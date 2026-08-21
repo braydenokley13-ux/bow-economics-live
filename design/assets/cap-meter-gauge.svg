@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 220" width="960" height="220" role="img" aria-label="Salary cap meter with safe, tight, and over-the-line threshold zones">
+  <defs>
+    <linearGradient id="panelBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b212c"/>
+      <stop offset="100%" stop-color="#131822"/>
+    </linearGradient>
+    <linearGradient id="trackWell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0d12"/>
+      <stop offset="100%" stop-color="#0d1119"/>
+    </linearGradient>
+    <linearGradient id="fillGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f7a56"/>
+      <stop offset="100%" stop-color="#1cb883"/>
+    </linearGradient>
+    <linearGradient id="fillHead" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- outer panel -->
+  <rect x="8" y="8" width="944" height="204" rx="16" fill="url(#panelBg)"/>
+  <rect x="8.75" y="8.75" width="942.5" height="202.5" rx="15.5" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1.5"/>
+
+  <!-- label row -->
+  <text x="36" y="46" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="14" letter-spacing="2" fill="#737b8c">SALARY CAP</text>
+  <text x="924" y="46" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="14" fill="#b9bfcc">$100M LIMIT</text>
+
+  <!-- track well: $0 to $100M mapped across x=36..924 (888px) -->
+  <rect x="36" y="60" width="888" height="46" rx="10" fill="url(#trackWell)"/>
+
+  <!-- threshold zone tint bands, behind the fill: safe 0-70%, tight 70-90%, over 90-100% -->
+  <rect x="36" y="60" width="621.6" height="46" fill="#12946a" fill-opacity="0.10"/>
+  <rect x="657.6" y="60" width="177.6" height="46" fill="#bd8a12" fill-opacity="0.12"/>
+  <rect x="835.2" y="60" width="88.8" height="46" fill="#d8394a" fill-opacity="0.14"/>
+
+  <rect x="36.5" y="60.5" width="887" height="45" rx="9.5" fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1"/>
+
+  <!-- sample fill state: $62M committed -->
+  <rect x="38" y="62" width="507" height="42" rx="8" fill="url(#fillGrad)"/>
+  <rect x="38" y="62" width="507" height="16" rx="8" fill="url(#fillHead)"/>
+  <polygon points="545,54 553,54 549,44" fill="#f6f4ec"/>
+
+  <!-- tick marks every $10M -->
+  <g stroke="#3a4354" stroke-width="1.5">
+    <line x1="36" y1="106" x2="36" y2="116"/>
+    <line x1="124.8" y1="106" x2="124.8" y2="116"/>
+    <line x1="213.6" y1="106" x2="213.6" y2="116"/>
+    <line x1="302.4" y1="106" x2="302.4" y2="116"/>
+    <line x1="391.2" y1="106" x2="391.2" y2="116"/>
+    <line x1="480" y1="106" x2="480" y2="116"/>
+    <line x1="568.8" y1="106" x2="568.8" y2="116"/>
+    <line x1="657.6" y1="106" x2="657.6" y2="116"/>
+    <line x1="746.4" y1="106" x2="746.4" y2="116"/>
+    <line x1="835.2" y1="106" x2="835.2" y2="116"/>
+    <line x1="924" y1="106" x2="924" y2="116"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#737b8c">
+    <text x="36" y="134" text-anchor="middle">$0</text>
+    <text x="480" y="134" text-anchor="middle">$50M</text>
+    <text x="924" y="134" text-anchor="middle">$100M</text>
+  </g>
+
+  <!-- threshold boundary markers -->
+  <line x1="657.6" y1="56" x2="657.6" y2="120" stroke="#bd8a12" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round"/>
+  <line x1="835.2" y1="56" x2="835.2" y2="120" stroke="#d8394a" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round"/>
+
+  <!-- big-number readout -->
+  <text x="36" y="184" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="13" letter-spacing="2" fill="#737b8c">CAP REMAINING</text>
+  <text x="228" y="192" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="36" fill="#f4b942">$38M</text>
+
+  <!-- state legend -->
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="12" letter-spacing="1">
+    <circle cx="560" cy="184" r="6" fill="#12946a"/>
+    <text x="574" y="189" fill="#b9bfcc">SAFE</text>
+    <circle cx="668" cy="184" r="6" fill="#bd8a12"/>
+    <text x="682" y="189" fill="#b9bfcc">TIGHT</text>
+    <circle cx="786" cy="184" r="6" fill="#d8394a"/>
+    <text x="800" y="189" fill="#b9bfcc">OVER THE LINE</text>
+  </g>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 520" width="380" height="520" role="img" aria-label="Dead-cap tear overlay: contract cut with dead-cap bite and OUT stamp">
+  <defs>
+    <linearGradient id="wound" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d8394a" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#d8394a" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <!-- back shadow edge of the tear, offset for depth -->
+  <path d="M 40 40
+           L 96 82 L 150 54 L 206 108 L 248 76 L 312 150 L 372 118 L 372 520 L 40 520 Z"
+        fill="#05070a" fill-opacity="0.6"/>
+
+  <!-- wound glow showing through the rip -->
+  <path d="M 34 32
+           L 90 76 L 146 46 L 202 102 L 244 68 L 308 144 L 368 110 L 380 130 L 316 168
+           L 252 92 L 210 126 L 154 70 L 98 100 L 40 54 Z"
+        fill="url(#wound)"/>
+
+  <!-- torn front edge, jagged -->
+  <path d="M 30 26
+           L 88 72 L 144 40 L 200 98 L 242 62 L 306 140 L 368 106"
+        fill="none" stroke="#f6f4ec" stroke-width="3" stroke-linejoin="round" stroke-opacity="0.85"/>
+  <path d="M 30 26
+           L 88 72 L 144 40 L 200 98 L 242 62 L 306 140 L 368 106"
+        fill="none" stroke="#d8394a" stroke-width="7" stroke-linejoin="round" stroke-opacity="0.35"/>
+
+  <!-- loose paper flecks near the tear -->
+  <g fill="#1b212c" stroke="#3a4354" stroke-width="1">
+    <polygon points="256,58 276,50 270,72" transform="rotate(18 266 60)"/>
+    <polygon points="112,86 130,96 108,104" transform="rotate(-10 118 95)"/>
+  </g>
+
+  <!-- dead-cap bite readout tag -->
+  <rect x="176" y="150" width="176" height="40" rx="8" fill="#0d1119" fill-opacity="0.92"/>
+  <rect x="176.5" y="150.5" width="175" height="39" rx="7.5" fill="none" stroke="#d8394a" stroke-width="1.5"/>
+  <text x="264" y="176" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="15" letter-spacing="1" fill="#e0736e">−10% DEAD CAP</text>
+
+  <!-- OUT stamp -->
+  <g transform="rotate(-12 190 380)">
+    <rect x="90" y="345" width="200" height="70" rx="6" fill="none" stroke="#d8394a" stroke-width="6" stroke-opacity="0.9"/>
+    <rect x="98" y="353" width="184" height="54" rx="3" fill="none" stroke="#d8394a" stroke-width="2" stroke-opacity="0.7"/>
+    <text x="190" y="398" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="42" letter-spacing="6" fill="#d8394a" fill-opacity="0.92">OUT</text>
+  </g>
+</svg>

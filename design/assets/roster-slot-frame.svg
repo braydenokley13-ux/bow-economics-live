@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 560" width="420" height="560" role="img" aria-label="Roster wall slot frame, empty state">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1b212c"/>
+      <stop offset="100%" stop-color="#131822"/>
+    </linearGradient>
+    <linearGradient id="plateEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a4354" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#3a4354" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="well" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1119"/>
+      <stop offset="100%" stop-color="#0a0d12"/>
+    </linearGradient>
+    <linearGradient id="nameplate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#232a37"/>
+      <stop offset="100%" stop-color="#1b212c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- outer mounting plate -->
+  <rect x="10" y="10" width="400" height="540" rx="18" fill="url(#plate)"/>
+  <rect x="10.75" y="10.75" width="398.5" height="538.5" rx="17.5" fill="none" stroke="url(#plateEdge)" stroke-width="1.5"/>
+
+  <!-- mount bolts, industrial detail -->
+  <g fill="#0a0d12" stroke="#3a4354" stroke-width="1">
+    <circle cx="28" cy="28" r="4.5"/>
+    <circle cx="392" cy="28" r="4.5"/>
+    <circle cx="28" cy="532" r="4.5"/>
+    <circle cx="392" cy="532" r="4.5"/>
+  </g>
+
+  <!-- slot index badge -->
+  <circle cx="42" cy="42" r="20" fill="#0a0d12"/>
+  <circle cx="42" cy="42" r="20" fill="none" stroke="#f4b942" stroke-width="2"/>
+  <text x="42" y="48" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="16" fill="#f4b942">01</text>
+
+  <!-- recessed docking well -->
+  <rect x="40" y="76" width="340" height="394" rx="14" fill="url(#well)"/>
+  <rect x="41.5" y="77.5" width="337" height="391" rx="12.5" fill="none" stroke="#4da2e8" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="3 9" stroke-linecap="round"/>
+
+  <!-- abstract placeholder glyph: geometric jersey silhouette, not a character -->
+  <g transform="translate(210,270)" fill="#ffffff" fill-opacity="0.07">
+    <circle cx="0" cy="-58" r="30"/>
+    <path d="M -78 96 C -78 20 -50 -18 0 -18 C 50 -18 78 20 78 96 L 78 118 L -78 118 Z"/>
+  </g>
+
+  <!-- docking corner brackets, broadcast targeting style -->
+  <g stroke="#4da2e8" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M 58 96 L 58 76 L 78 76"/>
+    <path d="M 362 96 L 362 76 L 342 76"/>
+    <path d="M 58 450 L 58 470 L 78 470"/>
+    <path d="M 362 450 L 362 470 L 342 470"/>
+  </g>
+
+  <!-- nameplate strip -->
+  <rect x="40" y="486" width="340" height="54" rx="9" fill="url(#nameplate)"/>
+  <rect x="40.5" y="486.5" width="339" height="53" rx="8.5" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+  <rect x="58" y="503" width="10" height="20" rx="2" fill="#4da2e8"/>
+  <text x="82" y="518" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="17" letter-spacing="2" fill="#b9bfcc">POSITION SLOT</text>
+</svg>

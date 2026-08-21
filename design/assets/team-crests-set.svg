@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 200" width="1020" height="200" role="img" aria-label="Fictional team crest template set: five distinct franchise marks">
+  <defs>
+    <linearGradient id="cIronworks" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a4560"/>
+      <stop offset="100%" stop-color="#232a3a"/>
+    </linearGradient>
+    <linearGradient id="cNorthstar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7b6bea"/>
+      <stop offset="100%" stop-color="#5643c2"/>
+    </linearGradient>
+    <linearGradient id="cHarbor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1cb883"/>
+      <stop offset="100%" stop-color="#0f7a56"/>
+    </linearGradient>
+    <linearGradient id="cSummit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d24a4a"/>
+      <stop offset="100%" stop-color="#a12f34"/>
+    </linearGradient>
+    <linearGradient id="cVale" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8a622"/>
+      <stop offset="100%" stop-color="#b8790f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 1: IRONWORKS — shield + gear, steel/navy -->
+  <g transform="translate(20,10)">
+    <path d="M 80 0 L 155 24 L 155 96 C 155 148 122 178 80 196 C 38 178 5 148 5 96 L 5 24 Z" fill="url(#cIronworks)" stroke="#8b95ab" stroke-width="2"/>
+    <circle cx="80" cy="84" r="34" fill="none" stroke="#f6f4ec" stroke-width="6"/>
+    <g fill="#f6f4ec">
+      <rect x="74" y="34" width="12" height="16"/>
+      <rect x="74" y="118" width="12" height="16"/>
+      <rect x="30" y="78" width="16" height="12"/>
+      <rect x="114" y="78" width="16" height="12"/>
+    </g>
+    <circle cx="80" cy="84" r="12" fill="#f6f4ec"/>
+    <text x="80" y="176" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="20" letter-spacing="1" fill="#f6f4ec">IW</text>
+  </g>
+
+  <!-- 2: NORTHSTAR — circle + starburst, violet -->
+  <g transform="translate(216,10)">
+    <circle cx="80" cy="90" r="80" fill="url(#cNorthstar)" stroke="#c9bdfb" stroke-width="2"/>
+    <!-- compass needle, not a star mark -->
+    <g>
+      <polygon points="80,26 96,90 80,78 64,90" fill="#f4b942"/>
+      <polygon points="80,154 96,90 80,102 64,90" fill="#3a2f86"/>
+      <circle cx="80" cy="90" r="9" fill="#1b1440" stroke="#f4b942" stroke-width="2"/>
+    </g>
+    <text x="80" y="176" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="20" letter-spacing="1" fill="#f6f4ec">NS</text>
+  </g>
+
+  <!-- 3: HARBOR — arch + tide lines, teal -->
+  <g transform="translate(412,10)">
+    <path d="M 5 196 L 5 70 C 5 25 38 0 80 0 C 122 0 155 25 155 70 L 155 196 Z" fill="url(#cHarbor)" stroke="#8fe3c4" stroke-width="2"/>
+    <g fill="none" stroke="#f6f4ec" stroke-width="6" stroke-linecap="round">
+      <path d="M 30 96 C 45 84 55 84 70 96 C 85 108 95 108 110 96 C 118 90 124 88 130 88"/>
+      <path d="M 30 122 C 45 110 55 110 70 122 C 85 134 95 134 110 122 C 118 116 124 114 130 114"/>
+    </g>
+    <text x="80" y="176" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="20" letter-spacing="1" fill="#f6f4ec">HB</text>
+  </g>
+
+  <!-- 4: SUMMIT — hexagon + peak, crimson -->
+  <g transform="translate(608,10)">
+    <polygon points="80,2 150,42 150,122 80,196 10,122 10,42" fill="url(#cSummit)" stroke="#f0a3a3" stroke-width="2"/>
+    <polygon points="80,50 118,112 96,112 80,86 64,112 42,112" fill="#f6f4ec"/>
+    <text x="80" y="176" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="20" letter-spacing="1" fill="#f6f4ec">SM</text>
+  </g>
+
+  <!-- 5: VALE — diamond + chevron valley, gold -->
+  <g transform="translate(804,10)">
+    <polygon points="80,0 158,90 80,196 2,90" fill="url(#cVale)" stroke="#f6d488" stroke-width="2"/>
+    <g fill="none" stroke="#1b212c" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="34,70 80,110 126,70"/>
+      <polyline points="34,100 80,140 126,100"/>
+    </g>
+    <text x="80" y="176" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="20" letter-spacing="1" fill="#1b212c">VL</text>
+  </g>
+</svg>
