@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOW Economics — Teach</title>
+<style>
+  :root { color-scheme: light; --ink:#12181f; --muted:#5b6673; --line:#dbe1e8; --bg:#f5f7fa; --card:#fff;
+    --accent:#1d5fd6; --warn:#b4571d; --danger:#c0273a; --ok:#1c8a53; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:14px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; background:var(--card); }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  main { max-width:960px; margin:0 auto; padding:20px; display:flex; flex-direction:column; gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  label { font-size:13px; color:var(--muted); display:block; margin-bottom:4px; }
+  input, select { font-size:15px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; width:100%; }
+  button { font-size:14px; padding:9px 14px; border-radius:7px; border:1px solid var(--line); background:#fff; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button.warn { background:#fff3ea; border-color:var(--warn); color:var(--warn); }
+  button.danger { background:#fdecee; border-color:var(--danger); color:var(--danger); }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .code { font-size:48px; font-weight:700; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+  .muted { color:var(--muted); font-size:13px; }
+  .pill { display:inline-block; padding:3px 9px; border-radius:99px; font-size:12px; font-weight:600; background:#eef2f7; }
+  .pill.live { background:#e6f6ec; color:var(--ok); }
+  .pill.paused { background:#fff3ea; color:var(--warn); }
+  .pill.frozen { background:#eaf1ff; color:var(--accent); }
+  .pill.ended { background:#fdecee; color:var(--danger); }
+  .phaserow { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; }
+  .phasechip { padding:4px 10px; border-radius:99px; font-size:12px; border:1px solid var(--line); }
+  .phasechip.current { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .phasechip.done { background:#eef2f7; color:var(--muted); }
+  ul.roster { list-style:none; margin:0; padding:0; max-height:220px; overflow:auto; }
+  ul.roster li { padding:6px 4px; border-bottom:1px solid var(--line); font-size:14px; display:flex; justify-content:space-between; }
+  table.tally { border-collapse:collapse; width:100%; }
+  table.tally td { padding:4px 6px; font-size:14px; }
+  .bar { background:var(--accent); height:14px; border-radius:4px; }
+  #status { font-size:12px; color:var(--muted); }
+  h2 { font-size:14px; margin:0 0 8px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+</style>
+</head>
+<body>
+<header>
+  <h1>BOW Economics — Teacher Console</h1>
+  <span id="status" class="muted"></span>
+</header>
+<main>
+  <section id="setup" class="card">
+    <h2>Start a session</h2>
+    <div class="row">
+      <div style="flex:1; min-width:180px;">
+        <label for="lesson">Lesson module</label>
+        <select id="lesson"></select>
+      </div>
+      <div style="flex:1; min-width:180px;">
+        <label for="title">Session title (optional)</label>
+        <input id="title" placeholder="Period 3 — Econ 101" />
+      </div>
+      <button id="create" class="primary" style="align-self:flex-end;">Create session</button>
+    </div>
+  </section>
+
+  <section id="room" class="card" hidden>
+    <div class="row" style="justify-content:space-between;">
+      <div>
+        <div class="muted">Join at <strong id="joinUrl"></strong> with code</div>
+        <div class="code" id="code"></div>
+      </div>
+      <div style="text-align:right;">
+        <span id="statePill" class="pill"></span>
+        <div class="muted" id="seatCount"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="controls" class="card" hidden>
+    <h2>Phase</h2>
+    <div class="phaserow" id="phaseRow"></div>
+    <div class="row">
+      <button id="btnAdvance" class="primary">Advance ▸</button>
+      <button id="btnReveal">Jump to REVEAL</button>
+      <button id="btnPause" class="warn">Pause</button>
+      <button id="btnFreeze" class="danger">Freeze</button>
+      <button id="btnRestore">Restore last good state</button>
+      <button id="btnEnd" class="danger">End session</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button id="btnShock">Trigger shock event</button>
+      <button id="btnCounterfactual">Rerun counterfactual</button>
+    </div>
+  </section>
+
+  <section id="roster" class="card" hidden>
+    <h2>Live join list</h2>
+    <ul class="roster" id="rosterList"></ul>
+  </section>
+
+  <section id="aggregate" class="card" hidden>
+    <h2>Aggregate panel</h2>
+    <div id="aggregateBody"></div>
+  </section>
+</main>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
