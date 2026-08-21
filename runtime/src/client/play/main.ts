@@ -424,6 +424,7 @@ function renderPlay(view: Record<string, unknown>): void {
   const lockWrap = document.createElement("div");
   lockWrap.style.marginTop = "12px";
   const lockBtn = document.createElement("button");
+  lockBtn.id = "btnLock";
   lockBtn.className = "btn btn-primary full";
   lockBtn.textContent = locked ? "Roster locked" : filledCount === 5 ? "Lock your roster" : `Fill all 5 slots to lock (${filledCount}/5)`;
   lockBtn.disabled = locked || filledCount < 5;

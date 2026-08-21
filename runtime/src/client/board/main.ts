@@ -125,8 +125,12 @@ function renderDraftDay(view: Record<string, unknown>, mode: string): void {
       const maxSpend = Math.max(1, ...gallery.map((g) => g.spent));
       const bars = gallery
         .map((g) => {
+          // Each segment's height is a share of THIS team's own stack (so the five
+          // segments always sum to exactly 100% of it); the stack's own height is
+          // this team's spend as a share of the class-wide max, so shorter-spend
+          // rosters read as visibly shorter columns next to bigger spenders.
           const segs = g.positions
-            .map((p) => `<div class="seg" title="${p.slot} $${p.price}M" style="height:${(p.price / maxSpend) * 100}%; background:${POSITION_COLOR[p.slot] ?? "var(--accent-blue)"};"></div>`)
+            .map((p) => `<div class="seg" title="${p.slot} $${p.price}M" style="height:${g.spent > 0 ? (p.price / g.spent) * 100 : 0}%; background:${POSITION_COLOR[p.slot] ?? "var(--accent-blue)"};"></div>`)
             .join("");
           return `<div class="barwrap"><div class="barcount">$${g.spent}M</div><div class="stack" style="height:${(g.spent / maxSpend) * 100}%;">${segs}</div><div class="barlabel">${g.strategy}</div></div>`;
         })
