@@ -78,6 +78,7 @@ const STATIC_TYPES: Record<string, string> = {
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml; charset=utf-8",
 };
 
 async function serveStatic(res: http.ServerResponse, relativePath: string): Promise<boolean> {
@@ -130,7 +131,7 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
     res.end();
     return;
   }
-  if (method === "GET" && parts[0] && ["teach", "play", "board", "shared"].includes(parts[0])) {
+  if (method === "GET" && parts[0] && ["teach", "play", "board", "shared", "assets"].includes(parts[0])) {
     const rel = parts.length === 1 ? `${parts[0]}/index.html` : parts.join("/");
     if (await serveStatic(res, rel)) return;
     sendJson(res, 404, { error: { code: "not_found", message: "asset not found" } });

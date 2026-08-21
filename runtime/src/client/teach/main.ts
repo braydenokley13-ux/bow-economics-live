@@ -10,7 +10,7 @@ type TeacherPayload = {
     paused: boolean; frozen: boolean; ended: boolean; version: number; hasCheckpoint: boolean;
   };
   seats: TeacherSeat[];
-  view: unknown;
+  view: Record<string, unknown>;
 };
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -28,7 +28,9 @@ async function loadLessons(): Promise<void> {
   const { lessons } = await apiFetch<{ lessons: Lesson[] }>("/api/lessons");
   const select = $<HTMLSelectElement>("lesson");
   select.innerHTML = "";
-  for (const lesson of lessons) {
+  // Draft Day first — this is the module the teacher actually runs class with.
+  const ordered = [...lessons].sort((a, b) => (a.id === "m1l1-draft-day" ? -1 : b.id === "m1l1-draft-day" ? 1 : 0));
+  for (const lesson of ordered) {
     const option = document.createElement("option");
     option.value = lesson.id;
     option.textContent = `${lesson.title} (${lesson.phases.join(" → ")})`;
@@ -79,7 +81,7 @@ function render(payload: TeacherPayload): void {
   const pillClass = s.ended ? "ended" : s.frozen ? "frozen" : s.paused ? "paused" : "live";
   const pillText = s.ended ? "ENDED" : s.frozen ? "FROZEN" : s.paused ? "PAUSED" : "LIVE";
   const pill = $("statePill");
-  pill.className = `pill ${pillClass}`;
+  pill.className = `pill pill-${pillClass === "live" ? "safe" : pillClass === "paused" ? "tight" : pillClass === "frozen" ? "over" : "over"}`;
   pill.textContent = pillText;
   $("seatCount").textContent = `${payload.seats.length} joined`;
 
@@ -101,38 +103,105 @@ function render(payload: TeacherPayload): void {
   $<HTMLButtonElement>("btnFreeze").textContent = s.frozen ? "Unfreeze" : "Freeze";
   $<HTMLButtonElement>("btnRestore").disabled = !s.hasCheckpoint;
   $<HTMLButtonElement>("btnEnd").disabled = s.ended;
+  // The shock is Draft Day's own consequence hook and only ever makes sense in CONSEQUENCE.
+  $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
+  $<HTMLButtonElement>("btnCounterfactual").hidden = s.lessonModuleId === "m1l1-draft-day";
 
   const roster = $("rosterList");
   roster.innerHTML = "";
   for (const seat of payload.seats) {
     const li = document.createElement("li");
     const joined = new Date(seat.joinedAt).toLocaleTimeString();
-    li.innerHTML = `<span>${escapeHtml(seat.displayName)}</span><span class="muted">${joined}</span>`;
+    li.innerHTML = `<span>${escapeHtml(seat.displayName)}</span><span style="color:var(--ink-muted);">${joined}</span>`;
     roster.appendChild(li);
   }
   if (payload.seats.length === 0) {
-    roster.innerHTML = '<li class="muted">Waiting for students to join…</li>';
+    roster.innerHTML = '<li style="color:var(--ink-muted);">Waiting for students to join…</li>';
   }
 
-  $("aggregateBody").innerHTML = renderAggregate(payload.view);
+  $("aggregateBody").innerHTML = "";
+  $("aggregateBody").appendChild(renderAggregate(payload.view, payload.seats));
 }
 
-/** The shell renders whatever shape a lesson module's teacherView returns. A tally
- *  object gets a small bar chart; anything else falls back to a readable JSON dump. */
-function renderAggregate(view: unknown): string {
-  if (view && typeof view === "object" && "tally" in (view as Record<string, unknown>)) {
+/** The shell renders whatever shape a lesson module's teacherView returns: Draft Day gets a
+ *  purpose-built per-pair tile grid; a tally object gets a small bar chart; anything else
+ *  falls back to a readable JSON dump. */
+function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
+  if (view["module"] === "m1l1-draft-day") return renderDraftDayAggregate(view, seats);
+
+  const wrap = document.createElement("div");
+  if (view && typeof view === "object" && "tally" in view) {
     const tally = (view as { tally: Record<string, number> }).tally;
     const max = Math.max(1, ...Object.values(tally));
-    return Object.entries(tally)
+    wrap.innerHTML = Object.entries(tally)
       .map(
         ([key, count]) =>
           `<div class="row" style="margin:4px 0;"><span style="width:70px;">${escapeHtml(key)}</span>
            <div class="bar" style="width:${Math.round((count / max) * 260)}px;"></div>
-           <span class="muted">${count}</span></div>`,
+           <span style="color:var(--ink-muted);">${count}</span></div>`,
       )
       .join("");
+    return wrap;
   }
-  return `<pre class="muted" style="white-space:pre-wrap; margin:0;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  wrap.innerHTML = `<pre style="color:var(--ink-muted); white-space:pre-wrap; margin:0;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  return wrap;
+}
+
+type TeamStat = {
+  locked: boolean; filled: number; spent: number; remaining: number; capState: string;
+  strategy: string | null; shocked: boolean; repaired: boolean | null;
+};
+type Aggregate = {
+  totalTeams: number; lockedTeams: number; spentToCapCount: number; avgSpent: number;
+  starSignerCount: number; starSignerCheapFillCount: number; balancedCount: number;
+  strategyCounts: Record<string, number>; hitCount: number; repairedCount: number; shockApplied: boolean;
+};
+
+function renderDraftDayAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
+  const teams = view["teams"] as TeamStat[];
+  const agg = view["aggregate"] as Aggregate;
+  const wrap = document.createElement("div");
+
+  const kpis = document.createElement("div");
+  kpis.className = "kpirow";
+  kpis.style.marginBottom = "14px";
+  kpis.innerHTML = `
+    <div class="kpi"><div class="num">${view["lockedCount"]}/${view["teamCount"]}</div><div class="lbl">Locked</div></div>
+    <div class="kpi"><div class="num">${agg.spentToCapCount}</div><div class="lbl">Spent to cap</div></div>
+    <div class="kpi"><div class="num">$${agg.avgSpent}M</div><div class="lbl">Avg spend</div></div>
+    <div class="kpi"><div class="num">${agg.starSignerCount}</div><div class="lbl">Signed a $60M star</div></div>
+    ${agg.shockApplied ? `<div class="kpi"><div class="num">${agg.repairedCount}/${agg.hitCount}</div><div class="lbl">Repaired after shock</div></div>` : ""}
+  `;
+  wrap.appendChild(kpis);
+
+  const strategyRow = document.createElement("div");
+  strategyRow.style.marginBottom = "14px";
+  const maxStrat = Math.max(1, ...Object.values(agg.strategyCounts));
+  strategyRow.innerHTML = Object.entries(agg.strategyCounts)
+    .map(
+      ([k, v]) =>
+        `<div class="row" style="margin:3px 0;"><span style="width:110px; font-size:12px; color:var(--ink-secondary);">${escapeHtml(k)}</span>
+         <div class="bar" style="width:${Math.round((v / maxStrat) * 260)}px; background:var(--accent-violet);"></div>
+         <span style="color:var(--ink-muted); font-size:12px;">${v}</span></div>`,
+    )
+    .join("");
+  wrap.appendChild(strategyRow);
+
+  const grid = document.createElement("div");
+  grid.className = "teamgrid";
+  teams.forEach((t, i) => {
+    const seat = seats[i];
+    const tile = document.createElement("div");
+    tile.className = "teamtile";
+    tile.innerHTML = `
+      <strong>${seat ? escapeHtml(seat.displayName) : `Team ${i + 1}`}</strong>
+      <div class="statline"><span>${t.locked ? "locked" : `${t.filled}/5`}</span><span class="pill pill-${t.capState}" style="font-size:10px;">$${t.spent}M</span></div>
+      ${t.strategy ? `<div class="statline"><span>${escapeHtml(t.strategy)}</span><span>${t.shocked ? (t.repaired ? "repaired" : "⚡ hit") : ""}</span></div>` : ""}
+    `;
+    grid.appendChild(tile);
+  });
+  wrap.appendChild(grid);
+  return wrap;
 }
 
 function escapeHtml(s: string): string {

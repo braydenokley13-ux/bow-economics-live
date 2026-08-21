@@ -4,72 +4,66 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BOW Economics — Play</title>
+<link rel="stylesheet" href="../shared/theme.css" />
 <style>
-  :root { color-scheme: light; --ink:#12181f; --muted:#5b6673; --line:#dbe1e8; --bg:#f5f7fa; --card:#fff; --accent:#1d5fd6; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; display:flex; flex-direction:column; }
-  header { padding:14px 18px; border-bottom:1px solid var(--line); background:var(--card); display:flex; justify-content:space-between; align-items:center; }
-  header h1 { font-size:15px; margin:0; font-weight:600; }
-  main { flex:1; max-width:520px; width:100%; margin:0 auto; padding:20px 16px; display:flex; flex-direction:column; gap:16px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; }
-  label { font-size:13px; color:var(--muted); display:block; margin:10px 0 4px; }
-  input { font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; width:100%; }
-  button { font-size:15px; padding:11px 16px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; width:100%; margin-top:12px; }
-  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
-  button:disabled { opacity:.4; }
-  .link { background:none; border:none; color:var(--accent); text-decoration:underline; width:auto; padding:0; margin-top:8px; }
-  .muted { color:var(--muted); font-size:13px; }
-  .center { text-align:center; }
-  .pinbox { font-size:32px; letter-spacing:.2em; font-weight:700; text-align:center; }
-  .colors { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
-  .swatch { height:96px; border-radius:12px; border:3px solid transparent; cursor:pointer; }
-  .swatch.red { background:#e5484d; } .swatch.blue { background:#3b82f6; }
-  .swatch.green { background:#22a06b; } .swatch.yellow { background:#f2b90c; }
-  .swatch.selected { border-color:var(--ink); box-shadow:0 0 0 2px #fff inset; }
-  .banner { padding:12px 14px; border-radius:8px; background:#eef2f7; font-size:14px; }
-  #err { color:#c0273a; font-size:13px; min-height:16px; }
-  #syncStatus { font-size:11px; color:var(--muted); }
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); background: var(--surface-panel);
+    display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-family: var(--font-display); letter-spacing: .08em; font-size: 15px; margin: 0; color: var(--ink-secondary); text-transform: uppercase; }
+  main { flex: 1; width: 100%; max-width: 640px; margin: 0 auto; padding: 16px 14px 40px; display: flex; flex-direction: column; gap: 14px; }
+  label { font-size: 13px; color: var(--ink-muted); display: block; margin: 10px 0 4px; }
+  input { font-size: 16px; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.14); border-radius: 8px; width: 100%;
+    background: var(--surface-inset); color: var(--ink-primary); }
+  input::placeholder { color: var(--ink-muted); }
+  button.full { width: 100%; margin-top: 12px; }
+  .link { background: none; border: none; color: var(--accent-blue); text-decoration: underline; width: auto; padding: 0; margin-top: 10px; cursor: pointer; font-size: 13px; }
+  .center { text-align: center; }
+  .pinbox { font-family: var(--font-number); font-size: 32px; letter-spacing: .2em; font-weight: 800; text-align: center; color: var(--accent-gold); }
+  #err { color: var(--over-the-line); font-size: 13px; min-height: 16px; }
+  #syncStatus { font-size: 11px; color: var(--ink-muted); }
+  .banner { padding: 14px; border-radius: 10px; background: var(--surface-panel); font-size: 14px; color: var(--ink-secondary); text-align: center; }
+  section.card { padding: 20px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>BOW Economics</h1>
+  <h1>BOW Economics · Draft Day</h1>
   <span id="syncStatus"></span>
 </header>
 <main>
   <section id="joinCard" class="card">
-    <h2 class="muted" style="margin-top:0;">Join your class</h2>
+    <h2 class="eyebrow" style="margin-top:0; font-size:13px;">Join your class</h2>
     <label for="joinCode">Class code</label>
     <input id="joinCode" placeholder="BOW347" autocomplete="off" autocapitalize="characters" />
     <label for="joinName">Your first name</label>
     <input id="joinName" placeholder="Alex" autocomplete="off" />
     <label for="joinName2">Working with a partner? Add their name too (optional)</label>
     <input id="joinName2" placeholder="Sam" autocomplete="off" />
-    <button id="btnJoin" class="primary">Join</button>
+    <button id="btnJoin" class="btn btn-primary full">Join</button>
     <button id="btnShowRejoin" class="link">Already joined on another device? Use your rejoin PIN</button>
   </section>
 
   <section id="rejoinCard" class="card" hidden>
-    <h2 class="muted" style="margin-top:0;">Rejoin your seat</h2>
+    <h2 class="eyebrow" style="margin-top:0; font-size:13px;">Rejoin your seat</h2>
     <label for="rejoinCode">Class code</label>
     <input id="rejoinCode" placeholder="BOW347" autocomplete="off" autocapitalize="characters" />
     <label for="rejoinName">Your name (exactly as you joined)</label>
     <input id="rejoinName" autocomplete="off" />
     <label for="rejoinPin">4-digit rejoin PIN</label>
     <input id="rejoinPin" inputmode="numeric" maxlength="4" autocomplete="off" />
-    <button id="btnRejoin" class="primary">Rejoin</button>
+    <button id="btnRejoin" class="btn btn-primary full">Rejoin</button>
     <button id="btnShowJoin" class="link">Back to join</button>
   </section>
 
   <div id="err"></div>
 
   <section id="pinCard" class="card" hidden>
-    <p class="muted">Your rejoin PIN — write it down in case you switch devices:</p>
+    <p class="eyebrow" style="font-size:12px;">Your rejoin PIN — write it down in case you switch devices:</p>
     <div class="pinbox" id="pinDisplay"></div>
   </section>
 
-  <section id="gameCard" class="card" hidden>
-    <div class="muted" id="gameHeader"></div>
+  <section id="gameCard" hidden>
+    <div class="eyebrow" id="gameHeader" style="font-size:12px; margin-bottom:10px;"></div>
     <div id="gameBody"></div>
   </section>
 </main>

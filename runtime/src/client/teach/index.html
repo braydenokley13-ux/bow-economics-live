@@ -4,48 +4,39 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BOW Economics — Teach</title>
+<link rel="stylesheet" href="../shared/theme.css" />
 <style>
-  :root { color-scheme: light; --ink:#12181f; --muted:#5b6673; --line:#dbe1e8; --bg:#f5f7fa; --card:#fff;
-    --accent:#1d5fd6; --warn:#b4571d; --danger:#c0273a; --ok:#1c8a53; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
-  header { padding:14px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; background:var(--card); }
-  header h1 { font-size:16px; margin:0; font-weight:600; }
-  main { max-width:960px; margin:0 auto; padding:20px; display:flex; flex-direction:column; gap:16px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  label { font-size:13px; color:var(--muted); display:block; margin-bottom:4px; }
-  input, select { font-size:15px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; width:100%; }
-  button { font-size:14px; padding:9px 14px; border-radius:7px; border:1px solid var(--line); background:#fff; cursor:pointer; }
-  button:hover { border-color:var(--accent); }
-  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
-  button.warn { background:#fff3ea; border-color:var(--warn); color:var(--warn); }
-  button.danger { background:#fdecee; border-color:var(--danger); color:var(--danger); }
-  button:disabled { opacity:.4; cursor:not-allowed; }
-  .code { font-size:48px; font-weight:700; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
-  .muted { color:var(--muted); font-size:13px; }
-  .pill { display:inline-block; padding:3px 9px; border-radius:99px; font-size:12px; font-weight:600; background:#eef2f7; }
-  .pill.live { background:#e6f6ec; color:var(--ok); }
-  .pill.paused { background:#fff3ea; color:var(--warn); }
-  .pill.frozen { background:#eaf1ff; color:var(--accent); }
-  .pill.ended { background:#fdecee; color:var(--danger); }
-  .phaserow { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; }
-  .phasechip { padding:4px 10px; border-radius:99px; font-size:12px; border:1px solid var(--line); }
-  .phasechip.current { background:var(--accent); color:#fff; border-color:var(--accent); }
-  .phasechip.done { background:#eef2f7; color:var(--muted); }
-  ul.roster { list-style:none; margin:0; padding:0; max-height:220px; overflow:auto; }
-  ul.roster li { padding:6px 4px; border-bottom:1px solid var(--line); font-size:14px; display:flex; justify-content:space-between; }
-  table.tally { border-collapse:collapse; width:100%; }
-  table.tally td { padding:4px 6px; font-size:14px; }
-  .bar { background:var(--accent); height:14px; border-radius:4px; }
-  #status { font-size:12px; color:var(--muted); }
-  h2 { font-size:14px; margin:0 0 8px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  header { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; background: var(--surface-panel); }
+  header h1 { font-family: var(--font-display); letter-spacing: .08em; font-size: 16px; margin: 0; color: var(--ink-secondary); text-transform: uppercase; }
+  main { max-width: 1080px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--surface-panel); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  label { font-size: 13px; color: var(--ink-muted); display: block; margin-bottom: 4px; }
+  input, select { font-size: 15px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; width: 100%;
+    background: var(--surface-inset); color: var(--ink-primary); }
+  .code { font-family: var(--font-number); font-size: 44px; font-weight: 800; letter-spacing: .06em; color: var(--accent-gold); }
+  .phaserow { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+  .phasechip { padding: 4px 10px; border-radius: 99px; font-size: 11px; letter-spacing: .03em; border: 1px solid rgba(255,255,255,0.14); color: var(--ink-muted); }
+  .phasechip.current { background: var(--accent-gold); color: #1b1406; border-color: var(--accent-gold); font-weight: 700; }
+  .phasechip.done { background: var(--surface-elevated); color: var(--ink-secondary); }
+  ul.roster { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; }
+  ul.roster li { padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; display: flex; justify-content: space-between; color: var(--ink-secondary); }
+  .bar { background: var(--accent-blue); height: 14px; border-radius: 4px; transition: width 300ms var(--ease-decel); }
+  #status { font-size: 12px; color: var(--ink-muted); }
+  h2 { font-family: var(--font-display); font-size: 13px; margin: 0 0 8px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .teamtile { background: var(--surface-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; font-size: 12px; }
+  .statline { display: flex; justify-content: space-between; margin-top: 4px; color: var(--ink-muted); }
+  .kpirow { display: flex; gap: 12px; flex-wrap: wrap; }
+  .kpi { flex: 1; min-width: 130px; background: var(--surface-card); border-radius: 8px; padding: 10px 12px; }
+  .kpi .num { font-family: var(--font-number); font-weight: 800; font-size: 24px; color: var(--accent-gold); }
+  .kpi .lbl { font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .04em; }
 </style>
 </head>
 <body>
 <header>
   <h1>BOW Economics — Teacher Console</h1>
-  <span id="status" class="muted"></span>
+  <span id="status" class="eyebrow"></span>
 </header>
 <main>
   <section id="setup" class="card">
@@ -59,19 +50,19 @@
         <label for="title">Session title (optional)</label>
         <input id="title" placeholder="Period 3 — Econ 101" />
       </div>
-      <button id="create" class="primary" style="align-self:flex-end;">Create session</button>
+      <button id="create" class="btn btn-primary" style="align-self:flex-end;">Create session</button>
     </div>
   </section>
 
   <section id="room" class="card" hidden>
     <div class="row" style="justify-content:space-between;">
       <div>
-        <div class="muted">Join at <strong id="joinUrl"></strong> with code</div>
+        <div class="eyebrow" style="font-size:12px;">Join at <strong id="joinUrl"></strong> with code</div>
         <div class="code" id="code"></div>
       </div>
       <div style="text-align:right;">
         <span id="statePill" class="pill"></span>
-        <div class="muted" id="seatCount"></div>
+        <div class="eyebrow" id="seatCount" style="font-size:12px; margin-top:4px;"></div>
       </div>
     </div>
   </section>
@@ -80,16 +71,16 @@
     <h2>Phase</h2>
     <div class="phaserow" id="phaseRow"></div>
     <div class="row">
-      <button id="btnAdvance" class="primary">Advance ▸</button>
-      <button id="btnReveal">Jump to REVEAL</button>
-      <button id="btnPause" class="warn">Pause</button>
-      <button id="btnFreeze" class="danger">Freeze</button>
-      <button id="btnRestore">Restore last good state</button>
-      <button id="btnEnd" class="danger">End session</button>
+      <button id="btnAdvance" class="btn btn-primary">Advance ▸</button>
+      <button id="btnReveal" class="btn">Jump to REVEAL</button>
+      <button id="btnPause" class="btn btn-warn">Pause</button>
+      <button id="btnFreeze" class="btn btn-danger">Freeze</button>
+      <button id="btnRestore" class="btn">Restore last good state</button>
+      <button id="btnEnd" class="btn btn-danger">End session</button>
     </div>
     <div class="row" style="margin-top:8px;">
-      <button id="btnShock">Trigger shock event</button>
-      <button id="btnCounterfactual">Rerun counterfactual</button>
+      <button id="btnShock" class="btn btn-danger">⚡ Trigger shock event</button>
+      <button id="btnCounterfactual" class="btn">Rerun counterfactual</button>
     </div>
   </section>
 

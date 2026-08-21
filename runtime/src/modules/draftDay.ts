@@ -153,12 +153,18 @@ export const spentOf = (team: TeamState): number =>
 export const filledCountOf = (team: TeamState): number =>
   SLOT_IDS.reduce((n, slot) => n + (team.slots[slot].playerId ? 1 : 0), 0);
 
-export type CapState = "ok" | "warning" | "critical" | "maxed";
+/**
+ * Matches the visual system's fixed three-zone cap-meter ramp exactly
+ * (design/assets/cap-meter-gauge.svg's baked-in zone tints and threshold
+ * markers sit at 70%/90% of the cap) — safe under 70%, tight from 70% to
+ * just under 90%, over the line at 90% and up (including exactly at cap).
+ */
+export type CapState = "safe" | "tight" | "over";
 export const capStateOf = (spent: number): CapState => {
-  if (spent >= CAP) return "maxed";
-  if (spent >= 80) return "critical";
-  if (spent >= 60) return "warning";
-  return "ok";
+  const pct = (spent / CAP) * 100;
+  if (pct >= 90) return "over";
+  if (pct >= 70) return "tight";
+  return "safe";
 };
 
 const usedPlayerIds = (team: TeamState): Set<string> => {
@@ -344,8 +350,12 @@ const PHASES: readonly CanonicalPhase[] = [
   "COMPLETE",
 ];
 
+/** Tags every view payload so the client shell can dispatch rendering by module identity instead of duck-typing view shape. */
+export const MODULE_ID = "m1l1-draft-day" as const;
+const tag = <T extends object>(obj: T): T & { module: typeof MODULE_ID } => ({ module: MODULE_ID, ...obj });
+
 export const draftDayModule: LessonModule<DraftDayState> = {
-  id: "m1l1-draft-day",
+  id: MODULE_ID,
   title: "Module 1 · Lesson 1 — Draft Day",
   phases: PHASES,
 
@@ -393,6 +403,7 @@ export const draftDayModule: LessonModule<DraftDayState> = {
     const spent = spentOf(team);
     const remaining = CAP - spent;
 
+    const view = (() => {
     switch (phase) {
       case "LOBBY":
         return { phase, message: "You're in! Waiting for your teacher to start Draft Day." };
@@ -493,6 +504,8 @@ export const draftDayModule: LessonModule<DraftDayState> = {
       default:
         return { phase };
     }
+    })();
+    return tag(view);
   },
 
   teacherView(state, phase) {
@@ -509,16 +522,17 @@ export const draftDayModule: LessonModule<DraftDayState> = {
         repaired: team.shockSlot !== null ? team.slots[team.shockSlot].playerId !== null : null,
       };
     });
-    return {
+    return tag({
       phase,
       teamCount: teams.length,
       lockedCount: teams.filter((t) => t.locked).length,
       teams,
       aggregate: computeAggregate(state),
-    };
+    });
   },
 
   boardView(state, phase) {
+    const view = (() => {
     switch (phase) {
       case "LOBBY":
         return { mode: "lobby", teamCount: Object.keys(state.teams).length };
@@ -589,6 +603,8 @@ export const draftDayModule: LessonModule<DraftDayState> = {
       default:
         return { mode: "idle", phase };
     }
+    })();
+    return tag(view);
   },
 
   aggregate(state) {

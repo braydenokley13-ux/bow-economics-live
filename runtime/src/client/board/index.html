@@ -4,26 +4,46 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BOW Economics — Board</title>
+<link rel="stylesheet" href="../shared/theme.css" />
 <style>
-  :root { color-scheme: dark; --ink:#f4f7fb; --muted:#8ea0b8; --bg:#0b1220; --card:#131d30; --accent:#4c8dff; }
-  * { box-sizing:border-box; }
-  html, body { height:100%; margin:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow:hidden; }
-  #stage { height:100vh; width:100vw; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:4vw; }
-  .code { font-size:12vw; font-weight:800; letter-spacing:.05em; }
-  .label { font-size:2.2vw; color:var(--muted); margin-bottom:1vh; text-transform:uppercase; letter-spacing:.08em; }
-  .sub { font-size:2.4vw; color:var(--muted); margin-top:2vh; }
-  .bars { display:flex; gap:3vw; align-items:flex-end; height:40vh; margin-top:4vh; }
-  .barwrap { display:flex; flex-direction:column; align-items:center; gap:1vh; width:12vw; }
-  .bar { width:100%; border-radius:10px 10px 0 0; transition: height .4s ease; }
-  .bar.red{background:#e5484d;} .bar.blue{background:#3b82f6;} .bar.green{background:#22a06b;} .bar.yellow{background:#f2b90c;}
-  .barcount { font-size:2.6vw; font-weight:700; }
-  .barlabel { font-size:1.6vw; color:var(--muted); text-transform:capitalize; }
-  .synthesis-note { max-width:60vw; font-size:2vw; color:var(--muted); margin-top:3vh; line-height:1.5; }
-  .banner { font-size:3vw; }
-  #hud { position:fixed; top:14px; right:18px; font-size:12px; color:var(--muted); }
+  html, body { height: 100%; overflow: hidden; }
+  #backdrop {
+    position: fixed; inset: 0; background-size: cover; background-position: center;
+    background-image: url("../assets/board-arena-backdrop.svg");
+    transition: background-image 700ms var(--ease-decel), opacity 700ms var(--ease-decel);
+  }
+  #backdrop.peak { background-image: url("../assets/reveal-synthesis-backdrop.svg"); }
+  #stage { position: relative; z-index: 1; height: 100vh; width: 100vw; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 4vw; }
+  .label { font-family: var(--font-display); font-size: 2.4vw; color: var(--ink-secondary); margin-bottom: 1vh;
+    text-transform: uppercase; letter-spacing: .1em; }
+  .sub { font-size: 2vw; color: var(--ink-muted); margin-top: 2vh; }
+  .code { font-family: var(--font-number); font-size: 12vw; font-weight: 800; letter-spacing: .05em; color: var(--accent-gold); }
+  .banner { font-size: 2.4vw; color: var(--ink-primary); }
+  #hud { position: fixed; top: 14px; right: 18px; font-size: 12px; color: var(--ink-muted); z-index: 2; }
+
+  .bars { display: flex; gap: 1.6vw; align-items: flex-end; height: 46vh; margin-top: 3vh; overflow-x: auto; max-width: 92vw; padding-bottom: 6px; }
+  .barwrap { display: flex; flex-direction: column; align-items: center; gap: .8vh; width: 6.4vw; min-width: 62px; flex-shrink: 0; }
+  .barcount { font-family: var(--font-number); font-size: 1.6vw; font-weight: 800; color: var(--accent-gold); }
+  .stack { width: 100%; display: flex; flex-direction: column-reverse; border-radius: 8px 8px 0 0; overflow: hidden; height: 100%; align-items: stretch; justify-content: flex-end; }
+  .seg { width: 100%; transition: height 400ms var(--ease-decel); }
+  .barlabel { font-size: 1vw; color: var(--ink-muted); text-transform: capitalize; }
+
+  .kpirow { display: flex; gap: 2vw; margin-top: 3vh; }
+  .kpi { background: rgba(19,24,34,0.75); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.4vh 1.6vw; }
+  .kpi .num { font-family: var(--font-number); font-weight: 800; font-size: 3vw; color: var(--accent-gold); }
+  .kpi .lbl { font-size: 1vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(22vw, 1fr)); gap: 1.6vw; max-width: 88vw; margin-top: 3vh; }
+  .synthcard { background: rgba(19,24,34,0.85); border: 1px solid rgba(244,185,66,0.35); border-radius: 14px; padding: 1.6vw; text-align: left; }
+  .synthcard h3 { margin: 0 0 1vh; font-family: var(--font-display); letter-spacing: .06em; font-size: 1.4vw; color: var(--accent-gold); text-transform: uppercase; }
+  .synthcard p { margin: 0; font-size: 1.15vw; line-height: 1.5; color: var(--ink-secondary); }
+  .synthesis-note { max-width: 62vw; font-size: 1.4vw; color: var(--ink-muted); margin-top: 3vh; line-height: 1.5; }
+  .exit-prompt { font-size: 1.6vw; color: var(--ink-primary); margin-top: 2vh; font-weight: 600; }
 </style>
 </head>
 <body>
+<div id="backdrop"></div>
 <div id="stage"><div class="label">Connecting…</div></div>
 <div id="hud"></div>
 <script type="module" src="./main.js"></script>

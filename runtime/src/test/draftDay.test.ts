@@ -174,14 +174,13 @@ test("lock succeeds once all five slots are filled and freezes further edits", (
   if (!result.ok) assert.match(result.reason, /locked/);
 });
 
-test("capStateOf reports semantic thresholds", () => {
-  assert.equal(capStateOf(0), "ok");
-  assert.equal(capStateOf(59), "ok");
-  assert.equal(capStateOf(60), "warning");
-  assert.equal(capStateOf(79), "warning");
-  assert.equal(capStateOf(80), "critical");
-  assert.equal(capStateOf(99), "critical");
-  assert.equal(capStateOf(100), "maxed");
+test("capStateOf reports the visual system's 70%/90% zone thresholds", () => {
+  assert.equal(capStateOf(0), "safe");
+  assert.equal(capStateOf(69), "safe");
+  assert.equal(capStateOf(70), "tight");
+  assert.equal(capStateOf(89), "tight");
+  assert.equal(capStateOf(90), "over");
+  assert.equal(capStateOf(100), "over");
 });
 
 test("studentView PLAY foregone panel lists only players priced above what's left, live", () => {
