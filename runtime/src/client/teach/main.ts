@@ -1,14 +1,16 @@
 import { ApiError, apiFetch } from "../shared/api.js";
+import { crestStyle } from "../shared/crest.js";
 import { startPolling } from "../shared/poll.js";
-import { loadTeachSessionCode, saveTeachSessionCode } from "../shared/storage.js";
+import { loadTeachSessionCode, loadTeachSessionKey, saveTeachSessionCode, saveTeachSessionKey } from "../shared/storage.js";
 
 type Lesson = { id: string; title: string; phases: string[] };
-type TeacherSeat = { id: string; displayName: string; joinedAt: string; lastSeenAt: string };
+type TeacherSeat = { id: string; displayName: string; joinedAt: string; lastSeenAt: string; rejoinLocked: boolean };
 type TeacherPayload = {
   session: {
     id: string; code: string; title: string; lessonModuleId: string; phase: string; phases: string[];
     paused: boolean; frozen: boolean; ended: boolean; version: number; hasCheckpoint: boolean;
   };
+  teacherKey?: string;
   seats: TeacherSeat[];
   view: Record<string, unknown>;
 };
@@ -22,6 +24,11 @@ const rosterEl = $("roster");
 const aggregateEl = $("aggregate");
 
 let currentCode: string | null = null;
+// R1: the per-session teacher credential — required on every /control and
+// GET /teacher call from here on. Held in memory plus localStorage (see
+// storage.ts) so a page refresh doesn't strand the teacher outside their
+// own room.
+let teacherKey: string | null = null;
 let poller: { stop: () => void } | null = null;
 
 async function loadLessons(): Promise<void> {
@@ -45,8 +52,18 @@ async function createSession(): Promise<void> {
     method: "POST",
     body: JSON.stringify({ lessonModuleId, title }),
   });
+  if (!payload.teacherKey) {
+    statusEl.textContent = "server did not issue a teacher key — cannot continue safely";
+    return;
+  }
+  teacherKey = payload.teacherKey;
   saveTeachSessionCode(payload.session.code);
+  saveTeachSessionKey(payload.teacherKey);
   openSession(payload.session.code);
+}
+
+function authHeaders(): Record<string, string> {
+  return teacherKey ? { Authorization: `Bearer ${teacherKey}` } : {};
 }
 
 function openSession(code: string): void {
@@ -63,7 +80,17 @@ function openSession(code: string): void {
     `/api/sessions/${code}/teacher`,
     1500,
     render,
-    { onError: (err) => (statusEl.textContent = describeError(err)) },
+    {
+      headers: authHeaders,
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 401) {
+          statusEl.textContent = "teacher key rejected — this room can no longer be controlled from here";
+          poller?.stop();
+          return;
+        }
+        statusEl.textContent = describeError(err);
+      },
+    },
   );
 }
 
@@ -81,7 +108,7 @@ function render(payload: TeacherPayload): void {
   const pillClass = s.ended ? "ended" : s.frozen ? "frozen" : s.paused ? "paused" : "live";
   const pillText = s.ended ? "ENDED" : s.frozen ? "FROZEN" : s.paused ? "PAUSED" : "LIVE";
   const pill = $("statePill");
-  pill.className = `pill pill-${pillClass === "live" ? "safe" : pillClass === "paused" ? "tight" : pillClass === "frozen" ? "over" : "over"}`;
+  pill.className = `pill pill-${pillClass === "live" ? "comfortable" : pillClass === "paused" ? "tight" : "at-cap"}`;
   pill.textContent = pillText;
   $("seatCount").textContent = `${payload.seats.length} joined`;
 
@@ -112,7 +139,31 @@ function render(payload: TeacherPayload): void {
   for (const seat of payload.seats) {
     const li = document.createElement("li");
     const joined = new Date(seat.joinedAt).toLocaleTimeString();
-    li.innerHTML = `<span>${escapeHtml(seat.displayName)}</span><span style="color:var(--ink-muted);">${joined}</span>`;
+    li.innerHTML = `<span>${escapeHtml(seat.displayName)}</span>`;
+    const right = document.createElement("span");
+    right.style.display = "flex";
+    right.style.alignItems = "center";
+    right.style.gap = "8px";
+    if (seat.rejoinLocked) {
+      // R3: a visible, one-click way for the teacher to clear a seat's rejoin lockout.
+      const warn = document.createElement("span");
+      warn.className = "pill pill-tight";
+      warn.style.fontSize = "10px";
+      warn.textContent = "PIN LOCKED";
+      const unlockBtn = document.createElement("button");
+      unlockBtn.className = "btn";
+      unlockBtn.style.fontSize = "11px";
+      unlockBtn.style.padding = "3px 8px";
+      unlockBtn.textContent = "Unlock";
+      unlockBtn.addEventListener("click", () => void unlockSeat(seat.id));
+      right.appendChild(warn);
+      right.appendChild(unlockBtn);
+    }
+    const time = document.createElement("span");
+    time.style.color = "var(--ink-muted)";
+    time.textContent = joined;
+    right.appendChild(time);
+    li.appendChild(right);
     roster.appendChild(li);
   }
   if (payload.seats.length === 0) {
@@ -121,6 +172,15 @@ function render(payload: TeacherPayload): void {
 
   $("aggregateBody").innerHTML = "";
   $("aggregateBody").appendChild(renderAggregate(payload.view, payload.seats));
+}
+
+async function unlockSeat(seatId: string): Promise<void> {
+  if (!currentCode) return;
+  try {
+    await apiFetch(`/api/sessions/${currentCode}/seats/${seatId}/unlock`, { method: "POST", headers: authHeaders() });
+  } catch (error) {
+    statusEl.textContent = error instanceof ApiError ? error.message : "could not unlock that seat";
+  }
 }
 
 /** The shell renders whatever shape a lesson module's teacherView returns: Draft Day gets a
@@ -147,8 +207,11 @@ function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): H
   return wrap;
 }
 
+type Franchise = { name: string; crestIndex: number };
 type TeamStat = {
-  locked: boolean; filled: number; spent: number; remaining: number; capState: string;
+  seatId: string;
+  franchise: Franchise | null;
+  locked: boolean; filled: number; spent: number; remaining: number; capState: "comfortable" | "tight" | "at-cap";
   strategy: string | null; shocked: boolean; repaired: boolean | null;
 };
 type Aggregate = {
@@ -161,6 +224,11 @@ function renderDraftDayAggregate(view: Record<string, unknown>, seats: TeacherSe
   const teams = view["teams"] as TeamStat[];
   const agg = view["aggregate"] as Aggregate;
   const wrap = document.createElement("div");
+  // G4: look up each team's own seat by seatId — teacherView is explicitly
+  // seat-identifying (only boardView is not) — rather than assuming the
+  // two arrays share array order, which was never actually guaranteed
+  // (a team's entry appears on its first *placement*, not on join).
+  const seatById = new Map(seats.map((s) => [s.id, s]));
 
   const kpis = document.createElement("div");
   kpis.className = "kpirow";
@@ -189,14 +257,18 @@ function renderDraftDayAggregate(view: Record<string, unknown>, seats: TeacherSe
 
   const grid = document.createElement("div");
   grid.className = "teamgrid";
-  teams.forEach((t, i) => {
-    const seat = seats[i];
+  teams.forEach((t) => {
+    const seat = seatById.get(t.seatId);
     const tile = document.createElement("div");
     tile.className = "teamtile";
+    const franchiseRow = t.franchise
+      ? `<div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;"><span style="${crestStyle(t.franchise.crestIndex, 16)}"></span><strong>${escapeHtml(t.franchise.name)}</strong></div>`
+      : `<strong>${seat ? escapeHtml(seat.displayName) : "Not started"}</strong>`;
     tile.innerHTML = `
-      <strong>${seat ? escapeHtml(seat.displayName) : `Team ${i + 1}`}</strong>
-      <div class="statline"><span>${t.locked ? "locked" : `${t.filled}/5`}</span><span class="pill pill-${t.capState}" style="font-size:10px;">$${t.spent}M</span></div>
-      ${t.strategy ? `<div class="statline"><span>${escapeHtml(t.strategy)}</span><span>${t.shocked ? (t.repaired ? "repaired" : "⚡ hit") : ""}</span></div>` : ""}
+      ${franchiseRow}
+      <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : ""}</span><span>${t.locked ? "locked" : `${t.filled}/5`}</span></div>
+      <div class="statline"><span class="pill pill-${t.capState}" style="font-size:10px;">$${t.spent}M</span><span>${t.strategy ? escapeHtml(t.strategy) : ""}</span></div>
+      ${t.shocked ? `<div class="statline"><span>${t.repaired ? "repaired" : "⚡ hit"}</span><span></span></div>` : ""}
     `;
     grid.appendChild(tile);
   });
@@ -213,6 +285,7 @@ async function sendControl(body: Record<string, unknown>): Promise<void> {
   try {
     const payload = await apiFetch<TeacherPayload>(`/api/sessions/${currentCode}/control`, {
       method: "POST",
+      headers: authHeaders(),
       body: JSON.stringify(body),
     });
     render(payload);
@@ -241,11 +314,16 @@ $("btnCounterfactual").addEventListener("click", () => void sendControl({ type: 
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();
-  if (remembered) {
-    apiFetch<TeacherPayload>(`/api/sessions/${remembered}/teacher`)
+  const rememberedKey = loadTeachSessionKey();
+  // R1: without the teacher key there is nothing safe to auto-reopen —
+  // fall through to the create-session form rather than guessing.
+  if (remembered && rememberedKey) {
+    teacherKey = rememberedKey;
+    apiFetch<TeacherPayload>(`/api/sessions/${remembered}/teacher`, { headers: authHeaders() })
       .then(() => openSession(remembered))
       .catch(() => {
-        /* stale/gone — fall through to the create-session form */
+        teacherKey = null;
+        /* stale/gone/wrong key — fall through to the create-session form */
       });
   }
 });

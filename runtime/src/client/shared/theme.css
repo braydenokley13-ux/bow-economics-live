@@ -141,14 +141,21 @@ body {
   border-radius: 99px;
   background: currentColor;
 }
-.pill-safe {
+.pill-comfortable {
   color: var(--cap-safe);
 }
 .pill-tight {
   color: var(--cap-tight);
 }
-.pill-over {
-  color: var(--over-the-line);
+/*
+ * G5 repair: the reducer makes exceeding the cap structurally impossible,
+ * so "at the cap" is a fully legal, often optimal build — not a
+ * violation. Styled gold (tense-but-legal broadcast drama), never the
+ * over-the-line red reserved for an actual problem elsewhere in the UI
+ * (the shock tear, the foregone panel).
+ */
+.pill-at-cap {
+  color: var(--accent-gold);
 }
 
 /* -------------------------------------------------- cap meter -------------------------------------------------- */
@@ -189,8 +196,9 @@ body {
 .cap-meter-fill.tight {
   background: linear-gradient(90deg, #8a6410, var(--cap-tight));
 }
-.cap-meter-fill.over {
-  background: linear-gradient(90deg, #97202d, var(--over-the-line));
+/* G5: "at the cap" is legal and often optimal — gold broadcast-drama fill, never alarm red. */
+.cap-meter-fill.at-cap {
+  background: linear-gradient(90deg, #a67714, var(--accent-gold));
 }
 .cap-meter-readout {
   display: flex;
@@ -442,4 +450,63 @@ body {
 
 .scroll-x {
   overflow-x: auto;
+}
+
+/* ------------------------------------------------------- franchise badge (G4) ----------------------------------- */
+.franchise-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.franchise-badge-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--ink-primary);
+}
+
+/* --------------------------------------------------------- rescue swap (G6) ------------------------------------- */
+.swap-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--ink-secondary);
+  background: rgba(77, 162, 232, 0.1);
+  border: 1px dashed rgba(77, 162, 232, 0.4);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease-decel), background 140ms var(--ease-decel);
+}
+.swap-suggestion:hover {
+  border-color: var(--accent-blue);
+  background: rgba(77, 162, 232, 0.18);
+}
+.swap-suggestion strong {
+  color: var(--accent-blue);
+}
+
+/* G6: a clear, unmistakable remove control on a filled slot — not a small text link. */
+.mini-card-remove-btn {
+  align-self: flex-end;
+  margin-top: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--surface-elevated);
+  color: var(--ink-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 140ms var(--ease-decel), border-color 140ms var(--ease-decel), color 140ms var(--ease-decel);
+}
+.mini-card-remove-btn:hover {
+  background: rgba(216, 57, 74, 0.22);
+  border-color: var(--over-the-line);
+  color: #ffb3ba;
 }

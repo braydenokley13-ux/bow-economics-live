@@ -1,4 +1,5 @@
 import { ApiError, apiFetch } from "../shared/api.js";
+import { crestStyle } from "../shared/crest.js";
 import { startPolling } from "../shared/poll.js";
 
 type SessionSummary = { code: string; ended: boolean };
@@ -117,7 +118,12 @@ function renderDraftDay(view: Record<string, unknown>, mode: string): void {
       return;
 
     case "reveal": {
-      const gallery = view["gallery"] as { spent: number; strategy: string; positions: { slot: string; price: number }[] }[];
+      const gallery = view["gallery"] as {
+        franchise: { name: string; crestIndex: number };
+        spent: number;
+        strategy: string;
+        positions: { slot: string; price: number }[];
+      }[];
       if (gallery.length === 0) {
         stage.innerHTML = `<div class="label">Class Gallery</div><div class="banner">No rosters locked yet.</div>`;
         return;
@@ -132,7 +138,14 @@ function renderDraftDay(view: Record<string, unknown>, mode: string): void {
           const segs = g.positions
             .map((p) => `<div class="seg" title="${p.slot} $${p.price}M" style="height:${g.spent > 0 ? (p.price / g.spent) * 100 : 0}%; background:${POSITION_COLOR[p.slot] ?? "var(--accent-blue)"};"></div>`)
             .join("");
-          return `<div class="barwrap"><div class="barcount">$${g.spent}M</div><div class="stack" style="height:${(g.spent / maxSpend) * 100}%;">${segs}</div><div class="barlabel">${g.strategy}</div></div>`;
+          // G4: label every bar with its franchise (crest + fictional name) — never a
+          // student name — so a class can point at the projector and say "that's ours!"
+          return `<div class="barwrap"><div class="barcount">$${g.spent}M</div><div class="stack" style="height:${(g.spent / maxSpend) * 100}%;">${segs}</div>
+            <div class="franchise-badge" style="flex-direction:column; gap:2px;">
+              <span style="${crestStyle(g.franchise.crestIndex, 28)}"></span>
+              <span class="barlabel" style="font-weight:700; color:var(--ink-primary);">${escapeHtml(g.franchise.name)}</span>
+            </div>
+            <div class="barlabel">${g.strategy}</div></div>`;
         })
         .join("");
       stage.innerHTML = `<div class="label">Class Gallery · ${gallery.length} rosters</div><div class="bars">${bars}</div>

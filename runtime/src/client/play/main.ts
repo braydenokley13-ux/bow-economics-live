@@ -1,7 +1,10 @@
 import { ApiError, apiFetch } from "../shared/api.js";
+import { crestStyle } from "../shared/crest.js";
 import { ActionOutbox } from "../shared/outbox.js";
 import { startPolling } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
+
+type Franchise = { name: string; crestIndex: number };
 
 type SessionInfo = { code: string; title: string; phase: string; paused: boolean; frozen: boolean; ended: boolean; version: number };
 type StudentPayload = {
@@ -151,7 +154,21 @@ function startGame(): void {
 
 function renderGame(payload: StudentPayload): void {
   const s = payload.session;
-  $("gameHeader").textContent = `${s.title || "Session"} · seated as ${payload.seat.displayName}`;
+  const header = $("gameHeader");
+  const franchise = payload.view["franchise"] as Franchise | null | undefined;
+  header.innerHTML = "";
+  const headerText = document.createElement("span");
+  headerText.textContent = `${s.title || "Session"} · seated as ${payload.seat.displayName}`;
+  header.appendChild(headerText);
+  // G4: once a team has placed a card, it has a fictional franchise identity — show it in the header
+  // from then on so the reveal's "that's ours!" moment starts registering well before REVEAL itself.
+  if (franchise) {
+    const badge = document.createElement("span");
+    badge.className = "franchise-badge";
+    badge.style.marginLeft = "10px";
+    badge.innerHTML = `<span style="${crestStyle(franchise.crestIndex, 18)}"></span><span class="franchise-badge-name" style="font-size:11px;">${escapeHtml(franchise.name)}</span>`;
+    header.appendChild(badge);
+  }
   const body = $("gameBody");
 
   if (s.ended) {
@@ -204,6 +221,13 @@ function renderGame(payload: StudentPayload): void {
 
 type Player = { id: string; name: string; position: string; price: number; rating: number };
 type SlotView = { id: string; player: Player | null };
+type SwapSuggestion = {
+  freeSlot: string;
+  freePlayerId: string;
+  freePlayerName: string;
+  freePlayerPrice: number;
+  unlocks: { id: string; name: string; price: number };
+};
 
 const POSITION_ICON: Record<string, string> = { SCORER: "◆", PLAYMAKER: "●", DEFENDER: "■", REBOUNDER: "▲", WILDCARD: "★" };
 
@@ -260,7 +284,8 @@ function renderDraftDay(s: SessionInfo, view: Record<string, unknown>): void {
       body.innerHTML = `
         <div class="panel" style="padding:16px;">
           <div class="eyebrow" style="font-size:12px;">Repair your ${escapeHtml(openSlot)} slot</div>
-          <div class="numeric" style="color:var(--accent-gold); margin:8px 0 14px; font-size:18px;">$${view["remaining"]}M left to spend</div>
+          <p style="margin:6px 0 0; font-size:12px; color:var(--ink-muted);">That player signed elsewhere for good. Here's a short-notice repair budget to find someone new.</p>
+          <div class="numeric" style="color:var(--accent-gold); margin:8px 0 14px; font-size:18px;">$${view["budget"]}M repair budget</div>
           <div class="market-grid" id="adaptCandidates"></div>
         </div>`;
       const grid = $("adaptCandidates");
@@ -340,15 +365,17 @@ function renderPlay(view: Record<string, unknown>): void {
   const spent = view["spent"] as number;
   const cap = view["cap"] as number;
   const remaining = view["remaining"] as number;
-  const capState = view["capState"] as "safe" | "tight" | "over";
+  // G5: comfortable/tight/at-cap — no "over" state exists, because the reducer makes exceeding the cap impossible.
+  const capState = view["capState"] as "comfortable" | "tight" | "at-cap";
   const slots = view["slots"] as SlotView[];
   const market = view["market"] as (Player & { used: boolean; affordable: boolean })[];
   const foregone = view["foregone"] as Player[];
-  const suggestions = view["suggestions"] as { slot: string; candidates: Player[] }[];
+  const suggestions = view["suggestions"] as { slot: string; candidates: Player[]; swaps: SwapSuggestion[] }[];
   const filledCount = slots.filter((s) => s.player !== null).length;
 
   body.innerHTML = "";
 
+  const capLabel = capState === "at-cap" ? "AT THE CAP" : capState.toUpperCase();
   // cap meter
   const meter = document.createElement("div");
   meter.className = "cap-meter";
@@ -356,13 +383,12 @@ function renderPlay(view: Record<string, unknown>): void {
   meter.innerHTML = `
     <div class="cap-meter-head">
       <span class="eyebrow" style="font-size:11px;">Salary Cap</span>
-      <span class="pill pill-${capState}"><span class="pill-dot"></span>${capState === "over" ? "OVER THE LINE" : capState.toUpperCase()}</span>
+      <span class="pill pill-${capState}"><span class="pill-dot"></span>${capLabel}</span>
     </div>
     <div class="cap-meter-track">
-      <div class="cap-meter-zone" style="left:0; width:70%; background:var(--cap-safe);"></div>
-      <div class="cap-meter-zone" style="left:70%; width:20%; background:var(--cap-tight);"></div>
-      <div class="cap-meter-zone" style="left:90%; width:10%; background:var(--over-the-line);"></div>
-      <div class="cap-meter-fill ${capState === "over" ? "over" : capState === "tight" ? "tight" : ""}" style="width:calc(${pct}% - 6px);"></div>
+      <div class="cap-meter-zone" style="left:0; width:90%; background:var(--cap-safe);"></div>
+      <div class="cap-meter-zone" style="left:90%; width:10%; background:var(--cap-tight);"></div>
+      <div class="cap-meter-fill ${capState === "at-cap" ? "at-cap" : capState === "tight" ? "tight" : ""}" style="width:calc(${pct}% - 6px);"></div>
     </div>
     <div class="cap-meter-readout">
       <span>SPENT <span class="numeric" style="color:var(--ink-primary);">$${spent}M</span> / $${cap}M</span>
@@ -380,31 +406,48 @@ function renderPlay(view: Record<string, unknown>): void {
     const el = document.createElement("div");
     el.className = "roster-slot" + (slot.player ? " filled arrive" : "");
     if (slot.player) {
+      // G6: a clear, unmistakable remove control right on the card — not a small text link.
       el.innerHTML = `
         <div class="roster-slot-label">${POSITION_ICON[slot.id] ?? ""} ${slot.id}</div>
         <div class="mini-card">
           <div class="mini-card-name">${escapeHtml(slot.player.name)}</div>
           <div class="mini-card-pos">${slot.player.position}</div>
           <div class="mini-card-rating">RTG ${slot.player.rating}</div>
-          <div class="mini-card-salary">$${slot.player.price}M</div>
-          ${locked ? "" : `<button class="mini-card-remove" data-slot="${slot.id}">remove</button>`}
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-top:auto;">
+            <div class="mini-card-salary" style="margin-top:0;">$${slot.player.price}M</div>
+            ${locked ? "" : `<button class="mini-card-remove-btn" data-slot="${slot.id}" title="Remove ${escapeHtml(slot.player.name)}" aria-label="Remove">×</button>`}
+          </div>
         </div>`;
       if (!locked) {
-        el.querySelector(".mini-card-remove")?.addEventListener("click", (e) => {
+        el.querySelector(".mini-card-remove-btn")?.addEventListener("click", (e) => {
           e.stopPropagation();
           outbox?.submit({ type: "remove", slotId: slot.id });
         });
       }
     } else {
       const sugg = suggestions.find((x) => x.slot === slot.id);
+      const hasCandidates = sugg && sugg.candidates.length > 0;
+      const hasSwaps = sugg && sugg.candidates.length === 0 && sugg.swaps.length > 0;
       el.innerHTML = `
         <div class="roster-slot-label">${POSITION_ICON[slot.id] ?? ""} ${slot.id}</div>
         <div class="roster-slot-empty-glyph">+</div>
         ${
-          sugg && sugg.candidates.length > 0 && !locked
-            ? `<div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:4px;">${sugg.candidates
+          hasCandidates && !locked
+            ? `<div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:4px;">${sugg!.candidates
                 .map((c) => `<span class="pill" style="font-size:10px; cursor:pointer;" data-place="${c.id}" data-slot="${slot.id}">${escapeHtml(c.name.split(" ")[0] ?? c.name)} $${c.price}M</span>`)
                 .join("")}</div>`
+            : ""
+        }
+        ${
+          hasSwaps && !locked
+            ? sugg!.swaps
+                .map(
+                  (s) =>
+                    `<div class="swap-suggestion" data-swap-free="${s.freeSlot}" data-swap-place-slot="${slot.id}" data-swap-place-id="${s.unlocks.id}">
+                       Free up $${s.freePlayerPrice}M by moving out <strong>${escapeHtml(s.freePlayerName)}</strong> → afford ${escapeHtml(s.unlocks.name)} ($${s.unlocks.price}M)
+                     </div>`,
+                )
+                .join("")
             : ""
         }`;
     }
@@ -415,6 +458,19 @@ function renderPlay(view: Record<string, unknown>): void {
     chip.addEventListener("click", (e) => {
       e.stopPropagation();
       outbox?.submit({ type: "place", slotId: chip.dataset["slot"], playerId: chip.dataset["place"] });
+    });
+  });
+  // G6: a swap suggestion is two actions in sequence — remove the blocker, then place the unlocked candidate.
+  // The outbox is strictly ordered (one in flight at a time, submission order), so queuing both here is safe.
+  wall.querySelectorAll<HTMLElement>("[data-swap-free]").forEach((row) => {
+    row.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const freeSlot = row.dataset["swapFree"];
+      const placeSlot = row.dataset["swapPlaceSlot"];
+      const placeId = row.dataset["swapPlaceId"];
+      if (!freeSlot || !placeSlot || !placeId) return;
+      outbox?.submit({ type: "remove", slotId: freeSlot });
+      outbox?.submit({ type: "place", slotId: placeSlot, playerId: placeId });
     });
   });
   wallWrap.appendChild(wall);

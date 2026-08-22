@@ -13,6 +13,7 @@ export type PlayCredentials = {
 
 const PLAY_KEY = "bow-play-credentials";
 const TEACH_KEY = "bow-teach-session-code";
+const TEACH_TEACHER_KEY = "bow-teach-session-key";
 
 export function loadPlayCredentials(): PlayCredentials | null {
   try {
@@ -50,6 +51,40 @@ export function loadTeachSessionCode(): string | null {
 export function saveTeachSessionCode(code: string): void {
   try {
     localStorage.setItem(TEACH_KEY, code);
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * R1: the per-session teacher credential, issued once at createSession.
+ * Stored separately from the join code (which is fine to keep around and
+ * even to say out loud in class) since this is the actual secret that
+ * gates /control and the teacher view — losing it (private window,
+ * cleared storage) means the "remembered session" reload can't safely
+ * reopen as teacher and should fall through to a fresh create-session
+ * form instead of guessing.
+ */
+export function loadTeachSessionKey(): string | null {
+  try {
+    return localStorage.getItem(TEACH_TEACHER_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function saveTeachSessionKey(key: string): void {
+  try {
+    localStorage.setItem(TEACH_TEACHER_KEY, key);
+  } catch {
+    /* best-effort */
+  }
+}
+
+export function clearTeachSession(): void {
+  try {
+    localStorage.removeItem(TEACH_KEY);
+    localStorage.removeItem(TEACH_TEACHER_KEY);
   } catch {
     /* best-effort */
   }
