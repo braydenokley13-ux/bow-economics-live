@@ -131,8 +131,12 @@ function render(payload: TeacherPayload): void {
   $<HTMLButtonElement>("btnRestore").disabled = !s.hasCheckpoint;
   $<HTMLButtonElement>("btnEnd").disabled = s.ended;
   // The shock is Draft Day's own consequence hook and only ever makes sense in CONSEQUENCE.
+  // The Box Office needs neither manual hook — its CONSEQUENCE and COUNTERFACTUAL states are
+  // computed automatically from the price/zone already stored at lock time, not teacher-triggered.
+  const isDraftDay = s.lessonModuleId === "m1l1-draft-day";
+  $<HTMLButtonElement>("btnShock").hidden = !isDraftDay;
   $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
-  $<HTMLButtonElement>("btnCounterfactual").hidden = s.lessonModuleId === "m1l1-draft-day";
+  $<HTMLButtonElement>("btnCounterfactual").hidden = isDraftDay || s.lessonModuleId === "m2-box-office";
 
   const roster = $("rosterList");
   roster.innerHTML = "";
@@ -188,6 +192,7 @@ async function unlockSeat(seatId: string): Promise<void> {
  *  falls back to a readable JSON dump. */
 function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
   if (view["module"] === "m1l1-draft-day") return renderDraftDayAggregate(view, seats);
+  if (view["module"] === "m2-box-office") return renderBoxOfficeAggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
@@ -269,6 +274,87 @@ function renderDraftDayAggregate(view: Record<string, unknown>, seats: TeacherSe
       <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : ""}</span><span>${t.locked ? "locked" : `${t.filled}/5`}</span></div>
       <div class="statline"><span class="pill pill-${t.capState}" style="font-size:10px;">$${t.spent}M</span><span>${t.strategy ? escapeHtml(t.strategy) : ""}</span></div>
       ${t.shocked ? `<div class="statline"><span>${t.repaired ? "repaired" : "⚡ hit"}</span><span></span></div>` : ""}
+    `;
+    grid.appendChild(tile);
+  });
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+/* ---------------------------------------------------- box office aggregate -- */
+
+type BoxMarket = { id: string; name: string; flavor: string };
+type BoxSeatStat = {
+  seatId: string;
+  market: BoxMarket | null;
+  currentPrice: number | null;
+  priceH1: number | null;
+  priceH2: number | null;
+  zone: string | null;
+  h1Locked: boolean;
+  h2Locked: boolean;
+};
+type BoxAggregate = {
+  totalPairs: number;
+  h1LockedCount: number;
+  h2LockedCount: number;
+  zoneCounts: { over: number; under: number; sweet: number };
+  avgPriceH1: number | null;
+  avgPriceH2: number | null;
+  payrollClearedH1Count: number;
+  payrollClearedH2Count: number;
+};
+
+function renderBoxOfficeAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
+  const boxSeats = (view["seats"] as BoxSeatStat[]) ?? [];
+  const agg = view["aggregate"] as BoxAggregate;
+  const wrap = document.createElement("div");
+  const seatById = new Map(seats.map((s) => [s.id, s]));
+
+  const kpis = document.createElement("div");
+  kpis.className = "kpirow";
+  kpis.style.marginBottom = "14px";
+  kpis.innerHTML = `
+    <div class="kpi"><div class="num">${agg.h1LockedCount}/${agg.totalPairs}</div><div class="lbl">Homestand 1 locked</div></div>
+    <div class="kpi"><div class="num">${agg.h2LockedCount}/${agg.totalPairs}</div><div class="lbl">Homestand 2 locked</div></div>
+    <div class="kpi"><div class="num">${agg.avgPriceH1 ?? "—"}</div><div class="lbl">Avg H1 price</div></div>
+    <div class="kpi"><div class="num">${agg.payrollClearedH1Count}</div><div class="lbl">Cleared payroll (H1)</div></div>
+  `;
+  wrap.appendChild(kpis);
+
+  const zoneRow = document.createElement("div");
+  zoneRow.style.marginBottom = "14px";
+  const maxZone = Math.max(1, agg.zoneCounts.over, agg.zoneCounts.under, agg.zoneCounts.sweet);
+  const zoneEntries: [string, number, string][] = [
+    ["Overpriced", agg.zoneCounts.over, "var(--over-the-line)"],
+    ["Underpriced", agg.zoneCounts.under, "var(--cap-tight)"],
+    ["Sweet spot", agg.zoneCounts.sweet, "var(--cap-safe)"],
+  ];
+  zoneRow.innerHTML = zoneEntries
+    .map(
+      ([label, count, color]) =>
+        `<div class="row" style="margin:3px 0;"><span style="width:110px; font-size:12px; color:var(--ink-secondary);">${label}</span>
+         <div class="bar" style="width:${Math.round((count / maxZone) * 260)}px; background:${color};"></div>
+         <span style="color:var(--ink-muted); font-size:12px;">${count}</span></div>`,
+    )
+    .join("");
+  wrap.appendChild(zoneRow);
+
+  const grid = document.createElement("div");
+  grid.className = "teamgrid";
+  boxSeats.forEach((bs) => {
+    const seat = seatById.get(bs.seatId);
+    const tile = document.createElement("div");
+    tile.className = "teamtile";
+    const priceLine = bs.h1Locked
+      ? `H1 $${bs.priceH1}${bs.h2Locked ? ` → H2 $${bs.priceH2}` : ""}`
+      : bs.currentPrice != null
+        ? `dragging: $${bs.currentPrice}`
+        : "not started";
+    tile.innerHTML = `
+      <strong>${seat ? escapeHtml(seat.displayName) : bs.seatId}</strong>
+      <div class="statline"><span>${bs.market ? escapeHtml(bs.market.name) : "—"}</span><span>${bs.zone ? bs.zone.toUpperCase() : ""}</span></div>
+      <div class="statline"><span>${escapeHtml(priceLine)}</span><span>${bs.h1Locked ? (bs.h2Locked ? "H2 locked" : "H1 locked") : ""}</span></div>
     `;
     grid.appendChild(tile);
   });

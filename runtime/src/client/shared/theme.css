@@ -490,6 +490,227 @@ body {
   color: var(--accent-blue);
 }
 
+/* ==================================================== Box Office (Module 2) ==================================================== */
+
+.market-flavor-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.market-flavor-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 14px;
+  color: var(--ink-primary);
+}
+.market-flavor-text {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-secondary);
+  line-height: 1.4;
+}
+
+/* ---- Price Dial: the one continuous control in the whole runtime ---- */
+.price-dial-wrap {
+  background: var(--surface-panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.price-dial-readout {
+  font-family: var(--font-number);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 40px;
+  color: var(--accent-gold);
+  text-align: center;
+  margin: 4px 0 12px;
+}
+.price-dial-input {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--cap-safe), var(--cap-tight) 55%, var(--over-the-line));
+  outline: none;
+  cursor: pointer;
+}
+.price-dial-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  border: 3px solid var(--accent-gold);
+  box-shadow: 0 0 0 4px rgba(244, 185, 66, 0.18);
+  cursor: grab;
+  transition: transform 120ms var(--ease-decel);
+}
+.price-dial-input:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+.price-dial-input::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  border: 3px solid var(--accent-gold);
+  cursor: grab;
+}
+.price-dial-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+/* ---- Fan Meter: a stadium-bowl grid of seat dots, live-fills with the dial ---- */
+.fan-meter-wrap {
+  margin-top: 16px;
+}
+.fan-meter {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  background: var(--surface-inset);
+  border-radius: 12px;
+  padding: 12px;
+}
+.fan-dot {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 220ms var(--ease-decel), border-color 220ms var(--ease-decel), box-shadow 220ms var(--ease-decel);
+}
+.fan-dot.filled {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 6px rgba(244, 185, 66, 0.45);
+}
+.fan-meter-readout {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* ---- Revenue Flow: three pipes feeding one total, against the Payroll Bill ---- */
+.revenue-flow {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.revenue-pipe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.revenue-pipe-label {
+  width: 54px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.revenue-pipe-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 6px;
+  background: var(--surface-inset);
+  overflow: hidden;
+}
+.revenue-pipe-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 260ms var(--ease-decel);
+}
+.revenue-pipe-fill.ticket {
+  background: linear-gradient(90deg, #0f7a56, var(--accent-gold));
+}
+.revenue-pipe-fill.tv {
+  background: var(--accent-blue);
+}
+.revenue-pipe-fill.merch {
+  background: var(--accent-violet);
+}
+.revenue-pipe-num {
+  width: 92px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 13px;
+}
+.revenue-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.revenue-total-num {
+  font-size: 24px;
+  color: var(--accent-gold);
+}
+
+/* ---- Zone banner: CONSEQUENCE's felt path-dependence beat ---- */
+.zone-banner {
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid;
+}
+.zone-banner.over {
+  background: rgba(216, 57, 74, 0.1);
+  border-color: var(--over-the-line);
+}
+.zone-banner.under {
+  background: rgba(189, 138, 18, 0.1);
+  border-color: var(--cap-tight);
+}
+.zone-banner.sweet {
+  background: rgba(18, 148, 106, 0.1);
+  border-color: var(--cap-safe);
+}
+.zone-banner-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  font-size: 19px;
+  text-transform: uppercase;
+}
+.zone-banner.over .zone-banner-title {
+  color: #ff9aa4;
+}
+.zone-banner.under .zone-banner-title {
+  color: #ffd98a;
+}
+.zone-banner.sweet .zone-banner-title {
+  color: var(--cap-safe);
+}
+
+/* ---- ARGUE: Homestand 1 vs Homestand 2, side by side ---- */
+.argue-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.argue-col {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
 /* G6: a clear, unmistakable remove control on a filled slot — not a small text link. */
 .mini-card-remove-btn {
   align-self: flex-end;

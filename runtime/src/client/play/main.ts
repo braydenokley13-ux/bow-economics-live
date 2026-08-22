@@ -189,6 +189,10 @@ function renderGame(payload: StudentPayload): void {
     renderDraftDay(s, view);
     return;
   }
+  if (view["module"] === "m2-box-office") {
+    renderBoxOffice(s, view);
+    return;
+  }
 
   // lobby-demo fallback (still registered, proves the runtime is genuinely generic)
   if (s.phase === "LOBBY") {
@@ -560,6 +564,286 @@ function placeAuto(p: Player, slots: SlotView[]): void {
     return;
   }
   showError(`No open slot for ${p.name} — remove someone first.`);
+}
+
+/* ------------------------------------------------------ box office render -- */
+
+type BoxMarket = { id: string; name: string; flavor: string };
+type BoxPreview = { attendance: number; fillPct: number; ticketRevenue: number; tvRevenue: number; merchRevenue: number; totalRevenue: number };
+type BoxResult = BoxPreview & { price: number };
+
+const ZONE_TITLE: Record<string, string> = { over: "EMPTY SEATS", under: "CASH CRUNCH", sweet: "RAISE OR HOLD" };
+const FAN_DOT_COUNT = 100;
+
+// The dial screen is rebuilt only when the phase/locked state actually
+// changes — every live-drag update after that patches text/dot classes in
+// place. Rebuilding the DOM on every server response (as draftDay does for
+// its discrete, click-driven actions) would tear the <input type="range">
+// out from under an in-progress pointer drag; this element is the one
+// truly continuous control in the whole runtime, so it gets this extra care.
+let boxDialMounted: { phase: string; locked: boolean } | null = null;
+let boxDragging = false;
+let boxLatestPrice: number | null = null;
+let boxThrottleTimer: number | null = null;
+
+/** Trailing-edge throttle: at most one setPrice submission per ~90ms, always carrying the latest value. */
+function queueSetPrice(price: number, immediate = false): void {
+  boxLatestPrice = price;
+  if (immediate) {
+    if (boxThrottleTimer !== null) {
+      window.clearTimeout(boxThrottleTimer);
+      boxThrottleTimer = null;
+    }
+    outbox?.submit({ type: "setPrice", price });
+    return;
+  }
+  if (boxThrottleTimer !== null) return;
+  boxThrottleTimer = window.setTimeout(() => {
+    boxThrottleTimer = null;
+    if (boxLatestPrice !== null) outbox?.submit({ type: "setPrice", price: boxLatestPrice });
+  }, 90);
+}
+
+function renderBoxOffice(s: SessionInfo, view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const phase = s.phase;
+  if (phase !== "PLAY" && phase !== "COUNTERFACTUAL") boxDialMounted = null;
+
+  switch (phase) {
+    case "LOBBY":
+      body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"] ?? "You're in! Waiting for your teacher to start The Box Office."))}</div>`;
+      return;
+
+    case "HOOK":
+      body.innerHTML = `
+        <div class="panel" style="padding:20px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">The Box Office</div>
+          <p style="font-size:16px; line-height:1.5; color:var(--ink-primary); margin:0;">${escapeHtml(String(view["message"]))}</p>
+          <div class="pill" style="margin-top:14px;">$${view["priceMin"]}–$${view["priceMax"]} dial · $${Number(view["payrollTarget"]).toLocaleString()} payroll</div>
+        </div>`;
+      return;
+
+    case "PLAY":
+    case "COUNTERFACTUAL":
+      renderBoxDialScreen(phase, view);
+      return;
+
+    case "REVEAL": {
+      const result = view["result"] as BoxResult | null;
+      const market = view["market"] as BoxMarket | null;
+      body.innerHTML = `
+        <div class="banner">${escapeHtml(String(view["message"]))}</div>
+        ${market && result != null && view["price"] != null ? renderResultCard("Homestand 1", market, Number(view["price"]), result, Number(view["payrollTarget"])) : ""}
+      `;
+      return;
+    }
+
+    case "CONSEQUENCE": {
+      const zone = view["zone"] as string | undefined;
+      if (!zone) {
+        body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"]))}</div>`;
+        return;
+      }
+      body.innerHTML = `
+        <div class="zone-banner ${zone}">
+          <div class="zone-banner-title">${escapeHtml(String(view["title"]))}</div>
+          <p style="margin:10px 0 0; font-size:14px; line-height:1.5; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
+        </div>`;
+      return;
+    }
+
+    case "ADAPT":
+      body.innerHTML = `
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px;">Adapt</div>
+          <p style="margin:10px 0 0; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"]))}</p>
+        </div>`;
+      return;
+
+    case "ARGUE": {
+      const h1 = view["h1"] as BoxResult | null;
+      const h2 = view["h2"] as BoxResult | null;
+      body.innerHTML = `
+        <div class="banner">${escapeHtml(String(view["prompt"]))}</div>
+        <div class="argue-compare">
+          ${h1 ? renderCompareCol("Homestand 1", h1) : `<div class="argue-col"><div class="eyebrow" style="font-size:11px;">Homestand 1</div><p style="font-size:12px; color:var(--ink-muted);">Not locked.</p></div>`}
+          ${h2 ? renderCompareCol("Homestand 2", h2) : `<div class="argue-col"><div class="eyebrow" style="font-size:11px;">Homestand 2</div><p style="font-size:12px; color:var(--ink-muted);">Not locked.</p></div>`}
+        </div>`;
+      return;
+    }
+
+    case "SYNTHESIS":
+      body.innerHTML = `
+        <div class="banner">${escapeHtml(String(view["message"]))}</div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"]))}</p>
+        </div>`;
+      return;
+
+    case "COMPLETE":
+      body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"]))}</div>`;
+      return;
+
+    default:
+      body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  }
+}
+
+function renderResultCard(label: string, market: BoxMarket, price: number, result: BoxResult, payrollTarget: number): string {
+  const delta = result.totalRevenue - payrollTarget;
+  return `
+    <div class="panel" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:11px;">${escapeHtml(label)} · ${escapeHtml(market.name)}</div>
+      <div class="numeric" style="font-size:26px; color:var(--accent-gold); margin-top:6px;">$${price} a ticket</div>
+      <div class="statline" style="margin-top:8px; color:var(--ink-secondary); display:flex; justify-content:space-between;"><span>${result.attendance.toLocaleString()} fans</span><span>$${result.totalRevenue.toLocaleString()} total</span></div>
+      <div class="pill ${delta >= 0 ? "pill-comfortable" : "pill-tight"}" style="margin-top:8px;">${delta >= 0 ? `+$${delta.toLocaleString()} over payroll` : `−$${Math.abs(delta).toLocaleString()} short of payroll`}</div>
+    </div>`;
+}
+
+function renderCompareCol(label: string, r: BoxResult): string {
+  return `
+    <div class="argue-col">
+      <div class="eyebrow" style="font-size:11px;">${escapeHtml(label)}</div>
+      <div class="numeric" style="font-size:22px; color:var(--accent-gold);">$${r.price}</div>
+      <div style="font-size:12px; color:var(--ink-secondary); margin-top:4px;">${r.attendance.toLocaleString()} fans</div>
+      <div style="font-size:12px; color:var(--ink-secondary);">$${r.totalRevenue.toLocaleString()} revenue</div>
+    </div>`;
+}
+
+function renderBoxDialScreen(phase: "PLAY" | "COUNTERFACTUAL", view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const locked = Boolean(view["locked"]);
+  const market = view["market"] as BoxMarket | null;
+
+  if (view["blocked"]) {
+    body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"]))}</div>`;
+    boxDialMounted = null;
+    return;
+  }
+
+  if (locked) {
+    body.innerHTML = `
+      <div class="panel" style="padding:18px;">
+        <div class="eyebrow" style="font-size:12px;">${market ? escapeHtml(market.name) : ""}</div>
+        <div class="numeric" style="font-size:30px; color:var(--accent-gold); margin-top:8px;">$${view["price"]} locked</div>
+        <p style="margin-top:10px; font-size:13px; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
+      </div>`;
+    boxDialMounted = { phase, locked: true };
+    return;
+  }
+
+  const price = Number(view["price"] ?? 10);
+  const priceMin = Number(view["priceMin"] ?? 10);
+  const priceMax = Number(view["priceMax"] ?? 120);
+  const priceStep = Number(view["priceStep"] ?? 5);
+  const payrollTarget = Number(view["payrollTarget"] ?? 0);
+  const preview = (view["preview"] as BoxPreview | null) ?? null;
+  const zone = view["zone"] as string | undefined;
+
+  const signature = { phase, locked: false };
+  const rootMissing = !document.getElementById("boxDialRoot");
+  const needsFullBuild = rootMissing || !boxDialMounted || boxDialMounted.phase !== signature.phase || boxDialMounted.locked !== signature.locked;
+
+  if (needsFullBuild) {
+    body.innerHTML = `
+      <div id="boxDialRoot">
+        ${market ? `<div class="market-flavor-card"><div class="market-flavor-name">${escapeHtml(market.name)}</div><div class="market-flavor-text">${escapeHtml(market.flavor)}</div></div>` : ""}
+        ${zone ? `<div class="pill pill-tight" style="margin-bottom:10px;">Homestand 2 opened: ${ZONE_TITLE[zone] ?? zone.toUpperCase()}</div>` : ""}
+        <div class="price-dial-wrap">
+          <div class="eyebrow" style="font-size:11px; text-align:center;">Price Dial</div>
+          <div class="price-dial-readout" id="boxPriceReadout">$${price}</div>
+          <input type="range" id="boxPriceInput" class="price-dial-input" min="${priceMin}" max="${priceMax}" step="${priceStep}" value="${price}" />
+          <div class="price-dial-ends"><span>$${priceMin}</span><span>$${priceMax}</span></div>
+        </div>
+        <div class="fan-meter-wrap">
+          <div class="eyebrow" style="font-size:11px;">Fan Meter</div>
+          <div class="fan-meter" id="boxFanMeter">${Array.from({ length: FAN_DOT_COUNT }, () => `<div class="fan-dot"></div>`).join("")}</div>
+          <div class="fan-meter-readout"><span id="boxAttendanceReadout">— fans</span><span>capacity live</span></div>
+        </div>
+        <div class="revenue-flow">
+          <div class="eyebrow" style="font-size:11px;">Revenue Flow</div>
+          <div class="revenue-pipe"><span class="revenue-pipe-label">Ticket</span><div class="revenue-pipe-track"><div class="revenue-pipe-fill ticket" id="boxTicketBar" style="width:0%;"></div></div><span class="revenue-pipe-num numeric" id="boxTicketNum">$0</span></div>
+          <div class="revenue-pipe"><span class="revenue-pipe-label">TV</span><div class="revenue-pipe-track"><div class="revenue-pipe-fill tv" id="boxTvBar" style="width:0%;"></div></div><span class="revenue-pipe-num numeric" id="boxTvNum">$0</span></div>
+          <div class="revenue-pipe"><span class="revenue-pipe-label">Merch</span><div class="revenue-pipe-track"><div class="revenue-pipe-fill merch" id="boxMerchBar" style="width:0%;"></div></div><span class="revenue-pipe-num numeric" id="boxMerchNum">$0</span></div>
+          <div class="revenue-total-row">
+            <span class="eyebrow" style="font-size:11px;">Total vs $${payrollTarget.toLocaleString()} payroll</span>
+            <span class="revenue-total-num numeric" id="boxTotalNum">$0</span>
+          </div>
+          <div id="boxPayrollDelta" class="pill" style="margin-top:6px;"></div>
+        </div>
+        <button id="boxLockBtn" class="btn btn-primary full" style="margin-top:14px;">Lock this price</button>
+      </div>`;
+    wireBoxDialEvents();
+    boxDialMounted = signature;
+  }
+
+  const readout = document.getElementById("boxPriceReadout");
+  if (readout) readout.textContent = `$${price}`;
+  const input = document.getElementById("boxPriceInput") as HTMLInputElement | null;
+  if (input && !boxDragging) input.value = String(price);
+  patchBoxDialLive(preview, payrollTarget);
+}
+
+function wireBoxDialEvents(): void {
+  const input = document.getElementById("boxPriceInput") as HTMLInputElement | null;
+  const readout = document.getElementById("boxPriceReadout");
+  if (input) {
+    const onDragStart = () => {
+      boxDragging = true;
+    };
+    const onDragEnd = () => {
+      boxDragging = false;
+    };
+    input.addEventListener("pointerdown", onDragStart);
+    input.addEventListener("pointerup", onDragEnd);
+    input.addEventListener("touchstart", onDragStart, { passive: true });
+    input.addEventListener("touchend", onDragEnd);
+    input.addEventListener("input", () => {
+      const price = Number(input.value);
+      if (readout) readout.textContent = `$${price}`;
+      queueSetPrice(price);
+    });
+    input.addEventListener("change", () => {
+      boxDragging = false;
+      queueSetPrice(Number(input.value), true);
+    });
+  }
+  document.getElementById("boxLockBtn")?.addEventListener("click", () => outbox?.submit({ type: "lock" }));
+}
+
+function patchBoxDialLive(preview: BoxPreview | null, payrollTarget: number): void {
+  if (!preview) return;
+  const dots = document.querySelectorAll<HTMLElement>("#boxFanMeter .fan-dot");
+  const filled = Math.round((preview.fillPct / 100) * dots.length);
+  dots.forEach((dot, i) => dot.classList.toggle("filled", i < filled));
+
+  setText("boxAttendanceReadout", `${preview.attendance.toLocaleString()} fans`);
+  setText("boxTicketNum", `$${preview.ticketRevenue.toLocaleString()}`);
+  setText("boxTvNum", `$${preview.tvRevenue.toLocaleString()}`);
+  setText("boxMerchNum", `$${preview.merchRevenue.toLocaleString()}`);
+  setText("boxTotalNum", `$${preview.totalRevenue.toLocaleString()}`);
+
+  const maxBar = Math.max(preview.ticketRevenue, preview.tvRevenue, preview.merchRevenue, 1);
+  setWidth("boxTicketBar", preview.ticketRevenue, maxBar);
+  setWidth("boxTvBar", preview.tvRevenue, maxBar);
+  setWidth("boxMerchBar", preview.merchRevenue, maxBar);
+
+  const delta = preview.totalRevenue - payrollTarget;
+  const deltaEl = document.getElementById("boxPayrollDelta");
+  if (deltaEl) {
+    deltaEl.textContent = delta >= 0 ? `+$${delta.toLocaleString()} over payroll` : `−$${Math.abs(delta).toLocaleString()} short of payroll`;
+    deltaEl.className = `pill ${delta >= 0 ? "pill-comfortable" : "pill-tight"}`;
+  }
+}
+
+function setText(id: string, text: string): void {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+function setWidth(id: string, value: number, max: number): void {
+  const el = document.getElementById(id);
+  if (el) el.style.width = `${Math.max(0, Math.min(100, (value / max) * 100))}%`;
 }
 
 function escapeHtml(s: string): string {

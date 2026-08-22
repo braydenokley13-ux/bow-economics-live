@@ -40,6 +40,13 @@
   .kpi .num { font-family: var(--font-number); font-weight: 800; font-size: 3vw; color: var(--accent-gold); }
   .kpi .lbl { font-size: 1vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; }
 
+  .scatter-wrap { width: 82vw; max-width: 1000px; margin-top: 2vh; }
+  .scatter-svg { width: 100%; height: auto; display: block; }
+  .scatter-legend { display: flex; justify-content: center; align-items: center; margin-top: 1.4vh; font-size: 1vw; color: var(--ink-muted); }
+  .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .legend-dot.h1 { background: var(--series-1); }
+  .legend-dot.h2 { background: var(--series-2); }
+
   .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(22vw, 1fr)); gap: 1.6vw; max-width: 88vw; margin-top: 3vh; }
   .synthcard { background: rgba(19,24,34,0.85); border: 1px solid rgba(244,185,66,0.35); border-radius: 14px; padding: 1.6vw; text-align: left; }
   .synthcard h3 { margin: 0 0 1vh; font-family: var(--font-display); letter-spacing: .06em; font-size: 1.4vw; color: var(--accent-gold); text-transform: uppercase; }
