@@ -1,19 +1,58 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (46 passing, see below), `npm run build` and `npm test` are
-green, and the three surfaces have been smoke-tested end-to-end by hand
-(create → join → advance → pick → reveal → teacher aggregate → board tally →
-restart-survival). It has **not** been gameplay-tested and it has **not**
-been run in a classroom, or anything resembling one. Per Decision D12, this
-runtime must pass an independent fresh-context verification gauntlet
-(refresh, reconnect, duplicate joins, late joins, bad state, Chromebook-class
-load) before it is used in a real session.
+real tests (107 passing, see below), `npm run build` and `npm test` are
+green, and the three surfaces have been driven end-to-end with Playwright
+(create → join → advance → build → lock → reveal → shock → adapt → repair →
+synthesis → complete) as well as smoke-tested by hand for restart-survival.
+It has **not** been gameplay-tested by a fresh student audience and it has
+**not** been run in a classroom, or anything resembling one. A first fresh-
+context verification round already ran against this runtime (see
+`docs/gauntlet/module-1/VERIFY_GAMEPLAY.md`, `VERIFY_ECONOMICS.md`,
+`VERIFY_RUNTIME.md`) and every required repair from that round has been
+applied — see "Repair charter round 1" below. Per Decision D12, a live
+classroom session still requires an independent fresh-context verification
+pass on this state before use.
 
-This package builds the **runtime the gameplay team plugs a lesson into** —
-it ships zero real Track 101 content. The one lesson included, `lobby-demo`
-(students tap a color, teacher reveals the class distribution on the
-board), exists only to prove the loop end-to-end.
+This package builds the **runtime the gameplay team plugs a lesson into**,
+plus one real Track 101 lesson: `m1l1-draft-day` (Module 1, Lesson 1 —
+"Draft Day"), the Roster Wall / salary-cap build described in
+`docs/gauntlet/module-1/PLAYABILITY_SPEC.md`. `lobby-demo` (students tap a
+color, teacher reveals the class distribution on the board) also still
+ships, unchanged, as the minimal proof the runtime itself is genuinely
+lesson-agnostic — a second real module works without touching the server
+contract.
+
+## Repair charter round 1 (post-verification)
+
+A fresh-context verification round produced three rulings — gameplay
+FUNCTIONAL (below the STRONG bar), economics SOUND WITH REQUIRED REPAIRS,
+runtime ACCEPT WITH REQUIRED REPAIRS — and every required repair from all
+three has been applied to this codebase:
+
+- **Runtime:** a per-session teacher key now gates `/control` and the
+  teacher view (closing a gap where any student holding only the join code
+  could pause/skip/end the session or read every team's private build
+  pre-reveal — see "Teacher authentication" below); `restore` can revive a
+  session the teacher ended by mistake; rejoin-PIN attempts lock a seat out
+  after 5 failures until the teacher clears it; a corrupted snapshot file is
+  quarantined and the server boots fresh instead of crashing the whole
+  classroom.
+- **Gameplay/economics (`m1l1-draft-day`):** the player market was redesigned
+  so price correlates with value but never determines it (closing a real
+  "buy the priciest thing" false lesson and a shock-reroll exploit); the
+  shock now permanently removes a player (poached by a rival franchise) with
+  a repair stipend, so recovery is a genuine choice, never a guaranteed free
+  reroll or a free upgrade; the Class Gallery reveal is now labeled with
+  fictional franchise identities so a class can point at its own bar; cap-
+  meter language no longer flags a fully legal max-spend build as "over the
+  line"; a student stuck with zero affordable options now gets a concrete
+  rescue suggestion instead of silence; the SYNTHESIS stage gained a new
+  RISK BUFFER card and two rewritten cards, all grounded in this session's
+  real numbers.
+
+Full detail is in `src/modules/draftDay.ts`'s inline comments (tagged
+G1-G7) and `src/server/sessionService.ts`'s (tagged R1-R4).
 
 ## Running it
 
@@ -44,11 +83,25 @@ src/
   shared/       phases.ts, lessonModule.ts   — the contract (below)
   server/       crypto.ts, repository.ts, snapshotRepository.ts,
                 sessionService.ts, http.ts, index.ts
-  modules/      lobbyDemo.ts                 — the proof-of-loop lesson
-  client/       teach/, play/, board/, shared/ (api, poll, storage, outbox)
-  test/         46 tests over crypto, the reducer, the service layer,
+  modules/      draftDay.ts                  — Module 1 Lesson 1, "Draft Day"
+                lobbyDemo.ts                 — the proof-of-loop lesson
+  client/       teach/, play/, board/,
+                shared/ (api, poll, storage, outbox, crest)
+  test/         107 tests over crypto, both reducers, the service layer,
                 and snapshot persistence
 ```
+
+**Teacher authentication (R1).** `POST /api/sessions` issues a per-session
+teacher key alongside the join code — a high-entropy opaque token, hashed
+at rest exactly like a student device token, returned exactly once (in the
+create-session response) and never again. Every subsequent `POST /control`
+and `GET .../teacher` call must present it as `Authorization: Bearer
+<teacherKey>`; a student's join code alone opens `/play` but nothing on
+`/teach`. `/teach` stores the key in its own `localStorage` slot (separate
+from the remembered join code) and refuses to silently reopen a remembered
+session without it. There is still no login, no password, no multi-teacher
+account system — this is one secret per session, sized for "the teacher's
+own laptop, projected to the room," not a hosted multi-tenant deployment.
 
 **Session store.** `SnapshotRepository` (`src/server/snapshotRepository.ts`)
 is in-memory Maps as the source of truth, with every mutation queued onto a
@@ -158,18 +211,25 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**46 tests, 46 passing** (`node --test`, no test framework dependency).
+**107 tests, 107 passing** (`node --test`, no test framework dependency).
 Coverage: PIN/token crypto round-trips (`crypto.test.ts`); the `lobby-demo`
 reducer/aggregate/views including rejected malformed and out-of-phase
-actions (`lobbyDemo.test.ts`); atomic writes and restart-survival
+actions (`lobbyDemo.test.ts`); the `m1l1-draft-day` reducer, market design
+properties (no dominant opening roster, verified by brute force; neutral
+candidate ordering; no-identical-restore after a shock), franchise
+assignment, and synthesis-card content (`draftDay.test.ts`); atomic writes,
+restart-survival, and corrupted-snapshot quarantine
 (`snapshotRepository.test.ts`, including an optimistic-concurrency-conflict
-case); and the full service layer — session create, join, **duplicate-join**
-(same name twice is rejected, not silently duplicated), device-token
-**resume**, rejoin-PIN token rotation, the **phase gate** (LOBBY blocks an
-action PLAY allows; paused/frozen/ended each reject with the right status),
-**action validation** (malformed payloads and retired tokens rejected
-before or by the reducer), and every teacher control including checkpoint
-**restore** (`sessionService.test.ts`).
+case); and the full service layer — session create (now asserting a teacher
+key is issued), join, **duplicate-join** (same name twice is rejected, not
+silently duplicated), device-token **resume**, rejoin-PIN token rotation and
+**lockout after 5 failures** with teacher-only unlock, the **phase gate**
+(LOBBY blocks an action PLAY allows; paused/frozen/ended each reject with
+the right status), **action validation** (malformed payloads and retired
+tokens rejected before or by the reducer), **teacher-key enforcement** on
+every control/teacher-view call, and every teacher control including
+checkpoint **restore — including reviving a session the teacher ended by
+mistake** (`sessionService.test.ts`).
 
 `npm run build` and `npm test` are both green as of this writing.
 
@@ -186,15 +246,22 @@ three static pages), not a general-purpose framework being reinvented.
 ## Known gaps / not yet done
 
 - No client-side module registry — `/play`'s and `/teach`'s renderers
-  special-case `lobby-demo`'s view shape (with a generic JSON-dump
-  fallback for anything else). Adding a second real lesson module means
-  writing its render function too; the *server* contract is fully generic
-  today, the client shell is not yet.
-- No teacher authentication of any kind (by design — see the crypto-layer
-  note above) and no rate limiting on rejoin-PIN attempts. Fine for a
-  single trusted classroom LAN; would need attention before anything
-  more exposed.
+  special-case `lobby-demo`'s and `m1l1-draft-day`'s view shapes (with a
+  generic JSON-dump fallback for anything else). Adding a third real lesson
+  module means writing its render function too; the *server* contract is
+  fully generic today, the client shell is not yet.
+- `GET /api/sessions` (the session list) is still unauthenticated — it
+  returns code/title/phase for every session ever created on the box, not
+  seat- or team-identifying data. Lower severity than the R1 gap it was
+  found alongside (that one is closed); worth gating in a future round if
+  this ever runs somewhere less trusted than one teacher's own laptop.
 - `SnapshotRepository` keeps every session/seat ever created in memory for
   the process lifetime — there is no archive/prune path. Not a problem at
   classroom scale (one class, a handful of sessions per day), worth
   revisiting for a long-running deployment.
+- The teacher-key/rejoin-lockout mechanisms are new as of this round and
+  have only been exercised by unit tests and one manual Playwright pass
+  (which exercises the *happy* teacher-key path via normal UI clicks, not
+  the lockout/unlock UI) — worth deliberately exercising the "PIN LOCKED /
+  Unlock" flow and a lost-teacher-key recovery scenario in the next
+  fresh-context verification round.
