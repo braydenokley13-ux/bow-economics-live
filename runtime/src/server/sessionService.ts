@@ -41,6 +41,7 @@ export class ServiceError extends Error {
 }
 
 const notFound = (what: string) => new ServiceError(404, "not_found", `${what} not found`);
+const REJOIN_LOCKOUT_THRESHOLD = 5;
 
 export type StudentPayload = {
   session: { code: string; title: string; phase: CanonicalPhase; paused: boolean; frozen: boolean; ended: boolean; version: number };
@@ -64,7 +65,9 @@ export type TeacherPayload = {
     version: number;
     hasCheckpoint: boolean;
   };
-  seats: Array<{ id: string; displayName: string; joinedAt: string; lastSeenAt: string }>;
+  /** Only ever populated on the createSession response — the one moment this credential is issued (R1). */
+  teacherKey?: string;
+  seats: Array<{ id: string; displayName: string; joinedAt: string; lastSeenAt: string; rejoinLocked: boolean }>;
   view: unknown;
 };
 
@@ -101,6 +104,16 @@ export class SessionService {
 
   /* ---------------------------------------------------------------- create -- */
 
+  /**
+   * R1 repair (VERIFY_RUNTIME.md B1/B2): every joined student necessarily
+   * holds the join code (they typed it to join) and the `/control` /
+   * teacher-state routes checked nothing but that code — any student with
+   * a browser console could pause, skip, spoil, or end the session, or
+   * read every team's private in-progress build before reveal. A per-
+   * session teacher key is now issued once here, hashed at rest exactly
+   * like a device token, and required as a bearer credential on every
+   * `control()`/`teacherView()` call thereafter (`assertTeacher`).
+   */
   async createSession(input: { lessonModuleId: string; title: string }): Promise<TeacherPayload> {
     const mod = this.modules.get(input.lessonModuleId);
     if (!mod) throw new ServiceError(400, "unknown_module", `no lesson module registered as "${input.lessonModuleId}"`);
@@ -115,14 +128,25 @@ export class SessionService {
       }
     }
     if (!code) throw new ServiceError(500, "code_exhausted", "could not allocate a unique join code");
+    const teacherKey = generateDeviceToken(); // same shape/entropy as a device token — an opaque bearer credential, not a low-entropy PIN
     const row = await this.repo.createSession({
       code,
       title: input.title || mod.title,
       lessonModuleId: mod.id,
       phase: mod.phases[0]!,
       state,
+      teacherKeyHash: hashDeviceToken(teacherKey),
     });
-    return this.buildTeacherPayload(row);
+    const payload = await this.buildTeacherPayload(row);
+    payload.teacherKey = teacherKey;
+    return payload;
+  }
+
+  /** Throws 401 unless `teacherKey` matches the session's own credential. Gates every teacher-only route (R1). */
+  private assertTeacher(session: SessionRow, teacherKey: string | null): void {
+    if (!teacherKey || hashDeviceToken(teacherKey) !== session.teacherKeyHash) {
+      throw new ServiceError(401, "bad_teacher_key", "missing or incorrect teacher key for this session");
+    }
   }
 
   async listSessions(): Promise<TeacherPayload["session"][]> {
@@ -178,12 +202,28 @@ export class SessionService {
     return this.studentPayload(session, seat);
   }
 
-  /** Short rejoin-PIN fallback for a browser that lost its device token. */
+  /**
+   * Short rejoin-PIN fallback for a browser that lost its device token.
+   *
+   * R3 repair (VERIFY_RUNTIME.md REQUIRED-REPAIR #1): the 4-digit PIN space
+   * (10,000 values) was exhaustible in ~7 minutes at realistic scripted
+   * concurrency with zero throttling — a successful guess silently retires
+   * the real student's device token, locking them out of their own seat.
+   * A seat now locks out after 5 consecutive wrong PINs; a locked seat
+   * rejects immediately (not even attempting the PIN check) until the
+   * teacher clears it via `unlockRejoin` — see that method and the new
+   * `/control`-adjacent HTTP route.
+   */
   async rejoin(code: string, displayName: string, pin: string): Promise<StudentPayload> {
     const session = await this.requireSession(code);
     const normalized = normalizeName(displayName.trim());
     const seat = await this.repo.getSeatBySessionAndName(session.id, normalized);
-    if (!seat || !verifyPin(pin, seat.rejoinPinHash)) {
+    if (!seat) throw new ServiceError(401, "bad_rejoin", "name and PIN do not match a seat in this session");
+    if (seat.failedRejoinAttempts >= REJOIN_LOCKOUT_THRESHOLD) {
+      throw new ServiceError(423, "rejoin_locked", "too many wrong PIN attempts — ask your teacher to reset your seat");
+    }
+    if (!verifyPin(pin, seat.rejoinPinHash)) {
+      await this.repo.updateSeat(seat.id, { failedRejoinAttempts: seat.failedRejoinAttempts + 1 });
       throw new ServiceError(401, "bad_rejoin", "name and PIN do not match a seat in this session");
     }
     // Rotate the device token: the old browser's token is retired the moment
@@ -192,9 +232,19 @@ export class SessionService {
     const updated = await this.repo.updateSeat(seat.id, {
       deviceTokenHash: hashDeviceToken(deviceToken),
       lastSeenAt: new Date().toISOString(),
+      failedRejoinAttempts: 0,
     });
     if (!updated) throw notFound("seat");
     return this.studentPayload(session, updated, { deviceToken });
+  }
+
+  /** Teacher-only: clears a seat's rejoin lockout counter (R3's "until the teacher re-enables"). */
+  async unlockRejoin(code: string, seatId: string, teacherKey: string | null): Promise<void> {
+    const session = await this.requireSession(code);
+    this.assertTeacher(session, teacherKey);
+    const seat = await this.repo.getSeatById(seatId);
+    if (!seat || seat.sessionId !== session.id) throw notFound("seat");
+    await this.repo.updateSeat(seat.id, { failedRejoinAttempts: 0 });
   }
 
   /* ---------------------------------------------------------------- action -- */
@@ -254,8 +304,10 @@ export class SessionService {
       | { type: "hook"; hook: string }
       | { type: "end" }
       | { type: "restore" },
+    teacherKey: string | null,
   ): Promise<TeacherPayload> {
     const session = await this.requireSession(code);
+    this.assertTeacher(session, teacherKey);
     if (session.ended && action.type !== "restore") {
       throw new ServiceError(410, "session_ended", "this session has ended");
     }
@@ -294,12 +346,28 @@ export class SessionService {
         return this.buildTeacherPayload(await this.patch(session, { state: result.state }, true));
       }
       case "end":
-        return this.buildTeacherPayload(await this.patch(session, { ended: true }));
+        // R2 repair: capture a checkpoint before ending, same as every
+        // other risky transition — previously "end" was the one control
+        // action that never snapshotted first, so `restore` structurally
+        // could not undo it (see the "restore" case and Checkpoint.ended).
+        return this.buildTeacherPayload(await this.patch(session, { ended: true }, true));
       case "restore": {
         if (!session.checkpoint) throw new ServiceError(400, "no_checkpoint", "no checkpoint to restore");
         const cp = session.checkpoint;
         return this.buildTeacherPayload(
-          await this.patch(session, { phase: cp.phase, state: cp.state, paused: cp.paused, frozen: cp.frozen }),
+          await this.patch(session, {
+            phase: cp.phase,
+            state: cp.state,
+            paused: cp.paused,
+            frozen: cp.frozen,
+            // R2 repair: restore now also clears `ended` when the checkpoint
+            // predates it — a teacher's accidental "End Session" click,
+            // freeze->unfreeze->end, is now actually recoverable, closing
+            // VERIFY_RUNTIME.md B3 (restore couldn't undo the riskiest
+            // transition, the one most likely to be a fat-fingered mistake
+            // live in front of a class).
+            ended: cp.ended,
+          }),
         );
       }
     }
@@ -323,6 +391,7 @@ export class SessionService {
             state: session.state,
             paused: session.paused,
             frozen: session.frozen,
+            ended: session.ended,
             capturedAt: new Date().toISOString(),
           },
         }
@@ -337,8 +406,10 @@ export class SessionService {
 
   /* ------------------------------------------------------------------ views -- */
 
-  async teacherView(code: string): Promise<TeacherPayload> {
-    return this.buildTeacherPayload(await this.requireSession(code));
+  async teacherView(code: string, teacherKey: string | null): Promise<TeacherPayload> {
+    const session = await this.requireSession(code);
+    this.assertTeacher(session, teacherKey);
+    return this.buildTeacherPayload(session);
   }
 
   async boardView(code: string): Promise<BoardPayload> {
@@ -401,7 +472,13 @@ export class SessionService {
   private async buildTeacherPayload(session: SessionRow): Promise<TeacherPayload> {
     const payload = this.teacherPayload(session);
     const seats = await this.repo.listSeatsForSession(session.id);
-    payload.seats = seats.map((s) => ({ id: s.id, displayName: s.displayName, joinedAt: s.joinedAt, lastSeenAt: s.lastSeenAt }));
+    payload.seats = seats.map((s) => ({
+      id: s.id,
+      displayName: s.displayName,
+      joinedAt: s.joinedAt,
+      lastSeenAt: s.lastSeenAt,
+      rejoinLocked: s.failedRejoinAttempts >= REJOIN_LOCKOUT_THRESHOLD,
+    }));
     return payload;
   }
 

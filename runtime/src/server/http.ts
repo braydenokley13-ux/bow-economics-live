@@ -213,21 +213,32 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
         return;
       }
 
-      // POST /api/sessions/:code/control
+      // POST /api/sessions/:code/control  (R1: requires the teacher key issued at createSession, as a bearer token)
       if (method === "POST" && sub === "control" && parts.length === 4) {
+        const teacherKey = bearerToken(req);
         const body = await readJson(req);
         const type = String(body["type"] ?? "");
         const allowed = new Set(["advance", "reveal", "pause", "unpause", "freeze", "unfreeze", "hook", "end", "restore"]);
         if (!allowed.has(type)) throw new ServiceError(400, "bad_control", `unknown control action "${type}"`);
         const action = type === "hook" ? { type: "hook" as const, hook: String(body["hook"] ?? "") } : { type: type as Exclude<typeof type, "hook"> };
-        const payload = await service.control(code, action as Parameters<SessionService["control"]>[1]);
+        const payload = await service.control(code, action as Parameters<SessionService["control"]>[1], teacherKey);
         sendJson(res, 200, payload);
         return;
       }
 
-      // GET /api/sessions/:code/teacher
+      // POST /api/sessions/:code/seats/:seatId/unlock  (R3: teacher-only, clears a seat's rejoin lockout)
+      if (method === "POST" && sub === "seats" && parts[5] === "unlock" && parts.length === 6) {
+        const teacherKey = bearerToken(req);
+        const seatId = decodeURIComponent(parts[4]!);
+        await service.unlockRejoin(code, seatId, teacherKey);
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      // GET /api/sessions/:code/teacher  (R1: requires the teacher key)
       if (method === "GET" && sub === "teacher" && parts.length === 4) {
-        const payload = await service.teacherView(code);
+        const teacherKey = bearerToken(req);
+        const payload = await service.teacherView(code, teacherKey);
         // session.version alone misses one thing: a seat joining does not
         // mutate session state, so it does not bump session.version. The
         // roster's own composition (count + most recent join) is folded in

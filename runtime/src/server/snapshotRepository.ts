@@ -63,16 +63,47 @@ export class SnapshotRepository implements Repository {
     await this.ready;
   }
 
+  /**
+   * R4 repair (VERIFY_RUNTIME.md BLOCKING/REQUIRED-REPAIR): a corrupted
+   * snapshot file used to re-throw straight through `whenReady()`, and
+   * `main()`'s only handling was `console.error` + `process.exit(1)` — one
+   * bad byte (a bad manual restore, a flaky removable drive) took the whole
+   * classroom down with no recovery path short of shell access. Read and
+   * parse are now separate try/catches: a read failure other than ENOENT
+   * (permissions, a missing mount) is still fatal — that's a real
+   * environment problem, not something to silently paper over — but a
+   * parse failure quarantines the bad file (renamed aside, never deleted)
+   * and boots with a fresh empty store instead. Loud, not silent: both
+   * paths log to stderr so a teacher/support sees exactly what happened.
+   */
   private async load(filePath: string): Promise<void> {
+    let raw: string;
     try {
-      const raw = await readFile(filePath, "utf8");
+      raw = await readFile(filePath, "utf8");
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException)?.code;
+      if (code === "ENOENT") return; // no snapshot yet — a fresh install, nothing to load
+      throw error; // a genuine filesystem problem — still fatal, not a corruption case
+    }
+    try {
       const parsed = JSON.parse(raw) as SnapshotFile;
       for (const session of parsed.sessions ?? []) this.sessions.set(session.id, session);
       for (const seat of parsed.seats ?? []) this.seats.set(seat.id, seat);
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException)?.code;
-      if (code !== "ENOENT") throw error;
-      // No snapshot yet — a fresh install. Nothing to load.
+    } catch (parseError) {
+      // eslint-disable-next-line no-console
+      console.error("[snapshot] FAILED TO PARSE snapshot file — quarantining it and starting fresh:", parseError);
+      try {
+        const quarantinePath = `${filePath}.corrupt-${Date.now()}`;
+        await rename(filePath, quarantinePath);
+        // eslint-disable-next-line no-console
+        console.error(`[snapshot] corrupted file moved aside to ${quarantinePath} — it was NOT deleted`);
+      } catch (renameError) {
+        // eslint-disable-next-line no-console
+        console.error("[snapshot] could not quarantine the corrupted file (continuing with a fresh store anyway):", renameError);
+      }
+      // Fall through with whatever was already loaded (nothing, in
+      // practice, since a single JSON.parse spans the whole file) — the
+      // server still comes up and starts serving new sessions.
     }
   }
 
@@ -123,6 +154,7 @@ export class SnapshotRepository implements Repository {
       state: input.state,
       version: 1,
       checkpoint: null,
+      teacherKeyHash: input.teacherKeyHash,
       createdAt: at,
       updatedAt: at,
     };
@@ -180,6 +212,7 @@ export class SnapshotRepository implements Repository {
       rejoinPinHash: input.rejoinPinHash,
       joinedAt: at,
       lastSeenAt: at,
+      failedRejoinAttempts: 0,
     };
     this.seats.set(row.id, row);
     this.persist();
