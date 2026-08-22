@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { boxOfficeModule } from "../modules/boxOffice.js";
 import { draftDayModule } from "../modules/draftDay.js";
 import { lobbyDemoModule } from "../modules/lobbyDemo.js";
 import { createHttpServer } from "./http.js";
@@ -17,6 +18,7 @@ async function main(): Promise<void> {
   const service = new SessionService(repo);
   service.registerModule(lobbyDemoModule);
   service.registerModule(draftDayModule);
+  service.registerModule(boxOfficeModule);
   // Additional lesson modules register here as the gameplay team ships them.
 
   const server = createHttpServer(service);
