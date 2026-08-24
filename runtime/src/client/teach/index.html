@@ -52,6 +52,12 @@
       </div>
       <button id="create" class="btn btn-primary" style="align-self:flex-end;">Create session</button>
     </div>
+    <div class="row" id="sourceSessionRow" hidden style="margin-top:10px;">
+      <div style="flex:1; min-width:260px;">
+        <label for="sourceSession">Link to a completed Draft Day (L1) session — carries each locked roster forward</label>
+        <select id="sourceSession"></select>
+      </div>
+    </div>
   </section>
 
   <section id="room" class="card" hidden>
@@ -81,6 +87,7 @@
     <div class="row" style="margin-top:8px;">
       <button id="btnShock" class="btn btn-danger">⚡ Trigger shock event</button>
       <button id="btnCounterfactual" class="btn">Rerun counterfactual</button>
+      <button id="btnRevealNext" class="btn btn-primary">🎙️ Reveal next target</button>
     </div>
   </section>
 

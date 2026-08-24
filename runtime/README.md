@@ -1,27 +1,61 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (107 passing, see below), `npm run build` and `npm test` are
-green, and the three surfaces have been driven end-to-end with Playwright
-(create → join → advance → build → lock → reveal → shock → adapt → repair →
-synthesis → complete) as well as smoke-tested by hand for restart-survival.
-It has **not** been gameplay-tested by a fresh student audience and it has
-**not** been run in a classroom, or anything resembling one. A first fresh-
-context verification round already ran against this runtime (see
-`docs/gauntlet/module-1/VERIFY_GAMEPLAY.md`, `VERIFY_ECONOMICS.md`,
-`VERIFY_RUNTIME.md`) and every required repair from that round has been
-applied — see "Repair charter round 1" below. Per Decision D12, a live
-classroom session still requires an independent fresh-context verification
-pass on this state before use.
+real tests (225 passing, see below), `npm run build` and `npm test` are
+green, and both `m1l1-draft-day` and `m1l2-trade-deadline` have been driven
+end-to-end with Playwright against the real compiled server (L1: create →
+join → advance → build → lock → reveal → shock → adapt → repair → synthesis
+→ complete; L2: `runtime/scripts/e2e-l2.cjs` — L1 played for real through the
+API to produce a genuine seed, then linked L2 creation, claiming, all three
+deadline paths incl. competing bids and a loss, teacher-staged reveal,
+aftermath rescue, synthesis, zero console errors) as well as smoke-tested by
+hand for restart-survival. It has **not** been gameplay-tested by a fresh
+student audience and it has **not** been run in a classroom, or anything
+resembling one. A first fresh-context verification round already ran against
+this runtime's L1 (see `docs/gauntlet/module-1/VERIFY_GAMEPLAY.md`,
+`VERIFY_ECONOMICS.md`, `VERIFY_RUNTIME.md`) and every required repair from
+that round has been applied — see "Repair charter round 1" below. Per
+Decision D12, a live classroom session still requires an independent
+fresh-context verification pass on this state before use.
 
 This package builds the **runtime the gameplay team plugs a lesson into**,
-plus one real Track 101 lesson: `m1l1-draft-day` (Module 1, Lesson 1 —
-"Draft Day"), the Roster Wall / salary-cap build described in
-`docs/gauntlet/module-1/PLAYABILITY_SPEC.md`. `lobby-demo` (students tap a
-color, teacher reveals the class distribution on the board) also still
-ships, unchanged, as the minimal proof the runtime itself is genuinely
-lesson-agnostic — a second real module works without touching the server
-contract.
+plus real Track 101 lessons: `m1l1-draft-day` (Module 1, Lesson 1 — "Draft
+Day"), the Roster Wall / salary-cap build described in
+`docs/gauntlet/module-1/PLAYABILITY_SPEC.md`; `m1l2-trade-deadline` (Module
+1, Lesson 2 — "The Trade Deadline"), which carries a completed L1 session's
+locked rosters forward (see below) and adds a midseason report, stand
+pat/veteran/sealed-bid deadline decisions, and a teacher-staged reveal; and
+`m2-box-office` (Module 2 prototype, price-setting under hidden demand).
+`lobby-demo` (students tap a color, teacher reveals the class distribution on
+the board) also still ships, unchanged, as the minimal proof the runtime
+itself is genuinely lesson-agnostic.
+
+## Module 1, Lesson 2 — The Trade Deadline (L1→L2 carry-forward)
+
+`src/modules/tradeDeadline.ts`. Each L2 franchise picks up exactly where its
+L1 roster left off: a midseason report (deterministic — a market bust reads
+as slumping, a gem as breaking out, computed off L1's own price/rating data,
+never `Math.random`), then one irreversible deadline decision — **stand
+pat** (an explicit, reasoned lock), **cut + sign a known veteran** (safe,
+dead-cap bite), or **cut + sealed bid** on a scarce, teacher-revealed target
+against a hidden rival bid *and* a hidden seller reserve (a lowball never
+wins). A team that cuts and loses its bid keeps the dead-cap hit and a real
+open slot, rescued only in a restricted ADAPT window — full-wall teams get
+nothing to do there, closing the "wait and see" exploit.
+
+**The seed.** The runtime itself stays lesson-agnostic: `POST /api/sessions`
+takes an optional `sourceSessionId`; the server resolves it to that other
+session's own `{lessonModuleId, state}` and hands it to the new module's
+`initialState` as an opaque `seed` (`shared/lessonModule.ts`). Only
+`tradeDeadline.ts` (`extractCarriedFranchises`) knows what a
+`m1l1-draft-day` seed means — it reads every *locked* L1 team, silently
+skips anything invalid (never locked, a slot still empty from an unrepaired
+shock, a corrupted id), and turns the rest into claimable franchises
+students pick up by name/crest on `/play`. A missing/unlinked/malformed seed
+just yields an empty pool — every seat then gets an honest, deterministic
+stock "expansion franchise," so the lesson runs standalone too. `/teach`
+exposes this as a "link to a completed Draft Day session" dropdown at
+create-session time.
 
 ## Repair charter round 1 (post-verification)
 
@@ -84,11 +118,15 @@ src/
   server/       crypto.ts, repository.ts, snapshotRepository.ts,
                 sessionService.ts, http.ts, index.ts
   modules/      draftDay.ts                  — Module 1 Lesson 1, "Draft Day"
+                tradeDeadline.ts             — Module 1 Lesson 2, "The Trade Deadline" (L1 seed + deadline)
+                boxOffice.ts                 — Module 2 prototype, "The Box Office"
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
                 shared/ (api, poll, storage, outbox, crest)
-  test/         107 tests over crypto, both reducers, the service layer,
-                and snapshot persistence
+  test/         225 tests over crypto, every reducer, the service layer
+                (incl. the L1->L2 seed), and snapshot persistence
+scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)
+                e2e-l2-early-advance.cjs     — focused probe: advancing out of REVEAL early
 ```
 
 **Teacher authentication (R1).** `POST /api/sessions` issues a per-session
@@ -165,7 +203,8 @@ interface LessonModule<TState> {
   id: string;
   title: string;
   phases: readonly CanonicalPhase[];       // an ordered subset of the vocabulary below
-  initialState(input): TState;
+  initialState(input): TState;             // input.seed is an opaque {lessonModuleId, state} from another
+                                            // session (see "L1->L2 carry-forward" above), or undefined
   reduce(state, action, ctx): { ok: true; state: TState } | { ok: false; reason: string };
   allowedActions(phase): readonly string[]; // docs/UI hint only — reduce() is the real gate
   studentView(state, seatId, phase): unknown;
@@ -211,18 +250,28 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**107 tests, 107 passing** (`node --test`, no test framework dependency).
+**225 tests, 225 passing** (`node --test`, no test framework dependency).
 Coverage: PIN/token crypto round-trips (`crypto.test.ts`); the `lobby-demo`
 reducer/aggregate/views including rejected malformed and out-of-phase
 actions (`lobbyDemo.test.ts`); the `m1l1-draft-day` reducer, market design
 properties (no dominant opening roster, verified by brute force; neutral
 candidate ordering; no-identical-restore after a shock), franchise
-assignment, and synthesis-card content (`draftDay.test.ts`); atomic writes,
-restart-survival, and corrupted-snapshot quarantine
-(`snapshotRepository.test.ts`, including an optimistic-concurrency-conflict
-case); and the full service layer — session create (now asserting a teacher
-key is issued), join, **duplicate-join** (same name twice is rejected, not
-silently duplicated), device-token **resume**, rejoin-PIN token rotation and
+assignment, and synthesis-card content (`draftDay.test.ts`); the
+`m1l2-trade-deadline` reducer — seed extraction/normalization, claiming, all
+three deadline paths, staged reveal (deterministic tiebreak, reserve
+prevents a lowball from winning), the aftermath rescue guarantee (brute-forced
+≥2 affordable options across every exactly-$100M L1 build), cap-inviolability
+property tests across every path, and view-leak tests confirming no seat's
+bid/reserve ever reaches another seat or the board (`tradeDeadline.test.ts`);
+the `m2-box-office` demand-curve and path-dependence reducer
+(`boxOffice.test.ts`); atomic writes, restart-survival, and
+corrupted-snapshot quarantine (`snapshotRepository.test.ts`, including an
+optimistic-concurrency-conflict case); and the full service layer — session
+create (now asserting a teacher key is issued), the **L1→L2 seed** (linked
+creation through a session actually played via the API, an ended source
+session, a missing/wrong-module source, malformed/never-locked L1 state),
+join, **duplicate-join** (same name twice is rejected, not silently
+duplicated), device-token **resume**, rejoin-PIN token rotation and
 **lockout after 5 failures** with teacher-only unlock, the **phase gate**
 (LOBBY blocks an action PLAY allows; paused/frozen/ended each reject with
 the right status), **action validation** (malformed payloads and retired
@@ -245,11 +294,12 @@ three static pages), not a general-purpose framework being reinvented.
 
 ## Known gaps / not yet done
 
-- No client-side module registry — `/play`'s and `/teach`'s renderers
-  special-case `lobby-demo`'s and `m1l1-draft-day`'s view shapes (with a
-  generic JSON-dump fallback for anything else). Adding a third real lesson
-  module means writing its render function too; the *server* contract is
-  fully generic today, the client shell is not yet.
+- No client-side module registry — `/play`, `/teach`, and `/board`'s
+  renderers special-case each module's view shape by its `module` tag
+  (`lobby-demo`, `m1l1-draft-day`, `m2-box-office`, `m1l2-trade-deadline`,
+  with a generic JSON-dump fallback for anything else). Adding another real
+  lesson module means writing its render functions too; the *server*
+  contract is fully generic today, the client shell is not yet.
 - `GET /api/sessions` (the session list) is still unauthenticated — it
   returns code/title/phase for every session ever created on the box, not
   seat- or team-identifying data. Lower severity than the R1 gap it was

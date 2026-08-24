@@ -39,7 +39,17 @@ export interface LessonModule<TState = unknown> {
    */
   phases: readonly CanonicalPhase[];
 
-  initialState(input: { sessionId: string; seatIds: readonly SeatId[] }): TState;
+  /**
+   * `seed` is the runtime's one hook for cross-lesson continuity (e.g. M1
+   * L2 carrying forward L1's franchise state): an opaque
+   * `{ lessonModuleId, state }` blob resolved from another session by the
+   * server at createSession time, or `undefined` when no source session was
+   * requested. The runtime never inspects it — only the receiving module
+   * knows what shape to expect from which source module id, and must treat
+   * everything about it (including its own presence) as untrusted input to
+   * validate, never assume.
+   */
+  initialState(input: { sessionId: string; seatIds: readonly SeatId[]; seed?: unknown }): TState;
 
   /**
    * The single source of truth. Must reject (ok:false) anything malformed or
@@ -63,6 +73,27 @@ export interface LessonModule<TState = unknown> {
 
   /** Class-wide aggregation used for reveal/board/teacher panels. */
   aggregate(state: TState, phase: CanonicalPhase): unknown;
+
+  /**
+   * Optional lifecycle hook: called by the runtime on every teacher-
+   * triggered phase transition (`advance`/`reveal`), right before the new
+   * phase is committed, with the phase being left and the phase being
+   * entered. Lets a module finish work that would otherwise be stranded the
+   * moment a phase-gated action stops being offered — e.g. a lesson with a
+   * teacher-staged reveal auto-resolving anything left pending so no
+   * reachable post-transition state depends on a click that may never come.
+   * Must be pure and deterministic (same inputs, same result, every time —
+   * this can run on any transition, not just ones a human is watching).
+   * Most modules need nothing here; omit it entirely rather than returning
+   * `state` unchanged for every phase. Not called by `restore` (that's a
+   * full checkpoint revert, not a forward transition) or `end`. The runtime
+   * guarantees `fromPhase !== toPhase` — a control action that targets the
+   * session's own current phase (e.g. `reveal` while already in REVEAL) is
+   * not a transition and never invokes this hook, so `fromPhase === "X"`
+   * inside an implementation can be trusted to mean "actually leaving X,"
+   * never "asked to re-enter X."
+   */
+  onPhaseExit?(state: TState, fromPhase: CanonicalPhase, toPhase: CanonicalPhase): TState;
 }
 
 /** Type-erasing helper so the registry can hold modules of differing TState. */

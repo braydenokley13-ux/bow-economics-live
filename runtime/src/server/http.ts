@@ -155,7 +155,10 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
       const body = await readJson(req);
       const lessonModuleId = String(body["lessonModuleId"] ?? "");
       const title = String(body["title"] ?? "");
-      const payload = await service.createSession({ lessonModuleId, title });
+      // Optional cross-lesson continuity link (e.g. M1 L2 linked to a
+      // completed L1 session) — an opaque id, meaningless to this layer.
+      const sourceSessionId = body["sourceSessionId"] ? String(body["sourceSessionId"]) : undefined;
+      const payload = await service.createSession({ lessonModuleId, title, sourceSessionId });
       sendJson(res, 201, payload);
       return;
     }

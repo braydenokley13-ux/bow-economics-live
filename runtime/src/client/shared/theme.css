@@ -731,3 +731,301 @@ body {
   border-color: var(--over-the-line);
   color: #ffb3ba;
 }
+
+/* ==================================================== Trade Deadline (Module 1, Lesson 2) ==================================================== */
+
+/* ---- HOOK: franchise claim cards + midseason form badges ---- */
+.claim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.claim-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease-decel), transform 140ms var(--ease-decel);
+}
+.claim-card:hover {
+  border-color: var(--accent-gold);
+  transform: translateY(-2px);
+}
+.claim-card.stock {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.claim-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.claim-card-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 15px;
+  color: var(--ink-primary);
+}
+.claim-card-meta {
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.claim-card-roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.claim-card-roster span {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--surface-elevated);
+  color: var(--ink-secondary);
+}
+
+.form-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.form-badge.slumping {
+  background: rgba(216, 57, 74, 0.14);
+  color: #ff9aa4;
+}
+.form-badge.steady {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-secondary);
+}
+.form-badge.breaking-out {
+  background: rgba(18, 148, 106, 0.16);
+  color: var(--cap-safe);
+}
+
+.report-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.report-row:last-child {
+  border-bottom: none;
+}
+.report-row.weakest {
+  background: rgba(216, 57, 74, 0.05);
+  margin: 0 -10px;
+  padding: 10px;
+  border-radius: 8px;
+  border-bottom: none;
+}
+.report-row-main {
+  flex: 1;
+}
+.report-row-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-primary);
+}
+.report-row-reason {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.standing-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 12px;
+}
+.standing-rank {
+  font-family: var(--font-number);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--accent-gold);
+}
+
+/* ---- PLAY: deadline decision panel ---- */
+.deadline-path-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.deadline-path-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: left;
+}
+.deadline-path-btn .path-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+  font-size: 13px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+}
+.deadline-path-btn .path-sub {
+  font-size: 11px;
+  color: var(--ink-muted);
+  display: block;
+}
+
+.reason-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.target-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease-decel);
+}
+.target-card:hover {
+  border-color: var(--accent-violet);
+}
+.target-card.selected {
+  border-color: var(--accent-violet);
+  background: rgba(139, 124, 240, 0.08);
+}
+.target-card-name {
+  font-weight: 700;
+  font-size: 13px;
+}
+.target-card-flavor {
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin: 4px 0 8px;
+  line-height: 1.4;
+}
+.target-band {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ink-secondary);
+}
+.target-band-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--cap-safe), var(--accent-gold), var(--over-the-line));
+  opacity: 0.5;
+}
+
+.bid-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.bid-stepper button {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.bid-stepper-readout {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-number);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--accent-gold);
+}
+
+.veteran-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.veteran-card:hover {
+  border-color: var(--accent-blue);
+}
+
+.tear-icon {
+  width: 20px;
+  height: 27px;
+  background-image: url("/assets/dead-cap-tear-overlay.svg");
+  background-repeat: no-repeat;
+  background-size: 380px 520px;
+  background-position: 0 -2px;
+  flex-shrink: 0;
+  opacity: 0.92;
+}
+
+/* ---- REVEAL: staged auction theater ---- */
+.reveal-target-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.reveal-target-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.verdict-badge.steal {
+  background: rgba(18, 148, 106, 0.16);
+  color: var(--cap-safe);
+}
+.verdict-badge.curse {
+  background: rgba(216, 57, 74, 0.16);
+  color: #ff9aa4;
+}
+.verdict-badge.fair {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-secondary);
+}
+.verdict-badge.unsold {
+  background: rgba(189, 138, 18, 0.16);
+  color: var(--cap-tight);
+}
+
+/* ---- ADAPT: restricted aftermath rescue ---- */
+.rescue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}

@@ -3,3 +3,4 @@ dist/
 data/*.json
 !data/.gitkeep
 *.log
+.e2e-scratch/

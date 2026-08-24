@@ -24,6 +24,9 @@ const rosterEl = $("roster");
 const aggregateEl = $("aggregate");
 
 let currentCode: string | null = null;
+// B1 repair (VERIFY_L2.md): what the Advance button's confirm() warning needs to know, refreshed every render()
+// so the click handler (which fires later, async from render) always checks the latest known state.
+let advanceWarnState: { lessonModuleId: string; phase: string; revealedCount: number; totalTargets: number } | null = null;
 // R1: the per-session teacher credential — required on every /control and
 // GET /teacher call from here on. Held in memory plus localStorage (see
 // storage.ts) so a page refresh doesn't strand the teacher outside their
@@ -31,26 +34,59 @@ let currentCode: string | null = null;
 let teacherKey: string | null = null;
 let poller: { stop: () => void } | null = null;
 
+const TRADE_DEADLINE_ID = "m1l2-trade-deadline";
+const DRAFT_DAY_ID = "m1l1-draft-day";
+
 async function loadLessons(): Promise<void> {
   const { lessons } = await apiFetch<{ lessons: Lesson[] }>("/api/lessons");
   const select = $<HTMLSelectElement>("lesson");
   select.innerHTML = "";
   // Draft Day first — this is the module the teacher actually runs class with.
-  const ordered = [...lessons].sort((a, b) => (a.id === "m1l1-draft-day" ? -1 : b.id === "m1l1-draft-day" ? 1 : 0));
+  const ordered = [...lessons].sort((a, b) => (a.id === DRAFT_DAY_ID ? -1 : b.id === DRAFT_DAY_ID ? 1 : 0));
   for (const lesson of ordered) {
     const option = document.createElement("option");
     option.value = lesson.id;
     option.textContent = `${lesson.title} (${lesson.phases.join(" → ")})`;
     select.appendChild(option);
   }
+  select.addEventListener("change", () => void syncSourceSessionRow());
+  await syncSourceSessionRow();
+}
+
+/** L2's linked-creation picker: shown only when Trade Deadline is the selected lesson, listing every existing
+ *  Draft Day (L1) session (live or ended — an ended one is exactly the normal end-of-class state, see
+ *  sessionService.test.ts's SEED tests) so the teacher can carry a real class's rosters forward. */
+async function syncSourceSessionRow(): Promise<void> {
+  const row = $("sourceSessionRow");
+  const lessonId = $<HTMLSelectElement>("lesson").value;
+  if (lessonId !== TRADE_DEADLINE_ID) {
+    row.hidden = true;
+    return;
+  }
+  row.hidden = false;
+  const select = $<HTMLSelectElement>("sourceSession");
+  select.innerHTML = `<option value="">No link — stock/expansion franchises only</option>`;
+  try {
+    const { sessions } = await apiFetch<{ sessions: { id: string; code: string; title: string; lessonModuleId: string; phase: string; ended: boolean }[] }>("/api/sessions");
+    const l1Sessions = sessions.filter((s) => s.lessonModuleId === DRAFT_DAY_ID);
+    for (const s of l1Sessions) {
+      const option = document.createElement("option");
+      option.value = s.id;
+      option.textContent = `${s.title || s.code} (${s.code}) — ${s.ended ? "ended" : `live, ${s.phase}`}`;
+      select.appendChild(option);
+    }
+  } catch {
+    /* if the listing fails, the teacher can still create an unlinked session — degrade quietly */
+  }
 }
 
 async function createSession(): Promise<void> {
   const lessonModuleId = $<HTMLSelectElement>("lesson").value;
   const title = $<HTMLInputElement>("title").value.trim();
+  const sourceSessionId = lessonModuleId === TRADE_DEADLINE_ID ? $<HTMLSelectElement>("sourceSession").value || undefined : undefined;
   const payload = await apiFetch<TeacherPayload>("/api/sessions", {
     method: "POST",
-    body: JSON.stringify({ lessonModuleId, title }),
+    body: JSON.stringify({ lessonModuleId, title, sourceSessionId }),
   });
   if (!payload.teacherKey) {
     statusEl.textContent = "server did not issue a teacher key — cannot continue safely";
@@ -123,7 +159,12 @@ function render(payload: TeacherPayload): void {
   });
 
   $<HTMLButtonElement>("btnAdvance").disabled = s.ended || currentIdx === s.phases.length - 1;
-  $<HTMLButtonElement>("btnReveal").disabled = s.ended || !s.phases.includes("REVEAL");
+  // Re-verification finding (VERIFY_L2.md, against 662f04b): "Jump to REVEAL" while ALREADY in REVEAL is
+  // never meaningful — it's not skipping ahead to anything, just re-entering the same phase — so disable it
+  // there rather than leave a same-phase click possible at all. (The runtime's own sessionService also now
+  // guarantees onPhaseExit never fires on a same-phase transition, independent of this UI guard — see
+  // applyPhaseChange — but removing the pointless affordance is the cheaper, clearer fix for a human.)
+  $<HTMLButtonElement>("btnReveal").disabled = s.ended || !s.phases.includes("REVEAL") || s.phase === "REVEAL";
   $<HTMLButtonElement>("btnPause").disabled = s.ended;
   $<HTMLButtonElement>("btnPause").textContent = s.paused ? "Unpause" : "Pause";
   $<HTMLButtonElement>("btnFreeze").disabled = s.ended;
@@ -133,10 +174,22 @@ function render(payload: TeacherPayload): void {
   // The shock is Draft Day's own consequence hook and only ever makes sense in CONSEQUENCE.
   // The Box Office needs neither manual hook — its CONSEQUENCE and COUNTERFACTUAL states are
   // computed automatically from the price/zone already stored at lock time, not teacher-triggered.
-  const isDraftDay = s.lessonModuleId === "m1l1-draft-day";
+  const isDraftDay = s.lessonModuleId === DRAFT_DAY_ID;
+  const isTradeDeadline = s.lessonModuleId === TRADE_DEADLINE_ID;
   $<HTMLButtonElement>("btnShock").hidden = !isDraftDay;
   $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
-  $<HTMLButtonElement>("btnCounterfactual").hidden = isDraftDay || s.lessonModuleId === "m2-box-office";
+  $<HTMLButtonElement>("btnCounterfactual").hidden = isDraftDay || isTradeDeadline || s.lessonModuleId === "m2-box-office";
+  // The staged per-target auction theater (charter point 6): one click reveals exactly the next
+  // not-yet-revealed target, so the teacher paces the reveal instead of dumping every result at once.
+  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline;
+  $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
+  // B1 repair (VERIFY_L2.md BLOCKER): the runtime now auto-resolves any unrevealed target the instant the
+  // teacher advances out of REVEAL (see tradeDeadline.ts's onPhaseExit), so the numbers can no longer go wrong
+  // — but the staged, one-at-a-time reveal theater is still lost on whatever's skipped, so warn before that
+  // happens rather than let it happen silently.
+  advanceWarnState = isTradeDeadline
+    ? { lessonModuleId: s.lessonModuleId, phase: s.phase, revealedCount: Number(payload.view["revealedCount"] ?? 0), totalTargets: Number(payload.view["totalTargets"] ?? 0) }
+    : null;
 
   const roster = $("rosterList");
   roster.innerHTML = "";
@@ -193,6 +246,7 @@ async function unlockSeat(seatId: string): Promise<void> {
 function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
   if (view["module"] === "m1l1-draft-day") return renderDraftDayAggregate(view, seats);
   if (view["module"] === "m2-box-office") return renderBoxOfficeAggregate(view, seats);
+  if (view["module"] === TRADE_DEADLINE_ID) return renderTradeDeadlineAggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
@@ -362,6 +416,69 @@ function renderBoxOfficeAggregate(view: Record<string, unknown>, seats: TeacherS
   return wrap;
 }
 
+/* -------------------------------------------------- trade deadline aggregate -- */
+
+type TDTeamStat = {
+  seatId: string;
+  claimed: boolean;
+  franchise: { name: string; crestIndex: number; origin: string } | null;
+  spend: number | null;
+  path: string | null;
+  cutSlot: string | null;
+  deadCapCharge: number;
+  bidTargetId: string | null;
+  bidAmount: number | null;
+  bidOutcome: string | null;
+  openSlot: boolean | null;
+  rescued: boolean;
+  capUsed: number;
+};
+type TDAggregate = {
+  standPatCount: number; veteranCount: number; bidCount: number; bidWonCount: number; bidLostCount: number;
+  totalDeadCapPaid: number; openSlotCount: number; rescuedCount: number; revealedCount: number;
+};
+
+function renderTradeDeadlineAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
+  const teams = (view["teams"] as TDTeamStat[]) ?? [];
+  const agg = view["aggregate"] as TDAggregate;
+  const seatById = new Map(seats.map((s) => [s.id, s]));
+  const wrap = document.createElement("div");
+
+  const kpis = document.createElement("div");
+  kpis.className = "kpirow";
+  kpis.style.marginBottom = "14px";
+  kpis.innerHTML = `
+    <div class="kpi"><div class="num">${view["claimedCount"]}/${view["carriedFranchiseCount"]}</div><div class="lbl">Claimed carried franchises</div></div>
+    <div class="kpi"><div class="num">${agg.standPatCount}/${agg.veteranCount}/${agg.bidCount}</div><div class="lbl">Stood pat / veteran / bid</div></div>
+    <div class="kpi"><div class="num">$${agg.totalDeadCapPaid}M</div><div class="lbl">Total dead cap paid</div></div>
+    <div class="kpi"><div class="num">${view["revealedCount"]}/${view["totalTargets"]}</div><div class="lbl">Targets revealed</div></div>
+    <div class="kpi"><div class="num">${agg.rescuedCount}/${agg.openSlotCount}</div><div class="lbl">Rescued open slots</div></div>
+  `;
+  wrap.appendChild(kpis);
+
+  const grid = document.createElement("div");
+  grid.className = "teamgrid";
+  teams.forEach((t) => {
+    const seat = seatById.get(t.seatId);
+    const tile = document.createElement("div");
+    tile.className = "teamtile";
+    const franchiseRow = t.franchise
+      ? `<div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;"><span style="${crestStyle(t.franchise.crestIndex, 16)}"></span><strong>${escapeHtml(t.franchise.name)}</strong>${t.franchise.origin === "stock" ? ' <span style="font-size:9px; color:var(--ink-muted);">EXP</span>' : ""}</div>`
+      : `<strong>${seat ? escapeHtml(seat.displayName) : "Not claimed"}</strong>`;
+    const pathLabel = t.path === "standPat" ? "stood pat" : t.path === "veteran" ? `cut → veteran` : t.path === "bid" ? `cut → bid ($${t.bidAmount ?? "?"}M)` : "deciding…";
+    const outcomeLabel = t.path === "bid" ? (t.bidOutcome ? (t.bidOutcome === "won" ? "won bid" : "lost bid") : "sealed — pending") : "";
+    tile.innerHTML = `
+      ${franchiseRow}
+      <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : ""}</span><span>${t.claimed ? `$${t.capUsed}M` : ""}</span></div>
+      <div class="statline"><span>${escapeHtml(pathLabel)}</span><span>${escapeHtml(outcomeLabel)}</span></div>
+      ${t.openSlot ? `<div class="statline"><span style="color:${t.rescued ? "var(--cap-safe)" : "#ff9aa4"};">${t.rescued ? "rescued" : "⚠ open slot"}</span><span></span></div>` : ""}
+    `;
+    grid.appendChild(tile);
+  });
+  wrap.appendChild(grid);
+  return wrap;
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
@@ -381,7 +498,20 @@ async function sendControl(body: Record<string, unknown>): Promise<void> {
 }
 
 $("create").addEventListener("click", () => void createSession().catch((e) => (statusEl.textContent = String(e))));
-$("btnAdvance").addEventListener("click", () => void sendControl({ type: "advance" }));
+$("btnAdvance").addEventListener("click", () => {
+  // B1 repair (VERIFY_L2.md BLOCKER): same confirm() idiom btnEnd already uses below — no new dialog
+  // framework. Only fires leaving REVEAL with targets still unrevealed; the economics stay correct either way
+  // (the runtime auto-resolves them), this is purely "you're about to skip the staged reveal theater."
+  const w = advanceWarnState;
+  if (w && w.lessonModuleId === TRADE_DEADLINE_ID && w.phase === "REVEAL" && w.revealedCount < w.totalTargets) {
+    const remaining = w.totalTargets - w.revealedCount;
+    const ok = confirm(
+      `${remaining} of ${w.totalTargets} target${w.totalTargets === 1 ? "" : "s"} unrevealed — advancing resolves ${remaining === 1 ? "it" : "them"} automatically, without the staged reveal. Continue?`,
+    );
+    if (!ok) return;
+  }
+  void sendControl({ type: "advance" });
+});
 $("btnReveal").addEventListener("click", () => void sendControl({ type: "reveal" }));
 $("btnPause").addEventListener("click", () => {
   const paused = $("btnPause").textContent === "Unpause";
@@ -397,6 +527,7 @@ $("btnEnd").addEventListener("click", () => {
 });
 $("btnShock").addEventListener("click", () => void sendControl({ type: "hook", hook: "shock" }));
 $("btnCounterfactual").addEventListener("click", () => void sendControl({ type: "hook", hook: "counterfactual" }));
+$("btnRevealNext").addEventListener("click", () => void sendControl({ type: "hook", hook: "revealNext" }));
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();

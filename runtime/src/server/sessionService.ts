@@ -114,11 +114,24 @@ export class SessionService {
    * like a device token, and required as a bearer credential on every
    * `control()`/`teacherView()` call thereafter (`assertTeacher`).
    */
-  async createSession(input: { lessonModuleId: string; title: string }): Promise<TeacherPayload> {
+  async createSession(input: { lessonModuleId: string; title: string; sourceSessionId?: string }): Promise<TeacherPayload> {
     const mod = this.modules.get(input.lessonModuleId);
     if (!mod) throw new ServiceError(400, "unknown_module", `no lesson module registered as "${input.lessonModuleId}"`);
     const sessionId = randomUUID();
-    const state = mod.initialState({ sessionId, seatIds: [] });
+    // Cross-lesson continuity hook (e.g. M1 L2 carrying forward L1's
+    // franchise state): resolve the named source session's own stored
+    // state, hand it to the new module as an opaque seed, and let the
+    // module decide what (if anything) it means. The runtime never reads
+    // into `source.state` itself — a missing/unresolvable source session
+    // is not an error here, it just means no seed (`undefined`), and the
+    // receiving module is required to normalize that gracefully (its own
+    // "stock franchise" story), same as any other malformed-seed case.
+    let seed: unknown;
+    if (input.sourceSessionId) {
+      const source = await this.repo.getSessionById(input.sourceSessionId);
+      if (source) seed = { lessonModuleId: source.lessonModuleId, state: source.state };
+    }
+    const state = mod.initialState({ sessionId, seatIds: [], seed });
     let code = "";
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const candidate = generateJoinCode();
@@ -373,8 +386,28 @@ export class SessionService {
     }
   }
 
+  /**
+   * `onPhaseExit` (optional on a module) runs here, before the phase itself
+   * is committed — the one place every teacher-triggered forward transition
+   * passes through, whether it's a normal `advance` or a `reveal` jump. See
+   * `shared/lessonModule.ts`'s doc comment; VERIFY_L2.md B1 is the module
+   * that actually uses this today (auto-resolving any target left pending
+   * when a teacher leaves REVEAL early).
+   */
   private async applyPhaseChange(session: SessionRow, next: CanonicalPhase): Promise<TeacherPayload> {
-    return this.buildTeacherPayload(await this.patch(session, { phase: next }, true));
+    const mod = this.moduleFor(session);
+    const patch: Parameters<Repository["updateSession"]>[1] = { phase: next };
+    // Root-cause fix for a re-verification finding against `onPhaseExit`'s first use (VERIFY_L2.md's
+    // "Jump to REVEAL while already in REVEAL" MODERATE): `onPhaseExit`'s contract is "the phase being LEFT" —
+    // when `next` is the session's current phase, nothing is actually being left, so nothing should fire. This
+    // guards every module that ever implements the hook, not just this one case: `reveal` is the only control
+    // action that can target a phase the session may already be in (`advance` always moves strictly forward by
+    // construction), but any future control path with the same shape gets the same protection for free.
+    if (mod.onPhaseExit && session.phase !== next) {
+      const resolvedState = mod.onPhaseExit(session.state, session.phase, next);
+      if (resolvedState !== session.state) patch.state = resolvedState;
+    }
+    return this.buildTeacherPayload(await this.patch(session, patch, true));
   }
 
   /** Applies a patch with optimistic concurrency; optionally captures a pre-change checkpoint first. */

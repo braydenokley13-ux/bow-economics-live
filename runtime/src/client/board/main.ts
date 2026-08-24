@@ -64,6 +64,12 @@ function render(payload: BoardPayload): void {
     renderBoxOfficeBoard(view, mode);
     return;
   }
+  if (view["module"] === "m1l2-trade-deadline") {
+    const mode = String(view["mode"] ?? "");
+    backdrop.classList.toggle("peak", PEAK_MODES.has(mode));
+    renderTradeDeadlineBoard(view, mode);
+    return;
+  }
 
   backdrop.classList.remove("peak");
   const legacy = view as { mode?: string; tally?: Record<string, number>; total?: number; note?: string; pickedCount?: number };
@@ -291,6 +297,84 @@ function renderBoxOfficeBoard(view: Record<string, unknown>, mode: string): void
 
     case "complete":
       stage.innerHTML = `<div class="label">The Box Office — Complete</div><div class="banner">Nice work, Operators. See you at the next homestand.</div>`;
+      return;
+
+    default:
+      stage.innerHTML = `<div class="label">${escapeHtml(mode)}</div>`;
+  }
+}
+
+/* --------------------------------------------------- trade deadline render -- */
+
+type TDFranchise = { name: string; crestIndex: number };
+type TDRevealedTarget = { id: string; name: string; position: string; floor: number; ceiling: number; trueValue: number; bidCount: number; winnerFranchise: TDFranchise | null; winningBid: number | null; verdict: "steal" | "curse" | "fair" | "unsold" };
+const TD_VERDICT_LABEL: Record<string, string> = { steal: "STEAL", curse: "WINNER'S CURSE", fair: "FAIR PRICE", unsold: "UNSOLD" };
+const TD_VERDICT_COLOR: Record<string, string> = { steal: "var(--cap-safe)", curse: "#ff9aa4", fair: "var(--ink-secondary)", unsold: "var(--cap-tight)" };
+
+function renderTradeDeadlineBoard(view: Record<string, unknown>, mode: string): void {
+  switch (mode) {
+    case "lobby":
+      stage.innerHTML = `<div class="label">The Trade Deadline</div><div class="banner">Waiting for the room to start — ${view["teamCount"]} teams joined</div>`;
+      return;
+
+    case "hook":
+      stage.innerHTML = `<div class="label">Midseason Report</div><div class="banner" style="max-width:70vw;">${escapeHtml(String(view["message"]))}</div><div class="kpirow"><div class="kpi"><div class="num">${view["claimedCount"]}</div><div class="lbl">Franchises claimed</div></div></div>`;
+      return;
+
+    case "building":
+      stage.innerHTML = `
+        <div class="label">The Deadline Window Is Open</div>
+        <div class="kpirow">
+          <div class="kpi"><div class="num">${view["committedCount"]}</div><div class="lbl">Decisions locked in</div></div>
+          <div class="kpi"><div class="num">${view["totalTeams"]}</div><div class="lbl">Teams in the room</div></div>
+        </div>`;
+      return;
+
+    case "reveal": {
+      const revealed = (view["revealed"] as TDRevealedTarget[]) ?? [];
+      const nextName = view["nextTargetName"] as string | null;
+      const allRevealed = Boolean(view["allRevealed"]);
+      const cards = revealed
+        .map(
+          (r) => `
+        <div class="synthcard">
+          <h3>${escapeHtml(r.name)} <span style="font-size:0.7em; color:var(--ink-muted); text-transform:none; letter-spacing:0;">· ${r.position}</span></h3>
+          <p style="margin-bottom:8px;">${r.bidCount} bid${r.bidCount === 1 ? "" : "s"} in.</p>
+          ${
+            r.winnerFranchise
+              ? `<p style="display:flex; align-items:center; gap:8px; margin:0;"><span style="${crestStyle(r.winnerFranchise.crestIndex, 22)}"></span><strong style="color:var(--ink-primary);">${escapeHtml(r.winnerFranchise.name)}</strong> won at <span class="numeric" style="color:var(--accent-gold);">$${r.winningBid}M</span></p>`
+              : `<p style="margin:0; color:var(--ink-muted);">${r.bidCount === 0 ? "Nobody bid on this one." : "Every bid came in under the hidden reserve — nobody signed this one."}</p>`
+          }
+          <p style="margin-top:8px; font-weight:800; color:${TD_VERDICT_COLOR[r.verdict]};">${TD_VERDICT_LABEL[r.verdict]}${r.winnerFranchise ? ` — turned out to be worth about $${r.trueValue}M` : ""}</p>
+        </div>`,
+        )
+        .join("");
+      stage.innerHTML = `
+        <div class="label">The Reveal</div>
+        ${revealed.length > 0 ? `<div class="cardgrid">${cards}</div>` : `<div class="banner">Waiting for the teacher to reveal the first target…</div>`}
+        <div class="synthesis-note">${allRevealed ? "Every target has been revealed." : `Next up: ${escapeHtml(nextName ?? "")}`}</div>`;
+      return;
+    }
+
+    case "adapt":
+      stage.innerHTML = `
+        <div class="label">Aftermath</div>
+        <div class="banner" style="max-width:66vw;">Any team left with an open slot signs a fallback now. Everyone else already has a full wall — nothing left to do.</div>
+        <div class="kpirow"><div class="kpi"><div class="num">${view["rescuedCount"]}/${view["openSlotCount"]}</div><div class="lbl">Open slots rescued</div></div></div>`;
+      return;
+
+    case "synthesis": {
+      const cards = (view["cards"] as { id: string; title: string; body: string }[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["heading"]))}</div>
+        <div class="cardgrid">${cards.map((c) => `<div class="synthcard"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.body)}</p></div>`).join("")}</div>
+        <div class="synthesis-note">${escapeHtml(String(view["beyondSports"]))}</div>
+        <div class="exit-prompt">${escapeHtml(String(view["exitPrompt"]))}</div>`;
+      return;
+    }
+
+    case "complete":
+      stage.innerHTML = `<div class="label">Trade Deadline Complete</div><div class="banner">See you next class.</div>`;
       return;
 
     default:
