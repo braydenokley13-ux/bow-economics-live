@@ -396,6 +396,22 @@ test("R2: a withdrawal is frozen into withdrawnOffers (day, seat, agent, ask-at-
   assert.equal(state.withdrawnOffers.length, 1, "withdrawnOffers is cumulative across the whole window, never reset at close");
 });
 
+test("R2 re-verification repair: holding with an offer still pending IS a withdrawal — same day lock, same engagement record, so offer→hold→offer can't fake the interest count for free", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = expectOk(offer(state, "t1", SOLID.id, SOLID.openingAsk, SOLID.position));
+  state = expectOk(freeAgencyModule.reduce(state, { type: "holdDay" }, l3Ctx("PLAY", "t1")));
+  assert.equal(state.teams["t1"]!.pendingOffer, null);
+  assert.equal(state.teams["t1"]!.outForDay, true, "clearing a pending offer via holdDay must lock the day exactly like withdrawOffer");
+  assert.equal(state.teams["t1"]!.held, true);
+  assert.equal(state.withdrawnOffers.length, 1, "the engagement record must be identical to a withdrawal's");
+  assert.equal(state.withdrawnOffers[0]!.agentId, SOLID.id);
+  expectRejected(offer(state, "t1", SOLID.id, SOLID.openingAsk, SOLID.position), /withdrew.*market|market saw you go/i);
+  // the next day is unaffected, same as a plain withdrawal
+  state = closeDay(state, ["t1"]);
+  assert.equal(state.teams["t1"]!.outForDay, false);
+  assert.equal(offer(state, "t1", SOLID.id, SOLID.openingAsk, SOLID.position).ok, true);
+});
+
 test("HOLD: an explicit one-tap action, distinct from just doing nothing, visible to the teacher pacing panel", () => {
   let state = claimStock(freshL3Stock(), "t1");
   state = expectOk(freeAgencyModule.reduce(state, { type: "holdDay" }, l3Ctx("PLAY", "t1")));

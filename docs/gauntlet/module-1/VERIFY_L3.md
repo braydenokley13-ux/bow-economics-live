@@ -352,3 +352,247 @@ round-trip, hostile reducer input) and a standalone Playwright script
 `/play` at 1024×600 and 390×844 — not committed, available at
 `/tmp/claude-0/-home-user-bow-economics-live/83ed0941-bd5b-5823-b4b5-789d77faca7a/scratchpad/`
 if a repairer wants to rerun any of them.
+
+---
+
+## RE-VERIFICATION (against commit `24f87d6`)
+
+Targeted re-check only, per founder instruction — the six findings above,
+not a full re-run of the original gauntlet. Read `24f87d6`'s diff critically
+(all changed files, not just the ones touching my six findings), rebuilt,
+ran the full suite and all four e2e scripts, then re-ran my original
+scratchpad repros against the repaired build plus new adversarial probes
+aimed specifically at each repair's own new surface (`outForDay`,
+`withdrawnOffers`, the rewritten `computeAwards`, `scrollIntoView`).
+Everything below is evidence from this pass, not carried over from the
+first round.
+
+**Build:** `npm run build` — clean.
+**Tests:** `npm test` — **312/312 passing** (303 + 9 new: 4 R2 reducer
+tests, 5 M1/M2 award tests), matches the commit message and
+`runtime/README.md`.
+**E2E:** all four scripts green this session — `scripts/e2e-l2.cjs`,
+`scripts/e2e-l2-early-advance.cjs` (both unaffected by this commit, zero
+console errors, confirming no L1/L2 regression), `scripts/e2e-l3.cjs` (now
+at the 1024×600 Chromebook viewport named in my original N1 finding, with a
+per-offer bounding-box assertion — see N1 below), `scripts/e2e-l3-early-advance.cjs`
+— **PASS**, zero console errors on each.
+
+### R1 (required) — **FIXED**
+
+`MARKET_RULES` (`freeAgency.ts:916-921`) states all four rules in
+grade 5-6 language — one offer/day (freely editable), withdrawal ends the
+day, the 0/1/2+ ask-movement rule (explicitly naming "even if every single
+offer was low," closing the exact gap my original finding named), and the
+day-4 carve-out. Wired into both `hookSummaryFor` (HOOK's market preview)
+and `playViewFor` (PLAY, beside the composer) as `marketRules`, rendered by
+a new `marketRulesHtml` (`play/main.ts:1422-1431`) as a `<details>` panel
+in both places — confirmed via source read and via `e2e-l3.cjs`'s own
+screenshot `docs/gauntlet/module-1/screens-l3/02-play-hook-market-preview.png`
+(regenerated this session). This closes the original gap cleanly: a
+student now has an in-app, teacher-independent place to read exactly what
+governs the day they're about to act in.
+
+### R2 (required) — **NOT FIXED** — the intended fix only closes one of
+two reducer paths that clear a pending offer; the other, `holdDay`, is
+untouched and reproduces the identical free interest-count exploit.
+
+The `withdrawOffer` path itself is genuinely and correctly repaired —
+re-ran my original repro against it directly:
+```
+after offer, interest: 1
+withdraw ok? true
+after withdraw, interest: 0 outForDay: true held: true
+re-offer after withdraw ok? false you withdrew from today's market — the
+  market saw you go. No new offer until tomorrow.
+withdrawnOffers: [{"day":1,"seatId":"t1","agentId":"fa-star-sc", ...}]
+teacherView t1 acted: true outForDay: true
+```
+`outForDay` locks `doOffer` (`freeAgency.ts:754`, checked before any
+other validation), resets correctly at day close, and the pacing panel
+correctly reads the withdrawn team as acted. Good.
+
+But `doHoldDay` (`freeAgency.ts`, unchanged by this commit — confirmed via
+`git diff 90c54dc..24f87d6` touching zero lines of this function) is the
+**other** way a team can clear a `pendingOffer` — `{ ...pre.team,
+pendingOffer: null, held: true }`, unconditionally, with no `outForDay`
+lock and no `withdrawnOffers` record. Re-ran my original pump-and-pivot
+repro, substituting `holdDay` for `withdrawOffer` as the retraction step,
+directly against the compiled reducer:
+```
+after t1 offers, interest: 1
+holdDay ok? true
+after t1 holdDay, interest: 0 outForDay: false pendingOffer: null
+re-offer after holdDay ok? true
+after re-offer, interest: 1
+[... repeated 3 more times, every cycle: interest 1 -> holdDay -> interest
+     0, outForDay stays false, a fresh offer is immediately accepted again ...]
+withdrawnOffers recorded (should be empty -- holdDay bypasses the record): []
+day1 history offers (t1 offer should be absent -- retracted via holdDay): []
+```
+The team can toggle `offer` → `holdDay` → `offer` → `holdDay` all day,
+manipulating the public interest count as many times as it likes, at
+literally zero cost — the exact property the repair was written to close.
+No test in the 4 new R2 tests exercises `holdDay` after an existing offer
+(`grep -n "outForDay\|holdDay" src/test/freeAgency.test.ts` shows the R2
+tests only call `withdrawOffer`), so this went unverified by the shipped
+suite.
+
+**Mitigating factor, and why this is still real.** The *current* polished
+`/play` UI never renders a "Hold" button while a team already has a
+pending offer — `renderFAPlay`'s `actedBanner` only wires `#faHoldBtn` in
+the branch where `!acted` (`play/main.ts`'s `else` case), so a student
+clicking through the real app cannot stumble into this by normal use. But
+the ruling for R2 was explicit — *"reducer-enforced, not just UI"* — and
+the reducer itself has no such protection: any seat's own device can
+`POST /api/sessions/:code/actions` with `{"type":"holdDay"}` directly, at
+any time, regardless of what the current client happens to render. This is
+not a stranded-state bug (nothing crashes, no permanent lock, days still
+progress cleanly) — it's the identical economic-integrity gap from the
+original finding, reachable through a second, currently-unguarded action.
+**Fix:** apply the same `outForDay`/`withdrawnOffers` treatment in
+`doHoldDay` whenever it clears a *non-null* `pendingOffer` (a hold called
+with nothing pending should stay free, exactly as today).
+
+### M1 (recommended) — **FIXED**
+
+Re-ran the shrinker-vs-mild-value scenario independently against the
+compiled reducer (two teams, one engages the −7 shrinker Priya Anand at
+$20M against a $45M ask, the other engages a mild −2 value agent, both
+lose, nobody signs anyone):
+```
+{
+  "id": "walk-away",
+  "title": "THE WALK-AWAY",
+  "franchise": { "name": "Ironworks", ... },
+  "agentName": "Priya Anand",
+  "body": "Ironworks was in talks for Priya Anand — up to $45M — and never
+    signed him. With the finale factor revealed, Priya Anand turned out to
+    be a real trap. The best money never spent."
+}
+```
+The shrinker's story now genuinely wins over the milder value agent, and a
+withdrawn (not just stood-at-close) engagement correctly still counts
+(confirmed via the shipped test and independently by re-deriving
+`considerEngagement`'s logic against `freeAgency.ts:1450-1476` by hand).
+The fallthrough case (nobody ever engages the shrinker) correctly credits
+whichever negative-factor agent someone *did* engage, never the untouched
+shrinker — matches the shipped test and my own read of the sort order
+(most-negative-factor-first, so an engaged milder agent only wins when the
+shrinker was never touched at all). Omits gracefully when nobody engages
+any negative-factor agent (unchanged path, still tested). This genuinely
+repairs the original finding — THE WALK-AWAY can now tell the story its
+own hidden-factor design was built for.
+
+**New, narrower observation (not one of the six, informational only, not
+rated).** The `askAtWalk` value used in the copy ("up to $X") is the
+agent's *asking price at the time*, not the team's own bid amount — in the
+repro above, Ironworks actually bid only $20M (a deep lowball against the
+$45M ask), yet the reveal card reads "in talks... up to $45M," which
+overstates how close the team really came to signing. The "engaged" bar
+itself is also just "made any offer at all," so a token, guaranteed-to-lose
+lowball currently qualifies as a full walk-away story on equal footing with
+a genuine near-miss. This doesn't misstate anything about the *cap* or
+*privacy*, and I'm not rating it as a numbered finding since it wasn't part
+of what I was asked to re-check this round — flagging it only so it isn't
+lost, worth a look next time this card is touched (e.g. use the team's own
+highest bid on that agent, not the ask, and/or require the offer to have
+been within some real distance of ask to count as "engagement").
+
+### M2 (recommended) — **FIXED**
+
+Re-ran the all-quiet three-team repro independently (three teams claim,
+nobody offers anything across all four days):
+```
+awards: [{ "id": "iron-books", ...,
+  "body": "Ironworks finished #1 without a single signing — and neither did
+    anyone else this window. The whole room held its money; these books
+    held the line best." }]
+```
+IRON BOOKS now fires and its copy correctly and honestly acknowledges the
+room-wide hold rather than implying a contrast that didn't happen. The
+gate is now `zeroSigners.length > 0 && teams.length >= 2`
+(`freeAgency.ts:1435`) — confirmed the one-team dry-run case the original
+gate's comment actually justified is still excluded (`teams.length >= 2`),
+while the class-realistic all-wait case the award exists to honor now
+fires. Matches the shipped test.
+
+### N1 (minor) — **FIXED**
+
+`renderFAComposer` now calls `root.scrollIntoView({ behavior: "auto",
+block: "nearest" })` on open (`play/main.ts`, confirmed in diff). Rather
+than trust the code alone, `scripts/e2e-l3.cjs` was re-run at the
+Chromebook-shaped 1024×600 viewport it now uses throughout (was 1000×640),
+with `submitOffer`'s new bounding-box assertion firing after every single
+one of the script's ~9 real composer opens across all four days — every
+one passed (`box.y` on-screen, no `"N1 regression"` throw), which is
+stronger evidence than a static code read: the fix was exercised live, in
+a real browser, at the exact viewport my original finding used, not just
+declared present.
+
+### N2 (minor) — **FIXED**
+
+`renderFreeAgencyAggregate`'s `actedLabel` now looks up the agent's name
+from the `agents` array already in the view (`agentNameById`,
+`teach/main.ts`), falling back to the raw id only if the lookup somehow
+misses. Confirmed via source diff; the teacher's per-team tile now also
+distinguishes "withdrew — out for today" from a plain "holding," a small
+but genuine pacing-clarity improvement beyond what N2 asked for.
+
+---
+
+## NEW FINDING this round
+
+### MODERATE — R2's fix is bypassable via `doHoldDay`, fully reopening the
+original exploit
+
+Already detailed under R2 above; recorded here as the round's one new,
+independently-discovered finding, not a restatement of the original.
+**Severity MODERATE** — same class as the original R2 (a real,
+zero-cost, zero-trace way to fake the market's central public information
+signal; not a crash, not a stuck state, not reachable through the current
+polished UI's own buttons, but fully reachable at the reducer/API level,
+which the ruling itself named as the actual bar to clear). No cap,
+dead-cap, or privacy impact; both e2e scripts still pass because neither
+drives this specific sequence. Repair by extending `doHoldDay` with the
+same `outForDay` treatment `doWithdrawOffer` already has, whenever it
+clears a real (non-null) pending offer.
+
+---
+
+## Overall verdict
+
+**ACCEPT WITH REQUIRED REPAIRS** (unchanged framing) — gameplay rating
+**STRONG**, one notch more confident than the first pass now that R1, M1,
+M2, N1, and N2 are all independently confirmed fixed against my own
+original repros, not just the builder's account of them, and 312/312 tests
+plus all four e2e scripts are green with zero console errors. R2 is the one
+required item still open: the specific submit-then-withdraw sequence I
+originally reproduced is genuinely closed, but the equivalent
+submit-then-hold sequence reopens the identical exploit, because the fix
+patched `doWithdrawOffer` without noticing `doHoldDay` clears a pending
+offer through the exact same code path. This is a narrow, single-function
+fix (extend `doHoldDay` the same way `doWithdrawOffer` was already
+extended) — repair it, re-verify only that path plus a quick regression
+pass on M1/M2 (which both now read `withdrawnOffers`/`outForDay`,
+so a `doHoldDay` change touches shared state those depend on), and ship.
+
+---
+
+## Post-re-verification repair (build side, not the verifier)
+
+The re-verification's one open required item — R2's `doHoldDay` bypass
+(`offer → holdDay → offer` re-opening the zero-cost interest-count fake at
+the reducer/API level) — was root-cause fixed exactly along the identified
+path: `doHoldDay` with a pending offer now routes through `doWithdrawOffer`
+itself, so clearing an offer via hold carries a withdrawal's identical cost
+(`outForDay` day lock) and leaves the identical `withdrawnOffers` engagement
+record (which is also the correct M1/WALK-AWAY semantics — the team engaged,
+then walked). A plain hold with nothing pending stays free. The /play UI
+never renders the Hold button while an offer is pending, so no student-facing
+behavior changes; the closed path was API-level only.
+
+Regression-tested: a new reducer test reproduces the verifier's exact
+sequence and asserts the day lock, the engagement record, the honest
+rejection string, and a clean next day. Full suite 313/313; all four e2e
+scripts re-run green with zero console errors after the fix.

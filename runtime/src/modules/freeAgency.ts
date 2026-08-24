@@ -794,10 +794,21 @@ function doWithdrawOffer(state: FreeAgencyState, _action: WithdrawOfferAction, c
   return { ok: true, state: { ...withTeam(state, ctx.seatId, nextTeam), withdrawnOffers: [...state.withdrawnOffers, record] } };
 }
 
+/**
+ * Re-verification MODERATE repair (VERIFY_L3.md): holding while an offer is
+ * still pending clears that offer — which is exactly a withdrawal, so it
+ * must carry exactly a withdrawal's cost. Routing it through
+ * `doWithdrawOffer` (same lock, same engagement record) closes the
+ * offer→hold→offer re-toggle that would otherwise reopen R2's free
+ * interest-count fake under a different action name. A plain hold with
+ * nothing pending stays what it always was: a free, explicit "we're
+ * waiting today."
+ */
 function doHoldDay(state: FreeAgencyState, _action: HoldDayAction, ctx: ReduceContext): ReduceResult<FreeAgencyState> {
   const pre = requireClaimedOpenWindow(state, ctx.seatId);
   if (!pre.ok) return pre;
-  return { ok: true, state: withTeam(state, ctx.seatId, { ...pre.team, pendingOffer: null, held: true }) };
+  if (pre.team.pendingOffer) return doWithdrawOffer(state, { type: "withdrawOffer" }, ctx);
+  return { ok: true, state: withTeam(state, ctx.seatId, { ...pre.team, held: true }) };
 }
 
 /**
