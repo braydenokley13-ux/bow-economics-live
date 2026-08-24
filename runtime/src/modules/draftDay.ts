@@ -68,8 +68,23 @@ export type Player = {
  * viable full-roster strategies (star-stacked / balanced / value-hunting)
  * rather than collapsing to one obviously-correct build.
  */
+/**
+ * ROUND-2 REPAIR (VERIFY_ROUND2.md BLOCKER 1): each position now carries
+ * three cards at the $10M floor instead of one — "bench depth" at the
+ * cheapest tier. This is the market-side half of closing the cap-overflow
+ * bug: once `adaptBudgetFor` stopped granting a flat stipend and started
+ * granting only the team's own real remaining cap room (see below), an
+ * at-cap team whose weakest card was the *sole* $10M option at its
+ * position would have had zero legal substitutes to repair with — a real
+ * dead end, not a choice. Three cards at $10M guarantees that whichever
+ * one gets poached, at least two more sit in the market at or under that
+ * same price, for every position, unconditionally (verified by a market-
+ * level property test, not just spot-checked builds).
+ */
 export const MARKET: readonly Player[] = [
   { id: "sc-10", name: "Jamal Wu", position: "SCORER", price: 10, rating: 58 },
+  { id: "sc-10b", name: "Eli Foster", position: "SCORER", price: 10, rating: 57 },
+  { id: "sc-10c", name: "JJ Prescott", position: "SCORER", price: 10, rating: 59 },
   { id: "sc-20", name: "Cole Bennett", position: "SCORER", price: 20, rating: 66 },
   { id: "sc-30", name: "Nate Rivers", position: "SCORER", price: 30, rating: 74 },
   { id: "sc-40", name: "Deion Marks", position: "SCORER", price: 40, rating: 83 },
@@ -77,6 +92,8 @@ export const MARKET: readonly Player[] = [
   { id: "sc-60", name: "Blaze Carter", position: "SCORER", price: 60, rating: 91 },
 
   { id: "pm-10", name: "Ravi Patel", position: "PLAYMAKER", price: 10, rating: 56 },
+  { id: "pm-10b", name: "Kofi Mensah", position: "PLAYMAKER", price: 10, rating: 53 },
+  { id: "pm-10c", name: "Diego Salas", position: "PLAYMAKER", price: 10, rating: 55 },
   { id: "pm-20", name: "Andre Lopez", position: "PLAYMAKER", price: 20, rating: 72 },
   { id: "pm-30", name: "Mikey Cross", position: "PLAYMAKER", price: 30, rating: 70 },
   { id: "pm-40", name: "Theo James", position: "PLAYMAKER", price: 40, rating: 81 },
@@ -84,6 +101,8 @@ export const MARKET: readonly Player[] = [
   { id: "pm-60", name: "Skylar Ford", position: "PLAYMAKER", price: 60, rating: 90 },
 
   { id: "df-10", name: "Sam Okafor", position: "DEFENDER", price: 10, rating: 60 },
+  { id: "df-10b", name: "Wyatt Chen", position: "DEFENDER", price: 10, rating: 51 },
+  { id: "df-10c", name: "Malik Osei", position: "DEFENDER", price: 10, rating: 54 },
   { id: "df-20", name: "Ty Brooks", position: "DEFENDER", price: 20, rating: 68 },
   { id: "df-30", name: "Owen Diaz", position: "DEFENDER", price: 30, rating: 78 },
   { id: "df-40", name: "Devon Shaw", position: "DEFENDER", price: 40, rating: 84 },
@@ -91,6 +110,8 @@ export const MARKET: readonly Player[] = [
   { id: "df-60", name: "Marcus Kane", position: "DEFENDER", price: 60, rating: 92 },
 
   { id: "rb-10", name: "Dario Silva", position: "REBOUNDER", price: 10, rating: 62 },
+  { id: "rb-10b", name: "Finn Delgado", position: "REBOUNDER", price: 10, rating: 50 },
+  { id: "rb-10c", name: "Rocco Ibarra", position: "REBOUNDER", price: 10, rating: 52 },
   { id: "rb-20", name: "Miles Chu", position: "REBOUNDER", price: 20, rating: 65 },
   { id: "rb-30", name: "Leo Grant", position: "REBOUNDER", price: 30, rating: 76 },
   { id: "rb-40", name: "Hank Volkov", position: "REBOUNDER", price: 40, rating: 87 },
