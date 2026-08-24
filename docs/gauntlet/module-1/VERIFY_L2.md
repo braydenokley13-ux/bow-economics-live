@@ -261,3 +261,134 @@ scripts) driving the real `/teach`, `/play`, `/board` pages — not committed
 to the repo, available at
 `/tmp/claude-0/-home-user-bow-economics-live/abe262a3-9823-5046-9293-b0fc8535899f/scratchpad/l2verify/`
 if a repairer wants to rerun any of them.
+
+---
+
+## RE-VERIFICATION (against commit `662f04b`)
+
+Targeted re-check only, per founder instruction — not a full re-run of the
+original gauntlet. Read `662f04b`'s diff critically (all 9 changed files),
+rebuilt, ran the full suite and both e2e scripts, then re-ran my own
+scratchpad repros against the repaired build plus new probes aimed
+specifically at the repair's own new surface (`onPhaseExit`, the PLAY-phase
+claim path, the `confirm()` warning). Everything below is evidence from
+this pass, not carried over from the first round.
+
+**Build/tests:** `npm run build` clean. `npm test` — **225/225 passing**
+(216 + 9 new), matches the commit message and `runtime/README.md`.
+**E2E:** both `scripts/e2e-l2.cjs` (unchanged happy-path arc) and the new
+`scripts/e2e-l2-early-advance.cjs` — **PASS**, zero console errors on each.
+
+### B1 (BLOCKER) — **FIXED**
+
+Re-ran my exact original repro (`aggregate_undercount.mjs`, with the bid
+amount that had originally shown the false undercount) plus a corrected
+both-teams-genuinely-lose variant against the repaired server:
+`openSlotCount` now reads **2** (was 1), `revealedCount` auto-jumps to
+**4/4** the instant the teacher advances out of REVEAL, and the board's
+projected SYNTHESIS card now reads *"2 teams finished the deadline with an
+open slot to rescue"* — matches ground truth exactly. Re-ran the original
+UI repro (`visual-bug.cjs`, screenshot `mobile-04-BUG-adapt-nothing-to-do.png`
+now overwritten with the fixed render) with a bid tuned to a genuine loss:
+Gamma's real `/play` ADAPT screen now shows **"OPEN SLOT: DEFENDER"** with
+three real, correctly-priced/rated rescue candidates — not the old false
+"nothing to do here." `hadOpenSlot` itself is untouched (confirmed via
+diff); its precondition (`bidOutcome` resolved) is now runtime-guaranteed.
+
+Additional targeted probes, all against the live repaired server:
+- Advance out of REVEAL with **0** revealed — succeeds, auto-resolves all 4,
+  correct winner/price/verdict, real ADAPT access. PASS.
+- Advance out of REVEAL with **all 4 already** revealed — succeeds as a true
+  no-op (team rows byte-identical before/after; `onPhaseExit` returns the
+  same state reference when nothing is left to resolve, confirmed via the
+  commit's own `state !== session.state` guard). PASS.
+- **Restore-after-early-advance** — advance early (1/4 manually revealed,
+  3 auto-resolved), then `restore`: reverts to the exact pre-advance REVEAL
+  checkpoint (`revealedCount` back to 1, the auto-resolved team's
+  `bidOutcome` back to `null`) — the checkpoint is captured from
+  `session.state` *before* `onPhaseExit` runs (confirmed in
+  `sessionService.patch`), so Restore genuinely undoes the auto-resolve, not
+  just the phase number. PASS.
+- **Divergence check** — built an identical two-bidder exact-tie fork,
+  resolved one copy via early-advance auto-resolve and the other via a full
+  manual click-through, normalized both `teacherView` team rows: **byte-for-
+  byte identical** (same winner, same price, same tiebreak). PASS — the
+  commit's "byte-identical" claim holds under an adversarial tie case, not
+  just the single-bidder case its own test covers.
+- **draftDay/boxOffice/lobbyDemo regression** — confirmed via `git diff`
+  those three module files have **zero changes** in this commit; live-probed
+  each module's `advance`/`reveal` controls post-repair anyway (all three
+  still transition phases normally, draftDay's `reveal` jump still works
+  with no crash from the new optional hook being absent). No behavior
+  change, as claimed.
+
+**NEW ISSUE found (not present before this repair) — MODERATE:**
+`btnReveal` ("Jump to REVEAL") stays enabled for the entire REVEAL phase —
+its disabled check is `!s.phases.includes("REVEAL")`, never `s.phase !==
+"REVEAL"` — and the new `confirm()` warning was wired only to `btnAdvance`,
+not to `btnReveal`. Clicking "Jump to REVEAL" **while already in REVEAL**
+sends `control({type:"reveal"})`, which calls the same `applyPhaseChange`
+with `fromPhase = toPhase = "REVEAL"` — `onPhaseExit` fires on that
+same-phase transition and silently bulk-resolves every remaining
+unrevealed target in one shot, with **zero warning**, even mid-staged-
+reveal. Reproduced directly (`edge_probes.mjs` PROBE 3): 0/4 revealed →
+one `{type:"reveal"}` call → 4/4 resolved, no dialog, no error. Before this
+repair, that same click was a harmless no-op (jumping to a phase you're
+already in did nothing); the repair turned it into a silent, irreversible-
+in-effect skip of the entire reveal drama. Not a repeat of B1 — the
+resolved numbers are still 100% correct (verified byte-identical to a
+manual reveal, same test method as above) and it's recoverable via Restore
+if caught immediately (same mechanism verified above), so no false data and
+no stuck state — hence MODERATE, not a blocker. Worth closing alongside any
+future B1-adjacent work, e.g. by extending the same `confirm()` guard to
+`btnReveal`, or disabling it once `phase === "REVEAL"`.
+
+### M1 (MODERATE) — **FIXED**
+
+Live-probed against the repaired server: a seat joining mid-PLAY (after a
+different seat already claimed and PLAY had opened) gets `lateJoin: true`
+and the same claim picker HOOK uses; successfully claims a stock franchise;
+then, once PLAY itself closes (phase advances to REVEAL), a *third* late
+joiner's claim attempt is correctly rejected (`"claim a franchise during
+HOOK or PLAY (session is in REVEAL)"`) — claiming is open longer, not
+open forever. Privacy check: the late-joiner's claim-picker view was
+scanned for leakage and contains no other seat's `deadCap`/`bidAmount`/
+`bidOutcome` data — `availableClaimsFor` only ever surfaces unclaimed
+carried franchises' own starting rosters, identical shape to HOOK's picker.
+No claim was ever observed landing after PLAY's close in any probe.
+
+### N1 (MINOR) — **FIXED**
+
+Confirmed via source diff (`ratingOf`'s `TARGET_BY_ID` fallback removed)
+and live: fetched a won target's `signedPlayer` mid-REVEAL — `rating` is
+now `0` (the honest "no rating concept applies"), not the old dormant `36`
+(the target's `trueValue`) that could have leaked into a future summary
+screen.
+
+### Prior "held up" ground — reconfirmed, not just assumed
+
+Reran the full round-3 exploit battery (`attack3.mjs` — reserve
+enforcement, deterministic tiebreak, cross-pool rescue forgery, full-wall
+rescue rejection, double-rescue rejection, seatId-spoofing, malformed
+payloads) against the repaired build: **25/25 still clean** — the
+`doRevealNext`/`resolveTarget` refactor did not disturb any previously-
+verified economics or exploit-resistance ground.
+
+### Overall verdict
+
+**ACCEPT.**
+
+All three prior findings (B1 BLOCKER, M1 MODERATE, N1 MINOR) are genuinely
+repaired and independently reconfirmed through unit tests, both e2e
+scripts, live API repros of the exact original scenarios, and a live-UI
+screenshot of the corrected ADAPT screen. The repair's own new surface
+(`onPhaseExit`, the confirm-gated Advance, the PLAY-phase claim path) was
+probed specifically, not just trusted, and one real gap surfaced — the
+un-warned "Jump to REVEAL while already in REVEAL" silent bulk-resolve.
+It is a genuine new issue, correctly scoped as MODERATE: no false data
+reaches any screen (confirmed byte-identical to a staged reveal), no team
+is left stuck, and it is recoverable via the same Restore mechanism that
+covers B1's own edge case. It does not warrant blocking acceptance; it is
+a debrief-drama loss on a narrow, findable misclick path, worth a small
+follow-up (extend the existing `confirm()` idiom to `btnReveal`, or disable
+it once already in REVEAL) whenever this module is next touched.
