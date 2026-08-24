@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  ADAPT_STIPEND,
   CAP,
   CREST_COUNT,
   FRANCHISE_NAMES,
@@ -76,15 +75,22 @@ test("draftDayModule declares a well-ordered phase subsequence covering the full
 
 /* -------------------------------------------------------------------- G1 -- */
 
-test("G1: market has 24 fictional players across 4 positions, six $10M-step tiers each, distinct ratings", () => {
-  assert.equal(MARKET.length, 24);
+test("G1: market has 36 fictional players across 4 positions — four $10M-floor cards plus one each of $20-60M, distinct ratings", () => {
+  assert.equal(MARKET.length, 36);
   const ratings = new Set(MARKET.map((p) => p.rating));
-  assert.equal(ratings.size, 24, "ratings should be pairwise distinct so shock targeting never needs a tie-break in practice");
+  assert.equal(ratings.size, 36, "ratings should be pairwise distinct so shock targeting never needs a tie-break in practice");
   for (const tag of POSITION_TAGS) {
-    const tiers = MARKET.filter((p) => p.position === tag)
-      .map((p) => p.price)
-      .sort((a, b) => a - b);
-    assert.deepEqual(tiers, [10, 20, 30, 40, 50, 60], `${tag} should have all six $10M-step tiers, no gaps`);
+    const byPrice = new Map<number, number>();
+    for (const p of MARKET.filter((p) => p.position === tag)) {
+      byPrice.set(p.price, (byPrice.get(p.price) ?? 0) + 1);
+    }
+    // ROUND-2 REPAIR: four cards at the $10M floor per position (not one) — see
+    // the MARKET doc comment for why this specific count closes the
+    // >=2-substitutes property once the ADAPT stipend was removed.
+    assert.equal(byPrice.get(10), 4, `${tag} should have four $10M-floor cards`);
+    for (const tier of [20, 30, 40, 50, 60]) {
+      assert.equal(byPrice.get(tier), 1, `${tag} should have exactly one $${tier}M card`);
+    }
   }
 });
 
@@ -417,7 +423,8 @@ test("G3: the shock permanently poaches the removed player — adaptFill rejects
   const hitSlot = team.shockSlot!;
   const removedId = team.slots[hitSlot].removedPlayerId!;
 
-  // Budget is generous (freed price + stipend), so the ONLY reason this must fail is the poaching rule.
+  // The removed player's own price is always <= the repair budget (it's the floor of that
+  // budget's formula), so the ONLY reason this must fail is the poaching rule, not price.
   const attempt = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: removedId }, ctx("ADAPT", "seat-1"));
   assert.equal(attempt.ok, false);
   if (!attempt.ok) assert.match(attempt.reason, /rival franchise/);
@@ -444,47 +451,61 @@ test("G3: no-identical-restore — a repaired roster can never return to byte-id
   assert.notEqual(repairedTeam.slots[hitSlot].playerId, preShockTeam.slots[hitSlot].playerId, "the slot's occupant must differ from before the shock");
 });
 
-test("G3: adaptBudgetFor is the freed price plus the fixed stipend, and candidatesForAdapt respects it", () => {
+test("ROUND-2: adaptBudgetFor is the freed price plus remaining cap room — no stipend, never over the cap", () => {
   const state = buildAndLock(empty(), "seat-1", [
     { slot: "SCORER", playerId: "sc-30" },
     { slot: "PLAYMAKER", playerId: "pm-10" }, // weakest — 56
     { slot: "DEFENDER", playerId: "df-20" },
     { slot: "REBOUNDER", playerId: "rb-20" },
     { slot: "WILDCARD", playerId: "sc-10" },
-  ]); // spent = 30+10+20+20+10 = 90
+  ]); // spent = 30+10+20+20+10 = 90, $10M of leftover room under the cap
   const shocked = draftDayModule.reduce(state, { type: "teacher:shock" }, ctx("CONSEQUENCE", "teacher"));
   assert.equal(shocked.ok, true);
   if (!shocked.ok) throw new Error("unreachable");
   const team = shocked.state.teams["seat-1"]!;
   assert.equal(team.shockSlot, "PLAYMAKER");
-  assert.equal(adaptBudgetFor(team, "PLAYMAKER"), 10 + ADAPT_STIPEND); // removed pm-10 cost $10M
+  // removed pm-10 cost $10M; the team had $10M of leftover room -> budget = 10+10 = 20,
+  // never the old stipend-inflated 10+20=30.
+  assert.equal(adaptBudgetFor(team, "PLAYMAKER"), 20);
 
   const wrongPos = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "df-10" }, ctx("ADAPT", "seat-1"));
   assert.equal(wrongPos.ok, false);
 
-  // pm-30 (70) costs $30M <= budget($30M) — affordable and genuinely different from the removed pm-10.
-  const result = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-30" }, ctx("ADAPT", "seat-1"));
+  // pm-30 (70) costs $30M > the $20M budget — must now be rejected (would have been
+  // accepted, and would have overflowed the cap, under the old stipend formula).
+  const tooExpensive = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-30" }, ctx("ADAPT", "seat-1"));
+  assert.equal(tooExpensive.ok, false);
+
+  // pm-20 (72) costs exactly $20M — affordable and genuinely different from the removed pm-10.
+  const result = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-20" }, ctx("ADAPT", "seat-1"));
   assert.equal(result.ok, true);
   if (!result.ok) throw new Error("unreachable");
-  assert.equal(result.state.teams["seat-1"]!.slots.PLAYMAKER.playerId, "pm-30");
+  assert.equal(result.state.teams["seat-1"]!.slots.PLAYMAKER.playerId, "pm-20");
+  assert.equal(spentOf(result.state.teams["seat-1"]!), 100, "repairing at exactly the budget must land exactly at the cap, never over");
 });
 
-test("adaptFill rejects a candidate the team's local repair budget can't cover", () => {
+test("ROUND-2: at exactly $100M locked (zero leftover), the repair budget is exactly the lost salary — the tightest legal case", () => {
   const state = buildAndLock(empty(), "seat-1", [
     { slot: "SCORER", playerId: "sc-30" },
     { slot: "PLAYMAKER", playerId: "pm-10" }, // weakest — 56
     { slot: "DEFENDER", playerId: "df-30" },
     { slot: "REBOUNDER", playerId: "rb-20" },
     { slot: "WILDCARD", playerId: "sc-10" },
-  ]); // spent = 30+10+30+20+10 = 100
+  ]); // spent = 30+10+30+20+10 = 100 — exactly at cap, zero leftover
   const shocked = draftDayModule.reduce(state, { type: "teacher:shock" }, ctx("CONSEQUENCE", "teacher"));
   assert.equal(shocked.ok, true);
   if (!shocked.ok) throw new Error("unreachable");
-  // budget = removed price (10) + stipend (20) = 30
-  const tooExpensive = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-40" }, ctx("ADAPT", "seat-1")); // $40 > $30
+  const team = shocked.state.teams["seat-1"]!;
+  assert.equal(team.shockSlot, "PLAYMAKER");
+  // budget = removed price (10) + remaining room (0) = 10 — exactly what was lost, not a cent more.
+  assert.equal(adaptBudgetFor(team, "PLAYMAKER"), 10);
+  const tooExpensive = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-20" }, ctx("ADAPT", "seat-1")); // $20 > $10
   assert.equal(tooExpensive.ok, false);
-  const affordable = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-30" }, ctx("ADAPT", "seat-1")); // $30 <= $30
+  // A DIFFERENT $10M-tier PLAYMAKER (the market-depth repair — pm-10 itself is poached and excluded).
+  const affordable = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-10b" }, ctx("ADAPT", "seat-1"));
   assert.equal(affordable.ok, true);
+  if (!affordable.ok) throw new Error("unreachable");
+  assert.equal(spentOf(affordable.state.teams["seat-1"]!), 100, "must land exactly at the cap, never over");
 });
 
 test("adaptFill rejects when the team wasn't hit by the shock", () => {
@@ -497,6 +518,101 @@ test("adaptFill rejects outside ADAPT phase", () => {
   const state = buildAndLock(empty(), "seat-1", CHEAP_FULL_ROSTER);
   const result = draftDayModule.reduce(state, { type: "adaptFill", playerId: "sc-20" }, ctx("PLAY", "seat-1"));
   assert.equal(result.ok, false);
+});
+
+/* ------------------------------------------------------- ROUND-2 PROPERTY -- */
+
+/**
+ * Every valid locked build that spends EXACTLY $100M — the adversarial
+ * worst case for cap safety (zero leftover room) and the exact scope the
+ * round-2 verifier brute-forced (688 builds against the pre-depth-repair
+ * market). Enumerated fresh here (not hardcoded) so it stays correct as
+ * the market is tuned.
+ */
+function enumerateAtCapBuilds(): { scId: string; pmId: string; dfId: string; rbId: string; wcId: string }[] {
+  const byPosition: Record<string, Player[]> = {};
+  for (const tag of POSITION_TAGS) byPosition[tag] = MARKET.filter((p) => p.position === tag);
+
+  const builds: { scId: string; pmId: string; dfId: string; rbId: string; wcId: string }[] = [];
+  for (const sc of byPosition["SCORER"]!) {
+    for (const pm of byPosition["PLAYMAKER"]!) {
+      for (const df of byPosition["DEFENDER"]!) {
+        for (const rb of byPosition["REBOUNDER"]!) {
+          const baseCost = sc.price + pm.price + df.price + rb.price;
+          if (baseCost > CAP) continue;
+          const usedIds = new Set([sc.id, pm.id, df.id, rb.id]);
+          for (const wc of MARKET) {
+            if (usedIds.has(wc.id)) continue;
+            if (baseCost + wc.price !== CAP) continue;
+            builds.push({ scId: sc.id, pmId: pm.id, dfId: df.id, rbId: rb.id, wcId: wc.id });
+          }
+        }
+      }
+    }
+  }
+  return builds;
+}
+
+test("ROUND-2 PROPERTY (BLOCKER 1): no reachable post-repair state ever exceeds the $100M cap, across every exactly-$100M locked build and every legal repair choice", () => {
+  const builds = enumerateAtCapBuilds();
+  assert.ok(builds.length > 100, `expected many exactly-$100M builds to exist, got ${builds.length}`);
+
+  let checkedRepairs = 0;
+  for (const b of builds) {
+    const state = buildAndLock(empty(), "seat-1", [
+      { slot: "SCORER", playerId: b.scId },
+      { slot: "PLAYMAKER", playerId: b.pmId },
+      { slot: "DEFENDER", playerId: b.dfId },
+      { slot: "REBOUNDER", playerId: b.rbId },
+      { slot: "WILDCARD", playerId: b.wcId },
+    ]);
+    const shocked = draftDayModule.reduce(state, { type: "teacher:shock" }, ctx("CONSEQUENCE", "teacher"));
+    assert.equal(shocked.ok, true);
+    if (!shocked.ok) throw new Error("unreachable");
+    const team = shocked.state.teams["seat-1"]!;
+    const slot = team.shockSlot!;
+
+    // Every candidate the reducer itself is willing to offer — not a re-implementation of
+    // the math, the actual `candidatesForAdapt` the client renders — must, if accepted by
+    // the actual reducer, land at or under the cap.
+    for (const candidate of candidatesForAdapt(team, slot)) {
+      const result = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: candidate.id }, ctx("ADAPT", "seat-1"));
+      assert.equal(result.ok, true, `candidate ${candidate.id} came from candidatesForAdapt but the reducer rejected it for build ${JSON.stringify(b)}`);
+      if (!result.ok) continue;
+      const finalSpent = spentOf(result.state.teams["seat-1"]!);
+      assert.ok(
+        finalSpent <= CAP,
+        `build ${JSON.stringify(b)} (slot ${slot}) repaired with ${candidate.id} landed at $${finalSpent}M — over the $${CAP}M cap`,
+      );
+      checkedRepairs += 1;
+    }
+  }
+  assert.ok(checkedRepairs > 100, `expected to have exercised many real repairs, got ${checkedRepairs}`);
+});
+
+test("ROUND-2 PROPERTY (BLOCKER 1): every poached card leaves >=2 same-position affordable substitutes, for every exactly-$100M locked build", () => {
+  const builds = enumerateAtCapBuilds();
+  assert.ok(builds.length > 100, `expected many exactly-$100M builds to exist, got ${builds.length}`);
+
+  for (const b of builds) {
+    const state = buildAndLock(empty(), "seat-1", [
+      { slot: "SCORER", playerId: b.scId },
+      { slot: "PLAYMAKER", playerId: b.pmId },
+      { slot: "DEFENDER", playerId: b.dfId },
+      { slot: "REBOUNDER", playerId: b.rbId },
+      { slot: "WILDCARD", playerId: b.wcId },
+    ]);
+    const shocked = draftDayModule.reduce(state, { type: "teacher:shock" }, ctx("CONSEQUENCE", "teacher"));
+    assert.equal(shocked.ok, true);
+    if (!shocked.ok) throw new Error("unreachable");
+    const team = shocked.state.teams["seat-1"]!;
+    const slot = team.shockSlot!;
+    const candidates = candidatesForAdapt(team, slot);
+    assert.ok(
+      candidates.length >= 2,
+      `build ${JSON.stringify(b)}, poached slot ${slot} (removed ${team.slots[slot].removedPlayerId}) left only ${candidates.length} substitute(s) — need >=2`,
+    );
+  }
 });
 
 /* -------------------------------------------------------------------- G4 -- */
@@ -627,9 +743,9 @@ test("synthesis cards cite real session numbers once rosters are locked, and TRA
   assert.ok(!view.cards.some((c) => c.id === "constrained-choice"));
 });
 
-test("G7a: RISK BUFFER card cites real leftover-vs-spent-to-cap repair outcomes after a shock", () => {
+test("G7a / ROUND-2 BLOCKER 2b: RISK BUFFER cites each group's real, mechanically-different repair budget", () => {
   let state = empty();
-  // Team A: spends to the exact cap before the shock (no leftover).
+  // Team A: spends to the exact cap before the shock (zero leftover).
   state = buildAndLock(state, "seat-1", [
     { slot: "SCORER", playerId: "sc-30" },
     { slot: "PLAYMAKER", playerId: "pm-10" }, // weakest, 56
@@ -637,7 +753,7 @@ test("G7a: RISK BUFFER card cites real leftover-vs-spent-to-cap repair outcomes 
     { slot: "REBOUNDER", playerId: "rb-20" },
     { slot: "WILDCARD", playerId: "sc-10" },
   ]); // spent 100
-  // Team B: leaves money on the table before the shock.
+  // Team B: leaves $20M on the table before the shock.
   state = buildAndLock(state, "seat-2", [
     { slot: "SCORER", playerId: "sc-20" },
     { slot: "PLAYMAKER", playerId: "pm-10" }, // weakest, 56
@@ -649,25 +765,72 @@ test("G7a: RISK BUFFER card cites real leftover-vs-spent-to-cap repair outcomes 
   const shocked = draftDayModule.reduce(state, { type: "teacher:shock" }, ctx("CONSEQUENCE", "teacher"));
   assert.equal(shocked.ok, true);
   if (!shocked.ok) throw new Error("unreachable");
-  // Both teams' weakest slot is PLAYMAKER (pm-10) — repair both with something better-rated (pm-20, rating 72 > 56).
+
+  const teamA = shocked.state.teams["seat-1"]!;
+  const teamB = shocked.state.teams["seat-2"]!;
+  assert.equal(teamA.shockSlot, "PLAYMAKER");
+  assert.equal(teamB.shockSlot, "PLAYMAKER");
+  const budgetA = adaptBudgetFor(teamA, "PLAYMAKER");
+  const budgetB = adaptBudgetFor(teamB, "PLAYMAKER");
+  assert.equal(budgetA, 10, "at-cap team's budget is exactly the lost salary back");
+  assert.equal(budgetB, 30, "leftover team's budget is the lost salary plus its unspent room");
+  assert.ok(budgetB > budgetA, "the team with slack must get a STRICTLY larger repair budget for the identical loss — the core ROUND-2 property");
+
+  // Team A can only afford another $10M-tier PLAYMAKER; team B can reach the $30M tier — a real, structural difference, not luck.
   let s = shocked.state;
-  const repairA = draftDayModule.reduce(s, { type: "adaptFill", playerId: "pm-20" }, ctx("ADAPT", "seat-1"));
-  assert.equal(repairA.ok, true);
-  if (!repairA.ok) throw new Error("unreachable");
-  s = repairA.state;
-  const repairB = draftDayModule.reduce(s, { type: "adaptFill", playerId: "pm-20" }, ctx("ADAPT", "seat-2"));
-  assert.equal(repairB.ok, true);
+  const repairA = draftDayModule.reduce(s, { type: "adaptFill", playerId: "pm-30" }, ctx("ADAPT", "seat-1"));
+  assert.equal(repairA.ok, false, "team A must not be able to afford the $30M tier — that's the whole point");
+  const repairA2 = draftDayModule.reduce(s, { type: "adaptFill", playerId: "pm-10b" }, ctx("ADAPT", "seat-1"));
+  assert.equal(repairA2.ok, true);
+  if (!repairA2.ok) throw new Error("unreachable");
+  s = repairA2.state;
+  const repairB = draftDayModule.reduce(s, { type: "adaptFill", playerId: "pm-30" }, ctx("ADAPT", "seat-2"));
+  assert.equal(repairB.ok, true, "team B, with slack, CAN afford the $30M tier team A could not");
   if (!repairB.ok) throw new Error("unreachable");
   s = repairB.state;
+
+  assert.equal(spentOf(s.teams["seat-1"]!), 100, "team A must land exactly at the cap, never over");
+  assert.equal(spentOf(s.teams["seat-2"]!), 100, "team B must land exactly at the cap, never over");
 
   const view = draftDayModule.boardView(s, "SYNTHESIS") as { cards: { id: string; body: string }[] };
   const riskBuffer = view.cards.find((c) => c.id === "risk-buffer");
   assert.ok(riskBuffer, "risk-buffer card should appear once the shock has been applied");
-  assert.match(riskBuffer!.body, /1 team.*money left/is);
-  assert.match(riskBuffer!.body, /1 team.*spent every last dollar/is);
+  assert.match(riskBuffer!.body, /1 team.*spent every last dollar.*\$10M avg/is);
+  assert.match(riskBuffer!.body, /1 team.*room in the budget.*\$30M avg/is);
 
   const constrained = view.cards.find((c) => c.id === "constrained-choice");
   assert.ok(constrained, "constrained-choice card should appear once the shock has been applied");
   assert.match(constrained!.body, /rival franchise/);
   assert.match(constrained!.body, /2 of 2/);
+});
+
+test("ROUND-2 BLOCKER 2a: SCARCITY's spentToCapCount uses locked-at-time spend, not live post-repair spend", () => {
+  const state = buildAndLock(empty(), "seat-1", [
+    { slot: "SCORER", playerId: "sc-30" },
+    { slot: "PLAYMAKER", playerId: "pm-10" }, // weakest — 56
+    { slot: "DEFENDER", playerId: "df-30" },
+    { slot: "REBOUNDER", playerId: "rb-20" },
+    { slot: "WILDCARD", playerId: "sc-10" },
+  ]); // spent exactly $100M at lock — a genuine "spent every last dollar" achievement
+  const before = draftDayModule.aggregate(state, "REVEAL") as { spentToCapCount: number };
+  assert.equal(before.spentToCapCount, 1);
+
+  const shocked = draftDayModule.reduce(state, { type: "teacher:shock" }, ctx("CONSEQUENCE", "teacher"));
+  assert.equal(shocked.ok, true);
+  if (!shocked.ok) throw new Error("unreachable");
+  // Repair with the ONLY thing the $10M budget allows — spend stays at $100M (this alone
+  // wouldn't have distinguished the old live-spend bug, since it never drifts off $100M).
+  // The bug the verifier actually found was during the window where the slot sits empty:
+  const midRepair = draftDayModule.aggregate(shocked.state, "CONSEQUENCE") as { spentToCapCount: number };
+  assert.equal(
+    midRepair.spentToCapCount,
+    1,
+    "live spend is $90M right after the shock (slot empty) — spentToCapCount must still read the frozen locked-at-time $100M, not this live dip",
+  );
+
+  const repaired = draftDayModule.reduce(shocked.state, { type: "adaptFill", playerId: "pm-10b" }, ctx("ADAPT", "seat-1"));
+  assert.equal(repaired.ok, true);
+  if (!repaired.ok) throw new Error("unreachable");
+  const after = draftDayModule.aggregate(repaired.state, "SYNTHESIS") as { spentToCapCount: number };
+  assert.equal(after.spentToCapCount, 1, "still counted after repair — the lock-time achievement never gets un-earned");
 });

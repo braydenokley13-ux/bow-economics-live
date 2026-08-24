@@ -288,7 +288,7 @@ function renderDraftDay(s: SessionInfo, view: Record<string, unknown>): void {
       body.innerHTML = `
         <div class="panel" style="padding:16px;">
           <div class="eyebrow" style="font-size:12px;">Repair your ${escapeHtml(openSlot)} slot</div>
-          <p style="margin:6px 0 0; font-size:12px; color:var(--ink-muted);">That player signed elsewhere for good. Here's a short-notice repair budget to find someone new.</p>
+          <p style="margin:6px 0 0; font-size:12px; color:var(--ink-muted);">That player signed elsewhere for good. Your repair budget is their salary back, plus any room you already had left under the $100M cap.</p>
           <div class="numeric" style="color:var(--accent-gold); margin:8px 0 14px; font-size:18px;">$${view["budget"]}M repair budget</div>
           <div class="market-grid" id="adaptCandidates"></div>
         </div>`;

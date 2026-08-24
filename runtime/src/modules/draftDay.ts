@@ -2,22 +2,25 @@
  * Module 1, Lesson 1 — "Draft Day: Nobody Gets Everything."
  *
  * Built against docs/gauntlet/module-1/PLAYABILITY_SPEC.md's L1 section,
- * D11's build charter riders, and the repair charter that followed the
- * first fresh-context verification round (docs/gauntlet/module-1/
- * VERIFY_GAMEPLAY.md, VERIFY_ECONOMICS.md, VERIFY_RUNTIME.md) — see the
- * per-section notes below (G1-G7) for what each repair fixed and why.
+ * D11's build charter riders, and two repair charters that followed two
+ * fresh-context verification rounds (docs/gauntlet/module-1/
+ * VERIFY_GAMEPLAY.md, VERIFY_ECONOMICS.md, VERIFY_RUNTIME.md, then
+ * VERIFY_ROUND2.md) — see the per-section notes below (G1-G7, and
+ * "ROUND-2 REPAIR") for what each repair fixed and why.
  *
  * The one object that carries the lesson: the Roster Wall. Five slots —
  * SCORER / PLAYMAKER / DEFENDER / REBOUNDER / WILDCARD — filled from a
- * 24-player fictional market, freely reversible (place/remove) right up
+ * 36-player fictional market, freely reversible (place/remove) right up
  * until each pair locks. A live cap meter and an ambient "priced yourself
  * out" panel react to every placement, not just at the end. A
  * teacher-triggered SHOCK in CONSEQUENCE permanently poaches each roster's
  * own actual weakest player (lowest rating, never random) to a rival
- * franchise, and ADAPT lets the team repair with a genuine, neutral choice
- * among real substitutes — never the identical player back. SYNTHESIS
- * renders concept cards built from this session's own aggregate numbers —
- * no canned claims, only earned concepts.
+ * franchise, and ADAPT lets the team repair — within a repair budget that
+ * is exactly their lost salary plus whatever cap room they already had,
+ * never more than the $100M cap allows in total — with a genuine, neutral
+ * choice among real substitutes, never the identical player back.
+ * SYNTHESIS renders concept cards built from this session's own aggregate
+ * numbers — no canned claims, only earned concepts.
  */
 import type { LessonModule, ReduceContext, ReduceResult, SeatId } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
@@ -70,21 +73,27 @@ export type Player = {
  */
 /**
  * ROUND-2 REPAIR (VERIFY_ROUND2.md BLOCKER 1): each position now carries
- * three cards at the $10M floor instead of one — "bench depth" at the
+ * FOUR cards at the $10M floor instead of one — "bench depth" at the
  * cheapest tier. This is the market-side half of closing the cap-overflow
  * bug: once `adaptBudgetFor` stopped granting a flat stipend and started
  * granting only the team's own real remaining cap room (see below), an
- * at-cap team whose weakest card was the *sole* $10M option at its
- * position would have had zero legal substitutes to repair with — a real
- * dead end, not a choice. Three cards at $10M guarantees that whichever
- * one gets poached, at least two more sit in the market at or under that
- * same price, for every position, unconditionally (verified by a market-
- * level property test, not just spot-checked builds).
+ * at-cap team whose weakest card was the *sole* (or one-of-two) $10M
+ * option at its position could have had fewer than 2 legal substitutes to
+ * repair with. The binding worst case is a wall that already spent its
+ * one WILDCARD slot on a second card of the same position as the one that
+ * gets poached (the only way a wall can ever hold two same-position
+ * cards) — that uses up 2 of the position's $10M cards, so the floor tier
+ * needs at least 4 total for 2 to always remain unused-and-unpoached
+ * afterward. Four guarantees it unconditionally, for every position,
+ * verified by a market-level property test (not just spot-checked
+ * builds) — see "ROUND-2: >=2 same-position substitutes" in
+ * draftDay.test.ts.
  */
 export const MARKET: readonly Player[] = [
   { id: "sc-10", name: "Jamal Wu", position: "SCORER", price: 10, rating: 58 },
   { id: "sc-10b", name: "Eli Foster", position: "SCORER", price: 10, rating: 57 },
   { id: "sc-10c", name: "JJ Prescott", position: "SCORER", price: 10, rating: 59 },
+  { id: "sc-10d", name: "Tobias Kwan", position: "SCORER", price: 10, rating: 61 },
   { id: "sc-20", name: "Cole Bennett", position: "SCORER", price: 20, rating: 66 },
   { id: "sc-30", name: "Nate Rivers", position: "SCORER", price: 30, rating: 74 },
   { id: "sc-40", name: "Deion Marks", position: "SCORER", price: 40, rating: 83 },
@@ -94,6 +103,7 @@ export const MARKET: readonly Player[] = [
   { id: "pm-10", name: "Ravi Patel", position: "PLAYMAKER", price: 10, rating: 56 },
   { id: "pm-10b", name: "Kofi Mensah", position: "PLAYMAKER", price: 10, rating: 53 },
   { id: "pm-10c", name: "Diego Salas", position: "PLAYMAKER", price: 10, rating: 55 },
+  { id: "pm-10d", name: "Nasir Whitfield", position: "PLAYMAKER", price: 10, rating: 63 },
   { id: "pm-20", name: "Andre Lopez", position: "PLAYMAKER", price: 20, rating: 72 },
   { id: "pm-30", name: "Mikey Cross", position: "PLAYMAKER", price: 30, rating: 70 },
   { id: "pm-40", name: "Theo James", position: "PLAYMAKER", price: 40, rating: 81 },
@@ -103,6 +113,7 @@ export const MARKET: readonly Player[] = [
   { id: "df-10", name: "Sam Okafor", position: "DEFENDER", price: 10, rating: 60 },
   { id: "df-10b", name: "Wyatt Chen", position: "DEFENDER", price: 10, rating: 51 },
   { id: "df-10c", name: "Malik Osei", position: "DEFENDER", price: 10, rating: 54 },
+  { id: "df-10d", name: "Julian Rocha", position: "DEFENDER", price: 10, rating: 64 },
   { id: "df-20", name: "Ty Brooks", position: "DEFENDER", price: 20, rating: 68 },
   { id: "df-30", name: "Owen Diaz", position: "DEFENDER", price: 30, rating: 78 },
   { id: "df-40", name: "Devon Shaw", position: "DEFENDER", price: 40, rating: 84 },
@@ -112,6 +123,7 @@ export const MARKET: readonly Player[] = [
   { id: "rb-10", name: "Dario Silva", position: "REBOUNDER", price: 10, rating: 62 },
   { id: "rb-10b", name: "Finn Delgado", position: "REBOUNDER", price: 10, rating: 50 },
   { id: "rb-10c", name: "Rocco Ibarra", position: "REBOUNDER", price: 10, rating: 52 },
+  { id: "rb-10d", name: "Damon Petrov", position: "REBOUNDER", price: 10, rating: 67 },
   { id: "rb-20", name: "Miles Chu", position: "REBOUNDER", price: 20, rating: 65 },
   { id: "rb-30", name: "Leo Grant", position: "REBOUNDER", price: 30, rating: 76 },
   { id: "rb-40", name: "Hank Volkov", position: "REBOUNDER", price: 40, rating: 87 },
@@ -124,7 +136,7 @@ const MARKET_BY_ID: ReadonlyMap<string, Player> = new Map(MARKET.map((p) => [p.i
 export const HOOK_COPY =
   "You're the GM of a brand-new team. $100 million. Five roster slots. The market has stars, starters, and bench players at every position — but you cannot afford everyone. Build once. Make it count.";
 export const SHOCK_COPY =
-  "Every locked roster just took a hit — a rival franchise poached each team's actual weakest player, not just the cheapest one. Look at your own wall: that slot is now empty, that player is never coming back, and the salary is back in your pocket (plus a short-notice roster exception to help you replace them).";
+  "Every locked roster just took a hit — a rival franchise poached each team's actual weakest player, not just the cheapest one. Look at your own wall: that slot is now empty, that player is never coming back, and their salary is back in your pocket — plus whatever room you already had left under the $100M cap.";
 export const BEYOND_SPORTS_LINE =
   "Fixed budgets force tradeoffs everywhere, not just here: an allowance, a family's grocery bill, a school trip fund. Whenever the money is capped, choosing one thing always means giving up another.";
 export const EXIT_PROMPT = "What did your team give up, and would you do it again?";
@@ -135,15 +147,20 @@ export const EXIT_PROMPT = "What did your team give up, and would you do it agai
  * locked team never overspends the cap, the refunded amount was always
  * >= the removed player's price, meaning the exact same player could
  * always be re-signed — "the shock" could never actually leave a team
- * worse off, and for teams that had left money unspent, ADAPT was a free,
- * uncontested upgrade. This stipend plus permanent poaching (see
- * `doShock`/`unavailablePlayerIds`) fixes both: the removed player can
- * never come back (poached, not benched), and every team gets a small
- * fixed "short-notice roster exception" on top of the freed salary so a
- * genuine, differently-priced substitute is available even to a team that
- * had spent to the exact cap.
+ * worse off. Permanent poaching (see `doShock`/`unavailablePlayerIds`)
+ * fixes that half: the removed player can never come back.
+ *
+ * ROUND-2 REPAIR (VERIFY_ROUND2.md BLOCKER 1 — supersedes the round-1
+ * fix's other half): round 1 also granted a flat $20M "stipend" on top of
+ * the freed salary so a spent-to-cap team would still have a genuine
+ * choice to repair with. The verifier caught what that quietly broke:
+ * `doAdaptFill` checked the stipend-inflated budget but never re-checked
+ * the resulting total against `CAP`, so 65% of full-spend builds could
+ * repair to *more* than $100M total roster spend — a silent crack in the
+ * one invariant ("$100 million... you cannot afford everyone") the entire
+ * lesson is built on, enforced everywhere else with a hard rejection.
+ * There is no stipend anymore. See `adaptBudgetFor` below.
  */
-export const ADAPT_STIPEND = 20;
 
 /* --------------------------------------------------------------- state -- */
 
@@ -161,6 +178,17 @@ export type TeamState = {
   lockedAt: number | null;
   /** Frozen at the moment of lock: ids priced out of reach at that instant, for the COUNTERFACTUAL debrief. */
   foregoneAtLock: readonly string[] | null;
+  /**
+   * ROUND-2 REPAIR (BLOCKER 2a): total spend at the instant of lock,
+   * frozen — never recomputed afterward. SCARCITY's "spent every last
+   * dollar to the cap" is a claim about build-phase discipline; reading it
+   * off *live* spend meant a team that heroically hit exactly $100M during
+   * PLAY silently stopped counting the moment ADAPT moved their spend off
+   * that number, even though the achievement being described already
+   * happened and was never undone by the *reducer* (spend only moves
+   * because a slot got poached, not because the team un-earned anything).
+   */
+  lockedSpend: number | null;
   shockSlot: SlotId | null;
   /**
    * G4: a stable index into FRANCHISE_NAMES/crest set, assigned once — the
@@ -190,6 +218,7 @@ const emptyTeam = (): TeamState => ({
   locked: false,
   lockedAt: null,
   foregoneAtLock: null,
+  lockedSpend: null,
   shockSlot: null,
   franchiseIndex: null,
 });
@@ -293,14 +322,25 @@ export const candidatesFor = (team: TeamState, slotId: SlotId): Player[] => {
   ).sort((a, b) => a.price - b.price);
 };
 
-/** G3: the local repair budget for a shocked slot — the freed salary plus a fixed short-notice roster exception. */
+/**
+ * G3 / ROUND-2 REPAIR: the repair budget for a shocked slot is the poached
+ * player's own salary plus whatever room the team still had under the cap
+ * — no stipend. `team.slots[slotId]` is already cleared by the time this
+ * runs (the shock empties it), so `spentOf(team)` already excludes it;
+ * `CAP - spentOf(team)` and "removedPrice + (CAP - lockedSpend)" are the
+ * same number (locked spend = current spend + removed price, by
+ * construction), so this is written the simpler way but is exactly the
+ * formula the ruling specifies. Because it's computed the identical way a
+ * normal placement's affordability check is (`CAP - spentOf(team)`),
+ * total roster spend can never exceed `CAP` after a repair — not by
+ * convention, but because the arithmetic is the same arithmetic.
+ */
 export const adaptBudgetFor = (team: TeamState, slotId: SlotId): number => {
-  const removedId = team.slots[slotId]?.removedPlayerId ?? null;
-  const removedPrice = removedId ? (MARKET_BY_ID.get(removedId)?.price ?? 0) : 0;
-  return removedPrice + ADAPT_STIPEND;
+  void slotId; // kept for API stability / narrative clarity at call sites — the formula no longer varies by slot identity
+  return CAP - spentOf(team);
 };
 
-/** G3 + G2: real substitutes for the shocked slot, excluding the poached player, priced against the local repair budget, neutrally ordered. */
+/** G3 + G2: real substitutes for the shocked slot, excluding the poached player, priced against the cap-safe repair budget, neutrally ordered. */
 export const candidatesForAdapt = (team: TeamState, slotId: SlotId): Player[] => {
   const budget = adaptBudgetFor(team, slotId);
   const unavailable = unavailablePlayerIds(team);
@@ -519,7 +559,7 @@ function doLock(state: DraftDayState, seatId: SeatId, now: number): ReduceResult
   const foregone = foregoneFor(team).map((p) => p.id);
   return {
     ok: true,
-    state: withTeam(state, seatId, { ...team, locked: true, lockedAt: now, foregoneAtLock: foregone }),
+    state: withTeam(state, seatId, { ...team, locked: true, lockedAt: now, foregoneAtLock: foregone, lockedSpend: spentOf(team) }),
   };
 }
 
@@ -542,7 +582,19 @@ function doAdaptFill(state: DraftDayState, action: AdaptFillAction, seatId: Seat
   if (unavailablePlayerIds(team).has(player.id)) return { ok: false, reason: `${player.name} is already on your wall` };
   const budget = adaptBudgetFor(team, slot);
   if (player.price > budget) {
-    return { ok: false, reason: `${player.name} costs $${player.price}M — your repair budget for this slot is $${budget}M` };
+    return { ok: false, reason: `${player.name} costs $${player.price}M — your repair budget for this slot is $${budget}M (that's your lost salary plus whatever room you already had, under the $100M cap)` };
+  }
+  // ROUND-2 REPAIR (BLOCKER 1): an explicit, independent re-check of the
+  // exact same rule doPlace enforces — belt-and-suspenders with the budget
+  // check above (today they are mathematically the same constraint, by
+  // construction), so a future change to adaptBudgetFor's formula can
+  // never silently reopen the cap-overflow bug without ALSO tripping this.
+  const projectedSpent = spentOf(team) + player.price;
+  if (projectedSpent > CAP) {
+    return {
+      ok: false,
+      reason: `signing ${player.name} for $${player.price}M would put this roster at $${projectedSpent}M — over the $${CAP}M cap`,
+    };
   }
 
   const nextSlots = cloneSlots(team.slots);
@@ -880,6 +932,10 @@ export type Aggregate = {
   substituteChoiceCount: number;
   positionPickCount: number;
   // G7(a): risk-buffer / margin-of-safety split, cited by the RISK BUFFER card.
+  leftoverHitCount: number;
+  capHitCount: number;
+  avgLeftoverBudget: number | null;
+  avgCapBudget: number | null;
   leftoverRepairedCount: number;
   leftoverUpgradeCount: number;
   capRepairedCount: number;
@@ -888,8 +944,15 @@ export type Aggregate = {
 
 function computeAggregate(state: DraftDayState): Aggregate {
   const locked = Object.values(state.teams).filter((t) => t.locked);
+  // ROUND-2 REPAIR (BLOCKER 2a): spentToCapCount reads locked-at-time spend
+  // (frozen at doLock) — a build-phase discipline claim, not a snapshot of
+  // whatever the live wall happens to show right now, which can differ
+  // post-shock/pre-repair or if a repair landed at a different price than
+  // what was lost. avgSpent stays live/current-state on purpose: it is a
+  // plain descriptive stat, not a claim about lock-time achievement, and by
+  // SYNTHESIS every repaired team's spend has already settled.
+  const spentToCapCount = locked.filter((t) => t.lockedSpend === CAP).length;
   const spentValues = locked.map((t) => spentOf(t));
-  const spentToCapCount = spentValues.filter((s) => s === CAP).length;
   const avgSpent = spentValues.length > 0 ? Math.round((spentValues.reduce((a, b) => a + b, 0) / spentValues.length) * 10) / 10 : 0;
 
   const starSigners = locked.filter((t) =>
@@ -929,9 +992,16 @@ function computeAggregate(state: DraftDayState): Aggregate {
     }
   }
 
-  // G7(a): risk-buffer split — did this team still have money left the
-  // instant before the shock hit, and did their repair come back as good
-  // or better than what they lost?
+  // G7(a) / ROUND-2 REPAIR (BLOCKER 2b): risk-buffer split, now grounded in
+  // each team's own actual, mechanically-guaranteed repair budget —
+  // `removedPrice + (CAP - lockedSpend)`, the exact formula `adaptBudgetFor`
+  // computes (via the algebraically identical `CAP - spentOf(team)`).
+  // lockedSpend is read directly from the frozen field set at doLock, so
+  // this no longer needs to reconstruct pre-shock spend from live slots.
+  let leftoverHitCount = 0;
+  let capHitCount = 0;
+  let leftoverBudgetSum = 0;
+  let capBudgetSum = 0;
   let leftoverRepairedCount = 0;
   let leftoverUpgradeCount = 0;
   let capRepairedCount = 0;
@@ -939,30 +1009,35 @@ function computeAggregate(state: DraftDayState): Aggregate {
   for (const t of hit) {
     const slot = t.shockSlot as SlotId;
     const removedId = t.slots[slot].removedPlayerId;
-    const newId = t.slots[slot].playerId;
-    if (!removedId || !newId) continue; // not yet repaired
+    if (!removedId) continue;
     const removedPrice = MARKET_BY_ID.get(removedId)?.price ?? 0;
+    const lockedSpend = t.lockedSpend ?? CAP;
+    const budget = removedPrice + (CAP - lockedSpend); // == adaptBudgetFor(t, slot) at the moment of the shock
+    const hasLeftover = lockedSpend < CAP;
+    if (hasLeftover) {
+      leftoverHitCount += 1;
+      leftoverBudgetSum += budget;
+    } else {
+      capHitCount += 1;
+      capBudgetSum += budget;
+    }
+
+    const newId = t.slots[slot].playerId;
+    if (!newId) continue; // not yet repaired — counted toward budget stats above, not the upgrade stats below
     const removedRating = MARKET_BY_ID.get(removedId)?.rating ?? 0;
     const newRating = MARKET_BY_ID.get(newId)?.rating ?? 0;
-    // Pre-shock spend: every OTHER slot's price (untouched by the shock or
-    // its repair) plus the removed player's own price. Deliberately NOT
-    // `spentOf(t) + removedPrice` — by the time this runs, the shocked
-    // slot may already be repaired, and spentOf(t) would then reflect the
-    // NEW occupant's price, double-counting against removedPrice.
-    const otherSlotsSpend = SLOT_IDS.filter((s) => s !== slot).reduce((sum, s) => {
-      const pid = t.slots[s].playerId;
-      return sum + (pid ? (MARKET_BY_ID.get(pid)?.price ?? 0) : 0);
-    }, 0);
-    const preShockSpent = otherSlotsSpend + removedPrice;
     const isUpgrade = newRating >= removedRating;
-    if (preShockSpent >= CAP) {
-      capRepairedCount += 1;
-      if (isUpgrade) capUpgradeCount += 1;
-    } else {
+    if (hasLeftover) {
       leftoverRepairedCount += 1;
       if (isUpgrade) leftoverUpgradeCount += 1;
+    } else {
+      capRepairedCount += 1;
+      if (isUpgrade) capUpgradeCount += 1;
     }
   }
+  const round1dp = (n: number): number => Math.round(n * 10) / 10;
+  const avgLeftoverBudget = leftoverHitCount > 0 ? round1dp(leftoverBudgetSum / leftoverHitCount) : null;
+  const avgCapBudget = capHitCount > 0 ? round1dp(capBudgetSum / capHitCount) : null;
 
   return {
     totalTeams: Object.keys(state.teams).length,
@@ -978,6 +1053,10 @@ function computeAggregate(state: DraftDayState): Aggregate {
     shockApplied: state.shockAppliedAt !== null,
     substituteChoiceCount,
     positionPickCount,
+    leftoverHitCount,
+    capHitCount,
+    avgLeftoverBudget,
+    avgCapBudget,
     leftoverRepairedCount,
     leftoverUpgradeCount,
     capRepairedCount,
@@ -1024,22 +1103,27 @@ function synthesisCards(agg: Aggregate): SynthesisCard[] {
     body: `Every roster slot had six real players at six different prices to choose from — picking one Scorer meant giving up the other five for that same spot. Across this class, ${agg.substituteChoiceCount} of ${agg.positionPickCount} position picks went to something other than the single priciest option for that slot. Every one of those was a real substitute chosen over another, not a coin flip.`,
   });
 
-  // G7(a): new card, grounded in this session's own leftover-vs-spent-to-cap
-  // repair outcomes — the single highest-value fix VERIFY_ECONOMICS.md named
-  // (previously a real, discoverable idea sitting unused in the data).
+  // G7(a) / ROUND-2 REPAIR (BLOCKER 2b): with the stipend gone, this claim
+  // is now mechanically guaranteed, not just empirically observed — a
+  // team's repair budget is exactly its lost salary back if it had spent
+  // every dollar, and strictly more than that if it hadn't (see
+  // `adaptBudgetFor`). The card now cites each group's real average
+  // budget instead of an upgrade-rate coincidence, so it states the actual
+  // structural fact rather than a claim the specific session's dice rolls
+  // happened to support.
   if (agg.shockApplied && agg.hitCount > 0) {
-    const leftoverLine =
-      agg.leftoverRepairedCount > 0
-        ? `${agg.leftoverRepairedCount} team${agg.leftoverRepairedCount === 1 ? "" : "s"} still had money left when the shock hit — ${agg.leftoverUpgradeCount} of ${agg.leftoverRepairedCount} repaired with someone rated as good or better than who they lost.`
-        : `No team in this class still had money left when the shock hit.`;
     const capLine =
-      agg.capRepairedCount > 0
-        ? `${agg.capRepairedCount} team${agg.capRepairedCount === 1 ? "" : "s"} had spent every last dollar before the shock — only ${agg.capUpgradeCount} of ${agg.capRepairedCount} could say the same.`
-        : `Every team in this class still had some room left before the shock hit.`;
+      agg.capHitCount > 0
+        ? `${agg.capHitCount} team${agg.capHitCount === 1 ? "" : "s"} had spent every last dollar before the shock — ${agg.capHitCount === 1 ? "its" : "their"} repair budget was exactly the salary ${agg.capHitCount === 1 ? "it" : "they"} lost back ($${agg.avgCapBudget}M avg), not a cent more.`
+        : `No team in this class had spent every dollar before the shock.`;
+    const leftoverLine =
+      agg.leftoverHitCount > 0
+        ? `${agg.leftoverHitCount} team${agg.leftoverHitCount === 1 ? "" : "s"} still had room in the budget — ${agg.leftoverHitCount === 1 ? "its" : "their"} repair budget was that same lost salary plus the unspent room ($${agg.avgLeftoverBudget}M avg), genuinely more to work with.`
+        : `No team in this class still had room in the budget when the shock hit.`;
     cards.push({
       id: "risk-buffer",
       title: "RISK BUFFER",
-      body: `${leftoverLine} ${capLine} Leaving room in a budget isn't wasted money — it's insurance against a setback you can't predict.`,
+      body: `${capLine} ${leftoverLine} Leaving room in a budget isn't wasted money — when a setback hits, that room becomes real extra repair budget, mechanically, every time.`,
     });
 
     // G7(c): rewritten to describe what the shock/repair mechanic actually
