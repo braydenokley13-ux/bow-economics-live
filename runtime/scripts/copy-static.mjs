@@ -1,0 +1,46 @@
+// Copies the non-TypeScript client assets (index.html per surface, the
+// shared theme stylesheet, and the visual team's SVG assets) into dist/
+// alongside the tsc-compiled JS. No bundler needed: the compiled JS is
+// already standard browser ES modules with explicit .js import extensions
+// (see tsconfig's NodeNext module setting).
+import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const root = path.join(here, "..");
+const surfaces = ["teach", "play", "board"];
+
+for (const surface of surfaces) {
+  const from = path.join(root, "src", "client", surface, "index.html");
+  const toDir = path.join(root, "dist", "client", surface);
+  mkdirSync(toDir, { recursive: true });
+  cpSync(from, path.join(toDir, "index.html"));
+}
+console.log(`copied ${surfaces.length} static index.html file(s) into dist/client/`);
+
+const sharedCssFrom = path.join(root, "src", "client", "shared", "theme.css");
+if (existsSync(sharedCssFrom)) {
+  const toDir = path.join(root, "dist", "client", "shared");
+  mkdirSync(toDir, { recursive: true });
+  cpSync(sharedCssFrom, path.join(toDir, "theme.css"));
+  console.log("copied shared/theme.css into dist/client/shared/");
+}
+
+// The visual identity SVGs live in the sibling design/ directory, owned by
+// a different agent — read-only here, never written back. Copied into
+// dist/client/assets/ at build time so the runtime's own static router
+// (which only ever serves dist/client/**) can hand them to the browser
+// with no separate asset server and no change to design/ itself.
+const designAssetsDir = path.join(root, "..", "design", "assets");
+if (existsSync(designAssetsDir)) {
+  const toDir = path.join(root, "dist", "client", "assets");
+  mkdirSync(toDir, { recursive: true });
+  const svgs = readdirSync(designAssetsDir).filter((f) => f.endsWith(".svg"));
+  for (const file of svgs) {
+    cpSync(path.join(designAssetsDir, file), path.join(toDir, file));
+  }
+  console.log(`copied ${svgs.length} design asset(s) into dist/client/assets/`);
+} else {
+  console.log("design/assets/ not found yet — skipping visual asset copy (structural styling only)");
+}

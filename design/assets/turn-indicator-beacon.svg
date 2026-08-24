@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="700" height="160" role="img" aria-label="Head-to-head draft turn indicator beacon, active side highlighted">
+  <defs>
+    <linearGradient id="activeSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2a2145"/>
+      <stop offset="100%" stop-color="#1b212c"/>
+    </linearGradient>
+    <linearGradient id="idleSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#131822"/>
+      <stop offset="100%" stop-color="#12161e"/>
+    </linearGradient>
+    <radialGradient id="beaconGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8b7cf0" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#8b7cf0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- idle side: Team B -->
+  <rect x="358" y="8" width="334" height="112" rx="14" fill="url(#idleSide)"/>
+  <rect x="358.5" y="8.5" width="333" height="111" rx="13.5" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+  <circle cx="398" cy="64" r="20" fill="#0a0d12" stroke="#3a4354" stroke-width="2"/>
+  <text x="430" y="56" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="16" fill="#6b7280" letter-spacing="1">TEAM B</text>
+  <text x="430" y="78" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="12" fill="#4a5162" letter-spacing="1">WAITING</text>
+
+  <!-- active side: Team A -->
+  <rect x="8" y="8" width="334" height="112" rx="14" fill="url(#activeSide)"/>
+  <rect x="8.5" y="8.5" width="333" height="111" rx="13.5" fill="none" stroke="#8b7cf0" stroke-width="2" stroke-opacity="0.8"/>
+  <circle cx="282" cy="64" r="20" fill="#0d1119" stroke="#f4b942" stroke-width="2"/>
+  <text x="60" y="56" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="18" fill="#f6f4ec" letter-spacing="1">TEAM A</text>
+  <text x="60" y="80" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="13" fill="#8b7cf0" letter-spacing="2">ON THE CLOCK</text>
+
+  <!-- center beacon -->
+  <circle cx="350" cy="64" r="46" fill="url(#beaconGlow)"/>
+  <g fill="none" stroke="#8b7cf0" stroke-width="3" stroke-dasharray="6 7" stroke-linecap="round">
+    <circle cx="350" cy="64" r="30"/>
+  </g>
+  <circle cx="350" cy="64" r="20" fill="#0d1119" stroke="#8b7cf0" stroke-width="2"/>
+  <polygon points="342,56 342,72 356,64" fill="#8b7cf0"/>
+
+  <!-- shared pool readout -->
+  <rect x="270" y="128" width="160" height="28" rx="14" fill="#0d1119"/>
+  <rect x="270.5" y="128.5" width="159" height="27" rx="13.5" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+  <text x="350" y="147" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="13" letter-spacing="1.5" fill="#b9bfcc">POOL: 7 LEFT</text>
+</svg>

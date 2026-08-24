@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOW Economics — Board</title>
+<link rel="stylesheet" href="/shared/theme.css" />
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  #backdrop {
+    position: fixed; inset: 0; background-size: cover; background-position: center;
+    background-image: url("/assets/board-arena-backdrop.svg");
+    transition: background-image 700ms var(--ease-decel), opacity 700ms var(--ease-decel);
+  }
+  #backdrop.peak { background-image: url("/assets/reveal-synthesis-backdrop.svg"); }
+  #stage { position: relative; z-index: 1; height: 100vh; width: 100vw; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 4vw; }
+  .label { font-family: var(--font-display); font-size: 2.4vw; color: var(--ink-secondary); margin-bottom: 1vh;
+    text-transform: uppercase; letter-spacing: .1em; }
+  .sub { font-size: 2vw; color: var(--ink-muted); margin-top: 2vh; }
+  .code { font-family: var(--font-number); font-size: 12vw; font-weight: 800; letter-spacing: .05em; color: var(--accent-gold); }
+  .banner { font-size: 2.4vw; color: var(--ink-primary); }
+  #hud { position: fixed; top: 14px; right: 18px; font-size: 12px; color: var(--ink-muted); z-index: 2; }
+
+  /* Bar chart sizing note: `.bars` deliberately keeps the default `align-items: stretch` (do not
+     set flex-end here) so every `.barwrap` gets a *definite* height equal to the container's
+     46vh — without that, `.stack`'s percentage height below has no definite containing block to
+     resolve against and silently collapses to zero in every browser. `.barwrap` then uses
+     `justify-content: flex-end` to bottom-pack its own (auto-height) label children around the
+     one child that actually carries a data-driven height, `.stack`. */
+  .bars { display: flex; gap: 1.6vw; height: 46vh; margin-top: 3vh; overflow-x: auto; max-width: 92vw; padding-bottom: 6px; }
+  .barwrap { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: .8vh; width: 6.4vw; min-width: 62px; flex-shrink: 0; }
+  .barcount { font-family: var(--font-number); font-size: 1.6vw; font-weight: 800; color: var(--accent-gold); }
+  .stack { width: 100%; display: flex; flex-direction: column-reverse; border-radius: 8px 8px 0 0; overflow: hidden; align-items: stretch; }
+  .seg { width: 100%; flex-shrink: 0; transition: height 400ms var(--ease-decel); }
+  .barlabel { font-size: 1vw; color: var(--ink-muted); text-transform: capitalize; }
+
+  .kpirow { display: flex; gap: 2vw; margin-top: 3vh; }
+  .kpi { background: rgba(19,24,34,0.75); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.4vh 1.6vw; }
+  .kpi .num { font-family: var(--font-number); font-weight: 800; font-size: 3vw; color: var(--accent-gold); }
+  .kpi .lbl { font-size: 1vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  .scatter-wrap { width: 82vw; max-width: 1000px; margin-top: 2vh; }
+  .scatter-svg { width: 100%; height: auto; display: block; }
+  .scatter-legend { display: flex; justify-content: center; align-items: center; margin-top: 1.4vh; font-size: 1vw; color: var(--ink-muted); }
+  .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .legend-dot.h1 { background: var(--series-1); }
+  .legend-dot.h2 { background: var(--series-2); }
+
+  .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(22vw, 1fr)); gap: 1.6vw; max-width: 88vw; margin-top: 3vh; }
+  .synthcard { background: rgba(19,24,34,0.85); border: 1px solid rgba(244,185,66,0.35); border-radius: 14px; padding: 1.6vw; text-align: left; }
+  .synthcard h3 { margin: 0 0 1vh; font-family: var(--font-display); letter-spacing: .06em; font-size: 1.4vw; color: var(--accent-gold); text-transform: uppercase; }
+  .synthcard p { margin: 0; font-size: 1.15vw; line-height: 1.5; color: var(--ink-secondary); }
+  .synthesis-note { max-width: 62vw; font-size: 1.4vw; color: var(--ink-muted); margin-top: 3vh; line-height: 1.5; }
+  .exit-prompt { font-size: 1.6vw; color: var(--ink-primary); margin-top: 2vh; font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="backdrop"></div>
+<div id="stage"><div class="label">Connecting…</div></div>
+<div id="hud"></div>
+<script type="module" src="/board/main.js"></script>
+</body>
+</html>

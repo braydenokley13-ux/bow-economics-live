@@ -1,0 +1,733 @@
+/**
+ * Shared design tokens for the Cap Room — the one fictional place all three
+ * surfaces render a different vantage of (see design/VISUAL_IDENTITY.md).
+ * One committed dark palette: this is a broadcast control room at night,
+ * not a light-mode app.
+ *
+ * Fonts: the identity doc names Bebas Neue / Inter / Space Grotesk via
+ * Google Fonts, but this runtime promises zero external dependencies and
+ * zero internet access on the classroom LAN (see runtime/README.md) — a
+ * teacher's laptop five minutes before class cannot depend on a CDN being
+ * reachable. The doc itself sanctions this: "All ship a system fallback
+ * stack so a slow Chromebook never blocks on a webfont." This file uses
+ * those fallback stacks directly, permanently, not as a loading fallback.
+ */
+
+:root {
+  --surface-void: #0a0d12;
+  --surface-panel: #131822;
+  --surface-card: #1b212c;
+  --surface-inset: #0d1119;
+  --surface-elevated: #232a37;
+
+  --ink-primary: #f6f4ec;
+  --ink-secondary: #b9bfcc;
+  --ink-muted: #737b8c;
+
+  --accent-gold: #f4b942;
+  --accent-blue: #4da2e8;
+  --accent-violet: #8b7cf0;
+
+  --cap-safe: #12946a;
+  --cap-tight: #bd8a12;
+  --over-the-line: #d8394a;
+
+  --series-1: #3987e5;
+  --series-2: #c98500;
+  --series-3: #d9598f;
+
+  --font-display: "Arial Narrow", "Bebas Neue", Impact, Haettenschweiler, sans-serif;
+  --font-ui: "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+  --font-number: "Space Grotesk", "Courier New", "IBM Plex Mono", monospace;
+
+  --ease-decel: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--surface-void);
+  color: var(--ink-primary);
+  font-family: var(--font-ui);
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-muted);
+}
+
+.numeric {
+  font-family: var(--font-number);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.panel {
+  background: var(--surface-panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+}
+
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--surface-elevated);
+  color: var(--ink-primary);
+  cursor: pointer;
+  transition: background 160ms var(--ease-decel), border-color 160ms var(--ease-decel), transform 160ms var(--ease-decel);
+}
+.btn:hover {
+  border-color: var(--accent-blue);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent-gold);
+  color: #1b1406;
+  border-color: var(--accent-gold);
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-danger {
+  background: rgba(216, 57, 74, 0.16);
+  border-color: var(--over-the-line);
+  color: #ffb3ba;
+}
+.btn-warn {
+  background: rgba(189, 138, 18, 0.16);
+  border-color: var(--cap-tight);
+  color: #ffd98a;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: var(--surface-elevated);
+  color: var(--ink-secondary);
+}
+.pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: currentColor;
+}
+.pill-comfortable {
+  color: var(--cap-safe);
+}
+.pill-tight {
+  color: var(--cap-tight);
+}
+/*
+ * G5 repair: the reducer makes exceeding the cap structurally impossible,
+ * so "at the cap" is a fully legal, often optimal build — not a
+ * violation. Styled gold (tense-but-legal broadcast drama), never the
+ * over-the-line red reserved for an actual problem elsewhere in the UI
+ * (the shock tear, the foregone panel).
+ */
+.pill-at-cap {
+  color: var(--accent-gold);
+}
+
+/* -------------------------------------------------- cap meter -------------------------------------------------- */
+.cap-meter {
+  background: var(--surface-panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+.cap-meter-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.cap-meter-track {
+  position: relative;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--surface-inset);
+  overflow: hidden;
+}
+.cap-meter-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0.14;
+}
+.cap-meter-fill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #0f7a56, #1cb883);
+  transition: width 420ms var(--ease-decel), background 300ms var(--ease-decel);
+}
+.cap-meter-fill.tight {
+  background: linear-gradient(90deg, #8a6410, var(--cap-tight));
+}
+/* G5: "at the cap" is legal and often optimal — gold broadcast-drama fill, never alarm red. */
+.cap-meter-fill.at-cap {
+  background: linear-gradient(90deg, #a67714, var(--accent-gold));
+}
+.cap-meter-readout {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.cap-meter-readout .big {
+  font-family: var(--font-number);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--accent-gold);
+}
+
+/* ---------------------------------------------- roster wall / slots -------------------------------------------- */
+.roster-wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.roster-slot {
+  position: relative;
+  background: linear-gradient(160deg, var(--surface-card), var(--surface-panel));
+  border: 1.5px dashed rgba(77, 162, 232, 0.35);
+  border-radius: 12px;
+  min-height: 168px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: border-color 160ms var(--ease-decel), box-shadow 160ms var(--ease-decel);
+}
+.roster-slot:hover {
+  border-color: var(--accent-blue);
+}
+.roster-slot.filled {
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.12);
+  cursor: default;
+}
+.roster-slot.out {
+  border-color: var(--over-the-line);
+  border-style: solid;
+  animation: tearShake 420ms var(--ease-decel);
+}
+.roster-slot-label {
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+}
+.roster-slot-empty-glyph {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.14);
+  font-size: 34px;
+}
+.roster-slot.arrive .roster-slot-empty-glyph {
+  display: none;
+}
+
+/* --------------------------------------------------- contract card --------------------------------------------- */
+.mini-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: arrive 260ms var(--ease-decel);
+}
+.mini-card-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink-primary);
+  line-height: 1.15;
+}
+.mini-card-pos {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+}
+.mini-card-salary {
+  margin-top: auto;
+  font-family: var(--font-number);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--accent-gold);
+}
+.mini-card-rating {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+.mini-card-remove {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.mini-card-remove:hover {
+  color: var(--over-the-line);
+}
+
+/* ------------------------------------------------------ market ------------------------------------------------- */
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.market-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 140ms var(--ease-decel), border-color 140ms var(--ease-decel), opacity 140ms var(--ease-decel);
+}
+.market-card:hover:not(.unaffordable):not(.used) {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+.market-card.unaffordable {
+  opacity: 0.35;
+  filter: grayscale(0.6);
+  cursor: not-allowed;
+}
+.market-card.used {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+.market-card-name {
+  font-weight: 700;
+  font-size: 13px;
+}
+.market-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+}
+.market-card-price {
+  font-family: var(--font-number);
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+.market-card-rating {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+/* -------------------------------------------------- foregone panel --------------------------------------------- */
+.foregone-panel {
+  border-left: 3px solid var(--over-the-line);
+  background: rgba(216, 57, 74, 0.06);
+  border-radius: 0 10px 10px 0;
+  padding: 12px 14px;
+}
+.foregone-panel h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  font-size: 13px;
+  color: #ff9aa4;
+  text-transform: uppercase;
+}
+.foregone-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 3px 0;
+  color: var(--ink-secondary);
+  animation: fadeSlideIn 220ms var(--ease-decel);
+}
+.foregone-row .price {
+  font-family: var(--font-number);
+  color: var(--over-the-line);
+}
+
+/* ------------------------------------------------------ motion ------------------------------------------------- */
+@keyframes arrive {
+  from {
+    transform: scale(1.06);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes tearShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+@keyframes settle {
+  from {
+    box-shadow: 0 0 0 0 rgba(244, 185, 66, 0.5);
+  }
+  to {
+    box-shadow: 0 0 0 14px rgba(244, 185, 66, 0);
+  }
+}
+.lock-settle {
+  animation: settle 600ms var(--ease-decel);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mini-card,
+  .foregone-row,
+  .roster-slot.out,
+  .lock-settle {
+    animation-duration: 120ms !important;
+    animation-name: fadeSlideIn !important;
+  }
+  * {
+    transition-duration: 80ms !important;
+  }
+}
+
+.scroll-x {
+  overflow-x: auto;
+}
+
+/* ------------------------------------------------------- franchise badge (G4) ----------------------------------- */
+.franchise-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.franchise-badge-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--ink-primary);
+}
+
+/* --------------------------------------------------------- rescue swap (G6) ------------------------------------- */
+.swap-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--ink-secondary);
+  background: rgba(77, 162, 232, 0.1);
+  border: 1px dashed rgba(77, 162, 232, 0.4);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease-decel), background 140ms var(--ease-decel);
+}
+.swap-suggestion:hover {
+  border-color: var(--accent-blue);
+  background: rgba(77, 162, 232, 0.18);
+}
+.swap-suggestion strong {
+  color: var(--accent-blue);
+}
+
+/* ==================================================== Box Office (Module 2) ==================================================== */
+
+.market-flavor-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.market-flavor-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 14px;
+  color: var(--ink-primary);
+}
+.market-flavor-text {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-secondary);
+  line-height: 1.4;
+}
+
+/* ---- Price Dial: the one continuous control in the whole runtime ---- */
+.price-dial-wrap {
+  background: var(--surface-panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.price-dial-readout {
+  font-family: var(--font-number);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 40px;
+  color: var(--accent-gold);
+  text-align: center;
+  margin: 4px 0 12px;
+}
+.price-dial-input {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--cap-safe), var(--cap-tight) 55%, var(--over-the-line));
+  outline: none;
+  cursor: pointer;
+}
+.price-dial-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  border: 3px solid var(--accent-gold);
+  box-shadow: 0 0 0 4px rgba(244, 185, 66, 0.18);
+  cursor: grab;
+  transition: transform 120ms var(--ease-decel);
+}
+.price-dial-input:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+.price-dial-input::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  border: 3px solid var(--accent-gold);
+  cursor: grab;
+}
+.price-dial-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+/* ---- Fan Meter: a stadium-bowl grid of seat dots, live-fills with the dial ---- */
+.fan-meter-wrap {
+  margin-top: 16px;
+}
+.fan-meter {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  background: var(--surface-inset);
+  border-radius: 12px;
+  padding: 12px;
+}
+.fan-dot {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 220ms var(--ease-decel), border-color 220ms var(--ease-decel), box-shadow 220ms var(--ease-decel);
+}
+.fan-dot.filled {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 6px rgba(244, 185, 66, 0.45);
+}
+.fan-meter-readout {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* ---- Revenue Flow: three pipes feeding one total, against the Payroll Bill ---- */
+.revenue-flow {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.revenue-pipe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.revenue-pipe-label {
+  width: 54px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.revenue-pipe-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 6px;
+  background: var(--surface-inset);
+  overflow: hidden;
+}
+.revenue-pipe-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 260ms var(--ease-decel);
+}
+.revenue-pipe-fill.ticket {
+  background: linear-gradient(90deg, #0f7a56, var(--accent-gold));
+}
+.revenue-pipe-fill.tv {
+  background: var(--accent-blue);
+}
+.revenue-pipe-fill.merch {
+  background: var(--accent-violet);
+}
+.revenue-pipe-num {
+  width: 92px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 13px;
+}
+.revenue-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.revenue-total-num {
+  font-size: 24px;
+  color: var(--accent-gold);
+}
+
+/* ---- Zone banner: CONSEQUENCE's felt path-dependence beat ---- */
+.zone-banner {
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid;
+}
+.zone-banner.over {
+  background: rgba(216, 57, 74, 0.1);
+  border-color: var(--over-the-line);
+}
+.zone-banner.under {
+  background: rgba(189, 138, 18, 0.1);
+  border-color: var(--cap-tight);
+}
+.zone-banner.sweet {
+  background: rgba(18, 148, 106, 0.1);
+  border-color: var(--cap-safe);
+}
+.zone-banner-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  font-size: 19px;
+  text-transform: uppercase;
+}
+.zone-banner.over .zone-banner-title {
+  color: #ff9aa4;
+}
+.zone-banner.under .zone-banner-title {
+  color: #ffd98a;
+}
+.zone-banner.sweet .zone-banner-title {
+  color: var(--cap-safe);
+}
+
+/* ---- ARGUE: Homestand 1 vs Homestand 2, side by side ---- */
+.argue-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.argue-col {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+/* G6: a clear, unmistakable remove control on a filled slot — not a small text link. */
+.mini-card-remove-btn {
+  align-self: flex-end;
+  margin-top: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--surface-elevated);
+  color: var(--ink-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 140ms var(--ease-decel), border-color 140ms var(--ease-decel), color 140ms var(--ease-decel);
+}
+.mini-card-remove-btn:hover {
+  background: rgba(216, 57, 74, 0.22);
+  border-color: var(--over-the-line);
+  color: #ffb3ba;
+}

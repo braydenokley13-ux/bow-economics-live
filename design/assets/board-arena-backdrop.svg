@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" role="img" aria-label="Front office at night, arena light through the window">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0c0f16"/>
+      <stop offset="55%" stop-color="#0a0d12"/>
+      <stop offset="100%" stop-color="#0d1119"/>
+    </linearGradient>
+    <radialGradient id="windowGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f4b942" stop-opacity="0.30"/>
+      <stop offset="45%" stop-color="#f4b942" stop-opacity="0.11"/>
+      <stop offset="100%" stop-color="#f4b942" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bowlGlow" cx="50%" cy="0%" r="75%">
+      <stop offset="0%" stop-color="#4da2e8" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#4da2e8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4e2b0" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#f4e2b0" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#f4e2b0" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#05070a" stop-opacity="0.55"/>
+      <stop offset="18%" stop-color="#05070a" stop-opacity="0"/>
+      <stop offset="82%" stop-color="#05070a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#05070a" stop-opacity="0.5"/>
+    </linearGradient>
+    <radialGradient id="vigSide" cx="50%" cy="45%" r="72%">
+      <stop offset="60%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.42"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+
+  <!-- distant arena bowl, far background, low opacity concentric tiers -->
+  <g stroke="#4da2e8" stroke-opacity="0.10" fill="none" stroke-width="2">
+    <ellipse cx="960" cy="1180" rx="1500" ry="360"/>
+    <ellipse cx="960" cy="1220" rx="1650" ry="400"/>
+    <ellipse cx="960" cy="1260" rx="1800" ry="440"/>
+  </g>
+  <ellipse cx="960" cy="60" rx="1400" ry="420" fill="url(#bowlGlow)"/>
+
+  <!-- arena floodlight through the window, upper right -->
+  <rect x="1180" y="-120" width="900" height="900" fill="url(#windowGlow)"/>
+
+  <!-- window frame: mullions, upper-right, suggesting the office window the light pours through -->
+  <g transform="translate(1360,60)" stroke="#c9d3e0" stroke-opacity="0.14" stroke-width="2">
+    <rect x="0" y="0" width="480" height="640" fill="none" stroke-opacity="0.20"/>
+    <line x1="160" y1="0" x2="160" y2="640"/>
+    <line x1="320" y1="0" x2="320" y2="640"/>
+    <line x1="0" y1="213" x2="480" y2="213"/>
+    <line x1="0" y1="426" x2="480" y2="426"/>
+  </g>
+  <g transform="translate(1360,60)" stroke="#f4b942" stroke-opacity="0.22" stroke-width="1.5">
+    <rect x="0" y="0" width="480" height="640" fill="none"/>
+  </g>
+
+  <!-- soft light shafts crossing the room, like blinds -->
+  <g>
+    <polygon points="1300,40 1420,40 760,1080 560,1080" fill="url(#beam)"/>
+    <polygon points="1520,40 1620,40 1180,1080 1000,1080" fill="url(#beam)"/>
+    <polygon points="1700,40 1780,40 1500,1080 1360,1080" fill="url(#beam)"/>
+  </g>
+
+  <!-- strategy-floor grid, faint, lower third -->
+  <g stroke="#4da2e8" stroke-opacity="0.055" stroke-width="1">
+    <line x1="0" y1="760" x2="1920" y2="760"/>
+    <line x1="0" y1="840" x2="1920" y2="840"/>
+    <line x1="0" y1="930" x2="1920" y2="930"/>
+    <line x1="0" y1="1030" x2="1920" y2="1030"/>
+  </g>
+  <g stroke="#4da2e8" stroke-opacity="0.045" stroke-width="1">
+    <line x1="240" y1="700" x2="80" y2="1080"/>
+    <line x1="640" y1="700" x2="560" y2="1080"/>
+    <line x1="1040" y1="700" x2="1080" y2="1080"/>
+    <line x1="1440" y1="700" x2="1560" y2="1080"/>
+    <line x1="1840" y1="700" x2="2040" y2="1080"/>
+  </g>
+
+  <!-- vignette keeps the center-low field of play brightest; data sits here -->
+  <rect width="1920" height="1080" fill="url(#vig)"/>
+  <rect width="1920" height="1080" fill="url(#vigSide)"/>
+</svg>
