@@ -114,11 +114,24 @@ export class SessionService {
    * like a device token, and required as a bearer credential on every
    * `control()`/`teacherView()` call thereafter (`assertTeacher`).
    */
-  async createSession(input: { lessonModuleId: string; title: string }): Promise<TeacherPayload> {
+  async createSession(input: { lessonModuleId: string; title: string; sourceSessionId?: string }): Promise<TeacherPayload> {
     const mod = this.modules.get(input.lessonModuleId);
     if (!mod) throw new ServiceError(400, "unknown_module", `no lesson module registered as "${input.lessonModuleId}"`);
     const sessionId = randomUUID();
-    const state = mod.initialState({ sessionId, seatIds: [] });
+    // Cross-lesson continuity hook (e.g. M1 L2 carrying forward L1's
+    // franchise state): resolve the named source session's own stored
+    // state, hand it to the new module as an opaque seed, and let the
+    // module decide what (if anything) it means. The runtime never reads
+    // into `source.state` itself — a missing/unresolvable source session
+    // is not an error here, it just means no seed (`undefined`), and the
+    // receiving module is required to normalize that gracefully (its own
+    // "stock franchise" story), same as any other malformed-seed case.
+    let seed: unknown;
+    if (input.sourceSessionId) {
+      const source = await this.repo.getSessionById(input.sourceSessionId);
+      if (source) seed = { lessonModuleId: source.lessonModuleId, state: source.state };
+    }
+    const state = mod.initialState({ sessionId, seatIds: [], seed });
     let code = "";
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const candidate = generateJoinCode();

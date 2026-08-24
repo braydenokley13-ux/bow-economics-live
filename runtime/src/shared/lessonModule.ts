@@ -39,7 +39,17 @@ export interface LessonModule<TState = unknown> {
    */
   phases: readonly CanonicalPhase[];
 
-  initialState(input: { sessionId: string; seatIds: readonly SeatId[] }): TState;
+  /**
+   * `seed` is the runtime's one hook for cross-lesson continuity (e.g. M1
+   * L2 carrying forward L1's franchise state): an opaque
+   * `{ lessonModuleId, state }` blob resolved from another session by the
+   * server at createSession time, or `undefined` when no source session was
+   * requested. The runtime never inspects it — only the receiving module
+   * knows what shape to expect from which source module id, and must treat
+   * everything about it (including its own presence) as untrusted input to
+   * validate, never assume.
+   */
+  initialState(input: { sessionId: string; seatIds: readonly SeatId[]; seed?: unknown }): TState;
 
   /**
    * The single source of truth. Must reject (ok:false) anything malformed or

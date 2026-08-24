@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { draftDayModule } from "../modules/draftDay.js";
 import { lobbyDemoModule } from "../modules/lobbyDemo.js";
+import { tradeDeadlineModule } from "../modules/tradeDeadline.js";
 import { ServiceError, SessionService } from "../server/sessionService.js";
 import { SnapshotRepository } from "../server/snapshotRepository.js";
 
@@ -8,6 +10,16 @@ function freshService(): SessionService {
   const repo = new SnapshotRepository(null); // in-memory only, no disk I/O
   const service = new SessionService(repo);
   service.registerModule(lobbyDemoModule);
+  return service;
+}
+
+/** Same as freshService but with both L1 (draftDay) and L2 (tradeDeadline) registered — for the cross-lesson
+ *  seed tests below. */
+function freshL1L2Service(): SessionService {
+  const repo = new SnapshotRepository(null);
+  const service = new SessionService(repo);
+  service.registerModule(draftDayModule);
+  service.registerModule(tradeDeadlineModule);
   return service;
 }
 
@@ -400,4 +412,154 @@ test("R2: restore after end reaching all the way back past freeze still clears e
   assert.equal(restored.session.ended, false);
   assert.equal(restored.session.frozen, false);
   assert.equal(restored.session.phase, "PLAY");
+});
+
+/* ------------------------------------------ L1->L2 cross-lesson seed (M1 L2) -- */
+
+/** Drives a real L1 (draftDay) session through the service layer to a single locked, at-$100M-cap roster, and
+ *  returns its session id — the same path a real teacher/class would take, not a hand-forged snapshot. */
+async function playThroughL1(service: SessionService): Promise<{ sessionId: string; code: string }> {
+  const { session, teacherKey } = await newSession(service, draftDayModule.id, "L1 class");
+  const seat = await service.join(session.code, "Alex & Sam");
+  await service.control(session.code, { type: "advance" }, teacherKey); // LOBBY -> HOOK
+  await service.control(session.code, { type: "advance" }, teacherKey); // HOOK -> PLAY
+  const picks = [
+    { slot: "SCORER", playerId: "sc-30" },
+    { slot: "PLAYMAKER", playerId: "pm-10" },
+    { slot: "DEFENDER", playerId: "df-30" },
+    { slot: "REBOUNDER", playerId: "rb-20" },
+    { slot: "WILDCARD", playerId: "sc-10" },
+  ]; // 30+10+30+20+10 = 100
+  for (const { slot, playerId } of picks) {
+    await service.submitAction(seat.deviceToken!, { type: "place", slotId: slot, playerId });
+  }
+  await service.submitAction(seat.deviceToken!, { type: "lock" });
+  return { sessionId: session.id, code: session.code };
+}
+
+test("SEED: linked creation happy path — L2 created with sourceSessionId carries the real L1 roster through submitAction/join, not a forged snapshot", async () => {
+  const service = freshL1L2Service();
+  const { sessionId: l1Id } = await playThroughL1(service);
+
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1Id });
+  const l2View = l2.view as { carriedFranchiseCount: number };
+  assert.equal(l2View.carriedFranchiseCount, 1, "the one locked L1 team must be offered as a claimable carried franchise");
+
+  const l2Seat = await service.join(l2.session.code, "Alex & Sam"); // a new seat in a new session — different seatId entirely
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // LOBBY -> HOOK
+  const claimed = await service.submitAction(l2Seat.deviceToken!, { type: "claim", carriedIndex: 0 });
+  const view = claimed.view as { claimed: boolean; franchise: { name: string; origin: string }; spend: number };
+  assert.equal(view.claimed, true);
+  assert.equal(view.franchise.origin, "carried");
+  assert.equal(view.franchise.name, "Ironworks");
+  assert.equal(view.spend, 100);
+});
+
+test("SEED: an ENDED L1 session is still a valid, usable seed — its state is exactly what's carried forward", async () => {
+  const service = freshL1L2Service();
+  const l1 = await service.createSession({ lessonModuleId: draftDayModule.id, title: "L1 class" });
+  const seat = await service.join(l1.session.code, "Alex & Sam");
+  await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!); // LOBBY -> HOOK
+  await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!); // HOOK -> PLAY
+  const picks = [
+    { slot: "SCORER", playerId: "sc-30" },
+    { slot: "PLAYMAKER", playerId: "pm-10" },
+    { slot: "DEFENDER", playerId: "df-30" },
+    { slot: "REBOUNDER", playerId: "rb-20" },
+    { slot: "WILDCARD", playerId: "sc-10" },
+  ];
+  for (const { slot, playerId } of picks) await service.submitAction(seat.deviceToken!, { type: "place", slotId: slot, playerId });
+  await service.submitAction(seat.deviceToken!, { type: "lock" });
+  await service.control(l1.session.code, { type: "end" }, l1.teacherKey!); // teacher ends class — the normal end-of-lesson flow
+
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1.session.id });
+  const l2View = l2.view as { carriedFranchiseCount: number };
+  assert.equal(l2View.carriedFranchiseCount, 1, "an ended L1 session's locked roster still carries forward — ending class doesn't erase what happened in it");
+});
+
+test("SEED: a missing/nonexistent sourceSessionId does not fail session creation — it just yields no carried franchises", async () => {
+  const service = freshL1L2Service();
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: "not-a-real-session-id" });
+  const view = l2.view as { carriedFranchiseCount: number };
+  assert.equal(view.carriedFranchiseCount, 0);
+  // The whole class must still be fully playable on stock franchises — claim() with carriedIndex null works.
+  const seat = await service.join(l2.session.code, "Jordan");
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!);
+  const claimed = await service.submitAction(seat.deviceToken!, { type: "claim", carriedIndex: null });
+  const claimedView = claimed.view as { claimed: boolean; franchise: { origin: string } };
+  assert.equal(claimedView.claimed, true);
+  assert.equal(claimedView.franchise.origin, "stock");
+});
+
+test("SEED: sourceSessionId pointing at a session using a DIFFERENT lesson module is ignored (empty pool), not crashed or misread", async () => {
+  const service = freshL1L2Service();
+  const other = await service.createSession({ lessonModuleId: draftDayModule.id, title: "" }); // never played — irrelevant, wrong module id path is what's tested
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: other.session.id });
+  const view = l2.view as { carriedFranchiseCount: number };
+  assert.equal(view.carriedFranchiseCount, 0, "an unlocked/empty L1 session naturally carries nothing forward");
+});
+
+test("SEED: malformed/incomplete L1 state (never locked) normalizes to zero carried franchises, never crashes createSession", async () => {
+  const service = freshL1L2Service();
+  const l1 = await service.createSession({ lessonModuleId: draftDayModule.id, title: "" });
+  const seat = await service.join(l1.session.code, "Alex");
+  await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!);
+  await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!);
+  await service.submitAction(seat.deviceToken!, { type: "place", slotId: "SCORER", playerId: "sc-10" }); // never locks
+
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id });
+  const view = l2.view as { carriedFranchiseCount: number };
+  assert.equal(view.carriedFranchiseCount, 0);
+});
+
+test("SEED: two seats can claim two different carried franchises from the same linked L1 session, each getting their own real roster", async () => {
+  const service = freshL1L2Service();
+  const l1 = await service.createSession({ lessonModuleId: draftDayModule.id, title: "" });
+  const seatIds = ["Team One", "Team Two"];
+  const a = await service.join(l1.session.code, seatIds[0]!);
+  const b = await service.join(l1.session.code, seatIds[1]!);
+  await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!);
+  await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!);
+  const picksA = [
+    { slot: "SCORER", playerId: "sc-30" },
+    { slot: "PLAYMAKER", playerId: "pm-10" },
+    { slot: "DEFENDER", playerId: "df-30" },
+    { slot: "REBOUNDER", playerId: "rb-20" },
+    { slot: "WILDCARD", playerId: "sc-10" },
+  ];
+  const picksB = [
+    { slot: "SCORER", playerId: "sc-10b" },
+    { slot: "PLAYMAKER", playerId: "pm-10b" },
+    { slot: "DEFENDER", playerId: "df-10b" },
+    { slot: "REBOUNDER", playerId: "rb-10b" },
+    { slot: "WILDCARD", playerId: "sc-10c" },
+  ];
+  for (const { slot, playerId } of picksA) await service.submitAction(a.deviceToken!, { type: "place", slotId: slot, playerId });
+  await service.submitAction(a.deviceToken!, { type: "lock" });
+  for (const { slot, playerId } of picksB) await service.submitAction(b.deviceToken!, { type: "place", slotId: slot, playerId });
+  await service.submitAction(b.deviceToken!, { type: "lock" });
+
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id });
+  assert.equal((l2.view as { carriedFranchiseCount: number }).carriedFranchiseCount, 2);
+
+  const l2SeatA = await service.join(l2.session.code, "Pair One");
+  const l2SeatB = await service.join(l2.session.code, "Pair Two");
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!);
+  const claimedA = await service.submitAction(l2SeatA.deviceToken!, { type: "claim", carriedIndex: 0 });
+  const claimedB = await service.submitAction(l2SeatB.deviceToken!, { type: "claim", carriedIndex: 1 });
+  const viewA = claimedA.view as { franchise: { name: string }; spend: number };
+  const viewB = claimedB.view as { franchise: { name: string }; spend: number };
+  assert.notEqual(viewA.franchise.name, viewB.franchise.name);
+  assert.equal(viewA.spend, 100);
+  assert.equal(viewB.spend, 50);
+
+  // A third pair cannot claim the same carried franchise index 0 again.
+  const l2SeatC = await service.join(l2.session.code, "Pair Three");
+  try {
+    await service.submitAction(l2SeatC.deviceToken!, { type: "claim", carriedIndex: 0 });
+    assert.fail("expected the duplicate claim to be rejected");
+  } catch (error) {
+    assert.ok(error instanceof ServiceError);
+    assert.equal((error as ServiceError).status, 409);
+  }
 });
