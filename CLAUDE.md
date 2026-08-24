@@ -65,7 +65,8 @@ Four-module spine is founder-fixed (D1, D2) — don't add, remove, or reorder
 without an explicit founder call:
 
 - **M1 "The Cap"** — scarcity, opportunity cost, constrained allocation,
-  cap-as-institution. L1 Draft Day, L2 Trade Deadline, L3 Why the Line Exists.
+  cap-as-institution. L1 Draft Day, L2 Trade Deadline, L3 Free Agency: The
+  Signing Window (rechartered per D18; the module finale).
 - **M2 "Money in Motion"** — revenue, incentives, path dependence. Prototype:
   "The Box Office."
 - **M3 "Measuring Players"** — information, uncertainty, evaluation. Not yet
@@ -90,11 +91,12 @@ and can attribute to their own choice.
 
 ## 7. State persistence across lessons
 
-Persist franchise state when yesterday's choice creates today's problem — L1
-roster → L2 trade deadline is the canonical case. Reset deliberately when a
-controlled comparison needs a clean baseline (L2 → L3). Normalize carried
-state only where playability requires it (an absent student gets a stock
-franchise, not a broken one).
+Persist franchise state when yesterday's choice creates today's problem — the
+L1 roster → L2 deadline → L3 free-agency books chain is the canonical case
+(D18 superseded the earlier L2→L3 clean-reset posture). Reset deliberately
+only when a controlled comparison genuinely needs a clean baseline. Normalize
+carried state only where playability requires it (an absent student gets a
+stock franchise, not a broken one).
 
 ## 8. Scope discipline
 
