@@ -865,6 +865,11 @@ export const STAND_PAT_COPY: Record<StandPatReason, string> = {
 export const BEYOND_SPORTS_LINE =
   "This is every real deadline: a phone contract broken early, a house bid against a hidden reserve, a return you can't fully undo. Revising a commitment almost always costs something, and the other side's number is almost always hidden from you.";
 export const EXIT_PROMPT = "What did undoing your Draft Day choice actually cost you — and would you do it again?";
+/** L3 seam (L3_CHARTER.md §8, D11 rider f now pointing at the real L3): the deadline's COMPLETE copy is the
+ *  tease for Free Agency — the books, every signing and every dead-cap dollar, follow the class into the
+ *  next class's signing window, not a clean reset. */
+export const COMPLETE_COPY =
+  "The trade deadline has passed. Your books — every signing, every dollar of dead cap — follow you into the playoff push. Free agency opens next class.";
 
 export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
   id: MODULE_ID,
@@ -1034,7 +1039,7 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
           return { phase, message: "Look up at the board.", exitPrompt: EXIT_PROMPT };
 
         case "COMPLETE":
-          return { phase, message: "The trade deadline has passed. See you next class." };
+          return { phase, message: COMPLETE_COPY };
 
         default:
           return { phase };
@@ -1118,7 +1123,7 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
         }
 
         case "COMPLETE":
-          return { mode: "complete" };
+          return { mode: "complete", message: COMPLETE_COPY };
 
         default:
           return { mode: "idle", phase };

@@ -185,6 +185,14 @@ async function closeDayAndWait(teach, board, expectedDayLabel) {
   await board.waitForFunction((label) => document.querySelector(".label")?.textContent?.includes(label), expectedDayLabel, { timeout: 15000 });
 }
 
+/** Every /play page polls independently on its own ~1.2s cadence -- after the teacher closes a day, a
+ *  student page can still be showing the STALE prior-day DOM for a moment. Interacting with it before its
+ *  own poll catches up risks a mid-click rebuild (the composer's DOM torn down under an in-progress click).
+ *  Waiting for each page's OWN day pill to update first makes every subsequent interaction race-free. */
+async function waitForDay(page, day) {
+  await page.waitForFunction((d) => document.querySelector(".fa-day-pill")?.textContent?.includes(`DAY ${d} OF 4`), day, { timeout: 15000 });
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
@@ -266,47 +274,52 @@ async function main() {
     for (const page of [alpha, beta, gamma]) await page.waitForSelector("#faPlayRoot");
     await board.waitForSelector(".fa-ticker");
 
-    /* ---- Day 1: a bidding war (fa-star-pm) + a price collapse (fa-value-pm untouched) ---- */
-    console.log("[e2e-l3] day 1: bidding war on Priya Anand (fa-star-pm), price collapse looming on Kai Sorensen (fa-value-pm)");
-    await submitOffer(alpha, "fa-star-pm", 20, "PLAYMAKER"); // well under the $45M opening ask
-    await submitOffer(beta, "fa-star-pm", 15, "PLAYMAKER"); // also under ask -> 2 offers, neither clears -> price UP
-    await holdToday(gamma);
+    /* ---- Day 1: a bidding war + a price collapse, both on affordable value/solid-tier slots ----
+     * (Alpha and Gamma both carry meaningfully less cap room than a fresh stock team -- Alpha stood pat at
+     * the full $100M L1 cap, Gamma spent up to a won sealed bid -- so this script always checks affordability
+     * against each team's REAL carried room, never assumes a star-tier chase is free money.) */
+    console.log("[e2e-l3] day 1: bidding war on Omar Hendricks (fa-value-df), price collapse looming on Theo Blackwood (fa-value-rb, untouched)");
+    for (const p of [alpha, beta, gamma]) await waitForDay(p, 1);
+    await submitOffer(alpha, "fa-value-df", 5, "DEFENDER"); // well under the $15M opening ask
+    await submitOffer(gamma, "fa-value-df", 10, "DEFENDER"); // also under ask -> 2 offers, neither clears -> price UP
+    await holdToday(beta);
     await closeDayAndWait(teach, board, "Day 2 of 4");
     const boardAfterDay1 = await board.evaluate(() => document.body.innerText);
-    assert.match(boardAfterDay1, /Priya Anand/);
-    console.log("[e2e-l3] day 1 closed: bidding war should have pushed Priya Anand's ask UP, Kai Sorensen's ask DOWN (0 offers)");
+    assert.match(boardAfterDay1, /Omar Hendricks/);
+    console.log("[e2e-l3] day 1 closed: bidding war pushed Omar Hendricks's ask UP; Theo Blackwood's ask fell (0 offers)");
 
-    /* ---- Day 2: a lowball that raises the price (two teams both under-ask on fa-solid-sc) + a clean signing ---- */
-    console.log("[e2e-l3] day 2: Delta joins late; coordinated lowballing on Dez Whitfield (fa-solid-sc); Beta signs Omar Hendricks cleanly at ask");
+    /* ---- Day 2: a lowball that raises the price (two teams both under-ask) + a clean signing ---- */
+    console.log("[e2e-l3] day 2: Delta joins late; coordinated lowballing on Dez Whitfield (fa-solid-sc); Beta signs Kai Sorensen cleanly at ask");
     await join(delta, "Delta");
     await delta.waitForSelector(".claim-card.stock");
     await delta.click(".claim-card.stock");
     await delta.waitForSelector("#faPlayRoot");
     console.log("[e2e-l3] Delta claimed a stock expansion franchise as a LATE JOINER, mid-window");
+    for (const p of [alpha, beta, gamma]) await waitForDay(p, 2);
 
-    await submitOffer(alpha, "fa-solid-sc", 15, "SCORER"); // under the $30M ask
-    await submitOffer(gamma, "fa-solid-sc", 20, "WILDCARD"); // also under ask -> coordinated lowballing -> price UP
-    await submitOffer(beta, "fa-value-df", 15, "DEFENDER"); // exactly the $15M opening ask -> clean signing
+    await submitOffer(alpha, "fa-solid-sc", 15, "SCORER"); // under fa-solid-sc's day-2 ask (already decayed from day 1's silence)
+    await submitOffer(gamma, "fa-solid-sc", 5, "WILDCARD"); // also under ask -> coordinated lowballing -> price UP anyway
+    await submitOffer(beta, "fa-value-pm", 10, "PLAYMAKER"); // matches the live ask exactly (decayed from $20 by day-1 silence) -> clean signing
     await holdToday(delta);
     await closeDayAndWait(teach, board, "Day 3 of 4");
-    console.log("[e2e-l3] day 2 closed: Dez Whitfield's ask should have risen despite two low offers; Omar Hendricks signed to Beta");
+    console.log("[e2e-l3] day 2 closed: Dez Whitfield's ask rose despite two low offers; Kai Sorensen signed to Beta");
 
-    /* ---- Day 3: an outbid team on fa-star-pm (both clear the now-higher ask; the lower one loses) ---- */
-    console.log("[e2e-l3] day 3: Alpha and Beta both chase Priya Anand again -- both clear ask, the lower offer is OUTBID");
-    const starAskText = await gamma.locator('.fa-agent-card[data-agent-id="fa-star-pm"] .fa-ask').first().textContent().catch(() => null);
-    void starAskText; // read defensively only for logging; submitOffer itself reads the live DOM value it needs
-    await submitOffer(alpha, "fa-star-pm", 60, "PLAYMAKER");
-    await submitOffer(beta, "fa-star-pm", 55, "PLAYMAKER"); // clears ask too, but loses to Alpha's higher offer -> OUTBID
+    /* ---- Day 3: an outbid team on fa-star-sc (both clear ask; the lower offer loses) ---- */
+    console.log("[e2e-l3] day 3: Delta and Beta both chase Trey Bishop (fa-star-sc) -- both clear ask, Delta's lower offer is OUTBID");
+    for (const p of [alpha, beta, gamma, delta]) await waitForDay(p, 3);
+    await submitOffer(delta, "fa-star-sc", 35, "SCORER");
+    await submitOffer(beta, "fa-star-sc", 40, "WILDCARD"); // clears ask too, and beats Delta's offer -> Delta is outbid
+    await holdToday(alpha);
     await holdToday(gamma);
-    await holdToday(delta);
     await closeDayAndWait(teach, board, "Day 4 of 4");
     const boardAfterDay3 = await board.evaluate(() => document.body.innerText);
     assert.match(boardAfterDay3, /signed/i);
-    console.log("[e2e-l3] day 3 closed: Priya Anand signed to Alpha; Beta's higher-than-ask-but-lower-than-Alpha's offer lost -- a real outbid team");
+    console.log("[e2e-l3] day 3 closed: Trey Bishop signed to Beta at the higher amount; Delta's lower, ask-clearing offer still lost -- a real outbid team");
 
     /* ---- Day 4: desperation -- the top offer on an untouched agent signs even under ask ---- */
-    console.log("[e2e-l3] day 4: desperation signing -- Gamma lowballs the untouched Marcus Dell (fa-solid-df), signs anyway (deadline day)");
-    await submitOffer(gamma, "fa-solid-df", 10, "DEFENDER"); // well under the $35M opening ask
+    console.log("[e2e-l3] day 4: desperation signing -- Gamma lowballs the untouched Jonah Rourke (fa-solid-rb, the RISER), signs anyway (deadline day)");
+    for (const p of [alpha, beta, gamma, delta]) await waitForDay(p, 4);
+    await submitOffer(gamma, "fa-solid-rb", 5, "REBOUNDER"); // the market floor is $10M by now -- this is genuinely a below-ask offer
     await holdToday(alpha);
     await holdToday(beta);
     await holdToday(delta);
@@ -321,27 +334,34 @@ async function main() {
     await teach.click("#btnAdvance"); // PLAY -> REVEAL (window already closed, no confirm expected)
     await teach.waitForSelector(".phasechip.current:text('REVEAL')");
     for (let i = 0; i < 12; i += 1) {
+      const respPromise = teach.waitForResponse((r) => r.url().includes("/control") && r.request().method() === "POST");
       await teach.click("#btnRevealNext");
-      await teach.waitForTimeout(120);
+      await respPromise;
     }
+    // NOTE: .label carries `text-transform: uppercase` in CSS -- innerText reflects the COMPUTED (uppercased)
+    // text, not the literal HTML, so every text assertion against staged headings here is case-insensitive.
+    await board.waitForFunction(() => document.body.innerText.toUpperCase().includes("GM AWARDS"), null, { timeout: 15000 });
     const boardReveal = await board.evaluate(() => document.body.innerText);
-    assert.match(boardReveal, /Final Standings/);
+    assert.match(boardReveal, /Final Standings/i);
     assert.match(boardReveal, /The Bracket|champion/i);
-    assert.match(boardReveal, /GM Awards/);
+    assert.match(boardReveal, /GM Awards/i);
     console.log("[e2e-l3] staged REVEAL played through: window recap, all 8 factor reveals, standings, bracket, GM Awards");
     await board.screenshot({ path: path.join(SCREEN_DIR, "05-board-reveal-finale.png") });
 
     await teach.click("#btnAdvance"); // REVEAL -> COUNTERFACTUAL
     await teach.waitForSelector(".phasechip.current:text('COUNTERFACTUAL')");
-    await board.waitForSelector(".cardgrid");
+    // `.cardgrid` is present in REVEAL too (agent factors, awards) -- wait for the HUD's own phase readout
+    // rather than a selector that was already satisfied by the PREVIOUS phase's stale content.
+    await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("COUNTERFACTUAL"), null, { timeout: 15000 });
     const boardCounterfactual = await board.evaluate(() => document.body.innerText);
     assert.match(boardCounterfactual, /PATIENCE DIVIDEND|DEAD CAP DRAG|NEAR-MISS/i);
-    await alpha.waitForFunction(() => document.body.innerText.includes("journey"), null, { timeout: 15000 }).catch(() => {});
+    await alpha.waitForFunction(() => document.body.innerText.toUpperCase().includes("JOURNEY"), null, { timeout: 15000 });
     console.log("[e2e-l3] COUNTERFACTUAL rendered on board and /play");
 
     await teach.click("#btnAdvance"); // COUNTERFACTUAL -> SYNTHESIS
     await teach.waitForSelector(".phasechip.current:text('SYNTHESIS')");
-    await board.waitForSelector(".synthcard");
+    // `.synthcard` is also used by COUNTERFACTUAL's class cards -- same stale-content race as REVEAL above.
+    await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("SYNTHESIS"), null, { timeout: 15000 });
     const boardSynthesis = await board.evaluate(() => document.body.innerText);
     assert.match(boardSynthesis, /THE MARKET SET THE PRICE/i);
     assert.match(boardSynthesis, /DECISIONS ≠ OUTCOMES|DECISIONS/i);
