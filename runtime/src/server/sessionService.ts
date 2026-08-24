@@ -386,8 +386,22 @@ export class SessionService {
     }
   }
 
+  /**
+   * `onPhaseExit` (optional on a module) runs here, before the phase itself
+   * is committed — the one place every teacher-triggered forward transition
+   * passes through, whether it's a normal `advance` or a `reveal` jump. See
+   * `shared/lessonModule.ts`'s doc comment; VERIFY_L2.md B1 is the module
+   * that actually uses this today (auto-resolving any target left pending
+   * when a teacher leaves REVEAL early).
+   */
   private async applyPhaseChange(session: SessionRow, next: CanonicalPhase): Promise<TeacherPayload> {
-    return this.buildTeacherPayload(await this.patch(session, { phase: next }, true));
+    const mod = this.moduleFor(session);
+    const patch: Parameters<Repository["updateSession"]>[1] = { phase: next };
+    if (mod.onPhaseExit) {
+      const resolvedState = mod.onPhaseExit(session.state, session.phase, next);
+      if (resolvedState !== session.state) patch.state = resolvedState;
+    }
+    return this.buildTeacherPayload(await this.patch(session, patch, true));
   }
 
   /** Applies a patch with optimistic concurrency; optionally captures a pre-change checkpoint first. */

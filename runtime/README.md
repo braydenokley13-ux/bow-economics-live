@@ -1,7 +1,7 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (216 passing, see below), `npm run build` and `npm test` are
+real tests (225 passing, see below), `npm run build` and `npm test` are
 green, and both `m1l1-draft-day` and `m1l2-trade-deadline` have been driven
 end-to-end with Playwright against the real compiled server (L1: create →
 join → advance → build → lock → reveal → shock → adapt → repair → synthesis
@@ -123,9 +123,10 @@ src/
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
                 shared/ (api, poll, storage, outbox, crest)
-  test/         216 tests over crypto, every reducer, the service layer
+  test/         225 tests over crypto, every reducer, the service layer
                 (incl. the L1->L2 seed), and snapshot persistence
-scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof
+scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)
+                e2e-l2-early-advance.cjs     — focused probe: advancing out of REVEAL early
 ```
 
 **Teacher authentication (R1).** `POST /api/sessions` issues a per-session
@@ -249,7 +250,7 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**216 tests, 216 passing** (`node --test`, no test framework dependency).
+**225 tests, 225 passing** (`node --test`, no test framework dependency).
 Coverage: PIN/token crypto round-trips (`crypto.test.ts`); the `lobby-demo`
 reducer/aggregate/views including rejected malformed and out-of-phase
 actions (`lobbyDemo.test.ts`); the `m1l1-draft-day` reducer, market design

@@ -563,3 +563,39 @@ test("SEED: two seats can claim two different carried franchises from the same l
     assert.equal((error as ServiceError).status, 409);
   }
 });
+
+/* ------------------------------------------ B1 repair: real control()-driven early advance -- */
+
+test("B1 repair (VERIFY_L2.md BLOCKER): a real teacher.control({type:'advance'}) call out of REVEAL — not just the module's pure onPhaseExit — auto-resolves a pending bid", async () => {
+  const service = freshL1L2Service();
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "" }); // unlinked — stock franchise is enough to prove the wiring
+  const seat = await service.join(l2.session.code, "Team X");
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // LOBBY -> HOOK
+  await service.submitAction(seat.deviceToken!, { type: "claim", carriedIndex: null }); // stock: SCORER=sc-20 PLAYMAKER=pm-20 ...
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // HOOK -> PLAY
+  await service.submitAction(seat.deviceToken!, { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 }); // a lowball, guaranteed to lose against the $35 reserve
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // PLAY -> REVEAL
+
+  const preAdvance = await service.teacherView(l2.session.code, l2.teacherKey!);
+  const preTeam = (preAdvance.view as { teams: { bidOutcome: string | null }[] }).teams[0]!;
+  assert.equal(preTeam.bidOutcome, null, "precondition: nothing revealed yet");
+
+  // The teacher advances straight out of REVEAL without ever calling the revealNext hook — exactly VERIFY_L2.md's
+  // repro, driven through the real service.control() path (sessionService.applyPhaseChange), not the module directly.
+  const afterAdvance = await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // REVEAL -> ADAPT
+  assert.equal(afterAdvance.session.phase, "ADAPT");
+  const postTeam = (afterAdvance.view as { teams: { bidOutcome: string | null; openSlot: boolean }[] }).teams[0]!;
+  assert.equal(postTeam.bidOutcome, "lost", "resolved by the real control() call, not left stranded null");
+  assert.equal(postTeam.openSlot, true);
+
+  const agg = (afterAdvance.view as { aggregate: { openSlotCount: number } }).aggregate;
+  assert.equal(agg.openSlotCount, 1);
+
+  // And the seat's own studentView (what /play actually renders) offers the real rescue, not the false "nothing
+  // to do here" — fetched via resumeByToken, the same path GET /api/me uses.
+  const studentPayload = await service.resumeByToken(seat.deviceToken!);
+  const studentView = studentPayload.view as { openSlot: string | null; rescued: boolean; candidates: unknown[] };
+  assert.equal(studentView.openSlot, "PLAYMAKER");
+  assert.equal(studentView.rescued, false);
+  assert.ok(studentView.candidates.length >= 2);
+});

@@ -24,6 +24,9 @@ const rosterEl = $("roster");
 const aggregateEl = $("aggregate");
 
 let currentCode: string | null = null;
+// B1 repair (VERIFY_L2.md): what the Advance button's confirm() warning needs to know, refreshed every render()
+// so the click handler (which fires later, async from render) always checks the latest known state.
+let advanceWarnState: { lessonModuleId: string; phase: string; revealedCount: number; totalTargets: number } | null = null;
 // R1: the per-session teacher credential — required on every /control and
 // GET /teacher call from here on. Held in memory plus localStorage (see
 // storage.ts) so a page refresh doesn't strand the teacher outside their
@@ -175,6 +178,13 @@ function render(payload: TeacherPayload): void {
   // not-yet-revealed target, so the teacher paces the reveal instead of dumping every result at once.
   $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline;
   $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
+  // B1 repair (VERIFY_L2.md BLOCKER): the runtime now auto-resolves any unrevealed target the instant the
+  // teacher advances out of REVEAL (see tradeDeadline.ts's onPhaseExit), so the numbers can no longer go wrong
+  // — but the staged, one-at-a-time reveal theater is still lost on whatever's skipped, so warn before that
+  // happens rather than let it happen silently.
+  advanceWarnState = isTradeDeadline
+    ? { lessonModuleId: s.lessonModuleId, phase: s.phase, revealedCount: Number(payload.view["revealedCount"] ?? 0), totalTargets: Number(payload.view["totalTargets"] ?? 0) }
+    : null;
 
   const roster = $("rosterList");
   roster.innerHTML = "";
@@ -483,7 +493,20 @@ async function sendControl(body: Record<string, unknown>): Promise<void> {
 }
 
 $("create").addEventListener("click", () => void createSession().catch((e) => (statusEl.textContent = String(e))));
-$("btnAdvance").addEventListener("click", () => void sendControl({ type: "advance" }));
+$("btnAdvance").addEventListener("click", () => {
+  // B1 repair (VERIFY_L2.md BLOCKER): same confirm() idiom btnEnd already uses below — no new dialog
+  // framework. Only fires leaving REVEAL with targets still unrevealed; the economics stay correct either way
+  // (the runtime auto-resolves them), this is purely "you're about to skip the staged reveal theater."
+  const w = advanceWarnState;
+  if (w && w.lessonModuleId === TRADE_DEADLINE_ID && w.phase === "REVEAL" && w.revealedCount < w.totalTargets) {
+    const remaining = w.totalTargets - w.revealedCount;
+    const ok = confirm(
+      `${remaining} of ${w.totalTargets} target${w.totalTargets === 1 ? "" : "s"} unrevealed — advancing resolves ${remaining === 1 ? "it" : "them"} automatically, without the staged reveal. Continue?`,
+    );
+    if (!ok) return;
+  }
+  void sendControl({ type: "advance" });
+});
 $("btnReveal").addEventListener("click", () => void sendControl({ type: "reveal" }));
 $("btnPause").addEventListener("click", () => {
   const paused = $("btnPause").textContent === "Unpause";

@@ -440,8 +440,18 @@ function priceOf(team: TeamState, playerId: string): number {
   return 0;
 }
 
+/**
+ * N1 repair (VERIFY_L2.md MINOR): deliberately has NO Target fallback. A
+ * signed target's worth is a dollar figure (`trueValue`), always surfaced
+ * explicitly as "turned out to be worth about $XXM" wherever it's shown
+ * (REVEAL/board) — never as a 0-100 "rating," which is a MARKET/VETERAN/
+ * RESCUE-only concept. `trueValue` (e.g. $30M) could easily read as a
+ * plausible rating if it leaked in here, silently miscomparing against real
+ * ratings in the 44-92 range. 0 for an id this function doesn't recognize
+ * is an honest "no rating concept applies," not a fabricated number.
+ */
 function ratingOf(playerId: string): number {
-  return MARKET_BY_ID.get(playerId)?.rating ?? VETERAN_BY_ID.get(playerId)?.rating ?? RESCUE_BY_ID.get(playerId)?.rating ?? TARGET_BY_ID.get(playerId)?.trueValue ?? 0;
+  return MARKET_BY_ID.get(playerId)?.rating ?? VETERAN_BY_ID.get(playerId)?.rating ?? RESCUE_BY_ID.get(playerId)?.rating ?? 0;
 }
 function nameOf(playerId: string): string {
   return MARKET_BY_ID.get(playerId)?.name ?? VETERAN_BY_ID.get(playerId)?.name ?? RESCUE_BY_ID.get(playerId)?.name ?? TARGET_BY_ID.get(playerId)?.name ?? playerId;
@@ -751,25 +761,21 @@ function doRescueFill(state: TradeDeadlineState, action: RescueFillAction, ctx: 
 }
 
 /**
- * The staged auction theater: reveals exactly the next not-yet-revealed
- * target, in the fixed `REVEAL_ORDER`. No target id parameter is needed
- * (and none is threaded through the runtime's generic `teacher:<hook>`
- * mechanism, which carries no payload) — this keeps the reveal entirely
- * module-owned with zero runtime surface added beyond the L1->L2 seed.
- *
- * Highest sealed bid on this target, among teams that chose it, wins IF it
- * clears the hidden reserve (never shown to any student, before or after).
- * A lowball — even the only bid — never steals: if the top bid is under
- * reserve, the target goes unsold and every bidder on it just lost their
- * cut player for nothing but the dead cap already paid. Deterministic
- * tiebreak on an exact bid tie: earliest commit time, then seatId — never
- * random, always reproducible.
+ * The pure core of the reveal: resolves ONE named target (must already be
+ * unrevealed — callers check that). Highest sealed bid on this target,
+ * among teams that chose it, wins IF it clears the hidden reserve (never
+ * shown to any student, before or after). A lowball — even the only bid —
+ * never steals: if the top bid is under reserve, the target goes unsold and
+ * every bidder on it just lost their cut player for nothing but the dead
+ * cap already paid. Deterministic tiebreak on an exact bid tie: earliest
+ * commit time, then seatId — never random, always reproducible. Used by
+ * both the teacher-staged single-target reveal (`doRevealNext`) and the
+ * bulk auto-resolve that fires on any REVEAL exit (`resolveAllTargets`) —
+ * same function, same math, so an auto-resolved target is byte-identical to
+ * one the teacher clicked through by hand.
  */
-function doRevealNext(state: TradeDeadlineState, ctx: ReduceContext): ReduceResult<TradeDeadlineState> {
-  const targetId = REVEAL_ORDER.find((id) => !state.revealedTargetIds.includes(id));
-  if (!targetId) return { ok: false, reason: "every deadline target has already been revealed" };
+function resolveTarget(state: TradeDeadlineState, targetId: string): TradeDeadlineState {
   const target = TARGET_BY_ID.get(targetId)!;
-
   const bidders = Object.entries(state.teams).filter(
     ([, t]) => t.path === "bid" && t.bidTargetId === targetId && t.bidOutcome === null,
   ) as [SeatId, TeamState][];
@@ -794,8 +800,45 @@ function doRevealNext(state: TradeDeadlineState, ctx: ReduceContext): ReduceResu
       nextTeams[seatId] = { ...t, bidOutcome: "lost" };
     }
   }
+  return { ...state, teams: nextTeams, revealedTargetIds: [...state.revealedTargetIds, targetId] };
+}
+
+/**
+ * The staged auction theater: reveals exactly the next not-yet-revealed
+ * target, in the fixed `REVEAL_ORDER`. No target id parameter is needed
+ * (and none is threaded through the runtime's generic `teacher:<hook>`
+ * mechanism, which carries no payload) — this keeps the reveal entirely
+ * module-owned with zero runtime surface added beyond the L1->L2 seed.
+ */
+function doRevealNext(state: TradeDeadlineState, ctx: ReduceContext): ReduceResult<TradeDeadlineState> {
+  const targetId = REVEAL_ORDER.find((id) => !state.revealedTargetIds.includes(id));
+  if (!targetId) return { ok: false, reason: "every deadline target has already been revealed" };
   void ctx;
-  return { ok: true, state: { ...state, teams: nextTeams, revealedTargetIds: [...state.revealedTargetIds, targetId] } };
+  return { ok: true, state: resolveTarget(state, targetId) };
+}
+
+/**
+ * VERIFY_L2.md BLOCKER B1 repair. `hadOpenSlot`/every view/aggregate below
+ * relies on `bidOutcome` being non-null for any team on the `"bid"` path —
+ * that was previously only true once the teacher had clicked through every
+ * target, and nothing stopped (or even strongly warned) a teacher from
+ * advancing out of REVEAL early, leaving `bidOutcome: null` stranded
+ * forever (phase-gated `teacher:revealNext` can never fire again once the
+ * session has left REVEAL). This resolves every still-unrevealed target,
+ * in the same fixed order and with the exact same deterministic math
+ * `resolveTarget` always uses, so an auto-resolved target is indistinguishable
+ * from one the teacher staged by hand — same winner, same price, same
+ * steal/curse verdict — the only thing lost is the live drama of the click.
+ * Called by the runtime's `onPhaseExit` hook (see `shared/lessonModule.ts`)
+ * on every transition OUT of REVEAL, so no reachable post-REVEAL state can
+ * ever have a `"bid"`-path team with `bidOutcome === null` again.
+ */
+function resolveAllTargets(state: TradeDeadlineState): TradeDeadlineState {
+  let next = state;
+  for (const targetId of REVEAL_ORDER) {
+    if (!next.revealedTargetIds.includes(targetId)) next = resolveTarget(next, targetId);
+  }
+  return next;
 }
 
 /* --------------------------------------------------------------- module -- */
@@ -827,9 +870,27 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
     return { carriedFranchises, claimedBy: {}, stockClaimCount: 0, teams: {}, revealedTargetIds: [] };
   },
 
+  /**
+   * VERIFY_L2.md B1 repair. Called by the runtime on every teacher-triggered
+   * phase transition, before the phase itself is committed (see
+   * `sessionService.applyPhaseChange`) — leaving REVEAL for any reason
+   * (normal advance, or a teacher jumping elsewhere) auto-resolves whatever
+   * targets the teacher never got to, deterministically, so no reachable
+   * state past REVEAL can ever have a pending sealed bid again.
+   */
+  onPhaseExit(state, fromPhase) {
+    if (fromPhase !== "REVEAL") return state;
+    return resolveAllTargets(state);
+  },
+
   reduce(state, action, ctx): ReduceResult<TradeDeadlineState> {
     if (action.type === "claim") {
-      if (ctx.phase !== "HOOK") return { ok: false, reason: `claim a franchise during HOOK (session is in ${ctx.phase})` };
+      // M1 repair (VERIFY_L2.md MODERATE): a late joiner can still claim through PLAY, not just HOOK — they
+      // just get less time to decide, same as arriving late to any real deadline. After PLAY closes, claiming
+      // permanently stops (studentView's PLAY case gives an honest "talk to your teacher" message by then).
+      if (ctx.phase !== "HOOK" && ctx.phase !== "PLAY") {
+        return { ok: false, reason: `claim a franchise during HOOK or PLAY (session is in ${ctx.phase})` };
+      }
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated team can claim a franchise" };
       return doClaim(state, action as unknown as ClaimAction, ctx);
     }
@@ -863,7 +924,7 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
 
   allowedActions(phase) {
     if (phase === "HOOK") return ["claim"];
-    if (phase === "PLAY") return ["standPat", "cutForVeteran", "cutForBid"];
+    if (phase === "PLAY") return ["claim", "standPat", "cutForVeteran", "cutForBid"];
     if (phase === "ADAPT") return ["rescueFill"];
     return [];
   },
@@ -879,22 +940,11 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
 
         case "HOOK": {
           if (!claimed) {
-            const claimedIndices = new Set(Object.keys(state.claimedBy).map(Number));
-            const available = state.carriedFranchises
-              .map((f, index) => ({ index, franchise: f }))
-              .filter((entry) => !claimedIndices.has(entry.index));
             return {
               phase,
               claimed: false,
               message: "Which franchise is yours? Pick it up where Draft Day left it — or start a fresh expansion franchise.",
-              available: available.map((entry) => ({
-                index: entry.index,
-                name: entry.franchise.name,
-                crestIndex: entry.franchise.crestIndex,
-                spend: entry.franchise.spend,
-                capRoom: CAP - entry.franchise.spend,
-                roster: SLOT_IDS.map((slot) => marketCardFor(entry.franchise.slots[slot])),
-              })),
+              available: availableClaimsFor(state),
             };
           }
           const report = midseasonReportFor(team);
@@ -914,7 +964,18 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
         }
 
         case "PLAY": {
-          if (!claimed) return { phase, message: "You never claimed a franchise — talk to your teacher." };
+          // M1 repair (VERIFY_L2.md MODERATE): a seat that joins after HOOK has closed can still claim here —
+          // same picker as HOOK, just less time left to decide once claimed. Only after PLAY itself closes
+          // does this become the honest, final "talk to your teacher" dead end (unchanged, below).
+          if (!claimed) {
+            return {
+              phase,
+              claimed: false,
+              lateJoin: true,
+              message: "The deadline window is already open — claim your franchise now. You'll have less time to decide, but you're not shut out.",
+              available: availableClaimsFor(state),
+            };
+          }
           if (team.path !== null) {
             return { phase, committed: true, path: team.path, ...committedSummary(team) };
           }
@@ -1066,6 +1127,23 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
 };
 
 /* -------------------------------------------------------------- view helpers -- */
+
+/** The still-unclaimed carried franchises, in claimable form — shared between HOOK's claim picker and PLAY's
+ *  late-joiner claim picker (M1 repair) so both surfaces stay byte-identical. */
+function availableClaimsFor(state: TradeDeadlineState) {
+  const claimedIndices = new Set(Object.keys(state.claimedBy).map(Number));
+  return state.carriedFranchises
+    .map((f, index) => ({ index, franchise: f }))
+    .filter((entry) => !claimedIndices.has(entry.index))
+    .map((entry) => ({
+      index: entry.index,
+      name: entry.franchise.name,
+      crestIndex: entry.franchise.crestIndex,
+      spend: entry.franchise.spend,
+      capRoom: CAP - entry.franchise.spend,
+      roster: SLOT_IDS.map((slot) => marketCardFor(entry.franchise.slots[slot])),
+    }));
+}
 
 /** A plain MARKET card — for contexts guaranteed to hold only original L1 market ids (a carried/stock franchise's
  *  starting roster, never yet touched by any deadline action). No team context needed or used. */

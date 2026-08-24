@@ -73,6 +73,22 @@ export interface LessonModule<TState = unknown> {
 
   /** Class-wide aggregation used for reveal/board/teacher panels. */
   aggregate(state: TState, phase: CanonicalPhase): unknown;
+
+  /**
+   * Optional lifecycle hook: called by the runtime on every teacher-
+   * triggered phase transition (`advance`/`reveal`), right before the new
+   * phase is committed, with the phase being left and the phase being
+   * entered. Lets a module finish work that would otherwise be stranded the
+   * moment a phase-gated action stops being offered — e.g. a lesson with a
+   * teacher-staged reveal auto-resolving anything left pending so no
+   * reachable post-transition state depends on a click that may never come.
+   * Must be pure and deterministic (same inputs, same result, every time —
+   * this can run on any transition, not just ones a human is watching).
+   * Most modules need nothing here; omit it entirely rather than returning
+   * `state` unchanged for every phase. Not called by `restore` (that's a
+   * full checkpoint revert, not a forward transition) or `end`.
+   */
+  onPhaseExit?(state: TState, fromPhase: CanonicalPhase, toPhase: CanonicalPhase): TState;
 }
 
 /** Type-erasing helper so the registry can hold modules of differing TState. */

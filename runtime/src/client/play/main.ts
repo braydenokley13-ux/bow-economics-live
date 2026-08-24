@@ -917,35 +917,42 @@ function renderTradeDeadline(s: SessionInfo, view: Record<string, unknown>): voi
   }
 }
 
+/** Shared by HOOK's claim picker and PLAY's late-joiner claim picker (M1 repair, VERIFY_L2.md MODERATE) — same
+ *  markup/behavior either way, just a different lead-in message the caller supplies via `view.message`. */
+function renderTDClaimPicker(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const available = (view["available"] as TDAvailable[]) ?? [];
+  body.innerHTML = `
+    <div class="panel" style="padding:16px;">
+      <div class="eyebrow" style="font-size:12px;">Claim your franchise</div>
+      <p style="margin:8px 0 14px; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
+      <div class="claim-grid" id="claimGrid"></div>
+    </div>`;
+  const grid = $("claimGrid");
+  for (const entry of available) {
+    const card = document.createElement("div");
+    card.className = "claim-card";
+    card.dataset["carriedIndex"] = String(entry.index);
+    card.innerHTML = `
+      <div class="claim-card-head"><span style="${crestStyle(entry.crestIndex, 22)}"></span><span class="claim-card-name">${escapeHtml(entry.name)}</span></div>
+      <div class="claim-card-meta">$${entry.spend}M spent · $${entry.capRoom}M cap room left</div>
+      <div class="claim-card-roster">${entry.roster.filter((p): p is TDPlayer => p !== null).map((p) => `<span>${escapeHtml(p.name.split(" ")[0] ?? p.name)} $${p.price}M</span>`).join("")}</div>`;
+    card.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: entry.index }));
+    grid.appendChild(card);
+  }
+  const stock = document.createElement("div");
+  stock.className = "claim-card stock";
+  stock.innerHTML = `
+    <div class="claim-card-head"><span class="claim-card-name">Start an expansion franchise</span></div>
+    <div class="claim-card-meta">A fresh, balanced, league-typical roster — no Draft Day history behind it.</div>`;
+  stock.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: null }));
+  grid.appendChild(stock);
+}
+
 function renderTDHook(view: Record<string, unknown>): void {
   const body = $("gameBody");
   if (!view["claimed"]) {
-    const available = (view["available"] as TDAvailable[]) ?? [];
-    body.innerHTML = `
-      <div class="panel" style="padding:16px;">
-        <div class="eyebrow" style="font-size:12px;">Claim your franchise</div>
-        <p style="margin:8px 0 14px; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
-        <div class="claim-grid" id="claimGrid"></div>
-      </div>`;
-    const grid = $("claimGrid");
-    for (const entry of available) {
-      const card = document.createElement("div");
-      card.className = "claim-card";
-      card.dataset["carriedIndex"] = String(entry.index);
-      card.innerHTML = `
-        <div class="claim-card-head"><span style="${crestStyle(entry.crestIndex, 22)}"></span><span class="claim-card-name">${escapeHtml(entry.name)}</span></div>
-        <div class="claim-card-meta">$${entry.spend}M spent · $${entry.capRoom}M cap room left</div>
-        <div class="claim-card-roster">${entry.roster.filter((p): p is TDPlayer => p !== null).map((p) => `<span>${escapeHtml(p.name.split(" ")[0] ?? p.name)} $${p.price}M</span>`).join("")}</div>`;
-      card.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: entry.index }));
-      grid.appendChild(card);
-    }
-    const stock = document.createElement("div");
-    stock.className = "claim-card stock";
-    stock.innerHTML = `
-      <div class="claim-card-head"><span class="claim-card-name">Start an expansion franchise</span></div>
-      <div class="claim-card-meta">A fresh, balanced, league-typical roster — no Draft Day history behind it.</div>`;
-    stock.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: null }));
-    grid.appendChild(stock);
+    renderTDClaimPicker(view);
     return;
   }
 
@@ -979,6 +986,14 @@ function renderTDHook(view: Record<string, unknown>): void {
 function renderTDPlay(view: Record<string, unknown>): void {
   const body = $("gameBody");
 
+  // M1 repair (VERIFY_L2.md MODERATE): a late joiner (never claimed, but PLAY still allows it — see the
+  // module's studentView) gets the same claim picker HOOK offers, not a dead end. No uncontrolled input lives
+  // on this screen, so it's fine to just let it rebuild every poll like most screens do.
+  if (view["claimed"] === false) {
+    tdPlayMounted = null;
+    renderTDClaimPicker(view);
+    return;
+  }
   if (!view["franchise"] && !view["committed"]) {
     body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"] ?? "You never claimed a franchise — talk to your teacher."))}</div>`;
     tdPlayMounted = null;

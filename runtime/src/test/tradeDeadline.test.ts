@@ -13,6 +13,7 @@ import {
   cutBudgetFor,
   deadCapFor,
   extractCarriedFranchises,
+  hadOpenSlot,
   isValidBid,
   midseasonReportFor,
   rescueCandidatesFor,
@@ -216,10 +217,40 @@ test("CLAIM: a team cannot claim twice", () => {
   expectRejected(result, /already claimed/);
 });
 
-test("CLAIM: claim is only allowed during HOOK, never PLAY or LOBBY", () => {
+test("CLAIM: rejected during LOBBY (too early) and REVEAL/ADAPT (too late) — never during any other phase", () => {
   const state = freshL2();
   expectRejected(tradeDeadlineModule.reduce(state, { type: "claim", carriedIndex: 0 }, tdCtx("LOBBY", "t1")));
-  expectRejected(tradeDeadlineModule.reduce(state, { type: "claim", carriedIndex: 0 }, tdCtx("PLAY", "t1")));
+  expectRejected(tradeDeadlineModule.reduce(state, { type: "claim", carriedIndex: 0 }, tdCtx("REVEAL", "t1")));
+  expectRejected(tradeDeadlineModule.reduce(state, { type: "claim", carriedIndex: 0 }, tdCtx("ADAPT", "t1")));
+});
+
+test("M1 repair (VERIFY_L2.md MODERATE): a late joiner can still claim during PLAY, not just HOOK — the studentView PLAY case offers the same picker instead of a dead end", () => {
+  const state = freshL2();
+  const claimed = expectOk(tradeDeadlineModule.reduce(state, { type: "claim", carriedIndex: 0 }, tdCtx("PLAY", "t1")));
+  const team = claimed.teams["t1"]!;
+  assert.equal(team.claim!.origin, "carried");
+  assert.equal(team.claim!.spend, 100);
+
+  // allowedActions documents PLAY-time claiming too, and studentView's PLAY case offers the picker before a
+  // claim, then falls through to the normal deciding screen immediately after — same-turn, no separate reload.
+  assert.ok(tradeDeadlineModule.allowedActions("PLAY").includes("claim"));
+  const preClaimView = tradeDeadlineModule.studentView(state, "t1", "PLAY") as { claimed: boolean; lateJoin?: boolean; available?: unknown[] };
+  assert.equal(preClaimView.claimed, false);
+  assert.equal(preClaimView.lateJoin, true);
+  assert.ok((preClaimView.available as unknown[]).length > 0);
+  const postClaimView = tradeDeadlineModule.studentView(claimed, "t1", "PLAY") as { committed: boolean; franchise: { name: string } };
+  assert.equal(postClaimView.committed, false);
+  assert.equal(postClaimView.franchise.name, "Ironworks");
+
+  // And a late-claiming team can go on to make a real, fully-governed deadline decision, same as anyone else.
+  const stood = expectOk(tradeDeadlineModule.reduce(claimed, { type: "standPat", reason: "no-good-fit" }, tdCtx("PLAY", "t1")));
+  assert.equal(stood.teams["t1"]!.path, "standPat");
+});
+
+test("M1: claiming a stock franchise during PLAY works the same as during HOOK", () => {
+  const state = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1"] }); // no seed
+  const claimed = expectOk(tradeDeadlineModule.reduce(state, { type: "claim", carriedIndex: null }, tdCtx("PLAY", "t1")));
+  assert.equal(claimed.teams["t1"]!.claim!.origin, "stock");
 });
 
 test("CLAIM: the teacher cannot claim a franchise", () => {
@@ -498,6 +529,141 @@ test("REVEAL: steal/curse verdict is computed from the winning bid vs. the targe
   const dfResult = board.revealed.find((r) => r.id === "tgt-df")!;
   assert.equal(dfResult.winningBid, 30);
   assert.equal(dfResult.verdict, "steal");
+});
+
+/* ------------------------------------------ B1 repair: early advance out of REVEAL -- */
+
+/** Simulates the runtime's `sessionService.applyPhaseChange` calling the module's `onPhaseExit` hook — the exact
+ *  call a teacher's Advance/Reveal click makes before the phase itself changes (see sessionService.ts). */
+function advanceOutOfReveal(state: TradeDeadlineState): TradeDeadlineState {
+  return tradeDeadlineModule.onPhaseExit!(state, "REVEAL", "ADAPT");
+}
+
+test("B1 repair (VERIFY_L2.md BLOCKER): onPhaseExit is a no-op leaving any phase other than REVEAL", () => {
+  const state = claim(freshL2(), "t1", 0);
+  const unchanged = tradeDeadlineModule.onPhaseExit!(state, "PLAY", "REVEAL");
+  assert.equal(unchanged, state, "leaving a non-REVEAL phase must return the identical state reference, not a no-op copy");
+  const unchanged2 = tradeDeadlineModule.onPhaseExit!(state, "HOOK", "PLAY");
+  assert.equal(unchanged2, state);
+});
+
+test("B1 repair: onPhaseExit auto-resolves every unrevealed target leaving REVEAL, byte-identical to a full manual reveal of the same starting state", () => {
+  const base = twoBidders(40, 20, "tgt-pm"); // t1 wins ($40 >= $35 reserve), t2 loses — one fixed starting state
+  const early = advanceOutOfReveal(base); // teacher never clicks revealNext at all
+  const manual = revealAllFor(base); // teacher clicks through all 4 by hand, from the identical starting point
+  assert.deepEqual(early, manual, "auto-resolve must produce the exact same state as a full manual reveal — same winners, same prices, same verdicts");
+  assert.equal(early.revealedTargetIds.length, TARGETS.length);
+  assert.equal(early.teams["t1"]!.bidOutcome, "won");
+  assert.equal(early.teams["t2"]!.bidOutcome, "lost");
+});
+
+test("B1 repair: onPhaseExit is idempotent with PARTIAL manual progress — 0, 1, 2, or 3 manual reveals first all converge on the identical final state", () => {
+  const base = twoBidders(40, 20, "tgt-pm"); // one fixed starting state — every branch below derives from this same object
+  const fullyManual = revealAllFor(base);
+  for (let manualClicks = 0; manualClicks <= 3; manualClicks += 1) {
+    let s = base;
+    for (let i = 0; i < manualClicks; i += 1) {
+      s = expectOk(tradeDeadlineModule.reduce(s, { type: "teacher:revealNext" }, tdCtx("REVEAL", "teacher")));
+    }
+    const resolved = advanceOutOfReveal(s);
+    assert.deepEqual(resolved, fullyManual, `${manualClicks} manual reveal(s) before auto-resolve should still converge on the identical final state`);
+  }
+});
+
+test("B1 repair: end-to-end — a team stranded mid-REVEAL by an early advance gets its bid resolved, real ADAPT access, and can actually rescue", () => {
+  // t1 cuts and bids low enough to genuinely lose; teacher advances out of REVEAL having revealed nothing.
+  const state = claim(freshL2(AT_CAP_ROSTER), "t1", 0); // cutting PLAYMAKER (pm-10): budget $9M
+  let s = expectOk(tradeDeadlineModule.reduce(state, { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 }, tdCtx("PLAY", "t1")));
+  assert.equal(s.teams["t1"]!.bidOutcome, null, "precondition: nothing has been revealed yet");
+
+  s = advanceOutOfReveal(s); // the teacher's early Advance click, simulated
+  assert.equal(s.teams["t1"]!.bidOutcome, "lost", "the $5 bid genuinely loses against tgt-pm's $35 reserve, resolved automatically");
+
+  const adaptView = tradeDeadlineModule.studentView(s, "t1", "ADAPT") as { openSlot: string | null; rescued: boolean; candidates: { id: string }[] };
+  assert.equal(adaptView.openSlot, "PLAYMAKER", "must NOT show the false 'nothing to do here' — this is exactly VERIFY_L2.md's B1 repro");
+  assert.equal(adaptView.rescued, false);
+  assert.ok(adaptView.candidates.length >= 2);
+
+  const rescued = expectOk(tradeDeadlineModule.reduce(s, { type: "rescueFill", playerId: adaptView.candidates[0]!.id }, tdCtx("ADAPT", "t1")));
+  assert.equal(rescued.teams["t1"]!.slots.PLAYMAKER, adaptView.candidates[0]!.id);
+  assert.ok(capUsedOf(rescued.teams["t1"]!) <= CAP);
+  const postRescueView = tradeDeadlineModule.studentView(rescued, "t1", "ADAPT") as { openSlot: string | null; rescued: boolean };
+  assert.equal(postRescueView.rescued, true);
+});
+
+test("B1 repair: class-wide aggregate open-slot count is correct after an early advance, across multiple teams with different unrevealed targets", () => {
+  // Mirrors VERIFY_L2.md's exact repro shape: two carried franchises bid on two DIFFERENT targets; only one
+  // target gets manually revealed before the teacher advances early. Both bids are genuine lowballs here (unlike
+  // the verifier's original repro where one bid happened to clear its reserve) so BOTH teams truly end up with
+  // an open slot — the class-wide count this asserts is unambiguous either way.
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  const seatIds = ["india", "juliet"];
+  for (const { slot, playerId } of ROOMY_ROSTER) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "india", seatIds)));
+  l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "india", seatIds)));
+  for (const { slot, playerId } of ROOMY_ROSTER) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "juliet", seatIds)));
+  l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "juliet", seatIds)));
+
+  let s = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["india", "juliet"], seed: { lessonModuleId: draftDayModule.id, state: l1 } });
+  s = claim(s, "india", 0, ["india", "juliet"]);
+  s = claim(s, "juliet", 1, ["india", "juliet"]);
+  // India cuts DEFENDER, lowballs tgt-df (reserve $25) at $10 — a genuine loss.
+  s = expectOk(tradeDeadlineModule.reduce(s, { type: "cutForBid", slot: "DEFENDER", targetId: "tgt-df", bidAmount: 10 }, tdCtx("PLAY", "india", ["india", "juliet"])));
+  // Juliet cuts SCORER, lowballs tgt-sc (reserve $40) at $20 — also a genuine loss.
+  s = expectOk(tradeDeadlineModule.reduce(s, { type: "cutForBid", slot: "SCORER", targetId: "tgt-sc", bidAmount: 20 }, tdCtx("PLAY", "juliet", ["india", "juliet"])));
+
+  // Teacher reveals ONLY tgt-sc (Juliet's), then advances early — India's tgt-df is left unrevealed.
+  s = expectOk(tradeDeadlineModule.reduce(s, { type: "teacher:revealNext" }, tdCtx("REVEAL", "teacher")));
+  assert.equal(s.teams["juliet"]!.bidOutcome, "lost");
+  assert.equal(s.teams["india"]!.bidOutcome, null, "precondition: India's target was never manually revealed");
+
+  s = advanceOutOfReveal(s); // the teacher's early advance
+
+  assert.equal(s.teams["india"]!.bidOutcome, "lost", "auto-resolved on exit, not left null");
+  assert.equal(hadOpenSlot(s.teams["india"]!), true);
+  assert.equal(hadOpenSlot(s.teams["juliet"]!), true);
+
+  const agg = tradeDeadlineModule.aggregate(s, "SYNTHESIS") as { openSlotCount: number; rescuedCount: number };
+  assert.equal(agg.openSlotCount, 2, "both teams genuinely have an open slot — the class-wide number must say 2, not undercount to 1");
+  assert.equal(agg.rescuedCount, 0);
+
+  const board = tradeDeadlineModule.boardView(s, "SYNTHESIS") as { cards: { id: string; body: string }[] };
+  const card = board.cards.find((c) => c.id === "no-dominant-strategy")!;
+  assert.match(card.body, /2 team.*open slot/is);
+});
+
+test("hadOpenSlot three-way semantics: never-open (standPat/veteran) is always false, open-resolved-lost is always true (rescued or not), and open-unresolved cannot survive past REVEAL", () => {
+  // 1. Never-open: a team that never took the bid path.
+  const standPatState = expectOk(tradeDeadlineModule.reduce(claim(freshL2(), "t1", 0), { type: "standPat", reason: "happy-with-roster" }, tdCtx("PLAY", "t1")));
+  assert.equal(hadOpenSlot(standPatState.teams["t1"]!), false);
+
+  const vetRoster = [
+    { slot: "SCORER", playerId: "sc-10" },
+    { slot: "PLAYMAKER", playerId: "pm-10" },
+    { slot: "DEFENDER", playerId: "df-10" },
+    { slot: "REBOUNDER", playerId: "rb-10" },
+    { slot: "WILDCARD", playerId: "sc-20" },
+  ];
+  const vetState = expectOk(tradeDeadlineModule.reduce(claim(freshL2(vetRoster), "t1", 0), { type: "cutForVeteran", slot: "SCORER", veteranId: "vet-sc" }, tdCtx("PLAY", "t1")));
+  assert.equal(hadOpenSlot(vetState.teams["t1"]!), false);
+
+  // 2. Open-resolved (lost): true whether or not it's since been rescued — this is the case the fix this
+  // helper was originally built for (see the module header) and it must still hold.
+  let bidLostState = expectOk(tradeDeadlineModule.reduce(claim(freshL2(AT_CAP_ROSTER), "t1", 0), { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 }, tdCtx("PLAY", "t1")));
+  bidLostState = revealAllFor(bidLostState);
+  assert.equal(bidLostState.teams["t1"]!.bidOutcome, "lost");
+  assert.equal(hadOpenSlot(bidLostState.teams["t1"]!), true, "open-resolved, not yet rescued");
+  const candidates = rescueCandidatesFor(bidLostState.teams["t1"]!, "PLAYMAKER");
+  const rescuedState = expectOk(tradeDeadlineModule.reduce(bidLostState, { type: "rescueFill", playerId: candidates[0]!.id }, tdCtx("ADAPT", "t1")));
+  assert.equal(hadOpenSlot(rescuedState.teams["t1"]!), true, "open-resolved, now rescued — still true, this fact never un-happens");
+
+  // 3. Open-unresolved (bidOutcome still null) is only ever transiently true DURING REVEAL — the whole point
+  // of the B1 repair is that this state cannot survive a transition out of REVEAL. Confirm both halves:
+  let unresolvedState = expectOk(tradeDeadlineModule.reduce(claim(freshL2(AT_CAP_ROSTER), "t1", 0), { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 }, tdCtx("PLAY", "t1")));
+  assert.equal(unresolvedState.teams["t1"]!.bidOutcome, null);
+  assert.equal(hadOpenSlot(unresolvedState.teams["t1"]!), false, "mid-REVEAL, unresolved reads as false — this is fine, nothing final is being claimed about it yet");
+  const afterExit = advanceOutOfReveal(unresolvedState);
+  assert.notEqual(afterExit.teams["t1"]!.bidOutcome, null, "must never still be null once REVEAL is left — that was exactly B1's bug");
+  assert.equal(hadOpenSlot(afterExit.teams["t1"]!), true, "now correctly resolved to true (this particular bid genuinely loses)");
 });
 
 /* -------------------------------------------------------------- adapt -- */
