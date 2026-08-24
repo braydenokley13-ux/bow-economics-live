@@ -146,3 +146,33 @@ franchise reveal, cap-state relabeling, rescue affordance, and all four runtime 
 repairs (B1-B3, R1-R4) — is genuinely fixed and classroom-gameplay-tested. This is a
 **gameplay-tested candidate**, not yet a fully certified one; classroom-proven still requires
 an actual classroom.
+
+## ROUND 3 CERTIFICATION (targeted re-check, commit 29225ea)
+
+Fresh scratch copy, `npm install && npm run build && npm test` — **143/143 passing** (was
+107/107). Re-ran only the two round-2 blockers against the identical MaxSpend ($100M locked,
+`sc-60/pm-10/df-10/rb-10/wc:sc-10`) and Leftover ($60M locked, $40M idle, same shocked card
+`pm-10`) teams.
+
+**1. Over-cap ADAPT repro — FIXED.** `adaptBudgetFor` is now `CAP - spentOf(team)`, arithmetic-
+identical to normal placement's affordability check. Both teams repaired and finished at
+exactly `spent: 100, remaining: 0` — no overflow possible by construction, confirmed live (not
+just by reading the comment). Bonus: the market gained three same-tier PLAYMAKER cards
+(Kofi Mensah 53, Diego Salas 55, Nasir Whitfield 63), so a maxed-out team's zero-stipend
+budget (=exactly the poached salary) still yields **3 real candidates**, not zero — a genuine
+lateral/upgrade choice, not a dead end.
+
+**2. RISK BUFFER equal-budgets repro — FIXED.** MaxSpend's budget is now $10M (poached salary,
+no more); Leftover's is $50M (poached salary + its real $40M slack) — mechanically different,
+not identical. The rendered card now cites the real per-group averages ("$10M avg" /
+"$50M avg") and its claim ("that room becomes real extra repair budget, mechanically, every
+time") is now actually true of the mechanics, not asserted over them.
+
+**Rating:** STRONG stands — if anything it's on firmer footing, since the cap invariant is now
+enforced by construction and RISK BUFFER teaches something the mechanic genuinely does. At-cap
+repair is correctly now a same-price substitute choice (a real "≤poached-salary" decision among
+differently-rated options), not a stipend shop.
+
+**Overall ruling: CLASSROOM-READY CANDIDATE.** Both named blockers are closed and verified live,
+not just claimed. (Standard caveat carried from round 2: this is gameplay-tested, not yet
+classroom-proven — that still requires a real classroom.)
