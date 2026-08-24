@@ -1309,7 +1309,7 @@ const FA_TIER_LABEL: Record<string, string> = { star: "STAR", solid: "SOLID", va
 // discipline as trade deadline's own PLAY screen (tdPlayMounted) and box office's price dial: only tear down
 // and rebuild the DOM when something the SERVER actually changed (day, acted state, or which agent's
 // composer is open), never on every ~1.2s poll tick, so an in-progress stepper value survives.
-let faPlayMounted: { day: number; acted: boolean; openAgentId: string | null } | null = null;
+let faPlayMounted: { day: number; acted: boolean; held: boolean; outForDay: boolean; openAgentId: string | null } | null = null;
 let faComposerSlot: string | null = null;
 let faComposerAmount = 0;
 
@@ -1402,6 +1402,7 @@ function renderFAHook(view: Record<string, unknown>): void {
       <div class="roster-wall" style="margin-top:12px;">${roster.map((r) => rosterSlotHtml(r.id, r.player)).join("")}</div>
     </div>
     ${standing ? `<div class="standing-card"><span>Playoff picture</span><span class="standing-rank">#${standing.rank} of ${standing.totalTeams}</span><span style="font-size:12px; color:${standing.inHunt ? "var(--cap-safe)" : "var(--ink-muted)"};">${standing.inHunt ? "In the playoff hunt" : "On the outside looking in"}</span></div>` : ""}
+    ${marketRulesHtml((view["marketRules"] as string[]) ?? [])}
     <div class="eyebrow" style="font-size:12px; margin:16px 0 4px;">The market preview</div>
     <div class="fa-market-grid" id="faMarketPreview"></div>`;
   const grid = $("faMarketPreview");
@@ -1416,6 +1417,18 @@ function renderFAHook(view: Record<string, unknown>): void {
       <div class="fa-ask-row"><span class="fa-ask">$${a.openingAsk}M</span><span class="eyebrow" style="font-size:10px;">opening ask</span></div>`;
     grid.appendChild(card);
   }
+}
+
+/** R1 repair (VERIFY_L3.md R1): a compact, collapsible rules panel — grade 5-6 copy the server itself owns
+ *  (`MARKET_RULES`), rendered wherever a student is about to decide something (HOOK's market preview, and
+ *  right beside the PLAY composer). `<details>` keeps it out of the way until tapped, native and dependency-free. */
+function marketRulesHtml(rules: string[]): string {
+  if (rules.length === 0) return "";
+  return `
+    <details class="fa-rules">
+      <summary>How the market works</summary>
+      <ul>${rules.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+    </details>`;
 }
 
 function rosterSlotHtml(slotId: string, player: FACard): string {
@@ -1457,6 +1470,7 @@ function renderFAPlay(view: Record<string, unknown>): void {
   const windowClosed = Boolean(view["windowClosed"]);
   const acted = Boolean(view["acted"]);
   const held = Boolean(view["held"]);
+  const outForDay = Boolean(view["outForDay"]);
   const pendingOffer = view["pendingOffer"] as { agentId: string; amount: number; slot: string } | null;
   const franchise = view["franchise"] as FAFranchise;
   const roster = (view["roster"] as FARosterSlot[]) ?? [];
@@ -1464,9 +1478,20 @@ function renderFAPlay(view: Record<string, unknown>): void {
   const history = (view["history"] as FADayHistory[]) ?? [];
   const openAgentId = document.getElementById("faComposerRoot")?.getAttribute("data-agent") ?? null;
 
-  const signature = { day, acted, openAgentId };
+  // R2 repair: `held`/`outForDay` must be their own signature fields, not folded only into `acted` — a
+  // withdraw flips held/outForDay from false->true while `acted` was ALREADY true (a pending offer already
+  // made it true), so `acted` alone wouldn't notice the transition and the stale "offer in, withdraw" banner
+  // would never refresh into the honest "out for today" state.
+  const signature = { day, acted, held, outForDay, openAgentId };
   const rootMissing = !document.getElementById("faPlayRoot");
-  const alreadyMounted = faPlayMounted && faPlayMounted.day === signature.day && faPlayMounted.acted === signature.acted && faPlayMounted.openAgentId === signature.openAgentId && !rootMissing;
+  const alreadyMounted =
+    faPlayMounted &&
+    faPlayMounted.day === signature.day &&
+    faPlayMounted.acted === signature.acted &&
+    faPlayMounted.held === signature.held &&
+    faPlayMounted.outForDay === signature.outForDay &&
+    faPlayMounted.openAgentId === signature.openAgentId &&
+    !rootMissing;
   if (alreadyMounted) return; // preserves the composer's in-progress stepper value across poll ticks
   faPlayMounted = signature;
 
@@ -1489,22 +1514,33 @@ function renderFAPlay(view: Record<string, unknown>): void {
   const actedBanner = $("faActedBanner");
   if (windowClosed) {
     actedBanner.innerHTML = `<div class="banner">The signing window has closed. Look up at the board for the finale.</div>`;
+  } else if (outForDay) {
+    // R2 repair (VERIFY_L3.md R2): a withdrawal is NOT the same as a plain hold — it's already cost this
+    // team its day. The composer is honest about that: no way back into today's market, just a wait for
+    // tomorrow.
+    actedBanner.innerHTML = `<div class="banner">You pulled out of talks today. The market saw you go — no new offer until tomorrow.</div>`;
   } else if (acted) {
     actedBanner.innerHTML = held
       ? `<div class="banner">You're holding today — waiting on the market. You can still change your mind before the day closes.</div>`
       : `<div class="banner">Offer in: $${pendingOffer?.amount}M on ${market.find((a) => a.id === pendingOffer?.agentId)?.name ?? "your target"} (${pendingOffer?.slot}). Sealed until the day closes. <button id="faWithdraw" class="btn" style="margin-left:8px;">Withdraw</button></div>`;
-    if (!held) $("faWithdraw")?.addEventListener("click", () => outbox?.submit({ type: "withdrawOffer" }));
+    if (!held) {
+      $("faWithdraw")?.addEventListener("click", () => {
+        if (confirm("Pull your offer back? This ends your day — no new offer until tomorrow. Editing your offer instead (pick a different agent, amount, or slot) is free and doesn't cost you anything.")) {
+          outbox?.submit({ type: "withdrawOffer" });
+        }
+      });
+    }
   } else {
     actedBanner.innerHTML = `<button id="faHoldBtn" class="btn btn-warn full">Hold today — wait on the market</button>`;
     $("faHoldBtn")?.addEventListener("click", () => outbox?.submit({ type: "holdDay" }));
   }
 
   const marketWrap = $("faMarketWrap");
-  marketWrap.innerHTML = `<div class="eyebrow" style="font-size:12px; margin-bottom:6px;">The market</div><div class="fa-market-grid" id="faMarketGrid"></div><div id="faComposerRoot"></div>`;
+  marketWrap.innerHTML = `${marketRulesHtml((view["marketRules"] as string[]) ?? [])}<div class="eyebrow" style="font-size:12px; margin:10px 0 6px;">The market</div><div class="fa-market-grid" id="faMarketGrid"></div><div id="faComposerRoot"></div>`;
   const grid = $("faMarketGrid");
   for (const a of market) {
     const card = document.createElement("div");
-    card.className = "fa-agent-card" + (a.signed ? " signed" : "");
+    card.className = "fa-agent-card" + (a.signed ? " signed" : outForDay ? " unaffordable" : "");
     card.dataset["agentId"] = a.id;
     card.innerHTML = `
       <div class="fa-agent-head"><span class="fa-agent-name">${escapeHtml(a.name)}</span><span class="fa-agent-meta">${a.position} · ${FA_TIER_LABEL[a.tier] ?? a.tier}</span></div>
@@ -1516,7 +1552,7 @@ function renderFAPlay(view: Record<string, unknown>): void {
           ? `<div class="fa-signed-stamp">✓ SIGNED — ${a.signedFranchise ? escapeHtml(a.signedFranchise.name) : ""} $${a.signedAmount}M (day ${a.signedDay})</div>`
           : `<div class="fa-interest-badge">${a.interestCount} team${a.interestCount === 1 ? "" : "s"} interested right now</div>`
       }`;
-    if (!a.signed && !windowClosed) {
+    if (!a.signed && !windowClosed && !outForDay) {
       card.addEventListener("click", () => {
         const root = document.getElementById("faComposerRoot");
         const currentlyOpen = root?.getAttribute("data-agent");
@@ -1602,6 +1638,11 @@ function renderFAComposer(agent: FAAgentCard, roster: FARosterSlot[]): void {
     if (!faComposerSlot) return;
     outbox?.submit({ type: "offer", agentId: agent.id, amount: faComposerAmount, slot: faComposerSlot });
   });
+  // N1 repair (VERIFY_L3.md N1): at the classroom Chromebook shape (~1024x600), the composer opens roughly a
+  // full market grid below the fold with zero cue anything happened. `block: "nearest"` brings it fully
+  // on-screen without yanking the whole page to the top when it's already partly visible. Instant, not
+  // smooth — a mid-animation scroll position is not a real "reachable" state to leave a student in.
+  root.scrollIntoView({ behavior: "auto", block: "nearest" });
 }
 
 function renderFAReveal(view: Record<string, unknown>): void {

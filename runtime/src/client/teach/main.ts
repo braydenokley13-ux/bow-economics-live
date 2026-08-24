@@ -533,6 +533,7 @@ type FATeamStat = {
   signingsCount: number;
   pendingOffer: { agentId: string; amount: number; slot: string } | null;
   held: boolean;
+  outForDay: boolean;
   acted: boolean;
 };
 type FAAgentStat = { id: string; name: string; position: string; tier: string; ask: number; signed: boolean; signedBy: string | null; signedAmount: number | null };
@@ -541,6 +542,9 @@ function renderFreeAgencyAggregate(view: Record<string, unknown>, seats: Teacher
   const teams = (view["teams"] as FATeamStat[]) ?? [];
   const agents = (view["agents"] as FAAgentStat[]) ?? [];
   const seatById = new Map(seats.map((s) => [s.id, s]));
+  // N2 repair (VERIFY_L3.md N2): the pending-offer label used to show the raw internal agent id
+  // (e.g. "fa-value-df") instead of its name -- the `agents` array already carries the friendly name.
+  const agentNameById = new Map(agents.map((a) => [a.id, a.name]));
   const wrap = document.createElement("div");
 
   const kpis = document.createElement("div");
@@ -574,7 +578,15 @@ function renderFreeAgencyAggregate(view: Record<string, unknown>, seats: Teacher
     const franchiseRow = t.franchise
       ? `<div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;"><span style="${crestStyle(t.franchise.crestIndex, 16)}"></span><strong>${escapeHtml(t.franchise.name)}</strong></div>`
       : `<strong>${seat ? escapeHtml(seat.displayName) : "Not claimed"}</strong>`;
-    const actedLabel = t.pendingOffer ? `offer: $${t.pendingOffer.amount}M on ${escapeHtml(t.pendingOffer.agentId)}` : t.held ? "holding" : t.acted ? "acted" : "deciding…";
+    const actedLabel = t.pendingOffer
+      ? `offer: $${t.pendingOffer.amount}M on ${escapeHtml(agentNameById.get(t.pendingOffer.agentId) ?? t.pendingOffer.agentId)}`
+      : t.outForDay
+        ? "withdrew — out for today"
+        : t.held
+          ? "holding"
+          : t.acted
+            ? "acted"
+            : "deciding…";
     tile.innerHTML = `
       ${franchiseRow}
       <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : ""}</span><span>$${t.capUsed}M used</span></div>

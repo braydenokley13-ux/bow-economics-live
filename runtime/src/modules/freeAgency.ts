@@ -9,6 +9,19 @@
  *   L3 "Everyone else faces constraints too, and their choices change my
  *   opportunities."
  *
+ * A fresh-context verification pass (docs/gauntlet/module-1/VERIFY_L3.md)
+ * returned ACCEPT WITH REQUIRED REPAIRS, rating STRONG. Six findings were
+ * repaired this round, tagged inline where each lives: R1 (the market's own
+ * governing rules were nowhere a student could read them — see
+ * `MARKET_RULES`), R2 (a withdraw-then-resubmit loop let a team fake the
+ * public interest-count signal for free — see `doWithdrawOffer`'s
+ * `outForDay` lock), M1 (THE WALK-AWAY could never tell the shrinker's
+ * story — see `computeAwards`'s engagement-based rewrite), M2 (IRON BOOKS
+ * never fired for a genuine whole-class hold — see the loosened gate), N1
+ * (the offer composer could open off-screen on a classroom Chromebook — see
+ * `renderFAComposer`'s `scrollIntoView` in play/main.ts), N2 (the teacher
+ * aggregate showed a raw agent id instead of its name — teach/main.ts).
+ *
  * This module imports wholesale from both draftDay.ts (MARKET, SLOT_IDS,
  * POSITION_TAGS, franchiseFor, ...) and tradeDeadline.ts (VETERANS,
  * RESCUE_POOL, TARGETS, deadCapFor, isValidBid, extractCarriedFranchises,
@@ -511,10 +524,15 @@ export type TeamState = {
   slots: Record<SlotId, CarriedPlayer | null>;
   /** Running total, starts at claim.deadCapCarried, grows with every incumbent released this window. */
   deadCap: number;
-  /** Today's sealed, revisable offer — null when undecided or explicitly holding. */
+  /** Today's sealed, revisable offer — null when undecided, explicitly holding, or withdrawn. */
   pendingOffer: Offer | null;
-  /** The pacing panel's explicit "acted (holding)" signal — see charter §2. */
+  /** The pacing panel's explicit "acted (holding)" signal — see charter §2. Also true after a withdrawal
+   *  (R2 repair) — "out for today" reads as acted for pacing, same as a plain hold. */
   held: boolean;
+  /** R2 repair (VERIFY_L3.md R2): true once this team has withdrawn an offer THIS day — locks out any new
+   *  offer for the rest of the day (editing an offer that's still standing never sets this; only an actual
+   *  withdrawal does). Reset to false at every day close. */
+  outForDay: boolean;
   /** Frozen chronological record of every agent this team has actually signed. */
   signings: readonly SigningEvent[];
 };
@@ -542,6 +560,11 @@ export type DayRecord = {
   resolutions: readonly DayResolutionRecord[];
 };
 
+/** R2/M1 repair: a withdrawn offer used to leave zero trace anywhere (VERIFY_L3.md R2's exploit evidence).
+ *  Frozen the instant a withdrawal happens — never mutated afterward — so THE WALK-AWAY (M1) can credit a
+ *  team for having genuinely engaged an agent even when they pulled out before the day closed. */
+export type WithdrawnOfferRecord = { day: number; seatId: SeatId; agentId: string; slot: SlotId; amount: number; askAtWithdraw: number };
+
 export type FreeAgencyState = {
   carriedFranchises: readonly CarriedFranchiseL3[];
   claimedBy: Record<number, SeatId>;
@@ -554,13 +577,16 @@ export type FreeAgencyState = {
   /** Full per-day frozen history — offers (sealed amounts included) and resolutions, oldest first. The
    *  finale and SYNTHESIS are computed from this and nothing else (charter §6). */
   history: readonly DayRecord[];
+  /** Every withdrawal, ever, across the whole window — cumulative, never reset at day close (unlike
+   *  `history`, which is per-day; a withdrawal happens mid-day, before that day's record exists). */
+  withdrawnOffers: readonly WithdrawnOfferRecord[];
   /** How many REVEAL stages have played, teacher-paced via `teacher:revealNext`. See `totalRevealSteps`. */
   revealStage: number;
 };
 
 const emptyTeamSlots = (): Record<SlotId, CarriedPlayer | null> => emptyCarriedSlots();
 
-const emptyTeam = (): TeamState => ({ claim: null, slots: emptyTeamSlots(), deadCap: 0, pendingOffer: null, held: false, signings: [] });
+const emptyTeam = (): TeamState => ({ claim: null, slots: emptyTeamSlots(), deadCap: 0, pendingOffer: null, held: false, outForDay: false, signings: [] });
 
 const getTeam = (state: FreeAgencyState, seatId: SeatId): TeamState => state.teams[seatId] ?? emptyTeam();
 const withTeam = (state: FreeAgencyState, seatId: SeatId, team: TeamState): FreeAgencyState => ({ ...state, teams: { ...state.teams, [seatId]: team } });
@@ -696,7 +722,7 @@ function doClaim(state: FreeAgencyState, action: ClaimAction, ctx: ReduceContext
 
   if (action.carriedIndex === null) {
     const franchise = stockFranchiseL3(state.carriedFranchises.length + state.stockClaimCount);
-    const team: TeamState = { claim: franchise, slots: { ...franchise.slots }, deadCap: franchise.deadCapCarried, pendingOffer: null, held: false, signings: [] };
+    const team: TeamState = { claim: franchise, slots: { ...franchise.slots }, deadCap: franchise.deadCapCarried, pendingOffer: null, held: false, outForDay: false, signings: [] };
     return { ok: true, state: { ...withTeam(state, seatId, team), stockClaimCount: state.stockClaimCount + 1 } };
   }
   if (typeof action.carriedIndex !== "number" || !Number.isInteger(action.carriedIndex)) {
@@ -707,7 +733,7 @@ function doClaim(state: FreeAgencyState, action: ClaimAction, ctx: ReduceContext
   if (!franchise) return { ok: false, reason: `no carried franchise at index ${idx}` };
   if (state.claimedBy[idx] !== undefined) return { ok: false, reason: `${franchise.name} has already been claimed by another team` };
 
-  const team: TeamState = { claim: franchise, slots: { ...franchise.slots }, deadCap: franchise.deadCapCarried, pendingOffer: null, held: false, signings: [] };
+  const team: TeamState = { claim: franchise, slots: { ...franchise.slots }, deadCap: franchise.deadCapCarried, pendingOffer: null, held: false, outForDay: false, signings: [] };
   return { ok: true, state: { ...withTeam(state, seatId, team), claimedBy: { ...state.claimedBy, [idx]: seatId } } };
 }
 
@@ -722,6 +748,10 @@ function doOffer(state: FreeAgencyState, action: OfferAction, ctx: ReduceContext
   const pre = requireClaimedOpenWindow(state, ctx.seatId);
   if (!pre.ok) return pre;
   const team = pre.team;
+  // R2 repair (VERIFY_L3.md R2): withdrawing ends the day — no new offer, whether this is a fresh offer or
+  // an attempt to "re-enter" after pulling out. Editing an offer that's still standing (doOffer called again
+  // before any withdrawal) never sets `outForDay`, so that path is untouched.
+  if (team.outForDay) return { ok: false, reason: "you withdrew from today's market — the market saw you go. No new offer until tomorrow." };
   if (typeof action.agentId !== "string") return { ok: false, reason: "agentId must be a string" };
   const agent = AGENT_BY_ID.get(action.agentId);
   if (!agent) return { ok: false, reason: `no free agent "${String(action.agentId)}"` };
@@ -743,11 +773,25 @@ function doOffer(state: FreeAgencyState, action: OfferAction, ctx: ReduceContext
   return { ok: true, state: withTeam(state, ctx.seatId, nextTeam) };
 }
 
+/**
+ * R2 repair (VERIFY_L3.md R2): "pulling out of talks" costs the day, not
+ * just the offer. An offer stays freely editable (a fresh `offer` call
+ * replaces it entirely, no cost) right up until it's actually withdrawn —
+ * withdrawal is the one action that locks the team out of any further
+ * offer this day (`outForDay`), closing the free submit-then-retract
+ * interest-count toggle without touching genuine exit or misclick-safe
+ * editing at all. Recorded in `withdrawnOffers` (frozen, cumulative) so the
+ * finale can still credit real engagement — see THE WALK-AWAY (M1).
+ */
 function doWithdrawOffer(state: FreeAgencyState, _action: WithdrawOfferAction, ctx: ReduceContext): ReduceResult<FreeAgencyState> {
   const pre = requireClaimedOpenWindow(state, ctx.seatId);
   if (!pre.ok) return pre;
-  if (!pre.team.pendingOffer) return { ok: false, reason: "you don't have an offer in today to withdraw" };
-  return { ok: true, state: withTeam(state, ctx.seatId, { ...pre.team, pendingOffer: null }) };
+  const offer = pre.team.pendingOffer;
+  if (!offer) return { ok: false, reason: "you don't have an offer in today to withdraw" };
+  const market = state.agentMarket[offer.agentId];
+  const record: WithdrawnOfferRecord = { day: state.day, seatId: ctx.seatId, agentId: offer.agentId, slot: offer.slot, amount: offer.amount, askAtWithdraw: market?.ask ?? offer.amount };
+  const nextTeam: TeamState = { ...pre.team, pendingOffer: null, held: true, outForDay: true };
+  return { ok: true, state: { ...withTeam(state, ctx.seatId, nextTeam), withdrawnOffers: [...state.withdrawnOffers, record] } };
 }
 
 function doHoldDay(state: FreeAgencyState, _action: HoldDayAction, ctx: ReduceContext): ReduceResult<FreeAgencyState> {
@@ -844,7 +888,7 @@ function closeCurrentDay(state: FreeAgencyState): FreeAgencyState {
   }
 
   for (const seatId of Object.keys(teams)) {
-    teams[seatId] = { ...teams[seatId]!, pendingOffer: null, held: false };
+    teams[seatId] = { ...teams[seatId]!, pendingOffer: null, held: false, outForDay: false };
   }
 
   const record: DayRecord = { day, offers: offersRecord, resolutions };
@@ -861,6 +905,20 @@ const tag = <T extends object>(obj: T): T & { module: typeof MODULE_ID } => ({ m
 
 export const HOOK_COPY =
   "The season's stretch run. The league's new TV deal just kicked in — the salary cap jumps from $100M to $130M, so every front office suddenly has room. But your books arrive exactly as you left them: every signing, every dollar of dead cap. Eight free agents just hit the open market. You have four days.";
+/**
+ * R1 repair (VERIFY_L3.md R1): the market's own governing rules, in plain
+ * grade 5-6 language, surfaced on HOOK's market preview AND from the PLAY
+ * composer (see `hookSummaryFor`/`playViewFor` below) — the two places a
+ * student actually decides something. Order matches the order a team hits
+ * these rules in a real day: submit/edit, (new) withdraw, price movement,
+ * then the day-4 carve-out.
+ */
+export const MARKET_RULES: readonly string[] = [
+  "Each day, your team can make ONE offer — or hold. You can change your offer as many times as you want (a new agent, a new amount, a new slot) right up until the day closes.",
+  "Taking your offer back (withdraw) ends your day. The market saw you go — no new offer until tomorrow.",
+  "If nobody's top offer meets an agent's asking price, the agent stays unsigned and the price moves. No offers that day: price drops $10M. One offer: price drops $5M. Two or more offers: price goes UP $5M — even if every single offer was low.",
+  "Day 4 is the deadline. The top offer signs that agent no matter what — even if it's below the asking price.",
+];
 export const BEYOND_SPORTS_LINE =
   "Every market you'll ever enter — housing, concert tickets, a job offer — is other people, also constrained, changing your prices in real time. Waiting isn't free, and neither is rushing.";
 export const EXIT_PROMPT = "When did someone else's choice change what you could do — and when did yours change theirs?";
@@ -876,7 +934,7 @@ export const freeAgencyModule: LessonModule<FreeAgencyState> = {
     const carriedFranchises = extractCarriedFranchisesL3(input.seed);
     const agentMarket: Record<string, AgentMarketState> = {};
     for (const a of AGENTS) agentMarket[a.id] = { ask: a.openingAsk, signed: false, signedBy: null, signedAmount: null, signedDay: null };
-    return { carriedFranchises, claimedBy: {}, stockClaimCount: 0, teams: {}, day: 1, windowClosed: false, agentMarket, history: [], revealStage: 0 };
+    return { carriedFranchises, claimedBy: {}, stockClaimCount: 0, teams: {}, day: 1, windowClosed: false, agentMarket, history: [], withdrawnOffers: [], revealStage: 0 };
   },
 
   /**
@@ -1001,6 +1059,7 @@ export const freeAgencyModule: LessonModule<FreeAgencyState> = {
       signingsCount: team.signings.length,
       pendingOffer: team.pendingOffer, // teacher-only: sealed offers are visible here, never to students/board
       held: team.held,
+      outForDay: team.outForDay,
       acted: team.pendingOffer !== null || team.held,
     }));
     return tag({
@@ -1139,6 +1198,7 @@ function hookSummaryFor(state: FreeAgencyState, team: TeamState) {
     teamForm: teamForm(team, false),
     standing: standingFor(state, team, false),
     marketPreview: AGENTS.map((a) => ({ id: a.id, name: a.name, position: a.position, tier: a.tier, flavor: a.flavor, openingAsk: a.openingAsk, factorHint: a.factorHint })),
+    marketRules: MARKET_RULES,
   };
 }
 
@@ -1166,8 +1226,10 @@ function playViewFor(state: FreeAgencyState, seatId: SeatId, team: TeamState) {
     minOffer: MIN_OFFER,
     acted,
     held: team.held,
+    outForDay: team.outForDay,
     pendingOffer: team.pendingOffer, // own offer only — this is studentView reading its own team, never another seat's
     history: dayHistoryPublicFor(state, seatId),
+    marketRules: MARKET_RULES,
   };
 }
 
@@ -1301,10 +1363,20 @@ export type AwardCard = { id: string; title: string; franchise: { name: string; 
  *   THE BARGAIN — highest (form + revealed factor) per dollar among every
  *     actual signing this window.
  *   PERFECT TIMING — signed furthest below its own opening ask.
- *   IRON BOOKS — best final standing among teams with zero signings.
- *   THE WALK-AWAY — among teams that offered on the single worst-performing
- *     agent (lowest form + factor) but never signed them, the one who came
- *     closest (highest offer) to that outcome and still walked away.
+ *   IRON BOOKS — best final standing among teams with zero signings; fires
+ *     even when the WHOLE class held (M2 repair, VERIFY_L3.md M2), gated
+ *     only on there being >= 2 claimed teams (a one-team dry run still has
+ *     nothing to honor against).
+ *   THE WALK-AWAY — M1 repair (VERIFY_L3.md M1): candidates are (agent,
+ *     team) pairs where the team genuinely engaged (stood at close on some
+ *     day, or withdrew under the R2 rule) and never ended up signing that
+ *     agent, restricted to agents whose revealed factor is negative — the
+ *     ones a team was actually right to be wary of. Picks the most negative
+ *     factor (the story the shrinker was built for), tie-broken by the
+ *     highest asking price the team was engaged at, then agent name. This
+ *     replaces the old "single worst agent by raw form" metric, which
+ *     deterministically spotlighted a cheap value player every session and
+ *     could never tell the shrinker's story at all.
  */
 function computeAwards(state: FreeAgencyState): AwardCard[] {
   const teams = Object.entries(state.teams).filter(([, t]) => t.claim !== null) as [SeatId, TeamState][];
@@ -1356,41 +1428,69 @@ function computeAwards(state: FreeAgencyState): AwardCard[] {
     }
   }
 
+  // M2 repair (VERIFY_L3.md M2): only guard on there being a real class to compare within (>= 2 claimed
+  // teams) — dropped the old "at least one OTHER team must have signed" guard, which excluded exactly the
+  // all-wait class the award exists to honor (charter §2: "all-wait collapses into a fierce day-4 auction").
   const zeroSigners = teams.filter(([, t]) => t.signings.length === 0);
-  // Gated to require at least one OTHER team that DID sign someone — "stand pat while the room around you
-  // spent" is the honored story; the sole team in a one-team dry run trivially has "zero signings and the
-  // best finish" with nothing to contrast against, which is not a real achievement to award.
-  if (zeroSigners.length > 0 && zeroSigners.length < teams.length) {
+  if (zeroSigners.length > 0 && teams.length >= 2) {
     const standings = computeStandings(state, true);
     const ranked = zeroSigners
       .map(([seatId, t]) => ({ seatId, t, rank: standings.find((r) => r.seatId === seatId)?.rank ?? 999 }))
       .sort((a, b) => a.rank - b.rank || a.t.claim!.name.localeCompare(b.t.claim!.name));
     const winner = ranked[0]!;
+    const wholeRoomHeld = zeroSigners.length === teams.length;
     awards.push({
       id: "iron-books",
       title: "IRON BOOKS",
       franchise: { name: winner.t.claim!.name, crestIndex: winner.t.claim!.crestIndex },
       agentName: null,
-      body: `${winner.t.claim!.name} never made a single signing this window and still finished #${winner.rank}. Sometimes the best move in a market is not making one.`,
+      body: wholeRoomHeld
+        ? `${winner.t.claim!.name} finished #${winner.rank} without a single signing — and neither did anyone else this window. The whole room held its money; these books held the line best.`
+        : `${winner.t.claim!.name} never made a single signing this window and still finished #${winner.rank}. Sometimes the best move in a market is not making one.`,
     });
   }
 
-  const worst = [...AGENTS].sort((a, b) => a.form + a.playoffFactor - (b.form + b.playoffFactor))[0]!;
-  const near: { seatId: SeatId; amount: number; day: number }[] = [];
-  for (const day of state.history) for (const o of day.offers) if (o.agentId === worst.id) near.push({ seatId: o.seatId, amount: o.amount, day: day.day });
-  const worstSignedBy = state.agentMarket[worst.id]?.signedBy ?? null;
-  const dodged = near.filter((n) => n.seatId !== worstSignedBy);
-  if (dodged.length > 0) {
-    dodged.sort((a, b) => b.amount - a.amount || a.seatId.localeCompare(b.seatId));
-    const top = dodged[0]!;
+  // M1 repair (VERIFY_L3.md M1): every (agent, team) pair where the team genuinely engaged (stood at close on
+  // some day's offers, or withdrew under R2) and never ended up signing that agent — restricted to agents
+  // whose revealed factor is negative, so this can actually spotlight the −7 shrinker rather than always
+  // landing on the cheapest mediocre value player by raw form.
+  const engagedAndDidNotSign = new Map<string, { agentId: string; seatId: SeatId; askAtWalk: number }>();
+  const considerEngagement = (seatId: SeatId, agentId: string, askAtWalk: number) => {
+    const market = state.agentMarket[agentId];
+    if (!market || market.signedBy === seatId) return; // this team DID end up signing this one -- not a walk-away
+    const agent = AGENT_BY_ID.get(agentId);
+    if (!agent || agent.playoffFactor >= 0) return; // only a genuine trap counts as something worth walking from
+    const key = `${seatId}::${agentId}`;
+    const existing = engagedAndDidNotSign.get(key);
+    if (!existing || askAtWalk > existing.askAtWalk) engagedAndDidNotSign.set(key, { agentId, seatId, askAtWalk });
+  };
+  for (const day of state.history) {
+    for (const o of day.offers) {
+      const resolution = day.resolutions.find((r) => r.agentId === o.agentId);
+      considerEngagement(o.seatId, o.agentId, resolution ? resolution.askBefore : o.amount);
+    }
+  }
+  for (const w of state.withdrawnOffers) considerEngagement(w.seatId, w.agentId, w.askAtWithdraw);
+
+  const walkAwayCandidates = [...engagedAndDidNotSign.values()];
+  if (walkAwayCandidates.length > 0) {
+    walkAwayCandidates.sort((a, b) => {
+      const factorA = AGENT_BY_ID.get(a.agentId)!.playoffFactor;
+      const factorB = AGENT_BY_ID.get(b.agentId)!.playoffFactor;
+      if (factorA !== factorB) return factorA - factorB; // most negative factor first
+      if (b.askAtWalk !== a.askAtWalk) return b.askAtWalk - a.askAtWalk; // then the highest ask they were engaged at
+      return AGENT_BY_ID.get(a.agentId)!.name.localeCompare(AGENT_BY_ID.get(b.agentId)!.name);
+    });
+    const top = walkAwayCandidates[0]!;
+    const agent = AGENT_BY_ID.get(top.agentId)!;
     const team = state.teams[top.seatId];
     if (team && team.claim) {
       awards.push({
         id: "walk-away",
         title: "THE WALK-AWAY",
         franchise: { name: team.claim.name, crestIndex: team.claim.crestIndex },
-        agentName: worst.name,
-        body: `${team.claim.name} offered $${top.amount}M on ${worst.name} on day ${top.day} and didn't push further. With the finale factor revealed, ${worst.name} turned out to be the coldest name in the market — the best money never spent.`,
+        agentName: agent.name,
+        body: `${team.claim.name} was in talks for ${agent.name} — up to $${top.askAtWalk}M — and never signed him. With the finale factor revealed, ${agent.name} turned out to be a real trap. The best money never spent.`,
       });
     }
   }

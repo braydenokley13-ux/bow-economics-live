@@ -1,7 +1,7 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (303 passing, see below), `npm run build` and `npm test` are
+real tests (312 passing, see below), `npm run build` and `npm test` are
 green, and `m1l1-draft-day`, `m1l2-trade-deadline`, and `m1l3-free-agency`
 have all been driven end-to-end with Playwright against the real compiled
 server (L1: create → join → advance → build → lock → reveal → shock → adapt
@@ -11,18 +11,20 @@ claiming, all three deadline paths incl. competing bids and a loss,
 teacher-staged reveal, aftermath rescue, synthesis, zero console errors; L3:
 `runtime/scripts/e2e-l3.cjs` — L1 and L2 both played for real through the API
 to produce a genuine seed, then linked L3 creation, claiming incl. a late
-joiner, a real four-day signing window exercising a bidding war, a price
-collapse, coordinated lowballing that still raises the ask, an outbid team,
-and a day-4 desperation signing, the full staged finale through COMPLETE,
-zero console errors) as well as smoke-tested by hand for restart-survival. It
-has **not** been gameplay-tested by a fresh student audience and it has
-**not** been run in a classroom, or anything resembling one. A first
-fresh-context verification round already ran against this runtime's L1 (see
-`docs/gauntlet/module-1/VERIFY_GAMEPLAY.md`, `VERIFY_ECONOMICS.md`,
-`VERIFY_RUNTIME.md`) and every required repair from that round has been
-applied — see "Repair charter round 1" below. Per Decision D12, a live
-classroom session still requires an independent fresh-context verification
-pass on this state before use.
+joiner, a real four-day signing window (student pages run at the classroom
+Chromebook shape, 1024×600, with an explicit on-screen check the offer
+composer is reachable there — see N1 below) exercising a bidding war, a
+price collapse, coordinated lowballing that still raises the ask, an outbid
+team, and a day-4 desperation signing, the full staged finale through
+COMPLETE, zero console errors) as well as smoke-tested by hand for
+restart-survival. It has **not** been gameplay-tested by a fresh student
+audience and it has **not** been run in a classroom, or anything resembling
+one. Fresh-context verification rounds have run against this runtime's L1
+(`docs/gauntlet/module-1/VERIFY_GAMEPLAY.md`, `VERIFY_ECONOMICS.md`,
+`VERIFY_RUNTIME.md`) and L3 (`VERIFY_L3.md`), and every required repair from
+both has been applied — see "Repair charter round 1" and L3's own "Repair
+round" below. Per Decision D12, a live classroom session still requires an
+independent fresh-context verification pass on this state before use.
 
 This package builds the **runtime the gameplay team plugs a lesson into**,
 plus real Track 101 lessons: `m1l1-draft-day` (Module 1, Lesson 1 — "Draft
@@ -129,6 +131,24 @@ plays (prices just fall faster, since fewer teams means fewer rival offers
 driving the demand curve up), but the "no dominant strategy" tension the
 charter names is sharpest with real competition for a scarce 2-star tier.
 
+**Repair round (post-verification, `docs/gauntlet/module-1/VERIFY_L3.md` —
+ACCEPT WITH REQUIRED REPAIRS, rating STRONG).** Six findings, all repaired:
+the market's own governing rules (one offer a day, the 0/1/2+ price-move
+rule, day-4 desperation) are now readable in a compact collapsible panel on
+both HOOK's market preview and the PLAY composer (R1); withdrawing an offer
+now **locks the team out of a new offer for the rest of that day**
+(`outForDay`, editing a standing offer stays free) — closing a free
+submit-then-retract loop that could fake the public interest-count signal
+with zero cost, framed in-fiction as "pulling out of talks" (R2); THE
+WALK-AWAY now picks the most-negative-factor agent a team genuinely engaged
+(stood at close, or withdrew) and never signed, so it can actually spotlight
+the −7 star shrinker instead of deterministically landing on the cheapest
+value player every session (M1); IRON BOOKS now fires for a real
+whole-class hold, not just when at least one other team signed someone (M2);
+the offer composer scrolls into view when it opens, confirmed reachable and
+submittable at the classroom Chromebook shape (1024×600) in `e2e-l3.cjs`
+(N1); the teacher aggregate shows an agent's name, not its raw id (N2).
+
 ## Repair charter round 1 (post-verification)
 
 A fresh-context verification round produced three rulings — gameplay
@@ -196,7 +216,7 @@ src/
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
                 shared/ (api, poll, storage, outbox, crest)
-  test/         303 tests over crypto, every reducer, the service layer
+  test/         312 tests over crypto, every reducer, the service layer
                 (incl. the L1->L2 and L2/L1->L3 seeds), and snapshot persistence
 scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)
                 e2e-l2-early-advance.cjs     — focused probe: advancing out of REVEAL early
@@ -325,7 +345,7 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**303 tests, 303 passing** (`node --test`, no test framework dependency).
+**312 tests, 312 passing** (`node --test`, no test framework dependency).
 Coverage: PIN/token crypto round-trips (`crypto.test.ts`); the `lobby-demo`
 reducer/aggregate/views including rejected malformed and out-of-phase
 actions (`lobbyDemo.test.ts`); the `m1l1-draft-day` reducer, market design
@@ -341,14 +361,21 @@ bid/reserve ever reaches another seat or the board, and the L3 seam copy
 (`tradeDeadline.test.ts`); the `m1l3-free-agency` reducer — seed extraction
 from a real L2 state (every deadline path incl. a won TARGET's mapped form
 and a lost-bid-unrescued open slot), from L1 fallback, and from a malformed/
-hostile seed; offer/withdraw/hold validation; day resolution incl. exact
-tiebreaks, a bidding war, a price collapse, a single lowball, an offer that
-clears ask signing at the OFFER amount not the ask, day-4 desperation, and
-an agent with zero day-4 offers going unsigned for good; both `onPhaseExit`
-paths (leaving PLAY auto-closes only the open day, leaving REVEAL
-auto-completes every remaining stage) with idempotency checks; view-privacy
-tests confirming sealed offers and unsigned-agent amounts never leak to
-another seat or the board before the finale discloses them; GM Award/
+hostile seed; offer/withdraw/hold validation incl. the R2 repair (withdraw
+locks the day, editing a standing offer never does, the next day is
+unaffected, a withdrawn offer is frozen for the finale but never appears in
+that day's own history); day resolution incl. exact tiebreaks, a bidding
+war, a price collapse, a single lowball, an offer that clears ask signing
+at the OFFER amount not the ask, day-4 desperation, and an agent with zero
+day-4 offers going unsigned for good; both `onPhaseExit` paths (leaving
+PLAY auto-closes only the open day, leaving REVEAL auto-completes every
+remaining stage) with idempotency checks; view-privacy tests confirming
+sealed offers and unsigned-agent amounts never leak to another seat or the
+board before the finale discloses them; GM Award computation incl. the M1
+repair (THE WALK-AWAY correctly picks an engaged-then-walked star shrinker
+over a milder value agent, falls through when the shrinker was never
+engaged, credits a withdrawn engagement, and omits gracefully) and the M2
+repair (IRON BOOKS fires for a genuine whole-class zero-signing hold);
 counterfactual/synthesis computation; and the two charter-required property
 tests — cap inviolability (an adversarial multi-day sequence, exhaustive
 over-cap rejection across every agent/slot, and exact dead-cap arithmetic)

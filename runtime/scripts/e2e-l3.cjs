@@ -162,6 +162,16 @@ async function buildL1AndL2() {
 async function submitOffer(page, agentId, desiredAmount, slotId) {
   await page.click(`.fa-agent-card[data-agent-id="${agentId}"]`);
   await page.waitForSelector(`#faComposerRoot[data-agent="${agentId}"]`);
+  // N1 repair (VERIFY_L3.md N1): confirm the composer actually scrolled into the visible viewport (the
+  // app's own fix, not Playwright's separate auto-scroll-before-click on the slot chip below) -- read the
+  // bounding box right after the composer opens, before clicking anything inside it.
+  const box = await page.locator("#faComposerRoot .fa-offer-composer").boundingBox();
+  const viewportSize = page.viewportSize();
+  if (!box || !viewportSize) throw new Error(`composer for ${agentId} has no bounding box -- N1 regression`);
+  const withinViewport = box.y >= 0 && box.y < viewportSize.height && box.y + box.height > 0;
+  if (!withinViewport) {
+    throw new Error(`composer for ${agentId} opened off-screen at ${viewportSize.width}x${viewportSize.height} (box.y=${box.y}, box.height=${box.height}) -- N1 regression`);
+  }
   await page.click(`.fa-slot-chip[data-slot="${slotId}"]`);
   const readoutText = await page.textContent("#faAmountReadout");
   const current = Number(String(readoutText).replace(/[^0-9]/g, ""));
@@ -216,12 +226,17 @@ async function main() {
     console.log("[e2e-l3] === L3: driving /teach, /play x4, /board through real Chromium pages ===");
     browser = await chromium.launch();
     const viewport = { width: 1000, height: 640 };
+    // N1 repair (VERIFY_L3.md N1): the student /play pages run at the exact classroom Chromebook shape named
+    // in the verification brief (~1024x600) rather than the taller generic viewport above, so this real,
+    // full-window offer flow (open the composer, pick a slot, step the amount, submit) doubles as proof the
+    // composer is actually reachable and submittable at that size, not just on a taller desktop window.
+    const chromebookViewport = { width: 1024, height: 600 };
     const teach = await browser.newPage({ viewport });
     const board = await browser.newPage({ viewport });
-    const alpha = await browser.newPage({ viewport });
-    const beta = await browser.newPage({ viewport });
-    const gamma = await browser.newPage({ viewport });
-    const delta = await browser.newPage({ viewport });
+    const alpha = await browser.newPage({ viewport: chromebookViewport });
+    const beta = await browser.newPage({ viewport: chromebookViewport });
+    const gamma = await browser.newPage({ viewport: chromebookViewport });
+    const delta = await browser.newPage({ viewport: chromebookViewport });
     for (const [label, page] of [["teach", teach], ["board", board], ["alpha", alpha], ["beta", beta], ["gamma", gamma], ["delta", delta]]) {
       watchConsole(page, label);
       page.on("dialog", (d) => d.accept());

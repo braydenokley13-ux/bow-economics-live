@@ -346,6 +346,56 @@ test("WITHDRAW: clears a pending offer; rejected with nothing pending", () => {
   assert.equal(state.teams["t1"]!.pendingOffer, null);
 });
 
+/* --------------------------------------------------- R2 repair: withdraw costs your day -- */
+
+test("R2: withdrawing sets outForDay and locks the day -- a new offer afterward is rejected with a clear reason string", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = expectOk(offer(state, "t1", VALUE.id, VALUE.openingAsk, VALUE.position));
+  state = expectOk(freeAgencyModule.reduce(state, { type: "withdrawOffer" }, l3Ctx("PLAY", "t1")));
+  assert.equal(state.teams["t1"]!.outForDay, true);
+  assert.equal(state.teams["t1"]!.held, true, "withdrawal counts as acted for the teacher pacing panel, same as a plain hold");
+  expectRejected(offer(state, "t1", VALUE2.id, VALUE2.openingAsk, VALUE2.position), /withdrew.*market|market saw you go/i);
+});
+
+test("R2: editing a still-standing offer (a fresh `offer` call before any withdrawal) never locks the day", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = expectOk(offer(state, "t1", VALUE.id, VALUE.openingAsk, VALUE.position));
+  state = expectOk(offer(state, "t1", VALUE2.id, VALUE2.openingAsk, VALUE2.position)); // a plain edit, not a withdrawal
+  assert.equal(state.teams["t1"]!.outForDay, false);
+  assert.equal(state.teams["t1"]!.pendingOffer!.agentId, VALUE2.id);
+  // and a further edit still works fine -- editing is free, over and over
+  state = expectOk(offer(state, "t1", VALUE.id, VALUE.openingAsk, VALUE.position));
+  assert.equal(state.teams["t1"]!.outForDay, false);
+  assert.equal(state.teams["t1"]!.pendingOffer!.agentId, VALUE.id);
+});
+
+test("R2: the next day is unaffected -- outForDay resets at close, a fresh offer is allowed again", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = expectOk(offer(state, "t1", VALUE.id, VALUE.openingAsk, VALUE.position));
+  state = expectOk(freeAgencyModule.reduce(state, { type: "withdrawOffer" }, l3Ctx("PLAY", "t1")));
+  expectRejected(offer(state, "t1", VALUE2.id, VALUE2.openingAsk, VALUE2.position));
+  state = closeDay(state, ["t1"]);
+  assert.equal(state.teams["t1"]!.outForDay, false, "outForDay must reset at day close");
+  assert.equal(state.teams["t1"]!.held, false);
+  const r = offer(state, "t1", VALUE2.id, VALUE2.openingAsk, VALUE2.position);
+  assert.equal(r.ok, true, "a fresh offer the day after a withdrawal must be allowed");
+});
+
+test("R2: a withdrawal is frozen into withdrawnOffers (day, seat, agent, ask-at-withdrawal) but never appears in that day's own history offers", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = expectOk(offer(state, "t1", SOLID.id, SOLID.openingAsk, SOLID.position));
+  state = expectOk(freeAgencyModule.reduce(state, { type: "withdrawOffer" }, l3Ctx("PLAY", "t1")));
+  assert.equal(state.withdrawnOffers.length, 1);
+  const w = state.withdrawnOffers[0]!;
+  assert.equal(w.seatId, "t1");
+  assert.equal(w.agentId, SOLID.id);
+  assert.equal(w.day, 1);
+  assert.equal(w.askAtWithdraw, SOLID.openingAsk);
+  state = closeDay(state, ["t1"]);
+  assert.equal(state.history[0]!.offers.length, 0, "a fully-withdrawn offer never stood at close -- it must not appear in the day's own offer record");
+  assert.equal(state.withdrawnOffers.length, 1, "withdrawnOffers is cumulative across the whole window, never reset at close");
+});
+
 test("HOLD: an explicit one-tap action, distinct from just doing nothing, visible to the teacher pacing panel", () => {
   let state = claimStock(freshL3Stock(), "t1");
   state = expectOk(freeAgencyModule.reduce(state, { type: "holdDay" }, l3Ctx("PLAY", "t1")));
@@ -775,6 +825,70 @@ test("AWARDS: PERFECT TIMING names the biggest discount off opening ask among re
   state = freeAgencyModule.onPhaseExit!(state, "REVEAL", "COUNTERFACTUAL");
   const view = freeAgencyModule.studentView({ ...state, revealStage: TOTAL_REVEAL_STEPS }, "t1", "REVEAL") as { awards: { id: string }[] };
   assert.ok(view.awards.some((a) => a.id === "perfect-timing"));
+});
+
+test("AWARDS: THE WALK-AWAY (M1 repair) -- an engaged-then-walked star shrinker beats a mild-negative value agent", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = claimStock(state, "t2");
+  state = expectOk(offer(state, "t1", STAR2.id, 20, STAR2.position, ["t1", "t2"])); // the -7 shrinker, never clears ask, never signs
+  state = expectOk(offer(state, "t2", VALUE.id, 5, VALUE.position, ["t1", "t2"])); // a mild -2, never clears ask, never signs
+  for (let i = 0; i < WINDOW_DAYS; i += 1) state = closeDay(state, ["t1", "t2"]);
+  assert.equal(state.agentMarket[STAR2.id]!.signed, false);
+  assert.equal(state.agentMarket[VALUE.id]!.signed, false);
+  state = freeAgencyModule.onPhaseExit!(state, "REVEAL", "COUNTERFACTUAL");
+  const view = freeAgencyModule.studentView({ ...state, revealStage: TOTAL_REVEAL_STEPS }, "t1", "REVEAL") as { awards: { id: string; agentName: string | null; franchise: { name: string } | null }[] };
+  const walkAway = view.awards.find((a) => a.id === "walk-away");
+  assert.ok(walkAway, "THE WALK-AWAY must fire -- both teams genuinely engaged a negative-factor agent and walked");
+  assert.equal(walkAway!.agentName, STAR2.name, "the -7 shrinker's story must win over the milder -2 value agent");
+  assert.equal(walkAway!.franchise!.name, "Ironworks", "credited to t1, who engaged the shrinker");
+});
+
+test("AWARDS: THE WALK-AWAY (M1 repair) -- falls through correctly when nobody ever engaged the shrinker", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = expectOk(offer(state, "t1", VALUE.id, 5, VALUE.position, ["t1"])); // the shrinker (STAR2) is never touched by anyone this window
+  for (let i = 0; i < WINDOW_DAYS; i += 1) state = closeDay(state, ["t1"]);
+  assert.equal(state.agentMarket[STAR2.id]!.signed, false);
+  assert.equal(state.agentMarket[VALUE.id]!.signed, false);
+  state = freeAgencyModule.onPhaseExit!(state, "REVEAL", "COUNTERFACTUAL");
+  const view = freeAgencyModule.studentView({ ...state, revealStage: TOTAL_REVEAL_STEPS }, "t1", "REVEAL") as { awards: { id: string; agentName: string | null }[] };
+  const walkAway = view.awards.find((a) => a.id === "walk-away");
+  assert.ok(walkAway);
+  assert.equal(walkAway!.agentName, VALUE.name, "must fall through to the agent that was genuinely engaged, never the untouched shrinker");
+});
+
+test("AWARDS: THE WALK-AWAY (M1 repair) -- a withdrawn engagement counts, not just one that stood at close", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = expectOk(offer(state, "t1", STAR2.id, 20, STAR2.position, ["t1"]));
+  state = expectOk(freeAgencyModule.reduce(state, { type: "withdrawOffer" }, l3Ctx("PLAY", "t1")));
+  for (let i = 0; i < WINDOW_DAYS; i += 1) state = closeDay(state, ["t1"]);
+  assert.equal(state.agentMarket[STAR2.id]!.signed, false);
+  state = freeAgencyModule.onPhaseExit!(state, "REVEAL", "COUNTERFACTUAL");
+  const view = freeAgencyModule.studentView({ ...state, revealStage: TOTAL_REVEAL_STEPS }, "t1", "REVEAL") as { awards: { id: string; agentName: string | null }[] };
+  const walkAway = view.awards.find((a) => a.id === "walk-away");
+  assert.ok(walkAway, "a withdrawn offer is still genuine engagement for THE WALK-AWAY");
+  assert.equal(walkAway!.agentName, STAR2.name);
+});
+
+test("AWARDS: THE WALK-AWAY omits gracefully when nobody ever engaged a negative-factor agent", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  const positiveAgent = AGENTS.find((a) => a.playoffFactor > 0)!;
+  state = expectOk(offer(state, "t1", positiveAgent.id, 5, positiveAgent.position, ["t1"]));
+  for (let i = 0; i < WINDOW_DAYS; i += 1) state = closeDay(state, ["t1"]);
+  state = freeAgencyModule.onPhaseExit!(state, "REVEAL", "COUNTERFACTUAL");
+  const view = freeAgencyModule.studentView({ ...state, revealStage: TOTAL_REVEAL_STEPS }, "t1", "REVEAL") as { awards: { id: string }[] };
+  assert.ok(!view.awards.some((a) => a.id === "walk-away"));
+});
+
+test("AWARDS: IRON BOOKS (M2 repair) -- fires for the whole-room-held class, nobody signed anyone", () => {
+  let state = claimStock(freshL3Stock(), "t1");
+  state = claimStock(state, "t2");
+  state = claimStock(state, "t3");
+  for (let i = 0; i < WINDOW_DAYS; i += 1) state = closeDay(state, ["t1", "t2", "t3"]);
+  state = freeAgencyModule.onPhaseExit!(state, "REVEAL", "COUNTERFACTUAL");
+  const view = freeAgencyModule.studentView({ ...state, revealStage: TOTAL_REVEAL_STEPS }, "t1", "REVEAL") as { awards: { id: string; body: string }[] };
+  const iron = view.awards.find((a) => a.id === "iron-books");
+  assert.ok(iron, "IRON BOOKS must fire even when the ENTIRE class made zero signings -- the class-realistic all-wait case");
+  assert.match(iron!.body, /whole room|held its money|held the line/i);
 });
 
 /* --------------------------------------------------------- counterfactuals -- */

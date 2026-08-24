@@ -1335,3 +1335,34 @@ body {
   color: var(--ink-primary);
   margin-top: 8px;
 }
+
+/* R1 repair (VERIFY_L3.md R1): the compact, collapsible "how the market works" panel. */
+.fa-rules {
+  background: var(--surface-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.fa-rules summary {
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-blue);
+}
+.fa-rules[open] summary {
+  margin-bottom: 8px;
+}
+.fa-rules ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fa-rules li {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-secondary);
+}
