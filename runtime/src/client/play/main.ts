@@ -931,6 +931,7 @@ function renderTDHook(view: Record<string, unknown>): void {
     for (const entry of available) {
       const card = document.createElement("div");
       card.className = "claim-card";
+      card.dataset["carriedIndex"] = String(entry.index);
       card.innerHTML = `
         <div class="claim-card-head"><span style="${crestStyle(entry.crestIndex, 22)}"></span><span class="claim-card-name">${escapeHtml(entry.name)}</span></div>
         <div class="claim-card-meta">$${entry.spend}M spent · $${entry.capRoom}M cap room left</div>
@@ -1030,6 +1031,7 @@ function renderTDPlay(view: Record<string, unknown>): void {
     btn.className = "btn full";
     btn.style.textAlign = "left";
     btn.style.fontSize = "12px";
+    btn.dataset["reason"] = reason;
     btn.innerHTML = STAND_PAT_COPY[reason] ?? reason;
     btn.addEventListener("click", () => {
       if (confirm(`Stand pat: "${STAND_PAT_COPY[reason] ?? reason}" — this locks your roster exactly as-is for the deadline. Continue?`)) {
@@ -1044,6 +1046,7 @@ function renderTDPlay(view: Record<string, unknown>): void {
     const el = document.createElement("div");
     el.className = "roster-slot filled";
     el.style.cursor = "pointer";
+    el.dataset["slot"] = slot.id;
     if (slot.player) {
       el.innerHTML = `
         <div class="roster-slot-label">${POSITION_ICON[slot.id] ?? ""} ${slot.id}</div>
@@ -1089,6 +1092,7 @@ function renderTDDecisionPanel(slot: TDSlot, veterans: TDPlayer[], targets: TDTa
     const affordable = v.price <= slot.cutBudget;
     const row = document.createElement("div");
     row.className = "veteran-card";
+    row.dataset["veteranId"] = v.id;
     row.style.marginTop = "6px";
     row.style.opacity = affordable ? "1" : "0.4";
     row.style.cursor = affordable ? "pointer" : "not-allowed";
@@ -1110,6 +1114,7 @@ function renderTDDecisionPanel(slot: TDSlot, veterans: TDPlayer[], targets: TDTa
   for (const t of eligibleTargets) {
     const card = document.createElement("div");
     card.className = "target-card";
+    card.dataset["targetId"] = t.id;
     card.style.marginTop = "8px";
     const maxBid = Math.max(minBid, Math.floor(slot.cutBudget / bidStep) * bidStep);
     const canBid = slot.cutBudget >= minBid;
@@ -1200,7 +1205,9 @@ function renderTDReveal(view: Record<string, unknown>): void {
       <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">${r.bidCount} bid${r.bidCount === 1 ? "" : "s"} came in. ${
         r.winnerFranchise
           ? `<strong style="color:var(--ink-primary);">${escapeHtml(r.winnerFranchise.name)}</strong> won at <span class="numeric" style="color:var(--accent-gold);">$${r.winningBid}M</span> — turned out to be worth about $${r.trueValue}M.`
-          : "Every bid came in under the hidden reserve — nobody signed this one."
+          : r.bidCount === 0
+            ? "Nobody bid on this one."
+            : "Every bid came in under the hidden reserve — nobody signed this one."
       }</p>`;
     list.appendChild(card);
   }

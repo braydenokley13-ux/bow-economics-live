@@ -532,6 +532,49 @@ test("ADAPT: a won-bid team is full-wall — rescue is rejected, nothing to do",
   expectRejected(tradeDeadlineModule.reduce(state, { type: "rescueFill", playerId: RESCUE_POOL[0]!.id }, tdCtx("ADAPT", "t1")));
 });
 
+test("ADAPT: studentView actually reports the rescue once it's signed — openSlot stays truthy (the slot id) so the client's rescued check is ever reached, never silently reverting to the generic 'nothing to do' message", () => {
+  const state = claim(freshL2(AT_CAP_ROSTER), "t1", 0); // cutting PLAYMAKER (pm-10): budget $9M
+  let s = expectOk(tradeDeadlineModule.reduce(state, { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 }, tdCtx("PLAY", "t1")));
+  s = revealAllFor(s);
+  assert.equal(s.teams["t1"]!.bidOutcome, "lost");
+
+  const preRescueView = tradeDeadlineModule.studentView(s, "t1", "ADAPT") as { openSlot: string | null; rescued: boolean; candidates: unknown[] };
+  assert.equal(preRescueView.openSlot, "PLAYMAKER");
+  assert.equal(preRescueView.rescued, false);
+  assert.ok(preRescueView.candidates.length >= 2);
+
+  const candidates = rescueCandidatesFor(s.teams["t1"]!, "PLAYMAKER");
+  s = expectOk(tradeDeadlineModule.reduce(s, { type: "rescueFill", playerId: candidates[0]!.id }, tdCtx("ADAPT", "t1")));
+
+  const postRescueView = tradeDeadlineModule.studentView(s, "t1", "ADAPT") as { openSlot: string | null; rescued: boolean; candidates: unknown[] };
+  assert.equal(postRescueView.openSlot, "PLAYMAKER", "openSlot must stay truthy after rescue — the client's `if (!openSlot) return` guard runs BEFORE its `rescued` check");
+  assert.equal(postRescueView.rescued, true);
+  assert.equal(postRescueView.candidates.length, 0);
+});
+
+test("ADAPT: boardView/teacherView/aggregate openSlot counts are frozen at reveal (bidOutcome === 'lost'), not derived from live post-rescue slot state", () => {
+  const state = claim(freshL2(AT_CAP_ROSTER), "t1", 0);
+  let s = expectOk(tradeDeadlineModule.reduce(state, { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 }, tdCtx("PLAY", "t1")));
+  s = revealAllFor(s);
+  assert.equal(s.teams["t1"]!.bidOutcome, "lost");
+
+  const boardBefore = tradeDeadlineModule.boardView(s, "ADAPT") as { openSlotCount: number; rescuedCount: number };
+  assert.equal(boardBefore.openSlotCount, 1);
+  assert.equal(boardBefore.rescuedCount, 0);
+  const teacherBefore = tradeDeadlineModule.teacherView(s, "ADAPT") as { teams: { openSlot: boolean; rescued: boolean }[] };
+  assert.equal(teacherBefore.teams.find((t) => t.rescued === false)!.openSlot, true);
+
+  const candidates = rescueCandidatesFor(s.teams["t1"]!, "PLAYMAKER");
+  s = expectOk(tradeDeadlineModule.reduce(s, { type: "rescueFill", playerId: candidates[0]!.id }, tdCtx("ADAPT", "t1")));
+
+  const boardAfter = tradeDeadlineModule.boardView(s, "ADAPT") as { openSlotCount: number; rescuedCount: number };
+  assert.equal(boardAfter.openSlotCount, 1, "the team still counts toward openSlotCount — it DID have an open slot, that fact never un-happens");
+  assert.equal(boardAfter.rescuedCount, 1);
+  const teacherAfter = tradeDeadlineModule.teacherView(s, "ADAPT") as { teams: { openSlot: boolean; rescued: boolean }[] };
+  const t1Row = teacherAfter.teams.find((t) => t.rescued === true)!;
+  assert.equal(t1Row.openSlot, true, "teacherView's per-team openSlot flag must also stay true post-rescue, paired with rescued:true");
+});
+
 test("PROPERTY: every rescue candidate offered is actually acceptable by the reducer, across every exactly-$100M L1 build and every slot cut for a bid", () => {
   const builds = enumerateAtCapBuilds();
   assert.ok(builds.length > 50, `expected many exactly-$100M builds, got ${builds.length}`);

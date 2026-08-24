@@ -343,7 +343,7 @@ function renderTradeDeadlineBoard(view: Record<string, unknown>, mode: string): 
           ${
             r.winnerFranchise
               ? `<p style="display:flex; align-items:center; gap:8px; margin:0;"><span style="${crestStyle(r.winnerFranchise.crestIndex, 22)}"></span><strong style="color:var(--ink-primary);">${escapeHtml(r.winnerFranchise.name)}</strong> won at <span class="numeric" style="color:var(--accent-gold);">$${r.winningBid}M</span></p>`
-              : `<p style="margin:0; color:var(--ink-muted);">Every bid came in under the hidden reserve — nobody signed this one.</p>`
+              : `<p style="margin:0; color:var(--ink-muted);">${r.bidCount === 0 ? "Nobody bid on this one." : "Every bid came in under the hidden reserve — nobody signed this one."}</p>`
           }
           <p style="margin-top:8px; font-weight:800; color:${TD_VERDICT_COLOR[r.verdict]};">${TD_VERDICT_LABEL[r.verdict]}${r.winnerFranchise ? ` — turned out to be worth about $${r.trueValue}M` : ""}</p>
         </div>`,

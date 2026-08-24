@@ -472,6 +472,15 @@ export const capUsedOf = (team: TeamState): number => {
 export const isSlotId = (v: unknown): v is SlotId => typeof v === "string" && (SLOT_IDS as readonly string[]).includes(v);
 
 /**
+ * Frozen the instant reveal resolves a lost bid — never flips again, regardless of whether the team has since
+ * rescued. This is the "did this team ever face an open slot" fact every VIEW/aggregate keys off (D15 discipline:
+ * a fact about what happened must not silently change because of later, unrelated state); it is deliberately NOT
+ * "is `team.slots[cutSlot]` literally empty right now" (that live check is exactly what `doRescueFill`'s own
+ * precondition uses, correctly, to gate the action itself — those are two different questions).
+ */
+export const hadOpenSlot = (team: TeamState): boolean => team.path === "bid" && team.bidOutcome === "lost";
+
+/**
  * The budget available for the freed slot right after a cut: existing room
  * under the cap plus the ~90% refund — algebraically identical to
  * draftDay's adaptBudgetFor, same reasoning: computed the same way a
@@ -938,15 +947,18 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
 
         case "ADAPT": {
           if (!claimed) return { phase, message: "You never claimed a franchise — talk to your teacher." };
-          const openSlot = team.cutSlot && team.slots[team.cutSlot] === null ? team.cutSlot : null;
-          if (!openSlot) {
+          if (!hadOpenSlot(team)) {
             return { phase, openSlot: null, message: "Your roster is full going into the rest of the season — nothing to do here." };
           }
-          const candidates = team.rescuePlayerId ? [] : rescueCandidatesFor(team, openSlot);
+          // `openSlot` stays the slot id even after a rescue signs it — the client keys off `rescued` (not
+          // openSlot's truthiness) to decide which message to show, so this never has to flip back to null.
+          const slot = team.cutSlot!;
+          const rescued = team.rescuePlayerId !== null;
+          const candidates = rescued ? [] : rescueCandidatesFor(team, slot);
           return {
             phase,
-            openSlot,
-            rescued: team.rescuePlayerId !== null,
+            openSlot: slot,
+            rescued,
             candidates: candidates.map((p) => ({ id: p.id, name: p.name, position: p.position, price: p.price, rating: p.rating })),
           };
         }
@@ -976,7 +988,7 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
       bidTargetId: team.bidTargetId,
       bidAmount: team.bidAmount, // teacher-only: the control room may see sealed bids, students/board never do
       bidOutcome: team.bidOutcome,
-      openSlot: team.cutSlot && team.slots[team.cutSlot] === null,
+      openSlot: hadOpenSlot(team),
       rescued: team.rescuePlayerId !== null,
       capUsed: capUsedOf(team),
     }));
@@ -1022,7 +1034,7 @@ export const tradeDeadlineModule: LessonModule<TradeDeadlineState> = {
         }
 
         case "ADAPT": {
-          const openSlotTeams = Object.values(state.teams).filter((t) => t.cutSlot && t.slots[t.cutSlot] === null);
+          const openSlotTeams = Object.values(state.teams).filter(hadOpenSlot);
           const rescued = openSlotTeams.filter((t) => t.rescuePlayerId !== null).length;
           return { mode: "adapt", openSlotCount: openSlotTeams.length, rescuedCount: rescued };
         }
@@ -1174,7 +1186,7 @@ function computeAggregate(state: TradeDeadlineState): Aggregate {
     else if (result["verdict"] === "unsold") unsoldTargetCount += 1;
   }
 
-  const openSlotTeams = teams.filter((t) => t.cutSlot && t.slots[t.cutSlot] === null);
+  const openSlotTeams = teams.filter(hadOpenSlot);
   const rescuedCount = openSlotTeams.filter((t) => t.rescuePlayerId !== null).length;
 
   // Each cut team's budget the instant it committed its cut — `cutBudgetFor` reads only frozen facts
