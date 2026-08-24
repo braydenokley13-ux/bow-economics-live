@@ -193,6 +193,10 @@ function renderGame(payload: StudentPayload): void {
     renderBoxOffice(s, view);
     return;
   }
+  if (view["module"] === "m1l2-trade-deadline") {
+    renderTradeDeadline(s, view);
+    return;
+  }
 
   // lobby-demo fallback (still registered, proves the runtime is genuinely generic)
   if (s.phase === "LOBBY") {
@@ -844,6 +848,390 @@ function setText(id: string, text: string): void {
 function setWidth(id: string, value: number, max: number): void {
   const el = document.getElementById(id);
   if (el) el.style.width = `${Math.max(0, Math.min(100, (value / max) * 100))}%`;
+}
+
+/* ------------------------------------------------------ trade deadline render -- */
+
+type TDFranchise = { name: string; crestIndex: number; origin?: string };
+type TDPlayer = { id: string; name: string; position: string; price: number; rating: number };
+type TDReportRow = { slot: string; name: string; position: string; price: number; draftRating: number; formTag: "slumping" | "steady" | "breaking-out"; currentForm: number; reason: string };
+type TDStanding = { rank: number; totalTeams: number; avgForm: number; inHunt: boolean };
+type TDAvailable = { index: number; name: string; crestIndex: number; spend: number; capRoom: number; roster: (TDPlayer | null)[] };
+type TDSlot = { id: string; player: TDPlayer | null; cutBudget: number };
+type TDTarget = { id: string; name: string; position: string; flavor: string; floor: number; ceiling: number };
+type TDRevealedTarget = { id: string; name: string; position: string; floor: number; ceiling: number; trueValue: number; bidCount: number; winnerFranchise: TDFranchise | null; winningBid: number | null; verdict: "steal" | "curse" | "fair" | "unsold" };
+
+const STAND_PAT_COPY: Record<string, string> = {
+  "happy-with-roster": "We like what we built. Not fixing what isn't broken.",
+  "protect-cap-room": "We're protecting our cap room for later, not spending it now.",
+  "risk-too-high": "Every option on the table right now is too risky for what we'd gain.",
+  "no-good-fit": "Nothing available actually fits what our roster needs.",
+};
+const VERDICT_LABEL: Record<string, string> = { steal: "STEAL", curse: "WINNER'S CURSE", fair: "FAIR PRICE", unsold: "UNSOLD" };
+
+// The uncommitted PLAY decision screen holds real, uncontrolled <input> state (the bid stepper's current value) —
+// re-rendering its DOM on every poll tick (nothing server-side changes while uncommitted) would wipe whatever a
+// student was mid-typing. Same guarded-rebuild discipline as box office's price dial.
+let tdPlayMounted: { phase: string; committed: boolean } | null = null;
+
+function renderTradeDeadline(s: SessionInfo, view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  if (s.phase !== "PLAY") tdPlayMounted = null;
+
+  switch (s.phase) {
+    case "LOBBY":
+      body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"] ?? "You're in! Waiting for your teacher to start the Trade Deadline."))}</div>`;
+      return;
+
+    case "HOOK":
+      renderTDHook(view);
+      return;
+
+    case "PLAY":
+      renderTDPlay(view);
+      return;
+
+    case "REVEAL":
+      renderTDReveal(view);
+      return;
+
+    case "ADAPT":
+      renderTDAdapt(view);
+      return;
+
+    case "SYNTHESIS":
+      body.innerHTML = `
+        <div class="banner">${escapeHtml(String(view["message"]))}</div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"]))}</p>
+        </div>`;
+      return;
+
+    case "COMPLETE":
+      body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"]))}</div>`;
+      return;
+
+    default:
+      body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  }
+}
+
+function renderTDHook(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  if (!view["claimed"]) {
+    const available = (view["available"] as TDAvailable[]) ?? [];
+    body.innerHTML = `
+      <div class="panel" style="padding:16px;">
+        <div class="eyebrow" style="font-size:12px;">Claim your franchise</div>
+        <p style="margin:8px 0 14px; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
+        <div class="claim-grid" id="claimGrid"></div>
+      </div>`;
+    const grid = $("claimGrid");
+    for (const entry of available) {
+      const card = document.createElement("div");
+      card.className = "claim-card";
+      card.innerHTML = `
+        <div class="claim-card-head"><span style="${crestStyle(entry.crestIndex, 22)}"></span><span class="claim-card-name">${escapeHtml(entry.name)}</span></div>
+        <div class="claim-card-meta">$${entry.spend}M spent · $${entry.capRoom}M cap room left</div>
+        <div class="claim-card-roster">${entry.roster.filter((p): p is TDPlayer => p !== null).map((p) => `<span>${escapeHtml(p.name.split(" ")[0] ?? p.name)} $${p.price}M</span>`).join("")}</div>`;
+      card.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: entry.index }));
+      grid.appendChild(card);
+    }
+    const stock = document.createElement("div");
+    stock.className = "claim-card stock";
+    stock.innerHTML = `
+      <div class="claim-card-head"><span class="claim-card-name">Start an expansion franchise</span></div>
+      <div class="claim-card-meta">A fresh, balanced, league-typical roster — no Draft Day history behind it.</div>`;
+    stock.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: null }));
+    grid.appendChild(stock);
+    return;
+  }
+
+  const franchise = view["franchise"] as TDFranchise;
+  const report = (view["report"] as TDReportRow[]) ?? [];
+  const weakestSlot = view["weakestSlot"] as string | null;
+  const standing = view["standing"] as TDStanding | null;
+  body.innerHTML = `
+    <div class="panel" style="padding:16px;">
+      <div class="claim-card-head" style="margin-bottom:10px;"><span style="${crestStyle(franchise.crestIndex, 26)}"></span><span class="claim-card-name" style="font-size:17px;">${escapeHtml(franchise.name)}</span>${franchise.origin === "stock" ? '<span class="pill" style="margin-left:6px; font-size:10px;">EXPANSION</span>' : ""}</div>
+      <p style="margin:0 0 12px; font-size:13px; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
+      <div class="pill">$${view["spend"]}M spent · $${view["capRoom"]}M cap room</div>
+      <div class="eyebrow" style="font-size:12px; margin:16px 0 4px;">Midseason report</div>
+      <div id="reportList"></div>
+    </div>
+    ${standing ? `<div class="standing-card"><span>League standing</span><span class="standing-rank">#${standing.rank} of ${standing.totalTeams}</span><span style="font-size:12px; color:${standing.inHunt ? "var(--cap-safe)" : "var(--ink-muted)"};">${standing.inHunt ? "In the playoff hunt" : "On the outside looking in"}</span></div>` : ""}`;
+  const list = $("reportList");
+  for (const row of report) {
+    const el = document.createElement("div");
+    el.className = "report-row" + (row.slot === weakestSlot ? " weakest" : "");
+    el.innerHTML = `
+      <div class="report-row-main">
+        <span class="report-row-name">${escapeHtml(row.name)} <span style="color:var(--ink-muted); font-weight:400;">· ${row.position} · $${row.price}M</span></span>
+        <div class="report-row-reason">${escapeHtml(row.reason)}</div>
+      </div>
+      <span class="form-badge ${row.formTag}">${row.formTag.replace("-", " ")}</span>`;
+    list.appendChild(el);
+  }
+}
+
+function renderTDPlay(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+
+  if (!view["franchise"] && !view["committed"]) {
+    body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"] ?? "You never claimed a franchise — talk to your teacher."))}</div>`;
+    tdPlayMounted = null;
+    return;
+  }
+
+  const committed = Boolean(view["committed"]);
+  const signature = { phase: "PLAY", committed };
+  const rootMissing = !committed && !document.getElementById("tdWall");
+  const alreadyMounted = tdPlayMounted && tdPlayMounted.phase === signature.phase && tdPlayMounted.committed === signature.committed && !rootMissing;
+  if (alreadyMounted) {
+    // Nothing about this screen's server-derived content changes while uncommitted (the market of veterans/
+    // targets/reasons is fixed, cutBudget is stable pre-cut) — skip the rebuild so a bid stepper or any other
+    // in-progress, uncontrolled DOM state a student is mid-interacting-with survives the next poll tick.
+    return;
+  }
+  tdPlayMounted = signature;
+
+  if (committed) {
+    body.innerHTML = `<div class="banner">Your deadline decision is locked in. Look up at the board when the reveal starts.</div>${renderTDDecisionRecap(view)}`;
+    return;
+  }
+
+  const franchise = view["franchise"] as TDFranchise;
+  const slots = (view["slots"] as TDSlot[]) ?? [];
+  const veterans = (view["veterans"] as TDPlayer[]) ?? [];
+  const targets = (view["targets"] as TDTarget[]) ?? [];
+  const standPatReasons = (view["standPatReasons"] as string[]) ?? [];
+  const bidStep = Number(view["bidStep"] ?? 5);
+  const minBid = Number(view["minBid"] ?? 5);
+
+  body.innerHTML = `
+    <div class="panel" style="padding:14px;">
+      <div class="claim-card-head"><span style="${crestStyle(franchise.crestIndex, 20)}"></span><span class="claim-card-name">${escapeHtml(franchise.name)}</span></div>
+      <div class="pill" style="margin-top:8px;">$${view["capRoom"]}M cap room right now</div>
+    </div>
+
+    <div class="panel" style="padding:14px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">Stand pat — keep this exact roster</div>
+      <div class="reason-grid" id="standPatGrid"></div>
+    </div>
+
+    <div class="eyebrow" style="font-size:12px; margin:16px 0 8px;">Or, cut a player</div>
+    <div class="roster-wall" id="tdWall"></div>
+    <div id="tdDecisionPanel" style="margin-top:14px;"></div>`;
+
+  const spGrid = $("standPatGrid");
+  for (const reason of standPatReasons) {
+    const btn = document.createElement("button");
+    btn.className = "btn full";
+    btn.style.textAlign = "left";
+    btn.style.fontSize = "12px";
+    btn.innerHTML = STAND_PAT_COPY[reason] ?? reason;
+    btn.addEventListener("click", () => {
+      if (confirm(`Stand pat: "${STAND_PAT_COPY[reason] ?? reason}" — this locks your roster exactly as-is for the deadline. Continue?`)) {
+        outbox?.submit({ type: "standPat", reason });
+      }
+    });
+    spGrid.appendChild(btn);
+  }
+
+  const wall = $("tdWall");
+  for (const slot of slots) {
+    const el = document.createElement("div");
+    el.className = "roster-slot filled";
+    el.style.cursor = "pointer";
+    if (slot.player) {
+      el.innerHTML = `
+        <div class="roster-slot-label">${POSITION_ICON[slot.id] ?? ""} ${slot.id}</div>
+        <div class="mini-card">
+          <div class="mini-card-name">${escapeHtml(slot.player.name)}</div>
+          <div class="mini-card-pos">${slot.player.position}</div>
+          <div class="mini-card-rating">RTG ${slot.player.rating}</div>
+          <div class="mini-card-salary">$${slot.player.price}M</div>
+        </div>`;
+      el.addEventListener("click", () => renderTDDecisionPanel(slot, veterans, targets, bidStep, minBid));
+    } else {
+      el.innerHTML = `<div class="roster-slot-label">${POSITION_ICON[slot.id] ?? ""} ${slot.id}</div><div class="roster-slot-empty-glyph">—</div>`;
+    }
+    wall.appendChild(el);
+  }
+}
+
+/** Rendered on demand when a student taps a roster slot to consider cutting it — the veteran/target choices for
+ *  that exact slot (position-matched, or every option for WILDCARD), each with its own affordability check. */
+function renderTDDecisionPanel(slot: TDSlot, veterans: TDPlayer[], targets: TDTarget[], bidStep: number, minBid: number): void {
+  const panel = $("tdDecisionPanel");
+  const isWildcard = slot.id === "WILDCARD";
+  const eligibleVeterans = isWildcard ? veterans : veterans.filter((v) => v.position === slot.id);
+  const eligibleTargets = isWildcard ? targets : targets.filter((t) => t.position === slot.id);
+
+  panel.innerHTML = `
+    <div class="panel" style="padding:14px; border-color:var(--over-the-line);">
+      <div class="eyebrow" style="font-size:12px; color:#ff9aa4;"><span class="tear-icon" style="display:inline-block; vertical-align:middle; margin-right:4px;"></span>Cutting ${escapeHtml(slot.player!.name)}</div>
+      <p style="margin:8px 0 4px; font-size:12px; color:var(--ink-secondary);">You get back ~90% of their $${slot.player!.price}M salary — the rest stays on the cap as dead cap. Your budget for this slot: <strong style="color:var(--accent-gold);">$${slot.cutBudget}M</strong>.</p>
+
+      <div class="eyebrow" style="font-size:11px; margin-top:14px;">Safe: sign a known veteran</div>
+      <div id="tdVeteranList"></div>
+
+      <div class="eyebrow" style="font-size:11px; margin-top:16px;">Risky: sealed bid on a deadline target</div>
+      <div id="tdTargetList"></div>
+    </div>`;
+
+  const vetList = $("tdVeteranList");
+  if (eligibleVeterans.length === 0) {
+    vetList.innerHTML = `<div class="eyebrow" style="font-size:11px; color:var(--ink-muted);">No veteran fits this slot.</div>`;
+  }
+  for (const v of eligibleVeterans) {
+    const affordable = v.price <= slot.cutBudget;
+    const row = document.createElement("div");
+    row.className = "veteran-card";
+    row.style.marginTop = "6px";
+    row.style.opacity = affordable ? "1" : "0.4";
+    row.style.cursor = affordable ? "pointer" : "not-allowed";
+    row.innerHTML = `<span>${escapeHtml(v.name)} <span style="color:var(--ink-muted); font-size:11px;">· ${v.position} · RTG ${v.rating}</span></span><span class="numeric" style="color:var(--accent-gold);">$${v.price}M</span>`;
+    if (affordable) {
+      row.addEventListener("click", () => {
+        if (confirm(`Cut ${slot.player!.name} and sign ${v.name} for $${v.price}M? This is final.`)) {
+          outbox?.submit({ type: "cutForVeteran", slot: slot.id, veteranId: v.id });
+        }
+      });
+    }
+    vetList.appendChild(row);
+  }
+
+  const tgtList = $("tdTargetList");
+  if (eligibleTargets.length === 0) {
+    tgtList.innerHTML = `<div class="eyebrow" style="font-size:11px; color:var(--ink-muted);">No target fits this slot.</div>`;
+  }
+  for (const t of eligibleTargets) {
+    const card = document.createElement("div");
+    card.className = "target-card";
+    card.style.marginTop = "8px";
+    const maxBid = Math.max(minBid, Math.floor(slot.cutBudget / bidStep) * bidStep);
+    const canBid = slot.cutBudget >= minBid;
+    card.innerHTML = `
+      <div class="target-card-name">${escapeHtml(t.name)} <span style="color:var(--ink-muted); font-weight:400; font-size:11px;">· ${t.position}</span></div>
+      <div class="target-card-flavor">${escapeHtml(t.flavor)}</div>
+      <div class="target-band"><span>$${t.floor}M</span><div class="target-band-track"></div><span>$${t.ceiling}M</span></div>
+      ${
+        canBid
+          ? `<div class="bid-stepper">
+              <button type="button" data-step="-1" class="btn">−</button>
+              <span class="bid-stepper-readout" data-readout>$${minBid}M</span>
+              <button type="button" data-step="1" class="btn">+</button>
+            </div>
+            <button type="button" class="btn btn-danger full" style="margin-top:8px;" data-submit-bid>Cut &amp; submit sealed bid</button>`
+          : `<div class="eyebrow" style="font-size:11px; color:var(--ink-muted); margin-top:8px;">Your budget here ($${slot.cutBudget}M) can't cover even the minimum bid.</div>`
+      }`;
+    if (canBid) {
+      let current = minBid;
+      const readout = card.querySelector<HTMLElement>("[data-readout]")!;
+      card.querySelectorAll<HTMLButtonElement>("[data-step]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const delta = Number(btn.dataset["step"]) * bidStep;
+          current = Math.max(minBid, Math.min(maxBid, current + delta));
+          readout.textContent = `$${current}M`;
+        });
+      });
+      card.querySelector("[data-submit-bid]")?.addEventListener("click", () => {
+        if (confirm(`Cut ${slot.player!.name} and bid $${current}M on ${t.name}? Sealed — nobody can see this number until the reveal. This is final either way.`)) {
+          outbox?.submit({ type: "cutForBid", slot: slot.id, targetId: t.id, bidAmount: current });
+        }
+      });
+    }
+    tgtList.appendChild(card);
+  }
+}
+
+function renderTDDecisionRecap(view: Record<string, unknown>): string {
+  const path = view["path"] as string;
+  if (path === "standPat") {
+    const reason = view["standPatReason"] as string;
+    return `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">Stood pat</div><p style="margin:8px 0 0; font-size:14px;">${escapeHtml(STAND_PAT_COPY[reason] ?? reason)}</p></div>`;
+  }
+  const cutPlayer = view["cutPlayer"] as TDPlayer | null;
+  const deadCap = view["deadCapCharge"] as number;
+  const cutLine = cutPlayer
+    ? `<div class="panel" style="padding:14px;"><div class="eyebrow" style="font-size:11px; color:#ff9aa4;"><span class="tear-icon" style="display:inline-block; vertical-align:middle; margin-right:4px;"></span>Cut ${escapeHtml(cutPlayer.name)}</div><p style="margin:6px 0 0; font-size:12px; color:var(--ink-secondary);">$${deadCap}M dead cap stayed on the books.</p></div>`
+    : "";
+  if (path === "veteran") {
+    const vet = view["veteran"] as TDPlayer | null;
+    return `${cutLine}<div class="panel" style="padding:14px; margin-top:10px;"><div class="eyebrow" style="font-size:11px;">Signed</div><p style="margin:6px 0 0; font-size:14px;">${vet ? escapeHtml(vet.name) + ` — $${vet.price}M, RTG ${vet.rating}` : ""}</p></div>`;
+  }
+  if (path === "bid") {
+    const target = view["target"] as { name: string } | null;
+    const bidAmount = view["bidAmount"] as number;
+    const outcome = view["bidOutcome"] as string | null;
+    return `${cutLine}<div class="panel" style="padding:14px; margin-top:10px;"><div class="eyebrow" style="font-size:11px;">Sealed bid — target: ${target ? escapeHtml(target.name) : ""}</div><p style="margin:6px 0 0; font-size:14px;">Your bid: $${bidAmount}M ${outcome ? `— <strong>${outcome === "won" ? "WON" : "LOST"}</strong>` : "(sealed — nobody can see this yet)"}</p></div>`;
+  }
+  return "";
+}
+
+function renderTDReveal(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const franchise = view["franchise"] as TDFranchise | undefined;
+  const yourDecision = view["yourDecision"] as Record<string, unknown> | undefined;
+  const revealed = (view["revealed"] as TDRevealedTarget[]) ?? [];
+  const waitingOn = view["waitingOn"] as string | null;
+
+  body.innerHTML = `
+    ${franchise ? `<div class="panel" style="padding:12px;"><div class="claim-card-head"><span style="${crestStyle(franchise.crestIndex, 18)}"></span><span class="claim-card-name" style="font-size:13px;">${escapeHtml(franchise.name)}</span></div></div>` : ""}
+    ${yourDecision ? `<div style="margin-top:10px;">${renderTDDecisionRecap(yourDecision)}</div>` : ""}
+    ${waitingOn ? `<div class="banner" style="margin-top:12px;">Your target hasn't been revealed yet — watch the board.</div>` : ""}
+    <div class="eyebrow" style="font-size:12px; margin:16px 0 8px;">Revealed so far</div>
+    <div id="revealList"></div>`;
+
+  const list = $("revealList");
+  if (revealed.length === 0) {
+    list.innerHTML = `<div class="eyebrow" style="font-size:11px; color:var(--ink-muted);">Nothing revealed yet — watch the board.</div>`;
+  }
+  for (const r of revealed) {
+    const card = document.createElement("div");
+    card.className = "reveal-target-card";
+    card.innerHTML = `
+      <div class="reveal-target-head">
+        <span class="claim-card-name" style="font-size:13px;">${escapeHtml(r.name)} <span style="color:var(--ink-muted); font-weight:400; font-size:11px;">· ${r.position}</span></span>
+        <span class="verdict-badge ${r.verdict}">${VERDICT_LABEL[r.verdict] ?? r.verdict}</span>
+      </div>
+      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">${r.bidCount} bid${r.bidCount === 1 ? "" : "s"} came in. ${
+        r.winnerFranchise
+          ? `<strong style="color:var(--ink-primary);">${escapeHtml(r.winnerFranchise.name)}</strong> won at <span class="numeric" style="color:var(--accent-gold);">$${r.winningBid}M</span> — turned out to be worth about $${r.trueValue}M.`
+          : "Every bid came in under the hidden reserve — nobody signed this one."
+      }</p>`;
+    list.appendChild(card);
+  }
+}
+
+function renderTDAdapt(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const openSlot = view["openSlot"] as string | null;
+  if (!openSlot) {
+    body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"] ?? "Your roster is full going into the rest of the season — nothing to do here."))}</div>`;
+    return;
+  }
+  if (view["rescued"]) {
+    body.innerHTML = `<div class="banner">Rescue signed. Your ${escapeHtml(openSlot)} slot is filled again.</div>`;
+    return;
+  }
+  const candidates = (view["candidates"] as TDPlayer[]) ?? [];
+  body.innerHTML = `
+    <div class="panel" style="padding:16px;">
+      <div class="eyebrow" style="font-size:12px; color:#ff9aa4;">Open slot: ${escapeHtml(openSlot)}</div>
+      <p style="margin:8px 0 12px; font-size:12px; color:var(--ink-secondary);">Your sealed bid didn't clear — the slot's still empty. Sign a fallback now.</p>
+      <div class="rescue-grid" id="rescueGrid"></div>
+    </div>`;
+  const grid = $("rescueGrid");
+  for (const p of candidates) {
+    grid.appendChild(
+      marketCardEl(p, { used: false, affordable: true }, () => {
+        if (confirm(`Sign ${p.name} for $${p.price}M?`)) outbox?.submit({ type: "rescueFill", playerId: p.id });
+      }),
+    );
+  }
 }
 
 function escapeHtml(s: string): string {
