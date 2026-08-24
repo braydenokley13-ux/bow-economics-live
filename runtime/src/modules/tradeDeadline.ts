@@ -139,7 +139,10 @@ const STOCK_SLOTS: Record<SlotId, string> = {
 };
 const STOCK_SPEND = SLOT_IDS.reduce((sum, s) => sum + (MARKET_BY_ID.get(STOCK_SLOTS[s])?.price ?? 0), 0);
 
-const stockFranchiseFor = (index: number): FranchiseRoster => {
+/** Exported (L3 addition): m1l3-free-agency's stock-only fallback reuses this exact shape rather than
+ *  re-declaring its own stock roster, per the "L3 imports from both, never re-declares" rule — pure visibility
+ *  change, zero behavior change to L1/L2. */
+export const stockFranchiseFor = (index: number): FranchiseRoster => {
   const f = franchiseFor(index);
   return { origin: "stock", name: f.name, crestIndex: f.crestIndex, slots: { ...STOCK_SLOTS }, spend: STOCK_SPEND };
 };
@@ -566,7 +569,10 @@ export type PlayerForm = {
  * showing up now." Interpretable line for a 10-year-old: name the cheaper
  * or pricier comparison directly, never an abstract stat.
  */
-function formFor(slotId: SlotId, playerId: string): PlayerForm | null {
+/** Exported (L3 addition): m1l3-free-agency's L2-carried MARKET-player form snapshot reuses this exact
+ *  formula rather than re-declaring it, per the "L3 imports from both, never re-declares" rule — pure
+ *  visibility change, zero behavior change to L1/L2. */
+export function formFor(slotId: SlotId, playerId: string): PlayerForm | null {
   const player = MARKET_BY_ID.get(playerId);
   if (!player) return null;
   const tag = valueTagFor(player);

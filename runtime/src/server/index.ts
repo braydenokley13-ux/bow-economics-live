@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { boxOfficeModule } from "../modules/boxOffice.js";
 import { draftDayModule } from "../modules/draftDay.js";
+import { freeAgencyModule } from "../modules/freeAgency.js";
 import { lobbyDemoModule } from "../modules/lobbyDemo.js";
 import { tradeDeadlineModule } from "../modules/tradeDeadline.js";
 import { createHttpServer } from "./http.js";
@@ -21,6 +22,7 @@ async function main(): Promise<void> {
   service.registerModule(draftDayModule);
   service.registerModule(boxOfficeModule);
   service.registerModule(tradeDeadlineModule);
+  service.registerModule(freeAgencyModule);
   // Additional lesson modules register here as the gameplay team ships them.
 
   const server = createHttpServer(service);
