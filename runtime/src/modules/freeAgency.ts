@@ -1006,6 +1006,7 @@ export const freeAgencyModule: LessonModule<FreeAgencyState> = {
     return tag({
       phase,
       day: state.day,
+      windowDays: WINDOW_DAYS,
       windowClosed: state.windowClosed,
       teamCount: teams.length,
       claimedCount: teams.filter((t) => t.claimed).length,

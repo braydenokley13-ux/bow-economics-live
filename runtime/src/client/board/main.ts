@@ -70,6 +70,12 @@ function render(payload: BoardPayload): void {
     renderTradeDeadlineBoard(view, mode);
     return;
   }
+  if (view["module"] === "m1l3-free-agency") {
+    const mode = String(view["mode"] ?? "");
+    backdrop.classList.toggle("peak", mode === "reveal" || mode === "counterfactual" || mode === "synthesis");
+    renderFreeAgencyBoard(view, mode);
+    return;
+  }
 
   backdrop.classList.remove("peak");
   const legacy = view as { mode?: string; tally?: Record<string, number>; total?: number; note?: string; pickedCount?: number };
@@ -374,7 +380,151 @@ function renderTradeDeadlineBoard(view: Record<string, unknown>, mode: string): 
     }
 
     case "complete":
-      stage.innerHTML = `<div class="label">Trade Deadline Complete</div><div class="banner">See you next class.</div>`;
+      stage.innerHTML = `<div class="label">Trade Deadline Complete</div><div class="banner" style="max-width:70vw;">${escapeHtml(String(view["message"] ?? "See you next class."))}</div>`;
+      return;
+
+    default:
+      stage.innerHTML = `<div class="label">${escapeHtml(mode)}</div>`;
+  }
+}
+
+/* --------------------------------------------------------- free agency render -- */
+
+type FAFranchise2 = { name: string; crestIndex: number };
+type FAAgentTicker = { id: string; name: string; position: string; tier: string; factorHint: string; ask: number; trend: number; interestCount: number; signed: boolean; signedAmount: number | null; signedFranchise: FAFranchise2 | null };
+type FAStanding2 = { seatId: string; franchise: FAFranchise2; form: number; capRoom: number; rank: number };
+type FAMatch2 = { a: FAStanding2; b: FAStanding2; winner: FAStanding2 };
+type FAPlayoffs2 = { field: FAStanding2[]; semis: FAMatch2[]; final: FAMatch2 | null; champion: FAStanding2 | null };
+type FAAward2 = { id: string; title: string; body: string };
+const FA_TIER_LABEL: Record<string, string> = { star: "STAR", solid: "SOLID", value: "VALUE" };
+
+function faTrendGlyph(trend: number): string {
+  if (trend > 0) return `<span class="fa-ticker-trend up">▲ rising</span>`;
+  if (trend < 0) return `<span class="fa-ticker-trend down">▼ falling</span>`;
+  return `<span class="fa-ticker-trend flat">– steady</span>`;
+}
+
+function faTickerHtml(market: FAAgentTicker[]): string {
+  return `<div class="fa-ticker">${market
+    .map(
+      (a) => `
+    <div class="fa-ticker-card ${a.signed ? "signed" : ""}">
+      <div class="fa-ticker-name">${escapeHtml(a.name)}</div>
+      <div class="fa-ticker-meta">${a.position} · ${FA_TIER_LABEL[a.tier] ?? a.tier}</div>
+      ${a.factorHint ? `<div class="fa-ticker-meta" style="color:var(--accent-blue); text-transform:none; font-style:italic; margin-top:.3vh;">"${escapeHtml(a.factorHint)}"</div>` : ""}
+      <div class="fa-ticker-ask-row"><span class="fa-ticker-ask">$${a.signed ? a.signedAmount : a.ask}M</span>${a.signed ? "" : faTrendGlyph(a.trend)}</div>
+      ${a.signed ? `<div class="fa-ticker-signed">✓ signed — ${a.signedFranchise ? escapeHtml(a.signedFranchise.name) : ""}</div>` : `<div class="fa-ticker-interest">${a.interestCount} team${a.interestCount === 1 ? "" : "s"} interested now</div>`}
+    </div>`,
+    )
+    .join("")}</div>`;
+}
+
+function faStandingsHtml(standings: FAStanding2[]): string {
+  return standings
+    .map(
+      (r) => `
+    <div class="fa-standings-row ${r.rank <= 4 ? "playoff-line" : ""}">
+      <span class="fa-standings-rank">#${r.rank}</span>
+      <span style="${crestStyle(r.franchise.crestIndex, 26)}"></span>
+      <span class="fa-standings-name">${escapeHtml(r.franchise.name)}</span>
+      <span class="fa-standings-form">${r.form}</span>
+    </div>`,
+    )
+    .join("");
+}
+
+function faMatchHtml(label: string, m: FAMatch2): string {
+  return `
+    <div class="fa-bracket-card">
+      <div class="fa-bracket-title">${label}</div>
+      <div class="fa-bracket-side ${m.winner.seatId === m.a.seatId ? "winner" : ""}"><span>${escapeHtml(m.a.franchise.name)}</span><span>${m.a.form}</span></div>
+      <div class="fa-bracket-side ${m.winner.seatId === m.b.seatId ? "winner" : ""}"><span>${escapeHtml(m.b.franchise.name)}</span><span>${m.b.form}</span></div>
+    </div>`;
+}
+
+function renderFreeAgencyBoard(view: Record<string, unknown>, mode: string): void {
+  switch (mode) {
+    case "lobby":
+      stage.innerHTML = `<div class="label">Free Agency</div><div class="banner">Waiting for the room to start — ${view["teamCount"]} franchises joined</div>`;
+      return;
+
+    case "hook":
+      stage.innerHTML = `<div class="label">The Signing Window Opens</div><div class="banner" style="max-width:70vw;">${escapeHtml(String(view["message"]))}</div><div class="kpirow"><div class="kpi"><div class="num">${view["claimedCount"]}</div><div class="lbl">Franchises claimed</div></div><div class="kpi"><div class="num">$${view["cap"]}M</div><div class="lbl">The new cap</div></div></div>`;
+      return;
+
+    case "play": {
+      const windowClosed = Boolean(view["windowClosed"]);
+      const market = (view["market"] as FAAgentTicker[]) ?? [];
+      const capRooms = (view["capRooms"] as { franchise: FAFranchise2; capRoom: number }[]) ?? [];
+      const standings = (view["standings"] as FAStanding2[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">${windowClosed ? "Signing Window Closed" : `Day ${view["day"]} of ${view["windowDays"]}`}</div>
+        <div class="kpirow"><div class="kpi"><div class="num">${view["actedCount"]}/${view["totalTeams"]}</div><div class="lbl">Teams acted today</div></div></div>
+        ${faTickerHtml(market)}
+        ${capRooms.length > 0 ? `<div class="fa-caproom-row">${capRooms.map((c) => `<div class="fa-caproom-tile"><span style="${crestStyle(c.franchise.crestIndex, 16)}"></span> ${escapeHtml(c.franchise.name)}: <span class="num">$${c.capRoom}M</span></div>`).join("")}</div>` : ""}
+        ${standings.length > 0 ? `<div class="synthesis-note" style="margin-top:2vh;">Playoff line — top ${Math.min(4, standings.length)}: ${standings.map((s) => escapeHtml(s.franchise.name)).join(", ")}</div>` : ""}
+      `;
+      return;
+    }
+
+    case "reveal": {
+      const recap = view["windowRecap"] as { signedCount: number; totalAgents: number; totalSpent: number; biggestContract: { agentName: string; amount: number; franchise: FAFranchise2 } | null; steepestFall: { agentName: string; from: number; to: number } | null } | null;
+      const agents = (view["agents"] as (FAAgentTicker & { revealed: boolean; playoffFactor: number | null })[]) ?? [];
+      const standings = view["standings"] as FAStanding2[] | null;
+      const playoffs = view["playoffs"] as FAPlayoffs2 | null;
+      const awards = view["awards"] as FAAward2[] | null;
+      const revealedAgents = agents.filter((a) => a.revealed);
+
+      let html = `<div class="label">The Playoff Push</div>`;
+      if (recap) {
+        html += `<div class="banner" style="max-width:74vw;">${recap.signedCount} of ${recap.totalAgents} agents signed · $${recap.totalSpent}M total spent${recap.biggestContract ? ` · biggest deal: ${escapeHtml(recap.biggestContract.agentName)} at $${recap.biggestContract.amount}M (${escapeHtml(recap.biggestContract.franchise.name)})` : ""}</div>`;
+      }
+      if (revealedAgents.length > 0) {
+        html += `<div class="cardgrid">${revealedAgents
+          .map((a) => {
+            const sign = a.playoffFactor !== null && a.playoffFactor > 0 ? "+" : "";
+            return `<div class="synthcard"><h3>${escapeHtml(a.name)} <span style="font-size:0.7em; color:var(--ink-muted); text-transform:none; letter-spacing:0;">· ${a.position}</span></h3><p style="font-weight:800; color:${a.playoffFactor !== null && a.playoffFactor > 0 ? "var(--cap-safe)" : a.playoffFactor !== null && a.playoffFactor < 0 ? "#ff9aa4" : "var(--ink-secondary)"};">${sign}${a.playoffFactor} playoff factor</p><p>${a.signed ? `Signed by ${a.signedFranchise ? escapeHtml(a.signedFranchise.name) : "a team"} for $${a.signedAmount}M.` : "Went unsigned this window."}</p></div>`;
+          })
+          .join("")}</div>`;
+      }
+      if (standings) html += `<div class="label" style="font-size:1.6vw; margin-top:3vh;">Final Standings</div>${faStandingsHtml(standings)}`;
+      if (playoffs && (playoffs.final || playoffs.semis.length > 0)) {
+        html += `<div class="label" style="font-size:1.6vw; margin-top:3vh;">The Bracket</div><div class="fa-bracket-row">`;
+        playoffs.semis.forEach((m, i) => (html += faMatchHtml(playoffs.semis.length > 1 ? `Semifinal ${i + 1}` : "Play-in", m)));
+        if (playoffs.final) html += faMatchHtml("Final", playoffs.final);
+        html += `</div>`;
+        if (playoffs.champion) html += `<div class="exit-prompt">🏆 ${escapeHtml(playoffs.champion.franchise.name)} — champion</div>`;
+      }
+      if (awards) {
+        html += `<div class="label" style="font-size:1.6vw; margin-top:3vh;">GM Awards</div>`;
+        html += awards.length > 0 ? `<div class="cardgrid">${awards.map((a) => `<div class="synthcard"><h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.body)}</p></div>`).join("")}</div>` : `<div class="synthesis-note">Nothing to award this round.</div>`;
+      }
+      stage.innerHTML = html;
+      return;
+    }
+
+    case "counterfactual": {
+      const classCards = (view["classCards"] as { id: string; title: string; body: string }[]) ?? [];
+      const debatePrompts = (view["debatePrompts"] as string[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">What If?</div>
+        <div class="cardgrid">${classCards.map((c) => `<div class="synthcard"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.body)}</p></div>`).join("")}</div>
+        <div class="synthesis-note">${debatePrompts.map(escapeHtml).join(" &nbsp;·&nbsp; ")}</div>`;
+      return;
+    }
+
+    case "synthesis": {
+      const cards = (view["cards"] as { id: string; title: string; body: string }[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["heading"]))}</div>
+        <div class="cardgrid">${cards.map((c) => `<div class="synthcard"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.body)}</p></div>`).join("")}</div>
+        <div class="synthesis-note">${escapeHtml(String(view["beyondSports"]))}</div>
+        <div class="exit-prompt">${escapeHtml(String(view["exitPrompt"]))}</div>`;
+      return;
+    }
+
+    case "complete":
+      stage.innerHTML = `<div class="label">Module 1 Complete</div><div class="banner" style="max-width:70vw;">${escapeHtml(String(view["message"]))}</div>`;
       return;
 
     default:
