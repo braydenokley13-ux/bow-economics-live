@@ -397,7 +397,13 @@ export class SessionService {
   private async applyPhaseChange(session: SessionRow, next: CanonicalPhase): Promise<TeacherPayload> {
     const mod = this.moduleFor(session);
     const patch: Parameters<Repository["updateSession"]>[1] = { phase: next };
-    if (mod.onPhaseExit) {
+    // Root-cause fix for a re-verification finding against `onPhaseExit`'s first use (VERIFY_L2.md's
+    // "Jump to REVEAL while already in REVEAL" MODERATE): `onPhaseExit`'s contract is "the phase being LEFT" —
+    // when `next` is the session's current phase, nothing is actually being left, so nothing should fire. This
+    // guards every module that ever implements the hook, not just this one case: `reveal` is the only control
+    // action that can target a phase the session may already be in (`advance` always moves strictly forward by
+    // construction), but any future control path with the same shape gets the same protection for free.
+    if (mod.onPhaseExit && session.phase !== next) {
       const resolvedState = mod.onPhaseExit(session.state, session.phase, next);
       if (resolvedState !== session.state) patch.state = resolvedState;
     }

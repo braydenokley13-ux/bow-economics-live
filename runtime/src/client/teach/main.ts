@@ -159,7 +159,12 @@ function render(payload: TeacherPayload): void {
   });
 
   $<HTMLButtonElement>("btnAdvance").disabled = s.ended || currentIdx === s.phases.length - 1;
-  $<HTMLButtonElement>("btnReveal").disabled = s.ended || !s.phases.includes("REVEAL");
+  // Re-verification finding (VERIFY_L2.md, against 662f04b): "Jump to REVEAL" while ALREADY in REVEAL is
+  // never meaningful — it's not skipping ahead to anything, just re-entering the same phase — so disable it
+  // there rather than leave a same-phase click possible at all. (The runtime's own sessionService also now
+  // guarantees onPhaseExit never fires on a same-phase transition, independent of this UI guard — see
+  // applyPhaseChange — but removing the pointless affordance is the cheaper, clearer fix for a human.)
+  $<HTMLButtonElement>("btnReveal").disabled = s.ended || !s.phases.includes("REVEAL") || s.phase === "REVEAL";
   $<HTMLButtonElement>("btnPause").disabled = s.ended;
   $<HTMLButtonElement>("btnPause").textContent = s.paused ? "Unpause" : "Pause";
   $<HTMLButtonElement>("btnFreeze").disabled = s.ended;

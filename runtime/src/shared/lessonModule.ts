@@ -86,7 +86,12 @@ export interface LessonModule<TState = unknown> {
    * this can run on any transition, not just ones a human is watching).
    * Most modules need nothing here; omit it entirely rather than returning
    * `state` unchanged for every phase. Not called by `restore` (that's a
-   * full checkpoint revert, not a forward transition) or `end`.
+   * full checkpoint revert, not a forward transition) or `end`. The runtime
+   * guarantees `fromPhase !== toPhase` — a control action that targets the
+   * session's own current phase (e.g. `reveal` while already in REVEAL) is
+   * not a transition and never invokes this hook, so `fromPhase === "X"`
+   * inside an implementation can be trusted to mean "actually leaving X,"
+   * never "asked to re-enter X."
    */
   onPhaseExit?(state: TState, fromPhase: CanonicalPhase, toPhase: CanonicalPhase): TState;
 }

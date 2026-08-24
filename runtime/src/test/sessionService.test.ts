@@ -599,3 +599,56 @@ test("B1 repair (VERIFY_L2.md BLOCKER): a real teacher.control({type:'advance'})
   assert.equal(studentView.rescued, false);
   assert.ok(studentView.candidates.length >= 2);
 });
+
+/* ------------------------------- re-verification repair: same-phase reveal must not fire onPhaseExit -- */
+
+test("re-verification repair (VERIFY_L2.md MODERATE, against 662f04b): control({type:'reveal'}) while ALREADY in REVEAL does not fire onPhaseExit — no silent bulk-resolve of unrevealed targets", async () => {
+  const service = freshL1L2Service();
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "" });
+  const seat = await service.join(l2.session.code, "Team X");
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // LOBBY -> HOOK
+  await service.submitAction(seat.deviceToken!, { type: "claim", carriedIndex: null });
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // HOOK -> PLAY
+  await service.submitAction(seat.deviceToken!, { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 }); // guaranteed loss
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // PLAY -> REVEAL
+
+  const before = await service.teacherView(l2.session.code, l2.teacherKey!);
+  assert.equal(before.session.phase, "REVEAL");
+  const beforeTeam = (before.view as { teams: { bidOutcome: string | null }[]; revealedCount: number }).teams[0]!;
+  assert.equal(beforeTeam.bidOutcome, null, "precondition: nothing revealed yet");
+  assert.equal((before.view as { revealedCount: number }).revealedCount, 0);
+
+  // The exact re-verification repro: "Jump to REVEAL" clicked while the session is ALREADY in REVEAL.
+  const same = await service.control(l2.session.code, { type: "reveal" }, l2.teacherKey!);
+  assert.equal(same.session.phase, "REVEAL", "a same-phase reveal jump is still a legal no-op transition");
+
+  const after = await service.teacherView(l2.session.code, l2.teacherKey!);
+  const afterView = after.view as { teams: { bidOutcome: string | null }[]; revealedCount: number };
+  assert.equal(afterView.teams[0]!.bidOutcome, null, "must NOT have been silently resolved by the same-phase click");
+  assert.equal(afterView.revealedCount, 0, "no target may be auto-revealed by re-entering the phase you're already in");
+
+  // Positive control: a REAL exit from REVEAL (advance to ADAPT) still auto-resolves correctly — the B1
+  // guarantee this repair must not weaken.
+  const advanced = await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // REVEAL -> ADAPT
+  assert.equal(advanced.session.phase, "ADAPT");
+  const advancedTeam = (advanced.view as { teams: { bidOutcome: string | null }[] }).teams[0]!;
+  assert.equal(advancedTeam.bidOutcome, "lost", "a genuine phase exit must still auto-resolve — B1's fix stays intact");
+});
+
+test("re-verification repair: a real (different-phase) reveal jump — e.g. from PLAY, before anything has been revealed — still works normally and resolves nothing", async () => {
+  const service = freshL1L2Service();
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "" });
+  const seat = await service.join(l2.session.code, "Team X");
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // LOBBY -> HOOK
+  await service.submitAction(seat.deviceToken!, { type: "claim", carriedIndex: null });
+  await service.control(l2.session.code, { type: "advance" }, l2.teacherKey!); // HOOK -> PLAY
+  await service.submitAction(seat.deviceToken!, { type: "cutForBid", slot: "PLAYMAKER", targetId: "tgt-pm", bidAmount: 5 });
+
+  // Teacher skips straight from PLAY to REVEAL via the "Jump to REVEAL" fallback (D11 rider d) — a genuine,
+  // different-phase transition (PLAY -> REVEAL), must behave exactly as before this repair.
+  const jumped = await service.control(l2.session.code, { type: "reveal" }, l2.teacherKey!);
+  assert.equal(jumped.session.phase, "REVEAL");
+  const team = (jumped.view as { teams: { bidOutcome: string | null }[]; revealedCount: number }).teams[0]!;
+  assert.equal(team.bidOutcome, null, "jumping INTO REVEAL resolves nothing — there's nothing to resolve yet");
+  assert.equal((jumped.view as { revealedCount: number }).revealedCount, 0);
+});
