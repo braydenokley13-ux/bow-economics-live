@@ -143,3 +143,12 @@ ROUND-2 RULING. Fresh-context re-verification (107/107 tests, real Playwright UI
 - **Date:** 2026-08-22
 - **Owner:** CEO
 - **Evidence:** docs/gauntlet/module-1/VERIFY_ROUND2.md.
+
+## D16. Round-3 certification — L1 is a classroom-ready candidate
+
+ROUND-3 CERTIFICATION. A targeted re-check of round-2's two named blockers, against the applied repair (commit `29225ea`: cap-inviolable ADAPT budget, locked-at-time SCARCITY/RISK BUFFER numbers), confirms both **FIXED**: the ADAPT budget is now arithmetic-identical to a normal placement's affordability check (no overflow possible by construction, confirmed live at $100M/$0 remaining); RISK BUFFER's repair-budget claim is now mechanically true (a leftover team's budget is provably larger than a spent-to-cap team's for an identical loss) rather than asserted over flat, identical numbers. 143/143 tests passing. Ruling: **CLASSROOM-READY CANDIDATE.** Standard D10 caveat still applies in full: gameplay-tested is not classroom-proven — a real classroom session is still required.
+
+- **Status:** ACTIVE
+- **Date:** 2026-08-24
+- **Owner:** CEO
+- **Evidence:** docs/gauntlet/module-1/VERIFY_ROUND2.md ("ROUND 3 CERTIFICATION" section).

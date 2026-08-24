@@ -4,7 +4,7 @@ Provisional module map per D1/D2 in `docs/PRODUCT_DECISIONS.md`. Anchor legacy a
 
 | Module | Working Title | Durable Concepts | Anchor Legacy Assets | Status |
 |---|---|---|---|---|
-| M1 L1 | Draft Day | Scarcity, opportunity cost, tradeoffs among substitutes, constrained choice, risk buffer | Built against Design C (D11); playability-redesigned per PLAYABILITY_SPEC.md | gameplay-tested candidate (STRONG per VERIFY_ROUND2.md), final certification in progress |
+| M1 L1 | Draft Day | Scarcity, opportunity cost, tradeoffs among substitutes, constrained choice, risk buffer | Built against Design C (D11); playability-redesigned per PLAYABILITY_SPEC.md | classroom-ready candidate (STRONG, round-3 certified — VERIFY_ROUND2.md) |
 | M1 L2 | The Trade Deadline: Undo Isn't Free | Cost of revising a commitment (dead cap), pricing under hidden information, risk tolerance | `T101-M1-L2` "Trade Deadline War Room" (28/28 test suite; luxury-tax teaching) — playability-redesigned per PLAYABILITY_SPEC.md, not the legacy code | play-designed (PLAYABILITY_SPEC), not built |
 | M1 L3 | Why the Line Exists | Institutions as designed rules, competitive balance, structural vs. earned advantage | Refounded off the legacy card-picker pattern into a live head-to-head draft — PLAYABILITY_SPEC.md | play-designed (PLAYABILITY_SPEC), not built |
 | M2 | Money in Motion | Revenue, incentives, path dependence | `101-M2-L2` "Small Markets, Big Money" — its `ROUND2[state.r1]` path-dependence pattern reborn as the central prototype's `roundTwoOpening(zone)` | central prototype ("The Box Office," PROTOTYPE_SPEC.md) technically verified — 143/143 tests, real Playwright E2E pass; not yet independently gameplay/economics/runtime-gauntleted |
