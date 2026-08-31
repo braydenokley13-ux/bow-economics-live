@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `67:f96fa569a6af6c8e99f3e458d9f1202b3cd77954036743b8eb1cdac856b92a5a`  
-Updated: 2026-08-31T22:57:07.407Z
+Event head: `68:cc23d5893a9a4302b1fda1197a21394218ad37914b29f0e76c6e065be983195a`  
+Updated: 2026-08-31T23:08:52.187Z
 
 ## Founder intent
 
@@ -60,6 +60,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-tests — test — Full runtime suite after L1 build
 - l1-tuning — test — BC-2 tuning harness: 11 properties
 - l1-e2e — e2e — M2 L1 full-arc three-surface Playwright proof
+- gate-l1-sr — sports-reality-report — L1 SR gate: CLEAR WITH REPAIRS. Blocking: Knicks won 2026 title (2026-06-13) so N3 'defending champions' collides with NY desk; capacities cleared w/ copy repair; magnitude-honesty + BC-3 point-of-use stamps required
 
 ## Claim ledger
 

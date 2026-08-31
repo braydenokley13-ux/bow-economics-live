@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T22:57:07.407Z",
+  "updatedAt": "2026-08-31T23:08:52.187Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -603,7 +603,8 @@
         "l1-e2e-browser",
         "l1-tests",
         "l1-tuning",
-        "l1-e2e"
+        "l1-e2e",
+        "gate-l1-sr"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1072,6 +1073,26 @@
       },
       "recordedAt": "2026-08-31T22:56:10.999Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-sr": {
+      "id": "gate-l1-sr",
+      "wave": 2,
+      "kind": "sports-reality-report",
+      "label": "L1 SR gate: CLEAR WITH REPAIRS. Blocking: Knicks won 2026 title (2026-06-13) so N3 'defending champions' collides with NY desk; capacities cleared w/ copy repair; magnitude-honesty + BC-3 point-of-use stamps required",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-sr--GATE_L1_SR.md",
+      "sha256": "668ef4bb30d97dbf106ff66bb290e5c8f85dc7c7ed58d421d5b6c9c8ac27b442",
+      "size": 26899,
+      "metadata": {
+        "verifiedAsOf": "2026-08-31",
+        "verdict": "CLEAR_WITH_REPAIRS",
+        "tags": [
+          "sports-reality",
+          "wave-2",
+          "gate"
+        ]
+      },
+      "recordedAt": "2026-08-31T23:08:52.187Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1259,11 +1280,11 @@
     "agentsActivated": 15,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 24,
+    "evidenceRecorded": 25,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 67,
-  "eventHead": "f96fa569a6af6c8e99f3e458d9f1202b3cd77954036743b8eb1cdac856b92a5a",
+  "eventCount": 68,
+  "eventHead": "cc23d5893a9a4302b1fda1197a21394218ad37914b29f0e76c6e065be983195a",
   "warnings": []
 }
