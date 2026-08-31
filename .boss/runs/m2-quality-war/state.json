@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:13:55.041Z",
+  "updatedAt": "2026-08-31T23:14:14.874Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -561,12 +561,24 @@
           "model": "claude-opus-5",
           "reason": "Mechanism truth of the built L1 incl. dominant-line hunt and N4 capacity-option dominance risk",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T22:57:06.959Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T23:14:14.860Z",
+          "sections": {
+            "mechanism-verdicts": "SOUND WITH REQUIRED REPAIRS. Clean: BC-4 (nothing sweepable pre-commit, verified on the wire), R6/R8 hold at shipped constants, D15 locked-at-time synthesis numbers, no dominant single price, ignoring the night card costs 32-50% of cash (pricing skill is information-reading, as designed). Night-spend is a real mechanism (return = eventFans x (tomorrow's price + a); NY pays only on N3) but tomorrow's card is shown on no surface, so the decision cannot be reasoned about in play.",
+            "false-lesson-risks": "B1 (blocking): RENEWALS tent low arm unreachable, so every price above a night's cash optimum is weakly dominated on both books; Pareto set collapses to [plan price, cash argmax] — FL3 by construction, the same defect class that blocked Candidate A's L1. N4 congratulating copy teaches that a $95,000 mistake is what professionals do.",
+            "dominant-strategies": "Exhaustive per-night best-response over market x card x renewals in GATE_L1_ECON.md: no single dominant price; weak dominance defect above via the tent; N4 open-best = closed-best minus bowl cost in every reachable cell ($95k NY / $42k MEM).",
+            "synthesis-map-verdict": "Two Peaks copy true; REVENUE card pools markets and cards misleadingly ($12 Memphis vs $90 NY — higher price drew the bigger crowd); 'most cash' ceiling beatable by $63,472/$78,280.",
+            "required-repairs": "Blocking: make the tent's low arm reachable (or restructure the renewals penalty) so above-optimum prices are not weakly dominated; fix or honestly reframe N4 (a trap is honest, congratulation is not) and correct SHOCK_REVEAL_COPY; surface tomorrow's card so night-spend is reasonable-about; fix cash ceiling; split the REVENUE synthesis card by market/card. Non-blocking items listed in the report."
+          },
+          "evidenceIds": [
+            "gate-l1-econ",
+            "l1-tuning"
+          ],
+          "cost": {
+            "tokens": 207746,
+            "toolUses": 41
+          }
         },
         "gate-l1-sr": {
           "assignmentId": "gate-l1-sr",
@@ -637,7 +649,8 @@
       ],
       "dissentIds": [
         "qa-teacher-misclick",
-        "econ-l1-renewals-tent"
+        "econ-l1-renewals-tent",
+        "gate-l1-econ-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1344,6 +1357,15 @@
       "status": "open",
       "recordedAt": "2026-08-31T23:13:55.041Z",
       "actor": "economic-truth-critic"
+    },
+    "gate-l1-econ-dissent": {
+      "id": "gate-l1-econ-dissent",
+      "wave": 2,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-08-31T23:14:14.874Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -1378,7 +1400,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 74,
-  "eventHead": "94746c6ca5af9e154db96875ae801f88a8bdc1d3456d2c8a47d544c5e6664797",
+  "eventCount": 76,
+  "eventHead": "4d47f24825144c91dfff5f97551b6ad4335a9371770e3289beef1170a65e01b3",
   "warnings": []
 }

@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `74:94746c6ca5af9e154db96875ae801f88a8bdc1d3456d2c8a47d544c5e6664797`  
-Updated: 2026-08-31T23:13:55.041Z
+Event head: `76:4d47f24825144c91dfff5f97551b6ad4335a9371770e3289beef1170a65e01b3`  
+Updated: 2026-08-31T23:14:14.874Z
 
 ## Founder intent
 
@@ -35,7 +35,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 
 - builder — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — active — claude-opus-5
-- economic-truth-critic — lead-integrator — active — claude-opus-5
+- economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - sports-reality-director — lead-integrator — completed-with-concerns — claude-opus-5
 - browser-qa — lead-integrator — completed-with-concerns — claude-sonnet-5
 
@@ -75,6 +75,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 
 - qa-teacher-misclick — classroom-reliability/blocking/open — Teacher's primary Advance during PLAY silently ends the whole five-night play window (no confirmation; guard present in m1l2/m1l3, missing in m2l1-full-house) and settlement discards set-but-unlocked prices — one plausible tap destroys the core loop for the class, unrecoverable. Repro + screenshots in GATE_L1_QA.md.
 - econ-l1-renewals-tent — economic-truth/blocking/open — Built L1's RENEWALS tent low arm is unreachable (max below-plan penalty -2 at NY, never negative at Memphis), so every price above a night's cash optimum is weakly dominated on both books and the Pareto set collapses to [plan price, cash argmax] — FL3 by construction, the same class of defect that blocked Candidate A's L1. Also blocking: N4's open option never beats closed in any reachable cell yet SHOCK_REVEAL_COPY congratulates it citing six real clubs; the 'most cash' ceiling is beatable; the pooled REVENUE synthesis card compares across markets/cards misleadingly. Exhaustive computations in GATE_L1_ECON.md.
+- gate-l1-econ-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
