@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:14:14.874Z",
+  "updatedAt": "2026-08-31T23:26:02.506Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -639,7 +639,8 @@
         "l1-e2e",
         "gate-l1-sr",
         "gate-l1-qa",
-        "gate-l1-econ"
+        "gate-l1-econ",
+        "gate-l1-play"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -650,7 +651,8 @@
       "dissentIds": [
         "qa-teacher-misclick",
         "econ-l1-renewals-tent",
-        "gate-l1-econ-dissent"
+        "gate-l1-econ-dissent",
+        "play-board-curve-pooled"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1172,6 +1174,25 @@
       },
       "recordedAt": "2026-08-31T23:13:54.810Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-play": {
+      "id": "gate-l1-play",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "L1 play gate: RATING FUNCTIONAL (repair not kill). All three Stage-0 STRONG beats survived (N5-repeat got better in a room). Blocking: board pools 25 desk-nights from five demand worlds into one 'ROOM'S OWN CURVE' with higher-price-bigger-crowd segments, then COUNTERFACTUAL tells the room to argue from it. N4 never on a best line; night-spend real but payback rule stated nowhere; Two Peaks chart plots people not money",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-play--GATE_L1_PLAY.md",
+      "sha256": "7b7735e42e62ad8711051287a88d5de6826340575a6951d4cb1f61eb580565a3",
+      "size": 25572,
+      "metadata": {
+        "rating": "FUNCTIONAL",
+        "tags": [
+          "gameplay",
+          "wave-2",
+          "gate"
+        ]
+      },
+      "recordedAt": "2026-08-31T23:26:02.287Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1366,6 +1387,20 @@
       "status": "open",
       "recordedAt": "2026-08-31T23:14:14.874Z",
       "actor": "lead-integrator"
+    },
+    "play-board-curve-pooled": {
+      "id": "play-board-curve-pooled",
+      "wave": 2,
+      "category": "gameplay",
+      "severity": "blocking",
+      "finding": "The board's class-evidence chart joins 25 desk-nights from five different demand worlds into one line labelled THE ROOM'S OWN CURVE, producing segments where a higher price drew a bigger crowd; COUNTERFACTUAL then instructs the room to argue from those two lines — the class-evidence layer manufactures false economics fuel. Blocking for the argue/synthesis beats. Detail + screenshots in GATE_L1_PLAY.md.",
+      "evidenceIds": [
+        "gate-l1-play"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-08-31T23:26:02.506Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "meetings": {},
@@ -1396,11 +1431,11 @@
     "agentsActivated": 15,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 27,
+    "evidenceRecorded": 28,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 76,
-  "eventHead": "4d47f24825144c91dfff5f97551b6ad4335a9371770e3289beef1170a65e01b3",
+  "eventCount": 78,
+  "eventHead": "e40500a21decdd956fb9448b566d0ad0ba69757a4f471bd706f4cfd46e869be3",
   "warnings": []
 }

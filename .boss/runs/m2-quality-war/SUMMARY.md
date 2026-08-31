@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `76:4d47f24825144c91dfff5f97551b6ad4335a9371770e3289beef1170a65e01b3`  
-Updated: 2026-08-31T23:14:14.874Z
+Event head: `78:e40500a21decdd956fb9448b566d0ad0ba69757a4f471bd706f4cfd46e869be3`  
+Updated: 2026-08-31T23:26:02.506Z
 
 ## Founder intent
 
@@ -63,6 +63,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-sr — sports-reality-report — L1 SR gate: CLEAR WITH REPAIRS. Blocking: Knicks won 2026 title (2026-06-13) so N3 'defending champions' collides with NY desk; capacities cleared w/ copy repair; magnitude-honesty + BC-3 point-of-use stamps required
 - gate-l1-qa — browser-trace — L1 QA gate: 1 BLOCKING (teacher Advance during PLAY silently ends all five nights, unlocked prices discarded, no confirm — guard exists in m1l2/m1l3, missing here), 2 MODERATE (38px lock button; missing confirm root cause). Privacy, auth, refresh/rejoin/restart-resume, malformed input all clean at 1366x768
 - gate-l1-econ — economic-truth-report — L1 econ gate: SOUND WITH REQUIRED REPAIRS. Blocking: renewals tent low arm unreachable (prices above cash optimum weakly dominated — FL3 by construction, same defect that blocked Candidate A); N4 open-never-beats-closed with congratulating copy; cash ceiling beatable; pooled REVENUE synthesis card misleads. Clean: BC-4, R6, R8, D15, no dominant price, card-reading worth 32-50% of cash
+- gate-l1-play — gameplay-report — L1 play gate: RATING FUNCTIONAL (repair not kill). All three Stage-0 STRONG beats survived (N5-repeat got better in a room). Blocking: board pools 25 desk-nights from five demand worlds into one 'ROOM'S OWN CURVE' with higher-price-bigger-crowd segments, then COUNTERFACTUAL tells the room to argue from it. N4 never on a best line; night-spend real but payback rule stated nowhere; Two Peaks chart plots people not money
 
 ## Claim ledger
 
@@ -76,6 +77,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - qa-teacher-misclick — classroom-reliability/blocking/open — Teacher's primary Advance during PLAY silently ends the whole five-night play window (no confirmation; guard present in m1l2/m1l3, missing in m2l1-full-house) and settlement discards set-but-unlocked prices — one plausible tap destroys the core loop for the class, unrecoverable. Repro + screenshots in GATE_L1_QA.md.
 - econ-l1-renewals-tent — economic-truth/blocking/open — Built L1's RENEWALS tent low arm is unreachable (max below-plan penalty -2 at NY, never negative at Memphis), so every price above a night's cash optimum is weakly dominated on both books and the Pareto set collapses to [plan price, cash argmax] — FL3 by construction, the same class of defect that blocked Candidate A's L1. Also blocking: N4's open option never beats closed in any reachable cell yet SHOCK_REVEAL_COPY congratulates it citing six real clubs; the 'most cash' ceiling is beatable; the pooled REVENUE synthesis card compares across markets/cards misleadingly. Exhaustive computations in GATE_L1_ECON.md.
 - gate-l1-econ-dissent — undefined/undefined/open — undefined
+- play-board-curve-pooled — gameplay/blocking/open — The board's class-evidence chart joins 25 desk-nights from five different demand worlds into one line labelled THE ROOM'S OWN CURVE, producing segments where a higher price drew a bigger crowd; COUNTERFACTUAL then instructs the room to argue from those two lines — the class-evidence layer manufactures false economics fuel. Blocking for the argue/synthesis beats. Detail + screenshots in GATE_L1_PLAY.md.
 
 ## Latest gate
 
