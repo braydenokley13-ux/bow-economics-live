@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:44:29.227Z",
+  "updatedAt": "2026-08-31T21:48:39.390Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -313,12 +313,24 @@
           "model": "claude-opus-5",
           "reason": "Independent mechanism-level review of the three candidate designs against the economic contract and the Stage-0 arithmetic findings, as selection pre-opinion.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T21:37:18.595Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T21:48:39.380Z",
+          "sections": {
+            "mechanism-verdicts": "Per-candidate per-lesson verdicts in SELECTION_ECON_REVIEW.md. C is the only candidate publishing constants and thus the only falsifiable one; its L3 signature (reinvest delta, r* proportional to (1-s)^2, 36%->9% across s=0..0.5) survives the sharing dissent intact. B's visitor's-share dial genuinely internalises the L2 externality but B publishes no constants and its L1 rests on a false constraint (seats treated as a season-long stock; arena capacity is a flow). A's L1 multiplicative shifters leave the cash argmax invariant — 'lock the Replay peak' is dominant; A's L3 take function has no cross-seat term.",
+            "false-lesson-risks": "Worst in the war: A-L3 teaches FL4 inverted — sharing's benefit channel does not compute in its own model, only the cost half. Structural, not tunable, on the finale of the one concept D2 gives M2.",
+            "dominant-strategies": "A: 'lock the Replay peak' dominant (argmax invariant under its shifters, verified $48 at m=0.6/1.0/1.6). B: not falsifiable (no constants) — flagged. C: cleared at Stage-0 level; two arithmetic defects found against its own constants (R6 fails 16.5x against the low price at New York; Memphis cannot exceed 75.3% fill at any legal price, R8).",
+            "synthesis-map-verdict": "Ranking for economic truth: C > B > A. C's synthesis most honestly earned; B's L2 instrument truest but unverifiable as written; A's L1/L3 payloads false in its own model.",
+            "required-repairs": "l3-sharing-argmax dissent UPHELD (re-run exit 1; both limbs closed-form: price move = a*s/(2(1-s)), identically zero under a binding capacity clamp; uniform tax moves no argmax). Discharge: drop price as L3's signature for a differential instrument (C's reinvest or B's visitor share) and make big-market non-movement itself taught economics (moving arrow next to flat arrow, ask why). New blocking dissent econ-candidate-a-blocked recorded. C's build repairs: R6/R8 arithmetic defects plus SR's C-1/C-2. Rulings on all four recorded R-disputes are in the doc."
+          },
+          "evidenceIds": [
+            "sel-econ-review",
+            "l3-arith-harness"
+          ],
+          "cost": {
+            "tokens": 150873,
+            "toolUses": 12
+          }
         },
         "sel-sr-review": {
           "assignmentId": "sel-sr-review",
@@ -360,14 +372,17 @@
         "readme-l1",
         "readme-l2l3",
         "l3-arith-harness",
-        "sel-sr-review"
+        "sel-sr-review",
+        "sel-econ-review"
       ],
       "claimIds": [],
       "dissentIds": [
         "econ-boxoffice-unrepaired",
         "econ-contract-dissent",
         "l3-sharing-argmax",
-        "proto-l2-l3-dissent"
+        "proto-l2-l3-dissent",
+        "econ-candidate-a-blocked",
+        "sel-econ-review-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -629,6 +644,23 @@
       },
       "recordedAt": "2026-08-31T21:44:12.499Z",
       "actor": "lead-integrator"
+    },
+    "sel-econ-review": {
+      "id": "sel-econ-review",
+      "wave": 1,
+      "kind": "economic-truth-report",
+      "label": "Econ selection review: C>B>A; A's L1 shifters + L3 take function blocked at mechanism level; l3-sharing-argmax upheld with closed-form discharge path (differential instrument + flat-arrow taught moment)",
+      "path": ".boss/runs/m2-quality-war/evidence/sel-econ-review--SELECTION_ECON_REVIEW.md",
+      "sha256": "3220dc4b46fa0feaaa12b23f6599582a248153e6ac3b9623b5188beae2caf313",
+      "size": 45113,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "selection"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:48:21.469Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {},
@@ -678,6 +710,29 @@
       "status": "open",
       "recordedAt": "2026-08-31T21:36:14.994Z",
       "actor": "lead-integrator"
+    },
+    "econ-candidate-a-blocked": {
+      "id": "econ-candidate-a-blocked",
+      "wave": 1,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "Candidate A blocked outright as specified: (1) its L1 demand system uses multiplicative shifters that leave the cash argmax invariant (verified $48 at m=0.6/1.0/1.6), making 'lock the Replay peak' a dominant strategy and A's stated payload false in its own model; (2) its L3 take function (1-s)*ownGate + pot + national has no cross-seat term, so L2's interdependence is off during the lesson that executes the rule — the payer's take falls monotonically in s with no offsetting channel, teaching FL4 inverted ('sharing only costs'). Structural, not tunable. See SELECTION_ECON_REVIEW.md.",
+      "evidenceIds": [
+        "sel-econ-review"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-08-31T21:48:15.314Z",
+      "actor": "economic-truth-critic"
+    },
+    "sel-econ-review-dissent": {
+      "id": "sel-econ-review-dissent",
+      "wave": 1,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-08-31T21:48:39.390Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -700,11 +755,11 @@
     "agentsActivated": 10,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 14,
+    "evidenceRecorded": 15,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 34,
-  "eventHead": "7ca2c8bb9841073b0365fa868cdc9bb44b7c4a1323f1e4dfde9d0ca75ba1a5fd",
+  "eventCount": 38,
+  "eventHead": "e7bfe576864fa3b62a5408418b89f194c70d59a34b908ac5bbfa929c2e14ed02",
   "warnings": []
 }

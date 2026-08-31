@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `34:7ca2c8bb9841073b0365fa868cdc9bb44b7c4a1323f1e4dfde9d0ca75ba1a5fd`  
-Updated: 2026-08-31T21:44:29.227Z
+Event head: `38:e7bfe576864fa3b62a5408418b89f194c70d59a34b908ac5bbfa929c2e14ed02`  
+Updated: 2026-08-31T21:48:39.390Z
 
 ## Founder intent
 
@@ -41,7 +41,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - builder — lead-integrator — completed — claude-sonnet-5
 - builder — lead-integrator — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — lead-integrator — active — claude-opus-5
-- economic-truth-critic — lead-integrator — active — claude-opus-5
+- economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - sports-reality-director — lead-integrator — completed — claude-opus-5
 
 ## Required evidence
@@ -73,6 +73,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - readme-l2l3 — browser-trace — Stage-0 L2/L3 notes incl. cross-design taxed-base conflict
 - l3-arith-harness — test — L3 sharing-arithmetic brute-force: claims i,iii FAIL for capacity-saturated NY; ii,iv PASS; Memphis passes all
 - sel-sr-review — sports-reality-report — SR selection review: C>A>B on real-world strength; best use A-L2 arena decision, worst miss B optional SR-8; two build-blocking accuracy items in C (lottery order, pipe magnitudes)
+- sel-econ-review — economic-truth-report — Econ selection review: C>B>A; A's L1 shifters + L3 take function blocked at mechanism level; l3-sharing-argmax upheld with closed-form discharge path (differential instrument + flat-arrow taught moment)
 
 ## Claim ledger
 
@@ -84,6 +85,8 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - econ-contract-dissent — undefined/undefined/open — undefined
 - l3-sharing-argmax — economic-truth/blocking/open — Deterministic brute force refutes part of the L3 signature moment shared by all three candidate designs: revenue sharing lowers a seat's own optimal price ONLY where demand has slack — for a capacity-saturated market (New York, Design C's own constants) the optimal price never moves at any share 0-50%. Additionally, Design C's L3 sharing base (gate + in-arena + local media taxed uniformly) cannot move any price argmax — proportional taxation does not shift a maximizer; the mechanism requires an untaxed revenue stream (present only in Design A's wording). The winning architecture must either re-slate L3's markets, adopt an untaxed-stream structure, or make big-market non-movement itself the taught moment.
 - proto-l2-l3-dissent — undefined/undefined/open — undefined
+- econ-candidate-a-blocked — economic-truth/blocking/open — Candidate A blocked outright as specified: (1) its L1 demand system uses multiplicative shifters that leave the cash argmax invariant (verified $48 at m=0.6/1.0/1.6), making 'lock the Replay peak' a dominant strategy and A's stated payload false in its own model; (2) its L3 take function (1-s)*ownGate + pot + national has no cross-seat term, so L2's interdependence is off during the lesson that executes the rule — the payer's take falls monotonically in s with no offsetting channel, teaching FL4 inverted ('sharing only costs'). Structural, not tunable. See SELECTION_ECON_REVIEW.md.
+- sel-econ-review-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
