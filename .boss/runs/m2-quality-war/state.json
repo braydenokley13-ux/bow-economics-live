@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:26:23.095Z",
+  "updatedAt": "2026-08-31T23:56:21.014Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -647,8 +647,91 @@
           "model": "claude-opus-5",
           "reason": "Consolidated Wave-2 repair batch: all blocking findings from the four L1 gates (QA misclick guard, SR facts/copy, econ renewals-tent/N4/night-spend-info/synthesis, play board-curve pooling). Repair 1 of 3 in wave budget.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-08-31T23:26:23.095Z",
+          "completedAt": "2026-08-31T23:56:19.572Z",
+          "sections": {
+            "what-changed": "All 9 charter items DONE: m1-pattern confirm guard + open-night settlement on teacher advance (D17 precedent); 44px lock target; N3 card fixed for the 2026 Knicks title (visitor now last season's beaten finalists, stamped) + FedExForum/magnitude/point-of-use-stamp copy repairs; three-segment card-conditional renewals tent (low arm binds, frontier undominated both sides, 44 reachable above-optimum undominated states per market); N4 kept as a DECLARED opportunity-cost trap with honest copy (option b — option a would recreate the capacity-clamp geometry BC-2 removed and delete the FULL HOUSE beat); best-season search over prices and spend schedule with honest 'best we could find' label; class chart unpooled (colour=market, shape=night, no joining stroke) + REVENUE card quotes one market one night; Two Peaks money curves with marked peaks on the board; tomorrow's card + slate + payback rule surfaced.",
+            "evidence": "Re-run by lead via evidence command, all exit 0: l1-tests-r1 (351/351, M1 untouched), l1-tuning-r1 (13/13 incl. new P11 trap test, P12 low-arm/frontier, P13 search-beats-20k-random-policies), l1-e2e-r1 (zero console errors, unpooled-chart assertions), l1-e2e-misclick (QA's exact scenario: guard text, cancel safe, accept honors the set $56).",
+            "claims": "Deterministic only, all observed above. The retune's classroom feel and the 2026 facts (taken from gate-l1-sr's dated sources) are not certified by the builder.",
+            "known-gaps": "Non-charter gate minors left open (econ N-items incl. simplifications ledger and boxOffice deregistration, play P4/5/7/8/9, SR R6-R9); BOARD_HONESTY_LINE wording qualified by caption but unchanged; renewals retune shifts the season-level two-book gap (66% vs 80%, was 22% vs 80%) — flagged for econ re-read; bestFoundSeason is a deterministic local search, labeled honestly."
+          },
+          "evidenceIds": [
+            "l1-tests-r1",
+            "l1-tuning-r1",
+            "l1-e2e-r1",
+            "l1-e2e-misclick"
+          ],
+          "cost": {
+            "tokens": 753844,
+            "toolUses": 260
+          }
+        },
+        "recheck-l1-econ": {
+          "assignmentId": "recheck-l1-econ",
+          "role": "economic-truth-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Focused re-verification of repair round 1 against the econ gate's own blocking findings incl. the flagged season-gap shift from the renewals retune",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T23:56:20.074Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "recheck-l1-play": {
+          "assignmentId": "recheck-l1-play",
+          "role": "player-gameplay-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Focused re-rate of the repaired lesson: does the unpooled class evidence + Two Peaks money proof lift FUNCTIONAL to STRONG",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T23:56:20.304Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "gate-l1-teacher": {
+          "assignmentId": "gate-l1-teacher",
+          "role": "teacher-transfer-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Fresh-context random-teacher gate on the repaired lesson, cold protocol (teacher-facing material first)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T23:56:20.541Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "gate-l1-projector": {
+          "assignmentId": "gate-l1-projector",
+          "role": "classroom-projector-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Three-coupled-surfaces session choreography, reveal theater, board privacy, fallbacks on the repaired lesson",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T23:56:20.774Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "gate-l1-visual": {
+          "assignmentId": "gate-l1-visual",
+          "role": "visual-experience-director",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Premium sports-business media bar on rendered output of the repaired lesson",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T23:56:21.014Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -665,7 +748,11 @@
         "gate-l1-sr",
         "gate-l1-qa",
         "gate-l1-econ",
-        "gate-l1-play"
+        "gate-l1-play",
+        "l1-tests-r1",
+        "l1-tuning-r1",
+        "l1-e2e-r1",
+        "l1-e2e-misclick"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1219,6 +1306,100 @@
       },
       "recordedAt": "2026-08-31T23:26:02.287Z",
       "actor": "lead-integrator"
+    },
+    "l1-tests-r1": {
+      "id": "l1-tests-r1",
+      "wave": 2,
+      "kind": "test",
+      "label": "Full runtime suite after repair round 1",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-tests-r1--record.json",
+      "sha256": "a3768d5dab2ed1a8887cfae8cd7dd6fbeb74d99b09b23baf3fd19e049184d52a",
+      "size": 87975,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "repair"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T23:55:08.662Z",
+      "actor": "lead-integrator"
+    },
+    "l1-tuning-r1": {
+      "id": "l1-tuning-r1",
+      "wave": 2,
+      "kind": "test",
+      "label": "Tuning harness 13 properties after repair round 1",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-tuning-r1--record.json",
+      "sha256": "49e55a03528e9c1c1b63c071836e04485e4d3e49b71577b31254a841cb968a56",
+      "size": 8973,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "repair"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T23:55:14.907Z",
+      "actor": "lead-integrator"
+    },
+    "l1-e2e-r1": {
+      "id": "l1-e2e-r1",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "Three-surface e2e after repair round 1 (unpooled chart assertions)",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-r1--record.json",
+      "sha256": "8ab8aeaaa4a5bf3e5475be1034f02114b6bb993997ccc5b1027cdba7ef088eab",
+      "size": 1940,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "repair"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T23:55:40.641Z",
+      "actor": "lead-integrator"
+    },
+    "l1-e2e-misclick": {
+      "id": "l1-e2e-misclick",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "QA misclick scenario repro: guard present, cancel safe, accept honors set price",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-misclick--record.json",
+      "sha256": "fc5d9c4bf290ab803b245875e37b4aa177e9a1d2915dabd3fe6d964346486c9e",
+      "size": 845,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "repair"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1-misclick.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T23:55:47.114Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1387,9 +1568,12 @@
         "gate-l1-qa"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-08-31T23:11:36.151Z",
-      "actor": "browser-qa"
+      "actor": "browser-qa",
+      "resolution": "Repaired with the m1l2/m1l3 confirm-guard pattern plus open-night settlement honoring set-but-unlocked prices (D17 auto-resolve precedent). Deterministically re-verified against the QA gate's exact repro scenario: guard text names the open night and unlocked desks, cancel leaves PLAY untouched, accept keeps the pair's set price; lock target 44px. Evidence l1-e2e-misclick (exit 0), tests l1-tests-r1.",
+      "resolvedAt": "2026-08-31T23:56:19.838Z",
+      "resolvedBy": "lead-integrator"
     },
     "econ-l1-renewals-tent": {
       "id": "econ-l1-renewals-tent",
@@ -1463,14 +1647,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 16,
+    "agentsActivated": 21,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 28,
+    "evidenceRecorded": 32,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 81,
-  "eventHead": "38e855793a95797cc98f7de46ddac37b1de56312f4d62514b9a8618aff0a0e6a",
+  "eventCount": 92,
+  "eventHead": "1aab58f642337b5aa237ef3ebb5b4a62f7ff96bc358251933e993178ba8ac13d",
   "warnings": []
 }
