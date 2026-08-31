@@ -107,7 +107,7 @@
   .legend-sep { display: inline-block; width: 2vw; }
   .legend-shape { display: inline-flex; align-items: center; gap: .3vw; margin-left: 1.1vw; }
   /* Two Peaks money view (gate-l1-play): show the peaks, don't assert them. */
-  .fh-money-svg { width: 100%; max-width: 34vw; height: auto; display: block; margin-top: .6vh; }
+  .fh-money-svg { width: 100%; max-width: 32vw; height: auto; display: block; margin-top: .6vh; }
   .fh-money-key { display: flex; align-items: center; gap: .5vw; font-size: .85vw; color: var(--ink-muted); }
   .fh-money-swatch { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--accent-gold); margin-left: 1vw; }
   .fh-money-swatch.dash { border-top: 2px dashed var(--ink-secondary); margin-left: 0; }
@@ -124,9 +124,13 @@
   .fh-desk-chip { display: flex; align-items: center; gap: .5vw; background: rgba(19,24,34,0.75);
     border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: .5vh 1vw; font-size: 1vw; color: var(--ink-secondary); }
 
+  /* Two markets side by side: the money view added height to each, and the
+     projector is a fixed, non-scrolling surface. */
   .fh-peaks-board { background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.5); border-radius: 16px;
-    padding: 1.6vh 2vw; margin-top: 2vh; max-width: 74vw; }
-  .fh-peaks-title { font-family: var(--font-display); font-size: 1.6vw; letter-spacing: .12em; color: var(--accent-gold); }
+    padding: 1.6vh 2vw; margin-top: 2vh; max-width: 74vw;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(28vw, 1fr)); column-gap: 2vw; }
+  .fh-peaks-title { font-family: var(--font-display); font-size: 1.6vw; letter-spacing: .12em; color: var(--accent-gold); grid-column: 1 / -1; }
+  .fh-peaks-punch { grid-column: 1 / -1; }
   .fh-peaks-market { margin-top: 1vh; text-align: left; }
   .fh-peaks-club { font-size: 1vw; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
   .fh-peaks-line { display: flex; justify-content: space-between; font-size: 1.3vw; color: var(--ink-secondary); padding: .2vh 0; }

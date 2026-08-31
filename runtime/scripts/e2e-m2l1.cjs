@@ -292,7 +292,13 @@ async function main() {
       await resp;
       if (i === 4) {
         // Stages 1-5 put the five nights up one at a time, each labelled by card.
-        await board.waitForFunction(() => document.body.innerText.includes("N5"), null, { timeout: 20000 });
+        // The headline is no longer "the room's own curve": the picture pools five
+        // demand worlds, so it says what it is (gate-l1-play P1).
+        await board.waitForFunction(
+          () => /N1 . N2 . N3 . N4 . N5/.test(document.body.innerText),
+          null,
+          { timeout: 20000 },
+        );
         const staged = await board.evaluate(() => document.body.innerText);
         assert.match(staged, /N1 · N2 · N3 · N4 · N5/);
         assert.equal(staged.includes("THE TWO PEAKS"), false, "Two Peaks landed before its own stage");
@@ -312,8 +318,20 @@ async function main() {
     await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("ADAPT"), null, { timeout: 20000 });
     const adaptBoard = await board.evaluate(() => document.body.innerText);
     assert.match(adaptBoard, /charge LESS and make MORE/i);
-    const curvePoints = await board.evaluate(() => document.querySelectorAll(".scatter-svg circle").length);
-    assert.ok(curvePoints >= 15, `expected the room's whole curve on the board, got ${curvePoints} points`);
+    // gate-l1-play P1: one mark per desk-night, shaped by night (circle / square /
+    // triangle / diamond / ring), and NO joining stroke — a line through five demand
+    // worlds is what made the projector argue against the lesson.
+    const curvePoints = await board.evaluate(
+      () => document.querySelectorAll(".scatter-svg circle, .scatter-svg rect, .scatter-svg polygon").length,
+    );
+    assert.ok(curvePoints >= 15, `expected every desk-night marked on the board, got ${curvePoints} marks`);
+    const joins = await board.evaluate(() => document.querySelectorAll(".scatter-svg path").length);
+    assert.equal(joins, 0, "the class chart is joining points across different nights again");
+    const shapes = await board.evaluate(() =>
+      new Set([...document.querySelectorAll(".scatter-svg circle, .scatter-svg rect, .scatter-svg polygon")].map((n) => n.tagName)).size,
+    );
+    assert.ok(shapes >= 2, "every night is drawn with the same mark — the room cannot tell the nights apart");
+    assert.match(adaptBoard, /SAME colour and the SAME shape/i);
     await board.screenshot({ path: path.join(SCREEN_DIR, "11-board-adapt-curve.png") });
     console.log(`[e2e-m2l1] ADAPT: questions plus the room's whole curve — ${curvePoints} class points, two labelled series`);
 
@@ -330,7 +348,7 @@ async function main() {
     await d1.waitForFunction(() => document.body.innerText.toUpperCase().includes("WHAT IF?"), null, { timeout: 20000 });
     const cfPlay = await d1.evaluate(() => document.body.innerText);
     assert.match(cfPlay, /Same price every night/);
-    assert.match(cfPlay, /The most cash the five nights could give/);
+    assert.match(cfPlay, /The best five nights we could find/); // gate-l1-econ B2: no beatable 'maximum' claim
     console.log("[e2e-m2l1] COUNTERFACTUAL: N1-vs-N5 on the board, per-desk replays on /play");
     await board.screenshot({ path: path.join(SCREEN_DIR, "12-board-counterfactual-n1-n5.png") });
     await d1.screenshot({ path: path.join(SCREEN_DIR, "13-play-counterfactual.png"), fullPage: true });

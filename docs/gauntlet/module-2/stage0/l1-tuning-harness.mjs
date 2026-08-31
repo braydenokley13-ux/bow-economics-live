@@ -66,6 +66,9 @@ const {
   curveFor,
   settleNight,
   renewalDelta,
+  renewalReferencePrice,
+  replayPlan,
+  bestFoundSeason,
   ticketPeakPrice,
   totalPeakPrice,
 } = mod;
@@ -256,11 +259,11 @@ console.log("");
         let renewBest = { p: null, v: -Infinity };
         for (const p of PRICE_GRID) {
           const cash = settleNight(market, curve, p, 0, false, card.bowlOffer).net;
-          const ren = renewalDelta(market, p, 0);
+          const ren = renewalDelta(market, card, p, 0);
           if (cash > cashBest.v) cashBest = { p, v: cash };
           if (ren > renewBest.v) renewBest = { p, v: ren };
         }
-        const renAtCashBest = renewalDelta(market, cashBest.p, 0);
+        const renAtCashBest = renewalDelta(market, card, cashBest.p, 0);
         const cashAtRenBest = settleNight(market, curve, renewBest.p, 0, false, card.bowlOffer).net;
         if (cashBest.p === renewBest.p) ok = false;
         if (!(renAtCashBest < renewBest.v && cashAtRenBest < cashBest.v)) ok = false;
@@ -293,7 +296,9 @@ console.log("");
     // consistently expensive price that still draws a crowd on the quiet card (renewals fall).
     for (const policy of [
       { label: "held the plan price all week", price: market.planPrice },
-      { label: "held $" + (market.planPrice + 30) + " all week", price: market.planPrice + 30 },
+      // The second line undercuts the club's own season-plan price all week — the arm the B1
+      // repair made reachable in BOTH markets. Renewals fall, so the repeat card draws fewer.
+      { label: "undercut the plan at $" + Math.max(PRICE_MIN, market.planPrice - 8) + " all week", price: Math.max(PRICE_MIN, market.planPrice - 8) },
     ]) {
       if (policy.price > PRICE_MAX) continue;
       let renewals = RENEWALS_START;
@@ -305,11 +310,11 @@ console.log("");
         const s = settleNight(market, curve, policy.price, 0, false, card.bowlOffer);
         if (card.id === "N1") n1Turnout = s.turnout;
         if (card.id === "N5") n5Turnout = s.turnout;
-        renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, policy.price, 0)));
+        renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, policy.price, 0)));
         carry = 0;
       }
       const delta = n5Turnout - n1Turnout;
-      const expectSign = renewalDelta(market, policy.price, 0) > 0 ? 1 : -1;
+      const expectSign = renewalDelta(market, CARDS[0], policy.price, 0) > 0 ? 1 : -1;
       const gotSign = Math.sign(delta);
       if (gotSign !== expectSign || Math.abs(delta) < 100) ok = false;
       rows.push(
@@ -384,7 +389,7 @@ console.log("");
         const spend = i === spendNightIndex ? market.eventMax : 0;
         const s = settleNight(market, curve, price, spend, false, card.bowlOffer);
         cash += s.net;
-        renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, price, spend)));
+        renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, price, spend)));
         carry = Math.round(market.eventFans * spend);
       }
       return cash;
@@ -436,28 +441,157 @@ console.log("");
   check("P10", "R1 — no single fixed price is right on more than two of the four distinct cards", ok, rows);
 }
 
-/* ------------------------------------ P11 — the capacity option is a real decision -- */
+/* ------------------------------------ P11 — the Night-4 capacity option is a declared trap -- */
 {
+  // REPLACES the old P11, which compared open-vs-closed AT A FIXED PRICE — the wrong
+  // comparison for two dials moved at the same moment (gate-l1-econ, "P11 does not test
+  // this"). The Night-4 ruling taken is option (b): the option stays a deliberate
+  // opportunity-cost trap and the reveal copy no longer congratulates anyone for taking it.
+  // So the property is: it is NEVER part of a best night at any reachable state, and it is
+  // never inert — it pays only where the desk has already underpriced.
   const rows = [];
   let ok = true;
   const shock = CARDS.find((c) => c.bowlOffer);
   for (const market of MARKETS) {
-    const curve = curveFor(market, shock, RENEWALS_START, 0);
-    let helps = null;
-    let hurts = null;
-    for (const p of PRICE_GRID) {
-      const closed = settleNight(market, curve, p, 0, false, true).net;
-      const open = settleNight(market, curve, p, 0, true, true).net;
-      if (open > closed && helps === null) helps = { p, gain: open - closed };
-      if (open < closed && hurts === null) hurts = { p, loss: closed - open };
+    let worstMargin = -Infinity;
+    let helpfulTop = null;
+    let cashBestAt50 = null;
+    for (const st of reachableStates(market)) {
+      const curve = curveFor(market, shock, st.renewals, st.carry);
+      let bestClosed = -Infinity;
+      let bestOpen = -Infinity;
+      let cashBestPrice = null;
+      let helpful = [];
+      for (const p of PRICE_GRID) {
+        const closed = settleNight(market, curve, p, 0, false, true).net;
+        const open = settleNight(market, curve, p, 0, true, true).net;
+        if (closed > bestClosed) {
+          bestClosed = closed;
+          cashBestPrice = p;
+        }
+        if (open > bestOpen) bestOpen = open;
+        if (open > closed) helpful.push(p);
+      }
+      if (!(bestOpen < bestClosed)) ok = false;
+      if (helpful.length === 0) ok = false;
+      if (helpful.length > 0 && !(Math.max(...helpful) < cashBestPrice)) ok = false;
+      worstMargin = Math.max(worstMargin, bestOpen - bestClosed);
+      if (st.renewals === RENEWALS_START && st.carry === 0) {
+        helpfulTop = helpful.length > 0 ? Math.max(...helpful) : null;
+        cashBestAt50 = cashBestPrice;
+      }
     }
-    if (!helps || !hurts) ok = false;
     rows.push(
-      `${market.id.padEnd(10)} opening ${fmt(market.bowlSeats)} more seats for $${fmt(market.bowlCost)}: ` +
-        `helps from $${helps ? helps.p : "-"} (+$${helps ? fmt(helps.gain) : "-"}) · pure cost from $${hurts ? hurts.p : "-"} (-$${hurts ? fmt(hurts.loss) : "-"})`,
+      `${market.id.padEnd(10)} best night with the bowl open is always worse than with it closed (closest margin $${fmt(Math.round(worstMargin))}) · ` +
+        `it only pays at or below $${helpfulTop} against a cash-best price of $${cashBestAt50} — a partial refund on your own underpricing`,
     );
   }
-  check("P11", "the Night-4 capacity option is conditional on your own price — it helps low and wastes money high", ok, rows);
+  check("P11", "the Night-4 capacity option is a declared trap: never in a best night, never inert, only pays below the cash optimum", ok, rows);
+}
+
+/* ------------------------------- P12 — the renewals book is two-sided over the REACHABLE dial -- */
+{
+  // gate-l1-econ B1 (BLOCKING dissent econ-l1-renewals-tent). Two limbs, both the gate's own:
+  //  (i)  the low arm binds inside the legal dial in EVERY market (it did not: at Memphis every
+  //       legal price below the plan price still GAINED renewals), and the reachable penalty
+  //       below the reference is at least a third of the penalty reachable above it;
+  //  (ii) there is a reachable state where a price STRICTLY ABOVE the night's cash optimum is
+  //       Pareto-undominated — i.e. the frontier is not one-directional and FL3 is not built in.
+  const rows = [];
+  let ok = true;
+  for (const market of MARKETS) {
+    let lowArm = 0;
+    for (const card of CARDS) {
+      const atFloor = renewalDelta(market, card, PRICE_MIN, 0);
+      const reference = renewalReferencePrice(market, card);
+      const worstBelow = Math.min(...PRICE_GRID.filter((p) => p <= reference).map((p) => renewalDelta(market, card, p, 0)));
+      const worstAbove = Math.min(...PRICE_GRID.filter((p) => p >= reference).map((p) => renewalDelta(market, card, p, 0)));
+      if (!(atFloor < 0)) ok = false;
+      if (!(Math.abs(worstBelow) >= Math.abs(worstAbove) / 3)) ok = false;
+      lowArm = Math.min(lowArm, atFloor);
+      rows.push(
+        `${market.id.padEnd(10)} ${card.id}: plan $${market.planPrice} · what tonight is worth $${reference.toFixed(0)} · ` +
+          `at the $${PRICE_MIN} floor ${atFloor} · worst below ${worstBelow} vs worst above ${worstAbove}`,
+      );
+    }
+    let undominatedStates = 0;
+    let example = null;
+    for (const card of CARDS) {
+      for (const st of reachableStates(market)) {
+        const curve = curveFor(market, card, st.renewals, st.carry);
+        const points = PRICE_GRID.map((p) => ({
+          p,
+          cash: settleNight(market, curve, p, 0, false, card.bowlOffer).net,
+          ren: renewalDelta(market, card, p, 0),
+        }));
+        const cashBest = points.reduce((a, b) => (b.cash > a.cash ? b : a));
+        const undominated = points.filter(
+          (a) => !points.some((b) => b.p !== a.p && b.cash >= a.cash && b.ren >= a.ren && (b.cash > a.cash || b.ren > a.ren)),
+        );
+        const above = undominated.filter((u) => u.p > cashBest.p);
+        if (above.length > 0) {
+          undominatedStates += 1;
+          if (!example) example = `${card.id} @renewals ${st.renewals}: cash best $${cashBest.p}, still undominated up to $${Math.max(...above.map((a) => a.p))}`;
+        }
+      }
+    }
+    if (undominatedStates === 0) ok = false;
+    rows.push(
+      `${market.id.padEnd(10)} low arm reaches ${lowArm} inside the dial · ` +
+        `${undominatedStates} reachable states carry an undominated price ABOVE the night's cash optimum (${example ?? "none"})`,
+    );
+  }
+  check("P12", "B1 — the renewals low arm binds inside the legal dial and the two-book frontier runs both ways", ok, rows);
+}
+
+/* ------------------------- P13 — the counterfactual's strongest line survives an outside search -- */
+{
+  // gate-l1-econ B2 (BLOCKING): the shipped "most cash the five nights could give" card was
+  // beatable by $63,472 (NY) / $78,280 (MEM) and carried the false note "spend early". The card
+  // now prints bestFoundSeason() and claims only that it is the best line we could find. This
+  // property tries to beat it from outside the module: every all-or-nothing spend schedule, every
+  // fixed-price line, and a deterministic pseudo-random policy sweep.
+  const rows = [];
+  let ok = true;
+  let seed = 20260831;
+  const rand = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  for (const market of MARKETS) {
+    const printed = bestFoundSeason(market);
+    let bestRival = { cash: -Infinity, label: "none" };
+    const consider = (cash, label) => {
+      if (cash > bestRival.cash) bestRival = { cash, label };
+    };
+    for (let mask = 0; mask < 1 << CARDS.length; mask += 1) {
+      const spends = CARDS.map((_c, i) => ((mask >> i) & 1 ? market.eventMax : 0));
+      let renewals = RENEWALS_START;
+      let carry = 0;
+      const prices = [];
+      for (let i = 0; i < CARDS.length; i += 1) {
+        const price = totalPeakPrice(market, curveFor(market, CARDS[i], renewals, carry));
+        prices.push(price);
+        renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, CARDS[i], price, spends[i])));
+        carry = Math.round(market.eventFans * spends[i]);
+      }
+      consider(replayPlan(market, { prices, spends }).cash, `greedy prices, spend mask ${mask}`);
+    }
+    for (const price of PRICE_GRID) {
+      for (const spend of [0, market.eventMax]) {
+        consider(replayPlan(market, { prices: CARDS.map(() => price), spends: CARDS.map(() => spend) }).cash, `flat $${price}, spend $${spend}`);
+      }
+    }
+    for (let trial = 0; trial < 20000; trial += 1) {
+      const prices = CARDS.map(() => PRICE_GRID[Math.floor(rand() * PRICE_GRID.length)]);
+      const spends = CARDS.map(() => Math.round((rand() * market.eventMax) / 5000) * 5000);
+      consider(replayPlan(market, { prices, spends }).cash, "random policy");
+    }
+    if (bestRival.cash > printed.cash) ok = false;
+    rows.push(
+      `${market.id.padEnd(10)} printed line $${fmt(printed.cash)} (renewals ${printed.renewals}%) · best rival found $${fmt(bestRival.cash)} (${bestRival.label}) · ` +
+        `margin $${fmt(printed.cash - bestRival.cash)}`,
+    );
+    rows.push(`${" ".repeat(11)}printed plan: prices ${printed.plan.prices.map((p) => `$${p}`).join(" ")} · spend ${printed.plan.spends.map((s) => `$${fmt(s)}`).join(" ")}`);
+  }
+  check("P13", "B2 — nothing an outside search finds beats the season line the COUNTERFACTUAL card prints", ok, rows);
 }
 
 /* --------------------------------------------------------------- verdict -- */

@@ -821,7 +821,7 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
           <div class="kpi"><div class="num">${view["lockedCount"]}/${view["deskCount"]}</div><div class="lbl">Desks locked in</div></div>
         </div>
         ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:66vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
-        ${points.length > 0 ? `<div class="scatter-wrap" style="width:60vw;">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : ""}
+        ${points.length > 0 && peaks.length === 0 ? `<div class="scatter-wrap" style="width:60vw;">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : ""}
         ${peaks.length > 0 ? fhTwoPeaksPanel(peaks) : ""}
         <div class="synthesis-note" style="font-size:1.1vw;">${escapeHtml(honesty)}</div>`;
       return;
@@ -836,7 +836,9 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // lands, the curve gives up room rather than pushing anything off screen.
       const crowded = Boolean(view["twoPeaksReleased"]);
       const booksUp = Boolean(view["booksReleased"]);
-      const showCurve = points.length > 0 && !booksUp;
+      // The projector is fixed and non-scrolling: once the Two Peaks money view is up it
+      // owns the screen, and the class chart gives up its room rather than push it off.
+      const showCurve = points.length > 0 && !booksUp && !crowded;
       stage.innerHTML = `
         <div class="label">${booksUp ? "The Season, Market By Market" : `The Room's Own Curve · ${shown.length ? shown.join(" · ") : "waiting"}`}</div>
         ${showCurve ? `<div class="scatter-wrap${crowded ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
