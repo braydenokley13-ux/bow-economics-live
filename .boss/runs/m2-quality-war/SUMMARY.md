@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `32:64ddd7de078104fcf4d4f4662e3b38f3182d6c72bf9f0c5dd948e6f9a1341a3f`  
-Updated: 2026-08-31T21:37:18.814Z
+Event head: `33:0a3d89dd34a8b93f7e52d9a3e54f050c0a5e888a3fcfca0578a1ec66084524ac`  
+Updated: 2026-08-31T21:44:12.499Z
 
 ## Founder intent
 
@@ -72,6 +72,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - readme-l1 — browser-trace — Stage-0 L1 trio implementation notes
 - readme-l2l3 — browser-trace — Stage-0 L2/L3 notes incl. cross-design taxed-base conflict
 - l3-arith-harness — test — L3 sharing-arithmetic brute-force: claims i,iii FAIL for capacity-saturated NY; ii,iv PASS; Memphis passes all
+- sel-sr-review — sports-reality-report — SR selection review: C>A>B on real-world strength; best use A-L2 arena decision, worst miss B optional SR-8; two build-blocking accuracy items in C (lottery order, pipe magnitudes)
 
 ## Claim ledger
 

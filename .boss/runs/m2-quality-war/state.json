@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:37:18.814Z",
+  "updatedAt": "2026-08-31T21:44:12.499Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -348,7 +348,8 @@
         "proto-l3",
         "readme-l1",
         "readme-l2l3",
-        "l3-arith-harness"
+        "l3-arith-harness",
+        "sel-sr-review"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -598,6 +599,25 @@
       },
       "recordedAt": "2026-08-31T21:36:07.798Z",
       "actor": "lead-integrator"
+    },
+    "sel-sr-review": {
+      "id": "sel-sr-review",
+      "wave": 1,
+      "kind": "sports-reality-report",
+      "label": "SR selection review: C>A>B on real-world strength; best use A-L2 arena decision, worst miss B optional SR-8; two build-blocking accuracy items in C (lottery order, pipe magnitudes)",
+      "path": ".boss/runs/m2-quality-war/evidence/sel-sr-review--SELECTION_SR_REVIEW.md",
+      "sha256": "034d3c4888951e2c6ac915f2c48661bad98c4599f72ae376044df7945d502278",
+      "size": 27937,
+      "metadata": {
+        "verifiedAsOf": "2026-08-31",
+        "ranking": "C,A,B",
+        "tags": [
+          "sports-reality",
+          "selection"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:44:12.499Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {},
@@ -669,11 +689,11 @@
     "agentsActivated": 10,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 13,
+    "evidenceRecorded": 14,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 32,
-  "eventHead": "64ddd7de078104fcf4d4f4662e3b38f3182d6c72bf9f0c5dd948e6f9a1341a3f",
+  "eventCount": 33,
+  "eventHead": "0a3d89dd34a8b93f7e52d9a3e54f050c0a5e888a3fcfca0578a1ec66084524ac",
   "warnings": []
 }
