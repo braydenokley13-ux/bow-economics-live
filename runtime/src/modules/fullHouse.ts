@@ -105,8 +105,16 @@ export type Market = {
   readonly eventFans: number;
   /** Dollars of event spend that buy one renewal point tonight. */
   readonly eventRenewalDollars: number;
-  /** Renewal points lost per $1 the price sits away from the plan price. */
+  /** Renewal points lost per $1 the price sits ABOVE what tonight is worth to a plan holder. */
   readonly planSlope: number;
+  /**
+   * Dollars between the season-plan price and what a plan holder thinks the
+   * biggest possible night is worth. Scales the card-conditional reference
+   * price (see `renewalReferencePrice`).
+   */
+  readonly premiumSpan: number;
+  /** Point-of-use season stamp for `capacity` (BC-3). Printed wherever the seat count is printed. */
+  readonly capacityNote: string;
 };
 
 /**
@@ -144,6 +152,8 @@ export const MARKETS: readonly Market[] = [
     eventFans: 0.01,
     eventRenewalDollars: 24_000,
     planSlope: 0.6,
+    premiumSpan: 92,
+    capacityNote: "listed basketball capacity 19,812 · 2025-26",
   },
   {
     id: "memphis",
@@ -169,6 +179,8 @@ export const MARKETS: readonly Market[] = [
     eventFans: 0.016,
     eventRenewalDollars: 10_000,
     planSlope: 0.6,
+    premiumSpan: 90,
+    capacityNote: "modeled seat count · published figures range 16,667-18,119",
   },
 ];
 const MARKET_BY_ID: ReadonlyMap<MarketId, Market> = new Map(MARKETS.map((m) => [m.id, m]));
@@ -185,6 +197,9 @@ export type MarketFacts = {
   eventMax: number;
   bowlSeats: number;
   bowlCost: number;
+  capacityNote: string;
+  /** P2/B4: the night-spend dial's payback rule, in dollars a pair can act on. */
+  spendRule: string;
 };
 export const marketFacts = (m: Market): MarketFacts => ({
   id: m.id,
@@ -197,7 +212,21 @@ export const marketFacts = (m: Market): MarketFacts => ({
   eventMax: m.eventMax,
   bowlSeats: m.bowlSeats,
   bowlCost: m.bowlCost,
+  capacityNote: m.capacityNote,
+  spendRule: spendRuleFor(m),
 });
+
+/**
+ * The night-spend dial's payback rule, printed BEFORE the commitment (the
+ * Economic Truth gate's B4 and the Player gate's P2: the mechanism is real
+ * and was illegible). This is a rule of the game a real promotions desk
+ * would know, not a preview: it says nothing about tonight's crowd, tonight's
+ * money, or what any price will do.
+ */
+export function spendRuleFor(m: Market): string {
+  const dollarsPerFan = Math.round(1 / m.eventFans);
+  return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them.`;
+}
 
 /* --------------------------------------------------------------- cards -- */
 
@@ -256,10 +285,14 @@ export const CARDS: readonly NightCard[] = [
     day: "Wednesday",
     weekend: false,
     draw: 88,
-    visitor: "the defending champions",
+    // gate-l1-sr F1 (BLOCKING): "the defending champions" collided with the New
+    // York desk — the Knicks won the 2026 title, so in 2026-27 half the room
+    // would host itself on the lesson's most-watched card. Card visitors are
+    // roles, never a club a desk can be holding. See SOURCE_NOTES.
+    visitor: "last season's beaten finalists",
     tv: "national",
     notes: [
-      "The champions are in the building. That pulls hard.",
+      "The club that lost last season's Finals is in the building. That pulls hard.",
       "It is also on national TV — the whole country can watch it free at home. Two things pulling opposite ways.",
     ],
     bowlOffer: false,
@@ -311,6 +344,10 @@ export const RENEWALS_START = 50;
 export const RENEWAL_TENT_PEAK = 6;
 export const RENEWAL_DELTA_FLOOR = -20;
 export const RENEWAL_DELTA_CEIL = 12;
+/** Renewal points lost per $1 the price sits BELOW the season-plan price (the low arm). */
+export const RENEWAL_UNDERCUT_SLOPE = 2.5;
+/** Extra renewal points at the top of the "your plan is a bargain tonight" ramp. */
+export const RENEWAL_BARGAIN_BONUS = 6;
 
 export const isValidPrice = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v) && v >= PRICE_MIN && v <= PRICE_MAX && (v - PRICE_MIN) % PRICE_STEP === 0;
@@ -383,17 +420,56 @@ export function settleNight(
 }
 
 /**
- * RENEWALS is a tent peaked at the season-ticket plan price, not a line.
- * Both halves are real club behaviour: price far above the plan and plan
- * holders quit; price far below it and the plan looks like a waste, so they
- * stop buying it. That two-sided shape is what keeps this book from
- * collapsing into "cheap is always kind" (the FL3 failure mode) and what
- * makes CASH and RENEWALS genuinely non-summable.
+ * What a season-plan holder thinks tonight's seat is worth: the plan price on
+ * a quiet night, rising with the visiting club's Draw and falling back when
+ * the game is on TV — every input is printed on the card the pair reads
+ * before it prices (R7).
  */
-export function renewalDelta(market: Market, price: number, spend: number): number {
-  const tent = RENEWAL_TENT_PEAK - market.planSlope * Math.abs(price - market.planPrice);
-  const fromSpend = spend / market.eventRenewalDollars;
-  return clamp(Math.round(tent + fromSpend), RENEWAL_DELTA_FLOOR, RENEWAL_DELTA_CEIL);
+export function renewalReferencePrice(market: Market, card: NightCard): number {
+  const fromDraw = Math.max(0, (card.draw - 40) / 60);
+  const fromTv = card.tv === "national" ? 0.45 : card.tv === "local" ? 0.15 : 0;
+  return market.planPrice + market.premiumSpan * Math.max(0, fromDraw - fromTv);
+}
+
+/**
+ * RENEWALS, repaired after `gate-l1-econ` B1 (BLOCKING dissent
+ * `econ-l1-renewals-tent`). The old shape was a tent peaked at the plan price,
+ * and its low arm was unreachable: $10 is only $6 under Memphis's plan price,
+ * so every legal price below the plan there still GAINED renewals while the
+ * high arm ran to -20. The result was a one-directional frontier — every price
+ * above a night's cash optimum was weakly dominated on both books at every
+ * reachable state — i.e. FL3 ("charging high is greedy, charging low is kind")
+ * built into the arithmetic.
+ *
+ * The repaired book has three segments, and all three are real club behaviour:
+ *
+ *  - BELOW the season-plan price: steep (`RENEWAL_UNDERCUT_SLOPE`). Walk-ups
+ *    paying less than your own plan holders is what makes the plan look like a
+ *    waste. This arm now bites inside the legal dial in both markets.
+ *  - BETWEEN the plan price and what the night is worth
+ *    (`renewalReferencePrice`): a rising bonus. The plan holder bought that
+ *    seat at plan price and tonight it is worth more — the plan looks like a
+ *    bargain. It accelerates, because the feeling only shows up when tonight's
+ *    walk-up price is well clear of what they paid.
+ *  - ABOVE what the night is worth: the old gentle arm (`planSlope`). Gouging.
+ *
+ * Consequence, asserted by `l1-tuning-harness` P12 and the suite: on the quiet
+ * cards the renewals book wants a LOWER price than the cash book, and on the
+ * big cards it wants a HIGHER one. The two-book frontier therefore contains
+ * real choices on both sides of the night's cash optimum, and no fixed moral
+ * about greed is available from the numbers.
+ */
+export function renewalDelta(market: Market, card: NightCard, price: number, spend: number): number {
+  const reference = renewalReferencePrice(market, card);
+  const span = reference - market.planPrice;
+  const ramp = span > 0 ? clamp((price - market.planPrice) / span, 0, 1) : 0;
+  const value =
+    RENEWAL_TENT_PEAK +
+    RENEWAL_BARGAIN_BONUS * ramp * ramp -
+    RENEWAL_UNDERCUT_SLOPE * Math.max(0, market.planPrice - price) -
+    market.planSlope * Math.max(0, price - reference) +
+    spend / market.eventRenewalDollars;
+  return clamp(Math.round(value), RENEWAL_DELTA_FLOOR, RENEWAL_DELTA_CEIL);
 }
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
@@ -505,7 +581,7 @@ function applyNight(
 ): Desk {
   const curve = curveFor(market, card, desk.renewals, carryFansFor(desk, market));
   const settlement = settleNight(market, curve, price, spend, openBowl, card.bowlOffer);
-  const move = renewalDelta(market, price, spend);
+  const move = renewalDelta(market, card, price, spend);
   const renewalsAfter = clamp(desk.renewals + move, 0, 100);
   const cashAfter = desk.cash + settlement.net;
   const night: SettledNight = {
@@ -634,16 +710,24 @@ function doLock(state: FullHouseState, seatId: SeatId): ReduceResult<FullHouseSt
  * season-ticket plan price with no event spend, marked `auto` so the reveal
  * can say so out loud.
  */
-function closeNight(state: FullHouseState): FullHouseState {
+function closeNight(state: FullHouseState, honorPendingDials = false): FullHouseState {
   const card = openCard(state);
   if (!card) return state;
   const desks: Record<SeatId, Desk> = {};
   for (const [seatId, desk] of Object.entries(state.desks)) {
     const market = marketOf(desk);
     const auto = !desk.locked;
-    const price = auto ? market.planPrice : desk.price;
-    const spend = auto ? 0 : Math.min(desk.spend, spendCapFor(desk, market));
-    const openBowl = auto ? false : desk.openBowl;
+    // The bell's auto-commit is the "did nothing" line: a desk that never
+    // touched a dial settles at the season-plan price. But when the TEACHER
+    // ends PLAY early (onPhaseExit), a pair may be mid-decision with a real
+    // price already set and simply not locked — `gate-l1-qa` D1 watched a desk
+    // that had dialled $56 settle all five nights at a flat $24. D17's
+    // auto-resolve-on-exit precedent is to honour what the student actually
+    // submitted, so on that path the dials as they stand are committed.
+    const usePending = honorPendingDials && !desk.locked;
+    const price = auto && !usePending ? market.planPrice : desk.price;
+    const spend = auto && !usePending ? 0 : Math.min(desk.spend, spendCapFor(desk, market));
+    const openBowl = auto && !usePending ? false : desk.openBowl;
     desks[seatId] = applyNight(desk, market, card, price, spend, openBowl, { auto, stock: false });
   }
   return { ...state, desks, nightIndex: state.nightIndex + 1 };
@@ -671,7 +755,18 @@ export type TwoPeaks = {
   ticketRevenueAtTicketPeak: number;
   totalRevenueAtTicketPeak: number;
   totalRevenueAtTotalPeak: number;
+  /**
+   * gate-l1-play, Two Peaks "weakened as a proof": the panel asserted two
+   * prices over a people-vs-price chart with no marker on either. This is the
+   * money view — the two curves the two peaks are peaks OF, sampled across the
+   * dial from the same frozen at-lock curve (D15). Released only with the rest
+   * of the Two Peaks payload, i.e. after the night it is drawn on is played.
+   */
+  moneySeries: { price: number; ticket: number; total: number }[];
 };
+
+/** Sampling step for the Two Peaks money view — fine enough to show both peaks, coarse enough to project. */
+const MONEY_SERIES_STEP = 4;
 
 export type RepeatRow = {
   deskHandle: string;
@@ -753,6 +848,11 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
       ticketRevenueAtTicketPeak: ticketRevenueAt(market, night.hidden, tp),
       totalRevenueAtTicketPeak: totalRevenueAt(market, night.hidden, tp),
       totalRevenueAtTotalPeak: totalRevenueAt(market, night.hidden, gp),
+      moneySeries: PRICE_GRID.filter((p) => (p - PRICE_MIN) % MONEY_SERIES_STEP === 0 || p === tp || p === gp).map((p) => ({
+        price: p,
+        ticket: ticketRevenueAt(market, night.hidden, p),
+        total: totalRevenueAt(market, night.hidden, p),
+      })),
     });
   }
 
@@ -812,38 +912,96 @@ export type SeasonReplay = { label: string; cash: number; renewals: number; note
  * RNG: we can show what the money would have done. We cannot show what the
  * pair would have done — and the board says so.
  */
-function replaySeason(
-  market: Market,
-  fromNight: number,
-  pickPrice: (card: NightCard, curve: Curve) => number,
-  spendPolicy: (card: NightCard) => number,
-): { cash: number; renewals: number } {
+export type SeasonPlan = { prices: readonly number[]; spends: readonly number[] };
+
+/** Runs one explicit five-night plan through the real model, from a fresh set of books. */
+export function replayPlan(market: Market, plan: SeasonPlan): { cash: number; renewals: number } {
   let cash = 0;
   let renewals = RENEWALS_START;
   let carry = 0;
-  for (let i = fromNight; i < CARDS.length; i += 1) {
+  for (let i = 0; i < CARDS.length; i += 1) {
     const card = CARDS[i]!;
     const curve = curveFor(market, card, renewals, carry);
-    const spend = Math.min(spendPolicy(card), cash < 0 ? 0 : market.eventMax);
-    const price = pickPrice(card, curve);
+    const spend = Math.min(plan.spends[i] ?? 0, cash < 0 ? 0 : market.eventMax);
+    const price = plan.prices[i] ?? market.planPrice;
     const settlement = settleNight(market, curve, price, spend, false, card.bowlOffer);
     cash += settlement.net;
-    renewals = clamp(renewals + renewalDelta(market, price, spend), 0, 100);
+    renewals = clamp(renewals + renewalDelta(market, card, price, spend), 0, 100);
     carry = Math.round(market.eventFans * spend);
   }
   return { cash, renewals };
 }
 
+const SPEND_LEVELS = (market: Market): number[] => {
+  const out: number[] = [];
+  for (let s = 0; s <= market.eventMax; s += SPEND_STEP) out.push(s);
+  return out;
+};
+
+const bestFoundCache = new Map<MarketId, { cash: number; renewals: number; plan: SeasonPlan }>();
+
+/**
+ * The strongest five nights this model will give up, found by deterministic
+ * coordinate descent from the night-by-night cash-best line over the whole
+ * price dial AND the whole spend dial.
+ *
+ * `gate-l1-econ` B2 (BLOCKING): the line this replaces was labelled "the most
+ * cash the five nights could give" and was beatable by $63,472 (New York) and
+ * $78,280 (Memphis), because it hard-coded the spend to Nights 1 and 2 — which
+ * LOSES money at New York. Two repairs: search for the spend schedule instead
+ * of asserting one, and stop claiming a proven maximum in the copy. A greedy
+ * price path is not provably optimal (tonight's price moves tomorrow's
+ * renewals), so the card says "the best five nights we could find" and
+ * `l1-tuning-harness` P14 tries to beat it from outside.
+ */
+export function bestFoundSeason(market: Market): { cash: number; renewals: number; plan: SeasonPlan } {
+  const cached = bestFoundCache.get(market.id);
+  if (cached) return cached;
+  const spendLevels = SPEND_LEVELS(market);
+  // Seed: each night at its own cash-best price against the curve that line reaches.
+  const prices: number[] = [];
+  const spends: number[] = CARDS.map(() => 0);
+  {
+    let renewals = RENEWALS_START;
+    for (const card of CARDS) {
+      const price = totalPeakPrice(market, curveFor(market, card, renewals, 0));
+      prices.push(price);
+      renewals = clamp(renewals + renewalDelta(market, card, price, 0), 0, 100);
+    }
+  }
+  let best = replayPlan(market, { prices, spends }).cash;
+  for (let pass = 0; pass < 4; pass += 1) {
+    let improved = false;
+    for (let i = 0; i < CARDS.length; i += 1) {
+      for (const price of PRICE_GRID) {
+        for (const spend of spendLevels) {
+          const trialPrices = [...prices];
+          const trialSpends = [...spends];
+          trialPrices[i] = price;
+          trialSpends[i] = spend;
+          const cash = replayPlan(market, { prices: trialPrices, spends: trialSpends }).cash;
+          if (cash > best + 1e-9) {
+            best = cash;
+            prices[i] = price;
+            spends[i] = spend;
+            improved = true;
+          }
+        }
+      }
+    }
+    if (!improved) break;
+  }
+  const plan: SeasonPlan = { prices: [...prices], spends: [...spends] };
+  const outcome = { ...replayPlan(market, plan), plan };
+  bestFoundCache.set(market.id, outcome);
+  return outcome;
+}
+
 function replaysFor(desk: Desk): SeasonReplay[] {
   const market = marketOf(desk);
-  const from = 0;
-  const flatPlan = replaySeason(market, from, () => market.planPrice, () => 0);
-  const bestCash = replaySeason(
-    market,
-    from,
-    (_card, curve) => totalPeakPrice(market, curve),
-    (card) => (card.id === "N1" || card.id === "N2" ? market.eventMax : 0),
-  );
+  const flatPlan = replayPlan(market, { prices: CARDS.map(() => market.planPrice), spends: CARDS.map(() => 0) });
+  const strongest = bestFoundSeason(market);
+  const spentOn = CARDS.filter((_c, i) => (strongest.plan.spends[i] ?? 0) > 0).map((c) => c.label.replace("Night ", "N"));
   return [
     {
       label: "What you actually did",
@@ -858,10 +1016,12 @@ function replaysFor(desk: Desk): SeasonReplay[] {
       note: "Never moved the dial. Renewals stay high; the big nights leave money on the table.",
     },
     {
-      label: "The most cash the five nights could give",
-      cash: bestCash.cash,
-      renewals: bestCash.renewals,
-      note: "Best price every night, spend early. Look at what it costs on the renewals side.",
+      label: "The best five nights we could find",
+      cash: strongest.cash,
+      renewals: strongest.renewals,
+      note: `Not a proven maximum — the best line we could search out: a different price on every night, and event money on ${
+        spentOn.length === 0 ? "no night at all" : spentOn.join(" and ")
+      }. Look at what it costs on the renewals side.`,
     },
   ];
 }
@@ -893,25 +1053,46 @@ export const HOUSE_RULES: readonly string[] = [
   "Everything that will move tonight's crowd is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Nothing else moves it.",
   "Money you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it.",
   "Your building's bill is due every night whether 200 people come or 19,000 do.",
-  "RENEWALS follow your season-ticket plan price. Charge far above it and plan holders quit. Charge far below it and the plan looks like a waste, so they stop buying it too.",
+  "RENEWALS follow your season-ticket plan price and what tonight is worth. Charge BELOW the plan price and the plan looks like a waste, so they stop buying it. Charge far above what tonight is worth and they quit. On a big night — high Draw, not on national TV — a strong price makes their plan look like a bargain and MORE of them come back.",
 ];
 
 export const BOARD_HONESTY_LINE =
   "These demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours.";
 
-export const HORIZON_LINE = "One night here stands for about eight real home dates. A real NBA season is 41 home games.";
+/**
+ * gate-l1-sr F3 (magnitude honesty): the old line said one night here "stands
+ * for about eight real home dates", which the modeled dollars contradict by
+ * 30-60x — a real Knicks home date takes in several million. The horizon line
+ * is now calendar compression only, and the money scale is stated separately,
+ * before the first price, by MODELED_DOLLARS_LINE.
+ */
+export const HORIZON_LINE = "Five nights here stand in for a whole 41-date home season. A real NBA season is 41 home games.";
+
+/** BC-3 / gate-l1-sr F3: the money scale, said out loud BEFORE the first price, not once at SYNTHESIS. */
+export const MODELED_DOLLARS_LINE =
+  "The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.";
 
 /** BC-3: every real figure in product copy carries its date. */
 export const SOURCE_NOTES: readonly string[] = [
   "New York Knicks · Madison Square Garden and Memphis Grizzlies · FedExForum are real clubs and real buildings; the Grizzlies' local media deal ran under $10M a year against the Lakers' about $149M in one leaked league year, 2016-17 (reported by ESPN, September 2017; verified as of 2026-08-31).",
   "Night 4 is modeled on a real demand shock: Indiana Fever home attendance went from 4,066 per game in 2023 to 17,036 per game in 2024, the best in the WNBA, and six opposing clubs moved Fever games into bigger buildings (2024 season; verified as of 2026-08-31).",
   "The San Francisco Giants pioneered dynamic ticket pricing in 2009 and ran it across a full season in 2010; variable and dynamic pricing are standard across the NBA today (verified as of 2026-08-31).",
-  "The 2025 NBA champions were the Oklahoma City Thunder (2024-25 season; verified as of 2026-08-31).",
-  "Building capacities are modeled at real arena scale — about 19,800 seats at Madison Square Garden and about 17,794 at FedExForum, the listed basketball capacities for the 2025-26 season. Every dollar figure in this lesson is a modeled magnitude, not an audited club financial.",
+  "The New York Knicks won the 2026 NBA championship on 13 June 2026, beating the San Antonio Spurs — their first title since 1973 (2025-26 season; NBA.com and ESPN, verified as of 2026-08-31). Every visiting club on these five cards is a ROLE, never a named club, so no desk in this room ever hosts itself.",
+  "Building capacities are modeled at real arena scale: about 19,800 seats at Madison Square Garden (listed basketball capacity 19,812, 2025-26 season) and 17,794 at FedExForum as this lesson's modeled seat count — published FedExForum figures range from 16,667 to 18,119 and the building is in a phased renovation through 2028, so there is no single listed figure to quote (verified as of 2026-08-31). Every dollar figure in this lesson is a modeled magnitude, not an audited club financial.",
 ];
 
+/**
+ * gate-l1-econ B3 / gate-l1-play P3. The old version of this told the room the
+ * six real clubs moved buildings "for exactly the reason some of you just paid
+ * to open more seats" — a real-world citation blessing a decision this model
+ * charges $95,000 (New York) or $42,000 (Memphis) for at every price a
+ * well-played desk would choose, printed on the projector before anybody had
+ * bought anything. The capacity option is a deliberate opportunity-cost trap
+ * (see the Night 4 ruling in this module's tests and P13): it is a partial
+ * refund on underpricing, never part of a best night. The copy now says that.
+ */
 export const SHOCK_REVEAL_COPY =
-  "That was a real thing, and it happened two seasons ago. Indiana Fever home attendance went from 4,066 a game in 2023 to 17,036 a game in 2024 — best in the WNBA. Six opposing clubs moved Fever games out of their own buildings and into bigger ones, for exactly the reason some of you just paid to open more seats.";
+  "That night was modeled on a real one. Indiana Fever home attendance went from 4,066 a game in 2023 to 17,036 a game in 2024 — best in the WNBA — and six opposing clubs moved Fever games out of their own buildings and into bigger ones. They could not raise the price: those tickets were already sold. You could. That is the difference: buying seats is what a club does when it cannot change the price. Opening more of this building never beat pricing it right — it only ever handed part of the money back to a desk that had already priced too low.";
 
 export const CAPACITY_DEFENCE_COPY =
   "Night 4 is the one night where charging too little hurts more than charging too much, and that is not a trick — it is the building. Once every seat is sold, a cheaper ticket brings nobody new; it just charges less to the same full house. On the other four nights the two mistakes cost about the same.";
@@ -930,8 +1111,14 @@ export const ADAPT_QUESTIONS: readonly string[] = [
   "Night 5 was Night 1's card again. Why did a different number of people show up?",
 ];
 
+/**
+ * gate-l1-play P1 / gate-l1-econ B5: the board's evidence is grouped by demand
+ * world (one market, one night), because five different nights joined into one
+ * line contains stretches where a higher price drew a bigger crowd. The prompt
+ * points the room at comparable dots only.
+ */
 export const ARGUE_PROMPT =
-  "Somebody in this room made more money by charging less. Explain how — using the two lines on the board, not a guess.";
+  "Find one night on the board — one colour, one shape — where two desks in the same building charged different prices. Somebody in this room made more money by charging less. Explain how, using those dots, not a guess.";
 
 export const COMPLETE_COPY =
   "That is Full House. You priced five nights with no forecast, you found out that the crowd moves for reasons printed on a card, and you found out that the ticket is not the only thing you sell. Next lesson: most of the people in your building came to see somebody else's team.";
@@ -974,6 +1161,31 @@ function viewNight(night: SettledNight, market: Market) {
         : null,
     marketId: market.id,
   };
+}
+
+/**
+ * The five-night slate: day, visiting club, Draw and TV for every night, known
+ * before the first price.
+ *
+ * `gate-l1-econ` B4 / `gate-l1-play` P2: the night-spend dial only pays when
+ * tomorrow is a night you can charge for, and the pair was never shown what
+ * tomorrow was — a real marginal-return decision made blind. A real building
+ * has the schedule on the wall in August. This carries no outcome and no
+ * demand constant: the same four printed facts the night card carries, one
+ * night earlier.
+ */
+function slateView() {
+  return CARDS.map((card, i) => ({
+    id: card.id,
+    label: card.label,
+    index: i + 1,
+    day: card.day,
+    visitor: card.visitor,
+    draw: card.draw,
+    tv: card.tv,
+    repeatOf: card.repeatOf,
+    bowlOffer: card.bowlOffer,
+  }));
 }
 
 function cardView(card: NightCard, index: number) {
@@ -1027,7 +1239,14 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
   onPhaseExit(state, fromPhase) {
     let next = state;
     if (fromPhase === "PLAY") {
-      while (next.nightIndex < NIGHT_COUNT) next = closeNight(next);
+      // The night that is actually open settles on the pair's own dials (see
+      // closeNight); nights nobody ever saw settle at the plan price, which is
+      // where every dial rests after a night is applied anyway.
+      let first = true;
+      while (next.nightIndex < NIGHT_COUNT) {
+        next = closeNight(next, first);
+        first = false;
+      }
       if (!next.twoPeaksReleased) next = { ...next, twoPeaksReleased: true };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };
@@ -1114,6 +1333,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             plainLine: market.plainLine,
             books: booksFor(desk),
             horizonLine: HORIZON_LINE,
+            modeledDollarsLine: MODELED_DOLLARS_LINE,
+            slate: slateView(),
           };
 
         case "PLAY": {
@@ -1139,6 +1360,9 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             seated: true,
             ...identity,
             card: cardView(card, state.nightIndex),
+            nextCard: CARDS[state.nightIndex + 1] ? cardView(CARDS[state.nightIndex + 1]!, state.nightIndex + 1) : null,
+            slate: slateView(),
+            modeledDollarsLine: MODELED_DOLLARS_LINE,
             locked: desk.locked,
             price: desk.price,
             spend: desk.spend,
@@ -1280,7 +1504,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               .map((seatId) => state.desks[seatId])
               .filter((d): d is Desk => d !== undefined)
               .map((d) => ({ handle: deskHandle(d), crestIndex: d.crestIndex, marketId: d.marketId })),
-            markets: MARKETS.map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity })),
+            markets: MARKETS.map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity, capacityNote: m.capacityNote })),
             message: "You are not the GM today. You run the building.",
           };
 
@@ -1290,9 +1514,11 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             message: HOOK_COPY,
             objective: OBJECTIVE_COPY,
             deskCount: agg.deskCount,
-            markets: MARKETS.map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity, bill: m.bill, planPrice: m.planPrice })),
+            markets: MARKETS.map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity, capacityNote: m.capacityNote, bill: m.bill, planPrice: m.planPrice })),
             honestyLine: BOARD_HONESTY_LINE,
             horizonLine: HORIZON_LINE,
+            modeledDollarsLine: MODELED_DOLLARS_LINE,
+            slate: slateView(),
           };
 
         case "PLAY": {
@@ -1311,6 +1537,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
           return {
             mode: "play",
             card: cardView(card, state.nightIndex),
+            nextCard: CARDS[state.nightIndex + 1] ? cardView(CARDS[state.nightIndex + 1]!, state.nightIndex + 1) : null,
             lockedCount: agg.lockedCount,
             deskCount: agg.deskCount,
             settledCards,
@@ -1320,7 +1547,11 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             lastSettledCardId: settledCards[settledCards.length - 1] ?? null,
             twoPeaksReleased: state.twoPeaksReleased,
             twoPeaks: state.twoPeaksReleased ? agg.twoPeaks : [],
-            shockCopy: card.id === "N4" ? SHOCK_REVEAL_COPY : null,
+            // gate-l1-play P3 (pre-commit leak): this block used to render while
+            // Night 4 was still OPEN and nobody had bought anything, telling the
+            // room what "some of you just paid" for and nudging it toward the
+            // one control that is a trap. It lands after the bell, never before.
+            shockCopy: settledCards.includes("N4") ? SHOCK_REVEAL_COPY : null,
             honestyLine: BOARD_HONESTY_LINE,
           };
         }
