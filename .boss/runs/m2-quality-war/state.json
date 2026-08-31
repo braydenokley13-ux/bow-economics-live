@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:15:48.029Z",
+  "updatedAt": "2026-08-31T21:35:11.297Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -272,7 +272,14 @@
         "econ-contract-report",
         "design-a",
         "design-b",
-        "design-c"
+        "design-c",
+        "proto-l1a",
+        "proto-l1b",
+        "proto-l1c",
+        "proto-l2",
+        "proto-l3",
+        "readme-l1",
+        "readme-l2l3"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -377,6 +384,125 @@
       },
       "recordedAt": "2026-08-31T21:14:47.439Z",
       "actor": "lead-integrator"
+    },
+    "proto-l1a": {
+      "id": "proto-l1a",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Stage-0 L1A Replay Dial prototype",
+      "path": ".boss/runs/m2-quality-war/evidence/proto-l1a--l1a-replay-dial.html",
+      "sha256": "6a56e067ca828af91103b700710d8c82dc780cd6f84833bc189b0520d91cadb1",
+      "size": 21630,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:35:10.010Z",
+      "actor": "lead-integrator"
+    },
+    "proto-l1b": {
+      "id": "proto-l1b",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Stage-0 L1B release-inventory prototype",
+      "path": ".boss/runs/m2-quality-war/evidence/proto-l1b--l1b-release.html",
+      "sha256": "0c8218f9475b974dab0a4dfdd7dfbe984ee51120bbd108b9ab4761b6a2c42c6a",
+      "size": 23094,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:35:10.217Z",
+      "actor": "lead-integrator"
+    },
+    "proto-l1c": {
+      "id": "proto-l1c",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Stage-0 L1C blind-price prototype",
+      "path": ".boss/runs/m2-quality-war/evidence/proto-l1c--l1c-blind-price.html",
+      "sha256": "9901cb4b1163c77cb9bb61cc50bf620967fd6aaf3988f7852ab8c6119934f924",
+      "size": 19629,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:35:10.430Z",
+      "actor": "lead-integrator"
+    },
+    "proto-l2": {
+      "id": "proto-l2",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Stage-0 L2 hosting/externality prototype",
+      "path": ".boss/runs/m2-quality-war/evidence/proto-l2--l2-hosting.html",
+      "sha256": "8b465598468cc6356213985341d4b17a40a2a669cb5183e488a58f3a429d012c",
+      "size": 28151,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:35:10.644Z",
+      "actor": "lead-integrator"
+    },
+    "proto-l3": {
+      "id": "proto-l3",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Stage-0 L3 rule-writing prototype",
+      "path": ".boss/runs/m2-quality-war/evidence/proto-l3--l3-rule.html",
+      "sha256": "a1567417cbf1f31dc4bfc709528da64b8abc76894b3f62436928afb665b2c2c8",
+      "size": 24847,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:35:10.858Z",
+      "actor": "lead-integrator"
+    },
+    "readme-l1": {
+      "id": "readme-l1",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Stage-0 L1 trio implementation notes",
+      "path": ".boss/runs/m2-quality-war/evidence/readme-l1--README-L1.md",
+      "sha256": "350426d008f70931c868d815de8d6da786a10fd22c5ccbb93322d78f7f3c130c",
+      "size": 9918,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:35:11.073Z",
+      "actor": "lead-integrator"
+    },
+    "readme-l2l3": {
+      "id": "readme-l2l3",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Stage-0 L2/L3 notes incl. cross-design taxed-base conflict",
+      "path": ".boss/runs/m2-quality-war/evidence/readme-l2l3--README-L2L3.md",
+      "sha256": "89ef6d8c58110fdd1442dd8c1f1622a45d3a3a2f1fc97690d64ebb00e0d6b5c3",
+      "size": 15557,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:35:11.297Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {},
@@ -425,11 +551,11 @@
     "agentsActivated": 7,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 5,
+    "evidenceRecorded": 12,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 17,
-  "eventHead": "7b8669abb5cea996b635681366508a0f6cea7ac9cfaae3e59a591976beff8e0b",
+  "eventCount": 24,
+  "eventHead": "7415737b454119459fede0ca351ab1a893ea31541b0d60f6cc1c78a9c47d2a1c",
   "warnings": []
 }

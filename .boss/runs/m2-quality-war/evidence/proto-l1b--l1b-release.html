@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stage-0 · L1B · Season on Sale (Design B "Refound")</title>
+<style>
+  :root{
+    --bg:#12151b; --panel:#1c212b; --panel2:#242a37; --line:#333c4d;
+    --ink:#e8ecf3; --dim:#9aa5b8; --accent:#3ca6e0; --good:#4caf7a; --bad:#e0605a;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;margin:0;padding:20px;}
+  h1{font-size:1.3rem;margin:0 0 4px;}
+  h2{font-size:1rem;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:0;}
+  .sub{color:var(--dim);font-size:.85rem;margin-bottom:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:8px 14px;
+    border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;}
+  button:hover{border-color:var(--accent);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .runinfo{color:var(--dim);font-size:.85rem;}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  .house{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;margin:10px 0;}
+  .block{aspect-ratio:1;border-radius:2px;background:#2c3444;border:1px solid #3a4256;}
+  .block.pass{background:var(--good);}
+  .block.release{background:var(--accent);}
+  .legend{display:flex;gap:16px;font-size:.8rem;color:var(--dim);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .swatch{width:12px;height:12px;border-radius:2px;display:inline-block;}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px;}
+  .card h3{margin:0 0 6px;font-size:.95rem;}
+  .shifter{color:var(--accent);font-size:.82rem;font-style:italic;}
+  .dial-value{font-size:2rem;color:var(--accent);text-align:center;margin:6px 0;}
+  input[type=range]{width:100%;}
+  .result-row{display:flex;justify-content:space-between;font-size:.85rem;padding:2px 0;}
+  .scoreboard{display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap;}
+  .score{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;}
+  .score .label{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.03em;}
+  .score .val{font-size:1.2rem;}
+  .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  details{margin-top:18px;}
+  summary{cursor:pointer;color:var(--dim);font-size:.85rem;}
+  pre{background:#0a0c10;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.72rem;
+      overflow:auto;max-height:320px;color:#b7c2d6;}
+  .footnote{color:var(--dim);font-size:.75rem;margin-top:10px;border-top:1px dotted var(--line);padding-top:8px;}
+  .debugbox{background:#301818;border:1px solid var(--bad);border-radius:8px;padding:10px;margin-bottom:16px;font-size:.8rem;}
+  .phase-badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:2px 10px;font-size:.78rem;color:var(--accent);}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;}
+  td{padding:3px 5px;border-bottom:1px solid var(--line);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>SEASON ON SALE — the release loop (Design B, Lesson 1, U1 Stage-0)</h1>
+    <div class="sub">You sell the seats for the Golden State Warriors. 1 block = 200 seats, 100 blocks total. Sell next season before you know what next season is.</div>
+  </div>
+  <div style="text-align:right">
+    <div class="runinfo">Run <span id="runCount">1</span> &middot; <span class="phase-badge" id="phaseBadge">wave 1</span></div>
+    <button id="newRunBtn">New run</button>
+  </div>
+</div>
+
+<div id="debugPanel"></div>
+
+<div class="scoreboard">
+  <div class="score"><div class="label">Cash</div><div class="val" id="scoreCash">$0</div></div>
+  <div class="score"><div class="label">Base (blocks sold as passes)</div><div class="val" id="scoreBase">0 / 100</div></div>
+  <div class="score"><div class="label">Held (unsold inventory)</div><div class="val" id="scoreHeld">100</div></div>
+</div>
+
+<div class="panel">
+  <h2>THE HOUSE</h2>
+  <div class="house" id="houseGrid"></div>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--good)"></span> Sold as passes (gone for the season)</span>
+    <span><span class="swatch" style="background:var(--accent)"></span> On sale tonight (this round's release)</span>
+    <span><span class="swatch" style="background:#2c3444"></span> Held (yours, unsold)</span>
+  </div>
+</div>
+
+<div class="panel" id="cardPanel"></div>
+
+<div class="panel" id="controlPanel">
+  <h2 id="controlTitle"></h2>
+  <div id="controlInstr" class="sub"></div>
+  <div class="dial-value"><span id="controlVal">0</span> blocks</div>
+  <input type="range" id="controlRange" min="0" max="100" step="1" value="0">
+  <div class="actions">
+    <button id="lockBtn">LOCK</button>
+    <button id="nextBtn" disabled>Continue</button>
+  </div>
+</div>
+
+<div class="panel" id="revealPanel" style="display:none">
+  <h2>REVEAL</h2>
+  <div id="revealBox"></div>
+</div>
+
+<div class="panel" id="booksPanel" style="display:none">
+  <h2>THE BOOKS — season complete</h2>
+  <div id="booksBox"></div>
+</div>
+
+<details>
+  <summary>Session log (instrumentation — window.__stage0)</summary>
+  <pre id="logOutput"></pre>
+</details>
+
+<div class="footnote">
+  Real market: Golden State Warriors (Chase Center, privately financed, league's highest 2024-25 revenue, SR-12).
+  National check referenced below is the real ~$76B / 11-year league media deal (SR-2) — fixed, arrives regardless
+  of how many blocks you release. Continuous re-release/re-pricing is a real job: the San Francisco Giants
+  pioneered dynamic pricing in 2009-10 (SR-13). Demand curves are <strong>modeled on real market differences, not
+  the Warriors' actual measured demand</strong>. Dollar figures are modeled illustrative magnitudes for Stage-0
+  play-testing, not audited team financials.
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const params = new URLSearchParams(location.search);
+  const DEBUG = params.get('debug') === '1';
+
+  // ---- HIDDEN ECONOMIC CONSTANTS (closure) ----
+  const TOTAL_BLOCKS = 100, SEATS_PER_BLOCK = 200;
+  const WAVE1_PRICE = 70000, WAVE2_PRICE = 85000; // $/block, guaranteed cash, irreversible
+  const PER_FAN_SPEND = 9; // $/seat/night ancillary, applies to every occupied seat
+  const DECLINE_DENOM = 50; // blocks; rate(r) = peak * max(0, 1 - r/DECLINE_DENOM)
+  const BASE_RATE = 8000, DRAW_FACTOR = 220; // $/block peak = BASE_RATE + DRAW_FACTOR*draw
+  const SEASON_BILL = 780000; // obligation the season's cash must clear, printed at the books
+
+  const NIGHTS_TEMPLATE = [
+    { key:'n1', label:'NIGHT 1', day:'Tue', opp:'Utah Jazz', draw:20, note:'A comparable Tuesday last season released 18 blocks and cleared about $10,700/block.' },
+    { key:'n2', label:'NIGHT 2', day:'Fri', opp:'LA Clippers', draw:55, note:'A comparable Friday last season released 22 blocks and cleared about $18,300/block.' },
+    { key:'n3', label:'NIGHT 3', day:'Sat', opp:'Boston Celtics', draw:80, note:'Last season\'s Celtics visit released 30 blocks and cleared about $23,600/block.' },
+    { key:'n4', label:'NIGHT 4', day:'Wed', opp:'Portland Trail Blazers', draw:22, note:'A comparable Wednesday last season released 16 blocks and cleared about $11,000/block.' },
+    { key:'n5', label:'NIGHT 5', day:'Sun', opp:'Denver Nuggets', draw:78, shifterLabel:'Announced before you release: Nuggets\' star is questionable and will likely sit — treat draw as uncertain, not the full 78.', note:'Last season\'s Nuggets visit released 28 blocks and cleared about $22,900/block.' },
+    { key:'n6', label:'NIGHT 6 · SEASON FINALE', day:'Tue', opp:'Oklahoma City Thunder', draw:95, note:'2025 NBA Champions. The biggest draw on this slate, by far.' }
+  ];
+
+  const SCENARIOS = [
+    NIGHTS_TEMPLATE,
+    // seed 1: same shape, different real opponents/draws for variety
+    [
+      { key:'n1', label:'NIGHT 1', day:'Mon', opp:'Washington Wizards', draw:16, note:'A comparable Monday last season released 15 blocks and cleared about $9,200/block.' },
+      { key:'n2', label:'NIGHT 2', day:'Thu', opp:'Miami Heat', draw:52, note:'A comparable Thursday last season released 20 blocks and cleared about $17,600/block.' },
+      { key:'n3', label:'NIGHT 3', day:'Sat', opp:'Cleveland Cavaliers', draw:72, note:'Last season\'s Cavaliers visit released 27 blocks and cleared about $21,300/block.' },
+      { key:'n4', label:'NIGHT 4', day:'Tue', opp:'Charlotte Hornets', draw:18, note:'A comparable Tuesday last season released 14 blocks and cleared about $9,800/block.' },
+      { key:'n5', label:'NIGHT 5', day:'Sun', opp:'Dallas Mavericks', draw:74, shifterLabel:'Announced before you release: Mavericks resting two starters on the second night of a back-to-back.', note:'Last season\'s Mavericks visit released 26 blocks and cleared about $21,900/block.' },
+      { key:'n6', label:'NIGHT 6 · SEASON FINALE', day:'Wed', opp:'Oklahoma City Thunder', draw:95, note:'2025 NBA Champions. The biggest draw on this slate, by far.' }
+    ],
+    // seed 2
+    [
+      { key:'n1', label:'NIGHT 1', day:'Tue', opp:'Brooklyn Nets', draw:19, note:'A comparable Tuesday last season released 17 blocks and cleared about $10,100/block.' },
+      { key:'n2', label:'NIGHT 2', day:'Fri', opp:'Chicago Bulls', draw:48, note:'A comparable Friday last season released 19 blocks and cleared about $16,700/block.' },
+      { key:'n3', label:'NIGHT 3', day:'Sat', opp:'New York Knicks', draw:76, note:'Last season\'s Knicks visit released 29 blocks and cleared about $22,000/block.' },
+      { key:'n4', label:'NIGHT 4', day:'Wed', opp:'Indiana Pacers', draw:24, note:'A comparable Wednesday last season released 15 blocks and cleared about $11,400/block.' },
+      { key:'n5', label:'NIGHT 5', day:'Sun', opp:'Phoenix Suns', draw:70, shifterLabel:'Announced before you release: this game airs on national TV — some fans will watch free at home.', note:'Last season\'s Suns visit released 25 blocks and cleared about $20,300/block.' },
+      { key:'n6', label:'NIGHT 6 · SEASON FINALE', day:'Tue', opp:'Oklahoma City Thunder', draw:95, note:'2025 NBA Champions. The biggest draw on this slate, by far.' }
+    ]
+  ];
+
+  let nights, state;
+
+  function peakRate(n){
+    let d = n.draw;
+    return BASE_RATE + DRAW_FACTOR * d;
+  }
+  function rateFor(n, release){
+    const p = peakRate(n);
+    const factor = Math.max(0, 1 - release / DECLINE_DENOM);
+    return Math.round(p * factor);
+  }
+
+  function freshState(seed, runCount){
+    nights = SCENARIOS[Math.abs(seed) % SCENARIOS.length];
+    return {
+      seed, runCount,
+      phase: 'wave1',   // wave1 -> scheduleReveal -> wave2 -> night(0..5) -> books
+      control: 0,
+      adjustCount: 0,
+      phaseStart: Date.now(),
+      cash: 0, pass: 0, held: TOTAL_BLOCKS,
+      nightIdx: 0,
+      nightResults: [],
+      log: []
+    };
+  }
+
+  function money(n){ return '$' + Math.round(n).toLocaleString('en-US'); }
+
+  function render(){
+    document.getElementById('runCount').textContent = state.runCount;
+    const phaseLabels = {
+      wave1:'wave 1 · early sale', scheduleReveal:'schedule release', wave2:'wave 2 · late sale',
+      night:'night ' + (state.nightIdx+1) + ' of 6', books:'season complete'
+    };
+    document.getElementById('phaseBadge').textContent = phaseLabels[state.phase] || state.phase;
+
+    document.getElementById('scoreCash').textContent = money(state.cash);
+    document.getElementById('scoreBase').textContent = state.pass + ' / ' + TOTAL_BLOCKS;
+    document.getElementById('scoreHeld').textContent = state.held;
+
+    // house grid
+    const grid = document.getElementById('houseGrid');
+    const releaseNow = (state.phase === 'night') ? state.control : 0;
+    let html = '';
+    for (let i=0;i<TOTAL_BLOCKS;i++){
+      let cls = 'block';
+      if (i < state.pass) cls += ' pass';
+      else if (i < state.pass + releaseNow) cls += ' release';
+      html += `<div class="${cls}"></div>`;
+    }
+    grid.innerHTML = html;
+
+    renderCard();
+    renderControl();
+    renderReveal();
+    renderBooks();
+    renderLog();
+    if (DEBUG) renderDebug();
+  }
+
+  function renderCard(){
+    const box = document.getElementById('cardPanel');
+    if (state.phase === 'wave1') {
+      box.innerHTML = `<h2>WAVE 1 — the early sale</h2>
+        <div class="sub">The schedule has <strong>not</strong> been released yet. You know your market and your building. Season-pass price now: <strong>${money(WAVE1_PRICE)}/block</strong> (early-bird discount — buying blind is cheaper). Cash lands immediately and is irreversible.</div>`;
+    } else if (state.phase === 'scheduleReveal') {
+      box.innerHTML = `<h2>THE SCHEDULE DROPS</h2>
+        <div class="sub">Six home nights, real visiting clubs, printed facts. This is new information — nothing here could have been derived in Wave 1.</div>
+        <table>${nights.map(n=>`<tr><td>${n.label}</td><td>${n.day}</td><td>vs ${n.opp}</td><td>Draw ${n.draw}/100</td></tr>`).join('')}</table>`;
+    } else if (state.phase === 'wave2') {
+      box.innerHTML = `<h2>WAVE 2 — the late sale</h2>
+        <div class="sub">The schedule is known now — so is the buyer's. Season-pass price rose to <strong>${money(WAVE2_PRICE)}/block</strong>. Sell more of your remaining ${state.held} held blocks, or stop and keep them for nightly release.</div>`;
+    } else if (state.phase === 'night') {
+      const n = nights[state.nightIdx];
+      box.innerHTML = `<h2>${n.label} — ${n.day} vs ${n.opp}</h2>
+        <div class="sub">Visitor Draw: <strong>${n.draw}/100</strong> ${n.shifterLabel?`<br><span class="shifter">${n.shifterLabel}</span>`:''}<br>
+        <em>${n.note}</em></div>
+        <div class="sub">You hold <strong>${state.held}</strong> unsold blocks. Drag some onto sale tonight. Blocks you release are gone after tonight; blocks you hold stay yours for a later night.</div>`;
+    } else if (state.phase === 'books') {
+      box.innerHTML = '';
+    }
+  }
+
+  function renderControl(){
+    const panel = document.getElementById('controlPanel');
+    const title = document.getElementById('controlTitle');
+    const instr = document.getElementById('controlInstr');
+    const rangeEl = document.getElementById('controlRange');
+    const lockBtn = document.getElementById('lockBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    if (state.phase === 'wave1') {
+      panel.style.display='';
+      title.textContent = 'How many blocks into SOLD AS PASSES?';
+      instr.textContent = 'No schedule exists yet. This is a bet on the whole season, blind.';
+      rangeEl.min = 0; rangeEl.max = TOTAL_BLOCKS; rangeEl.disabled = false;
+      lockBtn.style.display=''; lockBtn.disabled=false; nextBtn.disabled=true;
+    } else if (state.phase === 'scheduleReveal') {
+      panel.style.display='';
+      title.textContent = 'Schedule posted.';
+      instr.textContent = 'Nothing to commit here — continue to Wave 2.';
+      rangeEl.disabled = true; lockBtn.style.display='none'; nextBtn.disabled=false;
+    } else if (state.phase === 'wave2') {
+      panel.style.display='';
+      title.textContent = 'How many MORE blocks into SOLD AS PASSES?';
+      instr.textContent = `Up to ${state.held} available.`;
+      rangeEl.min = 0; rangeEl.max = state.held; rangeEl.disabled = false;
+      lockBtn.style.display=''; lockBtn.disabled=false; nextBtn.disabled=true;
+    } else if (state.phase === 'night') {
+      panel.style.display='';
+      title.textContent = 'How many HELD blocks go ON SALE TONIGHT?';
+      instr.textContent = `Up to ${state.held} available. Released blocks always sell — but the going rate falls the more you release.`;
+      rangeEl.min = 0; rangeEl.max = state.held; rangeEl.disabled = false;
+      lockBtn.style.display=''; lockBtn.disabled=false; nextBtn.disabled=true;
+    } else if (state.phase === 'books') {
+      panel.style.display='none';
+    }
+    if (Number(rangeEl.max) < state.control) state.control = Number(rangeEl.max);
+    rangeEl.value = state.control;
+    document.getElementById('controlVal').textContent = state.control;
+  }
+
+  function renderReveal(){
+    const panel = document.getElementById('revealPanel');
+    const box = document.getElementById('revealBox');
+    if (state.nightResults.length === 0) { panel.style.display='none'; return; }
+    panel.style.display = '';
+    box.innerHTML = state.nightResults.map(r => {
+      const fillPct = Math.round((r.occupiedSeats / (TOTAL_BLOCKS*SEATS_PER_BLOCK)) * 100);
+      return `<div class="card"><h3>${r.label} vs ${r.opp} — released ${r.release} blocks</h3>
+        <div class="result-row"><span>Going rate achieved</span><span>${money(r.rate)}/block</span></div>
+        <div class="result-row"><span>Gate revenue</span><span>${money(r.gate)}</span></div>
+        <div class="result-row"><span>In-arena spend (passes + tonight's release)</span><span>${money(r.ancillary)}</span></div>
+        <div class="result-row"><span>Total tonight</span><span><strong>${money(r.total)}</strong></span></div>
+        <div class="result-row"><span>Building fill</span><span>${fillPct}%</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderBooks(){
+    const panel = document.getElementById('booksPanel');
+    if (state.phase !== 'books') { panel.style.display='none'; return; }
+    panel.style.display = '';
+    const bill = SEASON_BILL;
+    const met = state.cash >= bill;
+    document.getElementById('booksBox').innerHTML = `
+      <div class="result-row"><span>Total cash</span><span>${money(state.cash)}</span></div>
+      <div class="result-row"><span>Season bill</span><span>${money(bill)} — <span class="${met?'':'shifter'}" style="color:${met?'var(--good)':'var(--bad)'}">${met?'MET':'NOT MET'}</span></span></div>
+      <div class="result-row"><span>Base (blocks that stayed sold as passes)</span><span>${state.pass} / ${TOTAL_BLOCKS}</span></div>
+      <div class="result-row"><span>Blocks left unreleased at season end</span><span>${state.held}</span></div>
+      <div class="sub" style="margin-top:8px">National check (not shown above, always arrives): fixed and identical no matter how many blocks you released — the real ~$76B league media deal (SR-2), scaled.</div>`;
+  }
+
+  function renderDebug(){
+    const el = document.getElementById('debugPanel');
+    const rows = nights.map(n => `${n.label}: draw=${n.draw} peakRate=${money(peakRate(n))}/block, DECLINE_DENOM=${DECLINE_DENOM} blocks`).join('<br>');
+    el.innerHTML = `<div class="debugbox"><strong>DEBUG MODE (?debug=1)</strong> — true hidden curves, never shown to a student:<br>
+      WAVE1_PRICE=${money(WAVE1_PRICE)} WAVE2_PRICE=${money(WAVE2_PRICE)} PER_FAN_SPEND=${money(PER_FAN_SPEND)}/seat<br>
+      BASE_RATE=${BASE_RATE} DRAW_FACTOR=${DRAW_FACTOR}<br>${rows}</div>`;
+  }
+
+  function renderLog(){
+    document.getElementById('logOutput').textContent = JSON.stringify(state.log, null, 2);
+  }
+
+  function syncExposed(){
+    window.__stage0 = {
+      runCount: state.runCount, seed: state.seed, phase: state.phase, nightIdx: state.nightIdx,
+      control: state.control, cash: state.cash, pass: state.pass, held: state.held,
+      nightResults: state.nightResults, log: state.log
+    };
+    if (DEBUG) {
+      window.__stage0.debug = { WAVE1_PRICE, WAVE2_PRICE, PER_FAN_SPEND, DECLINE_DENOM, BASE_RATE, DRAW_FACTOR, nights };
+    }
+  }
+
+  function setControl(value){
+    const rangeEl = document.getElementById('controlRange');
+    const max = Number(rangeEl.max) || 0;
+    const v = Math.max(0, Math.min(max, Math.round(Number(value))));
+    if (v !== state.control) {
+      state.control = v;
+      state.adjustCount++;
+      state.log.push({ type:'control_adjust', phase: state.phase, nightIdx: state.nightIdx,
+        value: v, adjustIndex: state.adjustCount, t: Date.now() });
+    }
+    render(); syncExposed();
+  }
+
+  function lock(){
+    if (state.phase === 'wave1') {
+      const n = state.control;
+      state.cash += n * WAVE1_PRICE;
+      state.pass += n; state.held -= n;
+      state.log.push({ type:'lock', phase:'wave1', committedValue:n,
+        adjustCountBeforeLock: state.adjustCount, timeToLockMs: Date.now()-state.phaseStart,
+        outcome: { blocksSold:n, cashFromWave1: n*WAVE1_PRICE } });
+      state.phase = 'scheduleReveal';
+      state.control = 0; state.adjustCount = 0; state.phaseStart = Date.now();
+    } else if (state.phase === 'wave2') {
+      const n = state.control;
+      state.cash += n * WAVE2_PRICE;
+      state.pass += n; state.held -= n;
+      state.log.push({ type:'lock', phase:'wave2', committedValue:n,
+        adjustCountBeforeLock: state.adjustCount, timeToLockMs: Date.now()-state.phaseStart,
+        outcome: { blocksSold:n, cashFromWave2: n*WAVE2_PRICE } });
+      state.phase = 'night'; state.nightIdx = 0;
+      state.control = 0; state.adjustCount = 0; state.phaseStart = Date.now();
+    } else if (state.phase === 'night') {
+      const n = nights[state.nightIdx];
+      const release = state.control;
+      const rate = rateFor(n, release);
+      const gate = release * rate;
+      const occupiedSeats = (state.pass + release) * SEATS_PER_BLOCK;
+      const ancillary = Math.round(occupiedSeats * PER_FAN_SPEND);
+      const total = gate + ancillary;
+      state.cash += total;
+      state.held -= release;
+      const result = { key:n.key, label:n.label, opp:n.opp, release, rate, gate, ancillary, total, occupiedSeats };
+      state.nightResults.push(result);
+      state.log.push({ type:'lock', phase:'night', night:n.key, committedValue:release,
+        adjustCountBeforeLock: state.adjustCount, timeToLockMs: Date.now()-state.phaseStart,
+        outcome: result });
+      state.nightIdx++;
+      state.control = 0; state.adjustCount = 0; state.phaseStart = Date.now();
+      if (state.nightIdx >= nights.length) state.phase = 'books';
+    }
+    render(); syncExposed();
+  }
+
+  function nextNight(){
+    if (state.phase === 'scheduleReveal') {
+      state.phase = 'wave2';
+      state.control = 0; state.adjustCount = 0; state.phaseStart = Date.now();
+      state.log.push({ type:'phase_advance', to:'wave2', t: Date.now() });
+      render(); syncExposed();
+    }
+    // during 'night' phase, lock() itself advances to the next night automatically.
+  }
+
+  function newRun(seed){
+    const s = (seed === undefined || seed === null) ? state.runCount : Number(seed);
+    state = freshState(s, state.runCount + 1);
+    render(); syncExposed();
+  }
+
+  document.getElementById('controlRange').addEventListener('input', e => setControl(e.target.value));
+  document.getElementById('lockBtn').addEventListener('click', lock);
+  document.getElementById('nextBtn').addEventListener('click', nextNight);
+  document.getElementById('newRunBtn').addEventListener('click', () => newRun());
+
+  window.__stage0Actions = { setControl, lock, nextNight, newRun };
+
+  state = freshState(0, 1);
+  render(); syncExposed();
+})();
+</script>
+</body>
+</html>

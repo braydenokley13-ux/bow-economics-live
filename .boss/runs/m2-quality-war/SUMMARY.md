@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `17:7b8669abb5cea996b635681366508a0f6cea7ac9cfaae3e59a591976beff8e0b`  
-Updated: 2026-08-31T21:15:48.029Z
+Event head: `24:7415737b454119459fede0ca351ab1a893ea31541b0d60f6cc1c78a9c47d2a1c`  
+Updated: 2026-08-31T21:35:11.297Z
 
 ## Founder intent
 
@@ -61,6 +61,13 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - design-a — design-doc — Candidate A: Box Office evolved (PRICE/BOOK/LEGISLATE, Replay Dial)
 - design-b — design-doc — Candidate B: structural refound (SELL/HOST/RULE, no price-setting)
 - design-c — design-doc — Candidate C: clean-room first principles (price the night / host the league / write the rule)
+- proto-l1a — browser-trace — Stage-0 L1A Replay Dial prototype
+- proto-l1b — browser-trace — Stage-0 L1B release-inventory prototype
+- proto-l1c — browser-trace — Stage-0 L1C blind-price prototype
+- proto-l2 — browser-trace — Stage-0 L2 hosting/externality prototype
+- proto-l3 — browser-trace — Stage-0 L3 rule-writing prototype
+- readme-l1 — browser-trace — Stage-0 L1 trio implementation notes
+- readme-l2l3 — browser-trace — Stage-0 L2/L3 notes incl. cross-design taxed-base conflict
 
 ## Claim ledger
 
