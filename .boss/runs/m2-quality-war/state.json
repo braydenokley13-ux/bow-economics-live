@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:44:12.499Z",
+  "updatedAt": "2026-08-31T21:44:29.227Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -327,12 +327,23 @@
           "model": "claude-opus-5",
           "reason": "Independent review of how each candidate design uses real sports-business content (integral vs trivia, accuracy, fandom-test risk), as selection pre-opinion.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-08-31T21:37:18.814Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T21:44:29.227Z",
+          "sections": {
+            "real-world-anchors": "Per-candidate operated-vs-mentioned inventory in SELECTION_SR_REVIEW.md. C operates real situations three times (a real club's building, Boston's June 2025 books, the Kings 22-8 vote) and alone carries the M1 cap-growth bridge, Packers revenue-vs-profit asterisk, and subsidy research finding. A strong where it commits (its L2 primary verb IS the six-front-offices 2024 arena decision, discovered as real afterward) but uses no SR-7/8/9 in its institutional L3. B has real names on an invented world — zero operated real situations; its one real commit-then-reveal is optional.",
+            "accuracy-findings": "Most severe: C-1 — C's L3 claims worst-team-picks-first, contrary to the NBA lottery and C's own Flagg reveal (blocks a build, not selection). C-2 — C's L2 pipe magnitudes inconsistent with its own gate-share ledger and SR-1 (must be re-derived). No blocking accuracy finding for A or B.",
+            "staleness-findings": "C is the only design with a staleness policy in ledger and copy; A and B need season stamps added at build time.",
+            "rights-source-considerations": "No material new flags beyond the anchor sheet: names, facts, statistics only across all three designs.",
+            "recommendation": "Ranking C > A > B on real-world strength. No design is a fandom test (all route decision-relevant facts through on-screen numbers). Best single beat: C's Kings Board-of-Governors capstone. Worst miss: B making SR-8 optional inside an L3 that is literally clubs voting on a binding league rule."
+          },
+          "evidenceIds": [
+            "sel-sr-review"
+          ],
+          "cost": {
+            "tokens": 120922,
+            "toolUses": 6
+          }
         }
       },
       "evidenceIds": [
@@ -693,7 +704,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 33,
-  "eventHead": "0a3d89dd34a8b93f7e52d9a3e54f050c0a5e888a3fcfca0578a1ec66084524ac",
+  "eventCount": 34,
+  "eventHead": "7ca2c8bb9841073b0365fa868cdc9bb44b7c4a1323f1e4dfde9d0ca75ba1a5fd",
   "warnings": []
 }

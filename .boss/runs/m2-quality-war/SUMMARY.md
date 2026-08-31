@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `33:0a3d89dd34a8b93f7e52d9a3e54f050c0a5e888a3fcfca0578a1ec66084524ac`  
-Updated: 2026-08-31T21:44:12.499Z
+Event head: `34:7ca2c8bb9841073b0365fa868cdc9bb44b7c4a1323f1e4dfde9d0ca75ba1a5fd`  
+Updated: 2026-08-31T21:44:29.227Z
 
 ## Founder intent
 
@@ -42,7 +42,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - builder — lead-integrator — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — lead-integrator — active — claude-opus-5
 - economic-truth-critic — lead-integrator — active — claude-opus-5
-- sports-reality-director — lead-integrator — active — claude-opus-5
+- sports-reality-director — lead-integrator — completed — claude-opus-5
 
 ## Required evidence
 
