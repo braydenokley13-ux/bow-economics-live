@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T20:48:20.468Z",
+  "updatedAt": "2026-08-31T20:49:03.309Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -153,12 +153,23 @@
           "model": "claude-fable-5",
           "reason": "Early product-design input: real sports-business material for Money in Motion before candidates commit to fiction. Routed to a web-capable general agent under this role contract because dated fact verification needs live search; role authority stays with the role.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-08-31T20:38:59.446Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T20:49:03.309Z",
+          "sections": {
+            "real-world-anchors": "15 verified, dated anchors in docs/gauntlet/module-2/SPORTS_REALITY_INPUT.md covering ticket/gate pricing, the 2024 $76B/11-yr Disney-NBC-Amazon media deal and its cap effects (+10% to $154.647M for 2025-26, +6.7% to $164.961M for 2026-27), NBA revenue sharing and market-size gaps (Warriors $833M revenue vs Grizzlies sub-$10M local-TV era), luxury tax/second apron as incentive design (2025 Celtics champion teardown, ~$456M league tax 2024-25), relocation/expansion economics (2013 Kings-to-Seattle owners' vote 22-8, $534M Sacramento sale; 2026 expansion watch), player-driven revenue shocks (Caitlin Clark: Fever 4,066->17,036 attendance, $250M expansion fees, March 2026 CBA cap $1.5M->$7M), Green Bay's published books ($453.2M national share per team, July 2026) as the one earned cross-league exception, plus Suns free-TV gamble and Luka-trade fan-goodwill reserves.",
+            "accuracy-findings": "Every factual claim carries verifiedAsOf dates and sources; post-Jan-2026 facts web-verified. Modeled demand curves must never present invented team-specific numbers as fact — flagged to Economic Truth.",
+            "staleness-findings": "Cap/tax figures age every June; NBA expansion could resolve any month (Silver: determination due end of 2026). All product copy needs season stamps.",
+            "rights-source-considerations": "Names, facts, and statistics only; no anchor requires logos, photos, video, likenesses, or proprietary datasets. No blanket legal claims made.",
+            "recommendation": "Highest-severity finding: Box Office's fictional Market Cards and generic TV pipe are exactly where reality is materially stronger at identical build cost — replace with Knicks/Thunder/Warriors/Grizzlies and the real national media deal. Ranked top-5 anchors map to lesson-shaped opportunities: (1) real-market ticket pricing, (2) Caitlin Clark demand shock, (3) Kings-to-Seattle commit-then-reveal + Seattle/Milwaukee arena-subsidy pair (outcome != decision quality), (4) second-apron incentive design, (5) Green Bay open books for revenue sharing."
+          },
+          "evidenceIds": [
+            "sr-input-report"
+          ],
+          "cost": {
+            "tokens": 104993,
+            "toolUses": 22
+          }
         },
         "econ-contract": {
           "assignmentId": "econ-contract",
@@ -278,7 +289,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 7,
-  "eventHead": "75a37b096703ba8d2666d091e9fa37e3435e713d8d737f1014293e7d2adf18fe",
+  "eventCount": 8,
+  "eventHead": "527a18f7981e2935a11df8b88e00f6ef932e12a2e5d2d9f2de513ce0bce67b51",
   "warnings": []
 }
