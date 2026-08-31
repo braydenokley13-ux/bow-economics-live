@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:35:11.297Z",
+  "updatedAt": "2026-08-31T21:35:46.952Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -245,12 +245,25 @@
           "model": "claude-sonnet-5",
           "reason": "Stage-0 disposable browser prototypes of the three rival L1 signature loops (A Replay Dial, B release-inventory, C blind-commit history-only); fast bounded build work.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-08-31T21:15:47.734Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T21:35:46.526Z",
+          "sections": {
+            "what-changed": "Three self-contained Stage-0 L1 prototypes (l1a-replay-dial.html 445L, l1b-release.html 425L, l1c-blind-price.html 390L) plus README-L1.md: each implements its design's real decision cadence, pre-commit feedback rules, real-team content, deterministic outcomes, instrumentation (window.__stage0 log with adjust-counts/time-to-lock), Playwright driver hooks (window.__stage0Actions), and ?debug=1 verification mode with hidden constants in closures.",
+            "evidence": "Playwright against pre-installed Chromium: all three load from file://, drivable end-to-end (l1a to done, l1b to books, l1c to synthesis), zero console/page errors, instrumentation populates and JSON-round-trips, no debug leak without ?debug=1. Screenshots render legibly. Recorded as run evidence proto-l1a/b/c, readme-l1.",
+            "claims": "All three prototypes are self-contained, offline, deterministic, drivable, instrumented, and leak-free by default; each implements its assigned design's L1 loop at Stage-0 fidelity with disclosed simplifications.",
+            "known-gaps": "No human/critic play yet (fun unverdicted); l1a omits market-scaled bill and per-fan ancillary; seeds are 3 hand-authored scenario sets per file, not procedural; sliders not literal drag physics (B's prose describes dragging); l1c auto-advances on lock (nextNight is a documented no-op)."
+          },
+          "evidenceIds": [
+            "proto-l1a",
+            "proto-l1b",
+            "proto-l1c",
+            "readme-l1"
+          ],
+          "cost": {
+            "tokens": 170238,
+            "toolUses": 28
+          }
         },
         "proto-l2-l3": {
           "assignmentId": "proto-l2-l3",
@@ -261,6 +274,20 @@
           "ephemeral": false,
           "status": "active",
           "activatedAt": "2026-08-31T21:15:48.029Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "stage0-play": {
+          "assignmentId": "stage0-play",
+          "role": "player-gameplay-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Independent play evidence across all five Stage-0 prototypes; fun cannot be inferred from source; judgment-heavy browser interaction.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T21:35:46.952Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -284,7 +311,8 @@
       "claimIds": [],
       "dissentIds": [
         "econ-boxoffice-unrepaired",
-        "econ-contract-dissent"
+        "econ-contract-dissent",
+        "l3-sharing-argmax"
       ],
       "meetingIds": [],
       "gates": [],
@@ -529,6 +557,20 @@
       "status": "open",
       "recordedAt": "2026-08-31T20:50:58.355Z",
       "actor": "lead-integrator"
+    },
+    "l3-sharing-argmax": {
+      "id": "l3-sharing-argmax",
+      "wave": 1,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "Deterministic brute force refutes part of the L3 signature moment shared by all three candidate designs: revenue sharing lowers a seat's own optimal price ONLY where demand has slack — for a capacity-saturated market (New York, Design C's own constants) the optimal price never moves at any share 0-50%. Additionally, Design C's L3 sharing base (gate + in-arena + local media taxed uniformly) cannot move any price argmax — proportional taxation does not shift a maximizer; the mechanism requires an untaxed revenue stream (present only in Design A's wording). The winning architecture must either re-slate L3's markets, adopt an untaxed-stream structure, or make big-market non-movement itself the taught moment.",
+      "evidenceIds": [
+        "l3-arith-harness"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-08-31T21:35:46.314Z",
+      "actor": "builder-proto-l2-l3"
     }
   },
   "meetings": {},
@@ -548,14 +590,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 7,
+    "agentsActivated": 8,
     "gateFailures": 0,
     "claimsContradicted": 0,
     "evidenceRecorded": 12,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 24,
-  "eventHead": "7415737b454119459fede0ca351ab1a893ea31541b0d60f6cc1c78a9c47d2a1c",
+  "eventCount": 27,
+  "eventHead": "a84309e2c653b43ff58a6b03d27f5cd6d29e78be4ffd6ceea19ec4efb4fd43c0",
   "warnings": []
 }
