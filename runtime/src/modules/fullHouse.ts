@@ -16,10 +16,13 @@
  *
  * Two books that cannot be summed (R4): CASH (dollars) and RENEWALS (the
  * share of the season-ticket base that comes back). The cash-best price and
- * the renewals-best price are different prices on every card, in both
- * directions across the five nights — pricing at the season-ticket plan
- * price protects RENEWALS and costs CASH on a quiet night, and costs
- * RENEWALS to chase CASH on the shock night.
+ * the renewals-best price are different prices on every card, and they pull
+ * in OPPOSITE directions depending on the night: on a quiet card the renewals
+ * book wants a price below the night's cash optimum (undercut your own plan
+ * price and the plan looks like a waste, but the plan price itself is where
+ * renewals peak), and on a big card it wants one above it (a strong walk-up
+ * price is what makes a plan holder's seat look like a bargain). See
+ * `renewalDelta` for the repair this replaced.
  *
  * WHAT IS HIDDEN AND WHY. `base` and `sensitivity` are module-scope
  * constants. They are never serialized into any view — not before the lock,
@@ -1685,14 +1688,7 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
     ];
   }
 
-  const priced = agg.curves;
-  const lowest = priced.reduce((a, b) => (b.price < a.price ? b : a));
-  const highest = priced.reduce((a, b) => (b.price > a.price ? b : a));
-  cards.push({
-    id: "revenue",
-    title: "REVENUE = PRICE × PEOPLE",
-    body: `Across ${priced.length} priced night${priced.length === 1 ? "" : "s"} this room charged as little as $${lowest.price} (${lowest.turnout.toLocaleString()} came) and as much as $${highest.price} (${highest.turnout.toLocaleString()} came). Neither number alone is the money. The money is the two of them multiplied — which is why the biggest crowd and the biggest night are almost never the same night.`,
-  });
+  cards.push({ id: "revenue", title: "REVENUE = PRICE × PEOPLE", body: revenueCardBody(agg) });
 
   // Demand shifters: the same market, two cards, two different best prices —
   // read off the room's own curve, not asserted.
@@ -1736,6 +1732,40 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
   });
 
   return cards;
+}
+
+/**
+ * gate-l1-econ B5 (BLOCKING): the old card took the minimum and maximum price
+ * across every desk-night in the room with no filter on market or card, and
+ * printed "$12 (16,080 came) ... $90 (16,980 came)" — a Memphis Night 1 beside
+ * a New York Night 4, with the HIGHER price drawing the BIGGER crowd, on the
+ * one board surface whose job is formalising demand. Every quoted pair now
+ * comes from one market on one night, and the group is chosen so the two
+ * turnouts move against the two prices.
+ */
+function revenueCardBody(agg: FullHouseAggregate): string {
+  type Group = { marketId: MarketId; cardId: string; points: CurvePoint[] };
+  const groups: Group[] = [];
+  for (const point of agg.curves) {
+    const found = groups.find((g) => g.marketId === point.marketId && g.cardId === point.cardId);
+    if (found) found.points.push(point);
+    else groups.push({ marketId: point.marketId, cardId: point.cardId, points: [point] });
+  }
+  const usable = groups
+    .map((g) => {
+      const low = g.points.reduce((a, b) => (b.price < a.price ? b : a));
+      const high = g.points.reduce((a, b) => (b.price > a.price ? b : a));
+      return { ...g, low, high, spread: high.price - low.price };
+    })
+    .filter((g) => g.spread > 0 && g.high.turnout < g.low.turnout)
+    .sort((a, b) => b.spread - a.spread);
+  const club = (id: MarketId): string => MARKET_BY_ID.get(id)?.club ?? id;
+  const best = usable[0];
+  if (!best) {
+    return `Every desk-night in this room is a price multiplied by a crowd — that product is the money, and neither number is the money on its own. Tonight the room did not give us two desks in the same building charging different prices on the same night, so there is no honest pair to quote: compare dots of the same colour and the same shape on the board, never two different nights.`;
+  }
+  const label = CARD_BY_ID.get(best.cardId)?.label ?? best.cardId;
+  return `${label}, ${club(best.marketId)} — the same night in the same building. One desk charged $${best.low.price} and ${best.low.turnout.toLocaleString()} came. Another charged $${best.high.price} and ${best.high.turnout.toLocaleString()} came. Higher price, smaller crowd: that is a demand curve, and it is only readable one night at a time. Neither number alone is the money — the money is the two of them multiplied, which is why the biggest crowd and the biggest night are almost never the same night.`;
 }
 
 function shifterCardBody(agg: FullHouseAggregate): string {

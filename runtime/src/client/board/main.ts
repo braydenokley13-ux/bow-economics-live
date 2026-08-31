@@ -551,6 +551,7 @@ type FHTwoPeaksB = {
   ticketRevenueAtTicketPeak: number;
   totalRevenueAtTicketPeak: number;
   totalRevenueAtTotalPeak: number;
+  moneySeries?: { price: number; ticket: number; total: number }[];
 };
 type FHRepeat = {
   deskHandle: string;
@@ -564,10 +565,26 @@ type FHRepeat = {
   samePrice: boolean;
 };
 type FHBooksB = { marketId: string; club: string; deskCount: number; medianCash: number; medianRenewals: number; bestFillPct: number; fullHouseNights: number };
-type FHMarketB = { id: string; club: string; building: string; plainLine: string; capacity: number; bill?: number; planPrice?: number };
+type FHMarketB = { id: string; club: string; building: string; plainLine: string; capacity: number; capacityNote?: string; bill?: number; planPrice?: number };
 type FHCardB = { id: string; label: string; index: number; of: number; day: string; visitor: string; draw: number; tv: string; notes: string[]; bowlOffer: boolean; repeatOf: string | null };
 
 const FH_SERIES: Record<string, string> = { "new-york": "var(--series-1)", memphis: "var(--series-2)" };
+
+type FHSlateB = { id: string; label: string; day: string; visitor: string; draw: number; tv: string };
+
+/** The five-night schedule, public before the first price (gate-l1-econ B4 / gate-l1-play P2). */
+function fhSlateBoardHtml(slate: FHSlateB[]): string {
+  if (slate.length === 0) return "";
+  return `
+    <div class="fh-slate-board">
+      ${slate
+        .map(
+          (n) =>
+            `<div class="fh-slate-card"><div class="fh-slate-night">${escapeHtml(n.label)}</div><div class="fh-slate-day">${escapeHtml(n.day)}</div><div class="fh-slate-visitor">${escapeHtml(n.visitor)}</div><div class="fh-slate-draw">DRAW <span class="num">${n.draw}</span></div><div class="fh-slate-tv">${n.tv === "national" ? "NATIONAL TV" : n.tv === "local" ? "LOCAL TV" : "NOT ON TV"}</div></div>`,
+        )
+        .join("")}
+    </div>`;
+}
 
 function fhCardBanner(card: FHCardB): string {
   return `
@@ -583,10 +600,39 @@ function fhCardBanner(card: FHCardB): string {
 }
 
 /**
- * The room's own demand curve: price on x, turnout on y, ONE LABELLED SERIES
- * PER MARKET (never one cloud — R9). Nothing here is money, and nothing is
- * sorted by money (R13).
+ * gate-l1-play P1 (BLOCKING dissent `play-board-curve-pooled`) and
+ * gate-l1-econ B5: this chart used to join every desk-night in a market into
+ * one price-sorted polyline labelled "THE ROOM'S OWN CURVE". Five different
+ * cards are five different demand worlds, so the joined line contained
+ * stretches climbing to the right — the projector arguing that a higher price
+ * drew a bigger crowd, in the room the lesson asks to reason from it.
+ *
+ * The repair: no joining stroke at all, and every dot is attributable to its
+ * demand world — colour by market, shape by night, with an on-screen key.
+ * Nothing is pooled into a line, so no rendered series can slope the wrong
+ * way; the comparison the room is asked to make (ARGUE_PROMPT) is inside one
+ * colour and one shape.
  */
+const FH_NIGHT_SHAPE: Record<string, string> = { N1: "circle", N2: "square", N3: "triangle", N4: "diamond", N5: "ring" };
+
+function fhMark(cx: number, cy: number, cardId: string, color: string, big: boolean, title: string): string {
+  const r = big ? 11 : 8.5;
+  const ring = `stroke:var(--surface-panel); stroke-width:2;`;
+  const t = `<title>${escapeHtml(title)}</title>`;
+  switch (FH_NIGHT_SHAPE[cardId]) {
+    case "square":
+      return `<rect x="${cx - r}" y="${cy - r}" width="${r * 2}" height="${r * 2}" rx="2" style="fill:${color}; ${ring}">${t}</rect>`;
+    case "triangle":
+      return `<polygon points="${cx},${cy - r - 1} ${cx + r + 1},${cy + r} ${cx - r - 1},${cy + r}" style="fill:${color}; ${ring}">${t}</polygon>`;
+    case "diamond":
+      return `<polygon points="${cx},${cy - r - 2} ${cx + r + 2},${cy} ${cx},${cy + r + 2} ${cx - r - 2},${cy}" style="fill:${color}; ${ring}">${t}</polygon>`;
+    case "ring":
+      return `<circle cx="${cx}" cy="${cy}" r="${r}" style="fill:none; stroke:${color}; stroke-width:4;">${t}</circle>`;
+    default:
+      return `<circle cx="${cx}" cy="${cy}" r="${r}" style="fill:${color}; ${ring}">${t}</circle>`;
+  }
+}
+
 function fhCurveSvg(points: FHPoint[], markets: string[]): string {
   const W = 960;
   const H = 440;
@@ -600,7 +646,7 @@ function fhCurveSvg(points: FHPoint[], markets: string[]): string {
   const x = (price: number) => mL + ((price - xMin) / (xMax - xMin)) * (W - mL - mR);
   const y = (t: number) => H - mB - (t / yMax) * (H - mT - mB);
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" class="scatter-svg" role="img" aria-label="Ticket price against how many people came, one series per market">`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="scatter-svg" role="img" aria-label="Ticket price against how many people came, one mark per desk-night, coloured by market and shaped by night">`;
   svg += `<line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
   svg += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
   for (const px of [10, 30, 50, 70, 90, 120]) {
@@ -613,26 +659,86 @@ function fhCurveSvg(points: FHPoint[], markets: string[]): string {
   svg += `<text x="${(mL + (W - mR)) / 2}" y="${H - 8}" text-anchor="middle" style="font:12px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">TICKET PRICE</text>`;
   svg += `<text x="16" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 16 ${(mT + H - mB) / 2})" style="font:12px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">PEOPLE WHO CAME</text>`;
 
-  for (const marketId of markets) {
-    const own = points.filter((p) => p.marketId === marketId).sort((a, b) => a.price - b.price);
-    if (own.length < 2) continue;
-    const path = own.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.price).toFixed(1)},${y(p.turnout).toFixed(1)}`).join(" ");
-    svg += `<path d="${path}" fill="none" stroke="${FH_SERIES[marketId] ?? "var(--accent-blue)"}" stroke-width="2" opacity="0.45"/>`;
-  }
+  // No joining stroke: five nights are five demand worlds and a line through
+  // them is a false picture (gate-l1-play P1). One mark per desk-night, shaped
+  // by night so the room can compare like with like.
+  void markets;
   for (const p of points) {
     const color = FH_SERIES[p.marketId] ?? "var(--accent-blue)";
-    svg += `<circle cx="${x(p.price)}" cy="${y(p.turnout)}" r="${p.soldOut ? 12 : 9}" style="fill:${color}; stroke:var(--surface-panel); stroke-width:2;"><title>${escapeHtml(`${p.deskHandle} · $${p.price} · ${p.turnout.toLocaleString()} came · ${p.fillPct}% full`)}</title></circle>`;
+    svg += fhMark(
+      x(p.price),
+      y(p.turnout),
+      p.cardId,
+      color,
+      p.soldOut,
+      `${p.deskHandle} · ${p.cardId} · $${p.price} · ${p.turnout.toLocaleString()} came · ${p.fillPct}% full`,
+    );
   }
   svg += `</svg>`;
   return svg;
 }
 
+const FH_NIGHT_LABEL: Record<string, string> = { N1: "N1 Tue", N2: "N2 Sat", N3: "N3 Wed", N4: "N4 Sat", N5: "N5 Tue" };
+
 function fhLegend(points: FHPoint[]): string {
   const ids = [...new Set(points.map((p) => p.marketId))];
+  const nights = [...new Set(points.map((p) => p.cardId))].sort();
   const label: Record<string, string> = { "new-york": "New York", memphis: "Memphis" };
+  const shapeKey = nights
+    .map(
+      (n) =>
+        `<span class="legend-shape"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">${fhMark(12, 12, n, "var(--ink-secondary)", false, "")}</svg>${escapeHtml(FH_NIGHT_LABEL[n] ?? n)}</span>`,
+    )
+    .join("");
   return `<div class="scatter-legend">${ids
     .map((id) => `<span class="legend-dot" style="background:${FH_SERIES[id] ?? "var(--accent-blue)"}; margin-left:14px;"></span>${escapeHtml(label[id] ?? id)}`)
-    .join("")}</div>`;
+    .join("")}<span class="legend-sep"></span>${shapeKey}</div>
+    <div class="synthesis-note" style="font-size:0.95vw;">Every dot is one desk on one night. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.</div>`;
+}
+
+/**
+ * gate-l1-play: "Two Peaks SURVIVED as a statement, weakened as a proof" — the
+ * panel asserted two prices while the chart above it plotted people, not
+ * money, with no marker at either price. This is the money view: both revenue
+ * curves for that desk's frozen Night 3 curve, with a marked peak on each, so
+ * the room can see the two peaks rather than be told about them.
+ */
+function fhMoneySvg(p: FHTwoPeaksB): string {
+  const series = p.moneySeries ?? [];
+  if (series.length < 3) return "";
+  const W = 420;
+  const H = 210;
+  const mL = 46;
+  const mR = 10;
+  const mT = 14;
+  const mB = 28;
+  const xMin = Math.min(...series.map((s) => s.price));
+  const xMax = Math.max(...series.map((s) => s.price));
+  const yMax = Math.max(...series.map((s) => s.total)) * 1.1;
+  const x = (v: number) => mL + ((v - xMin) / (xMax - xMin)) * (W - mL - mR);
+  const y = (v: number) => H - mB - (v / yMax) * (H - mT - mB);
+  const path = (key: "ticket" | "total") =>
+    series.map((s, i) => `${i === 0 ? "M" : "L"}${x(s.price).toFixed(1)},${y(s[key]).toFixed(1)}`).join(" ");
+  const mark = (price: number, key: "ticket" | "total", color: string, label: string) => {
+    const point = series.reduce((a, b) => (Math.abs(b.price - price) < Math.abs(a.price - price) ? b : a));
+    return (
+      `<line x1="${x(point.price)}" y1="${y(point[key])}" x2="${x(point.price)}" y2="${H - mB}" style="stroke:${color}; stroke-width:1.5; stroke-dasharray:3 3; opacity:.7;"/>` +
+      `<circle cx="${x(point.price)}" cy="${y(point[key])}" r="6" style="fill:${color}; stroke:var(--surface-panel); stroke-width:2;"/>` +
+      `<text x="${x(point.price)}" y="${y(point[key]) - 10}" text-anchor="middle" style="font:12px Inter, sans-serif; fill:${color};">${escapeHtml(label)}</text>`
+    );
+  };
+  return `
+    <svg viewBox="0 0 ${W} ${H}" class="fh-money-svg" role="img" aria-label="Money against ticket price: tickets alone, and tickets plus what people spend inside, each with its own peak">
+      <line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.12); stroke-width:1;"/>
+      <line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.12); stroke-width:1;"/>
+      <path d="${path("total")}" fill="none" stroke="var(--accent-gold)" stroke-width="3"/>
+      <path d="${path("ticket")}" fill="none" stroke="var(--ink-secondary)" stroke-width="2" stroke-dasharray="5 4"/>
+      ${mark(p.ticketPeakPrice, "ticket", "var(--ink-secondary)", `$${p.ticketPeakPrice}`)}
+      ${mark(p.totalPeakPrice, "total", "var(--accent-gold)", `$${p.totalPeakPrice}`)}
+      <text x="${(mL + W - mR) / 2}" y="${H - 6}" text-anchor="middle" style="font:11px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">TICKET PRICE</text>
+      <text x="14" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 14 ${(mT + H - mB) / 2})" style="font:11px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">MONEY IN</text>
+    </svg>
+    <div class="fh-money-key"><span class="fh-money-swatch dash"></span>Tickets alone<span class="fh-money-swatch solid"></span>Tickets + what they spend inside</div>`;
 }
 
 function fhTwoPeaksPanel(peaks: FHTwoPeaksB[]): string {
@@ -648,6 +754,7 @@ function fhTwoPeaksPanel(peaks: FHTwoPeaksB[]): string {
           <div class="fh-peaks-line"><span>Tickets alone peak at</span><span class="num">$${p.ticketPeakPrice}</span></div>
           <div class="fh-peaks-line hot"><span>Tickets + what they spend inside peak at</span><span class="num">$${p.totalPeakPrice}</span></div>
           <div class="fh-peaks-gap">$${p.gapDollars} lower · ${p.gapSteps} clicks of the dial</div>
+          ${fhMoneySvg(p)}
         </div>`,
         )
         .join("")}
@@ -666,7 +773,7 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
         <div class="banner" style="max-width:66vw;">${escapeHtml(String(view["message"] ?? ""))}</div>
         <div class="fh-market-row">${markets
           .map(
-            (m) => `<div class="fh-market-tile"><div class="fh-market-club">${escapeHtml(m.club)}</div><div class="fh-market-building">${escapeHtml(m.building)}</div><div class="fh-market-line">${escapeHtml(m.plainLine)}</div><div class="fh-market-cap">${m.capacity.toLocaleString()} seats</div></div>`,
+            (m) => `<div class="fh-market-tile"><div class="fh-market-club">${escapeHtml(m.club)}</div><div class="fh-market-building">${escapeHtml(m.building)}</div><div class="fh-market-line">${escapeHtml(m.plainLine)}</div><div class="fh-market-cap">${m.capacity.toLocaleString()} seats</div><div class="fh-market-stamp">${escapeHtml(m.capacityNote ?? "")}</div></div>`,
           )
           .join("")}</div>
         <div class="fh-desk-row">${assignments
@@ -685,11 +792,12 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
         <div class="banner" style="max-width:74vw;">${escapeHtml(String(view["message"] ?? ""))}</div>
         <div class="fh-market-row">${markets
           .map(
-            (m) => `<div class="fh-market-tile"><div class="fh-market-club">${escapeHtml(m.club)}</div><div class="fh-market-building">${escapeHtml(m.building)}</div><div class="fh-market-cap">${m.capacity.toLocaleString()} seats · bill $${(m.bill ?? 0).toLocaleString()} a night · season plan $${m.planPrice}</div></div>`,
+            (m) => `<div class="fh-market-tile"><div class="fh-market-club">${escapeHtml(m.club)}</div><div class="fh-market-building">${escapeHtml(m.building)}</div><div class="fh-market-cap">${m.capacity.toLocaleString()} seats · bill $${(m.bill ?? 0).toLocaleString()} a night · season plan $${m.planPrice}</div><div class="fh-market-stamp">${escapeHtml(m.capacityNote ?? "")}</div></div>`,
           )
           .join("")}</div>
         <div class="synthesis-note" style="max-width:70vw;">${escapeHtml(String(view["objective"] ?? ""))}</div>
-        <div class="exit-prompt" style="font-size:1.1vw; color:var(--ink-muted);">${escapeHtml(honesty)} ${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
+        ${fhSlateBoardHtml((view["slate"] as FHSlateB[]) ?? [])}
+        <div class="exit-prompt" style="font-size:1.1vw; color:var(--ink-muted);">${escapeHtml(honesty)} ${escapeHtml(String(view["horizonLine"] ?? ""))} ${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</div>`;
       return;
     }
 

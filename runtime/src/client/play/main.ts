@@ -1750,7 +1750,10 @@ type FHMarket = {
   eventMax: number;
   bowlSeats: number;
   bowlCost: number;
+  capacityNote: string;
+  spendRule: string;
 };
+type FHSlateNight = { id: string; label: string; index: number; day: string; visitor: string; draw: number; tv: "none" | "local" | "national"; repeatOf: string | null; bowlOffer: boolean };
 type FHCard = {
   id: string;
   label: string;
@@ -1901,11 +1904,42 @@ function fhCardHtml(card: FHCard, market: FHMarket): string {
       <div class="fh-card-draw"><span class="fh-card-draw-label">Visiting club's draw</span><span class="fh-dots">${dots}</span><span class="numeric fh-card-draw-num">${card.draw}/100</span></div>
       <ul class="fh-card-notes">${card.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>
       <div class="fh-card-facts">
-        <span>${market.capacity.toLocaleString()} seats</span>
+        <span>${market.capacity.toLocaleString()} seats<span class="fh-stamp"> · ${escapeHtml(market.capacityNote ?? "")}</span></span>
         <span>Tonight's bill ${money(market.bill)}</span>
         <span>Season plan $${market.planPrice} a seat</span>
       </div>
     </div>`;
+}
+
+/**
+ * Tomorrow's card, printed before tonight's commitment (gate-l1-econ B4,
+ * gate-l1-play P2). Four printed facts, one night ahead — no outcome, no
+ * money, nothing about tonight. The night-spend dial pays on the NEXT night,
+ * so this is the information that decision needs to be reasonable about.
+ */
+function fhNextCardHtml(next: FHCard | null): string {
+  if (!next) {
+    return `<div class="fh-next"><span class="fh-next-label">After tonight</span><span>Nothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.</span></div>`;
+  }
+  const tv = next.tv === "national" ? "national TV" : next.tv === "local" ? "local TV" : "not on TV";
+  return `<div class="fh-next"><span class="fh-next-label">Tomorrow</span><span>${escapeHtml(next.label)} · ${escapeHtml(next.day)} · ${escapeHtml(next.visitor)} · draw ${next.draw}/100 · ${tv}</span></div>`;
+}
+
+function fhSlateHtml(slate: FHSlateNight[]): string {
+  if (slate.length === 0) return "";
+  return `
+    <details class="fa-rules" style="margin-top:12px;">
+      <summary>All five nights on the schedule</summary>
+      <div class="fh-slate">
+        ${slate
+          .map(
+            (n) =>
+              `<div class="fh-slate-row"><span>${escapeHtml(n.label)}</span><span>${escapeHtml(n.day)}</span><span>${escapeHtml(n.visitor)}</span><span class="numeric">draw ${n.draw}</span><span>${n.tv === "national" ? "national TV" : n.tv === "local" ? "local TV" : "not on TV"}</span></div>`,
+          )
+          .join("")}
+      </div>
+      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">The schedule is public in a real building months ahead. What it does not tell you is what a seat is worth on any of these nights.</p>
+    </details>`;
 }
 
 function fhHistoryHtml(history: FHNight[], market: FHMarket): string {
@@ -1981,13 +2015,16 @@ function renderFHHook(view: Record<string, unknown>): void {
         <div><span>Bill, every night</span><span class="numeric">${money(market.bill)}</span></div>
         <div><span>Season plan, per seat</span><span class="numeric">$${market.planPrice}</span></div>
       </div>
+      <div class="fh-stamp" style="margin-top:6px;">${escapeHtml(market.capacityNote ?? "")}</div>
       <p style="margin:10px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(market.plainLine)}</p>
     </div>
     <details class="fa-rules" style="margin-top:12px;">
       <summary>How the five nights work</summary>
       <ul>${rules.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
     </details>
-    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
+    ${fhSlateHtml((view["slate"] as FHSlateNight[]) ?? [])}
+    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>
+    <div class="banner" style="margin-top:8px;">${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</div>`;
 }
 
 function renderFHPlay(view: Record<string, unknown>): void {
@@ -2036,6 +2073,8 @@ function renderFHPlay(view: Record<string, unknown>): void {
           <div class="price-dial-ends"><span>$${view["priceMin"]}</span><span>season plan $${market.planPrice}</span><span>$${view["priceMax"]}</span></div>
 
           <div class="eyebrow" style="font-size:12px; margin-top:16px;">Making it an event <span class="fh-lag">pays off next night</span></div>
+          ${fhNextCardHtml(view["nextCard"] as FHCard | null)}
+          <div class="fh-lag" style="display:block; margin:6px 0 8px;">${escapeHtml(market.spendRule ?? "")}</div>
           <div class="bid-stepper">
             <button type="button" class="btn" id="fhSpendDown">−</button>
             <span class="bid-stepper-readout" id="fhSpendReadout">${money(spend)}</span>
@@ -2048,11 +2087,14 @@ function renderFHPlay(view: Record<string, unknown>): void {
               ? `<label class="fh-bowl"><input type="checkbox" id="fhBowl" ${view["openBowl"] ? "checked" : ""} /> <span>Open ${market.bowlSeats.toLocaleString()} more seats tonight — ${money(market.bowlCost)}, paid whether they fill or not</span></label>`
               : ""
           }
-          <button class="btn btn-primary full" id="fhLock" style="margin-top:14px;">LOCK IT IN</button>
+          <!-- gate-l1-qa D2: 38px measured at 1366x768, under the comfortable
+               touch target for two students sharing one Chromebook. -->
+          <button class="btn btn-primary full" id="fhLock" style="margin-top:14px; min-height:44px;">LOCK IT IN</button>
           <div class="fh-blind-note">No preview. Nothing on this screen tells you what tonight will make.</div>
         </div>`
       }
       ${lastNight ? fhNightResultHtml(lastNight, `${lastNight.label} — how it went`) : ""}
+      ${fhSlateHtml((view["slate"] as FHSlateNight[]) ?? [])}
       <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your nights so far</div>
       ${fhHistoryHtml(history, market)}
     </div>`;

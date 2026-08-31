@@ -32,6 +32,10 @@ let currentCode: string | null = null;
 type AdvanceWarnState =
   | { kind: "td-reveal"; revealedCount: number; totalTargets: number }
   | { kind: "fa-play"; day: number; windowDays: number; actedCount: number; claimedCount: number }
+  // M2 L1's version of the same risk (gate-l1-qa D1/D3, BLOCKING): leaving PLAY
+  // ends the whole five-night window at once, and every night nobody has played
+  // yet settles on the spot.
+  | { kind: "fh-play"; nightNumber: number; nightCount: number; lockedCount: number; deskCount: number }
   | null;
 let advanceWarnState: AdvanceWarnState = null;
 // R1: the per-session teacher credential — required on every /control and
@@ -241,6 +245,14 @@ function render(payload: TeacherPayload): void {
   // happen, so this warns whenever a real day is still open, regardless of who has or hasn't acted yet.
   if (isTradeDeadline) {
     advanceWarnState = { kind: "td-reveal", revealedCount: Number(payload.view["revealedCount"] ?? 0), totalTargets: Number(payload.view["totalTargets"] ?? 0) };
+  } else if (isFullHouse && s.phase === "PLAY" && !Boolean(payload.view["allNightsDone"])) {
+    advanceWarnState = {
+      kind: "fh-play",
+      nightNumber: Number(payload.view["nightNumber"] ?? 1),
+      nightCount: Number(payload.view["nightCount"] ?? 5),
+      lockedCount: Number(payload.view["lockedCount"] ?? 0),
+      deskCount: Number(payload.view["deskCount"] ?? 0),
+    };
   } else if (isFreeAgency && s.phase === "PLAY" && !Boolean(payload.view["windowClosed"])) {
     advanceWarnState = {
       kind: "fa-play",
@@ -722,6 +734,21 @@ $("btnAdvance").addEventListener("click", () => {
     const remaining = w.totalTargets - w.revealedCount;
     const ok = confirm(
       `${remaining} of ${w.totalTargets} target${w.totalTargets === 1 ? "" : "s"} unrevealed — advancing resolves ${remaining === 1 ? "it" : "them"} automatically, without the staged reveal. Continue?`,
+    );
+    if (!ok) return;
+  } else if (w?.kind === "fh-play") {
+    const remaining = w.nightCount - w.nightNumber;
+    const unlocked = Math.max(0, w.deskCount - w.lockedCount);
+    const ok = confirm(
+      `Night ${w.nightNumber} of ${w.nightCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the night bell — advancing now settles tonight for every desk AND ends the five-night window early, so ${
+        remaining === 1 ? "1 night" : `${remaining} nights`
+      } will never be played.${
+        unlocked > 0
+          ? ` ${unlocked} desk${unlocked === 1 ? "" : "s"} ${unlocked === 1 ? "has" : "have"} not locked; ${
+              unlocked === 1 ? "it settles" : "they settle"
+            } at whatever price is on ${unlocked === 1 ? "its" : "their"} dial right now.`
+          : ""
+      } Continue?`,
     );
     if (!ok) return;
   } else if (w?.kind === "fa-play") {

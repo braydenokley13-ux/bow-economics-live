@@ -22,10 +22,13 @@ import {
   RENEWALS_START,
   REVEAL_STEPS,
   TWO_PEAKS_CARD_ID,
+  bestFoundSeason,
   computeAggregate,
   curveFor,
   fullHouseModule,
   renewalDelta,
+  renewalReferencePrice,
+  replayPlan,
   settleNight,
   ticketPeakPrice,
   totalPeakPrice,
@@ -361,9 +364,9 @@ test("R4: the cash book and the renewals book never agree, and each is strictly 
         const cashBest = PRICE_GRID.reduce((a, p) =>
           settleNight(market, curve, p, 0, false, card.bowlOffer).net > settleNight(market, curve, a, 0, false, card.bowlOffer).net ? p : a,
         );
-        const renewBest = PRICE_GRID.reduce((a, p) => (renewalDelta(market, p, 0) > renewalDelta(market, a, 0) ? p : a));
+        const renewBest = PRICE_GRID.reduce((a, p) => (renewalDelta(market, card, p, 0) > renewalDelta(market, card, a, 0) ? p : a));
         assert.notEqual(cashBest, renewBest, `${market.id} ${card.id} @${renewals}: one price is best on both books`);
-        assert.ok(renewalDelta(market, cashBest, 0) < renewalDelta(market, renewBest, 0));
+        assert.ok(renewalDelta(market, card, cashBest, 0) < renewalDelta(market, card, renewBest, 0));
         assert.ok(
           settleNight(market, curve, renewBest, 0, false, card.bowlOffer).net <
             settleNight(market, curve, cashBest, 0, false, card.bowlOffer).net,
@@ -399,13 +402,14 @@ test("the top of the dial is not dead on the biggest night (an aggressive pair s
 
 test("REPEAT CARD: N5 replays N1 and the crowd moves with the desk's own renewals", () => {
   // seat-1 (New York) holds the plan price all five nights: renewals climb, so
-  // the same card draws MORE the second time. seat-3 (also New York) holds a
-  // price far above the plan: renewals fall, so it draws LESS.
+  // the same card draws MORE the second time. seat-3 (also New York) undercuts
+  // its own season-plan price all week — the arm the B1 repair made reachable —
+  // so renewals fall and the same card draws LESS.
   const ny = MARKETS.find((m) => m.id === "new-york")!;
   let state = seated(3);
-  const high = ny.planPrice + 30;
+  const under = ny.planPrice - 8;
   for (let i = 0; i < NIGHT_COUNT; i += 1) {
-    state = playNight(state, { "seat-1": ny.planPrice, "seat-2": 20, "seat-3": high });
+    state = playNight(state, { "seat-1": ny.planPrice, "seat-2": 20, "seat-3": under });
   }
   const rows = computeAggregate(state).repeatCard;
   const climber = rows.find((r) => r.deskHandle.startsWith("Desk 1"))!;
@@ -452,17 +456,136 @@ test("debt locks the night-spend dial to $0 and is never terminal", () => {
   assert.ok(Math.max(...PRICE_GRID.map((p) => settleNight(market, curve, p, 0, false, false).net)) > 0);
 });
 
-test("the Night-4 capacity option is a real conditional decision", () => {
-  const market = MARKETS.find((m) => m.id === "new-york")!;
-  const shock = CARDS.find((c) => c.bowlOffer)!;
-  const curve = curveFor(market, shock, RENEWALS_START, 0);
-  const helps = PRICE_GRID.some(
-    (p) => settleNight(market, curve, p, 0, true, true).net > settleNight(market, curve, p, 0, false, true).net,
-  );
-  const wastes = PRICE_GRID.some(
-    (p) => settleNight(market, curve, p, 0, true, true).net < settleNight(market, curve, p, 0, false, true).net,
-  );
-  assert.ok(helps && wastes, "opening the building must help at some prices and waste money at others");
+/**
+ * gate-l1-econ B3 ruling, taken as option (b): the Night-4 capacity option is
+ * kept as a DELIBERATE opportunity-cost trap, and the copy that congratulated
+ * a pair for taking it is gone (see SHOCK_REVEAL_COPY). Option (a) — retuning
+ * so the bowl is part of a best night — was rejected because it requires the
+ * cash optimum to sit against the capacity clamp on N4, which is exactly the
+ * geometry BC-2/R6 was repaired to remove (16.5x error asymmetry), and because
+ * a best line that opens the bowl deletes the FULL HOUSE / turned-away beat the
+ * play gate recorded as the lesson's strongest moment.
+ *
+ * So it must be provably dominated, and provably not inert: it is a partial
+ * refund on your own underpricing, never part of a best night.
+ */
+test("N4 capacity option: never part of a best night, still a live hedge against underpricing", () => {
+  for (const market of MARKETS) {
+    const shock = CARDS.find((c) => c.bowlOffer)!;
+    for (let renewals = 0; renewals <= 100; renewals += 10) {
+      for (const carry of [0, Math.round(market.eventFans * market.eventMax)]) {
+        const curve = curveFor(market, shock, renewals, carry);
+        const bestClosed = Math.max(...PRICE_GRID.map((p) => settleNight(market, curve, p, 0, false, true).net));
+        const bestOpen = Math.max(...PRICE_GRID.map((p) => settleNight(market, curve, p, 0, true, true).net));
+        assert.ok(
+          bestOpen < bestClosed,
+          `${market.id} @renewals ${renewals}/carry ${carry}: opening the bowl reaches ${bestOpen} against ${bestClosed} closed — it is no longer a trap, and the reveal copy says it is`,
+        );
+        // and the trap has teeth only where the desk has already underpriced
+        const cashBest = PRICE_GRID.reduce((a, p) =>
+          settleNight(market, curve, p, 0, false, true).net > settleNight(market, curve, a, 0, false, true).net ? p : a,
+        );
+        const helpful = PRICE_GRID.filter(
+          (p) => settleNight(market, curve, p, 0, true, true).net > settleNight(market, curve, p, 0, false, true).net,
+        );
+        assert.ok(helpful.length > 0, `${market.id}: the capacity option is inert — it never helps at any price`);
+        assert.ok(
+          Math.max(...helpful) < cashBest,
+          `${market.id}: the capacity option helps at or above the night's cash-best price, so it is not the trap the copy describes`,
+        );
+      }
+    }
+  }
+});
+
+/**
+ * gate-l1-econ B1 (BLOCKING dissent `econ-l1-renewals-tent`). Two falsifiable
+ * limbs, both from the gate's own prescription.
+ */
+test("B1: the renewals low arm binds inside the legal dial, in every market", () => {
+  for (const market of MARKETS) {
+    for (const card of CARDS) {
+      const reference = renewalReferencePrice(market, card);
+      assert.ok(
+        renewalDelta(market, card, PRICE_MIN, 0) < 0,
+        `${market.id} ${card.id}: the $${PRICE_MIN} floor still GAINS renewals — the low arm is unreachable`,
+      );
+      const worstBelow = Math.min(...PRICE_GRID.filter((p) => p <= reference).map((p) => renewalDelta(market, card, p, 0)));
+      const worstAbove = Math.min(...PRICE_GRID.filter((p) => p >= reference).map((p) => renewalDelta(market, card, p, 0)));
+      assert.ok(
+        Math.abs(worstBelow) >= Math.abs(worstAbove) / 3,
+        `${market.id} ${card.id}: reachable penalty below (${worstBelow}) is under a third of the penalty above (${worstAbove})`,
+      );
+    }
+  }
+});
+
+test("B1: the two-book frontier is not one-directional — some price above a night's cash optimum is undominated", () => {
+  for (const market of MARKETS) {
+    let found = 0;
+    for (const card of CARDS) {
+      for (let renewals = 0; renewals <= 100; renewals += 10) {
+        const curve = curveFor(market, card, renewals, 0);
+        const points = PRICE_GRID.map((p) => ({
+          p,
+          cash: settleNight(market, curve, p, 0, false, card.bowlOffer).net,
+          ren: renewalDelta(market, card, p, 0),
+        }));
+        const cashBest = points.reduce((a, b) => (b.cash > a.cash ? b : a));
+        const undominated = points.filter(
+          (a) => !points.some((b) => b.p !== a.p && b.cash >= a.cash && b.ren >= a.ren && (b.cash > a.cash || b.ren > a.ren)),
+        );
+        if (undominated.some((u) => u.p > cashBest.p)) found += 1;
+      }
+    }
+    assert.ok(found > 0, `${market.id}: every price above every night's cash optimum is dominated on both books (FL3 by construction)`);
+  }
+});
+
+test("B2: the counterfactual's strongest line is not beaten by an exhaustive spend search", () => {
+  for (const market of MARKETS) {
+    const printed = bestFoundSeason(market);
+    const levels = [0, market.eventMax];
+    // every all-or-nothing spend schedule, priced night-by-night at its cash best
+    for (let mask = 0; mask < 1 << NIGHT_COUNT; mask += 1) {
+      const spends = CARDS.map((_c, i) => levels[(mask >> i) & 1]!);
+      let renewals = RENEWALS_START;
+      let carry = 0;
+      const prices: number[] = [];
+      for (let i = 0; i < CARDS.length; i += 1) {
+        const card = CARDS[i]!;
+        const price = totalPeakPrice(market, curveFor(market, card, renewals, carry));
+        prices.push(price);
+        renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, price, spends[i]!)));
+        carry = Math.round(market.eventFans * spends[i]!);
+      }
+      const rival = replayPlan(market, { prices, spends });
+      assert.ok(
+        rival.cash <= printed.cash,
+        `${market.id}: a plain spend schedule beats the printed line by $${rival.cash - printed.cash}`,
+      );
+    }
+    // and every fixed-price line, with and without a full-season spend
+    for (const price of PRICE_GRID) {
+      for (const spend of levels) {
+        const rival = replayPlan(market, { prices: CARDS.map(() => price), spends: CARDS.map(() => spend!) });
+        assert.ok(rival.cash <= printed.cash, `${market.id}: a flat $${price} line beats the printed line`);
+      }
+    }
+  }
+});
+
+test("gate-l1-sr F1: no night card's visiting club can be a club a desk in this room is running", () => {
+  const forbidden = MARKETS.flatMap((m) => [m.club, m.club.split(" ").slice(-1)[0]!, m.building]);
+  for (const card of CARDS) {
+    for (const word of forbidden) {
+      assert.equal(card.visitor.includes(word), false, `${card.id}'s visitor names ${word}`);
+    }
+    // and no champion framing: the champion changes every June and is currently a desk in this room
+    for (const text of [card.visitor, ...card.notes]) {
+      assert.equal(/defending champion|the champions/i.test(text), false, `${card.id} still carries a champion frame: ${text}`);
+    }
+  }
 });
 
 /* --------------------------------------------------- pacing and fallbacks -- */
@@ -539,8 +662,10 @@ test("a late seat gets an honest playable desk, not a broken one", () => {
 /* ------------------------------------------------------------- synthesis -- */
 
 test("synthesis cards are computed from this class's locked-at-time numbers", () => {
-  let state = seated(2);
-  const prices = { "seat-1": 34, "seat-2": 24 };
+  let state = seated(4);
+  // Two desks in each market, at different prices, so the room supplies a
+  // like-for-like pair (same market, same night) for the REVENUE card.
+  const prices = { "seat-1": 34, "seat-2": 24, "seat-3": 70, "seat-4": 46 };
   for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, prices);
   const agg = computeAggregate(state);
   const board = fullHouseModule.boardView(state, "SYNTHESIS") as { cards: { id: string; body: string }[] };
@@ -549,7 +674,7 @@ test("synthesis cards are computed from this class's locked-at-time numbers", ()
 
   // The revenue card must quote a price this room actually charged.
   const revenue = board.cards.find((c) => c.id === "revenue")!;
-  assert.match(revenue.body, /\$34|\$24/);
+  assert.match(revenue.body, /\$34|\$70/);
   // The Two Peaks card must quote the peaks computed off a REAL desk's frozen curve.
   const peak = agg.twoPeaks[0]!;
   const lossLeader = board.cards.find((c) => c.id === "loss-leader")!;
@@ -605,4 +730,63 @@ test("real figures in product copy carry a season stamp (BC-3)", async () => {
   assert.match(mod.SHOCK_REVEAL_COPY, /2024/);
   assert.match(mod.DYNAMIC_PRICING_COPY, /2009/);
   assert.match(mod.BOARD_HONESTY_LINE, /modeled on real market differences/i);
+  // gate-l1-sr F2: the champion reference must be the current one, and no stale one may survive.
+  assert.equal(
+    mod.SOURCE_NOTES.some((n: string) => /Oklahoma City/i.test(n)),
+    false,
+    "the stale 2025 champion note is still shipping",
+  );
+  // gate-l1-sr F5: FedExForum must not be claimed as a single listed season capacity.
+  const capacityNote = mod.SOURCE_NOTES.find((n: string) => n.includes("Building capacities"))!;
+  assert.match(capacityNote, /modeled seat count/i);
+  assert.match(capacityNote, /16,667/);
+  // gate-l1-sr F3: the horizon line may no longer invite anyone to multiply one modeled night by eight real dates.
+  assert.equal(/eight real home dates/i.test(mod.HORIZON_LINE), false);
+  assert.match(mod.MODELED_DOLLARS_LINE, /shrunk to classroom size/i);
+});
+
+test("gate-l1-sr F4: every real figure that reaches a screen carries its stamp at the point of use", () => {
+  // The capacity is printed on the board tiles, the HOOK panel and EVERY night
+  // card. Its season stamp must travel with it, not live once at SYNTHESIS.
+  for (const market of MARKETS) {
+    assert.match(market.capacityNote, /\b(19|20)\d\d|modeled seat count/, `${market.id} capacity has no point-of-use stamp`);
+  }
+  let state = seated(2);
+  const play = fullHouseModule.studentView(state, "seat-1", "PLAY") as { market: { capacity: number; capacityNote: string } };
+  assert.equal(play.market.capacityNote.length > 0, true, "the play card's capacity reaches a student with no stamp");
+  const lobby = fullHouseModule.boardView(state, "LOBBY") as { markets: { capacity: number; capacityNote: string }[] };
+  assert.equal(lobby.markets.every((m) => m.capacityNote.length > 0), true, "the board's capacity tiles carry no stamp");
+  const hook = fullHouseModule.boardView(state, "HOOK") as { markets: { capacityNote: string }[]; modeledDollarsLine: string };
+  assert.equal(hook.markets.every((m) => m.capacityNote.length > 0), true);
+  assert.ok(hook.modeledDollarsLine.length > 0, "the money scale is still only stated at SYNTHESIS");
+  state = playNight(state, { "seat-1": 34, "seat-2": 24 });
+  assert.ok(state.nightIndex === 1);
+});
+
+/**
+ * gate-l1-qa D1/D3 (BLOCKING dissent `qa-teacher-misclick`). The teacher's
+ * primary Advance is one tap from the night bell. It still ends the window —
+ * that is the manual fallback — but the night the room is actually mid-decision
+ * on now settles on the dials the pairs set, per D17's auto-resolve-on-exit
+ * precedent, instead of throwing away a real price for the plan price.
+ */
+test("teacher misclick: leaving PLAY settles the open night on the dials as they stand", () => {
+  let state = seated(2);
+  state = ok(act(state, { type: "setPrice", price: 56 }, "PLAY", "seat-1")); // set, deliberately NOT locked
+  state = ok(act(state, { type: "setSpend", spend: 20_000 }, "PLAY", "seat-1"));
+  const after = fullHouseModule.onPhaseExit!(state, "PLAY", "REVEAL");
+  const n1 = after.desks["seat-1"]!.nights[0]!;
+  assert.equal(n1.price, 56, "the price the pair had actually set was thrown away");
+  assert.equal(n1.spend, 20_000, "the night spend the pair had actually set was thrown away");
+  assert.equal(n1.auto, true, "the night must still be flagged as one nobody locked");
+  // a desk that touched nothing is unchanged: it still settles at the plan price
+  assert.equal(after.desks["seat-2"]!.nights[0]!.price, MARKETS.find((m) => m.id === "memphis")!.planPrice);
+  // and the nights nobody ever saw are still auto-played at the plan price
+  assert.equal(after.nightIndex, NIGHT_COUNT);
+  assert.equal(after.desks["seat-1"]!.nights[1]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
+  // the night bell itself is unchanged: an unlocked desk is the "did nothing" line
+  let belled = seated(1);
+  belled = ok(act(belled, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
+  belled = ok(act(belled, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+  assert.equal(belled.desks["seat-1"]!.nights[0]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
 });
