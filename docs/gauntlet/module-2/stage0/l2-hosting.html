@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stage-0 · L2 · Somebody Else's Building (the HOST/externality loop)</title>
+<style>
+  :root{
+    --bg:#12151b; --panel:#1c212b; --panel2:#242a37; --line:#333c4d;
+    --ink:#e8ecf3; --dim:#9aa5b8; --accent:#e0a53c; --good:#4caf7a; --bad:#e0605a; --visitor:#5b9fd6;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;margin:0;padding:20px;}
+  h1{font-size:1.25rem;margin:0 0 4px;}
+  h2{font-size:1rem;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:0;}
+  h3{font-size:.92rem;margin:0 0 6px;}
+  .sub{color:var(--dim);font-size:.85rem;margin-bottom:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:8px 14px;
+    border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;}
+  button:hover:not(:disabled){border-color:var(--accent);}
+  button:disabled{opacity:.35;cursor:not-allowed;}
+  .runinfo{color:var(--dim);font-size:.85rem;}
+  .phase-badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:2px 10px;font-size:.78rem;color:var(--accent);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr;}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  .score{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;}
+  .score .box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-width:140px;}
+  .score .label{color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;}
+  .score .val{font-size:1.2rem;color:var(--accent);}
+  .score .val.bad{color:var(--bad);} .score .val.good{color:var(--good);}
+  .dial-row{margin-bottom:14px;}
+  .dial-row .dhead{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px;}
+  .dial-row .dval{color:var(--accent);font-weight:bold;}
+  input[type=range]{width:100%;}
+  .disabled-note{color:var(--dim);font-size:.8rem;font-style:italic;}
+  .matchup-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:.87rem;}
+  .matchup-row:last-child{border-bottom:none;}
+  .draw-dots span{opacity:.25;} .draw-dots span.on{opacity:1;color:var(--accent);}
+  .decomp{margin-top:8px;}
+  .bar-wrap{background:#0d0f14;border-radius:6px;height:20px;overflow:hidden;display:flex;border:1px solid var(--line);margin:4px 0;}
+  .bar-own{background:var(--accent);height:100%;} .bar-visitor{background:var(--visitor);height:100%;}
+  .decomp-row{display:flex;justify-content:space-between;font-size:.84rem;padding:2px 0;}
+  .decomp-row .own{color:var(--accent);} .decomp-row .visitor{color:var(--visitor);} .decomp-row .cost{color:var(--bad);}
+  .away-box{background:var(--panel2);border:1px dashed var(--visitor);border-radius:8px;padding:10px;margin-top:8px;}
+  table.digest{width:100%;border-collapse:collapse;font-size:.82rem;}
+  table.digest td,table.digest th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left;}
+  .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  details{margin-top:18px;}
+  summary{cursor:pointer;color:var(--dim);font-size:.85rem;}
+  pre{background:#0a0c10;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.72rem;
+      overflow:auto;max-height:320px;color:#b7c2d6;}
+  .footnote{color:var(--dim);font-size:.75rem;margin-top:10px;border-top:1px dotted var(--line);padding-top:8px;}
+  .debugbox{background:#301818;border:1px solid var(--bad);border-radius:8px;padding:10px;margin-bottom:16px;font-size:.8rem;}
+  .card{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:var(--panel2);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>SOMEBODY ELSE'S BUILDING — the HOST loop (Design B/C convergence, L2 Stage-0)</h1>
+    <div class="sub" id="playFantasy">You run a club's home nights in a six-desk mini-league. Every week: open your building, decide how much to reinvest in being an attraction. The schedule brings a visitor whose own Draw is not yours to control.</div>
+  </div>
+  <div style="text-align:right">
+    <div class="runinfo">Run <span id="runCount">1</span> &middot; <span class="phase-badge" id="phaseBadge">week 1</span></div>
+    <button id="newRunBtn">New run</button>
+  </div>
+</div>
+
+<div id="debugPanel"></div>
+
+<div class="panel">
+  <h2>YOUR BOOKS</h2>
+  <div class="score">
+    <div class="box"><div class="label">Cash (vs weekly bill)</div><div class="val" id="cashVal">—</div></div>
+    <div class="box"><div class="label">Draw (never ranked)</div><div class="val" id="drawVal">—</div></div>
+    <div class="box"><div class="label">Value you made elsewhere (season)</div><div class="val" id="madeElsewhereVal">—</div></div>
+    <div class="box"><div class="label">Value you kept at home (season)</div><div class="val" id="keptHomeVal">—</div></div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="panel" id="decidePanel">
+    <h2 id="decideTitle">THIS WEEK'S DECISION</h2>
+    <div class="sub" id="matchupNote"></div>
+
+    <div class="dial-row">
+      <div class="dhead"><span>OPEN THE HOUSE — sections (cost lands tonight, before the crowd is known)</span><span class="dval"><span id="sectionsVal">0</span> / 5</span></div>
+      <input type="range" id="sectionsRange" min="0" max="5" step="1" value="0">
+      <div class="disabled-note" id="sectionsNote"></div>
+    </div>
+
+    <div class="dial-row">
+      <div class="dhead"><span>BUILD THE DRAW — reinvest this week's cash (pays off next week, elsewhere too)</span><span class="dval"><span id="reinvestVal">0</span>%</span></div>
+      <input type="range" id="reinvestRange" min="0" max="40" step="10" value="0">
+    </div>
+
+    <div class="actions">
+      <button id="commitBtn">COMMIT THE WEEK</button>
+    </div>
+  </div>
+
+  <div class="panel" id="leaguePanel">
+    <h2>THE SCHEDULE</h2>
+    <div id="leagueBox"></div>
+  </div>
+</div>
+
+<div class="panel" id="revealPanel" style="display:none">
+  <h2>DECOMPOSITION REVEAL — what your decision did vs what the visitor's draw did</h2>
+  <div id="revealBox"></div>
+  <div class="actions">
+    <button id="advanceBtn">Next week</button>
+  </div>
+</div>
+
+<div class="panel" id="digestPanel" style="display:none">
+  <h2>LEAGUE DIGEST — this week, every matchup</h2>
+  <table class="digest" id="digestTable"></table>
+</div>
+
+<div class="panel" id="completePanel" style="display:none">
+  <h2>SEASON COMPLETE — four weeks</h2>
+  <div id="completeBox"></div>
+</div>
+
+<details>
+  <summary>Session log (instrumentation — window.__stage0)</summary>
+  <pre id="logOutput"></pre>
+</details>
+
+<div class="footnote">
+  Real markets/anchors (modeled, not measured — SR-1, SR-2, SR-4, SR-6, SR-11, SR-12): New York
+  Knicks (MSG, biggest US media market), Golden State Warriors ($833M 2024-25, own Chase Center),
+  Oklahoma City Thunder (small market, 2025 champions), Cleveland Cavaliers (the 2010/2014 LeBron
+  demand shock, echoed here as an in-league "star departs" event, printed before it lands), Charlotte
+  Hornets (small, rebuilding — the seat the room will argue about in L3). Draw numbers, capacities,
+  and dollar figures are <strong>modeled illustrative magnitudes for Stage-0 play-testing</strong>,
+  not audited team financials or measured attendance elasticities.
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const params = new URLSearchParams(location.search);
+  const DEBUG = params.get('debug') === '1';
+
+  // ---- HIDDEN ECONOMIC CONSTANTS (closure; exposed only under ?debug=1) ----
+  const CAPACITY_PER_SECTION = 4000;      // max fans per open section
+  const SECTION_COST = 15000;             // $ cost per section opened, paid before the crowd is known
+  const PER_FAN_REVENUE = 40;             // $ combined ticket + in-arena spend per attendee
+  const VISITOR_PULL_PER_DRAW = 55;       // fans added per point of visitor Draw, capped by remaining capacity
+  const WEEKLY_BILL = 40000;              // fixed weekly overhead, independent of section choice
+  const DRAW_DECAY = 0.85;                // Draw multiplier per week with zero reinvestment
+  const DRAW_GAIN_SCALE = 0.9;            // drawGain = DRAW_GAIN_SCALE * sqrt(reinvestDollars)
+  const DRAW_CEILING = 100;               // same ceiling for every market — a big market cannot buy dominance
+  const DRAW_FLOOR = 10;                  // Draw never fully dies (catch-up channel, anti-death-spiral)
+  const NATIONAL_POT_BASE = 8000;         // $ per desk per week, equal split
+  const NATIONAL_POT_DRAW_RATE = 40;      // $ added to the pot's per-desk share per point of league total Draw
+  const STARTING_CASH = 20000;
+
+  // Fixed host/away shape for 4 weeks across 6 desks (0=HUMAN). Same shape every scenario;
+  // the desk->team mapping and starting parameters vary by seed.
+  const SCHEDULE = [
+    [{home:0,away:5},{home:1,away:4},{home:2,away:3}],
+    [{home:4,away:0},{home:5,away:3},{home:1,away:2}],
+    [{home:0,away:3},{home:4,away:2},{home:5,away:1}],
+    [{home:2,away:0},{home:3,away:1},{home:4,away:5}]
+  ];
+
+  // Bot policy tables: sections opened when hosting (fixed), reinvest % by week (1-indexed array).
+  const SCENARIOS = [
+    { // seed 0
+      names: ['You (Memphis)','New York','Golden State','Oklahoma City','Cleveland','Charlotte'],
+      marketStrength: [0.45, 0.85, 0.80, 0.55, 0.50, 0.30],
+      startDraw:      [30, 70, 65, 45, 50, 20],
+      botSections:    [null, 5, 5, 4, 3, 2],
+      botReinvest:    [null, [20,20,20,20], [30,30,30,30], [10,20,30,40], [15,15,0,0], [0,0,0,0]],
+      shock: { deskId:4, fromWeek:3, label:'Cleveland: star departs (echoes LeBron 2010) — Cleveland\'s own draw cut hard, printed before week 3 resolves.', ownMult:0.55 }
+    },
+    { // seed 1 — different mapping, same shape
+      names: ['You (Charlotte)','Golden State','New York','Cleveland','Oklahoma City','Memphis'],
+      marketStrength: [0.30, 0.80, 0.85, 0.50, 0.55, 0.45],
+      startDraw:      [20, 65, 70, 50, 45, 28],
+      botSections:    [null, 5, 5, 3, 4, 2],
+      botReinvest:    [null, [30,30,30,30], [20,20,20,20], [15,15,0,0], [10,20,30,40], [0,0,0,0]],
+      shock: { deskId:3, fromWeek:3, label:'Cleveland: star departs (echoes LeBron 2010) — Cleveland\'s own draw cut hard, printed before week 3 resolves.', ownMult:0.55 }
+    },
+    { // seed 2 — human starts at the marquee small market instead
+      names: ['You (Oklahoma City)','New York','Golden State','Memphis','Cleveland','Charlotte'],
+      marketStrength: [0.55, 0.85, 0.80, 0.45, 0.50, 0.30],
+      startDraw:      [45, 70, 65, 30, 50, 20],
+      botSections:    [null, 5, 5, 2, 3, 2],
+      botReinvest:    [null, [20,20,20,20], [30,30,30,30], [0,0,0,0], [15,15,0,0], [0,0,0,0]],
+      shock: { deskId:4, fromWeek:3, label:'Cleveland: star departs (echoes LeBron 2010) — Cleveland\'s own draw cut hard, printed before week 3 resolves.', ownMult:0.55 }
+    }
+  ];
+
+  let scenario, state;
+
+  function money(n){ return (n<0?'-$':'$') + Math.abs(Math.round(n)).toLocaleString('en-US'); }
+
+  function capacityOf(sections){ return sections * CAPACITY_PER_SECTION; }
+
+  // Pure resolution of one matchup. Returns crowd/gate decomposed into own vs visitor contribution.
+  function resolveMatch(homeId, awayId, homeSections, homeDrawOfAway, weekIdx){
+    const cap = capacityOf(homeSections);
+    let ownFraction = scenario.marketStrength[homeId];
+    if (scenario.shock && scenario.shock.deskId === homeId && weekIdx+1 >= scenario.shock.fromWeek) {
+      ownFraction *= scenario.shock.ownMult;
+    }
+    const ownCrowd = Math.min(cap, Math.round(ownFraction * cap));
+    const remaining = Math.max(0, cap - ownCrowd);
+    const visitorCrowd = Math.min(remaining, Math.round(VISITOR_PULL_PER_DRAW * homeDrawOfAway));
+    const crowd = ownCrowd + visitorCrowd;
+    const ownRevenue = ownCrowd * PER_FAN_REVENUE;
+    const visitorRevenue = visitorCrowd * PER_FAN_REVENUE;
+    const sectionCost = homeSections * SECTION_COST;
+    const gate = ownRevenue + visitorRevenue - sectionCost;
+    return { homeId, awayId, sections:homeSections, cap, ownCrowd, visitorCrowd, crowd, ownRevenue, visitorRevenue, sectionCost, gate };
+  }
+
+  function freshState(seed, runCount){
+    scenario = SCENARIOS[Math.abs(seed) % SCENARIOS.length];
+    const desks = scenario.names.map((name, id) => ({
+      id, name,
+      draw: scenario.startDraw[id],
+      cash: STARTING_CASH,
+      madeElsewhere: 0,
+      keptHome: 0,
+      lastHomeGate: 15000 // modeled preseason baseline for desks that have not yet hosted
+    }));
+    return {
+      seed, runCount,
+      week: 0, // 0-indexed internally, displayed as week+1
+      phase: 'decide', // decide -> reveal -> (decide next week) ... -> complete
+      controls: { sections: 0, reinvest: 0 },
+      desks,
+      weekStartTime: Date.now(),
+      lastWeekReveal: null,
+      history: [],
+      log: []
+    };
+  }
+
+  function humanMatchThisWeek(){
+    return SCHEDULE[state.week].find(m => m.home === 0 || m.away === 0);
+  }
+
+  function render(){
+    document.getElementById('runCount').textContent = state.runCount;
+    document.getElementById('phaseBadge').textContent =
+      state.phase === 'complete' ? 'season complete' : `week ${state.week+1} · ${state.phase}`;
+
+    const human = state.desks[0];
+    document.getElementById('cashVal').textContent = money(human.cash);
+    document.getElementById('cashVal').className = 'val ' + (human.cash >= 0 ? 'good' : 'bad');
+    document.getElementById('drawVal').textContent = human.draw.toFixed(1);
+    document.getElementById('madeElsewhereVal').textContent = money(human.madeElsewhere);
+    document.getElementById('keptHomeVal').textContent = money(human.keptHome);
+
+    renderDecide();
+    renderLeagueBox();
+    renderReveal();
+    renderComplete();
+    renderLog();
+    if (DEBUG) renderDebug();
+  }
+
+  function renderComplete(){
+    const panel = document.getElementById('completePanel');
+    if (state.phase !== 'complete') { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const human = state.desks[0];
+    const homeWeeks = state.history.filter(h => h.isHome);
+    const billsMet = homeWeeks.filter(h => h.result.gate >= WEEKLY_BILL).length;
+    const rows = state.desks.map(d =>
+      `<tr><td>${d.name}</td><td>${money(d.cash)}</td><td>${d.draw.toFixed(1)}</td><td>${money(d.madeElsewhere)}</td><td>${money(d.keptHome)}</td></tr>`
+    ).join('');
+    document.getElementById('completeBox').innerHTML = `
+      <div class="sub">Final books, every desk in the league (never ranked in the live UI — shown here for the Stage-0 review only).</div>
+      <table class="digest">
+        <tr><th>Desk</th><th>Cash</th><th>Draw</th><th>Value made elsewhere</th><th>Value kept at home</th></tr>
+        ${rows}
+      </table>
+      <div class="sub" style="margin-top:10px">
+        Your season: ${billsMet}/${homeWeeks.length} home weeks cleared the ${money(WEEKLY_BILL)} bill.
+        You made ${money(human.madeElsewhere)} in other clubs' buildings this season and kept ${money(human.keptHome)}
+        of what your own building earned. Click "New run" to replay with a different seed.
+      </div>`;
+  }
+
+  function renderDecide(){
+    const panel = document.getElementById('decidePanel');
+    if (state.phase !== 'decide') { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+
+    const match = humanMatchThisWeek();
+    const isHome = match.home === 0;
+    document.getElementById('decideTitle').textContent = `WEEK ${state.week+1} — ${isHome ? 'YOU HOST' : 'YOU TRAVEL'}`;
+
+    const sectionsRange = document.getElementById('sectionsRange');
+    const sectionsNote = document.getElementById('sectionsNote');
+    if (isHome) {
+      const visitorName = scenario.names[match.away];
+      const visitorDraw = state.desks[match.away].draw;
+      document.getElementById('matchupNote').textContent =
+        `Tonight's visitor: ${visitorName} — printed Draw ${visitorDraw.toFixed(1)}/100. You decide sections before you know how the crowd lands.`;
+      sectionsRange.disabled = false;
+      sectionsNote.textContent = '';
+    } else {
+      const hostName = scenario.names[match.home];
+      document.getElementById('matchupNote').textContent =
+        `No home game this week — you travel to ${hostName}. Your own Draw fills part of their building; you do not set their sections.`;
+      sectionsRange.disabled = true;
+      sectionsNote.textContent = 'No home game this week. Sections are not your decision on the road.';
+    }
+    sectionsRange.value = state.controls.sections;
+    document.getElementById('sectionsVal').textContent = state.controls.sections;
+    document.getElementById('reinvestRange').value = state.controls.reinvest;
+    document.getElementById('reinvestVal').textContent = state.controls.reinvest;
+  }
+
+  function renderLeagueBox(){
+    const box = document.getElementById('leagueBox');
+    if (state.phase === 'complete') { box.innerHTML = ''; return; }
+    const matches = SCHEDULE[state.week];
+    box.innerHTML = matches.map(m => {
+      const hostName = scenario.names[m.home], awayName = scenario.names[m.away];
+      const youMark = (m.home===0||m.away===0) ? ' &larr; you' : '';
+      return `<div class="matchup-row"><span>${hostName} <span style="color:var(--dim)">hosts</span> ${awayName}${youMark}</span></div>`;
+    }).join('');
+  }
+
+  function renderReveal(){
+    const panel = document.getElementById('revealPanel');
+    const digestPanel = document.getElementById('digestPanel');
+    if (state.phase !== 'reveal' || !state.lastWeekReveal) { panel.style.display = 'none'; digestPanel.style.display='none'; return; }
+    panel.style.display = ''; digestPanel.style.display = '';
+    const r = state.lastWeekReveal;
+    let html = '';
+
+    if (r.humanMatch.isHome) {
+      const m = r.humanMatch.result;
+      const pct = m.crowd > 0 ? (m.ownCrowd / m.crowd) * 100 : 0;
+      html += `<div class="card"><h3>YOUR HOME NIGHT vs ${scenario.names[m.awayId]}</h3>
+        <div class="bar-wrap"><div class="bar-own" style="width:${pct}%"></div><div class="bar-visitor" style="width:${100-pct}%"></div></div>
+        <div class="decomp-row"><span class="own">What your decision did (your own draw &times; your open sections)</span><span class="own">${money(m.ownRevenue)}</span></div>
+        <div class="decomp-row"><span class="visitor">What the visitor's draw did (${scenario.names[m.awayId]}, ${state.desks[m.awayId] ? '' : ''})</span><span class="visitor">${money(m.visitorRevenue)}</span></div>
+        <div class="decomp-row"><span class="cost">Cost of the sections you opened</span><span class="cost">-${money(m.sectionCost)}</span></div>
+        <div class="decomp-row"><strong>Net gate</strong><strong>${money(m.gate)}</strong></div>
+        <div class="sub">Crowd: ${m.crowd.toLocaleString()} of ${m.cap.toLocaleString()} open seats.</div>
+      </div>`;
+    } else {
+      const m = r.humanMatch.result;
+      html += `<div class="away-box"><h3>YOU TRAVELLED to ${scenario.names[m.homeId]}</h3>
+        <div class="decomp-row"><span class="visitor">Money you generated there (your Draw &times; their open sections)</span><span class="visitor">${money(m.visitorRevenue)}</span></div>
+        <div class="sub">That revenue landed on <strong>${scenario.names[m.homeId]}'s</strong> books, not yours. This is the loop's other half — you fill buildings too.</div>
+      </div>`;
+    }
+
+    html += `<div class="card"><h3>NATIONAL POT (equal split, fixed against your own effort)</h3>
+      <div class="decomp-row"><span>Your share this week</span><span>${money(r.potShare)}</span></div>
+    </div>`;
+
+    if (r.drawGainDollars > 0) {
+      html += `<div class="card"><h3>DRAW SPEND</h3>
+        <div class="decomp-row"><span>Reinvested this week (${state.history[state.history.length-1].reinvestPct}% of last week's gate)</span><span class="cost">-${money(r.drawGainDollars)}</span></div>
+        <div class="decomp-row"><span>Draw next week</span><span>${r.newDraw.toFixed(1)} (was ${r.oldDraw.toFixed(1)})</span></div>
+      </div>`;
+    } else {
+      html += `<div class="card"><h3>DRAW SPEND</h3><div class="decomp-row"><span>No reinvestment this week</span><span>Draw decays to ${r.newDraw.toFixed(1)} (was ${r.oldDraw.toFixed(1)})</span></div></div>`;
+    }
+
+    if (r.shockLabel) {
+      html += `<div class="card" style="border-color:var(--bad)"><h3 style="color:var(--bad)">LEAGUE EVENT</h3><div>${r.shockLabel}</div></div>`;
+    }
+
+    document.getElementById('revealBox').innerHTML = html;
+
+    const digest = SCHEDULE[state.week].map(m => {
+      const res = r.allResults.find(x => x.homeId===m.home && x.awayId===m.away);
+      return `<tr><td>${scenario.names[m.home]}</td><td>hosts</td><td>${scenario.names[m.away]}</td>
+        <td>${res.crowd.toLocaleString()}/${res.cap.toLocaleString()}</td><td>${money(res.gate)}</td></tr>`;
+    }).join('');
+    document.getElementById('digestTable').innerHTML =
+      `<tr><th>Host</th><th></th><th>Visitor</th><th>Crowd</th><th>Host's gate</th></tr>${digest}`;
+  }
+
+  function renderDebug(){
+    document.getElementById('debugPanel').innerHTML = `<div class="debugbox"><strong>DEBUG MODE (?debug=1)</strong> — hidden constants, never shown to a student:<br>
+      CAPACITY_PER_SECTION=${CAPACITY_PER_SECTION} SECTION_COST=${SECTION_COST} PER_FAN_REVENUE=${PER_FAN_REVENUE}
+      VISITOR_PULL_PER_DRAW=${VISITOR_PULL_PER_DRAW} WEEKLY_BILL=${WEEKLY_BILL} DRAW_DECAY=${DRAW_DECAY}
+      DRAW_GAIN_SCALE=${DRAW_GAIN_SCALE} DRAW_CEILING=${DRAW_CEILING} DRAW_FLOOR=${DRAW_FLOOR}<br>
+      marketStrength=${JSON.stringify(scenario.marketStrength)}</div>`;
+  }
+
+  function renderLog(){
+    document.getElementById('logOutput').textContent = JSON.stringify(state.log, null, 2);
+  }
+
+  function syncExposed(){
+    window.__stage0 = {
+      runCount: state.runCount, seed: state.seed, week: state.week+1, phase: state.phase,
+      controls: state.controls, desks: state.desks, history: state.history, log: state.log
+    };
+    if (DEBUG) {
+      window.__stage0.debug = {
+        CAPACITY_PER_SECTION, SECTION_COST, PER_FAN_REVENUE, VISITOR_PULL_PER_DRAW, WEEKLY_BILL,
+        DRAW_DECAY, DRAW_GAIN_SCALE, DRAW_CEILING, DRAW_FLOOR, schedule: SCHEDULE, scenario
+      };
+    }
+  }
+
+  function setControl(name, value){
+    if (name === 'sections') {
+      const match = humanMatchThisWeek();
+      if (match.home !== 0) return; // no-op on the road, matches disabled UI
+      state.controls.sections = Math.max(0, Math.min(5, Math.round(Number(value))));
+    } else if (name === 'reinvest') {
+      state.controls.reinvest = Math.max(0, Math.min(40, Math.round(Number(value)/10)*10));
+    }
+    state.log.push({ type:'control_adjust', week:state.week+1, name, value: state.controls[name], t: Date.now() });
+    render(); syncExposed();
+  }
+
+  function commit(){
+    if (state.phase !== 'decide') return;
+    const week = state.week;
+    const match = humanMatchThisWeek();
+    const isHome = match.home === 0;
+    const humanSections = isHome ? state.controls.sections : 0;
+
+    // Resolve every matchup this week deterministically.
+    const allResults = SCHEDULE[week].map(m => {
+      const homeSections = m.home === 0 ? humanSections : scenario.botSections[m.home];
+      const awayDraw = state.desks[m.away].draw;
+      return resolveMatch(m.home, m.away, homeSections, awayDraw, week);
+    });
+
+    // Apply gate outcomes to home desks' cash (visitors do not earn from the road under this design).
+    allResults.forEach(res => {
+      const homeDesk = state.desks[res.homeId];
+      homeDesk.cash += res.gate - WEEKLY_BILL;
+      homeDesk.keptHome += res.ownRevenue;
+    });
+    // Attribute "value made elsewhere" to every desk that was a visitor this week.
+    allResults.forEach(res => {
+      const awayDesk = state.desks[res.awayId];
+      awayDesk.madeElsewhere += res.visitorRevenue;
+    });
+
+    const totalLeagueDraw = state.desks.reduce((s,d) => s + d.draw, 0);
+    const potShare = NATIONAL_POT_BASE + NATIONAL_POT_DRAW_RATE * (totalLeagueDraw/6);
+    state.desks.forEach(d => d.cash += potShare);
+
+    // Update each desk's "last home gate" for whichever desk hosted this week — this is the base
+    // the reinvest dial spends against, so the dial stays live on away weeks too (Design C: "0% to
+    // 40% of last week's revenue"), not silently dead when there is no home game this week.
+    allResults.forEach(res => { state.desks[res.homeId].lastHomeGate = res.gate; });
+
+    // Reinvest / Draw evolution for every desk (human uses controls.reinvest; bots use their table).
+    const humanMatchResult = allResults.find(r => r.homeId===0 || r.awayId===0);
+    let humanDrawGainDollars = 0, humanOldDraw = state.desks[0].draw, humanNewDraw = 0;
+    state.desks.forEach((d, id) => {
+      const reinvestBase = Math.max(0, d.lastHomeGate);
+      const reinvestPct = id === 0 ? state.controls.reinvest : (scenario.botReinvest[id] ? scenario.botReinvest[id][week] : 0);
+      const reinvestDollars = reinvestBase * (reinvestPct/100);
+      d.cash -= reinvestDollars;
+      const gain = DRAW_GAIN_SCALE * Math.sqrt(reinvestDollars);
+      let nextDraw = d.draw * DRAW_DECAY + gain;
+      nextDraw = Math.max(DRAW_FLOOR, Math.min(DRAW_CEILING, nextDraw));
+      if (id === 0) { humanDrawGainDollars = reinvestDollars; humanNewDraw = nextDraw; }
+      d.draw = nextDraw;
+    });
+
+    let shockLabel = null;
+    if (scenario.shock && week+1 === scenario.shock.fromWeek) shockLabel = scenario.shock.label;
+
+    const record = {
+      week: week+1, isHome, sections: humanSections, reinvestPct: state.controls.reinvest,
+      result: humanMatchResult, allResults, cashAfter: state.desks[0].cash, drawAfter: state.desks[0].draw
+    };
+    state.history.push(record);
+    state.lastWeekReveal = {
+      humanMatch: { isHome, result: humanMatchResult },
+      allResults, potShare,
+      drawGainDollars: humanDrawGainDollars, oldDraw: humanOldDraw, newDraw: humanNewDraw,
+      shockLabel
+    };
+    state.log.push({ type:'commit', week: week+1, controls: {...state.controls}, timeToCommitMs: Date.now()-state.weekStartTime, record });
+    state.phase = 'reveal';
+    render(); syncExposed();
+  }
+
+  function advance(){
+    if (state.phase !== 'reveal') return;
+    if (state.week+1 >= SCHEDULE.length) {
+      state.phase = 'complete';
+      state.log.push({ type:'season_complete', finalCash: state.desks[0].cash, finalDraw: state.desks[0].draw, t: Date.now() });
+    } else {
+      state.week++;
+      state.phase = 'decide';
+      state.controls = { sections: 0, reinvest: 0 };
+      state.weekStartTime = Date.now();
+      state.log.push({ type:'phase_advance', to:`week ${state.week+1}`, t: Date.now() });
+    }
+    render(); syncExposed();
+  }
+
+  function newRun(seed){
+    const s = (seed === undefined || seed === null) ? (state ? state.runCount : 0) : Number(seed);
+    const runCount = state ? state.runCount + 1 : 1;
+    state = freshState(s, runCount);
+    render(); syncExposed();
+  }
+
+  document.getElementById('sectionsRange').addEventListener('input', e => setControl('sections', e.target.value));
+  document.getElementById('reinvestRange').addEventListener('input', e => setControl('reinvest', e.target.value));
+  document.getElementById('commitBtn').addEventListener('click', commit);
+  document.getElementById('advanceBtn').addEventListener('click', advance);
+  document.getElementById('newRunBtn').addEventListener('click', () => newRun());
+
+  window.__stage0Actions = { setControl, commit, advance, newRun };
+
+  state = freshState(0, 1);
+  render(); syncExposed();
+})();
+</script>
+</body>
+</html>
