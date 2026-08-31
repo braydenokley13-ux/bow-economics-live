@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `72:5361d5bef985b95205a3cc5e86b1c598b9cf64d420fc2e2108a528b10aa16fc6`  
-Updated: 2026-08-31T23:11:36.151Z
+Event head: `74:94746c6ca5af9e154db96875ae801f88a8bdc1d3456d2c8a47d544c5e6664797`  
+Updated: 2026-08-31T23:13:55.041Z
 
 ## Founder intent
 
@@ -62,6 +62,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-e2e — e2e — M2 L1 full-arc three-surface Playwright proof
 - gate-l1-sr — sports-reality-report — L1 SR gate: CLEAR WITH REPAIRS. Blocking: Knicks won 2026 title (2026-06-13) so N3 'defending champions' collides with NY desk; capacities cleared w/ copy repair; magnitude-honesty + BC-3 point-of-use stamps required
 - gate-l1-qa — browser-trace — L1 QA gate: 1 BLOCKING (teacher Advance during PLAY silently ends all five nights, unlocked prices discarded, no confirm — guard exists in m1l2/m1l3, missing here), 2 MODERATE (38px lock button; missing confirm root cause). Privacy, auth, refresh/rejoin/restart-resume, malformed input all clean at 1366x768
+- gate-l1-econ — economic-truth-report — L1 econ gate: SOUND WITH REQUIRED REPAIRS. Blocking: renewals tent low arm unreachable (prices above cash optimum weakly dominated — FL3 by construction, same defect that blocked Candidate A); N4 open-never-beats-closed with congratulating copy; cash ceiling beatable; pooled REVENUE synthesis card misleads. Clean: BC-4, R6, R8, D15, no dominant price, card-reading worth 32-50% of cash
 
 ## Claim ledger
 
@@ -73,6 +74,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 ## Dissent
 
 - qa-teacher-misclick — classroom-reliability/blocking/open — Teacher's primary Advance during PLAY silently ends the whole five-night play window (no confirmation; guard present in m1l2/m1l3, missing in m2l1-full-house) and settlement discards set-but-unlocked prices — one plausible tap destroys the core loop for the class, unrecoverable. Repro + screenshots in GATE_L1_QA.md.
+- econ-l1-renewals-tent — economic-truth/blocking/open — Built L1's RENEWALS tent low arm is unreachable (max below-plan penalty -2 at NY, never negative at Memphis), so every price above a night's cash optimum is weakly dominated on both books and the Pareto set collapses to [plan price, cash argmax] — FL3 by construction, the same class of defect that blocked Candidate A's L1. Also blocking: N4's open option never beats closed in any reachable cell yet SHOCK_REVEAL_COPY congratulates it citing six real clubs; the 'most cash' ceiling is beatable; the pooled REVENUE synthesis card compares across markets/cards misleadingly. Exhaustive computations in GATE_L1_ECON.md.
 
 ## Latest gate
 

@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:11:36.151Z",
+  "updatedAt": "2026-08-31T23:13:55.041Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -626,7 +626,8 @@
         "l1-tuning",
         "l1-e2e",
         "gate-l1-sr",
-        "gate-l1-qa"
+        "gate-l1-qa",
+        "gate-l1-econ"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -635,7 +636,8 @@
         "l1-bc2-harness-pass"
       ],
       "dissentIds": [
-        "qa-teacher-misclick"
+        "qa-teacher-misclick",
+        "econ-l1-renewals-tent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1138,6 +1140,25 @@
       },
       "recordedAt": "2026-08-31T23:11:19.709Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-econ": {
+      "id": "gate-l1-econ",
+      "wave": 2,
+      "kind": "economic-truth-report",
+      "label": "L1 econ gate: SOUND WITH REQUIRED REPAIRS. Blocking: renewals tent low arm unreachable (prices above cash optimum weakly dominated — FL3 by construction, same defect that blocked Candidate A); N4 open-never-beats-closed with congratulating copy; cash ceiling beatable; pooled REVENUE synthesis card misleads. Clean: BC-4, R6, R8, D15, no dominant price, card-reading worth 32-50% of cash",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-econ--GATE_L1_ECON.md",
+      "sha256": "eab858a920fd0aab3c97dec7d7e0411c03ab99cc9dd33e9168d195d8f78005c9",
+      "size": 42469,
+      "metadata": {
+        "verdict": "SOUND_WITH_REQUIRED_REPAIRS",
+        "tags": [
+          "economic-truth",
+          "wave-2",
+          "gate"
+        ]
+      },
+      "recordedAt": "2026-08-31T23:13:54.810Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1309,6 +1330,20 @@
       "status": "open",
       "recordedAt": "2026-08-31T23:11:36.151Z",
       "actor": "browser-qa"
+    },
+    "econ-l1-renewals-tent": {
+      "id": "econ-l1-renewals-tent",
+      "wave": 2,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "Built L1's RENEWALS tent low arm is unreachable (max below-plan penalty -2 at NY, never negative at Memphis), so every price above a night's cash optimum is weakly dominated on both books and the Pareto set collapses to [plan price, cash argmax] — FL3 by construction, the same class of defect that blocked Candidate A's L1. Also blocking: N4's open option never beats closed in any reachable cell yet SHOCK_REVEAL_COPY congratulates it citing six real clubs; the 'most cash' ceiling is beatable; the pooled REVENUE synthesis card compares across markets/cards misleadingly. Exhaustive computations in GATE_L1_ECON.md.",
+      "evidenceIds": [
+        "gate-l1-econ"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-08-31T23:13:55.041Z",
+      "actor": "economic-truth-critic"
     }
   },
   "meetings": {},
@@ -1339,11 +1374,11 @@
     "agentsActivated": 15,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 26,
+    "evidenceRecorded": 27,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 72,
-  "eventHead": "5361d5bef985b95205a3cc5e86b1c598b9cf64d420fc2e2108a528b10aa16fc6",
+  "eventCount": 74,
+  "eventHead": "94746c6ca5af9e154db96875ae801f88a8bdc1d3456d2c8a47d544c5e6664797",
   "warnings": []
 }
