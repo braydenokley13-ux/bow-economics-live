@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:08:52.187Z",
+  "updatedAt": "2026-08-31T23:09:07.246Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -575,12 +575,23 @@
           "model": "claude-opus-5",
           "reason": "BC-3 verification of every real figure in L1 product copy incl. builder-flagged capacities and champions fact",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T22:57:07.181Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T23:09:07.246Z",
+          "sections": {
+            "real-world-anchors": "Inventory of the built L1's real content in GATE_L1_SR.md: Knicks/MSG and Grizzlies/FedExForum desks, five night cards with real opponents/events, season-stamped notes array.",
+            "accuracy-findings": "BLOCKING R1: the Knicks won the 2026 NBA title (2026-06-13, first since 1973), so Night 3's 'defending champions' visitor collides with the New York desk hosting itself in 2026-27 — one-string fix. OKC champions note true and stamped but stale and explains a card it doesn't (delete with the repair). MSG 'about 19,800' accurate (19,812 listed). FedExForum has no single settled figure and is mid-renovation through 2028 — keep 17,794 as modeled count, drop the 'listed capacity, 2025-26' claim.",
+            "staleness-findings": "Champion framing must be re-checked every June; capacity claims must be point-of-use stamped, not only in the notes array (BC-3 test gap).",
+            "rights-source-considerations": "Names/facts only; no new material flags.",
+            "recommendation": "CLEAR WITH REPAIRS: fix N3 champions card string, delete stale OKC note, FedExForum copy repair, magnitude-honesty repair (the 'eight real home dates' line contradicts modeled dollars by ~30-60x), point-of-use season stamps."
+          },
+          "evidenceIds": [
+            "gate-l1-sr"
+          ],
+          "cost": {
+            "tokens": 165892,
+            "toolUses": 42
+          }
         },
         "gate-l1-qa": {
           "assignmentId": "gate-l1-qa",
@@ -1284,7 +1295,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 68,
-  "eventHead": "cc23d5893a9a4302b1fda1197a21394218ad37914b29f0e76c6e065be983195a",
+  "eventCount": 69,
+  "eventHead": "c39385001dbeab4fadd57d32bea9a4cdab85c823dd75a277a0e83ac2f8dc15b2",
   "warnings": []
 }

@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `68:cc23d5893a9a4302b1fda1197a21394218ad37914b29f0e76c6e065be983195a`  
-Updated: 2026-08-31T23:08:52.187Z
+Event head: `69:c39385001dbeab4fadd57d32bea9a4cdab85c823dd75a277a0e83ac2f8dc15b2`  
+Updated: 2026-08-31T23:09:07.246Z
 
 ## Founder intent
 
@@ -36,7 +36,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - builder — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — active — claude-opus-5
 - economic-truth-critic — lead-integrator — active — claude-opus-5
-- sports-reality-director — lead-integrator — active — claude-opus-5
+- sports-reality-director — lead-integrator — completed-with-concerns — claude-opus-5
 - browser-qa — lead-integrator — active — claude-sonnet-5
 
 ## Required evidence
