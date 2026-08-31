@@ -1,0 +1,18 @@
+{
+  "outputStyle": "Concise",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node tools/boss/hooks/protect-run-state.mjs",
+            "timeout": 5
+          }
+        ],
+        "description": "Prevent direct edits to event-sourced BOW Boss run truth"
+      }
+    ]
+  }
+}

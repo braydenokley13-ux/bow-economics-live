@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "releaseOnlyRoles": [
+    "teacher-transfer-critic",
+    "classroom-projector-critic",
+    "performance-critic",
+    "regression-hunter",
+    "reliability-reviewer",
+    "accessibility-critic"
+  ],
+  "levels": {
+    "0": {
+      "id": 0,
+      "name": "PROTOTYPE",
+      "bossEnabled": false,
+      "description": "First playable expression. No Boss run is created.",
+      "minimumRoles": [],
+      "minimumEvidence": ["browser-play"],
+      "softAgentBudget": 1,
+      "softMeetingBudget": 0
+    },
+    "1": {
+      "id": 1,
+      "name": "REPAIR",
+      "bossEnabled": true,
+      "description": "Small bounded post-prototype repair.",
+      "minimumRoles": ["lead-integrator", "builder"],
+      "minimumEvidence": ["git-diff", "test"],
+      "softAgentBudget": 4,
+      "softMeetingBudget": 0
+    },
+    "2": {
+      "id": 2,
+      "name": "FEATURE",
+      "bossEnabled": true,
+      "description": "Meaningful post-prototype product or engineering work.",
+      "minimumRoles": ["lead-integrator", "builder", "product-analyst"],
+      "minimumEvidence": ["git-diff", "test", "analyst-report"],
+      "softAgentBudget": 8,
+      "softMeetingBudget": 1
+    },
+    "3": {
+      "id": 3,
+      "name": "QUALITY_WAR",
+      "bossEnabled": true,
+      "description": "High-value lesson experience requiring multiple evidence waves. The student-pull target bar is above FUNCTIONAL.",
+      "minimumRoles": [
+        "lead-integrator",
+        "experience-director",
+        "builder",
+        "product-analyst",
+        "player-gameplay-critic",
+        "economic-truth-critic",
+        "regression-hunter"
+      ],
+      "minimumEvidence": [
+        "git-diff",
+        "test",
+        "analyst-report",
+        "browser-trace",
+        "gameplay-report",
+        "economic-truth-report"
+      ],
+      "softAgentBudget": 14,
+      "softMeetingBudget": 2
+    },
+    "4": {
+      "id": 4,
+      "name": "CLASSROOM_RELEASE",
+      "bossEnabled": true,
+      "description": "Maximum relevant rigor before a real classroom: a lesson is not classroom-ready at this level unless a random competent teacher could run it and the class can name the economics it produced.",
+      "minimumRoles": [
+        "lead-integrator",
+        "builder",
+        "product-analyst",
+        "economic-truth-critic",
+        "teacher-transfer-critic",
+        "classroom-projector-critic",
+        "engineering-reviewer",
+        "accessibility-critic",
+        "performance-critic",
+        "regression-hunter",
+        "reliability-reviewer"
+      ],
+      "minimumEvidence": [
+        "git-diff",
+        "test",
+        "build",
+        "analyst-report",
+        "browser-trace",
+        "economic-truth-report",
+        "teacher-transfer-report",
+        "synthesis-map",
+        "projector-report",
+        "rollback-plan",
+        "ship-case"
+      ],
+      "softAgentBudget": 20,
+      "softMeetingBudget": 3
+    }
+  }
+}

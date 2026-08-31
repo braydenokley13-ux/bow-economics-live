@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "lastVerified": "2026-08-31",
+  "sources": [
+    "https://platform.claude.com/docs/en/models/overview",
+    "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model",
+    "https://platform.claude.com/docs/en/about-claude/model-deprecations"
+  ],
+  "notice": "Capability metadata is a routing prior, not BOW performance evidence. Role authority never derives from this file.",
+  "models": [
+    {
+      "id": "claude-fable-5",
+      "provider": "anthropic",
+      "status": "active",
+      "contextTokens": 1000000,
+      "relativeCost": 5,
+      "relativeLatency": 5,
+      "capabilities": {
+        "deepReasoning": 5,
+        "agenticCoding": 5,
+        "longHorizon": 5,
+        "visualJudgment": 5,
+        "fastBoundedWork": 2
+      }
+    },
+    {
+      "id": "claude-opus-5",
+      "provider": "anthropic",
+      "status": "active",
+      "contextTokens": 1000000,
+      "relativeCost": 3,
+      "relativeLatency": 3,
+      "capabilities": {
+        "deepReasoning": 5,
+        "agenticCoding": 5,
+        "longHorizon": 4,
+        "visualJudgment": 5,
+        "fastBoundedWork": 3
+      }
+    },
+    {
+      "id": "claude-sonnet-5",
+      "provider": "anthropic",
+      "status": "active",
+      "contextTokens": 1000000,
+      "relativeCost": 2,
+      "relativeLatency": 2,
+      "capabilities": {
+        "deepReasoning": 4,
+        "agenticCoding": 4,
+        "longHorizon": 4,
+        "visualJudgment": 4,
+        "fastBoundedWork": 5
+      }
+    },
+    {
+      "id": "claude-haiku-4-5",
+      "provider": "anthropic",
+      "status": "active",
+      "contextTokens": 200000,
+      "relativeCost": 1,
+      "relativeLatency": 1,
+      "capabilities": {
+        "deepReasoning": 3,
+        "agenticCoding": 3,
+        "longHorizon": 2,
+        "visualJudgment": 3,
+        "fastBoundedWork": 5
+      }
+    }
+  ],
+  "historicalPerformance": []
+}

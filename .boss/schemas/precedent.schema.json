@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bow.education/schemas/boss/precedent.schema.json",
+  "title": "BOW Boss precedent",
+  "type": "object",
+  "required": ["id", "issue", "decision", "context", "alternatives", "evidence", "dissent", "outcome", "scope", "confidence", "active", "reviewTrigger", "createdAt"],
+  "properties": {
+    "id": { "type": "string" },
+    "issue": { "type": "string", "minLength": 10 },
+    "decision": { "type": "string", "minLength": 10 },
+    "context": { "type": "string", "minLength": 10 },
+    "alternatives": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "evidence": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "dissent": { "type": "array", "items": { "type": "string" } },
+    "outcome": { "type": "string" },
+    "scope": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "active": { "type": "boolean" },
+    "reviewTrigger": { "type": "string", "minLength": 5 },
+    "reviewAt": { "type": ["string", "null"], "format": "date-time" },
+    "createdAt": { "type": "string", "format": "date-time" }
+  }
+}

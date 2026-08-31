@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "minimumExpectedValueRatio": 1,
+  "defaultTokenBudget": 12000,
+  "maximumTokenBudget": 60000,
+  "types": [
+    "product-war-room",
+    "economics-review",
+    "classroom-review",
+    "sports-reality-review",
+    "teacher-transfer-review",
+    "architecture-review",
+    "incident-room",
+    "release-ship-room",
+    "rollback-review",
+    "postmortem",
+    "harness-retrospective"
+  ],
+  "requiredDecisionFields": [
+    "decision",
+    "disagreementMap",
+    "dissent",
+    "actions",
+    "revisitEvidence"
+  ]
+}

@@ -176,3 +176,51 @@ Verification (focused, per CLAUDE.md §11): independent fresh-context round retu
 - **Date:** 2026-08-24
 - **Owner:** CEO (recharter mandated by Founder instruction this session)
 - **Evidence:** docs/gauntlet/module-1/L3_CHARTER.md; docs/gauntlet/module-1/VERIFY_L3.md (verdict + re-verification + repair record); runtime/src/modules/freeAgency.ts; runtime/src/test/freeAgency.test.ts; runtime/scripts/e2e-l3.cjs, e2e-l3-early-advance.cjs; runtime/README.md.
+
+## D19. BOW Boss control plane adopted — adapted copy with provenance; Economics constitution is its own law
+
+The BOW Boss development control plane (first implemented in `bow-decision-challenges`) is
+adopted for this repository after a code-level audit of the source implementation (its doctor and
+27-eval suite were run and verified green in the source repo this session, per D10 — no README
+claim was trusted). Architecture ruling on the one-core-or-two-copies question: **adapted copy
+with provenance, not a shared package** — the core is ~2.7k dependency-free lines, this is the
+first reusability test, and premature extraction is the exact platform mistake §30 of the port
+program forbids. Every ported file names the source commit (`9313c91`); deliberate differences
+and backport candidates are mapped in `docs/development/ECONOMICS_BOSS_PORT.md`. Revisit
+extraction when a third product needs Boss or a shared harness defect must be fixed twice in one
+quarter.
+
+Standing consequences:
+
+- **Two development modes.** Prototype Mode (fast, reversible, never creates a Boss run) vs Boss
+  Mode (post-prototype convergence; founder activates). Boss levels 1–4; level 4 is
+  CLASSROOM_RELEASE. `.boss/runs/<id>/events.jsonl` is the source of truth; run state is never
+  hand-edited.
+- **Roles are stable; models are routed resources.** The CLAUDE.md §3 Fable/Sonnet division of
+  responsibility is retired; no model name holds permanent organizational authority. Role
+  contracts live in `.boss/config/roles.json`; dated routing priors live in
+  `.boss/config/models.json`.
+- **Permanent Economics review functions:** Sports Reality (real sports-business version of the
+  economics; dated facts; rights/source surfacing), Economic Truth (mechanisms, exploits, false
+  lessons, the synthesis map), Teacher Transfer (fresh-context random-teacher standard — a hard
+  gate at classroom release), Player/Gameplay (MAGNETIC–REFOUND scale; FUNCTIONAL is below the
+  bar for important experiences), Classroom/Projector (three coupled surfaces), Visual
+  Experience (premium bar, no CSS ceiling; Chromebook is a performance constraint, not an
+  excuse).
+- **Founder invariants made explicit in CLAUDE.md:** the real world of sports business (NBA
+  first, real people frequently, reality never a fandom test, simplify the interface before the
+  economics) and the random-teacher standard. Future non-sports BOW Economics courses are
+  separate products with their own play systems, never selectable motifs of this one.
+- **Constitution separation is machine-checked:** Decision Challenges assessment law (rubric,
+  evidence modes, standards, assessment-integrity blocking, its critic roster) is excluded by
+  `constitutionExclusions` in `.boss/config/project.json`, enforced by doctor and eval E1.
+- Status language: Economics Boss is **implemented, harness-tested (44/44 evals + CLI smoke),
+  and independently reviewed** — not "proven." The first real Boss-controlled program (Module 2)
+  is the actual test and requires explicit founder activation; this port deliberately performed
+  no Module 2 product work.
+
+- **Status:** ACTIVE
+- **Date:** 2026-08-31
+- **Owner:** CEO (program mandated by Founder instruction this session)
+- **Evidence:** docs/development/ECONOMICS_BOSS_PORT.md; tools/boss/test/ (44/44 this session);
+  `npm run boss:doctor` green this session; source audit against bow-decision-challenges@9313c91.

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": null,
+  "runs": 0,
+  "waves": 0,
+  "repairs": 0,
+  "rollbacks": 0,
+  "kills": 0,
+  "meetings": 0,
+  "agentsActivated": 0,
+  "gateFailures": 0,
+  "claimsContradicted": 0,
+  "repeatedFindings": {},
+  "roleUsefulness": {},
+  "routingOutcomes": []
+}

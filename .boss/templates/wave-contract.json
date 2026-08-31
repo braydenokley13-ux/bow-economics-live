@@ -1,0 +1,18 @@
+{
+  "hypothesis": "A falsifiable statement about the improvement this wave will prove.",
+  "whyThisMatters": "Why this is worth spending a wave on.",
+  "uncertainties": ["What is not yet known."],
+  "requiredEvidence": ["Observable evidence that would demonstrate success."],
+  "nonGoals": ["Work this wave must not expand into."],
+  "sacredConstraints": ["BOW law that cannot be weakened to obtain a pass."],
+  "passCondition": "Exact evidence that earns advancement.",
+  "repairCondition": "Evidence that the direction remains promising but incomplete.",
+  "rollbackCondition": "Evidence that the implementation caused more harm than value.",
+  "killCondition": "Evidence that the hypothesis should be abandoned or materially redesigned.",
+  "iterationBudget": {
+    "maximumWaves": 2,
+    "maximumRepairs": 2,
+    "softTokenBudget": 0,
+    "reason": "Why this investment is proportionate. Use 0 when token measurement is unavailable."
+  }
+}
