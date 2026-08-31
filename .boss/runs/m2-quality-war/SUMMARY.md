@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `8:527a18f7981e2935a11df8b88e00f6ef932e12a2e5d2d9f2de513ce0bce67b51`  
-Updated: 2026-08-31T20:49:03.309Z
+Event head: `12:feb7f9c87d846546500be0c6eb6c6b8b2bad229e5d1d28e83bd967f802fa42fc`  
+Updated: 2026-08-31T20:50:58.355Z
 
 ## Founder intent
 
@@ -34,7 +34,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 ## Role status
 
 - sports-reality-director — lead-integrator — completed — claude-fable-5
-- economic-truth-critic — lead-integrator — active — claude-opus-5
+- economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - experience-director — lead-integrator — active — claude-opus-5
 - experience-director — lead-integrator — active — claude-opus-5
 - experience-director — lead-integrator — active — claude-opus-5
@@ -55,6 +55,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 ## Evidence recorded
 
 - sr-input-report — sports-reality-report — Sports Reality design input: 15 dated real-world anchors + ranked top-5 for Module 2
+- econ-contract-report — economic-truth-report — Module 2 economic learning contract: concept verdicts, false-lesson risks, dominant-strategy analysis incl. existing Box Office model, three candidate arcs, R1-R16
 
 ## Claim ledger
 
@@ -62,7 +63,8 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 
 ## Dissent
 
-- No dissent recorded
+- econ-boxoffice-unrepaired — economic-truth/blocking/open — The existing Box Office demand model must not carry into the selected architecture unrepaired: (1) pre-lock server preview returns true attendance/revenue for every dial position, so the optimum is read by sweeping, not reasoned — the hidden-curve uncertainty is fake; (2) computed over the full price grid, sweet-spot pricing is optimal in both homestands for all four markets — the claimed short-term-cash-vs-fan-base tension does not exist; (3) an overpriced Expansion seat faces a $75,000 H2 payroll against a $52,500 revenue ceiling — unwinnable by construction. See ECONOMIC_CONTRACT.md R2/R5/R6/R10.
+- econ-contract-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
