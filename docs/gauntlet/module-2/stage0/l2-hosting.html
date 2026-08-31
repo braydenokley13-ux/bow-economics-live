@@ -348,7 +348,7 @@
       html += `<div class="card"><h3>YOUR HOME NIGHT vs ${scenario.names[m.awayId]}</h3>
         <div class="bar-wrap"><div class="bar-own" style="width:${pct}%"></div><div class="bar-visitor" style="width:${100-pct}%"></div></div>
         <div class="decomp-row"><span class="own">What your decision did (your own draw &times; your open sections)</span><span class="own">${money(m.ownRevenue)}</span></div>
-        <div class="decomp-row"><span class="visitor">What the visitor's draw did (${scenario.names[m.awayId]}, ${state.desks[m.awayId] ? '' : ''})</span><span class="visitor">${money(m.visitorRevenue)}</span></div>
+        <div class="decomp-row"><span class="visitor">What the visitor's draw did (${scenario.names[m.awayId]})</span><span class="visitor">${money(m.visitorRevenue)}</span></div>
         <div class="decomp-row"><span class="cost">Cost of the sections you opened</span><span class="cost">-${money(m.sectionCost)}</span></div>
         <div class="decomp-row"><strong>Net gate</strong><strong>${money(m.gate)}</strong></div>
         <div class="sub">Crowd: ${m.crowd.toLocaleString()} of ${m.cap.toLocaleString()} open seats.</div>
@@ -456,12 +456,11 @@
     const potShare = NATIONAL_POT_BASE + NATIONAL_POT_DRAW_RATE * (totalLeagueDraw/6);
     state.desks.forEach(d => d.cash += potShare);
 
-    // Update each desk's "last home gate" for whichever desk hosted this week — this is the base
-    // the reinvest dial spends against, so the dial stays live on away weeks too (Design C: "0% to
-    // 40% of last week's revenue"), not silently dead when there is no home game this week.
-    allResults.forEach(res => { state.desks[res.homeId].lastHomeGate = res.gate; });
-
     // Reinvest / Draw evolution for every desk (human uses controls.reinvest; bots use their table).
+    // Reinvestment spends against LAST week's home gate (Design C: "0% to 40% of last week's
+    // revenue"), captured in d.lastHomeGate BEFORE it is overwritten below — this is what keeps the
+    // dial live on away weeks (you can still spend against what your building earned last time you
+    // hosted) instead of going dead whenever there is no home game this week.
     const humanMatchResult = allResults.find(r => r.homeId===0 || r.awayId===0);
     let humanDrawGainDollars = 0, humanOldDraw = state.desks[0].draw, humanNewDraw = 0;
     state.desks.forEach((d, id) => {
@@ -475,6 +474,10 @@
       if (id === 0) { humanDrawGainDollars = reinvestDollars; humanNewDraw = nextDraw; }
       d.draw = nextDraw;
     });
+
+    // Now that this week's reinvestment has been charged against the PRIOR home gate, update each
+    // hosting desk's lastHomeGate to this week's freshly resolved gate, for next week's reinvest base.
+    allResults.forEach(res => { state.desks[res.homeId].lastHomeGate = res.gate; });
 
     let shockLabel = null;
     if (scenario.shock && week+1 === scenario.shock.fromWeek) shockLabel = scenario.shock.label;
