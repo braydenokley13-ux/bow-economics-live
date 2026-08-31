@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T20:37:32.416Z",
+  "updatedAt": "2026-08-31T20:39:00.457Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -145,7 +145,78 @@
         "softAgentBudget": 14,
         "softMeetingBudget": 2
       },
-      "assignments": {},
+      "assignments": {
+        "sr-design-input": {
+          "assignmentId": "sr-design-input",
+          "role": "sports-reality-director",
+          "actor": "lead-integrator",
+          "model": "claude-fable-5",
+          "reason": "Early product-design input: real sports-business material for Money in Motion before candidates commit to fiction. Routed to a web-capable general agent under this role contract because dated fact verification needs live search; role authority stays with the role.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T20:38:59.446Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "econ-contract": {
+          "assignmentId": "econ-contract",
+          "role": "economic-truth-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Recover and propose the module's three-lesson economic learning contract from repo state before architecture candidates are drafted; deep economic reasoning required.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T20:38:59.737Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "arch-candidate-a": {
+          "assignmentId": "arch-candidate-a",
+          "role": "experience-director",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Candidate A: strongest possible Module 2 built around the existing Box Office signature mechanic.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T20:38:59.974Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "arch-candidate-b": {
+          "assignmentId": "arch-candidate-b",
+          "role": "experience-director",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Candidate B: substantial refound preserving verified insights but redesigning the module's play.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T20:39:00.214Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "arch-candidate-c": {
+          "assignmentId": "arch-candidate-c",
+          "role": "experience-director",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Candidate C: first-principles design, sunk-cost-blind; agent context deliberately excludes the existing prototype.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T20:39:00.457Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        }
+      },
       "evidenceIds": [],
       "claimIds": [],
       "dissentIds": [],
@@ -177,14 +248,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 0,
+    "agentsActivated": 5,
     "gateFailures": 0,
     "claimsContradicted": 0,
     "evidenceRecorded": 0,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 1,
-  "eventHead": "644961b979bb90f3f8e211588bd81c384810c85fe88943a44891e95e7ddbc62c",
+  "eventCount": 6,
+  "eventHead": "0a33cb77535604c99a0ba64cb79b7722121822d16ad880c59d576fb68cb948e9",
   "warnings": []
 }
