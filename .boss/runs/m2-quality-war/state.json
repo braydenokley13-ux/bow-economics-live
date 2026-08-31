@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:35:46.952Z",
+  "updatedAt": "2026-08-31T21:36:14.994Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -272,12 +272,25 @@
           "model": "claude-sonnet-5",
           "reason": "Stage-0 prototypes for the convergent L2 hosting/externality loop and L3 rule-writing loop, plus the deterministic sharing-arithmetic harness all three designs depend on.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T21:15:48.029Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T21:36:14.985Z",
+          "sections": {
+            "what-changed": "Stage-0 l2-hosting.html (537L: 1 human + 5 deterministic bot desks, 4-week mini-league, sections + reinvest dials, per-matchup decomposition reveal, away-week earnings panel), l3-rule.html (~481L: share/condition dials, 3 anonymous offer rounds with histogram, two-thirds adoption, before/after lived season with bot re-optimization, plus operate-a-given-real-rule fallback toggle), l3-arith.mjs (no-dep brute-force harness over full price grid x share levels for NY and Memphis), README-L2L3.md. One reinvest-timing bug found and fixed during self-verification.",
+            "evidence": "l3-arith.mjs real verdict, unedited, exit 1: claim (i) FAIL for New York (optimal price flat at $48 across s=0-50% because demand exceeds capacity near optimum), (ii) monotonicity PASS both, (iii) FAIL for NY ($0 drop; Memphis passes with $6/3-step drop, first exceeding threshold at s=40%), (iv) no-unwinnable PASS both. Recorded as authentic command evidence l3-arith-harness. Playwright: both HTML files play full seasons with zero console errors; l3 adoption and visible before/after behavior shift confirmed; fallback toggle exercised; screenshots legible.",
+            "claims": "Harness exit code 1 is the honest, unmassaged result using Design C's own L1 constants; both prototypes are offline, deterministic, replayable, drivable, and instrumented. Dollar constants in the HTML prototypes are Stage-0 tuning choices, not real financial data.",
+            "known-gaps": "(1) LOAD-BEARING: sharing lowers a seat's optimal price only where demand has slack; false for capacity-saturated markets — needs an owner decision, not a harness retune. (2) Design C's taxed-base wording (gate + in-arena + local media taxed uniformly) mathematically cannot move a price argmax; the mechanism needs an untaxed stream (present in Design A's wording). (3) l3 AFTER-season is single-round best-response, not simultaneous equilibrium (documented). (4) No human play. (5) L2 constants are flat modeled figures, labeled as such."
+          },
+          "evidenceIds": [
+            "proto-l2",
+            "proto-l3",
+            "l3-arith-harness",
+            "readme-l2l3"
+          ],
+          "cost": {
+            "tokens": 205285,
+            "toolUses": 51
+          }
         },
         "stage0-play": {
           "assignmentId": "stage0-play",
@@ -306,13 +319,15 @@
         "proto-l2",
         "proto-l3",
         "readme-l1",
-        "readme-l2l3"
+        "readme-l2l3",
+        "l3-arith-harness"
       ],
       "claimIds": [],
       "dissentIds": [
         "econ-boxoffice-unrepaired",
         "econ-contract-dissent",
-        "l3-sharing-argmax"
+        "l3-sharing-argmax",
+        "proto-l2-l3-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -531,6 +546,30 @@
       },
       "recordedAt": "2026-08-31T21:35:11.297Z",
       "actor": "lead-integrator"
+    },
+    "l3-arith-harness": {
+      "id": "l3-arith-harness",
+      "wave": 1,
+      "kind": "test",
+      "label": "L3 sharing-arithmetic brute-force: claims i,iii FAIL for capacity-saturated NY; ii,iv PASS; Memphis passes all",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-arith-harness--record.json",
+      "sha256": "f75544f69f1f90702f7b74a9ca08dd5796bbb7004bf05ba57e5200e2938430c0",
+      "size": 4543,
+      "metadata": {
+        "tags": [
+          "stage0",
+          "arithmetic",
+          "wave-1"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l3-arith.mjs"
+        ],
+        "exitCode": 1,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T21:36:07.798Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {},
@@ -571,6 +610,15 @@
       "status": "open",
       "recordedAt": "2026-08-31T21:35:46.314Z",
       "actor": "builder-proto-l2-l3"
+    },
+    "proto-l2-l3-dissent": {
+      "id": "proto-l2-l3-dissent",
+      "wave": 1,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-08-31T21:36:14.994Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -593,11 +641,11 @@
     "agentsActivated": 8,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 12,
+    "evidenceRecorded": 13,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 27,
-  "eventHead": "a84309e2c653b43ff58a6b03d27f5cd6d29e78be4ffd6ceea19ec4efb4fd43c0",
+  "eventCount": 30,
+  "eventHead": "489c214e763500b214a30bdf1b6bfe1861811a2e1bdc7ae464acea4dab8c3a5f",
   "warnings": []
 }

@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `27:a84309e2c653b43ff58a6b03d27f5cd6d29e78be4ffd6ceea19ec4efb4fd43c0`  
-Updated: 2026-08-31T21:35:46.952Z
+Event head: `30:489c214e763500b214a30bdf1b6bfe1861811a2e1bdc7ae464acea4dab8c3a5f`  
+Updated: 2026-08-31T21:36:14.994Z
 
 ## Founder intent
 
@@ -39,7 +39,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - experience-director — lead-integrator — active — claude-opus-5
 - experience-director — lead-integrator — active — claude-opus-5
 - builder — lead-integrator — completed — claude-sonnet-5
-- builder — lead-integrator — active — claude-sonnet-5
+- builder — lead-integrator — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — lead-integrator — active — claude-opus-5
 
 ## Required evidence
@@ -69,6 +69,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - proto-l3 — browser-trace — Stage-0 L3 rule-writing prototype
 - readme-l1 — browser-trace — Stage-0 L1 trio implementation notes
 - readme-l2l3 — browser-trace — Stage-0 L2/L3 notes incl. cross-design taxed-base conflict
+- l3-arith-harness — test — L3 sharing-arithmetic brute-force: claims i,iii FAIL for capacity-saturated NY; ii,iv PASS; Memphis passes all
 
 ## Claim ledger
 
@@ -79,6 +80,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - econ-boxoffice-unrepaired — economic-truth/blocking/open — The existing Box Office demand model must not carry into the selected architecture unrepaired: (1) pre-lock server preview returns true attendance/revenue for every dial position, so the optimum is read by sweeping, not reasoned — the hidden-curve uncertainty is fake; (2) computed over the full price grid, sweet-spot pricing is optimal in both homestands for all four markets — the claimed short-term-cash-vs-fan-base tension does not exist; (3) an overpriced Expansion seat faces a $75,000 H2 payroll against a $52,500 revenue ceiling — unwinnable by construction. See ECONOMIC_CONTRACT.md R2/R5/R6/R10.
 - econ-contract-dissent — undefined/undefined/open — undefined
 - l3-sharing-argmax — economic-truth/blocking/open — Deterministic brute force refutes part of the L3 signature moment shared by all three candidate designs: revenue sharing lowers a seat's own optimal price ONLY where demand has slack — for a capacity-saturated market (New York, Design C's own constants) the optimal price never moves at any share 0-50%. Additionally, Design C's L3 sharing base (gate + in-arena + local media taxed uniformly) cannot move any price argmax — proportional taxation does not shift a maximizer; the mechanism requires an untaxed revenue stream (present only in Design A's wording). The winning architecture must either re-slate L3's markets, adopt an untaxed-stream structure, or make big-market non-movement itself the taught moment.
+- proto-l2-l3-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
