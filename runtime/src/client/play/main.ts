@@ -201,6 +201,10 @@ function renderGame(payload: StudentPayload): void {
     renderFreeAgency(s, view);
     return;
   }
+  if (view["module"] === "m2l1-full-house") {
+    renderFullHouse(s, view);
+    return;
+  }
 
   // lobby-demo fallback (still registered, proves the runtime is genuinely generic)
   if (s.phase === "LOBBY") {
@@ -1731,6 +1735,436 @@ function renderFACounterfactual(view: Record<string, unknown>): void {
     ${whatIfs.length > 0 ? `<div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">What if?</div>${whatIfs.map((w) => `<div class="fa-whatif-card">${escapeHtml(w)}</div>`).join("")}` : ""}
     <div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">Be ready to argue</div>
     ${debatePrompts.map((p) => `<p style="font-size:13px; color:var(--ink-secondary); margin:4px 0;">${escapeHtml(p)}</p>`).join("")}`;
+}
+
+/* -------------------------------------------------------- full house render -- */
+
+type FHMarket = {
+  id: string;
+  club: string;
+  building: string;
+  plainLine: string;
+  capacity: number;
+  bill: number;
+  planPrice: number;
+  eventMax: number;
+  bowlSeats: number;
+  bowlCost: number;
+};
+type FHCard = {
+  id: string;
+  label: string;
+  index: number;
+  of: number;
+  day: string;
+  visitor: string;
+  draw: number;
+  tv: "none" | "local" | "national";
+  notes: string[];
+  bowlOffer: boolean;
+  repeatOf: string | null;
+};
+type FHNight = {
+  cardId: string;
+  label: string;
+  day: string;
+  visitor: string;
+  draw: number;
+  price: number;
+  spend: number;
+  openBowl: boolean;
+  auto: boolean;
+  stock: boolean;
+  turnout: number;
+  seatsOpen: number;
+  fillPct: number;
+  turnedAway: number;
+  soldOut: boolean;
+  gate: number;
+  inArena: number;
+  total: number;
+  bill: number;
+  spendPaid: number;
+  bowlCost: number;
+  net: number;
+  renewalsBefore: number;
+  renewalsAfter: number;
+  renewalMove: number;
+  cashAfter: number;
+  resaleNote: string | null;
+};
+type FHBooks = { cash: number; renewals: number; inDebt: boolean };
+type FHTwoPeaks = { ticketPeakPrice: number; totalPeakPrice: number; gapDollars: number; gapSteps: number };
+type FHReplay = { label: string; cash: number; renewals: number; note: string };
+
+const TV_LABEL: Record<string, string> = {
+  none: "Not on TV",
+  local: "Local TV",
+  national: "NATIONAL TV",
+};
+
+let fhSeatRequested = false;
+let fhMountKey: string | null = null;
+/** Local dial state while dragging — the server only hears about it on release. */
+let fhLocalPrice: number | null = null;
+
+function money(n: number): string {
+  const sign = n < 0 ? "-" : "";
+  return `${sign}$${Math.abs(Math.round(n)).toLocaleString()}`;
+}
+
+function renderFullHouse(s: SessionInfo, view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  if (view["seated"] === false) {
+    if (!fhSeatRequested) {
+      fhSeatRequested = true;
+      outbox?.submit({ type: "takeSeat" });
+    }
+    body.innerHTML = `<div class="banner">You're in — finding your desk…</div>`;
+    return;
+  }
+  if (s.phase !== "PLAY") fhMountKey = null;
+
+  switch (s.phase) {
+    case "LOBBY":
+      renderFHLobby(view);
+      return;
+    case "HOOK":
+      renderFHHook(view);
+      return;
+    case "PLAY":
+      renderFHPlay(view);
+      return;
+    case "REVEAL":
+      renderFHReveal(view);
+      return;
+    case "ADAPT":
+      renderFHAdapt(view);
+      return;
+    case "COUNTERFACTUAL":
+      renderFHCounterfactual(view);
+      return;
+    case "SYNTHESIS":
+      body.innerHTML = `
+        ${fhDeskHeader(view)}
+        <div class="banner">${escapeHtml(String(view["message"] ?? "Look up at the board."))}</div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
+        </div>`;
+      return;
+    case "COMPLETE":
+      body.innerHTML = `${fhDeskHeader(view)}<div class="banner">${escapeHtml(String(view["message"] ?? ""))}</div>`;
+      return;
+    default:
+      body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  }
+}
+
+function fhDeskHeader(view: Record<string, unknown>): string {
+  const market = view["market"] as FHMarket | undefined;
+  if (!market) return "";
+  return `
+    <div class="fh-desk-head">
+      <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 24)}"></span>
+      <span class="fh-desk-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
+      <span class="fh-desk-building">${escapeHtml(market.building)}</span>
+    </div>`;
+}
+
+function fhBooksHtml(books: FHBooks | undefined): string {
+  if (!books) return "";
+  return `
+    <div class="fh-books">
+      <div class="fh-book ${books.inDebt ? "debt" : ""}">
+        <div class="fh-book-label">Cash</div>
+        <div class="fh-book-value numeric">${money(books.cash)}</div>
+        ${books.inDebt ? `<div class="fh-book-note">In the red — no night spend until you're back above zero.</div>` : ""}
+      </div>
+      <div class="fh-book">
+        <div class="fh-book-label">Renewals</div>
+        <div class="fh-book-value numeric">${books.renewals}%</div>
+        <div class="fh-book-note">Season-ticket holders coming back</div>
+      </div>
+    </div>`;
+}
+
+function fhCardHtml(card: FHCard, market: FHMarket): string {
+  const dots = Array.from({ length: 5 }, (_, i) => `<span class="fh-dot ${i < Math.round(card.draw / 20) ? "on" : ""}"></span>`).join("");
+  return `
+    <div class="fh-card ${card.repeatOf ? "repeat" : ""} ${card.bowlOffer ? "shock" : ""}">
+      <div class="fh-card-top">
+        <span class="fh-card-night">${escapeHtml(card.label)} of ${card.of}</span>
+        <span class="fh-card-tv ${card.tv}">${TV_LABEL[card.tv] ?? ""}</span>
+      </div>
+      <div class="fh-card-line">${escapeHtml(card.day)} · ${escapeHtml(card.visitor)}</div>
+      <div class="fh-card-draw"><span class="fh-card-draw-label">Visiting club's draw</span><span class="fh-dots">${dots}</span><span class="numeric fh-card-draw-num">${card.draw}/100</span></div>
+      <ul class="fh-card-notes">${card.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>
+      <div class="fh-card-facts">
+        <span>${market.capacity.toLocaleString()} seats</span>
+        <span>Tonight's bill ${money(market.bill)}</span>
+        <span>Season plan $${market.planPrice} a seat</span>
+      </div>
+    </div>`;
+}
+
+function fhHistoryHtml(history: FHNight[], market: FHMarket): string {
+  if (history.length === 0) {
+    return `<div class="fh-history-empty">Nothing behind you yet. Your first price is a judgement call — the season plan works out to $${market.planPrice} a seat, and that is the only number you have.</div>`;
+  }
+  return `
+    <div class="fh-history">
+      <div class="fh-history-row head"><span>Night</span><span>Price</span><span>Came</span><span>Full</span><span>Net</span></div>
+      ${history
+        .map(
+          (h) => `
+        <div class="fh-history-row ${h.stock ? "stock" : ""}">
+          <span>${escapeHtml(h.label.replace("Night ", "N"))} <span class="fh-history-sub">${escapeHtml(h.day.slice(0, 3))} · draw ${h.draw}</span>${h.stock ? ' <span class="fh-flag">covered</span>' : ""}${h.auto ? ' <span class="fh-flag">auto</span>' : ""}</span>
+          <span class="numeric">$${h.price}</span>
+          <span class="numeric">${h.turnout.toLocaleString()}</span>
+          <span class="numeric">${h.fillPct}%</span>
+          <span class="numeric ${h.net < 0 ? "neg" : ""}">${money(h.net)}</span>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+function fhNightResultHtml(n: FHNight, title: string): string {
+  return `
+    <div class="fh-result">
+      <div class="fh-result-head">
+        <span>${escapeHtml(title)}</span>
+        <span class="numeric">$${n.price}${n.openBowl ? " · extra seats open" : ""}</span>
+      </div>
+      <div class="fh-fill-track"><div class="fh-fill-bar ${n.soldOut ? "soldout" : ""}" style="width:${Math.min(100, n.fillPct)}%"></div></div>
+      <div class="fh-result-row"><span>Came</span><span class="numeric">${n.turnout.toLocaleString()} of ${n.seatsOpen.toLocaleString()} (${n.fillPct}%)${n.soldOut ? " — FULL HOUSE" : ""}</span></div>
+      <div class="fh-result-row"><span>Tickets</span><span class="numeric">${money(n.gate)}</span></div>
+      <div class="fh-result-row"><span>Spent inside the building</span><span class="numeric">${money(n.inArena)}</span></div>
+      <div class="fh-result-row total"><span>Money in</span><span class="numeric">${money(n.total)}</span></div>
+      <div class="fh-result-row"><span>Building bill</span><span class="numeric neg">-${money(n.bill).replace("$", "$")}</span></div>
+      ${n.spendPaid > 0 ? `<div class="fh-result-row"><span>Making it an event</span><span class="numeric neg">-${money(n.spendPaid)}</span></div>` : ""}
+      ${n.bowlCost > 0 ? `<div class="fh-result-row"><span>Opening more of the building</span><span class="numeric neg">-${money(n.bowlCost)}</span></div>` : ""}
+      <div class="fh-result-row total"><span>Kept</span><span class="numeric ${n.net < 0 ? "neg" : "pos"}">${money(n.net)}</span></div>
+      <div class="fh-result-row"><span>Renewals</span><span class="numeric">${n.renewalsBefore}% → ${n.renewalsAfter}% (${n.renewalMove >= 0 ? "+" : ""}${n.renewalMove})</span></div>
+      ${n.resaleNote ? `<div class="fh-resale">${escapeHtml(n.resaleNote)}</div>` : ""}
+    </div>`;
+}
+
+function renderFHLobby(view: Record<string, unknown>): void {
+  const market = view["market"] as FHMarket;
+  $("gameBody").innerHTML = `
+    ${fhDeskHeader(view)}
+    <div class="panel" style="padding:18px;">
+      <p style="margin:0 0 10px; font-size:16px; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+      <p style="margin:0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(market?.plainLine ?? "")}</p>
+    </div>
+    <div class="banner" style="margin-top:12px;">Waiting for your teacher to start.</div>`;
+}
+
+function renderFHHook(view: Record<string, unknown>): void {
+  const market = view["market"] as FHMarket;
+  const rules = (view["rules"] as string[]) ?? [];
+  $("gameBody").innerHTML = `
+    ${fhDeskHeader(view)}
+    <div class="panel" style="padding:18px;">
+      <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">Full House</div>
+      <p style="margin:0 0 12px; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+      <p style="margin:0; font-size:14px; line-height:1.5; color:var(--ink-secondary);">${escapeHtml(String(view["objective"] ?? ""))}</p>
+    </div>
+    ${fhBooksHtml(view["books"] as FHBooks)}
+    <div class="panel" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px; margin-bottom:6px;">Your building</div>
+      <div class="fh-market-facts">
+        <div><span>${escapeHtml(market.club)}</span><span>${escapeHtml(market.building)}</span></div>
+        <div><span>Seats</span><span class="numeric">${market.capacity.toLocaleString()}</span></div>
+        <div><span>Bill, every night</span><span class="numeric">${money(market.bill)}</span></div>
+        <div><span>Season plan, per seat</span><span class="numeric">$${market.planPrice}</span></div>
+      </div>
+      <p style="margin:10px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(market.plainLine)}</p>
+    </div>
+    <details class="fa-rules" style="margin-top:12px;">
+      <summary>How the five nights work</summary>
+      <ul>${rules.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+    </details>
+    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
+}
+
+function renderFHPlay(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  if (view["allNightsDone"]) {
+    fhMountKey = null;
+    body.innerHTML = `
+      ${fhDeskHeader(view)}
+      ${fhBooksHtml(view["books"] as FHBooks)}
+      <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+      ${fhHistoryHtml((view["history"] as FHNight[]) ?? [], view["market"] as FHMarket)}`;
+    return;
+  }
+
+  const card = view["card"] as FHCard;
+  const market = view["market"] as FHMarket;
+  const locked = Boolean(view["locked"]);
+  const history = (view["history"] as FHNight[]) ?? [];
+  const lastNight = view["lastNight"] as FHNight | null;
+  const spendCap = Number(view["spendCap"] ?? 0);
+
+  // Rebuild only when the night, the lock state or the number of settled nights
+  // actually changes — a poll tick must never yank the dial out from under a
+  // pair mid-drag.
+  const key = `${card.id}|${locked}|${history.length}|${spendCap}`;
+  if (fhMountKey === key && document.getElementById("fhPlayRoot")) return;
+  fhMountKey = key;
+  if (fhLocalPrice === null || !locked) fhLocalPrice = Number(view["price"] ?? market.planPrice);
+  const price = locked ? Number(view["price"]) : fhLocalPrice;
+  const spend = Number(view["spend"] ?? 0);
+
+  body.innerHTML = `
+    <div id="fhPlayRoot">
+      ${fhDeskHeader(view)}
+      ${fhBooksHtml(view["books"] as FHBooks)}
+      ${fhCardHtml(card, market)}
+      ${
+        locked
+          ? `<div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+             <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span>${spend > 0 ? `<span>· ${money(spend)} on the night</span>` : ""}${view["openBowl"] ? "<span>· extra seats open</span>" : ""}</div>`
+          : `
+        <div class="panel fh-dials" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
+          <div class="fh-price-readout numeric" id="fhPriceReadout">$${price}</div>
+          <input class="price-dial-input" type="range" id="fhPriceDial" min="${view["priceMin"]}" max="${view["priceMax"]}" step="${view["priceStep"]}" value="${price}" />
+          <div class="price-dial-ends"><span>$${view["priceMin"]}</span><span>season plan $${market.planPrice}</span><span>$${view["priceMax"]}</span></div>
+
+          <div class="eyebrow" style="font-size:12px; margin-top:16px;">Making it an event <span class="fh-lag">pays off next night</span></div>
+          <div class="bid-stepper">
+            <button type="button" class="btn" id="fhSpendDown">−</button>
+            <span class="bid-stepper-readout" id="fhSpendReadout">${money(spend)}</span>
+            <button type="button" class="btn" id="fhSpendUp">+</button>
+          </div>
+          ${spendCap === 0 ? `<div class="fh-lag" style="display:block; margin-top:6px;">Your books are in the red — the night-spend dial is locked at $0 until you're back above zero.</div>` : `<div class="fh-lag" style="display:block; margin-top:6px;">Up to ${money(spendCap)}. It costs cash tonight and never changes tonight's crowd.</div>`}
+
+          ${
+            card.bowlOffer
+              ? `<label class="fh-bowl"><input type="checkbox" id="fhBowl" ${view["openBowl"] ? "checked" : ""} /> <span>Open ${market.bowlSeats.toLocaleString()} more seats tonight — ${money(market.bowlCost)}, paid whether they fill or not</span></label>`
+              : ""
+          }
+          <button class="btn btn-primary full" id="fhLock" style="margin-top:14px;">LOCK IT IN</button>
+          <div class="fh-blind-note">No preview. Nothing on this screen tells you what tonight will make.</div>
+        </div>`
+      }
+      ${lastNight ? fhNightResultHtml(lastNight, `${lastNight.label} — how it went`) : ""}
+      <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your nights so far</div>
+      ${fhHistoryHtml(history, market)}
+    </div>`;
+
+  if (locked) return;
+
+  const dial = $<HTMLInputElement>("fhPriceDial");
+  const readout = $("fhPriceReadout");
+  dial.addEventListener("input", () => {
+    fhLocalPrice = Number(dial.value);
+    readout.textContent = `$${dial.value}`;
+  });
+  // Commit on release, not on every drag tick: nothing comes back from the
+  // server that the pair could read anyway, and a Chromebook on a school LAN
+  // should not fire fifty actions per drag.
+  const commitPrice = () => outbox?.submit({ type: "setPrice", price: Number(dial.value) });
+  dial.addEventListener("change", commitPrice);
+
+  let localSpend = spend;
+  const spendReadout = $("fhSpendReadout");
+  const stepSpend = (dir: number) => {
+    const step = Number(view["spendStep"] ?? 5000);
+    localSpend = Math.max(0, Math.min(spendCap, localSpend + dir * step));
+    spendReadout.textContent = money(localSpend);
+    outbox?.submit({ type: "setSpend", spend: localSpend });
+  };
+  $("fhSpendUp").addEventListener("click", () => stepSpend(1));
+  $("fhSpendDown").addEventListener("click", () => stepSpend(-1));
+  if (card.bowlOffer) {
+    $("fhBowl").addEventListener("change", (e) => outbox?.submit({ type: "setBowl", open: (e.target as HTMLInputElement).checked }));
+  }
+  $("fhLock").addEventListener("click", () => {
+    if (confirm(`Lock ${escapeHtml(card.label)} at $${dial.value}? You cannot change it after this.`)) {
+      outbox?.submit({ type: "setPrice", price: Number(dial.value) });
+      outbox?.submit({ type: "lock" });
+    }
+  });
+}
+
+function renderFHReveal(view: Record<string, unknown>): void {
+  const history = (view["history"] as FHNight[]) ?? [];
+  const peaks = (view["twoPeaks"] as FHTwoPeaks[]) ?? [];
+  $("gameBody").innerHTML = `
+    ${fhDeskHeader(view)}
+    ${fhBooksHtml(view["books"] as FHBooks)}
+    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+    ${
+      peaks.length > 0
+        ? `<div class="fh-peaks">
+             <div class="eyebrow" style="font-size:12px;">The two peaks — Night 3, your market</div>
+             <div class="fh-peaks-row"><span>Tickets alone made the most at</span><span class="numeric">$${peaks[0]!.ticketPeakPrice}</span></div>
+             <div class="fh-peaks-row"><span>Tickets + what they spent inside peaked at</span><span class="numeric hot">$${peaks[0]!.totalPeakPrice}</span></div>
+             <div class="fh-peaks-note">$${peaks[0]!.gapDollars} lower — ${peaks[0]!.gapSteps} clicks of the dial. The cheaper ticket made more money.</div>
+           </div>`
+        : ""
+    }
+    <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your five nights</div>
+    ${history.map((n) => fhNightResultHtml(n, n.label)).join("")}`;
+}
+
+function renderFHAdapt(view: Record<string, unknown>): void {
+  const questions = (view["questions"] as string[]) ?? [];
+  $("gameBody").innerHTML = `
+    ${fhDeskHeader(view)}
+    ${fhBooksHtml(view["books"] as FHBooks)}
+    <div class="panel" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+      <ol class="fh-questions">${questions.map((q) => `<li>${escapeHtml(q)}</li>`).join("")}</ol>
+    </div>
+    ${fhHistoryHtml((view["history"] as FHNight[]) ?? [], view["market"] as FHMarket)}`;
+}
+
+function renderFHCounterfactual(view: Record<string, unknown>): void {
+  const repeat = view["repeat"] as {
+    n1Price: number;
+    n1Turnout: number;
+    n5Price: number;
+    n5Turnout: number;
+    renewalsAtN1: number;
+    renewalsAtN5: number;
+    samePrice: boolean;
+  } | null;
+  const replays = (view["replays"] as FHReplay[]) ?? [];
+  $("gameBody").innerHTML = `
+    ${fhDeskHeader(view)}
+    ${
+      repeat
+        ? `<div class="fh-repeat">
+             <div class="eyebrow" style="font-size:12px;">Night 1 and Night 5 were the same card</div>
+             <div class="fh-repeat-grid">
+               <div><span class="fh-repeat-label">Night 1</span><span class="numeric">$${repeat.n1Price}</span><span class="numeric big">${repeat.n1Turnout.toLocaleString()}</span><span class="fh-repeat-sub">renewals ${repeat.renewalsAtN1}%</span></div>
+               <div><span class="fh-repeat-label">Night 5</span><span class="numeric">$${repeat.n5Price}</span><span class="numeric big">${repeat.n5Turnout.toLocaleString()}</span><span class="fh-repeat-sub">renewals ${repeat.renewalsAtN5}%</span></div>
+             </div>
+             <div class="fh-peaks-note">${repeat.samePrice ? "Same price both nights. The only thing that changed was you." : "You changed the price — so compare the renewals column too."}</div>
+           </div>`
+        : ""
+    }
+    <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">What if?</div>
+    ${replays
+      .map(
+        (r) => `
+      <div class="fh-replay">
+        <div class="fh-replay-head"><span>${escapeHtml(r.label)}</span><span class="numeric">${money(r.cash)} · ${r.renewals}%</span></div>
+        <div class="fh-replay-note">${escapeHtml(r.note)}</div>
+      </div>`,
+      )
+      .join("")}
+    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>
+    <div class="panel" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">Be ready to argue</div>
+      <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["prompt"] ?? ""))}</p>
+    </div>`;
 }
 
 function escapeHtml(s: string): string {

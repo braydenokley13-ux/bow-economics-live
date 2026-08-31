@@ -907,7 +907,7 @@ export const SOURCE_NOTES: readonly string[] = [
   "Night 4 is modeled on a real demand shock: Indiana Fever home attendance went from 4,066 per game in 2023 to 17,036 per game in 2024, the best in the WNBA, and six opposing clubs moved Fever games into bigger buildings (2024 season; verified as of 2026-08-31).",
   "The San Francisco Giants pioneered dynamic ticket pricing in 2009 and ran it across a full season in 2010; variable and dynamic pricing are standard across the NBA today (verified as of 2026-08-31).",
   "The 2025 NBA champions were the Oklahoma City Thunder (2024-25 season; verified as of 2026-08-31).",
-  "Building capacities are modeled at real arena scale (about 19,800 seats at Madison Square Garden, about 17,794 at FedExForum). Every dollar figure in this lesson is a modeled magnitude, not an audited club financial.",
+  "Building capacities are modeled at real arena scale — about 19,800 seats at Madison Square Garden and about 17,794 at FedExForum, the listed basketball capacities for the 2025-26 season. Every dollar figure in this lesson is a modeled magnitude, not an audited club financial.",
 ];
 
 export const SHOCK_REVEAL_COPY =

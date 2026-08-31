@@ -81,6 +81,66 @@
   .fa-bracket-title { font-size: .8vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .6vh; }
   .fa-bracket-side { display: flex; justify-content: space-between; font-size: 1vw; padding: .3vh 0; color: var(--ink-secondary); }
   .fa-bracket-side.winner { color: var(--accent-gold); font-weight: 800; }
+
+  /* ---- M2 L1 Full House ---- */
+  .fh-board-card { background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.4); border-radius: 16px;
+    padding: 1.4vh 2vw; margin-top: 1.6vh; max-width: 72vw; text-align: left; }
+  .fh-board-card-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .fh-board-night { font-family: var(--font-display); font-size: 2vw; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-gold); }
+  .fh-board-tv { font-size: .9vw; letter-spacing: .12em; color: var(--ink-muted); border: 1px solid rgba(255,255,255,.16); border-radius: 20px; padding: .3vh .8vw; }
+  .fh-board-matchup { font-size: 1.7vw; color: var(--ink-primary); margin-top: .6vh; }
+  .fh-board-draw { font-size: 1vw; letter-spacing: .08em; color: var(--ink-muted); margin-top: .8vh; }
+  .fh-board-draw .num { font-family: var(--font-number); font-size: 1.8vw; font-weight: 800; color: var(--accent-gold); }
+  .fh-board-notes { margin-top: .8vh; }
+  .fh-board-notes div { font-size: 1.1vw; color: var(--ink-secondary); line-height: 1.45; }
+
+  .fh-market-row { display: flex; gap: 2vw; margin-top: 2.4vh; flex-wrap: wrap; justify-content: center; }
+  .fh-market-tile { background: rgba(19,24,34,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+    padding: 1.4vh 1.6vw; min-width: 22vw; text-align: left; }
+  .fh-market-club { font-family: var(--font-display); font-size: 1.8vw; letter-spacing: .06em; color: var(--ink-primary); text-transform: uppercase; }
+  .fh-market-building { font-size: 1vw; color: var(--accent-gold); letter-spacing: .06em; }
+  .fh-market-line { font-size: 1.1vw; color: var(--ink-secondary); margin-top: .6vh; }
+  .fh-market-cap { font-size: .95vw; color: var(--ink-muted); margin-top: .6vh; }
+  .fh-desk-row { display: flex; flex-wrap: wrap; gap: 1vw; margin-top: 2vh; justify-content: center; max-width: 86vw; }
+  .fh-desk-chip { display: flex; align-items: center; gap: .5vw; background: rgba(19,24,34,0.75);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: .5vh 1vw; font-size: 1vw; color: var(--ink-secondary); }
+
+  .fh-peaks-board { background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.5); border-radius: 16px;
+    padding: 1.6vh 2vw; margin-top: 2vh; max-width: 74vw; }
+  .fh-peaks-title { font-family: var(--font-display); font-size: 1.6vw; letter-spacing: .12em; color: var(--accent-gold); }
+  .fh-peaks-market { margin-top: 1vh; text-align: left; }
+  .fh-peaks-club { font-size: 1vw; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
+  .fh-peaks-line { display: flex; justify-content: space-between; font-size: 1.3vw; color: var(--ink-secondary); padding: .2vh 0; }
+  .fh-peaks-line .num { font-family: var(--font-number); font-weight: 800; color: var(--ink-primary); }
+  .fh-peaks-line.hot .num { color: var(--accent-gold); font-size: 1.9vw; }
+  .fh-peaks-gap { font-size: 1vw; color: var(--ink-muted); }
+  .fh-peaks-punch { margin-top: 1.2vh; font-size: 1.8vw; color: var(--ink-primary); font-weight: 700; }
+
+  .fh-books-row { display: flex; gap: 2vw; margin-top: 2vh; justify-content: center; flex-wrap: wrap; }
+  .fh-books-tile { background: rgba(19,24,34,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+    padding: 1.2vh 1.6vw; min-width: 20vw; text-align: left; }
+  .fh-books-club { font-family: var(--font-display); font-size: 1.4vw; letter-spacing: .06em; color: var(--accent-gold); text-transform: uppercase; }
+  .fh-books-stat { display: flex; justify-content: space-between; font-size: 1vw; color: var(--ink-secondary); padding: .2vh 0; }
+  .fh-books-stat .num { font-family: var(--font-number); font-weight: 800; color: var(--ink-primary); }
+
+  .fh-questions-board { display: flex; flex-direction: column; gap: 1.2vh; margin-top: 2vh; max-width: 72vw; }
+  .fh-questions-board div { font-size: 1.6vw; color: var(--ink-primary); line-height: 1.4; }
+
+  .fh-repeat-board { display: flex; flex-direction: column; gap: 1vh; margin-top: 2vh; width: 78vw; }
+  .fh-repeat-row { background: rgba(19,24,34,0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: .8vh 1.2vw; text-align: left; }
+  .fh-repeat-handle { font-size: 1.1vw; color: var(--ink-primary); }
+  .fh-repeat-same { font-size: .9vw; color: var(--accent-gold); letter-spacing: .04em; }
+  .fh-repeat-same.diff { color: var(--ink-muted); }
+  .fh-repeat-bars { display: flex; flex-direction: column; gap: .3vh; margin: .5vh 0; }
+  .fh-repeat-bar { height: 2.2vh; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end;
+    padding-right: .5vw; font-family: var(--font-number); font-size: .9vw; font-weight: 800; color: #06121d; min-width: 4vw;
+    transition: width 600ms var(--ease-decel); }
+  .fh-repeat-bar.n1 { background: var(--series-1); }
+  .fh-repeat-bar.n5 { background: var(--accent-violet); }
+  .fh-repeat-renew { font-size: .9vw; color: var(--ink-muted); }
+
+  .fh-sources { margin-top: 2vh; max-width: 82vw; display: flex; flex-direction: column; gap: .4vh; }
+  .fh-sources div { font-size: .8vw; color: var(--ink-muted); line-height: 1.4; }
 </style>
 </head>
 <body>

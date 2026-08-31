@@ -44,6 +44,7 @@ let poller: { stop: () => void } | null = null;
 const TRADE_DEADLINE_ID = "m1l2-trade-deadline";
 const DRAFT_DAY_ID = "m1l1-draft-day";
 const FREE_AGENCY_ID = "m1l3-free-agency";
+const FULL_HOUSE_ID = "m2l1-full-house";
 
 async function loadLessons(): Promise<void> {
   const { lessons } = await apiFetch<{ lessons: Lesson[] }>("/api/lessons");
@@ -194,14 +195,34 @@ function render(payload: TeacherPayload): void {
   const isDraftDay = s.lessonModuleId === DRAFT_DAY_ID;
   const isTradeDeadline = s.lessonModuleId === TRADE_DEADLINE_ID;
   const isFreeAgency = s.lessonModuleId === FREE_AGENCY_ID;
+  const isFullHouse = s.lessonModuleId === FULL_HOUSE_ID;
   $<HTMLButtonElement>("btnShock").hidden = !isDraftDay;
   $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
-  $<HTMLButtonElement>("btnCounterfactual").hidden = isDraftDay || isTradeDeadline || isFreeAgency || s.lessonModuleId === "m2-box-office";
+  $<HTMLButtonElement>("btnCounterfactual").hidden =
+    isDraftDay || isTradeDeadline || isFreeAgency || isFullHouse || s.lessonModuleId === "m2-box-office";
   // The staged per-target auction theater (charter point 6, and L3's own staged finale): one click reveals
   // exactly the next not-yet-revealed step, so the teacher paces the reveal instead of dumping every result
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
-  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency;
+  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse;
   $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
+  // M2 L1's own pacing controls: the night bell (every desk settles at once against the card that
+  // was printed before anyone touched a dial) and the manual Two Peaks release. Both are teacher-
+  // triggered, never timed; leaving PLAY fires both automatically so nothing can be stranded.
+  {
+    const closeNight = $<HTMLButtonElement>("btnCloseNight");
+    const twoPeaks = $<HTMLButtonElement>("btnTwoPeaks");
+    closeNight.hidden = !isFullHouse;
+    twoPeaks.hidden = !isFullHouse;
+    if (isFullHouse) {
+      const allDone = Boolean(payload.view["allNightsDone"]);
+      closeNight.disabled = s.ended || s.phase !== "PLAY" || allDone;
+      closeNight.textContent = allDone
+        ? "🔔 All five nights are in the books"
+        : `🔔 Open the doors — Night ${payload.view["nightNumber"]} (${payload.view["lockedCount"]}/${payload.view["deskCount"]} locked)`;
+      twoPeaks.disabled = s.ended || !payload.view["twoPeaksAvailable"] || (s.phase !== "PLAY" && s.phase !== "REVEAL");
+      twoPeaks.textContent = payload.view["twoPeaksReleased"] ? "📈 Two Peaks is up" : "📈 Release the Two Peaks";
+    }
+  }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
   // simultaneously and deterministically, then advances the day counter. A close with zero offers is legal.
   $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency;
@@ -289,6 +310,7 @@ function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): H
   if (view["module"] === "m2-box-office") return renderBoxOfficeAggregate(view, seats);
   if (view["module"] === TRADE_DEADLINE_ID) return renderTradeDeadlineAggregate(view, seats);
   if (view["module"] === FREE_AGENCY_ID) return renderFreeAgencyAggregate(view, seats);
+  if (view["module"] === FULL_HOUSE_ID) return renderFullHouseAggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
@@ -599,6 +621,78 @@ function renderFreeAgencyAggregate(view: Record<string, unknown>, seats: Teacher
   return wrap;
 }
 
+/* --------------------------------------------------------- full house aggregate -- */
+
+type FHDeskStat = {
+  seatId: string;
+  deskNumber: number;
+  handle: string;
+  marketId: string;
+  club: string;
+  locked: boolean;
+  price: number;
+  spend: number;
+  openBowl: boolean;
+  cash: number;
+  renewals: number;
+  inDebt: boolean;
+  nightsPlayed: number;
+  joinedAtNight: number;
+  lastFillPct: number | null;
+  heldSamePriceRun: number;
+};
+
+function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
+  const desks = (view["desks"] as FHDeskStat[]) ?? [];
+  const card = view["card"] as { label: string; day: string; visitor: string; draw: number; tv: string; bowlOffer: boolean } | null;
+  const watchFor = (view["watchFor"] as string[]) ?? [];
+  const seatById = new Map(seats.map((s) => [s.id, s]));
+  const wrap = document.createElement("div");
+
+  const kpis = document.createElement("div");
+  kpis.className = "kpirow";
+  kpis.style.marginBottom = "14px";
+  kpis.innerHTML = `
+    <div class="kpi"><div class="num">${view["allNightsDone"] ? "done" : `${view["nightNumber"]}/${view["nightCount"]}`}</div><div class="lbl">Night</div></div>
+    <div class="kpi"><div class="num">${view["lockedCount"]}/${view["deskCount"]}</div><div class="lbl">Locked in</div></div>
+    <div class="kpi"><div class="num">${view["twoPeaksReleased"] ? "up" : "held"}</div><div class="lbl">Two Peaks panel</div></div>
+    <div class="kpi"><div class="num">${view["revealStage"]}/${view["totalRevealSteps"]}</div><div class="lbl">Reveal stages</div></div>`;
+  wrap.appendChild(kpis);
+
+  if (card) {
+    const cardRow = document.createElement("div");
+    cardRow.style.marginBottom = "12px";
+    cardRow.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">On the projector right now</div>
+      <div style="font-size:13px; color:var(--ink-secondary);">${escapeHtml(card.label)} — ${escapeHtml(card.day)} vs ${escapeHtml(card.visitor)} · draw ${card.draw}/100 · ${escapeHtml(card.tv)} TV${card.bowlOffer ? " · capacity option offered" : ""}</div>`;
+    wrap.appendChild(cardRow);
+  }
+
+  const watch = document.createElement("div");
+  watch.style.marginBottom = "12px";
+  watch.innerHTML =
+    `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Watch for</div>` +
+    watchFor.map((w) => `<div style="font-size:12px; color:var(--ink-secondary); margin:2px 0;">• ${escapeHtml(w)}</div>`).join("");
+  wrap.appendChild(watch);
+
+  const grid = document.createElement("div");
+  grid.className = "teamgrid";
+  for (const d of desks) {
+    const seat = seatById.get(d.seatId);
+    const tile = document.createElement("div");
+    tile.className = "teamtile";
+    tile.innerHTML = `
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;"><strong>${escapeHtml(d.handle)}</strong></div>
+      <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : d.seatId}</span><span>${d.locked ? `LOCKED $${d.price}` : `dialling $${d.price}`}</span></div>
+      <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">$${d.cash.toLocaleString()}</span><span>${d.renewals}% renewals</span></div>
+      <div class="statline"><span>${d.nightsPlayed} night${d.nightsPlayed === 1 ? "" : "s"}${d.joinedAtNight > 1 ? ` · joined N${d.joinedAtNight}` : ""}</span><span>${d.lastFillPct !== null ? `${d.lastFillPct}% full` : ""}</span></div>
+      ${d.spend > 0 ? `<div class="statline"><span>$${d.spend.toLocaleString()} on the night</span><span>${d.openBowl ? "extra seats" : ""}</span></div>` : ""}
+      ${d.heldSamePriceRun >= 3 ? `<div class="statline"><span style="color:var(--cap-tight);">held one price ${d.heldSamePriceRun} nights</span><span></span></div>` : ""}`;
+    grid.appendChild(tile);
+  }
+  wrap.appendChild(grid);
+  return wrap;
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
@@ -656,6 +750,8 @@ $("btnShock").addEventListener("click", () => void sendControl({ type: "hook", h
 $("btnCounterfactual").addEventListener("click", () => void sendControl({ type: "hook", hook: "counterfactual" }));
 $("btnRevealNext").addEventListener("click", () => void sendControl({ type: "hook", hook: "revealNext" }));
 $("btnCloseDay").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeDay" }));
+$("btnCloseNight").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeNight" }));
+$("btnTwoPeaks").addEventListener("click", () => void sendControl({ type: "hook", hook: "twoPeaks" }));
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();

@@ -76,6 +76,12 @@ function render(payload: BoardPayload): void {
     renderFreeAgencyBoard(view, mode);
     return;
   }
+  if (view["module"] === "m2l1-full-house") {
+    const mode = String(view["mode"] ?? "");
+    backdrop.classList.toggle("peak", mode === "reveal" || mode === "adapt" || mode === "counterfactual" || mode === "synthesis");
+    renderFullHouseBoard(view, mode);
+    return;
+  }
 
   backdrop.classList.remove("peak");
   const legacy = view as { mode?: string; tally?: Record<string, number>; total?: number; note?: string; pickedCount?: number };
@@ -525,6 +531,273 @@ function renderFreeAgencyBoard(view: Record<string, unknown>, mode: string): voi
 
     case "complete":
       stage.innerHTML = `<div class="label">Module 1 Complete</div><div class="banner" style="max-width:70vw;">${escapeHtml(String(view["message"]))}</div>`;
+      return;
+
+    default:
+      stage.innerHTML = `<div class="label">${escapeHtml(mode)}</div>`;
+  }
+}
+
+/* --------------------------------------------------------- full house board -- */
+
+type FHPoint = { marketId: string; cardId: string; deskHandle: string; price: number; turnout: number; fillPct: number; soldOut: boolean };
+type FHTwoPeaksB = {
+  marketId: string;
+  cardId: string;
+  ticketPeakPrice: number;
+  totalPeakPrice: number;
+  gapDollars: number;
+  gapSteps: number;
+  ticketRevenueAtTicketPeak: number;
+  totalRevenueAtTicketPeak: number;
+  totalRevenueAtTotalPeak: number;
+};
+type FHRepeat = {
+  deskHandle: string;
+  marketId: string;
+  n1Price: number;
+  n1Turnout: number;
+  n5Price: number;
+  n5Turnout: number;
+  renewalsStart: number;
+  renewalsAtN5: number;
+  samePrice: boolean;
+};
+type FHBooksB = { marketId: string; club: string; deskCount: number; medianCash: number; medianRenewals: number; bestFillPct: number; fullHouseNights: number };
+type FHMarketB = { id: string; club: string; building: string; plainLine: string; capacity: number; bill?: number; planPrice?: number };
+type FHCardB = { id: string; label: string; index: number; of: number; day: string; visitor: string; draw: number; tv: string; notes: string[]; bowlOffer: boolean; repeatOf: string | null };
+
+const FH_SERIES: Record<string, string> = { "new-york": "var(--series-1)", memphis: "var(--series-2)" };
+
+function fhCardBanner(card: FHCardB): string {
+  return `
+    <div class="fh-board-card">
+      <div class="fh-board-card-top">
+        <span class="fh-board-night">${escapeHtml(card.label)} of ${card.of}</span>
+        <span class="fh-board-tv">${card.tv === "national" ? "NATIONAL TV" : card.tv === "local" ? "LOCAL TV" : "NOT ON TV"}</span>
+      </div>
+      <div class="fh-board-matchup">${escapeHtml(card.day)} &nbsp;·&nbsp; ${escapeHtml(card.visitor)}</div>
+      <div class="fh-board-draw">VISITING CLUB'S DRAW <span class="num">${card.draw}</span> / 100</div>
+      <div class="fh-board-notes">${card.notes.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
+    </div>`;
+}
+
+/**
+ * The room's own demand curve: price on x, turnout on y, ONE LABELLED SERIES
+ * PER MARKET (never one cloud — R9). Nothing here is money, and nothing is
+ * sorted by money (R13).
+ */
+function fhCurveSvg(points: FHPoint[], markets: string[]): string {
+  const W = 960;
+  const H = 440;
+  const mL = 74;
+  const mR = 24;
+  const mT = 18;
+  const mB = 48;
+  const xMin = 10;
+  const xMax = 120;
+  const yMax = Math.max(5000, ...points.map((p) => p.turnout)) * 1.12;
+  const x = (price: number) => mL + ((price - xMin) / (xMax - xMin)) * (W - mL - mR);
+  const y = (t: number) => H - mB - (t / yMax) * (H - mT - mB);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="scatter-svg" role="img" aria-label="Ticket price against how many people came, one series per market">`;
+  svg += `<line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
+  svg += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
+  for (const px of [10, 30, 50, 70, 90, 120]) {
+    svg += `<text x="${x(px)}" y="${H - mB + 22}" text-anchor="middle" style="font:13px Inter, sans-serif; fill:var(--ink-muted);">$${px}</text>`;
+  }
+  for (let i = 0; i <= 4; i += 1) {
+    const t = Math.round((yMax * i) / 4);
+    svg += `<text x="${mL - 10}" y="${y(t) + 4}" text-anchor="end" style="font:13px Inter, sans-serif; fill:var(--ink-muted);">${(t / 1000).toFixed(0)}k</text>`;
+  }
+  svg += `<text x="${(mL + (W - mR)) / 2}" y="${H - 8}" text-anchor="middle" style="font:12px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">TICKET PRICE</text>`;
+  svg += `<text x="16" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 16 ${(mT + H - mB) / 2})" style="font:12px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">PEOPLE WHO CAME</text>`;
+
+  for (const marketId of markets) {
+    const own = points.filter((p) => p.marketId === marketId).sort((a, b) => a.price - b.price);
+    if (own.length < 2) continue;
+    const path = own.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.price).toFixed(1)},${y(p.turnout).toFixed(1)}`).join(" ");
+    svg += `<path d="${path}" fill="none" stroke="${FH_SERIES[marketId] ?? "var(--accent-blue)"}" stroke-width="2" opacity="0.45"/>`;
+  }
+  for (const p of points) {
+    const color = FH_SERIES[p.marketId] ?? "var(--accent-blue)";
+    svg += `<circle cx="${x(p.price)}" cy="${y(p.turnout)}" r="${p.soldOut ? 12 : 9}" style="fill:${color}; stroke:var(--surface-panel); stroke-width:2;"><title>${escapeHtml(`${p.deskHandle} · $${p.price} · ${p.turnout.toLocaleString()} came · ${p.fillPct}% full`)}</title></circle>`;
+  }
+  svg += `</svg>`;
+  return svg;
+}
+
+function fhLegend(points: FHPoint[]): string {
+  const ids = [...new Set(points.map((p) => p.marketId))];
+  const label: Record<string, string> = { "new-york": "New York", memphis: "Memphis" };
+  return `<div class="scatter-legend">${ids
+    .map((id) => `<span class="legend-dot" style="background:${FH_SERIES[id] ?? "var(--accent-blue)"}; margin-left:14px;"></span>${escapeHtml(label[id] ?? id)}`)
+    .join("")}</div>`;
+}
+
+function fhTwoPeaksPanel(peaks: FHTwoPeaksB[]): string {
+  if (peaks.length === 0) return "";
+  return `
+    <div class="fh-peaks-board">
+      <div class="fh-peaks-title">THE TWO PEAKS</div>
+      ${peaks
+        .map(
+          (p) => `
+        <div class="fh-peaks-market">
+          <div class="fh-peaks-club">${escapeHtml(p.marketId === "new-york" ? "New York" : "Memphis")}</div>
+          <div class="fh-peaks-line"><span>Tickets alone peak at</span><span class="num">$${p.ticketPeakPrice}</span></div>
+          <div class="fh-peaks-line hot"><span>Tickets + what they spend inside peak at</span><span class="num">$${p.totalPeakPrice}</span></div>
+          <div class="fh-peaks-gap">$${p.gapDollars} lower · ${p.gapSteps} clicks of the dial</div>
+        </div>`,
+        )
+        .join("")}
+      <div class="fh-peaks-punch">The cheaper ticket made more money.</div>
+    </div>`;
+}
+
+function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void {
+  const honesty = String(view["honestyLine"] ?? "");
+  switch (mode) {
+    case "lobby": {
+      const markets = (view["markets"] as FHMarketB[]) ?? [];
+      const assignments = (view["assignments"] as { handle: string; crestIndex: number; marketId: string }[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">Full House</div>
+        <div class="banner" style="max-width:66vw;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        <div class="fh-market-row">${markets
+          .map(
+            (m) => `<div class="fh-market-tile"><div class="fh-market-club">${escapeHtml(m.club)}</div><div class="fh-market-building">${escapeHtml(m.building)}</div><div class="fh-market-line">${escapeHtml(m.plainLine)}</div><div class="fh-market-cap">${m.capacity.toLocaleString()} seats</div></div>`,
+          )
+          .join("")}</div>
+        <div class="fh-desk-row">${assignments
+          .map(
+            (a) => `<div class="fh-desk-chip"><span style="${crestStyle(a.crestIndex, 22)}"></span>${escapeHtml(a.handle)}</div>`,
+          )
+          .join("")}</div>
+        <div class="synthesis-note">${assignments.length} desk${assignments.length === 1 ? "" : "s"} in the room. Odd desks run New York, even desks run Memphis — same five nights, different building.</div>`;
+      return;
+    }
+
+    case "hook": {
+      const markets = (view["markets"] as FHMarketB[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">Full House</div>
+        <div class="banner" style="max-width:74vw;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        <div class="fh-market-row">${markets
+          .map(
+            (m) => `<div class="fh-market-tile"><div class="fh-market-club">${escapeHtml(m.club)}</div><div class="fh-market-building">${escapeHtml(m.building)}</div><div class="fh-market-cap">${m.capacity.toLocaleString()} seats · bill $${(m.bill ?? 0).toLocaleString()} a night · season plan $${m.planPrice}</div></div>`,
+          )
+          .join("")}</div>
+        <div class="synthesis-note" style="max-width:70vw;">${escapeHtml(String(view["objective"] ?? ""))}</div>
+        <div class="exit-prompt" style="font-size:1.1vw; color:var(--ink-muted);">${escapeHtml(honesty)} ${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
+      return;
+    }
+
+    case "play": {
+      if (view["allNightsDone"]) {
+        const points = (view["curves"] as FHPoint[]) ?? [];
+        stage.innerHTML = `
+          <div class="label">Five Nights, In The Books</div>
+          <div class="scatter-wrap">${fhCurveSvg(points, ["new-york", "memphis"])}</div>
+          ${fhLegend(points)}
+          <div class="synthesis-note">${escapeHtml(honesty)}</div>`;
+        return;
+      }
+      const card = view["card"] as FHCardB;
+      const points = (view["curves"] as FHPoint[]) ?? [];
+      const peaks = (view["twoPeaks"] as FHTwoPeaksB[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">Tonight's Card</div>
+        ${fhCardBanner(card)}
+        <div class="kpirow">
+          <div class="kpi"><div class="num">${view["lockedCount"]}/${view["deskCount"]}</div><div class="lbl">Desks locked in</div></div>
+        </div>
+        ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:66vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
+        ${points.length > 0 ? `<div class="scatter-wrap" style="width:60vw;">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : ""}
+        ${peaks.length > 0 ? fhTwoPeaksPanel(peaks) : ""}
+        <div class="synthesis-note" style="font-size:1.1vw;">${escapeHtml(honesty)}</div>`;
+      return;
+    }
+
+    case "reveal": {
+      const points = (view["curves"] as FHPoint[]) ?? [];
+      const shown = (view["shownCards"] as string[]) ?? [];
+      const peaks = (view["twoPeaks"] as FHTwoPeaksB[]) ?? [];
+      const books = (view["books"] as FHBooksB[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">The Room's Own Curve · ${shown.length ? shown.join(" · ") : "waiting"}</div>
+        ${points.length > 0 ? `<div class="scatter-wrap">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : `<div class="banner">Waiting for your teacher to put up the first night.</div>`}
+        ${Number(view["totalTurnedAway"]) > 0 ? `<div class="synthesis-note">${Number(view["totalTurnedAway"]).toLocaleString()} people in this room's five nights wanted a seat and could not get one.</div>` : ""}
+        ${view["twoPeaksReleased"] ? fhTwoPeaksPanel(peaks) : ""}
+        ${
+          view["booksReleased"]
+            ? `<div class="fh-books-row">${books
+                .map(
+                  (b) => `<div class="fh-books-tile"><div class="fh-books-club">${escapeHtml(b.club)}</div>
+                    <div class="fh-books-stat"><span>Desks</span><span class="num">${b.deskCount}</span></div>
+                    <div class="fh-books-stat"><span>Fullest house</span><span class="num">${b.bestFillPct}%</span></div>
+                    <div class="fh-books-stat"><span>Sold-out nights</span><span class="num">${b.fullHouseNights}</span></div>
+                    <div class="fh-books-stat"><span>Median renewals</span><span class="num">${b.medianRenewals}%</span></div></div>`,
+                )
+                .join("")}</div>
+               <div class="synthesis-note">${escapeHtml(String(view["capacityDefence"] ?? ""))}</div>`
+            : ""
+        }
+        <div class="exit-prompt" style="font-size:1.1vw; color:var(--ink-muted);">${escapeHtml(honesty)}</div>`;
+      return;
+    }
+
+    case "adapt": {
+      const questions = (view["questions"] as string[]) ?? [];
+      const points = (view["curves"] as FHPoint[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">What Moved The Crowd?</div>
+        <div class="fh-questions-board">${questions.map((q) => `<div>${escapeHtml(q)}</div>`).join("")}</div>
+        ${points.length > 0 ? `<div class="scatter-wrap" style="width:64vw;">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : ""}
+        <div class="synthesis-note" style="font-size:1.1vw;">${escapeHtml(honesty)}</div>`;
+      return;
+    }
+
+    case "counterfactual": {
+      const rows = (view["repeatCard"] as FHRepeat[]) ?? [];
+      const max = Math.max(1, ...rows.flatMap((r) => [r.n1Turnout, r.n5Turnout]));
+      stage.innerHTML = `
+        <div class="label">Night 1 vs Night 5 — The Same Card</div>
+        <div class="fh-repeat-board">${rows
+          .map(
+            (r) => `
+          <div class="fh-repeat-row">
+            <div class="fh-repeat-handle">${escapeHtml(r.deskHandle)}${r.samePrice ? ` <span class="fh-repeat-same">same price $${r.n1Price}</span>` : ` <span class="fh-repeat-same diff">$${r.n1Price} → $${r.n5Price}</span>`}</div>
+            <div class="fh-repeat-bars">
+              <div class="fh-repeat-bar n1" style="width:${(r.n1Turnout / max) * 100}%"><span>${r.n1Turnout.toLocaleString()}</span></div>
+              <div class="fh-repeat-bar n5" style="width:${(r.n5Turnout / max) * 100}%"><span>${r.n5Turnout.toLocaleString()}</span></div>
+            </div>
+            <div class="fh-repeat-renew">renewals ${r.renewalsStart}% → ${r.renewalsAtN5}%</div>
+          </div>`,
+          )
+          .join("")}</div>
+        <div class="synthesis-note" style="max-width:70vw;">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
+        <div class="exit-prompt">${escapeHtml(String(view["prompt"] ?? ""))}</div>
+        <div class="synthesis-note" style="font-size:1vw;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>`;
+      return;
+    }
+
+    case "synthesis": {
+      const cards = (view["cards"] as { id: string; title: string; body: string }[]) ?? [];
+      const notes = (view["sourceNotes"] as string[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["heading"] ?? ""))}</div>
+        <div class="cardgrid">${cards.map((c) => `<div class="synthcard"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.body)}</p></div>`).join("")}</div>
+        <div class="synthesis-note">${escapeHtml(String(view["beyondSports"] ?? ""))}</div>
+        <div class="exit-prompt">${escapeHtml(String(view["exitPrompt"] ?? ""))}</div>
+        <div class="fh-sources">${notes.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>`;
+      return;
+    }
+
+    case "complete":
+      stage.innerHTML = `
+        <div class="label">Full House — Complete</div>
+        <div class="banner" style="max-width:70vw;">${escapeHtml(String(view["message"] ?? ""))}</div>`;
       return;
 
     default:

@@ -289,7 +289,6 @@ console.log("");
   const n1 = CARDS.find((c) => c.id === "N1");
   const n5 = CARDS.find((c) => c.id === "N5");
   for (const market of MARKETS) {
-    // Two honest five-night lines: hold the plan price (renewals climb) vs hold high (renewals fall).
     // Two honest lines a real pair could hold: the season-plan price (renewals climb) and a
     // consistently expensive price that still draws a crowd on the quiet card (renewals fall).
     for (const policy of [
@@ -392,20 +391,34 @@ console.log("");
     };
     const baseline = seasonWithSpendOn(-1);
     const deltas = CARDS.map((c, i) => ({ card: c.id, delta: seasonWithSpendOn(i) - baseline }));
-    const first = deltas[0].delta;
     const last = deltas[deltas.length - 1].delta;
-    if (!(first > 0 && last < 0)) ok = false;
-    rows.push(`${market.id.padEnd(10)} season cash change from spending the max on each night: ${deltas.map((d) => `${d.card} ${d.delta >= 0 ? "+" : ""}$${fmt(Math.round(d.delta))}`).join(" · ")}`);
+    const best = deltas.reduce((a, b) => (b.delta > a.delta ? b : a));
+    const spread = best.delta - Math.min(...deltas.map((d) => d.delta));
+    // The falsifiable claim is NOT "spend early" (which would be a fixed rule and therefore a
+    // dominant strategy). It is that WHEN you spend decides whether it pays at all: at least one
+    // night where the max spend is strictly profitable, a final night where it is strictly a
+    // waste, and a spread between best and worst night worth more than the whole dial.
+    if (!(best.delta > 0 && last < 0 && spread > market.eventMax)) ok = false;
+    rows.push(
+      `${market.id.padEnd(10)} season cash change from spending the max on each night: ${deltas.map((d) => `${d.card} ${d.delta >= 0 ? "+" : ""}$${fmt(Math.round(d.delta))}`).join(" · ")}`,
+    );
+    rows.push(
+      `${" ".repeat(11)}best night to spend: ${best.card} (+$${fmt(Math.round(best.delta))}) · spread across nights $${fmt(Math.round(spread))} vs a $${fmt(market.eventMax)} dial`,
+    );
   }
-  check("P9", "C10 — the night-spend dial pays when spent early and loses when spent late (not a decoration, not a free lunch)", ok, rows);
+  check("P9", "C10 — WHEN you spend on the night decides whether it pays: profitable on some night, pure waste on the last, spread bigger than a night's bill", ok, rows);
 }
 
 /* ------------------------------------------- P10 — no dominant fixed price rule -- */
 {
   const rows = [];
   let ok = true;
+  // Measured over the four DISTINCT cards only. N5 is N1's card by construction, so any price that
+  // is right on N1 is trivially right on N5 too — counting it would measure the design's own
+  // path-dependence beat as if it were a dominant-strategy defect.
+  const distinctCards = CARDS.filter((c) => c.repeatOf === null);
   for (const market of MARKETS) {
-    const optima = CARDS.map((card) => totalPeakPrice(market, curveFor(market, card, RENEWALS_START, 0)));
+    const optima = distinctCards.map((card) => totalPeakPrice(market, curveFor(market, card, RENEWALS_START, 0)));
     let bestCoverage = 0;
     let bestPrice = null;
     for (const p of PRICE_GRID) {
@@ -416,9 +429,11 @@ console.log("");
       }
     }
     if (bestCoverage > 2) ok = false;
-    rows.push(`${market.id.padEnd(10)} best single fixed price $${bestPrice} lands within one dial step of the night's best on ${bestCoverage}/${CARDS.length} nights`);
+    rows.push(
+      `${market.id.padEnd(10)} best single fixed price $${bestPrice} lands within one dial step of the night's best on ${bestCoverage}/${distinctCards.length} distinct cards`,
+    );
   }
-  check("P10", "R1 — no single fixed price is right on more than two of the five nights", ok, rows);
+  check("P10", "R1 — no single fixed price is right on more than two of the four distinct cards", ok, rows);
 }
 
 /* ------------------------------------ P11 — the capacity option is a real decision -- */
