@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:26:02.506Z",
+  "updatedAt": "2026-08-31T23:26:23.095Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -547,12 +547,23 @@
           "model": "claude-opus-5",
           "reason": "Independent play of the BUILT L1 lesson across teacher-paced classroom flow",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T22:57:06.742Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T23:26:22.863Z",
+          "sections": {
+            "what-the-student-plays": "One full multi-seat session (4 seats, distinct strategies incl. a blind adaptive line), teacher pacing all reveals incl. Two Peaks and the night bell. Beat-by-beat in GATE_L1_PLAY.md; 27 screenshots in screens-l1-gate/.",
+            "pull-rating": "RATING: FUNCTIONAL — repair, not kill. The Stage-0 loop survived intact (nothing sweepable pre-commit verified on every pre-lock screen across ten desk-seasons; N5-repeats-N1 got BETTER in a room — the board printed both directions in one line; Two Peaks lands as a statement). The classroom layer around the loop has not yet earned STRONG.",
+            "biggest-failure": "The board joins 25 desk-nights from five demand worlds into one line labelled THE ROOM'S OWN CURVE, producing higher-price-bigger-crowd segments, and COUNTERFACTUAL tells the room to argue from it — the class-evidence layer manufactures false argue-fuel (dissent play-board-curve-pooled).",
+            "moment-by-moment-notes": "Best beat: FULL HOUSE / '7,796 could not get a seat'. N4 ruling: not inert but never on a best line (A/B: bowl +$17,320 on a $95,000 outlay; best-with-bowl exactly $95k/$42k worse), and taking it deletes the FULL HOUSE beat. Night-spend: real (max-spend cost a Memphis desk $206,088 cash for +20pp renewals) but its payback rule (next-night price >$82 NY / >$50 MEM) is stated nowhere. Two Peaks proof weakened: chart plots people, not money, no peak markers.",
+            "required-repairs": "Blocking: un-pool the board curve (group by demand world). Non-blocking: money overlay/peak markers for Two Peaks; surface the night-spend payback information; N4 per the econ gate's ruling. Reliance note: post-hoc dominance verification deferred to the econ gate's exhaustive computation rather than duplicated."
+          },
+          "evidenceIds": [
+            "gate-l1-play"
+          ],
+          "cost": {
+            "tokens": 263484,
+            "toolUses": 130
+          }
         },
         "gate-l1-econ": {
           "assignmentId": "gate-l1-econ",
@@ -628,6 +639,20 @@
             "tokens": 149799,
             "toolUses": 71
           }
+        },
+        "repair-l1-round1": {
+          "assignmentId": "repair-l1-round1",
+          "role": "builder",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Consolidated Wave-2 repair batch: all blocking findings from the four L1 gates (QA misclick guard, SR facts/copy, econ renewals-tent/N4/night-spend-info/synthesis, play board-curve pooling). Repair 1 of 3 in wave budget.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-08-31T23:26:23.095Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -652,7 +677,8 @@
         "qa-teacher-misclick",
         "econ-l1-renewals-tent",
         "gate-l1-econ-dissent",
-        "play-board-curve-pooled"
+        "play-board-curve-pooled",
+        "gate-l1-play-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1401,6 +1427,15 @@
       "status": "open",
       "recordedAt": "2026-08-31T23:26:02.506Z",
       "actor": "player-gameplay-critic"
+    },
+    "gate-l1-play-dissent": {
+      "id": "gate-l1-play-dissent",
+      "wave": 2,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-08-31T23:26:22.876Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -1428,14 +1463,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 15,
+    "agentsActivated": 16,
     "gateFailures": 0,
     "claimsContradicted": 1,
     "evidenceRecorded": 28,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 78,
-  "eventHead": "e40500a21decdd956fb9448b566d0ad0ba69757a4f471bd706f4cfd46e869be3",
+  "eventCount": 81,
+  "eventHead": "38e855793a95797cc98f7de46ddac37b1de56312f4d62514b9a8618aff0a0e6a",
   "warnings": []
 }
