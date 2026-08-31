@@ -7,7 +7,7 @@ import { test } from "node:test";
 
 import { reconcileClaimAutomatically } from "../lib/claims.mjs";
 import { appendRunEvent, loadRun } from "../lib/events.mjs";
-import { createRun, makeRepo, recordEvidence } from "./helpers.mjs";
+import { createRun, makeRepo, recordCommandEvidence, recordEvidence } from "./helpers.mjs";
 
 function claim(root, kind, metadata, evidenceIds) {
   appendRunEvent(root, "synthetic-run", "ClaimRecorded", {
@@ -25,7 +25,7 @@ function claim(root, kind, metadata, evidenceIds) {
 test("test failure claimed as pass is contradicted by the exit code", () => {
   const root = makeRepo();
   createRun(root);
-  recordEvidence(root, "synthetic-run", { id: "tests", kind: "test", metadata: { exitCode: 1 } });
+  recordCommandEvidence(root, "synthetic-run", { id: "tests", kind: "test", exitCode: 1 });
   const state = claim(root, "tests-pass", {}, ["tests"]);
   const result = reconcileClaimAutomatically(root, state, "claim-a");
   assert.equal(result.status, "contradicted");
@@ -45,7 +45,7 @@ test("viewport verification without the named screenshot is contradicted", () =>
 test("CI pass claim is contradicted by a failed CI command", () => {
   const root = makeRepo();
   createRun(root);
-  recordEvidence(root, "synthetic-run", { id: "ci", kind: "ci", metadata: { exitCode: 2 } });
+  recordCommandEvidence(root, "synthetic-run", { id: "ci", kind: "ci", exitCode: 2 });
   const state = claim(root, "ci-pass", {}, ["ci"]);
   const result = reconcileClaimAutomatically(root, state, "claim-a");
   assert.equal(result.status, "contradicted");
@@ -54,7 +54,7 @@ test("CI pass claim is contradicted by a failed CI command", () => {
 test("e2e pass claim is confirmed only by a passing e2e command", () => {
   const root = makeRepo();
   createRun(root);
-  recordEvidence(root, "synthetic-run", { id: "e2e", kind: "e2e", metadata: { exitCode: 0 } });
+  recordCommandEvidence(root, "synthetic-run", { id: "e2e", kind: "e2e", exitCode: 0 });
   const state = claim(root, "e2e-pass", {}, ["e2e"]);
   const result = reconcileClaimAutomatically(root, state, "claim-a");
   assert.equal(result.status, "confirmed");

@@ -32,7 +32,9 @@ npm run boss -- evidence command <run> --id <id> --kind test --label "unit suite
 ```
 
 The command's real exit code is recorded and returned. A nonzero command remains evidence of
-failure and the CLI exits nonzero.
+failure and the CLI exits nonzero. Command-family claims and required command evidence at the
+gate accept only records produced this way — `evidence file` with a self-asserted kind and
+hand-authored `exitCode` metadata is deterministically contradicted.
 
 ```bash
 npm run boss -- claim add <run> --id <id> --kind tests-pass \

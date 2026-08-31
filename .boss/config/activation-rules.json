@@ -1,107 +1,269 @@
 {
   "schemaVersion": 1,
+  "note": "A matched rule's roles always become required-to-complete for the wave (the gate makes every activated role a hard check). The blocking flag additionally marks them as can-never-be-omitted blocking-role checks and signals that their findings tend to carry blocking dissent categories; blocking:false does NOT make a matched role optional.",
   "rules": [
     {
       "id": "economic-model",
-      "scopes": ["economic-model", "demand", "cap", "revenue", "incentives", "market", "pricing", "shock"],
-      "roles": ["economic-truth-critic"],
-      "evidence": ["economic-truth-report"],
+      "scopes": [
+        "economic-model",
+        "demand",
+        "cap",
+        "revenue",
+        "incentives",
+        "market",
+        "pricing",
+        "shock"
+      ],
+      "roles": [
+        "economic-truth-critic"
+      ],
+      "evidence": [
+        "economic-truth-report"
+      ],
       "blocking": true
     },
     {
       "id": "sports-reality",
-      "scopes": ["sports-reality", "real-world", "rosters", "contracts", "salaries", "league-rules", "nba"],
-      "roles": ["sports-reality-director"],
-      "evidence": ["sports-reality-report"],
+      "scopes": [
+        "sports-reality",
+        "real-world",
+        "rosters",
+        "contracts",
+        "salaries",
+        "league-rules",
+        "nba"
+      ],
+      "roles": [
+        "sports-reality-director"
+      ],
+      "evidence": [
+        "sports-reality-report"
+      ],
       "blocking": true
     },
     {
       "id": "rights-source",
-      "scopes": ["rights", "licensing", "likeness", "logos", "data-source", "media-assets"],
-      "roles": ["sports-reality-director"],
-      "evidence": ["rights-source-report"],
+      "scopes": [
+        "rights",
+        "licensing",
+        "likeness",
+        "logos",
+        "data-source",
+        "media-assets"
+      ],
+      "roles": [
+        "sports-reality-director"
+      ],
+      "evidence": [
+        "rights-source-report"
+      ],
       "blocking": false
     },
     {
       "id": "teacher-surface",
-      "scopes": ["teach", "teacher-surface", "teacher-controls", "pacing", "facilitation", "teacher-copy"],
-      "roles": ["teacher-transfer-critic", "classroom-projector-critic"],
-      "evidence": ["teacher-transfer-report"],
+      "scopes": [
+        "teach",
+        "teacher-surface",
+        "teacher-controls",
+        "pacing",
+        "facilitation",
+        "teacher-copy"
+      ],
+      "roles": [
+        "teacher-transfer-critic",
+        "classroom-projector-critic"
+      ],
+      "evidence": [
+        "teacher-transfer-report"
+      ],
       "blocking": true
     },
     {
       "id": "projector",
-      "scopes": ["board", "projector", "reveal", "class-evidence", "class-drama"],
-      "roles": ["classroom-projector-critic"],
-      "evidence": ["projector-report"],
+      "scopes": [
+        "board",
+        "projector",
+        "reveal",
+        "class-evidence",
+        "class-drama"
+      ],
+      "roles": [
+        "classroom-projector-critic"
+      ],
+      "evidence": [
+        "projector-report"
+      ],
       "blocking": true
     },
     {
       "id": "synthesis",
-      "scopes": ["synthesis", "debrief", "formalization", "concept-mapping"],
-      "roles": ["economic-truth-critic", "teacher-transfer-critic"],
-      "evidence": ["synthesis-map"],
+      "scopes": [
+        "synthesis",
+        "debrief",
+        "formalization",
+        "concept-mapping"
+      ],
+      "roles": [
+        "economic-truth-critic",
+        "teacher-transfer-critic"
+      ],
+      "evidence": [
+        "synthesis-map"
+      ],
       "blocking": true
     },
     {
       "id": "gameplay",
-      "scopes": ["student", "gameplay", "mechanic", "play-surface", "student-interaction"],
-      "roles": ["player-gameplay-critic", "browser-qa"],
-      "evidence": ["gameplay-report", "browser-trace"],
+      "scopes": [
+        "student",
+        "gameplay",
+        "mechanic",
+        "play-surface",
+        "student-interaction"
+      ],
+      "roles": [
+        "player-gameplay-critic",
+        "browser-qa"
+      ],
+      "evidence": [
+        "gameplay-report",
+        "browser-trace"
+      ],
       "blocking": false
     },
     {
       "id": "visual",
-      "scopes": ["visual", "art", "motion", "audio", "world-art", "student-visual"],
-      "roles": ["visual-experience-director", "browser-qa"],
-      "evidence": ["visual-report", "browser-trace"],
+      "scopes": [
+        "visual",
+        "art",
+        "motion",
+        "audio",
+        "world-art",
+        "student-visual"
+      ],
+      "roles": [
+        "visual-experience-director",
+        "browser-qa"
+      ],
+      "evidence": [
+        "visual-report",
+        "browser-trace"
+      ],
       "blocking": false
     },
     {
       "id": "persistence",
-      "scopes": ["persistence", "state", "resume", "seed-chain", "snapshot", "migration", "storage"],
-      "roles": ["persistence-state-reviewer", "reliability-reviewer"],
-      "evidence": ["persistence-report"],
+      "scopes": [
+        "persistence",
+        "state",
+        "resume",
+        "seed-chain",
+        "snapshot",
+        "migration",
+        "storage"
+      ],
+      "roles": [
+        "persistence-state-reviewer",
+        "reliability-reviewer"
+      ],
+      "evidence": [
+        "persistence-report"
+      ],
       "blocking": true
     },
     {
       "id": "privacy-security",
-      "scopes": ["privacy", "security", "auth", "bearer-key", "student-data", "identity"],
-      "roles": ["security-privacy-reviewer"],
-      "evidence": ["security-privacy-report"],
+      "scopes": [
+        "privacy",
+        "security",
+        "auth",
+        "bearer-key",
+        "student-data",
+        "identity"
+      ],
+      "roles": [
+        "security-privacy-reviewer"
+      ],
+      "evidence": [
+        "security-privacy-report"
+      ],
       "blocking": true
     },
     {
       "id": "architecture",
-      "scopes": ["architecture", "runtime-contract", "module-contract", "cross-layer", "dependency", "platform"],
-      "roles": ["architecture-critic", "engineering-reviewer"],
-      "evidence": ["architecture-report"],
+      "scopes": [
+        "architecture",
+        "runtime-contract",
+        "module-contract",
+        "cross-layer",
+        "dependency",
+        "platform"
+      ],
+      "roles": [
+        "architecture-critic",
+        "engineering-reviewer"
+      ],
+      "evidence": [
+        "architecture-report"
+      ],
       "blocking": false
     },
     {
       "id": "performance",
-      "scopes": ["performance", "chromebook", "bundle", "rendering", "latency"],
-      "roles": ["performance-critic"],
-      "evidence": ["performance-report"],
+      "scopes": [
+        "performance",
+        "chromebook",
+        "bundle",
+        "rendering",
+        "latency"
+      ],
+      "roles": [
+        "performance-critic"
+      ],
+      "evidence": [
+        "performance-report"
+      ],
       "blocking": false
     },
     {
       "id": "accessibility",
-      "scopes": ["accessibility", "a11y", "keyboard", "focus"],
-      "roles": ["accessibility-critic"],
-      "evidence": ["accessibility-report"],
+      "scopes": [
+        "accessibility",
+        "a11y",
+        "keyboard",
+        "focus"
+      ],
+      "roles": [
+        "accessibility-critic"
+      ],
+      "evidence": [
+        "accessibility-report"
+      ],
       "blocking": true
     },
     {
       "id": "copy",
-      "scopes": ["copy", "editorial", "student-copy"],
-      "roles": ["copy-editorial-critic"],
-      "evidence": ["copy-report"],
+      "scopes": [
+        "copy",
+        "editorial",
+        "student-copy"
+      ],
+      "roles": [
+        "copy-editorial-critic"
+      ],
+      "evidence": [
+        "copy-report"
+      ],
       "blocking": false
     },
     {
       "id": "classroom-release",
-      "scopes": ["release", "classroom-pilot", "ramaz", "live-class"],
+      "scopes": [
+        "release",
+        "classroom-pilot",
+        "ramaz",
+        "live-class"
+      ],
       "roles": [
         "teacher-transfer-critic",
         "classroom-projector-critic",
@@ -112,7 +274,13 @@
         "regression-hunter",
         "reliability-reviewer"
       ],
-      "evidence": ["release-evidence", "rollback-plan", "ship-case", "teacher-transfer-report", "synthesis-map"],
+      "evidence": [
+        "release-evidence",
+        "rollback-plan",
+        "ship-case",
+        "teacher-transfer-report",
+        "synthesis-map"
+      ],
       "blocking": true
     }
   ]

@@ -6,10 +6,22 @@
   "branchPrefix": "boss/",
   "founderControlsMainMerge": true,
   "productType": "live-classroom-sports-business-economics-course",
-  "surfaces": ["play", "teach", "board"],
+  "surfaces": [
+    "play",
+    "teach",
+    "board"
+  ],
   "requiredViewports": [
-    { "width": 1366, "height": 768, "why": "school Chromebook student/teacher device" },
-    { "width": 1920, "height": 1080, "why": "classroom projector board surface" }
+    {
+      "width": 1366,
+      "height": 768,
+      "why": "school Chromebook student/teacher device"
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "why": "classroom projector board surface"
+    }
   ],
   "sportsRealityMaxAgeDays": 400,
   "sacredConstraints": [
@@ -62,8 +74,11 @@
       "gradebook",
       "evidence-plan"
     ],
-    "forbiddenBlockingCategories": ["assessment-integrity"]
+    "forbiddenBlockingCategories": [
+      "assessment-integrity"
+    ]
   },
+  "protectedPathsNote": "Deterministic protection covers run state (always, via the PreToolUse hook) and .boss/config + .boss/schemas while a run is active (hook + the config-integrity gate check against the fingerprint frozen at run creation). The paths below beyond those are founder-review expectations enforced by branch protection and founder-controlled merge, not by a write guard.",
   "protectedPaths": [
     "runtime/src/shared",
     "docs/PRODUCT_DECISIONS.md",

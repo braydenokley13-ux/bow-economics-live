@@ -1,10 +1,17 @@
 // Ported from bow-decision-challenges tools/boss/lib/gates.mjs @ 9313c91.
 // Economics changes: the level-1 ceremony check reads releaseOnlyRoles from
 // levels config instead of a hardcoded product-specific role list.
+// Independent-review repairs: command-family required evidence (test, build,
+// lint, typecheck, ci, e2e) is satisfied only by an authentic passing command
+// record, not a self-labeled file; a config-integrity check fails the gate
+// when the harness constitution changed mid-run without a recorded founder
+// override on the subject "config-change".
 import { existsSync } from "node:fs";
 import path from "node:path";
 
+import { authenticCommandRecord, COMMAND_EVIDENCE_KINDS } from "./claims.mjs";
 import {
+  configFingerprint,
   gitSnapshot,
   hashFile,
   invariant,
@@ -92,7 +99,17 @@ export function evaluateGate(root, state, { gate = "wave" } = {}) {
   }
 
   const waveEvidence = wave.evidenceIds.map((id) => state.evidence[id]).filter(Boolean);
+  const commandKinds = new Set(COMMAND_EVIDENCE_KINDS);
   for (const requiredKind of wave.activation.evidence) {
+    if (commandKinds.has(requiredKind)) {
+      const passing = waveEvidence.some((record) => {
+        if (!evidenceMatches(record, requiredKind)) return false;
+        const authenticity = authenticCommandRecord(root, state, record);
+        return authenticity.authentic && authenticity.exitCode === 0;
+      });
+      checks.push(result(`evidence:${requiredKind}`, passing, passing ? `${requiredKind} evidence is an authentic passing command record.` : `${requiredKind} evidence requires an authentic passing \`evidence command\` record.`));
+      continue;
+    }
     const present = waveEvidence.some((record) => evidenceMatches(record, requiredKind));
     checks.push(result(`evidence:${requiredKind}`, present, present ? `${requiredKind} evidence is present.` : `${requiredKind} evidence is required.`));
   }
@@ -165,6 +182,21 @@ export function evaluateGate(root, state, { gate = "wave" } = {}) {
 
   const reservationConflicts = detectReservationConflicts(state);
   checks.push(result("ownership-conflicts", reservationConflicts.length === 0, reservationConflicts.length ? `Conflicting reservations: ${reservationConflicts.map((item) => `${item.left}<->${item.right}`).join(", ")}.` : "No active ownership conflicts."));
+
+  if (state.base.configHash) {
+    const current = configFingerprint(root);
+    const unchanged = current === state.base.configHash;
+    const acknowledged = state.overrides.some((override) => override.subject === "config-change");
+    checks.push(result(
+      "config-integrity",
+      unchanged || acknowledged,
+      unchanged
+        ? "Harness constitution is unchanged since run creation."
+        : acknowledged
+          ? "Harness constitution changed mid-run; a founder override on subject config-change acknowledges it."
+          : "Harness constitution changed mid-run without a founder override on subject config-change.",
+    ));
+  }
 
   const gitState = gitSnapshot(root);
   checks.push(result("protected-branch", gitState.branch !== config.project.defaultBranch, gitState.branch === config.project.defaultBranch ? `Boss implementation cannot run directly on ${config.project.defaultBranch}.` : `Branch ${gitState.branch} is not protected.`));

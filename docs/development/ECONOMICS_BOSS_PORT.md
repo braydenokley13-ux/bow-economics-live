@@ -115,10 +115,24 @@ Constitution (product-specific, deliberately different from DC):
 
 Code enforces: event integrity and resume; gate eligibility; role
 independence (builder ≠ analyst/critic actor); required-role and
-required-evidence presence; evidence hashes; command exit codes; claim
-screens; meeting economics and pre-opinion independence; ownership conflicts;
-budgets; branch protection; ship-gate clean-tree + rollback checkpoint;
-constitution separation; prototype/Boss boundary (level 0 refuses a run).
+required-evidence presence; evidence hashes; command-evidence authenticity
+(command-family claims and required command evidence accept only artifacts
+produced by `evidence command` — a self-labeled file with hand-authored
+exitCode metadata is contradicted); claim screens; meeting economics and
+pre-opinion independence; ownership conflicts; budgets; branch protection;
+ship-gate clean-tree + rollback checkpoint; constitution separation;
+constitution freeze during active runs (hook denial on `.boss/config` and
+`.boss/schemas`, plus a `config-integrity` gate check against the fingerprint
+frozen at run creation, releasable only by a founder override on subject
+`config-change`); prototype/Boss boundary (level 0 refuses a run).
+
+What code does NOT enforce, stated plainly: file-kind honesty for
+non-command evidence (a screenshot's authenticity is browser-qa's job),
+`protectedPaths` outside `.boss/config`/`.boss/schemas` (those are
+founder-review expectations backed by branch protection and founder-controlled
+merge, not a write guard — see `protectedPathsNote` in `project.json`), and
+the truth of any judgment claim. The independent read-only roles remain the
+integrity backstop for everything a local deterministic layer cannot prove.
 
 Model judgment (never fabricated by code): whether gameplay is MAGNETIC,
 whether a random teacher could run it, whether the economics is true and the
@@ -146,9 +160,11 @@ facts, player-pull claim without independent evidence, teacher-transfer claim
 without fresh-context evidence, synthesis omission at classroom release,
 teacher-surface/projector/economic-model activation triggers, rights/source
 surfacing without fabricated blocking, prototype ceremony, hidden facilitator
-knowledge (builder-notes transfer evidence), and roster-level independence.
+knowledge (builder-notes transfer evidence), roster-level independence, and the
+independent-review repair evals (forged command evidence, gate authenticity,
+mid-run constitution change, active-run config freeze).
 
-Suite: `npm run boss:test` — 44/44 this session. Doctor: all green this
+Suite: `npm run boss:test` — 48/48 after the independent-review repairs (44 at first install). Doctor: all green this
 session. CLI smoke: one synthetic level-1 run in a scratch fixture exercised
 create (dirty-tree rejection first), role activation, command evidence,
 deterministic claim confirmation, gate (correctly ineligible: missing
@@ -179,9 +195,43 @@ resume, and doctor run-projection freshness.
 - The workstream-lead pattern (lanes + reservations + budgets) exists in the
   runtime but has not yet been exercised by a real multi-lane program.
 
-## 8. Independent review
+## 8. Independent review — findings and dispositions
 
-A fresh-context independent review of this port ran after implementation and
-before ship; findings and dispositions are recorded in the run log of the
-port program (see the founder-facing ship case and the commit history of this
-branch).
+A fresh-context independent reviewer (no builder self-assessment provided)
+drove the real CLI against scratch fixtures and attacked the installation.
+Verdict: READY FOR FIRST ECONOMICS BOSS RUN, with findings, all repaired and
+re-evaled the same session:
+
+1. **IMPORTANT — forgeable "green" signals.** `evidence file` with a
+   self-asserted `--kind test` and hand-authored `exitCode` metadata confirmed
+   a `tests-pass` claim without anything running, and satisfied required
+   command evidence at the gate. *Repair:* command-family claims and required
+   command evidence now demand an authentic command record (artifact under the
+   run's `evidence/`, `--record.json`, parseable command + integer exit code,
+   metadata-consistent); forged records are contradicted. Evals R1.
+2. **IMPORTANT — `protectedPaths` was enforced by nothing;** a builder agent
+   could edit `.boss/config` mid-run to drop a critic and doctor stayed green.
+   *Repair:* a config fingerprint is frozen into `RunCreated`; the gate's
+   `config-integrity` check fails on any mid-run constitution change unless a
+   founder override on subject `config-change` is recorded; the PreToolUse
+   hook denies direct `.boss/config`/`.boss/schemas` edits while a run is
+   active; `protectedPathsNote` in `project.json` states honestly what the
+   remaining paths get (branch protection + founder merge, not a write
+   guard). Evals R2.
+3. **MINOR — DC assessment copy survived in the shared test fixture
+   contract.** *Repair:* fixture copy now speaks Economics law.
+4. **MINOR — `blocking:false` on an activation rule did not make its roles
+   omittable,** which an operator could misread. *Repair:* semantics
+   documented in `activation-rules.json` `note` (matched roles are always
+   required-to-complete; the flag controls blocking-role/never-omit status).
+5. **Operational note — run state lives in git,** so untracked run files make
+   the tree dirty before `git checkpoint`/ship gate. Documented in the
+   bow-boss skill's Operational notes, with the scope-naming guidance
+   (mechanism scopes, not lesson nouns) the reviewer's coverage audit
+   suggested.
+
+The reviewer's failed-attack list (tamper, truncation, stale projection,
+lock contention, self-certification, PASS bypass, ephemeral-role dodge,
+model-name authority, bleed injection, meeting economics, lesson promotion,
+fresh-checkout integrity) is preserved in the program transcript. Suite after
+repairs: 48/48; doctor green.

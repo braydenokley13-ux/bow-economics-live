@@ -94,6 +94,24 @@ and latest gate. Resume from the first unmet dependency.
 - Player pull is rated MAGNETIC / STRONG / FUNCTIONAL / WEAK / REFOUND. For important Track 101
   experiences FUNCTIONAL is below the target bar.
 
+## Operational notes
+
+- Run state lives in git (`.boss/runs/` is tracked, like the rest of the event
+  history). Because untracked run files make the tree dirty, commit run state
+  before `git checkpoint` and before the ship gate's clean-tree check — that
+  is the intended event-sourced-in-git model, not an error.
+- Evidence for command results must come from `evidence command` — a file
+  recorded with a self-asserted kind and hand-written exitCode metadata is
+  deterministically contradicted, and command-family gate evidence only counts
+  when it is an authentic passing command record.
+- The harness constitution (`.boss/config`, `.boss/schemas`) is frozen while a
+  run is active: the hook denies direct edits and the `config-integrity` gate
+  check fails on a changed fingerprint unless the founder records an override
+  on subject `config-change`.
+- Choose scopes by economic mechanism and surface (`economic-model`, `cap`,
+  `demand`, `teach`, `board`, `sports-reality`, …), not by lesson nouns — a
+  scope like `free-agency` matches no activation rule and pulls in no critics.
+
 ## Progressive references
 
 Read `.claude/skills/bow-boss/references/OPERATIONS.md` when you need exact commands for roles,

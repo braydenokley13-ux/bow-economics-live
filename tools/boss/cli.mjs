@@ -9,6 +9,7 @@ import { reconcileClaimAutomatically } from "./lib/claims.mjs";
 import {
   BossError,
   bossPaths,
+  configFingerprint,
   copyImmutableEvidence,
   findRepoRoot,
   gitSnapshot,
@@ -156,6 +157,7 @@ function commandRun(root, action, positional, flags) {
       base: {
         branch: base.branch,
         commit: base.commit,
+        configHash: configFingerprint(root),
         originMain: base.originMain,
         dirtyAtStart: base.dirty,
         dirtyReason: base.dirty ? flags["dirty-reason"] : null,

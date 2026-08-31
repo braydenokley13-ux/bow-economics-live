@@ -5,7 +5,12 @@
 // family; "sports-reality-current" and "teacher-transferable" gain
 // deterministic screens (a screen can contradict a claim, but confirmation of
 // judgment claims still requires an independent read-only reviewer).
-import { existsSync } from "node:fs";
+// Independent-review repair: command-family claims only accept evidence that
+// is an authentic command record (artifact inside the run's evidence
+// directory, parseable as a command record, exit code consistent with its
+// metadata) — a file recorded with a self-asserted kind and hand-authored
+// exitCode metadata no longer confirms anything.
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { hashFile, invariant, isNonEmptyString, loadConfig } from "./core.mjs";
@@ -30,11 +35,6 @@ function evidenceHasKind(evidence, kind) {
   return evidence.kind === kind || tags.includes(kind);
 }
 
-function commandPassed(evidence) {
-  const exitCode = evidence.metadata?.exitCode;
-  return Number.isInteger(exitCode) && exitCode === 0;
-}
-
 const COMMAND_CLAIM_KINDS = Object.freeze({
   "tests-pass": "test",
   "build-pass": "build",
@@ -43,6 +43,37 @@ const COMMAND_CLAIM_KINDS = Object.freeze({
   "ci-pass": "ci",
   "e2e-pass": "e2e",
 });
+
+export const COMMAND_EVIDENCE_KINDS = Object.freeze([...new Set(Object.values(COMMAND_CLAIM_KINDS))]);
+
+// An authentic command record is the artifact `boss evidence command` writes:
+// it lives under the run's evidence directory, parses as a command record with
+// a command array and an integer exit code, and agrees with the evidence
+// metadata. Anything else — including a file recorded with `--kind test` and
+// hand-authored `--metadata '{"exitCode":0}'` — is not command proof.
+export function authenticCommandRecord(root, state, record) {
+  if (!record.path) return { authentic: false, reason: `Evidence ${record.id} has no artifact; only \`evidence command\` output proves a command ran.` };
+  const normalized = String(record.path).replaceAll("\\", "/");
+  const expectedPrefix = `.boss/runs/${state.runId}/evidence/`;
+  if (!normalized.startsWith(expectedPrefix) || !normalized.endsWith("--record.json")) {
+    return { authentic: false, reason: `Evidence ${record.id} is not a command record produced by \`evidence command\`.` };
+  }
+  const absolute = path.resolve(root, normalized);
+  if (!existsSync(absolute)) return { authentic: false, reason: `Evidence ${record.id} command record is missing.` };
+  let artifact;
+  try {
+    artifact = JSON.parse(readFileSync(absolute, "utf8"));
+  } catch {
+    return { authentic: false, reason: `Evidence ${record.id} command record is not valid JSON.` };
+  }
+  if (!Array.isArray(artifact.command) || artifact.command.length === 0 || !Number.isInteger(artifact.exitCode)) {
+    return { authentic: false, reason: `Evidence ${record.id} artifact lacks a command and integer exit code.` };
+  }
+  if (record.metadata?.exitCode !== undefined && record.metadata.exitCode !== artifact.exitCode) {
+    return { authentic: false, reason: `Evidence ${record.id} metadata exit code disagrees with its command record.` };
+  }
+  return { authentic: true, exitCode: artifact.exitCode, command: artifact.command };
+}
 
 export function reconcileClaimAutomatically(root, state, claimId) {
   const claim = state.claims[claimId];
@@ -73,7 +104,12 @@ export function reconcileClaimAutomatically(root, state, claimId) {
     const matching = evidence.filter((record) => evidenceHasKind(record, expected));
     if (matching.length === 0) flag(`No ${expected} command evidence is linked.`);
     for (const record of matching) {
-      if (!commandPassed(record)) flag(`${expected} evidence ${record.id} has a nonzero or missing exit code.`);
+      const authenticity = authenticCommandRecord(root, state, record);
+      if (!authenticity.authentic) {
+        flag(authenticity.reason);
+      } else if (authenticity.exitCode !== 0) {
+        flag(`${expected} evidence ${record.id} has a nonzero exit code.`);
+      }
     }
   } else if (claim.kind === "viewport-verified") {
     const viewport = claim.metadata?.viewport;

@@ -1,10 +1,13 @@
-// Ported unchanged from bow-decision-challenges tools/boss/test/helpers.mjs @ 9313c91.
+// Ported from bow-decision-challenges tools/boss/test/helpers.mjs @ 9313c91.
+// Economics changes: fixture contract copy speaks this product's law, and
+// recordCommandEvidence writes an authentic command record for evals.
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { activationPlan } from "../lib/activation.mjs";
-import { findRepoRoot, gitSnapshot, runProcess } from "../lib/core.mjs";
+import { configFingerprint, findRepoRoot, gitSnapshot, runProcess } from "../lib/core.mjs";
 import { appendRunEvent, loadRun } from "../lib/events.mjs";
 
 const sourceRoot = findRepoRoot(import.meta.dirname);
@@ -15,8 +18,8 @@ export function contract(overrides = {}) {
     whyThisMatters: "This matters because the affected student or teacher path cannot advance safely without credible evidence.",
     uncertainties: ["Whether the implementation produces the intended result in the real affected path."],
     requiredEvidence: ["A deterministic command or browser artifact that directly exercises the hypothesis."],
-    nonGoals: ["Unrelated product redesign and assessment-semantic expansion are excluded."],
-    sacredConstraints: ["Assessment validity, evidence traceability, privacy, and classroom reliability cannot be weakened."],
+    nonGoals: ["Unrelated lesson redesign and economic-model expansion are excluded."],
+    sacredConstraints: ["Economic truth, teacher transfer, student privacy, and classroom reliability cannot be weakened."],
     passCondition: "All required roles and evidence confirm the improvement with no unresolved blocking contradiction.",
     repairCondition: "The direction remains promising, but a bounded evidence gap or repairable regression remains.",
     rollbackCondition: "The implementation causes a material regression or cannot preserve a sacred constraint.",
@@ -68,6 +71,7 @@ export function createRun(root, options = {}) {
     base: {
       branch: base.branch,
       commit: base.commit,
+      configHash: configFingerprint(root),
       originMain: null,
       dirtyAtStart: false,
       dirtyReason: null,
@@ -121,4 +125,35 @@ export function complete(root, runId, assignmentId, role, actor, options = {}) {
     evidenceIds: options.evidenceIds ?? [],
     cost: options.cost ?? null,
   }, actor, role);
+}
+
+// Writes the artifact `boss evidence command` would produce, then records the
+// evidence event pointing at it — the shape the authenticity check requires.
+export function recordCommandEvidence(root, runId, { id, kind, exitCode = 0, actor = "builder-a" }) {
+  const state = loadRun(root, runId).state;
+  const artifact = {
+    recordedAt: new Date().toISOString(),
+    command: ["node", "-e", `process.exit(${exitCode})`],
+    cwd: ".",
+    exitCode,
+    signal: null,
+    stdout: "",
+    stderr: "",
+  };
+  const relative = `.boss/runs/${state.runId}/evidence/${id}--record.json`;
+  const absolute = path.join(root, relative);
+  mkdirSync(path.dirname(absolute), { recursive: true });
+  const body = `${JSON.stringify(artifact, null, 2)}\n`;
+  writeFileSync(absolute, body);
+  const sha256 = createHash("sha256").update(body).digest("hex");
+  appendRunEvent(root, runId, "EvidenceRecorded", {
+    id,
+    wave: state.currentWave,
+    kind,
+    label: id,
+    path: relative,
+    sha256,
+    size: body.length,
+    metadata: { command: artifact.command, exitCode, signal: null },
+  }, actor, "builder");
 }

@@ -333,3 +333,11 @@ export function toRelative(root, filePath) {
 export function now() {
   return new Date().toISOString();
 }
+
+// Independent-review repair: fingerprint of the whole harness constitution
+// (all config files), frozen into RunCreated and re-checked at every gate so
+// mid-run edits to roles, levels, activation rules, meetings, models, or
+// project law cannot silently change what a running wave is held to.
+export function configFingerprint(root) {
+  return sha256(canonicalJson(loadConfig(root)));
+}

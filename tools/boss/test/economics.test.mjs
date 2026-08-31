@@ -6,13 +6,15 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
+import { spawnSync } from "node:child_process";
+
 import { activationPlan } from "../lib/activation.mjs";
 import { reconcileClaimAutomatically } from "../lib/claims.mjs";
 import { loadConfig } from "../lib/core.mjs";
 import { detectConstitutionBleed } from "../lib/doctor.mjs";
 import { appendRunEvent, loadRun } from "../lib/events.mjs";
 import { evaluateGate } from "../lib/gates.mjs";
-import { activate, complete, createRun, makeRepo, recordEvidence } from "./helpers.mjs";
+import { activate, complete, createRun, makeRepo, recordCommandEvidence, recordEvidence } from "./helpers.mjs";
 
 function addClaim(root, kind, metadata, evidenceIds, id = "claim-a") {
   appendRunEvent(root, "synthetic-run", "ClaimRecorded", {
@@ -235,4 +237,68 @@ test("independence: a builder cannot also serve as the transfer critic for the s
   const gate = evaluateGate(root, loadRun(root, "synthetic-run").state);
   const independence = gate.checks.find((item) => item.id === "role-independence");
   assert.equal(independence.passed, false);
+});
+
+// Independent-review repair evals.
+
+test("R1: a file recorded with a self-asserted test kind and forged exitCode cannot confirm tests-pass", () => {
+  const root = makeRepo();
+  createRun(root);
+  recordEvidence(root, "synthetic-run", { id: "forged", kind: "test", metadata: { exitCode: 0 } });
+  const state = addClaim(root, "tests-pass", {}, ["forged"]);
+  const result = reconcileClaimAutomatically(root, state, "claim-a");
+  assert.equal(result.status, "contradicted");
+  assert.match(result.reasons.join(" "), /evidence command/);
+});
+
+test("R1: the gate accepts required command evidence only as an authentic passing record", () => {
+  const root = makeRepo();
+  createRun(root, { level: 1, scopes: ["copy"] });
+  recordEvidence(root, "synthetic-run", { id: "forged", kind: "test", metadata: { exitCode: 0 } });
+  let gate = evaluateGate(root, loadRun(root, "synthetic-run").state);
+  assert.equal(gate.checks.find((item) => item.id === "evidence:test").passed, false);
+  recordCommandEvidence(root, "synthetic-run", { id: "real", kind: "test", exitCode: 0 });
+  gate = evaluateGate(root, loadRun(root, "synthetic-run").state);
+  assert.equal(gate.checks.find((item) => item.id === "evidence:test").passed, true);
+});
+
+test("R2: a mid-run constitution edit fails the gate until a founder override on config-change", () => {
+  const root = makeRepo();
+  createRun(root);
+  const meetingsPath = path.join(root, ".boss", "config", "meetings.json");
+  const meetings = JSON.parse(readFileSync(meetingsPath, "utf8"));
+  meetings.defaultTokenBudget = 999999;
+  writeFileSync(meetingsPath, JSON.stringify(meetings));
+  let gate = evaluateGate(root, loadRun(root, "synthetic-run").state);
+  const integrity = gate.checks.find((item) => item.id === "config-integrity");
+  assert.equal(integrity.passed, false);
+  assert.match(integrity.message, /config-change/);
+
+  appendRunEvent(root, "synthetic-run", "FounderOverrideRecorded", {
+    wave: 1,
+    subject: "config-change",
+    bossRecommendation: "REPAIR",
+    decision: "accept the recorded constitution change for this run",
+    founderReason: "synthetic eval",
+    riskAccepted: "gate now runs against amended law",
+    reviewTrigger: "next retrospective",
+  }, "founder-a", "founder");
+  gate = evaluateGate(root, loadRun(root, "synthetic-run").state);
+  assert.equal(gate.checks.find((item) => item.id === "config-integrity").passed, true);
+});
+
+test("R2: the hook freezes .boss/config while a run is active and releases it when closed", () => {
+  const root = makeRepo();
+  createRun(root);
+  const hook = path.join(import.meta.dirname, "..", "hooks", "protect-run-state.mjs");
+  const attempt = (filePath) => spawnSync(process.execPath, [hook], {
+    input: JSON.stringify({ tool_input: { file_path: filePath } }),
+    encoding: "utf8",
+  }).stdout;
+  const configPath = path.join(root, ".boss", "config", "levels.json");
+  assert.match(attempt(configPath), /deny/);
+  assert.match(attempt(path.join(root, ".boss", "runs", "synthetic-run", "events.jsonl")), /deny/);
+
+  appendRunEvent(root, "synthetic-run", "RunClosed", { status: "closed", reason: "eval" }, "lead-a", "lead-integrator");
+  assert.equal(attempt(configPath), "");
 });
