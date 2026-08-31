@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "projectId": "bow-economics-live",
+  "displayName": "BOW Economics Live",
+  "defaultBranch": "main",
+  "branchPrefix": "boss/",
+  "founderControlsMainMerge": true,
+  "productType": "live-classroom-sports-business-economics-course",
+  "surfaces": ["play", "teach", "board"],
+  "requiredViewports": [
+    { "width": 1366, "height": 768, "why": "school Chromebook student/teacher device" },
+    { "width": 1920, "height": 1080, "why": "classroom projector board surface" }
+  ],
+  "sportsRealityMaxAgeDays": 400,
+  "sacredConstraints": [
+    "experience-before-formalization",
+    "real-sports-business-truth",
+    "fandom-never-a-prerequisite",
+    "no-false-economics",
+    "simplify-interface-before-economics",
+    "recoverable-decisions",
+    "class-reveal-is-the-reward",
+    "no-gamification-layer",
+    "teacher-paced-with-manual-fallback",
+    "random-teacher-standard",
+    "student-privacy-across-surfaces",
+    "classroom-reliability",
+    "four-module-spine",
+    "browser-truth",
+    "founder-merge-control"
+  ],
+  "blockingDissentCategories": [
+    "economic-truth",
+    "teacher-transfer",
+    "classroom-reliability",
+    "student-privacy",
+    "data-loss"
+  ],
+  "advisoryDissentCategories": [
+    "rights-source",
+    "student-pull",
+    "visual-quality"
+  ],
+  "constitutionExclusions": {
+    "note": "BOW Decision Challenges assessment law must not silently become Economics law. These identifiers belong to the sibling product's constitution and may not appear as Economics roles, scopes, or blocking categories.",
+    "forbiddenRoleIds": [
+      "assessment-critic",
+      "financial-literacy-standards-critic",
+      "teacher-evidence-critic",
+      "teacher-district-critic",
+      "ai-red-team",
+      "ai-evaluation-analyst",
+      "classroom-qa"
+    ],
+    "forbiddenScopes": [
+      "assessment",
+      "rubric",
+      "evidence-mode",
+      "support-level",
+      "nysed",
+      "standards",
+      "gradebook",
+      "evidence-plan"
+    ],
+    "forbiddenBlockingCategories": ["assessment-integrity"]
+  },
+  "protectedPaths": [
+    "runtime/src/shared",
+    "docs/PRODUCT_DECISIONS.md",
+    "CLAUDE.md",
+    "package.json",
+    ".boss/schemas"
+  ],
+  "commands": {
+    "test": "npm test --prefix runtime",
+    "build": "npm run build --prefix runtime",
+    "harness": "npm run boss:test"
+  }
+}

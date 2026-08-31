@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bow.education/schemas/boss/wave-contract.schema.json",
+  "title": "BOW Boss wave contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "hypothesis",
+    "whyThisMatters",
+    "uncertainties",
+    "requiredEvidence",
+    "nonGoals",
+    "sacredConstraints",
+    "passCondition",
+    "repairCondition",
+    "rollbackCondition",
+    "killCondition",
+    "iterationBudget"
+  ],
+  "properties": {
+    "hypothesis": { "type": "string", "minLength": 20 },
+    "whyThisMatters": { "type": "string", "minLength": 20 },
+    "uncertainties": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+    "requiredEvidence": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+    "nonGoals": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+    "sacredConstraints": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+    "passCondition": { "type": "string", "minLength": 20 },
+    "repairCondition": { "type": "string", "minLength": 20 },
+    "rollbackCondition": { "type": "string", "minLength": 20 },
+    "killCondition": { "type": "string", "minLength": 20 },
+    "iterationBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximumWaves", "maximumRepairs", "softTokenBudget", "reason"],
+      "properties": {
+        "maximumWaves": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "maximumRepairs": { "type": "integer", "minimum": 0, "maximum": 20 },
+        "softTokenBudget": { "type": "integer", "minimum": 0 },
+        "reason": { "type": "string", "minLength": 10 }
+      }
+    }
+  }
+}

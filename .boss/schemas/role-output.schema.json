@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bow.education/schemas/boss/role-output.schema.json",
+  "title": "BOW Boss role output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["role", "actor", "wave", "status", "sections", "evidenceIds", "dissent"],
+  "properties": {
+    "role": { "type": "string", "minLength": 3 },
+    "actor": { "type": "string", "minLength": 1 },
+    "wave": { "type": "integer", "minimum": 1 },
+    "status": { "enum": ["completed", "completed-with-concerns", "blocked", "failed"] },
+    "sections": { "type": "object", "minProperties": 1 },
+    "evidenceIds": { "type": "array", "items": { "type": "string" } },
+    "dissent": {
+      "type": ["object", "null"],
+      "properties": {
+        "category": { "type": "string" },
+        "severity": { "enum": ["advisory", "important", "blocking"] },
+        "finding": { "type": "string" },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["category", "severity", "finding", "evidenceIds"]
+    }
+  }
+}

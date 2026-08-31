@@ -1,0 +1,19 @@
+{
+  "name": "bow-economics-live",
+  "private": true,
+  "version": "1.0.0",
+  "description": "BOW Economics Live — Track 101 live-classroom sports-business economics. Root package hosts the BOW Boss development control plane; the product lives in runtime/.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "boss": "node tools/boss/cli.mjs",
+    "boss:test": "node --test tools/boss/test/*.test.mjs",
+    "boss:doctor": "node tools/boss/cli.mjs doctor",
+    "boss:agents": "node tools/boss/generate-agents.mjs",
+    "boss:check": "npm run boss:agents && npm run boss:test && npm run boss:doctor",
+    "test": "npm test --prefix runtime",
+    "build": "npm run build --prefix runtime"
+  }
+}
