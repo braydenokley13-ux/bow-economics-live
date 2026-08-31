@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:09:07.246Z",
+  "updatedAt": "2026-08-31T23:11:36.151Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -600,12 +600,22 @@
           "model": "claude-sonnet-5",
           "reason": "Three-surface browser truth at required viewports incl. refresh/rejoin/late-join paths",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T22:57:07.407Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T23:11:35.916Z",
+          "sections": {
+            "paths-exercised": "Full 8-phase arc across /play /teach /board at 1366x768, spot-checked 1920x1080; mid-PLAY refresh; duplicate join; late join during Night 3; teacher early-advance during PLAY; board refresh mid-reveal; server-restart snapshot resume; malformed price/spend and privilege-escalation probes; /teach without bearer key; board privacy at every phase. Detail in GATE_L1_QA.md.",
+            "artifacts": "Screenshots in docs/gauntlet/module-2/screens-l1-qa/ by path and viewport.",
+            "defects": "BLOCKING: teacher's primary Advance during PLAY silently ends the entire five-night play window with no confirmation (guard exists in m1l2/m1l3, absent here); settlement honors only locked desks, so a set-but-unlocked price is discarded — repro'd a desk experiencing zero of five pricing decisions. MODERATE: Lock-It-In button 38px at 1366x768 (2px under touch-target minimum); missing confirm() as the root fixable gap. Zero 500s; malformed inputs cleanly 409'd.",
+            "not-verified": "1920x1080 beyond spot screenshots; nothing else material — refresh/rejoin/duplicate/restart-resume all exercised and recovered."
+          },
+          "evidenceIds": [
+            "gate-l1-qa"
+          ],
+          "cost": {
+            "tokens": 149799,
+            "toolUses": 71
+          }
         }
       },
       "evidenceIds": [
@@ -615,7 +625,8 @@
         "l1-tests",
         "l1-tuning",
         "l1-e2e",
-        "gate-l1-sr"
+        "gate-l1-sr",
+        "gate-l1-qa"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -623,7 +634,9 @@
         "l1-bc2-pass",
         "l1-bc2-harness-pass"
       ],
-      "dissentIds": [],
+      "dissentIds": [
+        "qa-teacher-misclick"
+      ],
       "meetingIds": [],
       "gates": [],
       "verdict": null,
@@ -1104,6 +1117,27 @@
       },
       "recordedAt": "2026-08-31T23:08:52.187Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-qa": {
+      "id": "gate-l1-qa",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "L1 QA gate: 1 BLOCKING (teacher Advance during PLAY silently ends all five nights, unlocked prices discarded, no confirm — guard exists in m1l2/m1l3, missing here), 2 MODERATE (38px lock button; missing confirm root cause). Privacy, auth, refresh/rejoin/restart-resume, malformed input all clean at 1366x768",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-qa--GATE_L1_QA.md",
+      "sha256": "68d864fe0ff36828fef8fc4536dd95a16fd3331d8eb5905035175eb8e7342d32",
+      "size": 13572,
+      "metadata": {
+        "blocking": 1,
+        "moderate": 2,
+        "minor": 0,
+        "tags": [
+          "browser-qa",
+          "wave-2",
+          "gate"
+        ]
+      },
+      "recordedAt": "2026-08-31T23:11:19.709Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1261,6 +1295,20 @@
       "status": "open",
       "recordedAt": "2026-08-31T21:48:39.390Z",
       "actor": "lead-integrator"
+    },
+    "qa-teacher-misclick": {
+      "id": "qa-teacher-misclick",
+      "wave": 2,
+      "category": "classroom-reliability",
+      "severity": "blocking",
+      "finding": "Teacher's primary Advance during PLAY silently ends the whole five-night play window (no confirmation; guard present in m1l2/m1l3, missing in m2l1-full-house) and settlement discards set-but-unlocked prices — one plausible tap destroys the core loop for the class, unrecoverable. Repro + screenshots in GATE_L1_QA.md.",
+      "evidenceIds": [
+        "gate-l1-qa"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-08-31T23:11:36.151Z",
+      "actor": "browser-qa"
     }
   },
   "meetings": {},
@@ -1291,11 +1339,11 @@
     "agentsActivated": 15,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 25,
+    "evidenceRecorded": 26,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 69,
-  "eventHead": "c39385001dbeab4fadd57d32bea9a4cdab85c823dd75a277a0e83ac2f8dc15b2",
+  "eventCount": 72,
+  "eventHead": "5361d5bef985b95205a3cc5e86b1c598b9cf64d420fc2e2108a528b10aa16fc6",
   "warnings": []
 }

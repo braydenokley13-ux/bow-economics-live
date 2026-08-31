@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `69:c39385001dbeab4fadd57d32bea9a4cdab85c823dd75a277a0e83ac2f8dc15b2`  
-Updated: 2026-08-31T23:09:07.246Z
+Event head: `72:5361d5bef985b95205a3cc5e86b1c598b9cf64d420fc2e2108a528b10aa16fc6`  
+Updated: 2026-08-31T23:11:36.151Z
 
 ## Founder intent
 
@@ -37,7 +37,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - player-gameplay-critic — lead-integrator — active — claude-opus-5
 - economic-truth-critic — lead-integrator — active — claude-opus-5
 - sports-reality-director — lead-integrator — completed-with-concerns — claude-opus-5
-- browser-qa — lead-integrator — active — claude-sonnet-5
+- browser-qa — lead-integrator — completed-with-concerns — claude-sonnet-5
 
 ## Required evidence
 
@@ -61,6 +61,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-tuning — test — BC-2 tuning harness: 11 properties
 - l1-e2e — e2e — M2 L1 full-arc three-surface Playwright proof
 - gate-l1-sr — sports-reality-report — L1 SR gate: CLEAR WITH REPAIRS. Blocking: Knicks won 2026 title (2026-06-13) so N3 'defending champions' collides with NY desk; capacities cleared w/ copy repair; magnitude-honesty + BC-3 point-of-use stamps required
+- gate-l1-qa — browser-trace — L1 QA gate: 1 BLOCKING (teacher Advance during PLAY silently ends all five nights, unlocked prices discarded, no confirm — guard exists in m1l2/m1l3, missing here), 2 MODERATE (38px lock button; missing confirm root cause). Privacy, auth, refresh/rejoin/restart-resume, malformed input all clean at 1366x768
 
 ## Claim ledger
 
@@ -71,7 +72,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 
 ## Dissent
 
-- No dissent recorded
+- qa-teacher-misclick — classroom-reliability/blocking/open — Teacher's primary Advance during PLAY silently ends the whole five-night play window (no confirmation; guard present in m1l2/m1l3, missing in m2l1-full-house) and settlement discards set-but-unlocked prices — one plausible tap destroys the core loop for the class, unrecoverable. Repro + screenshots in GATE_L1_QA.md.
 
 ## Latest gate
 
