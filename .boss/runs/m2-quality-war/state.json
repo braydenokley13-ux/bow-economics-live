@@ -26,12 +26,12 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:57:58.332Z",
+  "updatedAt": "2026-08-31T22:07:31.363Z",
   "currentWave": 1,
   "waves": {
     "1": {
       "number": 1,
-      "status": "active",
+      "status": "closed",
       "contract": {
         "hypothesis": "Module 2 'Money in Motion' can become a coherent three-lesson sports-business module in which (1) the winning architecture is selected from genuinely competing candidates (A: evolve The Box Office; B: substantial refound preserving its verified insights; C: first-principles, sunk-cost-blind) via played browser prototypes, not prose comparison; (2) every flagship lesson rates STRONG or MAGNETIC on independent gameplay review; (3) every taught mechanism is economically true and instantiated in play before it is named; (4) real NBA/sports-business people, contracts, rules, and events are integral, dated, and never a fandom test; (5) a fresh-context teacher review finds each lesson runnable to an excellent standard without founder knowledge; and (6) the runtime survives classroom behavior on the three surfaces.",
         "whyThisMatters": "Module 2 is the first module built under Economics Boss and the second module of Track 101. The existing Box Office prototype is technically verified but has never been gameplay/economics/teacher-gauntleted, and its architecture has never faced a competitor. Committing three lessons of build effort to an unexamined architecture is the exact sunk-cost failure the product philosophy forbids.",
@@ -390,7 +390,9 @@
         "l3-arith-harness",
         "sel-sr-review",
         "sel-econ-review",
-        "play-review"
+        "play-review",
+        "l3-replay-review",
+        "arch-selection"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -406,7 +408,7 @@
       "verdict": null,
       "repairs": 0,
       "startedAt": "2026-08-31T20:37:32.416Z",
-      "closedAt": null
+      "closedAt": "2026-08-31T22:07:31.363Z"
     }
   },
   "evidence": {
@@ -696,6 +698,41 @@
       },
       "recordedAt": "2026-08-31T21:57:38.330Z",
       "actor": "lead-integrator"
+    },
+    "l3-replay-review": {
+      "id": "l3-replay-review",
+      "wave": 1,
+      "kind": "gameplay-report",
+      "label": "L3 re-play after repair: FUNCTIONAL, signature half-landed (asymmetric arrows real, transfer attribution missing), inert CONDITION + unnamed club are build blockers; rule-writing L3 selectable",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-replay-review--PLAY_REVIEW.md",
+      "sha256": "1eae0c44b2ca88ad07e52edc6e8c22342dc59a2c931dc0a1aff3ae90b0e12009",
+      "size": 35159,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "selection",
+          "stage0"
+        ]
+      },
+      "recordedAt": "2026-08-31T22:06:31.847Z",
+      "actor": "lead-integrator"
+    },
+    "arch-selection": {
+      "id": "arch-selection",
+      "wave": 1,
+      "kind": "design-doc",
+      "label": "Wave 1 decision record: Candidate C selected; A and B killed; Box Office lesson superseded; binding build charter BC-1..BC-7",
+      "path": ".boss/runs/m2-quality-war/evidence/arch-selection--ARCHITECTURE_SELECTION.md",
+      "sha256": "1b46035e1df88f788164bc26ca17c3c2e24dc072980c10c86d4338b88636c7bb",
+      "size": 7123,
+      "metadata": {
+        "tags": [
+          "selection",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T22:07:30.629Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {},
@@ -710,9 +747,12 @@
         "econ-contract-report"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-08-31T20:50:58.116Z",
-      "actor": "economic-truth-critic"
+      "actor": "economic-truth-critic",
+      "resolution": "Resolved by kill: the Box Office demand model does not carry into the selected architecture. Candidate C (selected, see arch-selection) replaces the pre-lock-preview model with blind commitment + history-only feedback, independently play-verified as the war's only STRONG loop with nothing sweepable pre-commit and no dominant line. The old lesson is superseded; code removal deferred to the build wave.",
+      "resolvedAt": "2026-08-31T22:07:30.878Z",
+      "resolvedBy": "lead-integrator"
     },
     "econ-contract-dissent": {
       "id": "econ-contract-dissent",
@@ -756,9 +796,12 @@
         "sel-econ-review"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-08-31T21:48:15.314Z",
-      "actor": "economic-truth-critic"
+      "actor": "economic-truth-critic",
+      "resolution": "Resolved by selection outcome: Candidate A was not selected and its module is killed (see arch-selection). Both blocked mechanisms (argmax-invariant L1 shifters; cross-seat-free L3 take function) die with it; neither carries into Candidate C's build.",
+      "resolvedAt": "2026-08-31T22:07:31.120Z",
+      "resolvedBy": "lead-integrator"
     },
     "sel-econ-review-dissent": {
       "id": "sel-econ-review-dissent",
@@ -790,11 +833,11 @@
     "agentsActivated": 10,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 16,
+    "evidenceRecorded": 18,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 40,
-  "eventHead": "cf85bf2cc860e766d7a5274d06529831799b9617cf01ae4fb4c118c6eb200b5b",
+  "eventCount": 45,
+  "eventHead": "510b2273baf65c6cad194860068f623cd623c8935f9a0a5de43da29b0668b646",
   "warnings": []
 }

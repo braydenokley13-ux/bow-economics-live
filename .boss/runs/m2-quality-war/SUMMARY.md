@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `40:cf85bf2cc860e766d7a5274d06529831799b9617cf01ae4fb4c118c6eb200b5b`  
-Updated: 2026-08-31T21:57:58.332Z
+Event head: `45:510b2273baf65c6cad194860068f623cd623c8935f9a0a5de43da29b0668b646`  
+Updated: 2026-08-31T22:07:31.363Z
 
 ## Founder intent
 
@@ -75,6 +75,8 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - sel-sr-review — sports-reality-report — SR selection review: C>A>B on real-world strength; best use A-L2 arena decision, worst miss B optional SR-8; two build-blocking accuracy items in C (lottery order, pipe magnitudes)
 - sel-econ-review — economic-truth-report — Econ selection review: C>B>A; A's L1 shifters + L3 take function blocked at mechanism level; l3-sharing-argmax upheld with closed-form discharge path (differential instrument + flat-arrow taught moment)
 - play-review — gameplay-report — Stage-0 play review: l1c STRONG (only STRONG in war; no dominant line under 5 attack strategies), l1a WEAK (false-cause reveal + sweepable hump governing nothing), l1b WEAK, l2 FUNCTIONAL, l3 UNRATEABLE (dead-ends before payoff)
+- l3-replay-review — gameplay-report — L3 re-play after repair: FUNCTIONAL, signature half-landed (asymmetric arrows real, transfer attribution missing), inert CONDITION + unnamed club are build blockers; rule-writing L3 selectable
+- arch-selection — design-doc — Wave 1 decision record: Candidate C selected; A and B killed; Box Office lesson superseded; binding build charter BC-1..BC-7
 
 ## Claim ledger
 
@@ -82,11 +84,11 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 
 ## Dissent
 
-- econ-boxoffice-unrepaired — economic-truth/blocking/open — The existing Box Office demand model must not carry into the selected architecture unrepaired: (1) pre-lock server preview returns true attendance/revenue for every dial position, so the optimum is read by sweeping, not reasoned — the hidden-curve uncertainty is fake; (2) computed over the full price grid, sweet-spot pricing is optimal in both homestands for all four markets — the claimed short-term-cash-vs-fan-base tension does not exist; (3) an overpriced Expansion seat faces a $75,000 H2 payroll against a $52,500 revenue ceiling — unwinnable by construction. See ECONOMIC_CONTRACT.md R2/R5/R6/R10.
+- econ-boxoffice-unrepaired — economic-truth/blocking/resolved — The existing Box Office demand model must not carry into the selected architecture unrepaired: (1) pre-lock server preview returns true attendance/revenue for every dial position, so the optimum is read by sweeping, not reasoned — the hidden-curve uncertainty is fake; (2) computed over the full price grid, sweet-spot pricing is optimal in both homestands for all four markets — the claimed short-term-cash-vs-fan-base tension does not exist; (3) an overpriced Expansion seat faces a $75,000 H2 payroll against a $52,500 revenue ceiling — unwinnable by construction. See ECONOMIC_CONTRACT.md R2/R5/R6/R10.
 - econ-contract-dissent — undefined/undefined/open — undefined
 - l3-sharing-argmax — economic-truth/blocking/open — Deterministic brute force refutes part of the L3 signature moment shared by all three candidate designs: revenue sharing lowers a seat's own optimal price ONLY where demand has slack — for a capacity-saturated market (New York, Design C's own constants) the optimal price never moves at any share 0-50%. Additionally, Design C's L3 sharing base (gate + in-arena + local media taxed uniformly) cannot move any price argmax — proportional taxation does not shift a maximizer; the mechanism requires an untaxed revenue stream (present only in Design A's wording). The winning architecture must either re-slate L3's markets, adopt an untaxed-stream structure, or make big-market non-movement itself the taught moment.
 - proto-l2-l3-dissent — undefined/undefined/open — undefined
-- econ-candidate-a-blocked — economic-truth/blocking/open — Candidate A blocked outright as specified: (1) its L1 demand system uses multiplicative shifters that leave the cash argmax invariant (verified $48 at m=0.6/1.0/1.6), making 'lock the Replay peak' a dominant strategy and A's stated payload false in its own model; (2) its L3 take function (1-s)*ownGate + pot + national has no cross-seat term, so L2's interdependence is off during the lesson that executes the rule — the payer's take falls monotonically in s with no offsetting channel, teaching FL4 inverted ('sharing only costs'). Structural, not tunable. See SELECTION_ECON_REVIEW.md.
+- econ-candidate-a-blocked — economic-truth/blocking/resolved — Candidate A blocked outright as specified: (1) its L1 demand system uses multiplicative shifters that leave the cash argmax invariant (verified $48 at m=0.6/1.0/1.6), making 'lock the Replay peak' a dominant strategy and A's stated payload false in its own model; (2) its L3 take function (1-s)*ownGate + pot + national has no cross-seat term, so L2's interdependence is off during the lesson that executes the rule — the payer's take falls monotonically in s with no offsetting channel, teaching FL4 inverted ('sharing only costs'). Structural, not tunable. See SELECTION_ECON_REVIEW.md.
 - sel-econ-review-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
