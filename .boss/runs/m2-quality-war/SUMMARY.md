@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `38:e7bfe576864fa3b62a5408418b89f194c70d59a34b908ac5bbfa929c2e14ed02`  
-Updated: 2026-08-31T21:48:39.390Z
+Event head: `40:cf85bf2cc860e766d7a5274d06529831799b9617cf01ae4fb4c118c6eb200b5b`  
+Updated: 2026-08-31T21:57:58.332Z
 
 ## Founder intent
 
@@ -40,7 +40,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - experience-director — lead-integrator — active — claude-opus-5
 - builder — lead-integrator — completed — claude-sonnet-5
 - builder — lead-integrator — completed-with-concerns — claude-sonnet-5
-- player-gameplay-critic — lead-integrator — active — claude-opus-5
+- player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - sports-reality-director — lead-integrator — completed — claude-opus-5
 
@@ -74,6 +74,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 - l3-arith-harness — test — L3 sharing-arithmetic brute-force: claims i,iii FAIL for capacity-saturated NY; ii,iv PASS; Memphis passes all
 - sel-sr-review — sports-reality-report — SR selection review: C>A>B on real-world strength; best use A-L2 arena decision, worst miss B optional SR-8; two build-blocking accuracy items in C (lottery order, pipe magnitudes)
 - sel-econ-review — economic-truth-report — Econ selection review: C>B>A; A's L1 shifters + L3 take function blocked at mechanism level; l3-sharing-argmax upheld with closed-form discharge path (differential instrument + flat-arrow taught moment)
+- play-review — gameplay-report — Stage-0 play review: l1c STRONG (only STRONG in war; no dominant line under 5 attack strategies), l1a WEAK (false-cause reveal + sweepable hump governing nothing), l1b WEAK, l2 FUNCTIONAL, l3 UNRATEABLE (dead-ends before payoff)
 
 ## Claim ledger
 

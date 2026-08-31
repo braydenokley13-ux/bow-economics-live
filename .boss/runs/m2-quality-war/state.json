@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T21:48:39.390Z",
+  "updatedAt": "2026-08-31T21:57:58.332Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -299,12 +299,28 @@
           "model": "claude-opus-5",
           "reason": "Independent play evidence across all five Stage-0 prototypes; fun cannot be inferred from source; judgment-heavy browser interaction.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T21:35:46.952Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-08-31T21:57:58.332Z",
+          "sections": {
+            "what-the-student-plays": "Per-prototype beat-by-beat in stage0/PLAY_REVIEW.md. l1c: five blind price commits against night cards with history-only feedback and two currencies (CASH/RENEWALS); l1a: one price then three dials over a replay readout; l1b: blind pass sale then nightly release quantities; l2: sections+reinvest dials across a 4-week hosted mini-league with decomposition reveal; l3: share/condition dials through offer rounds to adoption, then a lived-under season (unreachable — see concerns).",
+            "pull-rating": "l1c-blind-price STRONG (L1 winner: nothing sweepable pre-commit, no dominant line after five attack strategies, graded landscape — hill-climbed optimum $3.79M/98% renewals vs flat-$50 $2.96M/15%; learning the system measurably improves play). l2-hosting FUNCTIONAL. l1a-replay-dial WEAK (Round-1 gate monotone to dial ceiling — dominant play is max it; sweepable $100-peak replay hump governs nothing). l1b-release WEAK. l3-rule REFOUND as playable / core loop UNRATEABLE (hard-blocks).",
+            "biggest-failure": "l1a's closing reveal states a false cause: it prints '$-944,112 less by pricing per night instead of once' but Round 2's slate is a silently poorer demand world (Saturday draw 92->50, Thursday x0.85); best-achievable R2 < best-achievable R1 on every seed, so the game blames per-night pricing for a shock it applied. Runner-up hard blocker: l3 dead-ends at liveBefore/reveal on both voted and fallback paths — the entire payoff is unreachable by play.",
+            "moment-by-moment-notes": "Best felt beat in the war: l1c Night 5 replaying Night 1's card — 3,200 fans then 2,080 at the same price. Best reveal: l1c Two Peaks ($54 ticket-max vs $48 total-max) making the uncertainty interpretable. Screenshots in stage0/screens-play/.",
+            "required-repairs": "Blocks selection: none against l1c. Blocks the build: l3 loop must be proven playable to payoff (prototype bug or fallback adoption); l2 needs pull work above FUNCTIONAL; l1a/l1b loops rejected as anchors. Open human thresholds (dial-adjust counts, spoken reasoning, adoption timing, economic-vs-moral talk) are NOT laundered from scripted play — they remain for the real-classroom rung. Pairs-on-one-device NOT VERIFIED in all five files."
+          },
+          "evidenceIds": [
+            "play-review",
+            "proto-l1a",
+            "proto-l1b",
+            "proto-l1c",
+            "proto-l2",
+            "proto-l3"
+          ],
+          "cost": {
+            "tokens": 227591,
+            "toolUses": 117
+          }
         },
         "sel-econ-review": {
           "assignmentId": "sel-econ-review",
@@ -373,7 +389,8 @@
         "readme-l2l3",
         "l3-arith-harness",
         "sel-sr-review",
-        "sel-econ-review"
+        "sel-econ-review",
+        "play-review"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -661,6 +678,24 @@
       },
       "recordedAt": "2026-08-31T21:48:21.469Z",
       "actor": "lead-integrator"
+    },
+    "play-review": {
+      "id": "play-review",
+      "wave": 1,
+      "kind": "gameplay-report",
+      "label": "Stage-0 play review: l1c STRONG (only STRONG in war; no dominant line under 5 attack strategies), l1a WEAK (false-cause reveal + sweepable hump governing nothing), l1b WEAK, l2 FUNCTIONAL, l3 UNRATEABLE (dead-ends before payoff)",
+      "path": ".boss/runs/m2-quality-war/evidence/play-review--PLAY_REVIEW.md",
+      "sha256": "1a6beda3215369450eaaf2c8026fe33b2718b7aca9a32ff9930b17c9e07aeaa9",
+      "size": 25479,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "selection",
+          "stage0"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:57:38.330Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {},
@@ -755,11 +790,11 @@
     "agentsActivated": 10,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 15,
+    "evidenceRecorded": 16,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 38,
-  "eventHead": "e7bfe576864fa3b62a5408418b89f194c70d59a34b908ac5bbfa929c2e14ed02",
+  "eventCount": 40,
+  "eventHead": "cf85bf2cc860e766d7a5274d06529831799b9617cf01ae4fb4c118c6eb200b5b",
   "warnings": []
 }
