@@ -10,11 +10,13 @@ scripted sweep whose numbers are reproduced here; **inferred** = reasoning from 
 **NOT VERIFIED** = requires real students or artifacts I was not given.
 
 Coverage honesty: L1A, L1B, L1C, L2 played to completion under 6+ strategies each including a
-different-seed replay. **L3 could not be played to completion by any strategy — it hard-blocks (see
-below); its second half was inspected by forcing the state machine from the console, which is not
-play.** No Boss evidence ids were supplied to me with this assignment, so I cite file paths, screenshot
-names and reproducible action sequences instead; if evidence ids are required for the gate, they must
-be attached by the Lead Integrator to these observations.
+different-seed replay. L3 was **re-played after the dead-end repair** (see "l3 re-play after repair"
+entries below) at reduced scope as instructed: obvious-optimization proposal, contrarian extreme-share
+holdout, fallback real-rule mode, and a different-seat replay — all click-only, all to the full
+BEFORE/AFTER payoff. Scripted sweeps were then used only to verify dominance and control potency after
+that blind play. No Boss evidence ids were supplied to me with this assignment, so I cite file paths,
+screenshot names and reproducible action sequences instead; if evidence ids are required for the gate,
+they must be attached by the Lead Integrator to these observations.
 
 ---
 
@@ -60,26 +62,105 @@ Three offer rounds: set SHARE (0–60% of local revenue pooled) and a CONDITION 
 ≥15% to collect), submit, see an anonymous unsorted histogram of six desks and a running median, move
 or hold → adoption test (two-thirds within ±10 of the round-3 median) → then "live under it": one week
 under the old rule, one under the new, then a before/after table.
-**What the student actually plays: 3 proposals and then a wall.** After the first live-week COMMIT the
-page renders an empty panel with no continue control (`l3-live-before-reveal-blank.png`). The entire
-"live under the rule" payoff is unreachable.
+*(l3 re-play after repair)* The full sequence now runs click-only: 3 proposals → ADOPTION verdict →
+BEFORE decide → **BEFORE — RESULTS** (all six desks' reinvest and take under the status quo) → AFTER
+decide → BEFORE/AFTER table with per-desk deltas → Finish. A "Skip the vote" toggle jumps straight to a
+modeled real-league share and runs the same before/after.
+**Genuine decisions: 5** — three proposals (of which rounds 2 and 3 gave me no reason to change my
+number) plus two reinvest settings whose optimum is the same value in both weeks. One of the two
+advertised rule controls, the CONDITION checkbox, is inert (measured, see honesty checks).
 
 ---
 
 ## pull-rating
 
-### l3-rule.html — REFOUND (as playable; UNRATEABLE as designed)
-Observed: from `liveBefore/decide`, clicking COMMIT THE WEEK moves state to `liveBefore/reveal`, where
-the only visible button in the document is "New run" (`newRunBtn`); `advanceBtn3` is present but not
-displayed, and the reveal panel is empty. Identical dead end via the fallback toggle
-(`l3-fallback-deadend.png`). Both routes to the lesson's payoff are closed. Biggest boredom source is
-moot — the student cannot reach the part that would or would not be boring.
-Of what *is* playable: three slider submissions against five simulated desks that converge on you
-anyway. Measured sensitivity is real (proposals `[0,0,0]`→adopted 22.5%; `[30,30,30]`→32.5%;
-`[35,35,35]`→35%; `[60,60,60]`→**no adoption**, fallback share 5%), so holding out has genuine bite —
-that is the one good bone here. But three submissions is not a loop, and in a real room the pull comes
-from the argument, which no prototype can evidence. NOT VERIFIED: everything about whether a room
-converges in eight minutes.
+### l3-rule.html — FUNCTIONAL *(l3 re-play after repair; supersedes the earlier REFOUND/UNRATEABLE entry)*
+**Repair independently verified.** Click-only, no console calls, both paths now reach the full payoff.
+Voted path: 3 proposals → ADOPTION → "Live under it" → BEFORE decide → **BEFORE — RESULTS** (new panel:
+all six desks' reinvest and take under the status quo, plus a "Live under the adopted rule" button,
+`advanceBtn4`) → AFTER decide → BEFORE/AFTER table → Finish
+(`l3-replay-voted-liveBefore-reveal-2.png`, `l3-replay-voted-complete-reveal-5.png`). Fallback path
+completes identically (`l3-replay-fallback-liveBefore-reveal.png` →
+`l3-replay-fallback-complete-reveal.png`). The earlier hard block is gone. The loop is now rateable.
+
+**FUNCTIONAL — below the Track 101 bar for a module finale.** Biggest boredom source: **you submit
+essentially the same number three times, and two of the four controls you are told you have do not do
+what the screen says.** The whole engine of this lesson is a room arguing; the prototype replaces the
+room with five bots that drift toward you anyway, so what remains in-hand is five thin decisions
+(3 near-identical proposals + 2 reinvest settings whose answer is the same number both times).
+What is genuinely good, measured:
+- The holdout has real teeth. Propose 50% or 60% three times and the room fails two-thirds; you are
+  dropped to a 5% status quo nobody chose, with the correct framing on screen — *"Real leagues have
+  this problem too — this is a legitimate outcome, not a failure state"*
+  (`l3-replay-holdout-adoption.png`).
+- Your proposal genuinely moves the adopted rule inside a bounded band. Measured: propose 0 or 10
+  → adopted 22.5%; 20 → 25%; 30 → 32.5%; 40 → 37.5%; 50 or 60 → no adoption. ~15 points of real
+  influence, then a cliff. That is the right shape and it is not gameable to an absurd result.
+- Replay puts you in a different seat. Measured across seeds: seed 0 = Memphis (before-take $362,474),
+  seed 1 = Charlotte ($280,881), seed 2 = Oklahoma City ($461,421). Reached click-only via "New run"
+  (`l3-replay-holdout-liveBefore-reveal.png` shows "You (Charlotte)"). A small-market seat and a
+  big-market seat should want different rules, so there is a real reason to run it twice.
+Why it does not clear STRONG — three measured defects, all in the honesty section below: an inert
+CONDITION control, a veil over your own club during the entire vote, and a reveal that shows the money
+moving without showing what moved it.
+
+#### l3 signature-moment verdict *(l3 re-play after repair)*
+
+**Do the arrows move? Yes. Could I attribute why from the UI alone? Only halfway.** The BEFORE/AFTER
+table shows six desks, their reinvest deltas and their takes, and the deltas are not uniform — big
+markets up and poorer, small market down and richer. That asymmetry is the moment, and it is a real
+one. But the table has no "paid into the pool / received from the pool" column, so from the UI alone I
+could see *that* Charlotte gained $89,736 and could not tell whether it gained from the transfer, from
+its own reinvest change, or from both. I only separated those by sweeping the model afterwards. For a
+class whose whole job is attribution, the module's candidate signature reveal currently shows the
+outcome and hides the mechanism.
+
+**Does the rule move the student's own hand?** Measured, my take against my own reinvest dial:
+
+| regime | r=0 | r=10 | r=20 | r=30 | r=40 |
+|---|---|---|---|---|---|
+| BEFORE (old rule, share 0%) | $300,000 | $356,603 | **$362,474** | $360,000 | $353,205 |
+| AFTER (adopted 35%, condition on) | $195,000 | $221,292 | **$415,926** | $403,817 | $388,901 |
+| AFTER (adopted 22.5%, condition on) | $232,500 | $269,617 | **$396,836** | $388,168 | $376,152 |
+| AFTER (fallback 10%, condition off) | $327,519 | $375,462 | **$377,746** | $372,519 | $363,404 |
+
+My optimum is 20% in every regime — **the rule never moves my optimal play.** What it moves is the cost
+of the *default*: the dial opens at 10%, which is worth 98% of peak under the old rule and 53% of peak
+under the adopted one. So a student who leaves the dial alone gets punished, hard, by a rule the room
+wrote — which is a genuinely good beat, but it is a trap for the passive rather than a redirection of
+the active, and the design should know which of those it is shipping.
+
+#### l3 honesty checks *(l3 re-play after repair)*
+
+1. **Is there a dominant rule proposal?** No, and this is the file's strongest result. Because your seat
+   is randomized across runs, the rule that pays you best is seat-dependent: as Charlotte you want the
+   pool, as New York you fund it. There is no single number that always wins. (Caveat below.)
+2. **Is the adoption mechanic gameable?** Bounded, not gameable. Measured: your proposal drags the
+   adopted share across a 22.5–37.5 band; beyond ~40 you lose two-thirds and forfeit to a 5% status
+   quo. You cannot ram through an extreme rule and you cannot be ignored. Correct shape.
+3. **Is the CONDITION control real? No — it is inert, and it is the potent half of the rule.** Measured
+   across 14 proposal combinations (share ∈ {0,10,20,30,40,50,60} × condition ∈ {on, off}), the adopted
+   condition was `true` in every adopted outcome and `false` only when adoption failed; toggling my own
+   box never changed the adopted rule or any downstream number. Meanwhile the condition is what creates
+   the entire reinvest cliff — with it on, r=10 → $221,292 and r=20 → $415,926; in the fallback run
+   with it off the same curve is smooth ($375,462 vs $377,746). So the room debates a checkbox it
+   cannot actually set, and the header text advertises it as one of two dials.
+4. **Do you know your own stake while voting? No.** Your club is never named during any of the three
+   proposal rounds; "You (Memphis)" first appears on the BEFORE results panel. A revenue-sharing
+   argument is driven by whose money it is, and right now nobody at the table knows. This also
+   undercuts check 1 above: there is no dominant proposal *across seats*, but a student who cannot see
+   their seat has no basis to prefer any share, so in practice the vote is preference-free. If the veil
+   is intentional (a Rawlsian original position), it is an interesting choice that is nowhere explained
+   and that removes the conflict the lesson is built to stage; if it is an oversight, it is a serious
+   one.
+5. **Does the fallback teach, or just replay?** It teaches. Measured: the room-voted 35%-with-condition
+   rule moves mean reinvest 20.0% → 21.7%, while the modeled real-league 10%-without-condition rule
+   moves it 20.0% → 15.0% — opposite directions, same screens. "The rule you wrote and the rule the
+   league actually uses pull the room different ways" is a better debrief than either alone. Two
+   caveats: the AFTER header prints "AFTER — SHARE 10%" and never states that the condition is off, so
+   the student must infer the causal difference from an absence; and the fallback's closing line, "No
+   rule was adopted, so there is nothing here to attribute to the room's own choice," is correct for
+   the holdout path but reads as a dead end rather than a prompt.
 
 ### l1a-replay-dial.html — WEAK
 Biggest boredom source: **the only interactive number on screen is decorative.** The REPLAY readout is
@@ -200,8 +281,10 @@ lesson of the whole lesson — one price for three different nights is wrong —
 lesson's own scoreboard, on every seed, under every strategy. That is a fun simulation teaching false
 economics, which CLAUDE.md §8 rules out on its own.
 
-Runner-up, and the reason it is only runner-up: L3 is hard-blocked (a bug, repairable in an hour).
-L1A's failure is in the experiment design, not the code.
+Runner-up *(l3 re-play after repair)*: L3's earlier hard block was a bug and is now fixed and verified.
+Its remaining honesty defect — a CONDITION control the student can toggle that provably changes nothing
+— is real but narrower. L1A's failure is in the experiment design, not the code, and no strategy escapes
+it.
 
 ---
 
@@ -246,16 +329,24 @@ $43,000 of reinvestment, after which the dial is dead for the rest of the season
 lists every desk's cash side by side (`l2-season-complete.png`) — flagged as Stage-0-review-only, but
 it is a leaderboard and D4 says no.
 
-**l3-rule** — Strongest: submitting 60% three times and being told the room did **not** reach
-two-thirds, then being dropped to a 5% share nobody chose (measured; `l3-r3-adopt.png` shows the
-adopted-path variant). Consequence for intransigence is real and rare in school software. Weakest, and
-disqualifying: `l3-live-before-reveal-blank.png` — after COMMIT THE WEEK in the live phase the panel is
-empty, no result, no button, run over. Forcing the state machine from the console shows what the
-student never sees: a before/after table where New York and Golden State move reinvest 10% → 20% and
-lose money, Charlotte moves 30% → 20% and gains $88,130, closing with "the rule changed what desks
-wanted to do — nobody told them to move" (`l3-liveafter-reveal-forced.png`,
-`l3-beforeafter-table-forced.png`). That content is promising; I am not allowed to rate content I could
-not reach by playing, and I do not.
+**l3-rule** *(l3 re-play after repair)* — Strongest: submitting 60% three times and being told the room
+did **not** reach two-thirds, then being dropped to a 5% status quo nobody chose, framed as a real
+league outcome rather than a loss (`l3-replay-holdout-adoption.png`). Consequence for intransigence is
+rare in school software and it lands. Second strongest, now reachable: the BEFORE/AFTER table with the
+arrows in it — New York and Golden State move reinvest 10% → 20% and *lose* money ($762,288 → $641,619;
+$712,475 → $614,696) while Charlotte moves 30% → 20% and *gains* $89,736 ($282,452 → $372,188), under
+the line "the rule changed what desks wanted to do — nobody told them to move"
+(`l3-replay-voted-liveAfter-reveal-4.png`). Third: the fallback run's mirror image — under a modeled
+real-league 10% share with no condition, the room's mean reinvest moves the *other* way, 20.0% → 15.0%
+(`l3-replay-fallback-liveAfter-reveal.png`). Two rules, two opposite behavioral directions, same
+screen layout. That contrast is the best argument in the file.
+Weakest: the three proposal rounds. Round 2 and Round 3 gave me no new reason to move — the histogram
+had already collapsed to a tight cluster after Round 1 (running median 32.5 → 35 → 35) and the correct
+play was to resubmit the same number twice (`l3-r1-histogram.png`, `l3-replay-voted-adoption.png`).
+Second weakest: I ticked and un-ticked the CONDITION box across 14 runs and the adopted rule never once
+differed. Third: I wrote a revenue-sharing rule for four screens without ever being told which club I
+was; "You (Memphis)" first appears on the BEFORE results panel, after the rule is locked
+(`l3-replay-voted-liveBefore-reveal-2.png`).
 
 ---
 
@@ -290,14 +381,17 @@ Each is falsifiable by replaying the file and rerunning the stated sweep.
 6. `newRun(seed)` must actually vary the season. *Test:* schedule, draws and comparables differ across
    seeds 0,1,2. Currently byte-identical across six seeds.
 
-**l3-rule**
-7. Fix the `liveBefore/reveal` dead end on both the voted path and the fallback path. *Test:* a
-   click-only session from load to the before/after table, with no console calls, on both paths.
-   Currently 0/2 paths complete.
-8. The "before" week must render its own result. *Test:* the liveBefore reveal names your reinvest,
-   your take, and at least one other desk's, before the new rule binds. Currently renders nothing.
-   (Note: repairs 7–8 restore playability; they do not entitle anyone to a pull rating. L3 must be
-   re-played end-to-end by a Player critic before selection, and I did not rate its core loop.)
+**l3-rule** *(l3 re-play after repair — items 7 and 8 are CLOSED, verified click-only on both paths;
+replaced by 7a–8a)*
+7a. The CONDITION control must be settable by the student or removed from the student's hands. *Test:*
+   holding share fixed, toggling the condition box changes `adopted.condition` in at least one
+   proposal configuration. Currently 0 of 14 configurations — it never changes anything, while being
+   the term that produces the entire reinvest cliff. Shipping a debated control that provably does
+   nothing is the kind of thing a class will catch, and it is the one honesty defect here I would
+   block a selection on if L3 is meant to be the module finale.
+8a. Name the student's club before the first proposal, or state the veil deliberately and teach it.
+   *Test:* the round-1 proposal screen names your seat and its market size. Currently your club is
+   first revealed after the rule is locked, so the rule-writing argument has no stakeholder in it.
 
 ### Fix during build
 
@@ -333,8 +427,18 @@ Each is falsifiable by replaying the file and rerunning the stated sweep.
 18. Drop the all-desk cash table, or replace it with matchup-level comparison. It is a leaderboard.
 19. Reconcile "six weeks" framing with the four-week season.
 
+**l3-rule** *(l3 re-play after repair)*
+20. Add a per-desk "paid in / received" decomposition to the BEFORE/AFTER table. *Test:* a reader of the
+    table alone can say whether Charlotte's $89,736 gain came from the transfer or from its own
+    reinvest change. Currently they cannot.
+21. Print the full adopted rule in the AFTER header on the fallback path ("SHARE 10% · CONDITION OFF"),
+    not just the share. The fallback's whole teaching value is the contrast with the room's own rule,
+    and the causal difference is currently an absence the student must notice.
+22. Replace the holdout path's closing line ("nothing here to attribute to the room's own choice") with
+    a prompt. Failing to adopt is framed well at the adoption screen; the payoff screen then goes flat.
+
 **All five**
-20. Pairs-on-one-device is **NOT VERIFIED** in every file. Only l1c names a partner in its own copy;
+23. Pairs-on-one-device is **NOT VERIFIED** in every file. Only l1c names a partner in its own copy;
     none has a surface built for two hands, a "you two disagree" moment, or anything a second student
     holds. That is a build-time requirement, not a Stage-0 excuse.
 
@@ -354,6 +458,14 @@ Each is falsifiable by replaying the file and rerunning the stated sweep.
   attribute the away-week money correctly from the UI alone; I could **not** attribute the home-week
   money correctly, because the label is false. Human threshold open; the instrument is currently
   miscalibrated against it.
-- L3's entire uncertainty list — eight-minute adoption, convergence-through-argument vs herding on the
-  median, and whether the room's talk is economic or moral. Nothing here is answerable from a
-  single-seat prototype with five simulated desks, and less so from one that dead-ends.
+- L3's human uncertainty list *(l3 re-play after repair)* — eight-minute adoption, and whether the room's
+  talk is economic or moral. Still fully open; five simulated desks cannot evidence a room. One part is
+  now partly answerable against Design C U3's third check ("convergence through argument, or herding on
+  the median?"): in this build the spread **collapses in round 1** — the histogram is shown immediately
+  after the first submission and the running median barely moves thereafter (32.5 → 35 → 35), so rounds
+  2 and 3 gave me nothing to reconsider. C's own prescription applies: withhold the histogram until
+  after round 1, or give rounds 2–3 new information. *Test:* the round-3 adopted share differs from the
+  round-1 median in a majority of runs. Currently it does not.
+- Whether the before/after arrows read as *the room's own doing* rather than as an animation. The
+  content is now reachable and the arrows do move, but with the student's own row typically showing
+  Δ 0 and the mechanism undecomposed, this needs real pairs to settle.
