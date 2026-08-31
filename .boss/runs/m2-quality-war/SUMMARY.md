@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `12:feb7f9c87d846546500be0c6eb6c6b8b2bad229e5d1d28e83bd967f802fa42fc`  
-Updated: 2026-08-31T20:50:58.355Z
+Event head: `15:a86ac3e26c00d3f19e02feb988c0fe113c2c61127482e4cfb190d68f681bca40`  
+Updated: 2026-08-31T21:14:47.439Z
 
 ## Founder intent
 
@@ -56,6 +56,9 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 
 - sr-input-report — sports-reality-report — Sports Reality design input: 15 dated real-world anchors + ranked top-5 for Module 2
 - econ-contract-report — economic-truth-report — Module 2 economic learning contract: concept verdicts, false-lesson risks, dominant-strategy analysis incl. existing Box Office model, three candidate arcs, R1-R16
+- design-a — design-doc — Candidate A: Box Office evolved (PRICE/BOOK/LEGISLATE, Replay Dial)
+- design-b — design-doc — Candidate B: structural refound (SELL/HOST/RULE, no price-setting)
+- design-c — design-doc — Candidate C: clean-room first principles (price the night / host the league / write the rule)
 
 ## Claim ledger
 

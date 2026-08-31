@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T20:50:58.355Z",
+  "updatedAt": "2026-08-31T21:14:47.439Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -241,7 +241,10 @@
       },
       "evidenceIds": [
         "sr-input-report",
-        "econ-contract-report"
+        "econ-contract-report",
+        "design-a",
+        "design-b",
+        "design-c"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -295,6 +298,57 @@
       },
       "recordedAt": "2026-08-31T20:50:57.895Z",
       "actor": "lead-integrator"
+    },
+    "design-a": {
+      "id": "design-a",
+      "wave": 1,
+      "kind": "design-doc",
+      "label": "Candidate A: Box Office evolved (PRICE/BOOK/LEGISLATE, Replay Dial)",
+      "path": ".boss/runs/m2-quality-war/evidence/design-a--DESIGN_A_BOXOFFICE_EVOLVED.md",
+      "sha256": "f35c636bbc8f971ad40427586dec91566035842c9a626507ba0d22298971c1c8",
+      "size": 43697,
+      "metadata": {
+        "tags": [
+          "design-war",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:14:47.016Z",
+      "actor": "lead-integrator"
+    },
+    "design-b": {
+      "id": "design-b",
+      "wave": 1,
+      "kind": "design-doc",
+      "label": "Candidate B: structural refound (SELL/HOST/RULE, no price-setting)",
+      "path": ".boss/runs/m2-quality-war/evidence/design-b--DESIGN_B_REFOUND.md",
+      "sha256": "5874f64969052ab968320a2d0c405b7e4fbfdcb0c8288b3c488bafdda981f25f",
+      "size": 50692,
+      "metadata": {
+        "tags": [
+          "design-war",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:14:47.227Z",
+      "actor": "lead-integrator"
+    },
+    "design-c": {
+      "id": "design-c",
+      "wave": 1,
+      "kind": "design-doc",
+      "label": "Candidate C: clean-room first principles (price the night / host the league / write the rule)",
+      "path": ".boss/runs/m2-quality-war/evidence/design-c--DESIGN_C_FIRSTPRINCIPLES.md",
+      "sha256": "724a687426b713ef7214d94d814aaeb46ba1bb0522cf7675e34628a169ef6a72",
+      "size": 65324,
+      "metadata": {
+        "tags": [
+          "design-war",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-08-31T21:14:47.439Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {},
@@ -343,11 +397,11 @@
     "agentsActivated": 5,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 2,
+    "evidenceRecorded": 5,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 12,
-  "eventHead": "feb7f9c87d846546500be0c6eb6c6b8b2bad229e5d1d28e83bd967f802fa42fc",
+  "eventCount": 15,
+  "eventHead": "a86ac3e26c00d3f19e02feb988c0fe113c2c61127482e4cfb190d68f681bca40",
   "warnings": []
 }
