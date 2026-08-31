@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `51:174d590c4d1d73a506a56ed0d78fe2889da4dd7c25e58d69bea9665c8e5c1fb1`  
-Updated: 2026-08-31T22:54:33.150Z
+Event head: `67:f96fa569a6af6c8e99f3e458d9f1202b3cd77954036743b8eb1cdac856b92a5a`  
+Updated: 2026-08-31T22:57:07.407Z
 
 ## Founder intent
 
@@ -33,7 +33,11 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 
 ## Role status
 
-- builder — lead-integrator — active — claude-opus-5
+- builder — lead-integrator — completed-with-concerns — claude-opus-5
+- player-gameplay-critic — lead-integrator — active — claude-opus-5
+- economic-truth-critic — lead-integrator — active — claude-opus-5
+- sports-reality-director — lead-integrator — active — claude-opus-5
+- browser-qa — lead-integrator — active — claude-sonnet-5
 
 ## Required evidence
 
@@ -53,10 +57,16 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-build-test — test — runtime npm test — full suite (345), Module 1 untouched
 - l1-tuning-harness — test — M2 L1 constant-tuning harness — BC-2 discharge (11 properties)
 - l1-e2e-browser — browser-trace — M2 L1 Playwright e2e — three surfaces, four desks, zero console errors
+- l1-tests — test — Full runtime suite after L1 build
+- l1-tuning — test — BC-2 tuning harness: 11 properties
+- l1-e2e — e2e — M2 L1 full-arc three-surface Playwright proof
 
 ## Claim ledger
 
-- No claims recorded yet
+- l1-tests-pass — confirmed — Full runtime test suite passes after the L1 Full House build (Module 1 suites unchanged)
+- l1-e2e-pass — confirmed — M2 L1 full three-surface arc runs to COMPLETE with zero console errors
+- l1-bc2-pass — contradicted — BC-2 discharged: tuning harness 11/11 (R6 worst asymmetry 1.38x vs 3.0x bar; Memphis reaches 100% fill; Two Peaks gap >=3 steps; per-card optima distinct)
+- l1-bc2-harness-pass — confirmed — BC-2 discharged: L1 tuning harness passes all 11 properties (R6 worst asymmetry 1.38x vs 3.0x bar; Memphis reaches 100% fill; Two Peaks gap >=3 steps; per-card optima distinct). Supersedes contradicted l1-bc2-pass which linked test evidence under a build-pass kind.
 
 ## Dissent
 
