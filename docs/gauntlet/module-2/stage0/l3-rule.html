@@ -111,6 +111,12 @@
   <div class="actions"><button id="commitLiveBtn">COMMIT THE WEEK</button></div>
 </div>
 
+<div class="panel" id="liveBeforeRevealPanel" style="display:none">
+  <h2>BEFORE — RESULTS</h2>
+  <div id="liveBeforeRevealBox"></div>
+  <div class="actions"><button id="advanceBtn4">Live under the adopted rule</button></div>
+</div>
+
 <div class="panel" id="beforeAfterPanel" style="display:none">
   <h2>BEFORE / AFTER, IN YOUR OWN NUMBERS</h2>
   <div id="beforeAfterBox"></div>
@@ -246,6 +252,7 @@
     renderHistogram();
     renderAdoption();
     renderLiveDecide();
+    renderLiveBeforeReveal();
     renderBeforeAfter();
     renderLog();
     if (DEBUG) renderDebug();
@@ -312,6 +319,27 @@
     }
     document.getElementById('reinvestRange').value = state.controls.reinvest;
     document.getElementById('reinvestVal').textContent = state.controls.reinvest;
+  }
+
+  // ROOT CAUSE FIX: after committing the BEFORE week, phase is 'liveBefore'/subphase 'reveal' —
+  // neither liveDecidePanel (requires subphase==='decide') nor beforeAfterPanel (requires
+  // phase==='liveAfter'||'complete', and reads state.liveAfter which does not exist yet) render
+  // anything for this state, so a click-only player had no visible continue control on either the
+  // voted path or the fallback path. This panel closes that gap.
+  function renderLiveBeforeReveal(){
+    const panel = document.getElementById('liveBeforeRevealPanel');
+    if (!(state.phase === 'liveBefore' && state.subphase === 'reveal')) { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const b = state.liveBefore;
+    const rows = scenario.names.map((name, id) =>
+      `<tr><td>${name}</td><td>${b.perDesk[id].r}%</td><td>${money(b.perDesk[id].take)}</td></tr>`
+    ).join('');
+    document.getElementById('liveBeforeRevealBox').innerHTML = `
+      <div class="sub">One week under the status quo (SHARE 0%), before the room's rule binds.</div>
+      <table class="digest">
+        <tr><th>Desk</th><th>Reinvest</th><th>Take</th></tr>
+        ${rows}
+      </table>`;
   }
 
   function renderBeforeAfter(){
@@ -458,6 +486,7 @@
   document.getElementById('advanceBtn').addEventListener('click', advance);
   document.getElementById('advanceBtn2').addEventListener('click', advance);
   document.getElementById('advanceBtn3').addEventListener('click', advance);
+  document.getElementById('advanceBtn4').addEventListener('click', advance);
   document.getElementById('newRunBtn').addEventListener('click', () => newRun());
   document.getElementById('fallbackBtn').addEventListener('click', activateFallback);
 
