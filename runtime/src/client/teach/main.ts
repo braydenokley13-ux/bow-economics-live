@@ -25,8 +25,15 @@ const aggregateEl = $("aggregate");
 
 let currentCode: string | null = null;
 // B1 repair (VERIFY_L2.md): what the Advance button's confirm() warning needs to know, refreshed every render()
-// so the click handler (which fires later, async from render) always checks the latest known state.
-let advanceWarnState: { lessonModuleId: string; phase: string; revealedCount: number; totalTargets: number } | null = null;
+// so the click handler (which fires later, async from render) always checks the latest known state. Extended
+// for L3: leaving PLAY early doesn't just skip a staged reveal theater (L2's case) — it permanently ends the
+// whole signing window, so days that were never opened simply never happen (charter §6a). Both are "you're
+// about to skip real content" warnings, just triggered by different lessons/phases.
+type AdvanceWarnState =
+  | { kind: "td-reveal"; revealedCount: number; totalTargets: number }
+  | { kind: "fa-play"; day: number; windowDays: number; actedCount: number; claimedCount: number }
+  | null;
+let advanceWarnState: AdvanceWarnState = null;
 // R1: the per-session teacher credential — required on every /control and
 // GET /teacher call from here on. Held in memory plus localStorage (see
 // storage.ts) so a page refresh doesn't strand the teacher outside their
@@ -36,6 +43,7 @@ let poller: { stop: () => void } | null = null;
 
 const TRADE_DEADLINE_ID = "m1l2-trade-deadline";
 const DRAFT_DAY_ID = "m1l1-draft-day";
+const FREE_AGENCY_ID = "m1l3-free-agency";
 
 async function loadLessons(): Promise<void> {
   const { lessons } = await apiFetch<{ lessons: Lesson[] }>("/api/lessons");
@@ -53,26 +61,35 @@ async function loadLessons(): Promise<void> {
   await syncSourceSessionRow();
 }
 
-/** L2's linked-creation picker: shown only when Trade Deadline is the selected lesson, listing every existing
- *  Draft Day (L1) session (live or ended — an ended one is exactly the normal end-of-class state, see
- *  sessionService.test.ts's SEED tests) so the teacher can carry a real class's rosters forward. */
+/** L2's linked-creation picker, extended for L3: Trade Deadline lists every Draft Day (L1) session (live or
+ *  ended — an ended one is exactly the normal end-of-class state, see sessionService.test.ts's SEED tests);
+ *  Free Agency lists BOTH — a completed Trade Deadline (L2, preferred) or a Draft Day (L1, fallback) source,
+ *  per the charter's "accepting L2 or L1 sources" (§8) — so the teacher can carry a real class's franchises
+ *  forward through however much of the arc that class actually played. */
 async function syncSourceSessionRow(): Promise<void> {
   const row = $("sourceSessionRow");
+  const label = $("sourceSessionLabel");
   const lessonId = $<HTMLSelectElement>("lesson").value;
-  if (lessonId !== TRADE_DEADLINE_ID) {
+  if (lessonId !== TRADE_DEADLINE_ID && lessonId !== FREE_AGENCY_ID) {
     row.hidden = true;
     return;
   }
   row.hidden = false;
+  label.textContent =
+    lessonId === FREE_AGENCY_ID
+      ? "Link to a completed Trade Deadline (L2, preferred) or Draft Day (L1) session — carries franchises into the signing window"
+      : "Link to a completed Draft Day (L1) session — carries each locked roster forward";
   const select = $<HTMLSelectElement>("sourceSession");
   select.innerHTML = `<option value="">No link — stock/expansion franchises only</option>`;
   try {
     const { sessions } = await apiFetch<{ sessions: { id: string; code: string; title: string; lessonModuleId: string; phase: string; ended: boolean }[] }>("/api/sessions");
-    const l1Sessions = sessions.filter((s) => s.lessonModuleId === DRAFT_DAY_ID);
-    for (const s of l1Sessions) {
+    const eligibleModuleIds = lessonId === FREE_AGENCY_ID ? [TRADE_DEADLINE_ID, DRAFT_DAY_ID] : [DRAFT_DAY_ID];
+    const eligible = sessions.filter((s) => eligibleModuleIds.includes(s.lessonModuleId)).sort((a, b) => eligibleModuleIds.indexOf(a.lessonModuleId) - eligibleModuleIds.indexOf(b.lessonModuleId));
+    for (const s of eligible) {
       const option = document.createElement("option");
       option.value = s.id;
-      option.textContent = `${s.title || s.code} (${s.code}) — ${s.ended ? "ended" : `live, ${s.phase}`}`;
+      const moduleLabel = s.lessonModuleId === TRADE_DEADLINE_ID ? "L2" : "L1";
+      option.textContent = `[${moduleLabel}] ${s.title || s.code} (${s.code}) — ${s.ended ? "ended" : `live, ${s.phase}`}`;
       select.appendChild(option);
     }
   } catch {
@@ -83,7 +100,7 @@ async function syncSourceSessionRow(): Promise<void> {
 async function createSession(): Promise<void> {
   const lessonModuleId = $<HTMLSelectElement>("lesson").value;
   const title = $<HTMLInputElement>("title").value.trim();
-  const sourceSessionId = lessonModuleId === TRADE_DEADLINE_ID ? $<HTMLSelectElement>("sourceSession").value || undefined : undefined;
+  const sourceSessionId = lessonModuleId === TRADE_DEADLINE_ID || lessonModuleId === FREE_AGENCY_ID ? $<HTMLSelectElement>("sourceSession").value || undefined : undefined;
   const payload = await apiFetch<TeacherPayload>("/api/sessions", {
     method: "POST",
     body: JSON.stringify({ lessonModuleId, title, sourceSessionId }),
@@ -176,20 +193,44 @@ function render(payload: TeacherPayload): void {
   // computed automatically from the price/zone already stored at lock time, not teacher-triggered.
   const isDraftDay = s.lessonModuleId === DRAFT_DAY_ID;
   const isTradeDeadline = s.lessonModuleId === TRADE_DEADLINE_ID;
+  const isFreeAgency = s.lessonModuleId === FREE_AGENCY_ID;
   $<HTMLButtonElement>("btnShock").hidden = !isDraftDay;
   $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
-  $<HTMLButtonElement>("btnCounterfactual").hidden = isDraftDay || isTradeDeadline || s.lessonModuleId === "m2-box-office";
-  // The staged per-target auction theater (charter point 6): one click reveals exactly the next
-  // not-yet-revealed target, so the teacher paces the reveal instead of dumping every result at once.
-  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline;
+  $<HTMLButtonElement>("btnCounterfactual").hidden = isDraftDay || isTradeDeadline || isFreeAgency || s.lessonModuleId === "m2-box-office";
+  // The staged per-target auction theater (charter point 6, and L3's own staged finale): one click reveals
+  // exactly the next not-yet-revealed step, so the teacher paces the reveal instead of dumping every result
+  // at once. Same control, same label, works for both lessons' own reveal-staging counters.
+  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency;
   $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
+  // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
+  // simultaneously and deterministically, then advances the day counter. A close with zero offers is legal.
+  $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency;
+  $<HTMLButtonElement>("btnCloseDay").disabled = s.ended || s.phase !== "PLAY" || Boolean(payload.view["windowClosed"]);
+  {
+    const pendingCount = Number(payload.view["pendingCount"] ?? 0);
+    const actedCount = Number(payload.view["actedCount"] ?? 0);
+    const claimedCount = Number(payload.view["claimedCount"] ?? 0);
+    $<HTMLButtonElement>("btnCloseDay").textContent = isFreeAgency ? `🔔 Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)` : "🔔 Close signing day";
+  }
   // B1 repair (VERIFY_L2.md BLOCKER): the runtime now auto-resolves any unrevealed target the instant the
   // teacher advances out of REVEAL (see tradeDeadline.ts's onPhaseExit), so the numbers can no longer go wrong
   // — but the staged, one-at-a-time reveal theater is still lost on whatever's skipped, so warn before that
-  // happens rather than let it happen silently.
-  advanceWarnState = isTradeDeadline
-    ? { lessonModuleId: s.lessonModuleId, phase: s.phase, revealedCount: Number(payload.view["revealedCount"] ?? 0), totalTargets: Number(payload.view["totalTargets"] ?? 0) }
-    : null;
+  // happens rather than let it happen silently. L3's own risk is sharper: leaving PLAY early doesn't just
+  // skip theater, it PERMANENTLY ends the signing window (charter §6a) — days that were never opened never
+  // happen, so this warns whenever a real day is still open, regardless of who has or hasn't acted yet.
+  if (isTradeDeadline) {
+    advanceWarnState = { kind: "td-reveal", revealedCount: Number(payload.view["revealedCount"] ?? 0), totalTargets: Number(payload.view["totalTargets"] ?? 0) };
+  } else if (isFreeAgency && s.phase === "PLAY" && !Boolean(payload.view["windowClosed"])) {
+    advanceWarnState = {
+      kind: "fa-play",
+      day: Number(payload.view["day"] ?? 1),
+      windowDays: Number(payload.view["windowDays"] ?? 4),
+      actedCount: Number(payload.view["actedCount"] ?? 0),
+      claimedCount: Number(payload.view["claimedCount"] ?? 0),
+    };
+  } else {
+    advanceWarnState = null;
+  }
 
   const roster = $("rosterList");
   roster.innerHTML = "";
@@ -247,6 +288,7 @@ function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): H
   if (view["module"] === "m1l1-draft-day") return renderDraftDayAggregate(view, seats);
   if (view["module"] === "m2-box-office") return renderBoxOfficeAggregate(view, seats);
   if (view["module"] === TRADE_DEADLINE_ID) return renderTradeDeadlineAggregate(view, seats);
+  if (view["module"] === FREE_AGENCY_ID) return renderFreeAgencyAggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
@@ -479,6 +521,84 @@ function renderTradeDeadlineAggregate(view: Record<string, unknown>, seats: Teac
   return wrap;
 }
 
+/* --------------------------------------------------------- free agency aggregate -- */
+
+type FATeamStat = {
+  seatId: string;
+  claimed: boolean;
+  franchise: { name: string; crestIndex: number; origin: string } | null;
+  capUsed: number;
+  capRoom: number;
+  deadCap: number;
+  signingsCount: number;
+  pendingOffer: { agentId: string; amount: number; slot: string } | null;
+  held: boolean;
+  outForDay: boolean;
+  acted: boolean;
+};
+type FAAgentStat = { id: string; name: string; position: string; tier: string; ask: number; signed: boolean; signedBy: string | null; signedAmount: number | null };
+
+function renderFreeAgencyAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
+  const teams = (view["teams"] as FATeamStat[]) ?? [];
+  const agents = (view["agents"] as FAAgentStat[]) ?? [];
+  const seatById = new Map(seats.map((s) => [s.id, s]));
+  // N2 repair (VERIFY_L3.md N2): the pending-offer label used to show the raw internal agent id
+  // (e.g. "fa-value-df") instead of its name -- the `agents` array already carries the friendly name.
+  const agentNameById = new Map(agents.map((a) => [a.id, a.name]));
+  const wrap = document.createElement("div");
+
+  const kpis = document.createElement("div");
+  kpis.className = "kpirow";
+  kpis.style.marginBottom = "14px";
+  kpis.innerHTML = `
+    <div class="kpi"><div class="num">${view["windowClosed"] ? "closed" : `${view["day"]}/${view["windowDays"] ?? 4}`}</div><div class="lbl">Signing day</div></div>
+    <div class="kpi"><div class="num">${view["claimedCount"]}/${view["carriedFranchiseCount"]}</div><div class="lbl">Claimed franchises</div></div>
+    <div class="kpi"><div class="num">${view["actedCount"]}</div><div class="lbl">Acted today</div></div>
+    <div class="kpi"><div class="num">${view["pendingCount"]}</div><div class="lbl">Sealed offers in</div></div>
+    <div class="kpi"><div class="num">${view["revealStage"]}/${view["totalRevealSteps"]}</div><div class="lbl">Reveal stages played</div></div>
+  `;
+  wrap.appendChild(kpis);
+
+  const marketRow = document.createElement("div");
+  marketRow.style.marginBottom = "14px";
+  marketRow.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Market snapshot</div>` + agents
+    .map((a) => {
+      const status = a.signed ? `SIGNED $${a.signedAmount}M` : `ask $${a.ask}M`;
+      return `<div class="row" style="margin:2px 0;"><span style="width:130px; font-size:11px; color:var(--ink-secondary);">${escapeHtml(a.name)} <span style="color:var(--ink-muted);">· ${a.position}</span></span><span style="font-size:11px; color:${a.signed ? "var(--cap-safe)" : "var(--ink-muted)"};">${status}</span></div>`;
+    })
+    .join("");
+  wrap.appendChild(marketRow);
+
+  const grid = document.createElement("div");
+  grid.className = "teamgrid";
+  teams.forEach((t) => {
+    const seat = seatById.get(t.seatId);
+    const tile = document.createElement("div");
+    tile.className = "teamtile";
+    const franchiseRow = t.franchise
+      ? `<div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;"><span style="${crestStyle(t.franchise.crestIndex, 16)}"></span><strong>${escapeHtml(t.franchise.name)}</strong></div>`
+      : `<strong>${seat ? escapeHtml(seat.displayName) : "Not claimed"}</strong>`;
+    const actedLabel = t.pendingOffer
+      ? `offer: $${t.pendingOffer.amount}M on ${escapeHtml(agentNameById.get(t.pendingOffer.agentId) ?? t.pendingOffer.agentId)}`
+      : t.outForDay
+        ? "withdrew — out for today"
+        : t.held
+          ? "holding"
+          : t.acted
+            ? "acted"
+            : "deciding…";
+    tile.innerHTML = `
+      ${franchiseRow}
+      <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : ""}</span><span>$${t.capUsed}M used</span></div>
+      <div class="statline"><span>${t.deadCap > 0 ? `$${t.deadCap}M dead cap` : "clean books"}</span><span>${t.signingsCount} signed</span></div>
+      <div class="statline"><span style="color:${t.acted ? "var(--cap-safe)" : "var(--ink-muted)"};">${actedLabel}</span><span></span></div>
+    `;
+    grid.appendChild(tile);
+  });
+  wrap.appendChild(grid);
+  return wrap;
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
@@ -500,13 +620,20 @@ async function sendControl(body: Record<string, unknown>): Promise<void> {
 $("create").addEventListener("click", () => void createSession().catch((e) => (statusEl.textContent = String(e))));
 $("btnAdvance").addEventListener("click", () => {
   // B1 repair (VERIFY_L2.md BLOCKER): same confirm() idiom btnEnd already uses below — no new dialog
-  // framework. Only fires leaving REVEAL with targets still unrevealed; the economics stay correct either way
-  // (the runtime auto-resolves them), this is purely "you're about to skip the staged reveal theater."
+  // framework. The economics stay correct either way (the runtime auto-resolves whatever's pending), this is
+  // purely "you're about to skip real content" — the staged reveal theater for L2, or up to three whole
+  // unplayed signing days for L3.
   const w = advanceWarnState;
-  if (w && w.lessonModuleId === TRADE_DEADLINE_ID && w.phase === "REVEAL" && w.revealedCount < w.totalTargets) {
+  if (w?.kind === "td-reveal" && w.revealedCount < w.totalTargets) {
     const remaining = w.totalTargets - w.revealedCount;
     const ok = confirm(
       `${remaining} of ${w.totalTargets} target${w.totalTargets === 1 ? "" : "s"} unrevealed — advancing resolves ${remaining === 1 ? "it" : "them"} automatically, without the staged reveal. Continue?`,
+    );
+    if (!ok) return;
+  } else if (w?.kind === "fa-play") {
+    const remainingDays = w.windowDays - w.day;
+    const ok = confirm(
+      `Day ${w.day} of ${w.windowDays} is still open (${w.actedCount}/${w.claimedCount} teams have acted). Advancing now closes today's day automatically AND ends the signing window early — ${remainingDays} day${remainingDays === 1 ? "" : "s"} will never happen. Continue?`,
     );
     if (!ok) return;
   }
@@ -528,6 +655,7 @@ $("btnEnd").addEventListener("click", () => {
 $("btnShock").addEventListener("click", () => void sendControl({ type: "hook", hook: "shock" }));
 $("btnCounterfactual").addEventListener("click", () => void sendControl({ type: "hook", hook: "counterfactual" }));
 $("btnRevealNext").addEventListener("click", () => void sendControl({ type: "hook", hook: "revealNext" }));
+$("btnCloseDay").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeDay" }));
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();

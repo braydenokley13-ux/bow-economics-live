@@ -1,22 +1,30 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (225 passing, see below), `npm run build` and `npm test` are
-green, and both `m1l1-draft-day` and `m1l2-trade-deadline` have been driven
-end-to-end with Playwright against the real compiled server (L1: create →
-join → advance → build → lock → reveal → shock → adapt → repair → synthesis
-→ complete; L2: `runtime/scripts/e2e-l2.cjs` — L1 played for real through the
-API to produce a genuine seed, then linked L2 creation, claiming, all three
-deadline paths incl. competing bids and a loss, teacher-staged reveal,
-aftermath rescue, synthesis, zero console errors) as well as smoke-tested by
-hand for restart-survival. It has **not** been gameplay-tested by a fresh
-student audience and it has **not** been run in a classroom, or anything
-resembling one. A first fresh-context verification round already ran against
-this runtime's L1 (see `docs/gauntlet/module-1/VERIFY_GAMEPLAY.md`,
-`VERIFY_ECONOMICS.md`, `VERIFY_RUNTIME.md`) and every required repair from
-that round has been applied — see "Repair charter round 1" below. Per
-Decision D12, a live classroom session still requires an independent
-fresh-context verification pass on this state before use.
+real tests (313 passing, see below), `npm run build` and `npm test` are
+green, and `m1l1-draft-day`, `m1l2-trade-deadline`, and `m1l3-free-agency`
+have all been driven end-to-end with Playwright against the real compiled
+server (L1: create → join → advance → build → lock → reveal → shock → adapt
+→ repair → synthesis → complete; L2: `runtime/scripts/e2e-l2.cjs` — L1 played
+for real through the API to produce a genuine seed, then linked L2 creation,
+claiming, all three deadline paths incl. competing bids and a loss,
+teacher-staged reveal, aftermath rescue, synthesis, zero console errors; L3:
+`runtime/scripts/e2e-l3.cjs` — L1 and L2 both played for real through the API
+to produce a genuine seed, then linked L3 creation, claiming incl. a late
+joiner, a real four-day signing window (student pages run at the classroom
+Chromebook shape, 1024×600, with an explicit on-screen check the offer
+composer is reachable there — see N1 below) exercising a bidding war, a
+price collapse, coordinated lowballing that still raises the ask, an outbid
+team, and a day-4 desperation signing, the full staged finale through
+COMPLETE, zero console errors) as well as smoke-tested by hand for
+restart-survival. It has **not** been gameplay-tested by a fresh student
+audience and it has **not** been run in a classroom, or anything resembling
+one. Fresh-context verification rounds have run against this runtime's L1
+(`docs/gauntlet/module-1/VERIFY_GAMEPLAY.md`, `VERIFY_ECONOMICS.md`,
+`VERIFY_RUNTIME.md`) and L3 (`VERIFY_L3.md`), and every required repair from
+both has been applied — see "Repair charter round 1" and L3's own "Repair
+round" below. Per Decision D12, a live classroom session still requires an
+independent fresh-context verification pass on this state before use.
 
 This package builds the **runtime the gameplay team plugs a lesson into**,
 plus real Track 101 lessons: `m1l1-draft-day` (Module 1, Lesson 1 — "Draft
@@ -24,11 +32,15 @@ Day"), the Roster Wall / salary-cap build described in
 `docs/gauntlet/module-1/PLAYABILITY_SPEC.md`; `m1l2-trade-deadline` (Module
 1, Lesson 2 — "The Trade Deadline"), which carries a completed L1 session's
 locked rosters forward (see below) and adds a midseason report, stand
-pat/veteran/sealed-bid deadline decisions, and a teacher-staged reveal; and
-`m2-box-office` (Module 2 prototype, price-setting under hidden demand).
-`lobby-demo` (students tap a color, teacher reveals the class distribution on
-the board) also still ships, unchanged, as the minimal proof the runtime
-itself is genuinely lesson-agnostic.
+pat/veteran/sealed-bid deadline decisions, and a teacher-staged reveal;
+`m1l3-free-agency` (Module 1, Lesson 3 — "Free Agency: The Signing Window,"
+the **module close**), which carries a completed L2 (preferred) or L1
+(fallback) session forward into a four-day open market under a newly-risen
+$130M cap (see below); and `m2-box-office` (Module 2 prototype,
+price-setting under hidden demand). `lobby-demo` (students tap a color,
+teacher reveals the class distribution on the board) also still ships,
+unchanged, as the minimal proof the runtime itself is genuinely
+lesson-agnostic.
 
 ## Module 1, Lesson 2 — The Trade Deadline (L1→L2 carry-forward)
 
@@ -56,6 +68,86 @@ just yields an empty pool — every seat then gets an honest, deterministic
 stock "expansion franchise," so the lesson runs standalone too. `/teach`
 exposes this as a "link to a completed Draft Day session" dropdown at
 create-session time.
+
+## Module 1, Lesson 3 — Free Agency: The Signing Window (module close)
+
+`src/modules/freeAgency.ts`, built against
+`docs/gauntlet/module-1/L3_CHARTER.md`. The season's stretch run: the
+league's new TV deal raises the salary cap from $100M to $130M, so every
+franchise suddenly has room — but every franchise's books arrive exactly as
+L1/L2 left them, dead cap included. Eight fixed free agents (two per
+position, star/solid/value tiers) hit the market for a four-day signing
+window run entirely inside PLAY (a day is a module-internal counter, not a
+runtime phase). Each day, each team submits **at most one binding, sealed
+offer** (or holds — an explicit one-tap action so the teacher's pacing panel
+can tell "waiting on the market" from "hasn't looked yet"); a payload-free
+`teacher:closeDay` hook resolves every still-open agent simultaneously and
+deterministically: the top offer signs if it clears the agent's live asking
+price (or unconditionally on day 4 — desperation), otherwise the price moves
+by demand (0 offers −$10M, 1 offer −$5M, 2+ offers **+$5M** — coordinated
+lowballing still raises the price, floored at $10M). **A losing offer costs
+nothing but the day** — unlike L2's sealed bid, a roster slot's incumbent is
+only ever released, with the standing ~10% dead-cap bite, the instant a
+signing actually wins. Each of the eight agents carries a hidden
+"playoff factor" (most ±2, one riser +6, one shrinker −7, both with an
+honest public hint) revealed only in a teacher-staged finale
+(`teacher:revealNext`): a window recap, one factor reveal per agent
+(signed first, then unsigned), final standings, a staged semifinal+final
+bracket (deterministic — higher final team form advances), and GM Awards
+(THE BARGAIN, PERFECT TIMING, IRON BOOKS, THE WALK-AWAY) computed from the
+session's own real market history, omitting gracefully when nobody
+qualifies. COUNTERFACTUAL and SYNTHESIS close the loop with personal
+what-ifs, class-level cards (the patience dividend, the near-miss on the
+riser, the dead-cap drag), and five economics cards computed from frozen
+history — this is also the **module's own close**, so its COMPLETE copy
+closes the whole three-lesson arc, not just L3.
+
+**The seed**, preferred `m1l2-trade-deadline`, falling back to
+`m1l1-draft-day`, else stock: `extractCarriedFranchisesL3` in
+`freeAgency.ts` snapshots each claimable franchise — final roster, carried
+dead cap, and a journey summary — at session-creation time, frozen (D15)
+from then on. It reuses tradeDeadline's own `extractCarriedFranchises`
+(L1 fallback), `stockFranchiseFor` (the stock-only fallback), and `formFor`
+(the L2-carried midseason-form snapshot) directly rather than re-declaring
+any of them — those three were made `export`s in `tradeDeadline.ts`
+specifically for this (pure visibility change, zero behavior change to
+L1/L2). A won L2 sealed-bid TARGET's dollar `trueValue` maps into the same
+0-100 form scale every other occupant uses via an explicit, documented
+formula (`targetForm`), never silently conflated with a rating.
+
+**Teacher notes.** `/teach`'s create-session flow gains an m1l3 option whose
+source-session picker accepts either a completed Trade Deadline (L2,
+preferred) or Draft Day (L1, fallback) session, labeled `[L2]`/`[L1]` in the
+dropdown. The control room gains a **"Close signing day"** button (shows
+live acted/pending counts, legal even with zero offers) alongside the
+existing **"Reveal next"** button, reused for L3's own staged finale. Leaving
+PLAY early — on any day — **permanently ends the signing window**: only the
+day actually open gets auto-closed (`onPhaseExit`, the exact same resolution
+math as the button), remaining days simply never happen. `/teach` warns with
+a `confirm()` before this, naming the real day/team counts, the same
+established idiom as L2's own early-REVEAL-advance warning. **The market is
+tuned for 6+ teams** — eight fixed agents against a smaller class still
+plays (prices just fall faster, since fewer teams means fewer rival offers
+driving the demand curve up), but the "no dominant strategy" tension the
+charter names is sharpest with real competition for a scarce 2-star tier.
+
+**Repair round (post-verification, `docs/gauntlet/module-1/VERIFY_L3.md` —
+ACCEPT WITH REQUIRED REPAIRS, rating STRONG).** Six findings, all repaired:
+the market's own governing rules (one offer a day, the 0/1/2+ price-move
+rule, day-4 desperation) are now readable in a compact collapsible panel on
+both HOOK's market preview and the PLAY composer (R1); withdrawing an offer
+now **locks the team out of a new offer for the rest of that day**
+(`outForDay`, editing a standing offer stays free) — closing a free
+submit-then-retract loop that could fake the public interest-count signal
+with zero cost, framed in-fiction as "pulling out of talks" (R2); THE
+WALK-AWAY now picks the most-negative-factor agent a team genuinely engaged
+(stood at close, or withdrew) and never signed, so it can actually spotlight
+the −7 star shrinker instead of deterministically landing on the cheapest
+value player every session (M1); IRON BOOKS now fires for a real
+whole-class hold, not just when at least one other team signed someone (M2);
+the offer composer scrolls into view when it opens, confirmed reachable and
+submittable at the classroom Chromebook shape (1024×600) in `e2e-l3.cjs`
+(N1); the teacher aggregate shows an agent's name, not its raw id (N2).
 
 ## Repair charter round 1 (post-verification)
 
@@ -119,14 +211,17 @@ src/
                 sessionService.ts, http.ts, index.ts
   modules/      draftDay.ts                  — Module 1 Lesson 1, "Draft Day"
                 tradeDeadline.ts             — Module 1 Lesson 2, "The Trade Deadline" (L1 seed + deadline)
+                freeAgency.ts                — Module 1 Lesson 3, "Free Agency" (L2/L1 seed + signing window, module close)
                 boxOffice.ts                 — Module 2 prototype, "The Box Office"
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
                 shared/ (api, poll, storage, outbox, crest)
-  test/         225 tests over crypto, every reducer, the service layer
-                (incl. the L1->L2 seed), and snapshot persistence
+  test/         313 tests over crypto, every reducer, the service layer
+                (incl. the L1->L2 and L2/L1->L3 seeds), and snapshot persistence
 scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)
                 e2e-l2-early-advance.cjs     — focused probe: advancing out of REVEAL early
+                e2e-l3.cjs                   — rerunnable Playwright L3 proof (full L1->L2->L3 arc)
+                e2e-l3-early-advance.cjs     — focused probe: advancing out of PLAY early
 ```
 
 **Teacher authentication (R1).** `POST /api/sessions` issues a per-session
@@ -250,7 +345,7 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**225 tests, 225 passing** (`node --test`, no test framework dependency).
+**313 tests, 313 passing** (`node --test`, no test framework dependency).
 Coverage: PIN/token crypto round-trips (`crypto.test.ts`); the `lobby-demo`
 reducer/aggregate/views including rejected malformed and out-of-phase
 actions (`lobbyDemo.test.ts`); the `m1l1-draft-day` reducer, market design
@@ -261,9 +356,33 @@ assignment, and synthesis-card content (`draftDay.test.ts`); the
 three deadline paths, staged reveal (deterministic tiebreak, reserve
 prevents a lowball from winning), the aftermath rescue guarantee (brute-forced
 ≥2 affordable options across every exactly-$100M L1 build), cap-inviolability
-property tests across every path, and view-leak tests confirming no seat's
-bid/reserve ever reaches another seat or the board (`tradeDeadline.test.ts`);
-the `m2-box-office` demand-curve and path-dependence reducer
+property tests across every path, view-leak tests confirming no seat's
+bid/reserve ever reaches another seat or the board, and the L3 seam copy
+(`tradeDeadline.test.ts`); the `m1l3-free-agency` reducer — seed extraction
+from a real L2 state (every deadline path incl. a won TARGET's mapped form
+and a lost-bid-unrescued open slot), from L1 fallback, and from a malformed/
+hostile seed; offer/withdraw/hold validation incl. the R2 repair (withdraw
+locks the day, editing a standing offer never does, the next day is
+unaffected, a withdrawn offer is frozen for the finale but never appears in
+that day's own history); day resolution incl. exact tiebreaks, a bidding
+war, a price collapse, a single lowball, an offer that clears ask signing
+at the OFFER amount not the ask, day-4 desperation, and an agent with zero
+day-4 offers going unsigned for good; both `onPhaseExit` paths (leaving
+PLAY auto-closes only the open day, leaving REVEAL auto-completes every
+remaining stage) with idempotency checks; view-privacy tests confirming
+sealed offers and unsigned-agent amounts never leak to another seat or the
+board before the finale discloses them; GM Award computation incl. the M1
+repair (THE WALK-AWAY correctly picks an engaged-then-walked star shrinker
+over a milder value agent, falls through when the shrinker was never
+engaged, credits a withdrawn engagement, and omits gracefully) and the M2
+repair (IRON BOOKS fires for a genuine whole-class zero-signing hold);
+counterfactual/synthesis computation; and the two charter-required property
+tests — cap inviolability (an adversarial multi-day sequence, exhaustive
+over-cap rejection across every agent/slot, and exact dead-cap arithmetic)
+and day-1 viability (≥2 affordable agents for the at-cap-standPat,
+high-dead-cap, lost-bid-unrescued, and pure-stock extremes, plus a 60-build
+sweep over real exactly-$100M L1 locks) (`freeAgency.test.ts`); the
+`m2-box-office` demand-curve and path-dependence reducer
 (`boxOffice.test.ts`); atomic writes, restart-survival, and
 corrupted-snapshot quarantine (`snapshotRepository.test.ts`, including an
 optimistic-concurrency-conflict case); and the full service layer — session
@@ -297,9 +416,9 @@ three static pages), not a general-purpose framework being reinvented.
 - No client-side module registry — `/play`, `/teach`, and `/board`'s
   renderers special-case each module's view shape by its `module` tag
   (`lobby-demo`, `m1l1-draft-day`, `m2-box-office`, `m1l2-trade-deadline`,
-  with a generic JSON-dump fallback for anything else). Adding another real
-  lesson module means writing its render functions too; the *server*
-  contract is fully generic today, the client shell is not yet.
+  `m1l3-free-agency`, with a generic JSON-dump fallback for anything else).
+  Adding another real lesson module means writing its render functions too;
+  the *server* contract is fully generic today, the client shell is not yet.
 - `GET /api/sessions` (the session list) is still unauthenticated — it
   returns code/title/phase for every session ever created on the box, not
   seat- or team-identifying data. Lower severity than the R1 gap it was

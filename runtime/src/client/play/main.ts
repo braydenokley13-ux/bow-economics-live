@@ -197,6 +197,10 @@ function renderGame(payload: StudentPayload): void {
     renderTradeDeadline(s, view);
     return;
   }
+  if (view["module"] === "m1l3-free-agency") {
+    renderFreeAgency(s, view);
+    return;
+  }
 
   // lobby-demo fallback (still registered, proves the runtime is genuinely generic)
   if (s.phase === "LOBBY") {
@@ -1254,6 +1258,479 @@ function renderTDAdapt(view: Record<string, unknown>): void {
       }),
     );
   }
+}
+
+/* ------------------------------------------------------- free agency render -- */
+
+type FAFranchise = { name: string; crestIndex: number; origin?: string };
+type FACard = { playerId: string; name: string; position: string; price: number; form: number } | null;
+type FARosterSlot = { id: string; player: FACard; releaseDeadCap: number };
+type FAAvailable = { index: number; name: string; crestIndex: number; origin: string; deadCapCarried: number; capRoom: number; roster: FACard[] };
+type FAAgentCard = {
+  id: string;
+  name: string;
+  position: string;
+  tier: string;
+  flavor: string;
+  factorHint: string;
+  openingAsk: number;
+  ask: number;
+  trend: number;
+  priceHistory: number[];
+  interestCount: number;
+  signed: boolean;
+  signedAmount: number | null;
+  signedDay: number | null;
+  signedFranchise: FAFranchise | null;
+};
+type FAResolutionRow = {
+  agentId: string;
+  agentName: string;
+  signed: boolean;
+  franchise?: FAFranchise | null;
+  amount?: number | null;
+  offerCount: number;
+  askBefore?: number;
+  askAfter?: number;
+  ownAmount?: number | null;
+  allOffers?: { seatId: string; amount: number }[] | null;
+};
+type FADayHistory = { day: number; resolutions: FAResolutionRow[] };
+type FAStanding = { seatId: string; franchise: FAFranchise; form: number; capRoom: number; rank: number };
+type FAAgentReveal = FAAgentCard & { revealed: boolean; playoffFactor: number | null; signedAmount: number | null };
+type FAWindowRecap = { signedCount: number; totalAgents: number; totalSpent: number; biggestContract: { agentName: string; amount: number; day: number; franchise: FAFranchise } | null; steepestFall: { agentName: string; from: number; to: number } | null };
+type FAPlayoffMatch = { a: FAStanding; b: FAStanding; winner: FAStanding };
+type FAPlayoffs = { field: FAStanding[]; semis: FAPlayoffMatch[]; final: FAPlayoffMatch | null; champion: FAStanding | null };
+type FAAward = { id: string; title: string; franchise: FAFranchise | null; agentName: string | null; body: string };
+
+const FA_TIER_LABEL: Record<string, string> = { star: "STAR", solid: "SOLID", value: "VALUE" };
+
+// The offer composer holds live, uncontrolled input state (the amount stepper) — same guarded-rebuild
+// discipline as trade deadline's own PLAY screen (tdPlayMounted) and box office's price dial: only tear down
+// and rebuild the DOM when something the SERVER actually changed (day, acted state, or which agent's
+// composer is open), never on every ~1.2s poll tick, so an in-progress stepper value survives.
+let faPlayMounted: { day: number; acted: boolean; held: boolean; outForDay: boolean; openAgentId: string | null } | null = null;
+let faComposerSlot: string | null = null;
+let faComposerAmount = 0;
+
+function renderFreeAgency(s: SessionInfo, view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  if (s.phase !== "PLAY") faPlayMounted = null;
+
+  switch (s.phase) {
+    case "LOBBY":
+      body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"] ?? "You're in! Waiting for your teacher to start Free Agency."))}</div>`;
+      return;
+    case "HOOK":
+      renderFAHook(view);
+      return;
+    case "PLAY":
+      renderFAPlay(view);
+      return;
+    case "REVEAL":
+      renderFAReveal(view);
+      return;
+    case "COUNTERFACTUAL":
+      renderFACounterfactual(view);
+      return;
+    case "SYNTHESIS":
+      body.innerHTML = `
+        <div class="banner">${escapeHtml(String(view["message"]))}</div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"]))}</p>
+        </div>`;
+      return;
+    case "COMPLETE":
+      body.innerHTML = `<div class="banner">${escapeHtml(String(view["message"]))}</div>`;
+      return;
+    default:
+      body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  }
+}
+
+/** Shared by HOOK's claim picker and PLAY's late-joiner claim picker. */
+function renderFAClaimPicker(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const available = (view["available"] as FAAvailable[]) ?? [];
+  body.innerHTML = `
+    <div class="panel" style="padding:16px;">
+      <div class="eyebrow" style="font-size:12px;">Claim your franchise</div>
+      <p style="margin:8px 0 14px; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
+      <div class="claim-grid" id="faClaimGrid"></div>
+    </div>`;
+  const grid = $("faClaimGrid");
+  for (const entry of available) {
+    const card = document.createElement("div");
+    card.className = "claim-card";
+    card.dataset["carriedIndex"] = String(entry.index);
+    const originLabel = entry.origin === "l2" ? "FROM THE DEADLINE" : entry.origin === "l1" ? "FROM DRAFT DAY" : "EXPANSION";
+    card.innerHTML = `
+      <div class="claim-card-head"><span style="${crestStyle(entry.crestIndex, 22)}"></span><span class="claim-card-name">${escapeHtml(entry.name)}</span></div>
+      <div class="claim-card-meta">${originLabel} · $${entry.capRoom}M cap room${entry.deadCapCarried > 0 ? ` · $${entry.deadCapCarried}M dead cap carried` : ""}</div>
+      <div class="claim-card-roster">${entry.roster.filter((p): p is NonNullable<FACard> => p !== null).map((p) => `<span>${escapeHtml(p.name.split(" ")[0] ?? p.name)} $${p.price}M</span>`).join("")}</div>`;
+    card.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: entry.index }));
+    grid.appendChild(card);
+  }
+  const stock = document.createElement("div");
+  stock.className = "claim-card stock";
+  stock.innerHTML = `
+    <div class="claim-card-head"><span class="claim-card-name">Start an expansion franchise</span></div>
+    <div class="claim-card-meta">A fresh, balanced, league-typical roster — no history behind it.</div>`;
+  stock.addEventListener("click", () => outbox?.submit({ type: "claim", carriedIndex: null }));
+  grid.appendChild(stock);
+}
+
+function renderFAHook(view: Record<string, unknown>): void {
+  if (!view["claimed"]) {
+    renderFAClaimPicker(view);
+    return;
+  }
+  const body = $("gameBody");
+  const franchise = view["franchise"] as FAFranchise;
+  const roster = (view["roster"] as { id: string; player: FACard }[]) ?? [];
+  const standing = view["standing"] as { rank: number; totalTeams: number; inHunt: boolean } | null;
+  const marketPreview = (view["marketPreview"] as { id: string; name: string; position: string; tier: string; flavor: string; openingAsk: number; factorHint: string }[]) ?? [];
+  body.innerHTML = `
+    <div class="panel" style="padding:16px;">
+      <div class="claim-card-head" style="margin-bottom:10px;"><span style="${crestStyle(franchise.crestIndex, 26)}"></span><span class="claim-card-name" style="font-size:17px;">${escapeHtml(franchise.name)}</span>${franchise.origin === "stock" ? '<span class="pill" style="margin-left:6px; font-size:10px;">EXPANSION</span>' : ""}</div>
+      <p style="margin:0 0 12px; font-size:13px; color:var(--ink-secondary);">${escapeHtml(String(view["message"]))}</p>
+      <div class="fa-cap-sheet">
+        <div class="fa-cap-sheet-row"><span>Cap room ($130M cap)</span><span class="num">$${view["capRoom"]}M</span></div>
+        ${Number(view["deadCapCarried"]) > 0 ? `<div class="fa-cap-sheet-row deadcap"><span>Dead cap carried in</span><span class="num">$${view["deadCapCarried"]}M</span></div>` : ""}
+      </div>
+      <div class="roster-wall" style="margin-top:12px;">${roster.map((r) => rosterSlotHtml(r.id, r.player)).join("")}</div>
+    </div>
+    ${standing ? `<div class="standing-card"><span>Playoff picture</span><span class="standing-rank">#${standing.rank} of ${standing.totalTeams}</span><span style="font-size:12px; color:${standing.inHunt ? "var(--cap-safe)" : "var(--ink-muted)"};">${standing.inHunt ? "In the playoff hunt" : "On the outside looking in"}</span></div>` : ""}
+    ${marketRulesHtml((view["marketRules"] as string[]) ?? [])}
+    <div class="eyebrow" style="font-size:12px; margin:16px 0 4px;">The market preview</div>
+    <div class="fa-market-grid" id="faMarketPreview"></div>`;
+  const grid = $("faMarketPreview");
+  for (const a of marketPreview) {
+    const card = document.createElement("div");
+    card.className = "fa-agent-card";
+    card.style.cursor = "default";
+    card.innerHTML = `
+      <div class="fa-agent-head"><span class="fa-agent-name">${escapeHtml(a.name)}</span><span class="fa-agent-meta">${a.position} · ${FA_TIER_LABEL[a.tier] ?? a.tier}</span></div>
+      <div class="fa-agent-flavor">${escapeHtml(a.flavor)}</div>
+      ${a.factorHint ? `<div class="fa-agent-hint">"${escapeHtml(a.factorHint)}"</div>` : ""}
+      <div class="fa-ask-row"><span class="fa-ask">$${a.openingAsk}M</span><span class="eyebrow" style="font-size:10px;">opening ask</span></div>`;
+    grid.appendChild(card);
+  }
+}
+
+/** R1 repair (VERIFY_L3.md R1): a compact, collapsible rules panel — grade 5-6 copy the server itself owns
+ *  (`MARKET_RULES`), rendered wherever a student is about to decide something (HOOK's market preview, and
+ *  right beside the PLAY composer). `<details>` keeps it out of the way until tapped, native and dependency-free. */
+function marketRulesHtml(rules: string[]): string {
+  if (rules.length === 0) return "";
+  return `
+    <details class="fa-rules">
+      <summary>How the market works</summary>
+      <ul>${rules.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+    </details>`;
+}
+
+function rosterSlotHtml(slotId: string, player: FACard): string {
+  return `
+    <div class="roster-slot ${player ? "filled" : ""}">
+      <div class="roster-slot-label">${POSITION_ICON[slotId] ?? ""} ${slotId}</div>
+      ${player ? `<div class="mini-card"><div class="mini-card-name">${escapeHtml(player.name)}</div><div class="mini-card-pos">${player.position}</div><div class="mini-card-rating">FORM ${player.form}</div><div class="mini-card-salary">$${player.price}M</div></div>` : `<div class="roster-slot-empty-glyph">—</div>`}
+    </div>`;
+}
+
+function trendGlyph(trend: number): string {
+  if (trend > 0) return `<span class="fa-trend up">▲</span>`;
+  if (trend < 0) return `<span class="fa-trend down">▼</span>`;
+  return `<span class="fa-trend flat">–</span>`;
+}
+
+function sparklineSvg(points: number[]): string {
+  if (points.length < 2) return "";
+  const w = 100;
+  const h = 24;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const span = max - min || 1;
+  const step = w / (points.length - 1);
+  const coords = points.map((p, i) => `${(i * step).toFixed(1)},${(h - ((p - min) / span) * h).toFixed(1)}`).join(" ");
+  return `<svg class="fa-sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="price history"><polyline points="${coords}" fill="none" stroke="var(--accent-blue)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+function renderFAPlay(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+
+  if (view["claimed"] === false) {
+    faPlayMounted = null;
+    renderFAClaimPicker(view);
+    return;
+  }
+
+  const day = Number(view["day"] ?? 1);
+  const windowClosed = Boolean(view["windowClosed"]);
+  const acted = Boolean(view["acted"]);
+  const held = Boolean(view["held"]);
+  const outForDay = Boolean(view["outForDay"]);
+  const pendingOffer = view["pendingOffer"] as { agentId: string; amount: number; slot: string } | null;
+  const franchise = view["franchise"] as FAFranchise;
+  const roster = (view["roster"] as FARosterSlot[]) ?? [];
+  const market = (view["market"] as FAAgentCard[]) ?? [];
+  const history = (view["history"] as FADayHistory[]) ?? [];
+  const openAgentId = document.getElementById("faComposerRoot")?.getAttribute("data-agent") ?? null;
+
+  // R2 repair: `held`/`outForDay` must be their own signature fields, not folded only into `acted` — a
+  // withdraw flips held/outForDay from false->true while `acted` was ALREADY true (a pending offer already
+  // made it true), so `acted` alone wouldn't notice the transition and the stale "offer in, withdraw" banner
+  // would never refresh into the honest "out for today" state.
+  const signature = { day, acted, held, outForDay, openAgentId };
+  const rootMissing = !document.getElementById("faPlayRoot");
+  const alreadyMounted =
+    faPlayMounted &&
+    faPlayMounted.day === signature.day &&
+    faPlayMounted.acted === signature.acted &&
+    faPlayMounted.held === signature.held &&
+    faPlayMounted.outForDay === signature.outForDay &&
+    faPlayMounted.openAgentId === signature.openAgentId &&
+    !rootMissing;
+  if (alreadyMounted) return; // preserves the composer's in-progress stepper value across poll ticks
+  faPlayMounted = signature;
+
+  body.innerHTML = `
+    <div id="faPlayRoot">
+      <div class="row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="fa-day-pill ${windowClosed ? "closed" : ""}">${windowClosed ? "WINDOW CLOSED" : `DAY ${day} OF ${view["windowDays"]}`}</span>
+        <div class="claim-card-head" style="margin:0;"><span style="${crestStyle(franchise.crestIndex, 20)}"></span><span class="claim-card-name" style="font-size:13px;">${escapeHtml(franchise.name)}</span></div>
+      </div>
+      <div class="fa-cap-sheet">
+        <div class="fa-cap-sheet-row"><span>Cap room</span><span class="num">$${view["capRoom"]}M</span></div>
+        <div class="fa-cap-sheet-row deadcap"><span>Dead cap on the books</span><span class="num">$${view["deadCap"]}M</span></div>
+      </div>
+      <div class="roster-wall" style="margin-top:10px;">${roster.map((r) => rosterSlotHtml(r.id, r.player)).join("")}</div>
+      <div id="faActedBanner" style="margin-top:12px;"></div>
+      <div id="faMarketWrap" style="margin-top:14px;"></div>
+      <div id="faHistoryWrap" style="margin-top:16px;"></div>
+    </div>`;
+
+  const actedBanner = $("faActedBanner");
+  if (windowClosed) {
+    actedBanner.innerHTML = `<div class="banner">The signing window has closed. Look up at the board for the finale.</div>`;
+  } else if (outForDay) {
+    // R2 repair (VERIFY_L3.md R2): a withdrawal is NOT the same as a plain hold — it's already cost this
+    // team its day. The composer is honest about that: no way back into today's market, just a wait for
+    // tomorrow.
+    actedBanner.innerHTML = `<div class="banner">You pulled out of talks today. The market saw you go — no new offer until tomorrow.</div>`;
+  } else if (acted) {
+    actedBanner.innerHTML = held
+      ? `<div class="banner">You're holding today — waiting on the market. You can still change your mind before the day closes.</div>`
+      : `<div class="banner">Offer in: $${pendingOffer?.amount}M on ${market.find((a) => a.id === pendingOffer?.agentId)?.name ?? "your target"} (${pendingOffer?.slot}). Sealed until the day closes. <button id="faWithdraw" class="btn" style="margin-left:8px;">Withdraw</button></div>`;
+    if (!held) {
+      $("faWithdraw")?.addEventListener("click", () => {
+        if (confirm("Pull your offer back? This ends your day — no new offer until tomorrow. Editing your offer instead (pick a different agent, amount, or slot) is free and doesn't cost you anything.")) {
+          outbox?.submit({ type: "withdrawOffer" });
+        }
+      });
+    }
+  } else {
+    actedBanner.innerHTML = `<button id="faHoldBtn" class="btn btn-warn full">Hold today — wait on the market</button>`;
+    $("faHoldBtn")?.addEventListener("click", () => outbox?.submit({ type: "holdDay" }));
+  }
+
+  const marketWrap = $("faMarketWrap");
+  marketWrap.innerHTML = `${marketRulesHtml((view["marketRules"] as string[]) ?? [])}<div class="eyebrow" style="font-size:12px; margin:10px 0 6px;">The market</div><div class="fa-market-grid" id="faMarketGrid"></div><div id="faComposerRoot"></div>`;
+  const grid = $("faMarketGrid");
+  for (const a of market) {
+    const card = document.createElement("div");
+    card.className = "fa-agent-card" + (a.signed ? " signed" : outForDay ? " unaffordable" : "");
+    card.dataset["agentId"] = a.id;
+    card.innerHTML = `
+      <div class="fa-agent-head"><span class="fa-agent-name">${escapeHtml(a.name)}</span><span class="fa-agent-meta">${a.position} · ${FA_TIER_LABEL[a.tier] ?? a.tier}</span></div>
+      ${a.factorHint ? `<div class="fa-agent-hint">"${escapeHtml(a.factorHint)}"</div>` : ""}
+      <div class="fa-ask-row"><span class="fa-ask">$${a.ask}M</span>${trendGlyph(a.trend)}</div>
+      ${sparklineSvg(a.priceHistory)}
+      ${
+        a.signed
+          ? `<div class="fa-signed-stamp">✓ SIGNED — ${a.signedFranchise ? escapeHtml(a.signedFranchise.name) : ""} $${a.signedAmount}M (day ${a.signedDay})</div>`
+          : `<div class="fa-interest-badge">${a.interestCount} team${a.interestCount === 1 ? "" : "s"} interested right now</div>`
+      }`;
+    if (!a.signed && !windowClosed && !outForDay) {
+      card.addEventListener("click", () => {
+        const root = document.getElementById("faComposerRoot");
+        const currentlyOpen = root?.getAttribute("data-agent");
+        if (currentlyOpen === a.id) {
+          root?.removeAttribute("data-agent");
+          if (root) root.innerHTML = "";
+          faPlayMounted = null; // force rebuild so the signature check reflects the closed composer
+        } else {
+          faComposerSlot = null;
+          faComposerAmount = a.ask;
+          renderFAComposer(a, roster);
+        }
+      });
+    }
+    grid.appendChild(card);
+  }
+
+  const historyWrap = $("faHistoryWrap");
+  if (history.length > 0) {
+    historyWrap.innerHTML = `<div class="eyebrow" style="font-size:12px; margin-bottom:6px;">Day-by-day results</div>`;
+    for (const day of [...history].reverse()) {
+      const dayEl = document.createElement("div");
+      dayEl.className = "panel";
+      dayEl.style.padding = "10px 12px";
+      dayEl.style.marginBottom = "8px";
+      dayEl.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:6px;">Day ${day.day}</div>` + day.resolutions.map(resolutionRowHtml).join("");
+      historyWrap.appendChild(dayEl);
+    }
+  }
+}
+
+function resolutionRowHtml(r: FAResolutionRow): string {
+  if (r.signed) {
+    return `<div class="foregone-row"><span>${escapeHtml(r.agentName)} — <strong style="color:var(--ink-primary);">${r.franchise ? escapeHtml(r.franchise.name) : "signed"}</strong></span><span class="price numeric">$${r.amount}M</span></div>`;
+  }
+  const ownNote = r.ownAmount != null ? ` (your offer: $${r.ownAmount}M)` : "";
+  return `<div class="foregone-row"><span>${escapeHtml(r.agentName)} — unsigned, ${r.offerCount} offer${r.offerCount === 1 ? "" : "s"}${ownNote}</span><span class="price numeric">$${r.askBefore}M → $${r.askAfter}M</span></div>`;
+}
+
+function renderFAComposer(agent: FAAgentCard, roster: FARosterSlot[]): void {
+  const root = document.getElementById("faComposerRoot");
+  if (!root) return;
+  root.setAttribute("data-agent", agent.id);
+  const eligibleSlots = roster.filter((r) => r.id === "WILDCARD" || r.id === agent.position);
+  root.innerHTML = `
+    <div class="fa-offer-composer">
+      <div class="eyebrow" style="font-size:12px;">Offer on ${escapeHtml(agent.name)}</div>
+      <div class="fa-slot-picker" id="faSlotPicker"></div>
+      <div class="bid-stepper">
+        <button type="button" data-fa-step="-1" class="btn">−</button>
+        <span class="bid-stepper-readout" id="faAmountReadout">$${faComposerAmount}M</span>
+        <button type="button" data-fa-step="1" class="btn">+</button>
+      </div>
+      <button type="button" id="faSubmitOffer" class="btn btn-danger full" style="margin-top:10px;" disabled>Pick a slot first</button>
+    </div>`;
+  const slotPicker = $("faSlotPicker");
+  for (const slot of eligibleSlots) {
+    const chip = document.createElement("span");
+    chip.className = "fa-slot-chip";
+    chip.dataset["slot"] = slot.id;
+    chip.textContent = slot.player ? `${slot.id} (release ${slot.player.name.split(" ")[0]}, $${slot.releaseDeadCap}M dead cap)` : `${slot.id} (open)`;
+    chip.addEventListener("click", () => {
+      faComposerSlot = slot.id;
+      slotPicker.querySelectorAll(".fa-slot-chip").forEach((el) => el.classList.remove("selected"));
+      chip.classList.add("selected");
+      const submitBtn = $<HTMLButtonElement>("faSubmitOffer");
+      submitBtn.disabled = false;
+      submitBtn.textContent = `Offer $${faComposerAmount}M for the ${slot.id} slot`;
+    });
+    slotPicker.appendChild(chip);
+  }
+  const readout = $("faAmountReadout");
+  root.querySelectorAll<HTMLButtonElement>("[data-fa-step]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const delta = Number(btn.dataset["faStep"]) * 5;
+      faComposerAmount = Math.max(5, faComposerAmount + delta);
+      readout.textContent = `$${faComposerAmount}M`;
+      const submitBtn = $<HTMLButtonElement>("faSubmitOffer");
+      if (faComposerSlot) submitBtn.textContent = `Offer $${faComposerAmount}M for the ${faComposerSlot} slot`;
+    });
+  });
+  $("faSubmitOffer").addEventListener("click", () => {
+    if (!faComposerSlot) return;
+    outbox?.submit({ type: "offer", agentId: agent.id, amount: faComposerAmount, slot: faComposerSlot });
+  });
+  // N1 repair (VERIFY_L3.md N1): at the classroom Chromebook shape (~1024x600), the composer opens roughly a
+  // full market grid below the fold with zero cue anything happened. `block: "nearest"` brings it fully
+  // on-screen without yanking the whole page to the top when it's already partly visible. Instant, not
+  // smooth — a mid-animation scroll position is not a real "reachable" state to leave a student in.
+  root.scrollIntoView({ behavior: "auto", block: "nearest" });
+}
+
+function renderFAReveal(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const franchise = view["franchise"] as FAFranchise | undefined;
+  const recap = view["windowRecap"] as FAWindowRecap | null;
+  const agents = (view["agents"] as FAAgentReveal[]) ?? [];
+  const standings = view["standings"] as FAStanding[] | null;
+  const playoffs = view["playoffs"] as FAPlayoffs | null;
+  const awards = view["awards"] as FAAward[] | null;
+
+  let html = franchise ? `<div class="panel" style="padding:12px;"><div class="claim-card-head"><span style="${crestStyle(franchise.crestIndex, 18)}"></span><span class="claim-card-name" style="font-size:13px;">${escapeHtml(franchise.name)}</span></div></div>` : "";
+
+  if (recap) {
+    html += `
+      <div class="panel" style="padding:14px; margin-top:10px;">
+        <div class="eyebrow" style="font-size:12px;">The window, in numbers</div>
+        <p style="margin:8px 0 0; font-size:13px; color:var(--ink-secondary);">${recap.signedCount} of ${recap.totalAgents} agents signed · $${recap.totalSpent}M total spent</p>
+        ${recap.biggestContract ? `<p style="margin:6px 0 0; font-size:13px;">Biggest contract: <strong>${escapeHtml(recap.biggestContract.agentName)}</strong>, $${recap.biggestContract.amount}M (${escapeHtml(recap.biggestContract.franchise.name)}, day ${recap.biggestContract.day})</p>` : ""}
+        ${recap.steepestFall ? `<p style="margin:6px 0 0; font-size:13px;">Steepest fall: <strong>${escapeHtml(recap.steepestFall.agentName)}</strong>, $${recap.steepestFall.from}M → $${recap.steepestFall.to}M</p>` : ""}
+      </div>`;
+  }
+
+  const revealedAgents = agents.filter((a) => a.revealed);
+  if (revealedAgents.length > 0) {
+    html += `<div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">Playoff factors revealed</div>`;
+    for (const a of revealedAgents) {
+      const sign = a.playoffFactor !== null && a.playoffFactor > 0 ? "+" : "";
+      html += `
+        <div class="reveal-target-card">
+          <div class="reveal-target-head">
+            <span class="claim-card-name" style="font-size:13px;">${escapeHtml(a.name)} <span style="color:var(--ink-muted); font-weight:400; font-size:11px;">· ${a.position}</span></span>
+            <span class="verdict-badge ${a.playoffFactor !== null && a.playoffFactor > 0 ? "steal" : a.playoffFactor !== null && a.playoffFactor < 0 ? "curse" : "fair"}">${sign}${a.playoffFactor}</span>
+          </div>
+          <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">${a.signed ? `Signed by <strong style="color:var(--ink-primary);">${a.signedFranchise ? escapeHtml(a.signedFranchise.name) : "a team"}</strong> for $${a.signedAmount}M.` : "Went unsigned this window."}</p>
+        </div>`;
+    }
+  }
+
+  if (standings) html += standingsHtml(standings);
+  if (playoffs) html += playoffsHtml(playoffs);
+  if (awards) html += awardsHtml(awards);
+
+  body.innerHTML = html || `<div class="banner">Watch the board.</div>`;
+}
+
+function standingsHtml(standings: FAStanding[]): string {
+  return `
+    <div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">Final standings</div>
+    ${standings.map((r) => `<div class="fa-standing-row ${r.rank <= 4 ? "playoff-line" : ""}"><span class="fa-standing-rank">#${r.rank}</span><span style="${crestStyle(r.franchise.crestIndex, 18)}"></span><span style="flex:1;">${escapeHtml(r.franchise.name)}</span><span class="numeric" style="color:var(--accent-gold);">${r.form}</span></div>`).join("")}`;
+}
+
+function matchHtml(label: string, m: FAPlayoffMatch): string {
+  return `
+    <div class="fa-bracket-match">
+      <div class="eyebrow" style="font-size:10px; margin-bottom:4px;">${label}</div>
+      <div class="fa-bracket-side ${m.winner.seatId === m.a.seatId ? "winner" : ""}"><span>${escapeHtml(m.a.franchise.name)}</span><span>${m.a.form}</span></div>
+      <div class="fa-bracket-side ${m.winner.seatId === m.b.seatId ? "winner" : ""}"><span>${escapeHtml(m.b.franchise.name)}</span><span>${m.b.form}</span></div>
+    </div>`;
+}
+
+function playoffsHtml(playoffs: FAPlayoffs): string {
+  if (!playoffs.final && !playoffs.champion) return "";
+  let html = `<div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">The playoff push</div>`;
+  playoffs.semis.forEach((m, i) => (html += matchHtml(playoffs.semis.length > 1 ? `Semifinal ${i + 1}` : "Play-in", m)));
+  if (playoffs.final) html += matchHtml("Final", playoffs.final);
+  if (playoffs.champion) html += `<div class="banner" style="margin-top:8px;">🏆 ${escapeHtml(playoffs.champion.franchise.name)} — champion</div>`;
+  return html;
+}
+
+function awardsHtml(awards: FAAward[]): string {
+  if (awards.length === 0) return `<div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">GM Awards</div><p style="font-size:12px; color:var(--ink-muted);">Nothing to award this round.</p>`;
+  return `<div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">GM Awards</div>${awards.map((a) => `<div class="fa-award-card"><h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.body)}</p></div>`).join("")}`;
+}
+
+function renderFACounterfactual(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const franchise = view["franchise"] as FAFranchise | undefined;
+  const timeline = (view["timeline"] as { label: string; body: string }[]) ?? [];
+  const whatIfs = (view["whatIfs"] as string[]) ?? [];
+  const debatePrompts = (view["debatePrompts"] as string[]) ?? [];
+  body.innerHTML = `
+    ${franchise ? `<div class="panel" style="padding:12px;"><div class="claim-card-head"><span style="${crestStyle(franchise.crestIndex, 18)}"></span><span class="claim-card-name" style="font-size:13px;">${escapeHtml(franchise.name)}</span></div></div>` : ""}
+    <div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">Your three-lesson journey</div>
+    <div class="fa-timeline">${timeline.map((t) => `<div class="fa-timeline-stop"><div class="label">${escapeHtml(t.label)}</div><div class="body">${escapeHtml(t.body)}</div></div>`).join("")}</div>
+    ${whatIfs.length > 0 ? `<div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">What if?</div>${whatIfs.map((w) => `<div class="fa-whatif-card">${escapeHtml(w)}</div>`).join("")}` : ""}
+    <div class="eyebrow" style="font-size:12px; margin:14px 0 6px;">Be ready to argue</div>
+    ${debatePrompts.map((p) => `<p style="font-size:13px; color:var(--ink-secondary); margin:4px 0;">${escapeHtml(p)}</p>`).join("")}`;
 }
 
 function escapeHtml(s: string): string {

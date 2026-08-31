@@ -53,6 +53,34 @@
   .synthcard p { margin: 0; font-size: 1.15vw; line-height: 1.5; color: var(--ink-secondary); }
   .synthesis-note { max-width: 62vw; font-size: 1.4vw; color: var(--ink-muted); margin-top: 3vh; line-height: 1.5; }
   .exit-prompt { font-size: 1.6vw; color: var(--ink-primary); margin-top: 2vh; font-weight: 600; }
+
+  /* ---- M1 L3 Free Agency: the live signing-window ticker ---- */
+  .fa-ticker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1vw; max-width: 92vw; margin-top: 2vh; }
+  .fa-ticker-card { background: rgba(19,24,34,0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1vw 1.1vw; text-align: left; }
+  .fa-ticker-card.signed { border-color: rgba(18,148,106,0.5); background: rgba(18,148,106,0.08); }
+  .fa-ticker-name { font-weight: 700; font-size: 1.05vw; color: var(--ink-primary); }
+  .fa-ticker-meta { font-size: 0.75vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .04em; }
+  .fa-ticker-ask-row { display: flex; align-items: baseline; justify-content: space-between; margin-top: .6vh; }
+  .fa-ticker-ask { font-family: var(--font-number); font-weight: 800; font-size: 1.6vw; color: var(--accent-gold); }
+  .fa-ticker-trend { font-size: 1vw; font-weight: 800; }
+  .fa-ticker-trend.up { color: var(--over-the-line); }
+  .fa-ticker-trend.down { color: var(--cap-safe); }
+  .fa-ticker-trend.flat { color: var(--ink-muted); }
+  .fa-ticker-interest { font-size: 0.75vw; color: var(--ink-secondary); margin-top: .4vh; }
+  .fa-ticker-signed { font-size: 0.75vw; font-weight: 800; color: var(--cap-safe); margin-top: .4vh; text-transform: uppercase; }
+  .fa-caproom-row { display: flex; flex-wrap: wrap; gap: 1vw; max-width: 90vw; margin-top: 2vh; justify-content: center; }
+  .fa-caproom-tile { background: rgba(19,24,34,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: .8vh 1.2vw; font-size: .9vw; color: var(--ink-secondary); }
+  .fa-caproom-tile .num { font-family: var(--font-number); font-weight: 800; color: var(--accent-gold); }
+  .fa-standings-row { display: flex; align-items: center; gap: 1vw; max-width: 60vw; margin: .5vh auto; padding: .6vh 1.2vw; background: rgba(19,24,34,0.7); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); }
+  .fa-standings-row.playoff-line { border-color: rgba(244,185,66,0.5); }
+  .fa-standings-rank { font-family: var(--font-number); font-weight: 800; color: var(--accent-gold); width: 2vw; }
+  .fa-standings-name { flex: 1; text-align: left; font-size: 1vw; }
+  .fa-standings-form { font-family: var(--font-number); font-weight: 700; font-size: 1vw; color: var(--ink-primary); }
+  .fa-bracket-row { display: flex; justify-content: center; gap: 2vw; max-width: 90vw; margin-top: 1.5vh; flex-wrap: wrap; }
+  .fa-bracket-card { background: rgba(19,24,34,0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1vw 1.4vw; min-width: 16vw; }
+  .fa-bracket-title { font-size: .8vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .6vh; }
+  .fa-bracket-side { display: flex; justify-content: space-between; font-size: 1vw; padding: .3vh 0; color: var(--ink-secondary); }
+  .fa-bracket-side.winner { color: var(--accent-gold); font-weight: 800; }
 </style>
 </head>
 <body>

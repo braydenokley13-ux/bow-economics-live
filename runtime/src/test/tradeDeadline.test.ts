@@ -1144,3 +1144,14 @@ test("AGGREGATE: path-dependence card connects each cut team's deadline budget b
   assert.match(card.body, /\$9M/);
   assert.match(card.body, /\$49M/);
 });
+
+/* --------------------------------------------------------------- L3 seam -- */
+
+test("SEAM (L3_CHARTER.md §8): COMPLETE copy on both student and board views teases Free Agency, not a generic goodbye", () => {
+  const state = freshL2();
+  const studentView = tradeDeadlineModule.studentView(state, "t1", "COMPLETE") as { message: string };
+  const boardView = tradeDeadlineModule.boardView(state, "COMPLETE") as { message: string };
+  assert.match(studentView.message, /free agency/i);
+  assert.match(studentView.message, /dead cap/i);
+  assert.equal(studentView.message, boardView.message, "the seam copy is the same single source of truth on both surfaces");
+});
