@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `6:0a33cb77535604c99a0ba64cb79b7722121822d16ad880c59d576fb68cb948e9`  
-Updated: 2026-08-31T20:39:00.457Z
+Event head: `7:75a37b096703ba8d2666d091e9fa37e3435e713d8d737f1014293e7d2adf18fe`  
+Updated: 2026-08-31T20:48:20.468Z
 
 ## Founder intent
 
@@ -54,7 +54,7 @@ Module 2 'Money in Motion' can become a coherent three-lesson sports-business mo
 
 ## Evidence recorded
 
-- No evidence recorded yet
+- sr-input-report — sports-reality-report — Sports Reality design input: 15 dated real-world anchors + ranked top-5 for Module 2
 
 ## Claim ledger
 
