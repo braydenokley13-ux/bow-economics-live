@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T22:08:22.952Z",
+  "updatedAt": "2026-08-31T22:54:33.150Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -529,7 +529,11 @@
           "cost": null
         }
       },
-      "evidenceIds": [],
+      "evidenceIds": [
+        "l1-build-test",
+        "l1-tuning-harness",
+        "l1-e2e-browser"
+      ],
       "claimIds": [],
       "dissentIds": [],
       "meetingIds": [],
@@ -862,6 +866,65 @@
       },
       "recordedAt": "2026-08-31T22:07:30.629Z",
       "actor": "lead-integrator"
+    },
+    "l1-build-test": {
+      "id": "l1-build-test",
+      "wave": 2,
+      "kind": "test",
+      "label": "runtime npm test — full suite (345), Module 1 untouched",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-build-test--record.json",
+      "sha256": "e7aa92515664d9e50e1cea127fa2125708daf277f0d7ea344fb4aebe2466c08d",
+      "size": 86399,
+      "metadata": {
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T22:54:03.123Z",
+      "actor": "builder"
+    },
+    "l1-tuning-harness": {
+      "id": "l1-tuning-harness",
+      "wave": 2,
+      "kind": "test",
+      "label": "M2 L1 constant-tuning harness — BC-2 discharge (11 properties)",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-tuning-harness--record.json",
+      "sha256": "8085b899c3aaff4b20dcbc165a497fbac1b116e2a959802a7db2bbc99eff599f",
+      "size": 6408,
+      "metadata": {
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T22:54:08.443Z",
+      "actor": "builder"
+    },
+    "l1-e2e-browser": {
+      "id": "l1-e2e-browser",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "M2 L1 Playwright e2e — three surfaces, four desks, zero console errors",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-browser--record.json",
+      "sha256": "00d379bf93009979b848a7c297ab9c380d0d9e0af0f2b84f9ce4e619d8a9d996",
+      "size": 1940,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-08-31T22:54:33.150Z",
+      "actor": "builder"
     }
   },
   "claims": {},
@@ -970,11 +1033,11 @@
     "agentsActivated": 11,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 18,
+    "evidenceRecorded": 21,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 48,
-  "eventHead": "e8c6d68914839277a5c59750e2262dbf18b57b60ff91860af215dce51a4f9e85",
+  "eventCount": 51,
+  "eventHead": "174d590c4d1d73a506a56ed0d78fe2889da4dd7c25e58d69bea9665c8e5c1fb1",
   "warnings": []
 }

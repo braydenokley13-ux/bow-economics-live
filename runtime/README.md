@@ -149,6 +149,72 @@ the offer composer scrolls into view when it opens, confirmed reachable and
 submittable at the classroom Chromebook shape (1024×600) in `e2e-l3.cjs`
 (N1); the teacher aggregate shows an agent's name, not its raw id (N2).
 
+## Module 2, Lesson 1 — Full House (`m2l1-full-house`)
+
+The selected Module 2 architecture's anchor lesson (`docs/gauntlet/module-2/
+ARCHITECTURE_SELECTION.md`, Candidate C). A pair runs a real NBA club's
+**building**: five game nights, two dials committed **blind**, two books that
+cannot be summed.
+
+**Phases:** `LOBBY → HOOK → PLAY → REVEAL → ADAPT → COUNTERFACTUAL →
+SYNTHESIS → COMPLETE`. All five nights live inside PLAY, paced by a teacher
+**night bell** ("Open the doors"); the design's mid-play ADAPT questions ship
+in the teacher panel and the canonical ADAPT phase carries them after the
+curves. CONSEQUENCE and ARGUE are not declared — the design's L1 flow has no
+separate block for either (consequence is felt during PLAY, the argue prompt
+rides on COUNTERFACTUAL).
+
+**Blind commitment is structural, not a convention.** `base` and
+`sensitivity` are module-scope constants and are never serialized to any
+view, pre- or post-lock. The pre-lock student payload contains the printed
+card, the dials' dollar positions, printed operating facts (capacity,
+tonight's bill, the season-plan price) and the pair's own realized history —
+and nothing derived from the pending action. Asserted in
+`fullHouse.test.ts` by settling the pending action and proving none of its
+quantities appear in the payload.
+
+**Two books (R4).** CASH and RENEWALS. RENEWALS is a *tent* peaked at the
+season-ticket plan price — price far above it and plan holders quit, far
+below it and the plan looks worthless — so neither error direction is
+dominated on both books, and the cash-best price is never the renewals-best
+price in any reachable state.
+
+**BC-2 (the two constant defects the selection econ review named) is
+repaired at the shipped constants.** R6: worst error-cost asymmetry is now
+**1.38×** (was 16.5× against the low side at New York), measured at equal
+distance from the true continuous argmax across every market × card ×
+reachable renewals/carry state. R8: **Memphis reaches 100% fill** on two
+cards (was capped at 75.3% at any legal price); the board carries fill % and
+sold-out nights, a non-money success metric, so the small market's path is
+visible inside L1. Re-verify with
+`node docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs` from the repo
+root (11 properties, exit 0 only when all hold; it imports the built module
+so it can never drift from the shipped constants).
+
+**Teacher controls.** `🔔 Open the doors` settles every desk simultaneously
+against the card printed before anyone touched a dial (a desk that never
+locked auto-commits at the plan price, flagged `auto` on its own screen);
+`📈 Release the Two Peaks` is a manual reveal, unavailable until Night 3 has
+actually been played; `🎙️ Reveal next` stages the seven REVEAL beats (five
+night curves, Two Peaks, per-market books). Every one of them has an
+automatic fallback: leaving PLAY closes all remaining nights and releases
+Two Peaks; leaving REVEAL plays out every remaining stage.
+
+**Board privacy.** Desks appear as `Desk 4 · Memphis Grizzlies` with a
+crest — never a student name, never a seat id. Markets are assigned
+deterministically and visibly (odd desks New York, even desks Memphis) and
+never ranked; no board surface sorts by money.
+
+**Late/absent seats.** A seat joining mid-window gets a desk, a market, and
+the nights it missed played at the plan price by "the desk manager,"
+labelled `covered` on its own history — real books, not a blank sheet.
+
+**End-to-end proof.** `node scripts/e2e-m2l1.cjs` (after `npm run build`)
+drives one teacher, one projector and four Chromebook-shaped student pages
+through the whole arc, including a late joiner at Night 3, a desk that never
+locks Night 5, the teacher-released Two Peaks, and all seven reveal stages.
+Screenshots land in `docs/gauntlet/module-2/screens-l1/`.
+
 ## Repair charter round 1 (post-verification)
 
 A fresh-context verification round produced three rulings — gameplay
@@ -345,7 +411,12 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**313 tests, 313 passing** (`node --test`, no test framework dependency).
+**345 tests, 345 passing** (`node --test`, no test framework dependency) —
+313 of them Module 1 and the shared runtime, unchanged, plus 32 new
+`fullHouse.test.ts` tests for Module 2 Lesson 1 (blind-commit and
+demand-constant leak assertions across every phase and surface, the BC-2
+retune properties, repeat-card renewal movement, locked-at-time synthesis,
+teacher-fallback behaviour, late-seat handling).
 Coverage: PIN/token crypto round-trips (`crypto.test.ts`); the `lobby-demo`
 reducer/aggregate/views including rejected malformed and out-of-phase
 actions (`lobbyDemo.test.ts`); the `m1l1-draft-day` reducer, market design
@@ -416,7 +487,8 @@ three static pages), not a general-purpose framework being reinvented.
 - No client-side module registry — `/play`, `/teach`, and `/board`'s
   renderers special-case each module's view shape by its `module` tag
   (`lobby-demo`, `m1l1-draft-day`, `m2-box-office`, `m1l2-trade-deadline`,
-  `m1l3-free-agency`, with a generic JSON-dump fallback for anything else).
+  `m1l3-free-agency`, `m2l1-full-house`, with a generic JSON-dump fallback
+  for anything else).
   Adding another real lesson module means writing its render functions too;
   the *server* contract is fully generic today, the client shell is not yet.
 - `GET /api/sessions` (the session list) is still unauthenticated — it
@@ -428,6 +500,21 @@ three static pages), not a general-purpose framework being reinvented.
   the process lifetime — there is no archive/prune path. Not a problem at
   classroom scale (one class, a handful of sessions per day), worth
   revisiting for a long-running deployment.
+- **Module 2 Lesson 1 (`m2l1-full-house`) known gaps.** (a) Arena
+  capacities and the "2025 defending champions" line come from model
+  knowledge, not from the dated sports-reality ledger in
+  `docs/gauntlet/module-2/SPORTS_REALITY_INPUT.md` — they carry season
+  stamps in copy but have **not** been independently re-verified by a
+  sports-reality pass. (b) The lesson has never been timed against a real
+  50-60 minute period; the five-night pace is a teacher judgement with no
+  in-product clock. (c) `boxOffice` (`m2-box-office`) is still registered
+  and dormant — the architecture selection kills it as a lesson, but code
+  removal was deferred. (d) The night-spend dial's returns are linear in
+  dollars, so the interesting decision is *when* to spend, not how much;
+  the harness asserts the timing spread but the dial has no interior
+  optimum. (e) The Night-4 capacity option never beats simply pricing the
+  shock night correctly — it is a hedge for a desk that priced low, and the
+  debrief must say so rather than present it as a rival strategy.
 - The teacher-key/rejoin-lockout mechanisms are new as of this round and
   have only been exercised by unit tests and one manual Playwright pass
   (which exercises the *happy* teacher-key path via normal UI clicks, not

@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `48:e8c6d68914839277a5c59750e2262dbf18b57b60ff91860af215dce51a4f9e85`  
-Updated: 2026-08-31T22:08:22.952Z
+Event head: `51:174d590c4d1d73a506a56ed0d78fe2889da4dd7c25e58d69bea9665c8e5c1fb1`  
+Updated: 2026-08-31T22:54:33.150Z
 
 ## Founder intent
 
@@ -50,7 +50,9 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 
 ## Evidence recorded
 
-- No evidence recorded yet
+- l1-build-test — test — runtime npm test — full suite (345), Module 1 untouched
+- l1-tuning-harness — test — M2 L1 constant-tuning harness — BC-2 discharge (11 properties)
+- l1-e2e-browser — browser-trace — M2 L1 Playwright e2e — three surfaces, four desks, zero console errors
 
 ## Claim ledger
 

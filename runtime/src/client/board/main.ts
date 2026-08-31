@@ -724,9 +724,14 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       const shown = (view["shownCards"] as string[]) ?? [];
       const peaks = (view["twoPeaks"] as FHTwoPeaksB[]) ?? [];
       const books = (view["books"] as FHBooksB[]) ?? [];
+      // The projector is a fixed, non-scrolling surface. As each staged panel
+      // lands, the curve gives up room rather than pushing anything off screen.
+      const crowded = Boolean(view["twoPeaksReleased"]);
+      const booksUp = Boolean(view["booksReleased"]);
+      const showCurve = points.length > 0 && !booksUp;
       stage.innerHTML = `
-        <div class="label">The Room's Own Curve · ${shown.length ? shown.join(" · ") : "waiting"}</div>
-        ${points.length > 0 ? `<div class="scatter-wrap">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : `<div class="banner">Waiting for your teacher to put up the first night.</div>`}
+        <div class="label">${booksUp ? "The Season, Market By Market" : `The Room's Own Curve · ${shown.length ? shown.join(" · ") : "waiting"}`}</div>
+        ${showCurve ? `<div class="scatter-wrap${crowded ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
         ${Number(view["totalTurnedAway"]) > 0 ? `<div class="synthesis-note">${Number(view["totalTurnedAway"]).toLocaleString()} people in this room's five nights wanted a seat and could not get one.</div>` : ""}
         ${view["twoPeaksReleased"] ? fhTwoPeaksPanel(peaks) : ""}
         ${

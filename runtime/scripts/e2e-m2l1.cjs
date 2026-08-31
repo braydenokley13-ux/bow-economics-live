@@ -290,26 +290,32 @@ async function main() {
       const resp = teach.waitForResponse((r) => r.url().includes("/control") && r.request().method() === "POST");
       await teach.click("#btnRevealNext");
       await resp;
+      if (i === 4) {
+        // Stages 1-5 put the five nights up one at a time, each labelled by card.
+        await board.waitForFunction(() => document.body.innerText.includes("N5"), null, { timeout: 20000 });
+        const staged = await board.evaluate(() => document.body.innerText);
+        assert.match(staged, /N1 · N2 · N3 · N4 · N5/);
+        assert.equal(staged.includes("THE TWO PEAKS"), false, "Two Peaks landed before its own stage");
+      }
     }
     await board.waitForFunction(() => document.body.innerText.includes("Fullest house"), null, { timeout: 20000 });
     const revealBoard = await board.evaluate(() => document.body.innerText);
-    assert.match(revealBoard, /N1/);
     assert.match(revealBoard, /THE TWO PEAKS/);
     assert.match(revealBoard, /Median renewals/i);
     assert.match(revealBoard, /modeled on real market differences/i);
-    const curvePoints = await board.evaluate(() => document.querySelectorAll(".scatter-svg circle").length);
-    assert.ok(curvePoints >= 15, `expected the room's whole curve on the board, got ${curvePoints} points`);
-    console.log(`[e2e-m2l1] REVEAL played through all 7 stages — ${curvePoints} class points on the curve, Two Peaks, per-market books`);
-    await board.screenshot({ path: path.join(SCREEN_DIR, "10-board-reveal-curve.png") });
+    console.log("[e2e-m2l1] REVEAL played through all 7 stages — Two Peaks, then per-market books");
+    await board.screenshot({ path: path.join(SCREEN_DIR, "10-board-reveal-books.png") });
 
-    /* ---- ADAPT ---- */
+    /* ---- ADAPT: the room's whole curve, both markets, one labelled series each ---- */
     await teach.click("#btnAdvance");
     await teach.waitForSelector(".phasechip.current:text('ADAPT')");
     await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("ADAPT"), null, { timeout: 20000 });
     const adaptBoard = await board.evaluate(() => document.body.innerText);
     assert.match(adaptBoard, /charge LESS and make MORE/i);
-    await board.screenshot({ path: path.join(SCREEN_DIR, "11-board-adapt.png") });
-    console.log("[e2e-m2l1] ADAPT questions on the board");
+    const curvePoints = await board.evaluate(() => document.querySelectorAll(".scatter-svg circle").length);
+    assert.ok(curvePoints >= 15, `expected the room's whole curve on the board, got ${curvePoints} points`);
+    await board.screenshot({ path: path.join(SCREEN_DIR, "11-board-adapt-curve.png") });
+    console.log(`[e2e-m2l1] ADAPT: questions plus the room's whole curve — ${curvePoints} class points, two labelled series`);
 
     /* ---- COUNTERFACTUAL: Night 1 vs Night 5 ---- */
     await teach.click("#btnAdvance");
@@ -353,7 +359,7 @@ async function main() {
     /* ---- COMPLETE ---- */
     await teach.click("#btnAdvance");
     await teach.waitForSelector(".phasechip.current:text('COMPLETE')");
-    await board.waitForFunction(() => document.body.innerText.includes("Full House — Complete"), null, { timeout: 20000 });
+    await board.waitForFunction(() => document.body.innerText.toUpperCase().includes("FULL HOUSE — COMPLETE"), null, { timeout: 20000 });
     await board.screenshot({ path: path.join(SCREEN_DIR, "15-board-complete.png") });
     console.log("[e2e-m2l1] COMPLETE reached on all three surfaces");
 
