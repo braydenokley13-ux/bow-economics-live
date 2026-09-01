@@ -933,11 +933,15 @@ export type ChoiceTotals = {
   /**
    * Of the value reinvesting created, the share that landed elsewhere — or
    * `null` where that ratio is not a coherent percentage (econ B7/N9). It is
-   * incoherent whenever the room over-invested: `created <= 0` used to print
-   * 0% beside $1,577,412 of spillover, and `gaveByChoice > created` used to
-   * print above 100% in 58 of 200 random rooms. A null here is not a gap in the
-   * evidence; it is the signal that the honest sentence is the over-investment
-   * one, which states both dollar figures instead.
+   * incoherent whenever `created` is not a whole to take a share OF: `created
+   * <= 0` used to print 0% beside $1,577,412 of spillover, and `gaveByChoice >
+   * created` used to print above 100% in 58 of 200 random rooms.
+   *
+   * A null here is not a gap in the evidence and it is NOT a verdict about the
+   * room (econ N11). It says only that no percentage is printable. Whether the
+   * room over-invested or under-provided is a separate question with a separate
+   * answer — the sign of `roomJointGain` — and `spilloverClaim` branches its
+   * noun on that and never on this.
    */
   externalPct: number | null;
   anySpend: boolean;
@@ -1069,7 +1073,8 @@ export type ClaimAtom = {
   rendered: string;
   /** The computed number the substring was built from. */
   value: number;
-  format: "money" | "percent" | "int";
+  /** `percent1` is a one-decimal percentage — the shape the pipe shares print in. */
+  format: "money" | "percent" | "percent1" | "int";
   /** The sign the surrounding sentence asserts about `value`. */
   assertsSign: ClaimSign;
   /** Hard bounds the value must obey for the sentence to be printable at all. */
@@ -1093,7 +1098,13 @@ export type ClaimAtom = {
 export type Claimed = { text: string; claims: readonly ClaimAtom[] };
 
 const renderClaim = (value: number, format: ClaimAtom["format"]): string =>
-  format === "money" ? money(value) : format === "percent" ? `${Math.round(value)}%` : `${Math.round(value)}`;
+  format === "money"
+    ? money(value)
+    : format === "percent"
+      ? `${Math.round(value)}%`
+      : format === "percent1"
+        ? `${Math.round(value * 10) / 10}%`
+        : `${Math.round(value)}`;
 
 /**
  * Build a claim atom. The ONLY way a number reaches a claim string: callers
@@ -1751,8 +1762,39 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
     externalLine = `That same spending put ${gave.rendered} on OTHER clubs' books — ${pct.rendered} of the value it created landed somewhere the desk that paid for it never sees.`;
   } else {
     const spend = claim("spillover.spend", ct.spend, "money", { assertsSign: "positive" });
-    claims.push(spend, claimWord("spillover.overInvested", "spent more on Draw than it got back", true));
-    externalLine = `This room spent ${spend.rendered} on Draw and put ${gave.rendered} of it on OTHER clubs' books, while the desks' own private columns say the room spent more on Draw than it got back. That is over-investment AND spillover at the same time, and both of them are real. There is no share to print here: you cannot take a percentage of a number that went the wrong way.`;
+    claims.push(spend);
+    // econ N11 / B9 (BLOCKING). Withholding the PERCENTAGE is a question about
+    // the denominator: `created = ownGain + gaveByChoice` is not a coherent
+    // whole here, so no share can be printed. Naming the SITUATION is a
+    // different question entirely, and it has exactly one honest answer: the
+    // sign of `roomJointGain`, the room counted as one set of books.
+    //
+    // The shipped card branched the noun off `created` instead, which is the
+    // aggregate this file's own `ChoiceTotals` docstring forbids using at room
+    // level. It printed "over-investment" in 173 of 177 plausible-price rooms
+    // that were in fact jointly BETTER off — up to $2.4M better off — three
+    // clauses before the joint line said so. Privately unprofitable and
+    // socially profitable is not over-investment; it is under-provision under a
+    // positive externality, which is the concept this module is named for and
+    // the premise L3 rests on. A room told it over-invested has been told to
+    // spend less, which is the inverted lesson.
+    //
+    // So: the noun is branched on `roomJointGain` and NOTHING else, and the
+    // branch word itself is an atom carrying the opposite noun as a forbidden
+    // phrase, so the audit checks the word and not merely the numbers beside it.
+    if (ct.roomJointGain > 0) {
+      const word = "less went back in than this room's own numbers would justify";
+      claims.push(claimWord("spillover.branchNoun", word, true, "over-invest"));
+      externalLine = `This room spent ${spend.rendered} on Draw and put ${gave.rendered} of it on OTHER clubs' books. Desk by desk that spending reads as a loss, because the desk that pays for Draw keeps only part of what the Draw earns — but the room as a whole came out ahead, so ${word}. There is no share to print here: you cannot take a percentage of a number that went the wrong way for the desks who paid.`;
+    } else if (ct.roomJointGain < 0) {
+      const word = "this room over-invested";
+      claims.push(claimWord("spillover.branchNoun", word, true, "less went back in than"));
+      externalLine = `This room spent ${spend.rendered} on Draw and put ${gave.rendered} of it on OTHER clubs' books, and counted as one set of books ${word} — the spending cost the room more than it made anywhere. That is over-investment AND spillover at the same time, and both of them are real. There is no share to print here: you cannot take a percentage of a number that went the wrong way.`;
+    } else {
+      const word = "the room came out exactly level";
+      claims.push(claimWord("spillover.branchNoun", word, true, "over-invest"));
+      externalLine = `This room spent ${spend.rendered} on Draw and put ${gave.rendered} of it on OTHER clubs' books, and counted as one set of books ${word} — every dollar the desks lost privately turned up in somebody else's building in this room. There is no share to print here: you cannot take a percentage of a number that went the wrong way for the desks who paid.`;
+    }
   }
 
   // The joint column — the room counted as one set of books.
