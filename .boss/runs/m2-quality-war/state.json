@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:55:12.509Z",
+  "updatedAt": "2026-09-01T02:57:32.474Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1829,12 +1829,22 @@
           "model": "claude-opus-5",
           "reason": "Affirmative re-grade of the repaired surfaces against the premium bar (part of analyst-no-pass-wave2)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T02:46:57.187Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T02:57:32.474Z",
+          "sections": {
+            "visual-verdict": "PREMIUM CLAUSE: NOT AFFIRMED. /play, /board, /teach all SERVICEABLE-NOT-PREMIUM; board SYNTHESIS and PLAY+Two-Peaks are SCHOOL-UI. 82 w3- screenshots, zero console errors. Advisory caveat recorded: this director previously advised the D1-D3 direction.",
+            "hierarchy-findings": "H1 partial (PLAY+Two-Peaks overflows 164px@1366/229px@1920; REVEAL5 133px; ADAPT 29px); H2/H3/P1/P5 FIXED; H4/H5 partial; H6 NOT FIXED.",
+            "production-quality-gaps": "N1: SYNTHESIS un-clipped by shrinking type to 11.2px/9.3px instead of staging. P2 price dial unchanged. P3/P6/P7/P9 NOT FIXED. P8 emoji repair REPORTED DONE BUT ABSENT (teach/main.ts:238,239,272,606,750) — a builder-claim failure worth the analyst's attention.",
+            "direction": "Drawn dial with a real plan notch; three motions; STAGE the synthesis (do not shrink it); fit the three overflowing frames; quiet the plot backdrop."
+          },
+          "evidenceIds": [
+            "w3-visual-regrade"
+          ],
+          "cost": {
+            "tokens": 119980,
+            "toolUses": 40
+          }
         }
       },
       "evidenceIds": [
@@ -1843,7 +1853,8 @@
         "l1-e2e-w3",
         "m1-e2e-w3",
         "w3-play-adj",
-        "w3-projector-adj"
+        "w3-projector-adj",
+        "w3-visual-regrade"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -3101,6 +3112,23 @@
       },
       "recordedAt": "2026-09-01T02:54:58.826Z",
       "actor": "classroom-projector-critic"
+    },
+    "w3-visual-regrade": {
+      "id": "w3-visual-regrade",
+      "wave": 3,
+      "kind": "visual-report",
+      "label": "W3 visual re-grade: PREMIUM CLAUSE NOT AFFIRMED — all three surfaces SERVICEABLE-NOT-PREMIUM; board SYNTHESIS + PLAY/Two-Peaks SCHOOL-UI (synthesis un-clipped by shrinking type to 11.2px/9.3px, not staging); P8 emoji repair reported done but still present (teach/main.ts:238,239,272,606,750); price dial unchanged. 82 screenshots. Advisory caveat: director previously advised D1-D3",
+      "path": ".boss/runs/m2-quality-war/evidence/w3-visual-regrade--GATE_L1_VISUAL.md",
+      "sha256": "1aae7b2bd6099f17b7133910cc52c3deb8f7161a47998a524f1860a20be20a5d",
+      "size": 32062,
+      "metadata": {
+        "tags": [
+          "visual",
+          "wave-3"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:57:18.803Z",
+      "actor": "visual-experience-director"
     }
   },
   "claims": {
@@ -3566,11 +3594,11 @@
     "agentsActivated": 38,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 62,
+    "evidenceRecorded": 63,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 188,
-  "eventHead": "6dfcfc74dfe01fbee963b9bd8218a6f4f26b3d827a820794341b2f6a731e63cc",
+  "eventCount": 190,
+  "eventHead": "158e2de1421731944e7f91ed83ad522e756fc4c37a9664f56f59a43919a1ccb4",
   "warnings": []
 }

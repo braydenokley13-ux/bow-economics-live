@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `188:6dfcfc74dfe01fbee963b9bd8218a6f4f26b3d827a820794341b2f6a731e63cc`  
-Updated: 2026-09-01T02:55:12.509Z
+Event head: `190:158e2de1421731944e7f91ed83ad522e756fc4c37a9664f56f59a43919a1ccb4`  
+Updated: 2026-09-01T02:57:32.474Z
 
 ## Founder intent
 
@@ -37,7 +37,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - player-gameplay-critic — player-gameplay-critic — completed — claude-opus-5
 - economic-truth-critic — economic-truth-critic — active — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
-- visual-experience-director — visual-experience-director — active — claude-opus-5
+- visual-experience-director — visual-experience-director — completed-with-concerns — claude-opus-5
 
 ## Required evidence
 
@@ -60,6 +60,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - m1-e2e-w3 — e2e — M1 L3 e2e at close-out head (shared files)
 - w3-play-adj — gameplay-report — W3 play adjudication: all 12 rows + summary verified at both resolutions, stage fits exactly, paging one-look-per-group, RATING STRONG. DISCHARGED. Non-blocking: summary type 2.05% vs 2.6% floor; group ordering/dedup
 - w3-projector-adj — projector-report — W3 projector adjudication: NOT DISCHARGED. Repair reached only its four fh-tight/SPLIT frames; 10 of 24 board frames overflow at both resolutions (worst PLAY-after-bell N4 +280/+392px); PLAY Two Peaks release orphans its punchline; compacted axis 1.30-1.56% below floor; assertStageScrollable must assert fit on every frame. Privacy PASS (48 scans)
+- w3-visual-regrade — visual-report — W3 visual re-grade: PREMIUM CLAUSE NOT AFFIRMED — all three surfaces SERVICEABLE-NOT-PREMIUM; board SYNTHESIS + PLAY/Two-Peaks SCHOOL-UI (synthesis un-clipped by shrinking type to 11.2px/9.3px, not staging); P8 emoji repair reported done but still present (teach/main.ts:238,239,272,606,750); price dial unchanged. 82 screenshots. Advisory caveat: director previously advised D1-D3
 
 ## Claim ledger
 
