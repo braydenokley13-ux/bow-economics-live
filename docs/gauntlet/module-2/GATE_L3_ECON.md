@@ -540,3 +540,171 @@ surfaces / 5/5 mutants" as evidence that printed economics matches the reducer, 
 B5 lands and a value-drift mutant fails the suite.
 
 *Nothing here is classroom-proven (D10). No real class has run this lesson.*
+
+---
+
+## RE-CHECK AFTER W4 FINAL REPAIR
+
+Boss run `m2-quality-war`, assignment `recheck-l3-econ`. Owning-critic confirm-or-refute
+of the two L3 econ dissents, fresh drive of the repaired build at HEAD (`b23719e`).
+
+Method, this session: `npm run build` clean; `npm test` **455 pass / 0 fail**;
+`node docs/gauntlet/module-2/stage0/l3-tuning-harness.mjs` **exit 0, all 10 properties**.
+Nine mutants of my own design injected into an isolated copy of `dist/` in
+`/tmp/claude-0/-home-user-bow-economics-live/2c7a1860-ee1d-5f9b-8309-ead93875cd08/scratchpad/mut/`
+— repo never modified. Both vote arms driven through the shipped reducer. Servers stopped.
+No git operations.
+
+### DISSENT econ-l3-claim-audit-vacuous: NOT DISCHARGED
+
+**Confirmed repaired.** The COVERAGE / VALUE / QUANTIFIER limbs are real and they bite. My
+own injections, patched into the compiled module at the claim-construction site (not into the
+surface objects the builder's own mutants poison), every one **CAUGHT**:
+
+| # | my injection | limb that caught it |
+|---|---|---|
+| A1 | `pot-total` doubled — my original surviving mutant, re-run | VALUE |
+| A2 | `synth-gate-total` × 1.12 (novel, subtle magnitude) | VALUE |
+| A3b | `transfer-net-${deskNumber}` × 1.5 (novel, per-desk generic-id path) | VALUE |
+| A4 | `era-l3-mean` + 3 points (novel, percent format) | VALUE |
+| A5 | `pot-two-sided` pinned false (novel; a constant-word atom I named in F5) | QUANTIFIER |
+| A6 | `synth-seeded` inverted with word **and** boolean flipped together, internally consistent | QUANTIFIER |
+| A7 | `arrow-any-flat-price` inverted | QUANTIFIER |
+| A8 | brand-new atom `pot-burn-total` with no entry in `truthFor` | **COVERAGE** |
+
+`truthFor` genuinely re-derives from `state.clubs[*].weeks[*]` and the shipped brute-force
+primitives, not from the aggregate the copy reads. Harness at head: 663 atoms / 171 surfaces /
+6 rooms / 8 mutation limbs CAUGHT. The live 6-desk falsehood branch is exercised and the
+`composition` card now prints a sentence true in **both** branches ("every dollar of it arrived
+whether this room sold a seat or not"). **F2 and F5's sign/bound/value/quantifier sub-classes
+are closed on the registered atom set. I credit the repair.**
+
+**Why it is still not discharged — two gaps, both narrow, both live.**
+
+**R1 (blocking) — the play surface's rendered claim is not the claim that is audited, and I
+exploited it.** `moduleClaims` registers `play:desk-N:transferLine` from `agg.potFlows`, i.e.
+three-week **season** totals (`writeTheRule.ts:2261`). The string the student device actually
+renders is built by the same `transferLineClaimed` from a **single week's** `w.pot`
+(`writeTheRule.ts:3101-3114`, rendered at `src/client/play/main.ts:3281` inside `wrTransferHtml`).
+The audited string is never rendered; the rendered string is never registered. Observed at head,
+12 desks, uniform play:
+
+```
+AUDITED  (play:desk-1:transferLine) : You paid $2,064,279 into the pot and took $1,353,435 back out...
+RENDERED (studentView seat-0)       : You paid   $723,293 into the pot and took   $478,716 back out...
+```
+
+Injection **A9** — `paidIn: w.pot.paidIn * 1.4` on the studentView path only — makes the student
+device read *"You paid $1,012,610 into the pot and took $478,716 back out. On the pot alone,
+$244,577 left you"*, which is not arithmetic, and the harness **passes 10/10, exit 0**. COVERAGE
+cannot refuse an atom it never sees, so "refuses to pass any atom lacking an independently
+recomputed value" is true only of the registered set, and registration is decoupled from
+rendering. Repair: register the per-week instances (or feed the play path the season row the
+audit checks), and add a limb asserting that each registered surface's text is a string some
+view function actually emits. Related, cheap: the week row ends "Everything else your books did
+**this season** came off your own two dials" over one week's numbers.
+
+**R2 (blocking, small) — the instrument is not in the suite.** `npm test` is 455 tests and
+`src/test/writeTheRule.test.ts:634-659` still asserts only `s.text.includes(atom.rendered)` plus
+sign and bounds — the tautology this dissent was recorded against. COVERAGE / VALUE / QUANTIFIER
+/ LEVEL exist **only** in `docs/gauntlet/module-2/stage0/l3-tuning-harness.mjs`, which is wired
+into no npm script and runs only when somebody remembers. This dissent's own stated discharge
+condition was "a value-drift mutant fails **the suite**." It fails the harness. Wire the harness
+into `npm test` (or port the four limbs into the suite) and R2 closes.
+
+### DISSENT econ-l3-signature-reachability: NOT DISCHARGED
+
+**RULING ON THE ARCHITECTURAL QUESTION, which the repair got right: outcome-adaptive teaching
+DOES discharge reachability.** A null reading of a real instrument is economic content, not an
+absence of content. In the status-quo arm the module now teaches: this rule was too small to
+change anyone's best move at any desk, and the number you refused would have moved 3 of 6 desks
+by up to 5 clicks — same brute force, same settlement, at a share the room itself named. That is
+a genuine, computed, attributable BC-1 payload in both arms, and it is better economics than a
+retuned supermajority would have been. **I confirm: do not tune the vote. BC-1 is reachable as
+teaching in both arms.** Verified in my own drive: stage 4 branches on `agg.arrowsMovedAny` in
+name, headline and `say`; `arrowWhyLine` carries a branch for all-flat and for no-sold-out-desk
+and is printed on `/board` stage 4 and on every `/play` lens.
+
+**Also confirmed repaired, by my own measurement:**
+
+- **The pot bonfire is closed.** My F4 case exactly — 6 desks, 40%, CONDITION ON, nobody ever
+  locks so every desk settles at `reinvest = 0` — now pays in **$10,189,377** and pays out
+  **$10,189,374**: **$3 destroyed (rounding)**, against **$5,094,681 (50.0%)** at the gate.
+  `settleWeek` line 899, `if (compliant[i] || compliantCount === 0) return evenShare;`, and the
+  counterfactual replay carries the same guard at line 1564.
+- **The L2/L3 bar is dollars a week** (`era-l2-dollars` / `era-l3-dollars` / `era-delta-dollars`),
+  the sentence says why, and the harness LEVEL limb recomputes the direction from dollars. B3 met.
+- **The rehearsal summit claim is gone**, and replaced by its refutation: "do not tell them
+  sharing pays the payer back. In this model it does not: the payers really do end worse off."
+  F8 met.
+- **The CONSEQUENCE ASK is computed from the same beat as its answer** (`consequenceAskClaimed`
+  → `consequenceBeat`), and `consequence-ask-direction` is registered and independently
+  recomputed. B6 met on both strings; the unseeded branch now prints "no Lesson 2 to measure
+  against" and counts nothing.
+- **B7 items 1-4 are on the `revenue-sharing` card**, including REDISTRIBUTION IS A TRANSFER,
+  NOT A FREE LUNCH, the payers' collectively-bargained counter with the Lakers' ~$115M, and the
+  honest horizon in the `ourClass` rail.
+
+**Why it is still not discharged.** Driving the sincere 6-desk status-quo arm (BIG propose 0%,
+small propose 60%, seeded from L2 — the arm P5 puts at 71% of proposal profiles):
+
+**R3 (blocking, highest severity in this re-check) — the module tells a room that wrote no rule
+that it wrote one.** In that arm `board:adoption` prints *"NOT ADOPTED — the old rule holds at
+SHARE 5%"*, while `reinvestEraLineClaimed` — which has no `rule.how` branch — prints *"**Under
+the rule you wrote**, it put back $264,882 a week."* Registered surfaces carrying it:
+`board:consequence:era`, `teach:consequence:answerKey`, `synthesis:incentives`. Through the view
+functions it reaches **13 surface/phase combinations across all three surfaces**, including
+`/board` REVEAL and CONSEQUENCE (the projector), `/play` SYNTHESIS (the student device) and
+`/teach` throughout. No atom covers the phrase, so the audit is structurally blind to it — this
+is R1's class on a second surface. `adoptedScriptClaimed` already models the fix: it branches
+per arm and registers `script-arm`.
+
+**R4 (blocking) — stage 4 and stage 5 contradict each other in that arm, and the contradiction
+is the module's own false lesson.** Stage 4: *"The best price and the best thing to put back are
+exactly where they were **with no rule at all**, at all 6 desks."* Stage 5 and the teacher's ASK,
+two beats later: *"Effort went down by $135,118 a week… did anybody DECIDE to try less — or did
+it just stop being worth it?"*, answer *"The answer you are fishing for is the second half: it
+stopped being worth it."* That is a moral-hazard attribution in a room whose own instrument just
+showed **zero incentive movement at every desk**; the fall is whatever the room's dials happened
+to do. `consequenceBeat` consults `agg.arrowsMovedAny` in its `noL2` branch and **not** in its
+`down` / `up` / `flat` branches (`writeTheRule.ts:2299-2367`) — the guard exists and was not
+applied where an L2 seed is present. It sits on the teacher answer key, so the random-teacher
+standard makes it worse, not better. The `down` branch needs the same `arrowsMovedAny` split the
+`noL2` branch already has.
+
+**R5 (non-blocking) — the counterfactual column can name a share nobody argued about, or move
+nothing.** Sweep of 1,000 six-desk rooms over a 10-point proposal grid, driven through
+`runAdoption`: 5 rooms print *"At 30% — the number this room argued about and did not pass"*
+where `runnerUp <= share` forces the fallback `REAL_RULE_SHARE = 30` (`writeTheRule.ts:1448`) and
+nobody proposed 30; 3 rooms print a would-move column that moves **0 of 6** desks while the
+stage-4 script tells the teacher *"those are the dials it would have moved."* Both need a room
+clustering at 0-5%, so this is a tail, not the modal case. The `arrow-would-share` atom's value
+is correct in every one — the falsehood is in the unatomed noun phrase around it, which is R1's
+class a third time. Either gate the sentence on `wouldMoved > 0` and on the share having been
+proposed, or say "at 30%, the league office's own number" when the fallback fires.
+
+**R6 (non-blocking) — scripted memories of moments the arm did not produce.** `synthesis:incentives`
+`rememberWhen` ("The moment somebody in this room worked out that trying harder had got cheaper
+to skip") and `synthesis:revenue-sharing` `rememberWhen` ("Week 1, the moment the pot formed:
+money left 0 desks and came back out in equal portions") both print in rooms where the pot never
+formed and nothing moved. My F1 note on `rememberWhen` was not carried into the repair. Zero-atom
+rails, unauditable by construction.
+
+**R7 (non-blocking, shared with projector) — on-frame tension at stage 4 in the no-movement arm.**
+The board renders `arrowsWouldMove` (three price arrows visibly moving) with `arrowWhy` beneath
+reading *"Nobody's best price moved."* The counterfactual column header disambiguates it, so this
+is defensible; two lines that read as contradictory on one projector frame is the projector
+gate's call as much as mine.
+
+### VERDICT OF THE RE-CHECK
+
+**BLOCKED (economic-truth)**, on R1, R2, R3, R4. Materially narrower than the gate: the audit's
+value and quantifier sub-classes really are closed on the registered set, the bonfire is really
+closed, the dollars bar and both teacher strings are really fixed, and outcome-adaptive teaching
+is the right answer to reachability and is ruled sufficient. What remains is one structural gap
+(registered ≠ rendered) showing up at three sites, one missing branch guard, and one unwired
+harness. None of them requires a redesign.
+
+**Both dissents stand.** They are recorded so a later reconciliation cannot treat the
+claim-vs-model defect class as closed, or the signature as true-of-its-arm, on the strength of a
+harness that passes. *Nothing here is classroom-proven (D10).*

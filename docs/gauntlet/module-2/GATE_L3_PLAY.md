@@ -359,3 +359,77 @@ condition is **not** met: the loop can plainly exceed FUNCTIONAL at classroom fi
   call, not mine.
 - The L2→L3 chained configuration. All three of my sessions were unchained, which is why the "no L2"
   frames appear; a chained class would see real before/after numbers there.
+
+---
+
+## RE-CHECK AFTER W4 FINAL REPAIR
+
+Owning critic, same fresh-context Player / Gameplay role, Boss run `m2-quality-war`, assignment
+`recheck-l3-play`. Method: `npm run build` at head `b23719e`, my own server on PORT 4411 (not the
+e2e's), Playwright + Chromium, real pointer drags and real clicks, no `?debug`, mechanics taken from
+`runtime/scripts/e2e-m2l3.cjs` but the assertions are mine. Screenshots `r1-*` in
+`docs/gauntlet/module-2/screens-l3-gate/`.
+
+| session | strategy mix | outcome |
+|---|---|---|
+| **R1** (full arc, 8 desks + late joiner) | 4 read-own-club, 2 copy-the-median, 1 ideologue at 60 every round, 1 holdout at 0 every round, 1 desk abstains in round 2, 1 desk never locks week 1, 1 desk non-compliant all season | **NOT ADOPTED** → status quo 5% · CONDITION OFF (4 of 8 in band) |
+| **R2** (full arc, 8 desks + late joiner) | same mix, market detector corrected (4 BIG / 4 SMALL) | **ADOPTED 25% · CONDITION OFF**, 6 of 8 in band |
+| **R1-probe** (4 desks, polarized 0/0/60/60) | decisive test of the nothing-moved fallback arm | NOT ADOPTED, 0 of 4 |
+
+Zero console errors on every surface in all three (observed).
+
+**RATING: STRONG**
+
+**DISSENT play-l3-below-bar: DISCHARGED**
+
+Cause-by-cause, all *observed* unless marked:
+
+1. **Sealed vote — fixed.** After round 3 closes the dial, the CONDITION control and the commit
+   button are all `disabled`, the button reads **VOTE SEALED**, and the desk prints why. A UI re-aim
+   is ignored; a proposal posted straight at the API returns **HTTP 409 "the vote is sealed — round 3
+   closed and the two-thirds test runs on the numbers that were in"**, and the board's middle number
+   is byte-identical before and after. **Abstention is now true abstention**: the round-2 abstainer is
+   told on its own screen that it is not counted in the middle number and cannot be in the band, and
+   the arithmetic proves it is excluded (7 numbers → median 15 → gauge "5 OF 8 WOULD PASS", which is
+   only correct if the abstainer is out). The live in-band gauge is on the projector in both rounds.
+2. **Reveal half — half-repaired, as declared.** The desk is no longer byte-identical: five distinct
+   `#wrLens` cards in both full sessions (rule / your net / paid-in-took-out / your price + verdict /
+   your put-back). The stage-3 prediction is a real two-button commit resolved at stage 4 on both
+   arms — "You said it moved. It did not move. Not what you expected — that is the thing to ask
+   about." Not repaired (declared out of scope): the back half is still 5+6+3+6+7+1 = **28 minutes**
+   with **two student actions** (predict, Kings), CONSEQUENCE still reprints REVEAL stage 5 verbatim
+   (same stat line, same eight-row table, new title + question), and all seven finale cards still end
+   on the same prompt.
+3. **Kings term sheets — fixed.** Two rendered sheets on the projector *and* on the student device:
+   $625M / $409M cash / private Seattle arena against $534M / ~$255M of city money capped at 47.7% /
+   $273M borrowed to 2050 / 27th vs 12th TV market. Commit → the room's own tally alone → 22-8, two
+   presses, with 16-of-30 stated correctly.
+4. **Arrow frame — fixed, and genuinely outcome-adaptive.** Adopted 25% (R2): four sold-out big
+   markets flat, four empty-seat small markets down $2, "NO CHANGE" spelled out, and a why-line that
+   is *true of that frame*. Nothing-moved fallback (probe): the frame retitles to "THE RULE YOU KEPT,
+   AND WHAT WOULD HAVE MOVED", labels the rows **"THESE ARE NOT YOUR NUMBERS… what every desk WOULD
+   have been at 60%"**, and the why-line becomes "a rule this small takes too little of each extra
+   dollar". That is a real status-quo lesson, not a shrug.
+5. **Failed arm no longer claims authorship — fixed.** COMPLETE reads "THE RULE THAT HELD… You could
+   not agree, so the old rule held. That is the artifact you keep… write the number you WERE arguing
+   for next to it", on board and desk. The counterfactual replays the number the room failed to agree
+   on (60% in the probe, 25% in R1), never below the status quo, no all-$0 column, headline "THE RULE
+   YOU DID NOT WRITE".
+
+**Single remaining cause (bounded, non-blocking): the back half is still a 28-minute lecture with two
+taps.** It is bounded because nothing in it is a mechanic or an integrity problem — it is length and
+duplication: merge CONSEQUENCE into REVEAL stage 5 (observed verbatim duplicate), cut the finale to
+the cards with computed OUR CLASS rails, and vary the closing prompt. `/teach` already carries two
+designated cuts (ARGUE 6 min, COUNTERFACTUAL 3 min), so a teacher can compress to ~19 min today, at
+the cost of the best six minutes in the track.
+
+Two smaller truth blemishes carried forward, non-blocking: (a) in the *middle* case — a kept 5% rule
+where one arrow still moves (R1) — the why-line falls back to the capacity sentence and says "the
+clubs with empty seats CAN sell more by charging less, and that is why their arrows moved" over a set
+of exactly one moved price, instead of the "a rule this small" sentence the nothing-moved branch
+already owns; (b) on the NOT-ADOPTED path, finale card 2's OUR CLASS rail still says the room played
+"under its own rule" (R1, observed).
+
+**Not verified.** Real grades 5–6 pairs at any of it; whether `l3-e2e`/`l3-tests` are green at this
+head (I ran my own sessions only); the L2→L3 chained configuration (all three sessions unchained, so
+the "no L2" rails appear); `/teach` director copy beyond the phase controls I pressed.
