@@ -198,3 +198,189 @@ so the board contradicts itself.
   was not).
 - `Restore last good state`.
 - Any real student. Nothing here is classroom-proven (D10).
+
+---
+
+## W3 ADJUDICATION
+
+Owning-critic re-adjudication of this gate's BLOCKING repair 2 — *"no board phase may
+require scrolling a projector; the stage must fit its content"* — after the round-4
+SPLIT (Two Peaks off the season-books stage) + TIGHTEN (`#stage.fh-tight`) repair.
+Fresh session, not the builder of the repair.
+
+### Session exercised
+
+One 12-desk session on port 4362 against `dist/server/index.js` with an isolated
+snapshot, mechanics from `runtime/scripts/e2e-m2l1.cjs`: 1 `/teach` (1440x900),
+1 `/board`, 12 `/play` desks at 1024x600 with twelve different prices
+($10–$84). Every phase, all seven REVEAL stages plus stage 0, the mid-PLAY Two Peaks
+release, and all four COUNTERFACTUAL groups were walked as teacher presses. Each board
+frame measured at 1366x768 **and** 1920x1080 (not a spot pass — every frame at both).
+
+**24 board frames × 2 resolutions = 48 measurements.** Zero console errors across all
+14 pages. Screenshots: `screens-l1-projector/w3-*.png` (49 files). Server killed.
+
+Measured per frame: `#stage.scrollHeight` vs `clientHeight`; every text-bearing element's
+and every SVG text node's rendered box against the viewport; rendered type as % of screen
+height; and a privacy scan of board `innerText` + `document.body.innerHTML` for all twelve
+student names and for `seatId` / `rejoinPin` / `data-seat` / `joinPin` tokens.
+
+### Per-phase fit
+
+| Board frame | `#stage` class | 1366x768 | 1920x1080 | clipped els @1366 | privacy hits |
+|---|---|---|---|---|---|
+| LOBBY | `(none)` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| HOOK | `(none)` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| PLAY · Night 1 open | `(none)` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| PLAY · after bell N1 | `(none)` | 920/768 — **OVER +152px** | 1293/1080 — **OVER +213px** | 2 | 0 |
+| PLAY · after bell N2 | `(none)` | 920/768 — **OVER +152px** | 1293/1080 — **OVER +213px** | 2 | 0 |
+| PLAY · after bell N3 | `(none)` | 920/768 — **OVER +152px** | 1293/1080 — **OVER +213px** | 2 | 0 |
+| PLAY · Two Peaks released | `(none)` | 932/768 — **OVER +164px** | 1309/1080 — **OVER +229px** | 4 | 0 |
+| PLAY · after bell N4 (+Two Peaks) | `(none)` | 1048/768 — **OVER +280px** | 1472/1080 — **OVER +392px** | 8 | 0 |
+| PLAY · five nights in the books | `(none)` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| REVEAL stage 0 | `(none)` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| REVEAL stage 1 | `(none)` | 776/768 — **OVER +8px** | 1089/1080 — **OVER +9px** | 0 | 0 |
+| REVEAL stage 2 | `(none)` | 776/768 — **OVER +8px** | 1089/1080 — **OVER +9px** | 0 | 0 |
+| REVEAL stage 3 | `(none)` | 776/768 — **OVER +8px** | 1089/1080 — **OVER +9px** | 0 | 0 |
+| REVEAL stage 4 | `(none)` | 901/768 — **OVER +133px** | 1265/1080 — **OVER +185px** | 2 | 0 |
+| REVEAL stage 5 | `fh-tight` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| REVEAL stage 6 | `(none)` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| REVEAL stage 7 | `fh-tight` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| ADAPT | `(none)` | 797/768 — **OVER +29px** | 1119/1080 — **OVER +39px** | 1 | 0 |
+| COUNTERFACTUAL group 1 | `fh-tight` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| COUNTERFACTUAL group 2 | `fh-tight` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| COUNTERFACTUAL group 3 | `fh-tight` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| COUNTERFACTUAL group 4 | `fh-tight` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| SYNTHESIS | `fh-tight fh-synth` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+| COMPLETE | `(none)` | 768/768 — FIT | 1080/1080 — FIT | 0 | 0 |
+
+**14 of 24 frames fit. 10 of 24 overflow at both projector shapes.** Every overflowing
+frame carries `#stage` class `(none)` — the repair reaches only the four frames it opted
+in (`fh-tight` on REVEAL 5, REVEAL 7, COUNTERFACTUAL, SYNTHESIS) plus the SPLIT frames.
+`overflow-y: auto` is still on `#stage`, so all ten overflowing frames are scroll frames:
+the substitution this gate rejected is still what carries them.
+
+### What the repair did discharge (observed)
+
+- **SYNTHESIS** — the worst case in the original finding — now fits at both shapes
+  (`w3-14-synthesis--1366.png`, `--1920.png`). Heading, all six card titles, the
+  beyond-sports closing line and the source rail are all inside the viewport.
+- **REVEAL stage 7** fits (`w3-10-reveal-stage7--1366.png`); the Two Peaks panel is gone
+  from it, so the 962px stacked frame is gone.
+- **COUNTERFACTUAL** fits on all four teacher-advanced groups; 12/12 desks were shown
+  across the four groups, every row box and the class summary inside the viewport at both
+  shapes (`w3-12-counterfactual-group1..4--1366.png`).
+- **REVEAL stage 5** (renewals rule) fits at both shapes.
+- **The SPLIT did not orphan the Two Peaks punchline in REVEAL.** Stage 6 carries the two
+  money curves, both marked peaks, the key, and `The cheaper ticket made more money.` at
+  3.20% of screen height, whole and fitting (`w3-10-reveal-stage6--1366.png`). Stage 7
+  keeps the room's carry-over — the turned-away total and the `capacityDefence` line — so
+  the beat is not stranded.
+
+### What it did not discharge (observed)
+
+1. **PLAY · after bell N4, +280px / +392px** — the worst frame in the lesson, and worse
+   than anything in the original finding. With Two Peaks released, the money panel's axis
+   titles, its `Tickets alone / Tickets + what they spend inside` key, and the punchline
+   `The cheaper ticket made more money.` (box 820..849 in a 768px viewport) are entirely
+   below the fold at both shapes (`w3-04-after-bell-night4--1366.png`, `--1920.png`).
+   **The SPLIT fixed the REVEAL stacking of the Two Peaks and left the PLAY stacking
+   intact — so the punchline IS orphaned, on the surface where the teacher first releases
+   it.** Same defect at the release moment itself: `w3-04b-two-peaks-in-play--1366.png`,
+   +164px, punchline off-screen.
+2. **PLAY · after bell N1/N2/N3, +152px / +213px** — this is the frame named in the
+   original evidence list (`04-after-bell-Night1--board1366.png`) and it is still not
+   fitting. The `safe center` change means the top is no longer lost, but the honesty line
+   `Every dot is one desk on one night — this picture is NOT a demand curve...` (764..850)
+   and the whole sourcing line are off the bottom.
+3. **REVEAL stage 4 (the shock), +133px / +185px** — the Sports Reality anchor
+   (`That night was modeled on a real one. Indiana Fever home attendance went from 4,066
+   ... to 17,036 ...`) is sliced at 724..839, and the sourcing line is fully off screen
+   (`w3-10-reveal-stage4--1366.png`). The shock beat's real-world grounding is unreadable
+   at the moment it lands.
+4. **REVEAL stages 1–3, +8px / +9px** — no text box crosses the edge, but the stage is a
+   scroll frame on the projector for the three core night reveals.
+5. **ADAPT, +29px / +39px** — the sourcing line is cut mid-sentence at 738..780
+   (`w3-11-adapt--1366.png`).
+
+### Instrument gap that let this through
+
+`runtime/scripts/e2e-m2l1.cjs` asserts the strict `scrollH <= clientH` condition **only**
+inside `classScaleCounterfactual` (COUNTERFACTUAL groups and SYNTHESIS). Every other board
+check routes through `assertStageScrollable` (line 100), which *passes an overflowing
+stage as long as `overflow-y` is `auto` or `scroll`* — it encodes the substitution this
+gate rejected. Called at lines 607, 697, 750. A guard that treats "scrollable" as success
+cannot fail on the ten frames above.
+
+### Evidence-tier legibility floor (~2.6% of screen height)
+
+Held, and improved, for the text tier the repair touched — TIGHTEN gave up leading, not
+type size, in HTML:
+
+| Element | Original gate | W3 |
+|---|---|---|
+| COUNTERFACTUAL desk rows / renewal deltas (`.fh-repeat-*`) | 1.60% | **2.67%** |
+| Chart shape/colour key (`.legend-shape`) | 1.51–1.78% | **2.67%** |
+| Season-books tiles (`.fh-books-*`) | 1.78% | **2.67–3.38%** |
+| Two Peaks key / gap lines | — | **2.67%** |
+| Honesty + source lines (`.exit-prompt`) | 1.42% | **1.96–2.22%** |
+
+Two exceptions, both **below** the floor and both a direct cost of the recomposition
+(observed, not inferred):
+
+- **The chart's own SVG type shrank where `fh-tight` compacts it.** The same class
+  scatter renders its axis titles and ticks at **2.86%** on REVEAL stages 1–4 (full
+  width), **1.56%** on REVEAL stage 5 (`.scatter-wrap.compact` → 44vw), and **1.30%** in
+  COUNTERFACTUAL (two-column). The repair's own comment in `board/main.ts` claims both
+  TIGHTEN frames "give up leading, never type size" — that is true of the HTML and false
+  of the SVG, which scales with its box. COUNTERFACTUAL's axis is now smaller than the
+  1.39% recorded in the original gate.
+- **SYNTHESIS**: card titles — which the repair designates as the evidence tier — sit at
+  **2.40%**, card bodies at **1.46%**, the source rail at **1.21%**.
+
+Non-blocking (this is repair 4 of this gate, already non-blocking), but it must not be
+recorded as discharged.
+
+### Board privacy
+
+**PASS, re-verified at class scale.** 48 rendered-output scans across every phase and both
+shapes: zero of the twelve student names (`Pair 1`…`Pair 12`) in board `innerText` or in
+`document.body.innerHTML`; zero `seatId` / `rejoinPin` / `data-seat` / `joinPin` tokens.
+The board carries only `Desk N · <real club>`. The paged COUNTERFACTUAL publishes
+pseudonymous desk lines exactly as before — the self-identifying-desk exposure flagged in
+the original gate is unchanged and still needs teacher framing, not a code change.
+
+### PROJECTOR FIT CONDITION: NOT DISCHARGED
+
+10 of 24 board frames overflow the projector at 1366x768 and at 1920x1080 in a 12-desk
+session, including the frame named in the original evidence (`PLAY · after bell N1`) and a
+new worst case (`PLAY · after bell N4`, +280px / +392px) where the Two Peaks punchline is
+entirely off screen. The condition is stated per-phase — "no board phase may require
+scrolling a projector" — and the repair discharged four frames of it.
+
+### Repairs required to discharge
+
+1. **BLOCKING (classroom-reliability).** Apply the fit remedy to the PLAY frames. The
+   Two Peaks panel must not stack under `Tonight's Card` + the lock counter: give it its
+   own PLAY board state the way it has its own REVEAL stage, or drop the card banner and
+   counter while it is up. `runtime/src/client/board/main.ts` `case "play"`.
+2. **BLOCKING (classroom-reliability).** REVEAL stage 4's real-world anchor and the
+   PLAY/ADAPT honesty and sourcing lines must be inside the viewport, or be moved to
+   `/teach` if they are not for the room. Trim REVEAL stages 1–3 by ≥9px.
+3. **BLOCKING (instrument).** Delete `assertStageScrollable` or make it assert
+   `scrollH <= clientH`, and run it on **every** board frame at both shapes — not only
+   COUNTERFACTUAL and SYNTHESIS. Until then this gate's regression check cannot fail on
+   its own condition.
+4. Non-blocking: keep the compacted chart's rendered SVG type at the ≥2.6% floor
+   (raise the SVG's internal font sizes as the box narrows), and raise SYNTHESIS card
+   titles from 2.40%.
+
+### Not verified in this pass
+
+- Freeze → Unfreeze, Pause, board refresh, `Restore last good state`, server restart from
+  snapshot. `sessionService.ts:357–358` now clears both `frozen` and `paused`, so this
+  gate's blocking repair 1 reads as repaired **in code** — inferred, not exercised here.
+- `/play` fit on a shared Chromebook (repairs 6–7), untouched by this pass.
+- Real projector in a real room; whether the ten overflowing frames render a visible
+  scrollbar on classroom hardware (headless Chromium uses overlay scrollbars).
+- Any real student. Nothing here is classroom-proven (D10).
