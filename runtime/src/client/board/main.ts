@@ -1042,8 +1042,12 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // The module now hands over ONE teacher-advanced group of at most
       // CF_ROWS_PER_PAGE rows; the class summary is computed over every row and
       // rendered outside the paged column, so it is on screen for every group.
-      // The group count is carried by the pager label itself ("Desks 1-3 of 12 ·
-      // group 1 of 4"); a second reassurance line cost a row of the projector.
+      // The group is carried by the pager label itself, named rather than
+      // positional ("Group 1 of 4 — Desk 2 · Memphis, Desk 3 · New York, Desk 4
+      // · Memphis") — `orderRepeatRows` groups by what a row can teach, not by
+      // desk number, so a group is never a contiguous desk range
+      // (`gate-l1-projector` W3F-1). A second reassurance line cost a row of
+      // the projector.
       const pageLabel = String(view["cfPageLabel"] ?? "");
       // Same TIGHTEN limb as the stacked REVEAL beats: leading and chart width
       // give ground so the group, the scatter and the class summary all fit.

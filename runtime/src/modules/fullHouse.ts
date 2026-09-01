@@ -691,6 +691,21 @@ export const CF_ROWS_PER_PAGE = 3;
 export const cfPageCount = (rowCount: number): number => Math.max(1, Math.ceil(rowCount / CF_ROWS_PER_PAGE));
 
 /**
+ * `gate-l1-projector` W3F-1: `orderRepeatRows` sorts by how much a row can
+ * teach, not by desk number, so a group's rows are no longer a contiguous
+ * desk range — "DESKS 1-3 OF 12" printed over Desk 2, Desk 3 and Desk 4 the
+ * moment the ordering shipped. A pager label must name the desks actually in
+ * the group, not claim a position. Takes the already-ordered card (as
+ * `computeAggregate` returns it) and the group's rows verbatim, so this and
+ * the rows rendered beneath it can never drift apart.
+ */
+export const cfPageDeskNames = (rows: readonly RepeatRow[], page: number): string =>
+  rows
+    .slice(page * CF_ROWS_PER_PAGE, page * CF_ROWS_PER_PAGE + CF_ROWS_PER_PAGE)
+    .map((r) => r.deskHandle)
+    .join(", ");
+
+/**
  * Synthesis cards per projector frame. ONE, for the same reason the repeat card
  * is capped at three: `design/VISUAL_IDENTITY.md` allows "one chart, one number,
  * or one reveal state at a time, never a dashboard grid" on `/board`, and the
@@ -2332,12 +2347,12 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         const pages = cfPageCount(rows.length);
         const page = Math.min(Math.max(0, state.cfPage ?? 0), pages - 1);
         const nextPage = pages <= 1 ? page : (page + 1) % pages;
-        const from = nextPage * CF_ROWS_PER_PAGE;
-        const to = Math.min(rows.length, from + CF_ROWS_PER_PAGE);
+        const prevPage = pages <= 1 ? page : (page + pages - 1) % pages;
         // W3-2: the control said only what the NEXT press would put up, so a
         // teacher who lost their place had to read it off the projector.
-        const curFrom = page * CF_ROWS_PER_PAGE;
-        const curTo = Math.min(rows.length, curFrom + CF_ROWS_PER_PAGE);
+        // W3F-1: named desks, not a positional range — `orderRepeatRows`
+        // groups by what a row can teach, so a group is not a contiguous
+        // desk-number span.
         return {
           cfPage: page + 1,
           cfPageCount: pages,
@@ -2348,17 +2363,17 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               ? "Nothing on the repeat card yet."
               : pages <= 1
                 ? `On the projector: all ${rows.length} desk${rows.length === 1 ? "" : "s"}`
-                : `On the projector now: desks ${curFrom + 1}-${curTo} of ${rows.length} · group ${page + 1} of ${pages}`,
+                : `On the projector now: group ${page + 1} of ${pages} — ${cfPageDeskNames(rows, page)}`,
           cfPrevPageLabel:
             pages <= 1
               ? "Back a group"
-              : `Back — desks ${((page + pages - 1) % pages) * CF_ROWS_PER_PAGE + 1}-${Math.min(rows.length, ((page + pages - 1) % pages) * CF_ROWS_PER_PAGE + CF_ROWS_PER_PAGE)}`,
+              : `Back — group ${prevPage + 1} of ${pages}: ${cfPageDeskNames(rows, prevPage)}`,
           cfNextPageLabel:
             pages <= 1
               ? rows.length === 0
                 ? "No desk has played both Night 1 and Night 5 yet."
                 : `All ${rows.length} desk${rows.length === 1 ? "" : "s"} are on the projector.`
-              : `Next group — desks ${from + 1}-${to} of ${rows.length}`,
+              : `Next group — group ${nextPage + 1} of ${pages}: ${cfPageDeskNames(rows, nextPage)}`,
           cfPageNote:
             pages <= 1
               ? "The whole repeat card fits on the projector in one look."
@@ -2543,12 +2558,14 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             repeatRowTotal: allRows.length,
             cfPage: page + 1,
             cfPageCount: pages,
+            // W3F-1: named desks, not a positional range — the group's own
+            // rows, not a "from-to of total" claim the reordered card broke.
             cfPageLabel:
               allRows.length === 0
                 ? "No desk has played both nights yet."
                 : pages === 1
                   ? `All ${allRows.length} desk${allRows.length === 1 ? "" : "s"} that played both nights`
-                  : `Desks ${from + 1}-${from + shown.length} of ${allRows.length} · group ${page + 1} of ${pages}`,
+                  : `Group ${page + 1} of ${pages} — ${cfPageDeskNames(allRows, page)}`,
             repeatSummary: repeatSummary(allRows),
             // gate-l1-play 1a (BLOCKING P1-b): ARGUE_PROMPT tells the room to
             // read dots "on the board". The scatter existed in REVEAL and ADAPT

@@ -333,6 +333,10 @@ async function classScaleCounterfactual(browser) {
       // paging made it the only carrier of the room-level pattern (W3-1).
       await assertFullyVisible(board, "#fhCfSummary", `${tag}: the class summary`);
       await assertBackRowType(board, "#fhCfSummary", `${tag}: the class summary`);
+      // W3F-4: the evidence-tier type the projector critic measured — the row
+      // handle (the pager label's own vocabulary) and the chart axis — must
+      // both clear the back-row floor, not just the class summary above.
+      await assertBackRowType(board, "#fhCfRows .fh-repeat-handle", `${tag}: the repeat row desk handle`);
       await assertBackRowType(board, ".scatter-svg", `${tag}: the two-column chart's axis`, { svg: true });
       await assertFullyVisible(board, "#fhCfScatter", `${tag}: the class scatter`);
       await assertFullyVisible(board, "#stage > .exit-prompt", `${tag}: the argue prompt`);
@@ -358,6 +362,31 @@ async function classScaleCounterfactual(browser) {
           [...document.querySelectorAll("#fhCfRows .fh-repeat-handle")].map((n) => n.textContent.trim().split(" same price")[0].split(" $")[0]),
         );
         for (const h of handles) seen.add(h);
+
+        // `gate-l1-projector` §W3 FINAL ADJUDICATION W3F-1: after
+        // `orderRepeatRows` sorted by teaching value instead of desk number,
+        // the pager label kept claiming a positional desk range ("DESKS 1-3
+        // OF 12") over rows that were no longer that range. The label must
+        // now NAME the desks in the group, and this asserts the named desks
+        // are exactly the rows actually rendered beneath it — not merely
+        // present somewhere on the card.
+        const pagerText = await board.evaluate(() => document.getElementById("fhCfPager")?.textContent?.trim() ?? "");
+        assert.doesNotMatch(
+          pagerText,
+          /desks?\s+\d+\s*-\s*\d+/i,
+          `${tag}: pager label "${pagerText}" still claims a positional desk range`,
+        );
+        const namedInPager = pagerText
+          .replace(/^Group \d+ of \d+\s*[—-]\s*/i, "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        assert.deepEqual(
+          namedInPager,
+          handles,
+          `${tag}: pager label names [${namedInPager.join(" | ")}] but the rows rendered beneath it are [${handles.join(" | ")}]`,
+        );
+
         await board.screenshot({ path: path.join(SCREEN_DIR, `16-board-cf-12desks-group${group + 1}.png`) });
       }
     }
