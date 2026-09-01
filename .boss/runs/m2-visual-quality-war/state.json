@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T21:03:28.870Z",
+  "updatedAt": "2026-09-01T21:09:43.687Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1332,11 +1332,21 @@
           "model": "claude-opus-5",
           "reason": "Lane A: Module-2 design system, fonts, arena, shared UI",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:45:34.983Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T21:09:43.687Z",
+          "sections": {
+            "what-changed": "Commits a768761 and 46a88e1: runtime/src/client/shared/m2.css (1984 lines, every selector under html[data-module=m2]; tokens, components ported from the tile plus the /play result/doors/fullhouse/rail/chain families; three keyframes with reduced-motion collapse; Inter M2 @font-face); shared/fonts/inter-latin.woff2 (OFL latin subset); shared/arena.ts (typed procedural arena: hero/outcome/backdrop, lit idle now renders CLOSED at 0.06 light so no pending-night picture exists; capacity documented as seats-open); shared/m2ui.ts (brandMark, 17-glyph sprite with target dropped and door/calendar added, statCard, pill requiring glyph+label, radialGauge, barPill, dotChart circles+text only, chainRow); one stylesheet link line in the three index.html; design/assets/m2-contrast-proof.md; VISUAL_IDENTITY.md Module 2 layer section (42 lines).",
+            "evidence": "Build exit 0; tsc --noEmit exit 0; render PNGs lane-a-tile-1366.png / lane-a-tile-1024.png with document.fonts showing Inter M2 loaded; DOM counts: hero arena 334 elements, 1 filter, 0 non-axis chart paths, 0 pills without a glyph, 0 elements computing to accent-gold; arena build timings 1.9-9.4 ms; contrast proof 39 pairings 0 failures.",
+            "claims": "Rows A1 (scoping mechanism), A2 (violet only; gold only inside the arena SVG), A3 (green only on CASH paths; RENEWALS ink-coloured), A4 (Inter vendored, no condensed face), A5 (hero classes 84px/76px; PIN chip class), A6 (no line/area rules; rings on marks), A7 (three views; idle = closed), A10 (three keyframes with reduced-motion collapse) believed met by construction; not certified; M1 byte comparison and reduced-motion browser run not performed by this lane.",
+            "known-gaps": "BLOCKING (out of lane, routed to Lane C): copy-static.mjs does not copy m2.css so the layer is inert in a clean build. Reduced-motion asserted from source only. M1 regression not run against this commit; mechanism depends on Lane B deleting data-module for non-m2 modules. VISUAL_IDENTITY section 42 lines (2 over). dotChart y-domain is the caller's (Lane B/Econ). trend-up glyph is a misuse risk beside money. Inactive pip colour is legal only beside the NIGHT n OF 5 label. Rail collapse breakpoint never rendered against real Lane B markup; 1024x600 lock reachability untested here. arenaSvg ids churn across renders (not byte-stable screenshots)."
+          },
+          "evidenceIds": [
+            "lane-a-tile-1366",
+            "lane-a-tile-1024",
+            "lane-a-contrast-proof",
+            "lane-a-identity-layer"
+          ],
           "cost": null
         },
         "lane-b-play-surface": {
@@ -1455,7 +1465,11 @@
         "m1-baseline-extended-l1-locked-settled",
         "m1-baseline-extended-l2-decision",
         "m1-baseline-extended-l2-reveal-board",
-        "m1-baseline-extended-l3-day1-market"
+        "m1-baseline-extended-l3-day1-market",
+        "lane-a-tile-1366",
+        "lane-a-tile-1024",
+        "lane-a-contrast-proof",
+        "lane-a-identity-layer"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3312,6 +3326,79 @@
       },
       "recordedAt": "2026-09-01T21:03:28.629Z",
       "actor": "browser-qa-w2base"
+    },
+    "lane-a-tile-1366": {
+      "id": "lane-a-tile-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Lane A render: m2ui components + three arena views (hero dark/closed, outcome lit, sellout with turned-away crowd) at 1366 width, Inter M2 loaded",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-a-tile-1366--lane-a-tile-1366.png",
+      "sha256": "9424dbf1604841eb14cd6b318bc29bb53c4ddd46ef714e86fb42d6bf5488c15a",
+      "size": 787384,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "lane-a",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:09:42.742Z",
+      "actor": "builder-a"
+    },
+    "lane-a-tile-1024": {
+      "id": "lane-a-tile-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Lane A render at 1024 width (rail-collapse breakpoint)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-a-tile-1024--lane-a-tile-1024.png",
+      "sha256": "36b7213dfb30d0c59b196288fbf4932fb868961369693ff4a4ff6dda22485741",
+      "size": 705577,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "lane-a",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:09:42.994Z",
+      "actor": "builder-a"
+    },
+    "lane-a-contrast-proof": {
+      "id": "lane-a-contrast-proof",
+      "wave": 2,
+      "kind": "note",
+      "label": "Module-2 contrast/CVD proof: 39 pairings, 0 failures after three token repairs; deuteranopia finding (LOCKED/STALLED 4.7 dE) enforced by glyph+label in pill()",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-a-contrast-proof--m2-contrast-proof.md",
+      "sha256": "68f63a72f7d6168986a5462831c9e973d66cf5e83f901a4ab71b0f12719bc72d",
+      "size": 9641,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "lane-a",
+          "contrast",
+          "cvd"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:09:43.226Z",
+      "actor": "builder-a"
+    },
+    "lane-a-identity-layer": {
+      "id": "lane-a-identity-layer",
+      "wave": 2,
+      "kind": "note",
+      "label": "VISUAL_IDENTITY.md Module 2 layer section (the ticket office; violet accent; Inter; arena as instrument; no team-colour badge fills)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-a-identity-layer--VISUAL_IDENTITY.md",
+      "sha256": "1cc6dd65c746e6873e80a7f804b28850c5a90fa518dee116b9e077b55ca4a640",
+      "size": 13999,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "lane-a",
+          "identity"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:09:43.453Z",
+      "actor": "builder-a"
     }
   },
   "claims": {},
@@ -3583,11 +3670,11 @@
     "agentsActivated": 15,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 103,
+    "evidenceRecorded": 107,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 154,
-  "eventHead": "d1771038ebea51a569d07132cd72b41387ef2089dd55ab2e1cd48f531f030515",
+  "eventCount": 159,
+  "eventHead": "50e79be7d30520186bf302702d6079d439d714cf0a2d8d4a28c0bf4ca2610583",
   "warnings": []
 }

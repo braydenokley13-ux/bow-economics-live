@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `154:d1771038ebea51a569d07132cd72b41387ef2089dd55ab2e1cd48f531f030515`  
-Updated: 2026-09-01T21:03:28.870Z
+Event head: `159:50e79be7d30520186bf302702d6079d439d714cf0a2d8d4a28c0bf4ca2610583`  
+Updated: 2026-09-01T21:09:43.687Z
 
 ## Founder intent
 
@@ -30,7 +30,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 
 ## Role status
 
-- builder — builder-a — active — claude-opus-5
+- builder — builder-a — completed-with-concerns — claude-opus-5
 - builder — builder-b — active — claude-opus-5
 - builder — builder-c — active — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
@@ -65,6 +65,10 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - m1-baseline-extended-l2-decision — screenshot — L2 Trade Deadline decision screen (#tdWall) on /play, byte-stable across both runs
 - m1-baseline-extended-l2-reveal-board — screenshot — L2 Trade Deadline reveal theater on /board after 4 real revealNext advances, byte-stable across both runs
 - m1-baseline-extended-l3-day1-market — screenshot — L3 Free Agency day-1 market on /play, byte-stable across both runs
+- lane-a-tile-1366 — screenshot — Lane A render: m2ui components + three arena views (hero dark/closed, outcome lit, sellout with turned-away crowd) at 1366 width, Inter M2 loaded
+- lane-a-tile-1024 — screenshot — Lane A render at 1024 width (rail-collapse breakpoint)
+- lane-a-contrast-proof — note — Module-2 contrast/CVD proof: 39 pairings, 0 failures after three token repairs; deuteranopia finding (LOCKED/STALLED 4.7 dE) enforced by glyph+label in pill()
+- lane-a-identity-layer — note — VISUAL_IDENTITY.md Module 2 layer section (the ticket office; violet accent; Inter; arena as instrument; no team-colour badge fills)
 
 ## Claim ledger
 
