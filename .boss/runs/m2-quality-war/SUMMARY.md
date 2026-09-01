@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `126:82d2563ca8a6521ea5f117622b0933f92e9f509083d3a2c11191df096ce4c995`  
-Updated: 2026-09-01T01:17:44.484Z
+Event head: `128:0a04743fd7bf129f8716fcee774e72da2912a814a6edb5bffb73762aa29702ec`  
+Updated: 2026-09-01T01:18:02.301Z
 
 ## Founder intent
 
@@ -47,7 +47,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - builder — lead-integrator — completed-with-concerns — claude-opus-5
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — active — claude-opus-5
-- teacher-transfer-critic — lead-integrator — active — claude-opus-5
+- teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
 
 ## Required evidence
 
@@ -113,6 +113,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - econ-l1-n5-attribution — economic-truth/blocking/open — The round-2 retune made Night-4 spend carry the dominant Night-5 channel, but the NIGHT 5 WAS NIGHT 1 reveal still credits renewals: NY 14,142 -> 15,202 (+1,060) decomposes as renewals -140 vs carry +1,200, yet the copy attributes the change to the renewals book. HOUSE_RULES[1] ('nothing else moves it') is now false and contradicts rule 2. Narrow attribution/copy repair: decompose the N5 delta honestly on the reveal and fix the rule text. GATE_L1_ECON_R2.md.
 - recheck2-l1-econ-dissent — undefined/undefined/open — undefined
 - teacher-l1-night5-now — teacher-transfer/blocking/open — Nights 4-5 share one NOW block (fullHouse.ts:2191, block2 = nightIndex>=3): on Night 5 the console instructs the teacher to read Night 4's card and watch for capacity buys, contradicting the adjacent projector mirror on the same screen. TRANSFER stays NOT READY on this alone; line-level fix. Also carried non-blocking: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. GATE_L1_TEACHER.md re-run section.
+- recheck2-l1-teacher-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 

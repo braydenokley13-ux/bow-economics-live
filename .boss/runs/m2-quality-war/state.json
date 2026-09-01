@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T01:17:44.484Z",
+  "updatedAt": "2026-09-01T01:18:02.301Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -856,12 +856,24 @@
           "model": "claude-opus-5",
           "reason": "Re-run the fresh-teacher protocol against the new /teach director layer and the nine blocking repairs",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T00:59:42.493Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T01:18:02.283Z",
+          "sections": {
+            "before-verdict": "Cold re-run (five sessions, four viewports): preparation now possible from the product alone — per-phase NOW with minute budgets, student-screen mechanics, simplifications note.",
+            "during-verdict": "Director layer works and exceeds the design: ON-THE-PROJECTOR visible through reveals, WATCH FOR flags stalled desks, seven named reveal beats each with a deliverable SAY line, ASK with answers, TIME CUT. One new blocking defect TT-R1: Nights 4-5 share Night 4's NOW block verbatim (fullHouse.ts:2191), contradicting the adjacent projector mirror on Night 5.",
+            "failure-recovery-verdict": "Late join, stalled desk, debt desk, capacity buy, freeze/unfreeze, misclick, second device, zero-student dry run all handled from the surface. Carried non-blocking: Jump-to-REVEAL still silently ends the game unconfirmed.",
+            "synthesis-verdict": "Deliverable as written by a stranger; wrap-up ASK is stale (carried non-blocking).",
+            "hidden-knowledge-findings": "HK-1 DISCHARGED — the director script reached the product. No new hidden-knowledge class findings; MODELED_DOLLARS_LINE leaks into teacher copy (minor).",
+            "required-repairs": "TT-R1 (line-level Night-5 NOW fix) blocks; then TRANSFER flips to READY per the report. DISSENT teacher-l1-not-ready: DISCHARGED; successor dissent teacher-l1-night5-now recorded."
+          },
+          "evidenceIds": [
+            "gate-l1-teacher-r2"
+          ],
+          "cost": {
+            "tokens": 122563,
+            "toolUses": 44
+          }
         }
       },
       "evidenceIds": [
@@ -911,7 +923,8 @@
         "gate-l1-teacher-dissent",
         "econ-l1-n5-attribution",
         "recheck2-l1-econ-dissent",
-        "teacher-l1-night5-now"
+        "teacher-l1-night5-now",
+        "recheck2-l1-teacher-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -2109,6 +2122,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T01:17:44.484Z",
       "actor": "teacher-transfer-critic"
+    },
+    "recheck2-l1-teacher-dissent": {
+      "id": "recheck2-l1-teacher-dissent",
+      "wave": 2,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T01:18:02.301Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -2143,7 +2165,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 126,
-  "eventHead": "82d2563ca8a6521ea5f117622b0933f92e9f509083d3a2c11191df096ce4c995",
+  "eventCount": 128,
+  "eventHead": "0a04743fd7bf129f8716fcee774e72da2912a814a6edb5bffb73762aa29702ec",
   "warnings": []
 }
