@@ -258,6 +258,24 @@ async function main() {
       console.log(`[e2e-m2l1] --- ${night.label} ---`);
       for (const p of [d1, d2, d3]) await waitForNight(p, night.label);
 
+      // `gate-l1-play` recheck2 R6 / P2 second clause (BLOCKING, carried): the
+      // event-spend receipt was a forward-looking conditional ("if there is room
+      // for them") that nothing ever came back to confirm or refute. Desk 1 put
+      // $40,000 into Night 3, which lands on Night 4 — and Desk 1 sells Night 4
+      // out. On Night 5's screen, Night 4's settlement must say what that money
+      // actually bought, in seats, not in intentions.
+      if (i === 4) {
+        await d1.waitForSelector("#fhSpendVerdict", { timeout: 20000 });
+        const verdict = (await d1.textContent("#fhSpendVerdict")).trim();
+        assert.match(
+          verdict,
+          /bought nothing|could not get in|every one of them got in/,
+          `the next-night receipt does not rule on last night's event money: "${verdict}"`,
+        );
+        assert.match(verdict, /\$40,000/, "the verdict does not name the money it is ruling on");
+        console.log(`[e2e-m2l1] spend receipt settled after the fact: "${verdict}"`);
+      }
+
       // Desk 4 joins late, mid-window, at Night 3.
       if (i === 2) {
         await join(d4, "Sam & Jo");
@@ -367,6 +385,25 @@ async function main() {
         assert.match(staged, /NIGHT 5 · NIGHT 1'S CARD AGAIN/, "the fifth reveal beat does not name itself");
         assert.match(staged, /THE RENEWALS RULE/, "the renewals rule never reaches the room (gate-l1-play P10)");
         assert.equal(staged.includes("THE TWO PEAKS"), false, "Two Peaks landed before its own stage");
+        // `gate-l1-play` recheck2, BLOCKING dissent `play-l1-repairs-below-fold`:
+        // presence in the DOM was never the claim. The rule measured a rendered
+        // TOP of 764 in a 768px viewport and 1073 in a 1080px one — the room saw
+        // none of it, while /teach told the teacher it was "on the screen now".
+        // It must be fully inside the projector without a scroll, at both shapes.
+        const revealShapes = [
+          { width: 1366, height: 768 },
+          { width: 1920, height: 1080 },
+        ];
+        for (const shape of revealShapes) {
+          await board.setViewportSize(shape);
+          await board.waitForTimeout(250);
+          const tag = `REVEAL stage 5 @ ${shape.width}x${shape.height}`;
+          await assertFullyVisible(board, "#fhRenewalsRule", `${tag}: the renewals rule`);
+          await assertStageScrollable(board, tag);
+        }
+        await board.setViewportSize({ width: 1600, height: 900 });
+        await board.waitForTimeout(250);
+        console.log("[e2e-m2l1] REVEAL stage 5: the renewals rule is fully above the fold at 1366x768 and 1920x1080");
       }
     }
     await board.waitForFunction(() => document.body.innerText.includes("Fullest house"), null, { timeout: 20000 });
@@ -424,6 +461,31 @@ async function main() {
     // it (gate-l1-play 1a / P1-b, BLOCKING).
     const cfMarks = await board.evaluate(() => document.querySelectorAll(".scatter-svg circle, .scatter-svg rect, .scatter-svg polygon").length);
     assert.ok(cfMarks >= 10, `COUNTERFACTUAL tells the room to read dots on the board; found ${cfMarks} marks rendered`);
+    // Same dissent, second half: the scatter measured a rendered TOP of 720/839/1007
+    // in viewports of 768/900/1080, so the prompt in the largest type on this board
+    // pointed at dots nobody could see. Rendered is not shown.
+    for (const shape of [
+      { width: 1366, height: 768 },
+      { width: 1920, height: 1080 },
+    ]) {
+      await board.setViewportSize(shape);
+      await board.waitForTimeout(250);
+      const tag = `COUNTERFACTUAL @ ${shape.width}x${shape.height}`;
+      await assertFullyVisible(board, "#fhCfScatter", `${tag}: the class scatter the prompt sends the room to`);
+      await assertFullyVisible(board, "#stage > .exit-prompt", `${tag}: the argue prompt`);
+      await assertStageScrollable(board, tag);
+    }
+    await board.setViewportSize({ width: 1600, height: 900 });
+    await board.waitForTimeout(250);
+    console.log("[e2e-m2l1] COUNTERFACTUAL: scatter fully above the fold at 1366x768 and 1920x1080");
+    // R4 (`econ-l1-n5-attribution`): every repeat row states which channel moved
+    // its crowd, in its own fans — never a bare renewals claim.
+    const cfBoardAfter = await board.evaluate(() => document.body.innerText);
+    assert.match(
+      cfBoardAfter,
+      /renewals [-+]?[\d,]+|event money [-+]?[\d,]+|nothing carried over/,
+      "the Night 1 vs Night 5 board does not decompose any desk's crowd change into its channels",
+    );
     console.log("[e2e-m2l1] COUNTERFACTUAL: N1-vs-N5 on the board, per-desk replays on /play");
     await board.screenshot({ path: path.join(SCREEN_DIR, "12-board-counterfactual-n1-n5.png") });
     await d1.screenshot({ path: path.join(SCREEN_DIR, "13-play-counterfactual.png"), fullPage: true });
