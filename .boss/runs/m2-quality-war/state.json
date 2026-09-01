@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T11:16:44.443Z",
+  "updatedAt": "2026-09-01T11:17:13.794Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3308,7 +3308,8 @@
         "gate-l3-sr",
         "gate-l3-econ",
         "gate-l3-play",
-        "gate-l3-projector"
+        "gate-l3-projector",
+        "gate-l3-teacher"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3321,7 +3322,8 @@
         "play-l3-below-bar",
         "gate-l3-play-dissent",
         "proj-l3-board-integrity",
-        "gate-l3-projector-dissent"
+        "gate-l3-projector-dissent",
+        "teacher-l3-not-ready"
       ],
       "meetingIds": [],
       "gates": [],
@@ -5571,6 +5573,25 @@
       },
       "recordedAt": "2026-09-01T11:16:25.554Z",
       "actor": "classroom-projector-critic"
+    },
+    "gate-l3-teacher": {
+      "id": "gate-l3-teacher",
+      "wave": 4,
+      "kind": "teacher-transfer-report",
+      "label": "L3 teacher gate: TRANSFER NOT READY, six blockers. B1 CONSEQUENCE ASK static+directional while the console's computed line reads the opposite; B2 unlinked runs lose the phase's instrument with no substitute or create-time warning; B3 Advance/Jump unguarded through PLAY (one click kills vote + three weeks; L2 guards this — regression); B4 late joiner stranded on 409 while /teach counts them joined; B5 rehearsal skips PLAY and trains the fatal gesture; B6 director claims a screen explains the 5% default — it does not. Strong: WATCH FOR, staged reveals, flat-arrow ASK, Kings capstone, finale cards, recovery",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l3-teacher--GATE_L3_TEACHER.md",
+      "sha256": "b3b3c220b673b3a70bb92121a5f369ed9fb476b103dadbe6ed38daba712ee6f1",
+      "size": 21849,
+      "metadata": {
+        "verdict": "NOT_READY",
+        "tags": [
+          "teacher-transfer",
+          "wave-4",
+          "l3"
+        ]
+      },
+      "recordedAt": "2026-09-01T11:17:13.499Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "claims": {
@@ -6354,6 +6375,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T11:16:44.443Z",
       "actor": "classroom-projector-critic"
+    },
+    "teacher-l3-not-ready": {
+      "id": "teacher-l3-not-ready",
+      "wave": 4,
+      "category": "teacher-transfer",
+      "severity": "blocking",
+      "finding": "L3 TRANSFER NOT READY on six blockers, worst: B1 — the CONSEQUENCE phase's scripted ASK ('Whose effort went DOWN?') is static and directional while the console's own computed line above it read 'Effort went UP by 20%' — the teacher is directed in writing to ask a question the room's evidence refutes at the module's central discussion beat (claim-audit class: the ASK must be computed); B3 — Advance/Jump unguarded through PLAY, a regression against the L1/L2 confirm-guard pattern. Plus B2 (unlinked runs lose the instrument silently), B4 (post-vote late joiner stranded while counted as joined), B5 (rehearsal trains the fatal gesture), B6 (director overclaims a student screen). GATE_L3_TEACHER.md.",
+      "evidenceIds": [
+        "gate-l3-teacher"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T11:17:13.794Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "meetings": {},
@@ -6405,11 +6440,11 @@
     "agentsActivated": 71,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 111,
+    "evidenceRecorded": 112,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 348,
-  "eventHead": "92ddc75543d0d29621b22f045b6fe7db154e898707af0703ffa30d1f0eedd32a",
+  "eventCount": 350,
+  "eventHead": "1a1ff006019f849464473567b153de9a1a1965bfefa7ee7a8e3e0b7125a1f193",
   "warnings": []
 }

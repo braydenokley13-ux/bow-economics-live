@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `348:92ddc75543d0d29621b22f045b6fe7db154e898707af0703ffa30d1f0eedd32a`  
-Updated: 2026-09-01T11:16:44.443Z
+Event head: `350:1a1ff006019f849464473567b153de9a1a1965bfefa7ee7a8e3e0b7125a1f193`  
+Updated: 2026-09-01T11:17:13.794Z
 
 ## Founder intent
 
@@ -88,6 +88,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - gate-l3-econ — economic-truth-report — L3 econ gate: BC-1 SOUND by independent proof (ancillary deletion -> $0 moves everywhere; closed form matches shipped brute force; reinvest up to 5 steps; uniform-tax mutant froze every argmax). DISSENT l3-sharing-argmax DISCHARGED. VERDICT BLOCKED: claim audit magnitude-blind (doubled pot-total prints $15.3M vs true $7.6M, suite green; live instance ships at 6 desks); 71% of proposal profiles incl. 100% of sincere play land on status-quo 5% where the BC-1 payload is null yet the teacher script asks the flat-arrow question; L2/L3 reinvest bases differ 62.5%; 50% pot bonfire at zero compliance. Summit ruling: TRUE economics, keep — but a rehearsal surface still asserts the withdrawn claim
 - gate-l3-play — gameplay-report — L3 play gate: RATING FUNCTIONAL. Stage-0's three causes genuinely fixed (histogram+band moves proposals; CONDITION has teeth; club visible). BLOCKING: the vote is not sealed — after round 3 closes, a late submission replaces the vote and moved the adopted rule 25->30% silently; never-submits counted as 5% votes with no notice; REVEAL->COMPLETE is 28 minutes with one student action (device byte-identical across five stages); Kings is a two-button poll with no term sheets; BC-1 arrows render but never say why NY didn't move; fallback calls a 0% failure 'your rule'. Kill condition not met
 - gate-l3-projector — projector-report — L3 projector gate: BLOCKED. B1 histogram bars print through the veil sentence (both shapes, invisible to all three shipped guards); B2 closeRound never clears proposal so round 2 opens reading 12/12 in and WATCH FOR empty; B3 /teach prints status-quo copy on the league-office arm while a 30%/ON rule is on the board; B4 REVEAL stage 2 names a desk's biggest swing directly above a no-desk-ranked promise. Clean: fit 0 overflows, 0 truncation, tier 2.67-3.74%, 0 leaks in 90 scans, no timers, fallbacks + freeze + refresh + rejoin all work. Best moment the moved/flat arrows; Kings one press not commit-then-reveal
+- gate-l3-teacher — teacher-transfer-report — L3 teacher gate: TRANSFER NOT READY, six blockers. B1 CONSEQUENCE ASK static+directional while the console's computed line reads the opposite; B2 unlinked runs lose the phase's instrument with no substitute or create-time warning; B3 Advance/Jump unguarded through PLAY (one click kills vote + three weeks; L2 guards this — regression); B4 late joiner stranded on 409 while /teach counts them joined; B5 rehearsal skips PLAY and trains the fatal gesture; B6 director claims a screen explains the 5% default — it does not. Strong: WATCH FOR, staged reveals, flat-arrow ASK, Kings capstone, finale cards, recovery
 
 ## Claim ledger
 
@@ -105,6 +106,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - gate-l3-play-dissent — undefined/undefined/open — undefined
 - proj-l3-board-integrity — classroom-reliability/blocking/open — Four L3 board/teach integrity blockers: B1 histogram bars overprint the veil sentence on rounds 2/3 at both shapes (column budget omits the tick label; invisible to the fit, truncation, and overlap guards — extend the overlap guard to catch it); B2 closeRound never clears proposal (round 2 opens claiming 12/12 in; WATCH FOR empty two of three rounds); B3 /teach prints STATUS_QUO_COPY on the league-office arm while an adopted 30%/ON rule is on the board (claim-audit class — register the arm surface); B4 REVEAL stage 2 names 'the biggest single swing at Desk 9' directly above 'No desk's money is ever ranked on this screen'. Kings should be commit-then-reveal choreography, not one press (= play finding). GATE_L3_PROJECTOR.md.
 - gate-l3-projector-dissent — undefined/undefined/open — undefined
+- teacher-l3-not-ready — teacher-transfer/blocking/open — L3 TRANSFER NOT READY on six blockers, worst: B1 — the CONSEQUENCE phase's scripted ASK ('Whose effort went DOWN?') is static and directional while the console's own computed line above it read 'Effort went UP by 20%' — the teacher is directed in writing to ask a question the room's evidence refutes at the module's central discussion beat (claim-audit class: the ASK must be computed); B3 — Advance/Jump unguarded through PLAY, a regression against the L1/L2 confirm-guard pattern. Plus B2 (unlinked runs lose the instrument silently), B4 (post-vote late joiner stranded while counted as joined), B5 (rehearsal trains the fatal gesture), B6 (director overclaims a student screen). GATE_L3_TEACHER.md.
 
 ## Latest gate
 
