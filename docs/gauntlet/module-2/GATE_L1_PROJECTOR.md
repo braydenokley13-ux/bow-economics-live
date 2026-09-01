@@ -384,3 +384,177 @@ scrolling a projector" — and the repair discharged four frames of it.
 - Real projector in a real room; whether the ten overflowing frames render a visible
   scrollbar on classroom hardware (headless Chromium uses overlay scrollbars).
 - Any real student. Nothing here is classroom-proven (D10).
+
+---
+
+## W3 FINAL ADJUDICATION
+
+Owning-critic re-adjudication of the projector fit condition after the staged repair
+(`1418882` / `f9dcda1`). Fresh session, independent instrument — not the builder's
+`runtime/scripts/e2e-m2l1.cjs`, which is itself part of what is under review.
+
+### Session exercised (observed)
+
+One **twelve-desk** session on **port 4364**, isolated snapshot, against `dist/server/index.js`
+built at head this session. One `/teach` (1440x900), one `/board` walked at **1366x768 and
+1920x1080**, twelve `/play` desks at 1024x600, twelve different prices ($10-$84) so the class
+evidence is a real spread. LOBBY → HOOK → PLAY (5 bells, Two Peaks released by the teacher at
+Night 3) → REVEAL (stages 0-7) → ADAPT → COUNTERFACTUAL (all 4 groups) → SYNTHESIS (all 6 pager
+cards) → COMPLETE.
+
+**31 board frames × 2 projector shapes = 62 fit measurements.** Every frame measured for
+`scrollHeight - clientHeight`, `scrollWidth - clientWidth`, per-element rendered box against the
+viewport, and per-element rendered type as a share of screen height (SVG type scaled from its
+rendered box, not its viewBox). A second drill ran the teacher fallbacks on a 4-desk session.
+
+Screenshots: `screens-l1-projector/w3f-*.png` (66 files, `--1366` / `--1920`).
+
+### Measured result
+
+| | result |
+|---|---|
+| max `#stage` vertical overflow, 62 measurements | **0 px** |
+| max horizontal overflow | **0 px** |
+| frames with any element clipped by the viewport | **0 of 31** |
+| board privacy scans (`innerText` + `innerHTML`), 62 | **0** name / seat-token hits |
+| console errors, 15 pages | **0** |
+
+Prior verdict was 10 of 24 board frames overflowing. **The overflow is gone at both projector
+shapes, at twelve desks, including the frames that were never instrumented before** (LOBBY at 12
+desk chips, HOOK, PLAY open-night, the two Two-Peaks-in-PLAY frames, REVEAL stage 0, all four CF
+groups, all six SYNTHESIS pages, COMPLETE).
+
+### Evidence tier, measured against the 2.6%-of-screen-height back-row floor
+
+Everything the room is told to read off the board now clears it (1366x768 figures; 1920x1080 is
+identical as a percentage because the type is set in `vw`):
+
+- class scatter axis + titles **2.61-2.69%** (was 1.30-1.56%), shape/colour key **2.67%**
+- COUNTERFACTUAL repeat rows, handles, both turnout numbers, renewal deltas **2.67%**
+- COUNTERFACTUAL class summary **2.85%** (was 2.05% under a larger caveat), and it is now
+  full-width under both columns rather than buried in the right column
+- season books tiles **2.67%**, club names 3.38%; turned-away total **2.67%**
+- Two Peaks money view peak labels **2.71%**, peak prices 3.38%
+- SYNTHESIS card title **4.27%**, body **2.85%** (was 11.20px / 1.46%)
+- PLAY strip: night 3.56%, tonight's card 2.67%, lock count 2.67%
+
+Marginal: `#fhRenewalsRule` renders at **2.58%** — 0.02 under the floor, i.e. at it. Not a finding
+on its own, but the e2e asserts only `assertFullyVisible` on that element, never
+`assertBackRowType`, so nothing catches it if it drifts further.
+
+### Rulings on the four questions asked
+
+**1. Does the PLAY strip keep the punchline on-screen?** Yes, observed. At the moment the teacher
+releases the Two Peaks (`w3f-04b-two-peaks-in-play--1366.png`, `--1920.png`) the strip costs 44px
+and `The cheaper ticket made more money.` lands at **3.2% of screen height, fully inside the
+viewport at both shapes** — the beat that previously measured box 820..849 in a 768px viewport.
+The strip also fixes the "counter outranks content" finding: `0/12 locked in` drops from 5.34% (the
+largest gold element on the board) to 2.67% the moment evidence is up, and returns to 5.34% on the
+open-night frame where the count *is* the content (`w3f-03b-play-n1-all-locked--1366.png`). This is
+the right dependency: the strip is on exactly when it should be.
+
+**2. Does the staged SYNTHESIS pager preserve the formalization as a room moment?** **Yes — it
+builds; it does not fragment.** Observed order: REVENUE = PRICE × PEOPLE → THE CARD MOVED THE CROWD
+→ THE TICKET IS NOT THE PRODUCT → NIGHT 5 WAS NIGHT 1 → TWO BOOKS, NO EXCHANGE RATE → YOUR JOB IS
+REAL. That is the identity, then the demand shifter, then the second revenue channel, then path
+dependence, then the constraint, then the real-world close — a sequence with a direction, and each
+card is computed from this class's own numbers (card 1 quoted this room's $14/15,410 against
+$84/0). `/teach` names the next card before the press ("Next card — 3 of 6: THE TICKET IS NOT THE
+PRODUCT") and states what is up now, which is the bell-label standard applied correctly. One card
+per frame is a genuine trade *up*: the six-card grid was ~850 words at 11.2px and the room could
+read none of it.
+
+Two costs, both real, neither blocking: (a) nothing accumulates — at card 5 the room cannot see the
+four terms already named, and no frame in the lesson ever shows the six together, so the "here is
+everything you just did" close exists only in the teacher's voice; COMPLETE is a single banner
+(`w3f-15-complete--1366.png`). (b) The beyond-sports line is byte-identical on all six frames and
+becomes wallpaper by card 3.
+
+**3. Do the builder's honest leftovers block?** **No.** All below-floor visible type is caveat,
+sourcing, prompt or set-up copy, not evidence: board honesty line 1.96% (on nearly every frame),
+COUNTERFACTUAL `honestLimit` 1.78%, REVEAL-7 "miss the best price" note 1.96%, sources rail 1.69%
+(last SYNTHESIS page only, correctly quiet), argue prompt and CF pager 2.22%, Two Peaks label spans
+2.31%, LOBBY/HOOK market cards and season slate 1.25-1.96%, PLAY open-night `NOT ON TV` 1.60% and
+`VISITING CLUB'S DRAW / 100` 1.78%. None of these is a number the class is asked to read off the
+projector and argue from. They are named in required-repairs, not held against the condition.
+
+One item in that band is **not** a caveat and I decline to file it as one: the Night-4 Fever anchor
+renders at **2.13%** as a six-line paragraph on `w3f-04-after-bell-night4--1366.png` and
+`w3f-10-reveal-stage4--*.png`. It is the module's Sports Reality anchor, it is the densest block on
+a PLAY frame, and it is below the floor. Non-blocking because it is teacher-read, but it is a
+repair, not a leftover.
+
+**4. Prior blocking defects.** Both discharged, observed live in the drill:
+- `unfreeze` now clears `paused` (`sessionService.ts` `case "unfreeze"`). Freeze → board `FROZEN` →
+  press Unfreeze → board returns to the **exact** REVEAL stage-7 frame, no `PAUSED` limbo.
+  `w3f-91-board-frozen--1366.png`, `w3f-92-board-after-unfreeze--1366.png`.
+- Silent clipping: gone, measured above.
+
+Also discharged from the prior non-blocking list: the last bell no longer dumps the class picture
+(`w3f-04-after-bell-night5--1366.png` reads *"Five Nights, In The Books / Nobody has seen the
+room's numbers yet. They go up one night at a time."* — the staged REVEAL is now genuinely first
+sight); `Reveal next` names each of its seven beats; the evidence tier is at the floor.
+
+### NEW BLOCKING FINDING — the COUNTERFACTUAL pager mislabels the room's own desks
+
+`orderRepeatRows` (introduced in this repair wave, `c09423b`) re-orders the repeat rows by teaching
+value. The pager label was left as positional arithmetic over that re-ordered list:
+
+`fullHouse.ts:2551` — `` `Desks ${from + 1}-${from + shown.length} of ${allRows.length} · group ${page + 1} of ${pages}` ``
+
+Observed on the projector at twelve desks (`w3f-12-cf-group1--1366.png`): the gold pager reads
+**"DESKS 1-3 OF 12 · GROUP 1 OF 4"** over rows headed **Desk 2 · Memphis**, **Desk 3 · New York**,
+**Desk 4 · Memphis**. Group 4 (`w3f-12-cf-group4--1366.png`) reads **"DESKS 10-12 OF 12"** over
+**Desk 11**, **Desk 12**, **Desk 1**. The same arithmetic drives the teacher's own controls
+(`fullHouse.ts:2355`, `:2361`), so `/teach` promises "Next group — desks 4-6" and puts up a
+different set of desks.
+
+Why this is classroom-reliability and not cosmetics: this is the phase whose prompt tells the room
+to argue about *specific desks*, the handles are self-identifying, and a pair at Desk 1 watches
+their own row appear under a heading that says desks 10-12. The teacher reads the projector aloud
+and is wrong. Fix is one line either way — label by position ("Rows 1-3 of 12") or stop claiming
+identity.
+
+### Verdict
+
+The fit condition asked for one thing: no board phase may require scrolling a projector, and the
+evidence tier must be readable from the back. At 31 frames × 2 shapes × 12 desks, both hold, and
+the previously un-instrumented frames hold too. The new pager defect is a board-copy regression
+filed separately; it does not resurrect the fit condition and is not a reason to withhold its
+discharge.
+
+### required-repairs (this adjudication)
+
+**Blocking (classroom-reliability)**
+
+W3F-1. **Stop the COUNTERFACTUAL pager claiming desk identity it does not have.**
+`fullHouse.ts:2551` (board), `:2355` and `:2361` (teach). Evidence: `w3f-12-cf-group1--1366.png`,
+`w3f-12-cf-group4--1366.png`.
+
+**Non-blocking (before classroom release)**
+
+W3F-2. Raise the Night-4 Fever anchor above the back-row floor or split it; at 2.13% and six lines
+it is the one piece of real sports-business content sitting in the caveat tier.
+W3F-3. Give SYNTHESIS an accumulator — a spine of the card titles already named, or a final
+"all six" frame — so the formalization closes as one picture and not six separate ones. Vary or
+retire the repeated beyond-sports line after its first appearance.
+W3F-4. Assert `assertBackRowType` on `#fhRenewalsRule` (measured 2.58%) and on the argue prompt;
+the fit instrument currently only asserts visibility there.
+W3F-5. Carried, unchanged: `/teach` still needs framing copy for the COUNTERFACTUAL board, which
+publicly lists self-identifying desks including the one that drew nobody at $84.
+
+### Not verified
+
+- A real projector in a real room: throw distance, ambient light, measured contrast. All figures
+  here are screen-height proportions in headless Chromium.
+- CVD separation of the blue/orange series as projected; contrast of the white turnout numerals on
+  the light-blue N1 bars in the CF rows (visual critic's ground).
+- `Restore last good state`.
+- Any real student. Nothing here is classroom-proven (D10).
+
+Verified this session and previously open: mid-class **server** restart from snapshot — board
+reloaded to the exact REVEAL stage 7 and fit both shapes (`w3f-93-board-after-server-restart--1366.png`);
+board refresh mid-REVEAL at stage 3 restored the stage exactly; pause/unpause round-tripped; the
+bell auto-committed all four desks in a run with zero manual locks.
+
+PROJECTOR FIT CONDITION: DISCHARGED
