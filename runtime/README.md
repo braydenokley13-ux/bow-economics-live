@@ -36,8 +36,9 @@ pat/veteran/sealed-bid deadline decisions, and a teacher-staged reveal;
 `m1l3-free-agency` (Module 1, Lesson 3 — "Free Agency: The Signing Window,"
 the **module close**), which carries a completed L2 (preferred) or L1
 (fallback) session forward into a four-day open market under a newly-risen
-$130M cap (see below); and `m2-box-office` (Module 2 prototype,
-price-setting under hidden demand). `lobby-demo` (students tap a color,
+$130M cap (see below). (`m2-box-office`, the Module 2 prototype for
+price-setting under hidden demand, was superseded per D20 and is no longer
+registered — see `docs/RAMAZ_READINESS.md`.) `lobby-demo` (students tap a color,
 teacher reveals the class distribution on the board) also still ships,
 unchanged, as the minimal proof the runtime itself is genuinely
 lesson-agnostic.
@@ -867,9 +868,9 @@ three static pages), not a general-purpose framework being reinvented.
   stamps in copy but have **not** been independently re-verified by a
   sports-reality pass. (b) The lesson has never been timed against a real
   50-60 minute period; the five-night pace is a teacher judgement with no
-  in-product clock. (c) `boxOffice` (`m2-box-office`) is still registered
-  and dormant — the architecture selection kills it as a lesson, but code
-  removal was deferred. (d) The night-spend dial's returns are linear in
+  in-product clock. (c) `boxOffice` (`m2-box-office`) has been deregistered
+  from the lesson picker (superseded per D20); `boxOffice.ts` and its tests
+  remain in the tree as history. (d) The night-spend dial's returns are linear in
   dollars, so the interesting decision is *when* to spend, not how much;
   the harness asserts the timing spread but the dial has no interior
   optimum. (e) The Night-4 capacity option never beats simply pricing the

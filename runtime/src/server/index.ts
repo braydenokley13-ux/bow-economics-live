@@ -1,6 +1,5 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { boxOfficeModule } from "../modules/boxOffice.js";
 import { draftDayModule } from "../modules/draftDay.js";
 import { freeAgencyModule } from "../modules/freeAgency.js";
 import { fullHouseModule } from "../modules/fullHouse.js";
@@ -23,7 +22,6 @@ async function main(): Promise<void> {
   const service = new SessionService(repo);
   service.registerModule(lobbyDemoModule);
   service.registerModule(draftDayModule);
-  service.registerModule(boxOfficeModule);
   service.registerModule(tradeDeadlineModule);
   service.registerModule(freeAgencyModule);
   service.registerModule(fullHouseModule);
