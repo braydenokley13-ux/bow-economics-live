@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:44:07.515Z",
+  "updatedAt": "2026-09-01T06:44:29.757Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2274,7 +2274,8 @@
         "recheck-l2-sr",
         "recheck-l2-teacher",
         "recheck-l2-play",
-        "recheck-l2-econ"
+        "recheck-l2-econ",
+        "recheck-l2-projector"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -2289,7 +2290,8 @@
         "proj-l2-truncation",
         "gate-l2-projector-dissent",
         "play-l2-below-bar",
-        "gate-l2-play-dissent"
+        "gate-l2-play-dissent",
+        "proj-l2-bar-timing"
       ],
       "meetingIds": [],
       "gates": [],
@@ -4009,6 +4011,24 @@
       },
       "recordedAt": "2026-09-01T06:44:07.244Z",
       "actor": "economic-truth-critic"
+    },
+    "recheck-l2-projector": {
+      "id": "recheck-l2-projector",
+      "wave": 3,
+      "kind": "projector-report",
+      "label": "L2 projector re-check: truncation DISCHARGED (zero offenders both shapes, non-vacuity proven live: re-injected ellipsis -> 26 offenders); evidence tier 2.67% vs 2.6% floor; freeze mirror discharged with honest do-not-say-look-at-the-board copy; privacy PASS (58 scans). NEW BLOCKING R-1: releasing the bar after the week-2 bell — what /teach prescribes — makes stage 5 print 'this room did NOT see the bar' falsely (off-by-one, hostTheLeague.ts:2433, two-arm probe)",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l2-projector--GATE_L2_PROJECTOR.md",
+      "sha256": "dc869d6c564f21af7ec10ce9339a72e767d1be95e79717a4cbf3a8df076453c5",
+      "size": 26284,
+      "metadata": {
+        "tags": [
+          "projector",
+          "wave-3",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T06:44:29.229Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "claims": {
@@ -4555,9 +4575,12 @@
         "gate-l2-projector"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T05:29:05.816Z",
-      "actor": "classroom-projector-critic"
+      "actor": "classroom-projector-critic",
+      "resolution": "Owning critic measured 29 frames x 2 shapes with zero ellipsized names and proved the instrument non-vacuous live (re-injected ellipsis caught 26 offenders by both the critic's detector and the shipped predicate); evidence tier at 2.67% vs the 2.6% floor; freeze mirror now honest. Explicit line: DISSENT proj-l2-truncation: DISCHARGED. Successor off-by-one tracked as proj-l2-bar-timing.",
+      "resolvedAt": "2026-09-01T06:44:29.488Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l2-projector-dissent": {
       "id": "gate-l2-projector-dissent",
@@ -4590,6 +4613,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T05:39:03.935Z",
       "actor": "player-gameplay-critic"
+    },
+    "proj-l2-bar-timing": {
+      "id": "proj-l2-bar-timing",
+      "wave": 3,
+      "category": "classroom-reliability",
+      "severity": "blocking",
+      "finding": "Off-by-one at hostTheLeague.ts:2433: releasing the Handed-To-You bar after the week-2 bell — exactly what /teach prescribes at hostTheLeague.ts:2894 — makes REVEAL stage 5 print 'This room did NOT see the Handed-To-You bar before it played week 3' falsely. Two-arm probe confirms. Narrow deterministic fix + a regression test pinning the prescribed-timing path. GATE_L2_PROJECTOR.md re-check section.",
+      "evidenceIds": [
+        "recheck-l2-projector"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T06:44:29.757Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "meetings": {},
@@ -4627,11 +4664,11 @@
     "agentsActivated": 54,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 85,
+    "evidenceRecorded": 86,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 261,
-  "eventHead": "c03d16bf0446fa0ccd8355c12c3c998499e2477c8e35e3d7be013577f42955b5",
+  "eventCount": 264,
+  "eventHead": "7a8961e85a53f90dde140005f839f63c0b13ff799c8064ebe4d35f65cc9317dc",
   "warnings": []
 }

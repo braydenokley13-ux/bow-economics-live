@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `261:c03d16bf0446fa0ccd8355c12c3c998499e2477c8e35e3d7be013577f42955b5`  
-Updated: 2026-09-01T06:44:07.515Z
+Event head: `264:7a8961e85a53f90dde140005f839f63c0b13ff799c8064ebe4d35f65cc9317dc`  
+Updated: 2026-09-01T06:44:29.757Z
 
 ## Founder intent
 
@@ -99,6 +99,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - recheck-l2-teacher — teacher-transfer-report — L2 teacher re-check: B1-B5 all FIXED live (board code entry, projector URL on every teach frame, resume-not-strand, free-riders = 0%-lockers only with never-locked separated, Q3 repointed to live panel, rehearsal renders fully). TRANSFER: READY. Two new non-blocking (mistyped board code strands CONNECTING; teacher-key copy claims shown-once falsely)
 - recheck-l2-play — gameplay-report — L2 play re-check: R1-R4 substantially CONFIRMED (bell lands settlement-first at 600px; $10-vs-$46 gap split correctly). NOT DISCHARGED: sold-out weeks put the externality card under the fixed lock bar (observed 3x); dials 595..617 behind the bar at decision moment; two bar-copy residuals; free-rider instrument reads $0/$0/$0. RATING FUNCTIONAL — remaining cause 'only one dial carries felt consequence' is repairable, not structural; kill condition explicitly not met
 - recheck-l2-econ — economic-truth-report — L2 econ re-check: instrument repair REAL (corr 0.918 chosen-shares vs 0.175 inherited; biggest giver = max spender) — B1/B2/B4/B5 discharged. NOT DISCHARGED overall: B3 unchanged (driver=visitor in 40/40 rooms, 7/40 fail price control), and two NEW blockers from the repair — externalPct prints 0% beside $1.58M given and >100% in 58/200 rooms; room-total ownGain reverses sign (-$1.15M printed vs +$0.55M actual)
+- recheck-l2-projector — projector-report — L2 projector re-check: truncation DISCHARGED (zero offenders both shapes, non-vacuity proven live: re-injected ellipsis -> 26 offenders); evidence tier 2.67% vs 2.6% floor; freeze mirror discharged with honest do-not-say-look-at-the-board copy; privacy PASS (58 scans). NEW BLOCKING R-1: releasing the bar after the week-2 bell — what /teach prescribes — makes stage 5 print 'this room did NOT see the bar' falsely (off-by-one, hostTheLeague.ts:2433, two-arm probe)
 
 ## Claim ledger
 
@@ -114,10 +115,11 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - gate-l2-teacher-dissent — undefined/undefined/open — undefined
 - econ-l2-evidence-surfaces — economic-truth/blocking/open — L2's mechanism is real but its evidence surfaces mislead: (B1) the give/take board is confounded with inherited Draw — corr(gave, startDraw)=0.959 vs corr(gave, meanShare)=0.644, so the room's biggest 'giver' spent $0 and a max-reinvest desk reads as a taker; it feeds ADAPT Q3, the SPILLOVER synthesis card (names a desk, credits spending it never did), and harness P3's free-riding limb (reproduces at zero reinvest). (B3) smallMarketPathFrom prints 'it won it on WHO WAS VISITING' without controlling for price ($110-vs-$30 reachable case) — Candidate A's killer defect class rebuilt. Also blocking: two false printed rules ('cannot turn Draw back into cash' — $25,912/point; 'about a fifth keeps your Draw' — measured 5-10%, unachievable above 85). Week-3 dominated reinvest disclosed at dial, unhandled by REVEAL 5. Do not advance or build L3 while B1/B3 stand. GATE_L2_ECON.md.
 - gate-l2-econ-dissent — undefined/undefined/open — undefined
-- proj-l2-truncation — classroom-reliability/blocking/open — L2 board: at 11-12 desks every schedule card ellipsizes its club names (Desk 1 ... HOSTS Golden S...) with a third of the frame empty (board index.html:331-333) — silent CSS truncation the fit instrument cannot see; plus evidence tier .hl-bar-foot at 1.78% vs the 2.6% floor, and the frozen board shows only FROZEN while /teach claims the schedule is up. Fit instruments must also assert no text ellipsization on evidence surfaces. GATE_L2_PROJECTOR.md.
+- proj-l2-truncation — classroom-reliability/blocking/resolved — L2 board: at 11-12 desks every schedule card ellipsizes its club names (Desk 1 ... HOSTS Golden S...) with a third of the frame empty (board index.html:331-333) — silent CSS truncation the fit instrument cannot see; plus evidence tier .hl-bar-foot at 1.78% vs the 2.6% floor, and the frozen board shows only FROZEN while /teach claims the schedule is up. Fit instruments must also assert no text ellipsization on evidence surfaces. GATE_L2_PROJECTOR.md.
 - gate-l2-projector-dissent — undefined/undefined/open — undefined
 - play-l2-below-bar — gameplay/blocking/open — L2 rates FUNCTIONAL, below the wave contract's STRONG bar, on repairable causes: (R1) the weekly settlement and decomposition land below the 1024x600 fold with auto-scroll to next week's dial — the reveal appears to do nothing at the exact moment the lesson pays off; LOCK below fold in week 1; (R2/R3) reveal-5 and reveal-4/synthesis-card-4 assert causal claims the played data refutes (same defect family as econ-l2-evidence-surfaces); (R4) the free-rider comparison is confounded by schedule luck. GATE_L2_PLAY.md.
 - gate-l2-play-dissent — undefined/undefined/open — undefined
+- proj-l2-bar-timing — classroom-reliability/blocking/open — Off-by-one at hostTheLeague.ts:2433: releasing the Handed-To-You bar after the week-2 bell — exactly what /teach prescribes at hostTheLeague.ts:2894 — makes REVEAL stage 5 print 'This room did NOT see the Handed-To-You bar before it played week 3' falsely. Two-arm probe confirms. Narrow deterministic fix + a regression test pinning the prescribed-timing path. GATE_L2_PROJECTOR.md re-check section.
 
 ## Latest gate
 
