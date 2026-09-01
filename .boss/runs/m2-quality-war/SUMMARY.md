@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `314:46a19c5c51cc15cae3937333bb880ab5c11e90d4630828db7317d64167085ed7`  
-Updated: 2026-09-01T09:05:48.681Z
+Event head: `315:c9b931fe56df27acc3db4ffec47eb03851107c12e9c3547a52dedc69b501555e`  
+Updated: 2026-09-01T09:06:10.437Z
 
 ## Founder intent
 
@@ -41,7 +41,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - player-gameplay-critic — player-gameplay-critic — completed — claude-opus-5
 - economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed — claude-sonnet-5
-- builder — builder-w4-r2 — active — claude-opus-5
+- builder — builder-w4-r2 — completed — claude-opus-5
 - economic-truth-critic — economic-truth-critic — active — claude-opus-5
 
 ## Required evidence
