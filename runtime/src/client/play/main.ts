@@ -3010,7 +3010,7 @@ function renderHLReveal(view: Record<string, unknown>): void {
       give
         ? `<div class="hl-give" id="hlGive">
              <div class="hl-split-title">What you gave, what you got</div>
-             <div class="hl-give-sub">Everything your Draw moved — most of it the Draw you were DEALT</div>
+             <div class="hl-give-sub" id="hlDealtLine">${escapeHtml(String(view["dealtLine"] ?? ""))}</div>
              <div class="hl-give-row"><span>Your Draw put this on OTHER clubs' books</span><span class="numeric">${money(give.gave)}</span></div>
              <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
              <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>

@@ -553,6 +553,24 @@ export type HostLeagueState = {
    * either way (`gate-l2-play` R3, `gate-l2-econ` FL-F).
    */
   barReleasedAtWeek: number | null;
+  /**
+   * How many live desks were already LOCKED into the open week at the moment
+   * the bar went up, or null if it never went up.
+   *
+   * `gate-l2-projector` W4-1 (BLOCKING). `barReleasedAtWeek === WEEK_COUNT - 1`
+   * covers two different rooms — the clean one `/teach` prescribes (released
+   * right after the week-2 bell, when no desk has touched a week-3 dial) and
+   * the messy one (released mid-week-3, with some desks already committed) —
+   * and the stage-5 frame asserted the messy one unconditionally: "some desks
+   * had already locked", printed to a room in which zero desks had. Observed
+   * live, both projector shapes, on the release path `/teach` itself
+   * prescribes. The existing state could not tell the two apart, so this is the
+   * variable that tells them apart.
+   *
+   * May be `undefined` on a snapshot written before this field existed; every
+   * read goes through `lockedAtBarRelease()`.
+   */
+  lockedAtBarRelease: number | null;
   revealStage: number;
   barPage: number;
   synthPage: number;
@@ -2232,6 +2250,38 @@ export function deskChoiceLineClaimed(row: GiveAndTakeRow): Claimed {
   };
 }
 
+/**
+ * The sub-label over the desk's give/take bars.
+ *
+ * `gate-l2-econ` N14 / FL-K. The shipped label was a hand-written static string
+ * in `client/play/main.ts` — "Everything your Draw moved — MOST OF IT the Draw
+ * you were DEALT" — carrying an unbound quantifier that the model contradicts
+ * in 16 of 96 probed desk-instances (worst measured: 12 desks @ $90 all-40%,
+ * desk 7 gave $847,704 of which $511,224 — 60% — was bought, not dealt). It was
+ * false in exactly the high-reinvest rooms the lesson wants to celebrate.
+ *
+ * The share is now computed and printed. `gave` is everything this club's Draw
+ * put in other buildings; `gaveByChoice` is the part that exists because this
+ * desk reinvested; the rest is the Draw the schedule dealt it. No quantifier is
+ * asserted that is not the rendered number.
+ */
+export function dealtLineClaimed(row: GiveAndTakeRow): Claimed {
+  if (row.gave <= 0) {
+    return {
+      text: "Everything your Draw moved. Your Draw put nothing in anybody else's building this season.",
+      claims: [claim("desk.dealtPct", 0, "percent", { bounds: { min: 0, max: 100 } })],
+    };
+  }
+  const dealtDollars = Math.max(0, row.gave - row.gaveByChoice);
+  const pctValue = Math.round((dealtDollars / row.gave) * 100);
+  const pct = claim("desk.dealtPct", pctValue, "percent", { bounds: { min: 0, max: 100 } });
+  const bought = claim("desk.boughtShare", 100 - pctValue, "percent", { bounds: { min: 0, max: 100 } });
+  return {
+    text: `Everything your Draw moved — ${pct.rendered} of it the Draw you were DEALT, ${bought.rendered} of it Draw you BOUGHT.`,
+    claims: [pct, bought],
+  };
+}
+
 function viewWeek(state: HostLeagueState, club: Club, w: SettledWeek) {
   const visitorDef = CLUBS[w.visitorSlot]!;
   const roadDef = CLUBS[w.roadHostSlot]!;
@@ -2375,6 +2425,26 @@ function requireOpenClub(
   return { ok: true, club, profile: profileOf(club) };
 }
 
+/** Live desks locked into the currently open week, right now. */
+export function lockedNow(state: HostLeagueState): number {
+  return state.clubs.filter((c) => c.seatId !== null && c.locked).length;
+}
+
+/** Live desks seated right now — the denominator stage 5 prints its lock count against. */
+export function liveDeskCount(state: HostLeagueState): number {
+  return state.clubs.filter((c) => c.seatId !== null).length;
+}
+
+/**
+ * The locked count stamped at bar release, tolerant of a snapshot written
+ * before the field existed. A missing stamp is `null`, and stage 5 then refuses
+ * to make any claim about who had committed rather than guessing one.
+ */
+export function lockedAtBarRelease(state: HostLeagueState): number | null {
+  const v = (state as { lockedAtBarRelease?: number | null }).lockedAtBarRelease;
+  return v === undefined ? null : v;
+}
+
 const withClub = (state: HostLeagueState, club: Club): HostLeagueState => {
   const clubs = state.clubs.slice();
   clubs[club.slot] = club;
@@ -2425,6 +2495,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       shockSlot: null,
       barReleased: false,
       barReleasedAtWeek: null,
+      lockedAtBarRelease: null,
       revealStage: 0,
       barPage: 0,
       synthPage: 0,
@@ -2447,7 +2518,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
         next = settleWeek(next, first);
         first = false;
       }
-      if (!next.barReleased) next = { ...next, barReleased: true, barReleasedAtWeek: next.weekIndex };
+      if (!next.barReleased) next = { ...next, barReleased: true, barReleasedAtWeek: next.weekIndex, lockedAtBarRelease: lockedNow(next) };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };
     return next;
@@ -2498,7 +2569,11 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       }
       if (state.weekIndex < 1) return { ok: false, reason: "close week 1 first — the bar is drawn on weeks the room has played" };
       if (state.barReleased) return { ok: false, reason: "the Handed-To-You bar is already up" };
-      return { ok: true, state: { ...state, barReleased: true, barReleasedAtWeek: state.weekIndex } };
+      // projector W4-1: stamp WHO HAD ALREADY COMMITTED, not just when. The
+      // prescribed press (straight after the week-2 bell) and a mid-week-3
+      // press both stamp `weekIndex === WEEK_COUNT - 1`; only this tells them
+      // apart, and stage 5 says something different about each.
+      return { ok: true, state: { ...state, barReleased: true, barReleasedAtWeek: state.weekIndex, lockedAtBarRelease: lockedNow(state) } };
     }
 
     if (action.type === "teacher:revealNext") {
@@ -2516,6 +2591,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
           revealStage: state.revealStage + 1,
           barReleased: true,
           barReleasedAtWeek: state.barReleased ? state.barReleasedAtWeek : state.weekIndex,
+          lockedAtBarRelease: state.barReleased ? lockedAtBarRelease(state) : lockedNow(state),
           barPage: 0,
         },
       };
@@ -2667,6 +2743,8 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             // sentence under it has to be about ITS decision, not about a
             // counterfactual identical to what it did.
             giveLine: give ? deskChoiceLineClaimed(give).text : "",
+            // econ FL-K: the "most of it was DEALT" sub-label is computed, not asserted.
+            dealtLine: give ? dealtLineClaimed(give).text : "",
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
             questions: phase === "ADAPT" ? ADAPT_QUESTIONS : [],
@@ -2737,6 +2815,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
     const synthPages = synthPageCount(cards.length);
     const synthPage = Math.min(Math.max(0, state.synthPage ?? 0), synthPages - 1);
     const synthTitle = (i: number): string => cards[i * SYNTH_CARDS_PER_PAGE]?.title ?? "";
+    const stagesNow = revealStagesFor(state);
     return tag({
       phase,
       weekIndex: state.weekIndex,
@@ -2757,9 +2836,11 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             : "Ready. This is the moment: release it, then let them play week 3 knowing what they now know.",
       revealStage: state.revealStage,
       totalRevealSteps: REVEAL_STEPS,
-      revealStages: REVEAL_STAGES,
-      nextRevealStage: REVEAL_STAGES[state.revealStage] ?? null,
-      currentRevealStage: REVEAL_STAGES[state.revealStage - 1] ?? null,
+      // projector W4-2: the stage list `/teach` prints is resolved against THIS
+      // room's bar release, not the static script.
+      revealStages: stagesNow,
+      nextRevealStage: stagesNow[state.revealStage] ?? null,
+      currentRevealStage: stagesNow[state.revealStage - 1] ?? null,
       barPage: barPage + 1,
       barPageCount: barPages,
       barRowTotal: barRows.length,
@@ -3036,6 +3117,43 @@ export function barReleasedDuringLastWeek(state: HostLeagueState): boolean {
   return sawBarBeforeWeek3(state) && state.barReleasedAtWeek === WEEK_COUNT - 1;
 }
 
+/**
+ * THE FOUR ARMS OF THE BAR RELEASE, computed once and used by every surface
+ * that says anything about it.
+ *
+ * `gate-l2-projector` W4-1 and W4-2, both BLOCKING, both the same root cause:
+ * the room's release timing was described in one place (the board) and NOT
+ * described in another (`/teach`'s ON-THE-PROJECTOR mirror, byte-identical
+ * across all four arms including the one where the board had already chosen).
+ * A teacher who never pressed the optional button — a plausible random-teacher
+ * path, which is why the module ships an auto-release fallback at all — was
+ * coached to run a two-candidate argument the projector behind them had closed.
+ *
+ * One function, four arms, and every surface that speaks about the release
+ * derives its sentence from this rather than writing its own:
+ *
+ *  - `never`               the room never saw the bar in time (arm C). The
+ *                          board CHOOSES: the last-week rule is the only cause
+ *                          on the table.
+ *  - `beforeLastWeek`      released during week 2's open window (arm B).
+ *  - `lastWeekNoneLocked`  released after the week-2 bell, before any desk
+ *                          committed week 3 — the release `/teach` prescribes
+ *                          (arm A). EVERY desk saw it before it priced.
+ *  - `lastWeekSomeLocked`  released mid-week-3 with desks already committed
+ *                          (arm D). Only these desks could have been moved.
+ *  - `lastWeekLockCountUnknown` a pre-W4-1 snapshot with no stamp: say nothing
+ *                          about who had committed rather than assert either.
+ */
+export type BarReleaseArm = "never" | "beforeLastWeek" | "lastWeekNoneLocked" | "lastWeekSomeLocked" | "lastWeekLockCountUnknown";
+
+export function barReleaseArm(state: HostLeagueState): BarReleaseArm {
+  if (!sawBarBeforeWeek3(state)) return "never";
+  if (!barReleasedDuringLastWeek(state)) return "beforeLastWeek";
+  const n = lockedAtBarRelease(state);
+  if (n === null) return "lastWeekLockCountUnknown";
+  return n > 0 ? "lastWeekSomeLocked" : "lastWeekNoneLocked";
+}
+
 export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostLeagueState): Claimed {
   const [w1, w2, w3] = agg.meanShareByWeek;
   const HORIZON =
@@ -3051,21 +3169,43 @@ export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostL
   // The bar is only a candidate cause if the room saw it BEFORE the last bell.
   // Otherwise nothing on this frame can be about the bar at all.
   const saw = sawBarBeforeWeek3(state);
-  const duringLast = barReleasedDuringLastWeek(state);
+  const arm = barReleaseArm(state);
   const claims: ClaimAtom[] = [];
-  const barClause = !saw
-    ? "This room did NOT see the Handed-To-You bar before it played week 3, so nothing on this frame can be about the bar."
-    : duringLast
-      ? "This room saw the Handed-To-You bar DURING week 3, before the last bell — some desks had already locked — so the bar is one of the things that could have moved it, for the desks that had not."
-      : "This room did see the Handed-To-You bar before it played week 3, so the bar is one of the things that could have moved it.";
+  // projector W4-1: the DURING-week-3 clause used to assert "some desks had
+  // already locked" for BOTH mid-week-3 releases and the clean prescribed one,
+  // and it was false in the prescribed one — which is also the cleanest setup
+  // the beat can have ("every desk saw it before it priced"). Four arms, four
+  // sentences, and the lock count is printed rather than presumed.
+  const lockedAt = lockedAtBarRelease(state);
+  const liveNow = liveDeskCount(state);
+  const barClause =
+    arm === "never"
+      ? "This room did NOT see the Handed-To-You bar before it played week 3, so nothing on this frame can be about the bar."
+      : arm === "lastWeekNoneLocked"
+        ? "This room saw the Handed-To-You bar DURING week 3, before the last bell and before a single desk had locked week 3 in — so every desk in this room priced its last week having seen it, and the bar is one of the things that could have moved it."
+        : arm === "lastWeekSomeLocked"
+          ? `This room saw the Handed-To-You bar DURING week 3, before the last bell — ${lockedAt} of ${liveNow} desks had already locked — so the bar is one of the things that could have moved it, for the desks that had not.`
+          : arm === "lastWeekLockCountUnknown"
+            ? "This room saw the Handed-To-You bar DURING week 3, before the last bell, so the bar is one of the things that could have moved it."
+            : "This room did see the Handed-To-You bar before it played week 3, so the bar is one of the things that could have moved it.";
   claims.push(
     claimWord(
       "reveal5.sawBar",
-      !saw ? "did NOT see the Handed-To-You bar" : duringLast ? "saw the Handed-To-You bar DURING week 3" : "did see the Handed-To-You bar",
+      arm === "never"
+        ? "did NOT see the Handed-To-You bar"
+        : arm === "beforeLastWeek"
+          ? "did see the Handed-To-You bar"
+          : "saw the Handed-To-You bar DURING week 3",
       saw,
       saw ? "did NOT see the Handed-To-You bar" : "could have moved it",
     ),
   );
+  if (arm === "lastWeekNoneLocked") {
+    claims.push(claimWord("reveal5.someLocked", "before a single desk had locked week 3 in", false, "desks had already locked"));
+  } else if (arm === "lastWeekSomeLocked") {
+    claims.push(claim("reveal5.lockedAtRelease", lockedAt ?? 0, "int", { assertsSign: "positive", bounds: { min: 1, max: liveNow } }));
+    claims.push(claimWord("reveal5.someLocked", `${lockedAt} of ${liveNow} desks had already locked`, true));
+  }
 
   const numbers = `Weeks 1-2: ${mean}% of the door money, on average. Week 3: ${w3}%${
     Math.abs(delta) < 1 ? " — level" : ` — ${delta > 0 ? "up" : "down"} ${Math.abs(delta)} points`
@@ -3097,6 +3237,74 @@ export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostL
 
 export function reinvestChangeLine(agg: HostLeagueAggregate, state: HostLeagueState): string {
   return reinvestChangeLineClaimed(agg, state).text;
+}
+
+/**
+ * `/teach`'s ON-THE-PROJECTOR mirror for REVEAL stage 5.
+ *
+ * `gate-l2-projector` W4-2 (BLOCKING). The shipped mirror was one hard-coded
+ * string on `REVEAL_STAGES[4].say` — byte-identical across all four release
+ * arms, and in every one of them it told the teacher *"Do not resolve it: this
+ * board deliberately refuses to choose between the rule and the bar."* In the
+ * arm where the bar was never released in time the board has ALREADY chosen
+ * ("the bar is not on the table"), so the teacher was coached to run a
+ * two-candidate argument the screen behind them had closed — the same defect
+ * shape as P-3's freeze mirror, at the lesson's argument beat.
+ *
+ * The mirror now describes the arm the board is actually in, derives that arm
+ * from the same `barReleaseArm` the board's own clause derives it from, and
+ * carries claim atoms so the sweep audits the two against each other. Whether
+ * the board refuses to choose is not a fact about this lesson's script; it is a
+ * fact about this room's release.
+ */
+export function teachStage5MirrorClaimed(state: HostLeagueState): Claimed {
+  const base =
+    "The room's own reinvest per week, with the last-week rule printed beside it. Say the rule out loud — week 3 was the end, and Draw bought then earns nothing else in this lesson — and THEN ask them why the room did what it did.";
+  const arm = barReleaseArm(state);
+  const lockedAt = lockedAtBarRelease(state);
+  const liveNow = liveDeskCount(state);
+  if (arm === "never") {
+    const word = "this board has ALREADY chosen";
+    return {
+      text: `${base} The bar never went up in time, so ${word}: the frame says the bar is not on the table and names the last-week rule as the only cause it can see. Do NOT offer the bar as a second candidate — the screen behind you has closed it. Ask them whether the rule is really why, and believe them.`,
+      claims: [claimWord("teach5.boardChose", word, true, "refuses to choose")],
+    };
+  }
+  const refuses = "this board deliberately refuses to choose between the rule and the bar";
+  if (arm === "lastWeekSomeLocked") {
+    const n = claim("teach5.lockedAtRelease", lockedAt ?? 0, "int", { assertsSign: "positive", bounds: { min: 1, max: liveNow } });
+    return {
+      text: `${base} Do not resolve it: ${refuses}. One thing to say out loud before you ask — you released the bar mid-week-3, and ${n.rendered} of ${liveNow} desks had already locked. Ask the desks that had NOT locked; the rest could not have used it.`,
+      claims: [claimWord("teach5.boardChose", refuses, false, "ALREADY chosen"), n, claimWord("teach5.someLocked", "had already locked", true)],
+    };
+  }
+  if (arm === "lastWeekNoneLocked") {
+    return {
+      text: `${base} Do not resolve it: ${refuses}. This is the cleanest version of the beat: you released it after the week-2 bell and NOT ONE desk had locked week 3 yet, so every pair in this room priced its last week having seen the bar. Ask the whole room, not a subset.`,
+      claims: [claimWord("teach5.boardChose", refuses, false, "ALREADY chosen"), claimWord("teach5.someLocked", "NOT ONE desk had locked", false, "had already locked")],
+    };
+  }
+  if (arm === "lastWeekLockCountUnknown") {
+    return {
+      text: `${base} Do not resolve it: ${refuses}. The bar went up during week 3; this session was restored from a snapshot that did not record how many desks had already locked, so do not tell the room either way.`,
+      claims: [claimWord("teach5.boardChose", refuses, false, "ALREADY chosen")],
+    };
+  }
+  return {
+    text: `${base} Do not resolve it: ${refuses}. The room saw the bar during week 2, so every desk had it in hand for the whole of week 3. Ask the whole room.`,
+    claims: [claimWord("teach5.boardChose", refuses, false, "ALREADY chosen")],
+  };
+}
+
+/** The `say` line `/teach` prints for a stage — computed for stage 5, static elsewhere. */
+export function revealStageSay(state: HostLeagueState, stage: number): string {
+  if (stage === 5) return teachStage5MirrorClaimed(state).text;
+  return REVEAL_STAGES[stage - 1]?.say ?? "";
+}
+
+/** REVEAL_STAGES with every `say` resolved against THIS room's state (projector W4-2). */
+export function revealStagesFor(state: HostLeagueState): RevealStage[] {
+  return REVEAL_STAGES.map((s) => ({ ...s, say: revealStageSay(state, s.stage) }));
 }
 
 /* --------------------------------------------------------- teacher aids -- */
@@ -3358,7 +3566,8 @@ function projectorMirror(state: HostLeagueState, phase: CanonicalPhase): { title
       };
     }
     case "REVEAL": {
-      const stage = REVEAL_STAGES[state.revealStage - 1] ?? null;
+      // projector W4-2: `say` is resolved against this room's release arm.
+      const stage = revealStagesFor(state)[state.revealStage - 1] ?? null;
       return {
         title: stage ? `Stage ${stage.stage} of ${REVEAL_STEPS} — ${stage.name}` : "Waiting for the first press",
         lines: stage ? [stage.headline, stage.say] : ['An empty frame and "Waiting for your teacher to put up the first beat."'],
@@ -3477,12 +3686,24 @@ export function moduleClaims(state: HostLeagueState): ClaimSurface[] {
   const path = agg.smallMarketPath;
   if (path.found) push("board:reveal-4:smallMarketPath", { text: path.line, claims: path.claims });
   push("board:reveal-5:changeLine", reinvestChangeLineClaimed(agg, state));
+  // projector W4-2: the teacher's ON-THE-PROJECTOR mirror for the same beat is
+  // a claim ABOUT the board, so it is swept beside the board's own clause and
+  // the two are audited against one recomputed release arm.
+  push("teach:reveal-5:projectorMirror", teachStage5MirrorClaimed(state));
   push("teach:adapt-q3:answerKey", adaptSpendAnswerClaimed(state));
   for (const card of synthesisCards(state, agg)) {
+    // econ N14: a card that ships zero atoms used to vanish from the sweep
+    // silently. `beyond` is the one legitimate case — it carries real-world
+    // facts, which are `gate-l2-sr`'s to verify and not computable from state.
+    // Every other card is registered, and a NEW card with no atoms is now a
+    // detectable hole rather than an invisible one.
     if (card.claims && card.claims.length > 0) push(`synthesis:${card.id}`, { text: card.body, claims: card.claims });
+    else out.push({ surface: `synthesis:${card.id}`, text: card.body, claims: [] });
   }
   for (const row of agg.giveAndTake) {
     push(`play:desk-${row.deskNumber}:choiceLine`, deskChoiceLineClaimed(row));
+    // econ FL-K: the give/take sub-label is a computed share, and swept.
+    push(`play:desk-${row.deskNumber}:dealtLine`, dealtLineClaimed(row));
   }
   for (const club of state.clubs.slice(0, state.leagueSize)) {
     if (club.seatId === null) continue;
@@ -3834,18 +4055,26 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   const pipes = [...agg.pipes].sort((a, b) => b.nationalPct - a.nationalPct);
   const mostDependent = pipes[0] ?? null;
   const leastDependent = pipes[pipes.length - 1] ?? null;
+  // econ N14: this card shipped four model-derived percentages and ZERO atoms,
+  // so the sweep could not see it at all — an unregistered claim surface is
+  // exactly the hole the claim layer exists to close. They are shares of a
+  // total, so the drift risk is lower than spillover's; "lower" is not "audited".
+  const compClaims: ClaimAtom[] = [];
+  const mostNat = mostDependent ? claim("composition.mostNationalPct", mostDependent.nationalPct, "percent1", { bounds: { min: 0, max: 100 } }) : null;
+  const mostGate = mostDependent ? claim("composition.mostGatePct", mostDependent.gatePct, "percent1", { bounds: { min: 0, max: 100 } }) : null;
+  const showLeast = Boolean(leastDependent && mostDependent && leastDependent.slot !== mostDependent.slot);
+  const leastNat = showLeast ? claim("composition.leastNationalPct", leastDependent!.nationalPct, "percent1", { bounds: { min: 0, max: 100 } }) : null;
+  const leastGate = showLeast ? claim("composition.leastGatePct", leastDependent!.gatePct, "percent1", { bounds: { min: 0, max: 100 } }) : null;
+  for (const a of [mostNat, mostGate, leastNat, leastGate]) if (a) compClaims.push(a);
   cards.push({
     id: "composition",
+    claims: compClaims,
     title: "THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS",
     body: `${
-      mostDependent
-        ? `For ${mostDependent.deskHandle}, the national check was ${mostDependent.nationalPct}% of everything the club earned and the gate was ${mostDependent.gatePct}%.`
+      mostDependent && mostNat && mostGate
+        ? `For ${mostDependent.deskHandle}, the national check was ${mostNat.rendered} of everything the club earned and the gate was ${mostGate.rendered}.`
         : ""
-    }${
-      leastDependent && mostDependent && leastDependent.slot !== mostDependent.slot
-        ? ` For ${leastDependent.deskHandle} it was ${leastDependent.nationalPct}% against a gate of ${leastDependent.gatePct}%.`
-        : ""
-    } Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national check that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
+    }${showLeast && leastNat && leastGate ? ` For ${leastDependent!.deskHandle} it was ${leastNat.rendered} against a gate of ${leastGate.rendered}.` : ""} Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national check that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
   });
 
   const path = agg.smallMarketPath;

@@ -673,7 +673,9 @@ const fmt = (value, format) =>
     ? `${value < 0 ? "-" : ""}$${Math.abs(Math.round(value)).toLocaleString()}`
     : format === "percent"
       ? `${Math.round(value)}%`
-      : `${Math.round(value)}`;
+      : format === "percent1"
+        ? `${Math.round(value * 10) / 10}%`
+        : `${Math.round(value)}`;
 
 const profileFor = (state, club) => MARKET_PROFILES.find((m) => m.id === club.profileId);
 const capacityOf = (club) => CLUBS[club.slot].capacity;
@@ -752,9 +754,18 @@ function playSeasonWith(deskCount, priceOf, shareOf) {
 }
 
 /**
- * An INDEPENDENT re-derivation of the small-market exhibit's selection rule and
- * price control, written from the econ gate's specification rather than from
- * the module's implementation.
+ * A TRANSCRIPTION of the small-market exhibit's selection rule and price
+ * control, written out here rather than called from the module.
+ *
+ * `gate-l2-econ` N14 required this to be named for what it is. It is NOT an
+ * independent derivation: it is a re-statement of the same shared specification
+ * `smallMarketPathFrom` implements. What it buys is real and bounded — it
+ * catches IMPLEMENTATION drift between the module and the spec (injection I3,
+ * dropping the price control, was caught here) — and what it cannot catch is
+ * an error in the spec itself, which no re-transcription of the spec ever
+ * could. The genuinely independent limbs in this file are the all-zero season
+ * REPLAY (`jointByReplay`) and the re-settled ARITHMETIC (`jointByArithmetic`);
+ * this one is a consistency check.
  */
 function recomputeMarketPath(state) {
   const smalls = [];
@@ -814,6 +825,25 @@ function recomputeTruth(state, joint, jointArith) {
   const created = own + gave;
   const coherent = created > 0 && gave >= 0 && gave <= created;
   const visitorLed = agg.homeRevenueDecomposition.filter((d) => d.fromVisitorDraw >= d.fromBuilding && d.fromVisitorDraw >= d.fromOwnDraw).length;
+  // econ N12/B9. THE INDEPENDENT BRANCH PREDICATE.
+  //
+  // The old limb audited `spillover.overInvested` with `check(!truth.coherent,
+  // ...)` — a verbatim re-derivation of the module's own print condition. It
+  // passed whenever the branch fired, could never fail, and is why a false
+  // economic noun survived a 70,628-atom sweep with 0 disagreements.
+  //
+  // The noun is a claim about ONE thing: did this room's reinvesting make the
+  // room, counted as one set of books, better or worse off. `joint` is that
+  // quantity, computed here by replaying the identical season with every dial
+  // at 0% through the shipped reducer and differencing the desks' cash — it
+  // touches neither `created` nor `coherent` nor any module aggregate. The
+  // expected WORD is computed from it here, in the harness's own code path,
+  // and compared to the word the surface actually rendered.
+  const expectedBranchNoun =
+    joint > 0 ? "less went back in than this room's own numbers would justify" : joint < 0 ? "this room over-invested" : "the room came out exactly level";
+  const lockedAtRelease = state.lockedAtBarRelease === undefined ? null : state.lockedAtBarRelease;
+  const sawBar = state.barReleased && state.barReleasedAtWeek !== null && state.barReleasedAtWeek <= WEEK_COUNT - 1;
+  const duringLast = sawBar && state.barReleasedAtWeek === WEEK_COUNT - 1;
   return {
     agg,
     anySpend: spendTotal > 0,
@@ -825,10 +855,33 @@ function recomputeTruth(state, joint, jointArith) {
     externalPct: coherent ? Math.round((gave / created) * 100) : null,
     joint,
     jointArith,
+    expectedBranchNoun,
     visitorLed,
     barCount: agg.homeRevenueDecomposition.length,
-    sawBar: state.barReleased && state.barReleasedAtWeek !== null && state.barReleasedAtWeek <= WEEK_COUNT - 1,
+    sawBar,
+    // projector W4-1/W4-2: the release arm, recomputed here from the stamp this
+    // harness itself set on the state, never read back off a module helper.
+    lockedAtRelease,
+    liveDesks: live.length,
+    someLockedAtRelease: duringLast && lockedAtRelease !== null ? lockedAtRelease > 0 : false,
+    boardChoseTheCause: !sawBar,
     market: recomputeMarketPath(state),
+    // econ FL-K: the dealt share of everything each desk's Draw moved, recomputed.
+    dealtPctByDesk: new Map(
+      agg.giveAndTake.map((r) => [r.deskNumber, r.gave > 0 ? Math.round((Math.max(0, r.gave - r.gaveByChoice) / r.gave) * 100) : 0]),
+    ),
+    // econ N14: the four composition percentages, recomputed from the pipe rows.
+    composition: (() => {
+      const pipes = [...agg.pipes].sort((a, b) => b.nationalPct - a.nationalPct);
+      const most = pipes[0] ?? null;
+      const least = pipes[pipes.length - 1] ?? null;
+      return {
+        mostNationalPct: most ? most.nationalPct : null,
+        mostGatePct: most ? most.gatePct : null,
+        leastNationalPct: least && most && least.slot !== most.slot ? least.nationalPct : null,
+        leastGatePct: least && most && least.slot !== most.slot ? least.gatePct : null,
+      };
+    })(),
     spendBySlot: new Map(live.map((c) => [c.slot, c.weeks.filter((w) => !w.stock).reduce((t, w) => t + w.reinvestPaid, 0)])),
   };
 }
@@ -874,6 +927,28 @@ function auditClaims(surfaces, truth, state) {
         }
       }
       if (a.id === "barSummary.visitorLedCount" && a.value !== truth.visitorLed) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.visitorLed}`);
+      // econ FL-K: the DEALT share, recomputed per desk from the by-choice ledger.
+      if (a.id === "desk.dealtPct") {
+        const m = surface.surface.match(/play:desk-(\d+):/);
+        const want = m ? truth.dealtPctByDesk.get(Number(m[1])) : undefined;
+        if (want !== undefined && a.value !== want) fail.push(`VALUE ${at}: printed ${a.value}% dealt, recomputed ${want}%`);
+      }
+      if (a.id === "desk.boughtShare") {
+        const m = surface.surface.match(/play:desk-(\d+):/);
+        const want = m ? truth.dealtPctByDesk.get(Number(m[1])) : undefined;
+        if (want !== undefined && a.value !== 100 - want) fail.push(`VALUE ${at}: printed ${a.value}% bought, recomputed ${100 - want}%`);
+      }
+      // econ N14: the four composition percentages.
+      for (const key of ["mostNationalPct", "mostGatePct", "leastNationalPct", "leastGatePct"]) {
+        if (a.id === `composition.${key}`) {
+          const want = truth.composition[key];
+          if (want === null || Math.abs(a.value - want) > 0.05) fail.push(`VALUE ${at}: printed ${a.value}, recomputed ${want}`);
+        }
+      }
+      // projector W4-1: the printed lock count at release.
+      if ((a.id === "reveal5.lockedAtRelease" || a.id === "teach5.lockedAtRelease") && a.value !== truth.lockedAtRelease) {
+        fail.push(`VALUE ${at}: printed ${a.value} desks locked at release, recomputed ${truth.lockedAtRelease}`);
+      }
       if (truth.market) {
         if (a.id === "market.gap" && !near(a.value, truth.market.gap)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.gap}`);
         if (a.id === "market.gapFromVisitor" && !near(a.value, truth.market.parts.visitor)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.parts.visitor}`);
@@ -899,8 +974,37 @@ function auditClaims(surfaces, truth, state) {
           case "spillover.pctPrinted":
             check(truth.coherent, "the share is a coherent percentage");
             break;
-          case "spillover.overInvested":
-            check(!truth.coherent, "the room over-invested");
+          // econ N12/B9. The branch NOUN, audited against the harness's own
+          // recomputation of the only thing the noun is about — the sign of the
+          // room's joint effect, replayed at 0% through the shipped reducer.
+          // Deliberately NOT `check(...)`: the surface always "claims" its own
+          // word, so a boolean comparison would be the tautology this replaces.
+          // The expected word is computed above from `joint` and compared to the
+          // word that was actually printed.
+          case "spillover.branchNoun":
+            if (a.quantifier.word !== truth.expectedBranchNoun) {
+              fail.push(
+                `QUANTIFIER ${at}: the card names the situation "${a.quantifier.word}", but the room's own joint effect (${Math.round(truth.joint).toLocaleString()}, replayed at 0%) makes it "${truth.expectedBranchNoun}"`,
+              );
+            }
+            // econ B9's discharge condition, asserted as a property of the text
+            // rather than of the atom: the over-investment noun may not appear
+            // anywhere on a surface belonging to a room that came out ahead.
+            if (truth.joint > 0 && /over-invest/i.test(surface.text)) {
+              fail.push(`QUANTIFIER ${at}: "over-invest" is on a surface whose room is ${Math.round(truth.joint).toLocaleString()} better off`);
+            }
+            break;
+          // projector W4-1: whether desks had already committed when the bar
+          // went up, recomputed from the stamp this harness set, per arm.
+          case "reveal5.someLocked":
+          case "teach5.someLocked":
+            check(truth.someLockedAtRelease, "some desks had already locked when the bar went up");
+            break;
+          // projector W4-2: whether the BOARD has already chosen the cause. The
+          // teacher mirror may promise "refuses to choose" only where the board
+          // does refuse — which is exactly the arms where the room saw the bar.
+          case "teach5.boardChose":
+            check(truth.boardChoseTheCause, "the board has already chosen the cause (the room never saw the bar in time)");
             break;
           case "spillover.jointDirection": {
             // econ B8: the printed direction must be the sign of the REPLAYED
@@ -1000,11 +1104,18 @@ function auditClaims(surfaces, truth, state) {
     { id: "one-spender", f: (i) => (i === 0 ? SHARE_MAX : 0) },
     { id: "mixed", f: (i, w) => SHARE_GRID[(i * 2 + w) % SHARE_GRID.length] },
   ];
+  // projector W4-1/W4-2: the release ARMS, not just the release WEEKS. Arms A
+  // and D both stamp `barReleasedAtWeek === 2` and are different rooms — the
+  // one `/teach` prescribes, where no desk had committed, and the mid-week-3
+  // one, where some had. `lockedAt` is the stamp that tells them apart, and it
+  // is set here so the audit's recomputation of it is this harness's own.
   const barReleases = [
-    { id: "never", at: null },
-    { id: "during-week-2", at: 1 },
-    { id: "after-week-2-bell (the /teach-prescribed release)", at: 2 },
-    { id: "after-the-final-bell", at: WEEK_COUNT },
+    { id: "arm C · never pressed", at: null, lockedAt: null },
+    { id: "arm B · during week 2", at: 1, lockedAt: 0 },
+    { id: "arm A · after the week-2 bell (the /teach-prescribed release, no desk locked)", at: 2, lockedAt: 0 },
+    { id: "arm D · during week 3, 7 desks already locked", at: 2, lockedAt: 7 },
+    { id: "arm C2 · after the final bell (the auto-release fallback)", at: WEEK_COUNT, lockedAt: null },
+    { id: "arm A' · pre-W4-1 snapshot, released in week 3, no lock stamp", at: 2, lockedAt: undefined },
   ];
 
   let rooms = 0;
@@ -1018,8 +1129,30 @@ function auditClaims(surfaces, truth, state) {
   let notVisitorDriven = null;
   /** A room where the coherence gate withholds the share — the M-C subject. */
   let overInvested = null;
+  /**
+   * A room where the share is withheld AND the room came out jointly ahead —
+   * the exact shape econ N11 found "over-investment" printed over, and the M-D
+   * subject. 173 of the econ critic's 177 plausible-price rooms were this.
+   */
+  let underProvided = null;
+  /** A room in arm D — the bar released mid-week-3 with desks already locked. */
+  let armDRoom = null;
+  /** A room in arm A — the /teach-prescribed release, where NO desk had locked. */
+  let armARoom = null;
+  /** A room in arm C — the bar never seen in time, where the board CHOOSES. */
+  let armCRoom = null;
   let worstJointSpread = 0;
+  let branchNounUnder = 0;
+  let branchNounOver = 0;
+  let branchNounLevel = 0;
+  const zeroAtomSurfaces = new Set();
   const idsSeen = new Set();
+  // econ N14: only these surfaces may legitimately ship zero atoms. `beyond` is
+  // real-world facts (gate-l2-sr's ground, not computable from state) and the
+  // rehearsal cards are stand-ins that say so on their face. Anything else with
+  // no atoms is a claim surface the audit cannot see, and the sweep now fails
+  // on it instead of silently omitting it.
+  const MAY_SHIP_ZERO_ATOMS = (s) => s === "synthesis:beyond" || s.startsWith("synthesis:rehearsal-");
 
   for (const deskCount of [8, 12]) {
     for (const P of priceSets) {
@@ -1035,17 +1168,36 @@ function auditClaims(surfaces, truth, state) {
         worstJointSpread = Math.max(worstJointSpread, Math.abs(jointArith - joint));
         for (const B of barReleases) {
           const state = { ...actual, barReleased: B.at !== null, barReleasedAtWeek: B.at };
+          if (B.lockedAt === undefined) delete state.lockedAtBarRelease;
+          else state.lockedAtBarRelease = B.lockedAt;
           const truth = recomputeTruth(state, joint, jointArith);
           const surfaces = moduleClaims(state);
           rooms += 1;
           surfacesSwept += surfaces.length;
-          for (const s of surfaces) for (const a of s.claims) idsSeen.add(a.id), (atoms += 1);
+          const label = `${deskCount} desks · ${P.id} · ${S.id}`;
+          for (const s of surfaces) {
+            for (const a of s.claims) idsSeen.add(a.id), (atoms += 1);
+            if (s.claims.length === 0 && !MAY_SHIP_ZERO_ATOMS(s.surface)) zeroAtomSurfaces.add(s.surface);
+          }
           const f = auditClaims(surfaces, truth, state);
-          if (f.length > 0) failures.push(`${deskCount} desks · ${P.id} · ${S.id} · bar ${B.id}: ${f.slice(0, 3).join(" | ")}`);
+          if (f.length > 0) failures.push(`${label} · bar ${B.id}: ${f.slice(0, 3).join(" | ")}`);
           if (f.length > 0) continue;
+          // Which branch the SPILLOVER noun took, tallied for the record.
+          const nounSurface = surfaces.find((s) => s.claims.some((c) => c.id === "spillover.branchNoun"));
+          if (nounSurface) {
+            if (truth.joint > 0) branchNounUnder += 1;
+            else if (truth.joint < 0) branchNounOver += 1;
+            else branchNounLevel += 1;
+          }
           if (!sample && truth.anySpend && truth.market) sample = { state, truth, surfaces };
-          if (!notVisitorDriven && truth.market && truth.market.driver !== "visitor") notVisitorDriven = { state, truth, surfaces, label: `${deskCount} desks · ${P.id} · ${S.id}` };
-          if (!overInvested && truth.anySpend && !truth.coherent) overInvested = { state, truth, surfaces, label: `${deskCount} desks · ${P.id} · ${S.id}` };
+          if (!notVisitorDriven && truth.market && truth.market.driver !== "visitor") notVisitorDriven = { state, truth, surfaces, label };
+          if (!overInvested && truth.anySpend && !truth.coherent) overInvested = { state, truth, surfaces, label };
+          if (!underProvided && truth.anySpend && !truth.coherent && truth.joint > 0) underProvided = { state, truth, surfaces, label };
+          if (!armDRoom && truth.someLockedAtRelease) armDRoom = { state, truth, surfaces, label: `${label} · ${B.id}` };
+          if (!armARoom && truth.sawBar && truth.lockedAtRelease === 0 && state.barReleasedAtWeek === WEEK_COUNT - 1) {
+            armARoom = { state, truth, surfaces, label: `${label} · ${B.id}` };
+          }
+          if (!armCRoom && truth.boardChoseTheCause && truth.anySpend) armCRoom = { state, truth, surfaces, label: `${label} · ${B.id}` };
         }
       }
     }
@@ -1132,13 +1284,114 @@ function auditClaims(surfaces, truth, state) {
       }
       mutants.push({ id: "M-C wrong BOUND", what, caught });
     }
+
+    // M-D · WRONG ECONOMIC NOUN. econ N11/B9/N12, exactly: print
+    // "over-investment" over a room the replay says came out AHEAD. This is the
+    // mutation the OLD limb could not catch — it audited `!truth.coherent`,
+    // which is the module's own print condition, so it passed by construction
+    // whenever the branch fired. The word is flipped in memory on exactly the
+    // room shape the econ critic measured (share withheld, room jointly better
+    // off), and the limb must bite on the WORD, not on any number beside it.
+    {
+      let caught = false;
+      let how = [];
+      let what = "no room in the sweep had the share withheld AND a positive joint effect — mutation NOT exercised";
+      if (underProvided) {
+        const t = underProvided.truth;
+        const honest = "less went back in than this room's own numbers would justify";
+        const lie = "this room over-invested";
+        let touched = 0;
+        const surfaces = underProvided.surfaces.map(clone);
+        for (const s of surfaces) {
+          const atom = s.claims.find((c) => c.id === "spillover.branchNoun");
+          if (!atom) continue;
+          s.text = s.text.split(honest).join(lie);
+          atom.rendered = lie;
+          atom.quantifier = { word: lie, claims: true };
+          delete atom.absent;
+          touched += 1;
+        }
+        const f = auditClaims(surfaces, t, underProvided.state);
+        caught = f.some((x) => x.startsWith("QUANTIFIER") && x.includes("spillover.branchNoun"));
+        how = f.filter((x) => x.includes("spillover.branchNoun")).slice(0, 1);
+        what = `"${lie}" injected on ${touched} surface(s) of ${underProvided.label}, a room the 0% REPLAY says is ${money(t.joint)} BETTER off (honest sentence: "${honest}")`;
+      }
+      mutants.push({ id: "M-D wrong ECONOMIC NOUN (econ N11/N12)", what: `${what}${how.length ? ` — first disagreement: ${how[0]}` : ""}`, caught });
+    }
+
+    // M-E · WRONG FACT ABOUT THE ROOM. projector W4-1, exactly: assert "some
+    // desks had already locked" on the release where none had — the sentence
+    // observed live on the arm `/teach` itself prescribes.
+    {
+      let caught = false;
+      let what = "no clean prescribed-release room in the sweep — mutation not exercised";
+      const subject = armARoom;
+      if (subject) {
+        const surfaces = subject.surfaces.map(clone);
+        let touched = 0;
+        for (const s of surfaces) {
+          const atom = s.claims.find((c) => c.id === "reveal5.someLocked" || c.id === "teach5.someLocked");
+          if (!atom) continue;
+          const lie = "7 of 12 desks had already locked";
+          s.text = s.text.split(atom.quantifier.word).join(lie);
+          atom.rendered = lie;
+          atom.quantifier = { word: lie, claims: true };
+          delete atom.absent;
+          touched += 1;
+        }
+        const f = auditClaims(surfaces, subject.truth, subject.state);
+        caught = touched > 0 && f.some((x) => x.startsWith("QUANTIFIER") && x.includes("someLocked"));
+        what = `"some desks had already locked" injected on ${touched} surface(s) of a room where the release stamp says ${subject.truth.lockedAtRelease} desks had locked`;
+      }
+      mutants.push({ id: "M-E wrong FACT ABOUT THE ROOM (projector W4-1)", what, caught });
+    }
+
+    // M-F · TEACHER MIRROR CONTRADICTS THE BOARD. projector W4-2, exactly:
+    // promise the teacher "this board refuses to choose" in the arm where the
+    // board has already chosen (the bar was never released in time).
+    {
+      let caught = false;
+      let what = "no never-released room in the sweep — mutation not exercised";
+      if (armCRoom) {
+        const surfaces = armCRoom.surfaces.map(clone);
+        const target = surfaces.find((s) => s.surface === "teach:reveal-5:projectorMirror");
+        if (target) {
+          const atom = target.claims.find((c) => c.id === "teach5.boardChose");
+          const lie = "this board deliberately refuses to choose between the rule and the bar";
+          target.text = target.text.split(atom.quantifier.word).join(lie);
+          atom.rendered = lie;
+          atom.quantifier = { word: lie, claims: false };
+          delete atom.absent;
+          const f = auditClaims(surfaces, armCRoom.truth, armCRoom.state);
+          caught = f.some((x) => x.startsWith("QUANTIFIER") && x.includes("teach5.boardChose"));
+          what = `the invariant "refuses to choose" coaching re-injected on ${armCRoom.label}, where the board has already named the last-week rule as the only cause on the table`;
+        }
+      }
+      mutants.push({ id: "M-F TEACHER MIRROR vs BOARD (projector W4-2)", what, caught });
+    }
   }
 
-  const mutantsCaught = mutants.length === 3 && mutants.every((m) => m.caught) && notVisitorDriven !== null && overInvested !== null;
-  const coversRequiredIds = ["spillover.externalPct", "spillover.jointDirection", "reveal5.sawBar", "priceCf.foundBest", "barSummary.quantifier"].every(
-    (id) => idsSeen.has(id),
-  );
-  const ok = failures.length === 0 && mutantsCaught && coversRequiredIds && sample !== null;
+  const mutantsCaught =
+    mutants.length === 6 &&
+    mutants.every((m) => m.caught) &&
+    notVisitorDriven !== null &&
+    overInvested !== null &&
+    underProvided !== null &&
+    armCRoom !== null &&
+    armDRoom !== null;
+  const coversRequiredIds = [
+    "spillover.externalPct",
+    "spillover.jointDirection",
+    "spillover.branchNoun",
+    "reveal5.sawBar",
+    "reveal5.someLocked",
+    "teach5.boardChose",
+    "desk.dealtPct",
+    "composition.mostNationalPct",
+    "priceCf.foundBest",
+    "barSummary.quantifier",
+  ].every((id) => idsSeen.has(id));
+  const ok = failures.length === 0 && mutantsCaught && coversRequiredIds && sample !== null && zeroAtomSurfaces.size === 0;
 
   check(
     "P11",
@@ -1150,6 +1403,9 @@ function auditClaims(surfaces, truth, state) {
       `disagreements found: ${failures.length}${failures.length ? ` — ${failures.slice(0, 4).join(" ;; ")}` : ""}`,
       ...mutants.map((m) => `MUTATION ${m.id}: ${m.what} -> ${m.caught ? "CAUGHT by the family" : "NOT CAUGHT — the family is vacuous on this limb"}`),
       `required claim ids all covered by the sweep: ${coversRequiredIds}`,
+      `SPILLOVER branch noun, decided ONLY by the replayed joint effect: under-provision ${branchNounUnder} rooms · over-investment ${branchNounOver} · exactly level ${branchNounLevel} (econ N11: the shipped card said "over-investment" in every one of these)`,
+      `claim-carrying surfaces shipping ZERO atoms (econ N14, only synthesis:beyond and rehearsal cards are allowed): ${zeroAtomSurfaces.size}${zeroAtomSurfaces.size ? ` — ${[...zeroAtomSurfaces].join(", ")}` : ""}`,
+      `bar-release arms swept: ${barReleases.length} (arm C never-pressed present: ${armCRoom !== null}; arm D mid-week-3-with-locks present: ${armDRoom !== null})`,
       `two independent joint computations (all-zero REPLAY through the reducer vs re-settled ARITHMETIC): worst magnitude spread ${money(worstJointSpread)}, sign disagreements 0 — the spread is the league office re-deriving its own reinvest dollars from a poorer door, which the arithmetic version holds fixed by the module's declared carve-out`,
       "Neither joint figure is read from the module: the room-total sentence's SIGN is checked against a season this harness replays at 0% through the shipped reducer.",
     ],
