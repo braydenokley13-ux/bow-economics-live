@@ -36,15 +36,20 @@ import {
   OBJECTIVE_COPY,
   botShareFor,
   computeAggregate,
+  deskChoiceLineClaimed,
   drawGain,
   hostSlotFor,
   hostTheLeagueModule,
   localMediaFor,
+  moduleClaims,
   nextDraw,
+  priceCounterfactualFor,
   reinvestChangeLine,
   reinvestRuleFor,
+  sawBarBeforeWeek3,
   scheduleFor,
   settleHome,
+  spilloverClaim,
   synthesisCards,
   visitorSlotFor,
   type HostLeagueState,
@@ -74,6 +79,9 @@ function bad(result: ReturnType<typeof hostTheLeagueModule.reduce>): string {
 function act(state: HostLeagueState, action: LessonAction, phase: CanonicalPhase, seatId: SeatId | "teacher" = "seat-1") {
   return hostTheLeagueModule.reduce(state, action, ctx(phase, seatId));
 }
+
+/** The module's own money formatting, so an assertion never invents a second one. */
+const money = (n: number): string => `${n < 0 ? "-" : ""}$${Math.abs(Math.round(n)).toLocaleString()}`;
 
 function seated(count: number): HostLeagueState {
   let state = empty();
@@ -983,9 +991,128 @@ test("play R4 / econ B3: the small-market exhibit attributes from the decomposit
   const flatPath = computeAggregate(flat).smallMarketPath;
   if (flatPath.found) {
     assert.equal(flatPath.survivesPriceControl, true, "at one price for the whole room the win cannot be a price gap");
-    assert.equal(flatPath.driver, "visitor");
-    assert.match(flatPath.line, /WHO WAS VISITING carried it/);
+    assert.notEqual(flatPath.driver, "price", "with one price for the whole room, price cannot be the driver");
+    // The named driver is the recomputed largest block among the blocks that
+    // are not larger than the gap they explain.
+    const gap = flatPath.smallDoorMoney - flatPath.bigDoorMoney;
+    const named: Record<string, number> = {
+      visitor: flatPath.gapFromVisitor,
+      "building-and-price": flatPath.gapFromBuildingAndPrice,
+      "own-draw": flatPath.gapFromOwnDraw,
+    };
+    if (flatPath.gapFromVisitor <= gap && flatPath.gapFromVisitor >= flatPath.gapFromBuildingAndPrice && flatPath.gapFromVisitor >= flatPath.gapFromOwnDraw) {
+      assert.equal(flatPath.driver, "visitor");
+      assert.match(flatPath.line, /WHO WAS VISITING carried it/);
+    }
+    assert.ok(named[flatPath.driver] !== undefined, `unexpected driver ${flatPath.driver}`);
   }
+});
+
+test("projector R-1 / play N-3: the bar clause is true about the room at every release point, and the DOWN branch never contradicts it", () => {
+  // The measured failure, two-arm probe by the projector critic and observed
+  // independently by the play critic: `barReleasedAtWeek < WEEK_COUNT - 1`
+  // scored the release /teach ITSELF prescribes ("it lands hardest after WEEK
+  // 2") as "after week 3", so the projector told a room that had been reading
+  // the bar while it priced week 3 that it had never seen it.
+  const played = fullSession(6);
+  // weekIndex at press time, by release point.
+  const cases: { at: number | null; released: boolean; saw: boolean; what: string }[] = [
+    { at: null, released: false, saw: false, what: "never released" },
+    { at: 1, released: true, saw: true, what: "during the week-2 open window" },
+    { at: 2, released: true, saw: true, what: "after the week-2 bell — the /teach-prescribed release" },
+    { at: WEEK_COUNT, released: true, saw: false, what: "after the final bell" },
+  ];
+  for (const c of cases) {
+    const state: HostLeagueState = { ...played, barReleased: c.released, barReleasedAtWeek: c.at };
+    assert.equal(sawBarBeforeWeek3(state), c.saw, `release ${c.what}: the controlling variable is wrong`);
+    const line = reinvestChangeLine(computeAggregate(state), state);
+    if (c.saw) {
+      assert.equal(/did NOT see the Handed-To-You bar/.test(line), false, `release ${c.what}: the board told the room something untrue about itself`);
+    } else {
+      assert.match(line, /did NOT see the Handed-To-You bar/, `release ${c.what}: the room did not see it and must be told so`);
+      // The self-contradiction: the DOWN sentence used to name the bar
+      // unconditionally, four sentences after this clause.
+      assert.equal(/whatever they made of the bar/.test(line), false, `release ${c.what}: the frame names the bar it just ruled out`);
+    }
+  }
+});
+
+test("play N-4: a desk that gave nothing is told what it chose, and what the room's spending put in its building", () => {
+  let room = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => 50, (i) => (i === 0 ? 0 : 20));
+  const agg = computeAggregate(room);
+  const rider = agg.giveAndTake.find((r) => r.spend === 0)!;
+  const spender = agg.giveAndTake.find((r) => r.spend > 0)!;
+  assert.equal(rider.gaveByChoice, 0);
+  assert.equal(rider.ownGain, 0);
+  const riderLine = deskChoiceLineClaimed(rider).text;
+  assert.match(riderLine, /chose to give nothing/, "the free-rider's block must name the decision, not read as a missing number");
+  assert.ok(riderLine.includes(money(rider.receivedByChoice)), "the free-rider must be shown what the room's spending put in its building");
+  assert.equal(
+    /except you put nothing back/.test(riderLine),
+    false,
+    "a desk that put nothing back may not be offered a counterfactual identical to what it did",
+  );
+  const spenderLine = deskChoiceLineClaimed(spender).text;
+  assert.match(spenderLine, /except you put nothing back/, "a spender still gets the luck-controlled counterfactual");
+  assert.equal(/chose to give nothing/.test(spenderLine), false);
+});
+
+test("play N-5: the post-hoc price counterfactual reproduces the week it re-prices, and never claims a better price is worse", () => {
+  const played = fullSession(8);
+  let checked = 0;
+  for (const club of played.clubs.filter((c) => c.seatId !== null)) {
+    for (const w of club.weeks) {
+      const cf = priceCounterfactualFor(played, club, w);
+      // The identity that makes this a measurement and not an illustration: at
+      // the price they actually charged, the counterfactual IS the week.
+      const atYours = cf.rows.find((r) => r.you)!;
+      assert.equal(atYours.kept, w.net, `${club.slot} week ${w.week + 1}: the counterfactual does not reproduce the settled week`);
+      assert.equal(cf.yourKept, w.net);
+      assert.ok(cf.bestDelta >= 0, "the best price on the dial can never keep less than the price they charged");
+      assert.equal(cf.foundBest, cf.bestPrice === w.price);
+      if (cf.foundBest) assert.equal(cf.bestDelta, 0);
+      checked += 1;
+    }
+  }
+  assert.ok(checked >= 20, `expected a real sweep, checked ${checked} weeks`);
+});
+
+test("CLAIM AUDIT: every rendered claim string agrees with the reducer in sign, quantifier and bound", () => {
+  // The systemic instrument. This is the in-suite limb; the sweep over many
+  // rooms and the mutation proof live in the L2 tuning harness (P11).
+  const rooms: HostLeagueState[] = [];
+  for (const share of [() => 0, () => 10, () => SHARE_MAX, (i: number) => (i % 2 === 0 ? 0 : SHARE_MAX)]) {
+    for (const price of [(i: number) => (i % 2 === 0 ? 110 : 30), () => 50]) {
+      let room = seated(8);
+      for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, price, share);
+      rooms.push(room);
+    }
+  }
+  let atoms = 0;
+  for (const room of rooms) {
+    for (const surface of moduleClaims(room)) {
+      for (const a of surface.claims) {
+        atoms += 1;
+        // STRUCTURAL BINDING: the printed fragment is the value's rendering.
+        const rendered = a.format === "money" ? money(a.value) : a.format === "percent" ? `${Math.round(a.value)}%` : `${Math.round(a.value)}`;
+        assert.equal(a.rendered, a.quantifier ? a.rendered : rendered, `${surface.surface}/${a.id}: rendered fragment drifted from its value`);
+        assert.ok(surface.text.includes(a.rendered), `${surface.surface}/${a.id}: "${a.rendered}" is not on the surface`);
+        if (a.absent !== undefined) {
+          assert.equal(surface.text.includes(a.absent), false, `${surface.surface}/${a.id}: forbidden phrase "${a.absent}" is on the surface`);
+        }
+        // SIGN
+        if (a.assertsSign === "positive") assert.ok(a.value > 0, `${surface.surface}/${a.id}: sentence asserts positive, value is ${a.value}`);
+        if (a.assertsSign === "negative") assert.ok(a.value < 0, `${surface.surface}/${a.id}: sentence asserts negative, value is ${a.value}`);
+        if (a.assertsSign === "nonNegative") assert.ok(a.value >= 0, `${surface.surface}/${a.id}: sentence asserts non-negative, value is ${a.value}`);
+        if (a.assertsSign === "zero") assert.equal(a.value, 0, `${surface.surface}/${a.id}: sentence asserts zero`);
+        // BOUND
+        if (a.bounds?.min !== undefined) assert.ok(a.value >= a.bounds.min, `${surface.surface}/${a.id}: ${a.value} below bound ${a.bounds.min}`);
+        if (a.bounds?.max !== undefined) assert.ok(a.value <= a.bounds.max, `${surface.surface}/${a.id}: ${a.value} above bound ${a.bounds.max}`);
+      }
+    }
+  }
+  assert.ok(atoms > 200, `the sweep must actually cover the lesson's claims, saw ${atoms} atoms`);
 });
 
 test("play R3 / econ FL-F: reveal 5 never claims spontaneity, and always carries the last-week rule", () => {

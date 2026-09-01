@@ -1721,16 +1721,20 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
     const word = "Nobody in this room put a single dollar back";
     return {
       text: `${word} into their club, so nobody here gave anything they CHOSE to give.`,
-      claims: [claimWord("spillover.nobodySpent", word, !ct.anySpend), claim("spillover.spend", ct.spend, "money", { assertsSign: "zero" })],
+      claims: [claimWord("spillover.nobodySpent", word, !ct.anySpend)],
     };
   }
 
   const claims: ClaimAtom[] = [];
   const own = claim("spillover.ownGain", ct.ownGain, "money", { assertsSign: ct.ownGain > 0 ? "positive" : ct.ownGain < 0 ? "negative" : "zero" });
   const gave = claim("spillover.gaveByChoice", ct.gaveByChoice, "money", { assertsSign: "nonNegative" });
-  const joint = claim("spillover.roomJointGain", ct.roomJointGain, "money", {
-    assertsSign: ct.roomJointGain > 0 ? "positive" : ct.roomJointGain < 0 ? "negative" : "zero",
-  });
+  // The joint figure prints as a magnitude plus a direction word, because
+  // "left this room -$399,172 better off" is not a sentence. The magnitude is
+  // bound-checked; the DIRECTION is the quantifier the audit recomputes against
+  // `sign(roomJointGain)` — that pairing is exactly econ B8's discharge
+  // condition ("the printed total does not disagree in SIGN with
+  // cash(actual) - cash(nobody-spends) at the same prices").
+  const joint = claim("spillover.roomJointMagnitude", Math.abs(ct.roomJointGain), "money", { assertsSign: "nonNegative", bounds: { min: 0 } });
   claims.push(own, gave, joint);
 
   // The private column, always labelled as what it is: a sum of partials.
@@ -1756,7 +1760,7 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
   const jointLine =
     ct.roomJointGain === 0
       ? `Counted as one room instead of desk by desk, reinvesting left this room ${direction}.`
-      : `Counted as one room instead of desk by desk — because a dollar that lands on another desk's books is still a dollar in this room — reinvesting left this room ${money(Math.abs(ct.roomJointGain))} ${direction}.`;
+      : `Counted as one room instead of desk by desk — because a dollar that lands on another desk's books is still a dollar in this room — reinvesting left this room ${joint.rendered} ${direction}.`;
   claims.push(claimWord("spillover.jointDirection", direction, true));
 
   return { text: `${privateLine} ${externalLine} ${jointLine}`, claims };
@@ -2056,7 +2060,16 @@ function slateFor(state: HostLeagueState, slot: number) {
  *    the card says so out loud rather than quietly implying the whole season
  *    would have followed.
  */
-export type PriceCounterfactualRow = { price: number; turnout: number; kept: number; delta: number; you: boolean; soldOut: boolean };
+export type PriceCounterfactualRow = {
+  price: number;
+  turnout: number;
+  kept: number;
+  /** The rendered figure, built FROM `kept` by the claim binder — the client prints this, never its own copy. */
+  keptRendered: string;
+  delta: number;
+  you: boolean;
+  soldOut: boolean;
+};
 export type PriceCounterfactual = {
   yourPrice: number;
   yourKept: number;
@@ -2066,6 +2079,8 @@ export type PriceCounterfactual = {
   bestDelta: number;
   foundBest: boolean;
   line: string;
+  /** The whole exhibit as one auditable string: every row's figure plus the verdict. */
+  tableText: string;
   verdict: string;
   claims: readonly ClaimAtom[];
 };
@@ -2094,25 +2109,31 @@ export function priceCounterfactualFor(state: HostLeagueState, club: Club, w: Se
   // grid, so the pair reads a shape rather than a single alternative.
   const snap = (p: number): number => Math.min(PRICE_MAX, Math.max(PRICE_MIN, Math.round((p - PRICE_MIN) / PRICE_STEP) * PRICE_STEP + PRICE_MIN));
   const probes = new Set<number>([snap(w.price - 20), w.price, snap(w.price + 20), bestPrice]);
+  const claims: ClaimAtom[] = [];
   const rows: PriceCounterfactualRow[] = [...probes]
     .sort((a, b) => a - b)
     .map((price) => {
       const k = keptAt(price);
-      return { price, turnout: k.turnout, kept: k.kept, delta: k.kept - yours.kept, you: price === w.price, soldOut: k.soldOut };
+      const atom = claim(`priceCf.kept.$${price}`, k.kept, "money");
+      claims.push(atom);
+      return { price, turnout: k.turnout, kept: k.kept, keptRendered: atom.rendered, delta: k.kept - yours.kept, you: price === w.price, soldOut: k.soldOut };
     });
 
   const foundBest = bestPrice === w.price;
   const yourKept = claim("priceCf.yourKept", yours.kept, "money");
   const bestKeptClaim = claim("priceCf.bestKept", bestKept, "money");
   const bestDelta = claim("priceCf.bestDelta", bestKept - yours.kept, "money", { assertsSign: "nonNegative", bounds: { min: 0 } });
-  const claims: ClaimAtom[] = [
-    yourKept,
-    bestKeptClaim,
-    bestDelta,
+  claims.push(yourKept, bestKeptClaim);
+  // The gap to the best price is only PRINTED when there is one, so it is only
+  // claimed when it is printed. Its bound (never negative — a better price
+  // cannot keep less) is asserted for every week by the unit suite and by the
+  // harness sweep, printed or not.
+  if (!foundBest) claims.push(bestDelta);
+  claims.push(
     foundBest
       ? claimWord("priceCf.foundBest", "the best price on the board for that night", true)
       : claimWord("priceCf.foundBest", "would have kept", false),
-  ];
+  );
 
   const verdict = foundBest
     ? `At $${w.price} you found the best price on the board for that night. Nothing on the dial beats ${yourKept.rendered}.`
@@ -2127,6 +2148,7 @@ export function priceCounterfactualFor(state: HostLeagueState, club: Club, w: Se
     bestDelta: bestKept - yours.kept,
     foundBest,
     line: "Same night. Same visitor. Same Draw on both sides. Same building. Only the price moves — and this is that ONE week's KEPT, not a re-run of the weeks after it.",
+    tableText: rows.map((r) => `$${r.price} kept ${r.keptRendered}`).join(" · "),
     verdict,
     claims,
   };
@@ -2149,18 +2171,21 @@ export function deskChoiceLineClaimed(row: GiveAndTakeRow): Claimed {
   const got = claim("desk.receivedByChoice", row.receivedByChoice, "money", { assertsSign: "nonNegative" });
   const spent = claim("desk.spend", row.spend, "money", { assertsSign: row.spend > 0 ? "positive" : "zero" });
   if (row.spend > 0) {
-    const own = claim("desk.ownGain", row.ownGain, "money");
+    const own = claim("desk.ownGain", row.ownGain, "money", {
+      assertsSign: row.ownGain > 0 ? "positive" : row.ownGain < 0 ? "negative" : "zero",
+    });
+    const verdict = row.ownGain > 0 ? "ahead" : row.ownGain < 0 ? "behind" : "exactly level";
     return {
-      text: `Same schedule, same prices, same everything — except you put nothing back. That is the only fair thing to compare yourself to, because nobody chose their calendar. You put ${spent.rendered} back in; other desks' spending put ${got.rendered} in your building.`,
-      claims: [spent, got, own, claimWord("desk.choseNothing", "you put nothing back", false, "chose to give nothing")],
+      text: `Same schedule, same prices, same everything — except you put nothing back. That is the only fair thing to compare yourself to, because nobody chose their calendar. You put ${spent.rendered} back in, and on your own books that left you ${own.rendered} — ${verdict}. Other desks' spending put ${got.rendered} in your building.`,
+      claims: [spent, got, own, claimWord("desk.ownGainDirection", verdict, true), claimWord("desk.choseNothing", "you put nothing back", false, "chose to give nothing")],
     };
   }
   const nothing = claimWord("desk.choseNothing", "chose to give nothing", true);
   return {
     text:
       row.receivedByChoice > 0
-        ? `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club, so nothing you did put a dollar in anybody else's building, and there is no "what if you had not" to compare, because you did not. And you received ${got.rendered} from the room: that is what OTHER desks chose to spend, turning up in your building on the nights they visited you.`
-        : `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club, and this time nobody else's spending reached your building either: ${got.rendered} came your way from anybody else's choices. Every zero in this block is somebody's decision, including yours.`,
+        ? `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club: ${spent.rendered}, every week. So nothing you did put a dollar in anybody else's building, and there is no "what if you had not" to compare, because you did not. And you received ${got.rendered} from the room — that is what OTHER desks chose to spend, turning up in your building on the nights they visited you.`
+        : `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club: ${spent.rendered}, every week. And this time nobody else's spending reached your building either — ${got.rendered} came your way from anybody else's choices. Every zero in this block is somebody's decision, including yours.`,
     claims: [spent, got, nothing],
   };
 }
@@ -3421,7 +3446,7 @@ export function moduleClaims(state: HostLeagueState): ClaimSurface[] {
     if (club.seatId === null) continue;
     for (const w of club.weeks) {
       const cf = priceCounterfactualFor(state, club, w);
-      push(`play:desk-${club.deskNumber}:week-${w.week + 1}:priceCounterfactual`, { text: `${cf.line} ${cf.verdict}`, claims: cf.claims });
+      push(`play:desk-${club.deskNumber}:week-${w.week + 1}:priceCounterfactual`, { text: `${cf.line} ${cf.tableText} ${cf.verdict}`, claims: cf.claims });
     }
   }
   return out;

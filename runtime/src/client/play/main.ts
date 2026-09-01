@@ -2428,7 +2428,7 @@ type HLWeek = {
 type HLPriceCf = {
   yourPrice: number;
   yourKept: number;
-  rows: { price: number; turnout: number; kept: number; delta: number; you: boolean; soldOut: boolean }[];
+  rows: { price: number; turnout: number; kept: number; keptRendered: string; delta: number; you: boolean; soldOut: boolean }[];
   bestPrice: number;
   bestKept: number;
   bestDelta: number;
@@ -2692,7 +2692,7 @@ function hlPriceCfHtml(w: HLWeek): string {
               <span class="numeric">$${r.price}</span>
               <span>${r.you ? "what you charged" : r.price === cf.bestPrice ? "the best on the dial" : r.price < cf.yourPrice ? "cheaper" : "dearer"}</span>
               <span class="numeric">${r.turnout.toLocaleString()} came${r.soldOut ? " · full" : ""}</span>
-              <span class="numeric ${r.kept < 0 ? "neg" : ""}">${money(r.kept)}</span>
+              <span class="numeric ${r.kept < 0 ? "neg" : ""}">${escapeHtml(r.keptRendered)}</span>
             </div>`,
           )
           .join("")}

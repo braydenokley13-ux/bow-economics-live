@@ -626,6 +626,529 @@ const drawOf = (state, deskIndex) => state.clubs[state.seatToSlot[`seat-${deskIn
   ]);
 }
 
+/* ----------------------------------------------------------------- P11 -- */
+/**
+ * THE CLAIM-AUDIT FAMILY.
+ *
+ * `analyst-wave3` recommendation: "treat 'printed claim vs recomputed model' as
+ * a single defect class and close it with a property-test family that
+ * recomputes every rendered board/synthesis/ADAPT claim string against the
+ * reducer and fails on disagreement in SIGN, QUANTIFIER or BOUND — that one
+ * instrument covers econ B7, B8, B3, the stage-5 bar off-by-one, and the
+ * SPILLOVER quantifier, which are currently four separate tickets owned by
+ * three critics."
+ *
+ * The lesson binds each claim to its number structurally: a claim string may
+ * only be built by interpolating `ClaimAtom.rendered`, which is rendered FROM
+ * the computed value, and every relation the sentence asserts travels with it.
+ * This family is the other half — it re-derives each relation from the state,
+ * with its own arithmetic, and fails on any disagreement:
+ *
+ *   - BINDING    the printed fragment IS the value's rendering, and it is
+ *                actually present on the surface (and any forbidden phrase is
+ *                actually absent);
+ *   - SIGN       the sign the sentence asserts is the sign the model produces —
+ *                including the room-total sentence, which is checked against a
+ *                joint figure this harness computes by REPLAYING the same
+ *                season with every desk at 0% through the real reducer (econ
+ *                B8);
+ *   - QUANTIFIER the causal and counting words — "WHO WAS VISITING carried it",
+ *                "did / did NOT see the Handed-To-You bar", "on all N bars",
+ *                "chose to give nothing", "the best price on the board" — each
+ *                recomputed from the state by an independent implementation of
+ *                the rule (econ B3, projector R-1, play N-3, the SPILLOVER
+ *                quantifier);
+ *   - BOUND      no percentage outside 0-100, no share printed where the value
+ *                created went the wrong way, no attribution block larger than
+ *                the gap it explains, no "better price" that keeps less (econ
+ *                B7, play N-5).
+ *
+ * Proven non-vacuous below by three in-memory mutants — one wrong sign, one
+ * wrong quantifier, one wrong bound — each of which this family must catch.
+ */
+const { moduleClaims } = mod;
+
+const fmt = (value, format) =>
+  format === "money"
+    ? `${value < 0 ? "-" : ""}$${Math.abs(Math.round(value)).toLocaleString()}`
+    : format === "percent"
+      ? `${Math.round(value)}%`
+      : `${Math.round(value)}`;
+
+const profileFor = (state, club) => MARKET_PROFILES.find((m) => m.id === club.profileId);
+const capacityOf = (club) => CLUBS[club.slot].capacity;
+
+/**
+ * The joint effect, computed WITHOUT the module's `roomJointGain`: replay the
+ * identical season with every desk's reinvest dial at 0% through the shipped
+ * reducer, and difference the desks' cash. This is the quantity econ B8 says
+ * the room-total sentence must not disagree with in sign.
+ */
+function jointByReplay(deskCount, priceOf, shareOf) {
+  const actual = playSeasonWith(deskCount, priceOf, shareOf);
+  const nobody = playSeasonWith(deskCount, priceOf, () => 0);
+  const cashOfRoom = (s) =>
+    s.clubs.filter((c) => c.seatId !== null && c.weeks.length > 0).reduce((sum, c) => sum + c.weeks.reduce((t, w) => t + w.net, 0), 0);
+  return { joint: Math.round(cashOfRoom(actual) - cashOfRoom(nobody)), actual, shockSeated: actual.shockSlot !== null && actual.clubs[actual.shockSlot].seatId !== null };
+}
+
+/**
+ * The same joint effect, re-derived by ARITHMETIC rather than by replay: every
+ * settled home week re-settled with both sides' never-reinvested Draw, at the
+ * week's actual price, with the module's declared carve-outs (stock weeks, bot
+ * clubs and the pinned shock club keep their actual spend).
+ *
+ * The two differ in scope on purpose and the harness reports it: the REPLAY
+ * lets the league-office clubs re-derive their own reinvest DOLLARS from a
+ * poorer door in a room that spent nothing, so bot Draw drifts by a point or
+ * two; the arithmetic version holds the bots where they actually were, which is
+ * the counterfactual the per-desk instrument answers and therefore the one the
+ * room-total sentence has to be consistent with. Magnitude is checked against
+ * the arithmetic; SIGN — which is what econ B8 is about — is checked against
+ * the replay, and the two are required to agree in sign in every room.
+ */
+function jointByArithmetic(state) {
+  let actual = 0;
+  let joint = 0;
+  const baselines = new Map();
+  for (const c of state.clubs.slice(0, state.leagueSize)) baselines.set(c.slot, mod.baselineDrawPathFor(state, c));
+  for (const club of state.clubs.slice(0, state.leagueSize)) {
+    if (club.seatId === null || club.weeks.length === 0) continue;
+    const profile = profileFor(state, club);
+    const cap = capacityOf(club);
+    const mine = baselines.get(club.slot) ?? [];
+    club.weeks.forEach((w, i) => {
+      actual += w.net;
+      const myDraw = mine[i] ?? w.hostDrawBefore;
+      const v = state.clubs[w.visitorSlot];
+      let vDraw = w.visitorDrawBefore;
+      if (v) {
+        const vp = baselines.get(v.slot) ?? [];
+        const vi = v.weeks.findIndex((x) => x.week === w.week);
+        if (vi >= 0) vDraw = vp[vi] ?? w.visitorDrawBefore;
+      }
+      const home = settleHome(profile, cap, myDraw, vDraw, w.home.price);
+      const reinvestB = club.seatId !== null && !w.stock ? 0 : w.reinvestPaid;
+      joint += home.doorMoney + localMediaFor(profile, myDraw) + w.national - w.bill - reinvestB;
+    });
+  }
+  return Math.round(actual - joint);
+}
+
+/** A season at explicit per-desk price/share functions, through the real reducer. */
+function playSeasonWith(deskCount, priceOf, shareOf) {
+  let state = hostTheLeagueModule.initialState({ sessionId: "claims", seatIds: [] });
+  for (let i = 1; i <= deskCount; i += 1) state = apply(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`);
+  for (let w = 0; w < WEEK_COUNT; w += 1) {
+    for (let i = 1; i <= deskCount; i += 1) {
+      const seatId = `seat-${i}`;
+      state = apply(state, { type: "setPrice", price: priceOf(i - 1, w) }, "PLAY", seatId);
+      state = apply(state, { type: "setShare", share: shareOf(i - 1, w) }, "PLAY", seatId);
+      state = apply(state, { type: "lock" }, "PLAY", seatId);
+    }
+    state = apply(state, { type: "teacher:closeWeek" }, "PLAY", "teacher");
+  }
+  return state;
+}
+
+/**
+ * An INDEPENDENT re-derivation of the small-market exhibit's selection rule and
+ * price control, written from the econ gate's specification rather than from
+ * the module's implementation.
+ */
+function recomputeMarketPath(state) {
+  const smalls = [];
+  const bigs = [];
+  for (const club of state.clubs.slice(0, state.leagueSize)) {
+    if (club.seatId === null) continue;
+    const isBig = club.profileId === "new-york" || club.profileId === "golden-state";
+    for (const w of club.weeks) {
+      if (w.stock) continue;
+      (isBig ? bigs : smalls).push({ club, w });
+    }
+  }
+  const doorAt = (c, price) =>
+    settleHome(profileFor(state, c.club), capacityOf(c.club), c.w.hostDrawBefore, c.w.visitorDrawBefore, price).doorMoney;
+  let bestCtrlVisitor = null;
+  let bestCtrl = null;
+  let bestAny = null;
+  for (const s of smalls) {
+    for (const b of bigs) {
+      if (s.w.visitorDrawBefore <= b.w.visitorDrawBefore) continue;
+      const gap = s.w.home.doorMoney - b.w.home.doorMoney;
+      if (gap <= 0) continue;
+      const parts = {
+        visitor: s.w.home.visitorDollars - b.w.home.visitorDollars,
+        bare: s.w.home.bareDollars - b.w.home.bareDollars,
+        own: s.w.home.ownDollars - b.w.home.ownDollars,
+      };
+      const atSmall = doorAt(s, s.w.home.price) - doorAt(b, s.w.home.price);
+      const atBig = doorAt(s, b.w.home.price) - doorAt(b, b.w.home.price);
+      const survives = atSmall > 0 && atBig > 0;
+      const visitorDriven = parts.visitor > 0 && parts.visitor >= parts.bare && parts.visitor >= parts.own && parts.visitor <= gap;
+      const cand = { gap, parts, atSmall, atBig, survives, visitorDriven };
+      if (!bestAny || gap > bestAny.gap) bestAny = cand;
+      if (survives && (!bestCtrl || gap > bestCtrl.gap)) bestCtrl = cand;
+      if (survives && visitorDriven && (!bestCtrlVisitor || gap > bestCtrlVisitor.gap)) bestCtrlVisitor = cand;
+    }
+  }
+  const best = bestCtrlVisitor ?? bestCtrl ?? bestAny;
+  if (!best) return null;
+  const driver = !best.survives
+    ? "price"
+    : best.parts.visitor >= best.parts.bare && best.parts.visitor >= best.parts.own && best.parts.visitor <= best.gap
+      ? "visitor"
+      : best.parts.bare >= best.parts.own
+        ? "building-and-price"
+        : "own-draw";
+  return { ...best, driver };
+}
+
+/** Every fact the audit needs, recomputed from state by this harness. */
+function recomputeTruth(state, joint, jointArith) {
+  const agg = computeAggregate(state);
+  const live = state.clubs.filter((c) => c.seatId !== null && c.weeks.length > 0);
+  const spendTotal = live.reduce((s, c) => s + c.weeks.filter((w) => !w.stock).reduce((t, w) => t + w.reinvestPaid, 0), 0);
+  const gave = agg.giveAndTake.reduce((s, r) => s + r.gaveByChoice, 0);
+  const own = agg.giveAndTake.reduce((s, r) => s + r.ownGain, 0);
+  const created = own + gave;
+  const coherent = created > 0 && gave >= 0 && gave <= created;
+  const visitorLed = agg.homeRevenueDecomposition.filter((d) => d.fromVisitorDraw >= d.fromBuilding && d.fromVisitorDraw >= d.fromOwnDraw).length;
+  return {
+    agg,
+    anySpend: spendTotal > 0,
+    spendTotal,
+    gave,
+    own,
+    created,
+    coherent,
+    externalPct: coherent ? Math.round((gave / created) * 100) : null,
+    joint,
+    jointArith,
+    visitorLed,
+    barCount: agg.homeRevenueDecomposition.length,
+    sawBar: state.barReleased && state.barReleasedAtWeek !== null && state.barReleasedAtWeek <= WEEK_COUNT - 1,
+    market: recomputeMarketPath(state),
+    spendBySlot: new Map(live.map((c) => [c.slot, c.weeks.filter((w) => !w.stock).reduce((t, w) => t + w.reinvestPaid, 0)])),
+  };
+}
+
+/**
+ * The audit itself. Returns a list of failure strings; an empty list is a pass.
+ * `surfaces` is deliberately a parameter so the mutation proof can hand it a
+ * poisoned copy of exactly what the lesson renders.
+ */
+function auditClaims(surfaces, truth, state) {
+  const fail = [];
+  for (const surface of surfaces) {
+    for (const a of surface.claims) {
+      const at = `${surface.surface}/${a.id}`;
+      // ---- BINDING
+      if (!a.quantifier && a.rendered !== fmt(a.value, a.format)) {
+        fail.push(`BINDING ${at}: printed "${a.rendered}" but the value renders as "${fmt(a.value, a.format)}"`);
+      }
+      if (!surface.text.includes(a.rendered)) fail.push(`BINDING ${at}: "${a.rendered}" is not on the surface`);
+      if (a.absent !== undefined && surface.text.includes(a.absent)) {
+        fail.push(`BINDING ${at}: forbidden phrase "${a.absent}" is on the surface`);
+      }
+      // ---- SIGN
+      if (a.assertsSign === "positive" && !(a.value > 0)) fail.push(`SIGN ${at}: asserts positive, value ${a.value}`);
+      if (a.assertsSign === "negative" && !(a.value < 0)) fail.push(`SIGN ${at}: asserts negative, value ${a.value}`);
+      if (a.assertsSign === "nonNegative" && !(a.value >= 0)) fail.push(`SIGN ${at}: asserts non-negative, value ${a.value}`);
+      if (a.assertsSign === "zero" && a.value !== 0) fail.push(`SIGN ${at}: asserts zero, value ${a.value}`);
+      // ---- BOUND
+      if (a.bounds?.min !== undefined && a.value < a.bounds.min) fail.push(`BOUND ${at}: ${a.value} < ${a.bounds.min}`);
+      if (a.bounds?.max !== undefined && a.value > a.bounds.max) fail.push(`BOUND ${at}: ${a.value} > ${a.bounds.max}`);
+
+      // ---- VALUE, recomputed by this harness
+      const near = (x, y, tol = 2) => Math.abs(Math.round(x) - Math.round(y)) <= tol;
+      if (a.id === "spillover.gaveByChoice" && !near(a.value, truth.gave)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.gave}`);
+      if (a.id === "spillover.ownGain" && !near(a.value, truth.own)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.own}`);
+      if (a.id === "spillover.externalPct" && a.value !== truth.externalPct) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.externalPct}`);
+      if (a.id === "spillover.roomJointMagnitude") {
+        if (!near(a.value, Math.abs(truth.jointArith), 4)) {
+          fail.push(`VALUE ${at}: ${a.value} vs independently recomputed joint magnitude ${Math.abs(truth.jointArith)}`);
+        }
+        if (Math.sign(truth.jointArith) !== Math.sign(truth.joint)) {
+          fail.push(`SIGN ${at}: the two independent joint computations disagree in sign — arithmetic ${truth.jointArith}, replay ${truth.joint}`);
+        }
+      }
+      if (a.id === "barSummary.visitorLedCount" && a.value !== truth.visitorLed) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.visitorLed}`);
+      if (truth.market) {
+        if (a.id === "market.gap" && !near(a.value, truth.market.gap)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.gap}`);
+        if (a.id === "market.gapFromVisitor" && !near(a.value, truth.market.parts.visitor)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.parts.visitor}`);
+        if (a.id === "market.gapAtSmallPrice" && !near(a.value, truth.market.atSmall)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.atSmall}`);
+        if (a.id === "market.gapAtBigPrice" && !near(a.value, truth.market.atBig)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.atBig}`);
+        // BOUND, econ B3: a block bigger than the gap it explains may never be
+        // the named cause.
+        if (a.id === "market.driverVisitor" && truth.market.parts.visitor > truth.market.gap) {
+          fail.push(`BOUND ${at}: the visitor block ${truth.market.parts.visitor} is larger than the gap ${truth.market.gap} it is credited with`);
+        }
+      }
+
+      // ---- QUANTIFIER, recomputed by this harness
+      if (a.quantifier) {
+        const claimsIt = a.quantifier.claims;
+        const check = (recomputed, what) => {
+          if (claimsIt !== recomputed) fail.push(`QUANTIFIER ${at}: surface claims ${claimsIt} for ${what}, recomputed ${recomputed} ("${a.quantifier.word}")`);
+        };
+        switch (a.id) {
+          case "spillover.nobodySpent":
+            check(!truth.anySpend, "nobody spent");
+            break;
+          case "spillover.pctPrinted":
+            check(truth.coherent, "the share is a coherent percentage");
+            break;
+          case "spillover.overInvested":
+            check(!truth.coherent, "the room over-invested");
+            break;
+          case "spillover.jointDirection": {
+            // econ B8: the printed direction must be the sign of the REPLAYED
+            // joint effect, not of the sum of per-desk partials.
+            const wanted = truth.joint > 0 ? "better off" : truth.joint < 0 ? "worse off" : "exactly level";
+            if (a.quantifier.word !== wanted) {
+              fail.push(`SIGN ${at}: the room-total sentence says "${a.quantifier.word}" against a replayed joint effect of ${truth.joint}`);
+            }
+            break;
+          }
+          case "market.driverVisitor":
+            check(truth.market !== null && truth.market.driver === "visitor", "the visitor carried the gap under a price control");
+            break;
+          case "market.driverPrice":
+            check(truth.market !== null && truth.market.driver === "price", "the price gap carried it");
+            break;
+          case "market.driverBuilding":
+            check(truth.market !== null && truth.market.driver === "building-and-price", "building and price carried it");
+            break;
+          case "market.driverOwn":
+            check(truth.market !== null && truth.market.driver === "own-draw", "the desk's own Draw carried it");
+            break;
+          case "reveal5.sawBar":
+          case "reveal5.barNamedAsCause":
+            check(truth.sawBar, "the room saw the Handed-To-You bar before it played week 3");
+            break;
+          case "barSummary.quantifier": {
+            const wanted =
+              truth.visitorLed === 0
+                ? "On every bar in this room, the visiting clubs were NOT the biggest block"
+                : truth.visitorLed === truth.barCount
+                  ? `On all ${truth.barCount} bars`
+                  : `On ${truth.visitorLed} of ${truth.barCount} bars`;
+            if (a.quantifier.word !== wanted) fail.push(`QUANTIFIER ${at}: printed "${a.quantifier.word}", recomputed "${wanted}"`);
+            break;
+          }
+          case "desk.choseNothing": {
+            const m = surface.surface.match(/play:desk-(\d+):/);
+            const deskNo = m ? Number(m[1]) : null;
+            const row = truth.agg.giveAndTake.find((r) => r.deskNumber === deskNo);
+            if (row) check((truth.spendBySlot.get(row.slot) ?? 0) === 0, `desk ${deskNo} chose to give nothing`);
+            break;
+          }
+          case "priceCf.foundBest": {
+            const m = surface.surface.match(/play:desk-(\d+):week-(\d+):/);
+            if (m) {
+              const club = state.clubs.find((c) => c.deskNumber === Number(m[1]));
+              const w = club?.weeks.find((x) => x.week + 1 === Number(m[2]));
+              if (club && w) {
+                const profile = profileFor(state, club);
+                const keptAt = (p) => {
+                  const home = settleHome(profile, capacityOf(club), w.hostDrawBefore, w.visitorDrawBefore, p);
+                  return home.doorMoney + w.localMedia + w.national - w.bill - Math.round((w.share / 100) * home.doorMoney);
+                };
+                let bestP = PRICE_GRID[0];
+                let bestK = -Infinity;
+                for (const p of PRICE_GRID) {
+                  const k = keptAt(p);
+                  if (k > bestK) {
+                    bestK = k;
+                    bestP = p;
+                  }
+                }
+                check(bestP === w.price, `desk ${m[1]} week ${m[2]} charged the best price on the dial`);
+                if (bestK < keptAt(w.price) - 1) fail.push(`BOUND ${at}: the "best" price keeps less than the price charged`);
+              }
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      }
+    }
+  }
+  return fail;
+}
+
+{
+  // The rooms. Deliberately includes the exact shapes the econ gate measured
+  // the falsehoods in: the alternating 0%/40% room (printed 0% beside $1.58M),
+  // the all-40% over-investment room, the one-spender room, the $110-vs-$30
+  // price-extreme room (the 40/40 visitor-driver claim), and both bar release
+  // points from the projector critic's two-arm probe.
+  const priceSets = [
+    { id: "flat-$50", f: () => 50 },
+    { id: "$110/$30", f: (i) => (i % 2 === 0 ? 110 : 30) },
+    { id: "spread", f: (i, w) => [22, 36, 48, 56, 68, 84, 96, 30, 42, 60, 74, 110][(i + w) % 12] },
+    { id: "floor-$10", f: (i) => (i < 2 ? 10 : 50) },
+  ];
+  const shareSets = [
+    { id: "all-0%", f: () => 0 },
+    { id: "all-10%", f: () => 10 },
+    { id: "all-25%", f: () => 25 },
+    { id: "all-40%", f: () => SHARE_MAX },
+    { id: "alternating-0/40", f: (i) => (i % 2 === 0 ? 0 : SHARE_MAX) },
+    { id: "one-spender", f: (i) => (i === 0 ? SHARE_MAX : 0) },
+    { id: "mixed", f: (i, w) => SHARE_GRID[(i * 2 + w) % SHARE_GRID.length] },
+  ];
+  const barReleases = [
+    { id: "never", at: null },
+    { id: "during-week-2", at: 1 },
+    { id: "after-week-2-bell (the /teach-prescribed release)", at: 2 },
+    { id: "after-the-final-bell", at: WEEK_COUNT },
+  ];
+
+  let rooms = 0;
+  let surfacesSwept = 0;
+  let atoms = 0;
+  let shockSeatedSkips = 0;
+  const failures = [];
+  /** Kept for the mutation proof: one room whose surfaces are known clean. */
+  let sample = null;
+  /** A room whose honest market-size driver is NOT the visitor — the M-B subject. */
+  let notVisitorDriven = null;
+  /** A room where the coherence gate withholds the share — the M-C subject. */
+  let overInvested = null;
+  let worstJointSpread = 0;
+  const idsSeen = new Set();
+
+  for (const deskCount of [8, 12]) {
+    for (const P of priceSets) {
+      for (const S of shareSets) {
+        const { joint, actual, shockSeated } = jointByReplay(deskCount, (i, w) => P.f(i, w), (i, w) => S.f(i, w));
+        if (shockSeated) {
+          // The joint replay is only exact while the pinned shock club is a
+          // league-office club; say so rather than quietly comparing anyway.
+          shockSeatedSkips += 1;
+          continue;
+        }
+        for (const B of barReleases) {
+          const state = { ...actual, barReleased: B.at !== null, barReleasedAtWeek: B.at };
+          const truth = recomputeTruth(state, joint);
+          const surfaces = moduleClaims(state);
+          rooms += 1;
+          surfacesSwept += surfaces.length;
+          for (const s of surfaces) for (const a of s.claims) idsSeen.add(a.id), (atoms += 1);
+          const f = auditClaims(surfaces, truth, state);
+          if (f.length > 0) failures.push(`${deskCount} desks · ${P.id} · ${S.id} · bar ${B.id}: ${f.slice(0, 3).join(" | ")}`);
+          if (!sample && f.length === 0 && truth.anySpend && truth.market) sample = { state, truth, surfaces };
+        }
+      }
+    }
+  }
+
+  // ---- NON-VACUITY BY MUTATION -------------------------------------------
+  // Three in-memory mutants of exactly what the lesson renders — one per limb.
+  // If the family cannot catch these, it certifies nothing.
+  const mutants = [];
+  if (sample) {
+    const clone = (s) => ({ surface: s.surface, text: s.text, claims: s.claims.map((c) => ({ ...c })) });
+
+    // M-A · WRONG SIGN. econ B8, exactly: report the room-total as if the sign
+    // of the sum of per-desk partials were the sign of the joint effect.
+    {
+      const surfaces = sample.surfaces.map(clone);
+      const target = surfaces.find((s) => s.claims.some((c) => c.id === "spillover.jointDirection"));
+      let caught = false;
+      if (target) {
+        const atom = target.claims.find((c) => c.id === "spillover.jointDirection");
+        const flipped = atom.quantifier.word === "worse off" ? "better off" : "worse off";
+        target.text = target.text.split(atom.quantifier.word).join(flipped);
+        atom.rendered = flipped;
+        atom.quantifier = { word: flipped, claims: true };
+        caught = auditClaims(surfaces, sample.truth, sample.state).some((x) => x.startsWith("SIGN"));
+      }
+      mutants.push({ id: "M-A wrong SIGN", what: "room-total direction flipped against the replayed joint effect", caught });
+    }
+
+    // M-B · WRONG QUANTIFIER. econ B3, exactly: assert the visitor carried a
+    // gap on a room where the price control refutes it.
+    {
+      const priceExtreme = playSeasonWith(12, (i) => (i % 2 === 0 ? 110 : 30), () => 10);
+      const jr = jointByReplay(12, (i) => (i % 2 === 0 ? 110 : 30), () => 10);
+      const truth = recomputeTruth(priceExtreme, jr.joint);
+      const surfaces = moduleClaims(priceExtreme).map(clone);
+      const target = surfaces.find((s) => s.surface.includes("smallMarketPath"));
+      let caught = false;
+      let honest = null;
+      if (target) {
+        const atom = target.claims.find((c) => c.id && c.id.startsWith("market.driver"));
+        honest = atom.quantifier.word;
+        const lie = "WHO WAS VISITING carried it";
+        target.text = target.text.split(honest).join(lie);
+        atom.id = "market.driverVisitor";
+        atom.rendered = lie;
+        atom.quantifier = { word: lie, claims: true };
+        caught = auditClaims(surfaces, truth, priceExtreme).some((x) => x.startsWith("QUANTIFIER") || x.startsWith("BOUND"));
+      }
+      mutants.push({
+        id: "M-B wrong QUANTIFIER",
+        what: `"WHO WAS VISITING carried it" injected over the $110/$30 room (honest driver: ${honest})`,
+        caught,
+      });
+    }
+
+    // M-C · WRONG BOUND. econ B7, exactly: restore the OLD externalPct — the
+    // ungated `gaveByChoice / (ownGain + gaveByChoice)` — on an over-invested
+    // room, which is where it printed 0% beside $1.58M and >100% elsewhere.
+    {
+      const over = playSeasonWith(12, () => 50, () => SHARE_MAX);
+      const jr = jointByReplay(12, () => 50, () => SHARE_MAX);
+      const truth = recomputeTruth(over, jr.joint);
+      const surfaces = moduleClaims(over).map(clone);
+      const target = surfaces.find((s) => s.surface === "synthesis:spillover");
+      let caught = false;
+      let oldPct = null;
+      if (target) {
+        const created = truth.own + truth.gave;
+        oldPct = created > 0 ? Math.round((truth.gave / created) * 100) : 0;
+        const rendered = `${oldPct}%`;
+        target.text = `${target.text} ${rendered} of the value it created landed somewhere the desk that paid for it never sees.`;
+        target.claims.push({
+          id: "spillover.externalPct",
+          rendered,
+          value: oldPct,
+          format: "percent",
+          assertsSign: "any",
+          bounds: { min: 0, max: 100 },
+        });
+        const f = auditClaims(surfaces, truth, over);
+        caught = f.some((x) => x.startsWith("BOUND") || x.startsWith("VALUE"));
+      }
+      mutants.push({ id: "M-C wrong BOUND", what: `the ungated externalPct (${oldPct}%) re-injected on an over-invested room`, caught });
+    }
+  }
+
+  const mutantsCaught = mutants.length === 3 && mutants.every((m) => m.caught);
+  const coversRequiredIds = ["spillover.externalPct", "spillover.jointDirection", "reveal5.sawBar", "priceCf.foundBest", "barSummary.quantifier"].every(
+    (id) => idsSeen.has(id),
+  );
+  const ok = failures.length === 0 && mutantsCaught && coversRequiredIds && sample !== null;
+
+  check(
+    "P11",
+    "CLAIM AUDIT — every rendered board/synthesis/ADAPT claim string agrees with the reducer in SIGN, QUANTIFIER and BOUND (econ B3/B7/B8, projector R-1, play N-3/N-5), proven non-vacuous by mutation",
+    ok,
+    [
+      `${rooms} rooms swept (${surfacesSwept} claim-carrying surfaces, ${atoms.toLocaleString()} claim atoms, ${idsSeen.size} distinct claim ids)`,
+      `rooms skipped because the pinned shock club was seated (the joint replay is not exact there): ${shockSeatedSkips}`,
+      `disagreements found: ${failures.length}${failures.length ? ` — ${failures.slice(0, 4).join(" ;; ")}` : ""}`,
+      ...mutants.map((m) => `MUTATION ${m.id}: ${m.what} -> ${m.caught ? "CAUGHT by the family" : "NOT CAUGHT — the family is vacuous on this limb"}`),
+      `required claim ids all covered by the sweep: ${coversRequiredIds}`,
+      "The joint effect this audit checks the room-total sentence against is computed by REPLAYING the same season with every desk at 0% through the shipped reducer — not by reading the module's own figure.",
+    ],
+  );
+}
+
 /* --------------------------------------------------------------- verdict -- */
 console.log("");
 console.log("=".repeat(96));
