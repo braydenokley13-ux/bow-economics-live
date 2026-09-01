@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `204:d11f5bac472a8d6160c21eb196255346f5d2a9768fca426daacf0c2a1363a2ee`  
-Updated: 2026-09-01T03:57:58.169Z
+Event head: `207:66ba320b810b44b296297535bc2d7af74e06408979d933f2b5b37ff5701b6ea6`  
+Updated: 2026-09-01T03:58:10.787Z
 
 ## Founder intent
 
@@ -39,8 +39,9 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - visual-experience-director — visual-experience-director — completed-with-concerns — claude-opus-5
 - builder — builder-w3-fit — completed — claude-opus-5
-- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - visual-experience-director — visual-experience-director — completed-with-concerns — claude-opus-5
+- builder — builder-w3-micro — active — claude-sonnet-5
 
 ## Required evidence
 
@@ -77,6 +78,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 ## Dissent
 
 - proj-l1-cf-pager-label — classroom-reliability/blocking/open — Regression from orderRepeatRows: the CF pager's board label claims desk ranges ('DESKS 1-3 OF 12') over reordered rows (Desk 2/3/4; group 4 reads '10-12' over 11/12/1) — the room is told to look at the wrong desks. fullHouse.ts:2551/:2355/:2361. One-line-class fix: label groups by group number/actual desk names, and assert label-vs-rows consistency in e2e. GATE_L1_PROJECTOR.md §W3 FINAL
+- w3-projector-final-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
