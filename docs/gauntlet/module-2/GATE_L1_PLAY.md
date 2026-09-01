@@ -1051,3 +1051,163 @@ STRONG-compatible, so the real-classroom test must watch for four specific thing
 
 I will dissent against any classroom-release decision that leaves the COUNTERFACTUAL frame
 unreadable at real class size.
+
+---
+
+## W3 ADJUDICATION
+
+Owning-critic adjudication of BLOCKING dissent `play-l1-repairs-below-fold` (COUNTERFACTUAL limb).
+Same Player / Gameplay role, fresh context, Boss run `m2-quality-war`, assignment `w3-play-adjudicate`.
+I did not build the paging repair.
+
+**Method (observed unless marked).** Rebuilt `runtime/dist` this session. Shipped server on **PORT
+4361**, real Chromium, mechanics driven the way `runtime/scripts/e2e-m2l1.cjs` drives them (range
+input, +/- steppers, LOCK IT IN, the teacher's own buttons) on **my own 12-desk line, not the
+builder's script**: ten desks at the same price on N1 and N5 clustered realistically around the two
+plan prices ($24 x3, $16 x3, $20, $12, $30, $40), one desk changing $16 → $34, one desk changing
+$62 → $24, one desk buying max event money on N2. Nights 2–4 settled on the bell. Projector measured
+at **1366x768** (all four groups) and **1920x1080** (group 1). Zero console errors across teach,
+board and twelve desks. Server killed; **port 4361 confirmed closed**, 0 `dist/server/index.js`
+processes. Screenshots `w3-01…w3-08` in `docs/gauntlet/module-2/screens-l1-gate/`.
+
+Boss evidence referenced: `gate-l1-play` r1/r2/r3 (my three prior sessions), `gate-l1-projector`
+(the 2.6%-of-screen-height back-row legibility floor used below is theirs, not mine). Builder proofs
+`l1-e2e`, `l1-tests` were **not re-run and not inherited**; I read `e2e-m2l1.cjs` to judge whether
+the instrument can now fail. Real students, real timing, real discussion volume remain NOT VERIFIED.
+
+### Highest-severity finding first
+
+**The class summary — the only always-on carrier of the room-level pattern, and therefore the thing
+paging makes load-bearing — is the smallest and dimmest text on the frame.** *Measured* at
+1366x768: **15.71px = 2.05% of screen height**; at 1920x1080, **22.08px = 2.04%**. The projector
+gate's back-row body floor is 2.6%. Directly above it, the "this picture is NOT a demand curve"
+caveat renders in visibly larger, and it is a five-line paragraph either way
+(`w3-02-board-cf-1366-group1.png`, `w3-06-board-cf-1920-group1.png`). At 1920 there is ~250px of
+empty column under the third repeat row while that sentence stays at 2.04%.
+
+This matters *because* of the repair, not despite it. With three rows on the projector at a time, no
+student can ever count "8 up, 2 down" off the board — the ten-desk pattern exists only in that
+sentence. The repair correctly moved the summary out of the paged column; it did not give it the
+weight the paging just handed it.
+
+### 1. Every desk row and the class summary — reachable and legible?
+
+**Rows: CONFIRMED, at both shapes.** *Measured*, 1366x768, all four groups: rows at 162–296,
+302–436, 441–575 (group 4's third row 441–647, its channel line runs to five lines), pager label
+138–158, argue prompt 93–133, scatter 138–338, summary 548–657. `#stage` **scrollHeight 768 ==
+clientHeight 768** in every group — the frame fits, it does not merely scroll. At 1920x1080,
+scrollHeight 1080 == clientHeight 1080. Row type (handle, both bar numerals, the renewals/channel
+line) measures **20.49px = 2.67%**, over the back-row floor. All **12 of 12** desk handles were
+shown across the four groups, three per group, none dropped, none repeated across groups; the
+fourth press wraps to group 1 (*observed*). Round 3's measurement at ten desks — six rows and the
+summary off a 768px projector, `#stage` 1,823px of content — does not reproduce at twelve.
+
+**Summary: in the viewport at every group and both shapes, below the legibility floor.** See above.
+
+**Instrument: the blindness is closed.** `e2e-m2l1.cjs` now runs a real 12-desk session and asserts
+per-row boxes (`#fhCfRows .fh-repeat-row:nth-child(n)`), `#fhCfSummary`, the cap
+(`rowCount <= CF_ROWS_PER_PAGE`), `#stage` **fitting** rather than scrolling, and the union of desk
+handles across groups equal to 12. Drop a row and the union check fails; grow a group and the fit
+check fails. That is a guard that can fail where the defect lives.
+
+### 2. Does paging keep the argue beat one look per group?
+
+**Within a group, yes.** Three rows, the always-on scatter, the always-on summary, no scroll, and
+the argue prompt in the largest type points at the *scatter*, not at the rows — so advancing a group
+never orphans the prompt's referent. That is the right structural choice and it is the reason I do
+not carry the dissent.
+
+**Across groups, two costs, both observed:**
+
+- **Grouping is by desk number, so the beats are ordered by accident.** Group 1 of my session
+  contained **two byte-identical rows** — Desk 1 and Desk 3, both New York at $24, both
+  16,862 → 17,462, both "renewals 50% → 74% · +600 people, and that is renewals +600"
+  (`w3-02-…group1.png`). The model is deterministic, so any two desks in the same market with the
+  same five-night line produce the same row, and a clustered class (which is what a real room does
+  at the plan price) will hand the teacher a group that is one row read twice. Meanwhile every
+  row worth arguing about landed in group 4 by desk-number accident: Desk 11's price-change split
+  ("renewals +100 and their own price change -4,896") and Desk 12's floored row
+  (`w3-05-…group4.png`). Uncapped, the room scanned and duplicates read as corroboration; walked
+  three at a time, group 1 is a flat beat and the payoff is four presses away.
+- **The room-level count is testimonial only.** "8 drew a bigger crowd, 2 drew a smaller one" can
+  never be verified off the projector at any single moment. Combined with the finding above, the
+  class-level pattern is a sub-floor sentence about evidence the room sees in tenths.
+
+P12 (already downgraded to non-blocking) re-confirms unchanged: the same-price deltas this session
+ran +50 to +650 on 12k–19k crowds. Desk 2's −50 renders as two bars of identical apparent length
+(`w3-02-…group1.png`); the beat lives in numerals and the channel sentence, as accepted in round 3.
+
+### 3. Does the paging control read to a teacher?
+
+**CONFIRMED.** *Observed* `w3-01-teach-cf-paging-control.png`: a gold button on its own row in the
+PHASE block, **267x38px**, 14px label, fully in a 1280x800 teacher viewport, hidden outside
+COUNTERFACTUAL and disabled when one group covers the room. It names what the next press will put up
+— **"Next group — desks 4-6 of 12"** — in the same register as the reveal buttons, and it tracked
+correctly through 4-6 / 7-9 / 10-12 / 1-3. A teacher who has never seen this screen knows what it
+does and what it will do next.
+
+Three residuals, none blocking: the button reports only the **next** group, never the one currently
+on the projector, so a teacher who loses their place must read the board; the explanation ("3 desks
+at a time … the class summary underneath stays up") is a `title` tooltip, invisible in a live room —
+the same sentence does exist in the COUNTERFACTUAL `now` script (`fullHouse.ts:2894`, *inferred from
+source, not observed rendered this session*); and there is **no back** — a room that wants group 2
+again presses forward three times. At 12 desks that is tolerable; at 20+ it is not.
+
+### Also observed
+
+- **Dead zone (P7, carried, non-blocking) is reachable at ordinary prices.** Desk 12 priced **$62 in
+  Memphis on Night 1 and drew 0 of 17,794** (`w3-05-…group4.png`). Round 3 hit this at $88 in New
+  York; $62 is a price a fifth-grader picks without meaning to be extreme.
+- The board's floored-row copy refuses to launder the zero: "+12,010 people — at this price demand
+  ran out before the door on one of the two nights, so the crowd cannot show what moved underneath
+  it." The class summary also counts floored desks separately. That is honest.
+- The private `/play` COUNTERFACTUAL now carries "WHERE THAT CHANGE CAME FROM" with the same split
+  as the board (*observed*, Desk 12) — the round-3 `econ-l1-n5-attribution` residual on the private
+  surface is repaired.
+- Blind pre-commit, board privacy, the single synchronized bell, zero console errors: re-verified.
+
+### Rating
+
+**RATING: STRONG**
+
+Unchanged from rounds 2 and 3, and this round's repair is a real gain: the room's own twelve rows
+now reach the projector at a real class size, in type above the back-row floor, in four teacher-paced
+beats that each fit the screen, guarded by an instrument that can fail. Not MAGNETIC, unchanged: after
+the fifth bell no student device accepts input for the rest of the period, and the loudest moment the
+repeat card can produce is still not reachable by a line a pair is likely to find. Not below STRONG:
+the private WHAT IF card remains the sharpest argue-fuel in the lesson and is untouched by any of this.
+
+### Required repairs (new this round)
+
+- **W3-1 (non-blocking, first in line) — give the class summary the weight paging just handed it.**
+  *Test:* at 1366x768 and 1920x1080 the `#fhCfSummary` statement renders at ≥2.6% of screen height
+  and is not visually outranked by the demand-curve caveat above it. Measured today: 2.05% / 2.04%,
+  under a larger caveat, with ~250px of empty column beside it at 1920.
+- **W3-2 (non-blocking) — order or de-duplicate the groups.** *Test:* no group contains two rows with
+  identical price, crowds and channel line while a differing row is un-shown; and the teacher can see
+  which group is currently up, not only which is next. A "back a group" control if it is cheap.
+
+**Carried unchanged:** scale the scatter's price axis to the room's actual prices · REVEAL-5 footnote
+clipping and the 1d contradiction · P12 subliminal bars · no cumulative statement of wasted event
+money and N5's spend never ruled on · REVEAL stages 1–3 say nothing about their own dots · Chromebook
+fold buries LOCK IT IN and the FULL HOUSE plate (P9) · top-of-dial dead zone (P7) · the unfurnished
+wait (P5).
+
+### Dissent
+
+**DISSENT `play-l1-repairs-below-fold`: DISCHARGED.**
+
+Both limbs are now closed. REVEAL stage 5 was discharged in round 3. The COUNTERFACTUAL limb is
+discharged on its own stated test: at twelve desks, at 1366x768 and 1920x1080, with no scrolling,
+every repeat row and the class summary render fully inside the viewport under teacher-advanced
+paging, all twelve desks are shown and none dropped, `#stage` fits its content rather than merely
+scrolling to it, and the e2e asserts per-row visibility at that desk count instead of one element at
+the top of the layout. The defect the dissent named — board content the room is instructed to argue
+from that does not reach the room — is not present at class scale.
+
+I do not carry a new dissent. W3-1 is a type-and-hierarchy repair on content that is now on screen,
+not content the room cannot reach. I record that I will dissent against any classroom-release
+decision that ships the class-level summary below the back-row legibility floor with no teacher line
+that says it out loud, and I keep round 3's four real-classroom watch items — including item 4,
+which this repair changes rather than removes: watch what the teacher does with four groups, and
+whether desks in group 4 disengage while groups 1–3 are read.
