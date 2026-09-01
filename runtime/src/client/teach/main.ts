@@ -41,6 +41,8 @@ type AdvanceWarnState =
   | { kind: "hl-play"; weekNumber: number; weekCount: number; lockedCount: number; deskCount: number }
   | null;
 let advanceWarnState: AdvanceWarnState = null;
+/** M2 L2's week bell, when it would settle a league with nobody locked in (gate-l2-teacher N5). */
+let closeWeekWarn: string | null = null;
 // R1: the per-session teacher credential — required on every /control and
 // GET /teacher call from here on. Held in memory plus localStorage (see
 // storage.ts) so a page refresh doesn't strand the teacher outside their
@@ -146,6 +148,8 @@ function openSession(code: string): void {
   aggregateEl.hidden = false;
   $("joinUrl").textContent = `${location.origin}/play`;
   $("code").textContent = code;
+  // gate-l2-teacher B1: the projector URL, printed, with its code already in it.
+  $("boardUrl").textContent = `${location.origin}/board?code=${code}`;
   poller?.stop();
   poller = startPolling<TeacherPayload>(
     `/api/sessions/${code}/teacher`,
@@ -280,6 +284,14 @@ function render(payload: TeacherPayload): void {
         ? `${BELL_GLYPH}All three weeks are in the books`
         : `${BELL_GLYPH}Close week ${escapeHtml(String(payload.view["weekNumber"]))} (${escapeHtml(String(payload.view["lockedCount"]))}/${escapeHtml(String(payload.view["deskCount"]))} locked)`;
       closeWeek.title = String(payload.view["bellNote"] ?? "");
+      // gate-l2-teacher N5: Advance and Jump to REVEAL both carry
+      // consequence-stating confirms; the bell carried none, and pressing it
+      // with nobody locked settles the whole league at house price instantly.
+      // That is the misclick most likely early in a period.
+      closeWeekWarn =
+        !allDone && Number(payload.view["lockedCount"] ?? 0) === 0 && Number(payload.view["deskCount"] ?? 0) > 0
+          ? `Nobody has locked in yet — 0 of ${payload.view["deskCount"]} desks. This is the week bell: it settles week ${payload.view["weekNumber"]} for every building in the league right now, and every desk that has not locked settles at its club's house price with nothing reinvested, marked AUTO. Ring it anyway?`
+          : null;
       handedTo.disabled = s.ended || !payload.view["barAvailable"] || (s.phase !== "PLAY" && s.phase !== "REVEAL");
       handedTo.textContent = payload.view["barReleased"] ? "The bar is on the projector" : "Release the Handed-To-You bar";
       handedTo.title = String(payload.view["barReason"] ?? "");
@@ -448,7 +460,7 @@ function render(payload: TeacherPayload): void {
     directorEl.hidden = false;
     $("directorHeading").textContent = `Directing ${s.phase}`;
     $("directorBody").innerHTML = "";
-    $("directorBody").appendChild(renderDirector(payload.view, s.phase));
+    $("directorBody").appendChild(renderDirector(payload.view, s.phase, { frozen: s.frozen, paused: s.paused }));
   } else {
     directorEl.hidden = true;
   }
@@ -484,7 +496,11 @@ function bullets(items: string[]): string {
  * what to drop. A teacher reading these aloud verbatim would sound like a
  * robot; a teacher glancing at them can run the room.
  */
-function renderDirector(view: Record<string, unknown>, phase: string): HTMLElement {
+function renderDirector(
+  view: Record<string, unknown>,
+  phase: string,
+  session: { frozen: boolean; paused: boolean } = { frozen: false, paused: false },
+): HTMLElement {
   const wrap = document.createElement("div");
   const d = view["director"] as FHDirector | undefined;
   const projector = view["projectorNow"] as FHProjector | undefined;
@@ -506,7 +522,27 @@ function renderDirector(view: Record<string, unknown>, phase: string): HTMLEleme
 
   // TT-B3: the projector mirror stays alive through REVEAL..SYNTHESIS, the four
   // phases where the projector IS the lesson and the teacher is narrating it.
-  if (projector && projector.title) {
+  //
+  // `gate-l2-projector` teacher-fallback defect: while the session was frozen
+  // the board showed the single word FROZEN and this panel went on claiming
+  // "Week 1 of 3 — the schedule / Every pairing in the league". The teacher
+  // could say "look at the board" at a blank board. The module's mirror cannot
+  // see session-level freeze/pause, so the truth is applied here, where it is
+  // known, and the mirror is never allowed to contradict the projector.
+  if (session.frozen || session.paused) {
+    parts.push(
+      block(
+        "On the projector right now",
+        `<div class="dir-projector-title">${session.frozen ? "FROZEN — one word on an otherwise empty projector" : "PAUSED — one word on an otherwise empty projector"}</div>${bullets([
+          session.frozen
+            ? "The board is NOT showing the lesson. Every student device has lost its controls and reads \u201cYour teacher has frozen the session. Hang tight.\u201d"
+            : "The board is NOT showing the lesson. Every student device reads \u201cPaused \u2014 everything you\u2019ve done is saved. We\u2019ll pick back up shortly.\u201d",
+          "Do not say \u201clook at the board\u201d until you press " + (session.frozen ? "Unfreeze" : "Resume") + ". This is the beat for eyes on you.",
+        ])}`,
+        "projector",
+      ),
+    );
+  } else if (projector && projector.title) {
     parts.push(
       block(
         "On the projector right now",
@@ -544,7 +580,7 @@ function renderDirector(view: Record<string, unknown>, phase: string): HTMLEleme
   if (phase === "REVEAL" && stages.length > 0) {
     parts.push(
       block(
-        "The seven reveals",
+        `The ${stages.length} reveals`,
         stages
           .map((st) => {
             const isNext = nextStage?.stage === st.stage;
@@ -1024,6 +1060,9 @@ type HLDeskStat = {
   draw: number;
   inDebt: boolean;
   weeksPlayed: number;
+  autoWeeks: number;
+  neverLocked: boolean;
+  coveredWeeks: number;
   joinedAtWeek: number;
   hostingThisWeek: string | null;
   lastFillPct: number | null;
@@ -1083,7 +1122,24 @@ function renderHostLeagueAggregate(view: Record<string, unknown>, seats: Teacher
       }</span></div>
       <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">$${d.cash.toLocaleString()}</span><span>Draw ${d.draw}</span></div>
       <div class="statline"><span>${escapeHtml(d.sizeLabel)}</span><span>${d.lastFillPct !== null ? `${d.lastFillPct}% full` : ""}</span></div>
-      ${d.hostingThisWeek ? `<div class="statline"><span>hosting ${escapeHtml(d.hostingThisWeek)}</span><span>${d.joinedAtWeek > 1 ? `joined W${d.joinedAtWeek}` : ""}</span></div>` : ""}`;
+      ${d.hostingThisWeek ? `<div class="statline"><span>hosting ${escapeHtml(d.hostingThisWeek)}</span><span>${d.joinedAtWeek > 1 ? `joined W${d.joinedAtWeek}` : ""}</span></div>` : ""}
+      ${
+        // gate-l2-teacher B3 / hidden-knowledge: AUTO lived only on the
+        // student's own private screen, so the teacher could not see that a
+        // desk had never once committed — and the free-rider WATCH FOR then
+        // named it as the author of a strategic choice. "COVERED" (a late desk
+        // inheriting weeks the league office ran) had no teacher-facing
+        // explanation anywhere either.
+        d.neverLocked || d.autoWeeks > 0 || d.coveredWeeks > 0
+          ? `<div class="statline"><span>${
+              d.neverLocked
+                ? `<span class="dir-stalled">never locked a week — ${d.autoWeeks} settled AUTO</span>`
+                : d.autoWeeks > 0
+                  ? `${d.autoWeeks} week${d.autoWeeks === 1 ? "" : "s"} settled AUTO`
+                  : ""
+            }</span><span>${d.coveredWeeks > 0 ? `${d.coveredWeeks} week${d.coveredWeeks === 1 ? "" : "s"} COVERED by the league office before they joined` : ""}</span></div>`
+          : ""
+      }`;
     grid.appendChild(tile);
   }
   wrap.appendChild(grid);
@@ -1204,10 +1260,53 @@ $("btnCfPage").addEventListener("click", () => void sendControl({ type: "hook", 
 $("btnCfPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "cfPageBack" }));
 $("btnSynthPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "synthPage" }));
 $("btnSynthPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "synthPageBack" }));
-$("btnCloseWeek").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeWeek" }));
+$("btnCloseWeek").addEventListener("click", () => {
+  if (closeWeekWarn && !confirm(closeWeekWarn)) return;
+  void sendControl({ type: "hook", hook: "closeWeek" });
+});
 $("btnHandedTo").addEventListener("click", () => void sendControl({ type: "hook", hook: "handedTo" }));
 $("btnBarPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPage" }));
 $("btnBarPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPageBack" }));
+
+/**
+ * `gate-l2-teacher` B2 (BLOCKING). The auto-reopen below already existed, but it
+ * was SILENT and asynchronous: a teacher who opened /teach in a second tab, on a
+ * second machine, or after clicking the wordmark saw "START A SESSION" and one
+ * available move — create a new session — which strands the whole room on the
+ * old code. The resume is now an affordance the teacher can see and press, shown
+ * synchronously the moment a stored code exists, plus a code+key entry for the
+ * second-machine case where localStorage has nothing.
+ */
+function attemptResume(code: string, key: string, onFail: (message: string) => void): void {
+  teacherKey = key;
+  apiFetch<TeacherPayload>(`/api/sessions/${code}/teacher`, { headers: authHeaders() })
+    .then(() => {
+      saveTeachSessionCode(code);
+      saveTeachSessionKey(key);
+      openSession(code);
+    })
+    .catch((err) => {
+      teacherKey = null;
+      onFail(
+        err instanceof ApiError && err.status === 401
+          ? `That teacher key does not open ${code}.`
+          : `Session ${code} is no longer on this server.`,
+      );
+    });
+}
+
+$("btnReopen").addEventListener("click", () => {
+  const code = $<HTMLInputElement>("reopenCode").value.trim().toUpperCase();
+  const key = $<HTMLInputElement>("reopenKey").value.trim();
+  if (!code || !key) {
+    statusEl.textContent = "a code AND a teacher key are both needed to reopen a room";
+    return;
+  }
+  statusEl.textContent = `reopening ${code}…`;
+  attemptResume(code, key, (message) => {
+    statusEl.textContent = message;
+  });
+});
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();
@@ -1215,12 +1314,18 @@ void loadLessons().then(() => {
   // R1: without the teacher key there is nothing safe to auto-reopen —
   // fall through to the create-session form rather than guessing.
   if (remembered && rememberedKey) {
-    teacherKey = rememberedKey;
-    apiFetch<TeacherPayload>(`/api/sessions/${remembered}/teacher`, { headers: authHeaders() })
-      .then(() => openSession(remembered))
-      .catch(() => {
-        teacherKey = null;
-        /* stale/gone/wrong key — fall through to the create-session form */
+    const row = $("resumeRow");
+    row.hidden = false;
+    $("resumeCode").textContent = remembered;
+    $("resumeNote").textContent = "Checking that it is still live…";
+    $("btnResume").addEventListener("click", () => {
+      $("resumeNote").textContent = "Reopening…";
+      attemptResume(remembered, rememberedKey, (message) => {
+        $("resumeNote").textContent = `${message} Start a new one below.`;
       });
+    });
+    attemptResume(remembered, rememberedKey, (message) => {
+      $("resumeNote").textContent = `${message} Start a new one below.`;
+    });
   }
 });

@@ -32,6 +32,8 @@ import {
   SHARE_GRID,
   SHARE_MAX,
   WEEK_COUNT,
+  MODELED_DOLLARS_LINE,
+  OBJECTIVE_COPY,
   botShareFor,
   computeAggregate,
   drawGain,
@@ -39,6 +41,8 @@ import {
   hostTheLeagueModule,
   localMediaFor,
   nextDraw,
+  reinvestChangeLine,
+  reinvestRuleFor,
   scheduleFor,
   settleHome,
   synthesisCards,
@@ -705,9 +709,42 @@ test("synthesis cards are computed from the room's own weeks and name the class'
   // The shared-product card quotes a real matchup from this room.
   const biggest = [...agg.visitorLedger].sort((a, b) => b.gateLift - a.gateLift)[0]!;
   assert.ok(cards[0]!.body.includes(biggest.visitorClub), "the shared-product card must quote the room's own biggest matchup");
-  // With no weeks played, the deck degrades to one honest placeholder.
+  // gate-l2-teacher B5: with no weeks played the deck used to collapse to a
+  // single placeholder titled YOU DON'T PLAY ALONE — a title that exists nowhere
+  // in the live deck — so the rehearsal the product PRESCRIBES did not rehearse
+  // the beat the console itself calls "the part the simulation does not do for
+  // you". It now renders all five templates, and every one of them is marked so
+  // it can never be read as a live room's arithmetic.
   const emptyCards = synthesisCards(empty(), computeAggregate(empty()));
-  assert.equal(emptyCards.length, 1);
+  assert.equal(emptyCards.length, 5, "the zero-desk rehearsal must render the whole deck, not a placeholder");
+  for (const c of emptyCards) {
+    assert.match(c.title, /^REHEARSAL — /, `rehearsal card ${c.id} must be unmistakably marked`);
+    assert.match(c.body, /STAND-IN/, `rehearsal card ${c.id} must say its figures are not real`);
+  }
+  assert.equal(
+    emptyCards.some((c) => /YOU DON'T PLAY ALONE/.test(c.title)),
+    false,
+    "no card title may exist that the live deck does not have — the SYNTHESIS time cut names card titles",
+  );
+});
+
+test("gate-l2-teacher B5: the prescribed zero-student rehearsal renders WATCH FOR at every phase", () => {
+  const state = empty();
+  for (const phase of ALL_PHASES) {
+    const view = hostTheLeagueModule.teacherView(state, phase) as Record<string, unknown>;
+    const flags = view["watchFor"] as { id: string; label: string; desks: string[]; action: string }[];
+    assert.ok(flags.length > 0, `${phase}: WATCH FOR rendered nothing at all with zero desks — the rehearsal cannot rehearse it`);
+    for (const f of flags) {
+      assert.match(f.label, /^REHEARSAL — /, `${phase}: a zero-desk watch flag must be marked as a rehearsal`);
+      assert.ok(f.desks.length > 0 && f.action.length > 0, `${phase}: flag ${f.id} is hollow`);
+    }
+  }
+  // And the moment one real desk exists, the samples are gone.
+  const live = seated(6);
+  const liveFlags = hostTheLeagueModule.teacherView(live, "PLAY") as Record<string, unknown>;
+  for (const f of (liveFlags["watchFor"] as { label: string }[]) ?? []) {
+    assert.equal(/REHEARSAL/.test(f.label), false, "a live room must never be shown rehearsal flags");
+  }
 });
 
 test("the director layer covers every phase with a minute budget and something to do", () => {
@@ -748,4 +785,250 @@ test("a late desk inherits a club the league office has been running, marked as 
   assert.equal(club.weeks[0]!.stock, true, "and its own screen says so");
   assert.notEqual(club.cash, 0);
   assert.notEqual(slot, state.shockSlot, "a late desk is never handed the club whose star just left");
+});
+
+/* ---- the repairs from the five L2 gates, made falsifiable ---------------- */
+
+test("econ B1: the give/take instrument measures the DECISION — silent in a room where nobody reinvested", () => {
+  // The failure this replaces: `gave` correlated 0.959 with the DEALT
+  // `startDraw` and only 0.644 with mean reinvest share, so the board named a
+  // desk that spent $0 as the room's biggest giver, and harness P3's "visible"
+  // limb reproduced in full with every desk at zero.
+  let zero = seated(8);
+  for (let w = 0; w < WEEK_COUNT; w += 1) zero = playWeek(zero, () => 50, () => 0);
+  const zeroAgg = computeAggregate(zero);
+  assert.equal(zeroAgg.choiceTotals.anySpend, false);
+  for (const r of zeroAgg.giveAndTake) {
+    assert.equal(r.spend, 0, `${r.deskHandle} spent nothing but the row says otherwise`);
+    assert.equal(r.gaveByChoice, 0, `${r.deskHandle} gave nothing it chose to give, but the instrument says ${r.gaveByChoice}`);
+    assert.equal(r.receivedByChoice, 0, `${r.deskHandle} received nothing anybody chose to give`);
+    assert.equal(r.netByChoice, 0);
+    assert.equal(r.ownGain, 0, "a desk that spent nothing cannot have gained anything by spending");
+  }
+  // ...and the DEALT ledger in that same room is loud, which is precisely the
+  // confound. If this stops being true the instrument has stopped being needed.
+  const dealtSpread = Math.max(...zeroAgg.giveAndTake.map((r) => r.net)) - Math.min(...zeroAgg.giveAndTake.map((r) => r.net));
+  assert.ok(dealtSpread > 500_000, `the dealt ledger should still show a large spread at zero reinvest, got ${dealtSpread}`);
+
+  // A room that DOES spend produces a non-zero instrument, and only for the
+  // desks that actually spent.
+  let mixed = seated(8);
+  for (let w = 0; w < WEEK_COUNT; w += 1) mixed = playWeek(mixed, () => 50, (i) => (i % 2 === 0 ? 0 : SHARE_MAX));
+  const mixedAgg = computeAggregate(mixed);
+  assert.equal(mixedAgg.choiceTotals.anySpend, true);
+  for (const r of mixedAgg.giveAndTake) {
+    if (r.spend === 0) {
+      assert.equal(r.gaveByChoice, 0, `${r.deskHandle} spent nothing and must give nothing by choice`);
+      assert.equal(r.ownGain, 0);
+    } else {
+      assert.ok(r.gaveByChoice > 0, `${r.deskHandle} spent ${r.spend} and must show up as a giver by choice`);
+    }
+  }
+  assert.ok(mixedAgg.choiceTotals.gaveByChoice > 0);
+});
+
+test("econ B1/B6: no surface or script attributes `gave` to a desk's spending", () => {
+  // Every place the old instrument was read as if it measured spending.
+  let zero = seated(8);
+  for (let w = 0; w < WEEK_COUNT; w += 1) zero = playWeek(zero, () => 50, () => 0);
+  const agg = computeAggregate(zero);
+  const spill = synthesisCards(zero, agg).find((c) => c.id === "spillover")!;
+  assert.match(spill.body, /Nobody in this room put a single dollar back/, "the spillover card must not invent givers in a room that spent nothing");
+  assert.equal(/most of what it earned/i.test(spill.body), false, "the falsified 'most' quantifier must be gone");
+
+  // And in a room that did spend, the card prints the MEASURED share and the
+  // biggest giver is the biggest SPENDER, not the biggest dealt Draw.
+  let mixed = seated(8);
+  for (let w = 0; w < WEEK_COUNT; w += 1) mixed = playWeek(mixed, () => 50, (i) => (i % 2 === 0 ? 0 : SHARE_MAX));
+  const mixedAgg = computeAggregate(mixed);
+  const card = synthesisCards(mixed, mixedAgg).find((c) => c.id === "spillover")!;
+  assert.match(card.body, new RegExp(`${mixedAgg.choiceTotals.externalPct}% of the value it created`));
+  const namedGiver = [...mixedAgg.giveAndTake].sort((a, b) => b.gaveByChoice - a.gaveByChoice)[0]!;
+  assert.ok(namedGiver.spend > 0, "the card may only name a giver that actually spent");
+  assert.match(card.body, new RegExp(namedGiver.deskHandle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+
+  // ADAPT Q3's answer key: computed, and pointing at a surface that is live.
+  const teach = hostTheLeagueModule.teacherView(mixed, "ADAPT") as Record<string, unknown>;
+  const q3 = (teach["director"] as { ask: { q: string; answer: string | null }[] }).ask.at(-1)!;
+  assert.equal(/by a distance/i.test(String(q3.answer)), false, "the falsified ADAPT Q3 magnitude must be gone");
+  assert.match(String(q3.answer), /own screen/, "the ADAPT Q3 answer must point at a surface the teacher can actually put up");
+});
+
+test("play R4 / econ B3: the small-market exhibit attributes from the decomposition, and prints both prices", () => {
+  // The reachable case the econ gate probed: odd desks at $110, even desks at
+  // $30. The old selector printed "it won it on WHO WAS VISITING" over an $80
+  // price gap.
+  let state = seated(10);
+  for (let w = 0; w < WEEK_COUNT; w += 1) state = playWeek(state, (i) => (i % 2 === 0 ? 110 : 30), () => 10);
+  const path = computeAggregate(state).smallMarketPath;
+  if (path.found) {
+    assert.match(path.line, new RegExp(`\\\\$${path.smallPrice}\\\\b`), "the exhibit must print the small-market desk's price");
+    assert.match(path.line, new RegExp(`\\\\$${path.bigPrice}\\\\b`), "the exhibit must print the big-market desk's price");
+    // The three blocks account for the whole gap, exactly.
+    assert.equal(
+      path.gapFromVisitor + path.gapFromBuildingAndPrice + path.gapFromOwnDraw,
+      path.smallDoorMoney - path.bigDoorMoney,
+      "the attribution must decompose the gap exactly, not approximately",
+    );
+    // The printed cause must be the block that actually carried the gap.
+    const parts: Record<string, number> = {
+      visitor: path.gapFromVisitor,
+      "building-and-price": path.gapFromBuildingAndPrice,
+      "own-draw": path.gapFromOwnDraw,
+    };
+    const biggest = Object.entries(parts).sort((a, b) => b[1] - a[1])[0]![0];
+    assert.equal(path.driver, biggest, `the exhibit named ${path.driver} but the blocks say ${biggest}`);
+    if (path.driver !== "visitor") {
+      assert.equal(/won it on WHO WAS VISITING/.test(path.line), false, "a price-driven gap may never be attributed to the visitor");
+    }
+  }
+  // A room priced uniformly is where the visitor SHOULD carry it, and does.
+  let flat = seated(10);
+  for (let w = 0; w < WEEK_COUNT; w += 1) flat = playWeek(flat, () => 50, () => 10);
+  const flatPath = computeAggregate(flat).smallMarketPath;
+  if (flatPath.found) {
+    assert.equal(flatPath.driver, "visitor");
+    assert.match(flatPath.line, /WHO WAS VISITING/);
+  }
+});
+
+test("play R3 / econ FL-F: reveal 5 never claims spontaneity, and always carries the last-week rule", () => {
+  const held = fullSession(6); // fullSession never releases the bar mid-lesson
+  const line = reinvestChangeLine(computeAggregate(held), held);
+  assert.equal(/[Nn]obody told this room to move/.test(line), false, "the unfalsifiable causal claim must be gone");
+  assert.match(line, /LAST week|last-week rule/i, "the beat must carry its controlling variable");
+  assert.match(line, /earns nothing else in this lesson/, "the horizon effect must be stated, not implied");
+  assert.match(line, /did NOT see the Handed-To-You bar before it played week 3/, "a room that never saw the bar must be told the bar cannot be the cause");
+
+  // A room that DID see the bar before week 3 gets the bar named as one
+  // candidate, never as the cause.
+  const saw: HostLeagueState = { ...held, barReleased: true, barReleasedAtWeek: 1 };
+  const sawLine = reinvestChangeLine(computeAggregate(saw), saw);
+  assert.match(sawLine, /did see the Handed-To-You bar/);
+  assert.equal(/[Nn]obody told this room to move/.test(sawLine), false);
+
+  // A room that held its dial flat across all three weeks must not be narrated
+  // as having moved in either direction.
+  let flat = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) flat = playWeek(flat, () => 50, () => 20);
+  const flatLine = reinvestChangeLine(computeAggregate(flat), flat);
+  assert.match(flatLine, /level/);
+  assert.equal(/went UP|went DOWN/.test(flatLine), false, "a flat room must not be described as moving");
+});
+
+test("econ B4/B5: the two false printed rules are gone, and what replaces them is true of the model", () => {
+  // B5 — the Draw-to-cash claim. A Draw point pays $12,000/week in local media
+  // plus $4,704-$7,722 on every home night; there is a real exchange rate.
+  assert.equal(/cannot turn Draw back into cash/i.test(OBJECTIVE_COPY), false);
+  assert.match(OBJECTIVE_COPY, /pays you back/i);
+  for (const profile of MARKET_PROFILES) {
+    assert.ok(profile.drawDollars > 0, "the local-media Draw term is what makes the old claim false — it must exist");
+  }
+
+  // B4 — the maintenance rule. No numeric break-even share may be printed at
+  // all, because the true one is 5-20% depending on Draw and door money and
+  // computing it on the student screen would be a demand-curve preview (R2).
+  for (const week of [1, 2, WEEK_COUNT]) {
+    const rule = reinvestRuleFor(week);
+    const all = [rule.line, ...rule.detail].join(" ");
+    assert.equal(/\d+\s*%/.test(all), false, `week ${week}'s reinvest rule still prints a percentage: ${all}`);
+    assert.equal(/about a fifth/i.test(all), false, "the falsified 'about a fifth' rule must be gone");
+    assert.ok(rule.line.split(/\s+/).length <= 25, `the always-visible rule is ${rule.line.split(/\s+/).length} words — it consumes the fold`);
+  }
+  // The replacement claim — "near the top of the scale no share on this dial can
+  // hold it at all" — is arithmetic, and this is the arithmetic.
+  const maintenanceRule = reinvestRuleFor(1).detail.join(" ");
+  assert.match(maintenanceRule, /no share on this dial can hold it/);
+  for (const profile of MARKET_PROFILES) {
+    const ceilingGain = drawGain(profile, 89, 1_000_000_000);
+    assert.ok(ceilingGain < 4, `at Draw 89 the maximum possible gain is ${ceilingGain}, which does NOT fall short of the 4-point decay`);
+    const lowGain = drawGain(profile, 30, 1_000_000_000);
+    assert.ok(lowGain > ceilingGain, "the rule claims it climbs fastest when Draw is low");
+  }
+  // The last week says the horizon out loud.
+  assert.match(reinvestRuleFor(WEEK_COUNT).line, /LAST WEEK/);
+});
+
+test("sr BLOCKING-1: no club renders a factual claim about a different club", () => {
+  // The shipped failure: the four anchor clubs' identity sentences rode on the
+  // shared profile line, so "the biggest market in American sports, and the
+  // league's biggest gate" printed under Detroit, and "one of the league's
+  // smallest markets — and the 2025 champions" printed under Denver. Any class
+  // of nine or more desks hit at least three false lines, on the private screen.
+  const CLUB_SPECIFIC = [
+    /biggest market in American sports/i,
+    /biggest gate/i,
+    /2025 champions/i,
+    /OWNS its building/i,
+    /OWNS THE BUILDING/i,
+    /concert money/i,
+    /Chase Center/i,
+    /Crypto\.com/i,
+  ];
+  for (const profile of MARKET_PROFILES) {
+    for (const re of CLUB_SPECIFIC) {
+      assert.equal(re.test(profile.plainLine), false, `profile ${profile.id}'s shared line makes a club-specific claim: ${profile.plainLine}`);
+      assert.equal(re.test(profile.sizeLabel), false, `profile ${profile.id}'s size label makes a club-specific claim: ${profile.sizeLabel}`);
+    }
+  }
+  // The identity sentences still exist — on the clubs they are true of, and
+  // nowhere else.
+  const withIdentity = CLUBS.filter((c) => c.identityLine);
+  assert.ok(withIdentity.length >= 4, "the verified anchor clubs must keep their sentences");
+  assert.ok(withIdentity.length < CLUBS.length, "most clubs must carry no club-specific claim at all");
+  assert.match(CLUBS.find((c) => c.short === "New York")!.identityLine!, /biggest gate/);
+  assert.equal(CLUBS.find((c) => c.short === "Detroit")!.identityLine, undefined);
+  assert.equal(CLUBS.find((c) => c.short === "Denver")!.identityLine, undefined);
+  assert.equal(CLUBS.find((c) => c.short === "Miami")!.identityLine, undefined);
+
+  // ...and the student view carries exactly its own club's line.
+  const state = seated(12);
+  for (const seatId of Object.keys(state.seatToSlot)) {
+    const slot = state.seatToSlot[seatId]!;
+    for (const phase of ["LOBBY", "HOOK"] as CanonicalPhase[]) {
+      const view = hostTheLeagueModule.studentView(state, seatId, phase) as Record<string, unknown>;
+      if (phase === "HOOK") assert.equal(view["identityLine"] ?? null, CLUBS[slot]!.identityLine ?? null);
+    }
+  }
+});
+
+test("sr BLOCKING-2: the modelled-dollars caption states no universal the bars falsify", () => {
+  assert.equal(/for every club in this league/i.test(MODELED_DOLLARS_LINE), false, "'the biggest single pipe for every club' is false by week 1");
+  assert.match(MODELED_DOLLARS_LINE, /Near a club's house price/);
+  // And the counterexamples are real: local media overtakes the national check
+  // at Draw 50 on the new-york profile, and Boston starts at 55.
+  const ny = MARKET_PROFILES.find((m) => m.id === "new-york")!;
+  const boston = CLUBS.find((c) => c.short === "Boston")!;
+  assert.ok(localMediaFor(ny, boston.startDraw) > NATIONAL, "Boston must falsify the old universal before anybody prices");
+});
+
+test("teacher B3: a desk that never locked is never presented as a free-rider", () => {
+  // Six desks; desk 6 never touches a dial and is auto-settled every week.
+  let state = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) {
+    for (let i = 0; i < 5; i += 1) {
+      const seatId = `seat-${i + 1}`;
+      state = ok(act(state, { type: "setPrice", price: 50 }, "PLAY", seatId));
+      state = ok(act(state, { type: "setShare", share: 0 }, "PLAY", seatId));
+      state = ok(act(state, { type: "lock" }, "PLAY", seatId));
+    }
+    state = ok(act(state, { type: "teacher:closeWeek" }, "PLAY", "teacher"));
+  }
+  const view = hostTheLeagueModule.teacherView(state, "REVEAL") as Record<string, unknown>;
+  const flags = view["watchFor"] as { id: string; desks: string[] }[];
+  const freeRider = flags.find((f) => f.id === "free-rider");
+  const never = flags.find((f) => f.id === "never-locked");
+  assert.ok(never, "a desk that never locked must be flagged as such");
+  assert.ok(never!.desks.some((d) => d.includes("Desk 6")), "the never-locked desk must be named on its own flag");
+  assert.equal(
+    freeRider?.desks.some((d) => d.includes("Desk 6")) ?? false,
+    false,
+    "the never-locked desk must NOT be offered to the teacher as the protagonist of the free-riding argument",
+  );
+  assert.ok(freeRider!.desks.length >= 5, "the desks that CHOSE 0% are still the free-riding case");
+  // The teacher can now see it on the desk card too.
+  const desks = view["desks"] as { handle: string; neverLocked: boolean; autoWeeks: number }[];
+  const d6 = desks.find((d) => d.handle.includes("Desk 6"))!;
+  assert.equal(d6.neverLocked, true);
+  assert.equal(d6.autoWeeks, WEEK_COUNT);
 });

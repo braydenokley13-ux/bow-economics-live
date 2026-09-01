@@ -299,7 +299,7 @@
   }
   .hl-club-chip.live { border-color: rgba(244,185,66,0.5); }
   .hl-chip-club { font-family: var(--font-display); font-size: 1.5vw; color: var(--ink-primary); letter-spacing: .02em; }
-  .hl-chip-who, .hl-chip-size { font-size: .95vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .hl-chip-who, .hl-chip-size { font-size: 1.5vw; color: var(--ink-secondary); text-transform: uppercase; letter-spacing: .04em; }
   .hl-chip-draw { font-size: 1vw; color: var(--ink-secondary); letter-spacing: .06em; }
   .hl-chip-draw b { font-family: var(--font-number); font-size: 1.5vw; color: var(--accent-gold); }
 
@@ -312,8 +312,8 @@
     background: rgba(19,24,34,0.85); border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; padding: 1vh 1.6vw;
   }
   .hl-week-strip-num { font-family: var(--font-display); font-size: 2vw; letter-spacing: .08em; color: var(--accent-gold); }
-  .hl-week-strip-mid { font-size: 1.3vw; color: var(--ink-secondary); }
-  .hl-week-strip-lock { font-size: 1.3vw; color: var(--ink-secondary); }
+  .hl-week-strip-mid { font-size: 1.5vw; color: var(--ink-secondary); }
+  .hl-week-strip-lock { font-size: 1.5vw; color: var(--ink-secondary); }
   .hl-week-strip-lock b { font-family: var(--font-number); font-size: 1.9vw; color: var(--ink-primary); }
 
   .hl-board-shock {
@@ -322,16 +322,33 @@
   }
   .hl-board-shock b { font-family: var(--font-number); color: var(--accent-gold); }
 
-  .hl-pairs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6vw; width: 88vw; margin-top: 1vh; }
+  /* gate-l2-projector P-1 (BLOCKING): CSS ellipsis is SILENT truncation, so the
+     fit instrument passed frames the room literally could not read. There is no
+     nowrap and no text-overflow anywhere in this block now, and the card is two
+     lines so a full "Desk 12 · Oklahoma City" gets the whole column width.
+     e2e-m2l2.cjs asserts scrollWidth <= clientWidth on these nodes at 12 desks
+     at both projector shapes. */
+  /* gate-l2-teacher B1: the projector's own code prompt. A board never guesses a room. */
+  .board-code-form { display: flex; gap: 1vw; align-items: center; justify-content: center; margin-top: 2vh; }
+  .board-code-input {
+    font-family: var(--font-number); font-size: 3vw; letter-spacing: .12em; text-align: center; width: 26vw;
+    padding: .8vh 1vw; border-radius: 10px; border: 2px solid rgba(244,185,66,0.55);
+    background: rgba(0,0,0,0.35); color: var(--accent-gold); text-transform: uppercase;
+  }
+  .board-code-btn { font-size: 1.5vw; padding: 1vh 1.6vw; }
+
+  .hl-pairs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6vw .8vw; width: 90vw; margin-top: 1vh; }
   .hl-pair {
-    display: grid; grid-template-columns: 1fr auto 1fr auto; align-items: baseline; gap: .5vw;
-    background: rgba(19,24,34,0.72); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: .55vh .8vw; text-align: left;
+    display: flex; flex-direction: column; gap: .1vh;
+    background: rgba(19,24,34,0.72); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: .5vh .9vw; text-align: left;
+    min-width: 0;
   }
   .hl-pair.live { border-color: rgba(244,185,66,0.35); }
-  .hl-pair-host { font-size: 1.5vw; color: var(--ink-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hl-pair-arrow { font-size: .95vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .06em; }
-  .hl-pair-visitor { font-size: 1.5vw; color: var(--accent-gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hl-pair-draw { font-size: .95vw; color: var(--ink-muted); letter-spacing: .05em; }
+  .hl-pair-host { font-size: 1.5vw; line-height: 1.15; color: var(--ink-primary); }
+  .hl-pair-vs { display: flex; align-items: baseline; flex-wrap: wrap; gap: .1vh .5vw; }
+  .hl-pair-arrow { font-size: 1.2vw; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .hl-pair-visitor { font-size: 1.5vw; line-height: 1.15; color: var(--accent-gold); }
+  .hl-pair-draw { font-size: 1.5vw; color: var(--ink-secondary); letter-spacing: .04em; }
   .hl-pair-draw b { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-primary); }
 
   .hl-bar-pager { font-family: var(--font-display); font-size: 1.5vw; letter-spacing: .08em; color: var(--ink-secondary); margin-top: 1vh; text-transform: uppercase; }
@@ -339,7 +356,7 @@
   .hl-bar-row { display: grid; grid-template-columns: 15vw 1fr; grid-template-rows: auto auto; column-gap: 1vw; align-items: center; text-align: left; }
   .hl-bar-handle { grid-row: 1 / span 2; font-size: 1.5vw; color: var(--ink-primary); line-height: 1.15; }
   .hl-bar-track { display: flex; height: 3.2vh; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.4); }
-  .hl-bar-foot { font-size: 1vw; color: var(--ink-muted); margin-top: .2vh; }
+  .hl-bar-foot { font-size: 1.5vw; line-height: 1.2; color: var(--ink-secondary); margin-top: .2vh; }
   .hl-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: .3vw 1.4vw; margin-top: .8vh; font-size: 1.2vw; color: var(--ink-secondary); }
   .hl-legend span { display: inline-flex; align-items: center; gap: .4vw; }
   .hl-legend i { display: inline-block; width: 1vw; height: 1vw; border-radius: 3px; }
@@ -347,20 +364,20 @@
   .hl-instruction { font-size: 2vw; color: var(--accent-gold); }
 
   .hl-ledger { width: 88vw; margin-top: .8vh; display: flex; flex-direction: column; gap: .7vh; }
-  .hl-ledger-row { display: grid; grid-template-columns: 15vw 1fr 9vw; column-gap: 1vw; align-items: center; text-align: left; }
+  .hl-ledger-row { display: grid; grid-template-columns: 15vw 1fr 21vw; column-gap: 1vw; align-items: center; text-align: left; }
   .hl-ledger-handle { font-size: 1.5vw; color: var(--ink-primary); }
   .hl-ledger-bars { display: flex; flex-direction: column; gap: .25vh; }
-  .hl-ledger-bar { height: 1.7vh; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: .4vw; min-width: 6vw; }
-  .hl-ledger-bar b { font-family: var(--font-number); font-size: 1.15vw; color: #0d1118; }
+  .hl-ledger-bar { height: 2.2vh; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: .4vw; min-width: 8vw; }
+  .hl-ledger-bar b { font-family: var(--font-number); font-size: 1.5vw; color: #0d1118; }
   .hl-ledger-bar.gave { background: var(--accent-violet); }
   .hl-ledger-bar.got { background: var(--accent-gold); }
-  .hl-ledger-draw { font-size: 1.05vw; color: var(--ink-muted); }
+  .hl-ledger-draw { font-size: 1.5vw; line-height: 1.2; color: var(--ink-secondary); }
 
   .hl-pipes { width: 88vw; margin-top: 1vh; display: flex; flex-direction: column; gap: 1vh; }
   .hl-pipe-row { display: grid; grid-template-columns: 16vw 1fr 14vw; column-gap: 1vw; align-items: center; text-align: left; }
   .hl-pipe-handle { font-size: 1.5vw; color: var(--ink-primary); display: flex; flex-direction: column; }
   .hl-pipe-handle i { font-style: normal; font-size: .95vw; color: var(--ink-muted); letter-spacing: .05em; }
-  .hl-pipe-nums { font-size: 1.2vw; color: var(--ink-secondary); text-align: right; }
+  .hl-pipe-nums { font-size: 1.5vw; color: var(--ink-secondary); text-align: right; }
 
   .hl-path { max-width: 84vw; font-size: 1.9vw; line-height: 1.34; color: var(--ink-primary); margin-top: 1.4vh; }
   .hl-argue { max-width: 84vw; font-size: 1.7vw; line-height: 1.36; color: var(--ink-primary); margin-top: 1vh; }
@@ -369,7 +386,7 @@
   .hl-mean-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: .6vh; height: 100%; width: 9vw; }
   .hl-mean-num { font-family: var(--font-number); font-size: 2.6vw; font-weight: 800; color: var(--accent-gold); }
   .hl-mean-bar { width: 100%; background: linear-gradient(180deg, var(--accent-gold), rgba(244,185,66,0.35)); border-radius: 6px 6px 0 0; }
-  .hl-mean-lbl { font-size: 1.2vw; color: var(--ink-muted); letter-spacing: .08em; }
+  .hl-mean-lbl { font-size: 1.5vw; color: var(--ink-secondary); letter-spacing: .08em; }
 </style>
 </head>
 <body>

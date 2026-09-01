@@ -24,9 +24,11 @@
  *   P2  the externality is material — a Draw-90 visitor roughly doubles a
  *       Draw-15 visitor's crowd at the same price, in every market, and the
  *       swing is worth more than the whole legal price dial is worth.
- *   P3  free-riding is punished AND visible — the always-zero line ends poorer
- *       than the adaptive line, and the room's own give-and-take ledger shows
- *       the banker as a net taker without anybody being told.
+ *   P3  free-riding is punished AND visible ON AN INSTRUMENT THAT MEASURES THE
+ *       DECISION — the always-zero line ends poorer than the adaptive line, the
+ *       room's by-choice ledger shows the banker as a net taker of other desks'
+ *       spending, and the same instrument is SILENT in a room where nobody
+ *       spent at all. That last limb is the control the old P3 lacked.
  *   P4  no unwinnable seat — from every reachable state, every club clears its
  *       weekly bill at some legal price, and the cash-best price clears it with
  *       room to spare.
@@ -295,6 +297,19 @@ const drawOf = (state, deskIndex) => state.clubs[state.seatToSlot[`seat-${deskIn
 }
 
 /* ------------------------------------------------------------------ P3 -- */
+/**
+ * P3, re-specified. `gate-l2-econ` B2 (BLOCKING): the old "visible" limb
+ * asserted `banker.net > 0 && feeder.net < 0 && banker.gave < feeder.gave` on
+ * the DEALT ledger, and that exact pattern reproduces with EVERY DESK AT 0%
+ * — New York net +$342,556, Memphis net -$613,280 — purely because New York was
+ * dealt startDraw 44 and Memphis 62. The limb was confounded and 11/11 certified
+ * nothing about free-rider visibility.
+ *
+ * The instrument being tested is now the by-choice ledger, and the property has
+ * a falsifying control built into it: the SAME room played with every desk at
+ * 0% must produce an instrument that is identically silent. If a future retune
+ * ever lets the by-choice figures move without anybody spending, this fails.
+ */
 {
   const DESKS = 8;
   // One desk banks everything, one desk feeds the product hard, the rest spread.
@@ -311,20 +326,58 @@ const drawOf = (state, deskIndex) => state.clubs[state.seatToSlot[`seat-${deskIn
   const adaptState = playSeason(DESKS, roomPolicies(DESKS, 0, adaptive));
   const punished = cashOf(adaptState, 0) > cashOf(zeroState, 0);
 
-  // VISIBLE: the room's own ledger shows the banker taking more than it gave,
-  // and the feeder giving more than it took, with no copy asserting it.
-  const visible = banker.net > 0 && feeder.net < 0 && banker.gave < feeder.gave;
+  // VISIBLE, on an instrument that measures the DECISION: the desk that spent
+  // nothing gave nothing it chose to give and is a net taker of other desks'
+  // spending; the desk that spent the maximum is a net giver of its own.
+  const visible =
+    banker.spend === 0 &&
+    banker.gaveByChoice === 0 &&
+    banker.netByChoice > 0 &&
+    feeder.spend > 0 &&
+    feeder.gaveByChoice > 0 &&
+    feeder.netByChoice < banker.netByChoice;
+
+  // THE CONTROL, and the whole point of the re-specification: in a room where
+  // nobody reinvests, this instrument must say NOTHING. Every by-choice figure
+  // must be exactly zero for every desk, so no desk can be named a giver or a
+  // taker on the strength of the Draw it was dealt.
+  // NOTE `zeroState` above puts only the FOCAL desk at 0% (the rest of the room
+  // is spread across the share grid), which is the right shape for the
+  // "punished" limb and the wrong shape for this one. The control needs a room
+  // in which nobody spent anything at all.
+  const allZeroState = playSeason(DESKS, Array.from({ length: DESKS }, () => fixedShare(0)));
+  const zeroAgg = computeAggregate(allZeroState);
+  const silentAtZero =
+    zeroAgg.choiceTotals.anySpend === false &&
+    zeroAgg.giveAndTake.every((r) => r.spend === 0 && r.gaveByChoice === 0 && r.receivedByChoice === 0 && r.netByChoice === 0 && r.ownGain === 0);
+  // ...while the DEALT ledger in that same room is loud, which is exactly the
+  // confound the old limb was reading.
+  const dealtSpreadAtZero = Math.max(...zeroAgg.giveAndTake.map((r) => r.net)) - Math.min(...zeroAgg.giveAndTake.map((r) => r.net));
+
+  // LUCK-CONTROLLED: reinvesting is worth something to the feeder's OWN books on
+  // its OWN schedule (gate-l2-play R4 — a within-desk counterfactual, so a kind
+  // calendar cannot masquerade as a good decision), and nothing at all to a desk
+  // that spent nothing.
+  const luckControlled = banker.ownGain === 0 && feeder.ownGain !== 0;
+
   const drawFell = drawOf(state, 0) < CLUBS[0].startDraw;
 
-  const ok = punished && visible && drawFell;
+  const ok = punished && visible && silentAtZero && luckControlled && drawFell;
   check(
     "P3",
-    "FL4/Family-2 — free-riding is punished AND visible: banking ends poorer than the adaptive line, and the room's own ledger shows the banker as a net taker",
+    "FL4/Family-2 — free-riding is punished AND visible on an instrument that measures the DECISION, and that instrument is silent in a room where nobody spent",
     ok,
     [
       `punished: adaptive ${money(cashOf(adaptState, 0))} vs always-zero ${money(cashOf(zeroState, 0))} at the same seat`,
-      `banker  Desk 1: gave ${money(banker.gave)} · received ${money(banker.received)} · net ${money(banker.net)} · Draw ${banker.drawStart} -> ${banker.drawEnd}`,
-      `feeder  Desk 2: gave ${money(feeder.gave)} · received ${money(feeder.received)} · net ${money(feeder.net)} · Draw ${feeder.drawStart} -> ${feeder.drawEnd}`,
+      `banker  Desk 1: spent ${money(banker.spend)} · gaveByChoice ${money(banker.gaveByChoice)} · receivedByChoice ${money(
+        banker.receivedByChoice,
+      )} · netByChoice ${money(banker.netByChoice)} · ownGain ${money(banker.ownGain)} · Draw ${banker.drawStart} -> ${banker.drawEnd}`,
+      `feeder  Desk 2: spent ${money(feeder.spend)} · gaveByChoice ${money(feeder.gaveByChoice)} · receivedByChoice ${money(
+        feeder.receivedByChoice,
+      )} · netByChoice ${money(feeder.netByChoice)} · ownGain ${money(feeder.ownGain)} · Draw ${feeder.drawStart} -> ${feeder.drawEnd}`,
+      `CONTROL — all 8 desks at 0% every week: by-choice instrument silent = ${silentAtZero}; dealt-ledger net spread in that same room = ${money(
+        dealtSpreadAtZero,
+      )} (that spread is the confound the old P3 was reading as free-rider evidence)`,
       `the banker's own Draw fell over the season: ${drawFell}`,
       `NOTE: this is the problem L3 exists to legislate, not a bug. Nothing in this lesson punishes it morally and no copy calls it cheating.`,
     ],

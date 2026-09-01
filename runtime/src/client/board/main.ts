@@ -1,8 +1,7 @@
-import { ApiError, apiFetch } from "../shared/api.js";
+import { ApiError } from "../shared/api.js";
 import { crestStyle } from "../shared/crest.js";
 import { startPolling } from "../shared/poll.js";
 
-type SessionSummary = { code: string; ended: boolean };
 type BoardPayload = {
   phase: string;
   paused: boolean;
@@ -20,16 +19,48 @@ function setHud(text: string): void {
   hud.textContent = text;
 }
 
-async function resolveCode(): Promise<string | null> {
+/**
+ * `gate-l2-teacher` B1 (BLOCKING, highest-severity failure-recovery finding).
+ *
+ * This used to fall back to "whatever session is live on this server" when no
+ * `?code=` was present. Observed twice in that gate: bare `/board` rendered a
+ * DIFFERENT class's COMPLETE synthesis frame on the projector, and on a second
+ * probe a different session's live week-1 schedule. There was no error state, no
+ * code field, and no place on /teach that printed the correct projector URL — so
+ * the failure a real teacher hits (laptop rebooted, bookmark opened, URL retyped
+ * without the code) ended with the room staring at another class's closing card
+ * before it had played a week.
+ *
+ * A board never guesses now. No code means a code prompt.
+ */
+function codeFromQuery(): string | null {
   const fromQuery = new URL(location.href).searchParams.get("code");
-  if (fromQuery) return fromQuery.toUpperCase();
-  try {
-    const { sessions } = await apiFetch<{ sessions: SessionSummary[] }>("/api/sessions");
-    const active = sessions.find((s) => !s.ended);
-    return active?.code ?? null;
-  } catch {
-    return null;
-  }
+  const code = (fromQuery ?? "").trim().toUpperCase();
+  return code.length > 0 ? code : null;
+}
+
+function askForCode(message: string): void {
+  backdrop.classList.remove("peak");
+  setHud("no session");
+  stage.innerHTML = `
+    <div class="label">WHICH ROOM?</div>
+    <div class="banner" id="boardCodePrompt">${escapeHtml(message)}</div>
+    <form id="boardCodeForm" class="board-code-form" autocomplete="off">
+      <input id="boardCodeInput" class="board-code-input" placeholder="BOW347" maxlength="10" autocapitalize="characters" aria-label="Class code" />
+      <button type="submit" class="btn btn-primary board-code-btn">Put this room on the projector</button>
+    </form>
+    <div class="sub">The code is on your teacher console, next to the join code. You can also open this page as <b>/board?code=YOURCODE</b>.</div>`;
+  const form = document.getElementById("boardCodeForm") as HTMLFormElement | null;
+  const input = document.getElementById("boardCodeInput") as HTMLInputElement | null;
+  input?.focus();
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const code = (input?.value ?? "").trim().toUpperCase();
+    if (code.length === 0) return;
+    const url = new URL(location.href);
+    url.searchParams.set("code", code);
+    location.href = url.toString();
+  });
 }
 
 const PEAK_MODES = new Set(["reveal", "synthesis", "consequence"]);
@@ -1227,7 +1258,7 @@ type HLBar = {
   visitorLed: boolean;
   visitors: { week: number; short: string; draw: number; dollars: number }[];
 };
-type HLLedgerRow = { deskHandle: string; club: string; gave: number; received: number; net: number; meanShare: number; drawStart: number; drawEnd: number };
+type HLLedgerRow = { deskHandle: string; club: string; gave: number; received: number; net: number; spend: number; gaveByChoice: number; receivedByChoice: number; netByChoice: number; ownGain: number; meanShare: number; drawStart: number; drawEnd: number };
 type HLPipe = { deskHandle: string; club: string; sizeLabel: string; gate: number; inArena: number; localMedia: number; national: number; total: number; gatePct: number; nationalPct: number };
 type HLPath = { found: boolean; line: string };
 
@@ -1343,7 +1374,16 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
             : `<div class="hl-pairs">${pairings
                 .map(
                   (p) =>
-                    `<div class="hl-pair ${p.host.live ? "live" : ""}"><span class="hl-pair-host">${escapeHtml(p.host.live ? p.host.handle : p.host.short)}</span><span class="hl-pair-arrow">hosts</span><span class="hl-pair-visitor">${escapeHtml(p.visitor.short)}</span><span class="hl-pair-draw">DRAW <b>${p.visitor.draw}</b></span></div>`,
+                    // `gate-l2-projector` P-1 (BLOCKING). Every club name on the
+                    // frame the room stares at for most of PLAY was ellipsized
+                    // away at 11 and 12 desks, at BOTH projector shapes —
+                    // `Desk 1 · ...  HOSTS  Golden S...` — with the bottom third
+                    // of the same frame empty. The class could not read its own
+                    // map, while /teach's week-2 coaching instructs "name the
+                    // desks who are hosting them". The pair card is now two
+                    // lines with no truncation of any kind, using the vertical
+                    // space that was already there.
+                    `<div class="hl-pair ${p.host.live ? "live" : ""}"><span class="hl-pair-host">${escapeHtml(p.host.live ? p.host.handle : p.host.short)}</span><span class="hl-pair-vs"><span class="hl-pair-arrow">hosts</span><span class="hl-pair-visitor">${escapeHtml(p.visitor.short)}</span><span class="hl-pair-draw">DRAW <b>${p.visitor.draw}</b></span></span></div>`,
                 )
                 .join("")}</div>
                <div class="synthesis-note hl-foot">${escapeHtml(honesty)}</div>`
@@ -1366,7 +1406,15 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
           <div class="exit-prompt hl-instruction" id="hlInstruction">${escapeHtml(String(view["barInstruction"] ?? ""))}</div>
           <div class="synthesis-note hl-summary" id="hlBarSummary">${escapeHtml(String(view["barSummary"] ?? ""))}</div>`;
       } else if (stageNo === 2) {
-        const max = Math.max(1, ...ledger.flatMap((r) => [r.gave, r.received]));
+        // `gate-l2-econ` B1/B2 (BLOCKING): these bars are the BY-CHOICE figures
+        // — what each desk's own spending put in other buildings, and what other
+        // desks' spending put in theirs. The dealt totals (mostly the Draw a
+        // desk was handed, and which used to BE these bars) stay on the row as a
+        // foot. In a room that never reinvested every bar is legitimately empty
+        // and the caption says so, which is what makes free-riding visible here
+        // instead of confounded with the deal.
+        const anySpend = Boolean(view["ledgerAnySpend"]);
+        const max = Math.max(1, ...ledger.flatMap((r) => [r.gaveByChoice, r.receivedByChoice]));
         bodyHtml = `
           <div class="hl-bar-pager">${escapeHtml(String(view["barPageLabel"] ?? ""))}</div>
           <div class="hl-ledger" id="hlLedger">${ledger
@@ -1374,15 +1422,16 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
               (r) => `<div class="hl-ledger-row" data-hl-ledger="1">
                 <span class="hl-ledger-handle">${escapeHtml(r.deskHandle)}</span>
                 <span class="hl-ledger-bars">
-                  <span class="hl-ledger-bar gave" style="width:${(r.gave / max) * 100}%"><b>${hlMoney(r.gave)}</b></span>
-                  <span class="hl-ledger-bar got" style="width:${(r.received / max) * 100}%"><b>${hlMoney(r.received)}</b></span>
+                  <span class="hl-ledger-bar gave" style="width:${anySpend ? (r.gaveByChoice / max) * 100 : 0}%"><b>${hlMoney(r.gaveByChoice)}</b></span>
+                  <span class="hl-ledger-bar got" style="width:${anySpend ? (r.receivedByChoice / max) * 100 : 0}%"><b>${hlMoney(r.receivedByChoice)}</b></span>
                 </span>
-                <span class="hl-ledger-draw">Draw ${r.drawStart}→${r.drawEnd}</span>
+                <span class="hl-ledger-draw">spent ${hlMoney(r.spend)} · dealt ${hlMoney(r.gave)}/${hlMoney(r.received)}</span>
               </div>`,
             )
             .join("")}</div>
-          <div class="hl-legend"><span><i class="hl-key gave"></i>what your Draw put on other clubs' books</span><span><i class="hl-key got"></i>what visiting clubs put on yours</span></div>
-          <div class="synthesis-note hl-summary">${escapeHtml(String(view["shockCopy"] ?? ""))}</div>`;
+          <div class="hl-legend"><span><i class="hl-key gave"></i>what YOUR spending put on other clubs' books</span><span><i class="hl-key got"></i>what THEIR spending put on yours</span></div>
+          <div class="synthesis-note hl-summary" id="hlLedgerSummary">${escapeHtml(String(view["ledgerSummary"] ?? ""))}</div>
+          <div class="synthesis-note hl-foot">${escapeHtml(String(view["shockCopy"] ?? ""))}</div>`;
       } else if (stageNo === 3) {
         const shown = pipes.length <= 3 ? pipes : [pipes[0]!, pipes[Math.floor(pipes.length / 2)]!, pipes[pipes.length - 1]!];
         bodyHtml = `
@@ -1476,21 +1525,23 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-async function boot(): Promise<void> {
-  const code = await resolveCode();
+function boot(): void {
+  const code = codeFromQuery();
   if (!code) {
-    stage.innerHTML = `<div class="label">No active session</div><div class="sub">Ask your teacher to start one at /teach</div>`;
-    setTimeout(() => void boot(), 3000);
+    askForCode("This projector is not pointed at a room yet. Type your class code — the same one your students join with.");
     return;
   }
   startPolling<BoardPayload>(`/api/sessions/${code}/board`, 1000, render, {
     onError: (error) => {
-      setHud(error instanceof ApiError && error.status === 404 ? "session ended — looking for a new one" : "reconnecting…");
       if (error instanceof ApiError && error.status === 404) {
-        setTimeout(() => void boot(), 2000);
+        // Never roam to another room. A 404 means THIS code is gone, and the
+        // only safe next frame is a prompt, not somebody else's class.
+        askForCode(`There is no live session with the code ${code}. Check the code on your teacher console and type it here.`);
+        return;
       }
+      setHud("reconnecting…");
     },
   });
 }
 
-void boot();
+boot();

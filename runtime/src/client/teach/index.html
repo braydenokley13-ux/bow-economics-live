@@ -62,6 +62,33 @@
       what to hold back, and the line for each reveal — is all there with zero students, so you can rehearse the
       whole period before the class walks in.
     </p>
+    <!-- gate-l2-teacher B2 (BLOCKING): a fresh /teach load in a new tab or on a
+         second machine showed only "START A SESSION" while the live code and
+         key sat in localStorage, so one stray navigation stranded the whole
+         room on a code the teacher could no longer control. -->
+    <div id="resumeRow" hidden style="margin-top:14px; padding:12px 14px; border:1px solid rgba(244,185,66,0.45); border-radius:8px; background:rgba(244,185,66,0.08);">
+      <div class="eyebrow" style="font-size:12px; margin-bottom:6px;">You already have a room open on this device</div>
+      <div class="row">
+        <div class="code" id="resumeCode" style="font-size:28px;"></div>
+        <button id="btnResume" class="btn btn-primary">Go back to this session</button>
+        <span id="resumeNote" class="hint" style="font-size:12px;"></span>
+      </div>
+    </div>
+    <details class="dir-details" style="margin-top:10px;">
+      <summary style="cursor:pointer; font-size:13px; color:var(--ink-secondary);">Reopen a session from another device (needs the code and the teacher key)</summary>
+      <div class="row" style="margin-top:8px;">
+        <div style="flex:1; min-width:150px;">
+          <label for="reopenCode">Class code</label>
+          <input id="reopenCode" placeholder="BOW347" autocomplete="off" autocapitalize="characters" />
+        </div>
+        <div style="flex:2; min-width:240px;">
+          <label for="reopenKey">Teacher key</label>
+          <input id="reopenKey" placeholder="paste the key issued when the session was created" autocomplete="off" />
+        </div>
+        <button id="btnReopen" class="btn" style="align-self:flex-end;">Reopen</button>
+      </div>
+      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-muted);">The key is per-session and is what stops anyone else driving your room. It is shown once, on the console that created the session.</p>
+    </details>
     <div class="row" id="sourceSessionRow" hidden style="margin-top:10px;">
       <div style="flex:1; min-width:260px;">
         <label for="sourceSession" id="sourceSessionLabel">Link to a completed Draft Day (L1) session — carries each locked roster forward</label>
@@ -75,6 +102,10 @@
       <div>
         <div class="eyebrow" style="font-size:12px;">Join at <strong id="joinUrl"></strong> with code</div>
         <div class="code" id="code"></div>
+        <!-- gate-l2-teacher B1: zero occurrences of a /board URL across 60+
+             captured /teach frames. A stranger teacher had to guess it, and
+             guessing wrong put another class's board on the projector. -->
+        <div class="eyebrow" style="font-size:12px; margin-top:8px;">Put the projector on <strong id="boardUrl" style="color:var(--accent-gold);"></strong></div>
       </div>
       <div style="text-align:right;">
         <span id="statePill" class="pill"></span>

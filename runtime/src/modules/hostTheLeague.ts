@@ -1408,6 +1408,24 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
   };
 }
 
+/**
+ * The caption under REVEAL stage 2, computed.
+ *
+ * `gate-l2-econ` N1 / B2 (BLOCKING). The gave/got bars used to be the dealt
+ * totals, which correlate 0.959 with `startDraw` and 0.644 with mean reinvest
+ * share — so the beat that exists to make free-riding arguable reproduced its
+ * whole pattern in a room where nobody reinvested at all. The bars are now the
+ * by-choice figures, which are exactly $0 for every desk in that room, and this
+ * caption says so out loud rather than leaving a blank frame.
+ */
+export function giveAndTakeSummary(agg: HostLeagueAggregate): string {
+  const ct = agg.choiceTotals;
+  if (!ct.anySpend) {
+    return "Every bar here is EMPTY, and that is the finding: nobody in this room put a dollar back into their club, so nobody gave anything they chose to give. All the money that moved between these buildings came from the Draw each desk was dealt. Ask them what it would have taken to make a bar appear.";
+  }
+  return `These bars are what the DESKS CHOSE, not what they were dealt. Across the room, reinvesting was worth ${money(ct.ownGain)} to these desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books. The dealt totals — every dollar drawing power moved, most of it Draw nobody bought — are printed under each row.`;
+}
+
 export function barSummaryFrom(rows: readonly HomeDecomposition[], visitorLed: number): string {
   if (rows.length === 0) return "No desk has played a home week yet.";
   const totalVisitor = rows.reduce((s, r) => s + r.fromVisitorDraw, 0);
@@ -2299,6 +2317,13 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             feverCopy: state.revealStage === 1 ? FEVER_REVEAL_COPY : null,
             ledger: state.revealStage === 2 ? agg.giveAndTake.slice(barPage * BARS_PER_PAGE, barPage * BARS_PER_PAGE + BARS_PER_PAGE) : [],
             ledgerTotal: agg.giveAndTake.length,
+            // econ B1: the bars on this beat measure the DECISION. The dealt
+            // totals stay on the row as a foot, because they are the true
+            // shared-product magnitude and the room has been reading them all
+            // lesson — but they are no longer what the beat's question is
+            // answered with.
+            ledgerAnySpend: state.revealStage === 2 ? agg.choiceTotals.anySpend : false,
+            ledgerSummary: state.revealStage === 2 ? giveAndTakeSummary(agg) : "",
             shockCopy: state.revealStage === 2 ? SHOCK_REVEAL_COPY : null,
             pipes: state.revealStage === 3 ? agg.pipes : [],
             pipesCopy: state.revealStage === 3 ? PIPES_REVEAL_COPY : null,
