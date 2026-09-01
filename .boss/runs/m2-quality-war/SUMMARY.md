@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `417:1989fd536584eaa2644c18414b45e5bd074eb8038caeaf7603d7cc831abe723d`  
-Updated: 2026-09-01T13:29:19.852Z
+Event head: `418:fbc8b8ae4b56d1a5149139844f9ac940bcb1a3d6b887dedf67c14bd93f374f7a`  
+Updated: 2026-09-01T13:30:05.323Z
 
 ## Founder intent
 
@@ -37,6 +37,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - sports-reality-director — sports-reality-director — completed — claude-sonnet-5
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
 - product-analyst — product-analyst — completed-with-concerns — claude-opus-5
+- builder — builder-w5-dereg — active — claude-sonnet-5
 
 ## Required evidence
 

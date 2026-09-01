@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T13:29:19.852Z",
+  "updatedAt": "2026-09-01T13:30:05.323Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3701,6 +3701,20 @@
             "tokens": 115687,
             "toolUses": 60
           }
+        },
+        "w5-dereg": {
+          "assignmentId": "w5-dereg",
+          "role": "builder",
+          "actor": "builder-w5-dereg",
+          "model": "claude-sonnet-5",
+          "reason": "Analyst item 5: deregister the killed m2-box-office lesson from the server registry (module file kept as history) with regression proof",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T13:30:05.323Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -7583,14 +7597,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 81,
+    "agentsActivated": 82,
     "gateFailures": 2,
     "claimsContradicted": 1,
     "evidenceRecorded": 146,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 417,
-  "eventHead": "1989fd536584eaa2644c18414b45e5bd074eb8038caeaf7603d7cc831abe723d",
+  "eventCount": 418,
+  "eventHead": "fbc8b8ae4b56d1a5149139844f9ac940bcb1a3d6b887dedf67c14bd93f374f7a",
   "warnings": []
 }
