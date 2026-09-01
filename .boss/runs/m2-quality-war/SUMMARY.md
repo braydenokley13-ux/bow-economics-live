@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `290:9c2a546b8e23a268973c19ae4674adaa056d4ae63ec01c41e30efd360a2ed302`  
-Updated: 2026-09-01T07:50:49.503Z
+Event head: `291:2adba2f6b2d9873f4f4ef478c336b588ddb42092b422389a1906775a0c2cd590`  
+Updated: 2026-09-01T07:51:06.418Z
 
 ## Founder intent
 
@@ -58,6 +58,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l2-e2e-w4 — e2e — L2 e2e: 124 occlusion probes incl. seeded sold-out weeks, 35 real dial drives
 - l1-e2e-w4 — e2e — L1 e2e at W4 head
 - w4-projector-adj — projector-report — W4 projector adjudication: proj-l2-bar-timing DISCHARGED (prescribed timing verified, two-arm probe); L1 PAGER INTENT SATISFIED (desk numbers are the unique key); privacy + fit clean incl. new two-column play at 1024x600. NEW blockers W4-1 (release copy prints 'some desks had already locked' when none had) and W4-2 (/teach stage-5 mirror byte-identical across four arms, contradicting the board in one) — both claim-audit-class strings on surfaces unregistered in moduleClaims
+- w4-play-adj — gameplay-report — W4 play adjudication: NOT DISCHARGED, RATING FUNCTIONAL (upper end). Week-1 first contact clean (decomposition->KEPT->externality->price counterfactual all visible); N-3/R-4 hold; N-5 real (changed the critic's week-2 price). Blocking N-6/N-7: at weeks 2/3 1024x600 both dials + visiting club + shock + schedule sit below the band — only LOCK is live reading '$56 · 0% back in'; double-press committed the free-ride default. N-5 verdict behind lock bar every week; sold-out hides the $522,856 line; 14/14 cards say 'you were wrong' (tone). Repairable, not structural
 
 ## Claim ledger
 

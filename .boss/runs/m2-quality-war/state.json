@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T07:50:49.503Z",
+  "updatedAt": "2026-09-01T07:51:06.418Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -2977,7 +2977,8 @@
         "l2-tuning-w4",
         "l2-e2e-w4",
         "l1-e2e-w4",
-        "w4-projector-adj"
+        "w4-projector-adj",
+        "w4-play-adj"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -4867,6 +4868,23 @@
       },
       "recordedAt": "2026-09-01T07:50:48.961Z",
       "actor": "classroom-projector-critic"
+    },
+    "w4-play-adj": {
+      "id": "w4-play-adj",
+      "wave": 4,
+      "kind": "gameplay-report",
+      "label": "W4 play adjudication: NOT DISCHARGED, RATING FUNCTIONAL (upper end). Week-1 first contact clean (decomposition->KEPT->externality->price counterfactual all visible); N-3/R-4 hold; N-5 real (changed the critic's week-2 price). Blocking N-6/N-7: at weeks 2/3 1024x600 both dials + visiting club + shock + schedule sit below the band — only LOCK is live reading '$56 · 0% back in'; double-press committed the free-ride default. N-5 verdict behind lock bar every week; sold-out hides the $522,856 line; 14/14 cards say 'you were wrong' (tone). Repairable, not structural",
+      "path": ".boss/runs/m2-quality-war/evidence/w4-play-adj--GATE_L2_PLAY.md",
+      "sha256": "5f5d4053261b9fe12921766980e91bc15a96ab2f8b5f4d8a7da8ba75895ff5e2",
+      "size": 48719,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "wave-4"
+        ]
+      },
+      "recordedAt": "2026-09-01T07:51:06.418Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "claims": {
@@ -5573,11 +5591,11 @@
     "agentsActivated": 59,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 93,
+    "evidenceRecorded": 94,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 290,
-  "eventHead": "9c2a546b8e23a268973c19ae4674adaa056d4ae63ec01c41e30efd360a2ed302",
+  "eventCount": 291,
+  "eventHead": "2adba2f6b2d9873f4f4ef478c336b588ddb42092b422389a1906775a0c2cd590",
   "warnings": []
 }
