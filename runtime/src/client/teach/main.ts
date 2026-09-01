@@ -210,6 +210,19 @@ function render(payload: TeacherPayload): void {
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
   $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse;
   $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
+  {
+    // gate-l1-teacher TT-B2 / gate-l1-projector repair 5: "Reveal next" was a
+    // blind press seven times running. Name what the press will put up, with
+    // its number, to the same standard as the night bell's label.
+    const btn = $<HTMLButtonElement>("btnRevealNext");
+    const next = payload.view["nextRevealStage"] as { stage: number; name: string } | null | undefined;
+    const total = Number(payload.view["totalRevealSteps"] ?? 0);
+    btn.textContent = isFullHouse
+      ? next
+        ? `Reveal ${next.stage} of ${total} — ${next.name}`
+        : "Every reveal has played"
+      : "Reveal next";
+  }
   // M2 L1's own pacing controls: the night bell (every desk settles at once against the card that
   // was printed before anyone touched a dial) and the manual Two Peaks release. Both are teacher-
   // triggered, never timed; leaving PLAY fires both automatically so nothing can be stranded.
@@ -225,7 +238,13 @@ function render(payload: TeacherPayload): void {
         ? "🔔 All five nights are in the books"
         : `🔔 Open the doors — Night ${payload.view["nightNumber"]} (${payload.view["lockedCount"]}/${payload.view["deskCount"]} locked)`;
       twoPeaks.disabled = s.ended || !payload.view["twoPeaksAvailable"] || (s.phase !== "PLAY" && s.phase !== "REVEAL");
-      twoPeaks.textContent = payload.view["twoPeaksReleased"] ? "📈 Two Peaks is up" : "📈 Release the Two Peaks";
+      // TT-B5: the button used to become silently enabled after the Night 3 bell
+      // with no reason on it while disabled, and a `held`/`up` tile in undefined
+      // vocabulary beside it.
+      twoPeaks.textContent = payload.view["twoPeaksReleased"] ? "Two Peaks is on the projector" : "Release the Two Peaks";
+      twoPeaks.title = String(payload.view["twoPeaksReason"] ?? "");
+      // TT-B6: say on the bell what ringing it does to a desk that never locked.
+      closeNight.title = String(payload.view["bellNote"] ?? "");
     }
   }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
@@ -304,6 +323,172 @@ function render(payload: TeacherPayload): void {
 
   $("aggregateBody").innerHTML = "";
   $("aggregateBody").appendChild(renderAggregate(payload.view, payload.seats));
+
+  // TT-B1/B2/B3: the director layer, only for the lesson that ships one.
+  if (payload.view["module"] === FULL_HOUSE_ID) {
+    directorEl.hidden = false;
+    $("directorHeading").textContent = `Directing ${s.phase}`;
+    $("directorBody").innerHTML = "";
+    $("directorBody").appendChild(renderDirector(payload.view, s.phase));
+  } else {
+    directorEl.hidden = true;
+  }
+}
+
+/* ------------------------------------------------------ full house director -- */
+
+type FHDirector = {
+  phase: string;
+  minuteBudget: string;
+  now: string[];
+  ask: { q: string; answer: string | null }[];
+  dontExplainYet: string[];
+  trigger: string | null;
+  timeCut: string;
+};
+type FHRevealStage = { stage: number; name: string; headline: string; say: string };
+type FHWatchFlag = { id: string; label: string; desks: string[]; action: string; urgency: "now" | "later" };
+type FHProjector = { title: string; lines: string[] };
+
+function block(eyebrow: string, inner: string, tone = ""): string {
+  return `<div class="dir-block ${tone}"><div class="dir-eyebrow">${escapeHtml(eyebrow)}</div>${inner}</div>`;
+}
+function bullets(items: string[]): string {
+  return `<ul class="dir-list">${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+}
+
+/**
+ * The per-phase teacher panels. Deliberately NOT a teleprompter: NOW is what
+ * should be happening, ASK is the question for this beat (with the answer the
+ * teacher needs to have, not a line to read out), DON'T EXPLAIN YET is what to
+ * withhold, TRIGGER and WATCH FOR are computed from live state, TIME CUT is
+ * what to drop. A teacher reading these aloud verbatim would sound like a
+ * robot; a teacher glancing at them can run the room.
+ */
+function renderDirector(view: Record<string, unknown>, phase: string): HTMLElement {
+  const wrap = document.createElement("div");
+  const d = view["director"] as FHDirector | undefined;
+  const projector = view["projectorNow"] as FHProjector | undefined;
+  const watchFor = (view["watchFor"] as FHWatchFlag[]) ?? [];
+  const stages = (view["revealStages"] as FHRevealStage[]) ?? [];
+  const nextStage = view["nextRevealStage"] as FHRevealStage | null;
+  const currentStage = view["currentRevealStage"] as FHRevealStage | null;
+  const parts: string[] = [];
+
+  if (d) {
+    parts.push(
+      block(
+        `Now — ${d.minuteBudget}`,
+        bullets(d.now),
+        "now",
+      ),
+    );
+  }
+
+  // TT-B3: the projector mirror stays alive through REVEAL..SYNTHESIS, the four
+  // phases where the projector IS the lesson and the teacher is narrating it.
+  if (projector && projector.title) {
+    parts.push(
+      block(
+        "On the projector right now",
+        `<div class="dir-projector-title">${escapeHtml(projector.title)}</div>${bullets(projector.lines)}`,
+        "projector",
+      ),
+    );
+  }
+
+  // TT-B7: a stalled desk has to be unmissable, and after the window closes
+  // nobody is "dialling" any more.
+  if (watchFor.length > 0) {
+    parts.push(
+      block(
+        "Watch for",
+        watchFor
+          .map(
+            (f) =>
+              `<div class="dir-flag ${f.urgency}">
+                 <div class="dir-flag-label">${escapeHtml(f.label)}</div>
+                 <div class="dir-flag-desks">${f.desks.map((x) => `<span class="dir-desk">${escapeHtml(x)}</span>`).join("")}</div>
+                 <div class="dir-flag-action">${escapeHtml(f.action)}</div>
+               </div>`,
+          )
+          .join(""),
+        "watch",
+      ),
+    );
+  }
+
+  if (d?.trigger) parts.push(block("Trigger", `<p class="dir-p">${escapeHtml(d.trigger)}</p>`, "trigger"));
+
+  // TT-B2: name every stage, mark the one on the projector and the one the next
+  // press will land, and carry the line to say as each arrives.
+  if (phase === "REVEAL" && stages.length > 0) {
+    parts.push(
+      block(
+        "The seven reveals",
+        stages
+          .map((st) => {
+            const isNext = nextStage?.stage === st.stage;
+            const isNow = currentStage?.stage === st.stage;
+            return `<div class="dir-stage ${isNow ? "current" : ""} ${isNext ? "next" : ""}">
+              <span class="dir-stage-num">${st.stage}/${stages.length}</span>
+              <span class="dir-stage-name">${escapeHtml(st.name)}${isNow ? " — on the projector" : isNext ? " — next press" : ""}</span>
+              <span class="dir-stage-say">${escapeHtml(st.say)}</span>
+            </div>`;
+          })
+          .join(""),
+        "stages",
+      ),
+    );
+  }
+
+  if (d && d.ask.length > 0) {
+    parts.push(
+      block(
+        "Ask",
+        d.ask
+          .map(
+            (a) =>
+              `<div class="dir-ask"><div class="dir-ask-q">${escapeHtml(a.q)}</div>${
+                a.answer ? `<div class="dir-ask-a">${escapeHtml(a.answer)}</div>` : ""
+              }</div>`,
+          )
+          .join(""),
+        "ask",
+      ),
+    );
+  }
+
+  if (d && d.dontExplainYet.length > 0) parts.push(block("Don't explain yet", bullets(d.dontExplainYet), "hold"));
+
+  const bellNote = String(view["bellNote"] ?? "");
+  if (bellNote) parts.push(block("The bell", `<p class="dir-p">${escapeHtml(bellNote)}</p>`, ""));
+
+  const studentScreen = (view["studentScreen"] as string[]) ?? [];
+  const simplifications = (view["simplifications"] as { what: string; why: string; risk: string }[]) ?? [];
+  const extras: string[] = [];
+  if (studentScreen.length > 0) {
+    extras.push(
+      `<details class="dir-details"><summary>What the students are looking at (you cannot see their screen)</summary>${bullets(studentScreen)}</details>`,
+    );
+  }
+  if (simplifications.length > 0) {
+    extras.push(
+      `<details class="dir-details"><summary>Where this model simplifies the real thing</summary>${simplifications
+        .map(
+          (s2) =>
+            `<div class="dir-simp"><div class="dir-simp-what">${escapeHtml(s2.what)}</div><div class="dir-simp-why">${escapeHtml(
+              s2.why,
+            )}</div><div class="dir-simp-risk">Risk: ${escapeHtml(s2.risk)}</div></div>`,
+        )
+        .join("")}</details>`,
+    );
+  }
+  if (d?.timeCut) extras.push(`<div class="dir-timecut"><span class="dir-eyebrow">Time cut</span>${escapeHtml(d.timeCut)}</div>`);
+  if (extras.length > 0) parts.push(extras.join(""));
+
+  wrap.innerHTML = parts.join("");
+  return wrap;
 }
 
 async function unlockSeat(seatId: string): Promise<void> {
@@ -658,7 +843,6 @@ type FHDeskStat = {
 function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
   const desks = (view["desks"] as FHDeskStat[]) ?? [];
   const card = view["card"] as { label: string; day: string; visitor: string; draw: number; tv: string; bowlOffer: boolean } | null;
-  const watchFor = (view["watchFor"] as string[]) ?? [];
   const seatById = new Map(seats.map((s) => [s.id, s]));
   const wrap = document.createElement("div");
 
@@ -668,7 +852,7 @@ function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherS
   kpis.innerHTML = `
     <div class="kpi"><div class="num">${view["allNightsDone"] ? "done" : `${view["nightNumber"]}/${view["nightCount"]}`}</div><div class="lbl">Night</div></div>
     <div class="kpi"><div class="num">${view["lockedCount"]}/${view["deskCount"]}</div><div class="lbl">Locked in</div></div>
-    <div class="kpi"><div class="num">${view["twoPeaksReleased"] ? "up" : "held"}</div><div class="lbl">Two Peaks panel</div></div>
+    <div class="kpi"><div class="num" style="font-size:15px;">${view["twoPeaksReleased"] ? "on the projector" : view["twoPeaksAvailable"] ? "ready to release" : "not yet"}</div><div class="lbl">Two Peaks panel</div></div>
     <div class="kpi"><div class="num">${view["revealStage"]}/${view["totalRevealSteps"]}</div><div class="lbl">Reveal stages</div></div>`;
   wrap.appendChild(kpis);
 
@@ -680,22 +864,20 @@ function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherS
     wrap.appendChild(cardRow);
   }
 
-  const watch = document.createElement("div");
-  watch.style.marginBottom = "12px";
-  watch.innerHTML =
-    `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Watch for</div>` +
-    watchFor.map((w) => `<div style="font-size:12px; color:var(--ink-secondary); margin:2px 0;">• ${escapeHtml(w)}</div>`).join("");
-  wrap.appendChild(watch);
-
   const grid = document.createElement("div");
   grid.className = "teamgrid";
+  // TT-B7: after the five-night window closes nobody is "dialling" anything, and
+  // while it is open a desk that has not locked has to be unmissable.
+  const windowClosed = Boolean(view["allNightsDone"]);
   for (const d of desks) {
     const seat = seatById.get(d.seatId);
     const tile = document.createElement("div");
-    tile.className = "teamtile";
+    tile.className = `teamtile${!windowClosed && !d.locked ? " stalled" : ""}`;
     tile.innerHTML = `
       <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;"><strong>${escapeHtml(d.handle)}</strong></div>
-      <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : d.seatId}</span><span>${d.locked ? `LOCKED $${d.price}` : `dialling $${d.price}`}</span></div>
+      <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : d.seatId}</span><span>${
+        windowClosed ? `finished · ${d.nightsPlayed} nights in the books` : d.locked ? `LOCKED $${d.price}` : `<span class="dir-stalled">still dialling $${d.price}</span>`
+      }</span></div>
       <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">$${d.cash.toLocaleString()}</span><span>${d.renewals}% renewals</span></div>
       <div class="statline"><span>${d.nightsPlayed} night${d.nightsPlayed === 1 ? "" : "s"}${d.joinedAtNight > 1 ? ` · joined N${d.joinedAtNight}` : ""}</span><span>${d.lastFillPct !== null ? `${d.lastFillPct}% full` : ""}</span></div>
       ${d.spend > 0 ? `<div class="statline"><span>$${d.spend.toLocaleString()} on the night</span><span>${d.openBowl ? "extra seats" : ""}</span></div>` : ""}

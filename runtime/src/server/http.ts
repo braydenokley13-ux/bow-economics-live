@@ -79,7 +79,13 @@ const STATIC_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml; charset=utf-8",
+  // Self-hosted webfonts (gate-l1-visual P1). Cached hard: the file name is
+  // content-stable and a Chromebook should fetch each face exactly once.
+  ".woff2": "font/woff2",
 };
+
+/** Fonts are immutable; everything else must never be cached across a class. */
+const STATIC_CACHE: Record<string, string> = { ".woff2": "public, max-age=31536000, immutable" };
 
 async function serveStatic(res: http.ServerResponse, relativePath: string): Promise<boolean> {
   const resolved = path.normalize(path.join(CLIENT_DIR, relativePath));
@@ -93,7 +99,7 @@ async function serveStatic(res: http.ServerResponse, relativePath: string): Prom
   } catch {
     return false;
   }
-  res.writeHead(200, { "Content-Type": contentType, "Cache-Control": "no-cache" });
+  res.writeHead(200, { "Content-Type": contentType, "Cache-Control": STATIC_CACHE[ext] ?? "no-cache" });
   await new Promise<void>((resolve, reject) => {
     const stream = createReadStream(resolved);
     stream.on("error", reject);

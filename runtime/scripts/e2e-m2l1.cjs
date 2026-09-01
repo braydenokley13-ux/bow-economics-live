@@ -57,6 +57,61 @@ async function waitForServer() {
   throw new Error("server never came up");
 }
 
+
+/* ---------------------------------------------------- projector visibility -- */
+
+/**
+ * gate-l1-projector repair 2 (BLOCKING): `#stage` was centre-flexed inside
+ * `body{overflow:hidden}`, so a frame taller than the viewport silently lost its
+ * top AND bottom with no scrollbar and no signal — and a text assertion on
+ * `innerText` passed while the room could not see the text. Presence is not
+ * legibility. These helpers assert the element's rendered box is fully inside
+ * the viewport (or reachable by scrolling `#stage`, which is now scrollable),
+ * at every projector resolution the review measured.
+ */
+async function assertFullyVisible(page, selector, label) {
+  const result = await page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return { found: false };
+    const r = el.getBoundingClientRect();
+    return {
+      found: true,
+      top: r.top,
+      bottom: r.bottom,
+      left: r.left,
+      right: r.right,
+      vh: window.innerHeight,
+      vw: window.innerWidth,
+      text: (el.textContent || "").slice(0, 60),
+    };
+  }, selector);
+  assert.ok(result.found, `${label}: element ${selector} not in the DOM at all`);
+  assert.ok(
+    result.top >= 0 && result.bottom <= result.vh + 1,
+    `${label}: "${result.text}" is clipped vertically — box ${Math.round(result.top)}..${Math.round(result.bottom)} in a ${result.vh}px viewport`,
+  );
+  assert.ok(
+    result.left >= -1 && result.right <= result.vw + 1,
+    `${label}: "${result.text}" is clipped horizontally — box ${Math.round(result.left)}..${Math.round(result.right)} in a ${result.vw}px viewport`,
+  );
+}
+
+/** The projector must be able to REACH everything, even when it cannot fit it. */
+async function assertStageScrollable(page, label) {
+  const overflow = await page.evaluate(() => {
+    const stage = document.getElementById("stage");
+    if (!stage) return null;
+    return { scrollH: stage.scrollHeight, clientH: stage.clientHeight, canScroll: getComputedStyle(stage).overflowY };
+  });
+  assert.ok(overflow, `${label}: no #stage`);
+  if (overflow.scrollH > overflow.clientH + 1) {
+    assert.ok(
+      overflow.canScroll === "auto" || overflow.canScroll === "scroll",
+      `${label}: #stage overflows (${overflow.scrollH} > ${overflow.clientH}) and cannot be scrolled — content is unreachable`,
+    );
+  }
+}
+
 /* --------------------------------------------------------------- UI helpers -- */
 
 /** Drives the real range input the way a finger does: set, then fire input + change. */
@@ -217,7 +272,12 @@ async function main() {
 
       await setPrice(d1, night.d1);
       if (i === 2) await bumpSpend(d1, 8); // $40,000 on the night before the shock — pays off on Night 4
-      if (i === 3) await d1.check("#fhBowl"); // open the upper bowl on the shock night
+      // gate-l1-visual P2: the capacity option is a drawn two-state plate now,
+      // not a default OS checkbox, so it is pressed rather than checked.
+      if (i === 3) {
+        await d1.click("#fhBowl");
+        await d1.waitForFunction(() => document.getElementById("fhBowl")?.getAttribute("aria-pressed") === "true", null, { timeout: 10000 });
+      }
       await lockNight(d1);
 
       await setPrice(d2, night.d2);
@@ -291,16 +351,21 @@ async function main() {
       await teach.click("#btnRevealNext");
       await resp;
       if (i === 4) {
-        // Stages 1-5 put the five nights up one at a time, each labelled by card.
-        // The headline is no longer "the room's own curve": the picture pools five
-        // demand worlds, so it says what it is (gate-l1-play P1).
+        // Stages 1-5 put the five nights up one at a time. Each press now NAMES
+        // its own beat on the projector (gate-l1-play "REVEAL stages 1-5 spend
+        // four of their five beats silently"; gate-l1-teacher TT-B2), and a
+        // running "Nights up" line still says how much of the room's evidence
+        // is on screen. The headline is not "the room's own curve": the picture
+        // pools five demand worlds, so it says what it is (gate-l1-play P1).
         await board.waitForFunction(
           () => /N1 . N2 . N3 . N4 . N5/.test(document.body.innerText),
           null,
           { timeout: 20000 },
         );
         const staged = await board.evaluate(() => document.body.innerText);
-        assert.match(staged, /N1 · N2 · N3 · N4 · N5/);
+        assert.match(staged, /Nights up: N1 · N2 · N3 · N4 · N5/);
+        assert.match(staged, /NIGHT 5 · NIGHT 1'S CARD AGAIN/, "the fifth reveal beat does not name itself");
+        assert.match(staged, /THE RENEWALS RULE/, "the renewals rule never reaches the room (gate-l1-play P10)");
         assert.equal(staged.includes("THE TWO PEAKS"), false, "Two Peaks landed before its own stage");
       }
     }
@@ -348,7 +413,17 @@ async function main() {
     await d1.waitForFunction(() => document.body.innerText.toUpperCase().includes("WHAT IF?"), null, { timeout: 20000 });
     const cfPlay = await d1.evaluate(() => document.body.innerText);
     assert.match(cfPlay, /Same price every night/);
-    assert.match(cfPlay, /The best five nights we could find/); // gate-l1-econ B2: no beatable 'maximum' claim
+    assert.match(cfPlay, /The most cash we could find/); // gate-l1-econ B2: no beatable 'maximum' claim
+    // gate-l1-econ-r1 R2 (BLOCKING dissent econ-l1-season-books): the note beside
+    // the strongest line used to assert a renewals cost the row's own numbers
+    // refuted. It is read off the two rows now, so it can only claim a cost when
+    // there is one — and at the shipped constants there is.
+    assert.match(cfPlay, /renewal points? for it/, "the strongest line's note does not state what it cost on the renewals book");
+    assert.match(cfPlay, /no exchange rate/i);
+    // The board's own argue-fuel must be ON the board in the phase that asks for
+    // it (gate-l1-play 1a / P1-b, BLOCKING).
+    const cfMarks = await board.evaluate(() => document.querySelectorAll(".scatter-svg circle, .scatter-svg rect, .scatter-svg polygon").length);
+    assert.ok(cfMarks >= 10, `COUNTERFACTUAL tells the room to read dots on the board; found ${cfMarks} marks rendered`);
     console.log("[e2e-m2l1] COUNTERFACTUAL: N1-vs-N5 on the board, per-desk replays on /play");
     await board.screenshot({ path: path.join(SCREEN_DIR, "12-board-counterfactual-n1-n5.png") });
     await d1.screenshot({ path: path.join(SCREEN_DIR, "13-play-counterfactual.png"), fullPage: true });
@@ -373,6 +448,27 @@ async function main() {
     assert.equal(/\b(Rae|Ben|Nour|Ivy|Ari|Tal|Sam|Jo)\b/.test(synth), false, "a student name reached the synthesis board");
     console.log("[e2e-m2l1] SYNTHESIS: all six cards computed from this class's own numbers, with dated real anchors");
     await board.screenshot({ path: path.join(SCREEN_DIR, "14-board-synthesis.png") });
+
+    // The two projector shapes the classroom review measured. The heading and
+    // the FIRST ROW of card titles are the exact elements it found beheaded at
+    // both resolutions, so they are the ones asserted — as rendered boxes inside
+    // the viewport, not as strings inside innerText.
+    for (const shape of [
+      { width: 1366, height: 768 },
+      { width: 1920, height: 1080 },
+    ]) {
+      const label = `SYNTHESIS @${shape.width}x${shape.height}`;
+      await board.setViewportSize(shape);
+      await board.waitForTimeout(400);
+      await assertFullyVisible(board, "#stage > .label", label + " heading");
+      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(1) h3", label + " card 1 title");
+      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(2) h3", label + " card 2 title");
+      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(3) h3", label + " card 3 title");
+      await assertStageScrollable(board, label);
+      await board.screenshot({ path: path.join(SCREEN_DIR, `14-board-synthesis-${shape.width}.png`) });
+      console.log(`[e2e-m2l1] ${label}: heading and the first card row are fully inside the viewport`);
+    }
+    await board.setViewportSize({ width: 1600, height: 900 });
 
     /* ---- COMPLETE ---- */
     await teach.click("#btnAdvance");

@@ -267,7 +267,7 @@ export function spendRuleFor(m: Market): string {
  * -4; at the $10 floor -20 New York / -9 Memphis).
  */
 export function renewalRuleFor(m: Market): string {
-  return `Your season-ticket holders paid $${m.planPrice} a seat. Price a night well UNDER that and their plan looks like a waste — renewals fall, even when the building is full. Price it ABOVE what they think that night is worth and they quit. In between — and on a big night, a bit over — the plan looks like a bargain and more of them come back.`;
+  return `Season plan: $${m.planPrice} a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.`;
 }
 
 /* --------------------------------------------------------------- cards -- */
@@ -1827,11 +1827,14 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // Held until every night is up: at stage 0 this counted nights the
             // room had not been shown yet (gate-l1-projector).
             totalTurnedAway: state.revealStage >= NIGHT_COUNT ? agg.totalTurnedAway : null,
-            shockCopy: state.revealStage >= 4 ? SHOCK_REVEAL_COPY : null,
-            capacityDefence: state.revealStage >= 4 ? CAPACITY_DEFENCE_COPY : null,
+            // Beat copy belongs to its own beat: carried forward, three long
+            // paragraphs stacked on the final stage and pushed the season books
+            // off a 1366x768 projector (gate-l1-projector repair 2).
+            shockCopy: state.revealStage === 4 ? SHOCK_REVEAL_COPY : null,
+            capacityDefence: state.revealStage >= REVEAL_STEPS ? CAPACITY_DEFENCE_COPY : null,
             // gate-l1-play P10: the renewals rule reaches the room on the beat
             // where its consequence is on screen — Night 5 against Night 1.
-            renewalsRule: state.revealStage >= RENEWALS_REVEAL_STAGE ? RENEWALS_RULE_BOARD : null,
+            renewalsRule: state.revealStage === RENEWALS_REVEAL_STAGE ? RENEWALS_RULE_BOARD : null,
             honestyLine: BOARD_HONESTY_LINE,
           };
         }

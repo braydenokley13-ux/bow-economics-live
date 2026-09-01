@@ -1840,7 +1840,10 @@ function renderFullHouse(s: SessionInfo, view: Record<string, unknown>): void {
     body.innerHTML = `<div class="banner">You're in — finding your desk…</div>`;
     return;
   }
-  if (s.phase !== "PLAY") fhMountKey = null;
+  if (s.phase !== "PLAY") {
+    fhMountKey = null;
+    document.body.classList.remove("fh-compact-play");
+  }
 
   switch (s.phase) {
     case "LOBBY":
@@ -1901,7 +1904,7 @@ function fhTopStrip(view: Record<string, unknown>): string {
   return `
     <div class="fh-topstrip">
       <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 20)}"></span>
-      <span class="fh-topstrip-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
+      <span class="fh-topstrip-name fh-desk-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
       <span class="fh-topstrip-book ${books.inDebt ? "debt" : ""}"><span>Cash</span><span class="numeric">${money(books.cash)}</span></span>
       <span class="fh-topstrip-book"><span>Renewals</span><span class="numeric">${books.renewals}%</span></span>
     </div>
@@ -2078,6 +2081,10 @@ function renderFHHook(view: Record<string, unknown>): void {
 
 function renderFHPlay(view: Record<string, unknown>): void {
   const body = $("gameBody");
+  // gate-l1-projector repair 6 (the Chromebook fold): the decision — dial and
+  // LOCK IT IN — has to clear a 1024x600 viewport without scrolling, every
+  // night. Scoped to this one screen so no other lesson's surface tightens.
+  document.body.classList.toggle("fh-compact-play", !view["allNightsDone"]);
   if (view["allNightsDone"]) {
     fhMountKey = null;
     body.innerHTML = `
@@ -2131,6 +2138,7 @@ function renderFHPlay(view: Record<string, unknown>): void {
           ${fhNextCardHtml(view["nextCard"] as FHCard | null)}
           ${receipt ? `<div class="fh-receipt">${escapeHtml(receipt.label)}</div>` : ""}
           <div class="fh-spend-row">
+
             <div class="bid-stepper">
               <button type="button" class="btn" id="fhSpendDown">−</button>
               <span class="bid-stepper-readout" id="fhSpendReadout">${money(spend)}</span>

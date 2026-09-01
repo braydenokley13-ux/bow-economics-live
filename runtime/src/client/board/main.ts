@@ -633,13 +633,31 @@ function fhMark(cx: number, cy: number, cardId: string, color: string, big: bool
   }
 }
 
+/**
+ * Deterministic jitter (gate-l1-play 1b): all ten Memphis desk-nights land
+ * between $10 and $16 in every session — the plan price is $16 and the renewals
+ * rule punishes undercutting it — so half the room's evidence rendered as ~10
+ * overlapping marks inside a ~50px box on the projector. This spreads
+ * co-located marks by a fixed offset derived from the desk and the night, so it
+ * is stable across polls and reveal stages (a mark never appears to move) and
+ * never large enough to change which price a mark reads as.
+ */
+function fhJitter(seed: string, span: number): number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i += 1) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (((h >>> 0) % 1000) / 1000 - 0.5) * 2 * span;
+}
+
 function fhCurveSvg(points: FHPoint[], markets: string[]): string {
   const W = 960;
-  const H = 440;
-  const mL = 74;
+  const H = 400;
+  const mL = 84;
   const mR = 24;
   const mT = 18;
-  const mB = 48;
+  const mB = 58;
   const xMin = 10;
   const xMax = 120;
   const yMax = Math.max(5000, ...points.map((p) => p.turnout)) * 1.12;
@@ -650,14 +668,17 @@ function fhCurveSvg(points: FHPoint[], markets: string[]): string {
   svg += `<line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
   svg += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
   for (const px of [10, 30, 50, 70, 90, 120]) {
-    svg += `<text x="${x(px)}" y="${H - mB + 22}" text-anchor="middle" style="font:13px Inter, sans-serif; fill:var(--ink-muted);">$${px}</text>`;
+    // gate-l1-projector repair 4: the evidence tier measured 1.39-1.78% of
+    // screen height. The chart now scales with the viewport and its labels are
+    // set to clear 2.6% of screen height at 1366x768 and 1920x1080 alike.
+    svg += `<text x="${x(px)}" y="${H - mB + 24}" text-anchor="middle" style="font:600 18px Inter, sans-serif; fill:var(--ink-secondary);">$${px}</text>`;
   }
   for (let i = 0; i <= 4; i += 1) {
     const t = Math.round((yMax * i) / 4);
-    svg += `<text x="${mL - 10}" y="${y(t) + 4}" text-anchor="end" style="font:13px Inter, sans-serif; fill:var(--ink-muted);">${(t / 1000).toFixed(0)}k</text>`;
+    svg += `<text x="${mL - 10}" y="${y(t) + 6}" text-anchor="end" style="font:600 18px Inter, sans-serif; fill:var(--ink-secondary);">${(t / 1000).toFixed(0)}k</text>`;
   }
-  svg += `<text x="${(mL + (W - mR)) / 2}" y="${H - 8}" text-anchor="middle" style="font:12px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">TICKET PRICE</text>`;
-  svg += `<text x="16" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 16 ${(mT + H - mB) / 2})" style="font:12px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">PEOPLE WHO CAME</text>`;
+  svg += `<text x="${(mL + (W - mR)) / 2}" y="${H - 8}" text-anchor="middle" style="font:17px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">TICKET PRICE</text>`;
+  svg += `<text x="16" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 16 ${(mT + H - mB) / 2})" style="font:17px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">PEOPLE WHO CAME</text>`;
 
   // No joining stroke: five nights are five demand worlds and a line through
   // them is a false picture (gate-l1-play P1). One mark per desk-night, shaped
@@ -665,9 +686,10 @@ function fhCurveSvg(points: FHPoint[], markets: string[]): string {
   void markets;
   for (const p of points) {
     const color = FH_SERIES[p.marketId] ?? "var(--accent-blue)";
+    const seed = `${p.deskHandle}|${p.cardId}`;
     svg += fhMark(
-      x(p.price),
-      y(p.turnout),
+      x(p.price) + fhJitter(seed, 11),
+      y(p.turnout) + fhJitter(`${seed}|y`, 8),
       p.cardId,
       color,
       p.soldOut,
@@ -693,7 +715,7 @@ function fhLegend(points: FHPoint[]): string {
   return `<div class="scatter-legend">${ids
     .map((id) => `<span class="legend-dot" style="background:${FH_SERIES[id] ?? "var(--accent-blue)"}; margin-left:14px;"></span>${escapeHtml(label[id] ?? id)}`)
     .join("")}<span class="legend-sep"></span>${shapeKey}</div>
-    <div class="synthesis-note" style="font-size:0.95vw;">Every dot is one desk on one night. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.</div>`;
+    <div class="synthesis-note" style="font-size:1.5vw; max-width:82vw;">Every dot is one desk on one night — this picture is NOT a demand curve. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.</div>`;
 }
 
 /**
@@ -803,11 +825,14 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
 
     case "play": {
       if (view["allNightsDone"]) {
-        const points = (view["curves"] as FHPoint[]) ?? [];
+        // gate-l1-projector repair 3: the last bell used to dump all 25 marks and
+        // the turned-away total here automatically, and REVEAL then wiped them and
+        // replayed the same five nights one press at a time. The centrepiece
+        // reveal was pre-spoiled and then repeated. The module now sends no
+        // curves in this state; the board holds.
         stage.innerHTML = `
           <div class="label">Five Nights, In The Books</div>
-          <div class="scatter-wrap">${fhCurveSvg(points, ["new-york", "memphis"])}</div>
-          ${fhLegend(points)}
+          <div class="banner" style="max-width:70vw;">${escapeHtml(String(view["subMessage"] ?? ""))}</div>
           <div class="synthesis-note">${escapeHtml(honesty)}</div>`;
         return;
       }
@@ -840,9 +865,12 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // owns the screen, and the class chart gives up its room rather than push it off.
       const showCurve = points.length > 0 && !booksUp && !crowded;
       stage.innerHTML = `
-        <div class="label">${booksUp ? "The Season, Market By Market" : `The Room's Own Curve · ${shown.length ? shown.join(" · ") : "waiting"}`}</div>
+        <div class="label">${escapeHtml(String(view["stageHeadline"] ?? (booksUp ? "The Season, Market By Market" : `The Room's Own Nights · ${shown.length ? shown.join(" · ") : "waiting"}`)))}</div>
+        ${shown.length > 0 ? `<div class="fh-nights-up">Nights up: ${shown.join(" · ")}</div>` : ""}
         ${showCurve ? `<div class="scatter-wrap${crowded ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
-        ${Number(view["totalTurnedAway"]) > 0 ? `<div class="synthesis-note">${Number(view["totalTurnedAway"]).toLocaleString()} people in this room's five nights wanted a seat and could not get one.</div>` : ""}
+        ${Number(view["totalTurnedAway"] ?? 0) > 0 ? `<div class="synthesis-note" style="font-size:1.5vw; color:var(--ink-primary);">${Number(view["totalTurnedAway"]).toLocaleString()} people in this room's five nights wanted a seat and could not get one.</div>` : ""}
+        ${view["renewalsRule"] ? `<div class="synthesis-note" style="max-width:78vw; font-size:1.5vw; color:var(--ink-secondary);">${escapeHtml(String(view["renewalsRule"]))}</div>` : ""}
+        ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:74vw; font-size:1.2vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
         ${view["twoPeaksReleased"] ? fhTwoPeaksPanel(peaks) : ""}
         ${
           view["booksReleased"]
@@ -875,6 +903,11 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
 
     case "counterfactual": {
       const rows = (view["repeatCard"] as FHRepeat[]) ?? [];
+      // gate-l1-play 1a (BLOCKING P1-b): the prompt in the largest type on this
+      // board tells the room to find two dots "on the board" — and the scatter
+      // was rendered in REVEAL and ADAPT only, so the designated argue-fuel
+      // pointed off-screen at the exact moment the argument was asked for.
+      const cfPoints = (view["curves"] as FHPoint[]) ?? [];
       const max = Math.max(1, ...rows.flatMap((r) => [r.n1Turnout, r.n5Turnout]));
       stage.innerHTML = `
         <div class="label">Night 1 vs Night 5 — The Same Card</div>
@@ -893,6 +926,11 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
           .join("")}</div>
         <div class="synthesis-note" style="max-width:70vw;">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
         <div class="exit-prompt">${escapeHtml(String(view["prompt"] ?? ""))}</div>
+        ${
+          cfPoints.length > 0
+            ? `<div class="scatter-wrap" style="width:70vw;">${fhCurveSvg(cfPoints, ["new-york", "memphis"])}</div>${fhLegend(cfPoints)}`
+            : ""
+        }
         <div class="synthesis-note" style="font-size:1vw;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>`;
       return;
     }
