@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T21:15:45.834Z",
+  "updatedAt": "2026-09-01T21:28:42.696Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -3656,8 +3656,10 @@
       "laneId": "shared-checkout",
       "reason": "Module-2 token + component layer",
       "sharedHotspot": false,
-      "status": "active",
-      "reservedAt": "2026-09-01T20:45:32.768Z"
+      "status": "released",
+      "reservedAt": "2026-09-01T20:45:32.768Z",
+      "releasedAt": "2026-09-01T21:28:42.458Z",
+      "releaseReason": "Lane A complete; m2.css handed to Lane B for the PIN-card demotion"
     },
     "lane-a-arena": {
       "id": "lane-a-arena",
@@ -3738,6 +3740,16 @@
       "sharedHotspot": false,
       "status": "active",
       "reservedAt": "2026-09-01T20:45:34.747Z"
+    },
+    "lane-b-m2css": {
+      "id": "lane-b-m2css",
+      "path": "runtime/src/client/shared/m2.css",
+      "owner": "builder-b",
+      "laneId": "shared-checkout",
+      "reason": "PIN card demotion under data-module m2",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T21:28:42.696Z"
     }
   },
   "checkpoints": [
@@ -3803,7 +3815,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 166,
-  "eventHead": "8f3c0762dcb63747782bf964ea5bcd2e30af60c9910bad7fc48d6b78e57452c7",
+  "eventCount": 168,
+  "eventHead": "562d7855a5f01c1a63899878c2b8e5f1ce8be8b025c32fc58e7d53b4c0a6edba",
   "warnings": []
 }
