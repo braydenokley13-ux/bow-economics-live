@@ -1,43 +1,44 @@
-# Wave 1 contract
+# Wave 2 contract
 
 Run: `m2-visual-quality-war`  
 Level: 3 — QUALITY_WAR
 
 ## Hypothesis
 
-Module 2 'Money in Motion' can cross the standing premium bar — premium interactive sports-business media, never technically-functional school UI — by implementing the five founder-approved reference mockups faithfully on the real product (Full House student surface first, then /teach, projector/class reveal, and the economics synthesis), deviating from a reference decision only for a recorded concrete reason (functional mismatch, classroom usability, economic truth, technical feasibility, viewport failure, demonstrably stronger implementation), without weakening the hidden-information pricing loop, the two-book economics, the audited rendered-claim discipline, teacher transfer, or projector privacy; and a fresh independent visual critic, fresh gameplay critic, three simulated kid critics (basketball obsessive, casual sports, non-sports), economic truth, classroom/projector and teacher-transfer reviewers will affirm that at the final head.
+Full House's student surface (/play, every state from lobby to complete) can be rebuilt to the frozen reference-to-product contract (VISUAL_REFERENCE_CONTRACT.md §A–§D, §G) — a Module-2-scoped design system (violet accent, vendored Inter, card grid, desk rail), a drawn arena that renders settled turnout only, a results state that owns the viewport before the next decision, a factual sellout beat, and a rendered-claim limb on the client — such that a fresh independent visual critic grades /play PREMIUM (or at minimum moves it out of SERVICEABLE-NOT-PREMIUM with the remaining gaps named and non-structural), fresh gameplay and three fresh simulated kid critics rate pull STRONG or better for every persona with the two blocking student-pull dissents discharged, Economic Truth confirms no rendered claim is stronger than the model (R-1 limb bites under mutation, R-2/R-3/R-4/R-9 discharged), Module 1's rendered output is unchanged, and the full suite plus the M2 L1 e2e stay green.
 
 ## Why this matters
 
-Three consecutive independent visual re-grades left Module 2 at SERVICEABLE-NOT-PREMIUM (D20, carried to the founder). The founder has now supplied a visual direction and activated a bounded quality war. If the product cannot reach premium sports-business media on its flagship lesson, the co-primary emotional north star (students genuinely want more) is at risk regardless of how correct the economics is; if it reaches premium by exposing hidden information or adding reward chrome, it fails the primary north star. This wave establishes, with fresh evidence, whether premium is genuinely unmet and why, and freezes the reference-to-product contract before any pixel is built.
+Wave 1 established with fresh evidence that premium is VERIFIED-UNMET on every surface and that the current /play buries the consequence — the loop's most important beat — below the fold for all three student personas. Full House is the flagship: if the design system, the arena and the results state cannot earn the bar here, propagation to /teach, the projector and the synthesis is not justified. Building under the frozen contract is what keeps the visual program from reintroducing false economics through prettier copy.
 
 ## Uncertainties
 
-- Whether a fresh independent visual reviewer, judging rendered browser state against the founder references at 1366x768 and 1920x1080, confirms VERIFIED-UNMET, and what the highest-leverage causes are.
-- Which reference decisions create a concrete product problem (pre-lock revenue projections and demand curve vs the blind-commit loop; 'Maximize Revenue' vs the two un-summable books; reward footer vs D4; fictional nav destinations; teacher projections/countdown that the model does not make).
-- Whether the arena/environment presence the references rely on can be reached with our own drawn art (SVG/canvas) at Chromebook cost without a raster we do not own.
-- How a Module-2-only design system (violet accent, Inter-class type, card grid) can be layered on the shared theme without redesigning Module 1's rendered output.
-- Whether simulated kid critics find the current Full House confusing, text-heavy, or school-like beyond the visual layer, which would change build priorities.
-- Whether the /teach surface can be reshaped into the Director Rail grammar without losing any facilitation knowledge the teacher-transfer gate already certified.
+- Whether the drawn SVG bowl reads as a real building lit for a game night at Chromebook cost, and whether it can encode fill, the upper-bowl third state and turned-away fans without becoming a pie chart.
+- Whether a results state that owns the viewport before the next dials (client-side acknowledged-night key) survives refresh, late join, the teacher's auto-commit bell, and the misclick e2e without a stuck desk.
+- Whether the Module-2 token layer can be scoped by module id without any Module 1 pixel change and without a second copy of the shared theme.
+- Whether the rendered-claim limb (R-1) can be made to bite under mutation without making the e2e brittle to legitimate copy.
+- Whether the 1024x600 first-contact composition can hold the hero price and the lock control in the first viewport with the desk rail collapsed.
+- Whether reading burden on the pre-lock desk can fall to ≤60 words in the first viewport while every registered rule stays reachable.
 
 ## Required evidence
 
-- browser-trace: fresh baseline screenshots of Full House on /play, /teach and /board at 1366x768 and 1920x1080 across every phase at the current head, captured by an independent Browser QA, not the builder.
-- visual-report: a SECOND INDEPENDENT visual review with an explicit verdict VERIFIED-MET / VERIFIED-UNMET / INSUFFICIENT-EVIDENCE, highest-leverage causes ranked, and every reference decision that creates a concrete product problem named.
-- gameplay-report: three simulated kid-experience baseline reads (basketball obsessive, casual sports, non-sports) of the current build, with the founder's prosecution questions answered per persona and an honest SIMULATED KID / AGENT-PLAYTESTED label.
-- economic-truth-report: an adaptation ruling on every reference element that would expose hidden information, collapse the two books, or state a claim stronger than the model supports; plus the rendered-claim (ClaimAtom) baseline that the build must preserve.
-- analyst-report: an independent reconciliation of the second review against the prior three re-grades and the founder references, recommending PASS/REPAIR/ROLLBACK/KILL for proceeding to build.
-- The reference-to-product contract (VISUAL_REFERENCE_CONTRACT.md): per required surface, REFERENCE FEATURE -> CURRENT PRODUCT STATE -> REQUIRED IMPLEMENTATION -> ALLOWED ADAPTATION -> ACCEPTANCE EVIDENCE.
+- git-diff: the wave-2 diff from the wave-1 checkpoint.
+- test: cd runtime && npm test green at the final wave head (build + full suite incl. the three harness wrappers), recorded as an authentic command record.
+- e2e-pass: node runtime/scripts/e2e-m2l1.cjs green at the final head with the R-1 claim limb active, plus e2e-m2l1-misclick.cjs; the R-1 mutation proof (two injected defects, limb red) recorded.
+- browser-trace: the reusable driver's full /play state set at 1366x768 and 1024x600 (and /teach, /board unchanged-shape checks) at the final head, captured by Browser QA, not the builder; Module 1 baseline comparison (board byte-identical; play/teach identical after code/PIN scrub).
+- visual-report: a fresh Visual Experience Director (different actor from wave 1) grading /play against the contract rows with measurements (hero size, fold positions, figure counts, font/accent audits).
+- gameplay-report: a fresh Player/Gameplay Critic plus fresh Kid A / Kid B / Kid C reads (different actors from wave 1) with the founder prosecution questions answered and pull rated per persona.
+- economic-truth-report: the owning critic's confirmation on R-1 (bites), R-2, R-3, R-4, R-7, R-9, R-10 and the rendered-claim audit of every new string.
+- regression report: the carried-state chain, refresh/rejoin/late-join on the new results state, the teacher bell auto-commit path, and the Module 1 pixel baseline.
+- analyst-report: independent disproof of the wave's pass claim.
 
 ## Non-goals
 
-- Redesigning Module 1 or changing any Module 1 rendered output.
-- Reopening Module 2's three-lesson architecture or its economic model constants.
-- Building Sports Business II, Franchise HQ, a world selector, or any commerce/enterprise feature.
-- Introducing real-time 3D/WebGL infrastructure, raster photography, logos, marks, or likeness assets.
-- Fixing the pre-existing M1 L3 play-client composer race / e2e flake (recorded, out of scope unless it blocks this wave).
-- Generic repository cleanup, Boss harness redesign, or new durable Boss roles.
-- Adding XP, levels, badges, leaderboards, trophies, timers that pace students, or any reward/progression chrome.
+- Any change to /teach or /board layout or content beyond what the /play rebuild forces (those are wave 3).
+- Any change to the six synthesis cards' set, order, staging or bodies (computed visuals are wave 3).
+- Any change to the economic model constants, the demand curves, the books, or the reveal choreography.
+- Module 1 visual changes, the M1 L3 e2e flake, generic cleanup, new durable Boss roles, real-time 3D, raster photography, logos or marks.
+- A pre-lock preview of any kind, a single-profit figure, reward chrome, a student-facing timer, or per-desk money on the projector.
 
 ## Sacred constraints
 
@@ -47,32 +48,32 @@ Three consecutive independent visual re-grades left Module 2 at SERVICEABLE-NOT-
 - class-reveal-is-the-reward
 - no-gamification-layer
 - teacher-paced-with-manual-fallback
-- random-teacher-standard
 - student-privacy-across-surfaces
 - fandom-never-a-prerequisite
 - browser-truth
+- classroom-reliability
 - founder-merge-control
 - real-sports-business-truth
 
 ## Pass condition
 
-All required evidence recorded; the second independent visual review has returned an explicit verdict with ranked causes; every reference element that conflicts with hidden information, the two books, D4, or teacher truth has an economic-truth ruling; the three kid baselines are on file; the analyst's reconciliation recommends proceeding to the Full House build under a frozen reference-to-product contract.
+Fresh visual critic grades /play at or above the top of SERVICEABLE with every contract row A–D either met (measured) or deviated with a recorded reason, and names PREMIUM as met or names the remaining gap as non-structural; fresh gameplay critic and all three fresh kid critics rate pull STRONG or better and no blocking student-pull dissent stands; Economic Truth confirms R-1 bites under mutation and R-2/R-3/R-4/R-7/R-9/R-10 are discharged with no new false claim; regression hunter finds Module 1 unchanged and the results state safe under refresh/rejoin/late-join/bell; npm test and both M2 L1 e2e scripts are authentic passing command records at the final head; the analyst cannot disprove the above.
 
 ## Repair condition
 
-The second review returns INSUFFICIENT-EVIDENCE, or the contract cannot be frozen because a reference decision's adaptation is disputed between the visual reviewer and economic truth — then hold a bounded meeting with independent pre-opinions and re-freeze.
+Any owning critic holds a material dissent that is bounded and repairable inside the wave's repair budget — a named contract row unmet, a persona below STRONG on a stated cause, a claim-limb gap, a viewport failure — then repair and return the fix to the owning critic only.
 
 ## Rollback condition
 
-Baseline capture or review activity modifies product code or run state; then restore the wave-0 checkpoint and re-run the audit read-only.
+The rebuilt /play breaks a sacred constraint that cannot be repaired without reopening the module's economics or the reveal choreography, or Module 1's rendered output changes and cannot be isolated, or the e2e/misclick paths cannot be made green — restore the wave-1 checkpoint.
 
 ## Kill condition
 
-The second independent review returns VERIFIED-MET at the current head with evidence the prior three re-grades were wrong — then the premium war is unnecessary and the program returns to the founder with that finding.
+Fresh critics find the reference direction itself — card grid, drawn arena, results-first state — makes students slower or more confused than the baseline on the same measured questions, with evidence that no adaptation inside the founder's allowed reasons fixes it; then the visual thesis returns to the founder.
 
 ## Iteration / failure budget
 
 - Maximum waves: 6
 - Maximum repairs: 8
 - Soft token budget: unavailable
-- Reason: Founder-activated quality war with a flagship-first plan: W1 audit + second review + contract, W2 Full House build + prosecution + repair loop, W3 propagation to /teach, projector and synthesis + fresh final prosecution + ship case; three waves of buffer for repair rounds. Token measurement is unavailable in this host.
+- Reason: Flagship build with a full prosecution and a bounded repair loop before any propagation; the wave-3 propagation and final prosecution follow only if this wave passes.

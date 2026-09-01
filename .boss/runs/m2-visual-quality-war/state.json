@@ -21,8 +21,8 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:45:31.964Z",
-  "currentWave": 1,
+  "updatedAt": "2026-09-01T20:45:35.715Z",
+  "currentWave": 2,
   "waves": {
     "1": {
       "number": 1,
@@ -1226,6 +1226,171 @@
       "repairs": 1,
       "startedAt": "2026-09-01T20:13:41.264Z",
       "closedAt": "2026-09-01T20:44:59.095Z"
+    },
+    "2": {
+      "number": 2,
+      "status": "active",
+      "contract": {
+        "hypothesis": "Full House's student surface (/play, every state from lobby to complete) can be rebuilt to the frozen reference-to-product contract (VISUAL_REFERENCE_CONTRACT.md §A–§D, §G) — a Module-2-scoped design system (violet accent, vendored Inter, card grid, desk rail), a drawn arena that renders settled turnout only, a results state that owns the viewport before the next decision, a factual sellout beat, and a rendered-claim limb on the client — such that a fresh independent visual critic grades /play PREMIUM (or at minimum moves it out of SERVICEABLE-NOT-PREMIUM with the remaining gaps named and non-structural), fresh gameplay and three fresh simulated kid critics rate pull STRONG or better for every persona with the two blocking student-pull dissents discharged, Economic Truth confirms no rendered claim is stronger than the model (R-1 limb bites under mutation, R-2/R-3/R-4/R-9 discharged), Module 1's rendered output is unchanged, and the full suite plus the M2 L1 e2e stay green.",
+        "whyThisMatters": "Wave 1 established with fresh evidence that premium is VERIFIED-UNMET on every surface and that the current /play buries the consequence — the loop's most important beat — below the fold for all three student personas. Full House is the flagship: if the design system, the arena and the results state cannot earn the bar here, propagation to /teach, the projector and the synthesis is not justified. Building under the frozen contract is what keeps the visual program from reintroducing false economics through prettier copy.",
+        "uncertainties": [
+          "Whether the drawn SVG bowl reads as a real building lit for a game night at Chromebook cost, and whether it can encode fill, the upper-bowl third state and turned-away fans without becoming a pie chart.",
+          "Whether a results state that owns the viewport before the next dials (client-side acknowledged-night key) survives refresh, late join, the teacher's auto-commit bell, and the misclick e2e without a stuck desk.",
+          "Whether the Module-2 token layer can be scoped by module id without any Module 1 pixel change and without a second copy of the shared theme.",
+          "Whether the rendered-claim limb (R-1) can be made to bite under mutation without making the e2e brittle to legitimate copy.",
+          "Whether the 1024x600 first-contact composition can hold the hero price and the lock control in the first viewport with the desk rail collapsed.",
+          "Whether reading burden on the pre-lock desk can fall to ≤60 words in the first viewport while every registered rule stays reachable."
+        ],
+        "requiredEvidence": [
+          "git-diff: the wave-2 diff from the wave-1 checkpoint.",
+          "test: cd runtime && npm test green at the final wave head (build + full suite incl. the three harness wrappers), recorded as an authentic command record.",
+          "e2e-pass: node runtime/scripts/e2e-m2l1.cjs green at the final head with the R-1 claim limb active, plus e2e-m2l1-misclick.cjs; the R-1 mutation proof (two injected defects, limb red) recorded.",
+          "browser-trace: the reusable driver's full /play state set at 1366x768 and 1024x600 (and /teach, /board unchanged-shape checks) at the final head, captured by Browser QA, not the builder; Module 1 baseline comparison (board byte-identical; play/teach identical after code/PIN scrub).",
+          "visual-report: a fresh Visual Experience Director (different actor from wave 1) grading /play against the contract rows with measurements (hero size, fold positions, figure counts, font/accent audits).",
+          "gameplay-report: a fresh Player/Gameplay Critic plus fresh Kid A / Kid B / Kid C reads (different actors from wave 1) with the founder prosecution questions answered and pull rated per persona.",
+          "economic-truth-report: the owning critic's confirmation on R-1 (bites), R-2, R-3, R-4, R-7, R-9, R-10 and the rendered-claim audit of every new string.",
+          "regression report: the carried-state chain, refresh/rejoin/late-join on the new results state, the teacher bell auto-commit path, and the Module 1 pixel baseline.",
+          "analyst-report: independent disproof of the wave's pass claim."
+        ],
+        "nonGoals": [
+          "Any change to /teach or /board layout or content beyond what the /play rebuild forces (those are wave 3).",
+          "Any change to the six synthesis cards' set, order, staging or bodies (computed visuals are wave 3).",
+          "Any change to the economic model constants, the demand curves, the books, or the reveal choreography.",
+          "Module 1 visual changes, the M1 L3 e2e flake, generic cleanup, new durable Boss roles, real-time 3D, raster photography, logos or marks.",
+          "A pre-lock preview of any kind, a single-profit figure, reward chrome, a student-facing timer, or per-desk money on the projector."
+        ],
+        "sacredConstraints": [
+          "experience-before-formalization",
+          "no-false-economics",
+          "simplify-interface-before-economics",
+          "class-reveal-is-the-reward",
+          "no-gamification-layer",
+          "teacher-paced-with-manual-fallback",
+          "student-privacy-across-surfaces",
+          "fandom-never-a-prerequisite",
+          "browser-truth",
+          "classroom-reliability",
+          "founder-merge-control",
+          "real-sports-business-truth"
+        ],
+        "passCondition": "Fresh visual critic grades /play at or above the top of SERVICEABLE with every contract row A–D either met (measured) or deviated with a recorded reason, and names PREMIUM as met or names the remaining gap as non-structural; fresh gameplay critic and all three fresh kid critics rate pull STRONG or better and no blocking student-pull dissent stands; Economic Truth confirms R-1 bites under mutation and R-2/R-3/R-4/R-7/R-9/R-10 are discharged with no new false claim; regression hunter finds Module 1 unchanged and the results state safe under refresh/rejoin/late-join/bell; npm test and both M2 L1 e2e scripts are authentic passing command records at the final head; the analyst cannot disprove the above.",
+        "repairCondition": "Any owning critic holds a material dissent that is bounded and repairable inside the wave's repair budget — a named contract row unmet, a persona below STRONG on a stated cause, a claim-limb gap, a viewport failure — then repair and return the fix to the owning critic only.",
+        "rollbackCondition": "The rebuilt /play breaks a sacred constraint that cannot be repaired without reopening the module's economics or the reveal choreography, or Module 1's rendered output changes and cannot be isolated, or the e2e/misclick paths cannot be made green — restore the wave-1 checkpoint.",
+        "killCondition": "Fresh critics find the reference direction itself — card grid, drawn arena, results-first state — makes students slower or more confused than the baseline on the same measured questions, with evidence that no adaptation inside the founder's allowed reasons fixes it; then the visual thesis returns to the founder.",
+        "iterationBudget": {
+          "maximumWaves": 6,
+          "maximumRepairs": 8,
+          "softTokenBudget": 0,
+          "reason": "Flagship build with a full prosecution and a bounded repair loop before any propagation; the wave-3 propagation and final prosecution follow only if this wave passes."
+        }
+      },
+      "contractAmendments": [],
+      "activation": {
+        "level": 3,
+        "levelName": "QUALITY_WAR",
+        "scopes": [
+          "visual",
+          "student",
+          "pricing"
+        ],
+        "roles": [
+          "browser-qa",
+          "builder",
+          "economic-truth-critic",
+          "experience-director",
+          "lead-integrator",
+          "player-gameplay-critic",
+          "product-analyst",
+          "regression-hunter",
+          "visual-experience-director"
+        ],
+        "blockingRoles": [
+          "economic-truth-critic"
+        ],
+        "evidence": [
+          "analyst-report",
+          "browser-trace",
+          "economic-truth-report",
+          "gameplay-report",
+          "git-diff",
+          "test",
+          "visual-report"
+        ],
+        "matchedRules": [
+          "economic-model",
+          "gameplay",
+          "visual"
+        ],
+        "softAgentBudget": 14,
+        "softMeetingBudget": 2
+      },
+      "assignments": {
+        "lane-a-design-system": {
+          "assignmentId": "lane-a-design-system",
+          "role": "builder",
+          "actor": "builder-a",
+          "model": "claude-opus-5",
+          "reason": "Lane A: Module-2 design system, fonts, arena, shared UI",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T20:45:34.983Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "lane-b-play-surface": {
+          "assignmentId": "lane-b-play-surface",
+          "role": "builder",
+          "actor": "builder-b",
+          "model": "claude-opus-5",
+          "reason": "Lane B: Full House /play rebuild to the contract",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T20:45:35.225Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "lane-c-module-claims": {
+          "assignmentId": "lane-c-module-claims",
+          "role": "builder",
+          "actor": "builder-c",
+          "model": "claude-opus-5",
+          "reason": "Lane C: R-9 gate, registered uiCopy, R-1 claim limb, tests",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T20:45:35.476Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "lead-w2": {
+          "assignmentId": "lead-w2",
+          "role": "lead-integrator",
+          "actor": "boss-lead",
+          "model": "claude-fable-5-1",
+          "reason": "deterministic activation",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T20:45:35.715Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        }
+      },
+      "evidenceIds": [],
+      "claimIds": [],
+      "dissentIds": [],
+      "meetingIds": [],
+      "gates": [],
+      "verdict": null,
+      "repairs": 0,
+      "startedAt": "2026-09-01T20:45:32.297Z",
+      "closedAt": null
     }
   },
   "evidence": {
@@ -2879,8 +3044,110 @@
     }
   },
   "meetings": {},
-  "lanes": {},
-  "reservations": {},
+  "lanes": {
+    "shared-checkout": {
+      "id": "shared-checkout",
+      "owner": "boss-lead",
+      "branch": "claude/economics-boss-module-2-8s591f",
+      "worktree": "/home/user/bow-economics-live",
+      "baseCommit": "128236a2856e847ac38129a8b318bd13e7b2ebce",
+      "integrationOrder": 1,
+      "status": "active",
+      "registeredAt": "2026-09-01T20:45:32.530Z"
+    }
+  },
+  "reservations": {
+    "lane-a-m2css": {
+      "id": "lane-a-m2css",
+      "path": "runtime/src/client/shared/m2.css",
+      "owner": "builder-a",
+      "laneId": "shared-checkout",
+      "reason": "Module-2 token + component layer",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:32.768Z"
+    },
+    "lane-a-arena": {
+      "id": "lane-a-arena",
+      "path": "runtime/src/client/shared/arena.ts",
+      "owner": "builder-a",
+      "laneId": "shared-checkout",
+      "reason": "procedural arena renderer",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:33.017Z"
+    },
+    "lane-a-m2ui": {
+      "id": "lane-a-m2ui",
+      "path": "runtime/src/client/shared/m2ui.ts",
+      "owner": "builder-a",
+      "laneId": "shared-checkout",
+      "reason": "brand mark, icons, component helpers",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:33.253Z"
+    },
+    "lane-a-fonts": {
+      "id": "lane-a-fonts",
+      "path": "runtime/src/client/shared/fonts",
+      "owner": "builder-a",
+      "laneId": "shared-checkout",
+      "reason": "vendor Inter latin (OFL)",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:33.553Z"
+    },
+    "lane-a-identity": {
+      "id": "lane-a-identity",
+      "path": "design",
+      "owner": "builder-a",
+      "laneId": "shared-checkout",
+      "reason": "Module 2 layer section + contrast proof",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:33.792Z"
+    },
+    "lane-b-play": {
+      "id": "lane-b-play",
+      "path": "runtime/src/client/play/main.ts",
+      "owner": "builder-b",
+      "laneId": "shared-checkout",
+      "reason": "Full House /play surface rebuild",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:34.020Z"
+    },
+    "lane-c-module": {
+      "id": "lane-c-module",
+      "path": "runtime/src/modules/fullHouse.ts",
+      "owner": "builder-c",
+      "laneId": "shared-checkout",
+      "reason": "R-9 gate, SIMPLIFICATIONS, uiCopy",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:34.263Z"
+    },
+    "lane-c-tests": {
+      "id": "lane-c-tests",
+      "path": "runtime/src/test",
+      "owner": "builder-c",
+      "laneId": "shared-checkout",
+      "reason": "R-9 test, clientClaims source test",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:34.500Z"
+    },
+    "lane-c-e2e": {
+      "id": "lane-c-e2e",
+      "path": "runtime/scripts",
+      "owner": "builder-c",
+      "laneId": "shared-checkout",
+      "reason": "R-1 claim limb + NEXT step in the e2e",
+      "sharedHotspot": false,
+      "status": "active",
+      "reservedAt": "2026-09-01T20:45:34.747Z"
+    }
+  },
   "checkpoints": [
     {
       "commit": "31fb8c83f922f4b3aa6a9186e23e22a411a62bdf",
@@ -2932,19 +3199,19 @@
   "linkedPrecedents": [],
   "shipCases": [],
   "metrics": {
-    "waves": 1,
+    "waves": 2,
     "repairs": 1,
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 9,
+    "agentsActivated": 13,
     "gateFailures": 1,
     "claimsContradicted": 0,
     "evidenceRecorded": 87,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 118,
-  "eventHead": "3c8cda4d3513383e0f63c2e24d0554a6338c3df25b02d1c05ca322d061095817",
+  "eventCount": 133,
+  "eventHead": "78bd8fd58b30c49a5c2c58c91d82616c9341e3cb018501d513c2097059d2fb46",
   "warnings": []
 }
