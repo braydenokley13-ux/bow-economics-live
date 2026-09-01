@@ -395,3 +395,181 @@ clause as satisfied: three of my nine original production-quality gaps (P3, P6, 
 untouched, P2's principal control is untouched, P8 is untouched and its repair was reported as
 done when it was not, and the projector's ceremonial close now fails as illegibility instead
 of as clipping. The direction was largely right; roughly half of it shipped.
+
+---
+
+## W3 FINAL RE-GRADE
+
+Run `m2-quality-war` · assignment `w3-visual-final` · Visual Experience Director.
+Bounded final re-grade of the changed states against `design/VISUAL_IDENTITY.md`, judged from
+rendered browser output only. Server booted on PORT 4365 from `runtime/dist` at HEAD `f9dcda1`;
+full arc driven through real Chromium (mechanics from `runtime/scripts/e2e-m2l1.cjs`: four desks,
+two markets, late joiner at Night 3, stalled desk, teacher-released Two Peaks, shock night, seven
+staged reveal beats, paged counterfactual, six staged synthesis cards). **47 screenshots**, all
+`w3f-` prefixed, in `docs/gauntlet/module-2/screens-l1-visual/`, at 1366x768 and 1920x1080. A
+parallel instrumented pass measured `#stage` overflow, computed type size and family per frame,
+and the price-dial notch geometry. **Zero console errors** across every page.
+
+Observed = visible in a `w3f-` screenshot or in a measured computed style. Inferred = corroborated
+by source read. NOT VERIFIED = could not be judged from this evidence.
+
+**Independence.** This reviewer directed D1–D3 and the W3 shortest-path items; the changes under
+review implement them. This document is therefore **advisory input, not certification**, and
+Visual Experience must not be the sole certifier of the premium clause. The verdict is NOT
+AFFIRMED, so the conflict does not launder a pass — but a second reviewer is required before any
+future AFFIRMED.
+
+**Performance budget: NOT VERIFIED.** Still no Chromebook-class budget document supplied and no
+frame/CPU measurement taken. Nothing changed this wave adds raster, WebGL or per-frame canvas; the
+two webfonts remain 36,056 B total.
+
+### Per-surface grades
+
+| Surface | W3 verdict | W3 FINAL verdict | Movement |
+|---|---|---|---|
+| `/play` | SERVICEABLE-NOT-PREMIUM (top of band) | **SERVICEABLE-NOT-PREMIUM** (top of band) | Dial de-ramped and notched correctly; one new collision defect |
+| `/board` | SERVICEABLE-NOT-PREMIUM, SYNTHESIS + PLAY/TWO-PEAKS at **SCHOOL-UI** | **SERVICEABLE-NOT-PREMIUM** — no frame remains SCHOOL-UI | Both SCHOOL-UI states left the band; analysis frames unchanged |
+| `/teach` | SERVICEABLE-NOT-PREMIUM | **SERVICEABLE-NOT-PREMIUM** | Emoji verified gone; every other named defect intact |
+
+**PREMIUM CLAUSE: NOT AFFIRMED (verdict: SERVICEABLE-NOT-PREMIUM; blocking: no).**
+
+### Did the two SCHOOL-UI states leave SCHOOL-UI? — YES, both
+
+**board SYNTHESIS — LEFT SCHOOL-UI.** OBSERVED + measured. The six-card dashboard grid is gone.
+One card per frame under `#btnSynthPage`, card bodies at **21.86px = 2.85% of screen height** at
+1366x768 (was 11.20px / 1.46%), titles at 32.78px in real Bebas Neue, `#stage` overflow 0px on all
+six cards at both shapes, generous negative space, the starburst backdrop finally reserved for a
+frame that earns it. This is the ceremonial register the identity asks for.
+`w3f-15-board-synth-card1-1366.png`, `w3f-15b-board-synth-card6-1920.png`.
+It is not premium: the card is still a bordered rounded `<div>` holding a heading and a paragraph
+(the identity's own DON'T), the "beyond-sports" close renders at roughly the same size and weight
+as the card body it is meant to follow, and **card 6 reverts** — a five-paragraph, ~200-word
+sourcing rail whose smallest live text measures **12.98px = 1.69% of screen height** occupies the
+bottom quarter of the last frame of the lesson. Correct discipline, wrong volume, on the one frame
+the room is looking at longest. Handed to Classroom/Projector.
+
+**board PLAY + Two Peaks — LEFT SCHOOL-UI.** OBSERVED + measured. `#stage` fits at both shapes
+(was +164px / +229px). Slots measure `fh-play-strip:52px · fh-peaks-board:564px ·
+synthesis-note:49px` — the live PLAY frame genuinely collapses to a strip while evidence is up, and
+the strip still carries the night, the card line and the lock counter. The punchline renders at
+24.59px = 3.20% of screen height and lands on frame; the caveat below it is now muted and smaller
+(H4 fixed here); P5's type collision is gone — the peak readout has its own right-aligned column.
+`w3f-08-board-play-twopeaks-1366.png`, `w3f-08b-board-play-twopeaks-1920.png`.
+It is not premium: the beat still **opens on the evidence and closes on the headline** — "The
+cheaper ticket made more money." sits at the bottom of the panel under two charts and two wrapped
+legends, which is H5 unrepaired at the module's mid-lesson peak; the whole panel is still a
+bordered rounded card floating on the backdrop (P4's framing clause); and two charts plus two
+legends plus a banner is a dashboard grid on the surface the identity restricts to one thing.
+
+### Emoji — VERIFIED GONE, but the replacement is not a drawn glyph
+
+OBSERVED (rendered) then grep. Rendered glyph scan of `/teach` body text at PLAY returns only
+`▸ (U+25B8)` and `◗ (U+25D7)`; `/board` and `/play` return none.
+`rg` over `runtime/src/client/teach/main.ts` for the five previously-named characters
+(`🔔 ⏰ ☑ ⚡ ⚠`) returns **zero hits**, and a full emoji-range grep of `teach/main.ts` returns
+**0**. The prior finding is discharged: no emoji reaches the control room.
+`w3f-10-teach-after-play.png`, `w3f-10b-teach-after-play-1920.png`, `w3f-10c-teach-after-play-viewport.png`.
+
+The repair is not what P8 asked for. `teach/main.ts:59-61` defines
+`BELL_GLYPH = <span class="btn-glyph">◗</span>`, `GLYPH_HIT = "/"`, `GLYPH_WARN = "!"` — Unicode
+text characters set in a 16px bordered box (`theme.css:2257`), not drawn 16px marks. Rendered, the
+bell control carries a small outlined square containing a half-disc that reads as nothing in
+particular; a room-full-of-people cue has become an unreadable pictogram. Register break closed,
+meaning not replaced.
+
+### Changed-state findings
+
+**F1 — The season-plan notch is now geometrically correct, and its label collides with the thumb
+on the default state of every night.** OBSERVED + measured. Correctness first: track $10–$120,
+`--plan-frac` with the 15px thumb-radius inset, measured notch centre 474.3px against a computed
+thumb centre of 473.4px on Desk 1 (plan $24) and 433.5 against 432.6 on Desk 2 (plan $16). W3's N2
+is FIXED. But `.fh-dial-notch{top:-3px}` puts an 18px tick and its "PLAN $24" label directly under
+a 30px thumb, and every night **opens with the dial parked on the plan price** — so the first thing
+every pair sees, five times a lesson, is a gold ring struck through its own label.
+`w3f-04-play-n1-fresh-viewport.png`, `w3f-09b-play-shock-soldout-viewport.png`.
+
+**F2 — The price dial is de-ramped but under-drawn.** OBSERVED. The reserved cap ramp is gone
+(`theme.css:571` is now an inset well, `linear-gradient(180deg,#080d14,#141c27)` with an inset
+shadow) and N4's worst clause with it. It remains an `input[type=range]` rendering as a thin flat
+empty bar with no fill behind the thumb, no zone marks, no docked readout relationship — the
+identity's DON'T for a meter reads "a generic progress bar in one flat colour"; this is its
+inverse and lands in the same place. The control the whole lesson turns on is correct and plain.
+
+**F3 — The plot scrim trades one identity breach for another.** OBSERVED.
+`board/main.ts:686` draws `rect fill:rgba(8,13,20,0.62) rx:6` behind every plot. It works: the
+starburst no longer washes the marks and the specks inside the plot rect are suppressed (P3's
+principal harm gone). What it leaves is a hard-edged rounded rectangle around the plot on every
+analysis frame — "never a bounding box/frame around the plot" in the chart law, met as a fill
+rather than a stroke. `w3f-12-board-adapt-1366.png`, `w3f-11-board-reveal-stage5-1366.png`.
+
+**F4 — Axis type clears the floor; the mark ring is 4 shapes out of 5.** OBSERVED + measured. The
+ADAPT axis renders at 24.17px = **2.69% of screen height**, above the 2.6% back-row floor, and the
+width-computed scaling holds at both shapes. `fhMark` (`board/main.ts:620-632`) now carries
+`stroke:var(--surface-panel); stroke-width:2` on circle, square, triangle and diamond — P4's
+mark-ring clause is fixed for those. The N5 "ring" mark is `fill:none; stroke:<market colour>`
+with no separator, and it is visibly the one that merges: at $10–$16 in ADAPT the orange N2 square,
+N5 ring and N1 circle fuse into a single unreadable blob. `w3f-12-board-adapt-1366.png`.
+
+**F5 — The counterfactual summary is full-width and legible; the bars beside it are unchanged.**
+OBSERVED + measured. `#fhCfSummary` measures 21.86px = 2.85% of screen height, full-bleed white
+bold across the frame — W3's shortest-path item for this frame is delivered. The bars above it are
+still **blue vs violet, colour-only, with no in-frame N1/N5 legend**, still flat full-height
+rectangles with the numbers dropped inside them, still no 4px rounded data-end and no 2px gap
+discipline; `accent-violet` remains a reserved L3 token spent here. P4's colour clause is
+untouched. `w3f-13-board-cf-1366.png`, `w3f-13b-board-cf-1920.png`. Held open for the colour/CVD owner.
+
+### Carried findings — status unchanged this wave
+
+| Id | Status | Evidence |
+|---|---|---|
+| H4 | **PARTIALLY FIXED, unchanged** — demoted on Two Peaks and REVEAL-7; on REVEAL stage 5 the room's own number ("7,732 people … could not get one") sits below the chart and below a three-line grey caption, with the bolder blue-grey caveat directly under it | `w3f-11-board-reveal-stage5-1366.png` |
+| H5 | **NOT FIXED** — ADAPT still opens on three lines of question copy with no headline number; Two Peaks still closes on its punchline instead of opening on it | `w3f-12-board-adapt-1366.png`, `w3f-08-board-play-twopeaks-1366.png` |
+| H6 | **NOT FIXED** — at 1920x1080 `/teach` is still a ~1040px centred column with ~440px dead on each side; desk names and pair names still wrap to three lines; still four KPI chips, no room-wide histogram; "done" is still a lowercase word in the big-number NIGHT slot | `w3f-10b-teach-after-play-1920.png` |
+| P6 | **NOT FIXED** — no staggered mark population, no commitment settle on lock, no sellout beat. NOT VERIFIED at frame level from stills; what is verified is that no such motion is defined | source read + state pairs |
+| P7 | **NOT FIXED** — `/play` is still a ~615px centred column on flat void with ~55% of a 1366 panel dead black, no window band, no floodlight falloff; the night card is still a bordered box | `w3f-04-play-n1-fresh-viewport.png` |
+| P9 | **NOT FIXED** — the COMPLETE paragraph still crosses a bright vertical mullion and the diagonal light shaft mid-sentence ("no forecast," / "not the" / "else's team.") | `w3f-16-board-complete-1920.png` |
+| N4 | **PARTIALLY FIXED** — the cap ramp is off the dial; KEPT still renders `cap-safe` green, the building bill `over-the-line` red, and the attendance bar is still a green→gold gradient | `w3f-09-play-shock-soldout.png` |
+
+### Not regressed — still the strongest work in the module
+
+FULL HOUSE as a composed plate with `7,256 could not get in` on its own line; the CAME × PRICE =
+TICKET MONEY box score with KEPT as the one dominant number (`w3f-09-play-shock-soldout.png`); the
+LOBBY/HOOK/COMPLETE backdrop art; REVEAL stage 7; the shape-per-night + hue-per-market encoding
+with its two-channel legend; named waiting states, no spinners; no XP/badges/leaderboards anywhere
+in the arc (D4 clean on M2).
+
+### What stands between here and PREMIUM
+
+Three things, none of them a repair of what was just changed.
+
+1. **`/play` has no place and no motion.** A centred column on flat void with half a Chromebook
+   panel dead black, and a lesson whose five commitments, five settlements and one sellout all
+   land as instant DOM swaps. The room, and the three motions already specified (40ms staggered
+   mark population, 200ms firm settle on lock, 260ms sellout edge flash, with the reduced-motion
+   collapse), are the remaining distance on this surface.
+2. **`/board`'s analysis frames still open on evidence and still frame their charts.** ADAPT,
+   REVEAL-5 and COUNTERFACTUAL each lead with paragraph copy, put the room's own number last, and
+   draw the plot inside a hard-edged rect; COUNTERFACTUAL's bars remain colour-only. The
+   headline-slot / evidence-slot / footnote-rail ramp that SYNTHESIS and Two Peaks now have has not
+   reached them.
+3. **`/teach` is not a monitor wall.** A 1040px column with 880px of dead screen, three-line name
+   wraps, "done" as a big number, no histogram, and control glyphs that no longer offend but no
+   longer signify.
+
+**Blocking judgement.** P6, P7, P9 and H6 are advisory and, in this reviewer's honest assessment,
+**not blocking for a classroom-quality bar**. None of them stops a competent teacher running a
+good session: the lesson's peaks (FULL HOUSE, Two Peaks, the staged SYNTHESIS) now land legibly
+on the surfaces that carry them, and the room can read every projector frame at both shapes. They
+are a polish wave, not a classroom gate. The one carried item with a legibility edge is P9, which
+puts body copy across a lit mullion on the final frame — handed to Classroom/Projector, who may
+make it blocking under their own law. F5's colour-only N1/N5 bars and N4's residual token misuse
+are handed to the colour/CVD owner on the same terms.
+
+### Recorded dissent
+
+Formal dissent is **maintained**, narrowed. The wave's premium clause is not satisfied and should
+not be recorded as satisfied: the two SCHOOL-UI states were genuinely repaired, but P6, P7 and P9
+are untouched across three consecutive re-grades, H6 is untouched, P4's colour clause is untouched,
+and P8's repair replaced emoji with characters rather than with drawn marks. The direction was
+right and roughly two-thirds of it has now shipped; the surfaces are at the top of
+SERVICEABLE-NOT-PREMIUM and are not premium.
