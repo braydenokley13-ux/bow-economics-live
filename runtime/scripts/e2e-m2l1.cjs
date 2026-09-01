@@ -328,8 +328,12 @@ async function classScaleCounterfactual(browser) {
       for (let r = 1; r <= rowCount; r += 1) {
         await assertFullyVisible(board, `#fhCfRows .fh-repeat-row:nth-child(${r})`, `${tag}: repeat row ${r} of ${rowCount}`);
       }
-      // The class summary — off-screen by 947px at ten desks before this repair.
+      // The class summary — off-screen by 947px at ten desks before this repair,
+      // and then on screen at 2.05% of screen height, under a LARGER caveat, once
+      // paging made it the only carrier of the room-level pattern (W3-1).
       await assertFullyVisible(board, "#fhCfSummary", `${tag}: the class summary`);
+      await assertBackRowType(board, "#fhCfSummary", `${tag}: the class summary`);
+      await assertBackRowType(board, ".scatter-svg", `${tag}: the two-column chart's axis`, { svg: true });
       await assertFullyVisible(board, "#fhCfScatter", `${tag}: the class scatter`);
       await assertFullyVisible(board, "#stage > .exit-prompt", `${tag}: the argue prompt`);
 
@@ -373,6 +377,18 @@ async function classScaleCounterfactual(browser) {
       );
     }
   }
+  // W3-2: the back control must actually move the projector backwards.
+  {
+    const before = await board.evaluate(() => document.getElementById("fhCfPager")?.textContent?.trim() ?? "");
+    const resp = teach.waitForResponse((r) => r.url().includes("/control") && r.request().method() === "POST");
+    await teach.click("#btnCfPageBack");
+    await resp;
+    await board.waitForFunction((prev) => (document.getElementById("fhCfPager")?.textContent?.trim() ?? "") !== prev, before, { timeout: 20000 });
+    const after = await board.evaluate(() => document.getElementById("fhCfPager")?.textContent?.trim() ?? "");
+    assert.notEqual(after, before, "the back-a-group control did not move the projector");
+    console.log(`${label} COUNTERFACTUAL: back-a-group moved the projector from "${before}" to "${after}"`);
+    await assertBoardFrameFits(board, `${label} COUNTERFACTUAL after back-a-group`, { width: 1366, height: 768 });
+  }
   assert.equal(
     seen.size,
     DESKS,
@@ -391,21 +407,40 @@ async function classScaleCounterfactual(browser) {
   await teach.click("#btnAdvance"); // SYNTHESIS
   await teach.waitForSelector(".phasechip.current:text('SYNTHESIS')");
   await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("SYNTHESIS"), null, { timeout: 30000 });
-  for (const shape of shapes) {
-    await board.setViewportSize(shape);
-    await board.waitForTimeout(350);
-    const tag = `${label} SYNTHESIS @ ${shape.width}x${shape.height}`;
-    await assertFullyVisible(board, "#stage > .label", `${tag}: heading`);
-    await assertFullyVisible(board, "#fhSynthClose", `${tag}: the closing beyond-sports line`);
-    await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(6) h3", `${tag}: the last card title`);
-    const fit = await board.evaluate(() => {
-      const s = document.getElementById("stage");
-      return { scrollH: s.scrollHeight, clientH: s.clientHeight };
-    });
-    assert.ok(fit.scrollH <= fit.clientH + 1, `${tag}: #stage overflows (${fit.scrollH} > ${fit.clientH}) — the ceremonial close still needs a scroll`);
-    if (shape.width === 1366) await board.screenshot({ path: path.join(SCREEN_DIR, "17-board-synthesis-12desks-1366.png") });
+  // W3 N1: staged one card at a time. At class scale, every card must fit AND
+  // stay above the back-row type floor at both shapes — the previous repair
+  // bought fit here by dropping the bodies to 11.20px / 1.46% of screen height.
+  const synthTitles = new Set();
+  for (let card = 0; card < 6; card += 1) {
+    for (const shape of shapes) {
+      await board.setViewportSize(shape);
+      await board.waitForTimeout(320);
+      const tag = `${label} SYNTHESIS card ${card + 1} of 6 @ ${shape.width}x${shape.height}`;
+      await assertFullyVisible(board, "#stage > .label", `${tag}: heading`);
+      await assertFullyVisible(board, "#fhSynthClose", `${tag}: the closing beyond-sports line`);
+      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(1) h3", `${tag}: the card title`);
+      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(1) p", `${tag}: the card body`);
+      await assertBackRowType(board, ".cardgrid .synthcard:nth-child(1) p", `${tag}: the card body`);
+      const fit = await board.evaluate(() => {
+        const s = document.getElementById("stage");
+        return { scrollH: s.scrollHeight, clientH: s.clientHeight };
+      });
+      assert.ok(fit.scrollH <= fit.clientH + 1, `${tag}: #stage overflows (${fit.scrollH} > ${fit.clientH}) — the ceremonial close still needs a scroll`);
+      if (shape.width === 1366) {
+        synthTitles.add(await board.textContent(".cardgrid .synthcard:nth-child(1) h3"));
+        if (card === 0) await board.screenshot({ path: path.join(SCREEN_DIR, "17-board-synthesis-12desks-1366.png") });
+      }
+    }
+    if (card < 5) {
+      const before = await board.evaluate(() => document.getElementById("fhSynthPager")?.textContent?.trim() ?? "");
+      const resp = teach.waitForResponse((r) => r.url().includes("/control") && r.request().method() === "POST");
+      await teach.click("#btnSynthPage");
+      await resp;
+      await board.waitForFunction((prev) => (document.getElementById("fhSynthPager")?.textContent?.trim() ?? "") !== prev, before, { timeout: 20000 });
+    }
   }
-  console.log(`${label} SYNTHESIS fits the projector at both shapes with no scroll`);
+  assert.equal(synthTitles.size, 6, `the pager showed ${synthTitles.size} distinct cards, not 6: ${[...synthTitles].join(" | ")}`);
+  console.log(`${label} SYNTHESIS: all six cards staged one at a time, each fitting both shapes with body type above the back-row floor`);
 
   for (const p of desks) await p.close();
   await board.close();
@@ -490,6 +525,7 @@ async function main() {
     assert.equal(/\b(Rae|Ben|Nour|Ivy|Ari|Tal)\b/.test(lobbyBoard), false, "a student name reached the projector");
     console.log("[e2e-m2l1] LOBBY: desks assigned, markets alternate, no student name on the board");
     await board.screenshot({ path: path.join(SCREEN_DIR, "01-board-lobby-desks.png") });
+    await assertBoardFrameFits(board, "LOBBY");
 
     /* ---- HOOK ---- */
     await teach.click("#btnAdvance");
@@ -497,6 +533,7 @@ async function main() {
     await d1.waitForFunction(() => document.body.innerText.includes("run the building"), null, { timeout: 20000 });
     await d1.screenshot({ path: path.join(SCREEN_DIR, "02-play-hook.png"), fullPage: true });
     await board.screenshot({ path: path.join(SCREEN_DIR, "03-board-hook.png") });
+    await assertBoardFrameFits(board, "HOOK");
     console.log("[e2e-m2l1] HOOK rendered on /play and /board");
 
     /* ---- PLAY ---- */
@@ -585,6 +622,7 @@ async function main() {
         assert.equal(openBoard.includes("$34"), false, "a locked price for the still-open night reached the projector");
         assert.match(openBoard, /Desks locked in/i);
         await board.screenshot({ path: path.join(SCREEN_DIR, "04-board-night1-open.png") });
+        await assertBoardFrameFits(board, "PLAY · Night 1 open");
         await d1.screenshot({ path: path.join(SCREEN_DIR, "05-play-night1-dials.png"), fullPage: true });
       }
 
@@ -596,6 +634,10 @@ async function main() {
         await d1.waitForFunction(() => document.body.innerText.includes("in the books"), null, { timeout: 20000 });
       }
       console.log(`[e2e-m2l1] ${night.label} settled for every desk`);
+      // W3 BLOCKING repair 3: EVERY board frame, not a named subset. These are
+      // the frames that measured +152px (N1-N3) and +280px (N4, with the Two
+      // Peaks panel stacked under the card banner and the lock counter).
+      await assertBoardFrameFits(board, `PLAY · after the ${night.label} bell`);
 
       if (i === 2) {
         // The Two Peaks release is a teacher decision, not a timer.
@@ -607,6 +649,20 @@ async function main() {
         assert.match(after, /The cheaper ticket made more money/);
         console.log("[e2e-m2l1] Two Peaks released by the teacher, on the room's own Night 3 curve");
         await board.screenshot({ path: path.join(SCREEN_DIR, "07-board-two-peaks.png") });
+        // `gate-l1-projector` W3: the punchline measured box 820..849 in a 768px
+        // viewport — the beat was orphaned on the surface where the teacher
+        // releases it. It must LAND on screen, at both shapes, with the money
+        // view's own type above the back-row floor.
+        for (const shape of PROJECTOR_SHAPES) {
+          await board.setViewportSize(shape);
+          await board.waitForTimeout(260);
+          const tag = `PLAY · Two Peaks released @ ${shape.width}x${shape.height}`;
+          await assertFullyVisible(board, ".fh-peaks-punch", `${tag}: the punchline`);
+          await assertBackRowType(board, ".fh-money-svg", `${tag}: the money view's peak labels`, { svg: true });
+        }
+        await board.setViewportSize({ width: 1600, height: 900 });
+        await board.waitForTimeout(150);
+        await assertBoardFrameFits(board, "PLAY · Two Peaks released");
       }
 
       if (i === 3) {
@@ -625,15 +681,20 @@ async function main() {
     const d3Body = await d3.evaluate(() => document.body.innerText);
     assert.match(d3Body, /auto/i, "the auto-committed night is not labelled on the desk that stalled");
     console.log("[e2e-m2l1] Desk 3's un-locked Night 5 was auto-committed at the plan price and flagged as such");
+    await assertBoardFrameFits(board, "PLAY · five nights in the books");
     await teach.screenshot({ path: path.join(SCREEN_DIR, "09-teach-after-play.png"), fullPage: true });
 
     /* ---- REVEAL, staged ---- */
     await teach.click("#btnAdvance");
     await teach.waitForSelector(".phasechip.current:text('REVEAL')");
+    await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("REVEAL"), null, { timeout: 20000 });
+    await assertBoardFrameFits(board, "REVEAL stage 0");
     for (let i = 0; i < 7; i += 1) {
       const resp = teach.waitForResponse((r) => r.url().includes("/control") && r.request().method() === "POST");
       await teach.click("#btnRevealNext");
       await resp;
+      await board.waitForTimeout(900);
+      await assertBoardFrameFits(board, `REVEAL stage ${i + 1}`);
       if (i === 4) {
         // Stages 1-5 put the five nights up one at a time. Each press now NAMES
         // its own beat on the projector (gate-l1-play "REVEAL stages 1-5 spend
@@ -656,16 +717,14 @@ async function main() {
         // TOP of 764 in a 768px viewport and 1073 in a 1080px one — the room saw
         // none of it, while /teach told the teacher it was "on the screen now".
         // It must be fully inside the projector without a scroll, at both shapes.
-        const revealShapes = [
-          { width: 1366, height: 768 },
-          { width: 1920, height: 1080 },
-        ];
-        for (const shape of revealShapes) {
+        for (const shape of PROJECTOR_SHAPES) {
           await board.setViewportSize(shape);
           await board.waitForTimeout(250);
           const tag = `REVEAL stage 5 @ ${shape.width}x${shape.height}`;
           await assertFullyVisible(board, "#fhRenewalsRule", `${tag}: the renewals rule`);
-          await assertStageScrollable(board, tag);
+          // The compacted chart's own SVG type is the thing the compaction
+          // repair shrank to 1.56% while the HTML around it stayed legible.
+          await assertBackRowType(board, ".scatter-svg", `${tag}: the compacted chart's axis`, { svg: true });
         }
         await board.setViewportSize({ width: 1600, height: 900 });
         await board.waitForTimeout(250);
@@ -717,6 +776,13 @@ async function main() {
     assert.ok(shapes >= 2, "every night is drawn with the same mark — the room cannot tell the nights apart");
     assert.match(adaptBoard, /SAME colour and the SAME shape/i);
     await board.screenshot({ path: path.join(SCREEN_DIR, "11-board-adapt-curve.png") });
+    await assertBoardFrameFits(board, "ADAPT");
+    for (const shape of PROJECTOR_SHAPES) {
+      await board.setViewportSize(shape);
+      await board.waitForTimeout(200);
+      await assertBackRowType(board, ".scatter-svg", `ADAPT @ ${shape.width}: the class chart's axis`, { svg: true });
+    }
+    await board.setViewportSize({ width: 1600, height: 900 });
     console.log(`[e2e-m2l1] ADAPT: questions plus the room's whole curve — ${curvePoints} class points, two labelled series`);
 
     /* ---- COUNTERFACTUAL: Night 1 vs Night 5 ---- */
@@ -746,19 +812,21 @@ async function main() {
     // Same dissent, second half: the scatter measured a rendered TOP of 720/839/1007
     // in viewports of 768/900/1080, so the prompt in the largest type on this board
     // pointed at dots nobody could see. Rendered is not shown.
-    for (const shape of [
-      { width: 1366, height: 768 },
-      { width: 1920, height: 1080 },
-    ]) {
+    for (const shape of PROJECTOR_SHAPES) {
       await board.setViewportSize(shape);
       await board.waitForTimeout(250);
       const tag = `COUNTERFACTUAL @ ${shape.width}x${shape.height}`;
       await assertFullyVisible(board, "#fhCfScatter", `${tag}: the class scatter the prompt sends the room to`);
       await assertFullyVisible(board, "#stage > .exit-prompt", `${tag}: the argue prompt`);
-      await assertStageScrollable(board, tag);
+      // `gate-l1-play` W3-1: paging made the class summary the ONLY carrier of
+      // the room-level pattern, and it rendered at 2.05% of screen height under
+      // a LARGER caveat.
+      await assertBackRowType(board, "#fhCfSummary", `${tag}: the class summary`);
+      await assertBackRowType(board, ".scatter-svg", `${tag}: the two-column chart's axis`, { svg: true });
     }
     await board.setViewportSize({ width: 1600, height: 900 });
     await board.waitForTimeout(250);
+    await assertBoardFrameFits(board, "COUNTERFACTUAL");
     console.log("[e2e-m2l1] COUNTERFACTUAL: scatter fully above the fold at 1366x768 and 1920x1080");
     // R4 (`econ-l1-n5-attribution`): every repeat row states which channel moved
     // its crowd, in its own fans — never a bare renewals claim.
@@ -776,7 +844,23 @@ async function main() {
     await teach.click("#btnAdvance");
     await teach.waitForSelector(".phasechip.current:text('SYNTHESIS')");
     await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("SYNTHESIS"), null, { timeout: 20000 });
-    const synth = await board.evaluate(() => document.body.innerText);
+    // W3 N1: the six-card dashboard grid is staged ONE card per frame under the
+    // teacher's own pager (it was previously made to fit by shrinking its bodies
+    // to 11.2px on a projector). Every card must still reach the room, and every
+    // page must fit at both shapes — a pager that hides a card is the same defect
+    // in a new place.
+    let synth = "";
+    for (let card = 0; card < 6; card += 1) {
+      synth += "\n" + (await board.evaluate(() => document.body.innerText));
+      await assertBoardFrameFits(board, `SYNTHESIS card ${card + 1} of 6`);
+      if (card < 5) {
+        const before = await board.evaluate(() => document.getElementById("fhSynthPager")?.textContent?.trim() ?? "");
+        const resp = teach.waitForResponse((r) => r.url().includes("/control") && r.request().method() === "POST");
+        await teach.click("#btnSynthPage");
+        await resp;
+        await board.waitForFunction((prev) => (document.getElementById("fhSynthPager")?.textContent?.trim() ?? "") !== prev, before, { timeout: 20000 });
+      }
+    }
     for (const title of [
       "REVENUE = PRICE × PEOPLE",
       "THE CARD MOVED THE CROWD",
@@ -785,7 +869,7 @@ async function main() {
       "TWO BOOKS, NO EXCHANGE RATE",
       "YOUR JOB IS REAL",
     ]) {
-      assert.ok(synth.includes(title), `synthesis card missing: ${title}`);
+      assert.ok(synth.includes(title), `synthesis card never reached the projector across the six staged frames: ${title}`);
     }
     assert.match(synth, /4,066/); // the dated Fever attendance figure
     assert.match(synth, /2009/); // the dated dynamic-pricing anchor
@@ -797,20 +881,20 @@ async function main() {
     // the FIRST ROW of card titles are the exact elements it found beheaded at
     // both resolutions, so they are the ones asserted — as rendered boxes inside
     // the viewport, not as strings inside innerText.
-    for (const shape of [
-      { width: 1366, height: 768 },
-      { width: 1920, height: 1080 },
-    ]) {
+    for (const shape of PROJECTOR_SHAPES) {
       const label = `SYNTHESIS @${shape.width}x${shape.height}`;
       await board.setViewportSize(shape);
       await board.waitForTimeout(400);
       await assertFullyVisible(board, "#stage > .label", label + " heading");
-      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(1) h3", label + " card 1 title");
-      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(2) h3", label + " card 2 title");
-      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(3) h3", label + " card 3 title");
-      await assertStageScrollable(board, label);
+      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(1) h3", label + " card title");
+      await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(1) p", label + " card body");
+      await assertFullyVisible(board, "#fhSynthClose", label + " the beyond-sports close");
+      // W3 N1: this frame was un-clipped by SHRINKING — 11.20px bodies and
+      // 9.29px sources at 1366x768. Fit is not the only condition.
+      await assertBackRowType(board, ".cardgrid .synthcard:nth-child(1) h3", label + " card title");
+      await assertBackRowType(board, ".cardgrid .synthcard:nth-child(1) p", label + " card body");
       await board.screenshot({ path: path.join(SCREEN_DIR, `14-board-synthesis-${shape.width}.png`) });
-      console.log(`[e2e-m2l1] ${label}: heading and the first card row are fully inside the viewport`);
+      console.log(`[e2e-m2l1] ${label}: the staged card is inside the viewport and above the back-row type floor`);
     }
     await board.setViewportSize({ width: 1600, height: 900 });
 
@@ -819,6 +903,7 @@ async function main() {
     await teach.waitForSelector(".phasechip.current:text('COMPLETE')");
     await board.waitForFunction(() => document.body.innerText.toUpperCase().includes("FULL HOUSE — COMPLETE"), null, { timeout: 20000 });
     await board.screenshot({ path: path.join(SCREEN_DIR, "15-board-complete.png") });
+    await assertBoardFrameFits(board, "COMPLETE", null);
     console.log("[e2e-m2l1] COMPLETE reached on all three surfaces");
 
     for (const page of [d1, d2, d3, d4]) await page.close();
@@ -833,6 +918,7 @@ async function main() {
       process.exitCode = 1;
     } else {
       console.log(`[e2e-m2l1] zero console errors across every page of both sessions (4-desk arc + 12-desk class-scale run)`);
+      console.log(`[e2e-m2l1] projector fit asserted on ${boardFramesChecked.length / 2} board frames x 2 shapes (1366x768 and 1920x1080): scrollHeight <= clientHeight on every one.`);
       console.log("[e2e-m2l1] PASS — full Full House arc verified end to end across /teach, /play and /board.");
     }
   } catch (error) {

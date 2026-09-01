@@ -689,7 +689,9 @@ function fhPlotScrim(x: number, y: number, w: number, h: number): string {
 function fhCurveSvg(points: FHPoint[], markets: string[], widthFrac = 0.84, plotHeight = 324): string {
   const W = 960;
   const { font, mL, mB, scale } = fhAxisType(widthFrac, W);
-  const mR = 24;
+  // Big type needs room at the right edge too: the last tick is centred on the
+  // axis end, so at font 32 "$120" ran past the viewBox and rendered clipped.
+  const mR = Math.max(24, Math.round(font * 1.7));
   const mT = 18;
   const H = plotHeight + mT + mB;
   const xMin = 10;
@@ -714,7 +716,12 @@ function fhCurveSvg(points: FHPoint[], markets: string[], widthFrac = 0.84, plot
   }
   svg += `<text x="${(mL + (W - mR)) / 2}" y="${H - 6}" text-anchor="middle" style="font:${font}px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">TICKET PRICE</text>`;
   const yTitleX = Math.round(font * 0.9);
-  svg += `<text x="${yTitleX}" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 ${yTitleX} ${(mT + H - mB) / 2})" style="font:${font}px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">PEOPLE WHO CAME</text>`;
+  // The rotated title has to live inside the PLOT HEIGHT. At the compact chart's
+  // larger type "PEOPLE WHO CAME" measured longer than the plot and rendered
+  // clipped ("PEOPLE WHO CA"), so the short form is used where the long one does
+  // not fit rather than shrinking the type back under the floor.
+  const yTitle = font * 8.3 > plotHeight ? "PEOPLE" : "PEOPLE WHO CAME";
+  svg += `<text x="${yTitleX}" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 ${yTitleX} ${(mT + H - mB) / 2})" style="font:${font}px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">${yTitle}</text>`;
 
   // No joining stroke: five nights are five demand worlds and a line through
   // them is a false picture (gate-l1-play P1). One mark per desk-night, shaped
@@ -974,8 +981,6 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // the tightening is no longer opt-in per stage — every REVEAL beat gives up
       // leading, and only the beats that stack a second panel give up chart width.
       stage.classList.add("fh-tight");
-      void ruleUp;
-      void booksUp;
       const ruleHtml = ruleUp
         ? `<div id="fhRenewalsRule" class="fh-reveal-rule">${escapeHtml(String(view["renewalsRule"]))}</div>`
         : "";
@@ -1037,7 +1042,8 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // The module now hands over ONE teacher-advanced group of at most
       // CF_ROWS_PER_PAGE rows; the class summary is computed over every row and
       // rendered outside the paged column, so it is on screen for every group.
-      const pageCount = Number(view["cfPageCount"] ?? 1);
+      // The group count is carried by the pager label itself ("Desks 1-3 of 12 ·
+      // group 1 of 4"); a second reassurance line cost a row of the projector.
       const pageLabel = String(view["cfPageLabel"] ?? "");
       // Same TIGHTEN limb as the stacked REVEAL beats: leading and chart width
       // give ground so the group, the scatter and the class summary all fit.
@@ -1065,13 +1071,12 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
           <div class="fh-cf-col">
             ${
               cfPoints.length > 0
-                ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"], 0.44, 240)}</div>${fhLegend(cfPoints)}`
+                ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"], 0.44, 210)}</div>${fhLegend(cfPoints)}`
                 : ""
             }
           </div>
         </div>
         <div class="synthesis-note fh-cf-summary" id="fhCfSummary">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
-        ${pageCount > 1 ? `<div class="fh-cf-pager-hint">The whole room's desks are on this card — your teacher walks the groups.</div>` : ""}
         <div class="synthesis-note" style="font-size:1vw;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>`;
       return;
     }

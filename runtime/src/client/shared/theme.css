@@ -586,6 +586,12 @@ body {
   position: relative;
   padding-bottom: 24px;
 }
+/* Chromium's UA sheet puts `margin: 2px` on `input[type=range]`, which offsets
+   the track from this wrapper and would put the notch 2px off its own price. */
+.fh-dial .price-dial-input {
+  margin: 0;
+  display: block;
+}
 .fh-dial-notch {
   position: absolute;
   top: -3px;
