@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `107:325d61899a874160ad2d353318063c0498f2837fff512e092069dcf38a28c429`  
-Updated: 2026-09-01T00:13:26.304Z
+Event head: `110:7a56a497939d0dde263b2766e1db9374cb8353968c3e63409fa4e3c8c8e99a07`  
+Updated: 2026-09-01T00:18:09.097Z
 
 ## Founder intent
 
@@ -42,8 +42,9 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
-- classroom-projector-critic — lead-integrator — active — claude-opus-5
+- classroom-projector-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - visual-experience-director — lead-integrator — active — claude-opus-5
+- builder — lead-integrator — active — claude-opus-5
 
 ## Required evidence
 
@@ -78,6 +79,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-econ-r1 — economic-truth-report — L1 econ re-check: weak dominance FIXED (38/110 undominated above-optimum states), tent low arm FIXED, N4 trap FIXED, cash ceiling FIXED (DP gap $0). NEW BLOCKING: season two-book tension sign flipped — best cash line also wins renewals 92-96% vs flat 80% on both books; synthesis card notes false; undisclosed spend-to-renewals channel
 - gate-l1-play-r1 — gameplay-report — L1 play re-rate: RATING STRONG (was FUNCTIONAL). Pooled curve fixed, Two Peaks proves itself, spend decidable. New blocking: COUNTERFACTUAL board instruction points at a scatter not rendered that phase; renewals undercut cost never stated on any student surface. Memphis 0-16 orange blob; REVEAL stages 1-5 dead air
 - gate-l1-teacher — teacher-transfer-report — L1 teacher gate: TRANSFER NOT READY. SYNTHESIS board strong, recovery solid, reveals gated. But /teach renders identically LOBBY/HOOK/PLAY, ON-THE-PROJECTOR vanishes during reveals, 7 reveal stages a blind n/7 counter, stalled desks grey. HK-1: complete director script (NOW/ASK/DON'T-EXPLAIN-YET/TRIGGER/minute budgets) exists in DESIGN_C lines 253-270 and reached the product as one fragment. Nine blocking repairs
+- gate-l1-projector — projector-report — L1 projector gate: board privacy PASS (43 rendered scans, zero leaks); fallbacks PASS except BLOCKING unfreeze bug (sessionService.ts:346-351 clears frozen but not paused — projector stays dark); choreography FUNCTIONAL — systemic #stage clipping hides SYNTHESIS heading + card titles at BOTH resolutions, last bell auto-dumps the class picture, evidence tier below back-row legibility floor, /play below fold. 56 screenshots
 
 ## Claim ledger
 

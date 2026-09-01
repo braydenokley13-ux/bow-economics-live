@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T00:13:26.304Z",
+  "updatedAt": "2026-09-01T00:18:09.097Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -751,12 +751,23 @@
           "model": "claude-opus-5",
           "reason": "Three-coupled-surfaces session choreography, reveal theater, board privacy, fallbacks on the repaired lesson",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T23:56:20.774Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T00:18:08.860Z",
+          "sections": {
+            "session-choreography-verdict": "FUNCTIONAL — every beat is teacher-triggered with no timers, bell-to-board 588-1009ms, live lock counter; but the centrepiece is spoiled: closing Night 5 auto-dumps all 25 desk-night marks, REVEAL then wipes to a blank WAITING screen and replays known nights; 'Reveal next' unlabelled across 7 presses.",
+            "board-privacy-verdict": "PASS, observed: 43 rendered-output scans across every phase and both resolutions — zero student names, no seatId/rejoinPin/data-seat tokens, no per-desk cash; crests + per-market aggregates only. Non-blocking flag: COUNTERFACTUAL publishes a per-desk table with a visibly worst line.",
+            "teacher-fallback-verdict": "PASS with one BLOCKING defect: sessionService.ts freeze sets {frozen,paused} but unfreeze clears only frozen — after Unfreeze the projector stays dark on PAUSED with misleading teacher UI. Two Peaks/reveal-stage refresh-and-retrigger all verified solid; onPhaseExit settles correctly; Pause/Unpause exact.",
+            "classroom-drama-notes": "Strongest: REVEAL stage 5 and the Two Peaks money view. Weakest: SYNTHESIS — the formalization heading and first card-title row are clipped off the top at BOTH resolutions (systemic #stage centre-flex + overflow hidden: text assertions pass while the room cannot see it); the evidence tier (axis labels, key, books tiles) sits below a ~2.6%-of-screen-height back-row floor; /play runs 1195px vs 768/600 viewports with LOCK below the fold and a never-hiding PIN panel. 56 screenshots in screens-l1-projector/.",
+            "required-repairs": "Blocking: unfreeze must clear paused; stop silent stage clipping and assert viewport visibility not innerText. Required before release: no auto-publish on last bell; evidence tier legibility; named reveal stages on /teach; /play above fold at 1024x600 + PIN dismiss + 44px steppers; teacher framing for the counterfactual table. Runtime-wide flag (not this wave): persistent PIN + name is a seat-takeover vector. Not verified: real optics, touch drag, CVD as projected, mid-class server restart, real students."
+          },
+          "evidenceIds": [
+            "gate-l1-projector"
+          ],
+          "cost": {
+            "tokens": 164705,
+            "toolUses": 71
+          }
         },
         "gate-l1-visual": {
           "assignmentId": "gate-l1-visual",
@@ -767,6 +778,20 @@
           "ephemeral": false,
           "status": "active",
           "activatedAt": "2026-08-31T23:56:21.014Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "repair-l1-round2": {
+          "assignmentId": "repair-l1-round2",
+          "role": "builder",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Wave-2 repair round 2 (2 of 3): all remaining blocking findings across econ season-books, play interpretability, teacher director layer, projector unfreeze/clipping, visual fonts/moments.",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T00:18:09.097Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -791,7 +816,8 @@
         "gate-l1-visual",
         "gate-l1-econ-r1",
         "gate-l1-play-r1",
-        "gate-l1-teacher"
+        "gate-l1-teacher",
+        "gate-l1-projector"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1520,6 +1546,26 @@
       },
       "recordedAt": "2026-09-01T00:13:09.167Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-projector": {
+      "id": "gate-l1-projector",
+      "wave": 2,
+      "kind": "projector-report",
+      "label": "L1 projector gate: board privacy PASS (43 rendered scans, zero leaks); fallbacks PASS except BLOCKING unfreeze bug (sessionService.ts:346-351 clears frozen but not paused — projector stays dark); choreography FUNCTIONAL — systemic #stage clipping hides SYNTHESIS heading + card titles at BOTH resolutions, last bell auto-dumps the class picture, evidence tier below back-row legibility floor, /play below fold. 56 screenshots",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-projector--GATE_L1_PROJECTOR.md",
+      "sha256": "b0c4815946e40b35292f29e4255f9cc7d218bb92e7644a1c7a1685b43d86a4c9",
+      "size": 12310,
+      "metadata": {
+        "privacy": "PASS",
+        "choreography": "FUNCTIONAL",
+        "tags": [
+          "projector",
+          "wave-2",
+          "gate"
+        ]
+      },
+      "recordedAt": "2026-09-01T00:17:48.239Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1842,14 +1888,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 21,
+    "agentsActivated": 22,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 36,
+    "evidenceRecorded": 37,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 107,
-  "eventHead": "325d61899a874160ad2d353318063c0498f2837fff512e092069dcf38a28c429",
+  "eventCount": 110,
+  "eventHead": "7a56a497939d0dde263b2766e1db9374cb8353968c3e63409fa4e3c8c8e99a07",
   "warnings": []
 }
