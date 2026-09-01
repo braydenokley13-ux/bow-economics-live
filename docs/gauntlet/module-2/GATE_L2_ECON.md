@@ -632,3 +632,300 @@ and B6 has been replaced by a worse defect — a synthesis card that prints "0% 
 landed somewhere the desk that paid for it never sees" in the same paragraph as $1,577,412 that did
 exactly that. L3 opens on the room's belief about who paid whom. A decision to proceed does not erase
 this dissent.
+
+---
+
+## W4 ADJUDICATION
+
+Boss run `m2-quality-war`, assignment `w4-econ-adjudicate`. Owning-critic adjudication of dissent
+`econ-l2-evidence-surfaces` against the Wave-4 claim-binding repair. Same critic, fresh probes,
+current tree. Baseline for this round is the RE-CHECK section above (B3 driver=visitor 40/40 with
+7/40 failing price control; B7 externalPct 0%/>100%; B8 sign reversal).
+
+**Evidence status.**
+
+- **Observed (computation, this session):** `npm run build --prefix runtime` exit 0;
+  `npm test --prefix runtime` → **403/403 pass**; `l2-tuning` harness re-run against current dist →
+  **exit 0, 12/12** (P11 self-reports 224 rooms / 10,720 surfaces / 70,628 atoms / 75 ids /
+  0 disagreements). Twelve fresh probe scripts driving the compiled
+  `runtime/dist/modules/hostTheLeague.js` through the real reducer: a 200-room random price/share
+  sweep, a 300-room plausible-price sweep, a 40-room market-size sweep with an **independently
+  written** price control, the two FL-A adversarial rooms, a uniform-share ladder, four
+  **source-level** injections into a sandboxed copy of dist run against a sandboxed harness, a
+  bot-path diagnosis of the joint spread, and a `moduleClaims` coverage sweep against the three
+  client renderers.
+- **Not verified by me:** every real-world sports fact (`gate-l2-sr`); any gameplay, projector,
+  visual or teacher-transfer rating; anything about how this plays in a room. No browser session.
+  Boss evidence ids referenced: `gate-l2-econ`, `recheck-l2-econ`, `l2-tuning`, `l2-tests-r1`,
+  `sel-econ-review`, `analyst-wave3`.
+
+### mechanism-verdicts
+
+**N11 — HIGHEST SEVERITY. NEW, BLOCKING. The B7 repair's replacement sentence names the wrong
+economics, and it names it in the rooms that best demonstrate the module's own concept.** (observed)
+
+The `externalPct === null` branch of `spilloverClaim` (module :1752–1755) prints:
+
+> "… while the desks' own private columns say the room spent more on Draw than it got back.
+> **That is over-investment AND spillover at the same time, and both of them are real.**"
+
+and then, in the same paragraph, the joint line prints the truth:
+
+> "Counted as one room instead of desk by desk … reinvesting left this room **$2,067,451 better off**."
+
+Those two sentences cannot both be right. Over-investment means the spending destroyed net value;
+`roomJointGain` says it created $2.07M. Measured through the real reducer:
+
+```
+uniform-share ladder, 12 desks @ $50
+  share 25%   partials  -$516,816   joint  +$2,217,804   -> prints "over-investment"   CONTRADICTS
+  share 30%   partials -$1,724,912  joint  +$1,201,636   -> prints "over-investment"   CONTRADICTS
+  share 35%   partials -$3,096,946  joint     -$72,938   -> prints "over-investment"   correct
+  share 40%   partials -$4,474,764  joint  -$1,345,012   -> prints "over-investment"   correct
+
+300 plausible-price rooms (prices $30-$70), branch vs the room's TRUE joint effect:
+  "over-investment" & room jointly BETTER off : 173      <- the card contradicts its own joint line
+  "over-investment" & room jointly WORSE  off :   4
+  worst: card says over-investment, room is $2,449,577 better off
+
+the harness's OWN 56 distinct rooms: 36 print "over-investment", 15 of those are jointly better off
+  worst: 12 desks / flat-$50 / all-25% — over-investment printed against +$2,217,804 joint
+200 random rooms: 51 fire the branch, 49 of them jointly better off
+```
+
+The branch predicate is wrong by construction. `coherent` gates on
+`created = ownGain + gaveByChoice` (:1409–1415) — a sum of private partials plus the payer's own
+external column. That quantity is not the room's value creation and the module knows it: the
+docstring at :912–930 says so explicitly ("Never print it as a room-level effect — print
+`roomJointGain` for that"), and then the over-investment noun is branched off exactly that
+forbidden aggregate. The module computes the right number, prints it three clauses later, and
+still names the situation from the wrong one.
+
+The economics matters more than the contradiction. Privately unprofitable **and** socially
+profitable is not over-investment — it is the positive-externality / under-provision case, the
+free-rider structure this module exists to teach and the premise L3's revenue sharing rests on. A
+room told it over-invested has been told the fix is to spend less. That is the inverted premise the
+original dissent named, arriving by a new route. It is on **three** surfaces:
+`board:reveal-2:ledgerSummary`, `teach:adapt-q3:answerKey`, `synthesis:spillover` — the projector,
+the teacher's answer key, and the formalization card carrying the module's named concept.
+**BLOCKING.**
+
+**N12 — NEW, BLOCKING. The audit limb that should have caught N11 recomputes the print condition,
+not the economics.** (observed)
+
+`claimWord("spillover.overInvested", …)` (:1754) is audited by
+`check(!truth.coherent, "the room over-invested")` (harness :902–904), where `truth.coherent` is a
+verbatim re-derivation of the module's own `coherent` (harness :815 vs module :1415). The
+"independent recomputation" is the branch condition itself, so the limb passes whenever the branch
+fires — it is tautological and can never fail. That is why N11 survived a 70,628-atom sweep with
+0 disagreements. Separately, the word **"over-investment"** carries no `ClaimAtom` at all; the atom
+sits on the neighbouring private-scope phrase. This is the same shape as round 1's **B2**
+(harness P3's confounded "visible" limb) and needs the same treatment. **BLOCKING.**
+
+**N13 — The claim-binding family is real and it bites. CONFIRMED by my own injections.** (observed)
+
+I did not accept the builder's three in-memory surface mutants. I patched a sandboxed copy of
+`dist/modules/hostTheLeague.js` at **source** and ran a sandboxed harness against it — four
+falsehoods, one per class, each through the real render path:
+
+```
+I1 BOUND       ungate externalPct (restore the pre-repair formula)  -> P11 FAIL, harness exit 1
+I2 SIGN        joint direction read from ownGain, not roomJointGain -> P11 FAIL, harness exit 1
+I3 QUANTIFIER  drop the price control from `driver`                 -> P11 FAIL (20 QUANTIFIER
+               disagreements, "market.driverOwn … recomputed false"), harness exit 1
+I4 BINDING     text prints a number that is not the atom's value    -> P11 FAIL (192 BINDING
+               disagreements, "$2,361,616 is not on the surface"), harness exit 1
+```
+
+All four bite on the correct limb. The structural binding (`claim` / `claimWord` /
+`Claimed` / `moduleClaims`) and the single-source `spilloverClaim` are a genuine advance over three
+rounds of copy edits, and the family is non-vacuous. Two limits, both recorded below: it can only
+see surfaces that opt in (N14), and one of its quantifier limbs is tautological (N12).
+
+**N14 — Coverage gaps in `moduleClaims`. Non-blocking, required.** (observed)
+
+The sweep cannot detect an unregistered surface: `moduleClaims` (:3430) pushes a card only
+`if (c.claims.length > 0)`, so a claim-carrying surface with no atoms is silently absent rather than
+flagged, and the harness's `coversRequiredIds` checks a hardcoded list of five ids. Three real gaps
+found by grepping the renderers:
+
+- **`synthesis:composition` carries 0 atoms and prints four model-derived percentages.** Measured
+  bodies: "the national check was **50.5%** … the gate was **22%** … **29.1%** against a gate of
+  **24.8%**" (mixed room); at $10 flat, 64.6%/8.3%; at $120 flat, 78.9%/0%. All computed from
+  `pipes`, none bound. Drift risk is lower than spillover/market-size (they are shares of a total),
+  but the module's own docstring says a surface missing from the list is a surface the audit cannot
+  see, and this is one.
+- **`client/play/main.ts:3013`** renders the static sub-label *"Everything your Draw moved — **most
+  of it** the Draw you were DEALT"* under the give/take bars. Unregistered quantifier, and false in
+  **16 of 96** probed desk-instances (worst: 12 desks @ $90 all-40%, desk 7 gave $847,704 of which
+  **$511,224 — 60% — was bought, not dealt**). Harmless in low-reinvest rooms, false in exactly the
+  rooms the lesson wants to celebrate.
+- `recomputeMarketPath` (harness :759–805) is described as "written from the econ gate's
+  specification rather than from the module's implementation" but is a near line-for-line
+  transcription of `smallMarketPathFrom`'s selector and control. It gives real purchase against
+  implementation drift (I3 proves that) and **none** against an error in the shared specification.
+  Name it for what it is.
+
+`synthesis:beyond` carrying 0 atoms is correct — it is a bridge card of real-world facts, which is
+`gate-l2-sr`'s to verify, not mine.
+
+**N15 — The $6,944 joint-magnitude spread is a benign scope difference, not a defect. (observed)**
+
+Diagnosed to a single cause, not inferred. In the 8-desk / flat-$50 / all-25% room (module
+`roomJointGain` $1,159,532 vs harness replay $1,166,476, spread 0.60%):
+
+```
+bot clubs whose path drifted in the all-zero replay: 1
+  slot 9 Philadelphia (unseated)  spend $466,282 -> $410,996   draw 49/45/55 -> 49/45/54
+live desks whose baselineDrawPathFor differs from the replay path: 0
+```
+
+The whole spread is one league-office club re-deriving its own reinvest dollars from a poorer door
+in a world where the desks spent nothing. The module's figure answers "what did **this room's**
+choices do, league office held fixed" — the same counterfactual the per-desk instrument answers, and
+the correct one for a sentence about the desks. The replay answers a different question. Sign agrees
+in all 224 harness rooms and in every room I probed. **Not a defect.** The only gap is that the
+disclosure lives in harness stdout; it belongs in `SIMPLIFICATIONS` beside the other carve-outs.
+
+**N16 — Mechanism re-confirms.** Nothing in this round touched the model. 403/403, 12/12, exhaustive
+best-response and solvency findings from `gate-l2-econ` stand unchanged: interior reinvest optimum,
+no dominant price, real externality worth 24–48% of value created, exact non-negative decomposition,
+no RNG, no unwinnable seat, no preview.
+
+### false-lesson-risks
+
+| id | False lesson | Evidence | Severity |
+|---|---|---|---|
+| **FL-J** | **"Putting money into your club was too much money."** N11. Printed on the projector, the SPILLOVER card and the teacher's answer key in 173 of 177 plausible-price rooms where the room was in fact jointly better off — up to $2,449,577 better off. Inverts the module's named concept and hands L3 the premise that the room should have spent less, when the true finding is under-provision under a positive externality. | observed, real reducer | **BLOCKING** |
+| **FL-A** | **"The small market won because of who was visiting" — when price won it.** The round-2 finding. **REFUTED this round.** Driver over 40 rooms is now visitor 25 / own-draw 10 / price 2 / none 3 (was visitor 40/40). **0 of 40** cards credit the visitor while failing my independently written price control (was 7/40). **0 of 40** credit the visitor with a block larger than the gap (was 23/40). The `random1/all-10%` room now prints *"THE PRICE GAP carried it, not the market: these two desks charged $60 and $110 for the same product."* | observed | **CLEARED** |
+| **FL-K** | "Most of what your Draw moved was money you were handed." N14, `play/main.ts:3013`. False in 16/96 probed desk-instances, up to 60% bought. Student surface, static label, unbound. | observed | non-blocking |
+| FL-B, FL-F, FL-G, FL-H, FL-I | Unchanged from the RE-CHECK section. FL-B and FL-F discharged there (R-a, R-b); FL-G, FL-H, FL-I still open as R-h, R-f, R-d. | observed | non-blocking |
+
+### dominant-strategies
+
+Not re-run exhaustively — nothing in this wave touched `settleHome`, `nextDraw`, `drawGain`,
+`localMediaFor` or the grids, and `l2-tuning` P1–P10 re-pass at the shipped constants this session.
+The `gate-l2-econ` findings stand: strictly interior optimum at 15%/10% under a 254,016-combination
+enumeration, price argmax moving every week for every seat, best response varying with the room,
+cash-optimal week-3 share 0% for every desk (disclosed at the dial, taught at REVEAL stage 5), no
+preview, no copy-the-neighbour. **No new dominant strategy.** No exploit is created by the claim
+layer — every atom is read-only over settled weeks and nothing in `moduleClaims` is reachable before
+commitment.
+
+One residual selection note, non-blocking: `smallMarketPathFrom` still prefers
+`bestControlledVisitor ?? bestControlled ?? bestAny` (:1603), so where any price-controlled
+visitor-driven pair exists the exhibit will show one. That is no longer selection on the conclusion
+in the harmful sense — the shown pair now genuinely passes the control and genuinely has the visitor
+as the largest block inside the gap, and in 12 of 40 rooms a different, honest driver printed — but
+the room is never told a search happened. Two smaller observations for the projector critic, not
+mine to rate: in the FL-A room the big-market comparator is a night that took **$0** through the
+door (Philadelphia hosting Draw-10 Sacramento at $110), and own-draw rooms print negative blocks
+(*"-$262,260 the building and the price"*) that are arithmetically exact and reconcilable but are a
+grade 5–6 legibility question.
+
+### synthesis-map-verdict
+
+| card | round-2 verdict | this round |
+|---|---|---|
+| `shared-product` | PASS | **PASS**, now atom-bound (1 atom). |
+| `spillover` | FAIL (externalPct 0%/>100%) | **FAIL, new ground.** The percentage is repaired — 0 of 200 random rooms print outside 0–100, 0 print 0% beside positive spillover, no rendered `%` anywhere on any claim surface leaves [0,100] across 200 rooms. The joint figure is published beside the labelled partial sum and agrees in sign with my replay in every probed room. Both B7 and B8 discharge on their stated conditions. The card then **misnames the situation** in 173 of 177 plausible-price rooms that fire the alternate branch (N11). |
+| `composition` | PASS | **PASS on arithmetic, UNREGISTERED** — four computed percentages, 0 atoms (N14). |
+| `market-size` | FAIL (cause asserted without price control) | **PASS.** The control is now a selection filter, both controlled figures and all three blocks always print, the driver is computed and can come back `price` or `own-draw`, and my independent recompute of the control matched the module's published `gapAtSmallPrice`/`gapAtBigPrice` in 37 of 37 rooms where a pair was found. |
+| `beyond` | PASS, contingent | unchanged, contingent on `gate-l2-sr`. |
+
+**The chain** (experienced moment → class evidence → real sports → formal term → beyond sports) is
+intact and every link still names a computable field. EXTERNALITY and SPILLOVER are still earned at
+SYNTHESIS and withheld before it. **The map's remaining break is one word on one card** — but it is
+the noun the whole module is named for, and it is the opposite of the concept.
+
+**Simplifications ledger: still nine entries, unchanged.** R-c through R-h are all open (see below),
+as are the two round-2 non-blockers: the ceteris-paribus assumption is still disclosed only on the
+student device (`play/main.ts:2949`) and on none of `board:reveal-2:ledgerSummary`,
+`teach:adapt-q3:answerKey` or `synthesis:spillover` (verified by string probe this session), and the
+three by-choice carve-outs are still only a source comment.
+
+### required-repairs
+
+**BLOCKING — economic-truth.**
+
+- **B9 (N11, FL-J).** Branch the over-investment sentence on `roomJointGain < 0`, not on
+  `created <= 0`. The module already computes the right aggregate and already forbids using
+  `created` at room level in its own docstring. Where private partials are negative and
+  `roomJointGain > 0`, the honest sentence is the module's own concept — every desk that spent was
+  privately worse off and the room as a whole was better off, which is the whole reason the next
+  lesson exists. Withholding the percentage there is right; calling it over-investment is not.
+  Discharge: a property test asserting no surface uses the words "over-investment" in any room where
+  `roomJointGain > 0`, plus the 300-room plausible-price cross-tab recorded.
+- **B10 (N12).** Re-specify the `spillover.overInvested` audit limb against an independent economic
+  predicate — the sign of the joint effect the harness already replays — instead of against
+  `!truth.coherent`, which is the print condition. Bind the noun "over-investment" itself to a
+  `claimWord`. `l2-tuning`'s 12/12 does not certify this sentence today. Discharge: a mutation proof
+  that prints "over-investment" over a positive replayed joint effect and is caught.
+
+**NON-BLOCKING — required, recorded.**
+
+- Register `synthesis:composition`'s four percentages as atoms, and make `moduleClaims` fail loudly
+  (or the harness assert) on a claim-carrying surface that ships zero atoms, so an unregistered
+  surface is detectable rather than invisible (N14).
+- Bind or correct `client/play/main.ts:3013` — "most of it the Draw you were DEALT" is false in
+  16/96 probed desk-instances (N14, FL-K).
+- Re-describe `recomputeMarketPath` in the harness as a transcription of the module's selector, not
+  an independent derivation (N14).
+- Ledger the joint-figure scope: `roomJointGain` holds the league office fixed; the harness's replay
+  does not; the spread is 0.60% and is one bot club (N15).
+- Disclose ceteris paribus on the SPILLOVER card and the reveal-2 caption, not only on the student
+  device. **Still open from round 2.**
+- Add the by-choice carve-outs (stock weeks, bot clubs, pinned shock club) to `SIMPLIFICATIONS`.
+  **Still open from round 2.**
+
+**R-c … R-h — status only, all NOT REPAIRED (verified this session).**
+
+| id | status |
+|---|---|
+| **R-c** | NOT REPAIRED. `SIMPLIFICATIONS[5]` still reads "always clearable, **at any legal price, from any state**"; counterexample re-measured this session (12 desks, all $120, all 0%): Chicago wk2 **-$12,000**, Chicago wk3 **-$60,000**, Golden State wk3 **-$36,000**. `SIMPLIFICATIONS[7]`'s "within 3x" unchanged. |
+| **R-d** | NOT ADDED. No ledger entry that the weekly bill never binds / CASH is a score, not a constraint. |
+| **R-e** | NOT ADDED. No ledger entry for the host-Draw-first attribution ordering; "residual 0" still presented as if it settled attribution. |
+| **R-f** | NOT ADDED. `visitorDrawFans` ≈ 1.33 × `ownDrawFans` still undefended. Real-world direction remains **NOT VERIFIED by me** — `gate-l2-sr`'s. |
+| **R-g** | NOT ADDED. The local-media Draw annuity (~92% of the reinvest decision) still unledgered. |
+| **R-h** | NOT REPAIRED. `HOOK_COPY` still says "most of the reason people show up" against a measured 38–41%. |
+
+Ledger is nine entries, byte-identical in substance to the original gate. None of R-c…R-h blocks;
+all six remain recorded and unaddressed after three rounds.
+
+### Overall
+
+**SOUND MODEL. TWO EVIDENCE SURFACES REPAIRED, ONE STILL MISNAMES ITS OWN CONCEPT.**
+
+This is the strongest round of the three. The structural claim binding is a real engineering answer
+to a defect class that had beaten three rounds of copy edits, and I proved it non-vacuous myself
+with source-level injections rather than accepting the builder's surface mutants. **B3 discharges**
+— the finding I carried unchanged through two gates is refuted by my own price control in 40 rooms.
+**B7 and B8 discharge** on the exact conditions I wrote for them. The $6,944 spread is benign and I
+diagnosed it to a single unseated club.
+
+What blocks is not a residue of the old dissent; it is the new sentence the B7 repair installed.
+The card that carries SPILLOVER tells 173 of 177 plausible-price rooms that they over-invested,
+three clauses before telling them they were up to $2.4M better off, and the 70,628-atom audit cannot
+see it because the limb that should check that word recomputes the condition that printed it.
+
+### Dissent
+
+**DISSENT econ-l2-evidence-surfaces: NOT DISCHARGED.**
+
+I record, without qualification, that **B3, B7 and B8 — the three items on which I maintained this
+dissent at the RE-CHECK — are each discharged** on the conditions I specified, verified by my own
+probes and not by the builder's. The dissent does not survive on them and I do not carry them
+forward.
+
+It survives on its own subject. This dissent has always been about the evidence surfaces that carry
+this module's named concepts, and about what L3 inherits from them. For the third consecutive round
+the SPILLOVER surface states something the model does not support: first a false quantifier
+("most"), then an incoherent percentage (0% beside $1.58M), now a false economic noun
+("over-investment") printed over the module's own contradicting joint figure in the great majority
+of realistic rooms. L3's entire premise is that the room legislates a problem it has just lived. A
+room that has been told by the projector, the synthesis card and its teacher's answer key that it
+spent too much will legislate against spending, not against the spillover — which is the inverted
+distribution I have named in all three rounds. **B9** and **B10** are narrow, bounded and do not
+touch the model.
+
+A decision to proceed does not erase this dissent.
