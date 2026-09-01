@@ -558,3 +558,102 @@ board refresh mid-REVEAL at stage 3 restored the stage exactly; pause/unpause ro
 bell auto-committed all four desks in a run with zero manual locks.
 
 PROJECTOR FIT CONDITION: DISCHARGED
+
+---
+
+## W4 ADJUDICATION
+
+Owning-critic intent ruling on `proj-l1-cf-pager-label` (my wave-3 W3F-1), which `ANALYST_WAVE3`
+correctly flagged as resolved without the critic who raised it. Fresh session, live, PORT 4392,
+mechanics from `runtime/scripts/e2e-m2l1.cjs` at head `df14bfb`: module `m2l1-full-house`, 12 desks
+at 1024x600, one `/teach` at 1280x800, one `/board` driven at 1366x768 and 1920x1080, five nights,
+through to COUNTERFACTUAL. All four groups paged with `#btnCfPage`, plus wrap-around and
+`#btnCfPageBack`. Zero console errors.
+
+### 1. The defect condition still exists in this run (observed)
+
+`orderRepeatRows` genuinely re-orders: the four groups came up as desks **2,3,4 / 5,6,7 / 8,9,10 /
+11,12,1**. The old positional label would still have printed `Desks 1-3 of 12` over rows headed Desk
+2, Desk 3, Desk 4, and group 4 would still have claimed `Desks 10-12` over Desk 11, Desk 12, Desk 1.
+The fix is being exercised against a live re-ordering, not a coincidentally contiguous list.
+
+### 2. What ships now (observed, all four groups, both shapes)
+
+| group | board pager (`#fhCfPager`) | rows on that frame | `/teach` "Next group" |
+|---|---|---|---|
+| 1 | `Group 1 of 4 — Desk 2, Desk 3, Desk 4` | Desk 2 · Memphis Grizzlies / Desk 3 · New York Knicks / Desk 4 · Memphis Grizzlies | `group 2 of 4: Desk 5, Desk 6, Desk 7` |
+| 2 | `Group 2 of 4 — Desk 5, Desk 6, Desk 7` | Desk 5 / Desk 6 / Desk 7 | `group 3 of 4: Desk 8, Desk 9, Desk 10` |
+| 3 | `Group 3 of 4 — Desk 8, Desk 9, Desk 10` | Desk 8 / Desk 9 / Desk 10 | `group 4 of 4: Desk 11, Desk 12, Desk 1` |
+| 4 | `Group 4 of 4 — Desk 11, Desk 12, Desk 1` | Desk 11 · New York Knicks / Desk 12 · Memphis Grizzlies / Desk 1 · New York Knicks | `group 1 of 4: Desk 2, Desk 3, Desk 4` |
+
+The pager names exactly the desks on the frame, in the frame's order. `/teach`'s "now", "next" and
+"back" lines name exactly the same desks, so the teacher's promise and the projector agree at every
+press — the second half of W3F-1, which was the part that made the teacher wrong out loud. Wrap-around
+from group 4 returns to group 1 and `Back a group` returns to group 4, both observed. Screenshots
+`screens-l1-projector/w4-l1-cf-group1..4--1366x768.png` and `--1920x1080.png`.
+
+### 3. THE RULING — does desk-number-only satisfy the finding's intent?
+
+**Yes. SATISFIED.** The intent of W3F-1 was never "print franchise names"; it was, in that finding's
+own words, *stop the pager claiming desk identity it does not have*, so that the room is told
+truthfully where to look. Three things decide it:
+
+1. **The desk number is the room's unique key; the franchise is not.** In this 12-desk run every desk
+   is either New York Knicks or Memphis Grizzlies — six each. A pager line reading `New York,
+   Memphis, New York` would point at six desks at once and name none of them. Adding franchise names
+   to the pager line would make the pointer **worse**, not better. That is not a close call, and it
+   inverts the premise that the full-name variant was the better label that only lost on 17px.
+2. **The room already navigates by desk number.** Verified on the private surface, not assumed: the
+   `/play` card at Desk 1 during COUNTERFACTUAL reads `DESK 1 · NEW YORK KNICKS`
+   (`w4-l1-cf-play-desk1--1024x600.png`). A pair looking for itself on the projector is looking for
+   its number, and its number is on the pager and again on its own row.
+3. **The franchise is present where it does work.** Every row on the frame is headed
+   `Desk N · <franchise> · <same price $X>` at 1.5vw = 2.67% of screen height, above the back-row
+   floor, one line under the pager — exactly as the repair claims. Nothing was dropped from the
+   room's view; a duplicate was dropped from a summary line.
+
+Intent does **not** require franchise names on the pager line. I rule the repair correct on the
+merits rather than merely acceptable under an overflow constraint, and I would rule the same way if
+the 17px had been available.
+
+### 4. One residual, non-blocking
+
+`#fhCfPager` renders at **1.25vw = 17.1px = 2.22% of screen height** at 1366x768 (measured, all four
+groups), under this gate's 2.6% back-row floor. Wave 3 filed the CF pager in the caveat tier at the
+same 2.22%; that classification is now stale, because the repair promoted this line from decoration
+to the load-bearing "where to look" instrument the teacher reads aloud. It stays non-blocking only
+because the identical desk numbers appear immediately beneath it at 1.5vw, which clears the floor —
+a room that cannot read the pager can still read the rows. Raise it to 1.5vw
+(`src/client/board/index.html:204`).
+
+### 5. Session checks taken alongside (observed)
+
+- **Fit: zero findings** on all four COUNTERFACTUAL frames at 1366x768 and 1920x1080, under an
+  independent instrument (viewport escape, `scrollWidth` overflow, declared ellipsis actually
+  ellipsizing, document scroll, `#stage` overflow). No regression.
+- **Privacy: zero hits.** Board `innerText` and whole-document `innerHTML` scanned on every group for
+  24 distinctive joined-name tokens (`Zylq<N>xn Krevanti<N>`) and for `seatId` / `rejoinPin` /
+  `data-seat` / `pin=`. The board's only identifiers are `Desk N · <franchise>`. The standing W3F-5
+  concern is unchanged and is not a privacy leak: the desks the CF board names publicly are
+  self-identifying by design, including the desk that drew nobody at $84, and `/teach` still ships no
+  framing copy for that.
+- **Paging is manual throughout.** Every group change came from a teacher press; no timer moved the
+  projector.
+
+### Not verified
+
+A real projector in a real room; CVD separation of the blue/orange N1/N5 series; contrast of the
+white turnout numerals on the light N1 bars; `Restore last good state`; any real student. Nothing
+here is classroom-proven (D10). Items W3F-2 (Night-4 Fever anchor at 2.13%), W3F-3 (no SYNTHESIS
+accumulator), W3F-4 (`#fhRenewalsRule` unasserted) and W3F-5 are carried unchanged and were not
+re-exercised by this adjudication.
+
+### required-repairs (this adjudication)
+
+**Blocking:** none.
+**Non-blocking (before classroom release):** raise `.fh-cf-pager` from 1.25vw to 1.5vw
+(`src/client/board/index.html:204`); carried W3F-2, W3F-3, W3F-4, W3F-5 unchanged.
+
+L1 PAGER INTENT: SATISFIED — the desk-number-only pager tells the room truthfully where to look, the
+franchise name is present on every row a line below, and franchise names on the pager line would
+weaken the pointer rather than strengthen it. `proj-l1-cf-pager-label` is DISCHARGED.

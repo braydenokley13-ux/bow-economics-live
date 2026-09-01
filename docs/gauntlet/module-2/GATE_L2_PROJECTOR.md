@@ -391,3 +391,139 @@ a non-vacuous instrument.
 BOARD TRUTH ABOUT THE ROOM (R-1, new): **NOT DISCHARGED** — blocking, classroom-reliability.
 
 DISSENT proj-l2-truncation: DISCHARGED
+
+---
+
+## W4 ADJUDICATION
+
+Owning-critic ruling on dissent `proj-l2-bar-timing` (my wave-3 R-1). Fresh session, live, PORT 4392,
+mechanics lifted from `runtime/scripts/e2e-m2l2.cjs` at head `df14bfb`. Four arms, one server, one
+session each; 12 desks for the prescribed arm with two live `/board` pages held at 1366x768 and
+1920x1080 for the whole session; 4 desks for the three control arms. Zero console errors across all
+arms and all surfaces. All shares set high in weeks 1-2 and cut in week 3, so every arm lands on the
+DOWN branch — the branch the repair also claims.
+
+### 1. The dissent's subject — four-arm probe (observed)
+
+| arm | release point | `barReleasedAtWeek` | stage-5 clause printed | DOWN branch names the bar |
+|---|---|---|---|---|
+| A — the /teach-prescribed release | after the week-2 bell, before any desk priced week 3 | 2 | `saw ... DURING week 3` | yes |
+| B | during the week-2 open window | 1 | `did see ... before it played week 3` | yes |
+| C | never pressed (auto-release on PLAY exit) | 3 | `did NOT see ...` | **no** |
+| D | during the week-3 open window | 2 | `saw ... DURING week 3` | yes |
+
+**The false negation is gone.** Arm A no longer prints `This room did NOT see the Handed-To-You bar
+before it played week 3, so nothing on this frame can be about the bar.` to a room that had been
+reading the bar the whole of week 3. That was the whole of R-1 and the whole of the dissent, and it
+is repaired: `sawBarBeforeWeek3` at `hostTheLeague.ts:2988` now tests `<= WEEK_COUNT - 1`, and the
+week-3 **bell**, not the week-2 bell, is the boundary. Arm C confirms the predicate is not merely
+true-for-everything: the room that never saw the bar is still told so, and the DOWN sentence in that
+arm refuses to name the bar (`the bar is not on the table`), which is the second half of the repair
+claim and holds. Screenshots `screens-l2-projector/w4-reveal5-A-prescribed--1366x768.png`,
+`--1920x1080.png`, `w4-reveal5-B-duringWk2--1366x768.png`, `w4-reveal5-C-never--1366x768.png`,
+`w4-reveal5-D-duringWk3--1366x768.png`.
+
+The unit pin at `src/test/hostTheLeague.test.ts:1010` covers the same four release points, but it
+assigns `barReleasedAtWeek` directly rather than driving `/teach`. It is a real regression guard for
+the predicate; it is **not** a guard that the prescribed teacher press produces the stamp it asserts.
+The live arms above are what closes that gap this session.
+
+### 2. NEW BLOCKING FINDING (classroom-reliability) — same line, same path, smaller
+
+**W4-1. On the prescribed release, the board tells the room some desks had already locked when none
+had.** Observed, arm A, both shapes. The frame reads:
+
+> This room saw the Handed-To-You bar DURING week 3, before the last bell — **some desks had already
+> locked** — so the bar is one of the things that could have moved it, **for the desks that had not**.
+
+In arm A the bar went up after the week-2 bell and before any desk touched a week-3 dial: zero desks
+had locked. `barReleasedDuringLastWeek` (`hostTheLeague.ts:2993`) is true for `barReleasedAtWeek ===
+WEEK_COUNT - 1`, and that single value covers two different rooms — the clean "everybody saw it
+before they priced" room that `/teach` prescribes, and the messy "released mid-week-3" room of arm D.
+The copy asserts the messy one unconditionally.
+
+Why it blocks rather than annotates: it is the same category I blocked in wave 3 — the projector
+asserting a fact about the room that the room knows is false — on the same beat and the same path.
+The cost is not only truth. On the prescribed timing every desk in the room saw the bar before it
+priced, which is the cleanest possible setup for "did you change your mind?"; the board hedges that
+into a partial case and invites the class to think the bar reached only part of the room. The
+existing state cannot distinguish the two rooms, so the fix is a stamp at release (how many desks
+were locked into week 3 when the button was pressed) plus a third clause — not a copy edit alone.
+
+**W4-2 (blocking, classroom-reliability). `/teach`'s stage-5 coaching is invariant to the clause the
+board actually printed.** Observed: the ON-THE-PROJECTOR mirror is byte-identical across all four
+arms, including arm C, and in every arm it instructs the teacher `Do not resolve it: this board
+deliberately refuses to choose between the rule and the bar.` In arm C the board has already chosen
+— `the bar is not on the table: the last-week rule ... is the cause this board can see`. A teacher
+who never pressed the optional bar button (a plausible random-teacher path, which is exactly why the
+module ships an auto-release fallback) is coached to run a two-candidate argument the projector has
+closed, and is contradicted by the screen behind them at the lesson's argument beat. This is the same
+defect shape as P-3's freeze mirror, which this gate required repaired.
+
+### 3. Coupled-session re-check around the layout change (observed)
+
+- **Fit: zero findings.** Every board frame from PLAY week 1 through SYNTHESIS, at 1366x768 and
+  1920x1080, under an independent instrument (viewport-escape, `scrollWidth` overflow, declared
+  `text-overflow:ellipsis` actually ellipsizing, document scroll, `#stage` overflow). No composition
+  regression from the layout change; the fit instrument's green is corroborated, not taken.
+- **Privacy: zero hits.** Board `innerText` and whole-document `innerHTML` scanned on every captured
+  frame for 24 deliberately distinctive joined-name tokens (`Zylq<N>xn Krevanti<N>`) and for
+  `seatId` / `rejoinPin` / `data-seat` / `pin=`. Nothing. The board's only identifiers stay
+  `Desk N · <real club>` and the pager's `Desk N`.
+- **`/play` two-column decision surface at 1024x600 (spot-check, observed).** Grid resolves to
+  `624px 340px`; zero horizontal overflow inside `#hlPlayRoot`; document height exactly 600 — no
+  scroll at first contact. Hit-tested, not measured: the top element at the centre of `#hlPriceDial`
+  is the dial, at `#hlShareUp` is the button, at `#hlLock` is the lock. LOCK IT IN sits in a fixed
+  bottom bar at 548-592. `screens-l2-projector/w4-play-twocol-week1--1024x600.png`. No regression
+  found. The rejoin-PIN banner eats the top ~100px of a 600px screen at first contact, which is a
+  `/play` composition cost, not a projector one, and it is dismissible.
+- **Stage-5 chart, correction to my own P-5 (observed).** Wave 3 recorded three near-identical gold
+  bars as a standing defect. With a room whose week-3 play actually differs the chart reads
+  32.9 / 32.9 / 2.5 from the back with no effort. P-5 was a property of that session's play, not a
+  fixed property of the frame; I withdraw it as a chart defect. What remains true is that stage 5
+  carries a seven-line prose paragraph occupying more vertical space than its chart, with ~120px of
+  dead frame beneath it.
+- **Reveal choreography and manual fallback (observed).** Every beat in every arm advanced only on a
+  teacher press — `#btnRevealNext` five times, `#btnCloseWeek` per bell, `#btnHandedTo` for the bar.
+  No timer moved any surface. The paged Handed-To-You bar labels its slice `GROUP 1 OF 3 — DESK 1,
+  DESK 2, DESK 3, DESK 4, DESK 5` over rows headed `Desk N · <club>`, the same convention ruled on in
+  `GATE_L1_PROJECTOR.md`.
+- **New non-blocking observation.** A decorative light panel sits at roughly x 970-1310, y 40-500 at
+  1366x768 on the PLAY frames, and its edge crosses the Handed-To-You bars; the light `national
+  check` segment reads at two different tints on either side of that edge
+  (`w4-bar-release--1366x768.png`). Segment-boundary legibility is the visual critic's ground; I
+  name it, I do not rule on it.
+
+### Not verified (this session)
+
+A real projector in a real room; colour-vision separation of the five-segment palette; freeze /
+unfreeze; refresh, rejoin-by-PIN, mid-class restart, `Restore last good state` (all previously
+observed, none re-exercised here); duplicate-join console error (P-9, still open); P-4 `WAITING`,
+P-7 `/play` fold assertions, P-8 ADAPT paging line — all carried unchanged and untouched by this
+adjudication. Any real student. Nothing here is classroom-proven (D10).
+
+### required-repairs (this adjudication)
+
+**Blocking (classroom-reliability)**
+- **W4-1** — stop the stage-5 frame asserting `some desks had already locked` / `for the desks that
+  had not` on a release where no desk had locked. Needs a locked-count stamp at release plus a third
+  clause. `hostTheLeague.ts:2993`, `:3016`. Evidence `w4-reveal5-A-prescribed--1366x768.png`,
+  `--1920x1080.png`.
+- **W4-2** — make `/teach`'s stage-5 ON-THE-PROJECTOR mirror follow the clause the board printed;
+  it must not promise "this board refuses to choose" in the arm where the board chose.
+
+**Non-blocking (before classroom release)**
+- W4-3 — stage 5 gives more vertical space to a seven-line paragraph than to its chart, with dead
+  frame below. Carried P-5, re-aimed at composition, not at the bars.
+- W4-4 — the colour-key legends that make the bars interpretable still render at 2.13%, below the
+  2.6% back-row floor. Carried, unchanged.
+- W4-5 — the decorative panel edge crossing the Handed-To-You bars (referred to the visual critic).
+
+PROJECTOR FIT CONDITION (post-layout-change): **DISCHARGED** — re-measured, both shapes, whole
+session, independent instrument.
+BOARD PRIVACY: **DISCHARGED** — zero hits, every captured frame, both shapes.
+BOARD TRUTH ABOUT THE ROOM: **NOT DISCHARGED** — W4-1 and W4-2, both new, both narrower than R-1.
+
+DISSENT proj-l2-bar-timing: DISCHARGED — the off-by-one at the week-2 bell is repaired and the
+prescribed-timing arm no longer prints the false negation; W4-1 and W4-2 are new findings on the same
+line and do not resurrect it.

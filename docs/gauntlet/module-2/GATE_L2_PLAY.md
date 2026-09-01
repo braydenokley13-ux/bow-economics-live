@@ -550,3 +550,195 @@ projector back-row legibility. Those belong to their owning critics.
 correctly in the common case but is occluded in the sold-out case, both decision dials are
 now off the fold at the moment of decision, and the lesson's second dial still carries no
 felt consequence. The cause is repairable and the kill condition is not met.
+
+---
+
+## W4 ADJUDICATION
+
+Owning-critic adjudication of dissent `play-l2-below-bar` after the Wave-4 bundle. Run
+`m2-quality-war`, assignment `w4-play-adjudicate`. Played in real Chromium
+(`/opt/pw-browsers`) against the built runtime on **PORT 4391**; server killed, no listener
+remains, no repository implementation state touched. Screenshots: `screens-l2-gate/w4-*`.
+
+Evidence produced: `w4-play-adjudicate` (this section + `screens-l2-gate/w4-*`). Evidence
+read as build claims, not verdicts: the W4 repair claim (fixed-height shell, two-column
+decision surface, occlusion instrumentation, N-3/R-1 boundary, free-rider line, N-5 price
+counterfactual). Not re-read: other W4 critic verdicts — fresh context.
+
+**Sessions played**
+
+| id | desks | strategies |
+| --- | --- | --- |
+| W-A | 8, every desk at 1024×600 | D1 schedule-adaptive, then **priced week 2 off the week-1 counterfactual** ($78 → $66 → $66) · D2 free-ride (house price, 0% ×3) · D3 **$10 floor ×3** (the sold-out probe) · D4 40% ×3 · D5 **$120 ceiling** · D6 house + 20% · D7 never locks (AUTO) · D8 chaotic. Handed-To-You released **immediately after the week-2 bell**. |
+| W-B | 4 @ 1024×600 | measurement pass: per-child occlusion inside `#hlPriceCf` on normal and floor-price settlements; one desk that **only ever presses the pinned button** and never touches a dial. |
+| W-C | 3 @ 1024×600 | band census: every block's box at the week-2 decision moment, no manual scroll. |
+
+Zero console errors on `/play`, `/teach`, `/board` across all three sessions (observed).
+
+### The two rule questions, answered
+
+**(1) Was the occlusion set cleared at first contact everywhere it mattered? PARTLY — the
+three elements I enumerated are clean; the repair then placed the new pull feature into the
+occluded band.**
+
+*Cleared (observed, 8 desks, no manual scroll):* week-1 first contact — `#hlPriceDial`
+250..272, `#hlShareUp/#hlShareDown` 344..388, `#hlLock` 548..592, all four unoccluded at
+centre / lower third / inset corner on **every** desk (`w4-01`). After the week-1 and week-2
+bells — `#hlSplit` 219..330, KEPT 337..376, `#hlRoad` 383..419, unoccluded on **all 8 desks
+both bells, including the sold-out desk** (`#hlSplit` 267..378, KEPT 385..424, `#hlRoad`
+431..467). N-1 as written and N-2 as written are met. `w4-02`, `w4-03`.
+
+*Not cleared:* the N-5 counterfactual card is the element the repair added, and it lands at
+426..583 under a lock bar occupying **539..600**.
+- **Normal week, every desk, every week:** the four-row card's **verdict line is occluded** —
+  `.hl-pricecf-verdict` 539..555, `elementFromPoint` at its centre returns
+  `div#hlLockBar.hl-lockbar`; the closing note 561..575 likewise. Observed W-B desk 1
+  ("$66 would have kept $1,379,136 — **$25,632 more than you did**") and desk 3
+  ("$62 … **$4,692 more**"). The four price rows themselves are visible, so the numbers
+  survive; the sentence that names the gap does not.
+- **Sold-out week:** the card measures **474..610 in a 600px viewport** — the "best on the
+  dial" row *and* the verdict are behind the bar and past the bottom edge. W-A desk 3 priced
+  $10, sold out 18,064 of 18,064, and its screen shows two rows and stops (`w4-03`,
+  `w4-04`). The hidden line is "$62 would have kept $1,160,904 — **$522,856 more than you
+  did**" — the largest teaching number that desk will ever be shown, on the most common
+  naive grade-5 strategy.
+The W4 occlusion instrument probes `#hlSplit`, `[data-hl-kept]` and `#hlRoad` and does not
+probe `#hlPriceCf`, so it passes both cases. This is the same "in the box, not in the field
+of view" failure the instrument was built for, one card further down.
+
+**(2) Does N-5 as implemented deliver the second felt consequence? PARTLY — it closes the
+limb I named for the price dial, and does not reach the second dial.**
+
+*What it delivers, observed:* a real, per-week, post-commit table on the settlement screen —
+same night, same visitor, same Draws, same building, price only. It changed my own play: I
+read "$66 would have kept $1,148,909 — $20,506 more" after week 1 and priced week 2 at $66;
+the week-2 card then named **$52** as best, because the visitor had changed — which is the
+lesson's interdependence arriving on the private device as a pricing consequence. It also
+rescues the old `$120` dead zone: W-A desk 5 read `0 · $0` in all three blocks and, for the
+first time, had something to attribute — "$48 would have kept $983,120 — $537,120 more".
+
+*What it does not deliver:* my ceiling diagnosis was "only one of the **two dials** carries a
+consequence the desk can feel." N-5 is a second exhibit on the **first** dial. On the second
+dial this session's own instruments told the desks: reinvesting was worth **−$244,687** to
+these desks' own books; the 40% desk read **−$414,583**, "behind"; and the free-rider read
+**$0 / $0 / $0** under "there is no 'what if you had not' to compare, because you did not."
+The reinvest dial is not shown a single "what another share would have done" row anywhere,
+so the only dial with a counterfactual table is the one that already had consequence. (My
+N-4 falsifiable — a non-degenerate counterfactual for a 0% desk — is **not met as
+specified**; the build chose an honest prose line instead. Downgraded to non-blocking: the
+zeroes are now explained, and the free-rider does now get a felt price consequence.)
+
+*Two play costs of the exhibit itself.* Fourteen of fourteen counterfactual cards observed
+across three price strategies said "you left money on the table"; **zero** said "you found
+the best price." On a 56-point $2 grid the `foundBest` branch is nearly unreachable, so every
+desk is told three times, in identical wording, that it was wrong — including when the gap is
+**$676 on $1,224,564** (0.05%). The same sentence ends "nothing on this screen told you,"
+which reads as the app scolding the pair for its own no-preview rule.
+
+### Everything else, verified again
+
+- **Reveal 5 / N-3: DISCHARGED.** Released after the week-2 bell — the path that produced the
+  false "did NOT see the bar" — the board now reads "This room saw the Handed-To-You bar
+  DURING week 3, before the last bell" and refuses to choose between the bar and the
+  last-week rule (`w4-09-board-reveal-5`). *Residual, non-blocking:* the same sentence adds
+  "— some desks had already locked —" unconditionally whenever the release lands in week 3.
+  In W-A nobody had locked week 3 at release. False about the room, hedged, teacher-facing.
+- **Reveal 4 / R-4: holds.** Small-market beat printed both prices ($46 vs $56), split the
+  $59,210 gap into the three blocks, and held the price still both ways (`w4-09-board-reveal-4`).
+- **AUTO desk:** D7 never locked weeks 1 and 3, was settled and flagged AUTO both times, and
+  finished with a legible three-week table (`w4-08`).
+- **Handed-To-You is still projector-only:** desk 1's rendered text is byte-identical across
+  the press (observed).
+- **After the FINAL bell there is no decomposition, no road card and no counterfactual** —
+  the screen collapses to a five-column table and "Look up at the board." Week 3's
+  consequence, the week the pair has learned the most for, is the thinnest of the three until
+  ADAPT re-serves it at the bottom of a long card.
+
+### RATING: FUNCTIONAL
+
+Upper end of FUNCTIONAL and clearly better than the re-checked build. Week 1 is now a strong
+cycle end to end: schedule anticipation, blind commit, and a bell that lands on decomposition
+→ KEPT → externality → counterfactual, all in the visible band, on every desk. It is not
+STRONG, because of what happens at the other two decisions.
+
+**The single remaining cause, stated precisely: at the week-2 and week-3 decision moments the
+1024×600 band contains last week and a pinned button that commits this week — and nothing
+else.** Measured, no manual scroll, `main` holding 1302px of content in a 512px band above a
+lock bar at 539..600:
+
+```
+decomposition   219..330    KEPT 337..376    road card 383..419
+price counterfactual 426..583  (verdict 539..555 — behind the bar)
+--------------------------- visible band ends -------------------
+the ledger        590..752        WEEK 2 OF 3 header   818..834
+the PRICE dial    865..887        the star departure   936..989
+the REINVEST +    959..1003       the schedule strip  1004..1223
+```
+
+Who is visiting, the star departure, the three-week schedule strip — the anticipation surface
+this gate called the build's best mechanic — and **both dials** are 350–700px below the band.
+The one live control on the screen is `LOCK IT IN`, pinned, reading "Week 2 · $56 · 0% back
+in." I pressed it twice without ever touching a dial (W-B, weeks 1 and 2): both times it
+committed **house price / 0% reinvest** — the free-ride default — and the defaults reset to
+house/0% every week, so a pair that set 20% in week 1 and then just presses the button
+silently drops to zero. Two of the lesson's three decisions can be completed at the visible
+surface without the decision existing on it. That is the same defect N-2 named, rotated out
+of week 1 and into weeks 2 and 3 rather than cleared, and it is why the mechanic — not the
+content — is what caps the rating.
+
+**Structural or repairable: REPAIRABLE.** The kill condition is not met. Both live findings
+are layout/choreography inside the existing `LessonModule` and one missing selector in an
+instrument that already exists and already works: no state shape, no reducer, no reveal
+ladder, no economics is implicated. Week 1 proves the same shell can hold decision and
+consequence at once.
+
+**DISSENT play-l2-below-bar: NOT DISCHARGED**
+
+### Required repairs to discharge
+
+**N-6 (BLOCKING).** The decision must exist on the screen at every decision moment, not only
+at first contact. *Falsifiable:* at 1024×600, on entering PLAY weeks **2 and 3** with no
+manual scroll, `#hlPriceDial` and both reinvest steppers are inside `0..bar.top` and
+unoccluded under `elementFromPoint`, **and** the week's own header and visiting club are in
+the band. Assert on every desk at 4 and 12 desks. Until it holds, `#hlLock` must not commit a
+default the pair has not been shown: either carry the previous week's share forward and say
+so on the bar, or require the dials to have been on screen once before the button arms.
+
+**N-7 (BLOCKING).** The counterfactual must be legible where it is placed. *Falsifiable:* at
+1024×600 immediately after `closeWeek`, `#hlPriceCf`, **`.hl-pricecf-verdict`, the
+`best`-flagged row and every `.hl-pricecf-row`** return themselves under `elementFromPoint`
+at centre and lower third, on a normal week **and** on a seeded sold-out week (`.fh-sellout`
+rendered). The existing occlusion instrument is correct; it is pointed at three selectors and
+must be pointed at these.
+
+### Non-blocking, recorded
+
+- **N-8.** The verdict fires "you left money on the table" on essentially every settlement
+  (14/14 observed, 0 `foundBest`). Give the branch a tolerance — within ~1–2% of the best
+  price reads as "you found the price for that night" — so the dial can be won, and drop
+  "nothing on this screen told you."
+- **N-9.** Reveal 5's "some desks had already locked" is printed unconditionally for a week-3
+  release; it was false in W-A. Condition it on the lock count at release.
+- **N-10.** The reinvest dial still has no "what another share would have done" row anywhere,
+  while the room's own instruments report its own-book return as negative. If the second dial
+  is meant to be a real decision inside this lesson, it needs the same post-hoc treatment the
+  price dial just got. (This is the ceiling I named; N-5 did not reach it, and I no longer
+  believe it is the rating-capping cause — N-6 is.)
+- **N-11.** After the final bell the settlement, road card and counterfactual disappear
+  entirely until ADAPT. Week 3 deserves the beat weeks 1 and 2 get.
+- Old R5 (played schedule rows retro-update to the visitor's current Draw) not re-measured
+  this pass — NOT VERIFIED.
+
+### Not verified in this adjudication
+
+12-desk scale (played at 8; the shipped `l2-e2e` asserts 12 — read as build claim), board
+privacy, teacher transfer, economic truth of the demand model, projector back-row legibility,
+rights/source. Those belong to their owning critics.
+
+### Formal dissent
+
+`play-l2-below-bar` stands, narrowed to one cause: **the student's visible band at the week-2
+and week-3 decision moments holds last week's result and a commit button, with both dials,
+the visiting club and the schedule strip below it** — so two of three decisions are skippable
+at the surface the pair actually sees — and the new price counterfactual's verdict is behind
+the same pinned bar the instrument was built to police. Repairable; kill condition not met.
