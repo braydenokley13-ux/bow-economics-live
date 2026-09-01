@@ -308,12 +308,34 @@
   .wr-board-rookie { font-size: 1.5vw; line-height: 1.3; color: var(--ink-primary); max-width: 86vw; margin-top: .6vh;
     border-left: 3px solid var(--accent-violet); padding: .5vh 1.2vw; text-align: left; }
 
-  .wr-board-hist { display: flex; align-items: flex-end; gap: .35vw; height: 24vh; margin-top: 1vh; width: 74vw; }
-  .wr-board-histcol { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .3vh; min-width: 0; }
+  /* projector B1 (BLOCKING): the bars were printed THROUGH the veil sentence at
+     both projector shapes, on the frame the room stares at for rounds 2 and 3.
+     The arithmetic, not chance: the container was 24vh, the bar was allowed up
+     to 23vh, and the tick label (1.5vw type, ~3.2vh of line box) plus a .3vh gap
+     lived INSIDE the same column — so the tallest column was ~26.5vh in a 24vh
+     box and overflowed UPWARD into the copy, every time any bin held the max.
+     The fix is to give the bar a WELL that is whatever is left after the tick
+     has taken its own space, and to size bars as a percentage of that well. The
+     column budget now includes the tick by construction, at any type size. */
+  .wr-board-hist { display: flex; align-items: stretch; gap: .35vw; height: 24vh; margin-top: 1vh; width: 74vw; }
+  .wr-board-histcol { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .3vh; min-width: 0; min-height: 0; }
+  .wr-board-histwell { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: flex-end; }
   .wr-board-histbar { width: 100%; border-radius: 4px 4px 0 0; background: var(--accent-gold); }
-  .wr-board-histtick { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); }
+  .wr-board-histcol.inband .wr-board-histbar { background: var(--accent-gold); }
+  .wr-board-histcol.outband .wr-board-histbar { background: var(--ink-muted); }
+  .wr-board-histtick { flex: 0 0 auto; font-family: var(--font-number); font-size: 1.5vw; line-height: 1.1; color: var(--ink-secondary); }
+  .wr-board-histcol.inband .wr-board-histtick { color: var(--accent-gold); }
   .wr-board-median { font-size: 1.6vw; color: var(--ink-primary); margin-top: .6vh; }
   .wr-board-median b { font-family: var(--font-number); color: var(--accent-gold); }
+  .wr-board-gauge { font-size: 1.75vw; line-height: 1.25; color: var(--ink-primary); margin-top: .5vh; }
+  .wr-board-gauge b { font-family: var(--font-number); color: var(--accent-gold); }
+  .wr-board-terms { display: flex; gap: 1.2vw; width: 86vw; margin-top: .8vh; }
+  .wr-board-term { flex: 1 1 0; text-align: left; background: rgba(19,24,34,0.85); border: 1px solid rgba(244,185,66,0.35);
+    border-radius: 12px; padding: .8vh 1.2vw; min-width: 0; }
+  .wr-board-term h4 { margin: 0; font-family: var(--font-display); font-size: 1.5vw; letter-spacing: .06em; color: var(--ink-muted); }
+  .wr-board-term .wr-term-head { font-family: var(--font-number); font-size: 2.1vw; color: var(--accent-gold); }
+  .wr-board-term ul { margin: .3vh 0 0; padding-left: 1.2vw; }
+  .wr-board-term li { font-size: 1.4vw; line-height: 1.3; color: var(--ink-primary); }
 
   /* The row count scales with the class, the projector does not: twelve rows of
      the first draft measured 742px inside a 768px frame. Only the vertical

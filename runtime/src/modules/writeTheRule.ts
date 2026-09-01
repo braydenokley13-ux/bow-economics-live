@@ -1659,6 +1659,11 @@ export const completeCopyFor = (how: AdoptedRule["how"] | undefined): string =>
 export const ROOKIE_COPY =
   "The rookie has landed. In this league the pick went to the club with the least money in the bank after week 1. That is NOT how the real league does it: the NBA uses a lottery precisely so that losing is never a guaranteed reward — since 2019 the three worst records each have a 14.0% chance at the first pick, and the worst record has no guarantee at all.";
 
+/**
+ * The default direction of the CONSEQUENCE question, kept only as the shape of
+ * the sentence. Nothing renders this constant: every surface asks the branch
+ * `consequenceQuestionFor()` computes from the room's own result (teacher B1).
+ */
 export const CONSEQUENCE_QUESTION = "Whose effort went down? Did anybody DECIDE to try less — or did it just stop being worth it?";
 
 export const COUNTERFACTUAL_HONESTY =
@@ -2235,6 +2240,15 @@ export function moduleClaims(state: WriteRuleState): ClaimSurface[] {
   push("board:argue:kings", kingsSplitLineClaimed(agg));
   push("teach:consequence:answerKey", consequenceAnswerClaimed(state, agg));
   push("teach:reveal:mirror", revealMirrorClaimed(state, agg));
+  // ARM-DEPENDENT TEACHER SURFACES. projector B3 shipped a /teach script that
+  // contradicted the projector on the league-office arm and no instrument could
+  // see it, because the sweep only ever registered surfaces that carry figures.
+  // The script a teacher reads ALOUD is now audited like any other claim: the
+  // arm's own script is registered with the arm's own rule figures in it, so a
+  // script that names the wrong rule fails BINDING, and the CONSEQUENCE ask is
+  // registered beside the answer key it must agree with.
+  push("teach:adopted:script", adoptedScriptClaimed(state, agg));
+  push("teach:consequence:ask", consequenceAskClaimed(state, agg));
   for (const card of synthesisCards(state, agg)) {
     if (card.claims && card.claims.length > 0) push(`synthesis:${card.id}`, { text: card.body, claims: card.claims });
     else out.push({ surface: `synthesis:${card.id}`, text: card.body, claims: [] });
@@ -2348,6 +2362,43 @@ export function consequenceBeat(state: WriteRuleState, agg: WriteRuleAggregate):
 
 export function consequenceAnswerClaimed(state: WriteRuleState, agg: WriteRuleAggregate): Claimed {
   return consequenceBeat(state, agg).claimed;
+}
+
+/**
+ * The scripted CONSEQUENCE question, as an auditable claim in its own right.
+ *
+ * It carries the SAME direction atom the computed line carries, so an audit that
+ * recomputes the direction catches a question that disagrees with the bar beside
+ * it — which is exactly the defect gate-l3-teacher B1 found by reading them.
+ */
+export function consequenceAskClaimed(state: WriteRuleState, agg: WriteRuleAggregate): Claimed {
+  const beat = consequenceBeat(state, agg);
+  const word = claimWord(
+    "consequence-ask-direction",
+    beat.direction === "down" ? "went down" : beat.direction === "up" ? "went UP" : beat.direction === "flat" ? "about the same" : "under this rule",
+    beat.direction === "down",
+  );
+  return { text: `${beat.question} [${word.rendered}] ${beat.answer}`, claims: [word] };
+}
+
+/**
+ * The script /teach prints under the printed rule — one per ARM, carrying that
+ * arm's own share so a script naming the wrong rule cannot pass the audit.
+ */
+export function adoptedScriptClaimed(state: WriteRuleState, agg: WriteRuleAggregate): Claimed {
+  const rule = agg.adopted;
+  if (!rule) return { text: "No rule is in force yet.", claims: [] };
+  const share = claim("script-share", rule.share, "percent", { assertsSign: "nonNegative", bounds: { min: SHARE_MIN, max: SHARE_MAX } });
+  const arm = claimWord(
+    "script-arm",
+    rule.how === "voted" ? "this room wrote it" : rule.how === "leagueOffice" ? "this room did not write it" : "the old rule holds",
+    rule.how === "voted",
+  );
+  const script = rule.how === "voted" ? "Print it and read it. Do not congratulate the room and do not warn them about anything." : rule.how === "leagueOffice" ? LEAGUE_OFFICE_COPY : STATUS_QUO_COPY;
+  return {
+    text: `The rule in force is SHARE ${share.rendered} and ${arm.rendered}. ${script}`,
+    claims: [share, arm],
+  };
 }
 
 /** The projector/desk question — the SAME atom set the answer key came from. */
@@ -2736,7 +2787,7 @@ function projectorMirror(state: WriteRuleState, phase: CanonicalPhase): { title:
         ],
       };
     case "COMPLETE":
-      return { title: "Closing card", lines: [COMPLETE_COPY] };
+      return { title: "Closing card", lines: [completeCopyFor(state.adopted?.how)] };
     default:
       return { title: "", lines: [] };
   }
@@ -2888,19 +2939,27 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
       };
     }
 
-    case "CONSEQUENCE":
+    case "CONSEQUENCE": {
+      // teacher B1: the ASK and the computed line beside it come from ONE atom
+      // set, so the scripted question can never contradict the room's own bar.
+      const beat = consequenceBeat(state, agg);
       return {
         phase,
         minuteBudget: "6 min",
-        now: [consequenceAnswerClaimed(state, agg).text, "Take three answers before you name anything. The room will describe moral hazard before it has a word for it, and that is the order you want."],
+        now: [
+          beat.claimed.text,
+          "Take three answers before you name anything. The room will describe the mechanism before it has a word for it, and that is the order you want.",
+          "Say the horizon out loud: three weeks shows the transfer. What the lost effort costs lands in DRAW, next season, and this lesson never prices a point of Draw in dollars.",
+        ],
         ask: [
-          { q: CONSEQUENCE_QUESTION, answer: "The answer you are fishing for is the second half: it stopped being worth it. Nobody decided anything." },
+          { q: beat.question, answer: beat.answer },
           { q: "Who did the money you paid in actually help — and did any of it come back to you?", answer: "Both halves are true and both are on the pot column. The product they visit is the channel it comes back through." },
         ],
         dontExplainYet: ["The Kings vote. It is a different beat and it needs a clean start."],
         trigger: null,
         timeCut: TIME_CUT,
       };
+    }
 
     case "COUNTERFACTUAL":
       return {
@@ -2917,16 +2976,33 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
       return {
         phase,
         minuteBudget: "6 min — THE DESIGNATED CUT",
+        // gate-l3-projector 5: the room's own verdict and the owners' 22-8 used
+        // to land in the SAME press, so the beat the design reaches for — we
+        // said this; now watch what thirty actual owners said — was compressed
+        // into one paragraph. Two presses, teacher-paced.
         now: [
-          "Read both term sheets. Seattle's offer is worth more money; Sacramento's keeps the club where it is. Every pair locks a vote.",
-          state.kingsRevealed ? kingsSplitLineClaimed(agg).text : `${live - agg.kingsSplit.undecided}/${live} desks have voted. Press the commit reveal when you are ready.`,
+          "Read both term sheets off their screens: Seattle $625M ($409M for the Maloofs' 65%), Sacramento $534M and about $255M of CITY money in the arena. Seattle is the bigger cheque by about $91M. Every pair locks a vote.",
+          state.kingsRevealed
+            ? kingsSplitLineClaimed(agg).text
+            : state.kingsSplitShown
+              ? `This room's own tally is on the projector, alone: ${agg.kingsSplit.deny} deny, ${agg.kingsSplit.approve} approve. Sit with it. Take two arguments from each side BEFORE you press again — the owners' answer is the second press.`
+              : `${live - agg.kingsSplit.undecided}/${live} desks have voted. The first press puts THIS ROOM's tally up alone; the owners' 22-8 is a second press after that.`,
         ],
         ask: [
           { q: ARGUE_PROMPT, answer: "There is no right answer and the real vote was 22-8, not unanimous. Eight owners voted the other way and they were not stupid." },
           { q: "Seattle offered MORE money and lost. What were the owners buying instead?", answer: "Anything about the league as a product, about other cities' leverage, or about what a move does to the value of everybody else's club." },
+          {
+            q: "Sacramento put about $255M of the city's own money into that arena. Should a city have to do that to keep a club?",
+            answer:
+              "No settled answer, and the class should split. The mainstream economics finding is that stadium subsidies rarely pay off for the city that grants them; the counter is that Seattle said no in 2006 and had no team by 2008. Both facts are on the finale cards.",
+          },
         ],
         dontExplainYet: ["Nothing. This is the last held card in the module."],
-        trigger: state.kingsRevealed ? null : "Press the commit reveal to show the 22-8 vote.",
+        trigger: state.kingsRevealed
+          ? null
+          : state.kingsSplitShown
+            ? "Press the commit reveal again to show the owners' 22-8 vote."
+            : "Press the commit reveal to put THIS ROOM's tally up — on its own, before the owners answer.",
         timeCut: "If you are past minute 46 when CONSEQUENCE ends, skip this phase entirely and go to SYNTHESIS. It is the best six minutes in the track and it is still the right thing to cut.",
       };
 
@@ -2949,7 +3025,10 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
       return {
         phase,
         minuteBudget: "1 min",
-        now: [COMPLETE_COPY, `This room's rule: SHARE ${agg.adopted?.share ?? STATUS_QUO_SHARE}% · ${agg.adopted?.condition ? "CONDITION ON" : "CONDITION OFF"}.`],
+        now: [
+          completeCopyFor(state.adopted?.how),
+          `${state.adopted?.how === "voted" ? "This room's rule" : state.adopted?.how === "leagueOffice" ? "The rule this room played under" : "The rule that held"}: SHARE ${agg.adopted?.share ?? STATUS_QUO_SHARE}% · ${agg.adopted?.condition ? "CONDITION ON" : "CONDITION OFF"}.`,
+        ],
         ask: [],
         dontExplainYet: [],
         trigger: null,
@@ -3170,6 +3249,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           draw: row.draw,
           cash: row.cash,
           l2Reinvest: row.meanReinvest,
+          l2ReinvestDollars: row.meanReinvestDollars,
           l2Cash: row.cash,
         };
         if (row.meanReinvest !== null) means.push(row.meanReinvest);
@@ -3196,9 +3276,11 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       rookieSlot: null,
       revealStage: 0,
       counterfactualRun: false,
+      kingsSplitShown: false,
       kingsRevealed: false,
       synthPage: 0,
       finalePage: 0,
+      observerSeats: [],
     };
   },
 
@@ -3225,7 +3307,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };
     if (fromPhase === "COUNTERFACTUAL" && !next.counterfactualRun) next = { ...next, counterfactualRun: true };
-    if (fromPhase === "ARGUE") next = { ...next, kingsRevealed: true };
+    if (fromPhase === "ARGUE") next = { ...next, kingsSplitShown: true, kingsRevealed: true };
     return next;
   },
 
@@ -3288,9 +3370,24 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       return { ok: true, state: { ...withClub(state, { ...open.club, locked: true }), leagueFrozen: true } };
     }
 
+    if (action.type === "arrowPredict") {
+      // The REVEAL-half lens (gate-l3-play repair 3): one tap, before stage 4,
+      // on the pair's OWN club. It changes no economics — it is the difference
+      // between a reveal happening to the room and with it.
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair predicts" };
+      if (ctx.phase !== "REVEAL") return { ok: false, reason: `the prediction is taken during REVEAL (session is in ${ctx.phase})` };
+      if (state.revealStage >= 4) return { ok: false, reason: "the arrows are already on the projector" };
+      const choice = action["choice"];
+      if (choice !== "moved" && choice !== "flat") return { ok: false, reason: "predict moved or flat" };
+      const open = requireLiveClub(state, ctx.seatId);
+      if (!open.ok) return { ok: false, reason: open.reason };
+      return { ok: true, state: withClub(state, { ...open.club, arrowPrediction: choice }) };
+    }
+
     if (action.type === "kingsVote") {
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair votes" };
       if (ctx.phase !== "ARGUE") return { ok: false, reason: `the Board of Governors votes in ARGUE (session is in ${ctx.phase})` };
+      if (state.kingsSplitShown) return { ok: false, reason: "the room's tally is already on the projector" };
       if (state.kingsRevealed) return { ok: false, reason: "the vote has already been read out" };
       const choice = action["choice"];
       if (choice !== "deny" && choice !== "approve") return { ok: false, reason: "vote deny or approve" };
@@ -3309,6 +3406,8 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       }
       if (ctx.phase === "ARGUE") {
         if (state.kingsRevealed) return { ok: false, reason: "the 22-8 vote is already up" };
+        // Commit, then the room's own verdict alone, then the owners' answer.
+        if (!state.kingsSplitShown) return { ok: true, state: { ...state, kingsSplitShown: true } };
         return { ok: true, state: { ...state, kingsRevealed: true } };
       }
       return { ok: false, reason: `there is no commit reveal in ${ctx.phase}` };
@@ -3374,7 +3473,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       case "PLAY":
         return ["takeSeat", "propose", "setPrice", "setReinvest", "lock", "teacher:ruleStep", "teacher:realRule", "teacher:closeWeek"];
       case "REVEAL":
-        return ["teacher:revealNext"];
+        return ["arrowPredict", "teacher:revealNext"];
       case "COUNTERFACTUAL":
         return ["teacher:counterfactual"];
       case "ARGUE":
@@ -3388,7 +3487,25 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
 
   studentView(state, seatId, phase) {
     const slot = state.seatToSlot[seatId];
-    if (slot === undefined) return tag({ seated: false, message: "Finding your club…" });
+    if (slot === undefined) {
+      // gate-l3-teacher B4: a pair that arrived after the league closed used to
+      // read "You're in — finding your club…" forever. They now get a real
+      // screen that says what happened and what to do about it.
+      if ((state.observerSeats ?? []).includes(seatId)) {
+        return tag({
+          seated: false,
+          observer: true,
+          message:
+            "You arrived after this league closed, so every club already has a pair running it. Sit with the desk next to you — you are on their club now, and you get a say in what they do with it.",
+          rule: ruleView(state),
+          ruleNote: state.adopted
+            ? `The rule in force is SHARE ${state.adopted.share}% · CONDITION ${state.adopted.condition ? `${CONDITION_MIN_REINVEST}% or you collect half a share` : "OFF"}. The room voted on it before you got here.`
+            : "The room is still writing its rule. Your neighbour's screen has the dials on it.",
+          houseRules: HOUSE_RULES,
+        });
+      }
+      return tag({ seated: false, observer: false, message: "Finding your club…" });
+    }
     const club = state.clubs[slot]!;
     const agg = computeAggregate(state);
     const card = clubCard(state, slot);
@@ -3434,11 +3551,31 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             histogramHeld: state.closedRounds.length === 0,
             shareGrid: SHARE_GRID,
             conditionMin: CONDITION_MIN_REINVEST,
+            band: ADOPT_BAND,
+            // THE VOTE IS SEALED once round 3 has closed. The dial, the toggle
+            // and the commit control are all dead, and the desk says why rather
+            // than silently swallowing a press (gate-l3-play, biggest failure).
+            sealed: state.roundIndex >= ROUND_COUNT,
+            sealedNote:
+              "The vote is sealed. Round 3 has closed and the two-thirds test runs on the numbers that were in — nothing you do now can change the rule this room adopts.",
+            // Abstention honesty, in the desk's own words, whenever this desk
+            // has no number in this round (teacher B6 — the director claims this
+            // sentence is here, so it has to be here).
+            abstainNote:
+              club.proposal === null
+                ? "You have not put a number in this round. A desk with no number in has ABSTAINED: it is not counted in the room's middle number, and it cannot be inside the ten-point band — so the two-thirds test counts it as a desk that did not back the rule."
+                : null,
             league: leagueTable(state),
           });
         }
         if (state.stage === "adopted") {
-          return tag({ ...base, mode: "adopted", adoption: adoptionLineClaimed(agg).text, seasonCopy: SEASON_COPY, league: leagueTable(state) });
+          return tag({
+            ...base,
+            mode: "adopted",
+            adoption: adoptionLineClaimed(agg).text,
+            seasonCopy: seasonCopyFor(state.adopted?.how),
+            league: leagueTable(state),
+          });
         }
         const week = Math.min(state.weekIndex, WEEK_COUNT - 1);
         const vSlot = visitorSlotFor(slot, week, state.leagueSize);
@@ -3466,14 +3603,58 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           noPreview: "No preview. Your dials show dollars and nothing else — what you have is your own history and the rule the room wrote.",
         });
       }
-      case "REVEAL":
+      case "REVEAL": {
+        // gate-l3-play repair 3: the student device was BYTE-IDENTICAL across
+        // all five reveal stages, so for twenty-eight minutes a pair had no row
+        // to find, nothing to mark and nothing to predict. Each stage now hands
+        // this desk ITS OWN number for that stage, and stage 3 takes a one-tap
+        // prediction about this club's own price arrow before stage 4 renders it.
+        const mine = agg.arrows.find((a) => a.deskHandle === deskHandleFor(club)) ?? null;
+        const flow = agg.potFlows.find((f) => f.deskNumber === club.deskNumber) ?? null;
+        const era = agg.reinvestEra.find((r) => r.deskNumber === club.deskNumber) ?? null;
+        const lens = [
+          { stage: 1, label: "The rule you are living under", value: state.adopted ? `SHARE ${state.adopted.share}% · CONDITION ${state.adopted.condition ? "ON" : "OFF"}` : "—" },
+          { stage: 2, label: "Your club's own net from the pot, three weeks", value: flow ? flow.netText : "—" },
+          { stage: 3, label: "You paid in / you took out", value: flow ? `${flow.paidInText} in · ${flow.tookOutText} out` : "—" },
+          {
+            stage: 4,
+            label: "Your best price, with the rule and without it",
+            value: mine ? `$${mine.priceAtZero} ${mine.priceSteps === 0 ? "· no change" : `→ $${mine.priceAtAdopted}`}` : "—",
+          },
+          {
+            stage: 5,
+            label: "What you put back, a week",
+            value: era ? `${money(Math.round(era.l3Dollars))}${era.l2Dollars !== null ? ` · last lesson ${money(Math.round(era.l2Dollars))}` : ""}` : "—",
+          },
+        ];
+        return tag({
+          ...base,
+          message: "Look up at the board — and find your own club's number for this beat, on this screen.",
+          revealStage: state.revealStage,
+          revealSteps: REVEAL_STEPS,
+          lens,
+          myLens: lens.find((l) => l.stage === state.revealStage) ?? null,
+          // The predict-the-arrow commit: open at stage 3, resolved at stage 4.
+          predictOpen: state.revealStage === 3 && club.arrowPrediction === null,
+          predictPrompt: "Before the arrows go up: did YOUR club's best ticket price move under this rule, or not move at all?",
+          prediction: club.arrowPrediction,
+          predictionResolved:
+            state.revealStage >= 4 && club.arrowPrediction !== null && mine
+              ? { actual: mine.priceSteps === 0 ? "flat" : "moved", right: (mine.priceSteps === 0 ? "flat" : "moved") === club.arrowPrediction }
+              : null,
+          arrowWhy: state.revealStage >= 4 ? arrowWhyLine(agg) : null,
+          weeks: club.weeks.map((w) => viewWeek(state, club, w)),
+          transfer: flow,
+          question: consequenceQuestionFor(state, agg),
+        });
+      }
       case "CONSEQUENCE":
         return tag({
           ...base,
           message: "Look up at the board — and check your own transfer column while you do.",
           weeks: club.weeks.map((w) => viewWeek(state, club, w)),
           transfer: agg.potFlows.find((f) => f.deskNumber === club.deskNumber) ?? null,
-          question: CONSEQUENCE_QUESTION,
+          question: consequenceQuestionFor(state, agg),
         });
       case "COUNTERFACTUAL":
         return tag({ ...base, message: COUNTERFACTUAL_HONESTY, weeks: club.weeks.map((w) => viewWeek(state, club, w)) });
@@ -3483,8 +3664,14 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           message: ARGUE_COPY,
           prompt: ARGUE_PROMPT,
           vote: club.kingsVote,
+          // SR A2: /teach told the teacher the term sheets were on the students'
+          // screens with the numbers on them. They were not on any surface.
+          termSheets: TERM_SHEETS,
+          termSheetNote: ARGUE_TERM_SHEET_NOTE,
+          splitShown: state.kingsSplitShown,
           revealed: state.kingsRevealed,
-          ...(state.kingsRevealed ? { revealCopy: ARGUE_REVEAL_COPY, split: agg.kingsSplit } : {}),
+          ...(state.kingsSplitShown ? { split: agg.kingsSplit } : {}),
+          ...(state.kingsRevealed ? { revealCopy: ARGUE_REVEAL_COPY } : {}),
         });
       case "SYNTHESIS":
         return tag({
@@ -3496,7 +3683,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           sources: SOURCE_NOTES,
         });
       case "COMPLETE":
-        return tag({ ...base, message: COMPLETE_COPY, rule: ruleView(state) });
+        return tag({ ...base, message: completeCopyFor(state.adopted?.how), ruleTitle: completeTitleFor(state.adopted?.how), rule: ruleView(state) });
       default:
         return tag({ ...base, message: "" });
     }
@@ -3535,18 +3722,23 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       ruleStepAvailable: state.stage === "rounds" || state.stage === "adopted",
       ruleStepWarn:
         state.stage === "rounds" && state.roundIndex < ROUND_COUNT && state.clubs.filter((c) => c.seatId !== null && c.proposal !== null).length === 0 && live > 0
-          ? `Nobody has put a number in yet — 0 of ${live} desks. Closing the round now records every desk at the old 5% rule. Close it anyway?`
+          ? `Nobody has put a number in yet — 0 of ${live} desks. Closing the round now records every desk as an ABSTENTION: no number goes into the room's middle number, and no desk can be inside the band. Close it anyway?`
           : state.stage === "rounds" && state.roundIndex >= ROUND_COUNT
             ? "This runs the two-thirds test and prints the rule this room will play under. It cannot be re-run. Print it?"
             : null,
       realRuleAvailable: state.stage === "rounds" || state.stage === "adopted",
       realRuleWarn: `This replaces the room's own vote with the league office's rule (SHARE ${REAL_RULE_SHARE}% · CONDITION ${REAL_RULE_CONDITION ? "ON" : "OFF"}) and cannot be undone. Use it if the room cannot agree or the period has run short. Operate the league office's rule?`,
       commitRevealAvailable: (phase === "HOOK" && !state.hookRevealed) || (phase === "ARGUE" && !state.kingsRevealed),
-      commitRevealLabel: phase === "ARGUE" ? "Read the 22-8 vote" : "Show what Boston did",
+      commitRevealLabel:
+        phase === "ARGUE" ? (state.kingsSplitShown ? "Read the owners' 22-8 vote" : "Show THIS ROOM's tally (the owners come next)") : "Show what Boston did",
       commitRevealWarn:
         phase === "ARGUE"
-          ? `This reads out the owners' vote. ${agg.kingsSplit.undecided} desk(s) have not voted yet and will not be able to after this. Reveal?`
+          ? state.kingsSplitShown
+            ? "This reads out the owners' 22-8. The room has already seen its own tally. Reveal?"
+            : `This closes the vote and puts THIS ROOM's own tally on the projector, alone — the owners' 22-8 is a second press after it. ${agg.kingsSplit.undecided} desk(s) have not voted yet and will not be able to after this. Show the room's tally?`
           : `This shows what Boston did. ${agg.hookSplit.undecided} desk(s) have not locked a position and will not be able to after this. Reveal?`,
+      kingsSplitShown: state.kingsSplitShown,
+      observerCount: (state.observerSeats ?? []).length,
       closeWeekWarn:
         state.stage === "season" && state.clubs.filter((c) => c.seatId !== null && c.locked).length === 0 && live > 0
           ? `Nobody has locked in yet — 0 of ${live} desks. The week bell settles week ${state.weekIndex + 1} for every building at once, and every desk that has not locked settles at its club's house price with nothing reinvested, marked AUTO. Ring it anyway?`
@@ -3615,10 +3807,29 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             heldCopy: "Round 1 is blind on purpose. A room that sees the middle number first writes the middle number.",
             submitted: state.clubs.filter((c) => c.seatId !== null && c.proposal !== null).length,
             deskCount: agg.deskCount,
+            band: ADOPT_BAND,
+            // The two-thirds tension, made visible while it is still live
+            // (gate-l3-play repair 2). Counts only — no desk, no money, no name.
+            gauge:
+              state.closedRounds.length > 0
+                ? {
+                    inBand: agg.rounds[agg.rounds.length - 1]!.inBand,
+                    needed: agg.rounds[agg.rounds.length - 1]!.needed,
+                    liveDesks: agg.rounds[agg.rounds.length - 1]!.liveDesks,
+                    abstained: agg.rounds[agg.rounds.length - 1]!.abstained,
+                  }
+                : null,
+            sealed: state.roundIndex >= ROUND_COUNT,
           });
         }
         if (state.stage === "adopted") {
-          return tag({ ...common, mode: "adopted", title: "THE RULE", adoptionLine: adoptionLineClaimed(agg).text, statusQuoCopy: state.adopted?.how === "statusQuo" ? STATUS_QUO_COPY : null });
+          return tag({
+            ...common,
+            mode: "adopted",
+            title: state.adopted?.how === "leagueOffice" ? "THE LEAGUE OFFICE'S RULE" : state.adopted?.how === "statusQuo" ? "THE RULE THAT HELD" : "THE RULE",
+            adoptionLine: adoptionLineClaimed(agg).text,
+            statusQuoCopy: state.adopted?.how === "statusQuo" ? STATUS_QUO_COPY : state.adopted?.how === "leagueOffice" ? LEAGUE_OFFICE_COPY : null,
+          });
         }
         return tag({
           ...common,
@@ -3645,8 +3856,13 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           totalStages: REVEAL_STEPS,
           headline: stage ? stage.headline : "Waiting for your teacher to put up the first beat.",
           potFlows: state.revealStage >= 3 ? agg.potFlows : [],
-          arrows: state.revealStage >= 4 ? agg.arrows : [],
+          arrows: state.revealStage >= 4 ? (agg.arrowsMovedAny ? agg.arrows : agg.arrowsWouldMove) : [],
+          // On the no-movement branch the frame shows what WOULD have moved, and
+          // says so in the column header (econ B1 / gate-l3-play repair 5).
+          arrowsAreCounterfactual: state.revealStage >= 4 && !agg.arrowsMovedAny,
+          arrowsCounterfactualShare: agg.arrowsWouldMoveShare,
           arrowLine: state.revealStage >= 4 ? arrowLineClaimed(agg).text : null,
+          arrowWhy: state.revealStage >= 4 ? arrowWhyLine(agg) : null,
           eraLine: state.revealStage >= 5 ? reinvestEraLineClaimed(agg).text : null,
           era: state.revealStage >= 5 ? agg.reinvestEra : [],
           l2Mean: agg.l2Mean,
@@ -3662,7 +3878,11 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           era: agg.reinvestEra,
           l2Mean: agg.l2Mean,
           l3Mean: agg.l3Mean,
-          question: CONSEQUENCE_QUESTION,
+          l2MeanDollars: agg.l2MeanDollars,
+          l3MeanDollars: agg.l3MeanDollars,
+          horizonNote:
+            "Three weeks shows the transfer. What the effort that stopped actually costs lands in DRAW, next season — and nothing in this lesson prices a point of Draw in dollars.",
+          question: consequenceQuestionFor(state, agg),
           potFlows: agg.potFlows,
         });
       case "COUNTERFACTUAL":
@@ -3683,7 +3903,18 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           title: "SACRAMENTO, 2013",
           copy: ARGUE_COPY,
           prompt: ARGUE_PROMPT,
+          termSheets: TERM_SHEETS,
+          termSheetNote: ARGUE_TERM_SHEET_NOTE,
+          splitShown: state.kingsSplitShown,
           revealed: state.kingsRevealed,
+          // Two presses: the room's own verdict stands alone on the projector
+          // before the owners answer (gate-l3-projector 5).
+          ...(state.kingsSplitShown && !state.kingsRevealed
+            ? {
+                roomSplitLine: `This room voted ${agg.kingsSplit.deny} to deny and ${agg.kingsSplit.approve} to approve${agg.kingsSplit.undecided > 0 ? `, with ${agg.kingsSplit.undecided} undecided` : ""}. Nobody has seen what the owners did.`,
+                split: agg.kingsSplit,
+              }
+            : {}),
           ...(state.kingsRevealed ? { revealCopy: ARGUE_REVEAL_COPY, splitLine: kingsSplitLineClaimed(agg).text, split: agg.kingsSplit } : {}),
         });
       case "SYNTHESIS": {
@@ -3700,7 +3931,13 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
         });
       }
       case "COMPLETE":
-        return tag({ ...common, mode: "complete", title: "YOUR RULE", copy: COMPLETE_COPY, adoptionLine: adoptionLineClaimed(agg).text });
+        return tag({
+          ...common,
+          mode: "complete",
+          title: completeTitleFor(state.adopted?.how),
+          copy: completeCopyFor(state.adopted?.how),
+          adoptionLine: adoptionLineClaimed(agg).text,
+        });
       default:
         return tag({ ...common, mode: "idle", title: "" });
     }

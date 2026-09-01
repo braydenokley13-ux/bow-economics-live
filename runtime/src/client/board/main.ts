@@ -1555,7 +1555,8 @@ type WRArrowRow = {
   reinvestSteps: number;
   soldOut: boolean;
 };
-type WREraRow = { deskHandle: string; sizeLabel: string; l2: number | null; l3: number };
+type WREraRow = { deskHandle: string; sizeLabel: string; l2: number | null; l3: number; l2Dollars: number | null; l3Dollars: number };
+type WRTermSheet = { id: string; city: string; headline: string; lines: string[] };
 type WRCfRow = { deskHandle: string; netAdoptedText: string; netRunnerUpText: string; deltaText: string; delta: number };
 type WRBoardCard = {
   id: string;
@@ -1563,18 +1564,32 @@ type WRBoardCard = {
   rails: { rememberWhen: string; ourClass: string; inSports: string; economistsCall: string; outsideSports: string };
 };
 
-function wrHistBoard(h: { round: number; bins: { share: number; count: number }[]; median: number; conditionYes: number; submitted: number }): string {
+/**
+ * The round histogram.
+ *
+ * Bar heights are a percentage of the BAR WELL, not an absolute vh: the well is
+ * whatever the column has left after the tick label, so a full-height bar can no
+ * longer overflow its container and print through the veil sentence above it
+ * (projector B1). The band is drawn on the columns themselves — gold inside the
+ * ten points that decide the vote, grey outside — which is the ±10 band the room
+ * could never see while it was still deciding (gate-l3-play repair 2).
+ */
+function wrHistBoard(
+  h: { round: number; bins: { share: number; count: number }[]; median: number; conditionYes: number; submitted: number },
+  band: number,
+): string {
   const max = Math.max(1, ...h.bins.map((b) => b.count));
   return `
-    <div class="wr-board-hist">
+    <div class="wr-board-hist" id="wrBoardHist">
       ${h.bins
-        .map(
-          (b) =>
-            `<div class="wr-board-histcol"><div class="wr-board-histbar" style="height:${Math.round((b.count / max) * 22) + 1}vh;"></div><div class="wr-board-histtick">${b.share}</div></div>`,
-        )
+        .map((b) => {
+          const inBand = Math.abs(b.share - h.median) <= band + 1e-9;
+          const pct = b.count === 0 ? 0 : Math.max(6, Math.round((b.count / max) * 100));
+          return `<div class="wr-board-histcol ${inBand ? "inband" : "outband"}"><div class="wr-board-histwell"><div class="wr-board-histbar" style="height:${pct}%;"></div></div><div class="wr-board-histtick">${b.share}%</div></div>`;
+        })
         .join("")}
     </div>
-    <div class="wr-board-median">MIDDLE NUMBER <b>${h.median}%</b> · ${h.conditionYes} of ${h.submitted} desks wanted the condition on</div>`;
+    <div class="wr-board-median">ROUND ${h.round} · SHARE OF LOCAL MONEY · MIDDLE NUMBER <b>${h.median}%</b> · the gold columns are within ${band} points of it · ${h.conditionYes} of ${h.submitted} desks wanted the condition on</div>`;
 }
 
 function wrPotBoard(rows: WRPotRow[]): string {
@@ -1610,9 +1625,22 @@ function wrPotBoard(rows: WRPotRow[]): string {
     </div>`;
 }
 
-function wrArrowBoard(rows: WRArrowRow[]): string {
+/**
+ * The BC-1 frame.
+ *
+ * "Did not move" used to be rendered as an em dash (`PRICE $72 — $72`), which a
+ * grade-5 reader parses as a range before a negation, so the whole meaning of
+ * the beat was carried by grey-versus-gold (gate-l3-play repair 5). It says
+ * NO CHANGE now, in words.
+ */
+function wrArrowBoard(rows: WRArrowRow[], counterfactual: boolean, cfShare: number): string {
   if (rows.length === 0) return "";
   return `
+    ${
+      counterfactual
+        ? `<div class="wr-board-median" id="wrBoardArrowHead">THESE ARE NOT YOUR NUMBERS. This is what every desk's best price and best put-back WOULD have been at ${cfShare}% — the rule this room argued about and did not pass.</div>`
+        : ""
+    }
     <div class="wr-board-rows">
       ${rows
         .map(
@@ -1620,23 +1648,34 @@ function wrArrowBoard(rows: WRArrowRow[]): string {
         <div class="wr-board-row arrow" data-wr-arrow>
           <span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span>
           <span class="wr-board-size">${escapeHtml(r.sizeLabel)}</span>
-          <span class="wr-board-arrow ${r.priceSteps === 0 ? "flat" : "moved"}">PRICE $${r.priceAtZero} ${r.priceSteps === 0 ? "—" : "→"} $${r.priceAtAdopted}</span>
-          <span class="wr-board-arrow ${r.reinvestSteps === 0 ? "flat" : "moved"}">PUT BACK ${r.reinvestAtZero}% ${r.reinvestSteps === 0 ? "—" : "→"} ${r.reinvestAtAdopted}%</span>
+          <span class="wr-board-arrow ${r.priceSteps === 0 ? "flat" : "moved"}">PRICE $${r.priceAtZero}${r.priceSteps === 0 ? " · NO CHANGE" : ` → $${r.priceAtAdopted}`}</span>
+          <span class="wr-board-arrow ${r.reinvestSteps === 0 ? "flat" : "moved"}">PUT BACK ${r.reinvestAtZero}%${r.reinvestSteps === 0 ? " · NO CHANGE" : ` → ${r.reinvestAtAdopted}%`}</span>
         </div>`,
         )
         .join("")}
     </div>`;
 }
 
+/**
+ * The before/after bar, in DOLLARS A WEEK.
+ *
+ * econ B3: the two lessons' reinvest dials share a scale and not a base, so the
+ * old percentage columns compared quantities that differ by up to 1.95x per club
+ * — a units artifact the module then named as moral hazard. Both columns are now
+ * the money each club actually spent, which is the one figure the two lessons
+ * mean the same thing by.
+ */
 function wrEraBoard(rows: WREraRow[]): string {
   if (rows.length === 0) return "";
+  const max = Math.max(1, ...rows.map((r) => Math.max(r.l2Dollars ?? 0, r.l3Dollars)));
+  const dollars = (n: number): string => `$${Math.round(n).toLocaleString()}`;
   return `
     <div class="wr-board-rows">
       <div class="wr-board-row era head">
         <span class="wr-board-handle">DESK</span>
         <span></span>
-        <span class="wr-board-num">LESSON 2</span>
-        <span class="wr-board-num">LESSON 3</span>
+        <span class="wr-board-num">LESSON 2 / WK</span>
+        <span class="wr-board-num">LESSON 3 / WK</span>
       </div>
       ${rows
         .map(
@@ -1644,11 +1683,29 @@ function wrEraBoard(rows: WREraRow[]): string {
         <div class="wr-board-row era" data-wr-era>
           <span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span>
           <span class="wr-board-bars">
-            <span class="wr-board-bar l2" style="width:${Math.round(((r.l2 ?? 0) / 40) * 100)}%"></span>
-            <span class="wr-board-bar l3" style="width:${Math.round((r.l3 / 40) * 100)}%"></span>
+            <span class="wr-board-bar l2" style="width:${Math.round(((r.l2Dollars ?? 0) / max) * 100)}%"></span>
+            <span class="wr-board-bar l3" style="width:${Math.round((r.l3Dollars / max) * 100)}%"></span>
           </span>
-          <span class="wr-board-num">${r.l2 === null ? "no L2" : `${Math.round((r.l2 ?? 0) * 10) / 10}%`}</span>
-          <span class="wr-board-num">${Math.round(r.l3 * 10) / 10}%</span>
+          <span class="wr-board-num">${r.l2Dollars === null ? "no L2" : dollars(r.l2Dollars)}</span>
+          <span class="wr-board-num">${dollars(r.l3Dollars)}</span>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+/** SR A2: the two bids, rendered, with the Sacramento public-money line. */
+function wrTermSheets(sheets: WRTermSheet[]): string {
+  if (sheets.length === 0) return "";
+  return `
+    <div class="wr-board-terms" id="wrBoardTerms">
+      ${sheets
+        .map(
+          (s) => `
+        <div class="wr-board-term" data-wr-term>
+          <h4>${escapeHtml(s.city)}</h4>
+          <div class="wr-term-head">${escapeHtml(s.headline)}</div>
+          <ul>${s.lines.map((l) => `<li>${escapeHtml(l)}</li>`).join("")}</ul>
         </div>`,
         )
         .join("")}
@@ -1698,11 +1755,22 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
     case "rounds": {
       const held = Boolean(view["histogramHeld"]);
       const h = view["histogram"] as { round: number; bins: { share: number; count: number }[]; median: number; conditionYes: number; submitted: number } | null;
+      const gauge = view["gauge"] as { inBand: number; needed: number; liveDesks: number; abstained: number } | null;
+      const band = Number(view["band"] ?? 10);
       stage.innerHTML = `
-        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}${view["sealed"] ? " · SEALED" : ""}</div>
         <div class="wr-board-copy" id="wrBoardVeil">${escapeHtml(String(view["veil"] ?? ""))}</div>
-        ${held || !h ? `<div class="wr-board-held" id="wrBoardHeld">${escapeHtml(String(view["heldCopy"] ?? ""))}</div>` : wrHistBoard(h)}
-        <div class="synthesis-note">${Number(view["submitted"] ?? 0)} of ${Number(view["deskCount"] ?? 0)} desks have a number in. ${escapeHtml(privacy)}</div>
+        ${held || !h ? `<div class="wr-board-held" id="wrBoardHeld">${escapeHtml(String(view["heldCopy"] ?? ""))}</div>` : wrHistBoard(h, band)}
+        ${
+          gauge
+            ? `<div class="wr-board-gauge" id="wrBoardGauge">RIGHT NOW <b>${gauge.inBand}</b> OF <b>${gauge.liveDesks}</b> DESKS WOULD PASS. <b>${gauge.needed}</b> ARE NEEDED.${
+                gauge.abstained > 0
+                  ? ` ${gauge.abstained} desk${gauge.abstained === 1 ? "" : "s"} put no number in — an abstention can never be inside the band.`
+                  : ""
+              }</div>`
+            : ""
+        }
+        <div class="synthesis-note">${Number(view["submitted"] ?? 0)} of ${Number(view["deskCount"] ?? 0)} desks have a number in THIS round. ${escapeHtml(privacy)}</div>
         <div class="exit-prompt hl-foot">${escapeHtml(String(view["adoptCopy"] ?? ""))}</div>`;
       return;
     }
@@ -1742,7 +1810,12 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
               evidence tables put 36 rows and 967px of content into a 768px
               projector, which the e2e's fit guard caught. */ ""}
         ${stageNo === 3 ? wrPotBoard((view["potFlows"] as WRPotRow[]) ?? []) : ""}
-        ${stageNo === 4 ? wrArrowBoard((view["arrows"] as WRArrowRow[]) ?? []) : ""}
+        ${stageNo === 4 ? wrArrowBoard((view["arrows"] as WRArrowRow[]) ?? [], Boolean(view["arrowsAreCounterfactual"]), Number(view["arrowsCounterfactualShare"] ?? 0)) : ""}
+        ${
+          stageNo === 4 && view["arrowWhy"]
+            ? `<div class="wr-board-gauge" id="wrBoardArrowWhy">${escapeHtml(String(view["arrowWhy"]))}</div>`
+            : ""
+        }
         ${stageNo === 5 ? wrEraBoard((view["era"] as WREraRow[]) ?? []) : ""}
         <div class="synthesis-note">Stage ${stageNo} of ${Number(view["totalStages"] ?? 5)}. ${escapeHtml(privacy)}</div>`;
       return;
@@ -1754,6 +1827,7 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
         ${ruleStrip}
         <div class="wr-board-headline" id="wrBoardEra">${escapeHtml(String(view["eraLine"] ?? ""))}</div>
         ${wrEraBoard((view["era"] as WREraRow[]) ?? [])}
+        <div class="synthesis-note" id="wrBoardHorizon">${escapeHtml(String(view["horizonNote"] ?? ""))}</div>
         <div class="exit-prompt wr-board-q">${escapeHtml(String(view["question"] ?? ""))}</div>`;
       return;
 
@@ -1781,12 +1855,15 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
       stage.innerHTML = `
         <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
         <div class="wr-board-copy" id="wrBoardArgue">${escapeHtml(String(view["copy"] ?? ""))}</div>
+        ${wrTermSheets((view["termSheets"] as WRTermSheet[]) ?? [])}
         <div class="exit-prompt wr-board-q">${escapeHtml(String(view["prompt"] ?? ""))}</div>
         ${
           view["revealed"]
             ? `<div class="wr-board-reveal" id="wrBoardKingsReveal">${escapeHtml(String(view["revealCopy"] ?? ""))}</div>
                <div class="synthesis-note wr-board-split" id="wrBoardKingsSplit">${escapeHtml(String(view["splitLine"] ?? ""))}</div>`
-            : `<div class="synthesis-note">Nobody has seen the vote.</div>`
+            : view["splitShown"]
+              ? `<div class="wr-board-headline" id="wrBoardKingsRoomSplit">${escapeHtml(String(view["roomSplitLine"] ?? ""))}</div>`
+              : `<div class="synthesis-note">Nobody has seen the vote. ${escapeHtml(String(view["termSheetNote"] ?? ""))}</div>`
         }`;
       return;
 
