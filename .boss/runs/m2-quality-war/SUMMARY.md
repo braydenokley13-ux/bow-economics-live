@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `154:e2dec86b9adf0bee095f7d7c42abb23cb64ce7f6a6d801cfac85fa6985a0baa9`  
-Updated: 2026-09-01T02:12:36.348Z
+Event head: `159:bfcb0f4cbdf6040987c797ee37164396187767494336cc657fa6727feebb3ced`  
+Updated: 2026-09-01T02:13:54.881Z
 
 ## Founder intent
 
@@ -43,7 +43,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — lead-integrator — completed-with-concerns — claude-opus-5
-- visual-experience-director — lead-integrator — active — claude-opus-5
+- visual-experience-director — lead-integrator — completed-with-concerns — claude-opus-5
 - builder — lead-integrator — completed-with-concerns — claude-opus-5
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
@@ -52,7 +52,8 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed — claude-sonnet-5
-- product-analyst — lead-integrator — active — claude-opus-5
+- product-analyst — lead-integrator — completed-with-concerns — claude-opus-5
+- regression-hunter — regression-hunter — active — claude-sonnet-5
 
 ## Required evidence
 
@@ -132,10 +133,83 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - econ-l1-two-book-baseline — economic-truth/blocking/open — The two-books synthesis card prices renewal points 47-70x too steep because it compares against a Pareto-dominated baseline line rather than the frontier; narrow fix — compute the card's price-per-point along the true frontier. Also open: reframe P14's zero-headroom source comment (30/4.5 passes with headroom, refuting the builder's ceiling claim); non-blocking demand-floor identity edge (a '0 then 0' card reachable from $58 Memphis) and HOUSE_RULES[2] +2 clause false in 62-65% of states. GATE_L1_ECON_R3.md.
 - recheck3-l1-econ-dissent — undefined/undefined/open — undefined
 - analyst-no-pass-wave2 — process/blocking/open — Analyst dissents against any PASS verdict for Wave 2: the premium-visual contract clause has no affirmative artifact (visual verdict SERVICEABLE-NOT-PREMIUM, never re-graded), and the projector critic's 'stage must fit its content' discharge condition was substituted with a scrollbar and never re-adjudicated by its owning critic. ANALYST_WAVE2.md.
+- analyst-wave2-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
-- Gate not evaluated
+Recommendation: **REPAIR**
+
+- PASS — role:browser-qa: browser-qa completed.
+- PASS — role:builder: builder completed.
+- PASS — role:classroom-projector-critic: classroom-projector-critic completed.
+- PASS — role:economic-truth-critic: economic-truth-critic completed.
+- FAIL — role:experience-director: experience-director is required and incomplete.
+- FAIL — role:lead-integrator: lead-integrator is required and incomplete.
+- PASS — role:player-gameplay-critic: player-gameplay-critic completed.
+- PASS — role:product-analyst: product-analyst completed.
+- FAIL — role:regression-hunter: regression-hunter is required and incomplete.
+- PASS — role:sports-reality-director: sports-reality-director completed.
+- PASS — role:teacher-transfer-critic: teacher-transfer-critic completed.
+- FAIL — role:visual-experience-director: visual-experience-director is required and incomplete.
+- PASS — blocking-role:classroom-projector-critic: classroom-projector-critic blocking review is present.
+- PASS — blocking-role:economic-truth-critic: economic-truth-critic blocking review is present.
+- PASS — blocking-role:sports-reality-director: sports-reality-director blocking review is present.
+- PASS — blocking-role:teacher-transfer-critic: teacher-transfer-critic blocking review is present.
+- FAIL — role-independence: Builder self-certification detected: lead-integrator/player-gameplay-critic, lead-integrator/economic-truth-critic, lead-integrator/sports-reality-director, lead-integrator/browser-qa, lead-integrator/economic-truth-critic, lead-integrator/player-gameplay-critic, lead-integrator/teacher-transfer-critic, lead-integrator/classroom-projector-critic, lead-integrator/economic-truth-critic, lead-integrator/player-gameplay-critic, lead-integrator/teacher-transfer-critic, lead-integrator/economic-truth-critic, lead-integrator/player-gameplay-critic, lead-integrator/teacher-transfer-critic, lead-integrator/product-analyst.
+- PASS — analyst-contract: Analyst output contract is complete.
+- PASS — evidence:analyst-report: analyst-report evidence is present.
+- PASS — evidence:browser-trace: browser-trace evidence is present.
+- PASS — evidence:economic-truth-report: economic-truth-report evidence is present.
+- PASS — evidence:gameplay-report: gameplay-report evidence is present.
+- FAIL — evidence:git-diff: git-diff evidence is required.
+- PASS — evidence:projector-report: projector-report evidence is present.
+- PASS — evidence:sports-reality-report: sports-reality-report evidence is present.
+- PASS — evidence:teacher-transfer-report: teacher-transfer-report evidence is present.
+- PASS — evidence:test: test evidence is an authentic passing command record.
+- PASS — evidence:visual-report: visual-report evidence is present.
+- PASS — evidence-integrity:l1-build-test: Evidence l1-build-test hash is intact.
+- PASS — evidence-integrity:l1-tuning-harness: Evidence l1-tuning-harness hash is intact.
+- PASS — evidence-integrity:l1-e2e-browser: Evidence l1-e2e-browser hash is intact.
+- PASS — evidence-integrity:l1-tests: Evidence l1-tests hash is intact.
+- PASS — evidence-integrity:l1-tuning: Evidence l1-tuning hash is intact.
+- PASS — evidence-integrity:l1-e2e: Evidence l1-e2e hash is intact.
+- PASS — evidence-integrity:gate-l1-sr: Evidence gate-l1-sr hash is intact.
+- PASS — evidence-integrity:gate-l1-qa: Evidence gate-l1-qa hash is intact.
+- PASS — evidence-integrity:gate-l1-econ: Evidence gate-l1-econ hash is intact.
+- PASS — evidence-integrity:gate-l1-play: Evidence gate-l1-play hash is intact.
+- PASS — evidence-integrity:l1-tests-r1: Evidence l1-tests-r1 hash is intact.
+- PASS — evidence-integrity:l1-tuning-r1: Evidence l1-tuning-r1 hash is intact.
+- PASS — evidence-integrity:l1-e2e-r1: Evidence l1-e2e-r1 hash is intact.
+- PASS — evidence-integrity:l1-e2e-misclick: Evidence l1-e2e-misclick hash is intact.
+- PASS — evidence-integrity:gate-l1-visual: Evidence gate-l1-visual hash is intact.
+- PASS — evidence-integrity:gate-l1-econ-r1: Evidence gate-l1-econ-r1 hash is intact.
+- PASS — evidence-integrity:gate-l1-play-r1: Evidence gate-l1-play-r1 hash is intact.
+- PASS — evidence-integrity:gate-l1-teacher: Evidence gate-l1-teacher hash is intact.
+- PASS — evidence-integrity:gate-l1-projector: Evidence gate-l1-projector hash is intact.
+- PASS — evidence-integrity:l1-tests-r2: Evidence l1-tests-r2 hash is intact.
+- PASS — evidence-integrity:l1-tuning-r2: Evidence l1-tuning-r2 hash is intact.
+- PASS — evidence-integrity:l1-e2e-r2: Evidence l1-e2e-r2 hash is intact.
+- PASS — evidence-integrity:m1-e2e-regression: Evidence m1-e2e-regression hash is intact.
+- PASS — evidence-integrity:gate-l1-econ-r2: Evidence gate-l1-econ-r2 hash is intact.
+- PASS — evidence-integrity:gate-l1-teacher-r2: Evidence gate-l1-teacher-r2 hash is intact.
+- PASS — evidence-integrity:gate-l1-play-r2: Evidence gate-l1-play-r2 hash is intact.
+- PASS — evidence-integrity:l1-tests-r3: Evidence l1-tests-r3 hash is intact.
+- PASS — evidence-integrity:l1-tuning-r3: Evidence l1-tuning-r3 hash is intact.
+- PASS — evidence-integrity:l1-e2e-r3: Evidence l1-e2e-r3 hash is intact.
+- PASS — evidence-integrity:gate-l1-teacher-r3: Evidence gate-l1-teacher-r3 hash is intact.
+- PASS — evidence-integrity:gate-l1-play-r3: Evidence gate-l1-play-r3 hash is intact.
+- PASS — evidence-integrity:gate-l1-econ-r3: Evidence gate-l1-econ-r3 hash is intact.
+- PASS — evidence-integrity:analyst-wave2: Evidence analyst-wave2 hash is intact.
+- PASS — claim-ledger-present: Wave contains progress claims.
+- FAIL — claims-reconciled: Unconfirmed or contradicted claims: l1-bc2-pass:contradicted.
+- FAIL — blocking-dissent: Blocking dissent remains: play-l1-repairs-below-fold, econ-l1-two-book-baseline, analyst-no-pass-wave2.
+- PASS — meetings-closed: All meetings are closed.
+- PASS — meeting-budget: Meeting count 0/2.
+- FAIL — agent-budget: Agent soft budget exceeded: 20/14.
+- PASS — failure-budget: Repairs 0/3; waves 2/6.
+- PASS — ownership-conflicts: No active ownership conflicts.
+- PASS — config-integrity: Harness constitution is unchanged since run creation.
+- PASS — protected-branch: Branch claude/module-2-money-motion-quality-77dedf is not protected.
 
 ## Decision pending
 
