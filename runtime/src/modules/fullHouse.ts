@@ -698,11 +698,18 @@ export const cfPageCount = (rowCount: number): number => Math.max(1, Math.ceil(r
  * the group, not claim a position. Takes the already-ordered card (as
  * `computeAggregate` returns it) and the group's rows verbatim, so this and
  * the rows rendered beneath it can never drift apart.
+ *
+ * Prints "Desk N" only, not the full row handle (which also carries the
+ * franchise, e.g. "Desk 11 · Memphis Grizzlies") — the franchise is already on
+ * the row itself a moment later, and three full handles joined together wrap
+ * to a second line on the pager at 1366x768, which is exactly the row this
+ * card's `CF_ROWS_PER_PAGE` cap was measured to fit
+ * (`runtime/scripts/e2e-m2l1.cjs`, class-scale 12-desk instrument).
  */
 export const cfPageDeskNames = (rows: readonly RepeatRow[], page: number): string =>
   rows
     .slice(page * CF_ROWS_PER_PAGE, page * CF_ROWS_PER_PAGE + CF_ROWS_PER_PAGE)
-    .map((r) => r.deskHandle)
+    .map((r) => r.deskHandle.split(" · ")[0])
     .join(", ");
 
 /**

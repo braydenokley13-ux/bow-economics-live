@@ -376,15 +376,21 @@ async function classScaleCounterfactual(browser) {
           /desks?\s+\d+\s*-\s*\d+/i,
           `${tag}: pager label "${pagerText}" still claims a positional desk range`,
         );
+        // The pager prints "Desk N" (no franchise — the row itself carries
+        // that a moment later); compare the same reduction against the rows
+        // actually rendered, so a dropped or extra desk in the label still
+        // fails this even though the franchise suffix differs by design.
         const namedInPager = pagerText
           .replace(/^Group \d+ of \d+\s*[—-]\s*/i, "")
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
+        const deskNumbersInPager = namedInPager.map((s) => s);
+        const deskNumbersInRows = handles.map((h) => h.split(" · ")[0]);
         assert.deepEqual(
-          namedInPager,
-          handles,
-          `${tag}: pager label names [${namedInPager.join(" | ")}] but the rows rendered beneath it are [${handles.join(" | ")}]`,
+          deskNumbersInPager,
+          deskNumbersInRows,
+          `${tag}: pager label names [${deskNumbersInPager.join(" | ")}] but the rows rendered beneath it are [${deskNumbersInRows.join(" | ")}]`,
         );
 
         await board.screenshot({ path: path.join(SCREEN_DIR, `16-board-cf-12desks-group${group + 1}.png`) });
