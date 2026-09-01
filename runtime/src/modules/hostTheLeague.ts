@@ -1373,30 +1373,38 @@ export function roomJointGain(state: HostLeagueState, baselines: ReadonlyMap<num
 export const OPTIMUM_BAND_TOLERANCE = 0.05;
 
 /**
- * THE ROOM'S OWN BOOKS AT ONE UNIFORM DIAL SETTING (econ N17 / B11).
+ * THE ROOM'S OWN BOOKS UNDER A COUNTERFACTUAL SET OF DIALS (econ N17 / B11).
  *
  * `roomJointGain` answers ONE counterfactual — "what if nobody had put anything
  * back" — and answers it as a total against a zero baseline. It cannot decide a
- * question about LEVEL. This is the same computation, generalised: the identical
- * season, the identical schedule and the identical prices, with every desk's
- * reinvest dial pinned at `share` instead of at 0.
+ * question about LEVEL. This is the same season re-run at a different set of
+ * dials: identical schedule, identical prices, identical shock, with each live
+ * desk's reinvest dial replaced by `shareFor(club, week)`.
  *
- * It is the same family and the same carve-outs, deliberately:
- *  - `stock` weeks, bot clubs and the pinned star-departure club keep their
- *    ACTUAL spend and (for the pinned club) their actual Draw path, exactly as
- *    `baselineDrawPathFor` declares;
- *  - only live desks' cash is counted, exactly as `roomJointGain` counts it;
- *  - `roomCashAtUniformShare(state, 0)` is by construction the same number
- *    `roomJointGain` subtracts (a test asserts it).
+ * Two deliberate differences from `baselineDrawPathFor`'s carve-outs, both
+ * because this instrument compares NON-ZERO worlds and that one does not:
+ *  - a league-office club (and a `stock` week a desk had not claimed yet) keeps
+ *    its recorded reinvest SHARE, not its recorded dollars. Its share is a
+ *    published policy (`botShareFor`) and its door money moves with the visiting
+ *    desk's counterfactual Draw, so holding the share is what the reducer would
+ *    actually have done; holding the dollars is only correct at the all-zero
+ *    point, where nothing about the room moved the bots' doors much. This makes
+ *    `roomCashAtShares` agree with a full REPLAY of the season through the
+ *    reducer, which is the computation the econ critic's contradiction test
+ *    used and the one the audit re-runs.
+ *  - the star-departure club stays pinned to its actual Draw path: the shock is
+ *    exogenous and announced before commitment (R7).
+ * Only live desks' cash is counted, exactly as `roomJointGain` counts it.
  *
  * It cannot reuse `baselineDrawPathFor` because above 0% the counterfactual is
  * COUPLED: what a desk spends is a share of a door that depends on the visiting
  * desk's counterfactual Draw. So the whole league is marched forward one week at
  * a time, every home night settled before any Draw is written back — the same
  * ordering `settleWeek` uses, so no club's counterfactual can depend on the
- * order the loop happened to visit it.
+ * order the loop happened to visit it. `shareFor` returning each week's own
+ * `share` reproduces the room's ACTUAL cash exactly (a test asserts it).
  */
-export function roomCashAtUniformShare(state: HostLeagueState, share: number): number {
+export function roomCashAtShares(state: HostLeagueState, shareFor: (club: Club, week: SettledWeek) => number): number {
   const inLeague = state.clubs.slice(0, state.leagueSize);
   const weekCount = inLeague.reduce((n, c) => Math.max(n, c.weeks.length), 0);
   const draw = new Map<number, number>();
@@ -1419,7 +1427,8 @@ export function roomCashAtUniformShare(state: HostLeagueState, share: number): n
       const before = draw.get(c.slot)!;
       const home = homes.get(c.slot)!;
       const isMine = c.seatId !== null && !w.stock;
-      const spend = isMine ? Math.round((share / 100) * home.doorMoney) : w.reinvestPaid;
+      const share = isMine ? shareFor(c, w) : w.share;
+      const spend = Math.round((share / 100) * home.doorMoney);
       if (c.seatId !== null) cash += home.doorMoney + localMediaFor(profile, before) + w.national - w.bill - spend;
       after.set(c.slot, state.shockSlot === c.slot ? (c.weeks[i + 1]?.hostDrawBefore ?? c.draw) : nextDraw(profile, before, spend));
     }
@@ -1427,6 +1436,21 @@ export function roomCashAtUniformShare(state: HostLeagueState, share: number): n
   }
   return Math.round(cash);
 }
+
+/** The room's books with every live desk's dial pinned to the same `share`. */
+export const roomCashAtUniformShare = (state: HostLeagueState, share: number): number => roomCashAtShares(state, () => share);
+
+/**
+ * The room's books with every live desk's dial moved `delta` points from where
+ * that desk ACTUALLY set it, week by week, clamped to the dial.
+ *
+ * This — not a uniform flattening — is the quantity a direction word is about.
+ * It is exactly the measurement econ N17 used to falsify the old clause ("every
+ * desk +5pp -> the room is jointly WORSE off in 68 of 86"), and no surface may
+ * name a direction that this disagrees with.
+ */
+export const roomCashAtShiftedShares = (state: HostLeagueState, delta: number): number =>
+  roomCashAtShares(state, (_c, w) => clamp(w.share + delta, SHARE_MIN, SHARE_MAX));
 
 /**
  * The room's own answer to "how much SHOULD have gone back in" — computed, not
@@ -1454,11 +1478,18 @@ export type RoomOptimum = {
   bandHi: number;
   /** The room's actual mean chosen share, over live desks' non-stock weeks. */
   actualShare: number;
-  /** Room cash at `actualShare`, and one dial step either side of it. */
+  /** Room cash at the dials the room actually set, and one step either side of them. */
   cashAtActual: number;
-  cashOneStepUp: number | null;
-  cashOneStepDown: number | null;
-  relation: "below" | "inside" | "above" | "unclear";
+  cashOneStepUp: number;
+  cashOneStepDown: number;
+  /**
+   * Where the room's level sits against its own band, and whether the room's
+   * own one-step gradient agrees. `underButFlat` / `overButFlat` are the arms
+   * where they DISAGREE — the level is outside the band, but this room's actual
+   * mix of dials does not gain from a step toward it — and no surface may print
+   * a prescription on those.
+   */
+  relation: "below" | "inside" | "above" | "underButFlat" | "overButFlat";
 };
 
 export function roomOptimumFor(state: HostLeagueState): RoomOptimum {
@@ -1484,20 +1515,26 @@ export function roomOptimumFor(state: HostLeagueState): RoomOptimum {
     }
   }
   const actualShare = chosenWeeks === 0 ? 0 : Math.round(chosenShare / chosenWeeks);
-  const cashAtActual = roomCashAtUniformShare(state, actualShare);
-  const cashOneStepUp = actualShare + SHARE_STEP <= SHARE_MAX ? roomCashAtUniformShare(state, actualShare + SHARE_STEP) : null;
-  const cashOneStepDown = actualShare - SHARE_STEP >= SHARE_MIN ? roomCashAtUniformShare(state, actualShare - SHARE_STEP) : null;
+  // The GRADIENT, measured where the room actually is rather than at a uniform
+  // flattening of it: every desk one dial step up, and every desk one dial step
+  // down, from that desk's own settings. This is econ N17's own measurement.
+  const cashAtActual = roomCashAtShiftedShares(state, 0);
+  const cashOneStepUp = roomCashAtShiftedShares(state, SHARE_STEP);
+  const cashOneStepDown = roomCashAtShiftedShares(state, -SHARE_STEP);
   const bandLo = SHARE_GRID[lo]!;
   const bandHi = SHARE_GRID[hi]!;
+  // A direction word needs BOTH: the room's level outside the band the room's
+  // own curve names, AND a one-step move that way that measurably pays. Either
+  // alone is what FL-L was.
   const relation: RoomOptimum["relation"] =
     actualShare < bandLo
-      ? cashOneStepUp !== null && cashOneStepUp > cashAtActual
+      ? cashOneStepUp > cashAtActual
         ? "below"
-        : "unclear"
+        : "underButFlat"
       : actualShare > bandHi
-        ? cashOneStepDown !== null && cashOneStepDown > cashAtActual
+        ? cashOneStepDown > cashAtActual
           ? "above"
-          : "unclear"
+          : "overButFlat"
         : "inside";
 
   return { byShare, bestShare: SHARE_GRID[bestIdx]!, bandLo, bandHi, actualShare, cashAtActual, cashOneStepUp, cashOneStepDown, relation };
@@ -1990,23 +2027,23 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
   const bandLo = claim("spillover.bandLo", opt.bandLo, "percent", { bounds: { min: SHARE_MIN, max: SHARE_MAX } });
   const bandHi = claim("spillover.bandHi", opt.bandHi, "percent", { bounds: { min: SHARE_MIN, max: SHARE_MAX } });
   const level = claim("spillover.actualShare", opt.actualShare, "percent", { bounds: { min: SHARE_MIN, max: SHARE_MAX } });
+  // Every one of these five words is true BY CONSTRUCTION of the branch above,
+  // and only two of them carry a prescription. The two `Flat` arms are the rooms
+  // where the band and this room's own gradient disagree; they say so, in the
+  // room's own terms, and they prescribe nothing.
   const relationWord =
     opt.relation === "below"
-      ? "under that band"
+      ? "under that band, so putting more back in would have left this room holding more money, not less"
       : opt.relation === "above"
-        ? "over that band"
+        ? "over that band, so the dollars past it cost this room more than they brought back"
         : opt.relation === "inside"
           ? "inside that band"
-          : "on neither side of that band";
-  const relationTail =
-    opt.relation === "below"
-      ? ", so putting more back in would have left this room holding more money, not less"
-      : opt.relation === "above"
-        ? ", so the dollars past it cost this room more than they brought back"
-        : "";
+          : opt.relation === "underButFlat"
+            ? "under that band — and yet one more step on every dial in this room would NOT have left it holding more, which is worth arguing about"
+            : "over that band — and yet one step back on every dial in this room would NOT have left it holding more, which is worth arguing about";
   claims.push(bandLo, bandHi, level, claimWord("spillover.levelRelation", relationWord, true));
   const range = opt.bandLo === opt.bandHi ? `at ${bandLo.rendered}` : `between ${bandLo.rendered} and ${bandHi.rendered}`;
-  const levelLine = `Run this room's own books at every setting on the dial and the room keeps the most ${range} — and this room's dials averaged ${level.rendered}, ${relationWord}${relationTail}.`;
+  const levelLine = `Run this room's own books at every setting on the dial and the room keeps the most ${range} — and this room's dials averaged ${level.rendered}, ${relationWord}.`;
 
   // The joint column — the room counted as one set of books.
   const direction = ct.roomJointGain > 0 ? "better off" : ct.roomJointGain < 0 ? "worse off" : "exactly level";

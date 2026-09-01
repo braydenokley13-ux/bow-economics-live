@@ -63,7 +63,9 @@ const {
   CLUBS,
   PRICE_GRID,
   SHARE_GRID,
+  SHARE_MIN,
   SHARE_MAX,
+  SHARE_STEP,
   DRAW_MIN,
   DRAW_MAX,
   DRAW_START,
@@ -694,6 +696,107 @@ function jointByReplay(deskCount, priceOf, shareOf) {
   return { joint: Math.round(cashOfRoom(actual) - cashOfRoom(nobody)), actual, shockSeated: actual.shockSlot !== null && actual.clubs[actual.shockSlot].seatId !== null };
 }
 
+const cashOfRoom = (s) =>
+  s.clubs.filter((c) => c.seatId !== null && c.weeks.length > 0).reduce((sum, c) => sum + c.weeks.reduce((t, w) => t + w.net, 0), 0);
+
+/**
+ * THE ROOM'S OWN LEVEL CURVE, BY REPLAY — econ N18 / B12.
+ *
+ * N18 was not that the branch-noun limb was tautological (N12's tautology was
+ * genuinely gone); it was that the limb verified `sign(joint)` — a TOTAL against
+ * a zero baseline — while the sentence beside it asserted a LEVEL. `sign(joint)`
+ * is true of almost every reachable room and says nothing whatever about how
+ * much SHOULD have gone back in. This is the missing quantity, and it is
+ * computed here the only way that is genuinely independent of the module's claim
+ * code: by REPLAYING the identical season through the shipped reducer once at
+ * every setting on the dial, and once with every desk's own dial nudged one step
+ * up and one step down, and differencing the desks' cash.
+ *
+ * Nothing below reads `roomOptimum`, `roomCashAtShares`, `roomJointGain` or any
+ * module aggregate. The band RULE (the widest contiguous run around the argmax
+ * within 5% of the curve's full spread) is a transcription of the module's
+ * declared spec and is named as one — what it catches is implementation drift,
+ * not an error in the rule. The GRADIENT limb is not a transcription of
+ * anything: it is econ N17's own falsifying measurement ("every desk +5pp -> the
+ * room is jointly WORSE off in 68 of 86"), re-run here, and it is what makes a
+ * printed prescription falsifiable rather than proof-read.
+ */
+const BAND_TOLERANCE = 0.05; // transcription of the module's OPTIMUM_BAND_TOLERANCE
+function levelByReplay(deskCount, priceOf, shareOf, state) {
+  const clampShare = (v) => Math.max(SHARE_MIN, Math.min(SHARE_MAX, v));
+  const byShare = SHARE_GRID.map((s) => Math.round(cashOfRoom(playSeasonWith(deskCount, priceOf, () => s))));
+  let bestIdx = 0;
+  for (let i = 1; i < byShare.length; i += 1) if (byShare[i] > byShare[bestIdx]) bestIdx = i;
+  const max = byShare[bestIdx];
+  const min = Math.min(...byShare);
+  const floor = max - (max - min) * BAND_TOLERANCE;
+  let lo = bestIdx;
+  let hi = bestIdx;
+  while (lo > 0 && byShare[lo - 1] >= floor) lo -= 1;
+  while (hi < byShare.length - 1 && byShare[hi + 1] >= floor) hi += 1;
+  const bandLo = SHARE_GRID[lo];
+  const bandHi = SHARE_GRID[hi];
+
+  // The room's own level, counted here off the settled weeks rather than read
+  // off any module figure: live desks, weeks they actually chose.
+  let n = 0;
+  let sum = 0;
+  for (const c of state.clubs.slice(0, state.leagueSize)) {
+    if (c.seatId === null) continue;
+    for (const w of c.weeks) {
+      if (w.stock) continue;
+      sum += w.share;
+      n += 1;
+    }
+  }
+  const actualShare = n === 0 ? 0 : Math.round(sum / n);
+
+  const cashAtActual = Math.round(cashOfRoom(state));
+  const cashOneStepUp = Math.round(cashOfRoom(playSeasonWith(deskCount, priceOf, (i, w) => clampShare(shareOf(i, w) + SHARE_STEP))));
+  const cashOneStepDown = Math.round(cashOfRoom(playSeasonWith(deskCount, priceOf, (i, w) => clampShare(shareOf(i, w) - SHARE_STEP))));
+
+  const relation =
+    actualShare < bandLo
+      ? cashOneStepUp > cashAtActual
+        ? "below"
+        : "underButFlat"
+      : actualShare > bandHi
+        ? cashOneStepDown > cashAtActual
+          ? "above"
+          : "overButFlat"
+        : "inside";
+  const word =
+    relation === "below"
+      ? "under that band, so putting more back in would have left this room holding more money, not less"
+      : relation === "above"
+        ? "over that band, so the dollars past it cost this room more than they brought back"
+        : relation === "inside"
+          ? "inside that band"
+          : relation === "underButFlat"
+            ? "under that band — and yet one more step on every dial in this room would NOT have left it holding more, which is worth arguing about"
+            : "over that band — and yet one step back on every dial in this room would NOT have left it holding more, which is worth arguing about";
+  return { byShare, bestShare: SHARE_GRID[bestIdx], bandLo, bandHi, actualShare, cashAtActual, cashOneStepUp, cashOneStepDown, relation, word };
+}
+
+/**
+ * The two sentences that PRESCRIBE, and the replayed measurement each one has to
+ * survive. Kept as data so the audit checks the printed TEXT as well as the
+ * atom: econ FL-L reached three surfaces through one shared builder, and a
+ * prescription that drifted out of an atom would otherwise be invisible.
+ */
+const PRESCRIPTIONS = [
+  {
+    phrase: "putting more back in would have left this room holding more money",
+    holds: (lvl) => lvl.cashOneStepUp > lvl.cashAtActual,
+    why: (lvl) => `a uniform one-step INCREASE moves this room from ${money(lvl.cashAtActual)} to ${money(lvl.cashOneStepUp)}`,
+  },
+  {
+    phrase: "the dollars past it cost this room more than they brought back",
+    holds: (lvl) => lvl.cashOneStepDown > lvl.cashAtActual,
+    why: (lvl) => `a uniform one-step DECREASE moves this room from ${money(lvl.cashAtActual)} to ${money(lvl.cashOneStepDown)}`,
+  },
+];
+
 /**
  * The same joint effect, re-derived by ARITHMETIC rather than by replay: every
  * settled home week re-settled with both sides' never-reinvested Draw, at the
@@ -816,7 +919,7 @@ function recomputeMarketPath(state) {
 }
 
 /** Every fact the audit needs, recomputed from state by this harness. */
-function recomputeTruth(state, joint, jointArith) {
+function recomputeTruth(state, joint, jointArith, lvl) {
   const agg = computeAggregate(state);
   const live = state.clubs.filter((c) => c.seatId !== null && c.weeks.length > 0);
   const spendTotal = live.reduce((s, c) => s + c.weeks.filter((w) => !w.stock).reduce((t, w) => t + w.reinvestPaid, 0), 0);
@@ -839,8 +942,12 @@ function recomputeTruth(state, joint, jointArith) {
   // touches neither `created` nor `coherent` nor any module aggregate. The
   // expected WORD is computed from it here, in the harness's own code path,
   // and compared to the word the surface actually rendered.
+  //
+  // econ N17/B11 moved the LEVEL clause off this noun entirely. The noun is now
+  // only what the joint figure can actually decide — better off, worse off, or
+  // level — and the level is a separate sentence audited by `truth.level`.
   const expectedBranchNoun =
-    joint > 0 ? "less went back in than this room's own numbers would justify" : joint < 0 ? "this room over-invested" : "the room came out exactly level";
+    joint > 0 ? "the room as a whole still came out ahead" : joint < 0 ? "this room over-invested" : "the room came out exactly level";
   const lockedAtRelease = state.lockedAtBarRelease === undefined ? null : state.lockedAtBarRelease;
   const sawBar = state.barReleased && state.barReleasedAtWeek !== null && state.barReleasedAtWeek <= WEEK_COUNT - 1;
   const duringLast = sawBar && state.barReleasedAtWeek === WEEK_COUNT - 1;
@@ -855,6 +962,9 @@ function recomputeTruth(state, joint, jointArith) {
     externalPct: coherent ? Math.round((gave / created) * 100) : null,
     joint,
     jointArith,
+    // econ N18/B12: the LEVEL, replayed through the reducer at every setting on
+    // the dial and one step either side of where this room actually sat.
+    level: lvl,
     expectedBranchNoun,
     visitorLed,
     barCount: agg.homeRevenueDecomposition.length,
@@ -880,6 +990,10 @@ function recomputeTruth(state, joint, jointArith) {
         mostGatePct: most ? most.gatePct : null,
         leastNationalPct: least && most && least.slot !== most.slot ? least.nationalPct : null,
         leastGatePct: least && most && least.slot !== most.slot ? least.gatePct : null,
+        // econ N21/FL-M: how many desks the national check really IS the
+        // biggest pipe for, recomputed from the four pipe totals.
+        pipeCount: pipes.length,
+        nationalBiggest: pipes.filter((p) => p.national >= p.gate && p.national >= p.inArena && p.national >= p.localMedia).length,
       };
     })(),
     spendBySlot: new Map(live.map((c) => [c.slot, c.weeks.filter((w) => !w.stock).reduce((t, w) => t + w.reinvestPaid, 0)])),
@@ -893,6 +1007,21 @@ function recomputeTruth(state, joint, jointArith) {
  */
 function auditClaims(surfaces, truth, state) {
   const fail = [];
+  // ---- LEVEL, econ N18/B12. A prescription is a claim about the room's own
+  // gradient, so it is checked against the room's own gradient — on the TEXT of
+  // every surface, before any atom is looked at, so a prescription that drifts
+  // out of its atom is still caught.
+  if (truth.level) {
+    for (const p of PRESCRIPTIONS) {
+      if (!p.holds(truth.level)) {
+        for (const surface of surfaces) {
+          if (surface.text.includes(p.phrase)) {
+            fail.push(`LEVEL ${surface.surface}: "${p.phrase}" is printed, but ${p.why(truth.level)} — replayed through the reducer`);
+          }
+        }
+      }
+    }
+  }
   for (const surface of surfaces) {
     for (const a of surface.claims) {
       const at = `${surface.surface}/${a.id}`;
@@ -926,6 +1055,30 @@ function auditClaims(surfaces, truth, state) {
           fail.push(`SIGN ${at}: the two independent joint computations disagree in sign — arithmetic ${truth.jointArith}, replay ${truth.joint}`);
         }
       }
+      // ---- LEVEL, econ N17/N18/B11/B12: the printed sweet-spot RANGE and the
+      // room's printed level, each recomputed by replaying the season at every
+      // setting on the dial. Checked at LEVEL (bounds), not at sign.
+      if (truth.level) {
+        if (a.id === "spillover.bandLo" && a.value !== truth.level.bandLo) {
+          fail.push(`LEVEL ${at}: the card puts the low edge of this room's sweet spot at ${a.value}%, the replayed curve puts it at ${truth.level.bandLo}%`);
+        }
+        if (a.id === "spillover.bandHi" && a.value !== truth.level.bandHi) {
+          fail.push(`LEVEL ${at}: the card puts the high edge of this room's sweet spot at ${a.value}%, the replayed curve puts it at ${truth.level.bandHi}%`);
+        }
+        // BOUND: the printed range must actually contain the replayed best, and
+        // must not be inverted. A range that excludes its own argmax is not a
+        // sweet spot however close its edges land.
+        if (a.id === "spillover.bandHi") {
+          const lo = surface.claims.find((c) => c.id === "spillover.bandLo");
+          if (lo && lo.value > a.value) fail.push(`BOUND ${at}: the printed range ${lo.value}%-${a.value}% is inverted`);
+          if (lo && (truth.level.bestShare < lo.value || truth.level.bestShare > a.value)) {
+            fail.push(`BOUND ${at}: the printed range ${lo.value}%-${a.value}% does not contain the replayed best setting ${truth.level.bestShare}%`);
+          }
+        }
+        if (a.id === "spillover.actualShare" && a.value !== truth.level.actualShare) {
+          fail.push(`LEVEL ${at}: the card says this room's dials averaged ${a.value}%, recomputed ${truth.level.actualShare}%`);
+        }
+      }
       if (a.id === "barSummary.visitorLedCount" && a.value !== truth.visitorLed) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.visitorLed}`);
       // econ FL-K: the DEALT share, recomputed per desk from the by-choice ledger.
       if (a.id === "desk.dealtPct") {
@@ -944,6 +1097,13 @@ function auditClaims(surfaces, truth, state) {
           const want = truth.composition[key];
           if (want === null || Math.abs(a.value - want) > 0.05) fail.push(`VALUE ${at}: printed ${a.value}, recomputed ${want}`);
         }
+      }
+      // econ N21/FL-M: the counted superlative that replaced the unbound title.
+      if (a.id === "composition.nationalBiggestCount" && a.value !== truth.composition.nationalBiggest) {
+        fail.push(`VALUE ${at}: printed ${a.value} desks, recomputed ${truth.composition.nationalBiggest}`);
+      }
+      if (a.id === "composition.pipeDeskCount" && a.value !== truth.composition.pipeCount) {
+        fail.push(`VALUE ${at}: printed ${a.value} desks, recomputed ${truth.composition.pipeCount}`);
       }
       // projector W4-1: the printed lock count at release.
       if ((a.id === "reveal5.lockedAtRelease" || a.id === "teach5.lockedAtRelease") && a.value !== truth.lockedAtRelease) {
@@ -994,6 +1154,25 @@ function auditClaims(surfaces, truth, state) {
               fail.push(`QUANTIFIER ${at}: "over-invest" is on a surface whose room is ${Math.round(truth.joint).toLocaleString()} better off`);
             }
             break;
+          // econ N17/N18, B11/B12. THE LEVEL WORD — the one econ FL-L was
+          // about. The five arms are recomputed here from the replayed curve
+          // and the replayed one-step gradient, and the printed word is
+          // compared to the word this harness computes, exactly as the branch
+          // noun is. Deliberately NOT `check(...)`.
+          case "spillover.levelRelation":
+            if (truth.level && a.quantifier.word !== truth.level.word) {
+              fail.push(
+                `LEVEL ${at}: the card places this room's ${truth.level.actualShare}% level as "${a.quantifier.word}", but the replayed curve (band ${truth.level.bandLo}%-${truth.level.bandHi}%, one step up ${money(truth.level.cashOneStepUp - truth.level.cashAtActual)}, one step down ${money(truth.level.cashOneStepDown - truth.level.cashAtActual)}) makes it "${truth.level.word}"`,
+              );
+            }
+            break;
+          // econ N21/FL-M: the composition card's superlative, now a counted
+          // fact, recomputed here from the pipe rows.
+          case "composition.nationalBiggestQuantifier": {
+            const want = `on ${truth.composition.nationalBiggest} of ${truth.composition.pipeCount} desks`;
+            if (a.quantifier.word !== want) fail.push(`QUANTIFIER ${at}: printed "${a.quantifier.word}", recomputed "${want}"`);
+            break;
+          }
           // projector W4-1: whether desks had already committed when the bar
           // went up, recomputed from the stamp this harness set, per arm.
           case "reveal5.someLocked":
@@ -1142,6 +1321,18 @@ function auditClaims(surfaces, truth, state) {
   /** A room in arm C — the bar never seen in time, where the board CHOOSES. */
   let armCRoom = null;
   let worstJointSpread = 0;
+  /** econ N17/B11: which of the five LEVEL arms each room shape landed in. */
+  const levelArms = {};
+  /** A room the card tells to put MORE back in — the M-H subject. */
+  let prescribedMore = null;
+  /** A room the card tells put too much in — the other direction. */
+  let prescribedLess = null;
+  /**
+   * A room where a uniform ONE-STEP INCREASE lowers the room's own cash — the
+   * exact region econ N17 measured the false prescription in (68 of 86 rooms),
+   * and the M-H subject the critic's B12 discharge condition names.
+   */
+  let upStepHurts = null;
   let branchNounUnder = 0;
   let branchNounOver = 0;
   let branchNounLevel = 0;
@@ -1166,11 +1357,16 @@ function auditClaims(surfaces, truth, state) {
         }
         const jointArith = jointByArithmetic(actual);
         worstJointSpread = Math.max(worstJointSpread, Math.abs(jointArith - joint));
+        // econ N18/B12: the LEVEL curve, replayed once per room shape.
+        const lvl = levelByReplay(deskCount, (i, w) => P.f(i, w), (i, w) => S.f(i, w), actual);
+        levelArms[lvl.relation] = (levelArms[lvl.relation] ?? 0) + 1;
+        if (!prescribedMore && lvl.relation === "below") prescribedMore = { deskCount, P, S, actual, joint, jointArith, lvl, label: `${deskCount} desks · ${P.id} · ${S.id}` };
+        if (!prescribedLess && lvl.relation === "above") prescribedLess = { deskCount, P, S, actual, joint, jointArith, lvl, label: `${deskCount} desks · ${P.id} · ${S.id}` };
         for (const B of barReleases) {
           const state = { ...actual, barReleased: B.at !== null, barReleasedAtWeek: B.at };
           if (B.lockedAt === undefined) delete state.lockedAtBarRelease;
           else state.lockedAtBarRelease = B.lockedAt;
-          const truth = recomputeTruth(state, joint, jointArith);
+          const truth = recomputeTruth(state, joint, jointArith, lvl);
           const surfaces = moduleClaims(state);
           rooms += 1;
           surfacesSwept += surfaces.length;
@@ -1190,6 +1386,9 @@ function auditClaims(surfaces, truth, state) {
             else branchNounLevel += 1;
           }
           if (!sample && truth.anySpend && truth.market) sample = { state, truth, surfaces };
+          if (!upStepHurts && truth.anySpend && truth.level.cashOneStepUp <= truth.level.cashAtActual) {
+            upStepHurts = { state, truth, surfaces, label };
+          }
           if (!notVisitorDriven && truth.market && truth.market.driver !== "visitor") notVisitorDriven = { state, truth, surfaces, label };
           if (!overInvested && truth.anySpend && !truth.coherent) overInvested = { state, truth, surfaces, label };
           if (!underProvided && truth.anySpend && !truth.coherent && truth.joint > 0) underProvided = { state, truth, surfaces, label };
@@ -1298,7 +1497,10 @@ function auditClaims(surfaces, truth, state) {
       let what = "no room in the sweep had the share withheld AND a positive joint effect — mutation NOT exercised";
       if (underProvided) {
         const t = underProvided.truth;
-        const honest = "less went back in than this room's own numbers would justify";
+        // The honest word is whatever this harness independently computed for
+        // this room, never a hard-coded copy of the module's string — a stale
+        // literal here would turn a QUANTIFIER proof into a BINDING one.
+        const honest = t.expectedBranchNoun;
         const lie = "this room over-invested";
         let touched = 0;
         const surfaces = underProvided.surfaces.map(clone);
@@ -1369,21 +1571,93 @@ function auditClaims(surfaces, truth, state) {
       }
       mutants.push({ id: "M-F TEACHER MIRROR vs BOARD (projector W4-2)", what, caught });
     }
+
+    // M-G · WRONG LEVEL, THE RANGE ITSELF (econ N17/B11, N18/B12). Shift the
+    // printed sweet-spot range 20 points up the dial and leave everything else
+    // alone. Nothing about the SIGN of anything changes; every number on the
+    // card still renders from its own value; the old sign/quantifier/bound
+    // limbs are all still satisfied. If the family cannot bite here, it is not
+    // auditing the level, which is exactly what N18 said of the old one.
+    {
+      let caught = false;
+      let how = [];
+      let what = "no clean room in the sweep — mutation not exercised";
+      if (sample) {
+        const surfaces = sample.surfaces.map(clone);
+        const t = sample.truth;
+        let touched = 0;
+        for (const s of surfaces) {
+          const lo = s.claims.find((c) => c.id === "spillover.bandLo");
+          const hi = s.claims.find((c) => c.id === "spillover.bandHi");
+          if (!lo || !hi) continue;
+          const newLo = Math.min(SHARE_MAX, lo.value + 20);
+          const newHi = Math.min(SHARE_MAX, hi.value + 20);
+          s.text = s.text.split(`between ${lo.rendered} and ${hi.rendered}`).join(`between ${newLo}% and ${newHi}%`);
+          lo.value = newLo;
+          lo.rendered = `${newLo}%`;
+          hi.value = newHi;
+          hi.rendered = `${newHi}%`;
+          touched += 1;
+        }
+        const f = auditClaims(surfaces, t, sample.state);
+        caught = touched > 0 && f.some((x) => x.startsWith("LEVEL") && x.includes("spillover.band"));
+        how = f.filter((x) => x.includes("spillover.band")).slice(0, 1);
+        what = `the printed sweet-spot range shifted +20 points on ${touched} surface(s) of a room whose replayed curve peaks at ${t.level.bestShare}% (band ${t.level.bandLo}%-${t.level.bandHi}%)`;
+      }
+      mutants.push({ id: "M-G wrong LEVEL — the RANGE (econ N17/B11)", what: `${what}${how.length ? ` — first disagreement: ${how[0]}` : ""}`, caught });
+    }
+
+    // M-H · WRONG LEVEL, THE PRESCRIPTION (econ B12's stated discharge
+    // condition, verbatim): print the "put more back in" clause over a room
+    // whose one-step-UP room cash is LOWER. This is FL-L itself, re-injected.
+    {
+      let caught = false;
+      let how = [];
+      let what = "no room in the sweep where a one-step increase lowers room cash — mutation NOT exercised";
+      if (upStepHurts) {
+        const t = upStepHurts.truth;
+        const surfaces = upStepHurts.surfaces.map(clone);
+        const lie = "under that band, so putting more back in would have left this room holding more money, not less";
+        let touched = 0;
+        for (const s of surfaces) {
+          const atom = s.claims.find((c) => c.id === "spillover.levelRelation");
+          if (!atom) continue;
+          s.text = s.text.split(atom.quantifier.word).join(lie);
+          atom.rendered = lie;
+          atom.quantifier = { word: lie, claims: true };
+          delete atom.absent;
+          touched += 1;
+        }
+        const f = auditClaims(surfaces, t, upStepHurts.state);
+        caught = touched > 0 && f.some((x) => x.startsWith("LEVEL"));
+        how = f.filter((x) => x.startsWith("LEVEL")).slice(0, 1);
+        what = `the under-provision PRESCRIPTION injected on ${touched} surface(s) of ${upStepHurts.label}, a room where a uniform one-step increase moves the room from ${money(t.level.cashAtActual)} to ${money(t.level.cashOneStepUp)} — replayed through the reducer`;
+      }
+      mutants.push({ id: "M-H wrong LEVEL — the PRESCRIPTION (econ N17/FL-L, B12)", what: `${what}${how.length ? ` — first disagreement: ${how[0]}` : ""}`, caught });
+    }
   }
 
   const mutantsCaught =
-    mutants.length === 6 &&
+    mutants.length === 8 &&
     mutants.every((m) => m.caught) &&
     notVisitorDriven !== null &&
     overInvested !== null &&
     underProvided !== null &&
     armCRoom !== null &&
     armDRoom !== null &&
-    armARoom !== null;
+    armARoom !== null &&
+    // econ B12: the LEVEL mutation is only a proof if the sweep actually
+    // contains the region econ N17 measured the falsehood in.
+    upStepHurts !== null;
   const coversRequiredIds = [
     "spillover.externalPct",
     "spillover.jointDirection",
     "spillover.branchNoun",
+    "spillover.bandLo",
+    "spillover.bandHi",
+    "spillover.actualShare",
+    "spillover.levelRelation",
+    "composition.nationalBiggestCount",
     "reveal5.sawBar",
     "reveal5.someLocked",
     "teach5.boardChose",
@@ -1404,7 +1678,15 @@ function auditClaims(surfaces, truth, state) {
       `disagreements found: ${failures.length}${failures.length ? ` — ${failures.slice(0, 4).join(" ;; ")}` : ""}`,
       ...mutants.map((m) => `MUTATION ${m.id}: ${m.what} -> ${m.caught ? "CAUGHT by the family" : "NOT CAUGHT — the family is vacuous on this limb"}`),
       `required claim ids all covered by the sweep: ${coversRequiredIds}`,
-      `SPILLOVER branch noun, decided ONLY by the replayed joint effect: under-provision ${branchNounUnder} rooms · over-investment ${branchNounOver} · exactly level ${branchNounLevel} (econ N11: the shipped card said "over-investment" in every one of these)`,
+      `SPILLOVER branch noun, decided ONLY by the replayed joint effect: jointly ahead ${branchNounUnder} rooms · over-investment ${branchNounOver} · exactly level ${branchNounLevel} (econ N11: the shipped card said "over-investment" in every one of these)`,
+      `SPILLOVER LEVEL arms (econ N17/B11), decided by the room's own replayed cash-by-share curve and its replayed one-step gradient: ${
+        Object.entries(levelArms)
+          .sort()
+          .map(([k, v]) => `${k} ${v}`)
+          .join(" · ") || "none"
+      }`,
+      `rooms where a uniform ONE-STEP INCREASE lowers the room's own cash (econ N17's falsifying region): ${upStepHurts ? `present — ${upStepHurts.label}` : "ABSENT, the level mutation is not exercised"}; a surface prescribing MORE in any such room is a LEVEL failure and none was found`,
+      `the two prescribing sentences are reachable in this sweep: "put more back in" ${prescribedMore ? `yes — ${prescribedMore.label}` : "no"} · "the dollars past it cost more" ${prescribedLess ? `yes — ${prescribedLess.label}` : "no"}`,
       `claim-carrying surfaces shipping ZERO atoms (econ N14, only synthesis:beyond and rehearsal cards are allowed): ${zeroAtomSurfaces.size}${zeroAtomSurfaces.size ? ` — ${[...zeroAtomSurfaces].join(", ")}` : ""}`,
       `bar-release arms swept: ${barReleases.length} (arm C never-pressed present: ${armCRoom !== null}; arm D mid-week-3-with-locks present: ${armDRoom !== null})`,
       `two independent joint computations (all-zero REPLAY through the reducer vs re-settled ARITHMETIC): worst magnitude spread ${money(worstJointSpread)}, sign disagreements 0 — the spread is the league office re-deriving its own reinvest dollars from a poorer door, which the arithmetic version holds fixed by the module's declared carve-out`,

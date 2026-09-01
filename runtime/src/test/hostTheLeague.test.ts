@@ -915,7 +915,9 @@ test("econ B7 (N9): no printed share is ever above 100%, and none is 0% while a 
       assert.match(body, /no share to print here/, `${p.label}: the room must be told why the share is withheld`);
       assert.match(body, new RegExp(money(ct.spend).replace(/[$,]/g, "\\$&")), `${p.label}: the dollars must print where the share cannot`);
       if (ct.roomJointGain > 0) {
-        assert.match(body, /less went back in than this room's own numbers would justify/, `${p.label}: a room that came out ahead is under-provided, not over-invested`);
+        // econ N17/B11: the noun this branch is entitled to is the one the joint
+        // figure decides. The LEVEL is a separate, separately-computed sentence.
+        assert.match(body, /the room as a whole still came out ahead/, `${p.label}: a room that came out ahead must be told so, not told it over-invested`);
       } else if (ct.roomJointGain < 0) {
         assert.match(body, /this room over-invested/, `${p.label}: a room that came out behind over-invested`);
       }
