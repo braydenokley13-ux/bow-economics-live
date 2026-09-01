@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T00:59:18.412Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-l3.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[e2e-l3] starting server...\n[e2e-l3] server up on http://localhost:4305\n[e2e-l3] === L1: playing Draft Day through the real API ===\n[e2e-l3] L1 complete and ended (code BOW46L)\n[e2e-l3] === L2: playing the Trade Deadline through the real API ===\n[e2e-l3] L2 complete and ended (code BOWJMV) — Alpha stood pat, Beta signed a veteran, Gamma won a sealed bid\n[e2e-l3] === L3: driving /teach, /play x4, /board through real Chromium pages ===\n[e2e-l3] L3 session created, code BOWF4L\n[e2e-l3] Alpha/Beta/Gamma joined L3 (Delta joins later, mid-window)\n[e2e-l3] Alpha/Beta/Gamma claimed their L2-carried franchises\n[e2e-l3] day 1: bidding war on Omar Hendricks (fa-value-df), price collapse looming on Theo Blackwood (fa-value-rb, untouched)\n[e2e-l3] day 1 closed: bidding war pushed Omar Hendricks's ask UP; Theo Blackwood's ask fell (0 offers)\n[e2e-l3] day 2: Delta joins late; coordinated lowballing on Dez Whitfield (fa-solid-sc); Beta signs Kai Sorensen cleanly at ask\n[e2e-l3] Delta claimed a stock expansion franchise as a LATE JOINER, mid-window\n[e2e-l3] day 2 closed: Dez Whitfield's ask rose despite two low offers; Kai Sorensen signed to Beta\n[e2e-l3] day 3: Delta and Beta both chase Trey Bishop (fa-star-sc) -- both clear ask, Delta's lower offer is OUTBID\n[e2e-l3] day 3 closed: Trey Bishop signed to Beta at the higher amount; Delta's lower, ask-clearing offer still lost -- a real outbid team\n[e2e-l3] day 4: desperation signing -- Gamma lowballs the untouched Jonah Rourke (fa-solid-rb, the RISER), signs anyway (deadline day)\n[e2e-l3] day 4 closed: the signing window is fully closed\n[e2e-l3] staged REVEAL played through: window recap, all 8 factor reveals, standings, bracket, GM Awards\n[e2e-l3] COUNTERFACTUAL rendered on board and /play\n[e2e-l3] SYNTHESIS cards rendered with real session numbers\n[e2e-l3] reached COMPLETE on /board — module close copy confirmed\n[e2e-l3] zero console errors across all 6 pages\n[e2e-l3] PASS — full L1->L2->L3 arc verified end to end.\n",
+  "stderr": ""
+}

@@ -57,10 +57,21 @@
 
   <div id="err"></div>
 
+  <!-- gate-l1-projector repair 6 / gate-l1-visual H3: this block was permanent
+       and never re-hidden, so a session-recovery affordance sat in the hero slot
+       of the decision surface for the whole lesson and pushed LOCK IT IN below
+       the fold on every Chromebook. It now shows once, on join, and collapses to
+       a one-line strip the pair can reopen. -->
   <section id="pinCard" class="card" hidden>
-    <p class="eyebrow" style="font-size:12px;">Your rejoin PIN — write it down in case you switch devices:</p>
-    <div class="pinbox" id="pinDisplay"></div>
+    <div class="pinrow">
+      <div>
+        <p class="eyebrow" style="font-size:12px; margin:0 0 6px;">Your rejoin PIN — write it down in case you switch devices:</p>
+        <div class="pinbox" id="pinDisplay"></div>
+      </div>
+      <button type="button" class="btn" id="btnHidePin">Got it</button>
+    </div>
   </section>
+  <button type="button" class="pin-reopen" id="btnShowPin" hidden>Rejoin PIN</button>
 
   <section id="gameCard" hidden>
     <div class="eyebrow" id="gameHeader" style="font-size:12px; margin-bottom:10px;"></div>

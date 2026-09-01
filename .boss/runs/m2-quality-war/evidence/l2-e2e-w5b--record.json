@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T14:38:58.682Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-m2l2.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[e2e-m2l2] W5 N-1: the pre-session prep note is lesson-specific — L2 names the week bell and the bar release, L3 keeps its round step and two-thirds test\n[e2e-m2l2] session BOWRJ4\n[e2e-m2l2] 12 pairs joined\n[e2e-m2l2] week 1 settled\n[e2e-m2l2] sold-out settlements probed for occlusion: 2 (after the week 1 bell, desk 1, after the week 1 bell, desk 3)\n[e2e-m2l2] week 2 settled\n[e2e-m2l2] W5 B-2: mirror vs projector at the prescribed bar release — board holds 5 bars, 0 pairings, 0 departure cards; mirror agrees on all three and on 0/12 locked\n[e2e-m2l2] three weeks settled\n[e2e-m2l2] W5 N-2: REVEAL stage 2 at 1366x768 — 770px WITHOUT the fit class (overflow), 739px with it in a 768px projector: 31px reclaimed, 29px spare, room for another wrapped line of the computed summary\n[e2e-m2l2] reveal stages: WHO FILLED YOUR BUILDING? | WHAT YOU GAVE, WHAT YOU GOT | FOUR PIPES, ONE CLUB | SMALL BUILDING, BIG NIGHT | WHAT YOU DID IN THE LAST WEEK\n[e2e-m2l2] W5 B-1: desk 12 (never locked) and desk 1 (locked, chose 0%) both finished on $0 and read DIFFERENT copy on their own devices; /teach separates them and carries the give/take line\n[e2e-m2l2] W5 N-3: a pair joining during ADAPT is landed as an announced observer on both surfaces, with the room's evidence unchanged\n[e2e-m2l2] PASS — 24 board frames checked at 2 projector shapes, 14 frames scanned for silent truncation, 72 1024x600 fold assertions (36 first-contact, all three weeks), 498 elementFromPoint occlusion probes (2 on sold-out settlements, 24 price-counterfactual cards), 3 LOCK arming checks, 33 price dials driven by real mouse drag + keyboard, zero console errors\n[e2e-m2l2] NON-VACUITY — the PRICE dial at first contact: poisoned frame caught at all 3 probe points\n[e2e-m2l2] NON-VACUITY — the externality road card on a SOLD-OUT week: poisoned frame caught at all 3 probe points\n",
+  "stderr": ""
+}

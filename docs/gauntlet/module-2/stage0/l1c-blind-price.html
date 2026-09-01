@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stage-0 · L1C · Price the Night Blind (Design C "First Principles")</title>
+<style>
+  :root{
+    --bg:#12151b; --panel:#1c212b; --panel2:#242a37; --line:#333c4d;
+    --ink:#e8ecf3; --dim:#9aa5b8; --accent:#c25ce0; --good:#4caf7a; --bad:#e0605a;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;margin:0;padding:20px;}
+  h1{font-size:1.3rem;margin:0 0 4px;}
+  h2{font-size:1rem;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:0;}
+  .sub{color:var(--dim);font-size:.85rem;margin-bottom:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:8px 14px;
+    border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;}
+  button:hover{border-color:var(--accent);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .runinfo{color:var(--dim);font-size:.85rem;}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  .dial-value{font-size:2rem;color:var(--accent);text-align:center;margin:6px 0;}
+  input[type=range]{width:100%;}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px;}
+  .card h3{margin:0 0 6px;font-size:.95rem;}
+  .result-row{display:flex;justify-content:space-between;font-size:.85rem;padding:2px 0;}
+  .scoreboard{display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap;}
+  .score{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;}
+  .score .label{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.03em;}
+  .score .val{font-size:1.2rem;}
+  .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .history{width:100%;border-collapse:collapse;font-size:.85rem;}
+  .history td,.history th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:left;}
+  .draw-dots span{opacity:.25;} .draw-dots span.on{opacity:1;color:var(--accent);}
+  details{margin-top:18px;}
+  summary{cursor:pointer;color:var(--dim);font-size:.85rem;}
+  pre{background:#0a0c10;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.72rem;
+      overflow:auto;max-height:320px;color:#b7c2d6;}
+  .footnote{color:var(--dim);font-size:.75rem;margin-top:10px;border-top:1px dotted var(--line);padding-top:8px;}
+  .debugbox{background:#301818;border:1px solid var(--bad);border-radius:8px;padding:10px;margin-bottom:16px;font-size:.8rem;}
+  .phase-badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:2px 10px;font-size:.78rem;color:var(--accent);}
+  .empty{color:var(--bad);} .sellout{color:var(--good);}
+  .bar-wrap{background:#0d0f14;border-radius:6px;height:18px;overflow:hidden;margin:4px 0;border:1px solid var(--line);}
+  .bar-fill{height:100%;background:linear-gradient(90deg,#5b7fb5,var(--accent));}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>PRICE THE NIGHT, BLIND — no revenue preview (Design C, Lesson 1, U1 Stage-0)</h1>
+    <div class="sub">You and a partner run the New York Knicks' building. Five game nights. No forecast — only your own history and tonight's printed card.</div>
+  </div>
+  <div style="text-align:right">
+    <div class="runinfo">Run <span id="runCount">1</span> &middot; <span class="phase-badge" id="phaseBadge">night 1</span></div>
+    <button id="newRunBtn">New run</button>
+  </div>
+</div>
+
+<div id="debugPanel"></div>
+
+<div class="scoreboard">
+  <div class="score"><div class="label">Cash</div><div class="val" id="scoreCash">$0</div></div>
+  <div class="score"><div class="label">Renewals</div><div class="val" id="scoreRenewals">50%</div></div>
+</div>
+
+<div class="panel">
+  <h2>YOUR HISTORY (own results only — no true curve, no forecast)</h2>
+  <table class="history" id="historyTable"><thead><tr><th>Night</th><th>Price</th><th>Turnout</th><th>Fill</th></tr></thead><tbody id="historyBody"></tbody></table>
+  <div class="sub" id="historyEmpty" style="display:none">No nights played yet. Your first price is a cold guess — that's the point.</div>
+</div>
+
+<div class="panel" id="cardPanel"></div>
+
+<div class="panel" id="controlPanel">
+  <h2>SET TONIGHT'S PRICE</h2>
+  <div class="sub">No revenue preview. The dial shows dollars only.</div>
+  <div class="dial-value">$<span id="controlVal">50</span></div>
+  <input type="range" id="controlRange" min="10" max="120" step="2" value="50">
+  <div class="actions">
+    <button id="lockBtn">LOCK</button>
+    <button id="nextBtn" disabled>Continue</button>
+  </div>
+</div>
+
+<div class="panel" id="revealPanel" style="display:none">
+  <h2>REVEAL</h2>
+  <div id="revealBox"></div>
+</div>
+
+<div class="panel" id="synthPanel" style="display:none">
+  <h2>THE TWO PEAKS + RESALE</h2>
+  <div id="synthBox"></div>
+</div>
+
+<details>
+  <summary>Session log (instrumentation — window.__stage0)</summary>
+  <pre id="logOutput"></pre>
+</details>
+
+<div class="footnote">
+  Real market: New York Knicks (Madison Square Garden, highest-gate market in the league). Visitor Draw ratings and
+  the loss-leader/resale mechanics are modeled from real market and pricing-behavior ranges (SR-1). Night 4's shock
+  is modeled on the real Indiana Fever attendance jump, 4,066 → 17,036 per game, 2023 → 2024, with six opposing
+  clubs moving games into bigger arenas (SR-6). Synthesis reference: real teams built continuous dynamic pricing
+  the way the Giants did starting 2009-10 (SR-13). Demand curves are <strong>modeled on real market differences,
+  not the Knicks' actual measured demand</strong>. Dollar figures are modeled illustrative magnitudes for Stage-0
+  play-testing, not audited team financials.
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const params = new URLSearchParams(location.search);
+  const DEBUG = params.get('debug') === '1';
+
+  // ---- HIDDEN ECONOMIC CONSTANTS (closure) ----
+  const CAPACITY = 19800;
+  const SENS = 300;       // fans lost per $1 of price
+  const ANCILLARY = 9;    // $/fan/night in-arena spend (the loss-leader term, C12)
+  const RENEW_BASELINE = 44; // reference price: pricing above it costs renewals, below it holds them
+  const RENEW_SENS = 1.1;    // % of renewals moved per $1 away from baseline
+
+  function baseFor(n){
+    // 'base' fans willing to attend at price $0, before capacity clamp.
+    return 14000 + n.draw * 210 + (n.renewalsBoost || 0);
+  }
+  function turnoutFor(n, price){
+    const raw = baseFor(n) - SENS * price;
+    return Math.max(0, Math.min(CAPACITY, Math.round(raw)));
+  }
+  function rawDemand(n, price){
+    return Math.round(baseFor(n) - SENS * price);
+  }
+  function resaleFor(n, price){
+    const raw = rawDemand(n, price);
+    const excess = Math.max(0, raw - CAPACITY);
+    if (excess <= 0) return { excess: 0, moneyPastTeam: 0, perTicket: 0 };
+    const perTicket = price + Math.round((excess / CAPACITY) * 90);
+    return { excess, moneyPastTeam: Math.round(excess * perTicket), perTicket };
+  }
+
+  // N1..N5, per Design C's L1 card sequence
+  const CARD_SETS = [
+    [
+      { key:'N1', label:'NIGHT 1', day:'Tuesday', opp:'a team that has lost four straight', draw:20, tv:false },
+      { key:'N2', label:'NIGHT 2', day:'Saturday', opp:'a strong local rival', draw:51, tv:'local' },
+      { key:'N3', label:'NIGHT 3', day:'Wednesday', opp:'the defending champions', draw:88, tv:'national' },
+      { key:'N4', label:'NIGHT 4', day:'Saturday', opp:'the league\'s breakout rookie\'s team', draw:97, tv:false, shock:true },
+      { key:'N5', label:'NIGHT 5', day:'Tuesday', opp:'a team that has lost four straight', draw:20, tv:false, repeatOf:'N1' }
+    ],
+    [
+      { key:'N1', label:'NIGHT 1', day:'Monday', opp:'a rebuilding team on a long road trip', draw:16, tv:false },
+      { key:'N2', label:'NIGHT 2', day:'Friday', opp:'a playoff contender', draw:58, tv:'local' },
+      { key:'N3', label:'NIGHT 3', day:'Sunday', opp:'the reigning MVP\'s team', draw:85, tv:'national' },
+      { key:'N4', label:'NIGHT 4', day:'Friday', opp:'the league\'s breakout rookie\'s team', draw:97, tv:false, shock:true },
+      { key:'N5', label:'NIGHT 5', day:'Monday', opp:'a rebuilding team on a long road trip', draw:16, tv:false, repeatOf:'N1' }
+    ],
+    [
+      { key:'N1', label:'NIGHT 1', day:'Wednesday', opp:'a team missing its best player', draw:22, tv:false },
+      { key:'N2', label:'NIGHT 2', day:'Saturday', opp:'a fast-rising young team', draw:53, tv:'local' },
+      { key:'N3', label:'NIGHT 3', day:'Thursday', opp:'last year\'s champions', draw:90, tv:'national' },
+      { key:'N4', label:'NIGHT 4', day:'Saturday', opp:'the league\'s breakout rookie\'s team', draw:97, tv:false, shock:true },
+      { key:'N5', label:'NIGHT 5', day:'Wednesday', opp:'a team missing its best player', draw:22, tv:false, repeatOf:'N1' }
+    ]
+  ];
+
+  let cards, state;
+
+  function freshState(seed, runCount){
+    cards = CARD_SETS[Math.abs(seed) % CARD_SETS.length];
+    return {
+      seed, runCount,
+      idx: 0,
+      phase: 'night',   // night -> reveal(per night, auto) -> ... -> synthesis
+      control: 50,
+      adjustCount: 0,
+      nightStart: Date.now(),
+      cash: 0,
+      renewals: 50, // %
+      history: [],
+      log: []
+    };
+  }
+
+  function money(n){ return '$' + Math.round(n).toLocaleString('en-US'); }
+
+  function currentCard(){ return cards[state.idx]; }
+
+  function render(){
+    document.getElementById('runCount').textContent = state.runCount;
+    document.getElementById('phaseBadge').textContent = state.phase === 'synthesis' ? 'complete'
+      : `night ${state.idx+1} of ${cards.length}`;
+    document.getElementById('scoreCash').textContent = money(state.cash);
+    document.getElementById('scoreRenewals').textContent = state.renewals + '%';
+
+    // history table
+    const body = document.getElementById('historyBody');
+    document.getElementById('historyEmpty').style.display = state.history.length ? 'none' : '';
+    body.innerHTML = state.history.map(h => {
+      const fillPct = Math.round((h.turnout / CAPACITY) * 100);
+      return `<tr><td>${h.label} (${h.day} vs ${h.opp})</td><td>${money(h.price)}</td><td>${h.turnout.toLocaleString()}</td><td>${fillPct}%</td></tr>`;
+    }).join('');
+
+    renderCard();
+    renderControl();
+    renderReveal();
+    renderSynthesis();
+    renderLog();
+    if (DEBUG) renderDebug();
+  }
+
+  function renderCard(){
+    const box = document.getElementById('cardPanel');
+    if (state.phase !== 'night') { box.innerHTML=''; return; }
+    const n = currentCard();
+    const dots = Array.from({length:5}, (_,i)=> (i < Math.round(n.draw/20)) ? '<span class="on">&#9679;</span>' : '<span>&#9679;</span>').join('');
+    box.innerHTML = `<h2>${n.label} — ${n.day} vs ${n.opp}</h2>
+      <div class="result-row"><span>Visitor Draw</span><span class="draw-dots">${dots} (${n.draw}/100)</span></div>
+      <div class="result-row"><span>National TV</span><span>${n.tv==='national'?'Yes — some fans will watch free at home':(n.tv==='local'?'Local broadcast only':'No')}</span></div>
+      ${n.shock ? '<div class="sub" style="color:var(--accent)">The league\'s breakout rookie is visiting. Demand is about to jump past anything you have seen yet.</div>' : ''}
+      ${n.repeatOf ? '<div class="sub" style="color:var(--accent)">Same card as Night 1. Same visitor, same day. The only thing that changed since then is you.</div>' : ''}
+    `;
+  }
+
+  function renderControl(){
+    const rangeEl = document.getElementById('controlRange');
+    const lockBtn = document.getElementById('lockBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const panel = document.getElementById('controlPanel');
+    if (state.phase === 'night') {
+      panel.style.display=''; rangeEl.disabled = false;
+      lockBtn.style.display=''; lockBtn.disabled=false; nextBtn.disabled=true;
+    } else {
+      panel.style.display='none';
+    }
+    rangeEl.value = state.control;
+    document.getElementById('controlVal').textContent = state.control;
+  }
+
+  function renderReveal(){
+    const panel = document.getElementById('revealPanel');
+    const box = document.getElementById('revealBox');
+    if (state.history.length === 0) { panel.style.display='none'; return; }
+    panel.style.display='';
+    box.innerHTML = state.history.map(h => {
+      const fillPct = Math.round((h.turnout / CAPACITY) * 100);
+      const soldOut = h.turnout >= CAPACITY;
+      return `<div class="card"><h3>${h.label} — ${h.day} vs ${h.opp} — priced at ${money(h.price)}</h3>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${Math.min(100,fillPct)}%"></div></div>
+        <div class="result-row"><span>Turnout</span><span class="${soldOut?'sellout':(fillPct<40?'empty':'')}">${h.turnout.toLocaleString()} / ${CAPACITY.toLocaleString()} ${soldOut?'(SOLD OUT)':''}</span></div>
+        <div class="result-row"><span>Gate revenue</span><span>${money(h.gate)}</span></div>
+        <div class="result-row"><span>In-arena spend</span><span>${money(h.ancillary)}</span></div>
+        <div class="result-row"><span>Total</span><span><strong>${money(h.total)}</strong></span></div>
+        ${h.resale.excess>0?`<div class="result-row"><span>Resale market captured</span><span class="empty">${h.resale.excess.toLocaleString()} tickets, ${money(h.resale.moneyPastTeam)} that went past the team</span></div>`:''}
+        <div class="result-row"><span>Renewals after this night</span><span>${h.renewalsAfter}%</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderSynthesis(){
+    const panel = document.getElementById('synthPanel');
+    if (state.phase !== 'synthesis') { panel.style.display='none'; return; }
+    panel.style.display='';
+    const n3 = state.history.find(h=>h.key==='N3');
+    let html = '';
+    if (n3) {
+      // Recompute the two peaks for N3's card at true parameters (safe: derived, not a leaked optimum,
+      // shown only after the round has resolved, mirroring the board's "Two Peaks" reveal).
+      const card = cards.find(c=>c.key==='N3');
+      let ticketBest = {p:0, rev:-1}, totalBest = {p:0, rev:-1};
+      for (let p=10; p<=120; p+=2){
+        const t = turnoutFor(card, p);
+        const gateRev = p*t;
+        const totalRev = gateRev + t*ANCILLARY;
+        if (gateRev > ticketBest.rev) ticketBest = {p, rev:gateRev};
+        if (totalRev > totalBest.rev) totalBest = {p, rev:totalRev};
+      }
+      html += `<div class="card"><h3>Night 3's real curve (revealed now that the round is over)</h3>
+        <div class="result-row"><span>Ticket-revenue-max price</span><span>${money(ticketBest.p)}</span></div>
+        <div class="result-row"><span>Total-revenue-max price (tickets + in-arena)</span><span>${money(totalBest.p)}</span></div>
+        <div class="sub">"The cheaper ticket made more money" — total revenue peaks ${money(ticketBest.p-totalBest.p)} lower than ticket revenue alone.</div>
+      </div>`;
+    }
+    const n1 = state.history.find(h=>h.key==='N1');
+    const n5 = state.history.find(h=>h.key==='N5');
+    if (n1 && n5) {
+      html += `<div class="card"><h3>Night 1 vs Night 5 — same card, replayed</h3>
+        <div class="result-row"><span>Night 1 price / turnout</span><span>${money(n1.price)} / ${n1.turnout.toLocaleString()}</span></div>
+        <div class="result-row"><span>Night 5 price / turnout</span><span>${money(n5.price)} / ${n5.turnout.toLocaleString()}</span></div>
+        <div class="sub">Same visitor, same day. The difference is your own accumulated renewals (path dependence).</div>
+      </div>`;
+    }
+    document.getElementById('synthBox').innerHTML = html;
+  }
+
+  function renderDebug(){
+    const el = document.getElementById('debugPanel');
+    const rows = cards.map(n => {
+      const b = baseFor(n);
+      const ticketPeak = b/(2*SENS);
+      const totalPeak = b/(2*SENS) - ANCILLARY/2;
+      return `${n.label} (draw=${n.draw}): base=${Math.round(b)} ticket-peak≈${money(ticketPeak)} total-peak≈${money(totalPeak)}`;
+    }).join('<br>');
+    el.innerHTML = `<div class="debugbox"><strong>DEBUG MODE (?debug=1)</strong> — true hidden curves, never shown to a student:<br>
+      CAPACITY=${CAPACITY} SENS=${SENS} ANCILLARY=${money(ANCILLARY)}/fan RENEW_BASELINE=${money(RENEW_BASELINE)}<br>${rows}</div>`;
+  }
+
+  function renderLog(){
+    document.getElementById('logOutput').textContent = JSON.stringify(state.log, null, 2);
+  }
+
+  function syncExposed(){
+    window.__stage0 = {
+      runCount: state.runCount, seed: state.seed, phase: state.phase, idx: state.idx,
+      control: state.control, cash: state.cash, renewals: state.renewals,
+      history: state.history, log: state.log
+    };
+    if (DEBUG) {
+      window.__stage0.debug = { CAPACITY, SENS, ANCILLARY, RENEW_BASELINE, RENEW_SENS, cards };
+    }
+  }
+
+  function setControl(value){
+    const v = Math.max(10, Math.min(120, Math.round(Number(value)/2)*2));
+    if (v !== state.control) {
+      state.control = v;
+      state.adjustCount++;
+      state.log.push({ type:'control_adjust', phase: state.phase, night: currentCard() ? currentCard().key : null,
+        value: v, adjustIndex: state.adjustCount, t: Date.now() });
+    }
+    render(); syncExposed();
+  }
+
+  function lock(){
+    if (state.phase !== 'night') return;
+    const n = currentCard();
+    n.renewalsBoost = Math.round((state.renewals - 50) * 40); // renewals nudge next base slightly
+    const price = state.control;
+    const turnout = turnoutFor(n, price);
+    const gate = price * turnout;
+    const ancillary = Math.round(turnout * ANCILLARY);
+    const total = gate + ancillary;
+    const resale = resaleFor(n, price);
+    // renewals move symmetrically around the public reference price
+    const delta = Math.round((RENEW_BASELINE - price) * RENEW_SENS);
+    state.renewals = Math.max(0, Math.min(100, state.renewals + delta));
+    state.cash += total;
+    const record = { key:n.key, label:n.label, day:n.day, opp:n.opp, price, turnout, gate, ancillary, total,
+      resale, renewalsAfter: state.renewals };
+    state.history.push(record);
+    state.log.push({ type:'lock', night:n.key, committedValue: price,
+      adjustCountBeforeLock: state.adjustCount, timeToLockMs: Date.now() - state.nightStart,
+      outcome: record });
+    state.idx++;
+    state.control = 50; state.adjustCount = 0; state.nightStart = Date.now();
+    if (state.idx >= cards.length) {
+      state.phase = 'synthesis';
+      state.log.push({ type:'phase_advance', to:'synthesis', t: Date.now() });
+    }
+    render(); syncExposed();
+  }
+
+  function nextNight(){
+    // Provided for driver symmetry; this loop auto-advances on lock(), so nextNight() is a no-op
+    // unless called while a night is still open (kept for interface consistency across the three prototypes).
+    render(); syncExposed();
+  }
+
+  function newRun(seed){
+    const s = (seed === undefined || seed === null) ? state.runCount : Number(seed);
+    state = freshState(s, state.runCount + 1);
+    render(); syncExposed();
+  }
+
+  document.getElementById('controlRange').addEventListener('input', e => setControl(e.target.value));
+  document.getElementById('lockBtn').addEventListener('click', lock);
+  document.getElementById('nextBtn').addEventListener('click', nextNight);
+  document.getElementById('newRunBtn').addEventListener('click', () => newRun());
+
+  window.__stage0Actions = { setControl, lock, nextNight, newRun };
+
+  state = freshState(0, 1);
+  render(); syncExposed();
+})();
+</script>
+</body>
+</html>

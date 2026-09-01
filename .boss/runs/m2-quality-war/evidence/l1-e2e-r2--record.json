@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T00:59:03.309Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-m2l1.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[e2e-m2l1] starting server...\n[e2e-m2l1] server up on http://localhost:4307\n[e2e-m2l1] session created, code BOW4PA\n[e2e-m2l1] three pairs joined (the fourth joins late, at Night 3)\n[e2e-m2l1] LOBBY: desks assigned, markets alternate, no student name on the board\n[e2e-m2l1] HOOK rendered on /play and /board\n[e2e-m2l1] blind commitment confirmed on the student screen — no outcome before the lock\n[e2e-m2l1] --- Night 1 ---\n[e2e-m2l1] Night 1 settled for every desk\n[e2e-m2l1] --- Night 2 ---\n[e2e-m2l1] Night 2 settled for every desk\n[e2e-m2l1] --- Night 3 ---\n[e2e-m2l1] Desk 4 joined late at Night 3 and arrived with real, labelled books\n[e2e-m2l1] Night 3 settled for every desk\n[e2e-m2l1] Two Peaks released by the teacher, on the room's own Night 3 curve\n[e2e-m2l1] --- Night 4 ---\n[e2e-m2l1] Night 4 settled for every desk\n[e2e-m2l1] the shock night sold a building out and reported the fans turned away\n[e2e-m2l1] --- Night 5 ---\n[e2e-m2l1] Desk 3 never locks Night 5 — the bell must auto-commit it at the plan price\n[e2e-m2l1] Night 5 settled for every desk\n[e2e-m2l1] Desk 3's un-locked Night 5 was auto-committed at the plan price and flagged as such\n[e2e-m2l1] REVEAL played through all 7 stages — Two Peaks, then per-market books\n[e2e-m2l1] ADAPT: questions plus the room's whole curve — 20 class points, two labelled series\n[e2e-m2l1] COUNTERFACTUAL: N1-vs-N5 on the board, per-desk replays on /play\n[e2e-m2l1] SYNTHESIS: all six cards computed from this class's own numbers, with dated real anchors\n[e2e-m2l1] SYNTHESIS @1366x768: heading and the first card row are fully inside the viewport\n[e2e-m2l1] SYNTHESIS @1920x1080: heading and the first card row are fully inside the viewport\n[e2e-m2l1] COMPLETE reached on all three surfaces\n[e2e-m2l1] zero console errors across all 6 pages\n[e2e-m2l1] PASS — full Full House arc verified end to end across /teach, /play and /board.\n",
+  "stderr": ""
+}

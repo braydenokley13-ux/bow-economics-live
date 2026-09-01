@@ -20,7 +20,14 @@ VERIFY_GAMEPLAY/ECONOMICS/RUNTIME pass has been commissioned for Module 2 yet (s
 | **CONSTRAINED CHOICE** (shock/adapt) | Loses a slot to the shock; repairs it via ADAPT. | Round-1: shock always reversible, repair guaranteed ≥ status quo. Round-2 (G3): shock now permanently poaches a player (irreversible); ADAPT offers real substitutes at a budget arithmetic-identical to a normal placement's affordability check, so no overflow is possible by construction. | `hitCount`/`repairedCount` aggregate data. | Round-1 SERIOUS finding's proposed fix line: "Teams that had money left over could repair with something as good or better. Teams that spent every last dollar could only get back exactly what they lost... That's the real cost of spending to the limit." | Not specified in source for this card. | Round-1: **WEAK/SERIOUS** (recovery guaranteed safe, undercut its own "consequence" framing). Round-2: **PARTIALLY FIXED**, one new crack found (repair stipend could push spend past $100M on 65% of full-spend builds). **EARNED as of round-3 certification** (VERIFY_ROUND2.md "ROUND 3 CERTIFICATION") — cap-overflow fixed and confirmed live at $100M/$0 remaining; a maxed-out team now gets 3 real candidates, not a forced click. |
 | **RISK BUFFER** | Chooses to leave slack under the cap vs. spending to the exact limit. | Added round-2 (G7) in response to VERIFY_ECONOMICS.md's "MISSING CONCEPT" finding. | Same locked-spend aggregate counts as SCARCITY. | Card's own closing line (VERIFY_ROUND2.md D): "leaving room in a budget... is insurance against a setback." | Not specified in source. | Round-2: **NOT EARNED as verified** — "RISK BUFFER's specific claim does not hold up under the actual stipend math... asserted, not earned by the mechanics," because the flat stipend gave leftover and capped teams identical repair options. **EARNED as of round-3 certification** (VERIFY_ROUND2.md) — budget is now provably larger for a leftover team than a spent-to-cap team facing the identical loss (confirmed live: $50M avg vs. $10M avg for the same shocked card), so the card's claim is now mechanically true. |
 
-## M2 "The Box Office" — spec-level, not yet independently audited
+## M2 "Money in Motion" — L1 "Full House" is the built lesson (D18-era recharter)
+
+The rows below are the older "Box Office" prototype spec, kept for provenance.
+The shipped M2 L1 is `m2l1-full-house` (`runtime/src/modules/fullHouse.ts`); its
+concept chain lives in `docs/gauntlet/module-2/ECONOMIC_CONTRACT.md` and its
+simplifications ledger is `SIMPLIFICATIONS` in the module itself.
+
+### M2 prototype spec ("The Box Office") — spec-level, not independently audited
 
 | Concept | Student action | Experienced moment | Class evidence | Formalization line | Beyond sports | Status |
 |---|---|---|---|---|---|---|

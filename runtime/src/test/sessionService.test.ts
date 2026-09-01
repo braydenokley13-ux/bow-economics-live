@@ -332,6 +332,28 @@ test("control: pause/unpause and freeze/unfreeze toggle their flags", async () =
   assert.equal(payload.session.frozen, false);
 });
 
+// gate-l1-projector (BLOCKING, classroom-reliability): freeze sets BOTH flags,
+// so an unfreeze that clears only `frozen` leaves the projector reading PAUSED
+// with no control anywhere still offering "Unfreeze". The teacher's room is dead
+// and nothing on any surface says why.
+test("control: unfreeze un-pauses too — freeze is one gesture, so its inverse is one gesture", async () => {
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+  let payload = await service.control(session.code, { type: "freeze" }, teacherKey);
+  assert.equal(payload.session.frozen, true);
+  assert.equal(payload.session.paused, true);
+  payload = await service.control(session.code, { type: "unfreeze" }, teacherKey);
+  assert.equal(payload.session.frozen, false, "unfreeze clears frozen");
+  assert.equal(payload.session.paused, false, "unfreeze also clears the pause freeze set — the room comes back live");
+});
+
+// Narrow by intent: unfreeze always clears both flags. Restoring a
+// *pre-freeze* pause would need a new persisted field on every session in the
+// runtime, which is a shared-schema change this repair is not chartered to
+// make. The cost of the narrow fix is that a freeze layered on top of a
+// deliberate pause comes back live; that is recoverable in one press and is
+// strictly better than a projector nobody can revive. Recorded as a known gap.
+
 test("control: end stops all further student actions and control actions except restore", async () => {
   const service = freshService();
   const { session, teacherKey } = await newSession(service);

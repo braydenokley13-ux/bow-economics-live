@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stage-0 · L1A · The Replay Dial (Design A "Full House")</title>
+<style>
+  :root{
+    --bg:#12151b; --panel:#1c212b; --panel2:#242a37; --line:#333c4d;
+    --ink:#e8ecf3; --dim:#9aa5b8; --accent:#e0a53c; --good:#4caf7a; --bad:#e0605a;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;margin:0;padding:20px;}
+  h1{font-size:1.3rem;margin:0 0 4px;}
+  h2{font-size:1rem;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:0;}
+  .sub{color:var(--dim);font-size:.85rem;margin-bottom:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:8px 14px;
+    border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;}
+  button:hover{border-color:var(--accent);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .runinfo{color:var(--dim);font-size:.85rem;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:820px){.grid{grid-template-columns:1fr;}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  table{width:100%;border-collapse:collapse;font-size:.9rem;}
+  td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left;}
+  .slate-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:.88rem;}
+  .slate-row:last-child{border-bottom:none;}
+  .draw-dots span{opacity:.25;}
+  .draw-dots span.on{opacity:1;color:var(--accent);}
+  .dial-value{font-size:2rem;color:var(--accent);text-align:center;margin:6px 0;}
+  input[type=range]{width:100%;}
+  .replay-box{background:var(--panel2);border:1px dashed var(--line);border-radius:8px;padding:10px;margin-top:10px;}
+  .bar-wrap{background:#0d0f14;border-radius:6px;height:22px;overflow:hidden;margin:6px 0;border:1px solid var(--line);}
+  .bar-fill{height:100%;background:linear-gradient(90deg,#5b7fb5,var(--accent));transition:width .15s;}
+  .bar-fill.sold{background:linear-gradient(90deg,#5b7fb5,var(--bad));}
+  .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .night-card{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:var(--panel2);}
+  .night-card h3{margin:0 0 4px;font-size:.95rem;color:var(--ink);}
+  .shifter{color:var(--accent);font-size:.82rem;font-style:italic;}
+  .result-row{display:flex;justify-content:space-between;font-size:.85rem;padding:2px 0;}
+  .empty{color:var(--bad);} .sellout{color:var(--good);}
+  details{margin-top:18px;}
+  summary{cursor:pointer;color:var(--dim);font-size:.85rem;}
+  pre{background:#0a0c10;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.72rem;
+      overflow:auto;max-height:320px;color:#b7c2d6;}
+  .footnote{color:var(--dim);font-size:.75rem;margin-top:10px;border-top:1px dotted var(--line);padding-top:8px;}
+  .debugbox{background:#301818;border:1px solid var(--bad);border-radius:8px;padding:10px;margin-bottom:16px;font-size:.8rem;}
+  .phase-badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:2px 10px;font-size:.78rem;color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>THE REPLAY DIAL — Full House (Design A, Lesson 1, U1 Stage-0)</h1>
+    <div class="sub">You run the New York Knicks' box office. One dial. Last Saturday's real crowd on the readout — tonight's slate is not last Saturday.</div>
+  </div>
+  <div style="text-align:right">
+    <div class="runinfo">Run <span id="runCount">1</span> &middot; <span class="phase-badge" id="phaseBadge">round 1</span></div>
+    <button id="newRunBtn">New run</button>
+  </div>
+</div>
+
+<div id="debugPanel"></div>
+
+<div class="grid">
+  <div class="panel">
+    <h2>THE BOOK — last Saturday, actual</h2>
+    <table id="bookTable"></table>
+    <div class="footnote">Fixed record. Non-interactive. This is what the dial's Replay readout is computed against — a real night, not tonight's.</div>
+  </div>
+  <div class="panel">
+    <h2>TONIGHT'S SLATE</h2>
+    <div id="slateBox"></div>
+  </div>
+</div>
+
+<div class="panel" id="dialPanel">
+  <h2 id="dialTitle">ROUND 1 — ONE PRICE, THREE NIGHTS</h2>
+  <div id="dialInstructions" class="sub"></div>
+  <div class="dial-value">$<span id="controlVal">50</span></div>
+  <input type="range" id="controlRange" min="10" max="120" step="2" value="50">
+  <div class="replay-box">
+    <strong>REPLAY — last Saturday, at this price</strong>
+    <div class="bar-wrap"><div class="bar-fill" id="replayBar" style="width:0%"></div></div>
+    <div class="result-row"><span>Fans (last Saturday's crowd, replayed)</span><span id="replayFans">—</span></div>
+    <div class="result-row"><span>Money taken (replayed)</span><span id="replayMoney">—</span></div>
+  </div>
+  <div class="actions">
+    <button id="lockBtn">LOCK</button>
+    <button id="nextBtn" disabled>Continue</button>
+  </div>
+</div>
+
+<div class="panel" id="revealPanel" style="display:none">
+  <h2>REVEAL</h2>
+  <div id="revealBox"></div>
+</div>
+
+<details>
+  <summary>Session log (instrumentation — window.__stage0)</summary>
+  <pre id="logOutput"></pre>
+</details>
+
+<div class="footnote">
+  Real market: New York Knicks (Madison Square Garden), modeled from real-scale ranges (SR-1). Opponents are real
+  NBA clubs (SR-1); the "star ruled out" shifter in Round 2 echoes the real 2010/2014 LeBron James demand shock
+  (SR-11). Synthesis reference: real teams now re-price continuously the way this dial does by hand (SR-13, the
+  Giants' 2009-10 dynamic pricing). Demand curves are <strong>modeled on real market differences, not any team's
+  actual measured demand</strong>. Dollar figures are modeled illustrative magnitudes for Stage-0 play-testing, not
+  audited team financials.
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const params = new URLSearchParams(location.search);
+  const DEBUG = params.get('debug') === '1';
+
+  // ---- HIDDEN ECONOMIC CONSTANTS (closure; not attached to window unless ?debug=1) ----
+  const CAPACITY = 19800, SENS = 90, BASE_MIN = 6000, DRAW_FACTOR = 190;
+  const DAY_MULT = { tue: 0.85, thu: 1.0, sat: 1.1 };
+
+  function demand(n, price){
+    let base = (BASE_MIN + n.draw * DRAW_FACTOR) * DAY_MULT[n.day];
+    if (n.baseMult) base *= n.baseMult;
+    let fans = Math.round(base - SENS * price);
+    if (fans < 0) fans = 0;
+    if (fans > CAPACITY) fans = CAPACITY;
+    return fans;
+  }
+
+  function resale(n, price, fans){
+    // Modeled: excess demand above capacity is captured by resellers, at a scarcity-driven markup.
+    const rawBase = (BASE_MIN + n.draw * DRAW_FACTOR) * DAY_MULT[n.day] * (n.baseMult||1);
+    const raw = Math.round(rawBase - SENS * price);
+    const excess = Math.max(0, raw - CAPACITY);
+    if (excess <= 0) return { excess: 0, moneyPastTeam: 0 };
+    const premium = price + (excess / CAPACITY) * 100;
+    return { excess, moneyPastTeam: Math.round(excess * premium) };
+  }
+
+  const SCENARIOS = [
+    { // seed 0 (default)
+      history: { draw: 55, day: 'sat' },
+      round1: [
+        { key:'tue', opp:'Memphis Grizzlies', draw:25, day:'tue', note:'Bottom-of-table this season' },
+        { key:'thu', opp:'Golden State Warriors', draw:60, day:'thu', note:'Contender, no shifter' },
+        { key:'sat', opp:'Oklahoma City Thunder', draw:92, day:'sat', note:'2025 NBA Champions' }
+      ],
+      round2: [
+        { key:'tue', opp:'Memphis Grizzlies', draw:25, day:'tue', note:'Same visitor, new homestand' },
+        { key:'thu', opp:'Golden State Warriors', draw:60, day:'thu', baseMult:0.85, shifterLabel:'Nationally televised (ESPN) — some fans watch free at home' },
+        { key:'sat', opp:'Oklahoma City Thunder', draw:50, day:'sat', shifterLabel:'Star ruled out: Shai Gilgeous-Alexander (rest) — draw craters' }
+      ]
+    },
+    { // seed 1
+      history: { draw: 40, day: 'thu' },
+      round1: [
+        { key:'tue', opp:'Charlotte Hornets', draw:18, day:'tue', note:'Rebuilding roster' },
+        { key:'thu', opp:'Cleveland Cavaliers', draw:58, day:'thu', note:'Playoff-caliber' },
+        { key:'sat', opp:'Boston Celtics', draw:85, day:'sat', note:'Defending-era contender' }
+      ],
+      round2: [
+        { key:'tue', opp:'Charlotte Hornets', draw:18, day:'tue', note:'Same visitor, new homestand' },
+        { key:'thu', opp:'Cleveland Cavaliers', draw:58, day:'thu', baseMult:0.85, shifterLabel:'Nationally televised (TNT)' },
+        { key:'sat', opp:'Boston Celtics', draw:48, day:'sat', shifterLabel:'Star ruled out (rest) — draw craters' }
+      ]
+    },
+    { // seed 2
+      history: { draw: 62, day: 'sat' },
+      round1: [
+        { key:'tue', opp:'Washington Wizards', draw:15, day:'tue', note:'Bottom-of-table this season' },
+        { key:'thu', opp:'Miami Heat', draw:55, day:'thu', note:'Mid-table, physical team' },
+        { key:'sat', opp:'Denver Nuggets', draw:80, day:'sat', note:'Reigning-era contender' }
+      ],
+      round2: [
+        { key:'tue', opp:'Washington Wizards', draw:15, day:'tue', note:'Same visitor, new homestand' },
+        { key:'thu', opp:'Miami Heat', draw:55, day:'thu', baseMult:0.85, shifterLabel:'Nationally televised (ESPN)' },
+        { key:'sat', opp:'Denver Nuggets', draw:45, day:'sat', shifterLabel:'Star ruled out (rest) — draw craters' }
+      ]
+    }
+  ];
+
+  const HIST_PRICE = 48;
+  const NIGHT_ORDER = ['tue','thu','sat'];
+  const NIGHT_LABEL = { tue:'TUESDAY', thu:'THURSDAY', sat:'SATURDAY' };
+
+  let scenario, state;
+
+  function freshState(seed, runCount){
+    scenario = SCENARIOS[Math.abs(seed) % SCENARIOS.length];
+    return {
+      seed, runCount,
+      phase: 'round1',           // round1 -> reveal1 -> round2 -> reveal2 -> done
+      control: 50,
+      adjustCount: 0,
+      nightStart: Date.now(),
+      round1: { price: null, results: null },
+      round2: { idx: 0, entries: {} },
+      log: []
+    };
+  }
+
+  function money(n){ return '$' + n.toLocaleString('en-US'); }
+
+  function currentNight(){
+    if (state.phase === 'round2') return scenario.round2[state.round2.idx];
+    return null;
+  }
+
+  function render(){
+    document.getElementById('runCount').textContent = state.runCount;
+    document.getElementById('phaseBadge').textContent =
+      state.phase === 'round1' ? 'round 1' :
+      state.phase === 'reveal1' ? 'round 1 · reveal' :
+      state.phase === 'round2' ? 'round 2 · ' + NIGHT_LABEL[NIGHT_ORDER[state.round2.idx]] :
+      state.phase === 'reveal2' ? 'round 2 · reveal' : 'done';
+
+    // BOOK
+    const histFans = demand({draw:scenario.history.draw, day:scenario.history.day}, HIST_PRICE);
+    document.getElementById('bookTable').innerHTML =
+      `<tr><td>Price charged</td><td>${money(HIST_PRICE)}</td></tr>
+       <tr><td>Fans who came</td><td>${histFans.toLocaleString()}</td></tr>
+       <tr><td>Money taken</td><td>${money(HIST_PRICE*histFans)}</td></tr>`;
+
+    // SLATE
+    const slate = state.phase === 'round2' || state.phase === 'reveal2' ? scenario.round2 : scenario.round1;
+    document.getElementById('slateBox').innerHTML = slate.map(n => {
+      const dots = Array.from({length:5}, (_,i)=> (i < Math.round(n.draw/20)) ? '<span class="on">&#9679;</span>' : '<span>&#9679;</span>').join('');
+      return `<div class="slate-row"><span><strong>${NIGHT_LABEL[n.key]}</strong> vs ${n.opp}${n.shifterLabel?`<br><span class="shifter">${n.shifterLabel}</span>`:''}${n.note?`<br><span style="color:var(--dim);font-size:.8rem">${n.note}</span>`:''}</span><span class="draw-dots">${dots}</span></div>`;
+    }).join('');
+
+    // DIAL panel
+    const dialPanel = document.getElementById('dialPanel');
+    const dialTitle = document.getElementById('dialTitle');
+    const instr = document.getElementById('dialInstructions');
+    const rangeEl = document.getElementById('controlRange');
+    const lockBtn = document.getElementById('lockBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    if (state.phase === 'round1') {
+      dialPanel.style.display = '';
+      dialTitle.textContent = 'ROUND 1 — ONE PRICE, THREE NIGHTS';
+      instr.textContent = 'This single price applies to Tuesday, Thursday AND Saturday. Nothing about tonight is shown before you lock.';
+      lockBtn.style.display = ''; lockBtn.disabled = false; nextBtn.disabled = true;
+      rangeEl.disabled = false;
+    } else if (state.phase === 'reveal1') {
+      dialPanel.style.display = '';
+      dialTitle.textContent = 'ROUND 1 — LOCKED';
+      instr.textContent = 'See the REVEAL below. Then continue to Round 2, where the action space expands to three dials.';
+      lockBtn.style.display = 'none'; nextBtn.disabled = false;
+      rangeEl.disabled = true;
+    } else if (state.phase === 'round2') {
+      const n = currentNight();
+      dialPanel.style.display = '';
+      dialTitle.textContent = `ROUND 2 — ${NIGHT_LABEL[n.key]} vs ${n.opp}`;
+      instr.textContent = n.shifterLabel ? `Announced shifter: ${n.shifterLabel}` : 'No shifter announced for this night.';
+      lockBtn.style.display = ''; lockBtn.disabled = false; nextBtn.disabled = true;
+      rangeEl.disabled = false;
+    } else if (state.phase === 'reveal2') {
+      dialPanel.style.display = '';
+      dialTitle.textContent = 'ROUND 2 — SEASON COMPLETE';
+      instr.textContent = 'Round 1 (one price) vs Round 2 (three prices) — compare totals below.';
+      lockBtn.style.display = 'none'; nextBtn.disabled = false; nextBtn.textContent = 'Finish';
+      rangeEl.disabled = true;
+    } else {
+      dialPanel.style.display = 'none';
+    }
+
+    rangeEl.value = state.control;
+    document.getElementById('controlVal').textContent = state.control;
+
+    // REPLAY readout (always keyed to history, per Design A's Replay Dial)
+    const rFans = demand({draw:scenario.history.draw, day:scenario.history.day}, state.control);
+    document.getElementById('replayFans').textContent = rFans.toLocaleString();
+    document.getElementById('replayMoney').textContent = money(state.control * rFans);
+    const rBar = document.getElementById('replayBar');
+    const rPct = Math.min(100, (rFans / CAPACITY) * 100);
+    rBar.style.width = rPct + '%';
+    rBar.className = 'bar-fill' + (rFans >= CAPACITY ? ' sold' : '');
+
+    renderReveal();
+    renderLog();
+
+    if (DEBUG) renderDebug();
+  }
+
+  function renderReveal(){
+    const box = document.getElementById('revealBox');
+    const panel = document.getElementById('revealPanel');
+    if (state.phase === 'round1' ) { panel.style.display='none'; return; }
+    panel.style.display = '';
+    let html = '';
+    if (state.round1.results) {
+      html += '<h3>Round 1 — one price, three nights</h3>';
+      html += `<div class="sub">Locked price: ${money(state.round1.price)}</div>`;
+      state.round1.results.forEach(r => {
+        const soldOut = r.fans >= CAPACITY;
+        html += `<div class="night-card"><h3>${NIGHT_LABEL[r.key]} vs ${r.opp}</h3>
+          <div class="result-row"><span>Fans</span><span class="${soldOut?'sellout':(r.fans/CAPACITY<0.4?'empty':'')}">${r.fans.toLocaleString()} / ${CAPACITY.toLocaleString()} ${soldOut?'(SOLD OUT)':''}</span></div>
+          <div class="result-row"><span>Gate revenue</span><span>${money(r.gate)}</span></div>
+          ${r.resale.excess>0?`<div class="result-row"><span>Resale market captured</span><span class="empty">${r.resale.excess.toLocaleString()} tickets, ${money(r.resale.moneyPastTeam)} that went past the team</span></div>`:''}
+        </div>`;
+      });
+      const total1 = state.round1.results.reduce((s,r)=>s+r.gate,0);
+      html += `<div class="sub"><strong>Round 1 total gate: ${money(total1)}</strong></div>`;
+    }
+    if (state.round2.entries.sat) {
+      html += '<h3>Round 2 — three prices</h3>';
+      NIGHT_ORDER.forEach(k => {
+        const e = state.round2.entries[k];
+        if (!e) return;
+        const soldOut = e.fans >= CAPACITY;
+        html += `<div class="night-card"><h3>${NIGHT_LABEL[k]} vs ${e.opp} — priced at ${money(e.price)}</h3>
+          <div class="result-row"><span>Fans</span><span class="${soldOut?'sellout':(e.fans/CAPACITY<0.4?'empty':'')}">${e.fans.toLocaleString()} / ${CAPACITY.toLocaleString()} ${soldOut?'(SOLD OUT)':''}</span></div>
+          <div class="result-row"><span>Gate revenue</span><span>${money(e.gate)}</span></div>
+          ${e.resale.excess>0?`<div class="result-row"><span>Resale market captured</span><span class="empty">${e.resale.excess.toLocaleString()} tickets, ${money(e.resale.moneyPastTeam)} that went past the team</span></div>`:''}
+        </div>`;
+      });
+      const total2 = NIGHT_ORDER.reduce((s,k)=> s + (state.round2.entries[k]?state.round2.entries[k].gate:0), 0);
+      html += `<div class="sub"><strong>Round 2 total gate: ${money(total2)}</strong></div>`;
+      if (state.round1.results) {
+        const total1 = state.round1.results.reduce((s,r)=>s+r.gate,0);
+        html += `<div class="sub">Round 1 total was ${money(total1)}. Difference: ${money(total2-total1)} ${total2>total1?'more':'less'} by pricing per night instead of once.</div>`;
+      }
+    }
+    box.innerHTML = html;
+  }
+
+  function renderDebug(){
+    let el = document.getElementById('debugPanel');
+    const n1 = scenario.round1.map(n => {
+      const raw = (BASE_MIN + n.draw*DRAW_FACTOR) * DAY_MULT[n.day];
+      const ticketPeak = raw / (2*SENS);
+      return `${n.key}: base=${Math.round(raw)} sens=${SENS} ticket-revenue-max price ≈ $${ticketPeak.toFixed(0)}`;
+    }).join('<br>');
+    el.innerHTML = `<div class="debugbox"><strong>DEBUG MODE (?debug=1)</strong> — true hidden curves, never shown to a student:<br>
+      CAPACITY=${CAPACITY} SENS=${SENS} BASE_MIN=${BASE_MIN} DRAW_FACTOR=${DRAW_FACTOR}<br>${n1}<br>
+      History night: draw=${scenario.history.draw} day=${scenario.history.day} (Replay is computed against THIS, never tonight's)</div>`;
+  }
+
+  function renderLog(){
+    document.getElementById('logOutput').textContent = JSON.stringify(state.log, null, 2);
+  }
+
+  // ---- exposed instrumentation ----
+  function syncExposed(){
+    window.__stage0 = {
+      runCount: state.runCount,
+      seed: state.seed,
+      phase: state.phase,
+      control: state.control,
+      round1: state.round1,
+      round2: state.round2,
+      log: state.log
+    };
+    if (DEBUG) {
+      window.__stage0.debug = {
+        CAPACITY, SENS, BASE_MIN, DRAW_FACTOR, DAY_MULT,
+        historyNight: scenario.history,
+        round1Slate: scenario.round1,
+        round2Slate: scenario.round2
+      };
+    }
+  }
+
+  function setControl(value){
+    const v = Math.max(10, Math.min(120, Math.round(Number(value)/2)*2));
+    if (v !== state.control) {
+      state.control = v;
+      state.adjustCount++;
+      state.log.push({ type:'control_adjust', phase: state.phase,
+        night: state.phase==='round2' ? NIGHT_ORDER[state.round2.idx] : 'ALL',
+        value: v, adjustIndex: state.adjustCount, t: Date.now() });
+    }
+    render(); syncExposed();
+  }
+
+  function lock(){
+    if (state.phase === 'round1') {
+      const price = state.control;
+      const results = scenario.round1.map(n => {
+        const fans = demand(n, price);
+        return { key:n.key, opp:n.opp, fans, gate: price*fans, resale: resale(n, price, fans) };
+      });
+      state.round1.price = price;
+      state.round1.results = results;
+      state.log.push({ type:'lock', phase:'round1', night:'ALL', committedValue: price,
+        adjustCountBeforeLock: state.adjustCount,
+        timeToLockMs: Date.now() - state.nightStart,
+        outcome: results });
+      state.phase = 'reveal1';
+    } else if (state.phase === 'round2') {
+      const n = currentNight();
+      const price = state.control;
+      const fans = demand(n, price);
+      const entry = { key:n.key, opp:n.opp, price, fans, gate: price*fans, resale: resale(n, price, fans), shifterLabel: n.shifterLabel||null };
+      state.round2.entries[n.key] = entry;
+      state.log.push({ type:'lock', phase:'round2', night:n.key, committedValue: price,
+        adjustCountBeforeLock: state.adjustCount,
+        timeToLockMs: Date.now() - state.nightStart,
+        outcome: entry });
+      state.round2.idx++;
+      state.adjustCount = 0; state.nightStart = Date.now();
+      state.control = 50;
+      if (state.round2.idx >= NIGHT_ORDER.length) state.phase = 'reveal2';
+    }
+    render(); syncExposed();
+  }
+
+  function nextNight(){
+    if (state.phase === 'reveal1') {
+      state.phase = 'round2';
+      state.round2.idx = 0;
+      state.adjustCount = 0; state.nightStart = Date.now(); state.control = 50;
+      state.log.push({ type:'phase_advance', to:'round2', t: Date.now() });
+    } else if (state.phase === 'reveal2') {
+      state.phase = 'done';
+      state.log.push({ type:'phase_advance', to:'done', t: Date.now() });
+    }
+    render(); syncExposed();
+  }
+
+  function newRun(seed){
+    const s = (seed === undefined || seed === null) ? state.runCount : Number(seed);
+    state = freshState(s, state.runCount + 1);
+    render(); syncExposed();
+  }
+
+  document.getElementById('controlRange').addEventListener('input', e => setControl(e.target.value));
+  document.getElementById('lockBtn').addEventListener('click', lock);
+  document.getElementById('nextBtn').addEventListener('click', nextNight);
+  document.getElementById('newRunBtn').addEventListener('click', () => newRun());
+
+  window.__stage0Actions = { setControl, lock, nextNight, newRun };
+
+  state = freshState(0, 1);
+  render(); syncExposed();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T13:19:51.189Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-l3.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 1,
+  "signal": null,
+  "stdout": "[e2e-l3] starting server...\n[e2e-l3] server up on http://localhost:4305\n[e2e-l3] === L1: playing Draft Day through the real API ===\n[e2e-l3] L1 complete and ended (code BOW64E)\n[e2e-l3] === L2: playing the Trade Deadline through the real API ===\n[e2e-l3] L2 complete and ended (code BOWNWT) — Alpha stood pat, Beta signed a veteran, Gamma won a sealed bid\n[e2e-l3] === L3: driving /teach, /play x4, /board through real Chromium pages ===\n[e2e-l3] L3 session created, code BOWTA4\n[e2e-l3] Alpha/Beta/Gamma joined L3 (Delta joins later, mid-window)\n[e2e-l3] Alpha/Beta/Gamma claimed their L2-carried franchises\n[e2e-l3] day 1: bidding war on Omar Hendricks (fa-value-df), price collapse looming on Theo Blackwood (fa-value-rb, untouched)\n[e2e-l3] day 1 closed: bidding war pushed Omar Hendricks's ask UP; Theo Blackwood's ask fell (0 offers)\n[e2e-l3] day 2: Delta joins late; coordinated lowballing on Dez Whitfield (fa-solid-sc); Beta signs Kai Sorensen cleanly at ask\n[e2e-l3] Delta claimed a stock expansion franchise as a LATE JOINER, mid-window\n[e2e-l3] day 2 closed: Dez Whitfield's ask rose despite two low offers; Kai Sorensen signed to Beta\n[e2e-l3] day 3: Delta and Beta both chase Trey Bishop (fa-star-sc) -- both clear ask, Delta's lower offer is OUTBID\n",
+  "stderr": "[e2e-l3] FAILED: Error: composer for fa-star-sc has no bounding box -- N1 regression\n    at submitOffer (/home/user/bow-economics-live/runtime/scripts/e2e-l3.cjs:170:36)\n    at async main (/home/user/bow-economics-live/runtime/scripts/e2e-l3.cjs:326:5)\n[e2e-l3] server log tail:\nBOW Economics runtime listening on http://localhost:4305\n  teacher console  http://localhost:4305/teach\n  student join     http://localhost:4305/play\n  projector        http://localhost:4305/board\n  snapshot file    /home/user/bow-economics-live/runtime/.e2e-scratch/snapshot-l3-1788268783154.json\n\n"
+}

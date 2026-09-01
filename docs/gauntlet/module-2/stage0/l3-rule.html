@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stage-0 · L3 · Writing the Rule (the rule-writing loop)</title>
+<style>
+  :root{
+    --bg:#12151b; --panel:#1c212b; --panel2:#242a37; --line:#333c4d;
+    --ink:#e8ecf3; --dim:#9aa5b8; --accent:#e0a53c; --good:#4caf7a; --bad:#e0605a; --pool:#8f6fd1;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;margin:0;padding:20px;}
+  h1{font-size:1.25rem;margin:0 0 4px;}
+  h2{font-size:1rem;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:0;}
+  h3{font-size:.92rem;margin:0 0 6px;}
+  .sub{color:var(--dim);font-size:.85rem;margin-bottom:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:8px 14px;
+    border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;}
+  button:hover:not(:disabled){border-color:var(--accent);}
+  button:disabled{opacity:.35;cursor:not-allowed;}
+  button.fallback{border-color:var(--pool);color:var(--pool);}
+  .runinfo{color:var(--dim);font-size:.85rem;}
+  .phase-badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:2px 10px;font-size:.78rem;color:var(--accent);}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  .dial-row{margin-bottom:14px;}
+  .dial-row .dhead{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px;}
+  .dial-row .dval{color:var(--accent);font-weight:bold;}
+  input[type=range]{width:100%;}
+  .toggle-row{display:flex;align-items:center;gap:10px;font-size:.88rem;margin-bottom:14px;}
+  .hist{display:flex;align-items:flex-end;gap:6px;height:90px;margin:10px 0;border-bottom:1px solid var(--line);}
+  .hist .bin{background:var(--accent);width:24px;border-radius:3px 3px 0 0;position:relative;}
+  .hist .bin .n{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:.72rem;color:var(--dim);}
+  .hist-labels{display:flex;gap:6px;font-size:.68rem;color:var(--dim);}
+  .hist-labels span{width:24px;text-align:center;}
+  table.digest{width:100%;border-collapse:collapse;font-size:.85rem;}
+  table.digest td,table.digest th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;}
+  .delta-down{color:var(--good);} .delta-up{color:var(--bad);} .delta-flat{color:var(--dim);}
+  .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  details{margin-top:18px;}
+  summary{cursor:pointer;color:var(--dim);font-size:.85rem;}
+  pre{background:#0a0c10;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.72rem;
+      overflow:auto;max-height:320px;color:#b7c2d6;}
+  .footnote{color:var(--dim);font-size:.75rem;margin-top:10px;border-top:1px dotted var(--line);padding-top:8px;}
+  .debugbox{background:#301818;border:1px solid var(--bad);border-radius:8px;padding:10px;margin-bottom:16px;font-size:.8rem;}
+  .card{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:var(--panel2);}
+  .verdict{font-size:1.05rem;margin:8px 0;}
+  .verdict.adopted{color:var(--good);} .verdict.failed{color:var(--bad);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>WRITING THE RULE — the rule-writing loop, then living under it (Design C, L3 Stage-0)</h1>
+    <div class="sub">Six desks. Two dials: SHARE (what fraction of local revenue pools and splits equally) and CONDITION (must you reinvest at least 15% to collect your full pool cut?). Three 90-second offer rounds, anonymous histogram between rounds, two-thirds-near-median adoption. Then you live one week under the old rule and one under the new one.</div>
+  </div>
+  <div style="text-align:right">
+    <div class="runinfo">Run <span id="runCount">1</span> &middot; <span class="phase-badge" id="phaseBadge">round 1</span></div>
+    <button id="newRunBtn">New run</button>
+  </div>
+</div>
+
+<div id="debugPanel"></div>
+
+<div class="panel" id="fallbackPanel">
+  <div class="toggle-row">
+    <strong>Fallback mode (Design B):</strong>
+    <button class="fallback" id="fallbackBtn">Skip the vote — operate the league's actual real-world sharing scale instead</button>
+  </div>
+  <div class="sub">If a room cannot reach two-thirds within three rounds, or you want the comparison, this jumps straight to a modeled real NBA-style share (not chosen by the room) and runs the same before/after season under it.</div>
+</div>
+
+<div class="panel" id="proposePanel">
+  <h2 id="proposeTitle">ROUND 1 OF 3 — YOUR PROPOSAL</h2>
+  <div class="sub" id="proposeNote"></div>
+
+  <div class="dial-row">
+    <div class="dhead"><span>SHARE — % of local revenue pooled and split equally</span><span class="dval"><span id="shareVal">20</span>%</span></div>
+    <input type="range" id="shareRange" min="0" max="60" step="5" value="20">
+  </div>
+  <div class="toggle-row">
+    <label><input type="checkbox" id="conditionCheck"> CONDITION — must reinvest &ge;15% to collect the full pool share</label>
+  </div>
+
+  <div class="actions"><button id="commitBtn">SUBMIT PROPOSAL</button></div>
+</div>
+
+<div class="panel" id="histogramPanel" style="display:none">
+  <h2>THE ROOM'S PROPOSALS — anonymous, unsorted, no names, no ranking</h2>
+  <div class="hist" id="histBars"></div>
+  <div class="hist-labels" id="histLabels"></div>
+  <div class="sub" id="medianNote"></div>
+  <div class="actions"><button id="advanceBtn">Next round</button></div>
+</div>
+
+<div class="panel" id="adoptionPanel" style="display:none">
+  <h2>ADOPTION</h2>
+  <div id="adoptionBox"></div>
+  <div class="actions"><button id="advanceBtn2">Live under it</button></div>
+</div>
+
+<div class="panel" id="liveDecidePanel" style="display:none">
+  <h2 id="liveDecideTitle">LIVE UNDER THE RULE</h2>
+  <div class="sub" id="liveDecideNote"></div>
+  <div class="dial-row">
+    <div class="dhead"><span>REINVEST — your own club's dial, this week</span><span class="dval"><span id="reinvestVal">10</span>%</span></div>
+    <input type="range" id="reinvestRange" min="0" max="40" step="10" value="10">
+  </div>
+  <div class="actions"><button id="commitLiveBtn">COMMIT THE WEEK</button></div>
+</div>
+
+<div class="panel" id="liveBeforeRevealPanel" style="display:none">
+  <h2>BEFORE — RESULTS</h2>
+  <div id="liveBeforeRevealBox"></div>
+  <div class="actions"><button id="advanceBtn4">Live under the adopted rule</button></div>
+</div>
+
+<div class="panel" id="beforeAfterPanel" style="display:none">
+  <h2>BEFORE / AFTER, IN YOUR OWN NUMBERS</h2>
+  <div id="beforeAfterBox"></div>
+  <div class="actions"><button id="advanceBtn3" style="display:none">See the room's before/after</button></div>
+</div>
+
+<details>
+  <summary>Session log (instrumentation — window.__stage0)</summary>
+  <pre id="logOutput"></pre>
+</details>
+
+<div class="footnote">
+  Real anchors (modeled, not measured — SR-3, SR-4, SR-5): the Lakers' ~$149M/yr local media vs the
+  Grizzlies' under $10M in the same league year; Memphis's ~$32M revenue-sharing check, the league's
+  largest, while the Lakers still cleared ~$115M after paying in; the Green Bay Packers' $453.2M/team
+  of shared national revenue in a ~320K-person metro (FY2025, the only US major-league team that
+  publishes audited books); the Celtics' 2025 luxury-tax teardown vs OKC's 2012 Harden trade, no
+  matching score. The fallback mode's "real rule" share is a modeled order-of-magnitude stand-in for
+  the NBA's actual revenue-sharing scale (order ~$400M/yr league-wide against a much larger revenue
+  base), not the league's actual formula.
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const params = new URLSearchParams(location.search);
+  const DEBUG = params.get('debug') === '1';
+
+  // ---- HIDDEN ECONOMIC CONSTANTS (closure; exposed only under ?debug=1) ----
+  const BONUS_SCALE = 500;       // $ of local-revenue bonus per sqrt($ reinvested) — same for every market
+  const CONDITION_THRESHOLD = 15; // % reinvest required to collect a full pool share when CONDITION is on
+  const REINVEST_GRID = [0,10,20,30,40];
+  const SHARE_GRID = [0,5,10,15,20,25,30,35,40,45,50,55,60];
+  const FALLBACK_SHARE = 10;      // modeled real-NBA-scale stand-in share
+  const N_DESKS = 6;
+
+  const SCENARIOS = [
+    { names:['You (Memphis)','New York','Golden State','Oklahoma City','Cleveland','Charlotte'],
+      base:[300000,700000,650000,400000,420000,220000],
+      // round-1 proposals and per-round drift rate toward the running median (0 = holdout).
+      botStart:[null, 5, 10, 35, 40, 45],
+      botDrift:[null, 0.4, 0.4, 0.35, 0, 0.35] },
+    { names:['You (Charlotte)','Golden State','New York','Cleveland','Oklahoma City','Memphis'],
+      base:[220000,650000,700000,420000,400000,300000],
+      botStart:[null, 10, 5, 40, 35, 45],
+      botDrift:[null, 0.4, 0.4, 0, 0.35, 0.35] },
+    { names:['You (Oklahoma City)','New York','Golden State','Memphis','Cleveland','Charlotte'],
+      base:[400000,700000,650000,300000,420000,220000],
+      botStart:[null, 5, 10, 45, 40, 45],
+      botDrift:[null, 0.4, 0.4, 0.35, 0, 0.35] }
+  ];
+
+  let scenario, state;
+
+  function money(n){ return (n<0?'-$':'$') + Math.abs(Math.round(n)).toLocaleString('en-US'); }
+
+  function localRevenue(base, rPct){ return base + BONUS_SCALE * Math.sqrt(rPct/100 * base); }
+
+  function reinvestDollars(base, rPct){ return rPct/100 * base; }
+
+  function take(base, rPct, share, poolShare, condition){
+    const eligible = !condition || rPct >= CONDITION_THRESHOLD;
+    return (1-share/100) * localRevenue(base, rPct) + (eligible ? poolShare : 0) - reinvestDollars(base, rPct);
+  }
+
+  // Brute force over the reinvest grid — deterministic best response holding poolShare fixed.
+  function bestReinvest(base, share, poolShare, condition){
+    let best = null;
+    for (const r of REINVEST_GRID) {
+      const t = take(base, r, share, poolShare, condition);
+      if (!best || t > best.take + 1e-9) best = { r, take: t, localRevenue: localRevenue(base, r) };
+    }
+    return best;
+  }
+
+  function median(arr){
+    const s = [...arr].sort((a,b)=>a-b);
+    const mid = Math.floor(s.length/2);
+    return s.length % 2 ? s[mid] : (s[mid-1]+s[mid])/2;
+  }
+
+  function nearestGrid(v, grid){
+    return grid.reduce((a,b)=> Math.abs(b-v) < Math.abs(a-v) ? b : a);
+  }
+
+  function freshState(seed, runCount){
+    scenario = SCENARIOS[Math.abs(seed) % SCENARIOS.length];
+    return {
+      seed, runCount,
+      phase: 'propose',       // propose -> adoption -> liveBefore -> liveAfter -> complete
+      round: 1,
+      subphase: 'decide',     // decide -> reveal (within propose rounds and live weeks)
+      controls: { share: 20, condition: false, reinvest: 10 },
+      fallbackMode: false,
+      proposals: [],          // one entry per round: array of {share,condition} for 6 desks
+      adopted: null,          // { share, condition, byVote:boolean }
+      liveBefore: null,
+      liveAfter: null,
+      log: []
+    };
+  }
+
+  function currentProposals(){
+    // Build this round's proposal set: bots drift from last round toward last round's median (or
+    // start values in round 1); human's value is whatever their dial currently shows.
+    const n = N_DESKS;
+    const arr = new Array(n);
+    if (state.round === 1) {
+      for (let id = 1; id < n; id++) arr[id] = { share: scenario.botStart[id], condition: scenario.botStart[id] >= 20 };
+    } else {
+      const prev = state.proposals[state.round - 2]; // 0-indexed store
+      const prevMedian = median(prev.map(p => p.share));
+      for (let id = 1; id < n; id++) {
+        const drift = scenario.botDrift[id];
+        const nextShare = nearestGrid(prev[id].share + drift * (prevMedian - prev[id].share), SHARE_GRID);
+        arr[id] = { share: nextShare, condition: nextShare >= 20 };
+      }
+    }
+    arr[0] = { share: state.controls.share, condition: state.controls.condition };
+    return arr;
+  }
+
+  function render(){
+    document.getElementById('runCount').textContent = state.runCount;
+    document.getElementById('phaseBadge').textContent =
+      state.phase === 'propose' ? `round ${state.round} of 3 · ${state.subphase}` :
+      state.phase === 'adoption' ? 'adoption' :
+      state.phase === 'liveBefore' ? 'live · before' :
+      state.phase === 'liveAfter' ? 'live · after' : 'complete';
+
+    document.getElementById('fallbackPanel').style.display = (state.phase === 'propose') ? '' : 'none';
+    renderPropose();
+    renderHistogram();
+    renderAdoption();
+    renderLiveDecide();
+    renderLiveBeforeReveal();
+    renderBeforeAfter();
+    renderLog();
+    if (DEBUG) renderDebug();
+  }
+
+  function renderPropose(){
+    const panel = document.getElementById('proposePanel');
+    if (state.phase !== 'propose' || state.subphase !== 'decide') { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    document.getElementById('proposeTitle').textContent = `ROUND ${state.round} OF 3 — YOUR PROPOSAL`;
+    document.getElementById('proposeNote').textContent = state.round === 1
+      ? 'Nobody has seen anyone else\'s number yet.'
+      : 'The room has seen the last round\'s anonymous spread. Move, or hold.';
+    document.getElementById('shareRange').value = state.controls.share;
+    document.getElementById('shareVal').textContent = state.controls.share;
+    document.getElementById('conditionCheck').checked = state.controls.condition;
+  }
+
+  function renderHistogram(){
+    const panel = document.getElementById('histogramPanel');
+    if (state.phase !== 'propose' || state.subphase !== 'reveal') { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const props = state.proposals[state.round - 1];
+    const counts = {};
+    SHARE_GRID.forEach(g => counts[g] = 0);
+    props.forEach(p => { counts[nearestGrid(p.share, SHARE_GRID)]++; });
+    const max = Math.max(1, ...Object.values(counts));
+    document.getElementById('histBars').innerHTML = SHARE_GRID.map(g =>
+      `<div class="bin" style="height:${(counts[g]/max)*80}px"><span class="n">${counts[g]||''}</span></div>`
+    ).join('');
+    document.getElementById('histLabels').innerHTML = SHARE_GRID.map(g => `<span>${g}</span>`).join('');
+    const med = median(props.map(p => p.share));
+    document.getElementById('medianNote').textContent = `Running median: ${med}%. (Round ${state.round} of 3.)`;
+    document.getElementById('advanceBtn').textContent = state.round < 3 ? 'Next round' : 'See adoption result';
+  }
+
+  function renderAdoption(){
+    const panel = document.getElementById('adoptionPanel');
+    if (state.phase !== 'adoption') { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const a = state.adopted;
+    let html = '';
+    if (a.byVote) {
+      html += `<div class="verdict adopted">ADOPTED by two-thirds: SHARE ${a.share}% &middot; CONDITION ${a.condition ? 'ON (reinvest ≥15% to collect)' : 'OFF'}</div>
+        <div class="sub">${a.withinBand} of ${N_DESKS} desks landed within ±10 points of the round-3 median (${a.median}%) — that clears two-thirds.</div>`;
+    } else {
+      html += `<div class="verdict failed">NOT ADOPTED. ${a.withinBand} of ${N_DESKS} desks were within ±10 points of the median (${a.median}%) — short of two-thirds.</div>
+        <div class="sub">The status quo holds: SHARE ${a.share}% &middot; CONDITION ${a.condition ? 'ON' : 'OFF'}. Real leagues have this problem too — this is a legitimate outcome, not a failure state.</div>`;
+    }
+    document.getElementById('adoptionBox').innerHTML = html;
+  }
+
+  function renderLiveDecide(){
+    const panel = document.getElementById('liveDecidePanel');
+    const isLive = (state.phase === 'liveBefore' || state.phase === 'liveAfter') && state.subphase === 'decide';
+    if (!isLive) { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    if (state.phase === 'liveBefore') {
+      document.getElementById('liveDecideTitle').textContent = 'BEFORE — the old rule (SHARE 0%, no condition)';
+      document.getElementById('liveDecideNote').textContent = 'One week under the status quo, before the room\'s rule binds. Set your reinvest.';
+    } else {
+      document.getElementById('liveDecideTitle').textContent = `AFTER — SHARE ${state.adopted.share}% ${state.adopted.condition ? '(CONDITION ON)' : ''}`;
+      document.getElementById('liveDecideNote').textContent = 'Same club, same dial. The rule is the only thing that changed. Set your reinvest again.';
+    }
+    document.getElementById('reinvestRange').value = state.controls.reinvest;
+    document.getElementById('reinvestVal').textContent = state.controls.reinvest;
+  }
+
+  // ROOT CAUSE FIX: after committing the BEFORE week, phase is 'liveBefore'/subphase 'reveal' —
+  // neither liveDecidePanel (requires subphase==='decide') nor beforeAfterPanel (requires
+  // phase==='liveAfter'||'complete', and reads state.liveAfter which does not exist yet) render
+  // anything for this state, so a click-only player had no visible continue control on either the
+  // voted path or the fallback path. This panel closes that gap.
+  function renderLiveBeforeReveal(){
+    const panel = document.getElementById('liveBeforeRevealPanel');
+    if (!(state.phase === 'liveBefore' && state.subphase === 'reveal')) { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const b = state.liveBefore;
+    const rows = scenario.names.map((name, id) =>
+      `<tr><td>${name}</td><td>${b.perDesk[id].r}%</td><td>${money(b.perDesk[id].take)}</td></tr>`
+    ).join('');
+    document.getElementById('liveBeforeRevealBox').innerHTML = `
+      <div class="sub">One week under the status quo (SHARE 0%), before the room's rule binds.</div>
+      <table class="digest">
+        <tr><th>Desk</th><th>Reinvest</th><th>Take</th></tr>
+        ${rows}
+      </table>`;
+  }
+
+  function renderBeforeAfter(){
+    const panel = document.getElementById('beforeAfterPanel');
+    if (state.phase !== 'complete' && !(state.phase==='liveAfter' && state.subphase==='reveal')) { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    const b = state.liveBefore, a = state.liveAfter;
+    const rows = scenario.names.map((name, id) => {
+      const bR = b.perDesk[id].r, aR = a.perDesk[id].r;
+      const delta = aR - bR;
+      const cls = delta < 0 ? 'delta-down' : (delta > 0 ? 'delta-up' : 'delta-flat');
+      return `<tr><td>${name}</td><td>${bR}%</td><td>${aR}%</td><td class="${cls}">${delta>0?'+':''}${delta}</td>
+        <td>${money(b.perDesk[id].take)}</td><td>${money(a.perDesk[id].take)}</td></tr>`;
+    }).join('');
+    const meanBefore = (b.perDesk.reduce((s,d)=>s+d.r,0)/N_DESKS).toFixed(1);
+    const meanAfter = (a.perDesk.reduce((s,d)=>s+d.r,0)/N_DESKS).toFixed(1);
+    document.getElementById('beforeAfterBox').innerHTML = `
+      <table class="digest">
+        <tr><th>Desk</th><th>Reinvest before</th><th>Reinvest after</th><th>&Delta;</th><th>Take before</th><th>Take after</th></tr>
+        ${rows}
+      </table>
+      <div class="sub" style="margin-top:10px">
+        Room mean reinvest: ${meanBefore}% before &rarr; ${meanAfter}% after.
+        ${state.adopted.byVote || state.fallbackMode ? 'The rule changed what desks wanted to do — nobody told them to move.' : 'No rule was adopted, so there is nothing here to attribute to the room\'s own choice.'}
+      </div>`;
+    const btn3 = document.getElementById('advanceBtn3');
+    btn3.style.display = (state.phase === 'liveAfter') ? '' : 'none';
+    btn3.textContent = 'Finish';
+  }
+
+  function renderDebug(){
+    document.getElementById('debugPanel').innerHTML = `<div class="debugbox"><strong>DEBUG MODE (?debug=1)</strong> — hidden constants:<br>
+      BONUS_SCALE=${BONUS_SCALE} CONDITION_THRESHOLD=${CONDITION_THRESHOLD}% FALLBACK_SHARE=${FALLBACK_SHARE}%<br>
+      base revenue=${JSON.stringify(scenario.base)}</div>`;
+  }
+
+  function renderLog(){
+    document.getElementById('logOutput').textContent = JSON.stringify(state.log, null, 2);
+  }
+
+  function syncExposed(){
+    window.__stage0 = {
+      runCount: state.runCount, seed: state.seed, phase: state.phase, round: state.round,
+      subphase: state.subphase, controls: state.controls, fallbackMode: state.fallbackMode,
+      proposals: state.proposals, adopted: state.adopted, liveBefore: state.liveBefore,
+      liveAfter: state.liveAfter, log: state.log
+    };
+    if (DEBUG) window.__stage0.debug = { BONUS_SCALE, CONDITION_THRESHOLD, FALLBACK_SHARE, scenario };
+  }
+
+  function setControl(name, value){
+    if (name === 'share') state.controls.share = nearestGrid(Math.max(0, Math.min(60, Number(value))), SHARE_GRID);
+    else if (name === 'condition') state.controls.condition = !!Number(value);
+    else if (name === 'reinvest') state.controls.reinvest = Math.max(0, Math.min(40, Math.round(Number(value)/10)*10));
+    else if (name === 'fallbackMode') state.fallbackMode = !!Number(value);
+    state.log.push({ type:'control_adjust', phase:state.phase, name, value: state.controls[name] !== undefined ? state.controls[name] : state.fallbackMode, t: Date.now() });
+    render(); syncExposed();
+  }
+
+  function runSeason(share, condition, referenceR){
+    // referenceR: array of reinvest% used to size the pool (null => this is the "before" season, no pool).
+    const perDesk = new Array(N_DESKS);
+    let poolShare = 0;
+    if (referenceR) {
+      const pool = share/100 * scenario.base.reduce((s, base, id) => s + localRevenue(base, referenceR[id]), 0);
+      poolShare = pool / N_DESKS;
+    }
+    for (let id = 1; id < N_DESKS; id++) {
+      const best = bestReinvest(scenario.base[id], share, poolShare, condition);
+      perDesk[id] = { r: best.r, take: best.take };
+    }
+    const humanR = state.controls.reinvest;
+    perDesk[0] = { r: humanR, take: take(scenario.base[0], humanR, share, poolShare, condition) };
+    return { share, condition, poolShare, perDesk };
+  }
+
+  function commit(){
+    if (state.phase === 'propose' && state.subphase === 'decide') {
+      const props = currentProposals();
+      state.proposals.push(props);
+      state.log.push({ type:'propose_commit', round: state.round, proposals: props, t: Date.now() });
+      state.subphase = 'reveal';
+    } else if ((state.phase === 'liveBefore' || state.phase === 'liveAfter') && state.subphase === 'decide') {
+      const referenceR = state.phase === 'liveBefore' ? null : state.liveBefore.perDesk.map(d => d.r);
+      const share = state.phase === 'liveBefore' ? 0 : state.adopted.share;
+      const cond = state.phase === 'liveBefore' ? false : state.adopted.condition;
+      const season = runSeason(share, cond, referenceR);
+      if (state.phase === 'liveBefore') state.liveBefore = season; else state.liveAfter = season;
+      state.log.push({ type:'live_commit', phase: state.phase, season, t: Date.now() });
+      state.subphase = 'reveal';
+    }
+    render(); syncExposed();
+  }
+
+  function finalizeAdoption(){
+    const finalProps = state.proposals[2];
+    const med = median(finalProps.map(p => p.share));
+    const withinBand = finalProps.filter(p => Math.abs(p.share - med) <= 10).length;
+    const byVote = withinBand >= Math.ceil(N_DESKS * 2/3);
+    const condVotes = finalProps.filter(p => p.condition).length;
+    state.adopted = {
+      share: byVote ? med : 5,
+      condition: byVote ? (condVotes > N_DESKS/2) : false,
+      byVote, median: med, withinBand
+    };
+  }
+
+  function advance(){
+    if (state.phase === 'propose' && state.subphase === 'reveal') {
+      if (state.round < 3) {
+        state.round++; state.subphase = 'decide';
+        state.log.push({ type:'phase_advance', to:`round ${state.round}`, t: Date.now() });
+      } else {
+        finalizeAdoption();
+        state.phase = 'adoption';
+        state.log.push({ type:'phase_advance', to:'adoption', adopted: state.adopted, t: Date.now() });
+      }
+    } else if (state.phase === 'adoption') {
+      state.phase = 'liveBefore'; state.subphase = 'decide'; state.controls.reinvest = 10;
+      state.log.push({ type:'phase_advance', to:'liveBefore', t: Date.now() });
+    } else if (state.phase === 'liveBefore' && state.subphase === 'reveal') {
+      state.phase = 'liveAfter'; state.subphase = 'decide'; state.controls.reinvest = 10;
+      state.log.push({ type:'phase_advance', to:'liveAfter', t: Date.now() });
+    } else if (state.phase === 'liveAfter' && state.subphase === 'reveal') {
+      state.phase = 'complete';
+      state.log.push({ type:'phase_advance', to:'complete', t: Date.now() });
+    }
+    render(); syncExposed();
+  }
+
+  function activateFallback(){
+    state.fallbackMode = true;
+    state.adopted = { share: FALLBACK_SHARE, condition: false, byVote: false, median: FALLBACK_SHARE, withinBand: N_DESKS, fallback: true };
+    state.log.push({ type:'fallback_activated', adopted: state.adopted, t: Date.now() });
+    state.phase = 'liveBefore'; state.subphase = 'decide'; state.controls.reinvest = 10;
+    render(); syncExposed();
+  }
+
+  document.getElementById('shareRange').addEventListener('input', e => setControl('share', e.target.value));
+  document.getElementById('conditionCheck').addEventListener('change', e => setControl('condition', e.target.checked ? 1 : 0));
+  document.getElementById('reinvestRange').addEventListener('input', e => setControl('reinvest', e.target.value));
+  document.getElementById('commitBtn').addEventListener('click', commit);
+  document.getElementById('commitLiveBtn').addEventListener('click', commit);
+  document.getElementById('advanceBtn').addEventListener('click', advance);
+  document.getElementById('advanceBtn2').addEventListener('click', advance);
+  document.getElementById('advanceBtn3').addEventListener('click', advance);
+  document.getElementById('advanceBtn4').addEventListener('click', advance);
+  document.getElementById('newRunBtn').addEventListener('click', () => newRun());
+  document.getElementById('fallbackBtn').addEventListener('click', activateFallback);
+
+  function newRun(seed){
+    const s = (seed === undefined || seed === null) ? (state ? state.runCount : 0) : Number(seed);
+    const runCount = state ? state.runCount + 1 : 1;
+    state = freshState(s, runCount);
+    render(); syncExposed();
+  }
+
+  window.__stage0Actions = { setControl, commit, advance, newRun };
+
+  state = freshState(0, 1);
+  render(); syncExposed();
+})();
+</script>
+</body>
+</html>

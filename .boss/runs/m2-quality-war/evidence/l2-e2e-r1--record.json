@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T06:26:05.750Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-m2l2.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[e2e-m2l2] session BOWJDT\n[e2e-m2l2] 12 pairs joined\n[e2e-m2l2] week 1 settled\n[e2e-m2l2] week 2 settled\n[e2e-m2l2] three weeks settled\n[e2e-m2l2] reveal stages: WHO FILLED YOUR BUILDING? | WHAT YOU GAVE, WHAT YOU GOT | FOUR PIPES, ONE CLUB | SMALL BUILDING, BIG NIGHT | WHAT YOU DID IN THE LAST WEEK\n[e2e-m2l2] PASS — 22 board frames checked at 2 projector shapes, 12 frames scanned for silent truncation, 48 1024x600 fold assertions, zero console errors\n",
+  "stderr": ""
+}

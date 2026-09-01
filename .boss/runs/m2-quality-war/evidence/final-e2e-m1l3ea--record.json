@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T13:19:35.927Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-l3-early-advance.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[early-advance-l3] starting server...\n[early-advance-l3] L1 and L2 played and ended via the API\n[early-advance-l3] L3 linked, claimed, day 1 closed for real, day 2 opened with a genuine pending offer on Theo Blackwood (fa-value-rb)\n[early-advance-l3] /teach reopened against the real session, confirmed in PLAY, day 2\n[early-advance-l3] /teach warned before advancing: \"Day 2 of 4 is still open (1/1 teams have acted). Advancing now closes today's day automatically AND ends the signing window early — 2 days will never happen. Continue?\"\n[early-advance-l3] the day-2 pending offer resolved for real: {\"id\":\"fa-value-rb\",\"name\":\"Theo Blackwood\",\"position\":\"REBOUNDER\",\"tier\":\"value\",\"ask\":10,\"signed\":true,\"signedBy\":\"67e77abf-6459-4115-ab0f-b5e0ab800b80\",\"signedAmount\":15,\"signedDay\":2}\n[early-advance-l3] /board correctly shows REVEAL content, not a stuck PLAY screen\n[early-advance-l3] /play no longer shows an open signing day\n[early-advance-l3] zero console errors across teach/play/board\n[early-advance-l3] PASS — L3 early-advance auto-close verified end to end.\n",
+  "stderr": ""
+}

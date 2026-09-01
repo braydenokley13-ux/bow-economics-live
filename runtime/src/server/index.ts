@@ -1,10 +1,12 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { boxOfficeModule } from "../modules/boxOffice.js";
 import { draftDayModule } from "../modules/draftDay.js";
 import { freeAgencyModule } from "../modules/freeAgency.js";
+import { fullHouseModule } from "../modules/fullHouse.js";
+import { hostTheLeagueModule } from "../modules/hostTheLeague.js";
 import { lobbyDemoModule } from "../modules/lobbyDemo.js";
 import { tradeDeadlineModule } from "../modules/tradeDeadline.js";
+import { writeTheRuleModule } from "../modules/writeTheRule.js";
 import { createHttpServer } from "./http.js";
 import { SnapshotRepository } from "./snapshotRepository.js";
 import { SessionService } from "./sessionService.js";
@@ -20,9 +22,11 @@ async function main(): Promise<void> {
   const service = new SessionService(repo);
   service.registerModule(lobbyDemoModule);
   service.registerModule(draftDayModule);
-  service.registerModule(boxOfficeModule);
   service.registerModule(tradeDeadlineModule);
   service.registerModule(freeAgencyModule);
+  service.registerModule(fullHouseModule);
+  service.registerModule(hostTheLeagueModule);
+  service.registerModule(writeTheRuleModule);
   // Additional lesson modules register here as the gameplay team ships them.
 
   const server = createHttpServer(service);

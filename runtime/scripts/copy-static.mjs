@@ -27,6 +27,18 @@ if (existsSync(sharedCssFrom)) {
   console.log("copied shared/theme.css into dist/client/shared/");
 }
 
+// Self-hosted webfonts (gate-l1-visual P1/D3). They ship in the repo and are
+// served off the same origin as everything else, so the "no internet, no CDN"
+// promise in runtime/README.md is unchanged — nothing here reaches the network.
+const fontsFrom = path.join(root, "src", "client", "shared", "fonts");
+if (existsSync(fontsFrom)) {
+  const toDir = path.join(root, "dist", "client", "shared", "fonts");
+  mkdirSync(toDir, { recursive: true });
+  const files = readdirSync(fontsFrom).filter((f) => f.endsWith(".woff2"));
+  for (const file of files) cpSync(path.join(fontsFrom, file), path.join(toDir, file));
+  console.log(`copied ${files.length} webfont file(s) into dist/client/shared/fonts/`);
+}
+
 // The visual identity SVGs live in the sibling design/ directory, owned by
 // a different agent — read-only here, never written back. Copied into
 // dist/client/assets/ at build time so the runtime's own static router

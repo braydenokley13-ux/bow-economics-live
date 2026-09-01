@@ -52,6 +52,50 @@
       </div>
       <button id="create" class="btn btn-primary" style="align-self:flex-end;">Create session</button>
     </div>
+    <!-- gate-l1-teacher recheck2 TT-R3: the whole director script — every NOW,
+         WATCH FOR, ASK with its answer, and all seven reveal SAY lines — lives
+         inside a created session, and nothing on this page said a teacher could
+         go and read it before the students arrive. -->
+    <!-- gate-l3-teacher B5 (BLOCKING): "press Advance ▸ through every phase" was
+         the ONLY instruction this page gave, and following it literally skips
+         the whole interior of PLAY — the histogram, the two-thirds test, the
+         adoption print, every season week, the week bell and the rookie card,
+         roughly half the period — while training the exact one-click gesture
+         that destroys a live class. Name the interior controls instead. -->
+    <!-- gate-l2-teacher W5 N-1 (non-blocking): this paragraph was written for M2
+         L3 and did not change when the lesson picker did, so a stranger prepping
+         M2 L2 tonight was told to rehearse "the round step... then once more for
+         the two-thirds test" and warned that Advance would throw away "the vote",
+         hunting for a vote and a round step this lesson does not have. The
+         interior controls are named PER LESSON now, from the picker above. -->
+    <p id="rehearseNote" style="margin:10px 0 0; font-size:13px; line-height:1.5; color:var(--ink-secondary);"></p>
+    <!-- gate-l2-teacher B2 (BLOCKING): a fresh /teach load in a new tab or on a
+         second machine showed only "START A SESSION" while the live code and
+         key sat in localStorage, so one stray navigation stranded the whole
+         room on a code the teacher could no longer control. -->
+    <div id="resumeRow" hidden style="margin-top:14px; padding:12px 14px; border:1px solid rgba(244,185,66,0.45); border-radius:8px; background:rgba(244,185,66,0.08);">
+      <div class="eyebrow" style="font-size:12px; margin-bottom:6px;">You already have a room open on this device</div>
+      <div class="row">
+        <div class="code" id="resumeCode" style="font-size:28px;"></div>
+        <button id="btnResume" class="btn btn-primary">Go back to this session</button>
+        <span id="resumeNote" class="hint" style="font-size:12px;"></span>
+      </div>
+    </div>
+    <details class="dir-details" style="margin-top:10px;">
+      <summary style="cursor:pointer; font-size:13px; color:var(--ink-secondary);">Reopen a session from another device (needs the code and the teacher key)</summary>
+      <div class="row" style="margin-top:8px;">
+        <div style="flex:1; min-width:150px;">
+          <label for="reopenCode">Class code</label>
+          <input id="reopenCode" placeholder="BOW347" autocomplete="off" autocapitalize="characters" />
+        </div>
+        <div style="flex:2; min-width:240px;">
+          <label for="reopenKey">Teacher key</label>
+          <input id="reopenKey" placeholder="paste the key issued when the session was created" autocomplete="off" />
+        </div>
+        <button id="btnReopen" class="btn" style="align-self:flex-end;">Reopen</button>
+      </div>
+      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-muted);">The key is per-session and is what stops anyone else driving your room. It is shown once, on the console that created the session.</p>
+    </details>
     <div class="row" id="sourceSessionRow" hidden style="margin-top:10px;">
       <div style="flex:1; min-width:260px;">
         <label for="sourceSession" id="sourceSessionLabel">Link to a completed Draft Day (L1) session — carries each locked roster forward</label>
@@ -65,12 +109,25 @@
       <div>
         <div class="eyebrow" style="font-size:12px;">Join at <strong id="joinUrl"></strong> with code</div>
         <div class="code" id="code"></div>
+        <!-- gate-l2-teacher B1: zero occurrences of a /board URL across 60+
+             captured /teach frames. A stranger teacher had to guess it, and
+             guessing wrong put another class's board on the projector. -->
+        <div class="eyebrow" style="font-size:12px; margin-top:8px;">Put the projector on <strong id="boardUrl" style="color:var(--accent-gold);"></strong></div>
       </div>
       <div style="text-align:right;">
         <span id="statePill" class="pill"></span>
         <div class="eyebrow" id="seatCount" style="font-size:12px; margin-top:4px;"></div>
       </div>
     </div>
+  </section>
+
+  <!-- gate-l1-teacher TT-B1 (BLOCKING): the per-phase director panel. The design
+       carried a complete NOW / ASK / DON'T EXPLAIN YET / TRIGGER / TIME CUT
+       script with minute budgets and exactly one fragment of it had reached the
+       product. -->
+  <section id="director" class="card" hidden>
+    <h2 id="directorHeading">Directing this phase</h2>
+    <div id="directorBody"></div>
   </section>
 
   <section id="controls" class="card" hidden>
@@ -85,11 +142,32 @@
       <button id="btnEnd" class="btn btn-danger">End session</button>
     </div>
     <div class="row" style="margin-top:8px;">
-      <button id="btnShock" class="btn btn-danger">⚡ Trigger shock event</button>
+      <button id="btnShock" class="btn btn-danger"><span class="btn-glyph" aria-hidden="true">!</span>Trigger shock event</button>
       <button id="btnCounterfactual" class="btn">Rerun counterfactual</button>
-      <button id="btnRevealNext" class="btn btn-primary">🎙️ Reveal next</button>
-      <button id="btnCloseDay" class="btn btn-primary">🔔 Close signing day</button>
+      <button id="btnRevealNext" class="btn btn-primary">Reveal next</button>
+      <button id="btnCloseDay" class="btn btn-primary">Close signing day</button>
+      <button id="btnCloseNight" class="btn btn-primary">Open the doors</button>
+      <button id="btnCloseWeek" class="btn btn-primary">Close the week</button>
+      <button id="btnHandedTo" class="btn">Release the Handed-To-You bar</button>
+      <button id="btnBarPage" class="btn btn-primary">Next group of desks</button>
+      <button id="btnBarPageBack" class="btn">Back a group</button>
+      <button id="btnTwoPeaks" class="btn">Release the Two Peaks</button>
+      <button id="btnCfPage" class="btn btn-primary">Next group of desks</button>
+      <button id="btnCfPageBack" class="btn">Back a group</button>
+      <button id="btnSynthPage" class="btn btn-primary">Next card</button>
+      <button id="btnSynthPageBack" class="btn">Back a card</button>
+      <!-- M2 L3 "Writing the Rule": the rule pacing control (close a round, then
+           run the two-thirds test, then open the season), the league office's
+           fallback rule, and the shared commit-then-reveal control used by both
+           the Boston hook and the Sacramento capstone. Every one of them carries
+           a consequence-stating confirm supplied by the module. -->
+      <button id="btnRuleStep" class="btn btn-primary">Close the round</button>
+      <button id="btnRealRule" class="btn">Operate the league office's rule</button>
+      <button id="btnCommitReveal" class="btn btn-primary">Reveal</button>
     </div>
+    <!-- `gate-l1-play` W3-2: the paging controls said only what the NEXT press
+         would do, so a teacher who lost their place had to read the projector. -->
+    <div class="row" style="margin-top:6px;"><span id="pagerNow" class="hint"></span></div>
   </section>
 
   <section id="roster" class="card" hidden>
