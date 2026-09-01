@@ -909,9 +909,37 @@ export type ChoiceTotals = {
   spend: number;
   gaveByChoice: number;
   receivedByChoice: number;
+  /**
+   * The SUM OF PER-DESK PRIVATE PARTIALS: for each desk, its own cash against
+   * the same desk having reinvested nothing, everything else held. This is a
+   * correct per-desk instrument and a misleading room-level one (econ B8/N10):
+   * every dollar a desk's spending put in somebody else's building is charged
+   * to the payer's external column and never returns to the room's own books,
+   * so the sum reverses sign against the joint effect in reachable rooms.
+   * Never print it as a room-level effect — print `roomJointGain` for that.
+   */
   ownGain: number;
-  /** Of the value reinvesting created (own gain + what it put in other buildings), the share that landed elsewhere. */
-  externalPct: number;
+  /**
+   * The JOINT effect, exactly computed: this room's cash minus the same room's
+   * cash in the counterfactual where every live desk reinvested nothing, at the
+   * same prices, the same schedule and the same bot/stock/shock carve-outs.
+   * Draw is a private stock — a club's Draw path depends only on its own spend —
+   * so the all-zero world's Draw path for each club is exactly its own
+   * `baselineDrawPathFor`, and the joint figure needs no re-simulation.
+   */
+  roomJointGain: number;
+  /** `ownGain + gaveByChoice` — the value reinvesting created, own books plus other people's. */
+  created: number;
+  /**
+   * Of the value reinvesting created, the share that landed elsewhere — or
+   * `null` where that ratio is not a coherent percentage (econ B7/N9). It is
+   * incoherent whenever the room over-invested: `created <= 0` used to print
+   * 0% beside $1,577,412 of spillover, and `gaveByChoice > created` used to
+   * print above 100% in 58 of 200 random rooms. A null here is not a gap in the
+   * evidence; it is the signal that the honest sentence is the over-investment
+   * one, which states both dollar figures instead.
+   */
+  externalPct: number | null;
   anySpend: boolean;
 };
 
@@ -948,9 +976,25 @@ export type SmallMarketPath = {
   gapFromVisitor: number;
   gapFromBuildingAndPrice: number;
   gapFromOwnDraw: number;
-  /** Which block actually carried the gap. Computed, never asserted. */
-  driver: "visitor" | "building-and-price" | "own-draw" | "none";
+  /**
+   * THE PRICE CONTROL (econ B3, unchanged through two rounds). The same two
+   * nights re-settled with both clubs at the SAME ticket price — once at the
+   * small market's price, once at the big market's — everything else held.
+   * Positive means the small market still wins at that common price.
+   */
+  gapAtSmallPrice: number;
+  gapAtBigPrice: number;
+  /** True only when the small market's win survives BOTH common prices. */
+  survivesPriceControl: boolean;
+  /**
+   * Which block actually carried the gap. Computed, never asserted — and
+   * `price` whenever the win does not survive the price control, because a win
+   * that disappears when both clubs charge the same is a price gap wearing a
+   * market-size costume.
+   */
+  driver: "visitor" | "building-and-price" | "own-draw" | "price" | "none";
   line: string;
+  claims: readonly ClaimAtom[];
 };
 
 export type DrawRow = {
@@ -989,6 +1033,86 @@ export type HostLeagueAggregate = {
 };
 
 const money = (n: number): string => `${n < 0 ? "-" : ""}$${Math.abs(Math.round(n)).toLocaleString()}`;
+
+/* ------------------------------------------------------- claim binding -- */
+
+/**
+ * `analyst-wave3` recommendation, and the single defect class behind econ B3,
+ * B7, B8, projector R-1 and play N-3: **the room is told things the model does
+ * not support**, on the synthesis surfaces where the economics is formalized.
+ *
+ * Four separate tickets owned by three critics all had the same shape — a
+ * sentence built by hand beside a number computed somewhere else, free to drift
+ * from it in SIGN ("reinvesting was worth -$1.15M" over a room $546K better
+ * off), in QUANTIFIER ("WHO WAS VISITING carried it" where price carried it),
+ * or in BOUND (a percentage printing 0% beside $1,577,412, and 119% elsewhere).
+ *
+ * The fix is structural, not another round of copy edits. A claim string may
+ * only be built by a builder that takes the computed value and renders it, so
+ * the printed figure IS the computed figure by construction; and every asserted
+ * relation the sentence carries — the sign it implies, the quantifier it uses,
+ * the bound it presumes — is emitted alongside the text as a machine-checkable
+ * `ClaimAtom`. `moduleClaims()` then sweeps every claim-carrying surface in the
+ * lesson, and the claim-audit family in the L2 tuning harness recomputes each
+ * atom against the reducer and fails on any disagreement.
+ *
+ * Nothing here is a rendering helper for its own sake: an atom that is never
+ * audited is not worth carrying, and a sentence that carries no atom is a
+ * sentence the audit cannot see.
+ */
+export type ClaimSign = "positive" | "negative" | "nonNegative" | "zero" | "any";
+
+export type ClaimAtom = {
+  /** Stable id. The audit dispatches its independent recomputation on this. */
+  id: string;
+  /** The exact substring the surface must contain. Rendered FROM `value`. */
+  rendered: string;
+  /** The computed number the substring was built from. */
+  value: number;
+  format: "money" | "percent" | "int";
+  /** The sign the surrounding sentence asserts about `value`. */
+  assertsSign: ClaimSign;
+  /** Hard bounds the value must obey for the sentence to be printable at all. */
+  bounds?: { min?: number; max?: number };
+  /**
+   * A quantifier or causal word the sentence uses, with the predicate it
+   * claims. The audit recomputes the predicate independently.
+   */
+  quantifier?: { word: string; claims: boolean };
+};
+
+export type Claimed = { text: string; claims: readonly ClaimAtom[] };
+
+const renderClaim = (value: number, format: ClaimAtom["format"]): string =>
+  format === "money" ? money(value) : format === "percent" ? `${Math.round(value)}%` : `${Math.round(value)}`;
+
+/**
+ * Build a claim atom. The ONLY way a number reaches a claim string: callers
+ * interpolate `atom.rendered`, never a separately formatted copy of the value.
+ */
+export function claim(
+  id: string,
+  value: number,
+  format: ClaimAtom["format"],
+  opts: { assertsSign?: ClaimSign; bounds?: { min?: number; max?: number } } = {},
+): ClaimAtom {
+  return {
+    id,
+    rendered: renderClaim(value, format),
+    value,
+    format,
+    assertsSign: opts.assertsSign ?? "any",
+    ...(opts.bounds ? { bounds: opts.bounds } : {}),
+  };
+}
+
+/** A claim about a WORD rather than a number — the quantifier limb of the audit. */
+export function claimWord(id: string, word: string, claims: boolean): ClaimAtom {
+  return { id, rendered: word, value: claims ? 1 : 0, format: "int", assertsSign: "any", quantifier: { word, claims } };
+}
+
+/** One claim-carrying surface: the rendered text plus every relation it asserts. */
+export type ClaimSurface = { surface: string; text: string; claims: readonly ClaimAtom[] };
 
 function decompositionFor(state: HostLeagueState, club: Club): HomeDecomposition {
   const def = defOf(club);
@@ -1137,6 +1261,51 @@ export function choiceLedgerFor(
   };
 }
 
+/**
+ * The room's cash against the same room where NOBODY reinvested — the joint
+ * effect, not a sum of one-desk-at-a-time partials.
+ *
+ * `gate-l2-econ` B8/N10 (BLOCKING): the board and the SPILLOVER card told a
+ * mixed room that reinvesting cost it $1,153,068 when the room was $546,124
+ * better off for having done it. The residue is `receivedByChoice` — the split
+ * charges every spillover dollar to the payer's external column and never
+ * returns it to the room's own books, so a sum of private partials is
+ * systematically pessimistic about the room and reverses sign where the
+ * spillover is large relative to private return.
+ *
+ * This is the joint quantity, computed exactly rather than approximated: for
+ * every live desk, every settled week is re-settled with BOTH the host's and
+ * the visitor's never-reinvested Draw, at the week's actual price. The
+ * carve-outs are `baselineDrawPathFor`'s (stock weeks, bot clubs and the pinned
+ * shock club keep their actual spend), so the two instruments answer the same
+ * counterfactual question at two different scopes.
+ */
+export function roomJointGain(state: HostLeagueState, baselines: ReadonlyMap<number, number[]>): number {
+  let actual = 0;
+  let joint = 0;
+  for (const club of state.clubs.slice(0, state.leagueSize)) {
+    if (club.seatId === null || club.weeks.length === 0) continue;
+    const profile = profileOf(club);
+    const capacity = defOf(club).capacity;
+    const mine = baselines.get(club.slot) ?? [];
+    club.weeks.forEach((w, i) => {
+      actual += w.net;
+      const myBaselineDraw = mine[i] ?? w.hostDrawBefore;
+      const visitor = state.clubs[w.visitorSlot];
+      let visitorBaselineDraw = w.visitorDrawBefore;
+      if (visitor) {
+        const vPath = baselines.get(visitor.slot) ?? [];
+        const vIndex = visitor.weeks.findIndex((x) => x.week === w.week);
+        if (vIndex >= 0) visitorBaselineDraw = vPath[vIndex] ?? w.visitorDrawBefore;
+      }
+      const homeB = settleHome(profile, capacity, myBaselineDraw, visitorBaselineDraw, w.home.price);
+      const reinvestB = club.seatId !== null && !w.stock ? 0 : w.reinvestPaid;
+      joint += homeB.doorMoney + localMediaFor(profile, myBaselineDraw) + w.national - w.bill - reinvestB;
+    });
+  }
+  return Math.round(actual - joint);
+}
+
 export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
   const inLeague = state.clubs.slice(0, state.leagueSize);
@@ -1221,12 +1390,20 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
     const receivedByChoice = giveAndTake.reduce((s, r) => s + r.receivedByChoice, 0);
     const ownGain = giveAndTake.reduce((s, r) => s + r.ownGain, 0);
     const created = ownGain + gaveByChoice;
+    // econ B7/N9: the ratio is a coherent percentage only when the value
+    // created is positive AND the external part is no larger than the whole.
+    // Everywhere else the room over-invested, and the honest sentence is the
+    // one that states both dollar figures rather than a number between 0 and
+    // 100 that is not the share of anything.
+    const coherent = created > 0 && gaveByChoice >= 0 && gaveByChoice <= created;
     return {
       spend,
       gaveByChoice,
       receivedByChoice,
       ownGain,
-      externalPct: created > 0 ? Math.round((gaveByChoice / created) * 100) : 0,
+      roomJointGain: roomJointGain(state, baselines),
+      created,
+      externalPct: coherent ? Math.round((gaveByChoice / created) * 100) : null,
       anySpend: spend > 0,
     };
   })();
@@ -1418,12 +1595,95 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
  * by-choice figures, which are exactly $0 for every desk in that room, and this
  * caption says so out loud rather than leaving a blank frame.
  */
-export function giveAndTakeSummary(agg: HostLeagueAggregate): string {
+/**
+ * THE ONE PLACE the room's reinvest arithmetic is turned into a sentence.
+ *
+ * `gate-l2-econ` B7 (N9) and B8 (N10), both BLOCKING, and the analyst's
+ * "printed claim vs recomputed model" defect class. The same three figures were
+ * being narrated by three hand-written sentences on three surfaces — the
+ * SPILLOVER synthesis card, the reveal-2 caption and the ADAPT Q3 answer key —
+ * and all three inherited the same two falsehoods:
+ *
+ *  - a percentage that printed **0% beside $1,577,412** of measured spillover
+ *    (the `created <= 0` branch, which fires in the three most likely teacher
+ *    set-piece rooms including the one-spender-versus-eleven-free-riders room)
+ *    and **above 100% in 58 of 200** random rooms;
+ *  - "reinvesting was worth -$1,153,068 to these desks' own books" printed as
+ *    if it were the room's joint result, in a room that was **$546,124 better
+ *    off** for having reinvested.
+ *
+ * Both are fixed by saying what each number actually is. The private column is
+ * labelled as a sum of one-desk-at-a-time partials; the joint figure is printed
+ * beside it with its own sign; and the percentage prints only where it is a
+ * coherent share of something, with the over-investment case getting its own
+ * honest sentence instead of a number between 0 and 100 that means nothing.
+ *
+ * Every figure comes back as a `ClaimAtom` so the audit can recompute it.
+ */
+export function spilloverClaim(ct: ChoiceTotals): Claimed {
+  if (!ct.anySpend) {
+    const word = "Nobody in this room put a single dollar back";
+    return {
+      text: `${word} into their club, so nobody here gave anything they CHOSE to give.`,
+      claims: [claimWord("spillover.nobodySpent", word, !ct.anySpend), claim("spillover.spend", ct.spend, "money", { assertsSign: "zero" })],
+    };
+  }
+
+  const claims: ClaimAtom[] = [];
+  const own = claim("spillover.ownGain", ct.ownGain, "money", { assertsSign: ct.ownGain > 0 ? "positive" : ct.ownGain < 0 ? "negative" : "zero" });
+  const gave = claim("spillover.gaveByChoice", ct.gaveByChoice, "money", { assertsSign: "nonNegative" });
+  const joint = claim("spillover.roomJointGain", ct.roomJointGain, "money", {
+    assertsSign: ct.roomJointGain > 0 ? "positive" : ct.roomJointGain < 0 ? "negative" : "zero",
+  });
+  claims.push(own, gave, joint);
+
+  // The private column, always labelled as what it is: a sum of partials.
+  const privateLine =
+    ct.ownGain >= 0
+      ? `Desk by desk, adding up what reinvesting was worth to each desk's OWN cash: ${own.rendered}.`
+      : `Desk by desk, adding up what reinvesting was worth to each desk's OWN cash: ${own.rendered} — these desks spent more on Draw than their own books got back.`;
+
+  // The external column, and the percentage ONLY where it is a coherent share.
+  let externalLine: string;
+  if (ct.externalPct !== null) {
+    const pct = claim("spillover.externalPct", ct.externalPct, "percent", { bounds: { min: 0, max: 100 } });
+    claims.push(pct, claimWord("spillover.pctPrinted", "of the value it created landed somewhere", true));
+    externalLine = `That same spending put ${gave.rendered} on OTHER clubs' books — ${pct.rendered} of the value it created landed somewhere the desk that paid for it never sees.`;
+  } else {
+    const spend = claim("spillover.spend", ct.spend, "money", { assertsSign: "positive" });
+    claims.push(spend, claimWord("spillover.overInvested", "spent more on Draw than it got back", true));
+    externalLine = `This room spent ${spend.rendered} on Draw and put ${gave.rendered} of it on OTHER clubs' books, while the desks' own private columns say the room spent more on Draw than it got back. That is over-investment AND spillover at the same time, and both of them are real. There is no share to print here: you cannot take a percentage of a number that went the wrong way.`;
+  }
+
+  // The joint column — the room counted as one set of books.
+  const direction = ct.roomJointGain > 0 ? "better off" : ct.roomJointGain < 0 ? "worse off" : "exactly level";
+  const jointLine =
+    ct.roomJointGain === 0
+      ? `Counted as one room instead of desk by desk, reinvesting left this room ${direction}.`
+      : `Counted as one room instead of desk by desk — because a dollar that lands on another desk's books is still a dollar in this room — reinvesting left this room ${money(Math.abs(ct.roomJointGain))} ${direction}.`;
+  claims.push(claimWord("spillover.jointDirection", direction, true));
+
+  return { text: `${privateLine} ${externalLine} ${jointLine}`, claims };
+}
+
+export function giveAndTakeSummaryClaimed(agg: HostLeagueAggregate): Claimed {
   const ct = agg.choiceTotals;
   if (!ct.anySpend) {
-    return "Every bar here is EMPTY, and that is the finding: nobody in this room put a dollar back into their club, so nobody gave anything they chose to give. All the money that moved between these buildings came from the Draw each desk was dealt. Ask them what it would have taken to make a bar appear.";
+    const core = spilloverClaim(ct);
+    return {
+      text: `Every bar here is EMPTY, and that is the finding. ${core.text} All the money that moved between these buildings came from the Draw each desk was dealt. Ask them what it would have taken to make a bar appear.`,
+      claims: core.claims,
+    };
   }
-  return `These bars are what the DESKS CHOSE, not what they were dealt. Across the room, reinvesting was worth ${money(ct.ownGain)} to these desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books. The dealt totals — every dollar drawing power moved, most of it Draw nobody bought — are printed under each row.`;
+  const core = spilloverClaim(ct);
+  return {
+    text: `These bars are what the DESKS CHOSE, not what they were dealt. ${core.text} The dealt totals — every dollar drawing power moved, most of it Draw nobody bought — are printed under each row.`,
+    claims: core.claims,
+  };
+}
+
+export function giveAndTakeSummary(agg: HostLeagueAggregate): string {
+  return giveAndTakeSummaryClaimed(agg).text;
 }
 
 export function barSummaryFrom(rows: readonly HomeDecomposition[], visitorLed: number): string {
