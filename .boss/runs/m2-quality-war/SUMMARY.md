@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `101:19f9a4ef638124589fae4db78c73afdde231d4c12ffe22727698d23de5bd7f65`  
-Updated: 2026-09-01T00:11:25.798Z
+Event head: `103:ceef2fd55106894a719e19d14b1773334a16e73400469be2c11a257ae1f5ad88`  
+Updated: 2026-09-01T00:11:42.456Z
 
 ## Founder intent
 
@@ -40,7 +40,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - browser-qa — lead-integrator — completed-with-concerns — claude-sonnet-5
 - builder — lead-integrator — completed — claude-opus-5
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
-- player-gameplay-critic — lead-integrator — active — claude-opus-5
+- player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — active — claude-opus-5
 - classroom-projector-critic — lead-integrator — active — claude-opus-5
 - visual-experience-director — lead-integrator — active — claude-opus-5
@@ -95,6 +95,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - econ-l1-season-books — economic-truth/blocking/open — Season-level two-book tension sign flipped by the repair-round-1 retune: the product's own printed best line ends 92%/96% renewals vs flat-plan 80%, beating flat plan by $1.45M/$1.38M on BOTH books — the CASH-vs-RENEWALS tradeoff the lesson teaches does not exist at season level; both notes on the season synthesis card are false; the spend-to-renewals channel (13-15 points) is undisclosed on any surface. Also: two false HOUSE_RULES clauses (national-TV qualifier; +1 one step below plan) and stale copy on N1/N2/N3/N5 + harness P5 printed row. R1-R3 prescriptions in GATE_L1_ECON_R1.md.
 - recheck-l1-econ-dissent — undefined/undefined/open — undefined
 - play-l1-renewals-unexplained — gameplay/blocking/open — The renewals undercut mechanism works in play (desk that filled the building five nights under plan fell 50%->25%) but NO student surface — dial, recap, seven reveal stages, ADAPT, COUNTERFACTUAL, six synthesis cards — ever states that undercutting the season-plan price costs renewals. Uninterpretable consequence = the exact failure class just repaired on the spend dial, relocated. Also blocking: COUNTERFACTUAL board's largest instruction tells the room to argue from dots that are not rendered in that phase. GATE_L1_PLAY.md re-rate section.
+- recheck-l1-play-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 

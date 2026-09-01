@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T00:11:25.798Z",
+  "updatedAt": "2026-09-01T00:11:42.456Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -700,12 +700,23 @@
           "model": "claude-opus-5",
           "reason": "Focused re-rate of the repaired lesson: does the unpooled class evidence + Two Peaks money proof lift FUNCTIONAL to STRONG",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T23:56:20.304Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T00:11:42.441Z",
+          "sections": {
+            "what-the-student-plays": "Full 4-seat teacher-paced session on the repaired build, zero console errors. Re-rate section appended to GATE_L1_PLAY.md with 18 r1- screenshots.",
+            "pull-rating": "RATING: STRONG (was FUNCTIONAL). Unpooled chart produces honest, legible argue-fuel; Two Peaks now proves itself (marked peaks, dashed vs solid); tomorrow's card + payback rule make the spend dial a decidable question; renewals retune felt both ways in play. Felt pull by real students NOT VERIFIED — structural pull rated.",
+            "biggest-failure": "REVEAL stages 1-5 are four silent projector clicks (dead air). Blocking items: COUNTERFACTUAL board instruction points at dots not rendered in that phase; renewals undercut cost stated on no student surface (dissent play-l1-renewals-unexplained).",
+            "moment-by-moment-notes": "Desk 4 filled the building five nights under plan and fell 50%->25% renewals — mechanism works, explanation missing. Memphis's ten desk-nights overlap into one orange blob at $10-16. No post-decision receipt on the spend dial.",
+            "required-repairs": "Blocking: render the scatter in COUNTERFACTUAL (or repoint the instruction); state the undercut-costs-renewals rule on a student surface. Non-blocking: Memphis blob jitter/zoom; spend receipt; reveal-stage pacing beats. DISSENT play-board-curve-pooled: DISCHARGED."
+          },
+          "evidenceIds": [
+            "gate-l1-play-r1"
+          ],
+          "cost": {
+            "tokens": 92921,
+            "toolUses": 33
+          }
         },
         "gate-l1-teacher": {
           "assignmentId": "gate-l1-teacher",
@@ -783,7 +794,8 @@
         "gate-l1-play-dissent",
         "econ-l1-season-books",
         "recheck-l1-econ-dissent",
-        "play-l1-renewals-unexplained"
+        "play-l1-renewals-unexplained",
+        "recheck-l1-play-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1737,6 +1749,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T00:11:25.798Z",
       "actor": "player-gameplay-critic"
+    },
+    "recheck-l1-play-dissent": {
+      "id": "recheck-l1-play-dissent",
+      "wave": 2,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T00:11:42.456Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -1771,7 +1792,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 101,
-  "eventHead": "19f9a4ef638124589fae4db78c73afdde231d4c12ffe22727698d23de5bd7f65",
+  "eventCount": 103,
+  "eventHead": "ceef2fd55106894a719e19d14b1773334a16e73400469be2c11a257ae1f5ad88",
   "warnings": []
 }
