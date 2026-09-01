@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `315:c9b931fe56df27acc3db4ffec47eb03851107c12e9c3547a52dedc69b501555e`  
-Updated: 2026-09-01T09:06:10.437Z
+Event head: `318:41819d62362e3a9364c453ccab1a0766f82b2861542715aadefd775f24a15192`  
+Updated: 2026-09-01T09:16:39.673Z
 
 ## Founder intent
 
@@ -74,6 +74,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - w4-play-final — gameplay-report — L2 play FINAL: RATING STRONG — each week one 1024x600 frame, no scroll; N-6/N-7 discharged (hit-tested, sold-out incl.); bell LANDS (KEPT largest object, changed the critic's play $78->$66->$50). DISCHARGED. Non-blocking F-1..F-8 incl. one session where doing nothing beat adaptation ($4.05M vs $3.62M — schedule variance to watch in class data)
 - l2-tests-w4r2 — test — Suite after repair 2 (411/411)
 - l2-tuning-w4r2 — test — L2 harness 12/12, 8/8 mutants incl. level-shift and costly-prescription
+- w4-econ-confirm — economic-truth-report — Econ final confirm: N17/FL-L discharged at root (1,395 own-reducer rooms; band/level/gradient 0 disagreements; 461 prescriptions 0 contradicted, was 83/86; strong reading 174/174); N18 limb independent. FL-N minor (band edge 0.582% below true max) + 5 non-blocking. DISCHARGED
 
 ## Claim ledger
 
