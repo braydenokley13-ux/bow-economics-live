@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T03:00:34.304Z",
+  "updatedAt": "2026-09-01T03:00:49.037Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1790,12 +1790,23 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic adjudication of the frontier-staged card, HOUSE_RULES bound, P16 falsifiability (dissent econ-l1-two-book-baseline)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T02:46:56.719Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T03:00:48.753Z",
+          "sections": {
+            "mechanism-verdicts": "Independent exact DP reproduces the shipped seasonFrontier point-for-point: 22/24 undominated, 0 dominated pairs, 0 replay failures; the card's implied renewal pricing equals true average marginal cost (ratio 1.0000, was 47-70x).",
+            "false-lesson-risks": "W3-R10 (top non-blocking): floored is an OR but two card writers read it as both, printing 'nobody walked in either time' over 670 people in 11/672 rooms — student-facing false line, batch it.",
+            "dominant-strategies": "No change; P16 demonstrated falsifiable under four mutations.",
+            "synthesis-map-verdict": "All five HOUSE_RULES true (zero case exact: 0/173, 0/183 off-clamp); $58 Memphis row repaired.",
+            "required-repairs": "DISSENT econ-l1-two-book-baseline: DISCHARGED. Non-blocking successors W3-R10..R14 (P14 title, SIMPLIFICATIONS[1] stale claim, etc.) to the wave-3 repair batch."
+          },
+          "evidenceIds": [
+            "w3-econ-adj"
+          ],
+          "cost": {
+            "tokens": 145438,
+            "toolUses": 50
+          }
         },
         "w3-projector-adjudicate": {
           "assignmentId": "w3-projector-adjudicate",
@@ -1845,6 +1856,20 @@
             "tokens": 119980,
             "toolUses": 40
           }
+        },
+        "w3-fit-repair": {
+          "assignmentId": "w3-fit-repair",
+          "role": "builder",
+          "actor": "builder-w3-fit",
+          "model": "claude-opus-5",
+          "reason": "Wave-3 repair 1: every-frame board fit + orphaned Two Peaks punchline + axis floor (projector NOT DISCHARGED), visual blocking items incl. staged SYNTHESIS, dial, and the emoji removal that was falsely reported done, econ W3-R10..R14 copy truths, play W3-1/W3-2 notes",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T03:00:49.037Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -3612,14 +3637,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 38,
+    "agentsActivated": 39,
     "gateFailures": 1,
     "claimsContradicted": 1,
     "evidenceRecorded": 64,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 192,
-  "eventHead": "7d8f95a1ea0aba17e4af0e418918b2e7547fe679d55f505f455480dd38c3ea1c",
+  "eventCount": 194,
+  "eventHead": "18622aaf881b48bff3c4a1dfc96a398bf86e26df2a69de5f9d9756be57b36e4f",
   "warnings": []
 }
