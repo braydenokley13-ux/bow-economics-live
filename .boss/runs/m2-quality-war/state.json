@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T00:11:42.456Z",
+  "updatedAt": "2026-09-01T00:13:09.399Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -778,7 +778,8 @@
         "l1-e2e-misclick",
         "gate-l1-visual",
         "gate-l1-econ-r1",
-        "gate-l1-play-r1"
+        "gate-l1-play-r1",
+        "gate-l1-teacher"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -795,7 +796,8 @@
         "econ-l1-season-books",
         "recheck-l1-econ-dissent",
         "play-l1-renewals-unexplained",
-        "recheck-l1-play-dissent"
+        "recheck-l1-play-dissent",
+        "teacher-l1-not-ready"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1486,6 +1488,25 @@
       },
       "recordedAt": "2026-09-01T00:11:25.306Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-teacher": {
+      "id": "gate-l1-teacher",
+      "wave": 2,
+      "kind": "teacher-transfer-report",
+      "label": "L1 teacher gate: TRANSFER NOT READY. SYNTHESIS board strong, recovery solid, reveals gated. But /teach renders identically LOBBY/HOOK/PLAY, ON-THE-PROJECTOR vanishes during reveals, 7 reveal stages a blind n/7 counter, stalled desks grey. HK-1: complete director script (NOW/ASK/DON'T-EXPLAIN-YET/TRIGGER/minute budgets) exists in DESIGN_C lines 253-270 and reached the product as one fragment. Nine blocking repairs",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-teacher--GATE_L1_TEACHER.md",
+      "sha256": "09015b71b761420879b045db2136a2536834d0a9a2aae8bfa2f9868dbdaf7f98",
+      "size": 25310,
+      "metadata": {
+        "verdict": "NOT_READY",
+        "tags": [
+          "teacher-transfer",
+          "wave-2",
+          "gate"
+        ]
+      },
+      "recordedAt": "2026-09-01T00:13:09.167Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1758,6 +1779,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T00:11:42.456Z",
       "actor": "lead-integrator"
+    },
+    "teacher-l1-not-ready": {
+      "id": "teacher-l1-not-ready",
+      "wave": 2,
+      "category": "teacher-transfer",
+      "severity": "blocking",
+      "finding": "Fresh-context teacher verdict NOT READY: /teach is a status board, not a director — identical render across LOBBY/HOOK/PLAY, projector context vanishing exactly when REVEAL begins, blind n/7 reveal counter with no names or lines, unhighlighted stalled desks. HK-1: the design doc's complete director script (NOW/ASK/DON'T EXPLAIN YET/TRIGGER/TIME CUT with per-phase minute budgets, DESIGN_C_FIRSTPRINCIPLES.md:253-270) reached the product as a single fragment, so every economics line must be invented live — hidden founder knowledge by construction. Nine blocking repairs in GATE_L1_TEACHER.md.",
+      "evidenceIds": [
+        "gate-l1-teacher"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T00:13:09.399Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "meetings": {},
@@ -1788,11 +1823,11 @@
     "agentsActivated": 21,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 35,
+    "evidenceRecorded": 36,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 103,
-  "eventHead": "ceef2fd55106894a719e19d14b1773334a16e73400469be2c11a257ae1f5ad88",
+  "eventCount": 105,
+  "eventHead": "8f8b44e360bcd9e686df12528ae115efbb444eb5e33284515780e0a4cfc6226f",
   "warnings": []
 }
