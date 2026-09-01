@@ -234,9 +234,12 @@ function render(payload: TeacherPayload): void {
     if (isFullHouse) {
       const allDone = Boolean(payload.view["allNightsDone"]);
       closeNight.disabled = s.ended || s.phase !== "PLAY" || allDone;
-      closeNight.textContent = allDone
-        ? "🔔 All five nights are in the books"
-        : `🔔 Open the doors — Night ${payload.view["nightNumber"]} (${payload.view["lockedCount"]}/${payload.view["deskCount"]} locked)`;
+      // gate-l1-visual P8: the emoji bell was reported repaired and was not. A
+      // drawn 16px glyph in the ink palette carries the same meaning in the
+      // Cap Room register. `escapeHtml` guards the interpolated counts.
+      closeNight.innerHTML = allDone
+        ? `${BELL_GLYPH}All five nights are in the books`
+        : `${BELL_GLYPH}Open the doors — Night ${escapeHtml(String(payload.view["nightNumber"]))} (${escapeHtml(String(payload.view["lockedCount"]))}/${escapeHtml(String(payload.view["deskCount"]))} locked)`;
       twoPeaks.disabled = s.ended || !payload.view["twoPeaksAvailable"] || (s.phase !== "PLAY" && s.phase !== "REVEAL");
       // TT-B5: the button used to become silently enabled after the Night 3 bell
       // with no reason on it while disabled, and a `held`/`up` tile in undefined
@@ -269,7 +272,9 @@ function render(payload: TeacherPayload): void {
     const pendingCount = Number(payload.view["pendingCount"] ?? 0);
     const actedCount = Number(payload.view["actedCount"] ?? 0);
     const claimedCount = Number(payload.view["claimedCount"] ?? 0);
-    $<HTMLButtonElement>("btnCloseDay").textContent = isFreeAgency ? `🔔 Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)` : "🔔 Close signing day";
+    $<HTMLButtonElement>("btnCloseDay").innerHTML = isFreeAgency
+      ? `${BELL_GLYPH}Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)`
+      : `${BELL_GLYPH}Close signing day`;
   }
   // B1 repair (VERIFY_L2.md BLOCKER): the runtime now auto-resolves any unrevealed target the instant the
   // teacher advances out of REVEAL (see tradeDeadline.ts's onPhaseExit), so the numbers can no longer go wrong
@@ -603,7 +608,7 @@ function renderDraftDayAggregate(view: Record<string, unknown>, seats: TeacherSe
       ${franchiseRow}
       <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : ""}</span><span>${t.locked ? "locked" : `${t.filled}/5`}</span></div>
       <div class="statline"><span class="pill pill-${t.capState}" style="font-size:10px;">$${t.spent}M</span><span>${t.strategy ? escapeHtml(t.strategy) : ""}</span></div>
-      ${t.shocked ? `<div class="statline"><span>${t.repaired ? "repaired" : "⚡ hit"}</span><span></span></div>` : ""}
+      ${t.shocked ? `<div class="statline"><span>${t.repaired ? "repaired" : `${GLYPH_HIT}hit`}</span><span></span></div>` : ""}
     `;
     grid.appendChild(tile);
   });
@@ -747,7 +752,7 @@ function renderTradeDeadlineAggregate(view: Record<string, unknown>, seats: Teac
       ${franchiseRow}
       <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : ""}</span><span>${t.claimed ? `$${t.capUsed}M` : ""}</span></div>
       <div class="statline"><span>${escapeHtml(pathLabel)}</span><span>${escapeHtml(outcomeLabel)}</span></div>
-      ${t.openSlot ? `<div class="statline"><span style="color:${t.rescued ? "var(--cap-safe)" : "#ff9aa4"};">${t.rescued ? "rescued" : "⚠ open slot"}</span><span></span></div>` : ""}
+      ${t.openSlot ? `<div class="statline"><span style="color:${t.rescued ? "var(--cap-safe)" : "#ff9aa4"};">${t.rescued ? "rescued" : `${GLYPH_WARN}open slot`}</span><span></span></div>` : ""}
     `;
     grid.appendChild(tile);
   });

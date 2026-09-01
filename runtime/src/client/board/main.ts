@@ -911,15 +911,26 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       const card = view["card"] as FHCardB;
       const points = (view["curves"] as FHPoint[]) ?? [];
       const peaks = (view["twoPeaks"] as FHTwoPeaksB[]) ?? [];
-      stage.innerHTML = `
+      const curveUp = points.length > 0 && peaks.length === 0;
+      const peaksUp = peaks.length > 0;
+      const evidenceUp = curveUp || peaksUp;
+      if (evidenceUp) stage.classList.add("fh-tight");
+      const locked = Number(view["lockedCount"] ?? 0);
+      const deskCount = Number(view["deskCount"] ?? 0);
+      stage.innerHTML = evidenceUp
+        ? `
+        ${fhPlayStrip(card, locked, deskCount)}
+        ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:74vw; font-size:1.2vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
+        ${curveUp ? `<div class="scatter-wrap" style="width:60vw;">${fhCurveSvg(points, ["new-york", "memphis"], 0.6)}</div>${fhLegend(points)}` : ""}
+        ${peaksUp ? fhTwoPeaksPanel(peaks) : ""}
+        <div class="synthesis-note" style="font-size:1.1vw;">${escapeHtml(honesty)}</div>`
+        : `
         <div class="label">Tonight's Card</div>
         ${fhCardBanner(card)}
         <div class="kpirow">
-          <div class="kpi"><div class="num">${view["lockedCount"]}/${view["deskCount"]}</div><div class="lbl">Desks locked in</div></div>
+          <div class="kpi"><div class="num">${locked}/${deskCount}</div><div class="lbl">Desks locked in</div></div>
         </div>
         ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:66vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
-        ${points.length > 0 && peaks.length === 0 ? `<div class="scatter-wrap" style="width:60vw;">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : ""}
-        ${peaks.length > 0 ? fhTwoPeaksPanel(peaks) : ""}
         <div class="synthesis-note" style="font-size:1.1vw;">${escapeHtml(honesty)}</div>`;
       return;
     }
@@ -941,7 +952,14 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // stage the rule is now the beat: it renders directly under the headline,
       // above the chart, and the chart drops to `compact` to pay for the room.
       const ruleUp = Boolean(view["renewalsRule"]);
+      // W3 repair 2: the shock stage carries the Sports Reality anchor (the dated
+      // Fever attendance line), which was sliced at 724..839 in a 768px viewport
+      // and took its sourcing line off screen with it. The anchor IS the beat, so
+      // the chart gives up the room for it — the same trade the renewals rule
+      // stage already makes.
+      const shockUp = Boolean(view["shockCopy"]);
       const showCurve = points.length > 0 && !booksUp && !crowded;
+      const compactCurve = crowded || ruleUp || shockUp;
       // SPLIT (projector repair 2): the final beat is the season books. Two
       // Peaks had its own stage one press earlier; carrying it under the books
       // made the last REVEAL frame 962px tall in a 768px projector. Each beat
@@ -952,7 +970,12 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // 1d contradiction line sliced mid-sentence. Stage 7 stacks the books row
       // under the same furniture. Both give up leading, never type size: the
       // projector review's evidence-tier floor stands.
-      if (ruleUp || booksUp) stage.classList.add("fh-tight");
+      // W3 repair 2: REVEAL stages 1-3 overflowed by 8-9px as scroll frames, so
+      // the tightening is no longer opt-in per stage — every REVEAL beat gives up
+      // leading, and only the beats that stack a second panel give up chart width.
+      stage.classList.add("fh-tight");
+      void ruleUp;
+      void booksUp;
       const ruleHtml = ruleUp
         ? `<div id="fhRenewalsRule" class="fh-reveal-rule">${escapeHtml(String(view["renewalsRule"]))}</div>`
         : "";
@@ -960,7 +983,7 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
         <div class="label">${escapeHtml(String(view["stageHeadline"] ?? (booksUp ? "The Season, Market By Market" : `The Room's Own Nights · ${shown.length ? shown.join(" · ") : "waiting"}`)))}</div>
         ${shown.length > 0 ? `<div class="fh-nights-up">Nights up: ${shown.join(" · ")}</div>` : ""}
         ${ruleHtml}
-        ${showCurve ? `<div class="scatter-wrap${crowded || ruleUp ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
+        ${showCurve ? `<div class="scatter-wrap${compactCurve ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"], compactCurve ? 0.44 : 0.8)}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
         ${Number(view["totalTurnedAway"] ?? 0) > 0 ? `<div class="synthesis-note" style="font-size:1.5vw; color:var(--ink-primary);">${Number(view["totalTurnedAway"]).toLocaleString()} people in this room's five nights wanted a seat and could not get one.</div>` : ""}
         ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:74vw; font-size:1.2vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
         ${showTwoPeaks ? fhTwoPeaksPanel(peaks) : ""}
@@ -985,10 +1008,13 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
     case "adapt": {
       const questions = (view["questions"] as string[]) ?? [];
       const points = (view["curves"] as FHPoint[]) ?? [];
+      // W3 repair 2: ADAPT overflowed by 29px/39px and cut its sourcing line
+      // mid-sentence. Same trade as REVEAL — leading first, then chart width.
+      stage.classList.add("fh-tight");
       stage.innerHTML = `
         <div class="label">What Moved The Crowd?</div>
         <div class="fh-questions-board">${questions.map((q) => `<div>${escapeHtml(q)}</div>`).join("")}</div>
-        ${points.length > 0 ? `<div class="scatter-wrap" style="width:64vw;">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : ""}
+        ${points.length > 0 ? `<div class="scatter-wrap" style="width:58vw;">${fhCurveSvg(points, ["new-york", "memphis"], 0.58)}</div>${fhLegend(points)}` : ""}
         <div class="synthesis-note" style="font-size:1.1vw;">${escapeHtml(honesty)}</div>`;
       return;
     }
@@ -1039,7 +1065,7 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
           <div class="fh-cf-col">
             ${
               cfPoints.length > 0
-                ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"])}</div>${fhLegend(cfPoints)}`
+                ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"], 0.44)}</div>${fhLegend(cfPoints)}`
                 : ""
             }
             <div class="synthesis-note fh-cf-summary" id="fhCfSummary">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
@@ -1064,13 +1090,25 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // sourcing rail underneath it — H4's inverted type weight). The sources
       // become one quiet rail, which is what sourcing discipline should look
       // like on a projector: present, dated, and not competing.
+      //
+      // W3 RE-GRADE N1 + W3 projector repair: the round-4 repair un-clipped this
+      // frame by SHRINKING it — measured 11.20px card bodies and 9.29px sources
+      // at 1366x768, against a 2.6%-of-height (≈20px) back-row floor. That is a
+      // dashboard grid of ~850 words on a projector, which VISUAL_IDENTITY.md
+      // forbids outright. Undone here: the frame is STAGED instead. One card at a
+      // time under the teacher's own pager, type back above the floor, the
+      // beyond-sports close on every page because it is the module's closing
+      // statement, and the sourcing rail on the last page where it belongs.
       stage.classList.add("fh-tight", "fh-synth");
+      const synthPageLabel = String(view["synthPageLabel"] ?? "");
+      const railUp = Boolean(view["synthRail"]);
       stage.innerHTML = `
         <div class="label fh-synth-head">${escapeHtml(String(view["heading"] ?? ""))}</div>
+        ${synthPageLabel ? `<div class="fh-synth-pager" id="fhSynthPager">${escapeHtml(synthPageLabel)}</div>` : ""}
         <div class="cardgrid">${cards.map((c) => `<div class="synthcard"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.body)}</p></div>`).join("")}</div>
         <div class="fh-synth-close" id="fhSynthClose">${escapeHtml(String(view["beyondSports"] ?? ""))}</div>
-        <div class="exit-prompt fh-synth-exit">${escapeHtml(String(view["exitPrompt"] ?? ""))}</div>
-        <div class="fh-sources">${notes.map((n) => `<span>${escapeHtml(n)}</span>`).join("")}</div>`;
+        ${railUp ? `<div class="exit-prompt fh-synth-exit">${escapeHtml(String(view["exitPrompt"] ?? ""))}</div>
+        <div class="fh-sources">${notes.map((n) => `<span>${escapeHtml(n)}</span>`).join("")}</div>` : ""}`;
       return;
     }
 

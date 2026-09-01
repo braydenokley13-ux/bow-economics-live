@@ -653,6 +653,17 @@ export type FullHouseState = {
    * summary is out of the paged column so it is on screen for every group.
    */
   cfPage: number;
+  /**
+   * Which synthesis card is on the projector.
+   *
+   * `gate-l1-visual` W3 N1 + `gate-l1-projector` W3: the six-card grid was made
+   * to fit by shrinking it — 11.20px bodies and 9.29px sources at 1366x768,
+   * against a 2.6%-of-height back-row floor — which trades the room's ability to
+   * read the lesson's formalization for a passing clip check. The cards are
+   * staged one at a time under the teacher's own control instead, exactly like
+   * the reveal beats and the repeat-card groups.
+   */
+  synthPage: number;
 };
 
 /**
@@ -670,6 +681,18 @@ export const CF_ROWS_PER_PAGE = 3;
 
 /** How many teacher-advanced groups this room's repeat card needs. */
 export const cfPageCount = (rowCount: number): number => Math.max(1, Math.ceil(rowCount / CF_ROWS_PER_PAGE));
+
+/**
+ * Synthesis cards per projector frame. ONE, for the same reason the repeat card
+ * is capped at three: `design/VISUAL_IDENTITY.md` allows "one chart, one number,
+ * or one reveal state at a time, never a dashboard grid" on `/board`, and the
+ * six-card grid could only be made to fit by dropping its body type to 1.46% of
+ * screen height. One card holds its title at 4.3% and its body at 2.85%.
+ */
+export const SYNTH_CARDS_PER_PAGE = 1;
+
+export const synthPageCount = (cardCount: number): number =>
+  Math.max(1, Math.ceil(cardCount / SYNTH_CARDS_PER_PAGE));
 
 export const REVEAL_STEPS = NIGHT_COUNT + 2; // one per night curve, then Two Peaks, then the season books
 
@@ -1017,6 +1040,15 @@ export type RepeatRow = {
    * so the card printed "0 then 0 — 0 people, and that is renewals -1,250".
    */
   floored: boolean;
+  /**
+   * True when BOTH nights were floored — nobody wanted in at this price either
+   * time. `gate-l1-econ-r3` W3-R10: `floored` is an OR, and every copy site that
+   * consumed it read it as an AND, so a desk that drew 670 people on Night 1 and
+   * 0 on Night 5 was described on the projector as one where "nobody walked in
+   * either time", in the same clause that printed the 670. The two cases need
+   * different sentences, so the row states which one it is.
+   */
+  bothFloored: boolean;
   /** The name of the biggest channel behind this row: "renewals", "spend", "price" or "none". */
   biggestChannel: "renewals" | "spend" | "price" | "none";
   /** One projector-length sentence, computed from the four terms above. */
@@ -1140,9 +1172,58 @@ export function repeatRowFor(
     seatedDelta,
     clamped,
     floored,
+    bothFloored,
     biggestChannel,
     channelLine,
   };
+}
+
+/**
+ * `gate-l1-play` W3-2. Grouping the repeat card by desk number ordered the beats
+ * by accident: the critic's own twelve-desk session put TWO BYTE-IDENTICAL rows
+ * (Desk 1 and Desk 3, both New York at $24, both 16,862 -> 17,462) in group 1
+ * while every row worth arguing about — a price-change split and a floored row —
+ * landed in group 4, four presses away. The model is deterministic, so a
+ * clustered room (which is what a real room does at the plan price) reliably
+ * produces duplicate rows.
+ *
+ * Two rules, in this order:
+ *   1. Rows are sorted by how much they can teach — the card's own beat (same
+ *      price, and a crowd that moved) first, then the rows that show the second
+ *      channel or the demand floor, then the price-change rows.
+ *   2. No group may contain two identical rows while a differing row is
+ *      un-shown: identical signatures are dealt into different groups.
+ * Every row is kept. Nothing is merged, so the room still sees all twelve desks.
+ */
+export function orderRepeatRows(rows: readonly RepeatRow[]): RepeatRow[] {
+  const signature = (r: RepeatRow): string =>
+    `${r.marketId}|${r.n1Price}|${r.n5Price}|${r.n1Turnout}|${r.n5Turnout}|${r.channelLine}`;
+  const interest = (r: RepeatRow): number => {
+    let s = r.samePrice ? 40 : 10;
+    if (r.samePrice && r.n5Turnout !== r.n1Turnout) s += 20;
+    if (r.biggestChannel === "spend") s += 12; // the channel a room never guesses
+    if (r.floored) s += 8; // the demand floor, said out loud
+    if (r.clamped) s += 4; // a sold-out night the room can argue about
+    return s;
+  };
+  const sorted = rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => interest(b.row) - interest(a.row) || a.index - b.index)
+    .map((x) => x.row);
+
+  const remaining = [...sorted];
+  const out: RepeatRow[] = [];
+  while (remaining.length > 0) {
+    const used = new Set<string>();
+    for (let slot = 0; slot < CF_ROWS_PER_PAGE && remaining.length > 0; slot += 1) {
+      let pick = remaining.findIndex((r) => !used.has(signature(r)));
+      if (pick === -1) pick = 0; // only duplicates left — nothing differing is being withheld
+      const [row] = remaining.splice(pick, 1);
+      out.push(row!);
+      used.add(signature(row!));
+    }
+  }
+  return out;
 }
 
 export function computeAggregate(state: FullHouseState): FullHouseAggregate {
@@ -1199,6 +1280,7 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
     const nightBeforeN5 = n5Index > 0 ? desk.nights[n5Index - 1] : undefined;
     repeatCard.push(repeatRowFor(desk, market, n1, n5, nightBeforeN5?.spend ?? 0));
   }
+  const orderedRepeatCard = orderRepeatRows(repeatCard);
 
   const books: MarketBooks[] = MARKETS.map((market) => {
     const own = desks.filter((d) => d.marketId === market.id);
@@ -1221,7 +1303,7 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
     lockedCount: desks.filter((d) => d.locked).length,
     curves,
     twoPeaks,
-    repeatCard,
+    repeatCard: orderedRepeatCard,
     books,
     totalTurnedAway: desks.reduce((s, d) => s + d.nights.reduce((s2, n) => s2 + n.settlement.turnedAway, 0), 0),
     autoNightCount: desks.reduce((s, d) => s + d.nights.filter((n) => n.auto).length, 0),
@@ -1887,7 +1969,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
   phases: PHASES,
 
   initialState() {
-    return { desks: {}, deskOrder: [], nightIndex: 0, twoPeaksReleased: false, revealStage: 0, cfPage: 0 };
+    return { desks: {}, deskOrder: [], nightIndex: 0, twoPeaksReleased: false, revealStage: 0, cfPage: 0, synthPage: 0 };
   },
 
   /**
@@ -1954,6 +2036,28 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       // Wraps on purpose: a teacher who wants the first group back at the end of
       // the argument must never hit a dead control in front of the room.
       return { ok: true, state: { ...state, cfPage: ((state.cfPage ?? 0) + 1) % pages } };
+    }
+    // `gate-l1-play` W3-2: forward-only paging made a room that wanted the
+    // previous group again press forward until it wrapped. Tolerable at twelve
+    // desks, not at twenty.
+    if (action.type === "teacher:cfPageBack") {
+      if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher pages the Night 1 vs Night 5 card" };
+      if (ctx.phase !== "COUNTERFACTUAL") {
+        return { ok: false, reason: `the repeat card is paged during COUNTERFACTUAL (session is in ${ctx.phase})` };
+      }
+      const pages = cfPageCount(computeAggregate(state).repeatCard.length);
+      if (pages <= 1) return { ok: false, reason: "every desk on this card is already on the projector" };
+      return { ok: true, state: { ...state, cfPage: ((state.cfPage ?? 0) + pages - 1) % pages } };
+    }
+    if (action.type === "teacher:synthPage" || action.type === "teacher:synthPageBack") {
+      if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher turns the synthesis cards" };
+      if (ctx.phase !== "SYNTHESIS") {
+        return { ok: false, reason: `the synthesis cards are turned during SYNTHESIS (session is in ${ctx.phase})` };
+      }
+      const pages = synthPageCount(synthesisCards(state, computeAggregate(state)).length);
+      if (pages <= 1) return { ok: false, reason: "there is only one card to show" };
+      const step = action.type === "teacher:synthPage" ? 1 : pages - 1;
+      return { ok: true, state: { ...state, synthPage: ((state.synthPage ?? 0) + step) % pages } };
     }
     if (action.type === "teacher:revealNext") {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher advances the reveal" };
@@ -2214,11 +2318,25 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         const nextPage = pages <= 1 ? page : (page + 1) % pages;
         const from = nextPage * CF_ROWS_PER_PAGE;
         const to = Math.min(rows.length, from + CF_ROWS_PER_PAGE);
+        // W3-2: the control said only what the NEXT press would put up, so a
+        // teacher who lost their place had to read it off the projector.
+        const curFrom = page * CF_ROWS_PER_PAGE;
+        const curTo = Math.min(rows.length, curFrom + CF_ROWS_PER_PAGE);
         return {
           cfPage: page + 1,
           cfPageCount: pages,
           cfRowTotal: rows.length,
           cfPageAvailable: phase === "COUNTERFACTUAL" && pages > 1,
+          cfCurrentPageLabel:
+            rows.length === 0
+              ? "Nothing on the repeat card yet."
+              : pages <= 1
+                ? `On the projector: all ${rows.length} desk${rows.length === 1 ? "" : "s"}`
+                : `On the projector now: desks ${curFrom + 1}-${curTo} of ${rows.length} · group ${page + 1} of ${pages}`,
+          cfPrevPageLabel:
+            pages <= 1
+              ? "Back a group"
+              : `Back — desks ${((page + pages - 1) % pages) * CF_ROWS_PER_PAGE + 1}-${Math.min(rows.length, ((page + pages - 1) % pages) * CF_ROWS_PER_PAGE + CF_ROWS_PER_PAGE)}`,
           cfNextPageLabel:
             pages <= 1
               ? rows.length === 0
@@ -2229,6 +2347,26 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             pages <= 1
               ? "The whole repeat card fits on the projector in one look."
               : `The projector shows ${CF_ROWS_PER_PAGE} desks at a time so every row stays readable from the back. The class summary underneath stays up for every group. Pressing past the last group comes back round to the first.`,
+        };
+      })(),
+      // W3 N1: the synthesis cards are staged the same way, for the same reason.
+      ...((): Record<string, unknown> => {
+        const cards = synthesisCards(state, computeAggregate(state));
+        const pages = synthPageCount(cards.length);
+        const page = Math.min(Math.max(0, state.synthPage ?? 0), pages - 1);
+        const nextPage = pages <= 1 ? page : (page + 1) % pages;
+        const prevPage = pages <= 1 ? page : (page + pages - 1) % pages;
+        const title = (i: number): string => cards[i * SYNTH_CARDS_PER_PAGE]?.title ?? "";
+        return {
+          synthPage: page + 1,
+          synthPageCount: pages,
+          synthPageAvailable: phase === "SYNTHESIS" && pages > 1,
+          synthCurrentLabel:
+            pages <= 1 ? `On the projector: ${title(page)}` : `On the projector now: card ${page + 1} of ${pages} — ${title(page)}`,
+          synthNextLabel: pages <= 1 ? "One card only" : `Next card — ${nextPage + 1} of ${pages}: ${title(nextPage)}`,
+          synthPrevLabel: pages <= 1 ? "Back a card" : `Back — card ${prevPage + 1}: ${title(prevPage)}`,
+          synthPageNote:
+            "One card at a time, in your own time. The 'what this looks like outside sports' line stays up on every card; the exit question and the sources land on the last one.",
         };
       })(),
       // TT-B2 (HK-3): name the stage the next press lands, the stage now on the
@@ -2408,16 +2546,30 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
           };
         }
 
-        case "SYNTHESIS":
+        case "SYNTHESIS": {
+          // W3: staged, not shrunk. One card owns the frame; the beyond-sports
+          // line stays up on every page because it is the module's closing
+          // statement (the econ gate calls it the strongest link in the chain);
+          // the exit prompt and the sourcing rail land on the last page.
+          const allCards = synthesisCards(state, agg);
+          const pages = synthPageCount(allCards.length);
+          const page = Math.min(Math.max(0, state.synthPage ?? 0), pages - 1);
+          const from = page * SYNTH_CARDS_PER_PAGE;
           return {
             mode: "synthesis",
             heading: "WHAT ECONOMICS DID WE JUST USE?",
-            cards: synthesisCards(state, agg),
+            cards: allCards.slice(from, from + SYNTH_CARDS_PER_PAGE),
+            cardCount: allCards.length,
+            synthPage: page + 1,
+            synthPageCount: pages,
+            synthPageLabel: pages > 1 ? `Card ${page + 1} of ${pages}` : "",
+            synthRail: page === pages - 1,
             beyondSports: BEYOND_SPORTS_LINE,
             exitPrompt: EXIT_PROMPT,
             sourceNotes: SOURCE_NOTES,
             honestyLine: BOARD_HONESTY_LINE,
           };
+        }
 
         case "COMPLETE":
           return { mode: "complete", message: COMPLETE_COPY, sourceNotes: SOURCE_NOTES };
@@ -2953,7 +3105,7 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
   }
 }
 
-function repeatSummary(rows: readonly RepeatRow[]): string {
+export function repeatSummary(rows: readonly RepeatRow[]): string {
   const same = rows.filter((r) => r.samePrice);
   if (same.length === 0) {
     return rows.length === 0
@@ -2970,20 +3122,41 @@ function repeatSummary(rows: readonly RepeatRow[]): string {
   // by" claim — the old line could say "3 were moved most by their own renewals"
   // about desks whose crowd was 0 on both nights.
   const readable = same.filter((r) => !r.floored);
-  const floored = same.length - readable.length;
+  // W3-R10: `floored` is an OR over the two nights. Counting a one-sided desk as
+  // "nobody came either night" printed a sentence the row's own crowd number
+  // refutes, in the band ($82-$84 New York, $58 Memphis) a pair reaches by
+  // trying "higher price, more money".
+  const flooredRows = same.filter((r) => r.floored);
+  const both = flooredRows.filter((r) => r.bothFloored).length;
+  const oneSided = flooredRows.length - both;
+  const floored = flooredRows.length;
   const byRenewals = readable.filter((r) => r.biggestChannel === "renewals").length;
   const bySpend = readable.filter((r) => r.biggestChannel === "spend").length;
+  const noneReadable =
+    both > 0 && oneSided > 0
+      ? `On ${both === 1 ? "one of them" : `${both} of them`} nobody came on either night, and on ${oneSided === 1 ? "the other" : `the other ${oneSided}`} the crowd ran out before the door on one of the two nights. Either way a crowd that hit zero cannot show what moved underneath it.`
+      : oneSided > 0
+        ? `On ${oneSided === 1 ? "it" : "every one of them"} the price was above what anybody in this model would pay on ONE of the two nights, so that night's crowd was 0 — and a crowd of nobody cannot show what moved underneath it.`
+        : "On every one of them the price was above what anybody in this model would pay, so nobody came either night — and a crowd of nobody cannot show what moved underneath it.";
   const led =
     readable.length === 0
-      ? "On every one of them the price was above what anybody in this model would pay, so nobody came either night — and a crowd of nobody cannot show what moved underneath it."
+      ? noneReadable
       : bySpend === 0
         ? `For every one of the ${readable.length} that drew a crowd, the biggest carried-over thing was their own renewals.`
         : byRenewals === 0
           ? `For every one of the ${readable.length} that drew a crowd, the biggest carried-over thing was the event money they spent on Night 4, which lands on the next night.`
           : `${byRenewals} were moved most by their own renewals, ${bySpend} by the event money they spent on Night 4 — it lands on the next night, and this is the next night.`;
+  // W3-R10, third site: this said "priced high enough that nobody wanted in at
+  // all" about a desk that drew 670 people on Night 1.
   const flooredLine =
     floored > 0 && readable.length > 0
-      ? ` ${floored} priced high enough that nobody wanted in at all, so ${floored === 1 ? "its" : "their"} crowd cannot show what changed underneath it.`
+      ? ` ${
+          oneSided > 0 && both > 0
+            ? `${both} priced high enough that nobody wanted in on either night and ${oneSided} on one of the two nights`
+            : oneSided > 0
+              ? `${oneSided} priced high enough that on one of the two nights nobody wanted in at all`
+              : `${both} priced high enough that nobody wanted in at all`
+        }, so ${floored === 1 ? "its" : "their"} crowd cannot show what changed underneath it.`
       : "";
   return `${same.length} desk${same.length === 1 ? "" : "s"} charged the SAME price on Night 1 and Night 5. ${up} drew a bigger crowd the second time, ${down} drew a smaller one. Same day, same visitor, same price — everything that changed, they did on an earlier night. ${led}${flooredLine}`;
 }
@@ -3122,7 +3295,7 @@ function revenueCardBody(agg: FullHouseAggregate): string {
  * fans. Nothing here is written prose about a cause: `biggestChannel`,
  * `renewalsFans` and `carryFans` are computed in `repeatRowFor`.
  */
-function pathDependenceCardBody(repeat: readonly RepeatRow[], same: readonly RepeatRow[]): string {
+export function pathDependenceCardBody(repeat: readonly RepeatRow[], same: readonly RepeatRow[]): string {
   // gate-l1-econ-r3 R6: quote desks whose crowd can actually show the split.
   // A floored desk prints "0 then 0" and the verdict under it used to say the
   // biggest thing that changed was its renewals — self-refuting on the projector.
@@ -3130,6 +3303,10 @@ function pathDependenceCardBody(repeat: readonly RepeatRow[], same: readonly Rep
   const readable = pool.filter((r) => !r.floored);
   const quoted = (readable.length > 0 ? readable : pool).slice(0, 3);
   const allFloored = readable.length === 0 && pool.length > 0;
+  // W3-R10: `allFloored` says only that no row has a readable crowd on BOTH
+  // nights. Whether nobody came at all is a different fact, and the card printed
+  // the stronger one over crowds of 542 and 670.
+  const allBothFloored = allFloored && pool.every((r) => r.bothFloored);
   if (quoted.length === 0) {
     return `No desk in this room has played both Night 1 and Night 5 yet. ${RENEWALS_RULE_BOARD}`;
   }
@@ -3143,11 +3320,19 @@ function pathDependenceCardBody(repeat: readonly RepeatRow[], same: readonly Rep
   const opener =
     same.length > 0
       ? `${same.length} desk${same.length === 1 ? "" : "s"} charged the same price on both nights. Same day, same visiting club, same price — and ${
-          allFloored ? "at that price nobody walked in either time" : "a different crowd walked in"
+          allBothFloored
+            ? "at that price nobody walked in either time"
+            : allFloored
+              ? "on one of those two nights the price was above what anybody in this model would pay, so that night's crowd was zero"
+              : "a different crowd walked in"
         }.`
       : `${repeat.length} desk${repeat.length === 1 ? "" : "s"} played that card twice and every one of them changed the price too, so part of every gap below is the price.`;
   const verdict = allFloored
-    ? "Nothing carried over could show up in a crowd of nobody. That is the order of operations in this building: the price decides whether there is a crowd at all, and only then can anything you did earlier move it."
+    ? `${
+        allBothFloored
+          ? "Nothing carried over could show up in a crowd of nobody."
+          : "A crowd that fell to nobody on one of the two nights cannot show what carried over into it — the gap you can see is the price, not the past."
+      } That is the order of operations in this building: the price decides whether there is a crowd at all, and only then can anything you did earlier move it.`
     : renewalsLed === quoted.length
       ? "For every desk on this card the biggest thing that changed was its own renewals: four nights of their own pricing decided who walked in on the fifth."
       : renewalsLed === 0
