@@ -710,3 +710,128 @@ TT-R1, the blocking finding that produced this dissent (Night 5's NOW block read
 Night 4's card and contradicting the adjacent projector-mirror block), no longer
 reproduces. All items claimed fixed in the repair round were independently verified
 against the live rendered product, not builder notes.
+
+## W5 RE-AFFIRMATION AT FINAL HEAD
+
+Fresh-context stranger-teacher re-run of `m2l1-full-house` at the current head,
+port 4431, cold protocol: the only repo file read before the session was
+`runtime/scripts/e2e-m2l1.cjs` (mechanics only, assertions ignored). Everything
+below is observed on `/teach`, `/board` and real `/play` seats. Scope is
+re-affirmation of the surfaces that changed after the earlier TRANSFER: READY
+verdict, not re-litigation of the lesson.
+
+### What was exercised
+
+One full multi-desk session, LOBBY → COMPLETE. Six pairs joined at LOBBY, a
+seventh joined late at Night 3, five nights played with a real price spread
+($12-$90), event money on N3, the capacity option on N4, and one desk left
+unlocked at Night 5. Plus a second, empty-room rehearsal session (the prep path
+the console itself recommends).
+
+Changed surfaces, specifically:
+
+- **Counterfactual group pager.** 7 desks = 3 groups. Forward 1→2→3, back
+  3→2→1, back at group 1 (wraps to group 3, labelled), forward at group 3
+  (wraps to group 1, labelled). At every group the `#fhCfPager` label named
+  exactly the desks rendered beneath it (`Group 2 of 3 — Desk 3, Desk 4,
+  Desk 6` over rows `Desk 3 · New York Knicks $70 → $24`, `Desk 4 · Memphis
+  Grizzlies $12 → $20`, `Desk 6 · Memphis Grizzlies $16 → $40`). `#stage` did
+  not overflow at 1366x768 or 1920x1080 on any group. Teacher-side labels
+  pre-announce the destination group by desk name in both directions.
+- **Board fold / staging.** Every frame visited (LOBBY, HOOK, five PLAY nights,
+  Two Peaks release, REVEAL 0-7, ADAPT, CF x3 groups, SYNTHESIS x6, COMPLETE)
+  fitted both projector shapes. No overflow observed anywhere.
+- **Synthesis pager.** Six distinct cards, each computed from this class's own
+  numbers, forward through all six and wrapping to card 1; back labels name the
+  previous card. Exit question and dated sources land on card 6 only.
+- **Reveal-stage SAY lines.** All seven presses. The button names the next beat,
+  the seven-item list marks `on the projector` / `next press` and carries a
+  one-line direction per stage.
+- **Misclicks.** (a) Night 1 bell rung with 4/6 locked; (b) `Advance ▸` pressed
+  mid-PLAY — guarded by an explicit confirm: *"Night 1 of 5 is still open (0/0
+  desks locked in). This is not the night bell — advancing now settles tonight
+  for every desk AND ends the five-night window early, so 4 nights will never be
+  played. Continue?"*; dismissing kept PLAY, accepting jumped to REVEAL and
+  `Restore last good state` returned the room to PLAY Night 1 with the board
+  correct; (c) `Freeze` → board `FROZEN`, desks "Your teacher has frozen the
+  session. Hang tight.", `Unfreeze` restored the exact frame.
+- **Refresh.** `/board` reloaded mid-Night-2 and again on CF group 3 (group
+  preserved); a locked desk reloaded and came back locked with its recap; the
+  teacher console was re-opened from four separate browser processes across the
+  session and re-attached to the live room every time.
+
+Zero console errors across the whole session. The only errors logged were from
+deliberate probes: a 404 on a bogus board code and a 409 on a duplicate seat
+name.
+
+### New findings
+
+None blocking. Nothing found on the changed surfaces contradicts the earlier
+verdict; the paging work is legible, labelled and reversible from `/teach`
+alone.
+
+Non-blocking, highest severity first:
+
+1. **The teacher key is never shown, and the copy says it is.** On a wrong-key
+   reopen, `/teach` states: *"The key is per-session and is what stops anyone
+   else driving your room. It is shown once, on the console that created the
+   session."* The key appears nowhere in the console's text or HTML — it exists
+   only in `localStorage` (`bow-teach-session-key`). Same-profile resume works
+   (verified repeatedly). Reopen with the real key on a second device works
+   (verified). But a teacher who loses the profile — new device, cleared
+   storage, private window — cannot recover a live room, and the surface tells
+   them a key was shown that never was. Pre-existing, outside the changed
+   surfaces; recorded here because failure recovery is in this gate's scope.
+2. **A mistyped projector code hangs silently.** `/board` with no code gives an
+   excellent recovery card ("WHICH ROOM?" plus the code's location).
+   `/board?code=BOGUS1` sits on "CONNECTING… / reconnecting…" indefinitely with
+   no bad-code diagnosis — the likeliest projector failure in a real room.
+3. **REVEAL's `ASK` block is phase-level and premature.** Through all seven
+   stages it shows the Night-5 question ("Same night, same visitor. Why did more
+   people come the second time?"), while the per-stage prompts live in the
+   quieter seven-item list. A teacher reading the loud box at stage 1 asks a
+   Night-5 question four presses early.
+4. **The outside-sports line is one shared block, repeated under all six
+   synthesis cards** (flights/hotels, Tuesday movie tickets and popcorn, bake
+   sale in the rain, milk loss leader). Disclosed on `/teach` and in the button
+   tooltip, so it is not hidden knowledge — but staging made it read six times,
+   and it is not mapped per concept: under NIGHT 5 WAS NIGHT 1 (path
+   dependence) and TWO BOOKS, NO EXCHANGE RATE (two objectives, no common unit)
+   the four examples on screen are all pricing examples. The per-card outside-
+   sports leg of the synthesis chain rests on one generic line.
+5. **`/teach` never names the synthesis card currently on the projector.**
+   REVEAL says "Stage 3 of 7 — …"; SYNTHESIS's projector mirror lists all six
+   titles in order and the current card is only inferable from the Next/Back
+   button labels.
+6. **An auto-committed desk is invisible on `/teach` after the fact.** The
+   pre-bell copy explains AUTO clearly and the desk's own history row is
+   labelled, but after an early bell the teacher's desk mirror shows the
+   auto-committed desk like any other, and the later "Held the same price 3+
+   nights" watch-list counts an auto-committed night as a held price.
+7. **The pre-create rehearsal note speaks another lesson's vocabulary.** It
+   tells the teacher to rehearse PLAY with "the round step … the two-thirds
+   test … the week bell" and warns that advancing "would throw away the vote and
+   the whole season". Full House has a night bell and a Two Peaks release, no
+   vote, no rounds, no weeks. The warning it carries is true and important; the
+   named controls do not exist here.
+8. **The rehearsal path cannot rehearse the changed surfaces.** With zero desks,
+   COUNTERFACTUAL reads "NO DESK HAS PLAYED BOTH NIGHTS YET" and the synthesis
+   pager collapses to a disabled "One card only". Both are correct degradations
+   and the directing text describes what will appear, but a teacher preparing
+   tonight cannot practise the paging itself.
+9. Minor: the TIME CUT card still offers "Past minute 45? Drop the Night 4
+   capacity-option discussion" while the console is at COMPLETE.
+
+### Judgement
+
+The directing panel carries the class without hidden founder knowledge: NOW with
+a time budget, ON THE PROJECTOR RIGHT NOW mirroring the board the teacher is
+standing beside, WATCH FOR naming specific desks with what to do about them (in
+the red, held one price, turned away 500+, paid to open the building), ASK with
+model answers, DON'T EXPLAIN YET, an explicit TRIGGER for the Two Peaks release
+that hands the timing decision to the teacher with the tradeoff stated, and a
+TIME CUT. Intervention is desk-specific and actionable; reveals are manual;
+recovery paths land. The gaps above are copy and disclosure gaps, not gaps in
+the teacher's ability to run the period.
+
+TRANSFER: READY (at final head)
