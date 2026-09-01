@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `131:e4caee750f0f89d481037644c3b7839f1301f214500485cb00aaa7f3249232b2`  
-Updated: 2026-09-01T01:18:46.197Z
+Event head: `134:3bd07404e49e81083d4da669d41701d5b1859d856325d6fd22d77a754e2833d3`  
+Updated: 2026-09-01T01:19:02.668Z
 
 ## Founder intent
 
@@ -46,8 +46,9 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - visual-experience-director — lead-integrator — active — claude-opus-5
 - builder — lead-integrator — completed-with-concerns — claude-opus-5
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
-- player-gameplay-critic — lead-integrator — active — claude-opus-5
+- player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
+- builder — lead-integrator — active — claude-opus-5
 
 ## Required evidence
 
@@ -116,6 +117,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - teacher-l1-night5-now — teacher-transfer/blocking/open — Nights 4-5 share one NOW block (fullHouse.ts:2191, block2 = nightIndex>=3): on Night 5 the console instructs the teacher to read Night 4's card and watch for capacity buys, contradicting the adjacent projector mirror on the same screen. TRANSFER stays NOT READY on this alone; line-level fix. Also carried non-blocking: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. GATE_L1_TEACHER.md re-run section.
 - recheck2-l1-teacher-dissent — undefined/undefined/open — undefined
 - play-l1-repairs-below-fold — gameplay/blocking/open — Two of four claimed board repairs render below the projector fold at 1366x768/1600x900/1920x1080 (REVEAL-5 renewals rule top 764/895/1073; COUNTERFACTUAL scatter top 720/839/1007) while /teach tells the teacher the rule is on the screen now. Also blocking: N5-repeats-N1 felt delta shrunk to +170/-360 with the round-1 FULL HOUSE unreachable (same N5 economy the econ dissent flags for attribution — rebalance and attribute together); spend receipt reports payoff but never waste. GATE_L1_PLAY.md r2 section.
+- recheck2-l1-play-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
