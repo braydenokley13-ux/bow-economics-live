@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `123:5f607ce92419a9cce60eb6fbe7298771beba7fd2d693e5cdd51e0f1026febcac`  
-Updated: 2026-09-01T01:10:47.655Z
+Event head: `126:82d2563ca8a6521ea5f117622b0933f92e9f509083d3a2c11191df096ce4c995`  
+Updated: 2026-09-01T01:17:44.484Z
 
 ## Founder intent
 
@@ -88,6 +88,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-e2e-r2 — e2e — M2 L1 e2e with viewport-visibility assertions after round 2
 - m1-e2e-regression — e2e — M1 L3 e2e re-run after shared-file changes (theme.css, sessionService, static router)
 - gate-l1-econ-r2 — economic-truth-report — L1 econ re-check 2: independent exact DP reproduces P14 corners exactly (NY flat $1.22M/80% vs most-cash $2.36M/53%; 8-point convex frontier; buying every point costs 6.99%/6.00% of cash). R1-R3 met, season dissent DISCHARGED. NEW BLOCKING: N5-was-N1 copy credits renewals (-140 term) while N4-spend carry (+1200) dominates; HOUSE_RULES[1] false
+- gate-l1-teacher-r2 — teacher-transfer-report — L1 teacher re-run: all nine blocking repairs FIXED from the surface; HK-1 DISCHARGED (director script reached the product and exceeded the design). New blocking TT-R1: Nights 4-5 NOW block is Night 4's script verbatim (fullHouse.ts:2191 block2 = nightIndex>=3) contradicting the adjacent projector mirror. Non-blocking carried: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. TRANSFER: NOT READY on TT-R1 alone
 
 ## Claim ledger
 
@@ -107,10 +108,11 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - recheck-l1-econ-dissent — undefined/undefined/open — undefined
 - play-l1-renewals-unexplained — gameplay/blocking/open — The renewals undercut mechanism works in play (desk that filled the building five nights under plan fell 50%->25%) but NO student surface — dial, recap, seven reveal stages, ADAPT, COUNTERFACTUAL, six synthesis cards — ever states that undercutting the season-plan price costs renewals. Uninterpretable consequence = the exact failure class just repaired on the spend dial, relocated. Also blocking: COUNTERFACTUAL board's largest instruction tells the room to argue from dots that are not rendered in that phase. GATE_L1_PLAY.md re-rate section.
 - recheck-l1-play-dissent — undefined/undefined/open — undefined
-- teacher-l1-not-ready — teacher-transfer/blocking/open — Fresh-context teacher verdict NOT READY: /teach is a status board, not a director — identical render across LOBBY/HOOK/PLAY, projector context vanishing exactly when REVEAL begins, blind n/7 reveal counter with no names or lines, unhighlighted stalled desks. HK-1: the design doc's complete director script (NOW/ASK/DON'T EXPLAIN YET/TRIGGER/TIME CUT with per-phase minute budgets, DESIGN_C_FIRSTPRINCIPLES.md:253-270) reached the product as a single fragment, so every economics line must be invented live — hidden founder knowledge by construction. Nine blocking repairs in GATE_L1_TEACHER.md.
+- teacher-l1-not-ready — teacher-transfer/blocking/resolved — Fresh-context teacher verdict NOT READY: /teach is a status board, not a director — identical render across LOBBY/HOOK/PLAY, projector context vanishing exactly when REVEAL begins, blind n/7 reveal counter with no names or lines, unhighlighted stalled desks. HK-1: the design doc's complete director script (NOW/ASK/DON'T EXPLAIN YET/TRIGGER/TIME CUT with per-phase minute budgets, DESIGN_C_FIRSTPRINCIPLES.md:253-270) reached the product as a single fragment, so every economics line must be invented live — hidden founder knowledge by construction. Nine blocking repairs in GATE_L1_TEACHER.md.
 - gate-l1-teacher-dissent — undefined/undefined/open — undefined
 - econ-l1-n5-attribution — economic-truth/blocking/open — The round-2 retune made Night-4 spend carry the dominant Night-5 channel, but the NIGHT 5 WAS NIGHT 1 reveal still credits renewals: NY 14,142 -> 15,202 (+1,060) decomposes as renewals -140 vs carry +1,200, yet the copy attributes the change to the renewals book. HOUSE_RULES[1] ('nothing else moves it') is now false and contradicts rule 2. Narrow attribution/copy repair: decompose the N5 delta honestly on the reveal and fix the rule text. GATE_L1_ECON_R2.md.
 - recheck2-l1-econ-dissent — undefined/undefined/open — undefined
+- teacher-l1-night5-now — teacher-transfer/blocking/open — Nights 4-5 share one NOW block (fullHouse.ts:2191, block2 = nightIndex>=3): on Night 5 the console instructs the teacher to read Night 4's card and watch for capacity buys, contradicting the adjacent projector mirror on the same screen. TRANSFER stays NOT READY on this alone; line-level fix. Also carried non-blocking: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. GATE_L1_TEACHER.md re-run section.
 
 ## Latest gate
 

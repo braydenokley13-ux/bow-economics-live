@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T01:10:47.655Z",
+  "updatedAt": "2026-09-01T01:17:44.484Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -888,7 +888,8 @@
         "l1-tuning-r2",
         "l1-e2e-r2",
         "m1-e2e-regression",
-        "gate-l1-econ-r2"
+        "gate-l1-econ-r2",
+        "gate-l1-teacher-r2"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -909,7 +910,8 @@
         "teacher-l1-not-ready",
         "gate-l1-teacher-dissent",
         "econ-l1-n5-attribution",
-        "recheck2-l1-econ-dissent"
+        "recheck2-l1-econ-dissent",
+        "teacher-l1-night5-now"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1751,6 +1753,24 @@
       },
       "recordedAt": "2026-09-01T01:10:30.330Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-teacher-r2": {
+      "id": "gate-l1-teacher-r2",
+      "wave": 2,
+      "kind": "teacher-transfer-report",
+      "label": "L1 teacher re-run: all nine blocking repairs FIXED from the surface; HK-1 DISCHARGED (director script reached the product and exceeded the design). New blocking TT-R1: Nights 4-5 NOW block is Night 4's script verbatim (fullHouse.ts:2191 block2 = nightIndex>=3) contradicting the adjacent projector mirror. Non-blocking carried: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. TRANSFER: NOT READY on TT-R1 alone",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-teacher-r2--GATE_L1_TEACHER.md",
+      "sha256": "147b7f0244a62b43bc3d10e7ab36784b7a3ecf4186dd6d3427311b3020933ea5",
+      "size": 37131,
+      "metadata": {
+        "tags": [
+          "teacher-transfer",
+          "wave-2",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T01:17:44.019Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -2037,9 +2057,12 @@
         "gate-l1-teacher"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T00:13:09.399Z",
-      "actor": "teacher-transfer-critic"
+      "actor": "teacher-transfer-critic",
+      "resolution": "Cold re-run (five sessions, four viewports, all seven reveal beats, failure paths): all nine blocking repairs FIXED from the product surface; HK-1 discharged — the director script reached the product and exceeded the design. Critic's explicit line: DISSENT teacher-l1-not-ready: DISCHARGED. The remaining narrow defect (Night-5 NOW block) is tracked as dissent teacher-l1-night5-now.",
+      "resolvedAt": "2026-09-01T01:17:44.244Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l1-teacher-dissent": {
       "id": "gate-l1-teacher-dissent",
@@ -2072,6 +2095,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T01:10:47.655Z",
       "actor": "lead-integrator"
+    },
+    "teacher-l1-night5-now": {
+      "id": "teacher-l1-night5-now",
+      "wave": 2,
+      "category": "teacher-transfer",
+      "severity": "blocking",
+      "finding": "Nights 4-5 share one NOW block (fullHouse.ts:2191, block2 = nightIndex>=3): on Night 5 the console instructs the teacher to read Night 4's card and watch for capacity buys, contradicting the adjacent projector mirror on the same screen. TRANSFER stays NOT READY on this alone; line-level fix. Also carried non-blocking: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. GATE_L1_TEACHER.md re-run section.",
+      "evidenceIds": [
+        "gate-l1-teacher-r2"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T01:17:44.484Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "meetings": {},
@@ -2102,11 +2139,11 @@
     "agentsActivated": 25,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 42,
+    "evidenceRecorded": 43,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 123,
-  "eventHead": "5f607ce92419a9cce60eb6fbe7298771beba7fd2d693e5cdd51e0f1026febcac",
+  "eventCount": 126,
+  "eventHead": "82d2563ca8a6521ea5f117622b0933f92e9f509083d3a2c11191df096ce4c995",
   "warnings": []
 }
