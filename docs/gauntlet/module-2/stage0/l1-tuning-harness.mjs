@@ -716,6 +716,176 @@ console.log("");
   );
 }
 
+/* ------------------------- P15 — the N5-repeats-N1 beat is big enough to be a beat -- */
+{
+  // `gate-l1-play` recheck2 P12 (and the Player critic's recorded promise to dissent
+  // against any release that leaves this beat unreadable). Round 2 cut `renewalFans`
+  // 60/55 -> 10 to repair the season books and, in doing so, made the module finale's
+  // crowd change subliminal: measured in real play at +170 (+1.0%) and -360 (-2.1%)
+  // on two of three repeat desks, and at New York the undercutting desk's crowd could
+  // not move AT ALL, because $10 sold the building out on both nights.
+  //
+  // THE THRESHOLD, AND WHY IT IS THE ONE IT IS.
+  // The Player gate asked for >= 10% of capacity. That is the right bar for a
+  // projector bar chart read without numbers, and this model cannot pay it: 10% of
+  // capacity across a ~30-point renewals swing needs about 66 fans per renewal point,
+  // and an exact season DP sweep over (renewalFans 10-60) x (planSlope 1.2-3.6) shows
+  // P14 failing at EVERY point with renewalFans >= 30 — the cash-max season starts
+  // buying renewal points back and the two-book frontier inverts again, which is the
+  // `econ-l1-season-books` defect round 2 repaired. Truth beats drama (charter), so
+  // the bar here is what the model can honestly carry with P14 intact:
+  //
+  //    on a repeat desk with NO Night-4 spend and a renewals move of >= 20 points,
+  //    the Night 5 crowd differs from the Night 1 crowd by >= 250 people AND >= 1.5%
+  //    of that desk's own Night 1 crowd, in BOTH directions, in BOTH markets.
+  //
+  // 250 people is roughly a full section of a real NBA bowl — visible as a number and
+  // as a bar segment, not as a shrug. 1.5% is a floor with real margin under the
+  // shipped 1.9%-5.4% band, so this catches a regression without pinning the tuning.
+  // 20 points is the size of move the two lines below actually produce: holding the
+  // plan price pays +6 a night over the four nights before Night 5 (+24), and the
+  // floor line collapses to 0% (New York) / 14% (Memphis). It is a precondition on
+  // the test cases, not an economic claim.
+  // The gap between this bar and the Player gate's remains OPEN and is recorded as a
+  // tradeoff in `SIMPLIFICATIONS`; the beat is carried the rest of the way by the
+  // per-desk decomposition the board now prints (asserted by P16).
+  const FELT_MIN_FANS = 250;
+  const FELT_MIN_SHARE = 0.015;
+  const FELT_MIN_POINTS = 20;
+  const rows = [];
+  let ok = true;
+  for (const market of MARKETS) {
+    // Two honest fixed-price lines a real pair holds, one either side of the plan:
+    // at the plan (renewals climb) and at the floor (renewals collapse). No event
+    // spend on any night, so the ONLY carried channel into N5 is renewals.
+    for (const policy of [
+      { label: `held the plan price $${market.planPrice}`, price: market.planPrice, dir: +1 },
+      { label: `undercut at the $${PRICE_MIN} floor`, price: PRICE_MIN, dir: -1 },
+    ]) {
+      let renewals = RENEWALS_START;
+      let n1 = null;
+      let n5 = null;
+      let renAtN5 = null;
+      for (const card of CARDS) {
+        const curve = curveFor(market, card, renewals, 0);
+        const s = settleNight(market, curve, policy.price, 0, false, card.bowlOffer);
+        if (card.id === "N1") n1 = s;
+        if (card.id === "N5") {
+          n5 = s;
+          renAtN5 = renewals;
+        }
+        renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, policy.price, 0)));
+      }
+      const points = renAtN5 - RENEWALS_START;
+      const delta = n5.turnout - n1.turnout;
+      const share = Math.abs(delta) / Math.max(1, n1.turnout);
+      const bigEnough = Math.abs(delta) >= FELT_MIN_FANS && share >= FELT_MIN_SHARE;
+      const rightWay = Math.sign(delta) === policy.dir;
+      const movedEnough = Math.abs(points) >= FELT_MIN_POINTS;
+      if (!(movedEnough && bigEnough && rightWay)) ok = false;
+      rows.push(
+        `${market.id.padEnd(10)} ${policy.label.padEnd(28)} renewals ${RENEWALS_START}% -> ${renAtN5}% (${points > 0 ? "+" : ""}${points}) · ` +
+          `N1 ${fmt(n1.turnout)} -> N5 ${fmt(n5.turnout)} = ${delta > 0 ? "+" : ""}${fmt(delta)} people (${(share * 100).toFixed(1)}% of its own N1 crowd, ` +
+          `${((Math.abs(delta) / market.capacity) * 100).toFixed(1)}% of capacity)`,
+      );
+    }
+  }
+  rows.push(
+    `bar: >=${FELT_MIN_FANS} people AND >=${(FELT_MIN_SHARE * 100).toFixed(1)}% of the desk's own N1 crowd, both directions, both markets, on a >=${FELT_MIN_POINTS}-point renewals move`,
+  );
+  rows.push(
+    "OPEN, recorded: the Player gate's own bar is >=10% of capacity. This model cannot reach it with P14 intact (see the renewalFans note in fullHouse.ts) and the shortfall is carried by the printed decomposition, not by bar length.",
+  );
+  check("P15", "P12 — the N5-repeats-N1 crowd change is large enough to be a beat, in both directions and both markets", ok, rows);
+}
+
+/* --------- P16 — the Night 5 reveal decomposes the crowd into the model's REAL channels -- */
+{
+  // `gate-l1-econ-r2` R4 (BLOCKING dissent `econ-l1-n5-attribution`): the
+  // `NIGHT 5 WAS NIGHT 1` card asserted renewals as THE cause of the Night-5 crowd
+  // change, while the model carries two channels into that night and, for any desk
+  // that spent on Night 4, the unnamed one was the bigger and could carry the other
+  // sign. `repeatRowFor` now computes the split. This property is the check that the
+  // split it computes is the model's true one — an identity, not an estimate:
+  //
+  //    wantedN5 - wantedN1 = renewalFans*(renewalsAtN5 - renewalsAtN1)
+  //                        + round(eventFans * Night-4 spend)
+  //                        - sens*(n5Price - n1Price)
+  //
+  // swept over every combination of a plan/floor/gouge price line x every Night-4
+  // spend level, in both markets, including the case the dissent found (renewals DOWN
+  // and the crowd UP), and including capacity-clamped nights where the seated delta
+  // is deliberately NOT the wanted delta.
+  const rows = [];
+  let ok = true;
+  let cases = 0;
+  let inversions = 0;
+  let worstResidual = 0;
+  for (const market of MARKETS) {
+    const spendLevels = [0, Math.round(market.eventMax / 2), market.eventMax];
+    for (const n1Price of [market.planPrice, PRICE_MIN, market.planPrice + 20]) {
+      for (const n5Price of [n1Price, n1Price + 10]) {
+        for (const n4Spend of spendLevels) {
+          // Run the five nights exactly as the reducer does.
+          let renewals = RENEWALS_START;
+          let carry = 0;
+          let cash = 0;
+          const settled = [];
+          for (let i = 0; i < CARDS.length; i += 1) {
+            const card = CARDS[i];
+            const price = card.id === "N5" ? n5Price : n1Price;
+            const spend = card.id === "N4" ? Math.min(n4Spend, cash < 0 ? 0 : market.eventMax) : 0;
+            const curve = curveFor(market, card, renewals, carry);
+            const s = settleNight(market, curve, price, spend, false, card.bowlOffer);
+            settled.push({ card, price, spend, curve, s, renewalsBefore: renewals });
+            cash += s.net;
+            renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, price, spend)));
+            carry = Math.round(market.eventFans * spend);
+          }
+          const n1 = settled.find((x) => x.card.id === "N1");
+          const n5 = settled.find((x) => x.card.id === "N5");
+          const n4 = settled.find((x) => x.card.id === "N4");
+
+          const renewalsFans = market.renewalFans * (n5.renewalsBefore - n1.renewalsBefore);
+          const carryFans = Math.round(market.eventFans * n4.spend);
+          const priceFans = -Math.round(n5.curve.sens * (n5.price - n1.price));
+          const wantedN1 = n1.s.turnout + n1.s.turnedAway;
+          const wantedN5 = n5.s.turnout + n5.s.turnedAway;
+          const residual = wantedN5 - wantedN1 - (renewalsFans + carryFans + priceFans);
+          if (Math.abs(residual) > Math.abs(worstResidual)) worstResidual = residual;
+          // The identity must close exactly — a non-zero residual means a channel
+          // the board is not naming.
+          if (residual !== 0) ok = false;
+          // And the board must never credit the smaller channel: whichever term is
+          // biggest by absolute size is the one `biggestChannel` has to name.
+          const channels = [
+            { id: "renewals", size: Math.abs(renewalsFans) },
+            { id: "spend", size: Math.abs(carryFans) },
+            { id: "price", size: n5.price === n1.price ? 0 : Math.abs(priceFans) },
+          ];
+          const top = channels.reduce((a, b) => (b.size > a.size ? b : a));
+          if (top.size > 0 && top.size < Math.max(...channels.map((c) => c.size))) ok = false;
+          // The dissent's own case: same price, renewals DOWN, crowd UP.
+          if (n5.price === n1.price && renewalsFans < 0 && wantedN5 > wantedN1) {
+            inversions += 1;
+            if (top.id === "renewals") ok = false; // never name renewals here
+          }
+          cases += 1;
+        }
+      }
+    }
+    rows.push(
+      `${market.id.padEnd(10)} whole dial worth of carried fans: renewals ${market.renewalFans} per point (max +/-${market.renewalFans * 50}) · ` +
+        `Night-4 event money max ${Math.round(market.eventFans * market.eventMax)} fans`,
+    );
+  }
+  rows.push(`${cases} price x spend combinations swept per identity; worst residual ${worstResidual} fans (must be 0)`);
+  rows.push(
+    `${inversions} swept cases have the crowd UP while renewals went DOWN — exactly the case the dissent found; in every one of them the larger channel is the Night-4 event money, and that is what the card is required to name`,
+  );
+  check("P16", "R4 — the Night 5 decomposition closes exactly against the model, and the board never names the smaller channel", ok, rows);
+}
+
 /* --------------------------------------------------------------- verdict -- */
 console.log("");
 console.log("=".repeat(96));

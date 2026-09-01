@@ -907,23 +907,35 @@ async function sendControl(body: Record<string, unknown>): Promise<void> {
 }
 
 $("create").addEventListener("click", () => void createSession().catch((e) => (statusEl.textContent = String(e))));
-$("btnAdvance").addEventListener("click", () => {
+/**
+ * The "you are about to skip real content" guard, shared by `Advance ▸` and
+ * `Jump to REVEAL`.
+ *
+ * `gate-l1-teacher` recheck2 gap 3 / TT-R2: `Jump to REVEAL` sits immediately
+ * beside `Advance ▸` and was a silent one-click end to the game — pressed at
+ * Night 2 with three nights unplayed it jumped straight to REVEAL with no
+ * dialog, no tooltip and no warning. It consumes exactly what advancing out of
+ * PLAY consumes, so it asks exactly what advancing asks.
+ */
+function confirmSkippingContent(via: "advance" | "reveal"): boolean {
   // B1 repair (VERIFY_L2.md BLOCKER): same confirm() idiom btnEnd already uses below — no new dialog
   // framework. The economics stay correct either way (the runtime auto-resolves whatever's pending), this is
   // purely "you're about to skip real content" — the staged reveal theater for L2, or up to three whole
   // unplayed signing days for L3.
   const w = advanceWarnState;
+  const lead = via === "reveal" ? "Jump to REVEAL. " : "";
   if (w?.kind === "td-reveal" && w.revealedCount < w.totalTargets) {
     const remaining = w.totalTargets - w.revealedCount;
-    const ok = confirm(
-      `${remaining} of ${w.totalTargets} target${w.totalTargets === 1 ? "" : "s"} unrevealed — advancing resolves ${remaining === 1 ? "it" : "them"} automatically, without the staged reveal. Continue?`,
+    return confirm(
+      `${lead}${remaining} of ${w.totalTargets} target${w.totalTargets === 1 ? "" : "s"} unrevealed — ${via === "reveal" ? "this" : "advancing"} resolves ${remaining === 1 ? "it" : "them"} automatically, without the staged reveal. Continue?`,
     );
-    if (!ok) return;
   } else if (w?.kind === "fh-play") {
     const remaining = w.nightCount - w.nightNumber;
     const unlocked = Math.max(0, w.deskCount - w.lockedCount);
-    const ok = confirm(
-      `Night ${w.nightNumber} of ${w.nightCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the night bell — advancing now settles tonight for every desk AND ends the five-night window early, so ${
+    return confirm(
+      `${lead}Night ${w.nightNumber} of ${w.nightCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the night bell — ${
+        via === "reveal" ? "this button" : "advancing now"
+      } settles tonight for every desk AND ends the five-night window early, so ${
         remaining === 1 ? "1 night" : `${remaining} nights`
       } will never be played.${
         unlocked > 0
@@ -933,17 +945,25 @@ $("btnAdvance").addEventListener("click", () => {
           : ""
       } Continue?`,
     );
-    if (!ok) return;
   } else if (w?.kind === "fa-play") {
     const remainingDays = w.windowDays - w.day;
-    const ok = confirm(
-      `Day ${w.day} of ${w.windowDays} is still open (${w.actedCount}/${w.claimedCount} teams have acted). Advancing now closes today's day automatically AND ends the signing window early — ${remainingDays} day${remainingDays === 1 ? "" : "s"} will never happen. Continue?`,
+    return confirm(
+      `${lead}Day ${w.day} of ${w.windowDays} is still open (${w.actedCount}/${w.claimedCount} teams have acted). ${
+        via === "reveal" ? "This button" : "Advancing now"
+      } closes today's day automatically AND ends the signing window early — ${remainingDays} day${remainingDays === 1 ? "" : "s"} will never happen. Continue?`,
     );
-    if (!ok) return;
   }
+  return true;
+}
+
+$("btnAdvance").addEventListener("click", () => {
+  if (!confirmSkippingContent("advance")) return;
   void sendControl({ type: "advance" });
 });
-$("btnReveal").addEventListener("click", () => void sendControl({ type: "reveal" }));
+$("btnReveal").addEventListener("click", () => {
+  if (!confirmSkippingContent("reveal")) return;
+  void sendControl({ type: "reveal" });
+});
 $("btnPause").addEventListener("click", () => {
   const paused = $("btnPause").textContent === "Unpause";
   void sendControl({ type: paused ? "unpause" : "pause" });

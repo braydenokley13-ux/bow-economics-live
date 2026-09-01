@@ -1765,6 +1765,32 @@ body {
   line-height: 1.45;
   color: var(--ink-muted);
 }
+/* gate-l1-play R6: the after-the-fact ruling on last night's event money. It is
+   a settlement line, not a footnote — a desk that burned $120,000 on a sold-out
+   night has to be able to see that it burned it. */
+.fh-spend-verdict {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-secondary);
+  background: rgba(255, 255, 255, 0.03);
+}
+.fh-spend-verdict.waste {
+  border-color: rgba(255, 154, 164, 0.45);
+  color: #ffb3ba;
+  background: rgba(255, 154, 164, 0.07);
+}
+.fh-spend-verdict.part {
+  border-color: rgba(244, 185, 66, 0.4);
+  color: var(--ink-primary);
+}
+.fh-spend-verdict.paid {
+  border-color: rgba(18, 148, 106, 0.45);
+  color: var(--ink-primary);
+}
 
 .fh-market-facts {
   display: flex;

@@ -180,6 +180,20 @@
   .fh-compact .fh-books-row { margin-top: 1vh; }
 
   .fh-nights-up { font-size: 1.5vw; letter-spacing: .1em; color: var(--ink-secondary); margin-top: .6vh; }
+  /* `play-l1-repairs-below-fold`: the renewals rule owns its own reveal stage and
+     sits above the chart, so it is on the projector without a scroll. */
+  .fh-reveal-rule { max-width: 84vw; font-size: 1.45vw; line-height: 1.35; color: var(--ink-primary);
+    background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.45); border-radius: 14px;
+    padding: 1.2vh 1.8vw; margin-top: 1vh; text-align: left; }
+  /* COUNTERFACTUAL, same dissent: the scatter the prompt in the largest type on
+     this board tells the room to read measured a TOP of 720/839/1007 in viewports
+     of 768/900/1080 — entirely below the fold — because it was stacked under the
+     per-desk repeat rows. Rows and chart now share the width instead of the height. */
+  .fh-cf-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.6vw;
+    width: 92vw; align-items: start; margin-top: 1vh; }
+  .fh-cf-grid .fh-repeat-board { width: 100%; margin-top: 0; }
+  .fh-cf-grid .scatter-wrap { width: 100%; margin-top: 0; }
+  .fh-cf-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
   .fh-sources { margin-top: 2vh; max-width: 82vw; display: flex; flex-direction: column; gap: .4vh; }
   .fh-sources div { font-size: .85vw; color: var(--ink-muted); opacity: .85; line-height: 1.4; }
 </style>

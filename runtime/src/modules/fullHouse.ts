@@ -111,6 +111,24 @@ export type Market = {
    * the two books never traded off at the scale the COUNTERFACTUAL card
    * reports. Cut to 10: renewals still move who shows up on the repeat card
    * (harness P6), but they are next season's money, not this season's.
+   *
+   * ROUND 3 (`gate-l1-play` recheck2 P12 + `gate-l1-econ-r2`): 10 fans a point
+   * made the N5-repeats-N1 beat subliminal — measured in real play at +170
+   * (+1.0%) and -360 (-2.1%) on two of three repeat desks, and at New York the
+   * undercutting desk's punishment could not land at all, because $10 sold the
+   * building out on BOTH nights. Raised to 25 with `planSlope` 1.8 -> 3.6 to pay
+   * for it. THE CONFLICT IS REAL AND THIS IS THE CEILING, measured by an exact
+   * season DP over (renewalFans 10-60) x (planSlope 1.2-3.6), both markets:
+   * every point at renewalFans >= 30 fails P14 at every planSlope tried,
+   * because a renewal point becomes worth more future cash than the cheapest
+   * points on the frontier cost, and the cash-max season starts buying them
+   * back — which is exactly the `econ-l1-season-books` defect round 2 repaired.
+   * The Player gate's ask (a repeat delta >= 10% of capacity) needs about 66
+   * fans a point; P14 breaks at 30. Truth over drama, per charter: 25 is the
+   * largest value at which all four P14 bars still hold, it roughly triples the
+   * felt delta, and the beat is carried the rest of the way by the printed
+   * per-desk decomposition (`repeatRowFor`) rather than by bar length. Recorded
+   * as a tradeoff in `SIMPLIFICATIONS` and asserted by harness P15.
    */
   readonly renewalFans: number;
   /** In-arena spend per fan (hidden pre-lock; revealed only as a settled dollar total). */
@@ -130,6 +148,13 @@ export type Market = {
    * plan holder. Raised from 0.6 to 1.8 by R1: at 0.6 the gouge arm could not
    * outweigh the tent peak plus the bargain bonus anywhere a cash-maximising
    * desk would price, so a maximising season lost nothing on the second book.
+   *
+   * Raised again 1.8 -> 3.6 in round 3, as the price of `renewalFans` 10 -> 25:
+   * with a renewal point worth 2.5x more future crowd, the cash-max season
+   * shades its prices down to keep points, and only a steeper gouge arm keeps
+   * the pure-cash line far enough below the flat plan for P14's four bars to
+   * hold. At the shipped pair: flat 80% vs cash-max 65% in BOTH markets,
+   * against a 15-point bar.
    */
   readonly planSlope: number;
   /**
@@ -172,11 +197,11 @@ export const MARKETS: readonly Market[] = [
     drawSens: 1.289,
     weekendSens: -25,
     tvSens: { none: 0, local: 15, national: 45 },
-    renewalFans: 10,
+    renewalFans: 25,
     ancillary: 18,
     eventFans: 0.01,
     eventRenewalDollars: 60_000,
-    planSlope: 1.8,
+    planSlope: 3.6,
     premiumSpan: 92,
     capacityNote: "listed basketball capacity 19,812 · 2025-26",
   },
@@ -199,11 +224,11 @@ export const MARKETS: readonly Market[] = [
     drawSens: 2.06,
     weekendSens: -30,
     tvSens: { none: 0, local: 18, national: 55 },
-    renewalFans: 10,
+    renewalFans: 25,
     ancillary: 12,
     eventFans: 0.016,
     eventRenewalDollars: 30_000,
-    planSlope: 1.8,
+    planSlope: 3.6,
     premiumSpan: 90,
     capacityNote: "modeled seat count · published figures range 16,667-18,119",
   },
@@ -281,7 +306,12 @@ export type NightCard = {
   readonly draw: number;
   readonly visitor: string;
   readonly tv: TvKind;
-  /** Everything that will move tonight's crowd is on this card. Nothing else moves it (R7). */
+  /**
+   * Everything NEW about tonight is on this card (R7). Two carried terms are
+   * not: the desk's own renewals and last night's event spend, both of which
+   * enter `curveFor`'s base and are disclosed in `HOUSE_RULES`, `renewalRule`
+   * and `spendRule` on the student's own screen (gate-l1-econ-r2 N-g).
+   */
   readonly notes: readonly string[];
   /** N4 only: the one-night capacity option. */
   readonly bowlOffer: boolean;
@@ -885,6 +915,26 @@ export type TwoPeaks = {
 /** Sampling step for the Two Peaks money view — fine enough to show both peaks, coarse enough to project. */
 const MONEY_SERIES_STEP = 4;
 
+/**
+ * `gate-l1-econ-r2` R4 (BLOCKING dissent `econ-l1-n5-attribution`): this row
+ * carried the two crowds and the two renewals figures and nothing else, so the
+ * board and the `NIGHT 5 WAS NIGHT 1` synthesis card attributed the whole
+ * Night-5 crowd change to renewals — while, for any desk that spent on Night 4,
+ * the unnamed carry channel was the larger one and could point the other way
+ * (measured: a New York desk at 14,142 -> 15,202 with renewals DOWN 14 points).
+ *
+ * Night 5 replays Night 1's card exactly, so `curveFor`'s `sens` and every card
+ * term are identical between the two nights. The whole difference in the number
+ * of people who WANTED in is therefore closed-form, with no residual:
+ *
+ *   wantedN5 - wantedN1 = renewalFans * (renewalsAtN5 - renewalsAtN1)   [renewals]
+ *                       + carryFans (= eventFans * Night-4 spend)        [last night's money]
+ *                       - sens * (n5Price - n1Price)                     [the desk's own price]
+ *
+ * and what the building actually SEATS can differ from that again, when either
+ * night hit the capacity clamp. All four terms are carried here as data, so no
+ * copy anywhere has to guess which one caused the crowd.
+ */
 export type RepeatRow = {
   deskHandle: string;
   marketId: MarketId;
@@ -895,6 +945,24 @@ export type RepeatRow = {
   renewalsStart: number;
   renewalsAtN5: number;
   samePrice: boolean;
+  /** Fans of demand base from the desk's own renewals move. Signed. */
+  renewalsFans: number;
+  /** Fans of demand base carried in from Night 4's event spend. Never negative. */
+  carryFans: number;
+  /** Dollars the desk put into Night 4. */
+  n4Spend: number;
+  /** Fans of demand base from the desk changing its own price. Signed; 0 when `samePrice`. */
+  priceFans: number;
+  /** People who WANTED in on N5 minus people who wanted in on N1 — the sum of the three channels. */
+  wantedDelta: number;
+  /** People who actually got in: N5 turnout minus N1 turnout. Differs from `wantedDelta` under the clamp. */
+  seatedDelta: number;
+  /** True when either night was capacity-clamped, so the seated delta is not the wanted delta. */
+  clamped: boolean;
+  /** The name of the biggest channel behind this row: "renewals", "spend", "price" or "none". */
+  biggestChannel: "renewals" | "spend" | "price" | "none";
+  /** One projector-length sentence, computed from the four terms above. */
+  channelLine: string;
 };
 
 export type MarketBooks = {
@@ -927,6 +995,76 @@ function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 1 ? sorted[mid]! : Math.round((sorted[mid - 1]! + sorted[mid]!) / 2);
+}
+
+/**
+ * R4's decomposition, computed — never written. Every number below comes out of
+ * the two settled nights and the market's own published conversion rates
+ * (`renewalFans` is the "10 fans per renewal point" the SIMPLIFICATIONS ledger
+ * states; `eventFans` is the `spendRule` the pair read before they spent).
+ */
+export function repeatRowFor(
+  desk: Desk,
+  market: Market,
+  n1: SettledNight,
+  n5: SettledNight,
+  n4Spend: number,
+): RepeatRow {
+  const renewalPoints = n5.renewalsBefore - n1.renewalsBefore;
+  const renewalsFans = market.renewalFans * renewalPoints;
+  const carryFans = Math.round(market.eventFans * n4Spend);
+  // N5 replays N1's card, so `sens` is the same number on both nights and the
+  // price term is exact rather than estimated. It is 0 for the desks the card
+  // quotes (same price both nights).
+  const priceFans = -Math.round(n5.hidden.sens * (n5.price - n1.price));
+  const wantedN1 = n1.settlement.turnout + n1.settlement.turnedAway;
+  const wantedN5 = n5.settlement.turnout + n5.settlement.turnedAway;
+  const wantedDelta = wantedN5 - wantedN1;
+  const seatedDelta = n5.settlement.turnout - n1.settlement.turnout;
+  const clamped = n1.settlement.soldOut || n5.settlement.soldOut;
+  const samePrice = n1.price === n5.price;
+
+  const channels: { id: "renewals" | "spend" | "price"; size: number }[] = [
+    { id: "renewals", size: Math.abs(renewalsFans) },
+    { id: "spend", size: Math.abs(carryFans) },
+    { id: "price", size: samePrice ? 0 : Math.abs(priceFans) },
+  ];
+  const top = channels.reduce((a, b) => (b.size > a.size ? b : a));
+  const biggestChannel = top.size === 0 ? "none" : top.id;
+
+  const say = (n: number): string => `${n > 0 ? "+" : ""}${n.toLocaleString()}`;
+  const parts: string[] = [];
+  if (renewalsFans !== 0) parts.push(`renewals ${say(renewalsFans)}`);
+  if (carryFans !== 0) parts.push(`Night 4's $${n4Spend.toLocaleString()} of event money ${say(carryFans)}`);
+  if (!samePrice && priceFans !== 0) parts.push(`their own price change ${say(priceFans)}`);
+  let channelLine: string;
+  if (parts.length === 0) {
+    channelLine = "nothing carried over: same renewals, no event money, same price";
+  } else if (clamped && seatedDelta !== wantedDelta) {
+    channelLine = `wanted in ${say(wantedDelta)} (${parts.join(", ")}) · seats only allowed ${say(seatedDelta)}`;
+  } else {
+    channelLine = `${say(wantedDelta)} people, and that is ${parts.join(" and ")}`;
+  }
+  return {
+    deskHandle: deskHandle(desk),
+    marketId: desk.marketId,
+    n1Price: n1.price,
+    n1Turnout: n1.settlement.turnout,
+    n5Price: n5.price,
+    n5Turnout: n5.settlement.turnout,
+    renewalsStart: n1.renewalsBefore,
+    renewalsAtN5: n5.renewalsBefore,
+    samePrice,
+    renewalsFans,
+    carryFans,
+    n4Spend,
+    priceFans,
+    wantedDelta,
+    seatedDelta,
+    clamped,
+    biggestChannel,
+    channelLine,
+  };
 }
 
 export function computeAggregate(state: FullHouseState): FullHouseAggregate {
@@ -975,20 +1113,13 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
 
   const repeatCard: RepeatRow[] = [];
   for (const desk of desks) {
+    const market = marketOf(desk);
     const n1 = desk.nights.find((n) => n.cardId === "N1");
     const n5 = desk.nights.find((n) => n.cardId === "N5");
     if (!n1 || !n5) continue;
-    repeatCard.push({
-      deskHandle: deskHandle(desk),
-      marketId: desk.marketId,
-      n1Price: n1.price,
-      n1Turnout: n1.settlement.turnout,
-      n5Price: n5.price,
-      n5Turnout: n5.settlement.turnout,
-      renewalsStart: n1.renewalsBefore,
-      renewalsAtN5: n5.renewalsBefore,
-      samePrice: n1.price === n5.price,
-    });
+    const n5Index = desk.nights.indexOf(n5);
+    const nightBeforeN5 = n5Index > 0 ? desk.nights[n5Index - 1] : undefined;
+    repeatCard.push(repeatRowFor(desk, market, n1, n5, nightBeforeN5?.spend ?? 0));
   }
 
   const books: MarketBooks[] = MARKETS.map((market) => {
@@ -1191,7 +1322,12 @@ export const OBJECTIVE_COPY =
 
 export const HOUSE_RULES: readonly string[] = [
   "Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.",
-  "Everything that will move tonight's crowd is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Nothing else moves it.",
+  // gate-l1-econ-r2 N-g: this used to end "Nothing else moves it", which the
+  // rule two lines below it contradicted and the model refutes — carried
+  // renewals move tonight's base by up to 500 fans and last night's event money
+  // by up to 1,200. Both were disclosed elsewhere on the same screen; the
+  // sentence saying they did not exist was the only false one.
+  "Everything NEW about tonight is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Two things you already did come with you as well — your RENEWALS, and the event money you spent LAST night. Nothing else moves tonight's crowd; there is no luck in this game.",
   "Money you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it. It also nudges RENEWALS up a little on the night you spend it: the whole dial is worth about two points.",
   "Your building's bill is due every night whether 200 people come or 19,000 do.",
   // gate-l1-econ-r1 N-a and N-b, both measured: the bargain arm peaks at +12 on
@@ -1242,9 +1378,14 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     risk: "A student may think real demand is a straight line, or that a club knows its own line. Neither is true — real clubs estimate it and are often wrong.",
   },
   {
-    what: "Renewals move the crowd, but only a little (10 fans per renewal point).",
-    why: "Renewals ARE partly next year's ticket demand, so the channel is real. It is deliberately small: when it was large, chasing renewals also maximised cash and the two books stopped trading off at all.",
-    risk: "A student may conclude renewals barely matter. They matter enormously — they matter NEXT season, which is outside these five nights, and that is exactly why the two books do not add up.",
+    what: "Renewals move the crowd, but only a little (25 fans per renewal point), so Night 5's crowd change is small next to the size of the building.",
+    why: "Renewals ARE partly next year's ticket demand, so the channel is real. Its size is capped by an honesty constraint, not a design taste: measured over the whole model, above about 30 fans a point a renewal point starts being worth more future cash than it costs to buy, the cash-maximising season starts chasing renewals as well, and the two books stop trading off at all. 25 is the largest setting at which they still do. We chose the true tradeoff over the louder moment.",
+    risk: "The Night 5 crowd change may be too small to read off the projector without the numbers — so read the numbers. The Night 1 vs Night 5 board prints each desk's own split (how many people came from renewals, how many from the event money it spent on Night 4). Do not let the room conclude renewals barely matter: they matter enormously, NEXT season, which is outside these five nights, and that is exactly why the two books do not add up.",
+  },
+  {
+    what: "Two different things you did on earlier nights arrive on tonight's crowd: your renewals, and last night's event money.",
+    why: "Both are real building economics — a season-ticket base is who shows up before anyone buys a walk-up ticket, and a promotion sells the NEXT night, not the one you paid for it on.",
+    risk: "They are easy to confuse for one another, and the event-money channel can be the bigger one on Night 5. Never attribute a Night-5 crowd change to renewals without checking the desk's own split on the board — the model prints both.",
   },
   {
     what: "Season-ticket holders reward a strong walk-up price on a big night.",
@@ -1326,8 +1467,42 @@ export const COMPLETE_COPY =
 
 /* ------------------------------------------------------- view builders -- */
 
+/**
+ * `gate-l1-play` recheck2 R6 / P2 second clause (BLOCKING, carried): the
+ * night-spend receipt was a forward-looking conditional — "about 960 extra
+ * people into tonight's building, IF there is room for them" — and nothing on
+ * any surface ever came back to say whether there was. Two of one desk's four
+ * landed spends went onto nights that sold out, so $120,000 bought nothing and
+ * the room was never told.
+ *
+ * This settles it, from the model rather than from copy. The carried fans are
+ * already inside the night's demand base; take them back out and re-clamp
+ * against the seats that were open, and the difference is exactly how many of
+ * them the building could actually seat.
+ */
+export function spendVerdictFor(
+  market: Market,
+  night: SettledNight,
+  carryFansIn: number,
+): { carryFans: number; seated: number; wasted: number; label: string } | null {
+  if (carryFansIn <= 0) return null;
+  const spend = Math.round(carryFansIn / market.eventFans);
+  const wanted = night.settlement.turnout + night.settlement.turnedAway;
+  const seatedWithout = Math.min(night.settlement.seatsOpen, Math.max(0, wanted - carryFansIn));
+  const seated = night.settlement.turnout - seatedWithout;
+  const wasted = carryFansIn - seated;
+  const dollars = `$${spend.toLocaleString()}`;
+  const label =
+    seated <= 0
+      ? `Last night's ${dollars} bought nothing. It brought about ${carryFansIn.toLocaleString()} more people to the door — and the building sold out anyway, so not one of them got a seat you had not already sold.`
+      : wasted > 0
+        ? `Last night's ${dollars} bought about ${seated.toLocaleString()} extra people through the door. The other ${wasted.toLocaleString()} could not get in — the building ran out.`
+        : `Last night's ${dollars} bought about ${seated.toLocaleString()} extra people, and every one of them got in and paid tonight's price.`;
+  return { carryFans: carryFansIn, seated, wasted, label };
+}
+
 /** The ONLY function that turns a settled night into something a view may carry. `hidden` never crosses it. */
-function viewNight(night: SettledNight, market: Market) {
+function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
   return {
     cardId: night.cardId,
     label: CARD_BY_ID.get(night.cardId)?.label ?? night.cardId,
@@ -1360,6 +1535,8 @@ function viewNight(night: SettledNight, market: Market) {
       night.settlement.turnedAway > 0
         ? `${night.settlement.turnedAway.toLocaleString()} people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it.`
         : null,
+    // R6/P2: was last night's event money confirmed or refuted by this night?
+    spendVerdict: spendVerdictFor(market, night, carryFansIn),
     marketId: market.id,
   };
 }
@@ -1512,7 +1689,11 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       }
       const market = marketOf(desk);
       const identity = deskIdentity(desk);
-      const history = desk.nights.map((n) => viewNight(n, market));
+      // Each night's carried fans come from the night before it — the same
+      // `carryFansFor` conversion the pair was shown before it spent (R6/P2).
+      const history = desk.nights.map((n, i) =>
+        viewNight(n, market, i > 0 ? Math.round(market.eventFans * desk.nights[i - 1]!.spend) : 0),
+      );
       switch (phase) {
         case "LOBBY":
           return {
@@ -2293,7 +2474,16 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
           "Between presses, say one sentence and stop. The line for each stage is under the button.",
           "Let the room look. Silence here is working time, not dead air.",
         ],
-        ask: [{ q: "Same night, same visitor. Why did more people come the second time?", answer: "Their own renewals. Desks that kept their season-ticket holders walked into Night 5 with a bigger base than they had on Night 1 — same card, different building underneath it." }],
+        // R4: this answer named renewals as THE cause. Two carried channels feed
+        // Night 5, and the board now prints each desk's split, so the answer
+        // points at that split instead of asserting one of them.
+        ask: [
+          {
+            q: "Same night, same visitor. Why did more people come the second time?",
+            answer:
+              "Two things carried over, and the board prints both for each desk. Their own renewals: a desk that kept its season-ticket holders walked into Night 5 with a bigger base. And event money spent on Night 4: that lands on the NEXT night, and Night 5 is the next night. Read the desk's own line before you name a cause — for a desk that spent big on Night 4 the money is usually the bigger half.",
+          },
+        ],
         dontExplainYet: ["Hold the words until SYNTHESIS. Name the thing, not the term."],
         trigger:
           state.revealStage < REVEAL_STEPS
@@ -2324,7 +2514,7 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
           {
             q: ADAPT_QUESTIONS[2]!,
             answer:
-              "Renewals. Four nights of their own pricing moved their season-ticket base, and that base is who shows up. Price well under your own plan price and the plan looks like a waste; price above what the night is worth to a plan holder and they quit.",
+              "Two things they did on earlier nights, and the Night 1 vs Night 5 board splits them per desk. RENEWALS: four nights of their own pricing moved their season-ticket base, and that base is who shows up — price well under your own plan price and the plan looks like a waste; price above what the night is worth to a plan holder and they quit. EVENT MONEY: whatever they put into Night 4 lands on Night 5. Take the desk's own numbers off the board rather than naming one of them yourself.",
           },
         ],
         dontExplainYet: [
@@ -2412,7 +2602,18 @@ function repeatSummary(rows: readonly RepeatRow[]): string {
   }
   const up = same.filter((r) => r.n5Turnout > r.n1Turnout).length;
   const down = same.filter((r) => r.n5Turnout < r.n1Turnout).length;
-  return `${same.length} desk${same.length === 1 ? "" : "s"} charged the SAME price on Night 1 and Night 5. ${up} drew a bigger crowd the second time, ${down} drew a smaller one. Same day, same visitor, same price — the only thing that changed was five nights of their own choices.`;
+  // R4: "the only thing that changed was five nights of their own choices" is
+  // true, but the room was left to assume WHICH choice. Name the channels by
+  // how many desks each one led, computed from the rows themselves.
+  const byRenewals = same.filter((r) => r.biggestChannel === "renewals").length;
+  const bySpend = same.filter((r) => r.biggestChannel === "spend").length;
+  const led =
+    bySpend === 0
+      ? "For every one of them the biggest carried-over thing was their own renewals."
+      : byRenewals === 0
+        ? "For every one of them the biggest carried-over thing was the event money they spent on Night 4, which lands on the next night."
+        : `${byRenewals} were moved most by their own renewals, ${bySpend} by the event money they spent on Night 4 — it lands on the next night, and this is the next night.`;
+  return `${same.length} desk${same.length === 1 ? "" : "s"} charged the SAME price on Night 1 and Night 5. ${up} drew a bigger crowd the second time, ${down} drew a smaller one. Same day, same visitor, same price — everything that changed, they did on an earlier night. ${led}`;
 }
 
 /* ------------------------------------------------------------ synthesis -- */
@@ -2456,13 +2657,7 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
   cards.push({
     id: "path-dependence",
     title: "NIGHT 5 WAS NIGHT 1",
-    body:
-      same.length > 0
-        ? `${same.length} desk${same.length === 1 ? "" : "s"} charged the same price on both. ${same
-            .slice(0, 3)
-            .map((r) => `${r.deskHandle}: ${r.n1Turnout.toLocaleString()} then ${r.n5Turnout.toLocaleString()}`)
-            .join(" · ")}. Same day, same visiting club, same price — and a different crowd walked in, because four nights of your own choices had already moved your renewals. ${RENEWALS_RULE_BOARD}`
-        : `${repeat.length} desk${repeat.length === 1 ? "" : "s"} played that card twice and every one of them changed the price, so compare crowds against the renewals column: the desks that carried more season-ticket holders into Night 5 started from a bigger base than they had on Night 1. ${RENEWALS_RULE_BOARD}`,
+    body: pathDependenceCardBody(repeat, same),
   });
 
   // gate-l1-econ-r1 R1/R2: the season claim on this card is now READ OFF the two
@@ -2531,6 +2726,42 @@ function revenueCardBody(agg: FullHouseAggregate): string {
   }
   const label = CARD_BY_ID.get(best.cardId)?.label ?? best.cardId;
   return `${label}, ${club(best.marketId)} — the same night in the same building. One desk charged $${best.low.price} and ${best.low.turnout.toLocaleString()} came. Another charged $${best.high.price} and ${best.high.turnout.toLocaleString()} came. Higher price, smaller crowd: that is a demand curve, and it is only readable one night at a time. Neither number alone is the money — the money is the two of them multiplied, which is why the biggest crowd and the biggest night are almost never the same night.`;
+}
+
+/**
+ * `gate-l1-econ-r2` R4 (BLOCKING dissent `econ-l1-n5-attribution`) — discharge
+ * limb (a). This card used to assert one cause ("because four nights of your own
+ * choices had already moved your renewals") for a crowd change the model builds
+ * out of TWO carried channels, and the unnamed one was the bigger one for every
+ * desk that spent on Night 4. The card now quotes each desk with its own split
+ * and only makes the renewals claim where renewals is the larger channel for the
+ * desks it quotes; where it is not, it says which channel was, in that desk's own
+ * fans. Nothing here is written prose about a cause: `biggestChannel`,
+ * `renewalsFans` and `carryFans` are computed in `repeatRowFor`.
+ */
+function pathDependenceCardBody(repeat: readonly RepeatRow[], same: readonly RepeatRow[]): string {
+  const quoted = (same.length > 0 ? same : repeat).slice(0, 3);
+  if (quoted.length === 0) {
+    return `No desk in this room has played both Night 1 and Night 5 yet. ${RENEWALS_RULE_BOARD}`;
+  }
+  const lines = quoted
+    .map(
+      (r) =>
+        `${r.deskHandle}: ${r.n1Turnout.toLocaleString()} then ${r.n5Turnout.toLocaleString()} — ${r.channelLine}`,
+    )
+    .join(" · ");
+  const renewalsLed = quoted.filter((r) => r.biggestChannel === "renewals").length;
+  const opener =
+    same.length > 0
+      ? `${same.length} desk${same.length === 1 ? "" : "s"} charged the same price on both nights. Same day, same visiting club, same price — and a different crowd walked in.`
+      : `${repeat.length} desk${repeat.length === 1 ? "" : "s"} played that card twice and every one of them changed the price too, so part of every gap below is the price.`;
+  const verdict =
+    renewalsLed === quoted.length
+      ? "For every desk on this card the biggest thing that changed was its own renewals: four nights of their own pricing decided who walked in on the fifth."
+      : renewalsLed === 0
+        ? "Read the split: on these desks renewals were NOT the biggest thing that changed. Last night's event money was — it lands on the next night, and Night 5 is the next night. Both are the same idea: what you did earlier decided what tonight could be."
+        : `Read the split: ${renewalsLed} of these ${quoted.length} desks were moved most by their own renewals, the rest by last night's event money. Both are things they did on an earlier night.`;
+  return `${opener} ${lines}. ${verdict} ${RENEWALS_RULE_BOARD}`;
 }
 
 function shifterCardBody(agg: FullHouseAggregate): string {

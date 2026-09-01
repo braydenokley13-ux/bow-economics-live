@@ -563,6 +563,8 @@ type FHRepeat = {
   renewalsStart: number;
   renewalsAtN5: number;
   samePrice: boolean;
+  /** econ-l1-n5-attribution R4: the honest channel split behind this row's two crowds. */
+  channelLine?: string | null;
 };
 type FHBooksB = { marketId: string; club: string; deskCount: number; medianCash: number; medianRenewals: number; bestFillPct: number; fullHouseNights: number };
 type FHMarketB = { id: string; club: string; building: string; plainLine: string; capacity: number; capacityNote?: string; bill?: number; planPrice?: number };
@@ -861,15 +863,24 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // lands, the curve gives up room rather than pushing anything off screen.
       const crowded = Boolean(view["twoPeaksReleased"]);
       const booksUp = Boolean(view["booksReleased"]);
-      // The projector is fixed and non-scrolling: once the Two Peaks money view is up it
-      // owns the screen, and the class chart gives up its room rather than push it off.
+      // `gate-l1-play` recheck2, BLOCKING dissent `play-l1-repairs-below-fold`:
+      // the renewals rule rendered LAST on this stage, under the class chart,
+      // its legend and the legend's own paragraph — measured top 764 of 768 at
+      // 1366x768, 1073 of 1080 at 1920x1080. The room was told to read a rule it
+      // could not see, and /teach asserted it was "on the screen now". On its own
+      // stage the rule is now the beat: it renders directly under the headline,
+      // above the chart, and the chart drops to `compact` to pay for the room.
+      const ruleUp = Boolean(view["renewalsRule"]);
       const showCurve = points.length > 0 && !booksUp && !crowded;
+      const ruleHtml = ruleUp
+        ? `<div id="fhRenewalsRule" class="fh-reveal-rule">${escapeHtml(String(view["renewalsRule"]))}</div>`
+        : "";
       stage.innerHTML = `
         <div class="label">${escapeHtml(String(view["stageHeadline"] ?? (booksUp ? "The Season, Market By Market" : `The Room's Own Nights · ${shown.length ? shown.join(" · ") : "waiting"}`)))}</div>
         ${shown.length > 0 ? `<div class="fh-nights-up">Nights up: ${shown.join(" · ")}</div>` : ""}
-        ${showCurve ? `<div class="scatter-wrap${crowded ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
+        ${ruleHtml}
+        ${showCurve ? `<div class="scatter-wrap${crowded || ruleUp ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
         ${Number(view["totalTurnedAway"] ?? 0) > 0 ? `<div class="synthesis-note" style="font-size:1.5vw; color:var(--ink-primary);">${Number(view["totalTurnedAway"]).toLocaleString()} people in this room's five nights wanted a seat and could not get one.</div>` : ""}
-        ${view["renewalsRule"] ? `<div class="synthesis-note" style="max-width:78vw; font-size:1.5vw; color:var(--ink-secondary);">${escapeHtml(String(view["renewalsRule"]))}</div>` : ""}
         ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:74vw; font-size:1.2vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
         ${view["twoPeaksReleased"] ? fhTwoPeaksPanel(peaks) : ""}
         ${
@@ -911,26 +922,32 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       const max = Math.max(1, ...rows.flatMap((r) => [r.n1Turnout, r.n5Turnout]));
       stage.innerHTML = `
         <div class="label">Night 1 vs Night 5 — The Same Card</div>
-        <div class="fh-repeat-board">${rows
-          .map(
-            (r) => `
-          <div class="fh-repeat-row">
-            <div class="fh-repeat-handle">${escapeHtml(r.deskHandle)}${r.samePrice ? ` <span class="fh-repeat-same">same price $${r.n1Price}</span>` : ` <span class="fh-repeat-same diff">$${r.n1Price} → $${r.n5Price}</span>`}</div>
-            <div class="fh-repeat-bars">
-              <div class="fh-repeat-bar n1" style="width:${(r.n1Turnout / max) * 100}%"><span>${r.n1Turnout.toLocaleString()}</span></div>
-              <div class="fh-repeat-bar n5" style="width:${(r.n5Turnout / max) * 100}%"><span>${r.n5Turnout.toLocaleString()}</span></div>
-            </div>
-            <div class="fh-repeat-renew">renewals ${r.renewalsStart}% → ${r.renewalsAtN5}%</div>
-          </div>`,
-          )
-          .join("")}</div>
-        <div class="synthesis-note" style="max-width:70vw;">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
-        <div class="exit-prompt">${escapeHtml(String(view["prompt"] ?? ""))}</div>
-        ${
-          cfPoints.length > 0
-            ? `<div class="scatter-wrap" style="width:70vw;">${fhCurveSvg(cfPoints, ["new-york", "memphis"])}</div>${fhLegend(cfPoints)}`
-            : ""
-        }
+        <div class="exit-prompt" style="max-width:88vw;">${escapeHtml(String(view["prompt"] ?? ""))}</div>
+        <div class="fh-cf-grid">
+          <div class="fh-cf-col">
+            <div class="fh-repeat-board">${rows
+              .map(
+                (r) => `
+              <div class="fh-repeat-row">
+                <div class="fh-repeat-handle">${escapeHtml(r.deskHandle)}${r.samePrice ? ` <span class="fh-repeat-same">same price $${r.n1Price}</span>` : ` <span class="fh-repeat-same diff">$${r.n1Price} → $${r.n5Price}</span>`}</div>
+                <div class="fh-repeat-bars">
+                  <div class="fh-repeat-bar n1" style="width:${(r.n1Turnout / max) * 100}%"><span>${r.n1Turnout.toLocaleString()}</span></div>
+                  <div class="fh-repeat-bar n5" style="width:${(r.n5Turnout / max) * 100}%"><span>${r.n5Turnout.toLocaleString()}</span></div>
+                </div>
+                <div class="fh-repeat-renew">renewals ${r.renewalsStart}% → ${r.renewalsAtN5}%${r.channelLine ? ` · ${escapeHtml(r.channelLine)}` : ""}</div>
+              </div>`,
+              )
+              .join("")}</div>
+          </div>
+          <div class="fh-cf-col">
+            ${
+              cfPoints.length > 0
+                ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"])}</div>${fhLegend(cfPoints)}`
+                : ""
+            }
+          </div>
+        </div>
+        <div class="synthesis-note" style="max-width:88vw;">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
         <div class="synthesis-note" style="font-size:1vw;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>`;
       return;
     }

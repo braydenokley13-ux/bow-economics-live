@@ -1809,6 +1809,8 @@ type FHNight = {
   renewalMove: number;
   cashAfter: number;
   resaleNote: string | null;
+  /** R6/P2: last night's event money, confirmed or refuted by this night's seats. */
+  spendVerdict: { carryFans: number; seated: number; wasted: number; label: string } | null;
 };
 type FHBooks = { cash: number; renewals: number; inDebt: boolean };
 type FHTwoPeaks = { ticketPeakPrice: number; totalPeakPrice: number; gapDollars: number; gapSteps: number };
@@ -2034,6 +2036,10 @@ function fhNightResultHtml(n: FHNight, title: string): string {
       <div class="fh-result-row total"><span>Kept</span><span class="numeric ${n.net < 0 ? "neg" : "pos"}">${money(n.net)}</span></div>
       <div class="fh-result-row"><span>Renewals</span><span class="numeric">${n.renewalsBefore}% → ${n.renewalsAfter}% (${n.renewalMove >= 0 ? "+" : ""}${n.renewalMove})</span></div>
       ${n.resaleNote ? `<div class="fh-resale">${escapeHtml(n.resaleNote)}</div>` : ""}
+      <!-- gate-l1-play R6 / P2 second clause: the forward-looking receipt on the
+           dial promised "if there is room for them". This is the night that
+           answers it, either way, in the desk's own numbers. -->
+      ${n.spendVerdict ? `<div class="fh-spend-verdict ${n.spendVerdict.seated <= 0 ? "waste" : n.spendVerdict.wasted > 0 ? "part" : "paid"}" id="fhSpendVerdict">${escapeHtml(n.spendVerdict.label)}</div>` : ""}
     </div>`;
 }
 
