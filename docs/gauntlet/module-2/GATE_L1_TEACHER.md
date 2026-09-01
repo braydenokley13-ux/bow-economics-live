@@ -437,3 +437,182 @@ not transferable. This lesson currently requires a teacher who already knows
 the lesson.
 
 **TRANSFER: NOT READY**
+
+---
+
+## RE-RUN AFTER DIRECTOR LAYER
+
+Run: `m2-quality-war` · Assignment: `recheck2-l1-teacher` · Level 4
+Reviewer: Teacher Transfer Critic, fresh context, cold protocol repeated.
+
+**Protocol.** Server booted on PORT 4343 from a freshly built `dist/`. The only
+repo file read before the re-verdict was drafted was `runtime/scripts/e2e-m2l1.cjs`
+(start/create/price/lock mechanics only). Five sessions driven in real Chromium at
+1440×1300, 1440×900, 1366×768 and 1280×800 (teacher), 1600×900 (projector),
+1024×600 (Chromebook desks): a full five-night class with a late joiner at Night 3,
+a desk that never locks Night 5, a desk that runs $70 flat into debt, a desk that
+buys the Night 4 capacity option; all seven reveal beats; ADAPT, COUNTERFACTUAL,
+SYNTHESIS, COMPLETE; freeze/unfreeze; a `Jump to REVEAL` misclick at Night 2; a
+second-device teacher rejoin; a zero-student dry run through all seven phases; and
+a 12-sample latency probe of the lock counter. `src/modules/fullHouse.ts` was read
+only afterwards, to pin one defect to its line.
+
+### The nine blocking repairs
+
+- **TT-B1 — per-phase director panel — FIXED, with one defect.** `/teach` now
+  renders `DIRECTING <PHASE>` with `NOW` + minute budget (LOBBY 2 min · HOOK 3 min ·
+  PLAY Nights 1-3 11 min / Nights 4-5 8 min · REVEAL+COUNTERFACTUAL 6 min · ADAPT
+  4 min · SYNTHESIS 7 min · COMPLETE 1 min), `ASK`, `DON'T EXPLAIN YET`, `TRIGGER`,
+  `THE BELL` and `TIME CUT`, all different in every phase. **[observed]**
+  **Defect: the Night 5 `NOW` block is Night 4's script verbatim.** On Night 5 the
+  console reads: *"Night 5 of 5. Read Night 4's card slowly — the room should feel
+  it. 'The biggest night of the five. Demand is going to run past what this building
+  holds.' Watch who raises the price and who pays to open more of the building."*
+  **[observed, two independent sessions]** Night 5 is Draw 22 with no capacity
+  option; nothing will run out and nobody can open the building. The adjacent
+  `ON THE PROJECTOR RIGHT NOW` block on the same screen says the opposite —
+  *"Same card as Night 1… The only thing that has changed since Night 1 is you."*
+  A stranger following `NOW` misdescribes the payoff night. Source confirmed after
+  the cold phase: `runtime/src/modules/fullHouse.ts:2191`, inside
+  `const block2 = state.nightIndex >= 3`, which covers Nights 4 **and** 5.
+- **TT-B2 — reveal beats named — FIXED.** The button names the next beat before the
+  press: `Reveal 1 of 7 — Night 1 — the quiet Tuesday` … `Reveal 6 of 7 — The Two
+  Peaks — the money view` … `Reveal 7 of 7 — The season, market by market`.
+  `ON THE PROJECTOR RIGHT NOW` names the beat that just landed
+  (`Stage 4 of 7 — Night 4 — the shock`), `TRIGGER` names the next press, and a
+  `THE SEVEN REVEALS` list carries all seven with a SAY line each and `— next press`
+  / `— on the projector` markers moving down it. **[observed, all seven presses]**
+- **TT-B3 — projector mirror through the debrief — FIXED.** `ON THE PROJECTOR RIGHT
+  NOW` is present in REVEAL, ADAPT, COUNTERFACTUAL, SYNTHESIS and COMPLETE, and
+  states what is up (e.g. SYNTHESIS: all six card titles, the outside-sports row and
+  the dated sources; COUNTERFACTUAL: the on-screen prompt verbatim plus "This board
+  names desks publicly, worst line included"). **[observed]** It is a contents list,
+  not the card text — the teacher still reads the SYNTHESIS prose off the wall, but
+  the `ASK` answers now carry the substance. Accepted as scoped.
+- **TT-B4 — ADAPT questions, answers, stall re-ask, both reconciliations — FIXED.**
+  The three questions appear in the stated order with answers, and the fallback is
+  there: *"If the room stalls, re-ask smaller: 'Point at two dots the same colour and
+  the same shape. Which one charged more? Which one drew more?'"* Both reconciliations
+  are answered at SYNTHESIS: the price×people vs in-building-spend contradiction, and
+  *"Why is Memphis's median renewals different from New York's? It is not the market —
+  it is the plan price… the two buildings sell different plans ($24 vs $16)."*
+  COUNTERFACTUAL pre-arms the "so doing nothing was better" trap and answers it with
+  no-exchange-rate. **[observed]**
+- **TT-B5 — Two Peaks timing — FIXED.** Disabled tooltip: *"Available after the Night
+  3 bell — the panel is drawn on that night's own curve."* After the Night 3 bell the
+  `TRIGGER` block fires: *"Night 3 is played — the Two Peaks release is live. Best
+  moment is right after the Night 3 bell, or hold it until after Night 4 if you want
+  the biggest decision of the lesson to stay blind. Your call; the button waits."*
+  Enabled tooltip states the consequence. The `held`/`up` tile now reads `not yet` →
+  `ready to release` → `on the projector`. **[observed]**
+- **TT-B6 — the bell's auto-commit — FIXED.** Button tooltip and a standing `THE BELL`
+  block both state it; `WATCH FOR` leads with `1 of 3 desks have not locked tonight`
+  and names the desk, with the same sentence attached. **[observed]** The button face
+  still shows only `(2/3 locked)`; the sentence is one hover or one panel away.
+- **TT-B7 — stalled desks scannable, no false "dialling" — FIXED.** The unlocked desk
+  card is outlined and its `still dialling $24` set in amber; `WATCH FOR` carries the
+  count and the names in a red-tinted lead flag. After the window closes every chip
+  reads `finished · 5 nights in the books` and the bell reads `🔔 All five nights are
+  in the books`. **[observed]** Latency probe: lock state reaches `/teach` in ~1.4 s
+  and is correct thereafter (12 samples over 8 s). **[observed]** Elapsed-time-per-desk
+  was asked for and is not there; not pursued.
+- **TT-B8 — empty desk list on the Night 4 flag — FIXED.** `Paid to open more of the
+  building on Night 4 · Desk 1 · New York Knicks` renders correctly in PLAY, REVEAL,
+  ADAPT, COUNTERFACTUAL, SYNTHESIS and COMPLETE. **[observed]**
+- **TT-B9 — student-screen mechanics on a teacher surface — FIXED for the harm.** A
+  `What the students are looking at (you cannot see their screen)` block gives both
+  plans, both bills, both seat counts, both event dials with per-market conversion
+  ($100 NY / $63 Memphis, +2 renewal points at the top), the price-blind guarantee and
+  the debt-lock rule with its recoverability. On Night 4 it adds the capacity option
+  with both prices and both seat counts. **[observed]** There is still no `/play`
+  preview or per-desk drill-down; the question "what does the event money do?" is now
+  answerable, which was the blocking harm.
+
+### HK-1
+
+**DISCHARGED.** The director script reached the product and is now richer than the
+design document: the TRIGGER is state-driven rather than a fixed instruction, the
+WATCH FOR flags name desks and say what to do with them, and the withholding
+instruction is staged (`Still no DEMAND, REVENUE or ELASTICITY` → `You can now say
+DEMAND if the room gets there. Still hold ELASTICITY` → `Nothing. This is the beat
+where every term gets said out loud`). The round-1 conflict is resolved in the
+board's favour and the panel is consistent with it. **[observed]**
+
+Round-1 concern styles re-tested: `/teach` no longer renders identically across
+m2l1 phases — LOBBY, HOOK, PLAY(N1-3), PLAY(N4-5), PLAY(window closed), REVEAL,
+ADAPT, COUNTERFACTUAL, SYNTHESIS and COMPLETE are all distinct. **[observed]** The
+reveal button names its beat. **[observed]** (Unrelated: `m1l1-draft-day` still
+renders LOBBY and HOOK identically on `/teach`. **[observed]** Out of scope here.)
+
+### Remaining hidden-knowledge / transfer gaps
+
+1. **Night 5 mis-direction (above).** Not hidden knowledge — worse: the panel states
+   something false with confidence, on the beat the whole lesson is built toward.
+2. **Nothing tells a teacher they can prepare.** The director panel exists only
+   inside a created session; `/teach` before creation is still a bare lesson picker.
+   A zero-student session advanced through all seven phases **does** expose almost the
+   whole script — verified, including all seven reveal SAY lines and every ASK answer
+   **[observed]** — but no surface says so. The one thing a dry run cannot show is
+   the Night 4 `NOW` block and the capacity-option disclosure, which are
+   night-conditional.
+3. **`Jump to REVEAL` (`#btnReveal`) is still a silent one-click end to the game.**
+   Pressed at Night 2 with three nights unplayed: no confirmation dialog, no tooltip,
+   no warning; the session jumped to REVEAL and the Two Peaks auto-released.
+   **[observed, dialog listener attached and empty]** It sits immediately beside
+   `Advance ▸`. This is now the sharpest remaining edge on the console.
+4. **`Restore last good state` still has no tooltip and no confirmation.** **[observed]**
+5. **No teacher rejoin from a second device, and still no warning.** `/teach?code=…`
+   from a clean browser returns the session-creation form. **[observed]** Nothing next
+   to the session code says the console is bound to this browser.
+6. **Stale copy in two places.** After the window closes, `ASK` still reads *"What on
+   tonight's card is different from last night's?"* while `NOW` correctly says wrap up
+   **[observed]**; and the reveal-era WATCH FOR advice (*"Keep this for the Night 4
+   reveal"*, *"Call on this desk when you reach the ADAPT questions"*) still shows in
+   COMPLETE. **[observed]**
+7. **A code identifier leaked into teacher copy:** *"MODELED_DOLLARS_LINE says so
+   before the first price."* **[observed, simplifications block]**
+8. **Ergonomics at 1366×768.** With both details collapsed the console is 1766 px tall;
+   `WATCH FOR` sits near the top and the bell at y≈1265, so the stalled-desk names and
+   the bell cannot be on screen together on a classroom laptop. **[observed]** The
+   bell's own `(2/3 locked)` face mitigates this.
+
+Freeze/unfreeze was re-tested: Freeze pauses, Unfreeze returns the room to LIVE and
+the Pause button to `Pause`. TT-N1 is fixed. **[observed]** Zero console errors on
+`/teach`, `/board` and `/play` across the full run. **[observed]**
+
+### Judgement against the bar
+
+The SAY lines are correct, deliverable and grade-appropriate; `NOW` and `WATCH FOR`
+do direct attention at named desks for named reasons; and the panel reads as
+intelligence — what is happening, who to call on, what to withhold — rather than a
+teleprompter, because it hands the teacher questions and evidence and leaves the
+sentences to them. On everything the round-1 gate asked for, this is a different
+product. One always-fires copy defect stands between it and an exceptional stranger
+class.
+
+### required-repairs (this re-run)
+
+**BLOCKING**
+
+- **TT-R1.** Split the Nights 4-5 `NOW` block. Night 5 must not be told to read
+  Night 4's card or to watch for capacity purchases. `runtime/src/modules/fullHouse.ts:2191`.
+
+**NON-BLOCKING**
+
+- **TT-R2.** Confirmation on `Jump to REVEAL` naming what the press consumes
+  (carried from TT-N2, still open).
+- **TT-R3.** One line on `/teach` before session creation: this lesson can be
+  rehearsed by creating a session with no students and advancing through the phases.
+- **TT-R4.** Explain `Restore last good state`; state that the console is bound to
+  this browser (carried from TT-N3, TT-N4, still open).
+- **TT-R5.** Retire the wrap-up `ASK` and the reveal-era WATCH FOR advice once their
+  moment has passed; remove `MODELED_DOLLARS_LINE` from teacher copy.
+
+### Dissent
+
+**DISSENT teacher-l1-not-ready: DISCHARGED** — the substance of the round-1 dissent
+(the room, the pacing and the questions are not transferable; the lesson requires a
+teacher who already knows it) no longer holds. It is replaced by a narrower,
+one-line objection recorded as TT-R1.
+
+**TRANSFER: NOT READY** — on TT-R1 alone.
