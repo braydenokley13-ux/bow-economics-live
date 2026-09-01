@@ -601,3 +601,217 @@ now drives half the outcome and half the classroom argument, and no student-faci
 rule that governs it at any point in the period. This is the same failure class the round just
 repaired on the night-spend dial, relocated. I do not consider the lesson classroom-ready while a desk
 can finish at 25% renewals with a full building and no available explanation.
+
+---
+
+# RE-CHECK AFTER REPAIR ROUND 2
+
+Same Player / Gameplay critic, fresh context, Boss run `m2-quality-war`, assignment `recheck2-l1-play`.
+I did not build any part of these repairs.
+
+**Method (observed unless marked).** Rebuilt `runtime/dist` this session. One real session on **PORT
+4342**, shipped server, real Chromium, six pages: `/teach` 1280x900, `/board` 1600x900, four `/play`
+seats at 1024x600, pairs-on-one-device. Teacher-paced throughout: LOBBY → HOOK → five blind nights
+with the bell → Two Peaks released after N3 → 7 REVEAL stages → ADAPT → COUNTERFACTUAL → SYNTHESIS →
+COMPLETE. I read every screen before choosing the next price; no scripted line. Four lines:
+
+| desk | market | line played |
+|---|---|---|
+| 1 · Rae & Ben | New York | card-reader around the plan: $22 / $34 / $44 / $70 / $22 |
+| 2 · Nour & Ivy | Memphis | exactly at plan $16 all five nights, max $60,000 event spend every night |
+| 3 · Ari & Tal | New York | $88 (burned) → $12 → $24 → $34 + bowl → **stalled, auto-committed $24** |
+| 4 · Sam & Jo | Memphis | stubborn undercutter, $10 all five nights |
+
+Final books: D1 $2,206,352 / 68% · D2 $587,432 / 90% · D3 $453,848 / 28% · D4 $454,556 / 5%.
+Zero console errors across all six pages (observed). Screenshots `r2-01…r2-21` in
+`docs/gauntlet/module-2/screens-l1-gate/`. A second short session on the same port was run only to
+measure projector fold geometry at three shapes; server killed, port 4342 confirmed closed.
+Boss evidence referenced: `l1-tests-r2`, `l1-tuning-r2`, `l1-e2e-r2`, `m1-e2e-regression` (builder's
+round-2 proofs — **not re-run by me, not inherited**), `gate-l1-play-r1` (my prior session),
+`gate-l1-projector` (board clipping), `gate-l1-teacher`, `arch-selection`. Real students, real
+timing and real discussion volume remain **NOT VERIFIED**.
+
+## Per-repair verdicts
+
+**R1 · Undercut-costs-renewals rule on the dial pre-commit — CONFIRMED.** *Observed* on every
+pre-lock screen, both markets, all five nights (`r2-01-play-night1-dial-renewalrule.png`): a
+bordered callout directly under the price dial, body-size type, not grey micro-copy — "Season plan:
+$24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full
+building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks
+like a bargain and more come back." Memphis prints its own $16. This is the repair the dissent asked
+for and it is in the right place at the right moment.
+
+**R2 · Rule at REVEAL stage 5 — CONFIRMED IN DOM, REFUTED ON THE PROJECTOR.** The stage exists, the
+board headline reads "NIGHT 5 · NIGHT 1'S CARD AGAIN", and the paragraph "THE RENEWALS RULE, out
+loud…" is in the DOM. *Measured* this session, rendered box of that paragraph vs viewport height:
+1366x768 → top **764** of 768 · 1600x900 → top **895** of 900 · 1920x1080 → top **1073** of 1080. At
+every projector shape the room sees nothing of it without the teacher scrolling `#stage`.
+`r2-13-board-reveal-stage5.png` (visible content ends at "23,058 people…"), `r2-20-board-reveal5-*`.
+Worse: `/teach` stage 5 tells the teacher "that rule is **on the screen now**"
+(`r2-12-teach-reveal-btn-5.png`). The director layer asserts a thing the projector is not showing.
+
+**R3 · Rule on the SYNTHESIS path-dependence card — CONFIRMED.** *Observed*
+`r2-18-board-synthesis.png`: card NIGHT 5 WAS NIGHT 1 names the three same-price desks with both
+crowds, attributes the change ("because four nights of your own choices had already moved your
+renewals"), then states the rule in full. Fully inside the viewport at 1600x900. This also
+discharges **P8** — the "different building" copy is gone.
+
+**R4 · COUNTERFACTUAL board renders the scatter — CONFIRMED IN DOM, REFUTED ON THE PROJECTOR.** 20
+marks, 0 joining paths, one `.scatter-svg` present in the COUNTERFACTUAL phase (*observed*). But
+*measured* at all three shapes the instruction "…using those dots, not a guess" ends at 709 / 826 /
+992 and the chart **starts** at 720 / 839 / 1007 in viewports of 768 / 900 / 1080.
+`r2-16-board-counterfactual.png` shows the room seeing the instruction, one axis label and the tip
+of a single diamond. Round-1 finding 1a — "the board tells the room to read dots that are not on the
+screen" — is relocated, not removed.
+
+**R5 · Memphis cluster jitter + rings — CONFIRMED, partially effective.** *Observed*
+`r2-15-board-adapt.png`, and *measured* mark geometry: per-desk jitter ≈ ±10px, N5 renders as an
+open ring, the on-chart key names all five night shapes. The two Memphis desks now separate into two
+readable clumps ($10 and $16) instead of round 1's single ~50px smudge. Inside a clump the five
+nights still overlap: at $10 the diamond, triangle, square, dot and ring occupy an ~20x60px box.
+Better than a blob, still not a projector-legible five-night comparison.
+
+**R6 · Next-night spend receipt line — CONFIRMED for the payoff, REFUTED for the waste.** *Observed*
+on Desk 2 every night after a spend: "Last night you put $60,000 into making it an event. That
+bought about 960 extra people into tonight's building — **if there is room for them**." Two of Desk
+2's four landed spends went onto nights that sold out (N2 and N4, `r2-07-play-night4-result-desk2.png`),
+so $120,000 bought nothing — and no settlement line, reveal stage, replay or synthesis card ever
+says so. The receipt is a forward-looking conditional, never a confirmation or a refutation.
+
+**R7 · FULL HOUSE as a composed beat — CONFIRMED.** *Observed* `r2-07-play-night4-result-desk2.png`:
+a bordered plate, display-weight "FULL HOUSE", "17,794 of 17,794 seats · every one sold", a rule,
+then "**8,006** could not get in" in large numerals, a full-width fill bar, then the ledger and the
+turned-away sentence. It reads as a designed moment. It also survives the bowl (*observed*, Desk 3
+opened the extra seats at $34, filled 22,200 and still turned 2,060 away, banner intact). One cost:
+the plate renders at y≈730–1170 in a 600px Chromebook viewport, so the biggest payoff in the lesson
+is entirely below the fold at the instant it fires.
+
+**R8 · Seven reveal stages named on the teacher button — CONFIRMED.** *Observed*, captured before
+each of the seven presses: "Reveal 1 of 7 — Night 1 — the quiet Tuesday" … "Reveal 5 of 7 — Night 5
+— Night 1's card again, and the renewals rule" … "Reveal 7 of 7 — The season, market by market."
+Each stage also headlines the board, so **P4 is now half-repaired**: stages 4, 5 and 7 carry real
+paragraphs; stages 1–3 still change only a headline and add dots. **P3 is discharged** — the Fever
+anchor has moved to reveal stage 4, where "some of you just paid to open more seats" is finally
+true, and it now closes with the honest ruling on the bowl.
+
+## Feel-regression check on the renewals retune
+
+**Regression found, and it is in the beat the module finale rests on.**
+
+The two-book tension itself reads in play — *observed*, four desks, every night: Desk 4 filled or
+near-filled FedExForum five straight nights at $10 and watched renewals go 50 → 41 → 32 → 23 → 14 →
+**5**; Desk 3 sold out MSG at $12 on N2 and lost 20 points in that one night; Desk 2 at plan climbed
++8 a night to 90%. Pricing bites in both directions and the pair now has the rule on screen when it
+chooses. That half is intact and better than round 1.
+
+What the retune cost is the **visible** half. *Observed*, the three desks that repeated their Night
+1 price:
+
+| desk | price both nights | N1 crowd | N5 crowd | delta | renewals |
+|---|---|---|---|---|---|
+| 1 · NY | $22 | 17,406 | 17,576 | **+170 (+1.0%)** | 50% → 67% |
+| 2 · MEM | $16 | 14,740 | 16,020 | +1,280 (+8.7%) | 50% → 82% |
+| 4 · MEM | $10 | 16,750 | 16,390 | **−360 (−2.1%)** | 50% → 14% |
+
+Two of three repeat desks moved by ~1–2% of their crowd. `r2-16-board-counterfactual.png` shows the
+consequence: Desk 1's and Desk 4's paired bars are visually identical on the projector, under a
+caption asserting "2 drew a bigger crowd the second time, 1 drew a smaller one… the only thing that
+changed was five nights of their own choices." The room is asked to feel a change it cannot see.
+
+The desk that most needs to feel it cannot, structurally: at $10 the building runs 92–94% full
+whatever the renewals book says, so the punishment for undercutting has nowhere visible to land. It
+lands only in a percentage labelled RENEWALS whose consequence never arrives inside the five nights.
+
+And the top of the beat has been sanded off. In `gate-l1-play-r1` the identical Desk 2 line (Memphis,
+plan price, max spend, every night) took N5 from 14,740 to **17,794 — FULL HOUSE**. The same line
+this session, under the slower rebuild, reached 16,020 / 90% and got no banner. The single loudest
+moment the repeat card could produce is now reachable only by a line I did not find in blind play.
+
+Verdict: **the two-book tension reads; the N5-repeats-N1 crowd beat has gone subliminal for the
+at-plan and under-plan cases**, and the per-desk `/play` card and the SYNTHESIS card — both of which
+print the renewals numbers next to the crowds — are now carrying attribution that the crowd itself
+used to carry.
+
+## Also re-observed this session (unrepaired)
+
+- **P7 dead zone**: $88 on Night 1 in New York → **0 of 19,800**, −$520,000, −20 renewals in one
+  press. SYNTHESIS card REVENUE = PRICE × PEOPLE still rests on "$88 and 0 came."
+- **P9 fold**: LOCK IT IN sits at y≈648 in a 600px viewport with the PIN block shown; the night
+  recap and the FULL HOUSE plate are far below it.
+- **1d copy**: the footnote "These demand curves are modeled on real market differences" still runs
+  two lines under the caption "this picture is NOT a demand curve," on every board that carries the
+  chart.
+- **P5 wait**: a locked pair still gets no count of how many desks are still deciding.
+- **New, minor**: the night-spend payback paragraph is now collapsed behind a "What does this money
+  actually do?" disclosure. The TOMORROW card and the rate line above it remain visible, so this is a
+  demotion, not a removal — but the most load-bearing sentence about the second dial is now one click
+  away instead of on screen.
+- Auto-commit at the plan price with an `AUTO` label, board privacy in every phase, blind
+  pre-commit, and the single synchronized bell all re-verified intact.
+
+## Rating
+
+**RATING: STRONG**
+
+Held, narrowly, and for a different mix of reasons than round 1. Gained: the price dial is now a
+genuinely decidable two-book choice at the moment of choosing (R1), the reveal is a scripted
+seven-beat sequence instead of four silent clicks (R8, P4 half), the shock night's real anchor is
+finally true when it appears (P3), and the room's own five-night attribution reaches synthesis with
+its own numbers (R3, P8). Lost: the repeat-card payoff is quieter than it was, and two of this
+round's four board repairs do not reach the projector.
+
+Not MAGNETIC, unchanged: after the fifth bell no student device accepts input for the rest of the
+period, and the loudest moment the lesson can produce — a repeat card that sells the building out —
+is no longer reachable by a line a pair is likely to find.
+
+Not below STRONG: the loop still produces surprise, attribution and argument. Desk 4's own
+COUNTERFACTUAL panel — $454,556 · 5% against "same price every night ($16): $830,312 · 80%" — is the
+sharpest single screen in the lesson, and after this round the pair reading it has been told the rule
+that explains it.
+
+## Repairs still required (updated)
+
+**BLOCKING (student-pull):**
+
+- **P11 (new) — the repaired board beats must be above the fold.** *Test:* at 1366x768, 1600x900 and
+  1920x1080, with no scrolling, the REVEAL stage-5 renewals-rule paragraph and the COUNTERFACTUAL
+  scatter are fully inside the viewport. Measured today: rule top 764/895/1073 in 768/900/1080;
+  scatter top 720/839/1007. Until then, `/teach` must stop telling the teacher the rule is "on the
+  screen now."
+- **P12 (new) — give the repeat card a crowd the room can see.** *Test:* a desk whose renewals moved
+  by 30+ points between N1 and N5 at an unchanged price shows an N5 crowd differing from N1 by
+  enough to read off a projector bar without the number (I would want ≥10% of capacity), in both the
+  gaining and the losing direction. Today: +1.0% and −2.1% on two of three repeat desks, while the
+  board asserts the change in words.
+- **P2 (second clause, carried) — confirm or refute the event spend after the fact.** *Test:* a desk
+  whose spend landed on a sold-out night is told, in the recap or at REVEAL, that the money bought
+  nothing. $120,000 of Desk 2's $300,000 vanished silently today.
+
+**NON-BLOCKING, in order:** stages 1–3 of REVEAL still say nothing about their own dots (P4
+remainder) · Memphis within-desk overlap (R5 remainder) · the Chromebook fold now buries the FULL
+HOUSE plate as well as LOCK IT IN (P9) · the "demand curves" footnote contradiction (1d) · the
+top-of-dial dead zone and the synthesis card built on it (P7) · the unfurnished wait (P5) · restore
+the spend payback paragraph to the visible surface.
+
+## Dissent
+
+**DISSENT play-l1-renewals-unexplained: DISCHARGED.**
+
+Its stated test was that a pair which priced below the season plan all five nights can, by the end of
+the period, state why their renewals fell while their building was full, via one dial-side line
+pre-commit plus one REVEAL or SYNTHESIS line. Both halves now exist and both are rendered where that
+pair will see them: the dial callout before every one of their five locks, and the SYNTHESIS
+NIGHT 5 WAS NIGHT 1 card, which is fully on the projector and names their own two crowds and their
+own renewals path. The REVEAL stage-5 statement of the same rule is below the fold, and that is
+recorded above as P11 rather than as continuation of this dissent.
+
+**New dissent recorded: `play-l1-repairs-below-fold` (BLOCKING, student-pull).** Two of the four
+board repairs claimed this round — the renewals rule at REVEAL 5 and the COUNTERFACTUAL scatter —
+render outside the visible projector area at every shape measured, while `/teach` and the board's own
+largest type instruct the room to look at them. A repair that only a scroll can reveal has not
+reached the class, and a director layer that asserts otherwise makes the failure invisible to the
+teacher too.
+
+I do not raise P12 (the subliminal repeat-card crowd) as a dissent this round, because the
+attribution now survives in text on `/play` and in SYNTHESIS. I record that I will dissent against
+any classroom-release decision that leaves the module's finale beat unreadable on the board.
