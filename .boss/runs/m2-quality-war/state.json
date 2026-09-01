@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:57:32.474Z",
+  "updatedAt": "2026-09-01T03:00:34.304Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1854,7 +1854,8 @@
         "m1-e2e-w3",
         "w3-play-adj",
         "w3-projector-adj",
-        "w3-visual-regrade"
+        "w3-visual-regrade",
+        "w3-econ-adj"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -3129,6 +3130,23 @@
       },
       "recordedAt": "2026-09-01T02:57:18.803Z",
       "actor": "visual-experience-director"
+    },
+    "w3-econ-adj": {
+      "id": "w3-econ-adj",
+      "wave": 3,
+      "kind": "economic-truth-report",
+      "label": "W3 econ adjudication: DISCHARGED — independent DP reproduces frontier point-for-point (22/24, 0 dominated, ratio 1.0000 vs prior 47-70x); all five HOUSE_RULES true (zero case exact); 8 Memphis repaired; P16 fails under four mutations. Five non-blocking: W3-R10 floored-OR read as both ('nobody walked in' over 670 people, 11/672 rooms), R11-R14",
+      "path": ".boss/runs/m2-quality-war/evidence/w3-econ-adj--GATE_L1_ECON_R3.md",
+      "sha256": "c763d915282669b50298dfb0094d59b7ed962a211ed9746ed48c8b6fe19a7ed4",
+      "size": 59352,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "wave-3"
+        ]
+      },
+      "recordedAt": "2026-09-01T03:00:34.061Z",
+      "actor": "economic-truth-critic"
     }
   },
   "claims": {
@@ -3522,9 +3540,12 @@
         "gate-l1-econ-r3"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T02:07:01.628Z",
-      "actor": "economic-truth-critic"
+      "actor": "economic-truth-critic",
+      "resolution": "Owning critic's independent exact DP reproduces the shipped frontier point-for-point: the card's implied renewal pricing now equals true average marginal cost (ratio 1.0000, was 47-70x), all HOUSE_RULES true with the zero case exact, the demand-floor card repaired, and P16 demonstrated falsifiable under four mutations. Explicit line: DISSENT econ-l1-two-book-baseline: DISCHARGED. Five non-blocking successors (W3-R10..R14) carried into the wave-3 repair batch.",
+      "resolvedAt": "2026-09-01T03:00:34.304Z",
+      "resolvedBy": "lead-integrator"
     },
     "recheck3-l1-econ-dissent": {
       "id": "recheck3-l1-econ-dissent",
@@ -3594,11 +3615,11 @@
     "agentsActivated": 38,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 63,
+    "evidenceRecorded": 64,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 190,
-  "eventHead": "158e2de1421731944e7f91ed83ad522e756fc4c37a9664f56f59a43919a1ccb4",
+  "eventCount": 192,
+  "eventHead": "7d8f95a1ea0aba17e4af0e418918b2e7547fe679d55f505f455480dd38c3ea1c",
   "warnings": []
 }

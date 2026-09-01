@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `190:158e2de1421731944e7f91ed83ad522e756fc4c37a9664f56f59a43919a1ccb4`  
-Updated: 2026-09-01T02:57:32.474Z
+Event head: `192:7d8f95a1ea0aba17e4af0e418918b2e7547fe679d55f505f455480dd38c3ea1c`  
+Updated: 2026-09-01T03:00:34.304Z
 
 ## Founder intent
 
@@ -61,6 +61,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - w3-play-adj — gameplay-report — W3 play adjudication: all 12 rows + summary verified at both resolutions, stage fits exactly, paging one-look-per-group, RATING STRONG. DISCHARGED. Non-blocking: summary type 2.05% vs 2.6% floor; group ordering/dedup
 - w3-projector-adj — projector-report — W3 projector adjudication: NOT DISCHARGED. Repair reached only its four fh-tight/SPLIT frames; 10 of 24 board frames overflow at both resolutions (worst PLAY-after-bell N4 +280/+392px); PLAY Two Peaks release orphans its punchline; compacted axis 1.30-1.56% below floor; assertStageScrollable must assert fit on every frame. Privacy PASS (48 scans)
 - w3-visual-regrade — visual-report — W3 visual re-grade: PREMIUM CLAUSE NOT AFFIRMED — all three surfaces SERVICEABLE-NOT-PREMIUM; board SYNTHESIS + PLAY/Two-Peaks SCHOOL-UI (synthesis un-clipped by shrinking type to 11.2px/9.3px, not staging); P8 emoji repair reported done but still present (teach/main.ts:238,239,272,606,750); price dial unchanged. 82 screenshots. Advisory caveat: director previously advised D1-D3
+- w3-econ-adj — economic-truth-report — W3 econ adjudication: DISCHARGED — independent DP reproduces frontier point-for-point (22/24, 0 dominated, ratio 1.0000 vs prior 47-70x); all five HOUSE_RULES true (zero case exact); 8 Memphis repaired; P16 fails under four mutations. Five non-blocking: W3-R10 floored-OR read as both ('nobody walked in' over 670 people, 11/672 rooms), R11-R14
 
 ## Claim ledger
 
