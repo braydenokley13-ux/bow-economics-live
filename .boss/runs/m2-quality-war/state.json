@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:46:57.187Z",
+  "updatedAt": "2026-09-01T02:52:57.523Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1818,7 +1818,8 @@
         "l1-tests-w3",
         "l1-tuning-w3",
         "l1-e2e-w3",
-        "m1-e2e-w3"
+        "m1-e2e-w3",
+        "w3-play-adj"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -3042,6 +3043,23 @@
       },
       "recordedAt": "2026-09-01T02:46:39.285Z",
       "actor": "regression-hunter"
+    },
+    "w3-play-adj": {
+      "id": "w3-play-adj",
+      "wave": 3,
+      "kind": "gameplay-report",
+      "label": "W3 play adjudication: all 12 rows + summary verified at both resolutions, stage fits exactly, paging one-look-per-group, RATING STRONG. DISCHARGED. Non-blocking: summary type 2.05% vs 2.6% floor; group ordering/dedup",
+      "path": ".boss/runs/m2-quality-war/evidence/w3-play-adj--GATE_L1_PLAY.md",
+      "sha256": "91980cdc69ff06d533c392d08b66f03399d7356f13823d4d78137af8f7690040",
+      "size": 82511,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "wave-3"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:52:57.288Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "claims": {
@@ -3409,9 +3427,12 @@
         "gate-l1-play-r2"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T01:18:46.197Z",
-      "actor": "player-gameplay-critic"
+      "actor": "player-gameplay-critic",
+      "resolution": "Owning critic adjudicated the paged counterfactual at 12 desks on both resolutions: all rows shown 3/group with none dropped, class summary always-on, stage fits exactly, argue beat one look per group, honest per-row+summary e2e instrument. Explicit line: DISSENT play-l1-repairs-below-fold: DISCHARGED; RATING STRONG. Two non-blocking notes (summary type height, group ordering) recorded in the W3 section.",
+      "resolvedAt": "2026-09-01T02:52:57.523Z",
+      "resolvedBy": "lead-integrator"
     },
     "recheck2-l1-play-dissent": {
       "id": "recheck2-l1-play-dissent",
@@ -3504,11 +3525,11 @@
     "agentsActivated": 38,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 60,
+    "evidenceRecorded": 61,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 183,
-  "eventHead": "46441f01451fe93d09b79e487257333a3b86ffab3b73b0d82e9f7e2e782c106a",
+  "eventCount": 185,
+  "eventHead": "286bff0752c0433d64dc2067a6f1bd1ecc0c9dd1d60354e31fc10b3f137e5612",
   "warnings": []
 }

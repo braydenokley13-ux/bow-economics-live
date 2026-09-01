@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `183:46441f01451fe93d09b79e487257333a3b86ffab3b73b0d82e9f7e2e782c106a`  
-Updated: 2026-09-01T02:46:57.187Z
+Event head: `185:286bff0752c0433d64dc2067a6f1bd1ecc0c9dd1d60354e31fc10b3f137e5612`  
+Updated: 2026-09-01T02:52:57.523Z
 
 ## Founder intent
 
@@ -58,6 +58,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l1-tuning-w3 — test — Tuning harness 16 props after close-out (P16 falsifiable)
 - l1-e2e-w3 — e2e — 12-desk e2e: all rows + summary in-viewport across 4 groups, both resolutions, no stage overflow
 - m1-e2e-w3 — e2e — M1 L3 e2e at close-out head (shared files)
+- w3-play-adj — gameplay-report — W3 play adjudication: all 12 rows + summary verified at both resolutions, stage fits exactly, paging one-look-per-group, RATING STRONG. DISCHARGED. Non-blocking: summary type 2.05% vs 2.6% floor; group ordering/dedup
 
 ## Claim ledger
 
