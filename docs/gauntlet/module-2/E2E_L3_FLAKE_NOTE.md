@@ -12,8 +12,10 @@ The failure mode is identical at both heads and the checkpoint predates every
 L2 change, so this is a **pre-existing race in M1 L3's play client**, not a
 Module-2 regression: `faPlayMounted`'s poll-driven remount wipes
 `#faComposerRoot` while a click is pending; day 3 is the only step where two
-desks contest one agent, so `interestCount` changes mid-click. Rate variation
-(1/6 vs 3/6) is consistent with machine load on the race window.
+desks contest one agent, so `interestCount` changes mid-click. The rate difference between heads (1/6 vs 3/6) is UNRESOLVED — n=6 per head has no
+statistical power (Fisher p~0.55), and one live mechanism is unexamined: Module 2's
+lessons ship inside the same shared `client/play/main.ts` the race lives in. "Pre-existing"
+is proven; "unaffected by M2" is not.
 
 Disposition per the wave contract's non-goals (M1 changes only for proven
 regressions caused by this wave): **not repaired here**; recorded as a known

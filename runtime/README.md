@@ -1,7 +1,7 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (313 passing, see below), `npm run build` and `npm test` are
+real tests (458 passing, see below), `npm run build` and `npm test` are
 green, and `m1l1-draft-day`, `m1l2-trade-deadline`, and `m1l3-free-agency`
 have all been driven end-to-end with Playwright against the real compiled
 server (L1: create → join → advance → build → lock → reveal → shock → adapt
@@ -726,7 +726,7 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**452 tests, 452 passing** (`node --test`, no test framework dependency), run
+**458 tests, 458 passing** (`node --test`, no test framework dependency), run
 this session (wave 4, `build-l3-rule`). Forty-one of those are M2 L3's
 (`writeTheRule.test.ts`): the runtime contract and the manual-fallback
 discipline on every phase exit, the untrusted L2 seed (absent, foreign,
@@ -835,6 +835,13 @@ specifically because the route table is small and fixed (a dozen API routes,
 three static pages), not a general-purpose framework being reinvented.
 
 ## Known gaps / not yet done
+
+- **Module 1 Lesson 3 e2e flake (pre-existing client race).** `e2e-l3.cjs` fails
+  intermittently (~1 in 3 at some heads) at day-3 `submitOffer`: `faPlayMounted`'s
+  poll-driven remount can wipe `#faComposerRoot` while a click is pending. Reproduced
+  at a pre-Module-2 checkpoint, so it predates M2 — but the rate difference between
+  heads is unresolved at n=6, and M2's lessons ship inside the same shared
+  `client/play/main.ts`. Bounded fix path in `docs/gauntlet/module-2/E2E_L3_FLAKE_NOTE.md`.
 
 - No client-side module registry — `/play`, `/teach`, and `/board`'s
   renderers special-case each module's view shape by its `module` tag

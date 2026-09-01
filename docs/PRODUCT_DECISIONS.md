@@ -250,8 +250,10 @@ critic, including BC-1 proven by independent computation — sharing moves behav
 differential reinvest instrument, capacity-bound markets honestly immobile), teacher transfer
 (**TRANSFER: READY** on all three), classroom/projector (fit, privacy, fallbacks, choreography),
 and sports reality (all real-world facts dated and verified, Kings capstone facts confirmed).
-Durable module discipline established: **every rendered claim on any surface is a computed,
-audited atom** (value/quantifier/bound/noun/level + rendered-string drift, mutation-proven), and
+Durable module discipline established: **every registered claim is a computed, audited atom**
+(value/quantifier/bound/noun/level plus rendered-string drift, mutation-proven) — with the
+owning critic's honest limit on record: rendered-but-unregistered prose remains structurally
+invisible to the audit (W5-1..W5-3 narrow, not close, that hole) — and
 e2e instruments assert occlusion/ellipsization/ink-collision at class size on both projector
 shapes plus 1024x600 first-contact.
 
@@ -259,8 +261,8 @@ Open at ruling time, carried to the founder: the visual premium clause is **VERI
 (three consecutive advisory SERVICEABLE-NOT-PREMIUM re-grades, explicitly non-blocking for
 classroom use — founder decides: accept, or commission an independent second visual review and a
 polish wave); a pre-existing M1 L3 client race makes its e2e flaky (documented with a bounded fix
-path in `docs/gauntlet/module-2/E2E_L3_FLAKE_NOTE.md`; not a Module 2 regression — reproduced at
-a pre-M2 checkpoint); non-blocking backlogs live in the gate docs. D10 in full force: all three
+path in `docs/gauntlet/module-2/E2E_L3_FLAKE_NOTE.md`; reproduced at a pre-M2 checkpoint, so it predates M2; the rate difference between heads is
+unresolved at n=6 and M2 ships in the same shared play client); non-blocking backlogs live in the gate docs. D10 in full force: all three
 lessons are **classroom-ready candidates**; nothing is classroom-proven until it survives a real
 class.
 
