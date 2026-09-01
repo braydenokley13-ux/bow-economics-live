@@ -321,7 +321,7 @@ export function dotChart(points: DotPoint[], axes: DotAxes): string {
 
   svg +=
     '<text class="axis-label" x="' + padL + '" y="' + (h - 8) + '">' + esc(axes.xLabel) + "</text>" +
-    '<text class="axis-label" x="' + padL + '" y="' + (padT - 2) + '">' + esc(axes.yLabel) + "</text>";
+    '<text class="axis-label" x="4" y="' + (padT - 2) + '">' + esc(axes.yLabel) + "</text>";
 
   if (points.length === 0) {
     if (axes.emptyLine) {
@@ -332,15 +332,31 @@ export function dotChart(points: DotPoint[], axes: DotAxes): string {
     return svg + "</svg>";
   }
 
+  /* Marks first, then labels, so no label can be drawn under a mark. Labels
+     stagger away from a neighbour instead of overprinting it (P2/P6). */
+  const placed: Array<{ x: number; y: number }> = [];
+  let marks = "";
+  let labels = "";
   for (const pt of points) {
     const cx = px(pt.x);
     const cy = py(pt.y);
-    svg += '<circle class="pt" cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="5"/>';
-    svg +=
-      '<text class="pt-label" x="' + cx.toFixed(1) + '" y="' + (cy + 18).toFixed(1) +
+    marks += '<circle class="pt" cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="5"/>';
+    let ly = cy + 18;
+    let guard = 0;
+    while (
+      guard < 6 &&
+      placed.some((q) => Math.abs(q.x - cx) < 46 && Math.abs(q.y - ly) < 13)
+    ) {
+      ly += 13;
+      guard++;
+    }
+    if (ly > padT + plotH + 12) ly = cy - 12;
+    placed.push({ x: cx, y: ly });
+    labels +=
+      '<text class="pt-label" x="' + cx.toFixed(1) + '" y="' + ly.toFixed(1) +
       '" text-anchor="middle">' + esc(pt.label) + "</text>";
   }
-  return svg + "</svg>";
+  return svg + marks + labels + "</svg>";
 }
 
 /* ------------------------------------------------------------------ */

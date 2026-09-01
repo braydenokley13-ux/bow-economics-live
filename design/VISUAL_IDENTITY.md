@@ -181,3 +181,48 @@ why the Northstar crest is a compass needle, not a five-point star).
 
 **DO** — dense, monitor-wall information on `/teach`; sparse, one-idea-at-a-time on
 `/board`. **DON'T** — the same layout density on both surfaces.
+
+---
+
+## Module 2 layer — the ticket office
+
+Module 1 is the Cap Room: the war room after the building empties. **Module 2 is a different room
+in the same building at a different hour — the ticket office on a game day, in the hours before
+doors.** M1 is aftermath; M2 is anticipation. That is what earns Module 2 its own layer without
+fracturing the product family.
+
+**Scoping — the whole safety argument.** The layer is `runtime/src/client/shared/m2.css`; every
+selector in it begins `html[data-module="m2"]`, touching no `:root`, no bare element, no M1 class.
+Each client sets `documentElement.dataset.module = "m2"` for an M2 lesson and deletes it otherwise.
+`theme.css` stays the base layer, still linked first on all three surfaces. **Module 1's rendered
+output is unchanged.** Tokens are `--m2-*`; components are `.m2-*`.
+
+**Accent.** Violet (`#5b3df0` -> `#7a5cff`, text at `#9d86ff`) is the only UI accent under M2 (Boss
+lead ruling Q1(a), wave 1). **Gold is retired as an M2 UI accent** and survives only as floodlight
+warmth and wood inside the drawn building (`shared/arena.ts`). Money is off-white; green `#22c55e`
+marks positive CASH only. **RENEWALS is never green- or red-coded**, never rendered as dollars, and
+never shares a type slot with CASH — the two books are two instruments, and no view ever sums them.
+Amber and red exist only on teacher attention pills. Computed ratios and the colour-vision finding:
+`design/assets/m2-contrast-proof.md`.
+
+**Type.** Inter (vendored latin subset, OFL, declared as the family `"Inter M2"` so M1's `--font-ui`
+is untouched) sets everything on M2 — UI, body, labels and figures. No condensed display face on the
+student or teacher surface; Bebas Neue does not appear under M2. Tabular figures for any column of
+digits; the standalone hero figure is proportional and >= 64px.
+
+**Composition.** Near-black canvas with a blue-violet cast, cards barely lighter, 1px hairlines at
+7%, 16px radius, no drop shadows, 18px gutters, 22px card padding. One hero figure per state and
+almost nothing else: the premium is place and restraint, not palette.
+
+**The arena is an instrument, not wallpaper.** The drawn bowl renders a **settled** turnout only.
+Pre-lock the building is dark and closed (`lit: "idle"`) — never lit, never moving with a dial, never
+a picture of a pending night. Fill is always drawn and labelled against the seats opened that night.
+
+**Sports reality.** Real clubs appear as **typographic wordmarks and initials only — no team-colour
+badge fills, no invented logo-alikes, no crest art that could read as a real mark.** The crest chip is
+violet-on-violet like every other chip; a club is named, never branded. Fictional names apply to
+students, never clubs; no "Team N" substitution anywhere.
+
+**Motion.** 200ms commitment settle on lock; the building comes up dark on locked-waiting; one 260ms
+edge flash on a desk's first sellout only. Nothing else gets an entrance. Every animation ships its
+`prefers-reduced-motion` collapse at <= 120ms cross-fade, and no money figure uses overshoot easing.
