@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `229:269163926db6e1492530672d9d21765def4a41b9abdb628a9c620f565266d677`  
-Updated: 2026-09-01T05:26:50.532Z
+Event head: `231:c504af94302d673187ccdba069d083152720d2ad3f6fa792a453dda30dd1fa9a`  
+Updated: 2026-09-01T05:28:36.932Z
 
 ## Founder intent
 
@@ -83,6 +83,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l1-e2e-postl2 — e2e — L1 e2e regression after L2's shared-file changes
 - gate-l2-sr — sports-reality-report — L2 SR gate: CLEAR WITH REPAIRS. Dated facts survived independent verification (cap chain exact, $76B deal, arena renames). BLOCKING-1: profile anchor-club sentences print verbatim under 15 wrong clubs (Detroit reads 'biggest market'; Denver reads '2025 champions'; Lakers 'OWNS its building' — AEG owns it). BLOCKING-2: MODELED_DOLLARS_LINE universals falsified by desks' own bars. Also: 'NY highest gate' repair fails vs shared curves; header/README contradiction; Fever kept half-operated; SR-10 cut sound
 - gate-l2-teacher — teacher-transfer-report — L2 teacher gate: TRANSFER NOT READY. B1 bare /board silently renders a DIFFERENT session (once a previous class's synthesis); B2 new /teach tab strands the room despite stored code+key; B3 WATCH FOR makes a never-locked desk the protagonist; B4 ADAPT answer key cites a board with no reveal-back control; B5 prescribed rehearsal never renders WATCH FOR and collapses synthesis. Synthesis economics + reveal scripting correct and class-computed. Zero console errors
+- gate-l2-econ — economic-truth-report — L2 econ gate: SOUND WITH REQUIRED REPAIRS. Real: externality 24-48% of created value, interior reinvest optimum (both corners lose ~$333k), argmax moves weekly, residual 0, no unwinnable seat (18.5M-state sweep). Blocking: give/take board measures the DEAL not the DECISION (corr gave-vs-startDraw 0.959 vs gave-vs-meanShare 0.644; biggest 'giver' spent $0) and feeds ADAPT Q3 + SPILLOVER card + harness P3; smallMarketPathFrom credits WHO WAS VISITING without controlling price ($110 vs $30 case); two false printed rules; week-3 dominated reinvest unhandled at reveal
 
 ## Claim ledger
 
@@ -96,6 +97,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - gate-l2-sr-dissent — undefined/undefined/open — undefined
 - teacher-l2-not-ready — teacher-transfer/blocking/open — L2 TRANSFER NOT READY on five blocking findings, worst two: B1 — a bare /board URL (no ?code) silently renders a DIFFERENT session's content (observed: a previous class's COMPLETE synthesis card), with no code entry on /board and /teach never printing the projector URL — a live-class wrong-projector hazard; B4 — ADAPT question 3's answer key cites the WHAT YOU GAVE/GOT board (REVEAL stage 2) with no reveal-back control. Plus B2 (stranded new /teach tab), B3 (WATCH FOR protagonist never locked, no auto signal), B5 (prescribed rehearsal renders no WATCH FOR, collapses synthesis). GATE_L2_TEACHER.md.
 - gate-l2-teacher-dissent — undefined/undefined/open — undefined
+- econ-l2-evidence-surfaces — economic-truth/blocking/open — L2's mechanism is real but its evidence surfaces mislead: (B1) the give/take board is confounded with inherited Draw — corr(gave, startDraw)=0.959 vs corr(gave, meanShare)=0.644, so the room's biggest 'giver' spent $0 and a max-reinvest desk reads as a taker; it feeds ADAPT Q3, the SPILLOVER synthesis card (names a desk, credits spending it never did), and harness P3's free-riding limb (reproduces at zero reinvest). (B3) smallMarketPathFrom prints 'it won it on WHO WAS VISITING' without controlling for price ($110-vs-$30 reachable case) — Candidate A's killer defect class rebuilt. Also blocking: two false printed rules ('cannot turn Draw back into cash' — $25,912/point; 'about a fifth keeps your Draw' — measured 5-10%, unachievable above 85). Week-3 dominated reinvest disclosed at dial, unhandled by REVEAL 5. Do not advance or build L3 while B1/B3 stand. GATE_L2_ECON.md.
 
 ## Latest gate
 
