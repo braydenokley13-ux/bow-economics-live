@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `446:aeb7f99074c69ce3d22b17f6a37f93f7960b9818bb64aec027750c573110e45c`  
-Updated: 2026-09-01T14:45:57.444Z
+Event head: `450:83df0a692d7bb2fd423174ca056e37a476ce87050a0a40e3272fdd788366ce9a`  
+Updated: 2026-09-01T14:46:25.113Z
 
 ## Founder intent
 
@@ -42,6 +42,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - builder — builder-w5-l2fix — completed — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
+- lead-integrator — lead-integrator — completed-with-concerns — claude-fable-5
 
 ## Required evidence
 
@@ -187,4 +188,4 @@ Recommendation: **REPAIR**
 
 ## Decision pending
 
-A gate and founder decision are still pending.
+Recorded verdict: **REPAIR**
