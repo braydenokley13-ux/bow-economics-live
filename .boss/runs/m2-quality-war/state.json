@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T08:42:14.923Z",
+  "updatedAt": "2026-09-01T08:42:32.715Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3026,12 +3026,23 @@
           "model": "claude-opus-5",
           "reason": "Final owning-critic ruling on play-l2-below-bar after the per-week decision-band repair (incl. the builder-flagged N-1 guard inversion)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T08:27:41.359Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T08:42:32.427Z",
+          "sections": {
+            "what-the-student-plays": "Each week in one 1024x600 frame, no scroll: who visits and their live Draw, all three weeks, the star departure, two dials, blind commit; then three named blocks, KEPT, the externality line, and what four other prices would have taken.",
+            "pull-rating": "RATING: STRONG. DISSENT play-l2-below-bar: DISCHARGED.",
+            "biggest-failure": "Non-blocking: one session where doing nothing won ($4,053,620 passive vs $3,618,957 adaptive) — schedule variance worth watching in real class data (F-items).",
+            "moment-by-moment-notes": "N-6/N-7 discharged (6 desks x 3 weeks, hit-tested, sold-out included; the $522,856 line legible). The bell LANDS in the evidence column — KEPT is the largest object and it changed the critic's own play ($78 -> $66 -> $50 at 94.8% full). Minor costs: silent 12px swap; ledger below fold.",
+            "required-repairs": "None blocking. F-1..F-8 recorded; N-10/N-11/R5 stand as non-blocking."
+          },
+          "evidenceIds": [
+            "w4-play-final"
+          ],
+          "cost": {
+            "tokens": 127880,
+            "toolUses": 47
+          }
         },
         "w4-econ-final": {
           "assignmentId": "w4-econ-final",
@@ -3082,6 +3093,20 @@
             "tokens": 105025,
             "toolUses": 34
           }
+        },
+        "w4-repair2": {
+          "assignmentId": "w4-repair2",
+          "role": "builder",
+          "actor": "builder-w4-r2",
+          "model": "claude-opus-5",
+          "reason": "Wave-4 repair 2 (micro): econ B11/B12 — compute the reinvest prescription from the room-optimal share and audit it at level, not direction; FL-M composition title if quick",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T08:42:32.715Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -5849,14 +5874,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 63,
+    "agentsActivated": 64,
     "gateFailures": 2,
     "claimsContradicted": 1,
     "evidenceRecorded": 101,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 309,
-  "eventHead": "3c8e59a412367274967e2e7f99c152dd55c314e7b76aa5bf23b676829875e47f",
+  "eventCount": 311,
+  "eventHead": "edcab6168bc928dac6ecb53a8b92bff1bf79f50e8e6f27e4edad9118eb43da39",
   "warnings": []
 }
