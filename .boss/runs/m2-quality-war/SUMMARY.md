@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `395:4987bd0901462eea447dffcd0db772b1648b1b319dd59cc8f934d1bbf649a262`  
-Updated: 2026-09-01T13:03:00.289Z
+Event head: `398:9e5e697aba4212647d702ddf32f5daeb362e04c626cfc9e763ec6fb759a2890e`  
+Updated: 2026-09-01T13:04:43.206Z
 
 ## Founder intent
 
@@ -34,7 +34,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 ## Role status
 
 - builder — builder-w5 — completed — claude-opus-5
-- sports-reality-director — sports-reality-director — active — claude-sonnet-5
+- sports-reality-director — sports-reality-director — completed — claude-sonnet-5
 - economic-truth-critic — economic-truth-critic — active — claude-opus-5
 
 ## Required evidence
@@ -65,6 +65,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - l3-tests-w5 — test — Suite after close-out (458/458 incl. the three harnesses as tests)
 - l3-tuning-w5 — test — L3 harness 10/10 with RENDER limb; 9 mutation limbs caught
 - l3-e2e-w5 — e2e — L3 e2e at close-out head
+- w5-sr-confirm — sports-reality-report — SR w5 narrow confirm: N1 (Seattle SoDo up-to-$200M public bonds; both-sides-public coda; MOU ledgered) and N2 (DMA 20/13) verified verbatim; single-source data with no divergent client copy; no new unverified claim. DISCHARGED
 
 ## Claim ledger
 

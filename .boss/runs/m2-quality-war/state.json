@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T13:03:00.289Z",
+  "updatedAt": "2026-09-01T13:04:43.206Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3634,12 +3634,23 @@
           "model": "claude-sonnet-5",
           "reason": "Narrow owning-critic confirm of the two one-line fact fixes (N1 Seattle MOU, N2 DMA)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T13:02:59.980Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T13:04:43.206Z",
+          "sections": {
+            "real-world-anchors": "Both remaining lines verified verbatim at source (writeTheRule.ts:1693,1705,1745,2241); single-source data rendered identically on /play and /board.",
+            "accuracy-findings": "N1 and N2 CONFIRMED; no new unverified factual claim introduced.",
+            "staleness-findings": "None new.",
+            "rights-source-considerations": "None new.",
+            "recommendation": "DISSENT sr-l3-capstone-facts: DISCHARGED."
+          },
+          "evidenceIds": [
+            "w5-sr-confirm"
+          ],
+          "cost": {
+            "tokens": 42085,
+            "toolUses": 8
+          }
         },
         "w5-econ-confirm": {
           "assignmentId": "w5-econ-confirm",
@@ -3669,7 +3680,8 @@
         "w5-r3r4-arm",
         "l3-tests-w5",
         "l3-tuning-w5",
-        "l3-e2e-w5"
+        "l3-e2e-w5",
+        "w5-sr-confirm"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -6341,6 +6353,23 @@
       },
       "recordedAt": "2026-09-01T13:02:41.693Z",
       "actor": "lead-integrator"
+    },
+    "w5-sr-confirm": {
+      "id": "w5-sr-confirm",
+      "wave": 5,
+      "kind": "sports-reality-report",
+      "label": "SR w5 narrow confirm: N1 (Seattle SoDo up-to-$200M public bonds; both-sides-public coda; MOU ledgered) and N2 (DMA 20/13) verified verbatim; single-source data with no divergent client copy; no new unverified claim. DISCHARGED",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-sr-confirm--GATE_L3_SR.md",
+      "sha256": "0a59d834b761ddcd23efe131dba626f92721cc379e70bbe57798a1e1e1440c1a",
+      "size": 48089,
+      "metadata": {
+        "tags": [
+          "sports-reality",
+          "wave-5"
+        ]
+      },
+      "recordedAt": "2026-09-01T13:04:42.596Z",
+      "actor": "sports-reality-director"
     }
   },
   "claims": {
@@ -7029,9 +7058,12 @@
         "gate-l3-sr"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T11:04:36.311Z",
-      "actor": "sports-reality-director"
+      "actor": "sports-reality-director",
+      "resolution": "Owning critic verified both remaining lines verbatim against the fact base (Seattle 2012 MOU public-bond truth with the subsidy-coda retaught honestly; DMA ranks corrected), confirmed single-source rendering across surfaces and no new unverified claims. Explicit line: DISSENT sr-l3-capstone-facts: DISCHARGED. GATE_L3_SR.md W5 NARROW CONFIRM.",
+      "resolvedAt": "2026-09-01T13:04:42.895Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l3-sr-dissent": {
       "id": "gate-l3-sr-dissent",
@@ -7214,11 +7246,11 @@
     "agentsActivated": 80,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 133,
+    "evidenceRecorded": 134,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 395,
-  "eventHead": "4987bd0901462eea447dffcd0db772b1648b1b319dd59cc8f934d1bbf649a262",
+  "eventCount": 398,
+  "eventHead": "9e5e697aba4212647d702ddf32f5daeb362e04c626cfc9e763ec6fb759a2890e",
   "warnings": []
 }
