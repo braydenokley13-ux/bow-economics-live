@@ -87,6 +87,7 @@ const occlusionChecks = [];
 const nonVacuityProofs = [];
 const realDialDrives = [];
 const privacyScans = [];
+const inkScans = [];
 
 async function assertFullyVisible(page, selector, label) {
   const result = await page.evaluate((sel) => {
@@ -251,6 +252,138 @@ async function assertNoOverlap(board, label) {
   }
   await board.setViewportSize({ width: 1600, height: 900 });
   await board.waitForTimeout(150);
+}
+
+/**
+ * NO INK PRINTED THROUGH ANY OTHER INK, ANYWHERE ON THE FRAME.
+ *
+ * `assertNoOverlap` above hit-tests table CELLS against their siblings, and that
+ * is all it can see. The projector gate found the round histogram's gold bars
+ * printed THROUGH the veil paragraph — 4 columns, 10px at 1366x768 and 14px at
+ * 1920x1080, on the frame the room stares at for two of three rounds — and every
+ * shipped guard passed it: `assertBoardFrameFits` could not see it (the overflow
+ * is inside a fixed-height container, so #stage's scrollHeight never moved),
+ * `assertNoEllipsization` could not see it (nothing was truncated), and
+ * `assertNoOverlap` could not see it (neither element is a `.wr-board-row` cell).
+ *
+ * This is the guard that can. Every TEXT LINE on the frame is measured as real
+ * ink with a Range, and every painted, non-transparent, non-ancestor element is
+ * tested against it. A bar drawn over a sentence fails here and nowhere else.
+ */
+async function assertNoInkCollision(board, label) {
+  for (const shape of PROJECTOR_SHAPES) {
+    await board.setViewportSize(shape);
+    await board.waitForTimeout(260);
+    const offenders = await board.evaluate(() => {
+      const stage = document.getElementById("stage");
+      if (!stage) return [];
+      const painted = [];
+      for (const el of stage.querySelectorAll("*")) {
+        const cs = getComputedStyle(el);
+        if (cs.visibility === "hidden" || cs.display === "none" || Number(cs.opacity) === 0) continue;
+        const bg = cs.backgroundColor;
+        const opaque = bg && bg !== "transparent" && !/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(bg);
+        if (!opaque) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        painted.push({ el, rect: r });
+      }
+      // Text lines, as ink rather than as boxes.
+      const lines = [];
+      const walker = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if (!n.textContent || n.textContent.trim().length < 2) continue;
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        for (const r of range.getClientRects()) {
+          if (r.width < 2 || r.height < 2) continue;
+          lines.push({ node: n, rect: r, text: n.textContent.trim().slice(0, 48) });
+        }
+      }
+      const out = [];
+      for (const line of lines) {
+        for (const p of painted) {
+          // A block that CONTAINS the text legitimately sits behind it.
+          if (p.el.contains(line.node)) continue;
+          const dx = Math.min(line.rect.right, p.rect.right) - Math.max(line.rect.left, p.rect.left);
+          const dy = Math.min(line.rect.bottom, p.rect.bottom) - Math.max(line.rect.top, p.rect.top);
+          if (dx > 1 && dy > 1) {
+            out.push({
+              text: line.text,
+              over: `${p.el.tagName.toLowerCase()}.${(typeof p.el.className === "string" ? p.el.className.split(/\s+/)[0] : "") || "?"}`,
+              by: `${Math.round(dx)}x${Math.round(dy)}px`,
+              boxes: `text ${Math.round(line.rect.top)}..${Math.round(line.rect.bottom)} vs paint ${Math.round(p.rect.top)}..${Math.round(p.rect.bottom)}`,
+            });
+          }
+        }
+      }
+      return out;
+    });
+    assert.equal(
+      offenders.length,
+      0,
+      `${label} @ ${shape.width}x${shape.height}: the projector is painting over text the room has to read —\n  ${offenders
+        .map((o) => `"${o.text}" is covered by ${o.over} (${o.by}, ${o.boxes})`)
+        .join("\n  ")}`,
+    );
+    inkScans.push(`${label}@${shape.width}`);
+  }
+  await board.setViewportSize({ width: 1600, height: 900 });
+  await board.waitForTimeout(150);
+}
+
+/**
+ * ...and the guard is proven able to bite, in this run, on this frame.
+ *
+ * The histogram container is temporarily grown in memory until its bars reach up
+ * into the veil paragraph — exactly the defect the projector gate photographed —
+ * the SAME scan is re-run, and the run fails if it comes back clean. Then the
+ * page is restored and the honest scan is re-asserted.
+ */
+async function proveInkGuardBites(board, label) {
+  const staged = await board.evaluate(() => {
+    const hist = document.getElementById("wrBoardHist");
+    const copy = document.getElementById("wrBoardVeil");
+    if (!hist || !copy) return false;
+    const bar = hist.querySelector(".wr-board-histbar");
+    if (!bar) return false;
+    const copyBox = copy.getBoundingClientRect();
+    const histBox = hist.getBoundingClientRect();
+    hist.dataset.e2ePrev = hist.getAttribute("style") || "";
+    bar.dataset.e2ePrev = bar.getAttribute("style") || "";
+    // Reproduce the shipped defect: a column taller than its own container,
+    // reaching up through the sentence above it.
+    hist.style.overflow = "visible";
+    bar.style.position = "relative";
+    bar.style.height = `${Math.ceil(histBox.bottom - copyBox.bottom + 20)}px`;
+    bar.style.top = `${-Math.ceil(histBox.bottom - copyBox.bottom + 20 - histBox.height)}px`;
+    return true;
+  });
+  assert.ok(staged, `ink-guard non-vacuity: could not stage the histogram collision on ${label}`);
+  let caught = false;
+  try {
+    await assertNoInkCollision(board, `${label} (deliberately poisoned)`);
+  } catch {
+    caught = true;
+  }
+  await board.evaluate(() => {
+    const hist = document.getElementById("wrBoardHist");
+    const bar = hist?.querySelector(".wr-board-histbar");
+    if (hist) {
+      hist.setAttribute("style", hist.dataset.e2ePrev || "");
+      delete hist.dataset.e2ePrev;
+    }
+    if (bar) {
+      bar.setAttribute("style", bar.dataset.e2ePrev || "");
+      delete bar.dataset.e2ePrev;
+    }
+  });
+  assert.ok(
+    caught,
+    `NON-VACUITY FAILED: with a histogram bar deliberately drawn up through the veil paragraph — the exact defect gate-l3-projector B1 photographed at both shapes — the ink guard still reported the frame clean. The instrument cannot see the defect it exists to catch.`,
+  );
+  await assertNoInkCollision(board, `${label} (restored)`);
+  nonVacuityProofs.push(`ink collision on ${label}: staged histogram-through-copy overprint caught, frame restored clean`);
 }
 
 /** The projector may never be handed a seat identity, at any phase. */
@@ -741,9 +874,122 @@ async function main() {
         await assertBoardFrameFits(board, "PLAY round 2 (histogram up)");
         await assertNoEllipsization(board, "PLAY round 2");
         await assertBoardPrivacy(board, "PLAY round 2");
+
+        // projector B2: `closeRound` never cleared the live proposal, so round 2
+        // opened with the board and the console both asserting the room was
+        // finished before anybody had moved.
+        const counter = await board.evaluate(() => document.body.innerText);
+        assert.match(
+          counter,
+          /0 of \d+ desks have a number in THIS round/,
+          `round 2 opened with a stale submission count on the projector — the board reads: ${counter.slice(0, 400)}`,
+        );
+        const teachCounter = await teach.evaluate(() => document.getElementById("btnRuleStep")?.textContent ?? "");
+        assert.match(teachCounter, /\(0\/\d+ in\)/, `round 2 opened with a stale count on /teach: "${teachCounter}"`);
+
+        // The two-thirds gauge the room could never see while it still mattered.
+        const gauge = await board.textContent("#wrBoardGauge");
+        assert.match(gauge, /WOULD PASS/, "the live in-band gauge is not on the round frame");
+        assert.match(gauge, /ARE NEEDED/, "the gauge does not say how many desks are needed");
+        await assertBackRowType(board, "#wrBoardGauge", "ROUNDS: the two-thirds gauge");
+
+        // projector B1: the bars must not be printed through the veil sentence —
+        // and the guard must be able to see it when they are.
+        await assertNoInkCollision(board, "PLAY round 2 (histogram frame)");
+        await proveInkGuardBites(board, "PLAY round 2 (histogram frame)");
         await board.screenshot({ path: path.join(SCREEN_DIR, "08-board-round2-histogram.png") });
         for (let i = 0; i < 3; i += 1) await assertRoundsFirstContact(desks[i], `round 2 first contact, desk ${i + 1}`);
+
+        // Abstention honesty: a desk with no number in this round must be told
+        // on its own screen what that means (teacher B6 claims this sentence
+        // exists, so the run proves it does).
+        const abstain = await desks[0].evaluate(() => document.querySelector("#wrAbstain")?.textContent ?? "");
+        assert.match(abstain, /ABSTAINED/, "a desk with no number in this round is not told it has abstained");
+        assert.match(abstain, /cannot be inside the ten-point band/, "the abstention note does not say what abstaining costs");
       }
+    }
+
+    // ---- THE VOTE IS SEALED ----------------------------------------------
+    // gate-l3-play's biggest failure, reproduced as a guard. Round 3 has closed,
+    // the full histogram and the middle number are on the projector, and a desk
+    // tries to re-aim at them. Both halves are asserted: the DESK is dead (the
+    // controls are disabled and the screen says why) and the MODEL is dead (a
+    // proposal submitted anyway is refused, and the adopted rule is unchanged).
+    {
+      const sealedDesk = await desks[0].evaluate(() => ({
+        dial: document.getElementById("wrShareDial")?.disabled ?? null,
+        condition: document.getElementById("wrCondition")?.disabled ?? null,
+        submit: document.getElementById("wrPropose")?.disabled ?? null,
+        label: document.getElementById("wrPropose")?.textContent ?? "",
+        note: document.getElementById("wrSealed")?.textContent ?? "",
+      }));
+      assert.equal(sealedDesk.dial, true, "the SHARE dial is still live after round 3 closed — the vote is not sealed");
+      assert.equal(sealedDesk.condition, true, "the CONDITION control is still live after round 3 closed");
+      assert.equal(sealedDesk.submit, true, "PUT IT IN is still live after round 3 closed");
+      assert.match(sealedDesk.label, /SEALED/, `the commit control does not say the vote is sealed — it reads "${sealedDesk.label}"`);
+      assert.match(sealedDesk.note, /sealed/i, "the desk does not say why its controls are dead");
+
+      // ...and the model refuses it even if the UI is bypassed entirely. This is
+      // the only place in this run that posts an action directly, precisely
+      // because the point is that the SERVER refuses it, not the screen.
+      const before = (await board.textContent(".wr-board-median")) ?? "";
+      const rejected = await desks[0].evaluate(async () => {
+        const raw = localStorage.getItem("bow-play-credentials");
+        if (!raw) return { skipped: true, why: "no stored credentials" };
+        const c = JSON.parse(raw);
+        const res = await fetch(`/api/sessions/${c.sessionCode}/actions`, {
+          method: "POST",
+          headers: { "content-type": "application/json", authorization: `Bearer ${c.deviceToken}` },
+          body: JSON.stringify({ type: "propose", share: 60, condition: true }),
+        });
+        return { skipped: false, status: res.status, body: (await res.text()).slice(0, 240) };
+      });
+      assert.equal(rejected.skipped, false, `sealed-vote probe could not run: ${rejected.why}`);
+      assert.notEqual(rejected.status, 200, `a proposal LANDED after the round closed: HTTP ${rejected.status} ${rejected.body}`);
+      assert.match(rejected.body, /sealed/i, `the refusal does not say the vote is sealed: ${rejected.body}`);
+      await board.waitForTimeout(1500);
+      const after = (await board.textContent(".wr-board-median")) ?? "";
+      assert.equal(after, before, `the room's middle number changed after the round closed — "${before}" became "${after}"`);
+      console.log(`[e2e-m2l3] SEALED VOTE — post-close submission refused with HTTP ${rejected.status}; the room's middle number did not move`);
+    }
+
+    // ---- LATE JOINER: never a silent 409 ---------------------------------
+    // gate-l3-teacher B4. A pair arriving after the league closed used to sit on
+    // "You're in — finding your club…" forever with a 409 in its console while
+    // /teach counted it as joined. It must land somewhere playable and honest.
+    {
+      const late = await browser.newPage({ viewport: { width: 1024, height: 600 } });
+      watchConsole(late, "late-joiner");
+      late.on("dialog", (d) => d.accept());
+      await late.goto(`${BASE}/play`);
+      await late.fill("#joinCode", code);
+      await late.fill("#joinName", "Late Pair");
+      await late.click("#btnJoin");
+      await late.waitForSelector("#gameCard:not([hidden])", { timeout: 30000 });
+      await late.waitForFunction(
+        () => {
+          const t = document.body.innerText;
+          return /arrived after this league closed/i.test(t) || /DESK \d/i.test(t);
+        },
+        null,
+        { timeout: 30000 },
+      );
+      const landing = await late.evaluate(() => document.body.innerText);
+      assert.equal(
+        /finding your club/i.test(landing),
+        false,
+        `the late joiner is stranded on "finding your club…" — the screen reads:\n${landing.slice(0, 400)}`,
+      );
+      const seated = /DESK \d/i.test(landing);
+      if (!seated) {
+        assert.match(landing, /arrived after this league closed/i, "the observer landing does not say what happened");
+        assert.match(landing, /Sit with the desk next to you/i, "the observer landing does not say what to do");
+        const watch = await teach.evaluate(() => document.getElementById("director")?.innerText ?? "");
+        assert.match(watch, /arrived after the league closed/i, "the teacher console says nothing about the stranded pair");
+      }
+      console.log(`[e2e-m2l3] LATE JOINER — landed ${seated ? "on a handed-over league-office club" : "as an announced observer, with the teacher told"}`);
+      await late.screenshot({ path: path.join(SCREEN_DIR, "08b-play-late-joiner.png") });
+      await late.close();
     }
 
     // ---- the two-thirds test --------------------------------------------
@@ -852,9 +1098,25 @@ async function main() {
     let arrowFrameSeen = false;
     let potFrameSeen = false;
     let eraFrameSeen = false;
+    // gate-l3-play repair 3: the student device was byte-identical across all
+    // five reveal stages. Every stage's desk text is captured and compared.
+    const deskAtStage = [];
     for (let stage = 1; stage <= 5; stage += 1) {
       await teach.click("#btnRevealNext");
       await board.waitForFunction((s) => new RegExp(`Stage ${s} of`).test(document.body.innerText), stage, { timeout: 25000 });
+      await desks[0].waitForFunction((s) => new RegExp(`Beat ${s} of`).test(document.body.innerText), stage, { timeout: 25000 });
+      deskAtStage.push(await desks[0].evaluate(() => document.getElementById("wrLens")?.innerText ?? ""));
+      if (stage === 3) {
+        // The one-tap prediction, before the arrows land.
+        await desks[0].waitForSelector("#wrPredictFlat", { timeout: 20000 });
+        await desks[0].click("#wrPredictFlat");
+        await desks[0].waitForFunction(() => /The arrows are next/.test(document.body.innerText), null, { timeout: 20000 });
+        await desks[0].screenshot({ path: path.join(SCREEN_DIR, "15b-play-reveal-predict.png") });
+      }
+      if (stage === 4) {
+        const resolved = await desks[0].textContent("#wrPredictResult");
+        assert.ok(resolved && /You said/.test(resolved), "the desk's prediction was never resolved against its own arrow");
+      }
       await assertFullyVisible(board, "#wrBoardHeadline", `REVEAL stage ${stage}: the headline`);
       await assertBackRowType(board, "#wrBoardHeadline", `REVEAL stage ${stage}: the headline`);
       if (stage === 3) {
@@ -871,6 +1133,15 @@ async function main() {
         const flat = await board.evaluate(() => document.querySelectorAll("[data-wr-arrow] .wr-board-arrow.flat").length);
         assert.ok(moved > 0, "BC-1: no arrow moved on the reveal frame");
         assert.ok(flat > 0, "BC-1: no arrow held flat on the reveal frame — the 'why didn't New York move?' beat is missing");
+        // gate-l3-play repair 5: the frame must SAY why the flat arrow is flat,
+        // and "did not move" must not be an em dash a ten-year-old reads as a
+        // range. Without this the module's signature beat is founder knowledge.
+        const why = await board.textContent("#wrBoardArrowWhy");
+        assert.ok(why && why.length > 40, "REVEAL stage 4 does not say WHY the capacity-bound market's price did not move");
+        assert.match(why, /cannot discount a seat you do not have|nothing for a cheaper seat to buy|too little of each extra dollar/i, `the why-line does not carry the capacity argument: "${why}"`);
+        await assertBackRowType(board, "#wrBoardArrowWhy", "REVEAL stage 4: the why-line");
+        const flatText = await board.evaluate(() => [...document.querySelectorAll("[data-wr-arrow] .wr-board-arrow.flat")].map((n) => n.textContent).join(" | "));
+        assert.match(flatText, /NO CHANGE/, `a flat arrow is still rendered as a dash rather than saying so: "${flatText}"`);
         arrowFrameSeen = true;
       }
       if (stage === 5) {
@@ -881,10 +1152,29 @@ async function main() {
       await assertBoardFrameFits(board, `REVEAL stage ${stage}`);
       await assertNoEllipsization(board, `REVEAL stage ${stage}`);
       await assertNoOverlap(board, `REVEAL stage ${stage}`);
+      await assertNoInkCollision(board, `REVEAL stage ${stage}`);
       await assertBoardPrivacy(board, `REVEAL stage ${stage}`);
       await board.screenshot({ path: path.join(SCREEN_DIR, `15-board-reveal-${stage}.png`) });
     }
     assert.ok(potFrameSeen && arrowFrameSeen && eraFrameSeen, "a staged reveal beat never rendered its own evidence");
+    assert.equal(
+      new Set(deskAtStage).size,
+      deskAtStage.length,
+      `the student device repeated itself across reveal stages — it must carry this desk's own number for each beat, not the same screen five times:\n${deskAtStage.join("\n---\n")}`,
+    );
+
+    // projector B4: the board must not name one desk's superlative money on a
+    // frame that promises no desk's money is ever ranked.
+    {
+      const stage2Text = await board.evaluate(() => document.body.innerText);
+      if (/No desk's money is ever ranked/.test(stage2Text)) {
+        assert.equal(
+          /biggest single swing was \$[\d,]+ at Desk \d/.test(stage2Text),
+          false,
+          "the projector names a desk's ranked superlative on the same frame that promises it never ranks a desk's money",
+        );
+      }
+    }
 
     // ---- CONSEQUENCE -----------------------------------------------------
     await advanceTo(teach, "CONSEQUENCE");
@@ -917,19 +1207,54 @@ async function main() {
     const argueText = await board.evaluate(() => document.body.innerText);
     assert.match(argueText, /2013/, "the capstone must carry its date on the board");
     assert.equal(/22-8/.test(argueText), false, "the board leaked the owners' vote before the reveal");
+    // SR A2 (BLOCKING): /teach tells the teacher the two term sheets are on the
+    // room's screens with the numbers on them. They must actually exist.
+    const boardTerms = await board.evaluate(() => document.querySelectorAll("[data-wr-term]").length);
+    assert.equal(boardTerms, 2, `the projector renders ${boardTerms} term sheets — the capstone claims two`);
+    assert.match(argueText, /\$625M/, "the Seattle bid figure is not on the projector");
+    assert.match(argueText, /\$534M/, "the Sacramento bid figure is not on the projector");
+    assert.match(argueText, /\$255M/, "the ~$255M of Sacramento public money is not in the debate material");
+    const deskTerms = await desks[0].evaluate(() => ({
+      count: document.querySelectorAll("#wrTermSheets [data-wr-term]").length,
+      text: document.getElementById("wrTermSheets")?.innerText ?? "",
+    }));
+    assert.equal(deskTerms.count, 2, `the student device renders ${deskTerms.count} term sheets`);
+    assert.match(deskTerms.text, /\$625M/, "the Seattle bid figure is not on the student device");
+    assert.match(deskTerms.text, /\$534M/, "the Sacramento bid figure is not on the student device");
+    assert.match(deskTerms.text, /\$255M/, "the Sacramento public-money line is not on the student device");
     await assertBoardFrameFits(board, "ARGUE (held)");
     await assertNoEllipsization(board, "ARGUE (held)");
+    await assertNoInkCollision(board, "ARGUE (held)");
     await board.screenshot({ path: path.join(SCREEN_DIR, "19-board-argue.png") });
     for (let i = 0; i < DESKS; i += 1) {
       await desks[i].waitForSelector("#wrKingsDeny");
       await desks[i].click(i % 4 === 0 ? "#wrKingsApprove" : "#wrKingsDeny");
     }
     await desks[0].screenshot({ path: path.join(SCREEN_DIR, "20-play-argue.png") });
+
+    // COMMIT, THEN THE ROOM, THEN THE OWNERS. The class has to see its own
+    // verdict stand alone before the 22-8 lands (gate-l3-projector 5).
+    await teach.click("#btnCommitReveal");
+    await board.waitForSelector("#wrBoardKingsRoomSplit", { timeout: 25000 });
+    const roomOnly = await board.evaluate(() => document.body.innerText);
+    assert.match(roomOnly, /This room voted \d+ to deny/, "the room's own tally is not on the projector after the first press");
+    assert.equal(/22-8/.test(roomOnly), false, "the owners' 22-8 landed in the SAME press as the room's own tally");
+    await assertBackRowType(board, "#wrBoardKingsRoomSplit", "ARGUE: the room's own verdict, alone");
+    await assertBoardFrameFits(board, "ARGUE (room's tally alone)");
+    await assertNoInkCollision(board, "ARGUE (room's tally alone)");
+    await board.screenshot({ path: path.join(SCREEN_DIR, "20b-board-argue-roomsplit.png") });
+
     await teach.click("#btnCommitReveal");
     await board.waitForSelector("#wrBoardKingsReveal", { timeout: 25000 });
     const kings = await board.textContent("#wrBoardKingsReveal");
     assert.match(kings, /22-8/, "the capstone reveal must carry the real vote");
     assert.match(kings, /May 15, 2013/, "the capstone reveal must carry its date");
+    // SR A1 (BLOCKING): relocation is a SIMPLE MAJORITY, 16 of 30 — the finale
+    // taught a supermajority rule the NBA does not have, and used it to justify
+    // the room's own adoption threshold.
+    assert.match(kings, /16 of 30/, "the capstone does not state the real relocation threshold");
+    assert.match(kings, /March 2026|30-0/, "the expansion epilogue is not refreshed to the March 2026 board vote");
+    assert.match(kings, /23 of the 30|23 of 30/, "the capstone does not say what the expansion vote actually requires");
     const kingsSplit = await board.textContent("#wrBoardKingsSplit");
     assert.match(kingsSplit, /Nobody is scored/, "the capstone must say there is no matching score (FL5)");
     await assertBackRowType(board, "#wrBoardKingsSplit", "ARGUE: the room's split");
@@ -961,8 +1286,17 @@ async function main() {
       await assertFullyVisible(board, "#wrBoardCard", `SYNTHESIS card ${page}`);
       await assertBackRowType(board, "#wrBoardCard h3", `SYNTHESIS card ${page}: title`);
       await assertBackRowType(board, "#wrBoardOurClass", `SYNTHESIS card ${page}: the OUR CLASS rail`);
+      // SR A1: no card may teach the false supermajority rule.
+      const cardText = await board.evaluate(() => document.getElementById("wrBoardCard")?.innerText ?? "");
+      assert.equal(
+        /owners' votes on money take supermajorities/.test(cardText),
+        false,
+        `finale card ${page} still teaches the false NBA supermajority rule`,
+      );
+      assert.equal(/several times any one club's gate/.test(cardText), false, `finale card ${page} still over-claims the national check against every club's gate`);
       await assertBoardFrameFits(board, `SYNTHESIS card ${page}`);
       await assertNoEllipsization(board, `SYNTHESIS card ${page}`);
+      await assertNoInkCollision(board, `SYNTHESIS card ${page}`);
       await assertBoardPrivacy(board, `SYNTHESIS card ${page}`);
       await board.screenshot({ path: path.join(SCREEN_DIR, `22-board-synthesis-${page}.png`) });
       if (page < pageCount) await pageSynth(teach, board, page + 1);
@@ -994,6 +1328,7 @@ async function main() {
       `[e2e-m2l3] PASS — ${boardFramesChecked.length / 2} board frames checked at 2 projector shapes, ` +
         `${ellipsisScans.length / 2} frames scanned for silent truncation, ${privacyScans.length} board privacy scans, ` +
         `${foldChecks.length} 1024x600 first-contact assertions (rule rounds + all three weeks, every desk), ` +
+        `${inkScans.length / 2} frames scanned for text-vs-ink overprint, ` +
         `${occlusionChecks.length} elementFromPoint occlusion probes, ` +
         `${realDialDrives.length} dials driven by real mouse drag + keyboard, ${pageCount} finale cards paged, zero console errors`,
     );

@@ -39,6 +39,14 @@ type AdvanceWarnState =
   | { kind: "fh-play"; nightNumber: number; nightCount: number; lockedCount: number; deskCount: number }
   // M2 L2: leaving PLAY settles every week still open, in one press.
   | { kind: "hl-play"; weekNumber: number; weekCount: number; lockedCount: number; deskCount: number }
+  // M2 L3 (gate-l3-teacher B3, BLOCKING): L3 regressed against its own sibling.
+  // `Advance ▸` and `Jump to REVEAL` were unguarded through the WHOLE of PLAY,
+  // so one click during the vote threw away the vote AND all three weeks, and
+  // the console then offered five reveal beats for a season nobody played with
+  // no warning anywhere that the class had been derailed. The consequence is
+  // larger here than in either sibling, and it names the two arms separately.
+  | { kind: "wr-vote"; round: number; roundCount: number; submitted: number; deskCount: number; sealed: boolean }
+  | { kind: "wr-season"; weekNumber: number; weekCount: number; lockedCount: number; deskCount: number }
   | null;
 let advanceWarnState: AdvanceWarnState = null;
 /** M2 L2's week bell, when it would settle a league with nobody locked in (gate-l2-teacher N5). */
@@ -468,6 +476,25 @@ function render(payload: TeacherPayload): void {
       lockedCount: Number(payload.view["lockedCount"] ?? 0),
       deskCount: Number(payload.view["deskCount"] ?? 0),
     };
+  } else if (isWriteRule && s.phase === "PLAY" && String(payload.view["stage"] ?? "") !== "seasonDone") {
+    const stage = String(payload.view["stage"] ?? "");
+    advanceWarnState =
+      stage === "season"
+        ? {
+            kind: "wr-season",
+            weekNumber: Number(payload.view["weekNumber"] ?? 1),
+            weekCount: Number(payload.view["weekCount"] ?? 3),
+            lockedCount: Number(payload.view["lockedCount"] ?? 0),
+            deskCount: Number(payload.view["deskCount"] ?? 0),
+          }
+        : {
+            kind: "wr-vote",
+            round: Number(payload.view["round"] ?? 1),
+            roundCount: Number(payload.view["roundCount"] ?? 3),
+            submitted: Number(payload.view["proposalCount"] ?? 0),
+            deskCount: Number(payload.view["deskCount"] ?? 0),
+            sealed: stage === "adopted",
+          };
   } else if (isFreeAgency && s.phase === "PLAY" && !Boolean(payload.view["windowClosed"])) {
     advanceWarnState = {
       kind: "fa-play",
@@ -1360,6 +1387,29 @@ function confirmSkippingContent(via: "advance" | "reveal"): boolean {
             } on whatever is on ${unlocked === 1 ? "its" : "their"} dials right now.`
           : ""
       } Continue?`,
+    );
+  } else if (w?.kind === "wr-vote") {
+    const missing = Math.max(0, w.deskCount - w.submitted);
+    return confirm(
+      `${lead}${
+        w.sealed
+          ? "The rule is printed but the season has not opened."
+          : `Round ${w.round} of ${w.roundCount} is still open (${w.submitted}/${w.deskCount} desks have a number in${missing > 0 ? `, ${missing} abstaining so far` : ""}).`
+      } This is NOT the round step and it is NOT the week bell — ${
+        via === "reveal" ? "this button" : "advancing now"
+      } abandons the rest of the vote AND the whole three-week season: every round still open closes at once, the two-thirds test runs, and all three weeks settle without anybody playing them. Restore last good state is the only way back. Continue?`,
+    );
+  } else if (w?.kind === "wr-season") {
+    const remaining = w.weekCount - w.weekNumber;
+    const unlocked = Math.max(0, w.deskCount - w.lockedCount);
+    return confirm(
+      `${lead}Week ${w.weekNumber} of ${w.weekCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the week bell — ${
+        via === "reveal" ? "this button" : "advancing now"
+      } settles this week for every club AND ends the season early, so ${remaining === 1 ? "1 week" : `${remaining} weeks`} will never be played.${
+        unlocked > 0
+          ? ` ${unlocked} desk${unlocked === 1 ? "" : "s"} ${unlocked === 1 ? "has" : "have"} not locked; ${unlocked === 1 ? "it settles" : "they settle"} at ${unlocked === 1 ? "its" : "their"} club's house price with nothing put back, marked AUTO.`
+          : ""
+      } Restore last good state is the only way back. Continue?`,
     );
   } else if (w?.kind === "fa-play") {
     const remainingDays = w.windowDays - w.day;

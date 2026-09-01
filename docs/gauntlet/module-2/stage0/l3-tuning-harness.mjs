@@ -427,6 +427,46 @@ console.log(`${MARKET_PROFILES.length} market profiles · ${WEEK_COUNT}-week sea
   for (const b of band) if (!SHARE_GRID.includes(b.adopted)) fail.push(`adopted ${b.adopted}% is not on the dial`);
   if (snapShare(63) !== SHARE_MAX || snapShare(-4) !== SHARE_GRID[0]) fail.push("snapShare does not clamp to the dial");
 
+  // ---- THE ADOPTION RATE, MEASURED ----------------------------------------
+  // econ dissent 2 / F1: the mechanism's attractor is STATUS QUO, and at 5%
+  // BC-1's payload is null. The wave's charter asks for this number on the
+  // record after the repair. It is printed, not asserted: the supermajority is
+  // correct economics and the econ gate ruled explicitly against tuning it away,
+  // so the repair is an OUTCOME-ADAPTIVE REVEAL rather than a retune, and this
+  // sweep is the honest statement of how often that branch fires.
+  {
+    const PROFILE = [0, 15, 30, 45, 60];
+    const DESKS = 6;
+    const base = seated(DESKS);
+    const seats = base.clubs.filter((c) => c.seatId !== null).map((c) => c.seatId);
+    const hist = new Map();
+    let adopted = 0;
+    let total = 0;
+    const idx = new Array(DESKS).fill(0);
+    for (;;) {
+      let s = base;
+      for (let i = 0; i < DESKS; i += 1) s = apply(s, { type: "propose", share: PROFILE[idx[i]], condition: false }, "PLAY", seats[i]);
+      s = mod.closeRound(s);
+      const out = runAdoption(s);
+      total += 1;
+      if (out.adopted.how === "voted") adopted += 1;
+      hist.set(out.adopted.share, (hist.get(out.adopted.share) ?? 0) + 1);
+      let k = DESKS - 1;
+      while (k >= 0 && ++idx[k] === PROFILE.length) idx[k--] = 0;
+      if (k < 0) break;
+    }
+    const pct = (n) => `${((n / total) * 100).toFixed(1)}%`;
+    rows.push(
+      `ADOPTION RATE over ${total.toLocaleString()} uniform proposal profiles (${PROFILE.length}^${DESKS}), driven through closeRound + runAdoption: ADOPTED ${pct(adopted)} · STATUS QUO ${pct(total - adopted)}`,
+    );
+    rows.push(
+      `adopted-share histogram: ${[...hist.entries()].sort((a, b) => b[1] - a[1]).map(([share, n]) => `${share}%: ${pct(n)}`).join(" · ")}`,
+    );
+    rows.push(
+      "NOT TUNED. The supermajority is the mechanism working — a room that cannot buy its big markets keeps the old rule, which is the real politics of the real league. The repair is that the reveal now TEACHES that branch (stage 4 branches, prints why nothing moved, and shows what the number the room argued about would have moved) instead of asking a false-premise question over a null instrument.",
+    );
+  }
+
   check("P5", "ADOPTION MECHANICS — two-thirds passes, a split room falls to a legitimate status quo, and one desk's influence is bounded", fail.length === 0, [...rows, ...fail]);
 }
 
@@ -541,6 +581,23 @@ function auditClaims(surfaces, truth) {
   for (const surface of surfaces) {
     for (const a of surface.claims) {
       const at = `${surface.surface}/${a.id}`;
+      // ---- COVERAGE. econ dissent `econ-l3-claim-audit-vacuous`: the old audit
+      // asserted `s.text.includes(atom.rendered)` where `rendered` was derived
+      // from `atom.value` by the SAME expression that built the sentence, so the
+      // check was tautological for values; and `quantifier.claims` was stored
+      // and never asserted at all. Both sub-classes are now closed by making the
+      // audit REFUSE TO PASS an atom it cannot check independently. A new atom
+      // with no recomputation registered in `truthFor` fails the suite — it is
+      // not silently waved through, which is how the value class stayed open.
+      const isQuantifier = Boolean(a.quantifier);
+      const generic = a.id.replace(/-\d+$/, "-N");
+      if (isQuantifier) {
+        if (!truth.predicates.has(a.id) && !truth.predicates.has(generic)) {
+          fail.push(`COVERAGE ${at}: quantifier atom has no independently recomputed predicate — the audit cannot see whether this word is true`);
+        }
+      } else if (!truth.values.has(a.id) && !truth.values.has(generic)) {
+        fail.push(`COVERAGE ${at}: value atom has no independently recomputed magnitude — a value drift here would be invisible`);
+      }
       // BINDING — the printed substring IS the computed value, and it is present.
       if (!a.quantifier && a.rendered !== fmt(a.value, a.format)) {
         fail.push(`BINDING ${at}: printed "${a.rendered}" but the value renders as "${fmt(a.value, a.format)}"`);
@@ -554,75 +611,280 @@ function auditClaims(surfaces, truth) {
       if (a.assertsSign === "negative" && !(a.value < 0)) fail.push(`SIGN ${at}: asserts negative, value ${a.value}`);
       if (a.assertsSign === "nonNegative" && !(a.value >= 0)) fail.push(`SIGN ${at}: asserts non-negative, value ${a.value}`);
       if (a.assertsSign === "zero" && a.value !== 0) fail.push(`SIGN ${at}: asserts zero, value ${a.value}`);
-      // QUANTIFIER — the word's predicate, recomputed independently.
+      // QUANTIFIER — the word's predicate, recomputed independently. An atom
+      // whose predicate is not registered has already failed COVERAGE above, so
+      // an unchecked `claims` can no longer reach a student surface.
       if (a.quantifier) {
         if (!surface.text.includes(a.quantifier.word)) fail.push(`QUANTIFIER ${at}: the word "${a.quantifier.word}" is not on the surface`);
-        const recomputed = truth.predicates.get(a.id);
+        const recomputed = truth.predicates.has(a.id) ? truth.predicates.get(a.id) : truth.predicates.get(generic);
         if (recomputed !== undefined && recomputed !== a.quantifier.claims) {
-          fail.push(`QUANTIFIER ${at}: the sentence claims ${a.quantifier.claims} but the reducer says ${recomputed}`);
+          fail.push(`QUANTIFIER ${at}: the sentence claims ${a.quantifier.claims} but the reducer says ${recomputed} (word: "${a.quantifier.word}")`);
         }
       }
       // BOUND
       if (a.bounds?.min !== undefined && a.value < a.bounds.min - 1e-9) fail.push(`BOUND ${at}: ${a.value} < ${a.bounds.min}`);
       if (a.bounds?.max !== undefined && a.value > a.bounds.max + 1e-9) fail.push(`BOUND ${at}: ${a.value} > ${a.bounds.max}`);
-      // VALUE — recomputed by this harness, never read back from the module.
-      const near = (x, y, tol = 2) => Math.abs(Math.round(x) - Math.round(y)) <= tol;
-      if (a.id === "pot-total" && !near(a.value, truth.potTotal, truth.leagueSize)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.potTotal}`);
-      if (a.id === "adopted-share" && a.value !== truth.share) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.share}`);
-      if (a.id === "era-l3-mean" && !near(a.value, truth.l3Mean, 0.2)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.l3Mean}`);
-      if (a.id === "arrow-flat-price-count" && a.value !== truth.flatCount) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.flatCount}`);
+      // ---- VALUE. EVERY rendered dollar/percent/count magnitude, recomputed by
+      // this harness from RAW STATE and compared to the atom. This is the limb
+      // the dissent was recorded against: doubling `pot-total` used to print a
+      // 2x falsehood on the projector while the whole suite passed.
+      if (!isQuantifier) {
+        const want = truth.values.has(a.id) ? truth.values.get(a.id) : truth.values.get(generic);
+        if (want !== undefined) {
+          const tol =
+            a.format === "money" || a.format === "dollars0"
+              ? Math.max(4, truth.leagueSize * 2)
+              : a.format === "percent1"
+                ? 0.2
+                : a.format === "percent"
+                  ? 0.5
+                  : 0;
+          if (Math.abs(a.value - want) > tol + 1e-9) {
+            fail.push(`VALUE ${at}: the surface prints ${a.value} (${a.rendered}) but this harness recomputes ${want} from raw state`);
+          }
+        }
+      }
     }
     // LEVEL — a surface may not prescribe a direction the room's own gradient
     // contradicts. The only directional phrase this lesson prints about the
     // room's own behaviour is the effort direction, and it is recomputed here.
-    if (surface.surface === "board:consequence:era" && truth.l2Mean !== null) {
-      const wentDown = truth.l3Mean < truth.l2Mean - 0.05;
-      if (surface.text.includes("went down") && !wentDown) fail.push(`LEVEL ${surface.surface}: prints "went down" but the room's means are ${truth.l2Mean} -> ${truth.l3Mean}`);
-      if (surface.text.includes("went up") && !(truth.l3Mean > truth.l2Mean + 0.05)) {
-        fail.push(`LEVEL ${surface.surface}: prints "went up" but the room's means are ${truth.l2Mean} -> ${truth.l3Mean}`);
+    // The comparison is in DOLLARS A WEEK now, not dial percentages: the two
+    // lessons' dials are shares of different bases (econ B3), so a percentage
+    // "effort fell by Z" sentence measured the bases, not the room.
+    if ((surface.surface === "board:consequence:era" || surface.surface === "teach:consequence:ask") && truth.l2MeanDollars !== null) {
+      const wentDown = truth.l3MeanDollars < truth.l2MeanDollars - 1;
+      const wentUp = truth.l3MeanDollars > truth.l2MeanDollars + 1;
+      if (surface.text.includes("went down") && !wentDown) {
+        fail.push(`LEVEL ${surface.surface}: prints "went down" but the room spent ${Math.round(truth.l2MeanDollars)} -> ${Math.round(truth.l3MeanDollars)} a week`);
+      }
+      if ((surface.text.includes("went up") || surface.text.includes("went UP")) && !wentUp) {
+        fail.push(`LEVEL ${surface.surface}: prints "went up" but the room spent ${Math.round(truth.l2MeanDollars)} -> ${Math.round(truth.l3MeanDollars)} a week`);
+      }
+    }
+    // teacher B1: the scripted ASK and the computed line beside it must agree.
+    if (surface.surface === "teach:consequence:ask" && truth.l2MeanDollars !== null) {
+      const wentDown = truth.l3MeanDollars < truth.l2MeanDollars - 1;
+      if (/Whose effort went down/.test(surface.text) && !wentDown) {
+        fail.push(`LEVEL ${surface.surface}: the teacher is directed to ask "whose effort went down?" in a room whose own bar says it did not`);
+      }
+      if (/Whose effort went UP/.test(surface.text) && !(truth.l3MeanDollars > truth.l2MeanDollars + 1)) {
+        fail.push(`LEVEL ${surface.surface}: the teacher is directed to ask "whose effort went UP?" in a room whose own bar says it did not`);
       }
     }
   }
   return fail;
 }
 
-/** Everything the audit checks against, recomputed from raw state by this file. */
+/**
+ * Everything the audit checks against, recomputed from RAW STATE by this file.
+ *
+ * Nothing below reads a rendered string, a claim builder or an aggregate field
+ * that the copy also reads: the pot totals, the era dollars, the counterfactual
+ * nets, the road ledger and the adoption arithmetic are all re-derived here from
+ * `state.clubs[*].weeks[*]` and from the shipped brute-force primitives. That is
+ * the whole point — an audit built out of the same expression as the sentence
+ * proves only that the sentence quotes itself.
+ */
 function truthFor(state) {
-  const live = state.clubs.slice(0, state.leagueSize).filter((c) => c.seatId !== null);
+  const size = state.leagueSize;
+  const live = state.clubs.slice(0, size).filter((c) => c.seatId !== null);
   let potTotal = 0;
-  for (const club of state.clubs.slice(0, state.leagueSize)) for (const w of club.weeks) potTotal += w.pot.paidIn;
-  const l3Mean =
-    live.length > 0 ? live.reduce((a, c) => a + (c.weeks.length ? c.weeks.reduce((b, w) => b + w.reinvest, 0) / c.weeks.length : c.reinvest), 0) / live.length : 0;
+  for (const club of state.clubs.slice(0, size)) for (const w of club.weeks) potTotal += w.pot.paidIn;
+
+  const meanOf = (xs) => (xs.length > 0 ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+  const l3Mean = meanOf(live.map((c) => (c.weeks.length ? meanOf(c.weeks.map((w) => w.reinvest)) : c.reinvest)));
+  const l3MeanDollars = meanOf(live.map((c) => (c.weeks.length ? meanOf(c.weeks.map((w) => w.reinvestSpend)) : 0)));
   const l2Rows = live.filter((c) => c.l2Reinvest !== null);
-  const l2Mean = l2Rows.length > 0 ? l2Rows.reduce((a, c) => a + c.l2Reinvest, 0) / l2Rows.length : null;
-  const agg = computeAggregate(state);
-  const flatCount = agg.arrows.filter((a) => a.priceSteps === 0).length;
-  const payers = agg.potFlows.filter((f) => f.net < 0).length;
+  const l2Mean = l2Rows.length > 0 ? meanOf(l2Rows.map((c) => c.l2Reinvest)) : null;
+  const l2DollarRows = live.filter((c) => c.l2ReinvestDollars !== null);
+  const l2MeanDollars = l2DollarRows.length > 0 ? meanOf(l2DollarRows.map((c) => c.l2ReinvestDollars)) : null;
+
+  // Per-desk pot flows, straight off the settled weeks.
+  const flows = live.map((c) => {
+    const paidIn = c.weeks.reduce((a, w) => a + w.pot.paidIn, 0);
+    const tookOut = c.weeks.reduce((a, w) => a + w.pot.tookOut, 0);
+    return { deskNumber: c.deskNumber, paidIn, tookOut, net: tookOut - paidIn };
+  });
+  const payers = flows.filter((f) => f.net < 0).length;
+  const receivers = flows.filter((f) => f.net > 0).length;
+  const biggestSwing = flows.length > 0 ? Math.max(...flows.map((f) => Math.abs(f.net))) : 0;
+
+  // The arrows, re-derived from the shipped brute force rather than read off
+  // `agg.arrows` — the aggregation is what is under audit.
+  const rule = state.adopted;
+  const arrowOf = (club, r) => {
+    const week = Math.min(Math.max(0, state.weekIndex - 1), WEEK_COUNT - 1);
+    const settled = club.weeks[week];
+    const hostDraw = settled ? settled.hostDrawAtTip : club.draw;
+    const vSlot = mod.visitorSlotFor(club.slot, week, size);
+    const visitorDraw = settled ? settled.visitorDrawAtTip : state.clubs[vSlot].draw;
+    const p0 = bestPriceUnder(state, club, null, hostDraw, visitorDraw);
+    const p1 = r ? bestPriceUnder(state, club, r, hostDraw, visitorDraw) : p0;
+    const r0 = bestReinvestUnder(state, club, null);
+    const r1 = r ? bestReinvestUnder(state, club, r) : r0;
+    return { priceSteps: Math.round((p0 - p1) / PRICE_STEP), reinvestSteps: Math.round((r0 - r1) / REINVEST_STEP), r0, r1 };
+  };
+  const arrows = live.map((c) => arrowOf(c, rule));
+  const flatCount = arrows.filter((a) => a.priceSteps === 0).length;
+  const movedPriceCount = arrows.filter((a) => a.priceSteps > 0).length;
+  const movedCount = arrows.filter((a) => a.reinvestSteps > 0).length;
+  const movedAny = arrows.some((a) => a.reinvestSteps > 0 || a.priceSteps > 0);
+  const biggestArrow = [...arrows].sort((a, b) => b.reinvestSteps - a.reinvestSteps)[0] ?? null;
+
+  // The no-movement branch's counterfactual arrows.
+  const wouldShare = rule && rule.runnerUp > rule.share ? rule.runnerUp : 30;
+  const wouldArrows = !movedAny && rule ? live.map((c) => arrowOf(c, hypotheticalRule(wouldShare, rule.condition))) : [];
+  const wouldMovedCount = wouldArrows.filter((a) => a.reinvestSteps > 0).length;
+  const wouldBiggest = [...wouldArrows].sort((a, b) => b.reinvestSteps - a.reinvestSteps)[0] ?? null;
+
+  // The counterfactual replay, re-implemented here from the settled weeks.
+  const netAt = (shareValue, condition) => {
+    const nets = new Map();
+    for (let w = 0; w < state.weekIndex; w += 1) {
+      const paid = [];
+      const ok = [];
+      for (let slot = 0; slot < size; slot += 1) {
+        const wk = state.clubs[slot].weeks[w];
+        paid.push(wk ? Math.round((shareValue / 100) * wk.taxedLocal) : 0);
+        ok.push(!condition || (wk ? wk.reinvest >= CONDITION_MIN_REINVEST : false));
+      }
+      const pot = paid.reduce((a, b) => a + b, 0);
+      const even = size > 0 ? pot / size : 0;
+      const okCount = ok.filter(Boolean).length;
+      let forfeited = 0;
+      const base = ok.map((good) => {
+        if (good || okCount === 0) return even;
+        forfeited += even * 0.5;
+        return even * 0.5;
+      });
+      const bonus = okCount > 0 ? forfeited / okCount : 0;
+      for (let slot = 0; slot < size; slot += 1) {
+        const took = Math.round(base[slot] + (ok[slot] ? bonus : 0));
+        nets.set(slot, (nets.get(slot) ?? 0) + took - paid[slot]);
+      }
+    }
+    return nets;
+  };
+  const cfShare = rule ? rule.runnerUp : 30;
+  const nowNets = netAt(rule ? rule.share : 0, rule ? rule.condition : false);
+  const cfNets = netAt(cfShare, rule ? rule.condition : false);
+  let cfBetter = 0;
+  let cfWorse = 0;
+  for (const c of live) {
+    const d = (cfNets.get(c.slot) ?? 0) - (nowNets.get(c.slot) ?? 0);
+    if (d > 0) cfBetter += 1;
+    if (d < 0) cfWorse += 1;
+  }
+
+  const gateTotal = live.reduce((a, c) => a + c.weeks.reduce((b, w) => b + w.home.gate, 0), 0);
+  const nationalTotal = live.reduce((a, c) => a + c.weeks.length * NATIONAL, 0);
+  const roadGiven = live.length > 0 ? Math.max(0, ...live.map((c) => c.weeks.reduce((a, w) => a + w.roadDollarsGiven, 0))) : 0;
+
+  // The adoption arithmetic, re-run here from the recorded round.
+  const sealed = state.closedRounds.length > 0 ? state.closedRounds[state.closedRounds.length - 1] : null;
+  const votedShares = sealed ? sealed.shares.filter((s) => s !== null) : [];
+  const rawMedian = votedShares.length > 0 ? [...votedShares].sort((a, b) => a - b)[Math.floor(votedShares.length / 2)] : STATUS_QUO_SHARE;
+  const evenMedian =
+    votedShares.length > 0 && votedShares.length % 2 === 0
+      ? ([...votedShares].sort((a, b) => a - b)[votedShares.length / 2 - 1] + [...votedShares].sort((a, b) => a - b)[votedShares.length / 2]) / 2
+      : rawMedian;
+  const supporting = votedShares.filter((s) => Math.abs(s - evenMedian) <= ADOPT_BAND + 1e-9).length;
+  const liveDesks = sealed ? sealed.shares.length : live.length;
+  const abstained = sealed ? sealed.shares.filter((s) => s === null).length : 0;
+
+  const droppedDesks = live.filter((c) => c.l2ReinvestDollars !== null && meanOf(c.weeks.map((w) => w.reinvestSpend)) < c.l2ReinvestDollars - 1).length;
+  const roseDesks = live.filter((c) => c.l2ReinvestDollars !== null && meanOf(c.weeks.map((w) => w.reinvestSpend)) > c.l2ReinvestDollars + 1).length;
+  const deltaDollars = l2MeanDollars === null ? 0 : l3MeanDollars - l2MeanDollars;
+
   const predicates = new Map([
     ["adopted-passed", state.adopted ? state.adopted.how === "voted" : false],
     ["adopted-condition", state.adopted ? state.adopted.condition : false],
+    ["adopted-league-office", state.adopted ? state.adopted.how === "leagueOffice" : false],
+    ["script-arm", state.adopted ? state.adopted.how === "voted" : false],
     ["pot-two-sided", payers > 0],
     ["arrow-any-flat-price", flatCount > 0],
-    ["era-direction", l2Mean !== null ? l3Mean < l2Mean - 0.05 : false],
+    ["arrow-nothing-moved", !movedAny],
+    ["era-direction", l2MeanDollars !== null ? deltaDollars < -1 : false],
+    ["era-no-l2", l2MeanDollars === null],
     ["cf-not-behaviour", true],
     ["hook-no-score", true],
     ["kings-no-score", true],
     ["synth-seeded", state.seeded],
-    ["consequence-nobody-decided", agg.reinvestEra.filter((r) => r.l2 !== null && r.l3 < r.l2 - 0.01).length > 0],
+    ["synth-road-someone-else", live.some((c) => c.weeks.length > 0)],
+    // econ F2: the live falsehood the old audit could not see.
+    ["synth-national-bigger", nationalTotal > gateTotal],
+    ["consequence-nobody-decided", true],
+    ["consequence-no-l2-instrument", l2MeanDollars === null],
+    ["consequence-ask-direction", l2MeanDollars !== null && deltaDollars < -1],
+    ["transfer-direction-N", null], // per-desk; resolved below
     ["reveal-holding", state.revealStage < 5],
   ]);
+  predicates.delete("transfer-direction-N");
+  for (const f of flows) predicates.set(`transfer-direction-${f.deskNumber}`, f.net >= 0);
+
+  const values = new Map([
+    ["pot-total", potTotal],
+    ["pot-payers", payers],
+    ["pot-receivers", receivers],
+    ["pot-biggest-net", biggestSwing],
+    ["adopted-share", state.adopted ? state.adopted.share : STATUS_QUO_SHARE],
+    ["adopted-supporting", state.adopted ? (state.adopted.how === "leagueOffice" ? state.adopted.supporting : supporting) : 0],
+    ["adopted-live-desks", state.adopted ? state.adopted.liveDesks : liveDesks],
+    ["adopted-abstained", abstained],
+    ["script-share", state.adopted ? state.adopted.share : STATUS_QUO_SHARE],
+    ["era-l3-mean", l3Mean],
+    ["era-l3-dollars", l3MeanDollars],
+    ["era-l2-dollars", l2MeanDollars ?? 0],
+    ["era-delta-dollars", Math.abs(deltaDollars)],
+    ["arrow-flat-price-count", flatCount],
+    ["arrow-moved-price-count", movedPriceCount],
+    ["arrow-moved-count", movedCount],
+    ["arrow-biggest-steps", biggestArrow ? biggestArrow.reinvestSteps : 0],
+    ["arrow-biggest-from", biggestArrow ? biggestArrow.r0 : 0],
+    ["arrow-biggest-to", biggestArrow ? biggestArrow.r1 : 0],
+    ["arrow-would-share", wouldShare],
+    ["arrow-would-move-count", wouldMovedCount],
+    ["arrow-would-biggest-steps", wouldBiggest ? wouldBiggest.reinvestSteps : 0],
+    ["cf-share", cfShare],
+    ["cf-better", cfBetter],
+    ["cf-worse", cfWorse],
+    ["hook-pay", live.filter((c) => c.hookPick === "pay").length],
+    ["hook-breakup", live.filter((c) => c.hookPick === "breakup").length],
+    ["kings-deny", live.filter((c) => c.kingsVote === "deny").length],
+    ["kings-approve", live.filter((c) => c.kingsVote === "approve").length],
+    ["synth-gate-total", gateTotal],
+    ["synth-national-total", nationalTotal],
+    ["synth-road-given", roadGiven],
+    ["consequence-dropped-desks", droppedDesks],
+    ["consequence-rose-desks", roseDesks],
+    ["reveal-stage", state.revealStage],
+    ["reveal-total", 5],
+  ]);
+  for (const f of flows) {
+    values.set(`transfer-paid-${f.deskNumber}`, f.paidIn);
+    values.set(`transfer-took-${f.deskNumber}`, f.tookOut);
+    values.set(`transfer-net-${f.deskNumber}`, Math.abs(f.net));
+  }
+
   return {
     potTotal,
     l3Mean,
     l2Mean,
+    l2MeanDollars,
+    l3MeanDollars,
     share: state.adopted ? state.adopted.share : STATUS_QUO_SHARE,
     flatCount,
-    leagueSize: state.leagueSize,
+    leagueSize: size,
     predicates,
+    values,
   };
 }
 
 {
+  // `reinvestPaid` is L2's own spend in DOLLARS. It is what the before/after bar
+  // is drawn on now, because the two lessons' dial percentages are shares of
+  // different money (econ B3) — a seed carrying only `share` leaves L3 with no
+  // comparable left-hand bar, and the module says so rather than inventing one.
   const L2_SEED = {
     lessonModuleId: "m2l2-host-league",
     state: {
@@ -630,7 +892,28 @@ function truthFor(state) {
         slot,
         draw: 30 + ((slot * 7) % 55),
         cash: 900_000 + slot * 130_000,
-        weeks: [{ share: 20 + (slot % 3) * 5 }, { share: 25 + (slot % 2) * 5 }, { share: 30 }],
+        weeks: [
+          { share: 20 + (slot % 3) * 5, reinvestPaid: 300_000 + slot * 11_000 },
+          { share: 25 + (slot % 2) * 5, reinvestPaid: 320_000 + slot * 9_000 },
+          { share: 30, reinvestPaid: 340_000 + slot * 8_000 },
+        ],
+      })),
+    },
+  };
+  // A room whose LAST lesson barely reinvested, so this lesson's effort went UP.
+  // The frozen-quantifier mutant needs a room where "went down" is false.
+  const L2_SEED_LOW = {
+    lessonModuleId: "m2l2-host-league",
+    state: {
+      clubs: Array.from({ length: 12 }, (_, slot) => ({
+        slot,
+        draw: 30 + ((slot * 7) % 55),
+        cash: 900_000 + slot * 130_000,
+        weeks: [
+          { share: 0, reinvestPaid: 1_000 },
+          { share: 0, reinvestPaid: 1_000 },
+          { share: 0, reinvestPaid: 1_000 },
+        ],
       })),
     },
   };
@@ -640,6 +923,16 @@ function truthFor(state) {
     {
       label: "status-quo room (0/30/60, nobody moves), seeded",
       state: playSession(9, (slot) => ({ share: [0, 30, 60][slot % 3], condition: false }), (slot, w) => ({ price: 46, reinvest: 0 }), { seed: L2_SEED }),
+    },
+    {
+      label: "effort went UP (seeded from a near-zero L2)",
+      state: playSession(12, () => ({ share: 40, condition: true }), (slot) => ({ price: 46 + (slot % 5) * 2, reinvest: 25 }), { seed: L2_SEED_LOW }),
+    },
+    {
+      // econ F2's live falsehood: six desks, share 0%, where the room's gate
+      // total EXCEEDS the national check and the card used to assert otherwise.
+      label: "six desks at 0% — the branch where the gate beats the national check",
+      state: playSession(6, () => ({ share: 0, condition: false }), (slot) => ({ price: 56 + (slot % 4) * 2, reinvest: 20 })),
     },
     { label: "league office's rule, never voted", state: (() => {
         let s = seated(12, L2_SEED);
@@ -655,6 +948,8 @@ function truthFor(state) {
   let surfacesSwept = 0;
   let atomsSwept = 0;
   let cleanRoom = null;
+  let effortUpRoom = null;
+  let gateBeatsNationalRoom = null;
   for (const room of rooms) {
     // Every reveal stage is played, so the staged surfaces are all reachable.
     const state = { ...room.state, revealStage: 5, counterfactualRun: true, hookRevealed: true, kingsRevealed: true };
@@ -664,6 +959,12 @@ function truthFor(state) {
     atomsSwept += surfaces.reduce((a, s) => a + s.claims.length, 0);
     const problems = auditClaims(surfaces, truth);
     if (problems.length === 0 && cleanRoom === null) cleanRoom = { state, surfaces, truth };
+    if (problems.length === 0 && effortUpRoom === null && truth.l2MeanDollars !== null && truth.l3MeanDollars > truth.l2MeanDollars + 1) {
+      effortUpRoom = { state, surfaces, truth, label: room.label };
+    }
+    if (problems.length === 0 && gateBeatsNationalRoom === null && truth.values.get("synth-gate-total") > truth.values.get("synth-national-total")) {
+      gateBeatsNationalRoom = { state, surfaces, truth, label: room.label };
+    }
     for (const p of problems) fail.push(`${room.label}: ${p}`);
     rows.push(`${room.label.padEnd(46)} ${surfaces.length} surfaces · ${surfaces.reduce((a, s) => a + s.claims.length, 0)} atoms · ${problems.length} problems`);
   }
@@ -710,7 +1011,7 @@ function truthFor(state) {
     });
     run("LEVEL", "print the wrong direction for the room's own effort", (s) => {
       for (const surface of s) {
-        if (surface.surface === "board:consequence:era" && cleanRoom.truth.l2Mean !== null) {
+        if (surface.surface === "board:consequence:era" && cleanRoom.truth.l2MeanDollars !== null) {
           surface.text = surface.text.replace("went down", "went up").replace("did not move", "went up");
           if (!surface.text.includes("went up")) surface.text += " Effort went up.";
           return true;
@@ -718,16 +1019,90 @@ function truthFor(state) {
       }
       return false;
     });
+
+    // ---- THE THREE MUTANTS THE DISSENT WAS RECORDED ON ---------------------
+    // `econ-l3-claim-audit-vacuous`: doubling `pot-total` made the projector
+    // print a 2x falsehood and the whole suite passed 41/41; an inverted
+    // quantifier and a frozen quantifier word likewise survived. Each is now a
+    // named limb of this harness, and each must FAIL.
+
+    run("VALUE-DRIFT", "double the pot total, exactly as the econ gate's surviving mutant did", (s) => {
+      for (const surface of s) {
+        for (const a of surface.claims) {
+          if (a.id === "pot-total") {
+            const doubled = a.value * 2;
+            const rendered = fmt(doubled, a.format);
+            surface.text = surface.text.split(a.rendered).join(rendered);
+            a.value = doubled;
+            a.rendered = rendered;
+            return true;
+          }
+        }
+      }
+      return false;
+    });
+
+    run("QUANTIFIER-INVERT", "invert `synth-national-bigger` — the live printed falsehood econ F2 found", (s) => {
+      for (const surface of s) {
+        for (const a of surface.claims) {
+          if (a.id === "synth-national-bigger") {
+            a.quantifier.claims = !a.quantifier.claims;
+            return true;
+          }
+        }
+      }
+      return false;
+    });
+  }
+
+  // The frozen-quantifier limb needs a room where the honest word is NOT
+  // "went down", because that is the whole shape of the defect: a constant word
+  // beside a boolean that varies. Run it against the effort-went-up room.
+  if (effortUpRoom) {
+    const poisoned = JSON.parse(JSON.stringify(effortUpRoom.surfaces));
+    let applied = false;
+    for (const surface of poisoned) {
+      for (const a of surface.claims) {
+        if (a.id === "era-direction" || a.id === "consequence-ask-direction") {
+          // Pin the word AND the boolean, exactly as a hard-coded sentence would.
+          surface.text = surface.text.split(a.quantifier.word).join("went down");
+          a.rendered = "went down";
+          a.quantifier = { word: "went down", claims: true };
+          applied = true;
+        }
+      }
+    }
+    const caught = applied ? auditClaims(poisoned, effortUpRoom.truth).length > 0 : false;
+    mutants.push({
+      id: "QUANTIFIER-FROZEN",
+      what: `pin the effort direction to "went down" in "${effortUpRoom.label}", whose own bar went UP (${Math.round(effortUpRoom.truth.l2MeanDollars)} -> ${Math.round(effortUpRoom.truth.l3MeanDollars)} a week)`,
+      caught: applied ? caught : null,
+    });
+    if (applied && !caught) fail.push("MUTATION QUANTIFIER-FROZEN NOT CAUGHT: a frozen direction word survives in a room that moved the other way");
+  } else {
+    mutants.push({ id: "QUANTIFIER-FROZEN", what: "no clean room in the sweep had effort going UP — mutation not exercised", caught: null });
+    fail.push("MUTATION QUANTIFIER-FROZEN NOT EXERCISED: the sweep has no room where the effort direction is anything but 'down', so the frozen-word limb is unproven");
+  }
+
+  // And the live instance of the open class: the composition card's comparative
+  // in the branch where the room's gate BEATS the national check (econ F2).
+  if (gateBeatsNationalRoom) {
+    const t = gateBeatsNationalRoom.truth;
+    rows.push(
+      `econ F2 branch exercised in "${gateBeatsNationalRoom.label}": gate ${money(t.values.get("synth-gate-total"))} vs national ${money(t.values.get("synth-national-total"))} — the card must NOT claim the national check is the larger, and the audit recomputes that comparison`,
+    );
+  } else {
+    fail.push("econ F2 branch NOT EXERCISED: no room in the sweep has the room's gate exceeding the national check, so the composition card's false branch is unproven");
   }
 
   rows.push(`claim-carrying surfaces shipping ZERO atoms (allowed only where nothing is computed from state): ${zeroAtom.size}${zeroAtom.size ? ` — ${[...zeroAtom].join(", ")}` : ""}`);
   for (const m of mutants) rows.push(`MUTATION ${m.id}: ${m.what} → ${m.caught === null ? "NOT EXERCISED (no eligible atom in the clean room)" : m.caught ? "CAUGHT" : "NOT CAUGHT — the family is vacuous on this limb"}`);
   const exercised = mutants.filter((m) => m.caught !== null).length;
-  if (exercised < 5) fail.push(`only ${exercised} of 5 mutation limbs were exercised — the audit's non-vacuity is not fully proven`);
+  if (exercised < 8) fail.push(`only ${exercised} of 8 mutation limbs were exercised — the audit's non-vacuity is not fully proven`);
 
   check(
     "P9",
-    `CLAIM AUDIT — ${atomsSwept} atoms across ${surfacesSwept} surfaces in ${rooms.length} rooms agree with the reducer in BINDING, SIGN, QUANTIFIER, BOUND and LEVEL, proven non-vacuous by 5 mutations`,
+    `CLAIM AUDIT — ${atomsSwept} atoms across ${surfacesSwept} surfaces in ${rooms.length} rooms agree with the reducer in COVERAGE, BINDING, SIGN, QUANTIFIER, BOUND, VALUE and LEVEL, proven non-vacuous by ${exercised} mutations including value drift, an inverted quantifier and a frozen quantifier word`,
     fail.length === 0,
     [...rows, ...fail.slice(0, 12)],
   );

@@ -3448,7 +3448,58 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
       renderWRPlay(view);
       return;
 
-    case "REVEAL":
+    case "REVEAL": {
+      // gate-l3-play repair 3: the desk was byte-identical across all five
+      // reveal stages. It now carries THIS club's own number for the beat that
+      // is up, plus a one-tap prediction before the arrows land.
+      const weeks = (view["weeks"] as WRWeek[]) ?? [];
+      const stageNo = Number(view["revealStage"] ?? 0);
+      const myLens = view["myLens"] as WRLens | null;
+      const predictOpen = Boolean(view["predictOpen"]);
+      const prediction = view["prediction"] as string | null;
+      const resolved = view["predictionResolved"] as { actual: string; right: boolean } | null;
+      const key = `reveal|${stageNo}|${prediction ?? "none"}|${resolved ? String(resolved.right) : "no"}`;
+      if (wrMountKey === key && document.getElementById("wrLens")) return;
+      wrMountKey = key;
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        ${wrRuleStrip(view["rule"] as WRRule)}
+        <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        <div class="panel" id="wrLens" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Beat ${stageNo || "—"} of ${Number(view["revealSteps"] ?? 5)} — your club</div>
+          ${
+            myLens
+              ? `<div class="hl-give-row"><span>${escapeHtml(myLens.label)}</span><span class="numeric" id="wrLensValue">${escapeHtml(myLens.value)}</span></div>`
+              : `<p style="margin:8px 0 0; font-size:14px; color:var(--ink-secondary);">Your teacher has not put up the first beat yet. When they do, your club's own number for it lands here.</p>`
+          }
+          ${
+            predictOpen
+              ? `<div style="margin-top:10px;">
+                   <div class="eyebrow" style="font-size:12px;">${escapeHtml(String(view["predictPrompt"] ?? ""))}</div>
+                   <div class="wr-choice">
+                     <button type="button" class="btn" id="wrPredictMoved">IT MOVED</button>
+                     <button type="button" class="btn" id="wrPredictFlat">IT DID NOT MOVE</button>
+                   </div>
+                 </div>`
+              : ""
+          }
+          ${prediction && !resolved ? `<div class="hl-give-note" id="wrPredictLocked">You said your best price ${prediction === "moved" ? "moved" : "did not move"}. The arrows are next.</div>` : ""}
+          ${
+            resolved
+              ? `<div class="hl-give-note" id="wrPredictResult">You said ${prediction === "moved" ? "it moved" : "it did not move"}. It ${resolved.actual === "moved" ? "moved" : "did not move"}. ${resolved.right ? "You called it." : "Not what you expected — that is the thing to ask about."}</div>`
+              : ""
+          }
+          ${view["arrowWhy"] ? `<div class="hl-give-note" id="wrArrowWhy">${escapeHtml(String(view["arrowWhy"]))}</div>` : ""}
+        </div>
+        ${weeks.map((w) => wrWeekResult(w)).join("")}`;
+      if (predictOpen) {
+        const send = (choice: string) => outbox?.submit({ type: "arrowPredict", choice });
+        document.getElementById("wrPredictMoved")?.addEventListener("click", () => send("moved"));
+        document.getElementById("wrPredictFlat")?.addEventListener("click", () => send("flat"));
+      }
+      return;
+    }
+
     case "CONSEQUENCE": {
       const weeks = (view["weeks"] as WRWeek[]) ?? [];
       body.innerHTML = `
@@ -3473,22 +3524,46 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
 
     case "ARGUE": {
       const revealed = Boolean(view["revealed"]);
+      const splitShown = Boolean(view["splitShown"]);
+      const closed = revealed || splitShown;
       const vote = view["vote"];
       const split = view["split"] as { deny: number; approve: number; undecided: number } | undefined;
+      const sheets = (view["termSheets"] as WRTermSheet[]) ?? [];
       body.innerHTML = `
         ${wrDeskHeader(view)}
         <div class="panel" style="padding:18px;">
           <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">Sacramento, 2013 — the Board of Governors</div>
           <p style="margin:0; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
         </div>
+        <div id="wrTermSheets">
+          ${sheets
+            .map(
+              (s) => `
+            <div class="panel wr-term" data-wr-term style="padding:14px; margin-top:10px;">
+              <div class="eyebrow" style="font-size:12px;">${escapeHtml(s.city)}</div>
+              <div class="fh-price-readout numeric" style="font-size:26px;">${escapeHtml(s.headline)}</div>
+              <ul style="margin:6px 0 0; padding-left:18px;">${s.lines.map((l) => `<li style="font-size:13.5px; line-height:1.45; color:var(--ink-primary);">${escapeHtml(l)}</li>`).join("")}</ul>
+            </div>`,
+            )
+            .join("")}
+          <div class="hl-give-note">${escapeHtml(String(view["termSheetNote"] ?? ""))}</div>
+        </div>
         <div class="panel" style="padding:16px; margin-top:12px;">
           <div class="eyebrow" style="font-size:12px;">${escapeHtml(String(view["prompt"] ?? ""))}</div>
           <div class="wr-choice">
-            <button type="button" class="btn ${vote === "deny" ? "btn-primary" : ""}" id="wrKingsDeny" ${revealed ? "disabled" : ""}>DENY — KEEP IT IN SACRAMENTO</button>
-            <button type="button" class="btn ${vote === "approve" ? "btn-primary" : ""}" id="wrKingsApprove" ${revealed ? "disabled" : ""}>APPROVE — LET IT MOVE TO SEATTLE</button>
+            <button type="button" class="btn ${vote === "deny" ? "btn-primary" : ""}" id="wrKingsDeny" ${closed ? "disabled" : ""}>DENY — KEEP IT IN SACRAMENTO</button>
+            <button type="button" class="btn ${vote === "approve" ? "btn-primary" : ""}" id="wrKingsApprove" ${closed ? "disabled" : ""}>APPROVE — LET IT MOVE TO SEATTLE</button>
           </div>
           ${vote ? `<div class="hl-give-note">Locked: ${vote === "deny" ? "deny" : "approve"}. There is no score.</div>` : ""}
         </div>
+        ${
+          splitShown && !revealed
+            ? `<div class="panel" id="wrKingsRoomSplit" style="padding:16px; margin-top:12px;">
+                 <div class="eyebrow" style="font-size:12px;">This room</div>
+                 <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${split ? `${split.deny} deny · ${split.approve} approve` : ""}. Nobody has seen what the owners did.</p>
+               </div>`
+            : ""
+        }
         ${
           revealed
             ? `<div class="panel" id="wrKingsReveal" style="padding:16px; margin-top:12px;">
@@ -3498,7 +3573,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
                </div>`
             : ""
         }`;
-      if (!revealed) {
+      if (!closed) {
         const send = (choice: string) => outbox?.submit({ type: "kingsVote", choice });
         document.getElementById("wrKingsDeny")?.addEventListener("click", () => send("deny"));
         document.getElementById("wrKingsApprove")?.addEventListener("click", () => send("approve"));
@@ -3533,7 +3608,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
       body.innerHTML = `
         ${wrDeskHeader(view)}
         <div class="banner">${escapeHtml(String(view["message"] ?? ""))}</div>
-        ${rule ? `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">Your rule</div><p style="margin:8px 0 0; font-size:16px; color:var(--ink-primary);">SHARE ${rule.share}% · CONDITION ${rule.condition ? "ON" : "OFF"}</p></div>` : ""}`;
+        ${rule ? `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">${escapeHtml(String(view["ruleTitle"] ?? "Your rule"))}</div><p style="margin:8px 0 0; font-size:16px; color:var(--ink-primary);">SHARE ${rule.share}% · CONDITION ${rule.condition ? "ON" : "OFF"}</p></div>` : ""}`;
       return;
     }
 
