@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `267:64d6b43e324925b86a8de1719da6236ff3a8e0a1b342473a1b08ca1b2f8cda61`  
-Updated: 2026-09-01T06:44:43.761Z
+Event head: `268:e97167315e42d4508080aa21faa685d388ebcea3f67758895f3ba0a560d84951`  
+Updated: 2026-09-01T06:51:15.860Z
 
 ## Founder intent
 
@@ -101,6 +101,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - recheck-l2-play — gameplay-report — L2 play re-check: R1-R4 substantially CONFIRMED (bell lands settlement-first at 600px; $10-vs-$46 gap split correctly). NOT DISCHARGED: sold-out weeks put the externality card under the fixed lock bar (observed 3x); dials 595..617 behind the bar at decision moment; two bar-copy residuals; free-rider instrument reads $0/$0/$0. RATING FUNCTIONAL — remaining cause 'only one dial carries felt consequence' is repairable, not structural; kill condition explicitly not met
 - recheck-l2-econ — economic-truth-report — L2 econ re-check: instrument repair REAL (corr 0.918 chosen-shares vs 0.175 inherited; biggest giver = max spender) — B1/B2/B4/B5 discharged. NOT DISCHARGED overall: B3 unchanged (driver=visitor in 40/40 rooms, 7/40 fail price control), and two NEW blockers from the repair — externalPct prints 0% beside $1.58M given and >100% in 58/200 rooms; room-total ownGain reverses sign (-$1.15M printed vs +$0.55M actual)
 - recheck-l2-projector — projector-report — L2 projector re-check: truncation DISCHARGED (zero offenders both shapes, non-vacuity proven live: re-injected ellipsis -> 26 offenders); evidence tier 2.67% vs 2.6% floor; freeze mirror discharged with honest do-not-say-look-at-the-board copy; privacy PASS (58 scans). NEW BLOCKING R-1: releasing the bar after the week-2 bell — what /teach prescribes — makes stage 5 print 'this room did NOT see the bar' falsely (off-by-one, hostTheLeague.ts:2433, two-arm probe)
+- l1-e2e-final-head — e2e — L1 board e2e re-run at the true final head (closes the analyst's stale-proof finding)
 
 ## Claim ledger
 

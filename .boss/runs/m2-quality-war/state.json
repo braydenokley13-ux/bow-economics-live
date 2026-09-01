@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:44:43.761Z",
+  "updatedAt": "2026-09-01T06:51:15.860Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2300,7 +2300,8 @@
         "recheck-l2-teacher",
         "recheck-l2-play",
         "recheck-l2-econ",
-        "recheck-l2-projector"
+        "recheck-l2-projector",
+        "l1-e2e-final-head"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -4055,6 +4056,29 @@
       },
       "recordedAt": "2026-09-01T06:44:29.229Z",
       "actor": "classroom-projector-critic"
+    },
+    "l1-e2e-final-head": {
+      "id": "l1-e2e-final-head",
+      "wave": 3,
+      "kind": "e2e",
+      "label": "L1 board e2e re-run at the true final head (closes the analyst's stale-proof finding)",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-final-head--record.json",
+      "sha256": "d2bc1ef1cd4d232c27356cd09627406410483750b37c8ec58815a29dc1c3bddc",
+      "size": 3350,
+      "metadata": {
+        "tags": [
+          "wave-3",
+          "regression"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T06:51:15.860Z",
+      "actor": "regression-hunter"
     }
   },
   "claims": {
@@ -4699,11 +4723,11 @@
     "agentsActivated": 55,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 86,
+    "evidenceRecorded": 87,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 267,
-  "eventHead": "64d6b43e324925b86a8de1719da6236ff3a8e0a1b342473a1b08ca1b2f8cda61",
+  "eventCount": 268,
+  "eventHead": "e97167315e42d4508080aa21faa685d388ebcea3f67758895f3ba0a560d84951",
   "warnings": []
 }
