@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `268:e97167315e42d4508080aa21faa685d388ebcea3f67758895f3ba0a560d84951`  
-Updated: 2026-09-01T06:51:15.860Z
+Event head: `271:0521e164330275e4c61a62184b62538e293a9de27bdb37060b2875d5f14b1906`  
+Updated: 2026-09-01T06:51:36.486Z
 
 ## Founder intent
 
@@ -102,6 +102,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - recheck-l2-econ — economic-truth-report — L2 econ re-check: instrument repair REAL (corr 0.918 chosen-shares vs 0.175 inherited; biggest giver = max spender) — B1/B2/B4/B5 discharged. NOT DISCHARGED overall: B3 unchanged (driver=visitor in 40/40 rooms, 7/40 fail price control), and two NEW blockers from the repair — externalPct prints 0% beside $1.58M given and >100% in 58/200 rooms; room-total ownGain reverses sign (-$1.15M printed vs +$0.55M actual)
 - recheck-l2-projector — projector-report — L2 projector re-check: truncation DISCHARGED (zero offenders both shapes, non-vacuity proven live: re-injected ellipsis -> 26 offenders); evidence tier 2.67% vs 2.6% floor; freeze mirror discharged with honest do-not-say-look-at-the-board copy; privacy PASS (58 scans). NEW BLOCKING R-1: releasing the bar after the week-2 bell — what /teach prescribes — makes stage 5 print 'this room did NOT see the bar' falsely (off-by-one, hostTheLeague.ts:2433, two-arm probe)
 - l1-e2e-final-head — e2e — L1 board e2e re-run at the true final head (closes the analyst's stale-proof finding)
+- analyst-wave3 — analyst-report — Wave-3 analyst: REPAIR. Catches: pager dissent closed without owning critic (sacred-constraint violation); visual director's maintained dissent invisible to ledger; premium clause converted NOT-VERIFIED to VERIFIED-UNMET and must reach the founder as unmet; L2 repair created falsehoods faster than critics cleared them (claim-vs-model defect class); occlusion-blind fold instrument; flake attribution honest on pre-existence, overclaimed on rate; TRANSFER READY provisional pending bar-timing
 
 ## Claim ledger
 
@@ -123,6 +124,8 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - gate-l2-play-dissent — undefined/undefined/open — undefined
 - proj-l2-bar-timing — classroom-reliability/blocking/open — Off-by-one at hostTheLeague.ts:2433: releasing the Handed-To-You bar after the week-2 bell — exactly what /teach prescribes at hostTheLeague.ts:2894 — makes REVEAL stage 5 print 'This room did NOT see the Handed-To-You bar before it played week 3' falsely. Two-arm probe confirms. Narrow deterministic fix + a regression test pinning the prescribed-timing path. GATE_L2_PROJECTOR.md re-check section.
 - recheck-l2-projector-dissent — undefined/undefined/open — undefined
+- visual-l1-premium-unmet — visual/blocking/open — Ledger entry for the visual director's maintained formal dissent (previously artifact-only, caught by the wave-3 analyst): the premium visual bar is VERIFIED-UNMET — three consecutive advisory NOT-AFFIRMED re-grades (SERVICEABLE-NOT-PREMIUM), the director explicitly stating the clause should not be recorded as satisfied and that a second independent reviewer is required (GATE_L1_VISUAL.md:416-420,570). Resolution is a FOUNDER decision at the ship case: accept SERVICEABLE for classroom use (the director's own scoped blocking:no) or commission an independent second visual reviewer and a polish wave. Not silently closable by Boss.
+- analyst-no-pass-wave3 — process/blocking/open — Analyst dissents against any PASS for Wave 3: (a) proj-l1-cf-pager-label was closed without its owning-critic adjudication (sacred-constraint violation — the projector intent check must still happen); (b) analyst-no-pass-wave2's premium ground was closed on an artifact whose author maintains formal dissent (now ledgered as visual-l1-premium-unmet — ship case must carry the clause as UNMET); (c) the wave's repair round introduced two new blocking economic falsehoods on student synthesis surfaces (econ B7/B8). TRANSFER: READY for L2 is provisional pending reconciliation with proj-l2-bar-timing. ANALYST_WAVE3.md.
 
 ## Latest gate
 

@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:51:15.860Z",
+  "updatedAt": "2026-09-01T06:51:36.486Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2301,7 +2301,8 @@
         "recheck-l2-play",
         "recheck-l2-econ",
         "recheck-l2-projector",
-        "l1-e2e-final-head"
+        "l1-e2e-final-head",
+        "analyst-wave3"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -2318,7 +2319,9 @@
         "play-l2-below-bar",
         "gate-l2-play-dissent",
         "proj-l2-bar-timing",
-        "recheck-l2-projector-dissent"
+        "recheck-l2-projector-dissent",
+        "visual-l1-premium-unmet",
+        "analyst-no-pass-wave3"
       ],
       "meetingIds": [],
       "gates": [],
@@ -4079,6 +4082,23 @@
       },
       "recordedAt": "2026-09-01T06:51:15.860Z",
       "actor": "regression-hunter"
+    },
+    "analyst-wave3": {
+      "id": "analyst-wave3",
+      "wave": 3,
+      "kind": "analyst-report",
+      "label": "Wave-3 analyst: REPAIR. Catches: pager dissent closed without owning critic (sacred-constraint violation); visual director's maintained dissent invisible to ledger; premium clause converted NOT-VERIFIED to VERIFIED-UNMET and must reach the founder as unmet; L2 repair created falsehoods faster than critics cleared them (claim-vs-model defect class); occlusion-blind fold instrument; flake attribution honest on pre-existence, overclaimed on rate; TRANSFER READY provisional pending bar-timing",
+      "path": ".boss/runs/m2-quality-war/evidence/analyst-wave3--ANALYST_WAVE3.md",
+      "sha256": "2f516637009e2a84aaddf2a6050e678aa65283a4fcb1b4afa95b8a6ebcb40c9c",
+      "size": 10314,
+      "metadata": {
+        "tags": [
+          "analyst",
+          "wave-3"
+        ]
+      },
+      "recordedAt": "2026-09-01T06:51:35.926Z",
+      "actor": "product-analyst"
     }
   },
   "claims": {
@@ -4686,6 +4706,35 @@
       "status": "open",
       "recordedAt": "2026-09-01T06:44:43.485Z",
       "actor": "classroom-projector-critic"
+    },
+    "visual-l1-premium-unmet": {
+      "id": "visual-l1-premium-unmet",
+      "wave": 3,
+      "category": "visual",
+      "severity": "blocking",
+      "finding": "Ledger entry for the visual director's maintained formal dissent (previously artifact-only, caught by the wave-3 analyst): the premium visual bar is VERIFIED-UNMET — three consecutive advisory NOT-AFFIRMED re-grades (SERVICEABLE-NOT-PREMIUM), the director explicitly stating the clause should not be recorded as satisfied and that a second independent reviewer is required (GATE_L1_VISUAL.md:416-420,570). Resolution is a FOUNDER decision at the ship case: accept SERVICEABLE for classroom use (the director's own scoped blocking:no) or commission an independent second visual reviewer and a polish wave. Not silently closable by Boss.",
+      "evidenceIds": [
+        "w3-visual-final",
+        "analyst-wave3"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T06:51:36.236Z",
+      "actor": "visual-experience-director"
+    },
+    "analyst-no-pass-wave3": {
+      "id": "analyst-no-pass-wave3",
+      "wave": 3,
+      "category": "process",
+      "severity": "blocking",
+      "finding": "Analyst dissents against any PASS for Wave 3: (a) proj-l1-cf-pager-label was closed without its owning-critic adjudication (sacred-constraint violation — the projector intent check must still happen); (b) analyst-no-pass-wave2's premium ground was closed on an artifact whose author maintains formal dissent (now ledgered as visual-l1-premium-unmet — ship case must carry the clause as UNMET); (c) the wave's repair round introduced two new blocking economic falsehoods on student synthesis surfaces (econ B7/B8). TRANSFER: READY for L2 is provisional pending reconciliation with proj-l2-bar-timing. ANALYST_WAVE3.md.",
+      "evidenceIds": [
+        "analyst-wave3"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T06:51:36.486Z",
+      "actor": "product-analyst"
     }
   },
   "meetings": {},
@@ -4723,11 +4772,11 @@
     "agentsActivated": 55,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 87,
+    "evidenceRecorded": 88,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 268,
-  "eventHead": "e97167315e42d4508080aa21faa685d388ebcea3f67758895f3ba0a560d84951",
+  "eventCount": 271,
+  "eventHead": "0521e164330275e4c61a62184b62538e293a9de27bdb37060b2875d5f14b1906",
   "warnings": []
 }
