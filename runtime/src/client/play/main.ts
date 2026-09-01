@@ -2389,7 +2389,7 @@ function fhRuleSlot(view: Record<string, unknown>): string {
 
 /* ------------------------------------------------------- the settled night -- */
 
-/** The CASH decomposition, as a chain (E10). Never one money hero, never "profit". */
+/** The CASH decomposition, as a chain (E10). Never one money hero, never one collapsed word for the two books. */
 function fhChainHtml(n: FHNight, ui: FHUiCopy): string {
   const tight = fhTight();
   const row = (op: string, label: string, value: string, sub = "", strong = false) => `

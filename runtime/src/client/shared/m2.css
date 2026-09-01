@@ -1982,3 +1982,91 @@ html[data-module="m2"] .m2-filter b {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* =========================================================================
+   14. The shared /play chrome, demoted (Lane B, contract A5/B9)
+   -------------------------------------------------------------------------
+   `#pinCard` and `#gameHeader` belong to the join flow, not to Module 2, and
+   at 1366x768 they were spending ~180px of the desk's first viewport with the
+   32px gold PIN outranking the price — the hero-slot defect A5 names. These
+   rules do not hide anything a pair can still be asked to read: the PIN stays
+   on screen, legible, as a one-line strip until the pair dismisses it (or the
+   20s auto-collapse fires), and the rail keeps its permanent PIN chip.
+   Module 1 is untouched: every selector is scoped to the M2 document flag.
+   ========================================================================= */
+
+html[data-module="m2"] main {
+  padding-top: 12px;
+  gap: 10px;
+}
+
+/* An empty error slot should not hold 16px + a gutter open all lesson. */
+html[data-module="m2"] #err:empty {
+  display: none;
+}
+
+html[data-module="m2"] #pinCard {
+  padding: 7px 12px;
+  border-radius: var(--m2-r-chip);
+  background: var(--m2-panel);
+  border: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] #pinCard .pinrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 0;
+}
+html[data-module="m2"] #pinCard .pinrow > div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+html[data-module="m2"] #pinCard .eyebrow {
+  margin: 0 !important;
+  font-family: var(--m2-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.055em;
+  line-height: 16px;
+  text-transform: uppercase;
+  color: var(--m2-ink-label);
+  white-space: nowrap;
+}
+/* Never gold on an M2 surface (A2), and never larger than the price (A5). */
+html[data-module="m2"] #pinCard .pinbox {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: left;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] #pinCard #btnHidePin {
+  margin-left: auto;
+  flex: none;
+  padding: 4px 12px;
+  min-height: 0;
+  font-size: 12px;
+  border-radius: var(--m2-r-chip);
+}
+/* The collapsed state is unchanged in behaviour; only its type is M2's. */
+html[data-module="m2"] .pin-reopen {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
+/* "Session · seated as Rae & Ben" rides as a caption line, not its own row. */
+html[data-module="m2"] #gameHeader {
+  margin: 0 0 4px !important;
+  font-size: 10.5px !important;
+  line-height: 14px;
+  letter-spacing: 0.07em;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] #gameHeader .franchise-badge {
+  vertical-align: middle;
+}
