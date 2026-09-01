@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `264:7a8961e85a53f90dde140005f839f63c0b13ff799c8064ebe4d35f65cc9317dc`  
-Updated: 2026-09-01T06:44:29.757Z
+Event head: `267:64d6b43e324925b86a8de1719da6236ff3a8e0a1b342473a1b08ca1b2f8cda61`  
+Updated: 2026-09-01T06:44:43.761Z
 
 ## Founder intent
 
@@ -53,7 +53,8 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
 - sports-reality-director — sports-reality-director — completed — claude-opus-5
-- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
+- product-analyst — product-analyst — active — claude-opus-5
 
 ## Required evidence
 
@@ -120,6 +121,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - play-l2-below-bar — gameplay/blocking/open — L2 rates FUNCTIONAL, below the wave contract's STRONG bar, on repairable causes: (R1) the weekly settlement and decomposition land below the 1024x600 fold with auto-scroll to next week's dial — the reveal appears to do nothing at the exact moment the lesson pays off; LOCK below fold in week 1; (R2/R3) reveal-5 and reveal-4/synthesis-card-4 assert causal claims the played data refutes (same defect family as econ-l2-evidence-surfaces); (R4) the free-rider comparison is confounded by schedule luck. GATE_L2_PLAY.md.
 - gate-l2-play-dissent — undefined/undefined/open — undefined
 - proj-l2-bar-timing — classroom-reliability/blocking/open — Off-by-one at hostTheLeague.ts:2433: releasing the Handed-To-You bar after the week-2 bell — exactly what /teach prescribes at hostTheLeague.ts:2894 — makes REVEAL stage 5 print 'This room did NOT see the Handed-To-You bar before it played week 3' falsely. Two-arm probe confirms. Narrow deterministic fix + a regression test pinning the prescribed-timing path. GATE_L2_PROJECTOR.md re-check section.
+- recheck-l2-projector-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
