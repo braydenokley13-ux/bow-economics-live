@@ -177,6 +177,13 @@
   .fh-cf-grid .fh-repeat-bar { height: 2.9vh; }
   .fh-cf-grid .fh-repeat-bars { gap: .25vh; margin: .35vh 0; }
   .fh-cf-grid .fh-repeat-board { gap: .7vh; }
+  /* The scatter is argue-fuel beside the rows, not the frame's centrepiece — at
+     full width it took 321px of a 768px projector on its own and pushed the
+     class summary under the fold. Capped by HEIGHT so it keeps its aspect. */
+  .fh-cf-grid .scatter-svg { height: 26vh; width: auto; max-width: 100%; margin: 0 auto; }
+  .fh-cf-grid .scatter-legend { margin-top: .6vh; font-size: 1.2vw; }
+  #stage.fh-tight .fh-cf-grid { margin-top: .6vh; }
+  #stage.fh-tight .exit-prompt { font-size: 1.25vw; }
   .fh-cf-pager { font-family: var(--font-display); font-size: 1.25vw; letter-spacing: .1em; text-transform: uppercase;
     color: var(--accent-gold); text-align: left; width: 100%; margin-bottom: .5vh; }
   .fh-cf-summary { margin-top: 1.2vh; text-align: left; max-width: none; font-size: 1.15vw; color: var(--ink-secondary); }
@@ -190,6 +197,20 @@
   .fh-compact .fh-peaks-board { padding: 1vh 1.6vw; margin-top: 1vh; }
   .fh-compact .fh-peaks-punch { font-size: 1.5vw; margin-top: .6vh; }
   .fh-compact .fh-books-row { margin-top: 1vh; }
+
+  /* gate-l1-projector repair 2, TIGHTEN limb: the stacked REVEAL beats give up
+     leading and chart width, never type size — the review's back-row evidence
+     floor (>=2.6% of screen height) is what the class has to read. */
+  #stage.fh-tight { padding-top: 1.4vh; padding-bottom: 1.4vh; }
+  #stage.fh-tight .label { margin-bottom: .4vh; }
+  #stage.fh-tight .fh-nights-up { margin-top: .3vh; }
+  #stage.fh-tight .fh-reveal-rule { margin-top: .6vh; padding: .9vh 1.6vw; }
+  #stage.fh-tight .scatter-wrap.compact { width: 44vw; margin-top: .5vh; }
+  #stage.fh-tight .scatter-legend { margin-top: .5vh; }
+  #stage.fh-tight .synthesis-note { margin-top: .6vh; }
+  #stage.fh-tight .exit-prompt { margin-top: .5vh; }
+  #stage.fh-tight .fh-books-row { margin-top: .6vh; }
+  #stage.fh-tight .fh-books-tile { padding: .8vh 1.4vw; }
 
   .fh-nights-up { font-size: 1.5vw; letter-spacing: .1em; color: var(--ink-secondary); margin-top: .6vh; }
   /* `play-l1-repairs-below-fold`: the renewals rule owns its own reveal stage and
@@ -208,6 +229,24 @@
   .fh-cf-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
   .fh-sources { margin-top: 2vh; max-width: 82vw; display: flex; flex-direction: column; gap: .4vh; }
   .fh-sources div { font-size: .85vw; color: var(--ink-muted); opacity: .85; line-height: 1.4; }
+
+  /* ---- SYNTHESIS composition (gate-l1-visual SCHOOL-UI + gate-l1-projector
+     repair 2). Hierarchy, not art: the heading opens the beat, the six card
+     TITLES are the economics tier, the bodies support them, the beyond-sports
+     line closes, and sourcing is a rail — the review found that rail set BOLDER
+     and BRIGHTER than the evidence above it (H4). Nothing here shrinks a card
+     title below the projector's back-row floor. ---- */
+  #stage.fh-synth .fh-synth-head { font-size: 2.6vw; color: var(--accent-gold); margin-bottom: .8vh; }
+  #stage.fh-synth .cardgrid { gap: .8vw; max-width: 94vw; margin-top: .6vh; }
+  #stage.fh-synth .synthcard { padding: .8vh 1vw; }
+  #stage.fh-synth .synthcard h3 { font-size: 1.35vw; margin-bottom: .4vh; }
+  #stage.fh-synth .synthcard p { font-size: .82vw; line-height: 1.35; }
+  #stage.fh-synth .fh-synth-close { margin-top: 1.2vh; max-width: 88vw; font-size: 1.5vw; line-height: 1.35;
+    color: var(--ink-primary); border-top: 1px solid rgba(244,185,66,0.35); padding-top: 1vh; }
+  #stage.fh-synth .fh-synth-exit { font-size: 1.25vw; margin-top: .7vh; color: var(--accent-gold); }
+  #stage.fh-synth .fh-sources { margin-top: .9vh; max-width: 92vw; flex-direction: row; flex-wrap: wrap;
+    justify-content: center; column-gap: 1.4vw; row-gap: .2vh; }
+  #stage.fh-synth .fh-sources span { font-size: .68vw; color: var(--ink-muted); opacity: .72; line-height: 1.35; }
 </style>
 </head>
 <body>

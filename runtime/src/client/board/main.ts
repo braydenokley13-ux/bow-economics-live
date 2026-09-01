@@ -788,6 +788,16 @@ function fhTwoPeaksPanel(peaks: FHTwoPeaksB[]): string {
 
 function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void {
   const honesty = String(view["honestyLine"] ?? "");
+  // `gate-l1-projector` BLOCKING repair 2 ("`#stage` must fit its content at
+  // 1366x768 and 1920x1080 — scale down, tighten, or split the panel"): the
+  // round-3 repair substituted `overflow-y:auto` for all three named remedies,
+  // which makes content REACHABLE but still requires the teacher to scroll a
+  // projector mid-beat. The two frames that still overflowed are the beats that
+  // stack a previous panel under the current one. Remedy chosen: TIGHTEN the
+  // stacked frames and SPLIT the last REVEAL beat (the season books stop
+  // carrying the Two Peaks panel that already had its own stage). This class
+  // carries the tightening; it is cleared on every other frame.
+  stage.classList.remove("fh-tight", "fh-synth");
   switch (mode) {
     case "lobby": {
       const markets = (view["markets"] as FHMarketB[]) ?? [];
@@ -872,6 +882,17 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // above the chart, and the chart drops to `compact` to pay for the room.
       const ruleUp = Boolean(view["renewalsRule"]);
       const showCurve = points.length > 0 && !booksUp && !crowded;
+      // SPLIT (projector repair 2): the final beat is the season books. Two
+      // Peaks had its own stage one press earlier; carrying it under the books
+      // made the last REVEAL frame 962px tall in a 768px projector. Each beat
+      // owns its own screen from here.
+      const showTwoPeaks = crowded && !booksUp;
+      // TIGHTEN: stage 5 (rule + compacted chart + legend + the turned-away line
+      // + the sourcing footnote) measured its footnote at 739-775 of 768 — the
+      // 1d contradiction line sliced mid-sentence. Stage 7 stacks the books row
+      // under the same furniture. Both give up leading, never type size: the
+      // projector review's evidence-tier floor stands.
+      if (ruleUp || booksUp) stage.classList.add("fh-tight");
       const ruleHtml = ruleUp
         ? `<div id="fhRenewalsRule" class="fh-reveal-rule">${escapeHtml(String(view["renewalsRule"]))}</div>`
         : "";
@@ -882,7 +903,7 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
         ${showCurve ? `<div class="scatter-wrap${crowded || ruleUp ? " compact" : ""}">${fhCurveSvg(points, ["new-york", "memphis"])}</div>${fhLegend(points)}` : points.length === 0 ? `<div class="banner">Waiting for your teacher to put up the first night.</div>` : ""}
         ${Number(view["totalTurnedAway"] ?? 0) > 0 ? `<div class="synthesis-note" style="font-size:1.5vw; color:var(--ink-primary);">${Number(view["totalTurnedAway"]).toLocaleString()} people in this room's five nights wanted a seat and could not get one.</div>` : ""}
         ${view["shockCopy"] ? `<div class="synthesis-note" style="max-width:74vw; font-size:1.2vw; color:#ffd98a;">${escapeHtml(String(view["shockCopy"]))}</div>` : ""}
-        ${view["twoPeaksReleased"] ? fhTwoPeaksPanel(peaks) : ""}
+        ${showTwoPeaks ? fhTwoPeaksPanel(peaks) : ""}
         ${
           view["booksReleased"]
             ? `<div class="fh-books-row">${books
@@ -932,6 +953,9 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // rendered outside the paged column, so it is on screen for every group.
       const pageCount = Number(view["cfPageCount"] ?? 1);
       const pageLabel = String(view["cfPageLabel"] ?? "");
+      // Same TIGHTEN limb as the stacked REVEAL beats: leading and chart width
+      // give ground so the group, the scatter and the class summary all fit.
+      stage.classList.add("fh-tight");
       stage.innerHTML = `
         <div class="label">Night 1 vs Night 5 — The Same Card</div>
         <div class="exit-prompt" style="max-width:88vw;">${escapeHtml(String(view["prompt"] ?? ""))}</div>
@@ -969,12 +993,24 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
     case "synthesis": {
       const cards = (view["cards"] as { id: string; title: string; body: string }[]) ?? [];
       const notes = (view["sourceNotes"] as string[]) ?? [];
+      // `gate-l1-visual` (SYNTHESIS = SCHOOL-UI, the module's weakest board) and
+      // `gate-l1-projector` (the explicit-formalization moment is the least
+      // readable board in the lesson, clipped top AND bottom at both
+      // resolutions). This is a composition repair — hierarchy and type, no new
+      // art: one headline slot, an evidence tier of six cards whose TITLES carry
+      // the economics and whose bodies are support, then the beyond-sports line
+      // promoted to the closing statement it is (the econ gate calls it the
+      // strongest link in the chain, and it was set smaller and dimmer than the
+      // sourcing rail underneath it — H4's inverted type weight). The sources
+      // become one quiet rail, which is what sourcing discipline should look
+      // like on a projector: present, dated, and not competing.
+      stage.classList.add("fh-tight", "fh-synth");
       stage.innerHTML = `
-        <div class="label">${escapeHtml(String(view["heading"] ?? ""))}</div>
+        <div class="label fh-synth-head">${escapeHtml(String(view["heading"] ?? ""))}</div>
         <div class="cardgrid">${cards.map((c) => `<div class="synthcard"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.body)}</p></div>`).join("")}</div>
-        <div class="synthesis-note">${escapeHtml(String(view["beyondSports"] ?? ""))}</div>
-        <div class="exit-prompt">${escapeHtml(String(view["exitPrompt"] ?? ""))}</div>
-        <div class="fh-sources">${notes.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>`;
+        <div class="fh-synth-close" id="fhSynthClose">${escapeHtml(String(view["beyondSports"] ?? ""))}</div>
+        <div class="exit-prompt fh-synth-exit">${escapeHtml(String(view["exitPrompt"] ?? ""))}</div>
+        <div class="fh-sources">${notes.map((n) => `<span>${escapeHtml(n)}</span>`).join("")}</div>`;
       return;
     }
 

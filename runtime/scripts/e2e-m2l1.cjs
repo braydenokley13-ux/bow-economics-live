@@ -146,6 +146,211 @@ async function waitForNight(page, label) {
   );
 }
 
+/* ------------------------------------------- the class-scale instrument -- */
+
+/**
+ * `gate-l1-play` recheck3 P11-b (BLOCKING dissent `play-l1-repairs-below-fold`)
+ * and the wave-2 analyst's biggest-failure finding, which is as much about THIS
+ * FILE as about the board.
+ *
+ * The old guard asserted `assertFullyVisible` on `#fhCfScatter` and
+ * `#stage > .exit-prompt` only. Both sit at the TOP of the COUNTERFACTUAL
+ * layout, and everything that overflows overflows BENEATH them — so both
+ * assertions passed at any class size, including a ten-desk session where the
+ * room could see four repeat rows out of ten and no class summary at all. A
+ * guard that cannot fail at the size the defect appears is not evidence.
+ *
+ * This is the repaired instrument. It runs a REAL twelve-desk session, and at
+ * both projector shapes it asserts, per teacher-advanced group:
+ *   - every rendered repeat row's own box is fully inside the viewport;
+ *   - the class summary's box is fully inside the viewport;
+ *   - `#stage` does not overflow AT ALL — the projector's "must fit its
+ *     content" condition, not "is reachable by scrolling";
+ * and then, across all groups, that the union of desk handles the room was
+ * actually shown is all twelve. Partial content cannot pass silently: drop a
+ * row from a group and the union check fails; let a group overflow and the
+ * per-row check fails.
+ */
+async function classScaleCounterfactual(browser) {
+  const DESKS = 12;
+  const label = `[e2e-m2l1][12-desk]`;
+  const teach = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const board = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+  watchConsole(teach, "teach-12");
+  watchConsole(board, "board-12");
+  teach.on("dialog", (d) => d.accept());
+
+  await teach.goto(`${BASE}/teach`);
+  await teach.selectOption("#lesson", "m2l1-full-house");
+  await teach.fill("#title", "E2E M2 L1 twelve-desk class");
+  await teach.click("#create");
+  await teach.waitForSelector("#room:not([hidden])");
+  const code = (await teach.textContent("#code")).trim();
+  await board.goto(`${BASE}/board?code=${code}`);
+  await board.waitForSelector("#stage .label");
+
+  // Twelve pairs, twelve different prices spread across the dial, so the class
+  // evidence is a real spread and every row's decomposition is different.
+  const PRICES = [10, 14, 18, 22, 26, 30, 36, 42, 50, 58, 70, 84];
+  const desks = [];
+  for (let i = 0; i < DESKS; i += 1) {
+    const p = await browser.newPage({ viewport: { width: 1024, height: 600 } });
+    watchConsole(p, `desk${i + 1}-12`);
+    // LOCK IT IN is behind a confirm guard; without a handler Playwright
+    // auto-DISMISSES it and the desk silently never locks.
+    p.on("dialog", (dlg) => dlg.accept());
+    await p.goto(`${BASE}/play`);
+    await p.fill("#joinCode", code);
+    await p.fill("#joinName", `Pair ${i + 1}`);
+    await p.click("#btnJoin");
+    await p.waitForSelector("#gameCard:not([hidden])");
+    await p.waitForSelector(".fh-desk-name", { timeout: 20000 });
+    desks.push(p);
+  }
+  console.log(`${label} ${DESKS} pairs joined`);
+
+  await teach.click("#btnAdvance"); // HOOK
+  await teach.waitForSelector(".phasechip.current:text('HOOK')");
+  await teach.click("#btnAdvance"); // PLAY
+  await teach.waitForSelector(".phasechip.current:text('PLAY')");
+  for (const p of desks) await p.waitForSelector("#fhPlayRoot", { timeout: 30000 });
+
+  // Night 1 and Night 5 are priced by hand at the SAME price on each desk — the
+  // repeat card's own case. Nights 2-4 settle on the teacher's bell at the plan
+  // price (the auto-commit path), which keeps the run inside a sane wall clock.
+  for (let night = 1; night <= 5; night += 1) {
+    if (night === 1 || night === 5) {
+      for (let i = 0; i < DESKS; i += 1) {
+        await waitForNight(desks[i], `Night ${night}`);
+        await setPrice(desks[i], PRICES[i]);
+        await lockNight(desks[i]);
+      }
+    }
+    await teach.click("#btnCloseNight");
+    if (night < 5) {
+      await desks[0].waitForFunction((l) => document.querySelector(".fh-card-night")?.textContent?.includes(l), `Night ${night + 1}`, { timeout: 30000 });
+    }
+  }
+  await desks[0].waitForFunction(() => document.body.innerText.includes("in the books"), null, { timeout: 30000 });
+  console.log(`${label} five nights settled across ${DESKS} desks`);
+
+  for (const phase of ["REVEAL", "ADAPT", "COUNTERFACTUAL"]) {
+    await teach.click("#btnAdvance");
+    await teach.waitForSelector(`.phasechip.current:text('${phase}')`);
+  }
+  await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("COUNTERFACTUAL"), null, { timeout: 30000 });
+
+  // Three rows per group (fullHouse.CF_ROWS_PER_PAGE) — four groups at twelve desks.
+  const CF_ROWS_PER_PAGE = 3;
+  const pageCount = Math.ceil(DESKS / CF_ROWS_PER_PAGE);
+  const shapes = [
+    { width: 1366, height: 768 },
+    { width: 1920, height: 1080 },
+  ];
+  const seen = new Set();
+  let groups = 0;
+  for (let group = 0; group < pageCount; group += 1) {
+    groups += 1;
+    for (const shape of shapes) {
+      await board.setViewportSize(shape);
+      await board.waitForTimeout(300);
+      const tag = `${label} COUNTERFACTUAL group ${group + 1}/${pageCount} @ ${shape.width}x${shape.height}`;
+
+      const rowCount = await board.evaluate(() => document.querySelectorAll("#fhCfRows .fh-repeat-row").length);
+      assert.ok(rowCount > 0, `${tag}: no repeat rows rendered at all`);
+      assert.ok(
+        rowCount <= CF_ROWS_PER_PAGE,
+        `${tag}: ${rowCount} rows in one group — the projector cap is not being applied`,
+      );
+
+      // PER-ROW visibility. This is the assertion the old guard did not have.
+      for (let r = 1; r <= rowCount; r += 1) {
+        await assertFullyVisible(board, `#fhCfRows .fh-repeat-row:nth-child(${r})`, `${tag}: repeat row ${r} of ${rowCount}`);
+      }
+      // The class summary — off-screen by 947px at ten desks before this repair.
+      await assertFullyVisible(board, "#fhCfSummary", `${tag}: the class summary`);
+      await assertFullyVisible(board, "#fhCfScatter", `${tag}: the class scatter`);
+      await assertFullyVisible(board, "#stage > .exit-prompt", `${tag}: the argue prompt`);
+
+      // The projector's own condition (gate-l1-projector repair 2): the stage
+      // must FIT its content, not merely be able to scroll to it.
+      const fit = await board.evaluate(() => {
+        const s = document.getElementById("stage");
+        return {
+          scrollH: s.scrollHeight,
+          clientH: s.clientHeight,
+          // Whoever has to repair this next needs to know WHICH slot grew.
+          parts: [...s.children].map((c) => `${c.className || c.tagName} ${Math.round(c.getBoundingClientRect().height)}px`),
+        };
+      });
+      assert.ok(
+        fit.scrollH <= fit.clientH + 1,
+        `${tag}: #stage still overflows — ${fit.scrollH}px of content in a ${fit.clientH}px projector; the room would have to scroll mid-argument. Slots: ${fit.parts.join(" · ")}`,
+      );
+
+      if (shape.width === 1366) {
+        const handles = await board.evaluate(() =>
+          [...document.querySelectorAll("#fhCfRows .fh-repeat-handle")].map((n) => n.textContent.trim().split(" same price")[0].split(" $")[0]),
+        );
+        for (const h of handles) seen.add(h);
+        await board.screenshot({ path: path.join(SCREEN_DIR, `16-board-cf-12desks-group${group + 1}.png`) });
+      }
+    }
+    if (group < pageCount - 1) {
+      // Wait for the PROJECTOR to actually change groups, not for the POST to
+      // return. A fixed sleep here silently sampled group 1 twice and skipped
+      // group 2 entirely — exactly the class of blind spot this instrument
+      // exists to close.
+      const before = await board.evaluate(() => document.getElementById("fhCfPager")?.textContent?.trim() ?? "");
+      const resp = teach.waitForResponse((r) => r.url().includes("/control") && r.request().method() === "POST");
+      await teach.click("#btnCfPage");
+      await resp;
+      await board.waitForFunction(
+        (prev) => (document.getElementById("fhCfPager")?.textContent?.trim() ?? "") !== prev,
+        before,
+        { timeout: 20000 },
+      );
+    }
+  }
+  assert.equal(
+    seen.size,
+    DESKS,
+    `the room was only ever shown ${seen.size} of ${DESKS} desks across ${groups} groups — rows are being dropped, not paged (${[...seen].join(" | ")})`,
+  );
+  console.log(`${label} COUNTERFACTUAL: all ${DESKS} desk rows and the class summary fully inside the viewport across ${groups} teacher-advanced groups, at 1366x768 and 1920x1080, with #stage not overflowing`);
+
+  // The private surface must carry the same decomposition as the board.
+  const cfPlay = await desks[11].evaluate(() => document.body.innerText);
+  assert.match(
+    cfPlay,
+    /Where that change came from/i,
+    "the desk's own COUNTERFACTUAL card does not carry the channel split — econ-l1-n5-attribution is still live on /play",
+  );
+
+  await teach.click("#btnAdvance"); // SYNTHESIS
+  await teach.waitForSelector(".phasechip.current:text('SYNTHESIS')");
+  await board.waitForFunction(() => document.getElementById("hud")?.textContent?.includes("SYNTHESIS"), null, { timeout: 30000 });
+  for (const shape of shapes) {
+    await board.setViewportSize(shape);
+    await board.waitForTimeout(350);
+    const tag = `${label} SYNTHESIS @ ${shape.width}x${shape.height}`;
+    await assertFullyVisible(board, "#stage > .label", `${tag}: heading`);
+    await assertFullyVisible(board, "#fhSynthClose", `${tag}: the closing beyond-sports line`);
+    await assertFullyVisible(board, ".cardgrid .synthcard:nth-child(6) h3", `${tag}: the last card title`);
+    const fit = await board.evaluate(() => {
+      const s = document.getElementById("stage");
+      return { scrollH: s.scrollHeight, clientH: s.clientHeight };
+    });
+    assert.ok(fit.scrollH <= fit.clientH + 1, `${tag}: #stage overflows (${fit.scrollH} > ${fit.clientH}) — the ceremonial close still needs a scroll`);
+    if (shape.width === 1366) await board.screenshot({ path: path.join(SCREEN_DIR, "17-board-synthesis-12desks-1366.png") });
+  }
+  console.log(`${label} SYNTHESIS fits the projector at both shapes with no scroll`);
+
+  for (const p of desks) await p.close();
+  await board.close();
+  await teach.close();
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
@@ -405,10 +610,26 @@ async function main() {
         await board.waitForTimeout(250);
         console.log("[e2e-m2l1] REVEAL stage 5: the renewals rule is fully above the fold at 1366x768 and 1920x1080");
       }
+      if (i === 5) {
+        // gate-l1-projector repair 2, SPLIT limb: the Two Peaks money view owns
+        // stage 6. It used to be carried under the season books on stage 7 as
+        // well, which made the final REVEAL frame 962px tall in a 768px
+        // projector. Each beat owns its own screen now, so Two Peaks is asserted
+        // on its own stage and must be GONE by the books.
+        await board.waitForFunction(() => document.body.innerText.includes("THE TWO PEAKS"), null, { timeout: 20000 });
+        const peaksStage = await board.evaluate(() => document.body.innerText);
+        assert.match(peaksStage, /The cheaper ticket made more money/);
+        assert.equal(peaksStage.includes("Fullest house"), false, "the season books landed before their own stage");
+        console.log("[e2e-m2l1] REVEAL stage 6: the Two Peaks money view has the projector to itself");
+      }
     }
     await board.waitForFunction(() => document.body.innerText.includes("Fullest house"), null, { timeout: 20000 });
     const revealBoard = await board.evaluate(() => document.body.innerText);
-    assert.match(revealBoard, /THE TWO PEAKS/);
+    assert.equal(
+      revealBoard.includes("THE TWO PEAKS"),
+      false,
+      "the final REVEAL beat still stacks the Two Peaks panel under the season books — the frame the projector review measured at 962px in a 768px viewport",
+    );
     assert.match(revealBoard, /Median renewals/i);
     assert.match(revealBoard, /modeled on real market differences/i);
     console.log("[e2e-m2l1] REVEAL played through all 7 stages — Two Peaks, then per-market books");
@@ -539,11 +760,18 @@ async function main() {
     await board.screenshot({ path: path.join(SCREEN_DIR, "15-board-complete.png") });
     console.log("[e2e-m2l1] COMPLETE reached on all three surfaces");
 
+    for (const page of [d1, d2, d3, d4]) await page.close();
+    await board.close();
+    await teach.close();
+
+    /* ---- the class-scale COUNTERFACTUAL, at 12 desks ---- */
+    await classScaleCounterfactual(browser);
+
     if (consoleErrors.length > 0) {
       console.error("[e2e-m2l1] CONSOLE ERRORS DETECTED:\n" + consoleErrors.join("\n"));
       process.exitCode = 1;
     } else {
-      console.log("[e2e-m2l1] zero console errors across all 6 pages");
+      console.log(`[e2e-m2l1] zero console errors across every page of both sessions (4-desk arc + 12-desk class-scale run)`);
       console.log("[e2e-m2l1] PASS — full Full House arc verified end to end across /teach, /play and /board.");
     }
   } catch (error) {

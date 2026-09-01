@@ -656,11 +656,17 @@ export type FullHouseState = {
 };
 
 /**
- * Repeat rows per COUNTERFACTUAL group. Four is what fits beside the scatter at
- * 1366x768 with the class summary still on screen — asserted per-row by
- * `runtime/scripts/e2e-m2l1.cjs` at a 12-desk session, not assumed here.
+ * Repeat rows per COUNTERFACTUAL group.
+ *
+ * THREE is not a taste — it is the measured number that fits. Four rows plus the
+ * headline, the argue prompt, the class scatter and the class summary measured
+ * 854px of content in a 768px projector (`e2e-m2l1`, 12-desk session), so the
+ * group had to give up a row. `runtime/scripts/e2e-m2l1.cjs` asserts every
+ * rendered row's own box, the summary's box, and that `#stage` does not overflow
+ * at all, at 1366x768 and 1920x1080 — if this constant is raised past what fits,
+ * that instrument fails rather than silently clipping the room's evidence again.
  */
-export const CF_ROWS_PER_PAGE = 4;
+export const CF_ROWS_PER_PAGE = 3;
 
 /** How many teacher-advanced groups this room's repeat card needs. */
 export const cfPageCount = (rowCount: number): number => Math.max(1, Math.ceil(rowCount / CF_ROWS_PER_PAGE));

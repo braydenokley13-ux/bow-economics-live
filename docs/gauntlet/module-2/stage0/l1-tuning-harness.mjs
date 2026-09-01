@@ -71,6 +71,13 @@ const {
   bestFoundSeason,
   ticketPeakPrice,
   totalPeakPrice,
+  // gate-l1-econ-r3 R9: P16's dominance limb now judges the SHIPPED row.
+  repeatRowFor,
+  // gate-l1-econ-r3 R5: P14's new limb (v) judges every PRINTED season line
+  // against the model's own exact Pareto frontier.
+  seasonFrontier,
+  renewalsCornerSeason,
+  renewalMarginalCost,
 } = mod;
 void createRequire;
 
@@ -697,6 +704,63 @@ console.log("");
     if (!(renRange >= SEASON_RENEWAL_RANGE)) ok = false;
     if (!(cashShare >= SEASON_CASH_SHARE)) ok = false;
     if (distinct < 4) ok = false;
+
+    /* ---- LIMB (v): `gate-l1-econ-r3` R5, BLOCKING dissent `econ-l1-two-book-baseline`.
+       Limb (i) above can pass with a baseline that is OFF the frontier, and until
+       this round it did: the flat line the card staged the two-book claim against
+       is Pareto-DOMINATED, so the room was led to infer that 15 renewal points
+       cost $1.18M when the model charges $25,050 — 47x (NY) / 70x (MEM). R5 limb
+       (iii) requires a property that pins every season line the product PRINTS to
+       the model's own frontier. This is that limb, inside the property whose
+       weakest limb caused the defect rather than as a new property (the wave's
+       non-goals forbid adding one).                                            */
+    const exact = seasonFrontier(market);
+    const corner = renewalsCornerSeason(market);
+    const marginal = renewalMarginalCost(market);
+    // (v.a) Every frontier point must be reachable by the SHIPPED reducer path,
+    //       exactly. A DP that cannot be replayed is an upper bound, not a line.
+    for (const point of exact) {
+      const replay = replayPlan(market, point.plan);
+      if (replay.cash !== point.cash || replay.renewals !== point.renewals) ok = false;
+    }
+    // (v.b) Every frontier point must be genuinely undominated by every other.
+    for (const a of exact) {
+      for (const b of exact) {
+        if (a === b) continue;
+        if (b.renewals >= a.renewals && b.cash >= a.cash && (b.renewals > a.renewals || b.cash > a.cash)) ok = false;
+      }
+    }
+    // (v.c) The renewals-friendly line the two-book comparison is STAGED on must
+    //       itself be undominated — and must beat "never moved the dial" on both
+    //       books, which is what makes the flat row a "what if we did nothing"
+    //       row instead of the price of renewals.
+    const cornerOnFrontier = exact.some((p) => p.renewals === corner.renewals && p.cash === corner.cash);
+    if (!cornerOnFrontier) ok = false;
+    if (!(corner.cash > flat.cash && corner.renewals >= flat.renewals)) ok = false;
+    // (v.d) The exchange rate the card lets a room infer must be the model's own.
+    //       Both printed corners are on the frontier, so the implied $/point is
+    //       the true average marginal cost over exactly that range by
+    //       construction — and it must sit inside the true per-point range.
+    const impliedPoints = corner.renewals - printed.renewals;
+    const impliedPerPoint = Math.round((printed.cash - corner.cash) / Math.max(1, impliedPoints));
+    if (impliedPoints <= 0) ok = false;
+    if (impliedPerPoint !== marginal.averageOverRange) ok = false;
+    if (!(impliedPerPoint >= marginal.cheapest && impliedPerPoint <= marginal.dearest)) ok = false;
+    // (v.e) And the frontier must have the shape the card claims: rising
+    //       marginal cost, cheap points first and ruinous points last.
+    if (!(marginal.dearest > marginal.cheapest * 5)) ok = false;
+    // (v.f) The cash corner of the exact frontier must be the printed
+    //       "most cash we could find" line, with no gap.
+    const exactCashCorner = exact[exact.length - 1];
+    if (exactCashCorner.cash !== printed.cash || exactCashCorner.renewals !== printed.renewals) ok = false;
+    rows.push(
+      `${" ".repeat(11)}R5 limb (v): exact frontier ${exact.length} undominated points, all replayable through the shipped reducer · ` +
+        `PRINTED renewals line ${corner.renewals}% @ $${fmt(corner.cash)} is on it and beats "never move the dial" ($${fmt(flat.cash)} / ${flat.renewals}%) on BOTH books`,
+    );
+    rows.push(
+      `${" ".repeat(11)}implied exchange rate between the two printed corners: $${fmt(impliedPerPoint)} per renewal point over ${impliedPoints} points ` +
+        `= the model's own average marginal cost, inside its true range $${fmt(marginal.cheapest)} (cheapest) .. $${fmt(marginal.dearest)} (last point)`,
+    );
     rows.push(
       `${market.id.padEnd(10)} never move the dial $${fmt(flat.cash)} / ${flat.renewals}%  ·  most cash $${fmt(cashMax.cash)} / ${cashMax.renewals}%  ·  most renewals $${fmt(renMax.cash)} / ${renMax.renewals}%`,
     );

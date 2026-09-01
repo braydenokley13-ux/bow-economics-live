@@ -2026,14 +2026,42 @@ function fhNightResultHtml(n: FHNight, title: string): string {
       </div>
       ${sellout}
       <div class="fh-fill-track"><div class="fh-fill-bar ${n.soldOut ? "soldout" : ""}" style="width:${Math.min(100, n.fillPct)}%"></div></div>
-      <div class="fh-result-row"><span>Came</span><span class="numeric">${n.turnout.toLocaleString()} of ${n.seatsOpen.toLocaleString()} (${n.fillPct}%)</span></div>
-      <div class="fh-result-row"><span>Tickets</span><span class="numeric">${money(n.gate)}</span></div>
+      <!-- gate-l1-visual P2 (SCHOOL-UI, /play nightly P&L): this was an unstyled
+           two-column ledger in which "Kept $215,384" — the number the whole night
+           was about — carried exactly the same size and weight as the word
+           "Tickets". The settlement is a box score now: the lesson's own identity
+           (people x price = ticket money) reads across the top in the scoreboard
+           face, the costs are supporting rows underneath, and KEPT is the one
+           dominant number on the card. Composition only: no new art, no glyphs,
+           same palette and tokens. -->
+      <div class="fh-boxscore">
+        <div class="fh-boxscore-cell">
+          <span class="fh-boxscore-label">Came</span>
+          <span class="fh-boxscore-num numeric">${n.turnout.toLocaleString()}</span>
+          <span class="fh-boxscore-sub">of ${n.seatsOpen.toLocaleString()} · ${n.fillPct}%</span>
+        </div>
+        <div class="fh-boxscore-op">×</div>
+        <div class="fh-boxscore-cell">
+          <span class="fh-boxscore-label">Price</span>
+          <span class="fh-boxscore-num numeric">$${n.price}</span>
+          <span class="fh-boxscore-sub">a seat</span>
+        </div>
+        <div class="fh-boxscore-op">=</div>
+        <div class="fh-boxscore-cell">
+          <span class="fh-boxscore-label">Ticket money</span>
+          <span class="fh-boxscore-num numeric">${money(n.gate)}</span>
+          <span class="fh-boxscore-sub">gate only</span>
+        </div>
+      </div>
       <div class="fh-result-row"><span>Spent inside the building</span><span class="numeric">${money(n.inArena)}</span></div>
       <div class="fh-result-row total"><span>Money in</span><span class="numeric">${money(n.total)}</span></div>
       <div class="fh-result-row"><span>Building bill</span><span class="numeric neg">-${money(n.bill).replace("$", "$")}</span></div>
       ${n.spendPaid > 0 ? `<div class="fh-result-row"><span>Making it an event</span><span class="numeric neg">-${money(n.spendPaid)}</span></div>` : ""}
       ${n.bowlCost > 0 ? `<div class="fh-result-row"><span>Opening more of the building</span><span class="numeric neg">-${money(n.bowlCost)}</span></div>` : ""}
-      <div class="fh-result-row total"><span>Kept</span><span class="numeric ${n.net < 0 ? "neg" : "pos"}">${money(n.net)}</span></div>
+      <div class="fh-kept ${n.net < 0 ? "neg" : ""}">
+        <span class="fh-kept-label">Kept</span>
+        <span class="fh-kept-num numeric">${money(n.net)}</span>
+      </div>
       <div class="fh-result-row"><span>Renewals</span><span class="numeric">${n.renewalsBefore}% → ${n.renewalsAfter}% (${n.renewalMove >= 0 ? "+" : ""}${n.renewalMove})</span></div>
       ${n.resaleNote ? `<div class="fh-resale">${escapeHtml(n.resaleNote)}</div>` : ""}
       <!-- gate-l1-play R6 / P2 second clause: the forward-looking receipt on the
