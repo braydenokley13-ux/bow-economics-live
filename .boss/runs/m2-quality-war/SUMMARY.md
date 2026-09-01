@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `332:1d40d7ec85d198eb9f474f1a4f7c08b2cc7ec3d3ee1cda354f5be824e53da08d`  
-Updated: 2026-09-01T11:04:36.311Z
+Event head: `334:6e7851f47bf4e4e203ffc1dd55ee1f8ae0e94f8f8b23988e058009dbb5dc486b`  
+Updated: 2026-09-01T11:04:53.354Z
 
 ## Founder intent
 
@@ -46,7 +46,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - builder — builder-l3 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
 - economic-truth-critic — economic-truth-critic — active — claude-opus-5
-- sports-reality-director — sports-reality-director — active — claude-opus-5
+- sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
 
@@ -94,6 +94,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 
 - proj-l2-mirror-claims — classroom-reliability/blocking/resolved — Two W4 successors, both the claim-vs-model class on surfaces UNREGISTERED in moduleClaims (the builder's disclosed audit limitation): W4-1 — the prescribed release path prints 'some desks had already locked' when none had; W4-2 — the /teach stage-5 mirror is byte-identical across all four release arms, promising 'this board refuses to choose' even in the arm where the board already ruled the bar out. Fix: compute both strings from state AND register them (and the teacher director/mirror surface generally) in moduleClaims so the audit family sees them. GATE_L2_PROJECTOR.md W4 section.
 - sr-l3-capstone-facts — sports-reality/blocking/open — L3 blocking pair: A1 — the finale teaches that owners' money votes take supermajorities and reads 22-8 against a 16-14 threshold, but NBA relocation needs a simple majority (16/30; expansion 23/30) — a false institutional rule at the exact moment the lesson formalizes institutions; A2 — /teach twice tells the teacher the two term sheets are on student screens with the numbers, but no surface renders any figure (real: $625M Seattle vs $534M Sacramento). Plus: gate-claim contradiction vs the Knicks' own printed $193M; the ~$255M Sacramento subsidy that decided the vote missing from the debate material; undated sharing figures; expansion copy a season behind. GATE_L3_SR.md.
+- gate-l3-sr-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
