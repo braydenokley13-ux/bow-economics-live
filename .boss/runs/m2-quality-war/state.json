@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T05:28:50.231Z",
+  "updatedAt": "2026-09-01T05:29:05.816Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2102,7 +2102,8 @@
         "l1-e2e-postl2",
         "gate-l2-sr",
         "gate-l2-teacher",
-        "gate-l2-econ"
+        "gate-l2-econ",
+        "gate-l2-projector"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -2113,7 +2114,8 @@
         "teacher-l2-not-ready",
         "gate-l2-teacher-dissent",
         "econ-l2-evidence-surfaces",
-        "gate-l2-econ-dissent"
+        "gate-l2-econ-dissent",
+        "proj-l2-truncation"
       ],
       "meetingIds": [],
       "gates": [],
@@ -3657,6 +3659,26 @@
       },
       "recordedAt": "2026-09-01T05:28:36.673Z",
       "actor": "economic-truth-critic"
+    },
+    "gate-l2-projector": {
+      "id": "gate-l2-projector",
+      "wave": 3,
+      "kind": "projector-report",
+      "label": "L2 projector gate: choreography FUNCTIONAL (0.6-1.0s teacher->board, five distinct stages; best beat WHO FILLED YOUR BUILDING). Privacy PASS (60 scans). Fallbacks PASS incl. mid-class server restart, one defect (frozen board vs teach claim). BLOCKING P-1: schedule cards ellipsize club names at 11-12 desks with a third of the frame empty — silent CSS truncation the fit instrument passed; P-2 evidence tier 1.78% vs 2.6% floor. Eight non-blocking",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l2-projector--GATE_L2_PROJECTOR.md",
+      "sha256": "7f6cf12add3dd5bf74c924f3cd6fed134d5816d774f39ad8ef18fddd86f0c28a",
+      "size": 17541,
+      "metadata": {
+        "privacy": "PASS",
+        "choreography": "FUNCTIONAL",
+        "tags": [
+          "projector",
+          "wave-3",
+          "l2"
+        ]
+      },
+      "recordedAt": "2026-09-01T05:29:05.554Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "claims": {
@@ -4186,6 +4208,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T05:28:50.231Z",
       "actor": "economic-truth-critic"
+    },
+    "proj-l2-truncation": {
+      "id": "proj-l2-truncation",
+      "wave": 3,
+      "category": "classroom-reliability",
+      "severity": "blocking",
+      "finding": "L2 board: at 11-12 desks every schedule card ellipsizes its club names (Desk 1 ... HOSTS Golden S...) with a third of the frame empty (board index.html:331-333) — silent CSS truncation the fit instrument cannot see; plus evidence tier .hl-bar-foot at 1.78% vs the 2.6% floor, and the frozen board shows only FROZEN while /teach claims the schedule is up. Fit instruments must also assert no text ellipsization on evidence surfaces. GATE_L2_PROJECTOR.md.",
+      "evidenceIds": [
+        "gate-l2-projector"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T05:29:05.816Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "meetings": {},
@@ -4223,11 +4259,11 @@
     "agentsActivated": 48,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 76,
+    "evidenceRecorded": 77,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 233,
-  "eventHead": "4693abe4843fb788ab0493db8cc670b839a6da5e33affd827376916cc171f3e9",
+  "eventCount": 235,
+  "eventHead": "6d5776047768561c633463dbc5c70ca853dd85e501395980f1e2e8495c765c30",
   "warnings": []
 }
