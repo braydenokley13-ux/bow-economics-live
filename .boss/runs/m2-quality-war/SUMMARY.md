@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `239:b96afc4be754a064f28b82d1367a8dc97d664bb0a8720cbab2a3b7378b7c540b`  
-Updated: 2026-09-01T05:38:46.955Z
+Event head: `242:e59ba6d8474d7230d0c13eceae94e13a3d49491d4e492c1ef787fab781699bc5`  
+Updated: 2026-09-01T05:39:04.192Z
 
 ## Founder intent
 
@@ -43,11 +43,12 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - visual-experience-director — visual-experience-director — completed-with-concerns — claude-opus-5
 - builder — builder-w3-micro — completed — claude-sonnet-5
 - builder — builder-l2 — completed-with-concerns — claude-opus-5
-- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — completed-with-concerns — claude-opus-5
 - economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
+- builder — builder-l2-repair — active — claude-opus-5
 
 ## Required evidence
 
@@ -104,6 +105,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - proj-l2-truncation — classroom-reliability/blocking/open — L2 board: at 11-12 desks every schedule card ellipsizes its club names (Desk 1 ... HOSTS Golden S...) with a third of the frame empty (board index.html:331-333) — silent CSS truncation the fit instrument cannot see; plus evidence tier .hl-bar-foot at 1.78% vs the 2.6% floor, and the frozen board shows only FROZEN while /teach claims the schedule is up. Fit instruments must also assert no text ellipsization on evidence surfaces. GATE_L2_PROJECTOR.md.
 - gate-l2-projector-dissent — undefined/undefined/open — undefined
 - play-l2-below-bar — gameplay/blocking/open — L2 rates FUNCTIONAL, below the wave contract's STRONG bar, on repairable causes: (R1) the weekly settlement and decomposition land below the 1024x600 fold with auto-scroll to next week's dial — the reveal appears to do nothing at the exact moment the lesson pays off; LOCK below fold in week 1; (R2/R3) reveal-5 and reveal-4/synthesis-card-4 assert causal claims the played data refutes (same defect family as econ-l2-evidence-surfaces); (R4) the free-rider comparison is confounded by schedule luck. GATE_L2_PLAY.md.
+- gate-l2-play-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
