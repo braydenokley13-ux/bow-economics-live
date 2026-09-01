@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `245:adfa962b74d80d5ded18cd600c707ef51f77c9a8705c0c19f5b5a68b1bff4425`  
-Updated: 2026-09-01T06:32:31.928Z
+Event head: `251:0968c51c8b7f2c56c97ac4c833dc626bbdbf24e8c0326abb52c755db0bb8033d`  
+Updated: 2026-09-01T06:32:57.950Z
 
 ## Founder intent
 
@@ -48,7 +48,12 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
-- builder — builder-l2-repair — active — claude-opus-5
+- builder — builder-l2-repair — completed-with-concerns — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- sports-reality-director — sports-reality-director — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
 
 ## Required evidence
 
