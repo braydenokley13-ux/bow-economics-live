@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `350:1a1ff006019f849464473567b153de9a1a1965bfefa7ee7a8e3e0b7125a1f193`  
-Updated: 2026-09-01T11:17:13.794Z
+Event head: `353:29bf80904b6fb9b98404c6526b035b86aa3877ec2529644e13d1131997ea0700`  
+Updated: 2026-09-01T11:17:35.550Z
 
 ## Founder intent
 
@@ -47,8 +47,9 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - player-gameplay-critic — player-gameplay-critic — completed-with-concerns — claude-opus-5
 - economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
-- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
+- builder — builder-w4-r3 — active — claude-opus-5
 
 ## Required evidence
 
@@ -107,6 +108,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - proj-l3-board-integrity — classroom-reliability/blocking/open — Four L3 board/teach integrity blockers: B1 histogram bars overprint the veil sentence on rounds 2/3 at both shapes (column budget omits the tick label; invisible to the fit, truncation, and overlap guards — extend the overlap guard to catch it); B2 closeRound never clears proposal (round 2 opens claiming 12/12 in; WATCH FOR empty two of three rounds); B3 /teach prints STATUS_QUO_COPY on the league-office arm while an adopted 30%/ON rule is on the board (claim-audit class — register the arm surface); B4 REVEAL stage 2 names 'the biggest single swing at Desk 9' directly above 'No desk's money is ever ranked on this screen'. Kings should be commit-then-reveal choreography, not one press (= play finding). GATE_L3_PROJECTOR.md.
 - gate-l3-projector-dissent — undefined/undefined/open — undefined
 - teacher-l3-not-ready — teacher-transfer/blocking/open — L3 TRANSFER NOT READY on six blockers, worst: B1 — the CONSEQUENCE phase's scripted ASK ('Whose effort went DOWN?') is static and directional while the console's own computed line above it read 'Effort went UP by 20%' — the teacher is directed in writing to ask a question the room's evidence refutes at the module's central discussion beat (claim-audit class: the ASK must be computed); B3 — Advance/Jump unguarded through PLAY, a regression against the L1/L2 confirm-guard pattern. Plus B2 (unlinked runs lose the instrument silently), B4 (post-vote late joiner stranded while counted as joined), B5 (rehearsal trains the fatal gesture), B6 (director overclaims a student screen). GATE_L3_TEACHER.md.
+- gate-l3-teacher-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
