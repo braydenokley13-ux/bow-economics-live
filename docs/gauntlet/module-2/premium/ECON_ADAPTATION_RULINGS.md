@@ -540,3 +540,63 @@ curve), **E8** ("Target: $110–$120"), **E14** (trophy + "Strong Round! You're 
 Keep optimizing to maximize profits."), **E16/E17** (per-desk revenue/profit columns on the
 projector, and the presupposing prompt "Why didn't the highest price always win?").
 
+---
+
+## 5. REQUIRED REPAIRS (binding builder rules)
+
+**R-1 — BLOCKING, must land before or with the first rebuilt surface: a rendered-claim limb on the
+client.** Today every economic-truth protection in L1 stops at the module boundary (§0). Discharge,
+falsifiably: extend `runtime/scripts/e2e-m2l1.cjs` so that at **every pre-lock PLAY state it drives**
+it harvests every number and every word from `#gameBody`, imports `dist/modules/fullHouse.js`,
+recomputes `settleNight(market, curveFor(...), currentPrice, currentSpend, openBowl, bowlOffered)`
+for the dials as set, and asserts that **none** of `turnout`, `gate`, `inArena`, `total`, `net`,
+`fillPct`, `turnedAway`, `curve.base`, `curve.sens` appears in the DOM, and that the rendered text
+contains none of `project`, `forecast`, `estimate`, `expected`, `preview` (outside the registered
+`HOUSE_RULES[0]` sentence that says there is no preview), `target`, `profit`, `readiness`,
+`momentum`, `time remaining`. **Mutation limb — the repair is not discharged until it is shown to
+bite:** inject a client-side projection into `play/main.ts` in a scratch copy of `dist`, re-run, and
+record that the limb goes red; then inject a "Target $110–$120" literal and record the same. A limb
+that has not failed is not evidence (the wave's own P16 precedent, `GATE_L1_ECON_R3.md` §6).
+Cheap complement, same wave: a source-level test that greps `runtime/src/client/{play,board}/main.ts`
+for the same forbidden vocabulary inside rendered template literals, so `npm test` alone catches the
+label class without a browser.
+
+**R-2 — BLOCKING before the results/projector surfaces ship: fix the fill denominator everywhere.**
+`fillPct` is `turnout / seatsOpen` (`fullHouse.ts:497-507`), and `seatsOpen` changes on Night 4.
+Every fill number, bar, gauge and arena picture is labelled **"of the seats you opened tonight"** /
+**"of the seats that desk opened"**. "of Capacity" is forbidden. If `/board` is to draw a per-desk
+arena, `CurvePoint` must gain `seatsOpen` and `openBowl` — a module change that returns through
+Economic Truth before it ships.
+
+**R-3 — BLOCKING: the two books stay two books on every surface.** No single money hero on the
+student results screen, no per-desk money column on the projector, no label "profit", "total
+revenue" (for `gate`), or "after costs". CASH renders as the module's own decomposition chain
+(E10); RENEWALS renders at equal figure weight beside it; one registered sentence stating they do
+not add up appears wherever both are shown.
+
+**R-4 — BLOCKING: the reference's evaluative and target-bearing copy does not ship.** E8 (target
+band), E14 (trophy / "Strong Round" / "momentum" / "maximize profits"), E17 (presupposing prompt),
+E4 ("Maximize Revenue" as the single goal), E2's footnote and E5's adaptive pre-lock advice. All
+projector discussion prompts come from `ADAPT_QUESTIONS`, `ARGUE_PROMPT`, `EXIT_PROMPT`, verbatim.
+
+**R-5 — Required before the wave closes: the synthesis visuals are computed, and two of them are
+re-drawn.** The demand-curve visual is the class's realized dots for one market × one card, never a
+fitted curve (E27). The tradeoffs visual is a two-axis frontier, never a balance scale (E27). The
+demand-shifters chips are DAY / DRAW / TV, with RENEWALS and LAST NIGHT'S EVENT MONEY in a
+separately-labelled "carried" group and never in the "tonight" group; **"Weather" does not appear**
+(E27). Six cards, their order and their bodies are unchanged.
+
+**R-6 — Required before the wave closes: teacher surface.** No `Proj. Attendance` (E22), no
+`Readiness` score (E23), no countdown (E24). If the elapsed clock ships, the session start
+timestamp is exposed server-side — `createdAt` exists on `SessionRow` but does not reach `/teach`
+today. `Open Projector View` opens `/board`; the teacher DOM is never mirrored to the projector.
+
+**R-7 — Required before the wave closes: record the two new simplifications** introduced by the
+arena picture (§3) in `SIMPLIFICATIONS`, each with its misconception risk, so the teacher surface
+carries them.
+
+**R-8 — Advisory, recorded so it is not lost:** `ARGUE_PROMPT` asserts an outcome ("Somebody in this
+room made more money by charging less"). OBSERVED it holds season-wide in 84.5% of the worst room I
+swept (4 desks, all prices $10–$40) and 100% elsewhere. Acceptable as a season-wide prompt; it must
+not be promoted to a per-night headline or a projector hero line, where the sample collapses to one
+market × one night and the claim becomes as fragile as E17.

@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `29:d6891abe9b0513bde8f37a7df031b421a79e573d55852900dfbc25c8142d927b`  
-Updated: 2026-09-01T20:24:38.408Z
+Event head: `42:bd8d50fd77291092171a42e2e618b6b05c0596ae9250e12a8c9b396ecb85bde9`  
+Updated: 2026-09-01T20:31:02.869Z
 
 ## Founder intent
 
@@ -31,7 +31,7 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 ## Role status
 
 - visual-experience-director — visual-critic-2 — active — claude-opus-5
-- browser-qa — browser-qa-w1 — active — claude-sonnet-5
+- browser-qa — browser-qa-w1 — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — kid-a-basketball — active — claude-opus-5
 - player-gameplay-critic — kid-b-casual — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — kid-c-nonsports — active — claude-opus-5
@@ -67,6 +67,17 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 - kid-b-shot-play-summary-table — screenshot — End-of-PLAY summary screen — the one genuinely glanceable result screen: five-row table, positive template for per-night results
 - kid-b-shot-board-two-peaks — screenshot — Board REVEAL stage 7, Two Peaks money view — premium visual register, one clear economic punchline
 - kid-b-shot-board-counterfactual — screenshot — Board COUNTERFACTUAL frame — Night 1 vs Night 5 same card
+- baseline-browser-qa-report — note — BASELINE_QA.md — full findings report (paths, artifacts, defects, not-verified)
+- baseline-browser-qa-manifest — browser-trace — Baseline run manifest — 167 screenshots x 33 states x /play,/teach,/board x viewports (4 desks, late joiner at Night 3, stalled desk at Night 5)
+- baseline-browser-qa-manifest-class12 — browser-trace — Class-scale run manifest — 20 screenshots x 5 states x /teach,/board (12 desks, port 4412)
+- baseline-browser-qa-console — note — Console error/warning log, both runs — [] in both (zero console errors/warnings across the full arc, 6 pages + 14 pages)
+- baseline-browser-qa-console-class12 — note — Console error/warning log, class-scale run — []
+- baseline-browser-qa-teach-cutoff-1366 — screenshot — DEFECT 1 — /teach @1366x768, PLAY Night 1 open: pacing controls (Advance/Open the doors/Release the Two Peaks) entirely below the fold, only director notes visible
+- baseline-browser-qa-teach-cutoff-1920 — screenshot — Same moment @1920x1080 for comparison — pacing controls visible, only the top header/room-code panel is cropped by the same scroll offset
+- baseline-browser-qa-adapt-overlap — screenshot — DEFECT 2 — /board ADAPT @1366x768: class scatter, orange square (N2) and orange diamond (N4) fully overlap into one unreadable compound shape
+- baseline-browser-qa-cf12-overlap — screenshot — DEFECT 2 at class scale — /board COUNTERFACTUAL page 1 @1366x768 (12 desks): dense cluster of overlapping marks, several individually unreadable
+- baseline-browser-qa-lock-1024 — screenshot — DEFECT 3 — /play @1024x600, Night 1 open: dial UI cuts off mid-card; DOM-measured lock control top=664 in a 600px viewport (check-lock-1024.cjs)
+- baseline-browser-qa-lobby-1024 — screenshot — /play @1024x600 first contact (LOBBY) — fits cleanly, no issue, for contrast with the Night 1 case
 
 ## Claim ledger
 
@@ -75,6 +86,7 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 ## Dissent
 
 - kid-b-casual-baseline-dissent — student-pull/blocking/open — For the casual/low-reading grade 5-6 student pairs-on-one-device persona, the current M2L1 Full House build should not ship to a real classroom as-is. Every per-night result card renders below the fold behind the next night's full pricing UI on a 1366x768 student viewport (confirmed at two consecutive night transitions), inverting the founder's own preserved reference decision that the consequence gets a separate, larger screen state than the decision. A fast, low-reading student can play all five nights end to end -- dial, LOCK IT IN, dial, LOCK IT IN -- without ever reading a single one of her own result cards, leaving the experience->consequence->adaptation loop that is this lesson's core promise dependent entirely on a compact header number and, later, the class board -- not on anything her own device reliably shows her at the moment it matters.
+- baseline-browser-qa-dissent — classroom-reliability/important/open — /teach at 1366x768 (the design-target teacher viewport) has no sticky/fixed anchor for its session-pacing controls (PHASE chips, Advance, Open the doors, Release the Two Peaks, End session) and no scroll-management on phase change, so those controls are inconsistently below the fold depending on how much director-note text renders for a given beat -- confirmed by DOM measurement and by grep (no position:sticky/fixed rule for this panel in theme.css; no scrollIntoView/scrollTo call in teach/main.ts). This is not a hard trap, but it is real live-pacing friction on the surface CLAUDE.md names as where 'teacher paces phases' -- a teacher mid-class should not have to hunt for the button that advances the room.
 
 ## Latest gate
 

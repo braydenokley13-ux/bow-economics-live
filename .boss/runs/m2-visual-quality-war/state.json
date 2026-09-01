@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:24:38.408Z",
+  "updatedAt": "2026-09-01T20:31:02.869Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -142,11 +142,28 @@
           "model": "claude-sonnet-5",
           "reason": "Fresh baseline browser truth at head, three surfaces, both viewports; reusable capture driver",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:14:03.377Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T20:31:02.861Z",
+          "sections": {
+            "paths-exercised": "Full Full House arc driven end to end against the real build at head (runtime/dist), on both /teach, /play, /board, at required viewports (student/teacher 1366x768, projector 1920x1080 and 1366x768, first-contact/small-Chromebook 1024x600): LOBBY -> HOOK -> PLAY (5 nights, dial-open state + settled state each) -> Two Peaks release (teacher-gated after the Night 3 bell) -> books-closed -> REVEAL (all 7 stages) -> ADAPT -> COUNTERFACTUAL (all paged groups) -> SYNTHESIS (all 6 cards) -> COMPLETE. Baseline run: 4 desks (one late joiner at Night 3, one stalled desk that never locks Night 5, auto-commit verified on both), port 4402, 33 states, 167 screenshots. Class-scale run: 12 desks, /teach+/board only, port 4412, 5 states (PLAY Night 3 open, books-closed, REVEAL stage 7, COUNTERFACTUAL page 1 of 4, SYNTHESIS card 1 of 6), 20 screenshots. Both runs: zero console errors/warnings.",
+            "artifacts": "Reusable driver at /tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/tools/drive-m2l1.cjs (CLI documented in its header; --surfaces/--states flags let later waves capture any single checkpoint without re-driving the whole arc). Baseline screenshots+manifest+console log at docs/gauntlet/module-2/premium/screens-baseline/ (167 PNGs). Class-scale screenshots+manifest+console log at scratch/baseline-browser-qa/screens-class12/ (20 PNGs). Verification scripts (DOM measurement, not pixel-guessing) at scratch/baseline-browser-qa/check-lock-1024.cjs, check-teach-scroll.cjs, check-tile-text.cjs. Full report at docs/gauntlet/module-2/premium/BASELINE_QA.md.",
+            "defects": "Highest severity first. (1) /teach at 1366x768 (design-target teacher viewport): the session-pacing controls (Advance / Open the doors / Release the Two Peaks / End session) are inconsistently below the fold with no sticky/fixed anchor and no scroll-to-top on phase change -- DOM-measured scrollY=269 immediately after a phase advance with bodyScrollHeight 1526 vs innerHeight 768; confirmed no position:sticky/fixed CSS for this panel and no scrollIntoView/scrollTo in teach/main.ts. Not a hard trap (scrolling reaches it) but a classroom-reliability friction risk since /teach paces the class. (2) Class scatter chart (ADAPT and COUNTERFACTUAL, both 4-desk and 12-desk runs): same-color, different-shape marks can render fully stacked into one unreadable compound glyph (orange N2 square exactly overlapping orange N4 diamond in ADAPT; a denser unreadable cluster in the 12-desk COUNTERFACTUAL page 1) -- undermines the board's own 'SAME colour and SAME shape' legend contract for that cluster. (3) /play at 1024x600 (first-contact/small-Chromebook shape): the lock control is 64px below the fold on Night 1 (DOM-measured top=664 in a 600px viewport); reachable by scrolling (not the old overflow:hidden trap) but not visible on arrival. (4, minor/informational) On /play at 1366x768, the just-settled night's box score is itself partially below the fold on the transition frame that opens the next night -- by design (immediate progression), noted so a later wave doesn't misread a '-settled' filename as a full result screen. One suspected defect (a teacher desk-tile reading 'Pairfinished') was investigated via live DOM read and ruled out as a textContent-concatenation false positive, not a real collision.",
+            "not-verified": "Whether a real teacher's own scroll behavior reproduces the exact 269px offset (the underlying facts -- no sticky CSS, no scroll JS, controls below fold at two captured states -- are verified independently of that number). Desks other than Desk 1 were not captured as named screenshots at every state (per the canonical-capture contract), though the arc requires their screens (auto-commit label, late-join 'covered' copy) to render correctly to proceed. Whether the marker-overlap defect recurs across other price seeds -- not swept this run. Visual/aesthetic premium-vs-serviceable judgment -- out of role scope by design. teach/index.html literal markup and Full House's reduced-motion CSS coverage -- inherited NOT VERIFIED from the surface inventory, not re-checked."
+          },
+          "evidenceIds": [
+            "baseline-browser-qa-report",
+            "baseline-browser-qa-manifest",
+            "baseline-browser-qa-manifest-class12",
+            "baseline-browser-qa-console",
+            "baseline-browser-qa-console-class12",
+            "baseline-browser-qa-teach-cutoff-1366",
+            "baseline-browser-qa-teach-cutoff-1920",
+            "baseline-browser-qa-adapt-overlap",
+            "baseline-browser-qa-cf12-overlap",
+            "baseline-browser-qa-lock-1024",
+            "baseline-browser-qa-lobby-1024"
+          ],
           "cost": null
         },
         "kid-a-basketball-baseline": {
@@ -279,11 +296,23 @@
         "kid-b-shot-night2-result-full",
         "kid-b-shot-play-summary-table",
         "kid-b-shot-board-two-peaks",
-        "kid-b-shot-board-counterfactual"
+        "kid-b-shot-board-counterfactual",
+        "baseline-browser-qa-report",
+        "baseline-browser-qa-manifest",
+        "baseline-browser-qa-manifest-class12",
+        "baseline-browser-qa-console",
+        "baseline-browser-qa-console-class12",
+        "baseline-browser-qa-teach-cutoff-1366",
+        "baseline-browser-qa-teach-cutoff-1920",
+        "baseline-browser-qa-adapt-overlap",
+        "baseline-browser-qa-cf12-overlap",
+        "baseline-browser-qa-lock-1024",
+        "baseline-browser-qa-lobby-1024"
       ],
       "claimIds": [],
       "dissentIds": [
-        "kid-b-casual-baseline-dissent"
+        "kid-b-casual-baseline-dissent",
+        "baseline-browser-qa-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -566,6 +595,205 @@
       },
       "recordedAt": "2026-09-01T20:24:38.183Z",
       "actor": "kid-b-casual"
+    },
+    "baseline-browser-qa-report": {
+      "id": "baseline-browser-qa-report",
+      "wave": 1,
+      "kind": "note",
+      "label": "BASELINE_QA.md — full findings report (paths, artifacts, defects, not-verified)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-report--BASELINE_QA.md",
+      "sha256": "7395028c3e4a30b5dfe6ac26ff026fe1bae8dc354d5c46950fe526ef0522e392",
+      "size": 10728,
+      "metadata": {
+        "tags": [
+          "report"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:00.409Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-manifest": {
+      "id": "baseline-browser-qa-manifest",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Baseline run manifest — 167 screenshots x 33 states x /play,/teach,/board x viewports (4 desks, late joiner at Night 3, stalled desk at Night 5)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-manifest--manifest.json",
+      "sha256": "669fcf23ccaec3c9cd7271d7608134997dd9f1c37dcbd6fc65985c5cfcc07b78",
+      "size": 30871,
+      "metadata": {
+        "tags": [
+          "manifest",
+          "4-desk",
+          "port-4402"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:00.626Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-manifest-class12": {
+      "id": "baseline-browser-qa-manifest-class12",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Class-scale run manifest — 20 screenshots x 5 states x /teach,/board (12 desks, port 4412)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-manifest-class12--manifest.json",
+      "sha256": "f240187c048fcdaf116809b0c60b3c77dd645f955f4dd32f89df80d4be022759",
+      "size": 3702,
+      "metadata": {
+        "tags": [
+          "manifest",
+          "12-desk",
+          "port-4412"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:00.837Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-console": {
+      "id": "baseline-browser-qa-console",
+      "wave": 1,
+      "kind": "note",
+      "label": "Console error/warning log, both runs — [] in both (zero console errors/warnings across the full arc, 6 pages + 14 pages)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-console--console.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "size": 2,
+      "metadata": {
+        "tags": [
+          "console",
+          "4-desk"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:01.052Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-console-class12": {
+      "id": "baseline-browser-qa-console-class12",
+      "wave": 1,
+      "kind": "note",
+      "label": "Console error/warning log, class-scale run — []",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-console-class12--console.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "size": 2,
+      "metadata": {
+        "tags": [
+          "console",
+          "12-desk"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:01.267Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-teach-cutoff-1366": {
+      "id": "baseline-browser-qa-teach-cutoff-1366",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "DEFECT 1 — /teach @1366x768, PLAY Night 1 open: pacing controls (Advance/Open the doors/Release the Two Peaks) entirely below the fold, only director notes visible",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-teach-cutoff-1366--baseline-03-teach-night-1-open-1366x768.png",
+      "sha256": "05422fc538d6eab06de41bd253f8d32df56da51ad274b84b9d588477ea33cbf0",
+      "size": 104741,
+      "metadata": {
+        "tags": [
+          "defect",
+          "teach",
+          "1366x768",
+          "below-the-fold"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:01.512Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-teach-cutoff-1920": {
+      "id": "baseline-browser-qa-teach-cutoff-1920",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Same moment @1920x1080 for comparison — pacing controls visible, only the top header/room-code panel is cropped by the same scroll offset",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-teach-cutoff-1920--baseline-03-teach-night-1-open-1920x1080.png",
+      "sha256": "a754d26abd28ae5cdd3f74e725b704a2e9bffeeb33b7a9ae46a1422fbb6c6fe1",
+      "size": 136530,
+      "metadata": {
+        "tags": [
+          "comparison",
+          "teach",
+          "1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:01.727Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-adapt-overlap": {
+      "id": "baseline-browser-qa-adapt-overlap",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "DEFECT 2 — /board ADAPT @1366x768: class scatter, orange square (N2) and orange diamond (N4) fully overlap into one unreadable compound shape",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-adapt-overlap--baseline-24-board-adapt-1366x768.png",
+      "sha256": "4ff48df3b1d1463b5af78c2f344347504f702658b0a81186c6cfbe5140d4ce0c",
+      "size": 792359,
+      "metadata": {
+        "tags": [
+          "defect",
+          "board",
+          "adapt",
+          "marker-overlap"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:01.991Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-cf12-overlap": {
+      "id": "baseline-browser-qa-cf12-overlap",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "DEFECT 2 at class scale — /board COUNTERFACTUAL page 1 @1366x768 (12 desks): dense cluster of overlapping marks, several individually unreadable",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-cf12-overlap--baseline12-04-board-cf-1-1366x768.png",
+      "sha256": "372004e4b6cdfb2e295cc250f2637c626569dbe2c3ddf894ee5ef828f6c787e7",
+      "size": 839962,
+      "metadata": {
+        "tags": [
+          "defect",
+          "board",
+          "counterfactual",
+          "marker-overlap",
+          "12-desk"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:02.207Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-lock-1024": {
+      "id": "baseline-browser-qa-lock-1024",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "DEFECT 3 — /play @1024x600, Night 1 open: dial UI cuts off mid-card; DOM-measured lock control top=664 in a 600px viewport (check-lock-1024.cjs)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-lock-1024--baseline-03-play-night-1-open-1024x600.png",
+      "sha256": "32ce762dffed5f01660c22db3687a1f5c6e11faa0ca02f4efeaab2ed5f745eb4",
+      "size": 80020,
+      "metadata": {
+        "tags": [
+          "defect",
+          "play",
+          "1024x600",
+          "below-the-fold"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:02.420Z",
+      "actor": "browser-qa-w1"
+    },
+    "baseline-browser-qa-lobby-1024": {
+      "id": "baseline-browser-qa-lobby-1024",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/play @1024x600 first contact (LOBBY) — fits cleanly, no issue, for contrast with the Night 1 case",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/baseline-browser-qa-lobby-1024--baseline-01-play-lobby-1024x600.png",
+      "sha256": "68ec5bb7ff9465f56310bd282a52537176d9c522b4b4ff07bf30224896fe8e09",
+      "size": 41703,
+      "metadata": {
+        "tags": [
+          "comparison",
+          "play",
+          "1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:31:02.637Z",
+      "actor": "browser-qa-w1"
     }
   },
   "claims": {},
@@ -586,6 +814,21 @@
       "status": "open",
       "recordedAt": "2026-09-01T20:24:38.408Z",
       "actor": "kid-b-casual"
+    },
+    "baseline-browser-qa-dissent": {
+      "id": "baseline-browser-qa-dissent",
+      "wave": 1,
+      "category": "classroom-reliability",
+      "severity": "important",
+      "finding": "/teach at 1366x768 (the design-target teacher viewport) has no sticky/fixed anchor for its session-pacing controls (PHASE chips, Advance, Open the doors, Release the Two Peaks, End session) and no scroll-management on phase change, so those controls are inconsistently below the fold depending on how much director-note text renders for a given beat -- confirmed by DOM measurement and by grep (no position:sticky/fixed rule for this panel in theme.css; no scrollIntoView/scrollTo call in teach/main.ts). This is not a hard trap, but it is real live-pacing friction on the surface CLAUDE.md names as where 'teacher paces phases' -- a teacher mid-class should not have to hunt for the button that advances the room.",
+      "evidenceIds": [
+        "baseline-browser-qa-teach-cutoff-1366",
+        "baseline-browser-qa-teach-cutoff-1920"
+      ],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T20:31:02.869Z",
+      "actor": "browser-qa-w1"
     }
   },
   "meetings": {},
@@ -631,11 +874,11 @@
     "agentsActivated": 8,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 16,
+    "evidenceRecorded": 27,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 29,
-  "eventHead": "d6891abe9b0513bde8f37a7df031b421a79e573d55852900dfbc25c8142d927b",
+  "eventCount": 42,
+  "eventHead": "bd8d50fd77291092171a42e2e618b6b05c0596ae9250e12a8c9b396ecb85bde9",
   "warnings": []
 }
