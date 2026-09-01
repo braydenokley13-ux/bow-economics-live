@@ -1,0 +1,127 @@
+# screens-baseline-visual — second independent visual review (visual-critic-2)
+
+Captured from the built product on port 4401, one full M2 L1 session: 4 desks, a late joiner at Night 3, one desk that never locks Night 5.
+
+- `00-teach-create-session.png` — /teach before a session exists — the create form
+- `01-play-join-1366x768.png` — /play first contact: join screen, Chromebook design target
+- `02-play-join-1024x600.png` — /play first contact: join screen at the smallest supported device
+- `03-play-lobby-1366x768.png` — /play LOBBY, seated, waiting on the room
+- `04-play-lobby-1024x600.png` — /play LOBBY at 1024x600
+- `05-board-lobby@1920x1080.png` — /board LOBBY — desks and markets assigned
+- `05-board-lobby@1366x768.png` — /board LOBBY — desks and markets assigned
+- `06-teach-lobby@1366x768.png` — /teach LOBBY — the control room before play
+- `06-teach-lobby@1920x1080.png` — /teach LOBBY — the control room before play
+- `07-play-hook-1366x768.png` — /play HOOK — the job, the books, the slate
+- `07b-play-hook-1366x768-full.png` — /play HOOK full page (below the fold)
+- `08-play-hook-1024x600.png` — /play HOOK at 1024x600
+- `09-board-hook@1920x1080.png` — /board HOOK
+- `09-board-hook@1366x768.png` — /board HOOK
+- `10-teach-hook.png` — /teach HOOK
+- `11-play-night1-prelock-1366x768.png` — /play Night 1 pre-lock — card, dials, blind commitment
+- `11b-play-night1-prelock-full.png` — /play Night 1 pre-lock full page
+- `12-play-night1-prelock-1024x600.png` — /play Night 1 pre-lock at 1024x600 — can a first-contact desk reach the lock?
+- `12b-play-night1-prelock-1024x600-full.png` — /play Night 1 pre-lock at 1024x600, full page
+- `11c-clip-price-dial.png` — the price dial + readout, /play Night 1 (clip of #fhPlayRoot .fh-dials)
+- `11d-clip-card.png` — tonight's card (the printed operating facts) (clip of .fh-card)
+- `13-teach-night1-open@1366x768.png` — /teach PLAY, Night 1 open, nobody locked
+- `13-teach-night1-open@1920x1080.png` — /teach PLAY, Night 1 open, nobody locked
+- `14-board-night1-open@1920x1080.png` — /board PLAY, Night 1 open
+- `14-board-night1-open@1366x768.png` — /board PLAY, Night 1 open
+- `15-play-night1-locked-waiting.png` — /play locked-waiting — the state a desk sits in until the bell
+- `15b-play-locked-waiting-1024x600.png` — /play locked-waiting at 1024x600
+- `16-teach-night1-all-locked@1366x768.png` — /teach with the room locked in, before the bell
+- `16-teach-night1-all-locked@1920x1080.png` — /teach with the room locked in, before the bell
+- `17-board-night1-all-locked@1920x1080.png` — /board with the room locked in, night still open
+- `17-board-night1-all-locked@1366x768.png` — /board with the room locked in, night still open
+- `18-play-night2-with-night1-result.png` — /play Night 2 pre-lock carrying last night's settlement
+- `18b-play-night2-with-night1-result-full.png` — same, full page
+- `18c-clip-night1-result.png` — last night's settlement box score (clip of .fh-result)
+- `19-play-night2-result-1024x600.png` — /play Night 2 with last night's result at 1024x600
+- `19b-board-after-night1@1920x1080.png` — /board after the Night 1 bell — first class evidence
+- `19b-board-after-night1@1366x768.png` — /board after the Night 1 bell — first class evidence
+- `20-play-late-joiner-night3.png` — /play late joiner arriving at Night 3 with carried books
+- `20b-play-late-joiner-night3-full.png` — late joiner, full page
+- `21-clip-spend-dial.png` — the event-spend stepper after 8 presses (clip of #fhPlayRoot .fh-dials)
+- `23-board-two-peaks@1920x1080.png` — /board Two Peaks released by the teacher
+- `23-board-two-peaks@1366x768.png` — /board Two Peaks released by the teacher
+- `23c-clip-two-peaks-money.png` — the Two Peaks money view (clip of .fh-money-svg)
+- `22-play-night4-upperbowl-pressed.png` — /play Night 4 with the upper-bowl plate pressed
+- `22b-clip-bowl-plate.png` — the upper-bowl two-state plate (clip of #fhBowl)
+- `24-play-night4-sellout.png` — /play the Night-4 sellout state — the loudest student moment in the lesson
+- `24b-play-night4-sellout-full.png` — sellout, full page
+- `24c-clip-sellout-headline.png` — the sellout headline + turned-away count (clip of .fh-sellout)
+- `25-board-after-shock@1920x1080.png` — /board after the shock night settles
+- `25-board-after-shock@1366x768.png` — /board after the shock night settles
+- `26-play-books-closed.png` — /play with five nights in the books
+- `26b-play-books-closed-full.png` — books closed, full page
+- `27-play-books-closed-1024x600.png` — /play books closed at 1024x600 (this desk stalled Night 5)
+- `28-board-books-closed@1920x1080.png` — /board with five nights in the books, marks still held back
+- `28-board-books-closed@1366x768.png` — /board with five nights in the books, marks still held back
+- `29-teach-books-closed@1366x768.png` — /teach after PLAY — every desk's season
+- `29-teach-books-closed@1920x1080.png` — /teach after PLAY — every desk's season
+- `30-board-reveal-stage0@1920x1080.png` — /board REVEAL before the first press
+- `30-board-reveal-stage0@1366x768.png` — /board REVEAL before the first press
+- `31-board-reveal-stage1@1920x1080.png` — /board REVEAL stage 1 of 7
+- `31-board-reveal-stage1@1366x768.png` — /board REVEAL stage 1 of 7
+- `31b-clip-reveal-stage1-chart.png` — the first night's class evidence (clip of .scatter-svg)
+- `31-board-reveal-stage5@1920x1080.png` — /board REVEAL stage 5 of 7
+- `31-board-reveal-stage5@1366x768.png` — /board REVEAL stage 5 of 7
+- `31-board-reveal-stage6@1920x1080.png` — /board REVEAL stage 6 of 7
+- `31-board-reveal-stage6@1366x768.png` — /board REVEAL stage 6 of 7
+- `31-board-reveal-stage7@1920x1080.png` — /board REVEAL stage 7 of 7
+- `31-board-reveal-stage7@1366x768.png` — /board REVEAL stage 7 of 7
+- `32-play-reveal-mirror.png` — /play during the final reveal stage
+- `33-teach-reveal@1366x768.png` — /teach during REVEAL — staging control
+- `33-teach-reveal@1920x1080.png` — /teach during REVEAL — staging control
+- `34-board-adapt@1920x1080.png` — /board ADAPT — the room's whole curve
+- `34-board-adapt@1366x768.png` — /board ADAPT — the room's whole curve
+- `34b-clip-adapt-scatter.png` — the class scatter, both markets (clip of .scatter-svg)
+- `35-play-adapt.png` — /play ADAPT
+- `35b-play-adapt-1024x600.png` — /play ADAPT at 1024x600
+- `36-board-counterfactual@1920x1080.png` — /board COUNTERFACTUAL — Night 1 vs Night 5
+- `36-board-counterfactual@1366x768.png` — /board COUNTERFACTUAL — Night 1 vs Night 5
+- `36b-clip-cf-rows.png` — the per-desk repeat rows (clip of #fhCfRows)
+- `37-play-counterfactual.png` — /play COUNTERFACTUAL — the pair's own replays
+- `37b-play-counterfactual-full.png` — same, full page
+- `38-teach-counterfactual@1366x768.png` — /teach during COUNTERFACTUAL
+- `38-teach-counterfactual@1920x1080.png` — /teach during COUNTERFACTUAL
+- `39-board-synthesis-card1@1920x1080.png` — /board SYNTHESIS card 1 of 6
+- `39-board-synthesis-card1@1366x768.png` — /board SYNTHESIS card 1 of 6
+- `39b-clip-synthcard1.png` — synthesis card 1 (clip of .cardgrid .synthcard)
+- `40-play-synthesis-card1.png` — /play SYNTHESIS mirror, card 1
+- `39-board-synthesis-card6@1920x1080.png` — /board SYNTHESIS card 6 of 6
+- `39-board-synthesis-card6@1366x768.png` — /board SYNTHESIS card 6 of 6
+- `39b-clip-synthcard6.png` — synthesis card 6 (clip of .cardgrid .synthcard)
+- `40-play-synthesis-card6.png` — /play SYNTHESIS mirror, card 6
+- `41-teach-synthesis@1366x768.png` — /teach during SYNTHESIS
+- `41-teach-synthesis@1920x1080.png` — /teach during SYNTHESIS
+- `42-board-complete@1920x1080.png` — /board COMPLETE
+- `42-board-complete@1366x768.png` — /board COMPLETE
+- `43-play-complete.png` — /play COMPLETE
+- `44-teach-complete@1366x768.png` — /teach COMPLETE
+- `44-teach-complete@1920x1080.png` — /teach COMPLETE
+
+## Measurements
+
+- /teach initial load (nav->load): 69ms
+- /board first paint of #stage .label: 103ms
+- /play initial load: 63ms
+- 1024x600 #fhLock rendered box vs viewport: {"top":664.234375,"bottom":708.234375,"vh":600}
+- lock->locked-recap render, Night 1, desk1: 71ms
+- lock->locked-recap render, Night 2, desk1: 83ms
+- lock->locked-recap render, Night 3, desk1: 74ms
+- lock->locked-recap render, Night 4, desk1: 63ms
+- lock->locked-recap render, Night 5, desk1: 75ms
+- reveal stage 1 control roundtrip: 1039ms
+- reveal stage 5 control roundtrip: 1033ms
+- reveal stage 6 control roundtrip: 1032ms
+- reveal stage 7 control roundtrip: 1039ms
+- /play DOM nodes / heapMB / nav ms at COMPLETE: {"domNodes":50,"heap":10,"nav":57}
+- /board DOM nodes at COMPLETE: {"domNodes":14}
+- /teach DOM nodes at COMPLETE: {"domNodes":283}
+- /play computed type: {"body":{"ff":"Inter, \"Segoe UI\", system-ui, -apple-system, sans-serif","size":"16px","weight":"400","color":"rgb(246, 244, 236)"},"h1":{"ff":"\"Bebas Neue\", \"Arial Narrow\", Impact, Haettenschweiler, sans-serif","size":"15px","weight":"700","color":"rgb(185, 191, 204)"}}
+- document.fonts on /play: ["Bebas Neue|400|loaded","Space Grotesk|300 700|loaded"]
+
+## Console errors
+
+none observed
