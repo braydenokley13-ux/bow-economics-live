@@ -336,3 +336,106 @@ projector that can silently show another class's closing card, and a scripted
 discussion question whose evidence cannot be put on screen, are both
 teacher-transfer failures regardless of how well the rest of the console
 directs.
+
+---
+
+## RE-CHECK AFTER L2 REPAIR
+
+Owning-critic confirm-or-refute of dissent `teacher-l2-not-ready`, Boss run
+`m2-quality-war`, assignment `recheck-l2-teacher`. Cold-style: the only repo
+file read before driving the product was `runtime/scripts/e2e-m2l2.cjs`
+(mechanics only). Live server PORT 4383 (`npm run build` run this session).
+Sessions driven: `BOWDV7` (zero-student rehearsal, all 8 phases, synthesis
+paged), `BOWHYM` (7 desks, 3 weeks, desk 6 chose 0% twice, desk 7 never locked
+once, through SYNTHESIS), `BOW3FR` (mid-session new-tab probe), `BOWT7F`
+(0-locked close-week probe + second-machine reopen), `BOWRXH` (board code-entry
+probe). Zero console errors and zero pageerrors on every surface in every
+session. Evidence id: `recheck-l2-teacher` (observed).
+
+### The five repros
+
+**B1 — bare `/board`. FIXED.** Observed: bare `http://localhost:4383/board`
+loaded in a fresh browser context while `BOWHYM` was live renders a
+`WHICH ROOM?` state with a `#boardCodeInput` field — "This projector is not
+pointed at a room yet. Type your class code" — and no session content. Entering
+the live code puts the correct room up and rewrites the URL to `?code=`, so a
+projector refresh keeps the room (`BOWRXH`). Every `/teach` frame in every
+phase, including LOBBY, now prints `PUT THE PROJECTOR ON
+HTTP://LOCALHOST:4383/BOARD?CODE=<code>` beside the join line (11 of 11
+captured frames).
+
+**B2 — teacher console outside its tab. FIXED.** Observed in `BOW3FR`: a new
+tab in the same browser, opened mid-PLAY with `bow-teach-session-code` and
+`bow-teach-session-key` in localStorage, renders the live room directly —
+`LIVE · V5`, `2 JOINED`, `DIRECTING PLAY`, full control column, `#room` not
+hidden. A genuinely fresh context correctly falls back to START A SESSION plus
+a `Reopen a session from another device` form; driven with code + key it
+reopened `BOWT7F` at PLAY on the right code.
+
+**B3 — never-locked vs chose-zero. FIXED, both limbs.** Observed in `BOWHYM`
+at REVEAL: desk 7, which never locked once, is its own WATCH FOR group — "Has
+never locked a week — every week settled automatically … they did not choose
+0%, they chose nothing. Go to the desk. Do NOT use them on the gave/got board
+and do not name them in the argument: they are not the free-rider case, they
+are the pair you have not reached yet." The free-rider group is now titled
+"CHOSE to put nothing back, two weeks running" and contained only desks 4 and 6,
+both of which locked at 0%. The group also fires during PLAY, not only at
+REVEAL. The desk card itself carries the cumulative flag: `Desk 7 · Indiana …
+never locked a week — 2 settled AUTO`.
+
+**B4 — ADAPT question 3. FIXED.** Observed in `BOWHYM`: the answer key now ends
+"You do not need the reveal board back for this — every pair has its own two
+numbers on its own screen right now, under WHAT YOU GAVE, WHAT YOU GOT. Tell
+them to read their own." Verified against the students' actual ADAPT screens:
+desk 1 carries WHAT YOU GAVE, WHAT YOU GOT with both figures ($893,640 out /
+$934,142 in, net $40,502) plus the by-choice split ($188,992 / $127,602 /
+$78,052); desk 7 carries the same panel with $0 in the by-choice rows. The
+question is answerable from the surface the pair is already holding.
+
+**B5 — the prescribed rehearsal. FIXED.** Observed in `BOWDV7` with zero desks:
+WATCH FOR renders at every phase, prefixed `REHEARSAL — this panel is a sample,
+because nobody has joined`, with sample groups including the big-Draw host, the
+collapsed-Draw host, the never-locked desk and the CHOSE-zero desk, each with
+its live director copy. SYNTHESIS pages five cards, not one placeholder —
+`card 1 of 5 — REHEARSAL — SHARED PRODUCT` through `card 5 of 5 — REHEARSAL —
+AND ONE MORE THING` — and the board renders each card in full with the
+`REHEARSAL` marker on the frame. The rehearsal labelling disappears once real
+desks exist (`BOWHYM` groups carry no prefix).
+
+### Non-blocking notes
+
+- **N1 FIXED.** The REVEAL heading now reads `THE 5 REVEALS`; zero occurrences
+  of "SEVEN REVEALS" across all captured frames.
+- **N2 FIXED.** The SYNTHESIS TIME CUT now reads "Past minute 55? Say card 1,
+  SHARED PRODUCT, and card 2, SPILLOVER, and stop."
+- **N5 FIXED.** `◗Close week 1 (0/3 locked)` now raises a consequence-stating
+  confirm — "Nobody has locked in yet — 0 of 3 desks. This is the week bell …
+  every desk that has not locked settles at its club's house price with nothing
+  reinvested, marked AUTO. Ring it anyway?" — and dismissing it leaves the week
+  open (`BOWT7F`).
+- N3, N4, N7 NOT re-verified as fixed: no elapsed clock appeared on any
+  `/teach` frame, and no Pause/Freeze or "COVERED" explanatory copy appeared.
+  Unchanged, still non-blocking.
+- N6 NOT VERIFIED this re-check — reveal stage 5 board copy was not sampled.
+
+### New, non-blocking, introduced by the repairs
+
+- **N8 — a mistyped code on `/board` strands the projector with no way back.**
+  Observed in `BOWRXH`: entering `BOWZZZ` navigates to `/board?code=BOWZZZ`,
+  which renders `CONNECTING… / reconnecting…` indefinitely (probed to t+29s),
+  with the code field gone and no "no such room" state. Strictly safer than the
+  old silent cross-session attach, and `/teach` now prints the correct URL, so
+  the teacher has a visible recovery — but the field should come back on an
+  unknown code.
+- **N9 — the teacher key is never displayed, and the reopen panel says it was.**
+  Observed: `runtime/src/client/teach/index.html:90` reads "It is shown once, on
+  the console that created the session," and `#reopenKey` asks the teacher to
+  "paste the key issued when the session was created." No `/teach` frame in any
+  session printed the key; it is only written to localStorage
+  (`runtime/src/client/teach/main.ts:132-134`). The same-machine path is covered
+  by auto-resume, so this is not blocking, but the second-machine form is
+  unusable and its instruction is false.
+
+**TRANSFER: READY**
+
+**DISSENT teacher-l2-not-ready: DISCHARGED**

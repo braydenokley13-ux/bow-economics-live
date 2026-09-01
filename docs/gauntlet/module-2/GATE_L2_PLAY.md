@@ -386,3 +386,167 @@ None recorded. If the run advances this lesson as STRONG without clearing R1–R
 paragraph as dissent on the ground that BC-5 is satisfied in the DOM but not in the
 student's field of view, and that two projector beats state causal claims the play does not
 support.
+
+---
+
+## RE-CHECK AFTER L2 REPAIR
+
+Owning-critic confirm-or-refute of dissent `play-l2-below-bar`, run `m2-quality-war`,
+assignment `recheck-l2-play`. Fresh sessions played in real Chromium against the built
+runtime on PORT 4381 (server killed at end; no listener remains). Six desks, every desk at
+the 1024×600 pairs-on-one-device default, teacher at 1280×900, board at 1600×900.
+Screenshots: `screens-l2-gate/r1-*`.
+
+Evidence produced: `recheck-l2-play` (this section + `screens-l2-gate/r1-*`).
+Evidence read as build claims, not verdicts: `l2-e2e-r1` (exit 0), `l2-tests-r1` (exit 0).
+Zero console errors on `/play`, `/teach`, `/board` across both sessions (observed).
+
+**Sessions played**
+
+| id | desks | strategies |
+| --- | --- | --- |
+| R-A | 6 | D1 schedule-adaptive (me, $78/$46/$76) · D2 free-ride (house price, 0/0/0) · D3 max reinvest (40/40/40) · D4 floor price $10 all weeks · D5 ceiling $120 then house · D6 house + 20%. Handed-To-You released **after the week-2 bell** (the path the shipped e2e drives). |
+| R-B | 6 | Price-extreme probe: both big-market desks (D1 New York, D3 Golden State) held at **$10** all three weeks, small markets at house price; Handed-To-You released **during the week-2 open window**. |
+
+### Per-repair verdicts
+
+**R1 — stage the consequence. CONFIRMED, with a reachable exception (new finding N-1).**
+Observed, every desk, both bells, no manual scroll: page at `scrollY 0`, `#hlSplit`
+219..330, KEPT 337..376, `#hlRoad` 383..436 in a 600px viewport; `#hlPriceDial` at
+1131..1174, off-screen. The bell now lands the pair on the result
+(`r1-05-afterbell-w1-desk1.png`). This is a real repair and the screen is the best in the
+build.
+*Exception:* on any **sold-out** week a FULL HOUSE banner pushes `#hlRoad` to 531..584 while
+the fixed lock bar occupies **539..600 at z-index 20**. Hit-tested with
+`elementFromPoint` at the road card's own centre and lower third: `#hlLockBar`, not
+`#hlRoad`. The externality sentence — "…$350,064 on THEIR books. You do not get any of it."
+— is behind an opaque bar and unreadable (observed R-B/D1 and R-B/D3 week 1, R-A/D4 week 2;
+`r1-17-afterbell-fullhouse-desk1-w1.png`). `assertSettlementAboveFold` passes it because it
+tests `bottom <= vh+1` and never tests occlusion — the same "in the box, not in the field of
+view" blind spot the original R1 named, one layer down. Low price is the most common naive
+grade-5 strategy; this fires in most classes.
+
+**R2 — LOCK IT IN and the schedule strip above the fold. CONFIRMED as specified; the fold
+problem rotated rather than cleared (new finding N-2).** Observed on all six desks at first
+contact: `#hlLock` 548..592, all three schedule rows fully visible at 348..486, page 1002px
+(`r1-03-prelock-w1-fold.png`). But `#hlPriceDial` measures **595..617** and the reinvest
+stepper below it — i.e. **both dials are now under or below the fixed lock bar at the moment
+of decision**, on every desk. A pair can complete a turn by pressing the pinned LOCK IT IN at
+the default $56 / 0% without ever seeing a dial. R2's falsifiable clause did not assert the
+decision surface, only the button and the strip.
+
+**R3 — reveal stage 5's causal claim. CONFIRMED in substance; two residual copy defects
+(N-3).** "Nobody told this room to move" is gone. The beat now teaches the horizon rule
+("investment dies when there is no tomorrow to collect in") and refuses to choose a cause.
+Residuals, both observed:
+- *Off-by-one on the bar clause.* `sawBarBeforeWeek3` = `barReleasedAtWeek < WEEK_COUNT - 1`.
+  In R-A the teacher released the bar after the week-2 bell — the room read the bar on the
+  projector while pricing week 3 — and the board printed "This room did **NOT** see the
+  Handed-To-You bar before it played week 3, so nothing on this frame can be about the bar."
+  That is false about the room, and it is the release point `e2e-m2l2.cjs` itself drives.
+- *Self-contradiction in the DOWN branch.* The DOWN sentence names the bar unconditionally
+  ("…and whatever they made of the bar"), so it fires four sentences after the NOT-seen
+  clause. Observed in R-A (`r1-12-board-reveal-5.png`). R-B, released in the week-2 window,
+  printed the correct "did see" clause (`r1-19-board-reveal-5-bar-seen.png`).
+
+**R4 — "SMALL BUILDING, BIG NIGHT". CONFIRMED.** The gap is now split by the same three
+blocks the room has read all lesson, the driver is computed rather than asserted, and both
+prices print either way. Watched under the exact condition that broke it: R-B, New York at
+**$10** hosting Draw 26 ($490,672) against Oklahoma City at **$46** hosting Boston Draw 60
+($811,826); gap $321,154, of which $279,928 is the visitor block, and the board says so
+(`r1-18-board-reveal-4-price-extreme.png`). In R-A no honest pair existed and the beat said
+so rather than inventing one. Claim now matches the data. *Play cost, recorded not blocking:*
+beat 4 is five lines of prose with no exhibit, and can be a dead beat entirely.
+
+**Free-rider comparison separates choice from schedule luck. CONFIRMED as an instrument;
+empty for the desk it exists to inform (N-4).** Board reveal 2 now prints per desk
+"spent $X · dealt $A/$B" under the legend "These bars are what the **DESKS CHOSE**, not what
+they were dealt" (`r1-12-board-reveal-2.png`). The private ADAPT card splits into
+"EVERYTHING YOUR DRAW MOVED — MOST OF IT THE DRAW YOU WERE DEALT" (Net, now carrying "This is
+not money you kept or lost" — old R9 closed) and "WHAT YOUR OWN DECISIONS DID", with a
+within-desk counterfactual: "Same schedule, same prices, same everything — except you put
+nothing back. That is the only fair thing to compare yourself to, because nobody chose their
+calendar." That is a genuine luck control and the first "what if we'd done something
+different" in the build. Observed R-A: D1 spent $429,581 → **+$270,243** own cash; D4 spent
+$105,724 → +$27,982; D6 spent $687,711 → **−$155,919**; D3 spent $1,255,738 → **−$269,638**.
+*Residual:* the free-riding desk's block reads $0 / $0 / $0 under a sentence describing a
+counterfactual identical to what it did (`r1-13-adapt-desk2-freerider.png`). D2 free-rode
+three weeks, finished **2nd of 6 in cash ($3,722,096)**, and neither its card nor the board
+shows it what the choice cost — the board's class line says reinvesting was worth
+**−$127,332** to these desks' own books. The confound is gone; the consequence still is not
+there. (Economically that is the externality doing its job; as play it means the free-rider
+never feels a cost.)
+
+**Unchanged, verified again:** the Handed-To-You release is still projector-only — desk 1's
+rendered text is byte-identical across the press (observed). Old R5 (schedule strip
+retro-updates played weeks: recap header "W1 vs Memphis · D62" beside strip row "Week 1 ·
+played · HOST Memphis · Draw 54") still present. R10 confirmed fixed: reinvest copy is one
+line plus a "HOW THE REINVEST DIAL WORKS" disclosure. Week 3 now reads "LAST WEEK. Draw you
+buy now earns you nothing more in this lesson — it is what your club carries into the next
+one," which points at an L3 that does not exist yet.
+
+### RATING: FUNCTIONAL
+
+Upper end of FUNCTIONAL, and materially better than the graded build. It is not STRONG.
+
+**The single remaining cause, stated precisely: only one of the two dials carries a
+consequence the desk can feel inside the lesson.** The price dial has consequence but no
+counterfactual — nothing anywhere tells a pair what $46 would have taken on the night they
+priced $78. The reinvest dial now has a counterfactual but the product itself prices its own-
+book return at roughly nothing (negative for the two heaviest reinvestors; −$127,332 across
+the room on the board) and then tells the desk in week 3 that it earns nothing more this
+lesson. Across three weeks the pair therefore plays one live dial and one dial the game says
+does not pay, against a schedule they did not choose, for a KEPT number with no reference
+point and no week that can be lost. That is what caps the pull.
+
+**Structural or repairable — the wave contract's kill condition: REPAIRABLE.** The kill
+condition is not met and this slot should not return to architecture-level rework. The
+evidence for that: the repair wave moved the hardest previously-blocking defect (staging the
+consequence) without touching architecture, and the four findings above (N-1 occlusion, N-2
+dials below the fold, N-3 bar-clause off-by-one and self-contradiction, N-4 empty free-rider
+counterfactual) are all bounded copy/layout/instrument work inside the existing
+`LessonModule`. The pull ceiling itself is closed by one bounded feature — a post-hoc price
+counterfactual on the settlement screen — which the graded gate already recorded as "the
+highest-value non-blocking opportunity for pull" and which does not violate the build's
+no-preview rule.
+
+**DISSENT play-l2-below-bar: NOT DISCHARGED**
+
+### Required repairs to discharge
+
+**N-1 (BLOCKING).** The road card must be legible after every bell, not merely
+box-inside-viewport. *Falsifiable:* at 1024×600 immediately after `closeWeek`, for the
+centre point and the lower third of `#hlRoad`, `document.elementFromPoint` returns a node
+inside `#hlRoad`. Assert on a seeded sold-out week (FULL HOUSE rendered) as well as a normal
+week. The same occlusion assertion belongs on `#hlSplit` and the KEPT row.
+
+**N-2 (BLOCKING).** The decision surface must be reachable on first contact. *Falsifiable:*
+at 1024×600 on entering PLAY week 1, `#hlPriceDial` and the reinvest stepper are fully inside
+`0..600` and not occluded by `#hlLockBar` under `elementFromPoint`.
+
+**N-3 (BLOCKING).** Reveal 5 must not state a false fact about the room, and must not
+contradict itself. *Falsifiable:* releasing the bar at any point before week 3 is locked
+renders the "did see" clause; and no rendered `#hlChange` string names the bar as a candidate
+cause while also asserting nothing on the frame can be about it.
+
+**N-4 (BLOCKING for STRONG).** A desk that spent $0 must be shown what its choice cost, in
+the same luck-controlled form the reinvesting desks get. *Falsifiable:* for a desk with
+average share 0%, the "WHAT YOUR OWN DECISIONS DID" block carries a non-degenerate
+counterfactual (e.g. same schedule, same prices, 20% back in) rather than three zeroes.
+
+**N-5 (the rating ceiling, non-blocking for the repairs above but required for STRONG).** A
+post-hoc price counterfactual on the settlement screen, so the dial the pair touches every
+week is the one that answers "what if we'd done something different."
+
+### Not verified in this re-check
+
+12-desk scale (played at 6; `l2-e2e-r1` asserts 12 and reports exit 0 — read as build claim,
+not observed here); board privacy; teacher transfer; economic truth of the demand model;
+projector back-row legibility. Those belong to their owning critics.
+
+### Formal dissent
+
+`play-l2-below-bar` stands, on the narrowed ground stated above: the settlement is staged
+correctly in the common case but is occluded in the sold-out case, both decision dials are
+now off the fold at the moment of decision, and the lesson's second dial still carries no
+felt consequence. The cause is repairable and the kill condition is not met.
