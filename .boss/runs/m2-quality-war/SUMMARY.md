@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `168:93b95e22a81c54cd87952a628e7c845a1038aed875e0602b33bf6c639e7c62a0`  
-Updated: 2026-09-01T02:15:29.927Z
+Event head: `171:e5ccae0181236a1031ff9eaec5167f0c895a994f0f8849cab54de5446e8bc215`  
+Updated: 2026-09-01T02:15:51.424Z
 
 ## Founder intent
 
@@ -55,7 +55,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - product-analyst — lead-integrator — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-hunter — completed — claude-sonnet-5
 - experience-director — lead-integrator — completed — claude-opus-5
-- lead-integrator — lead-integrator — active — claude-fable-5
+- lead-integrator — lead-integrator — completed-with-concerns — claude-fable-5
 
 ## Required evidence
 
@@ -220,4 +220,4 @@ Recommendation: **REPAIR**
 
 ## Decision pending
 
-A gate and founder decision are still pending.
+Recorded verdict: **REPAIR**
