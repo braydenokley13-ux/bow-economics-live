@@ -2533,7 +2533,12 @@ body.fh-compact-play .hl-reinvest-more { margin-top: 4px; }
 body.fh-compact-play .hl-slate-block { margin-top: 6px !important; }
 body.fh-compact-play .hl-slate-block > summary { font-size: 12px; }
 body.fh-compact-play .fh-slate-row { padding: 3px 0; font-size: 12px; }
-body.fh-compact-play .hl-split { margin-top: 7px; padding: 8px; }
+body.fh-compact-play .hl-split { margin-top: 6px; padding: 7px 8px; }
+body.fh-compact-play .hl-bell-head { margin: 0 0 3px; }
+body.fh-compact-play .fh-result { padding: 8px 10px; margin-top: 0; }
+body.fh-compact-play .fh-result-head { font-size: 12.5px; }
+body.fh-compact-play .fh-fill-track { margin-top: 5px; }
+body.fh-compact-play .hl-split-rows { gap: 2px; }
 body.fh-compact-play .hl-road { margin-top: 7px; padding: 8px 10px; font-size: 13px; line-height: 1.35; }
 body.fh-compact-play .fh-kept { margin-top: 7px; }
 body.fh-compact-play .fh-bowl-plate {

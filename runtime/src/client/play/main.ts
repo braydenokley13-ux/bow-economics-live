@@ -2825,8 +2825,8 @@ function renderHLPlay(view: Record<string, unknown>): void {
 
   body.innerHTML = `
     <div id="hlPlayRoot">
-      ${hlTopStrip(view)}
-      ${justSettled ? `<div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}` : ""}
+      ${justSettled ? "" : hlTopStrip(view)}
+      ${justSettled ? `<div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}${hlTopStrip(view)}` : ""}
       ${weekCardHtml}
       ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [], !justSettled)}
       ${dialsHtml}

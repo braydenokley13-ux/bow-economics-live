@@ -1504,7 +1504,7 @@ export const SOURCE_NOTES: readonly string[] = [
   "The Golden State Warriors privately financed the roughly $1.4B Chase Center, opened 2019, and own it; their 2024-25 revenue of $833M was the NBA's highest, about 34% above the second-place Knicks (Sportico, 2025; verified as of 2026-08-31).",
   "On 1-2 February 2025 the Dallas Mavericks traded Luka Doncic to the Los Angeles Lakers. Season-ticket cancellations and protests followed and the general manager who made the trade was fired on 11 November 2025 after a 3-8 start. Dallas then won the 2025 draft lottery and drafted Cooper Flagg (reported November 2025 and May-June 2025; verified as of 2026-08-31).",
   "The 2025-26 salary cap rose the maximum permitted 10% to $154.647M, and 6.7% to $164.961M for 2026-27 (NBA.com, June 2025 and June 2026; verified as of 2026-08-31).",
-  "Club names, buildings and listed capacities are real (2025-26). Every dollar figure in this lesson is a modeled magnitude, not an audited club financial, and clubs are named as typographic wordmarks only — no logos, marks, photographs or likenesses.",
+  "Club names, buildings and listed capacities are real (2025-26), and a fact printed under one club is printed under that club only: Knicks gate receipts about $193M in 2024-25, the NBA's largest; Oklahoma City beat Indiana 4-3 in the 2025 Finals; the Lakers are tenants of AEG's Crypto.com Arena. Every dollar figure here is a modeled magnitude, not an audited club financial, and clubs are named as typographic wordmarks only — no logos, marks, photographs or likenesses (verified as of 2026-09-01).",
 ];
 
 export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string }[] = [
@@ -2786,7 +2786,7 @@ export function adaptSpendAnswer(state: HostLeagueState): string {
   if (!ct.anySpend) {
     return `Careful — nobody in this room put anything back, so this question has no spending to be about. Ask it the other way: what would it have cost you, and who else would it have paid? ${where}`;
   }
-  return `BOTH, and this room's own numbers say in what proportion: reinvesting was worth ${money(ct.ownGain)} to these desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books — ${ct.externalPct}% of it landed elsewhere. So the honest answer is not "the buildings they visited, by a distance". It is: it pays you back, slowly, through your local money and your own gate — AND it pays somebody else at the same time, on the night, and you never see that part. That is the problem, not a wrong. Say the next lesson is about what a league does with it. ${where}`;
+  return `BOTH, and this room's own numbers say in what proportion: reinvesting was worth ${money(ct.ownGain)} to these desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books — ${ct.externalPct}% of it landed elsewhere. So do not tell them the buildings took it all. The honest answer is that it pays you back, slowly, through your local money and your own gate — AND it pays somebody else at the same time, on the night, and you never see that part. That is the problem, not a wrong. Say the next lesson is about what a league does with it. ${where}`;
 }
 
 export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): DirectorPanel {

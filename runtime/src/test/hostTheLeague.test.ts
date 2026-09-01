@@ -851,6 +851,8 @@ test("econ B1/B6: no surface or script attributes `gave` to a desk's spending", 
   const teach = hostTheLeagueModule.teacherView(mixed, "ADAPT") as Record<string, unknown>;
   const q3 = (teach["director"] as { ask: { q: string; answer: string | null }[] }).ask.at(-1)!;
   assert.equal(/by a distance/i.test(String(q3.answer)), false, "the falsified ADAPT Q3 magnitude must be gone");
+  assert.match(String(q3.answer), /BOTH/, "the true answer is that the dial pays the desk AND the buildings it visits");
+  assert.match(String(q3.answer), new RegExp(`${mixedAgg.choiceTotals.externalPct}%`), "the answer key must carry the room's measured share");
   assert.match(String(q3.answer), /own screen/, "the ADAPT Q3 answer must point at a surface the teacher can actually put up");
 });
 
@@ -862,8 +864,8 @@ test("play R4 / econ B3: the small-market exhibit attributes from the decomposit
   for (let w = 0; w < WEEK_COUNT; w += 1) state = playWeek(state, (i) => (i % 2 === 0 ? 110 : 30), () => 10);
   const path = computeAggregate(state).smallMarketPath;
   if (path.found) {
-    assert.match(path.line, new RegExp(`\\\\$${path.smallPrice}\\\\b`), "the exhibit must print the small-market desk's price");
-    assert.match(path.line, new RegExp(`\\\\$${path.bigPrice}\\\\b`), "the exhibit must print the big-market desk's price");
+    assert.ok(path.line.includes(`priced at $${path.smallPrice},`), `the exhibit must print the small-market desk's price: ${path.line}`);
+    assert.ok(path.line.includes(`priced at $${path.bigPrice},`), `the exhibit must print the big-market desk's price: ${path.line}`);
     // The three blocks account for the whole gap, exactly.
     assert.equal(
       path.gapFromVisitor + path.gapFromBuildingAndPrice + path.gapFromOwnDraw,

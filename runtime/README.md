@@ -335,8 +335,12 @@ is a season a class could play. At the shipped constants all 11 hold: no
 dominant reinvest line (an adaptive line beats always-max, always-zero and
 copy-the-leader at both a big-market and a small-market seat, by $123k-$870k);
 the externality is material (a Draw-90 visitor draws 2.2-2.6× a Draw-15
-visitor's crowd at the same price); free-riding is punished *and* visible in
-the room's own give-and-take ledger; no seat can be stranded (every club clears
+visitor's crowd at the same price); free-riding is punished *and* visible on an instrument that measures the
+DECISION — and P3 now carries the control it lacked: the same room played with
+every desk at 0% must produce a by-choice ledger that is identically silent,
+while the dealt ledger in that same room still shows a ~$2.0M net spread (which
+is exactly the confound the old P3 was reading as free-rider evidence); no seat
+can be stranded (every club clears
 its weekly bill from every reachable state, with $242k-$291k of room at the
 cash-best price in the worst case); the decomposition residual is 0; the
 cash-best price moves $28-$32 with the visitor's Draw; error costs are
@@ -357,6 +361,19 @@ shows nothing about an open week, the star departure reaches every desk before
 week 2 is priced, the week bell auto-commits a desk that never locked, and all
 five reveal stages render their own beat. Screenshots land in
 `docs/gauntlet/module-2/screens-l2/`.
+
+Two instruments were added in the five-gate repair round, because the existing
+guards could not see either defect. **Silent truncation:** CSS ellipsis produces
+zero overflow and zero clipping, so the fit instrument passed schedule frames on
+which every club name had been thrown away at 11 and 12 desks. Every element
+under `#stage` is now scanned at both projector shapes for a declared
+`text-overflow: ellipsis` and for horizontal self-clipping
+(`scrollWidth > clientWidth` under a non-visible overflow); reintroducing the
+original rule makes the run fail with 13 named offenders. **The 1024×600
+fold:** 48 assertions per run, on every desk, with no manual scroll — after
+each week bell the decomposition, the KEPT figure and the road card must all sit
+inside `0..600` and next week's price dial must not, and `LOCK IT IN` must be
+above the fold in every week.
 
 **No L1 → L2 seeding, deliberately.** D9 persists state only where yesterday's
 choice creates today's problem, and in this lesson today's problem is created
@@ -702,7 +719,31 @@ three static pages), not a general-purpose framework being reinvented.
   is the tallest single pipe for almost every desk but not for all of them — a
   desk that prices high into marquee visitors, or a big market that reinvests
   hard, can out-earn it; the board prints each desk's real percentages and the
-  director tells the teacher to ask that desk what it did.
+  director tells the teacher to ask that desk what it did. (g) **After the
+  five-gate repair round:** the gave/got board now carries two instruments — the
+  DEALT totals (mostly Draw a desk was handed) and the BY-CHOICE figures
+  recomputed against a never-reinvested counterfactual — and every question
+  about a decision reads the second. The by-choice figures are a *ceteris
+  paribus* partial derivative (one desk's spending varied, every other input
+  held at what actually happened); they are not a general-equilibrium answer and
+  no surface claims they are. (h) Still open from `gate-l2-econ`, out of this
+  repair's scope and unfixed: `SIMPLIFICATIONS[5]`'s "at any legal price, from
+  any state" is false in the strong form (reachable weekly nets of −$12,000 to
+  −$60,000 at $120), `SIMPLIFICATIONS[7]`'s "within 3x" is only true under the
+  harness's per-offset band definition, the weekly bill never binds anywhere in
+  the reachable space, the three-block attribution is exact but *order-dependent*
+  and undisclosed, and `visitorDrawFans ≈ 1.33 × ownDrawFans` — the constant that
+  produces the lesson's headline — is not in the ledger. (i) Still open from
+  `gate-l2-sr`: MODERATE-5 (the 2026 Knicks title is not absorbed into the
+  money-does-not-buy-wins counter), MINOR-6/7/8, and the `capacityNote` restamp
+  to 2026-27. (j) Still open from `gate-l2-play`: R5 (a played schedule row
+  retro-updates to the visitor's *current* Draw), R6 (the $120 dead zone), R7
+  (the local-media driver is unnamed on the settlement row), R9 (the ADAPT "Net"
+  figure vs the cash column). (k) Still open from `gate-l2-teacher`: N3 (no
+  elapsed clock against absolute-minute TIME CUT triggers), N4 (Pause vs Freeze
+  are undistinguished on the surface). (l) Still open from `gate-l2-projector`:
+  P-3 (freeze blanks the projector — the /teach mirror now tells the truth about
+  it, but the board still shows one word), P-4, P-5, P-6, P-8, P-9.
 - The teacher-key/rejoin-lockout mechanisms are new as of this round and
   have only been exercised by unit tests and one manual Playwright pass
   (which exercises the *happy* teacher-key path via normal UI clicks, not
