@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:31:32.990Z",
+  "updatedAt": "2026-09-01T12:59:00.823Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3616,7 +3616,18 @@
           "cost": null
         }
       },
-      "evidenceIds": [],
+      "evidenceIds": [
+        "w5-suite",
+        "w5-l3-harness",
+        "w5-e2e-m2l3",
+        "w5-e2e-m2l2",
+        "w5-e2e-m2l1",
+        "w5-a9-proof",
+        "w5-module-file",
+        "w5-harness-file",
+        "w5-suite-wrapper",
+        "w5-r3r4-arm"
+      ],
       "claimIds": [],
       "dissentIds": [],
       "meetingIds": [],
@@ -6048,6 +6059,177 @@
       },
       "recordedAt": "2026-09-01T12:30:35.173Z",
       "actor": "teacher-transfer-critic"
+    },
+    "w5-suite": {
+      "id": "w5-suite",
+      "wave": 5,
+      "kind": "test",
+      "label": "npm test (458 tests, now including the three M2 tuning harnesses)",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-suite--record.json",
+      "sha256": "33837020e0374385430015bf9003790cd2b480708f19e8d0d09051faee0887bf",
+      "size": 113663,
+      "metadata": {
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:52:47.739Z",
+      "actor": "builder-w5"
+    },
+    "w5-l3-harness": {
+      "id": "w5-l3-harness",
+      "wave": 5,
+      "kind": "test",
+      "label": "L3 tuning harness at head — 10/10 properties, 9 mutation limbs CAUGHT incl. RENDER-DRIFT (A9)",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-l3-harness--record.json",
+      "sha256": "912d4f642c6c9da9a5e89209c71c2f5d842e14115c1d102896ffce3b4c568f8e",
+      "size": 12789,
+      "metadata": {
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l3-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:52:56.131Z",
+      "actor": "builder-w5"
+    },
+    "w5-e2e-m2l3": {
+      "id": "w5-e2e-m2l3",
+      "wave": 5,
+      "kind": "browser-trace",
+      "label": "M2 L3 browser e2e (12 desks, /teach /play /board)",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-e2e-m2l3--record.json",
+      "sha256": "5ef22e1ccf8f28d0909959ef26ce283add9bf4bac3251dc16f331e3eebdf41d1",
+      "size": 1467,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l3.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:55:02.324Z",
+      "actor": "builder-w5"
+    },
+    "w5-e2e-m2l2": {
+      "id": "w5-e2e-m2l2",
+      "wave": 5,
+      "kind": "browser-trace",
+      "label": "M2 L2 browser e2e (shared /play client touched)",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-e2e-m2l2--record.json",
+      "sha256": "b78fad83b1586e5632499252c1c192e043259cd0f7f934994d5358fe4158b743",
+      "size": 1212,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l2.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:56:15.717Z",
+      "actor": "builder-w5"
+    },
+    "w5-e2e-m2l1": {
+      "id": "w5-e2e-m2l1",
+      "wave": 5,
+      "kind": "browser-trace",
+      "label": "M2 L1 browser e2e (shared /play client touched)",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-e2e-m2l1--record.json",
+      "sha256": "0ae8063495a04b61231ccb2b1bc0c00ef15d6bb49b5bc9b3062323d596c19918",
+      "size": 3350,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:57:29.278Z",
+      "actor": "builder-w5"
+    },
+    "w5-a9-proof": {
+      "id": "w5-a9-proof",
+      "wave": 5,
+      "kind": "test",
+      "label": "A9 mutation proof: drifting the rendered /play week pot line fails the L3 harness and the suite",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-a9-proof--record.json",
+      "sha256": "3bac19c635e978a8c2ebd71f2e1f29cf019b4504ee7a4acb78b1a995cefa34e0",
+      "size": 795,
+      "metadata": {
+        "command": [
+          "node",
+          "/tmp/claude-0/-home-user-bow-economics-live/2c7a1860-ee1d-5f9b-8309-ead93875cd08/scratchpad/a9-proof.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:58:27.039Z",
+      "actor": "builder-w5"
+    },
+    "w5-module-file": {
+      "id": "w5-module-file",
+      "wave": 5,
+      "kind": "test",
+      "label": "L3 module at head after the six close-out repairs",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-module-file--writeTheRule.ts",
+      "sha256": "6c62291d292ee09c4d524a91c6ae81a6daf0f6d7ee3bdd728017409be79d3b68",
+      "size": 216163,
+      "metadata": {},
+      "recordedAt": "2026-09-01T12:58:42.468Z",
+      "actor": "builder-w5"
+    },
+    "w5-harness-file": {
+      "id": "w5-harness-file",
+      "wave": 5,
+      "kind": "test",
+      "label": "L3 tuning harness with the RENDER limb and the A9 mutation limb",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-harness-file--l3-tuning-harness.mjs",
+      "sha256": "efa6cfa47a8609a0bd7d1aeb5e9f9682aea8753fd7f001ea704022f5cfe4d551",
+      "size": 66492,
+      "metadata": {},
+      "recordedAt": "2026-09-01T12:58:48.060Z",
+      "actor": "builder-w5"
+    },
+    "w5-suite-wrapper": {
+      "id": "w5-suite-wrapper",
+      "wave": 5,
+      "kind": "test",
+      "label": "node:test wrapper that spawns the three M2 harnesses",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-suite-wrapper--m2Harnesses.test.ts",
+      "sha256": "f1a2f9ee8952500b4da0f7985bcdb08ad03cadb012508a77e1dcbf1bbadf9386",
+      "size": 2537,
+      "metadata": {},
+      "recordedAt": "2026-09-01T12:58:48.371Z",
+      "actor": "builder-w5"
+    },
+    "w5-r3r4-arm": {
+      "id": "w5-r3r4-arm",
+      "wave": 5,
+      "kind": "economic-truth-report",
+      "label": "sincere 6-desk status-quo arm, no arrow movement: era line, answer key, ASK and the 'Under the rule you wrote' sweep",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-r3r4-arm--record.json",
+      "sha256": "8705f5a3a8da8e9aac5802bc89b65a7f7ca16237a5ade54d1d8768876cc230e7",
+      "size": 2490,
+      "metadata": {
+        "command": [
+          "node",
+          "/tmp/claude-0/-home-user-bow-economics-live/2c7a1860-ee1d-5f9b-8309-ead93875cd08/scratchpad/r3r4-check.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:59:00.823Z",
+      "actor": "builder-w5"
     }
   },
   "claims": {
@@ -6921,11 +7103,11 @@
     "agentsActivated": 78,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 120,
+    "evidenceRecorded": 130,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 379,
-  "eventHead": "ec34aec1f263e527e30c85df61eccdfd675ec259ab6a988df90146f07762c332",
+  "eventCount": 389,
+  "eventHead": "0a464bc0501c2425ba9cfb20b492a5bc5b3036816eed35f6e0a59ba4b35ef637",
   "warnings": []
 }

@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T12:58:27.000Z",
+  "command": [
+    "node",
+    "/tmp/claude-0/-home-user-bow-economics-live/2c7a1860-ee1d-5f9b-8309-ead93875cd08/scratchpad/a9-proof.mjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "CONTROL   l3 harness on the untouched copy: exit 0\nINJECTED  A9 — paidIn * 1.4 on the studentView render path only; moduleClaims untouched\nMUTANT    l3 harness on the A9 copy: exit 1\nFINDING   RENDER play:desk-1:week-1:transferLine: the audited sentence is not among the strings /play actually renders — audited text begins \"You paid $712,691 into the pot and took $293,609 back out. O…\"\nSUITE     node --test m2Harnesses.test.js on the A9 copy: exit 1\nA9 PROOF: the injection FAILS the harness and the suite.\n",
+  "stderr": ""
+}
