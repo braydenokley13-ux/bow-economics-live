@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:30:35.457Z",
+  "updatedAt": "2026-09-01T12:30:55.359Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -2797,7 +2797,7 @@
     },
     "4": {
       "number": 4,
-      "status": "active",
+      "status": "closed",
       "contract": {
         "hypothesis": "One systemic instrument — a claim-audit property family that recomputes every rendered board/synthesis/ADAPT claim string against the reducer and fails on sign, quantifier, or bound disagreement — plus occlusion-aware fold instruments can close L2's entire claim-vs-model defect class and its pull blockers to STRONG under owning-critic re-adjudication; and L3 'Writing the Rule' can then be built as the module finale (rule dials, offer rounds, two-thirds adoption, lived-under season, real-rule fallback, Kings 22-8 capstone, Economics-You-Learned synthesis) discharging the standing l3-sharing-argmax dissent per BC-1 (differential reinvest instrument; big-market non-movement taught), completing the three-lesson module for the program ship case.",
         "whyThisMatters": "The analyst showed per-ticket copy fixes manufacture new falsehoods faster than critics clear them; only an instrument that audits every printed claim closes the class. L3 is the module's institution-design finale and the only unbuilt lesson; the whole program's ship case waits on it.",
@@ -3368,12 +3368,24 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T12:14:18.278Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T12:30:54.780Z",
+          "sections": {
+            "before-verdict": "READY — rehearsal walks the interior (rule-step x5, week bell x3) and forbids the fatal gesture by instruction; league-office control explained before pressed.",
+            "during-verdict": "READY — computed CONSEQUENCE beat agrees across line/ASK/WATCH FOR/key; abstention explained on the pair's own screen.",
+            "failure-recovery-verdict": "READY — both advance controls guard mid-vote and mid-season; post-vote late joiner lands as observer or takeover, no 409, WATCH FOR raised.",
+            "synthesis-verdict": "READY (unchanged; not re-tested).",
+            "hidden-knowledge-findings": "B2 closed: substitute ASK, dollars/week common basis, LOBBY warning for unlinked runs.",
+            "required-repairs": "Non-blocking N9-N11 only. TRANSFER: READY; DISSENT teacher-l3-not-ready: DISCHARGED."
+          },
+          "evidenceIds": [
+            "recheck-l3-teacher"
+          ],
+          "cost": {
+            "tokens": 136286,
+            "toolUses": 36
+          }
         },
         "recheck-l3-sr": {
           "assignmentId": "recheck-l3-sr",
@@ -3477,10 +3489,17 @@
       ],
       "meetingIds": [],
       "gates": [],
-      "verdict": null,
-      "repairs": 0,
+      "verdict": {
+        "wave": 4,
+        "verdict": "REPAIR",
+        "reason": "Wave 4 delivered the full module: L3 built with BC-1 proven (the run's oldest dissent discharged by independent computation), all three lessons now STRONG on independent play, teacher READY on all three, projector/privacy clean, the Kings capstone genuinely commit-then-reveal. The wave's passCondition is nonetheless unmet: two narrowed dissents remain open (sr-l3-capstone-facts on two repair-introduced one-line facts; the econ pair on four bounded instrument/copy items led by render-vs-atom drift), and the repair budget is spent 3/3. The close-out micro-set opens Wave 5 with integration, the analyst, and the ship case.",
+        "evidenceIds": [],
+        "at": "2026-09-01T12:30:55.064Z",
+        "actor": "lead-integrator"
+      },
+      "repairs": 1,
       "startedAt": "2026-09-01T06:53:16.375Z",
-      "closedAt": null
+      "closedAt": "2026-09-01T12:30:55.359Z"
     }
   },
   "evidence": {
@@ -6763,7 +6782,7 @@
   "shipCases": [],
   "metrics": {
     "waves": 4,
-    "repairs": 2,
+    "repairs": 3,
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
@@ -6774,7 +6793,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 373,
-  "eventHead": "887ccb63de40696544a1e880764657045178bcf4cf677ce6d4947a396467d066",
+  "eventCount": 376,
+  "eventHead": "7680198d9df1de005d9f3384646dff2f78db0411e868a097a6c369be2daa2043",
   "warnings": []
 }
