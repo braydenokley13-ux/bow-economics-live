@@ -1141,3 +1141,182 @@ bounded, and touch no part of the model.
 A decision to proceed does not erase this dissent.
 
 **DISSENT econ-l2-evidence-surfaces: NOT DISCHARGED.**
+
+## W4 FINAL CONFIRM
+
+Boss run `m2-quality-war`, assignment `w4-econ-confirm`. Owning-critic FINAL CONFIRM on the last open
+ground of dissent `econ-l2-evidence-surfaces` — N17/FL-L (a direction word prescribed against the
+room optimum) and N18 (a sign-only audit) — against the repair-2 tree (`fbe1a78`). Fresh probes on a
+build I made this session; the builder's tally is not accepted as evidence for anything below.
+
+**Evidence status.** Observed (computation, this session): `npm run build --prefix runtime` exit 0;
+`npm test --prefix runtime` **411/411 pass**; `l2-tuning` against current dist **exit 0, 12/12**
+(P11 self-reports 336 rooms / 20,448 surfaces / 119,142 atoms / 93 ids / 0 disagreements / 8 of 8
+mutants caught / 0 shock-seated skips). Four probe scripts of my own driving compiled
+`runtime/dist/modules/hostTheLeague.js` through the real reducer over **1,395 rooms**, plus two
+source-level mutations of a sandboxed dist run against a sandboxed harness. Inferred, not observed:
+nothing load-bearing below. Not verified by me: every real-world fact (`gate-l2-sr`); any play,
+projector, visual or teacher rating; anything about a real room. No browser session. Boss evidence
+ids referenced: `l2-tests-w4r2`, `l2-tuning-w4r2`, `gate-l2-econ`, `l2-tuning-w4r1`, `analyst-wave3`.
+
+### mechanism-verdicts
+
+**N17 / FL-L — DISCHARGED at the root, on my own contradiction sweep.** (observed)
+
+The clause is gone. `roomOptimumFor` (module :1495–1541) runs the room's identical season at all nine
+settings on the dial and at the room's own dials ±1 step, and a direction word requires BOTH the
+level outside the computed band AND a one-step move that way measurably paying. Re-running the sweep
+that produced the 83/86 contradiction:
+
+```
+probe 1  530 rooms (90-room uniform ladder 8/12 desks x $30-$110 x all 9 shares;
+                    200 random $30-70; 120 high-share; 120 low-share)
+  module byShare + 3 gradient points vs MY OWN full-reducer replay : 0 disagreements (6,360 points)
+  band / level / relation vs my recompute                          : 0 / 0 / 0 mismatches
+  rooms printing "putting more back in…"                           : 134, CONTRADICTED 0
+  rooms printing "the dollars past it cost…"                       : 327, CONTRADICTED 0
+probe 2  525 rooms with MID-SEASON JOINERS (315 carrying stock weeks), leagues of 2-12 desks,
+         the star-departure shock live in 525 of 525
+  arithmetic / band / level / relation / prescription contradictions: 0 / 0 / 0 / 0 / 0
+```
+
+The M-D showcase room my ruling was written on — 8 desks · flat-$50 · all-25% — now prints:
+"…the room as a whole still came out ahead. … reinvesting left this room $1,159,532 better off. Run
+this room's own books at every setting on the dial and the room keeps the most between 10% and 15% —
+and this room's dials averaged 25%, **over that band, so the dollars past it cost this room more than
+they brought back.**" That is the exact opposite of the sentence FL-L was raised on, and it is what
+the room's own books say. **97% contradiction -> 0 of 461 prescriptions across 1,055 rooms.**
+
+I also tested the STRONGER reading a fifth-grader will take, which the one-step guard does not by
+itself license — "past it" meaning every dollar past the band, not one step. Clamping every dial into
+the band beats the actual dials in **160 of 160** "above" rooms and raising every dial into the band
+beats it in **14 of 14** "below" rooms, and all 340 room curves probed are unimodal. The sentence is
+true on the strong reading, not only the guarded one.
+
+**N18 — DISCHARGED. The limb now recomputes the proposition the sentence asserts, and I made it
+bite from source.** (observed) I read `levelByReplay` (harness :725–779) before probing it: `byShare`,
+`cashOneStepUp` and `cashOneStepDown` each come from `playSeasonWith` — whole seasons through the
+shipped reducer — and it touches no module aggregate, not `roomOptimum`, not `roomCashAtShares`, not
+`roomJointGain`. `PRESCRIPTIONS` (:787–798) is checked against surface **TEXT before any atom**
+(:1014–1024), so a prescription that drifts out of its atom is still caught. `truth.level` is set for
+every room shape, so the limb cannot go unexercised, and `mutantsCaught` (:1651) additionally
+requires `upStepHurts !== null` — the falsifying region must be present in the sweep. The four new
+atoms are in `coversRequiredIds`.
+
+The builder's mutants are in-memory. Mine are not. Sandboxed dist + sandboxed harness, baseline
+exit 0:
+
+```
+M1  roomOptimumFor returns bandLo/bandHi + 20pp        -> exit 1, 288 disagreements
+    (LEVEL spillover.bandLo/bandHi AND BOUND "the printed range 30%-35% does not
+     contain the replayed best setting 10%")
+M2  relation forced to "below" for every room          -> exit 1, 228 LEVEL disagreements
+    board:reveal-2:ledgerSummary, teach:adapt-q3:answerKey, synthesis:spillover each:
+    '"putting more back in would have left this room holding more money" is printed, but a
+     uniform one-step INCREASE moves this room from $28,718,394 to $28,665,739'
+```
+
+M-G and M-H genuinely bite, and they bite on the FL-L proposition by name, on all three surfaces.
+
+**N23 — the `underButFlat` arm is REACHABLE and its copy is true.** (observed) The builder recorded it
+as untested. I constructed it: 3 desks · $110 · all-10% · one mid-season joiner, band 20%–20%, level
+10%, room cash $8,601,985 against $8,563,314 one step up. The card prints "…under that band — and yet
+one more step on every dial in this room would NOT have left it holding more, which is worth arguing
+about," and prescribes nothing. Four such rooms found; `overButFlat` reached 39 times. Both Flat arms
+are honest disclosure of the band/gradient disagreement, not evasion of it.
+
+**N24 — FL-M is closed.** (observed) Title is now "THE CHECK NOBODY CONTROLS" — true of every desk in
+every room, since `national` is the fixed `NATIONAL` pipe — and the superlative it used to assert is a
+counted atom, "the single biggest of the four pipes on N of M desks." Recomputed from the desk pipes
+in **340 of 340 rooms, 0 mismatches**.
+
+**N25 — the model is untouched and re-confirms.** Nothing in repair 2 reached `settleHome`,
+`nextDraw`, `drawGain`, `localMediaFor` or the grids; `roomCashAtShares` is a read-only instrument.
+Its carve-outs are safe: the shock club can never be a live desk (`seatDesk` :684 excludes
+`shockSlot` and `leagueFrozen` blocks league growth), which I confirmed over 525 shock-live rooms.
+411/411, 12/12, P1–P10 re-pass at the shipped constants.
+
+### false-lesson-risks
+
+| id | False lesson | Evidence | Severity |
+|---|---|---|---|
+| **FL-L** | "Your room should have put MORE back in." **CLEARED.** 0 of 461 printed prescriptions contradicted by my own replayed gradient over 1,055 rooms; true also under the strong "every dial into the band" reading (174 of 174); the forcing mutation caught on all three surfaces from source. | observed | **CLEARED** |
+| **FL-M** | "The national check is the biggest check." **CLEARED.** Title bound to what is true of every desk; the superlative is a counted atom, exact in 340 of 340 rooms. | observed | **CLEARED** |
+| FL-J, FL-K, FL-A | Cleared at W4 FINAL RULING; re-confirmed this session, unchanged. | observed | CLEARED |
+| **FL-N** | *New, minor.* "The room keeps the most anywhere in this band." The band is everything within 5% of the curve's SPREAD, so the band's worst point is not the max. Worst measured shortfall **0.582% of room cash** ($104,506 of $17,958,249). Below classroom resolution; a rendering choice, not a falsehood. | observed | non-blocking |
+| FL-B, FL-F, FL-G, FL-H, FL-I | Unchanged. FL-G, FL-H, FL-I open as R-h, R-f, R-d. | observed | non-blocking |
+
+### dominant-strategies
+
+**No new dominant strategy and no new exploit.** Everything added in repair 2 is read-only over
+settled weeks; `roomOptimumFor` is called only from `computeAggregate`, and nothing it produces is
+reachable before commitment, so a desk cannot read the room's optimum and play against it. P1's
+no-dominant-line result re-passes at the shipped constants. The externality wedge measured at the
+W4 FINAL RULING — private best response 5% against a room optimum of 10–15% — is now the module's
+own printed instrument rather than a critic's private measurement, which is the right direction.
+The `smallMarketPathFrom` selection note and the negative-block legibility question stand unchanged.
+
+### synthesis-map-verdict
+
+| card | last verdict | this confirm |
+|---|---|---|
+| `shared-product` | PASS | **PASS**, unchanged. |
+| `spillover` | FAIL (third ground, N17) | **PASS.** Band, level and relation agree with my independent replay in 1,055 of 1,055 rooms; the noun agrees with the joint truth; the level clause is now a separate, computed, gradient-guarded sentence. |
+| `composition` | PASS, title unbound | **PASS, title bound** (FL-M). |
+| `market-size`, `beyond` | unchanged | unchanged; `beyond` remains `gate-l2-sr`'s. |
+
+The chain experienced moment -> class result -> formal term -> generalization holds, EXTERNALITY and
+SPILLOVER are still earned at SYNTHESIS and withheld before it, and for the first time the card that
+tells the room what its own economics means says something the room's own books confirm.
+
+**Simplifications ledger: still nine entries, byte-identical (verified).** The new instrument is a
+new simplification and is not in it — see below.
+
+### required-repairs
+
+**BLOCKING — none. B11 and B12 are discharged on the conditions I wrote for them.**
+
+**NON-BLOCKING — required, recorded.**
+
+- **Ledger the band instrument.** The room optimum is a UNIFORM-share counterfactual with a
+  5%-of-spread tolerance, compared against the MEAN of heterogeneous dials. Three real
+  simplifications, all class-facing, none recorded. CLAUDE.md §3 requires what changed, why, and the
+  misconception risk. This is the tenth round the ledger has gone unaddressed.
+- **The all-0% room prints no level line at all.** `spilloverClaim` early-returns at `!anySpend`
+  (module :1938), so the one room where "your room's own books say 10–15%" is most available and most
+  true says nothing about level. Omission, not falsehood — but it is the best teaching room in the
+  set. (The harness's "reachable in this sweep — 8 desks · flat-$50 · all-0%" line reports the
+  RELATION arm, not a printed sentence; reachability of the printed prescription is established by my
+  probe, 148 rooms, not by that line.)
+- Bind the room-scope "most of it Draw nobody bought" trailer (module :2070). Still unbound.
+- `moduleClaims`' `push` (module :3910) still drops non-synthesis zero-atom surfaces silently. N14
+  half-closed, unchanged.
+- Two source comments (module :1469, :2024) still say the relation is `"unclear"` where the two
+  measures disagree; the shipped type has no such arm — the arms are `underButFlat`/`overButFlat`.
+  Stale, and misleading to the next reader of this code.
+- Ledger, still: N15's joint-figure scope, the by-choice carve-outs, R-c … R-h.
+
+### Overall
+
+**SOUND MODEL. THE CLAIM LAYER IS A REAL INSTRUMENT. THE SENTENCE IT GUARDS IS NOW TRUE.**
+
+The repair did the thing I asked for and did it at the root rather than at the surface: the level
+question is answered by computing the room's own curve instead of by reading the sign of a total, the
+direction word is doubly guarded, the two arms where the guards disagree say so out loud and
+prescribe nothing, and the audit limb recomputes the level proposition by replay and fails from
+source when I break it. I verified all of it myself over 1,395 rooms rather than accepting the tally.
+
+### Dissent
+
+`econ-l2-evidence-surfaces` has run four rounds on the same subject: the evidence surfaces that carry
+this module's named concepts. Those surfaces said, in turn, a false quantifier, an incoherent
+percentage, a false economic noun, and a false level claim. Each repair was correct on the defect
+named. This one is correct on the defect named and, on every probe I could construct — including the
+strong reading, mid-season joiners, small leagues, the shock, and two source-level mutations —
+installs nothing in its place. A room told by the projector, the synthesis card and its teacher's
+answer key where its own optimum sat will now legislate at L3 from a true premise, which is the
+inverted distribution I raised the dissent about. I carry nothing forward and record no new dissent.
+
+The non-blocking set above is real and is now ten rounds old on the ledger item. It does not block.
+
+**DISSENT econ-l2-evidence-surfaces: DISCHARGED.**
