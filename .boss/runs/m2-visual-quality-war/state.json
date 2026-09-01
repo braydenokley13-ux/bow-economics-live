@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:44:59.095Z",
+  "updatedAt": "2026-09-01T20:45:31.964Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -2881,7 +2881,15 @@
   "meetings": {},
   "lanes": {},
   "reservations": {},
-  "checkpoints": [],
+  "checkpoints": [
+    {
+      "commit": "31fb8c83f922f4b3aa6a9186e23e22a411a62bdf",
+      "branch": "claude/economics-boss-module-2-8s591f",
+      "reason": "known-good audit head after wave 1; the wave-2 build starts here",
+      "at": "2026-09-01T20:45:31.964Z",
+      "actor": "boss-lead"
+    }
+  ],
   "overrides": [],
   "ephemeralRoles": {
     "kid-experience-critics": {
@@ -2936,7 +2944,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 117,
-  "eventHead": "a59ebc7c3f410648a94bccdc2aa3992abc6cb2f7d7c2eee95d34bd7acd7adcc7",
+  "eventCount": 118,
+  "eventHead": "3c8cda4d3513383e0f63c2e24d0554a6338c3df25b02d1c05ca322d061095817",
   "warnings": []
 }
