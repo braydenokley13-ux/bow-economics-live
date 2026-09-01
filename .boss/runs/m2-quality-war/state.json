@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T08:34:25.110Z",
+  "updatedAt": "2026-09-01T08:34:39.479Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3054,12 +3054,23 @@
           "model": "claude-sonnet-5",
           "reason": "Narrow confirm of proj-l2-mirror-claims (W4-1/W4-2) across release arms",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T08:27:41.902Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T08:34:39.479Z",
+          "sections": {
+            "session-choreography-verdict": "Both live-driven arms advanced only on teacher presses; bar-release beat and all five REVEAL presses landed correctly per arm; zero console errors.",
+            "board-privacy-verdict": "Out of scope for this narrow confirm (unchanged from prior sections).",
+            "teacher-fallback-verdict": "PASS for arms A and C: prescribed-timing copy truthful ('before a single desk had locked week 3 in'); never-released arm correctly prints did-NOT-see; /teach stage-5 mirror arm-specific and matching its own board in each arm. Arms B/D pinned by unit tests + six-arm mutation sweep, read not re-driven.",
+            "classroom-drama-notes": "Not re-assessed (narrow confirm). 7 w4f- screenshots.",
+            "required-repairs": "None issued. DISSENT proj-l2-mirror-claims: DISCHARGED."
+          },
+          "evidenceIds": [
+            "w4-projector-final"
+          ],
+          "cost": {
+            "tokens": 105025,
+            "toolUses": 34
+          }
         }
       },
       "evidenceIds": [
@@ -5795,7 +5806,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 304,
-  "eventHead": "4fb82424fed0094f6a028be49e1ff87e615a98be5875dd7fdac02242fdbc5083",
+  "eventCount": 305,
+  "eventHead": "ee38002d2c3d2f03301a63662986757791940aa5221d36c81c5737b8c0cfeeab",
   "warnings": []
 }
