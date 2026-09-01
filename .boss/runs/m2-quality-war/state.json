@@ -26,8 +26,8 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:30:57.339Z",
-  "currentWave": 4,
+  "updatedAt": "2026-09-01T12:31:32.990Z",
+  "currentWave": 5,
   "waves": {
     "1": {
       "number": 1,
@@ -3500,6 +3500,131 @@
       "repairs": 1,
       "startedAt": "2026-09-01T06:53:16.375Z",
       "closedAt": "2026-09-01T12:30:55.359Z"
+    },
+    "5": {
+      "number": 5,
+      "status": "active",
+      "contract": {
+        "hypothesis": "The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom drift audit, R2 harness-in-npm-test, R3/R4 arm-copy) can be repaired and discharged by their owning critics; the whole module then holds together as one product at a single head (all M1 + M2 suites, harnesses, and e2e green; state docs truthful); and the program can present an evidence-backed ship case for the founder with an honest analyst reconciliation and a first-real-Boss-run retrospective.",
+        "whyThisMatters": "This is the program's closing wave: the founder needs a truthful ship case, a clean tree, updated state docs, and the retrospective the first real Boss run owes the harness's own learning system.",
+        "uncertainties": [
+          "Whether the render-vs-atom drift fix (audit compares rendered output, not just atoms) generalizes cleanly across the three lessons' clients.",
+          "Whether the analyst finds unreconciled claims across the whole program's ledger.",
+          "Nothing else material: the remaining items are measured and bounded."
+        ],
+        "requiredEvidence": [
+          "Owning-critic discharge lines for sr-l3-capstone-facts and both econ L3 dissents.",
+          "One full deterministic sweep at the final head recorded via evidence command: full suite, all three M2 harnesses, all three M2 e2e, all M1 e2e.",
+          "State docs updated truthfully (TRACK_101_MAP, RAMAZ_READINESS, PRODUCT_DECISIONS append for the program's standing decisions, runtime/README) with no readiness-rung inflation (D10).",
+          "A fresh analyst reconciliation of the program's claims (read-only, disproof-first).",
+          "The ship case prepared via the harness (ship-case + ship gate evaluation), the founder ship decision left to the founder.",
+          "The first-real-run Boss retrospective recorded through the harness's lesson system (provisional lessons, no silent constitution changes)."
+        ],
+        "nonGoals": [
+          "Any new feature or lesson work beyond the six close-out items.",
+          "Visual polish (visual-l1-premium-unmet is the founder's ship-case item).",
+          "The M1 L3 flake fix (documented follow-up).",
+          "Boss constitution changes (lessons go through the maturity system).",
+          "Classroom-readiness rung inflation (D10: nothing is classroom-proven)."
+        ],
+        "sacredConstraints": [
+          "All prior sacred constraints carry forward (D1-D19, BC-1..BC-7, dissent resolutions require owning-critic lines, audits may not be weakened, founder merge control).",
+          "visual-l1-premium-unmet stays open for the founder; the ship case carries the premium clause as UNMET.",
+          "State docs record honest rungs only; the ladder's 'classroom-proven' word appears nowhere."
+        ],
+        "passCondition": "All three carried dissents discharged with owning-critic lines; the deterministic sweep green at the final head; state docs truthful and committed; analyst reconciliation recorded; ship case prepared and the ship gate evaluated; retrospective lessons recorded; tree clean and pushed. The program verdict is then recorded and the founder receives the ship case with the open founder items named.",
+        "repairCondition": "A close-out item's fix fails its owning-critic confirm within this wave's repair budget (3): iterate within budget.",
+        "rollbackCondition": "The close-out repairs regress any lesson's verified behavior beyond budget: revert to checkpoint 8a9ff2f967f659c7fd85599df753e565762045bb.",
+        "killCondition": "Not applicable at this stage: the module exists and is independently gated; a discovery that invalidates a lesson's economics at mechanism level would return the program to REPAIR, not kill, per the owning critics' standing rulings.",
+        "iterationBudget": {
+          "maximumWaves": 6,
+          "maximumRepairs": 3,
+          "softTokenBudget": 0,
+          "reason": "Closing wave; wave 6 remains as the final buffer."
+        }
+      },
+      "contractAmendments": [],
+      "activation": {
+        "level": 3,
+        "levelName": "QUALITY_WAR",
+        "scopes": [
+          "economic-model",
+          "demand",
+          "revenue",
+          "teach",
+          "board",
+          "sports-reality",
+          "visual",
+          "gameplay"
+        ],
+        "roles": [
+          "browser-qa",
+          "builder",
+          "classroom-projector-critic",
+          "economic-truth-critic",
+          "experience-director",
+          "lead-integrator",
+          "player-gameplay-critic",
+          "product-analyst",
+          "regression-hunter",
+          "sports-reality-director",
+          "teacher-transfer-critic",
+          "visual-experience-director"
+        ],
+        "blockingRoles": [
+          "classroom-projector-critic",
+          "economic-truth-critic",
+          "sports-reality-director",
+          "teacher-transfer-critic"
+        ],
+        "evidence": [
+          "analyst-report",
+          "browser-trace",
+          "economic-truth-report",
+          "gameplay-report",
+          "git-diff",
+          "projector-report",
+          "sports-reality-report",
+          "teacher-transfer-report",
+          "test",
+          "visual-report"
+        ],
+        "matchedRules": [
+          "economic-model",
+          "sports-reality",
+          "teacher-surface",
+          "projector",
+          "gameplay",
+          "visual"
+        ],
+        "softAgentBudget": 14,
+        "softMeetingBudget": 2
+      },
+      "assignments": {
+        "w5-closeout": {
+          "assignmentId": "w5-closeout",
+          "role": "builder",
+          "actor": "builder-w5",
+          "model": "claude-opus-5",
+          "reason": "Wave-5 close-out micro-set: SR N1/N2 one-line facts; econ R1 rendered-output audit, R2 harness wired into npm test, R3/R4 arm-copy fixes",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T12:31:32.990Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        }
+      },
+      "evidenceIds": [],
+      "claimIds": [],
+      "dissentIds": [],
+      "meetingIds": [],
+      "gates": [],
+      "verdict": null,
+      "repairs": 0,
+      "startedAt": "2026-09-01T12:31:32.664Z",
+      "closedAt": null
     }
   },
   "evidence": {
@@ -6788,19 +6913,19 @@
   "linkedPrecedents": [],
   "shipCases": [],
   "metrics": {
-    "waves": 4,
+    "waves": 5,
     "repairs": 3,
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 77,
+    "agentsActivated": 78,
     "gateFailures": 2,
     "claimsContradicted": 1,
     "evidenceRecorded": 120,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 377,
-  "eventHead": "deab14fb79f6619cef9070f5d00756d8f27bfb262eb37d42e6f33043c3c3b481",
+  "eventCount": 379,
+  "eventHead": "ec34aec1f263e527e30c85df61eccdfd675ec259ab6a988df90146f07762c332",
   "warnings": []
 }
