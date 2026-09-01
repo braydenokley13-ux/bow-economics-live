@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `342:9939cf343f10c041c0674a1800f70fb4cf2afd5ffdc1773eff796b6726d3ef2e`  
-Updated: 2026-09-01T11:13:57.249Z
+Event head: `344:2b9ac679692523abdb8e7bb7f0ca8403d54c8f33ab963f699afd99abd9aa60e0`  
+Updated: 2026-09-01T11:14:15.218Z
 
 ## Founder intent
 
@@ -44,7 +44,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - builder — builder-w4-r2 — completed — claude-opus-5
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
 - builder — builder-l3 — completed-with-concerns — claude-opus-5
-- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — completed-with-concerns — claude-opus-5
 - economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
@@ -101,6 +101,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - econ-l3-signature-reachability — economic-truth/blocking/open — 71.0% of 15,625 proposal profiles — including 100% of sincere play — land on the status-quo 5% share where the entire BC-1 payload is null, yet reveal stage 4 still scripts 'why didn't the big market move?' with no desk sold out. The signature moment must be reachable by the play the room actually produces (adoption dynamics/status-quo level retune, or the reveal must adapt to the outcome that occurred). Also: L2/L3 reinvest bases differ 62.5% (contaminating the before/after bar); a 50% pot bonfire at zero compliance; a rehearsal teacher surface still asserts the withdrawn interior-summit claim. GATE_L3_ECON.md.
 - gate-l3-econ-dissent — undefined/undefined/open — undefined
 - play-l3-below-bar — gameplay/blocking/open — L3 rates FUNCTIONAL on five bounded causes: (1) VOTE NOT SEALED — with the histogram on the projector, a late dial submission after round-3 close silently replaces the vote (observed: adopted rule 25%->30%, supporters 3/3->2/3) and never-submitting desks are counted as 5% votes with no notice; (2) REVEAL->COMPLETE is 28 director-budgeted minutes with ONE student action and a byte-identical student device across five stages; (3) the Kings capstone is a two-button poll whose promised term sheets don't exist (= SR A2); (4) the flat-beside-moved arrows render but no surface says why (= econ reachability finding); (5) the fallback replays the counterfactual at 0% and calls the failure 'your rule'. Kill condition not met. GATE_L3_PLAY.md.
+- gate-l3-play-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
