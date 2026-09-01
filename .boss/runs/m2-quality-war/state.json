@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T13:20:15.978Z",
+  "updatedAt": "2026-09-01T13:21:20.123Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3676,6 +3676,20 @@
             "tokens": 116811,
             "toolUses": 45
           }
+        },
+        "analyst-program": {
+          "assignmentId": "analyst-program",
+          "role": "product-analyst",
+          "actor": "product-analyst",
+          "model": "claude-opus-5",
+          "reason": "Program-level reconciliation before the ship case: fresh read-only disproof across the whole run's claims, dissent ledger, and final-head evidence",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T13:21:20.123Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -7496,14 +7510,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 80,
+    "agentsActivated": 81,
     "gateFailures": 2,
     "claimsContradicted": 1,
     "evidenceRecorded": 144,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 411,
-  "eventHead": "1985b5bb27fb09e6b51a4665d8c9418925c7e14567dd2882b6452f31356a02ea",
+  "eventCount": 412,
+  "eventHead": "43f77e0aae11e4f11e60c647a5c0ded207b58cb196b7d383234f4238fbd139c3",
   "warnings": []
 }
