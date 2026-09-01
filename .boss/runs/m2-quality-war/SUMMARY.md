@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `242:e59ba6d8474d7230d0c13eceae94e13a3d49491d4e492c1ef787fab781699bc5`  
-Updated: 2026-09-01T05:39:04.192Z
+Event head: `244:a7702653881bf599046eb969ca05dcdf73d7ae6bf543043f2615df29b36a544e`  
+Updated: 2026-09-01T06:26:05.777Z
 
 ## Founder intent
 
@@ -87,6 +87,8 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - gate-l2-econ — economic-truth-report — L2 econ gate: SOUND WITH REQUIRED REPAIRS. Real: externality 24-48% of created value, interior reinvest optimum (both corners lose ~$333k), argmax moves weekly, residual 0, no unwinnable seat (18.5M-state sweep). Blocking: give/take board measures the DEAL not the DECISION (corr gave-vs-startDraw 0.959 vs gave-vs-meanShare 0.644; biggest 'giver' spent $0) and feeds ADAPT Q3 + SPILLOVER card + harness P3; smallMarketPathFrom credits WHO WAS VISITING without controlling price ($110 vs $30 case); two false printed rules; week-3 dominated reinvest unhandled at reveal
 - gate-l2-projector — projector-report — L2 projector gate: choreography FUNCTIONAL (0.6-1.0s teacher->board, five distinct stages; best beat WHO FILLED YOUR BUILDING). Privacy PASS (60 scans). Fallbacks PASS incl. mid-class server restart, one defect (frozen board vs teach claim). BLOCKING P-1: schedule cards ellipsize club names at 11-12 desks with a third of the frame empty — silent CSS truncation the fit instrument passed; P-2 evidence tier 1.78% vs 2.6% floor. Eight non-blocking
 - gate-l2-play — gameplay-report — L2 play gate: RATING FUNCTIONAL (below STRONG bar). BC-5 passes in content (3/3 correct pre-reveal attributions incl. same-crowd-inverted-reasons week 2), fails in placement: settlement + externality card below the 1024x600 fold with auto-scroll landing on next week's dial — the bell appears to do nothing; LOCK below fold week 1. Two projector beats state causal claims play refutes (matches econ B1/B3). Interdependence genuinely felt; free-rider trap real but schedule-luck confounded; no dominant line; zero-ticket week keeps $734k. R1-R4 blocking
+- l2-tests-r1 — test — Suite after L2 repair (397/397)
+- l2-e2e-r1 — e2e — L2 e2e: fold assertions at 1024x600, truncation scans, 22 frames x 2 shapes
 
 ## Claim ledger
 
