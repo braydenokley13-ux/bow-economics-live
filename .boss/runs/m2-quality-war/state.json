@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T05:28:36.932Z",
+  "updatedAt": "2026-09-01T05:28:50.231Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1997,12 +1997,24 @@
           "model": "claude-opus-5",
           "reason": "Independent L2 gate on the built lesson",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T05:12:07.667Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T05:28:50.199Z",
+          "sections": {
+            "mechanism-verdicts": "SOUND WITH REQUIRED REPAIRS. Real: externality worth 24-48% of the value a desk creates; interior reinvest optimum (15%/10%, both corners lose ~$333k); argmax price moves every week for every seat; decomposition residual 0; no unwinnable seat (18.5M-state solvency sweep; 254,016-combo exhaustive best-response); builder harness re-run 11/11.",
+            "false-lesson-risks": "B1: give/take board measures the deal, not the decision (corr 0.959 with inherited Draw vs 0.644 with chosen share) — the room's biggest giver spent $0; feeds ADAPT Q3, SPILLOVER card, harness P3. B3: small-market path credits WHO WAS VISITING without controlling price — Candidate A's killer defect class rebuilt. Two false printed rules on student surfaces.",
+            "dominant-strategies": "No dominant line at shipped constants; week-3 reinvest strictly dominated ($216k-$568k) — disclosed at the dial, unhandled by REVEAL 5 (teach the endgame or restructure).",
+            "synthesis-map-verdict": "SPILLOVER card names a desk and credits spending it never did — must recompute from chosen shares; other cards locked-at-time and honest.",
+            "required-repairs": "Blocking B1/B3 + the two false rules + week-3 handling (dissent econ-l2-evidence-surfaces). Do not advance or build L3 while B1/B3 stand."
+          },
+          "evidenceIds": [
+            "gate-l2-econ",
+            "l2-tuning"
+          ],
+          "cost": {
+            "tokens": 159962,
+            "toolUses": 38
+          }
         },
         "gate-l2-sr": {
           "assignmentId": "gate-l2-sr",
@@ -2100,7 +2112,8 @@
         "gate-l2-sr-dissent",
         "teacher-l2-not-ready",
         "gate-l2-teacher-dissent",
-        "econ-l2-evidence-surfaces"
+        "econ-l2-evidence-surfaces",
+        "gate-l2-econ-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -4164,6 +4177,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T05:28:36.932Z",
       "actor": "economic-truth-critic"
+    },
+    "gate-l2-econ-dissent": {
+      "id": "gate-l2-econ-dissent",
+      "wave": 3,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T05:28:50.231Z",
+      "actor": "economic-truth-critic"
     }
   },
   "meetings": {},
@@ -4205,7 +4227,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 231,
-  "eventHead": "c504af94302d673187ccdba069d083152720d2ad3f6fa792a453dda30dd1fa9a",
+  "eventCount": 233,
+  "eventHead": "4693abe4843fb788ab0493db8cc670b839a6da5e33affd827376916cc171f3e9",
   "warnings": []
 }

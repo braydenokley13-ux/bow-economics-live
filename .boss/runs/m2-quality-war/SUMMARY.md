@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `231:c504af94302d673187ccdba069d083152720d2ad3f6fa792a453dda30dd1fa9a`  
-Updated: 2026-09-01T05:28:36.932Z
+Event head: `233:4693abe4843fb788ab0493db8cc670b839a6da5e33affd827376916cc171f3e9`  
+Updated: 2026-09-01T05:28:50.231Z
 
 ## Founder intent
 
@@ -44,7 +44,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - builder — builder-w3-micro — completed — claude-sonnet-5
 - builder — builder-l2 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
-- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
@@ -98,6 +98,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - teacher-l2-not-ready — teacher-transfer/blocking/open — L2 TRANSFER NOT READY on five blocking findings, worst two: B1 — a bare /board URL (no ?code) silently renders a DIFFERENT session's content (observed: a previous class's COMPLETE synthesis card), with no code entry on /board and /teach never printing the projector URL — a live-class wrong-projector hazard; B4 — ADAPT question 3's answer key cites the WHAT YOU GAVE/GOT board (REVEAL stage 2) with no reveal-back control. Plus B2 (stranded new /teach tab), B3 (WATCH FOR protagonist never locked, no auto signal), B5 (prescribed rehearsal renders no WATCH FOR, collapses synthesis). GATE_L2_TEACHER.md.
 - gate-l2-teacher-dissent — undefined/undefined/open — undefined
 - econ-l2-evidence-surfaces — economic-truth/blocking/open — L2's mechanism is real but its evidence surfaces mislead: (B1) the give/take board is confounded with inherited Draw — corr(gave, startDraw)=0.959 vs corr(gave, meanShare)=0.644, so the room's biggest 'giver' spent $0 and a max-reinvest desk reads as a taker; it feeds ADAPT Q3, the SPILLOVER synthesis card (names a desk, credits spending it never did), and harness P3's free-riding limb (reproduces at zero reinvest). (B3) smallMarketPathFrom prints 'it won it on WHO WAS VISITING' without controlling for price ($110-vs-$30 reachable case) — Candidate A's killer defect class rebuilt. Also blocking: two false printed rules ('cannot turn Draw back into cash' — $25,912/point; 'about a fifth keeps your Draw' — measured 5-10%, unachievable above 85). Week-3 dominated reinvest disclosed at dial, unhandled by REVEAL 5. Do not advance or build L3 while B1/B3 stand. GATE_L2_ECON.md.
+- gate-l2-econ-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
