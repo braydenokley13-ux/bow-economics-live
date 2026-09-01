@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `92:1aab58f642337b5aa237ef3ebb5b4a62f7ff96bc358251933e993178ba8ac13d`  
-Updated: 2026-08-31T23:56:21.014Z
+Event head: `93:f9c1d5d50c6d0de5c7289f2e7cecaa4082b174afe6902b1cc9b1bfac94c2fdd7`  
+Updated: 2026-09-01T00:07:35.544Z
 
 ## Founder intent
 
@@ -74,6 +74,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-tuning-r1 — test — Tuning harness 13 properties after repair round 1
 - l1-e2e-r1 — e2e — Three-surface e2e after repair round 1 (unpooled chart assertions)
 - l1-e2e-misclick — e2e — QA misclick scenario repro: guard present, cancel safe, accept honors set price
+- gate-l1-visual — visual-report — L1 visual gate: SERVICEABLE-NOT-PREMIUM. Board clips its own SYNTHESIS + live PLAY frames (overflow:hidden/100vh, both viewports); FULL HOUSE beat renders as 8 monospace chars below fold; theme.css font stacks put Arial Narrow ahead of Bebas with zero @font-face so all dollars render Courier repo-wide; N4 default OS checkbox; teach emoji glyphs. 69 screenshots
 
 ## Claim ledger
 

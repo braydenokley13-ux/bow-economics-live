@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-08-31T23:56:21.014Z",
+  "updatedAt": "2026-09-01T00:07:35.544Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -752,7 +752,8 @@
         "l1-tests-r1",
         "l1-tuning-r1",
         "l1-e2e-r1",
-        "l1-e2e-misclick"
+        "l1-e2e-misclick",
+        "gate-l1-visual"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1400,6 +1401,25 @@
       },
       "recordedAt": "2026-08-31T23:55:47.114Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-visual": {
+      "id": "gate-l1-visual",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "L1 visual gate: SERVICEABLE-NOT-PREMIUM. Board clips its own SYNTHESIS + live PLAY frames (overflow:hidden/100vh, both viewports); FULL HOUSE beat renders as 8 monospace chars below fold; theme.css font stacks put Arial Narrow ahead of Bebas with zero @font-face so all dollars render Courier repo-wide; N4 default OS checkbox; teach emoji glyphs. 69 screenshots",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-visual--GATE_L1_VISUAL.md",
+      "sha256": "224a1fa4f12b483b0ffb933e1ae75549a3853852b2bb13d718605132473c6d04",
+      "size": 18676,
+      "metadata": {
+        "verdict": "SERVICEABLE-NOT-PREMIUM",
+        "tags": [
+          "visual",
+          "wave-2",
+          "gate"
+        ]
+      },
+      "recordedAt": "2026-09-01T00:07:35.544Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1650,11 +1670,11 @@
     "agentsActivated": 21,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 32,
+    "evidenceRecorded": 33,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 92,
-  "eventHead": "1aab58f642337b5aa237ef3ebb5b4a62f7ff96bc358251933e993178ba8ac13d",
+  "eventCount": 93,
+  "eventHead": "f9c1d5d50c6d0de5c7289f2e7cecaa4082b174afe6902b1cc9b1bfac94c2fdd7",
   "warnings": []
 }
