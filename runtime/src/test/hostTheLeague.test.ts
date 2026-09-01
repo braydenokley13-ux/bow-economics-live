@@ -25,6 +25,7 @@ import {
   MAX_DESKS,
   NATIONAL,
   OFFSETS,
+  OPTIMUM_BAND_TOLERANCE,
   PRICE_GRID,
   PRICE_MAX,
   PRICE_MIN,
@@ -48,6 +49,8 @@ import {
   priceCounterfactualFor,
   reinvestChangeLine,
   reinvestRuleFor,
+  roomCashAtShiftedShares,
+  roomCashAtUniformShare,
   sawBarBeforeWeek3,
   scheduleFor,
   teachStage5MirrorClaimed,
@@ -1070,11 +1073,18 @@ test("econ B9 (N11): no surface ever says over-investment in a room that came ou
         }
         if (ct.roomJointGain < 0 && ct.externalPct === null) {
           assert.equal(
-            /less went back in than this room's own numbers would justify/.test(surface.text),
+            /the room as a whole still came out ahead/.test(surface.text),
             false,
-            `${P.label} · ${S.label} · ${surface.surface}: under-provision printed in a room that came out behind`,
+            `${P.label} · ${S.label} · ${surface.surface}: "came out ahead" printed in a room that came out behind`,
           );
         }
+        // econ N17/FL-L: the retired clause may not come back anywhere, in any
+        // arm, on any surface. It was a marginal claim decided by a total.
+        assert.equal(
+          /less went back in than this room's own numbers would justify/.test(surface.text),
+          false,
+          `${P.label} · ${S.label} · ${surface.surface}: the retired FL-L clause is back on a surface`,
+        );
       }
       // The branch word is an ATOM, so the audit can see it — not prose beside one.
       const spill = spilloverClaim(ct);
@@ -1084,7 +1094,7 @@ test("econ B9 (N11): no surface ever says over-investment in a room that came ou
         assert.equal(
           noun!.rendered,
           ct.roomJointGain > 0
-            ? "less went back in than this room's own numbers would justify"
+            ? "the room as a whole still came out ahead"
             : ct.roomJointGain < 0
               ? "this room over-invested"
               : "the room came out exactly level",
@@ -1097,6 +1107,165 @@ test("econ B9 (N11): no surface ever says over-investment in a room that came ou
   assert.ok(withheld > 0, "no room in the sweep withheld the share — the branch under test never fired");
   assert.ok(ahead > 0, "no room in the sweep came out jointly ahead — the N11 case was never exercised");
   assert.ok(behind > 0, "no room in the sweep came out jointly behind — the over-investment case was never exercised");
+});
+
+test("econ B11 (N17): the level instrument reproduces the room's ACTUAL books exactly, and reduces to the room's own weeks", () => {
+  // `roomCashAtShares` is the whole basis of the level sentence, so the first
+  // thing it has to survive is the identity: fed each week's own share back, it
+  // must land on the number the reducer actually settled, to the dollar. If it
+  // drifts here it is not this room's books and no sentence built on it means
+  // anything.
+  for (const desks of [8, 12]) {
+    for (const price of [30, 50, 70, 110]) {
+      for (const shape of [() => 0, () => 10, () => 25, () => SHARE_MAX, (i: number) => (i % 2 === 0 ? 0 : SHARE_MAX), (i: number) => SHARE_GRID[i % SHARE_GRID.length]!]) {
+        let room = seated(desks);
+        for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => price, shape);
+        const settled = room.clubs
+          .filter((c) => c.seatId !== null && c.weeks.length > 0)
+          .reduce((sum, c) => sum + c.weeks.reduce((t, w) => t + w.net, 0), 0);
+        assert.equal(
+          roomCashAtShiftedShares(room, 0),
+          settled,
+          `${desks} desks · $${price}: the level instrument disagrees with the room's settled cash`,
+        );
+      }
+    }
+  }
+});
+
+test("econ B11/FL-L (N17, BLOCKING): no surface tells a room to put MORE back in where a one-step increase lowers room cash", () => {
+  // THE BLOCKING FAILURE, stated as a property. The retired clause — "less went
+  // back in than this room's own numbers would justify" — was a claim about the
+  // room's LEVEL decided by the SIGN of a total. It fired only at shares >= 25%
+  // and the room's own books peak at 10-15%, so a uniform +5pp step made those
+  // rooms jointly WORSE off in 68 of 86 rooms the econ critic measured. The
+  // prescription is now built from `roomOptimum` and may only print where the
+  // room's own one-step gradient agrees.
+  const PRESCRIBE_MORE = "putting more back in would have left this room holding more money";
+  const PRESCRIBE_LESS = "the dollars past it cost this room more than they brought back";
+  const arms: Record<string, number> = {};
+  let checkedMore = 0;
+  let checkedLess = 0;
+  let upHurtRooms = 0;
+  for (const desks of [8, 12]) {
+    for (const price of [30, 50, 70, 90, 110]) {
+      for (const shape of [
+        () => 0,
+        () => 5,
+        () => 10,
+        () => 15,
+        () => 25,
+        () => SHARE_MAX,
+        (i: number) => (i % 2 === 0 ? 0 : SHARE_MAX),
+        (i: number) => (i === 0 ? SHARE_MAX : 0),
+        (i: number) => SHARE_GRID[i % SHARE_GRID.length]!,
+      ]) {
+        let room = seated(desks);
+        for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => price, shape);
+        const ct = computeAggregate(room).choiceTotals;
+        if (!ct.anySpend) continue;
+        const opt = ct.roomOptimum;
+        arms[opt.relation] = (arms[opt.relation] ?? 0) + 1;
+        const base = roomCashAtShiftedShares(room, 0);
+        const up = roomCashAtShiftedShares(room, 5);
+        const down = roomCashAtShiftedShares(room, -5);
+        if (up <= base) upHurtRooms += 1;
+        const label = `${desks} desks · $${price} · band ${opt.bandLo}-${opt.bandHi}% · level ${opt.actualShare}% · ${opt.relation}`;
+        // EVERY claim-carrying surface, because the same builder reaches
+        // board:reveal-2, teach:adapt-q3 and synthesis:spillover.
+        for (const surface of moduleClaims(room)) {
+          if (surface.text.includes(PRESCRIBE_MORE)) {
+            checkedMore += 1;
+            assert.ok(up > base, `${label} · ${surface.surface}: told to put MORE back in, but +5pp on every dial moves the room ${base} -> ${up}`);
+          }
+          if (surface.text.includes(PRESCRIBE_LESS)) {
+            checkedLess += 1;
+            assert.ok(down > base, `${label} · ${surface.surface}: told it overspent, but -5pp on every dial moves the room ${base} -> ${down}`);
+          }
+        }
+        // And the range printed is the range computed, on every surface.
+        for (const surface of moduleClaims(room)) {
+          const lo = surface.claims.find((c) => c.id === "spillover.bandLo");
+          const hi = surface.claims.find((c) => c.id === "spillover.bandHi");
+          if (!lo || !hi) continue;
+          assert.equal(lo.value, opt.bandLo, `${label} · ${surface.surface}: printed low edge`);
+          assert.equal(hi.value, opt.bandHi, `${label} · ${surface.surface}: printed high edge`);
+          assert.ok(lo.value <= opt.bestShare && hi.value >= opt.bestShare, `${label}: the printed range excludes its own best setting ${opt.bestShare}%`);
+          assert.ok(surface.text.includes(lo.rendered) && surface.text.includes(hi.rendered), `${label} · ${surface.surface}: an edge is not on the surface`);
+        }
+      }
+    }
+  }
+  // Non-vacuity in every direction, or this test proves nothing.
+  assert.ok(checkedMore > 0, 'no room in the sweep printed "put more back in" — the FL-L arm was never exercised');
+  assert.ok(checkedLess > 0, 'no room in the sweep printed the overspend clause — that arm was never exercised');
+  assert.ok(upHurtRooms > 0, "no room in the sweep was one where a +5pp step hurts — N17's falsifying region is not covered");
+  assert.ok((arms["below"] ?? 0) > 0 && (arms["above"] ?? 0) > 0 && (arms["inside"] ?? 0) > 0, `the level arms are not all reachable: ${JSON.stringify(arms)}`);
+});
+
+test("econ B12 (N18): the level relation and its range are what the room's own curve says, not what any sign says", () => {
+  // N18: the old limb audited sign(joint) — true of almost every reachable room
+  // — while the sentence beside it asserted a level. This asserts the level
+  // itself, recomputed here from `roomCashAtUniformShare` rather than read off
+  // `roomOptimum`, and asserts the relation's five-way branch independently.
+  for (const desks of [8, 12]) {
+    for (const price of [30, 50, 90]) {
+      for (const shape of [() => 0, () => 10, () => 25, () => SHARE_MAX, (i: number) => SHARE_GRID[i % SHARE_GRID.length]!]) {
+        let room = seated(desks);
+        for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => price, shape);
+        const opt = computeAggregate(room).choiceTotals.roomOptimum;
+        const curve = SHARE_GRID.map((s) => roomCashAtUniformShare(room, s));
+        const max = Math.max(...curve);
+        const floorAt = max - (max - Math.min(...curve)) * OPTIMUM_BAND_TOLERANCE;
+        const label = `${desks} desks · $${price}`;
+        assert.equal(curve[SHARE_GRID.indexOf(opt.bestShare)], max, `${label}: bestShare is not the argmax of the room's own curve`);
+        for (const s of SHARE_GRID) {
+          const inBand = s >= opt.bandLo && s <= opt.bandHi;
+          if (inBand) assert.ok(curve[SHARE_GRID.indexOf(s)]! >= floorAt, `${label}: ${s}% is inside the printed band but below the band floor`);
+        }
+        // The band must be contiguous around the best and stop where the curve does.
+        if (opt.bandLo > 0) assert.ok(curve[SHARE_GRID.indexOf(opt.bandLo) - 1]! < floorAt, `${label}: the band stops short of a setting that qualifies`);
+        if (opt.bandHi < SHARE_MAX) assert.ok(curve[SHARE_GRID.indexOf(opt.bandHi) + 1]! < floorAt, `${label}: the band stops short of a setting that qualifies`);
+        // The five-way relation, re-derived.
+        const base = roomCashAtShiftedShares(room, 0);
+        const want =
+          opt.actualShare < opt.bandLo
+            ? roomCashAtShiftedShares(room, 5) > base
+              ? "below"
+              : "underButFlat"
+            : opt.actualShare > opt.bandHi
+              ? roomCashAtShiftedShares(room, -5) > base
+                ? "above"
+                : "overButFlat"
+              : "inside";
+        assert.equal(opt.relation, want, `${label}: the printed relation is not the one the room's own curve and gradient give`);
+      }
+    }
+  }
+});
+
+test("econ FL-M (N21): the composition card claims no unbound superlative, and counts the desks the national check really leads", () => {
+  // The measured failure: the title "THE BIGGEST CHECK IS THE ONE NOBODY
+  // CONTROLS" was false for 28-30 of every 100 desk-instances at every price
+  // probed — a desk's local media routinely beats its national check.
+  let sawMinority = false;
+  for (const desks of [8, 12]) {
+    for (const price of [30, 50, 70, 90, 110]) {
+      let room = seated(desks);
+      for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => price, () => 10);
+      const agg = computeAggregate(room);
+      const card = synthesisCards(room, agg).find((c) => c.id === "composition")!;
+      const label = `${desks} desks · $${price}`;
+      assert.equal(/BIGGEST CHECK/.test(card.title), false, `${label}: the unbound superlative is back in the title`);
+      const want = agg.pipes.filter((p) => p.national >= p.gate && p.national >= p.inArena && p.national >= p.localMedia).length;
+      if (want < agg.pipes.length) sawMinority = true;
+      const atom = card.claims!.find((c) => c.id === "composition.nationalBiggestCount");
+      assert.ok(atom, `${label}: the counted superlative carries no atom`);
+      assert.equal(atom!.value, want, `${label}: printed count`);
+      assert.match(card.body, new RegExp(`on ${want} of ${agg.pipes.length} desks`), `${label}: the count is not on the card`);
+    }
+  }
+  assert.ok(sawMinority, "no probed room had a desk whose national check was NOT its biggest pipe — FL-M was never exercised");
 });
 
 test("econ FL-K: the give/take sub-label prints the measured dealt share, never an unbound 'most'", () => {

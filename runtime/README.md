@@ -590,8 +590,18 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**403 tests, 403 passing** (`node --test`, no test framework dependency), run
-this session (wave 4, `w4-l2-closeout`). Six of them are new and belong to the
+**411 tests, 411 passing** (`node --test`, no test framework dependency), run
+this session (wave 4, `w4-repair2`). Four of those tests are newer still and
+belong to the econ N17/N18 level repair: econ B11 (the level instrument
+reproduces the room's settled cash to the dollar), econ B11/FL-L (no surface
+tells a room to put MORE back in where a one-step increase lowers room cash, on
+every claim-carrying surface), econ B12 (the printed sweet-spot range and its
+five-way relation are what the room's own cash-by-share curve says), and econ
+FL-M (the composition card carries no unbound superlative and counts the desks
+the national check actually leads). Both instruments were proven non-vacuous
+this session by a source-level mutation of `roomOptimumFor`'s relation branch:
+tests 259/260 failed and harness P11 reported 228 LEVEL disagreements. Six
+earlier tests belong to the
 claim-audit work: `CLAIM AUDIT` (every rendered board/synthesis/ADAPT claim
 string recomputed against the reducer in sign, quantifier and bound), econ B7
 (no printed share above 100%, none at 0% beside measured spillover), econ B8
@@ -770,7 +780,23 @@ three static pages), not a general-purpose framework being reinvented.
   poorer door while the arithmetic version holds bots at their actual spend per
   the module's declared carve-out. The printed figure is the carve-out-matched
   one; the discrepancy is a scope difference, not an error, and is not disclosed
-  on any student-facing surface. (o) The post-hoc price counterfactual (play
+  on any student-facing surface. (n2) **The LEVEL sentence (econ N17/N18,
+  wave-4 repair 2).** The SPILLOVER card's prescription is no longer a direction
+  word branched off `sign(roomJointGain)`; it prints the room's own computed
+  sweet-spot RANGE, from `roomOptimum`, which re-runs the identical season at
+  every setting on the dial through `roomCashAtShares`. That instrument
+  reproduces the room's settled cash exactly at the room's own dials and agreed
+  with a full reducer replay to **$0** on ±5pp shifts and on uniform worlds over
+  120 probed rooms. A direction word prints only where the room's level is
+  outside its own band AND a one-step move that way measurably pays; the two
+  `underButFlat` / `overButFlat` arms are where those disagree and they
+  prescribe nothing. Known limits: the band edge depends on
+  `OPTIMUM_BAND_TOLERANCE` (5% of the curve's spread), which is a rendering
+  choice and not derived from anything; the band is a UNIFORM-share comparative
+  static while a real room's dials are heterogeneous, which is exactly what the
+  `Flat` arms exist to disclose; and `underButFlat` has not been observed in any
+  sweep run so far, so that arm's copy is untested against real output. (o) The
+  post-hoc price counterfactual (play
   N-5) re-prices **one settled week only**. A different price would have bought
   a different reinvest dollar and therefore a different Draw the following week;
   the card says so in words but does not model it, and no surface shows what a
