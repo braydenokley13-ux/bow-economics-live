@@ -38,6 +38,7 @@ import {
   SHARE_MAX,
   STATUS_QUO_SHARE,
   WEEK_COUNT,
+  adoptRule,
   adoptionLineClaimed,
   arrowFor,
   bestPriceUnder,
@@ -112,12 +113,12 @@ function toAdopted(state: WriteRuleState, shares: number[], conditions: boolean[
 
 const toSeason = (state: WriteRuleState): WriteRuleState => apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
 
-function playSeason(state: WriteRuleState): WriteRuleState {
+function playSeason(state: WriteRuleState, opts: { reinvest?: number } = {}): WriteRuleState {
   let next = state;
   for (let w = 0; w < WEEK_COUNT; w += 1) {
     for (const club of next.clubs.filter((c) => c.seatId !== null)) {
       next = apply(next, { type: "setPrice", price: 46 + (club.slot % 5) * 2 }, "PLAY", club.seatId!);
-      next = apply(next, { type: "setReinvest", reinvest: REINVEST_GRID[club.slot % REINVEST_GRID.length]! }, "PLAY", club.seatId!);
+      next = apply(next, { type: "setReinvest", reinvest: opts.reinvest ?? REINVEST_GRID[club.slot % REINVEST_GRID.length]! }, "PLAY", club.seatId!);
       next = apply(next, { type: "lock" }, "PLAY", club.seatId!);
     }
     next = apply(next, { type: "teacher:closeWeek" }, "PLAY", "teacher");
@@ -279,13 +280,112 @@ test("the histogram is withheld until round 1 has closed (anti-herding)", () => 
   assert.equal(JSON.stringify(hist).includes("Desk"), false);
 });
 
-test("a desk with no number in is recorded at the status quo, never skipped", () => {
+/**
+ * ABSTENTION. This test used to assert the OPPOSITE — that a desk with no number
+ * in was "recorded at the status quo" — and that was the defect, not the
+ * contract: a pair distracted for ninety seconds silently cast a 5% vote nobody
+ * made, it dragged the room's middle number toward zero, and no surface said so
+ * (gate-l3-play, probe C). A non-vote is now a true abstention on the median and
+ * carries NO relief on the two-thirds denominator, so staying quiet can never
+ * lower the bar and can never move the room's number.
+ */
+test("a desk with no number in ABSTAINS: no number in the median, and no relief on the two-thirds", () => {
   let state = withDesks(6);
   state = apply(state, { type: "propose", share: 40, condition: false }, "PLAY", "seat-0");
   state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
   const round = state.closedRounds[0]!;
-  assert.equal(round.shares.length, 6);
-  assert.equal(round.shares.filter((s) => s === STATUS_QUO_SHARE).length, 5);
+  assert.equal(round.shares.length, 6, "every live desk is still on the record");
+  assert.equal(round.shares.filter((s) => s === null).length, 5, "five desks abstained and none was given a number");
+  assert.equal(round.shares.filter((s) => s === STATUS_QUO_SHARE).length, 0, "no desk may be recorded at a number it never proposed");
+  // The middle number is the one number that was actually said out loud.
+  assert.equal(round.median, 40);
+
+  // ...and the denominator does not shrink: two-thirds of SIX is still needed,
+  // so one voice cannot carry a rule by everybody else going quiet.
+  const outcome = runAdoption(state);
+  assert.equal(outcome.needed, 4);
+  assert.equal(outcome.voted, 1);
+  assert.equal(outcome.abstained, 5);
+  assert.equal(outcome.inBand, 1);
+  assert.equal(outcome.adopted.how, "statusQuo");
+
+  // The desk's own screen says all of this, in its own words (teacher B6).
+  const desk = writeTheRuleModule.studentView(withDesks(6), "seat-1", "PLAY") as Record<string, unknown>;
+  assert.match(String(desk["abstainNote"] ?? ""), /ABSTAINED/);
+  assert.match(String(desk["abstainNote"] ?? ""), /cannot be inside the ten-point band/);
+});
+
+/**
+ * THE SEAL. gate-l3-play's biggest failure: with the full histogram and the
+ * middle number on the projector, a desk could still drag its dial and press PUT
+ * IT IN, and that late number replaced its round-3 vote and changed the rule the
+ * class adopted. The seal is enforced in the REDUCER, not only on the screen.
+ */
+test("the vote is sealed at the close of round 3 — a late proposal cannot change the adopted rule", () => {
+  let state = proposeAll(withDesks(3), [20, 25, 30], [false]);
+  for (let r = 0; r < 3; r += 1) {
+    if (r > 0) state = proposeAll(state, [20, 25, 30], [false]);
+    state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
+  }
+  const sealedRule = runAdoption(state).adopted;
+  assert.equal(sealedRule.share, 25);
+  assert.equal(sealedRule.supporting, 3);
+
+  // The re-aim that used to work, refused by the model.
+  const late = writeTheRuleModule.reduce(
+    state,
+    { type: "propose", share: 60, condition: true },
+    { phase: "PLAY", seatId: "seat-0", seatIds: [], now: 0 },
+  );
+  assert.equal(late.ok, false);
+  assert.match(late.ok ? "" : late.reason, /sealed/i);
+
+  // ...and the rule that gets printed is the sealed one, whatever the state says.
+  const adopted = adoptRule(state).adopted!;
+  assert.equal(adopted.share, 25);
+  assert.equal(adopted.supporting, 3);
+
+  // The desk's own controls are dead and the desk says why.
+  const desk = writeTheRuleModule.studentView(state, "seat-0", "PLAY") as Record<string, unknown>;
+  assert.equal(desk["sealed"], true);
+  assert.match(String(desk["sealedNote"] ?? ""), /sealed/i);
+});
+
+/**
+ * projector B2: `closeRound` never cleared the live proposal, so rounds 2 and 3
+ * opened with every "submitted" count asserting the room had already finished.
+ */
+test("closing a round clears every desk's live proposal, so round 2 opens at zero", () => {
+  let state = proposeAll(withDesks(6), [20], [false]);
+  assert.equal(state.clubs.filter((c) => c.seatId !== null && c.proposal !== null).length, 6);
+  state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
+  assert.equal(state.clubs.filter((c) => c.seatId !== null && c.proposal !== null).length, 0);
+  const board = writeTheRuleModule.boardView(state, "PLAY") as Record<string, unknown>;
+  assert.equal(board["submitted"], 0);
+  const teach = writeTheRuleModule.teacherView(state, "PLAY") as Record<string, unknown>;
+  assert.equal(teach["proposalCount"], 0);
+  assert.match(String(teach["ruleStepLabel"]), /\(0\/6 in\)/);
+  // ...and the round the room just closed is still on the record.
+  assert.equal(state.closedRounds[0]!.shares.filter((s) => s === 20).length, 6);
+});
+
+/** econ B4: a condition with no compliant club may not burn half the pot. */
+test("with NOBODY meeting the condition, the pot still closes at zero — no bonfire", () => {
+  const state = playSeason(toSeason(toAdopted(withDesks(6), [40], [true])), { reinvest: 0 });
+  for (let w = 0; w < WEEK_COUNT; w += 1) {
+    const paid = state.clubs.slice(0, state.leagueSize).reduce((a, c) => a + (c.weeks[w]?.pot.paidIn ?? 0), 0);
+    const took = state.clubs.slice(0, state.leagueSize).reduce((a, c) => a + (c.weeks[w]?.pot.tookOut ?? 0), 0);
+    assert.ok(paid > 0, `week ${w + 1} formed no pot to test`);
+    assert.ok(
+      Math.abs(paid - took) <= state.leagueSize,
+      `week ${w + 1}: ${paid} left the clubs and only ${took} reached them — the condition destroyed money`,
+    );
+  }
+  // ...and nobody is told they were docked when nobody was.
+  assert.equal(
+    state.clubs.slice(0, state.leagueSize).some((c) => c.weeks.some((w) => w.pot.docked)),
+    false,
+  );
 });
 
 /* ------------------------------------------------------------ adoption -- */

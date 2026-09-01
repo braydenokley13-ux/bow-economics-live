@@ -917,6 +917,20 @@ function truthFor(state) {
       })),
     },
   };
+  // A room that walked out of L2 with full buildings — which is what makes the
+  // gate large enough to beat the national check at six desks (econ F2).
+  const L2_SEED_HIGH_DRAW = {
+    lessonModuleId: "m2l2-host-league",
+    state: {
+      clubs: Array.from({ length: 12 }, (_, slot) => ({
+        slot,
+        draw: 95,
+        cash: 2_000_000,
+        weeks: [{ share: 20, reinvestPaid: 300_000 }],
+      })),
+    },
+  };
+  const BIG_PROFILE = new Set(MARKET_PROFILES.filter((p) => p.sizeLabel === "BIG MARKET").map((p) => p.id));
   const rooms = [
     { label: "voted 40% condition ON, seeded from L2", state: playSession(12, () => ({ share: 40, condition: true }), (slot, w) => ({ price: 44 + (slot % 6) * 2, reinvest: REINVEST_GRID[(slot + w) % REINVEST_GRID.length] }), { seed: L2_SEED }) },
     { label: "voted 10% condition OFF, unseeded", state: playSession(12, () => ({ share: 10, condition: false }), (slot, w) => ({ price: 50, reinvest: 20 })) },
@@ -929,10 +943,17 @@ function truthFor(state) {
       state: playSession(12, () => ({ share: 40, condition: true }), (slot) => ({ price: 46 + (slot % 5) * 2, reinvest: 25 }), { seed: L2_SEED_LOW }),
     },
     {
-      // econ F2's live falsehood: six desks, share 0%, where the room's gate
-      // total EXCEEDS the national check and the card used to assert otherwise.
-      label: "six desks at 0% — the branch where the gate beats the national check",
-      state: playSession(6, () => ({ share: 0, condition: false }), (slot) => ({ price: 56 + (slot % 4) * 2, reinvest: 20 })),
+      // econ F2's live falsehood, exercised: six desks — the minimum league and
+      // a completely ordinary classroom — where the room's own GATE exceeds the
+      // national check. The composition card used to assert the opposite here in
+      // words while the audit could not see the comparison at all.
+      label: "six desks, gate BEATS the national check (econ F2's branch)",
+      state: playSession(
+        6,
+        () => ({ share: 0, condition: false }),
+        (slot) => ({ price: BIG_PROFILE.has(CLUBS[slot].profileId) ? 70 : 52, reinvest: 40 }),
+        { seed: L2_SEED_HIGH_DRAW },
+      ),
     },
     { label: "league office's rule, never voted", state: (() => {
         let s = seated(12, L2_SEED);

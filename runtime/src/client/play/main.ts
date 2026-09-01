@@ -3155,7 +3155,7 @@ type WRHistogram = {
   abstained: number;
   inBand: number;
   needed: number;
-  liveDesks: number;
+  roomSize: number;
 };
 type WRTermSheet = { id: string; city: string; headline: string; lines: string[] };
 type WRLens = { stage: number; label: string; value: string };
@@ -3265,7 +3265,7 @@ function wrHistogramHtml(h: WRHistogram | null, held: boolean, heldCopy: string,
           })
           .join("")}
       </div>
-      <div class="hl-give-note" id="wrHistBand">Middle number: <b class="numeric">${h.median}%</b> · the highlighted columns are within ${band} points of it, and <b class="numeric">${h.inBand}</b> of <b class="numeric">${h.liveDesks}</b> desks are in there — <b class="numeric">${h.needed}</b> are needed to pass.${h.abstained > 0 ? ` ${h.abstained} desk${h.abstained === 1 ? "" : "s"} put no number in.` : ""}</div>
+      <div class="hl-give-note" id="wrHistBand">Middle number: <b class="numeric">${h.median}%</b> · the highlighted columns are within ${band} points of it, and <b class="numeric">${h.inBand}</b> of <b class="numeric">${h.roomSize}</b> desks are in there — <b class="numeric">${h.needed}</b> are needed to pass.${h.abstained > 0 ? ` ${h.abstained} desk${h.abstained === 1 ? "" : "s"} put no number in.` : ""}</div>
       <div class="hl-give-note">${h.conditionYes} of ${h.submitted} desks wanted the condition on. Unsorted, no money, no names.</div>
     </div>`;
 }
@@ -3674,6 +3674,14 @@ function renderWRRounds(view: Record<string, unknown>): void {
           </div>
           <div class="hl-give-note">${escapeHtml(String(view["plainLine"] ?? ""))}</div>
         </div>
+        ${
+          !sealed && view["abstainNote"]
+            ? `<div class="panel" id="wrAbstain" style="padding:12px; margin-top:10px;">
+                 <div class="eyebrow" style="font-size:12px;">You have not put a number in</div>
+                 <div class="hl-give-note">${escapeHtml(String(view["abstainNote"]))}</div>
+               </div>`
+            : ""
+        }
         ${wrHistogramHtml(view["histogram"] as WRHistogram | null, Boolean(view["histogramHeld"]), "Round 1 is blind on purpose. Everybody's numbers go up here once this round closes.", Number(view["band"] ?? 10))}
       </div>
       <div class="hl-col-decide" id="wrDecisionBand">
@@ -3690,11 +3698,7 @@ function renderWRRounds(view: Record<string, unknown>): void {
                  <div class="eyebrow" style="font-size:12px;">THE VOTE IS SEALED</div>
                  <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["sealedNote"] ?? ""))}</p>
                </div>`
-            : view["abstainNote"]
-              ? `<div class="panel" id="wrAbstain" style="padding:12px; margin-top:10px;">
-                   <div class="hl-give-note">${escapeHtml(String(view["abstainNote"]))}</div>
-                 </div>`
-              : ""
+            : ""
         }
         <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">SHARE — how much of every club's local money goes into the pot</div>

@@ -395,8 +395,9 @@ The module finale. The room writes a revenue-sharing rule on two dials, votes
 it in at two-thirds, and then plays a season **under the rule it wrote**.
 
 **The arc, in one PLAY phase and six more.** LOBBY (how you got here) → HOOK
-(Boston, June 2025, commit-then-reveal) → PLAY, which holds three timed offer
-rounds, the two-thirds test and three season weeks, because the canonical phase
+(Boston, June 2025, commit-then-reveal) → PLAY, which holds three offer rounds
+(teacher-paced, NOT timed — there is no timer anywhere in this lesson), the
+two-thirds test and three season weeks, because the canonical phase
 list is strictly increasing and a season cannot come after `REVEAL` → REVEAL
 (five staged beats) → CONSEQUENCE → COUNTERFACTUAL → ARGUE (the Kings 22-8
 Board-of-Governors capstone) → SYNTHESIS (the module finale cards) → COMPLETE.
@@ -480,11 +481,18 @@ on both branches of the condition; the claim audit with five mutation proofs
 **End-to-end proof.** `node scripts/e2e-m2l3.cjs` (after `npm run build`) drives
 one teacher, one projector and **twelve** Chromebook-shaped student pages
 through the whole arc including the capstone and every finale card. Measured
-this session: 25 board frames checked at both projector shapes, 25 frames
+this session: 26 board frames checked at both projector shapes, 25 frames
 scanned for silent truncation, 22 board-privacy scans, 51 first-contact
 assertions at 1024×600 (the rule-writing screen and all three season weeks, on
-every desk), 342 `elementFromPoint` occlusion probes, 71 dials driven by real
-mouse drag plus keyboard, seven finale cards paged, zero console errors.
+every desk), **16 frames scanned for text-vs-ink overprint**, 342
+`elementFromPoint` occlusion probes, 71 dials driven by real mouse drag plus
+keyboard, seven finale cards paged, zero console errors. It also proves, in the
+browser: that a proposal posted after the round closes is refused by the server
+and does not move the room's middle number; that a pair joining after the league
+closes lands somewhere playable with the teacher told; that round 2 opens at
+`0/12` on both the projector and the console; that the student device is not
+byte-identical across the five reveal stages; and that both Kings term sheets
+render with their real figures before a two-press capstone.
 Screenshots land in `docs/gauntlet/module-2/screens-l3/`.
 
 Three product defects were found by these instruments and fixed rather than
@@ -499,6 +507,22 @@ silent-**overlap** guard, the sibling of the silent-truncation guard: a
 it simply draws on top of its neighbour, and every geometric guard in the file
 passed it. The guard range-measures each row cell's ink and fails on any
 overlap, at both projector shapes.
+
+The classroom/projector gate then found the defect *that* guard could not see:
+the round histogram's gold bars printed straight through the veil paragraph the
+teacher is told to read twice — four columns, 10px at 1366×768 and 14px at
+1920×1080, on the frame the room stares at for two of three rounds. It was
+arithmetic, not chance (a 24vh container, a bar allowed 23vh, and the tick label
+living inside the same column), and three shipped guards missed it: the fit
+guard could not see an overflow inside a fixed-height box, the truncation guard
+saw nothing truncated, and the overlap guard only inspects `.wr-board-row`
+cells. Both halves are repaired: the bar now sizes as a percentage of a WELL
+that is whatever the column has left after the tick, so the budget includes the
+label by construction at any type size; and `assertNoInkCollision` measures
+every TEXT LINE on the frame as real ink with a Range and tests it against every
+painted non-ancestor element. That guard is proven able to bite in-run —
+`proveInkGuardBites` re-stages the exact defect in memory, requires the scan to
+fail, then restores the page and re-asserts it clean.
 
 ## Repair charter round 1 (post-verification)
 
@@ -869,12 +893,36 @@ three static pages), not a general-purpose framework being reinvented.
   vote time (cash is never ranked on any surface) and exactly nameable
   afterwards, and the module says out loud that this is **not** how the real
   league does it — but a big market cannot realistically be insuring itself.
-  (c) The lesson has not been played by a human. Every rating in this file is a
-  builder's, and no play, teacher-transfer, projector, sports-reality or
-  economics gate has run on it.
-  (d) The board's ROUNDS frame shows lock progress and the histogram only; it
-  has no per-desk anything, which is correct for anti-herding but leaves the
-  projector thin for eight minutes.
+  (c) The lesson has not been played by a human. Five independent gates (play,
+  economics, sports reality, teacher transfer, classroom/projector) have now
+  run on it and their blocking findings were repaired in wave 4 — see
+  `docs/gauntlet/module-2/GATE_L3_*.md` and the repair notes below. Nothing here
+  is classroom-proven (D10).
+  (d) The board's ROUNDS frame now carries the histogram with the ±10 band drawn
+  on it and a live in-band gauge ("right now N of M would pass; K are needed"),
+  which is what rounds 2 and 3 were missing. Round 1 is still deliberately thin
+  and that thinness is earned.
+  (e) **Repaired in wave 4, carried here so the next reader knows what changed.**
+  The vote is SEALED at the close of round 3 (a post-close proposal is refused by
+  the reducer and the adopted rule reads the recorded round, not a live control);
+  a desk with no number in ABSTAINS rather than being recorded at a 5% nobody
+  proposed, with no relief on the two-thirds denominator; `closeRound` clears the
+  live proposal so rounds 2 and 3 count honestly; a late joiner is handed a
+  league-office club or landed as an announced observer, never a silent 409; the
+  condition can no longer destroy half the pot when nobody complies; the L2→L3
+  before/after bar is drawn in DOLLARS A WEEK because the two lessons' dials are
+  percentages of different bases; REVEAL stage 4 branches on whether anything
+  actually moved and always prints WHY; the Kings capstone renders both term
+  sheets and lands in two presses (the room's own tally, then the owners' 22-8);
+  and the finale no longer teaches a supermajority relocation rule the NBA does
+  not have.
+  (f) **Still open, not repaired this wave.** No elapsed clock on `/teach` against
+  the minute-keyed TIME CUT lines; the reveal half is still budgeted at ~28
+  minutes against a 7–15 minute debrief standard (the desk now has a per-stage
+  lens and one prediction, but CONSEQUENCE and REVEAL stage 5 remain closely
+  related frames); finale cards 6 and 7 still cover neighbouring Seattle /
+  Milwaukee arena material; the round histogram is not split by market size; and
+  no non-16:9 projector shape has been measured.
 - **Module 2 Lesson 2 (`m2l2-host-league`) known gaps.** (a) Real content is
   *dated* in `SOURCE_NOTES` but has **not** been re-verified by an independent
   sports-reality pass this wave; arena capacities and the club→market-size

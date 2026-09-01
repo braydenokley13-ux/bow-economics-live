@@ -52,9 +52,24 @@ const SCREEN_DIR = path.join(ROOT, "..", "docs", "gauntlet", "module-2", "screen
 const DESKS = 12;
 
 const consoleErrors = [];
+/**
+ * Two probes in this run deliberately provoke a server refusal — the sealed-vote
+ * post and the late joiner's seat request — and a refusal that the product is
+ * SUPPOSED to make must not be scored as a console error. The window is opened
+ * around exactly those probes and closed again, so every other 4xx in the run
+ * still fails the suite.
+ */
+let expectingRefusals = false;
+const deliberateRefusals = [];
 function watchConsole(page, label) {
   page.on("console", (msg) => {
-    if (msg.type() === "error") consoleErrors.push(`[${label}] console.error: ${msg.text()}`);
+    if (msg.type() !== "error") return;
+    const line = `[${label}] console.error: ${msg.text()}`;
+    if (expectingRefusals && /\b40\d\b|Conflict|Bad Request|Forbidden/.test(msg.text())) {
+      deliberateRefusals.push(line);
+      return;
+    }
+    consoleErrors.push(line);
   });
   page.on("pageerror", (err) => consoleErrors.push(`[${label}] pageerror: ${err.message}`));
 }
@@ -916,6 +931,9 @@ async function main() {
     // controls are disabled and the screen says why) and the MODEL is dead (a
     // proposal submitted anyway is refused, and the adopted rule is unchanged).
     {
+      // The desks poll on their own clock; wait for the seal to reach the device
+      // rather than racing it, then assert what the pair can actually touch.
+      for (const p of desks) await p.waitForSelector("#wrSealed", { timeout: 30000 });
       const sealedDesk = await desks[0].evaluate(() => ({
         dial: document.getElementById("wrShareDial")?.disabled ?? null,
         condition: document.getElementById("wrCondition")?.disabled ?? null,
@@ -933,6 +951,7 @@ async function main() {
       // the only place in this run that posts an action directly, precisely
       // because the point is that the SERVER refuses it, not the screen.
       const before = (await board.textContent(".wr-board-median")) ?? "";
+      expectingRefusals = true;
       const rejected = await desks[0].evaluate(async () => {
         const raw = localStorage.getItem("bow-play-credentials");
         if (!raw) return { skipped: true, why: "no stored credentials" };
@@ -948,6 +967,7 @@ async function main() {
       assert.notEqual(rejected.status, 200, `a proposal LANDED after the round closed: HTTP ${rejected.status} ${rejected.body}`);
       assert.match(rejected.body, /sealed/i, `the refusal does not say the vote is sealed: ${rejected.body}`);
       await board.waitForTimeout(1500);
+      expectingRefusals = false;
       const after = (await board.textContent(".wr-board-median")) ?? "";
       assert.equal(after, before, `the room's middle number changed after the round closed — "${before}" became "${after}"`);
       console.log(`[e2e-m2l3] SEALED VOTE — post-close submission refused with HTTP ${rejected.status}; the room's middle number did not move`);
@@ -958,6 +978,7 @@ async function main() {
     // "You're in — finding your club…" forever with a 409 in its console while
     // /teach counted it as joined. It must land somewhere playable and honest.
     {
+      expectingRefusals = true;
       const late = await browser.newPage({ viewport: { width: 1024, height: 600 } });
       watchConsole(late, "late-joiner");
       late.on("dialog", (d) => d.accept());
@@ -984,12 +1005,15 @@ async function main() {
       if (!seated) {
         assert.match(landing, /arrived after this league closed/i, "the observer landing does not say what happened");
         assert.match(landing, /Sit with the desk next to you/i, "the observer landing does not say what to do");
-        const watch = await teach.evaluate(() => document.getElementById("director")?.innerText ?? "");
+        // The console polls on its own clock; wait for the flag rather than race it.
+        await teach.waitForFunction(() => /arrived after the league closed/i.test(document.body.innerText), null, { timeout: 30000 }).catch(() => {});
+        const watch = await teach.evaluate(() => document.body.innerText);
         assert.match(watch, /arrived after the league closed/i, "the teacher console says nothing about the stranded pair");
       }
       console.log(`[e2e-m2l3] LATE JOINER — landed ${seated ? "on a handed-over league-office club" : "as an announced observer, with the teacher told"}`);
       await late.screenshot({ path: path.join(SCREEN_DIR, "08b-play-late-joiner.png") });
       await late.close();
+      expectingRefusals = false;
     }
 
     // ---- the two-thirds test --------------------------------------------
@@ -1104,7 +1128,8 @@ async function main() {
     for (let stage = 1; stage <= 5; stage += 1) {
       await teach.click("#btnRevealNext");
       await board.waitForFunction((s) => new RegExp(`Stage ${s} of`).test(document.body.innerText), stage, { timeout: 25000 });
-      await desks[0].waitForFunction((s) => new RegExp(`Beat ${s} of`).test(document.body.innerText), stage, { timeout: 25000 });
+      // `.eyebrow` is CSS-uppercased, so innerText comes back shouting.
+      await desks[0].waitForFunction((s) => new RegExp(`Beat ${s} of`, "i").test(document.body.innerText), stage, { timeout: 25000 });
       deskAtStage.push(await desks[0].evaluate(() => document.getElementById("wrLens")?.innerText ?? ""));
       if (stage === 3) {
         // The one-tap prediction, before the arrows land.
@@ -1214,6 +1239,8 @@ async function main() {
     assert.match(argueText, /\$625M/, "the Seattle bid figure is not on the projector");
     assert.match(argueText, /\$534M/, "the Sacramento bid figure is not on the projector");
     assert.match(argueText, /\$255M/, "the ~$255M of Sacramento public money is not in the debate material");
+    // The desks poll on their own clock — wait for ARGUE to reach the device.
+    for (const p of desks) await p.waitForSelector("#wrTermSheets [data-wr-term]", { timeout: 30000 });
     const deskTerms = await desks[0].evaluate(() => ({
       count: document.querySelectorAll("#wrTermSheets [data-wr-term]").length,
       text: document.getElementById("wrTermSheets")?.innerText ?? "",
@@ -1333,6 +1360,7 @@ async function main() {
         `${realDialDrives.length} dials driven by real mouse drag + keyboard, ${pageCount} finale cards paged, zero console errors`,
     );
     for (const p of nonVacuityProofs) console.log(`[e2e-m2l3] NON-VACUITY — ${p}`);
+    console.log(`[e2e-m2l3] deliberate refusals observed (expected, not defects): ${deliberateRefusals.length}`);
   } catch (error) {
     failure = error;
     try {

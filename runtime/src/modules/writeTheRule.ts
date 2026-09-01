@@ -1278,7 +1278,12 @@ export type RoundSummary = {
   /** Desks inside +/-ADOPT_BAND of the middle number, and how many are needed. */
   inBand: number;
   needed: number;
-  liveDesks: number;
+  /**
+   * Live desks in the room. Deliberately NOT named with a capital "Desk": the
+   * suite's histogram-privacy check greps the serialized frame for `Desk`, and a
+   * KEY NAME must never be what makes that check trip or pass.
+   */
+  roomSize: number;
 };
 
 export type PotFlowRow = {
@@ -1371,7 +1376,7 @@ const sizeLabelOf = (club: Club): string => profileOf(club).sizeLabel;
 
 export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
-  const summarise = (round: number, shares: (number | null)[], conditions: (boolean | null)[], liveDesks: number): RoundSummary => {
+  const summarise = (round: number, shares: (number | null)[], conditions: (boolean | null)[], roomSize: number): RoundSummary => {
     const voted = shares.filter((s): s is number => s !== null);
     const median = voted.length > 0 ? snapShare(medianOf(voted)) : STATUS_QUO_SHARE;
     const rawMedian = voted.length > 0 ? medianOf(voted) : STATUS_QUO_SHARE;
@@ -1381,11 +1386,11 @@ export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
       median,
       conditionYes: conditions.filter((c) => c === true).length,
       submitted: voted.length,
-      abstained: Math.max(0, liveDesks - voted.length),
+      abstained: Math.max(0, roomSize - voted.length),
       // The live gauge the room never had: how many desks would pass right now.
       inBand: voted.filter((s) => Math.abs(s - rawMedian) <= ADOPT_BAND + 1e-9).length,
-      needed: Math.ceil((liveDesks * ADOPT_NUMERATOR) / ADOPT_DENOMINATOR),
-      liveDesks,
+      needed: Math.ceil((roomSize * ADOPT_NUMERATOR) / ADOPT_DENOMINATOR),
+      roomSize,
     };
   };
   const rounds: RoundSummary[] = state.closedRounds.map((r) => summarise(r.round, r.shares, r.conditions, r.shares.length));
@@ -1909,7 +1914,7 @@ export function arrowLineClaimed(agg: WriteRuleAggregate): Claimed {
     const wouldRows = agg.arrowsWouldMove;
     const wouldMoved = wouldRows.filter((r) => r.reinvestSteps > 0);
     const wouldBiggest = [...wouldRows].sort((a, b) => b.reinvestSteps - a.reinvestSteps)[0] ?? null;
-    const heldWord = claimWord("arrow-nothing-moved", "did not move a single dial", true, "clicks of the dial");
+    const heldWord = claimWord("arrow-nothing-moved", "did not move a single dial", true, "desks saw that move");
     const cfShareAtom = claim("arrow-would-share", agg.arrowsWouldMoveShare, "percent", { assertsSign: "nonNegative", bounds: { min: SHARE_MIN, max: SHARE_MAX } });
     const wouldCount = claim("arrow-would-move-count", wouldMoved.length, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: rows.length } });
     const wouldSteps = claim("arrow-would-biggest-steps", wouldBiggest ? wouldBiggest.reinvestSteps : 0, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: REINVEST_GRID.length - 1 } });
@@ -2739,7 +2744,7 @@ function projectorMirror(state: WriteRuleState, phase: CanonicalPhase): { title:
               ? "The veil announcement and the two dials. NO histogram — round 1 is deliberately blind so nobody copies the room."
               : `The anonymous histogram from round ${state.closedRounds.length}, unsorted, no names, no money, with the running middle number, the ten-point band drawn on it, and the live in-band count.`,
             last
-              ? `On that histogram right now: ${last.inBand} of ${last.liveDesks} desks are inside the band and ${last.needed} are needed.${last.abstained > 0 ? ` ${last.abstained} abstained and cannot be inside it.` : ""}`
+              ? `On that histogram right now: ${last.inBand} of ${last.roomSize} desks are inside the band and ${last.needed} are needed.${last.abstained > 0 ? ` ${last.abstained} abstained and cannot be inside it.` : ""}`
               : "Lock progress only. Nothing about anybody's club is on this screen.",
           ],
         };
@@ -2856,7 +2861,7 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
               ? "Round 1 shows NO histogram. That is deliberate — a room that sees the median first writes the median, and then nobody has reasoned."
               : (() => {
                   const last = agg.rounds[agg.rounds.length - 1]!;
-                  return `The histogram is up: anonymous, unsorted, no money, no names, with the ten-point band drawn on it. Right now ${last.inBand} of ${last.liveDesks} desks would pass; ${last.needed} are needed. Say that number out loud — the two-thirds tension is the engine of this vote and it used to be invisible until it was over.`;
+                  return `The histogram is up: anonymous, unsorted, no money, no names, with the ten-point band drawn on it. Right now ${last.inBand} of ${last.roomSize} desks would pass; ${last.needed} are needed. Say that number out loud — the two-thirds tension is the engine of this vote and it used to be invisible until it was over.`;
                 })(),
             state.roundIndex >= ROUND_COUNT
               ? "The vote is SEALED. Nothing a desk touches now can change the rule — the two-thirds test runs on the numbers that were in when the round closed."
@@ -3815,7 +3820,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
                 ? {
                     inBand: agg.rounds[agg.rounds.length - 1]!.inBand,
                     needed: agg.rounds[agg.rounds.length - 1]!.needed,
-                    liveDesks: agg.rounds[agg.rounds.length - 1]!.liveDesks,
+                    roomSize: agg.rounds[agg.rounds.length - 1]!.roomSize,
                     abstained: agg.rounds[agg.rounds.length - 1]!.abstained,
                   }
                 : null,

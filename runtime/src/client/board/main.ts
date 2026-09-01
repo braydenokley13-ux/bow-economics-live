@@ -1755,7 +1755,7 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
     case "rounds": {
       const held = Boolean(view["histogramHeld"]);
       const h = view["histogram"] as { round: number; bins: { share: number; count: number }[]; median: number; conditionYes: number; submitted: number } | null;
-      const gauge = view["gauge"] as { inBand: number; needed: number; liveDesks: number; abstained: number } | null;
+      const gauge = view["gauge"] as { inBand: number; needed: number; roomSize: number; abstained: number } | null;
       const band = Number(view["band"] ?? 10);
       stage.innerHTML = `
         <div class="label">${escapeHtml(String(view["title"] ?? ""))}${view["sealed"] ? " · SEALED" : ""}</div>
@@ -1763,7 +1763,7 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
         ${held || !h ? `<div class="wr-board-held" id="wrBoardHeld">${escapeHtml(String(view["heldCopy"] ?? ""))}</div>` : wrHistBoard(h, band)}
         ${
           gauge
-            ? `<div class="wr-board-gauge" id="wrBoardGauge">RIGHT NOW <b>${gauge.inBand}</b> OF <b>${gauge.liveDesks}</b> DESKS WOULD PASS. <b>${gauge.needed}</b> ARE NEEDED.${
+            ? `<div class="wr-board-gauge" id="wrBoardGauge">RIGHT NOW <b>${gauge.inBand}</b> OF <b>${gauge.roomSize}</b> DESKS WOULD PASS. <b>${gauge.needed}</b> ARE NEEDED.${
                 gauge.abstained > 0
                   ? ` ${gauge.abstained} desk${gauge.abstained === 1 ? "" : "s"} put no number in — an abstention can never be inside the band.`
                   : ""
@@ -1855,7 +1855,10 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
       stage.innerHTML = `
         <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
         <div class="wr-board-copy" id="wrBoardArgue">${escapeHtml(String(view["copy"] ?? ""))}</div>
-        ${wrTermSheets((view["termSheets"] as WRTermSheet[]) ?? [])}
+        ${/* The term sheets are the DEBATE material: they hold the frame while the
+              room is still arguing, and they come down once the owners have
+              answered so the verdict owns the projector (and so the frame fits). */ ""}
+        ${view["revealed"] ? "" : wrTermSheets((view["termSheets"] as WRTermSheet[]) ?? [])}
         <div class="exit-prompt wr-board-q">${escapeHtml(String(view["prompt"] ?? ""))}</div>
         ${
           view["revealed"]
