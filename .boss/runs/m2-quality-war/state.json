@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T00:08:18.302Z",
+  "updatedAt": "2026-09-01T00:11:25.798Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -766,7 +766,8 @@
         "l1-e2e-r1",
         "l1-e2e-misclick",
         "gate-l1-visual",
-        "gate-l1-econ-r1"
+        "gate-l1-econ-r1",
+        "gate-l1-play-r1"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -781,7 +782,8 @@
         "play-board-curve-pooled",
         "gate-l1-play-dissent",
         "econ-l1-season-books",
-        "recheck-l1-econ-dissent"
+        "recheck-l1-econ-dissent",
+        "play-l1-renewals-unexplained"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1453,6 +1455,25 @@
       },
       "recordedAt": "2026-09-01T00:07:59.449Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-play-r1": {
+      "id": "gate-l1-play-r1",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "L1 play re-rate: RATING STRONG (was FUNCTIONAL). Pooled curve fixed, Two Peaks proves itself, spend decidable. New blocking: COUNTERFACTUAL board instruction points at a scatter not rendered that phase; renewals undercut cost never stated on any student surface. Memphis 0-16 orange blob; REVEAL stages 1-5 dead air",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-play-r1--GATE_L1_PLAY.md",
+      "sha256": "13db4dcd3b47fc2883c3e55f1fc33d9a78208c94b87a1d837acf25c397ada90f",
+      "size": 41071,
+      "metadata": {
+        "rating": "STRONG",
+        "tags": [
+          "gameplay",
+          "wave-2",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T00:11:25.306Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1664,9 +1685,12 @@
         "gate-l1-play"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-08-31T23:26:02.506Z",
-      "actor": "player-gameplay-critic"
+      "actor": "player-gameplay-critic",
+      "resolution": "Independently re-verified in a full 4-seat session: no joining stroke, colour=market + shape=night with key and honest caption, no upward-sloping segment anywhere. Critic's explicit line: DISSENT play-board-curve-pooled: DISCHARGED. Rating moved FUNCTIONAL -> STRONG. GATE_L1_PLAY.md re-rate section.",
+      "resolvedAt": "2026-09-01T00:11:25.557Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l1-play-dissent": {
       "id": "gate-l1-play-dissent",
@@ -1699,6 +1723,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T00:08:18.302Z",
       "actor": "lead-integrator"
+    },
+    "play-l1-renewals-unexplained": {
+      "id": "play-l1-renewals-unexplained",
+      "wave": 2,
+      "category": "gameplay",
+      "severity": "blocking",
+      "finding": "The renewals undercut mechanism works in play (desk that filled the building five nights under plan fell 50%->25%) but NO student surface — dial, recap, seven reveal stages, ADAPT, COUNTERFACTUAL, six synthesis cards — ever states that undercutting the season-plan price costs renewals. Uninterpretable consequence = the exact failure class just repaired on the spend dial, relocated. Also blocking: COUNTERFACTUAL board's largest instruction tells the room to argue from dots that are not rendered in that phase. GATE_L1_PLAY.md re-rate section.",
+      "evidenceIds": [
+        "gate-l1-play-r1"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T00:11:25.798Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "meetings": {},
@@ -1729,11 +1767,11 @@
     "agentsActivated": 21,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 34,
+    "evidenceRecorded": 35,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 98,
-  "eventHead": "f901c312709d6f61f63674a9f7f02943e928ea0ea3788e1732d7e2f4cda9e9a5",
+  "eventCount": 101,
+  "eventHead": "19f9a4ef638124589fae4db78c73afdde231d4c12ffe22727698d23de5bd7f65",
   "warnings": []
 }
