@@ -510,6 +510,13 @@ export type Club = {
   cash: number;
   /** The room's own L2 reinvest mean for this club, when a session was linked. */
   l2Reinvest: number | null;
+  /**
+   * The room's own L2 reinvest mean in DOLLARS PER WEEK. The two lessons' dials
+   * share a scale and not a base (L2 spends a share of door money; L3 spends a
+   * share of local revenue, which includes local media), so the percentages are
+   * not like-for-like and the before/after bar is computed on dollars instead.
+   */
+  l2ReinvestDollars: number | null;
   l2Cash: number | null;
   hookPick: "pay" | "breakup" | null;
   proposal: RuleProposal | null;
@@ -519,6 +526,10 @@ export type Club = {
   locked: boolean;
   weeks: SettledWeek[];
   kingsVote: "deny" | "approve" | null;
+  /** REVEAL-half lens: what this desk predicted about its own price arrow. */
+  arrowPrediction: "moved" | "flat" | null;
+  /** True when a late-arriving pair took this club over from the league office. */
+  handedOver: boolean;
 };
 
 export type WriteRuleStage = "rounds" | "adopted" | "season" | "seasonDone";
@@ -537,15 +548,24 @@ export type WriteRuleState = {
   hookRevealed: boolean;
   stage: WriteRuleStage;
   roundIndex: number;
-  closedRounds: { round: number; shares: number[]; conditions: boolean[]; median: number }[];
+  /**
+   * `shares`/`conditions` are per LIVE DESK in slot order and carry `null` for a
+   * desk that never put a number in that round. A non-vote is an abstention, not
+   * a fabricated 5% — see `runAdoption`.
+   */
+  closedRounds: { round: number; shares: (number | null)[]; conditions: (boolean | null)[]; median: number; slots: number[] }[];
   adopted: AdoptedRule | null;
   weekIndex: number;
   rookieSlot: number | null;
   revealStage: number;
   counterfactualRun: boolean;
+  /** The room's own Kings tally is on the projector, alone, before the 22-8. */
+  kingsSplitShown: boolean;
   kingsRevealed: boolean;
   synthPage: number;
   finalePage: number;
+  /** Pairs who arrived after the league closed and could not be given a club. */
+  observerSeats: string[];
 };
 
 /* --------------------------------------------------------------- paging -- */
@@ -573,6 +593,7 @@ function makeClub(slot: number): Club {
     draw: def.startDraw,
     cash: def.startCash,
     l2Reinvest: null,
+    l2ReinvestDollars: null,
     l2Cash: null,
     hookPick: null,
     proposal: null,
@@ -582,6 +603,8 @@ function makeClub(slot: number): Club {
     locked: false,
     weeks: [],
     kingsVote: null,
+    arrowPrediction: null,
+    handedOver: false,
   };
 }
 
@@ -592,19 +615,52 @@ function withLeagueSize(state: WriteRuleState, size: number): WriteRuleState {
   return { ...state, clubs, leagueSize: size };
 }
 
+/**
+ * Seating, including the late arrival.
+ *
+ * A pair that walks in after the league has closed (`leagueFrozen`, set by the
+ * first round close or the first lock) used to be refused with a bare 409 while
+ * the console still counted them as joined and their own device said "finding
+ * your club…" forever (gate-l3-teacher B4). Two honest landings replace it:
+ *
+ *  1. HANDOVER — if any club inside the frozen league is still being run by the
+ *     league office, the pair takes it over. They are told on their own screen
+ *     that the rule was voted before they arrived and that this club's earlier
+ *     weeks were played by the league office.
+ *  2. OBSERVER — if every club is taken, the seat is recorded as an observer.
+ *     Their device says what to do (sit with a neighbouring desk) and a WATCH
+ *     FOR entry names them to the teacher. Nothing about them is silent.
+ */
 function seatDesk(state: WriteRuleState, seatId: SeatId): ReduceResult<WriteRuleState> {
   if (state.seatToSlot[seatId] !== undefined) return { ok: true, state };
-  const slot = state.deskCount;
-  if (slot >= MAX_DESKS) return { ok: false, reason: `this league seats ${MAX_DESKS} desks` };
-  let next = state;
-  if (!state.leagueFrozen) next = withLeagueSize(next, Math.max(MIN_LEAGUE, slot + 1));
-  else if (slot >= next.leagueSize) return { ok: false, reason: "the league is closed for this session" };
-  const clubs = next.clubs.slice();
-  clubs[slot] = { ...clubs[slot]!, seatId };
-  return {
-    ok: true,
-    state: { ...next, clubs, seatToSlot: { ...next.seatToSlot, [seatId]: slot }, deskCount: slot + 1 },
-  };
+  if (!state.leagueFrozen) {
+    const slot = state.deskCount;
+    if (slot >= MAX_DESKS) return { ok: false, reason: `this league seats ${MAX_DESKS} desks` };
+    const next = withLeagueSize(state, Math.max(MIN_LEAGUE, slot + 1));
+    const clubs = next.clubs.slice();
+    clubs[slot] = { ...clubs[slot]!, seatId };
+    return {
+      ok: true,
+      state: { ...next, clubs, seatToSlot: { ...next.seatToSlot, [seatId]: slot }, deskCount: slot + 1 },
+    };
+  }
+  const free = state.clubs.slice(0, state.leagueSize).find((c) => c.seatId === null);
+  if (free) {
+    const clubs = state.clubs.slice();
+    clubs[free.slot] = { ...free, seatId, handedOver: true };
+    return {
+      ok: true,
+      state: {
+        ...state,
+        clubs,
+        seatToSlot: { ...state.seatToSlot, [seatId]: free.slot },
+        deskCount: Math.max(state.deskCount, free.slot + 1),
+      },
+    };
+  }
+  const observers = state.observerSeats ?? [];
+  if (observers.includes(seatId)) return { ok: true, state };
+  return { ok: true, state: { ...state, observerSeats: [...observers, seatId] } };
 }
 
 /* ---------------------------------------------------------------- seed -- */
@@ -618,7 +674,14 @@ function seatDesk(state: WriteRuleState, seatId: SeatId): ReduceResult<WriteRule
  * it actually locked in L2. Nothing else — no L2 price, no L2 schedule, no L2
  * decomposition. A club the seed does not describe keeps its stock opening.
  */
-export type CarriedClub = { slot: number; draw: number; cash: number; meanReinvest: number | null };
+export type CarriedClub = {
+  slot: number;
+  draw: number;
+  cash: number;
+  meanReinvest: number | null;
+  /** L2's own reinvest spend in DOLLARS PER WEEK — the like-for-like basis. */
+  meanReinvestDollars: number | null;
+};
 
 export function extractCarriedClubs(seed: unknown): CarriedClub[] {
   if (!seed || typeof seed !== "object") return [];
@@ -639,15 +702,22 @@ export function extractCarriedClubs(seed: unknown): CarriedClub[] {
     if (typeof draw !== "number" || !Number.isFinite(draw)) continue;
     if (typeof cash !== "number" || !Number.isFinite(cash)) continue;
     let meanReinvest: number | null = null;
+    let meanReinvestDollars: number | null = null;
     const weeks = c["weeks"];
     if (Array.isArray(weeks) && weeks.length > 0) {
       const shares: number[] = [];
+      const paid: number[] = [];
       for (const w of weeks) {
         if (!w || typeof w !== "object") continue;
         const share = (w as Record<string, unknown>)["share"];
         if (typeof share === "number" && Number.isFinite(share) && share >= 0 && share <= 100) shares.push(share);
+        // L2's `reinvestPaid` is the dollars actually spent that week. It is the
+        // only figure the two lessons can honestly be compared on (econ B3).
+        const spend = (w as Record<string, unknown>)["reinvestPaid"];
+        if (typeof spend === "number" && Number.isFinite(spend) && spend >= 0) paid.push(spend);
       }
       if (shares.length > 0) meanReinvest = shares.reduce((a, b) => a + b, 0) / shares.length;
+      if (paid.length > 0) meanReinvestDollars = paid.reduce((a, b) => a + b, 0) / paid.length;
     }
     out.push({
       slot,
@@ -656,6 +726,7 @@ export function extractCarriedClubs(seed: unknown): CarriedClub[] {
       // the carried floor is one week's national check, and the board says so.
       cash: Math.max(NATIONAL, Math.round(cash)),
       meanReinvest,
+      meanReinvestDollars,
     });
   }
   return out;
@@ -812,17 +883,24 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
   // The pot: formed, then split. With the CONDITION on, a club under the
   // reinvest floor collects half, and the forfeited half is redistributed among
   // the clubs that did comply — a compliance pool, not a bonfire.
+  //
+  // econ B4: when NOBODY complies there is no compliance pool to pay, and the
+  // old code annihilated 50% of a transfer in silence (reachable in week 1 of a
+  // real class, where every unlocked desk settles at reinvest 0). A rule that
+  // destroys money teaches something false about redistribution. With no
+  // compliant club the docked half has nowhere to go, so it goes back to the
+  // league it came from and the pot closes at zero — printed in HOUSE_RULES.
   const pot = rows.reduce((sum, r) => sum + r.paidIn, 0);
   const compliant = rows.map((r) => !rule || !rule.condition || r.reinvest >= CONDITION_MIN_REINVEST);
+  const compliantCount = compliant.filter(Boolean).length;
   const evenShare = size > 0 ? pot / size : 0;
   let forfeited = 0;
   const base = rows.map((_, i) => {
-    if (compliant[i]) return evenShare;
+    if (compliant[i] || compliantCount === 0) return evenShare;
     const collected = evenShare * CONDITION_COLLECT_FRACTION;
     forfeited += evenShare - collected;
     return collected;
   });
-  const compliantCount = compliant.filter(Boolean).length;
   const bonus = compliantCount > 0 ? forfeited / compliantCount : 0;
   const tookOut = rows.map((_, i) => Math.round(base[i]! + (compliant[i] ? bonus : 0)));
 
@@ -860,7 +938,7 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
         paidIn: r.paidIn,
         tookOut: tookOut[r.slot]!,
         net: tookOut[r.slot]! - r.paidIn,
-        docked: !compliant[r.slot]!,
+        docked: compliantCount > 0 && !compliant[r.slot]!,
       },
       bill: profile.bill,
       national: NATIONAL,
@@ -1052,9 +1130,12 @@ export const snapShare = (value: number): number =>
 
 export type AdoptionOutcome = {
   adopted: AdoptedRule;
-  proposals: number[];
+  /** One entry per live desk, `null` where that desk abstained. */
+  proposals: (number | null)[];
   inBand: number;
   needed: number;
+  voted: number;
+  abstained: number;
 };
 
 /**
@@ -1066,35 +1147,67 @@ export type AdoptionOutcome = {
  * supermajority they have to be bought rather than outvoted — which is how real
  * leagues work, and which forces the two sides to trade.
  */
+/**
+ * ABSTENTION, and why it is handled this way.
+ *
+ * A desk that never presses PUT IT IN used to be recorded as a 5% proposal
+ * nobody made (gate-l3-play, probe C): it dragged the room's middle number
+ * toward zero with a number no pair chose, and no surface said so. That is a
+ * fabricated vote, and it is the same defect class as the unsealed round.
+ *
+ * The design shipped here is a TRUE ABSTENTION on the numerator and NO relief on
+ * the denominator:
+ *   - an abstaining desk contributes NO number to the middle number;
+ *   - the two-thirds test is still two-thirds of every LIVE DESK in the room.
+ * Two-thirds therefore stays exactly as meaningful as it was written to be. You
+ * cannot lower the bar by staying quiet — an abstention can never be inside the
+ * band, so it is a desk that did not back the rule — and you cannot move the
+ * room's middle number without saying a number out loud. Both halves are printed
+ * on the desk, on the board tally and in the teacher's WATCH FOR panel.
+ */
 export function runAdoption(state: WriteRuleState): AdoptionOutcome {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
-  const proposals = live.map((c) => c.proposal?.share ?? STATUS_QUO_SHARE);
-  const conditions = live.map((c) => c.proposal?.condition ?? STATUS_QUO_CONDITION);
-  const median = medianOf(proposals);
+  // The vote is sealed at the close of the last round: the adopted rule reads
+  // the RECORDED round, never a live control that can still be touched.
+  const sealed = state.closedRounds.length > 0 ? state.closedRounds[state.closedRounds.length - 1]! : null;
+  const proposals: (number | null)[] = sealed ? sealed.shares.slice() : live.map((c) => c.proposal?.share ?? null);
+  const conditions: (boolean | null)[] = sealed ? sealed.conditions.slice() : live.map((c) => c.proposal?.condition ?? null);
+  const liveDesks = sealed ? sealed.shares.length : live.length;
+  const votedIdx = proposals.map((p, i) => (p === null ? -1 : i)).filter((i) => i >= 0);
+  const votedShares = votedIdx.map((i) => proposals[i]!);
+  const median = votedShares.length > 0 ? medianOf(votedShares) : STATUS_QUO_SHARE;
   const snapped = snapShare(median);
-  const bandIdx = proposals.map((p, i) => (Math.abs(p - median) <= ADOPT_BAND + 1e-9 ? i : -1)).filter((i) => i >= 0);
-  const needed = Math.ceil((live.length * ADOPT_NUMERATOR) / ADOPT_DENOMINATOR);
-  const runnerUp = runnerUpShare(proposals, snapped);
-  if (live.length === 0 || bandIdx.length < needed) {
+  const bandIdx = votedIdx.filter((i) => Math.abs(proposals[i]! - median) <= ADOPT_BAND + 1e-9);
+  const needed = Math.ceil((liveDesks * ADOPT_NUMERATOR) / ADOPT_DENOMINATOR);
+  const passes = liveDesks > 0 && votedShares.length > 0 && bandIdx.length >= needed;
+  // On the fallback path the replay runs at the number the room FAILED to agree
+  // on, never below the rule actually in force (gate-l3-play repair 4).
+  const runnerUp = passes
+    ? runnerUpShare(votedShares, snapped)
+    : runnerUpShare(votedShares, STATUS_QUO_SHARE, snapped > STATUS_QUO_SHARE ? snapped : undefined);
+  const abstained = liveDesks - votedShares.length;
+  if (liveDesks === 0 || votedShares.length === 0 || bandIdx.length < needed) {
     return {
       adopted: {
         share: STATUS_QUO_SHARE,
         condition: STATUS_QUO_CONDITION,
         how: "statusQuo",
         supporting: bandIdx.length,
-        liveDesks: live.length,
+        liveDesks,
         median: snapped,
         runnerUp,
       },
       proposals,
       inBand: bandIdx.length,
       needed,
+      voted: votedShares.length,
+      abstained,
     };
   }
   // The CONDITION rides with the desks who actually carried the share: a
   // majority of the supporting bloc, ties resolving OFF (the less intrusive
   // rule, and the status quo's own setting).
-  const yes = bandIdx.filter((i) => conditions[i]).length;
+  const yes = bandIdx.filter((i) => conditions[i] === true).length;
   const condition = yes * 2 > bandIdx.length;
   return {
     adopted: {
@@ -1102,25 +1215,38 @@ export function runAdoption(state: WriteRuleState): AdoptionOutcome {
       condition,
       how: "voted",
       supporting: bandIdx.length,
-      liveDesks: live.length,
+      liveDesks,
       median: snapped,
       runnerUp,
     },
     proposals,
     inBand: bandIdx.length,
     needed,
+    voted: votedShares.length,
+    abstained,
   };
 }
 
-/** The share that finished second — the one the COUNTERFACTUAL replays. */
-export function runnerUpShare(proposals: readonly number[], adoptedShare: number): number {
+/**
+ * The share the COUNTERFACTUAL replays — the one that finished second.
+ *
+ * Two guards the first version did not have (gate-l3-play repair 4). The replay
+ * may never run BELOW the rule that is actually in force on the fallback path,
+ * and it may never run at 0%: a room that could not agree was shown an "AT 0%"
+ * column of eight literal $0 cells, which is the difference between doing
+ * nothing and doing slightly less than nothing, on the frame that was supposed
+ * to price what not agreeing cost. On the status-quo path the honest replay is
+ * the number the room FAILED to agree on — its own round-3 middle number.
+ */
+export function runnerUpShare(proposals: readonly number[], adoptedShare: number, failedMedian?: number): number {
   const counts = new Map<number, number>();
   for (const p of proposals) {
     const s = snapShare(p);
+    if (s <= 0) continue;
     counts.set(s, (counts.get(s) ?? 0) + 1);
   }
   counts.delete(adoptedShare);
-  let best = adoptedShare === STATUS_QUO_SHARE ? REAL_RULE_SHARE : STATUS_QUO_SHARE;
+  let best = -1;
   let bestCount = -1;
   for (const [share, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
     if (count > bestCount) {
@@ -1128,7 +1254,11 @@ export function runnerUpShare(proposals: readonly number[], adoptedShare: number
       best = share;
     }
   }
-  return best;
+  if (best > 0 && best !== adoptedShare) return best;
+  // Nothing else was on the table. Fall back to the room's own failed middle
+  // number where there is one, and to the league office's rule otherwise.
+  if (failedMedian !== undefined && failedMedian > adoptedShare) return failedMedian;
+  return adoptedShare === REAL_RULE_SHARE ? SHARE_MAX : REAL_RULE_SHARE;
 }
 
 /* ---------------------------------------------------------- aggregates -- */
@@ -1368,13 +1498,14 @@ export function counterfactualRows(state: WriteRuleState, share: number): Counte
       }
       const pot = paid.reduce((a, b) => a + b, 0);
       const even = size > 0 ? pot / size : 0;
+      const compliantCount = compliant.filter(Boolean).length;
       let forfeited = 0;
+      // Same no-bonfire rule the live settlement uses (econ B4).
       const base = compliant.map((ok) => {
-        if (ok) return even;
+        if (ok || compliantCount === 0) return even;
         forfeited += even * (1 - CONDITION_COLLECT_FRACTION);
         return even * CONDITION_COLLECT_FRACTION;
       });
-      const compliantCount = compliant.filter(Boolean).length;
       const bonus = compliantCount > 0 ? forfeited / compliantCount : 0;
       for (let slot = 0; slot < size; slot += 1) {
         const took = Math.round(base[slot]! + (compliant[slot] ? bonus : 0));
