@@ -1690,7 +1690,7 @@ export const TERM_SHEETS: readonly TermSheet[] = [
     lines: [
       "$409M in cash for the Maloof family's 65% of the club.",
       "The club relocates. The SuperSonics name comes back to a city that lost its team in 2008.",
-      "A new arena in Seattle, privately financed by the buying group.",
+      "A new arena in SoDo, about $490M — with up to $200M of city and county bond money in it too, repaid out of arena revenue and guaranteed by the buyers.",
       "This is the higher offer. Every owner in the room owns a club that could be moved one day too.",
     ],
   },
@@ -1702,7 +1702,7 @@ export const TERM_SHEETS: readonly TermSheet[] = [
       "A then-record price for an NBA franchise — and about $91M less than Seattle put up.",
       "The club stays. A new arena goes downtown instead of a move.",
       "About $255M of CITY money goes into that arena, capped at 47.7% of its cost. Sacramento borrowed $273M in 2015 against roughly $18M of payments a year running to 2050.",
-      "The 27th-largest US television market keeps a club. Seattle, the 12th, does not get one.",
+      "Sacramento is the 20th-largest US television market. Seattle, the 13th, does not get a club.",
     ],
   },
 ];
@@ -1742,7 +1742,7 @@ export const SOURCE_NOTES: readonly string[] = [
   "2024-25 luxury tax: about $456M paid by ten clubs; the Suns paid the most at about $152M; each of the twenty non-tax clubs received about $11.4M. 2026-27 lines: tax $200.428M, first apron $209.015M, second apron $221.686M.",
   "Revenue sharing: in one leaked league year (2016-17 reporting) 14 of 30 clubs lost money before revenue sharing and 9 after; Memphis received about $32M, the league's most; the Lakers still cleared about $115M after paying in. In 2021-22 ten high-revenue clubs paid $163.6M into the pool, with the Warriors and Lakers alone over $88M of it.",
   "Green Bay Packers FY2025, reported July 2026: $453.2M per club in shared national revenue, up 4.8%; total Packers revenue $719M; metro population about 320,000 — and the same record-revenue report showed an operating loss.",
-  "Sacramento: the owners voted 22-8 on May 15, 2013 to deny relocation; relocation is decided by a simple majority of the Board of Governors (16 of 30), not by a supermajority. The Hansen/Ballmer group raised to a $625M valuation ($409M for the Maloofs' 65%); the Ranadive group bought at a then-record $534M. Golden 1 Center opened 2016; the Sacramento City Council approved about $255M in land and cash toward it (capped at 47.7% of the $534.6M cost) without a public vote, and the city issued $273M of bonds in August 2015 against roughly $18M a year running to 2050. Seattle lost the Sonics to Oklahoma City in 2008; Climate Pledge Arena was later rebuilt with about $1.15B of private money. Milwaukee approved about $250M of public money in 2015 under a relocation threat and won the 2021 title.",
+  "Sacramento: the owners voted 22-8 on May 15, 2013 to deny relocation; relocation is decided by a simple majority of the Board of Governors (16 of 30), not by a supermajority. The Hansen/Ballmer group raised to a $625M valuation ($409M for the Maloofs' 65%); the Ranadive group bought at a then-record $534M. Golden 1 Center opened 2016; the Sacramento City Council approved about $255M in land and cash toward it (capped at 47.7% of the $534.6M cost) without a public vote, and the city issued $273M of bonds in August 2015 against roughly $18M a year running to 2050. Seattle lost the Sonics to Oklahoma City in 2008; the 2012 Hansen/Ballmer SoDo memorandum of understanding, approved 7-2 by the Seattle City Council and unanimously by the King County Council, carried up to $200M of city and county bonds toward a roughly $490M arena, repaid from arena revenue and guaranteed by the buying group, so neither 2013 bid was privately financed; Climate Pledge Arena was later rebuilt, on a different deal, with about $1.15B of private money. Sacramento-Stockton-Modesto is the 20th-largest US television market and Seattle-Tacoma the 13th (2025-26 Nielsen DMA ranks; materially the same in 2013). Milwaukee approved about $250M of public money in 2015 under a relocation threat and won the 2021 title.",
   "NBA draft lottery: since the 2019 reform the three worst records each hold a 14.0% chance at the first pick.",
   "Expansion, as of 2026-09-01 and due a re-check every term: in March 2026 the Board of Governors voted 30-0 to formally explore expansion to Seattle and Las Vegas exclusively, targeting 2028-29, with PJT Partners advising; a final vote requires 23 of 30 governors and had not been taken as of 2026-09-01. In July 2026 the commissioner said the process was on track for a determination by year end. The league still has 30 clubs.",
 ];
@@ -1837,14 +1837,43 @@ export function adoptionLineClaimed(agg: WriteRuleAggregate): Claimed {
  * hazard. The comparison is now made on the only figure the two lessons share:
  * what each club actually SPENT, per week.
  */
+/**
+ * WHOSE RULE THIS WAS — one atom, every arm, one forbidden phrase.
+ *
+ * The status-quo and league-office arms did not write a rule. Any sentence that
+ * names the rule in force takes this atom instead of a hard-coded noun phrase,
+ * so the arm is recomputable and the false phrase is machine-forbidden rather
+ * than proof-read.
+ */
+export function eraArmAtom(agg: WriteRuleAggregate): ClaimAtom {
+  const how = agg.adopted?.how;
+  const phrase =
+    how === "voted"
+      ? "the rule you wrote"
+      : how === "leagueOffice"
+        ? "the league office's rule"
+        : how === "statusQuo"
+          ? "the old rule this room did not replace"
+          : "the old rule that was already in force";
+  return claimWord("era-arm", phrase, how === "voted", how === "voted" ? undefined : "the rule you wrote");
+}
+
 export function reinvestEraLineClaimed(agg: WriteRuleAggregate): Claimed {
   const l3 = claim("era-l3-mean", agg.l3Mean, "percent1", { assertsSign: "nonNegative", bounds: { min: 0, max: REINVEST_MAX } });
   const l3d = claim("era-l3-dollars", agg.l3MeanDollars, "money", { assertsSign: "nonNegative" });
+  // econ re-check R3 (blocking): this sentence had no arm branch, so a room that
+  // wrote NO rule — `board:adoption` printing "NOT ADOPTED — the old rule holds
+  // at SHARE 5%" — was told "Under the rule you wrote" on thirteen surface/phase
+  // combinations, including the projector and the teacher's answer key. The arm
+  // is now an atom: the word is recomputed against `adopted.how` like any other
+  // quantifier, and the two arms that did not write a rule carry the forbidden
+  // phrase as `absent`, so the audit fails if it ever comes back.
+  const arm = eraArmAtom(agg);
   if (agg.l2MeanDollars === null) {
     const word = claimWord("era-no-l2", "no Lesson 2 numbers", true);
     return {
-      text: `This room put back ${l3d.rendered} a week on average — ${l3.rendered} of what came through its doors — across three weeks under its own rule. There are ${word.rendered} linked to this session, so the before-and-after bar has one bar in it. Use the rule's own before-and-after instead: the arrows at stage 4.`,
-      claims: [l3, l3d, word],
+      text: `This room put back ${l3d.rendered} a week on average — ${l3.rendered} of what came through its doors — across three weeks under ${arm.rendered}. There are ${word.rendered} linked to this session, so the before-and-after bar has one bar in it. Use the rule's own before-and-after instead: the arrows at stage 4.`,
+      claims: [l3, l3d, word, arm],
     };
   }
   const l2d = claim("era-l2-dollars", agg.l2MeanDollars, "money", { assertsSign: "nonNegative" });
@@ -1856,8 +1885,8 @@ export function reinvestEraLineClaimed(agg: WriteRuleAggregate): Claimed {
     delta < -1,
   );
   return {
-    text: `Last lesson this room put back ${l2d.rendered} a week into its own clubs, with no rule at all. Under the rule you wrote, it put back ${l3d.rendered} a week. Effort ${direction.rendered} by ${deltaAtom.rendered} a week. Both figures are DOLLARS, because the two lessons' dials are percentages of different money.`,
-    claims: [l2d, l3d, deltaAtom, direction],
+    text: `Last lesson this room put back ${l2d.rendered} a week into its own clubs, with no rule at all. Under ${arm.rendered}, it put back ${l3d.rendered} a week. Effort ${direction.rendered} by ${deltaAtom.rendered} a week. Both figures are DOLLARS, because the two lessons' dials are percentages of different money.`,
+    claims: [l2d, l3d, deltaAtom, direction, arm],
   };
 }
 
@@ -2209,7 +2238,7 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
     // fact in that vote was $255M of city money. The old copy claimed nothing in
     // the lesson was about public money, which the capstone contradicts.
     body:
-      "You voted on public money today and may not have noticed. Sacramento's winning bid was about $255M of CITY money toward a downtown arena, borrowed in 2015 against payments running to 2050 — that is what beat a bid worth $91M more. Every arena in this league sits in a town that had to make that call, and the mainstream economics finding is that stadium subsidies rarely pay off for the city that grants them.",
+      "You voted on public money today and may not have noticed — on BOTH term sheets. Sacramento's winning bid put about $255M of CITY money into a downtown arena, borrowed in 2015 against payments running to 2050; Seattle's arena plan carried up to $200M of city and county bond money of its own. Neither side was private. What differed was how much, how fast, and who got asked — and that is a large part of what beat a bid worth $91M more. Every arena in this league sits in a town that had to make that call, and the mainstream economics finding is that stadium subsidies rarely pay off for the city that grants them.",
     rails: {
       rememberWhen: "The Sacramento term sheet, and the line on it that said about $255M of it was the city's money.",
       ourClass: "Every club in this league operated a building it did not have to pay to construct. That was a simplification, and this card is where we admit it — and where the vote you just cast turns out to have been about it anyway.",
@@ -2261,17 +2290,68 @@ export function moduleClaims(state: WriteRuleState): ClaimSurface[] {
   for (const row of agg.potFlows) {
     push(`play:desk-${row.deskNumber}:transferLine`, transferLineClaimed(row));
   }
+  // econ re-check R1 (blocking): the string the student device actually renders
+  // is the PER-WEEK one built in `viewWeek`, and only the three-week season row
+  // was ever registered — so the audited sentence was never rendered and the
+  // rendered sentence was never audited. The critic drifted the rendered week
+  // line by 40% and the harness passed 10/10. Every week line every desk can see
+  // is now registered from the same builder the view calls, and the harness
+  // diffs the REGISTERED text against the strings the view functions really
+  // emit (RENDER limb), so registration and rendering can no longer drift apart.
+  for (const club of state.clubs.slice(0, state.leagueSize)) {
+    if (club.seatId === null) continue;
+    for (const w of club.weeks) {
+      push(`play:desk-${club.deskNumber}:week-${w.week + 1}:transferLine`, weekTransferClaimed(club, w));
+    }
+  }
   return out;
 }
 
-/** The paid-in / took-out attribution sentence, per desk (BC-6, fix 3). */
-export function transferLineClaimed(row: PotFlowRow): Claimed {
-  const paid = claim(`transfer-paid-${row.deskNumber}`, row.paidIn, "money", { assertsSign: "nonNegative" });
-  const took = claim(`transfer-took-${row.deskNumber}`, row.tookOut, "money", { assertsSign: "nonNegative" });
-  const net = claim(`transfer-net-${row.deskNumber}`, Math.abs(row.net), "money", { assertsSign: "nonNegative" });
-  const word = claimWord(`transfer-direction-${row.deskNumber}`, row.net >= 0 ? "came to you" : "left you", row.net >= 0);
+/**
+ * The per-week pot row, as the student device reads it.
+ *
+ * ONE source for the numbers and ONE source for the sentence: `viewWeek` calls
+ * this and renders `.text` unchanged, and `moduleClaims` registers exactly the
+ * same call. A number that drifts on the way to the screen therefore drifts away
+ * from a registered atom the harness recomputes from raw state.
+ */
+export function weekFlowRow(club: Club, w: SettledWeek): PotFlowRow {
   return {
-    text: `You paid ${paid.rendered} into the pot and took ${took.rendered} back out. On the pot alone, ${net.rendered} ${word.rendered}. Everything else your books did this season came off your own two dials.`,
+    deskHandle: deskHandleFor(club),
+    deskNumber: club.deskNumber,
+    sizeLabel: profileOf(club).sizeLabel,
+    paidIn: w.pot.paidIn,
+    tookOut: w.pot.tookOut,
+    net: w.pot.net,
+    ownDialDelta: w.cashDelta - w.pot.net,
+    docked: w.pot.docked,
+    paidInText: money(w.pot.paidIn),
+    tookOutText: money(w.pot.tookOut),
+    netText: money(w.pot.net),
+  };
+}
+
+export function weekTransferClaimed(club: Club, w: SettledWeek): Claimed {
+  return transferLineClaimed(weekFlowRow(club, w), w.week + 1);
+}
+
+/**
+ * The paid-in / took-out attribution sentence, per desk (BC-6, fix 3).
+ *
+ * `week` is the week number when the row is one week's pot, and undefined when
+ * it is the three-week season row: the atom ids and the closing clause both
+ * carry the period, because the week row used to end "everything else your books
+ * did THIS SEASON" over one week's numbers.
+ */
+export function transferLineClaimed(row: PotFlowRow, week?: number): Claimed {
+  const tag = week === undefined ? "" : `-w${week}`;
+  const paid = claim(`transfer-paid-${row.deskNumber}${tag}`, row.paidIn, "money", { assertsSign: "nonNegative" });
+  const took = claim(`transfer-took-${row.deskNumber}${tag}`, row.tookOut, "money", { assertsSign: "nonNegative" });
+  const net = claim(`transfer-net-${row.deskNumber}${tag}`, Math.abs(row.net), "money", { assertsSign: "nonNegative" });
+  const word = claimWord(`transfer-direction-${row.deskNumber}${tag}`, row.net >= 0 ? "came to you" : "left you", row.net >= 0);
+  const period = week === undefined ? "this season" : `in week ${week}`;
+  return {
+    text: `You paid ${paid.rendered} into the pot and took ${took.rendered} back out. On the pot alone, ${net.rendered} ${word.rendered}. Everything else your books did ${period} came off your own two dials.`,
     claims: [paid, took, net, word],
   };
 }
@@ -2307,6 +2387,19 @@ export function consequenceBeat(state: WriteRuleState, agg: WriteRuleAggregate):
 
   const droppedAtom = claim("consequence-dropped-desks", dropped, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: agg.reinvestEra.length } });
   const roseAtom = claim("consequence-rose-desks", rose, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: agg.reinvestEra.length } });
+  // econ re-check R4 (blocking): the guard existed in the `noL2` branch only, so
+  // a room whose own stage-4 instrument had just printed "the best price and the
+  // best thing to put back are exactly where they were with no rule at all, at
+  // all N desks" was handed a moral-hazard answer key two beats later. Whether
+  // the rule moved ANY desk's best move is now an atom on every branch, and each
+  // branch's question and answer key branch on it: no incentive movement, no
+  // incentive story.
+  const moved = agg.arrowsMovedAny;
+  const movedAtom = claimWord(
+    "consequence-rule-moved",
+    moved ? "this rule moved somebody's best move" : "this rule moved nobody's best move",
+    moved,
+  );
 
   if (direction === "noL2") {
     // The unlinked room has no before-bar at all, and the module used to count
@@ -2322,21 +2415,24 @@ export function consequenceBeat(state: WriteRuleState, agg: WriteRuleAggregate):
       answer:
         "There is no Lesson 2 bar in this room, so do not fish for one. The evidence is the arrow frame you just put up: the best thing to put back, with the rule and without it, computed from this room's own three weeks.",
       claimed: {
-        text: `${era.text} This session has ${word.rendered}, so the question below is asked about the rule's own before-and-after — the stage 4 arrows — and not about last lesson. Take three answers before you name anything.`,
-        claims: [...era.claims, word],
+        text: `${era.text} This session has ${word.rendered}, so the question below is asked about the rule's own before-and-after — the stage 4 arrows — and not about last lesson. Those arrows say ${movedAtom.rendered}. Take three answers before you name anything.`,
+        claims: [...era.claims, word, movedAtom],
       },
     };
   }
   if (direction === "up") {
-    const word = claimWord("consequence-nobody-decided", "nobody had to decide to try harder", true);
+    const word = claimWord("consequence-nobody-decided", moved ? "nobody had to decide to try harder" : "somebody in this room decided that on their own", true);
     return {
       direction,
-      question: "Whose effort went UP — and what was it about the rule that paid you for it?",
-      answer:
-        "The honest answer is the CONDITION, if the room voted it in: it pays a club for putting money back, so putting money back got more valuable, not less. Nobody decided to care more. The rule made trying worth more. That is the same mechanism as moral hazard, running the other way — say so.",
+      question: moved
+        ? "Whose effort went UP — and what was it about the rule that paid you for it?"
+        : "Whose effort went UP? Under this rule nobody's best move changed at any desk — so what was it that paid you for it?",
+      answer: moved
+        ? "The honest answer is the CONDITION, if the room voted it in: it pays a club for putting money back, so putting money back got more valuable, not less. Nobody decided to care more. The rule made trying worth more. That is the same mechanism as moral hazard, running the other way — say so."
+        : "Do NOT credit the rule here. This room's own arrows say it changed nobody's best price and nobody's best reinvest, so nothing about it made trying worth more — desks put back more anyway. Take the answers, then ask what the rule would have had to be to pay for it. Stage 4's counterfactual column has that number.",
       claimed: {
-        text: `${era.text} ${roseAtom.rendered} desks put back MORE dollars a week than they did last lesson and ${droppedAtom.rendered} put back less — and ${word.rendered}. Ask the question, take the answers, and do not name the mechanism until somebody has described it.`,
-        claims: [...era.claims, droppedAtom, roseAtom, word],
+        text: `${era.text} ${roseAtom.rendered} desks put back MORE dollars a week than they did last lesson and ${droppedAtom.rendered} put back less — and ${word.rendered}. The arrows at stage 4 say ${movedAtom.rendered}. Ask the question, take the answers, and do not name the mechanism until somebody has described it.`,
+        claims: [...era.claims, droppedAtom, roseAtom, word, movedAtom],
       },
     };
   }
@@ -2344,23 +2440,30 @@ export function consequenceBeat(state: WriteRuleState, agg: WriteRuleAggregate):
     const word = claimWord("consequence-nobody-decided", "nobody had to decide anything", true);
     return {
       direction,
-      question: "The room put back about the same as last lesson. Did the rule change what you WANTED to do — or only what it cost you?",
-      answer:
-        "Both answers are defensible and the room should argue about it. The transfer moved money; the effort did not move much. That is a rule that redistributed without changing behaviour, which is a real and unusual outcome — name it as one.",
+      question: moved
+        ? "The room put back about the same as last lesson. Did the rule change what you WANTED to do — or only what it cost you?"
+        : "The room put back about the same as last lesson, and under this rule nobody's best move changed at any desk either. So what did this rule actually do?",
+      answer: moved
+        ? "Both answers are defensible and the room should argue about it. The transfer moved money; the effort did not move much. That is a rule that redistributed without changing behaviour, which is a real and unusual outcome — name it as one."
+        : "It moved money and nothing else. The effort did not move and neither did the incentive: this room's own arrows are flat at every desk. That is a PURE TRANSFER — name it as one, and use stage 4's counterfactual column for the share that would have moved something.",
       claimed: {
-        text: `${era.text} ${droppedAtom.rendered} desks put back fewer dollars a week than last lesson and ${roseAtom.rendered} put back more — and ${word.rendered}. Take three answers before you name anything.`,
-        claims: [...era.claims, droppedAtom, roseAtom, word],
+        text: `${era.text} ${droppedAtom.rendered} desks put back fewer dollars a week than last lesson and ${roseAtom.rendered} put back more — and ${word.rendered}. The arrows at stage 4 say ${movedAtom.rendered}. Take three answers before you name anything.`,
+        claims: [...era.claims, droppedAtom, roseAtom, word, movedAtom],
       },
     };
   }
-  const word = claimWord("consequence-nobody-decided", "nobody had to decide to try less", true);
+  const word = claimWord("consequence-nobody-decided", moved ? "nobody had to decide to try less" : "nothing about the rule made trying less worth it", true);
   return {
     direction,
-    question: "Whose effort went down? Did anybody DECIDE to try less — or did it just stop being worth it?",
-    answer: "The answer you are fishing for is the second half: it stopped being worth it. Nobody decided anything.",
+    question: moved
+      ? "Whose effort went down? Did anybody DECIDE to try less — or did it just stop being worth it?"
+      : "Whose effort went down? Under this rule nobody's best move changed at any desk — so what made it fall?",
+    answer: moved
+      ? "The answer you are fishing for is the second half: it stopped being worth it. Nobody decided anything."
+      : "Do NOT fish for moral hazard here. This room's own arrows say the rule changed nobody's best price and nobody's best reinvest, so putting money back never stopped being worth it — these desks put back less anyway. Say that out loud: the fall is theirs, not the rule's. Then ask what the rule would have had to be to change anybody's best move — stage 4's counterfactual column has that number.",
     claimed: {
-      text: `${era.text} ${droppedAtom.rendered} desks put back fewer dollars a week than they did last lesson and ${roseAtom.rendered} put back more — and ${word.rendered}. Ask the question, take the answers, and do not name moral hazard until somebody has described it.`,
-      claims: [...era.claims, droppedAtom, roseAtom, word],
+      text: `${era.text} ${droppedAtom.rendered} desks put back fewer dollars a week than they did last lesson and ${roseAtom.rendered} put back more — and ${word.rendered}. The arrows at stage 4 say ${movedAtom.rendered}. Ask the question, take the answers, and ${moved ? "do not name moral hazard until somebody has described it" : "do not name moral hazard at all in this room — the instrument does not support it"}.`,
+      claims: [...era.claims, droppedAtom, roseAtom, word, movedAtom],
     },
   };
 }
@@ -3097,21 +3200,9 @@ function slateFor(state: WriteRuleState, slot: number) {
 
 function viewWeek(state: WriteRuleState, club: Club, w: SettledWeek) {
   const def = defOf(club);
-  const profile = profileOf(club);
-  const flowRow: PotFlowRow = {
-    deskHandle: deskHandleFor(club),
-    deskNumber: club.deskNumber,
-    sizeLabel: profile.sizeLabel,
-    paidIn: w.pot.paidIn,
-    tookOut: w.pot.tookOut,
-    net: w.pot.net,
-    ownDialDelta: w.cashDelta - w.pot.net,
-    docked: w.pot.docked,
-    paidInText: money(w.pot.paidIn),
-    tookOutText: money(w.pot.tookOut),
-    netText: money(w.pot.net),
-  };
-  const transfer = transferLineClaimed(flowRow);
+  // R1: the week row's sentence and the week row's registered claim are the same
+  // call. Nothing here rebuilds a number the audit does not see.
+  const transfer = weekTransferClaimed(club, w);
   return {
     week: w.week + 1,
     price: w.price,

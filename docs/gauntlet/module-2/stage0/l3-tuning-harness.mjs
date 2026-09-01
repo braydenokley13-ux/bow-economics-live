@@ -676,6 +676,58 @@ function auditClaims(surfaces, truth) {
 }
 
 /**
+ * THE RENDER LIMB — what the three surfaces actually emit, harvested from the
+ * shipped view functions.
+ *
+ * econ re-check R1 (blocking): `moduleClaims` and the student device were two
+ * different code paths saying two different things about the same pot, and the
+ * audit only ever read the first. Drifting the rendered week line by 40% left
+ * this harness passing 10/10. So the audit no longer trusts the registry to
+ * describe the product: it drives `studentView` / `boardView` / `teacherView`
+ * over every phase, collects every string they emit, and requires each REGISTERED
+ * sentence to appear in the surface family it claims to be on. A sentence that
+ * is audited but never rendered, or rendered but drifted away from its audited
+ * form, fails here.
+ */
+function renderedBlobs(state) {
+  const bags = { play: [], board: [], teach: [] };
+  const walk = (v, bag) => {
+    if (typeof v === "string") { bag.push(v); return; }
+    if (Array.isArray(v)) { for (const x of v) walk(x, bag); return; }
+    if (v && typeof v === "object") { for (const x of Object.values(v)) walk(x, bag); }
+  };
+  const seats = state.clubs.filter((c) => c.seatId !== null).map((c) => c.seatId);
+  for (const phase of writeTheRuleModule.phases) {
+    walk(writeTheRuleModule.boardView(state, phase), bags.board);
+    walk(writeTheRuleModule.teacherView(state, phase), bags.teach);
+    for (const seatId of seats) walk(writeTheRuleModule.studentView(state, seatId, phase), bags.play);
+  }
+  const join = (xs) => ` ${xs.join(" ")} `;
+  return { play: join(bags.play), board: join(bags.board), teach: join(bags.teach) };
+}
+
+/**
+ * `blobs` is a parameter for the same reason `surfaces` is: the mutation proof
+ * hands this a poisoned copy of what the views emit, and it must bite.
+ */
+function auditRendered(surfaces, blobs) {
+  const fail = [];
+  const all = `${blobs.play}${blobs.board}${blobs.teach}`;
+  for (const s of surfaces) {
+    if (s.claims.length === 0) continue;
+    const family = s.surface.split(":")[0];
+    const hay = family === "play" ? blobs.play : family === "board" ? blobs.board : family === "teach" ? blobs.teach : all;
+    if (!hay.includes(s.text)) {
+      const near = s.text.slice(0, 60);
+      fail.push(
+        `RENDER ${s.surface}: the audited sentence is not among the strings ${family === "synthesis" ? "any surface" : `/${family}`} actually renders — audited text begins "${near}…"`,
+      );
+    }
+  }
+  return fail;
+}
+
+/**
  * Everything the audit checks against, recomputed from RAW STATE by this file.
  *
  * Nothing below reads a rendered string, a claim builder or an aggregate field
@@ -865,6 +917,20 @@ function truthFor(state) {
     values.set(`transfer-took-${f.deskNumber}`, f.tookOut);
     values.set(`transfer-net-${f.deskNumber}`, Math.abs(f.net));
   }
+  // R1: the PER-WEEK pot row the student device actually renders, recomputed
+  // week by week from raw state. The season row alone left every rendered week
+  // line outside the audit.
+  for (const c of live) {
+    for (const w of c.weeks) {
+      const n = w.week + 1;
+      values.set(`transfer-paid-${c.deskNumber}-w${n}`, w.pot.paidIn);
+      values.set(`transfer-took-${c.deskNumber}-w${n}`, w.pot.tookOut);
+      values.set(`transfer-net-${c.deskNumber}-w${n}`, Math.abs(w.pot.net));
+      predicates.set(`transfer-direction-${c.deskNumber}-w${n}`, w.pot.net >= 0);
+    }
+  }
+  predicates.set("era-arm", state.adopted ? state.adopted.how === "voted" : false);
+  predicates.set("consequence-rule-moved", movedAny);
 
   return {
     potTotal,
@@ -976,10 +1042,11 @@ function truthFor(state) {
     const state = { ...room.state, revealStage: 5, counterfactualRun: true, hookRevealed: true, kingsRevealed: true };
     const surfaces = moduleClaims(state);
     const truth = truthFor(state);
+    const blobs = renderedBlobs(state);
     surfacesSwept += surfaces.length;
     atomsSwept += surfaces.reduce((a, s) => a + s.claims.length, 0);
-    const problems = auditClaims(surfaces, truth);
-    if (problems.length === 0 && cleanRoom === null) cleanRoom = { state, surfaces, truth };
+    const problems = [...auditClaims(surfaces, truth), ...auditRendered(surfaces, blobs)];
+    if (problems.length === 0 && cleanRoom === null) cleanRoom = { state, surfaces, truth, blobs };
     if (problems.length === 0 && effortUpRoom === null && truth.l2MeanDollars !== null && truth.l3MeanDollars > truth.l2MeanDollars + 1) {
       effortUpRoom = { state, surfaces, truth, label: room.label };
     }
