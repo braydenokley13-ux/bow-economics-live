@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T05:29:18.055Z",
+  "updatedAt": "2026-09-01T05:38:46.955Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2114,7 +2114,8 @@
         "gate-l2-sr",
         "gate-l2-teacher",
         "gate-l2-econ",
-        "gate-l2-projector"
+        "gate-l2-projector",
+        "gate-l2-play"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -2127,7 +2128,8 @@
         "econ-l2-evidence-surfaces",
         "gate-l2-econ-dissent",
         "proj-l2-truncation",
-        "gate-l2-projector-dissent"
+        "gate-l2-projector-dissent",
+        "play-l2-below-bar"
       ],
       "meetingIds": [],
       "gates": [],
@@ -3691,6 +3693,25 @@
       },
       "recordedAt": "2026-09-01T05:29:05.554Z",
       "actor": "classroom-projector-critic"
+    },
+    "gate-l2-play": {
+      "id": "gate-l2-play",
+      "wave": 3,
+      "kind": "gameplay-report",
+      "label": "L2 play gate: RATING FUNCTIONAL (below STRONG bar). BC-5 passes in content (3/3 correct pre-reveal attributions incl. same-crowd-inverted-reasons week 2), fails in placement: settlement + externality card below the 1024x600 fold with auto-scroll landing on next week's dial — the bell appears to do nothing; LOCK below fold week 1. Two projector beats state causal claims play refutes (matches econ B1/B3). Interdependence genuinely felt; free-rider trap real but schedule-luck confounded; no dominant line; zero-ticket week keeps $734k. R1-R4 blocking",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l2-play--GATE_L2_PLAY.md",
+      "sha256": "edfc22e1bab223ebaecf01e0afdd933ab3b7fa581135c24255513e6776ec62f2",
+      "size": 24682,
+      "metadata": {
+        "rating": "FUNCTIONAL",
+        "tags": [
+          "gameplay",
+          "wave-3",
+          "l2"
+        ]
+      },
+      "recordedAt": "2026-09-01T05:38:46.690Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "claims": {
@@ -4243,6 +4264,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T05:29:18.055Z",
       "actor": "classroom-projector-critic"
+    },
+    "play-l2-below-bar": {
+      "id": "play-l2-below-bar",
+      "wave": 3,
+      "category": "gameplay",
+      "severity": "blocking",
+      "finding": "L2 rates FUNCTIONAL, below the wave contract's STRONG bar, on repairable causes: (R1) the weekly settlement and decomposition land below the 1024x600 fold with auto-scroll to next week's dial — the reveal appears to do nothing at the exact moment the lesson pays off; LOCK below fold in week 1; (R2/R3) reveal-5 and reveal-4/synthesis-card-4 assert causal claims the played data refutes (same defect family as econ-l2-evidence-surfaces); (R4) the free-rider comparison is confounded by schedule luck. GATE_L2_PLAY.md.",
+      "evidenceIds": [
+        "gate-l2-play"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T05:38:46.955Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "meetings": {},
@@ -4280,11 +4315,11 @@
     "agentsActivated": 48,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 77,
+    "evidenceRecorded": 78,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 237,
-  "eventHead": "4a2893c66cb7b49c67ef9491b96112c1ac6dfecf71e7863cca33e15326a674da",
+  "eventCount": 239,
+  "eventHead": "b96afc4be754a064f28b82d1367a8dc97d664bb0a8720cbab2a3b7378b7c540b",
   "warnings": []
 }

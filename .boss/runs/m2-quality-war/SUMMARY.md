@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `237:4a2893c66cb7b49c67ef9491b96112c1ac6dfecf71e7863cca33e15326a674da`  
-Updated: 2026-09-01T05:29:18.055Z
+Event head: `239:b96afc4be754a064f28b82d1367a8dc97d664bb0a8720cbab2a3b7378b7c540b`  
+Updated: 2026-09-01T05:38:46.955Z
 
 ## Founder intent
 
@@ -85,6 +85,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - gate-l2-teacher — teacher-transfer-report — L2 teacher gate: TRANSFER NOT READY. B1 bare /board silently renders a DIFFERENT session (once a previous class's synthesis); B2 new /teach tab strands the room despite stored code+key; B3 WATCH FOR makes a never-locked desk the protagonist; B4 ADAPT answer key cites a board with no reveal-back control; B5 prescribed rehearsal never renders WATCH FOR and collapses synthesis. Synthesis economics + reveal scripting correct and class-computed. Zero console errors
 - gate-l2-econ — economic-truth-report — L2 econ gate: SOUND WITH REQUIRED REPAIRS. Real: externality 24-48% of created value, interior reinvest optimum (both corners lose ~$333k), argmax moves weekly, residual 0, no unwinnable seat (18.5M-state sweep). Blocking: give/take board measures the DEAL not the DECISION (corr gave-vs-startDraw 0.959 vs gave-vs-meanShare 0.644; biggest 'giver' spent $0) and feeds ADAPT Q3 + SPILLOVER card + harness P3; smallMarketPathFrom credits WHO WAS VISITING without controlling price ($110 vs $30 case); two false printed rules; week-3 dominated reinvest unhandled at reveal
 - gate-l2-projector — projector-report — L2 projector gate: choreography FUNCTIONAL (0.6-1.0s teacher->board, five distinct stages; best beat WHO FILLED YOUR BUILDING). Privacy PASS (60 scans). Fallbacks PASS incl. mid-class server restart, one defect (frozen board vs teach claim). BLOCKING P-1: schedule cards ellipsize club names at 11-12 desks with a third of the frame empty — silent CSS truncation the fit instrument passed; P-2 evidence tier 1.78% vs 2.6% floor. Eight non-blocking
+- gate-l2-play — gameplay-report — L2 play gate: RATING FUNCTIONAL (below STRONG bar). BC-5 passes in content (3/3 correct pre-reveal attributions incl. same-crowd-inverted-reasons week 2), fails in placement: settlement + externality card below the 1024x600 fold with auto-scroll landing on next week's dial — the bell appears to do nothing; LOCK below fold week 1. Two projector beats state causal claims play refutes (matches econ B1/B3). Interdependence genuinely felt; free-rider trap real but schedule-luck confounded; no dominant line; zero-ticket week keeps $734k. R1-R4 blocking
 
 ## Claim ledger
 
@@ -102,6 +103,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - gate-l2-econ-dissent — undefined/undefined/open — undefined
 - proj-l2-truncation — classroom-reliability/blocking/open — L2 board: at 11-12 desks every schedule card ellipsizes its club names (Desk 1 ... HOSTS Golden S...) with a third of the frame empty (board index.html:331-333) — silent CSS truncation the fit instrument cannot see; plus evidence tier .hl-bar-foot at 1.78% vs the 2.6% floor, and the frozen board shows only FROZEN while /teach claims the schedule is up. Fit instruments must also assert no text ellipsization on evidence surfaces. GATE_L2_PROJECTOR.md.
 - gate-l2-projector-dissent — undefined/undefined/open — undefined
+- play-l2-below-bar — gameplay/blocking/open — L2 rates FUNCTIONAL, below the wave contract's STRONG bar, on repairable causes: (R1) the weekly settlement and decomposition land below the 1024x600 fold with auto-scroll to next week's dial — the reveal appears to do nothing at the exact moment the lesson pays off; LOCK below fold in week 1; (R2/R3) reveal-5 and reveal-4/synthesis-card-4 assert causal claims the played data refutes (same defect family as econ-l2-evidence-surfaces); (R4) the free-rider comparison is confounded by schedule luck. GATE_L2_PLAY.md.
 
 ## Latest gate
 
