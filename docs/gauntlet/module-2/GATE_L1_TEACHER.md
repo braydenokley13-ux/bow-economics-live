@@ -616,3 +616,97 @@ teacher who already knows it) no longer holds. It is replaced by a narrower,
 one-line objection recorded as TT-R1.
 
 **TRANSFER: NOT READY** — on TT-R1 alone.
+
+## NARROW RE-CHECK (ROUND 3)
+
+Scope: narrow confirm-or-refute of `DISSENT teacher-l1-night5-now` after repair round 3
+only — not a full cold protocol. Server booted on PORT 4353
+(`runtime/dist/server/index.js`, mechanics adapted from `runtime/scripts/e2e-m2l1.cjs`),
+driven headlessly through a real 3-desk session on `/teach`, `/play` to Night 5 and
+through all 7 reveal presses. Screens: `docs/gauntlet/module-2/screens-l1-teacher-r3/`.
+Findings dump: `screens-l1-teacher-r3/findings.json`. Zero console errors across
+`/teach` and three `/play` pages for the whole run **[observed]**.
+
+- **Night 5 has its own NOW block and a repeat-price WATCH FOR flag — CONFIRMED.**
+  `runtime/src/modules/fullHouse.ts:2411-2433` splits `isNight4` / `isNight5` /
+  Nights-1-3 into three independent blocks (comment at 2404-2410 names the old bug
+  directly). Live on Night 5 (`06-teach-night5-repeatflag.png`): NOW reads *"Night 5
+  of 5 — the payoff night. Read it as a repeat, not as a new card: 'Same day, same
+  visiting club, same TV as Night 1. Nothing on this card has changed.' There is no
+  capacity option tonight and nothing is going to run out."* `ON THE PROJECTOR RIGHT
+  NOW` on the same screen reads *"NIGHT 5 — TONIGHT'S CARD ... Same card as Night 1
+  ... The only thing that has changed since Night 1 is you."* — the two blocks agree;
+  neither mentions capacity or "demand will run past what this building holds"
+  (that language is confirmed still correctly scoped to Night 4 only, contrast
+  `04-teach-night4-now.png`). WATCH FOR carries its own `repeat-price` flag, distinct
+  from the stalled-desk flag: *"2 desks are sitting on their own Night 1 price ...
+  Say nothing to them. These are the desks the Night 1 vs Night 5 board can quote
+  with no price confound."* Source: `fullHouse.ts:2139-2156`. **[observed]**
+- **Held-price/bowl WATCH FOR actions retire when their moment passes — CONFIRMED.**
+  `fullHouse.ts:2161-2171` (held-price: `"Call on this desk NOW"` at ADAPT only,
+  `"Already used, if you called on them at ADAPT"` from COUNTERFACTUAL on) and
+  `2198-2206` (bowl: `"Keep this for the Night 4 reveal"` pre-reveal,
+  `"Already named on the projector at reveal stage 4"` after). Live: ADAPT screen
+  reads `Call on this desk NOW` (`09-teach-adapt-heldprice.png`); SYNTHESIS reads
+  both retired forms verbatim (`10-teach-synthesis-retired-flags.png`); COMPLETE
+  carries neither stale instruction. **[observed]**
+- **The same confirm guard now covers both "Advance" and "Jump to REVEAL" —
+  CONFIRMED.** `runtime/src/client/teach/main.ts:920-966` — one
+  `confirmSkippingContent(via)` function, both `btnAdvance` and `btnReveal` listeners
+  call it (959-966). Live: pressed `Jump to REVEAL` at Night 2 with 0/3 locked; the
+  dialog fired with `"Jump to REVEAL. Night 2 of 5 is still open (0/3 desks locked
+  in). This is not the night bell — this button settles tonight for every desk AND
+  ends the five-night window early, so 3 nights will never be played. 3 desks have
+  not locked; they settle at whatever price is on their dial right now. Continue?"`
+  — dismissed, and the console held at PLAY / Night 2 with state unchanged
+  (`02-teach-night2-before-jump.png`, `03-teach-night2-after-dismiss.png`).
+  **[observed]**
+- **Wrap-up ASK is done-conditional — CONFIRMED.** `fullHouse.ts:2441-2454`
+  branches on `done`. Live, all 5 nights closed but still in PLAY
+  (`07-teach-wrapup-ask.png`): ASK reads *"Before we look: whose Night 5 crowd was
+  NOT the same as their Night 1 crowd? ... Which night do you already know you got
+  wrong?"* — the stale *"What on tonight's card is different from last night's?"* is
+  gone from this screen. **[observed]**
+- **The modeled-dollars line no longer reads as code-identifier teacher voice —
+  CONFIRMED.** `fullHouse.ts:1400-1406` — the risk line now quotes
+  `MODELED_DOLLARS_LINE`'s actual sentence, marked as the mirror it is (*"Their
+  screens already say so before the first price, in these words: 'The magnitudes
+  are not real club financials...'"*), not the old `"MODELED_DOLLARS_LINE says
+  so"`. Confirmed by reading the live `<details>` panel's own text content on
+  `/teach` (`01-teach-simplifications.png`); the string `MODELED_DOLLARS_LINE says`
+  does not appear anywhere on the rendered page. **[observed]**
+- **A prep pointer exists — CONFIRMED.** `runtime/src/client/teach/index.html:55-64`,
+  `#rehearseNote`. Live, on `/teach` before any session is created
+  (`00-teach-precreate-preppointer.png`): *"Never run this lesson before? Create a
+  session now with nobody in it and press Advance ▸ through every phase. The
+  console's directing panel ... is all there with zero students, so you can
+  rehearse the whole period before the class walks in."* **[observed]**
+- **The projector-mirror stage claim for the renewals rule is fixed (`=== stage
+  5`) — CONFIRMED.** `RENEWALS_REVEAL_STAGE = 5` (`fullHouse.ts:697`); `boardView`
+  gates the actual rule render at `=== RENEWALS_REVEAL_STAGE`
+  (`fullHouse.ts:2021`); the teacher-facing mirror now gates its claim the same
+  way, `state.revealStage === RENEWALS_REVEAL_STAGE` (`fullHouse.ts:2286-2288`,
+  replacing the old `>=`). Live, the instant reveal press 5 landed
+  (`08-teach-reveal-stage5.png`): `ON THE PROJECTOR RIGHT NOW` reads *"STAGE 5 OF
+  7 — NIGHT 5 — NIGHT 1'S CARD AGAIN, AND THE RENEWALS RULE ... The renewals rule
+  is on the screen in full, directly under the headline and above the chart."*
+  — the claim appears exactly on the stage the board itself renders it, matching
+  the fix. **[observed]**
+
+### TRANSFER: READY
+
+On the seven items named in this recheck, all seven are CONFIRMED against the
+rendered `/teach` surface with a real 3-desk session driven to Night 5 and through
+all 7 reveal presses. The Night 5 screen in particular states Night 5's actual card
+and repeat framing and contradicts nothing else on the same screen — the specific
+defect the dissent named. This verdict is scoped to the named items only; it is not
+a full cold-protocol re-grade of `GATE_L1_TEACHER.md` and does not re-open
+non-blocking items already on record there (e.g. TT-R4, `Restore last good state`
+still untooltipped — not in scope this round, not re-tested).
+
+### DISSENT teacher-l1-night5-now: DISCHARGED
+
+TT-R1, the blocking finding that produced this dissent (Night 5's NOW block reading
+Night 4's card and contradicting the adjacent projector-mirror block), no longer
+reproduces. All items claimed fixed in the repair round were independently verified
+against the live rendered product, not builder notes.

@@ -1,0 +1,21 @@
+{
+  "prepPointer": true,
+  "modeledDollarsNoCodeId": true,
+  "modeledDollarsQuoted": true,
+  "jumpRevealDialogFired": true,
+  "jumpRevealDialogText": "Jump to REVEAL. Night 2 of 5 is still open (0/3 desks locked in). This is not the night bell — this button settles tonight for every desk AND ends the five-night window early, so 3 nights will never be played. 3 desks have not locked; they settle at whatever price is on their dial right now. Continue?",
+  "jumpRevealGuardHeld": true,
+  "night5NowMentionsRepeat": true,
+  "night5NowNoCapacityMisdirect": true,
+  "night5NowNoBowlWatch": true,
+  "night5RepeatPriceFlag": true,
+  "wrapupAskDoneConditional": true,
+  "wrapupAskStaleGone": true,
+  "stage5MirrorClaim": true,
+  "stage5NumberMatches": true,
+  "heldPriceAtAdaptCallNow": true,
+  "heldPriceRetiredAtSynthesis": true,
+  "bowlRetiredAtSynthesis": true,
+  "staleWatchForGoneAtComplete": true,
+  "consoleErrors": []
+}
