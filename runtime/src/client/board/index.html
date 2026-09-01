@@ -398,11 +398,15 @@
      floor — and together they reclaim roughly 11px at 768, so another wrapped
      line of the summary still lands inside the frame. Declared AFTER .hl-tight
      because the two selectors have identical specificity. */
+  #stage.hl-ledger-frame { padding-top: 1vh; padding-bottom: 1vh; }
+  #stage.hl-ledger-frame .label { margin-bottom: .2vh; }
+  #stage.hl-ledger-frame .hl-bar-pager { margin-top: .4vh; }
   #stage.hl-ledger-frame .hl-ledger { gap: .45vh; margin-top: .5vh; }
   #stage.hl-ledger-frame .hl-ledger-bars { gap: .18vh; }
   #stage.hl-ledger-frame .hl-legend { margin-top: .5vh; }
   #stage.hl-ledger-frame .hl-summary { margin-top: .45vh; }
   #stage.hl-ledger-frame .hl-foot { margin-top: .45vh; }
+  #stage.hl-ledger-frame .exit-prompt { margin-top: .4vh; }
 
   .hl-club-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .7vw; max-width: 88vw; margin-top: 1.4vh; }
   .hl-club-grid.tight { grid-template-columns: repeat(7, 1fr); gap: .5vw; margin-top: 1vh; }
