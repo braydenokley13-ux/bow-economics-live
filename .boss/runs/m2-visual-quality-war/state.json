@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:23:53.434Z",
+  "updatedAt": "2026-09-01T20:24:38.408Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -170,11 +170,26 @@
           "model": "claude-sonnet-5",
           "reason": "Founder-mandated simulated KID B (casual sports student) baseline prosecution",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:14:03.797Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T20:24:38.400Z",
+          "sections": {
+            "what-the-student-plays": "Five nights of set-one-number-and-wait: a facts card, one big price dial anchored at the season-plan price ($24 of a $10-$120 range), a secondary event-spend stepper, a Night-4 upper-bowl toggle, and one dominant LOCK IT IN button behind a confirm guard. No pre-lock preview of any kind, confirmed absent on every night's screen ('No preview. Nothing on this screen tells you what tonight will make.'). Two non-summable books (CASH, RENEWALS) update in a compact header strip after each close. REVEAL/ADAPT/COUNTERFACTUAL/SYNTHESIS move to the class board with a stronger, more premium visual register (arena backdrop, one chart per frame, one punchline sentence) than the student's own device carries.",
+            "pull-rating": "WEAK",
+            "biggest-failure": "The just-closed night's result is buried below the fold behind the NEXT night's full pricing UI on the 1366x768 student viewport. Confirmed at Night1->2 (screens-kid-b/06-play-night1-RESULT.png viewport vs -FULL.png fullPage: 0 attendance / -$520,000 result card sits ~700px below the fold, hidden behind Night 2's fresh dial and its own LOCK IT IN button) and again at Night2->3 (09-play-night2-RESULT-FULL.png: a sellout with 1,208 turned away, likewise buried). This inverts the founder-preserved reference decision that 'the result is a separate, larger state than the decision' (VISUAL_REFERENCE_SPEC section 2). For a persona who reads little and acts on the first big number/button she sees, the experience->consequence->adaptation loop that is this lesson's entire spine can be played end to end without the student ever reading a single per-night result card on her own screen -- only the compact red/gold CASH and RENEWALS header numbers are guaranteed visible, which register as 'good/bad' but not 'why.'",
+            "moment-by-moment-notes": "Join flow is clean, one screen, one CTA. HOOK is ~259 words and Night 1's pre-lock screen adds ~170 more before the first LOCK IT IN (measured on raw text dumps) -- heavy for this persona, though the hero price figure and dial and CTA remain findable without reading, so the mechanic itself is operable. The recurring blue guidance paragraph explaining the season-plan anchor repeats verbatim every night; a skim-first reader who reads it once (or never) then habituates to skipping it, so the actual pricing rule is experienced as an unexplained pattern rather than a taught mechanic. Kid B's naive play (price near dial max Night 1 -> zero attendance -> overcorrect near dial floor Night 2 -> sellout with fans turned away -> repeat Night 1's exact price on Night 5, same card, same result: zero again) produced a real, attributable, replayable causal story -- but that story lived in result cards the persona would structurally miss per the biggest-failure above. The Night-4 bowl toggle (CLOSED/OPEN, $95,000 cost) is legible and operable without reading its caption -- a genuine strength. The end-of-PLAY five-row summary table (17-play-night5-RESULT-allnights.png) is the one screen in the whole PLAY phase a fast reader could parse in ten seconds and should be the template for every per-night result, not just the final one. Board frames in REVEAL/ADAPT/COUNTERFACTUAL/SYNTHESIS are visually strong and would likely carry this persona's engagement if she is watching the class screen, independent of her own device's flaws. This was a solo one-desk test session; the COUNTERFACTUAL 'did anybody charge less and make more' prompt has no positive cross-desk answer at n=1 -- NOT VERIFIED as a flaw at real class scale.",
+            "required-repairs": "(1) Reorder or resequence the per-night transition so the just-closed night's result renders as its own screen state fully inside the 1366x768 viewport before the next night's pricing dial and LOCK button become the dominant on-screen action -- currently the next decision sits above the previous consequence in scroll order, screens-kid-b/06-play-night1-RESULT.png vs -FULL.png. (2) Stop repeating the identical guidance paragraph verbatim every night; either compress after Night 1 or make it reference the student's own last result so a skim-first reader gets a second real chance to absorb the mechanic. (3) Use the end-of-play summary table's glanceable table format (17-play-night5-RESULT-allnights.png) as the design template for every individual night's result card, not only the final one. Not recommending changes to: the join flow, the single-hero-figure-plus-single-CTA pricing card structure, the blind-commitment discipline (verified absent preview on every pre-lock screen), the bowl toggle's legible state change, or the board's visual register in REVEAL/ADAPT/COUNTERFACTUAL/SYNTHESIS."
+          },
+          "evidenceIds": [
+            "kid-b-baseline-report",
+            "kid-b-shot-night1-prelock",
+            "kid-b-shot-night1-result-viewport",
+            "kid-b-shot-night1-result-full",
+            "kid-b-shot-night2-result-full",
+            "kid-b-shot-play-summary-table",
+            "kid-b-shot-board-two-peaks",
+            "kid-b-shot-board-counterfactual"
+          ],
           "cost": null
         },
         "kid-c-nonsports-baseline": {
@@ -256,10 +271,20 @@
         "premium-direction-board-playframe",
         "premium-direction-board-twopeaks",
         "premium-direction-board-books",
-        "premium-direction-teach"
+        "premium-direction-teach",
+        "kid-b-baseline-report",
+        "kid-b-shot-night1-prelock",
+        "kid-b-shot-night1-result-viewport",
+        "kid-b-shot-night1-result-full",
+        "kid-b-shot-night2-result-full",
+        "kid-b-shot-play-summary-table",
+        "kid-b-shot-board-two-peaks",
+        "kid-b-shot-board-counterfactual"
       ],
       "claimIds": [],
-      "dissentIds": [],
+      "dissentIds": [
+        "kid-b-casual-baseline-dissent"
+      ],
       "meetingIds": [],
       "gates": [],
       "verdict": null,
@@ -407,10 +432,162 @@
       },
       "recordedAt": "2026-09-01T20:23:53.205Z",
       "actor": "experience-director-w1"
+    },
+    "kid-b-baseline-report": {
+      "id": "kid-b-baseline-report",
+      "wave": 1,
+      "kind": "gameplay-report",
+      "label": "Kid B (casual sports student) full-pass gameplay critique, M2L1 Full House",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-baseline-report--KID_B_BASELINE.md",
+      "sha256": "f8bc95577f5aeccf5899276d7cc33f809902663c9f04db47f69180cae32528f9",
+      "size": 15542,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "student-pull",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:36.439Z",
+      "actor": "kid-b-casual"
+    },
+    "kid-b-shot-night1-prelock": {
+      "id": "kid-b-shot-night1-prelock",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Night 1 pre-lock pricing screen, first look — hero $24 figure, dial, LOCK IT IN, no preview",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-shot-night1-prelock--03-play-night1-FIRST-LOOK.png",
+      "sha256": "69d69af01b6f33b15e9f0d46a1fe7c66559e27f0222c563c0bc6ec141a67925b",
+      "size": 95196,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:36.874Z",
+      "actor": "kid-b-casual"
+    },
+    "kid-b-shot-night1-result-viewport": {
+      "id": "kid-b-shot-night1-result-viewport",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Night 1 to Night 2 transition, VIEWPORT truth — Night 1's result (0 attendance, -$520,000) is entirely off-screen; only Night 2's fresh pricing card is visible",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-shot-night1-result-viewport--06-play-night1-RESULT.png",
+      "sha256": "25ce62b82bfecb447acd28bcca5d84c32e797cfd92d66333d4f108588b1b90ea",
+      "size": 100181,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "biggest-failure"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:37.083Z",
+      "actor": "kid-b-casual"
+    },
+    "kid-b-shot-night1-result-full": {
+      "id": "kid-b-shot-night1-result-full",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Same moment, fullPage companion — shows the buried NIGHT 1 HOW IT WENT card (CAME 0 of 19,800, KEPT -$520,000) roughly 700px below the fold",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-shot-night1-result-full--06-play-night1-RESULT-FULL.png",
+      "sha256": "ec45020787a1c3fe0ce76666272ce5631e313964fb6497d00b4963f648288f84",
+      "size": 135557,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "fullpage",
+          "biggest-failure"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:37.300Z",
+      "actor": "kid-b-casual"
+    },
+    "kid-b-shot-night2-result-full": {
+      "id": "kid-b-shot-night2-result-full",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Night 2 to Night 3 transition, fullPage — second confirmation of the same buried-result pattern (sellout, 1,208 turned away, scrolled below Night 3's pricing card)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-shot-night2-result-full--09-play-night2-RESULT-FULL.png",
+      "sha256": "4f3d164d6655def115f45dc713191a123225489f6f187c25d48e57c09c6c77fa",
+      "size": 175711,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "fullpage"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:37.533Z",
+      "actor": "kid-b-casual"
+    },
+    "kid-b-shot-play-summary-table": {
+      "id": "kid-b-shot-play-summary-table",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "End-of-PLAY summary screen — the one genuinely glanceable result screen: five-row table, positive template for per-night results",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-shot-play-summary-table--17-play-night5-RESULT-allnights.png",
+      "sha256": "791a18b9a4acf32f9aa3228ffa772ebfc6444eb7260682664b7e25be260b6628",
+      "size": 50703,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:37.745Z",
+      "actor": "kid-b-casual"
+    },
+    "kid-b-shot-board-two-peaks": {
+      "id": "kid-b-shot-board-two-peaks",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Board REVEAL stage 7, Two Peaks money view — premium visual register, one clear economic punchline",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-shot-board-two-peaks--19-board-reveal-stage7.png",
+      "sha256": "69c0c05772e6778254584ff246aed74a16157bc58d9ac95f76584d526156a286",
+      "size": 861014,
+      "metadata": {
+        "tags": [
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:37.969Z",
+      "actor": "kid-b-casual"
+    },
+    "kid-b-shot-board-counterfactual": {
+      "id": "kid-b-shot-board-counterfactual",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Board COUNTERFACTUAL frame — Night 1 vs Night 5 same card",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/kid-b-shot-board-counterfactual--21-board-counterfactual.png",
+      "sha256": "4ea792404d9a0e9ace64df972bbaafebd62a4196505ed90739a030104673f338",
+      "size": 1431325,
+      "metadata": {
+        "tags": [
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:24:38.183Z",
+      "actor": "kid-b-casual"
     }
   },
   "claims": {},
-  "dissent": {},
+  "dissent": {
+    "kid-b-casual-baseline-dissent": {
+      "id": "kid-b-casual-baseline-dissent",
+      "wave": 1,
+      "category": "student-pull",
+      "severity": "blocking",
+      "finding": "For the casual/low-reading grade 5-6 student pairs-on-one-device persona, the current M2L1 Full House build should not ship to a real classroom as-is. Every per-night result card renders below the fold behind the next night's full pricing UI on a 1366x768 student viewport (confirmed at two consecutive night transitions), inverting the founder's own preserved reference decision that the consequence gets a separate, larger screen state than the decision. A fast, low-reading student can play all five nights end to end -- dial, LOCK IT IN, dial, LOCK IT IN -- without ever reading a single one of her own result cards, leaving the experience->consequence->adaptation loop that is this lesson's core promise dependent entirely on a compact header number and, later, the class board -- not on anything her own device reliably shows her at the moment it matters.",
+      "evidenceIds": [
+        "kid-b-baseline-report",
+        "kid-b-shot-night1-result-viewport",
+        "kid-b-shot-night1-result-full",
+        "kid-b-shot-night2-result-full"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T20:24:38.408Z",
+      "actor": "kid-b-casual"
+    }
+  },
   "meetings": {},
   "lanes": {},
   "reservations": {},
@@ -454,11 +631,11 @@
     "agentsActivated": 8,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 8,
+    "evidenceRecorded": 16,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 19,
-  "eventHead": "1aa949db78f378fb628828cfba86a5146abd103d502a4da0f25976ea8f32b6dc",
+  "eventCount": 29,
+  "eventHead": "d6891abe9b0513bde8f37a7df031b421a79e573d55852900dfbc25c8142d927b",
   "warnings": []
 }
