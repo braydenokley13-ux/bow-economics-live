@@ -96,3 +96,14 @@ test("build-to-learn favors a cheap reversible information-gain experiment", () 
   assert.equal(result.recommendation, "small playable probe");
   assert.match(result.note, /ordinal/);
 });
+
+test("router routes the Boss lead to claude-fable-5-1 and never to a superseded id", () => {
+  const root = makeRepo();
+  const lead = recommendModel(root, { complexity: 5, ambiguity: 5, coding: 3, longHorizon: 5, visual: 5, speed: 0, risk: 5 });
+  assert.equal(lead.model, "claude-fable-5-1");
+  const everyRoute = [lead, recommendModel(root, { speed: 5, coding: 2, risk: 0 }), recommendModel(root, { visual: 5, coding: 4, risk: 3, maxRelativeCost: 3 })];
+  for (const route of everyRoute) {
+    assert.notEqual(route.model, "claude-fable-5", "a superseded id must never be recommended");
+    for (const alternative of route.alternatives) assert.notEqual(alternative.model, "claude-fable-5");
+  }
+});

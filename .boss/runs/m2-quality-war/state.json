@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T14:46:27.310Z",
+  "updatedAt": "2026-09-01T20:07:50.067Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -8472,7 +8472,19 @@
       "actor": "lead-integrator"
     }
   ],
-  "overrides": [],
+  "overrides": [
+    {
+      "wave": 5,
+      "subject": "config-change",
+      "bossRecommendation": "REPAIR",
+      "decision": "Unfreeze .boss/config/models.json for the smallest bounded Fable 5.1 compatibility repair (register claude-fable-5-1; supersede the uninvokable claude-fable-5 id) before opening the Module 2 premium visual quality war",
+      "founderReason": "Founder instruction this session (ECONOMICS BOSS — MODULE 2 PREMIUM EXPERIENCE QUALITY WAR, section 0): if the Boss model registry does not recognize Fable 5.1, perform the smallest bounded Boss compatibility repair necessary; do not redesign Boss",
+      "riskAccepted": "The m2-quality-war fingerprint changes after program close; no product code, schema, role, or gate semantics change",
+      "reviewTrigger": "next retrospective",
+      "at": "2026-09-01T20:07:50.067Z",
+      "actor": "founder"
+    }
+  ],
   "ephemeralRoles": {},
   "modelRoutes": [],
   "harnessExperiments": [],
@@ -8505,7 +8517,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 451,
-  "eventHead": "6940961a67c8b4462f75c6f1d058cb0f222e39140e66a1f8b895d4b93430fcf5",
+  "eventCount": 452,
+  "eventHead": "96571b7145893ce26a6a48f3229b54588051f88a63fc012964095f75cafc9720",
   "warnings": []
 }
