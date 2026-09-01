@@ -150,8 +150,16 @@ export type Market = {
   /** Fans added to NEXT night's base per dollar of tonight's event spend. */
   readonly eventFans: number;
   /**
-   * Dollars of event spend that buy one renewal point tonight. The whole dial
-   * is worth about +2 points in both markets — small, real, and now printed on
+   * Dollars of event spend that buy one renewal point tonight.
+   *
+   * `gate-l1-econ-r3` W3-R14 CORRECTS THIS COMMENT. It read "the whole dial is
+   * worth about +2 points in both markets", which R7 refuted and replaced
+   * everywhere else: +2 is a CEILING, not a rate. Measured over all 280
+   * card-price states per market, the full dial buys 0 points in 62% (New York)
+   * and 65% (Memphis) of them — every one of those on the `RENEWAL_DELTA_CEIL` /
+   * `RENEWAL_DELTA_FLOOR` clamp, because the spend term is added inside the band
+   * — and it never exceeds +2 anywhere. `HOUSE_RULES[2]`, `spendRuleFor` and the
+   * SIMPLIFICATIONS ledger all say "at most". This is now printed on
    * the student's own screen before the commitment (`spendRuleFor`), which is
    * `gate-l1-econ-r1` R3's first discharge limb: the channel exists, so it is
    * disclosed with its magnitude rather than left as an unattributable bonus.
@@ -1674,8 +1682,10 @@ export const HOUSE_RULES: readonly string[] = [
   "Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.",
   // gate-l1-econ-r2 N-g: this used to end "Nothing else moves it", which the
   // rule two lines below it contradicted and the model refutes — carried
-  // renewals move tonight's base by up to 500 fans and last night's event money
-  // by up to 1,200. Both were disclosed elsewhere on the same screen; the
+  // renewals move tonight's base by up to +/-1,250 fans (renewalFans 25 across
+  // the 0-100 renewals range; this comment said 500, which was the number before
+  // the round-3 retune) and last night's event money by up to 1,200. Both were
+  // disclosed elsewhere on the same screen; the
   // sentence saying they did not exist was the only false one.
   "Everything NEW about tonight is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Two things you already did come with you as well — your RENEWALS, and the event money you spent LAST night. Nothing else moves tonight's crowd; there is no luck in this game.",
   // gate-l1-econ-r3 R7: the third clause used to read "the whole dial is worth
@@ -1737,7 +1747,7 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
   },
   {
     what: "Renewals move the crowd, but only a little (25 fans per renewal point), so Night 5's crowd change is small next to the size of the building.",
-    why: "Renewals ARE partly next year's ticket demand, so the channel is real. Its size is capped by an honesty constraint, not a design taste: measured over the whole model, above about 30 fans a point a renewal point starts being worth more future cash than it costs to buy, the cash-maximising season starts chasing renewals as well, and the two books stop trading off at all. 25 is the largest setting at which they still do. We chose the true tradeoff over the louder moment.",
+    why: "Renewals ARE partly next year's ticket demand, so the channel is real. Its size is capped by an honesty constraint, not a design taste: push it far enough and a renewal point starts being worth more future cash than it costs to buy, the cash-maximising season starts chasing renewals as well, and the two books stop trading off at all. What was actually swept when 25 was chosen was renewalFans 10-60 against planSlope 1.2-3.6; a later independent sweep found 30/4.5, 30/6.0 and 35/6.0 also keep the two books trading off, with a larger Night-5 move. So 25 is A truthful setting, not the largest one — it is the pair this build shipped and kept rather than retune. What IS a hard ceiling is arithmetic, not taste: a crowd change big enough to read off a bar chart without numbers would need about 80 fans a point in a 19,800-seat building, and the books stop trading off long before that. We chose the true tradeoff over the louder moment.",
     risk: "The Night 5 crowd change may be too small to read off the projector without the numbers — so read the numbers. The Night 1 vs Night 5 board prints each desk's own split (how many people came from renewals, how many from the event money it spent on Night 4). Do not let the room conclude renewals barely matter: they matter enormously, NEXT season, which is outside these five nights, and that is exactly why the two books do not add up.",
   },
   {
@@ -1750,6 +1760,12 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     what: "The event-money dial's renewals value is a ceiling, not a rate: at most +2 points, and exactly zero at most prices.",
     why: "One night can only move renewals within a fixed band (-20 to +12 points). The spend term is added inside that band, so once your price has already driven the night to the top or the bottom of it, more money buys no more points. Measured over every card-and-price state in the model, the dial buys zero points in 62% (New York) and 65% (Memphis) of them — including at the cash-best price on Nights 1, 2 and 5.",
     risk: "A pair can read '+2 points' as a rate they can always buy and spend for it. The student screen and the house rules now say 'at most', and name the zero case. If a desk spends and its renewals do not move, that is the model being consistent, not a bug — say so.",
+  },
+  {
+    // gate-l1-econ-r3 W3-R12's ledger limb.
+    what: "The renewals card says protecting your base \"starts cheap and ends expensive\" and prints the cheapest and the dearest point. That is the trend, not the shape.",
+    why: "The season frontier's cost per renewal point rises strongly overall (under $3,000 a point below 93%, $9,000-$51,478 above it), but it is not monotone: walking the frontier there are 7 local drops at New York and 8 at Memphis, and the single cheapest step is in the middle of the range, not at the start.",
+    risk: "A sharp student who compares two ADJACENT points can find a step that is cheaper than the one before it and conclude the card is wrong. It is not — the printed numbers are the two extremes of a sawtoothed but strongly rising sequence. Say that the price of the NEXT point depends on which night you have to move to buy it.",
   },
   {
     what: "Season-ticket holders reward a strong walk-up price on a big night.",
@@ -2829,8 +2845,8 @@ function projectorMirror(state: FullHouseState, phase: CanonicalPhase): { title:
       return {
         title: "WHAT ECONOMICS DID WE JUST USE?",
         lines: [
-          "Six cards, every number computed from this class's own nights: REVENUE = PRICE x PEOPLE · THE CARD MOVED THE CROWD · THE TICKET IS NOT THE PRODUCT · NIGHT 5 WAS NIGHT 1 · TWO BOOKS, NO EXCHANGE RATE · YOUR JOB IS REAL.",
-          "Then the outside-sports row, then the dated sources.",
+          "ONE card at a time, in the order you press them: REVENUE = PRICE x PEOPLE · THE CARD MOVED THE CROWD · THE TICKET IS NOT THE PRODUCT · NIGHT 5 WAS NIGHT 1 · TWO BOOKS, NO EXCHANGE RATE · YOUR JOB IS REAL. Every number on them is computed from this class's own nights.",
+          "The outside-sports line is under every card. The exit question and the dated sources land on the last one.",
         ],
       };
     case "COMPLETE":
@@ -3069,6 +3085,7 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
         minuteBudget: "7 min",
         now: [
           "This is the part the simulation does not do for you. Name each thing they already felt, in order, off the board's own cards.",
+          "The cards come up ONE at a time — press \u2018Next card\u2019 when you have said this one. Short of time? The first three are the lesson.",
           "Every card on that board is computed from THIS class's numbers — you can point at any figure and it belongs to somebody in the room.",
         ],
         ask: [

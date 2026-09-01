@@ -96,20 +96,81 @@ async function assertFullyVisible(page, selector, label) {
   );
 }
 
-/** The projector must be able to REACH everything, even when it cannot fit it. */
-async function assertStageScrollable(page, label) {
-  const overflow = await page.evaluate(() => {
-    const stage = document.getElementById("stage");
-    if (!stage) return null;
-    return { scrollH: stage.scrollHeight, clientH: stage.clientHeight, canScroll: getComputedStyle(stage).overflowY };
-  });
-  assert.ok(overflow, `${label}: no #stage`);
-  if (overflow.scrollH > overflow.clientH + 1) {
+/**
+ * EVERY board frame, at BOTH projector shapes, must FIT.
+ *
+ * `gate-l1-projector` W3, BLOCKING repair 3. What used to be here was
+ * `assertStageScrollable`, which passed an overflowing stage as long as
+ * `overflow-y` computed to `auto` or `scroll` — i.e. it encoded the exact
+ * substitution ("reachable by scrolling") that the gate had already rejected,
+ * and it was only called on three named frames. Ten of twenty-four board frames
+ * overflowed the projector while this instrument was green.
+ *
+ * The condition is per-phase and unqualified — "no board phase may require
+ * scrolling a projector" — so this is called on every frame the run visits, not
+ * on a named subset, and it fails on overflow rather than on unreachability.
+ */
+const PROJECTOR_SHAPES = [
+  { width: 1366, height: 768 },
+  { width: 1920, height: 1080 },
+];
+/** 2.6% of screen height — the projector review's measured back-row floor. */
+const BACK_ROW_FLOOR_PCT = 2.6;
+const boardFramesChecked = [];
+
+async function assertBoardFrameFits(board, label, restore = { width: 1600, height: 900 }) {
+  for (const shape of PROJECTOR_SHAPES) {
+    await board.setViewportSize(shape);
+    await board.waitForTimeout(260);
+    const fit = await board.evaluate(() => {
+      const s = document.getElementById("stage");
+      if (!s) return null;
+      return {
+        scrollH: s.scrollHeight,
+        clientH: s.clientHeight,
+        // Whoever repairs this next needs to know WHICH slot grew.
+        parts: [...s.children].map((c) => `${(c.className || c.tagName).toString().slice(0, 30)}:${Math.round(c.getBoundingClientRect().height)}px`),
+      };
+    });
+    assert.ok(fit, `${label}: no #stage`);
     assert.ok(
-      overflow.canScroll === "auto" || overflow.canScroll === "scroll",
-      `${label}: #stage overflows (${overflow.scrollH} > ${overflow.clientH}) and cannot be scrolled — content is unreachable`,
+      fit.scrollH <= fit.clientH + 1,
+      `${label} @ ${shape.width}x${shape.height}: #stage OVERFLOWS by ${fit.scrollH - fit.clientH}px — ${fit.scrollH}px of content in a ${fit.clientH}px projector. A projector cannot scroll. Slots: ${fit.parts.join(" · ")}`,
     );
+    boardFramesChecked.push(`${label}@${shape.width}`);
   }
+  if (restore) {
+    await board.setViewportSize(restore);
+    await board.waitForTimeout(150);
+  }
+}
+
+/**
+ * Rendered type, as a share of screen height, against the back-row floor. HTML
+ * type holds the floor because it is set in `vw`; SVG type does not, because it
+ * scales with the box its chart is drawn in — which is how the compaction repair
+ * shrank the class chart's own axis to 1.30% while the HTML around it passed.
+ */
+async function assertBackRowType(page, selector, label, { svg = false } = {}) {
+  const m = await page.evaluate(
+    ({ sel, isSvg }) => {
+      const el = document.querySelector(isSvg ? `${sel} text` : sel);
+      if (!el) return { found: false };
+      const px = parseFloat(getComputedStyle(el).fontSize);
+      let rendered = px;
+      if (isSvg) {
+        const svgEl = document.querySelector(sel);
+        rendered = px * (svgEl.getBoundingClientRect().width / svgEl.viewBox.baseVal.width);
+      }
+      return { found: true, rendered, pct: (rendered / window.innerHeight) * 100, text: (el.textContent || "").slice(0, 40) };
+    },
+    { sel: selector, isSvg: svg },
+  );
+  assert.ok(m.found, `${label}: ${selector} is not on the frame at all`);
+  assert.ok(
+    m.pct >= BACK_ROW_FLOOR_PCT - 0.01,
+    `${label}: "${m.text}" renders at ${m.rendered.toFixed(1)}px = ${m.pct.toFixed(2)}% of screen height, under the ${BACK_ROW_FLOOR_PCT}% back-row floor`,
+  );
 }
 
 /* --------------------------------------------------------------- UI helpers -- */

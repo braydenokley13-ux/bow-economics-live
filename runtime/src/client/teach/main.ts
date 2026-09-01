@@ -51,6 +51,15 @@ const DRAFT_DAY_ID = "m1l1-draft-day";
 const FREE_AGENCY_ID = "m1l3-free-agency";
 const FULL_HOUSE_ID = "m2l1-full-house";
 
+/**
+ * gate-l1-visual P8 (reported repaired at round 4, and was not — the bell was
+ * still rendering as an emoji on the control room's biggest button). Drawn 16px
+ * marks in the ink palette, the same `.btn-glyph` the shock control already uses.
+ */
+const BELL_GLYPH = `<span class="btn-glyph" aria-hidden="true">◗</span>`;
+const GLYPH_HIT = `<span class="btn-glyph" aria-hidden="true">/</span>`;
+const GLYPH_WARN = `<span class="btn-glyph" aria-hidden="true">!</span>`;
+
 async function loadLessons(): Promise<void> {
   const { lessons } = await apiFetch<{ lessons: Lesson[] }>("/api/lessons");
   const select = $<HTMLSelectElement>("lesson");
@@ -256,12 +265,38 @@ function render(payload: TeacherPayload): void {
   // standard as the reveal button and the bell.
   {
     const cfPage = $<HTMLButtonElement>("btnCfPage");
+    const cfBack = $<HTMLButtonElement>("btnCfPageBack");
+    const synthPage = $<HTMLButtonElement>("btnSynthPage");
+    const synthBack = $<HTMLButtonElement>("btnSynthPageBack");
+    const pagerNow = $("pagerNow");
     cfPage.hidden = !isFullHouse || s.phase !== "COUNTERFACTUAL";
+    cfBack.hidden = cfPage.hidden;
+    synthPage.hidden = !isFullHouse || s.phase !== "SYNTHESIS";
+    synthBack.hidden = synthPage.hidden;
+    pagerNow.hidden = cfPage.hidden && synthPage.hidden;
     if (isFullHouse) {
       const available = Boolean(payload.view["cfPageAvailable"]);
       cfPage.disabled = s.ended || !available;
       cfPage.textContent = String(payload.view["cfNextPageLabel"] ?? "Next group of desks");
       cfPage.title = String(payload.view["cfPageNote"] ?? "");
+      // W3-2: a back control, and a readout of the group that is up RIGHT NOW —
+      // the room's own evidence, not only the next press.
+      cfBack.disabled = s.ended || !available;
+      cfBack.textContent = String(payload.view["cfPrevPageLabel"] ?? "Back a group");
+      cfBack.title = String(payload.view["cfPageNote"] ?? "");
+      const synthAvailable = Boolean(payload.view["synthPageAvailable"]);
+      synthPage.disabled = s.ended || !synthAvailable;
+      synthBack.disabled = s.ended || !synthAvailable;
+      synthPage.textContent = String(payload.view["synthNextLabel"] ?? "Next card");
+      synthBack.textContent = String(payload.view["synthPrevLabel"] ?? "Back a card");
+      synthPage.title = String(payload.view["synthPageNote"] ?? "");
+      synthBack.title = String(payload.view["synthPageNote"] ?? "");
+      pagerNow.textContent =
+        s.phase === "COUNTERFACTUAL"
+          ? String(payload.view["cfCurrentPageLabel"] ?? "")
+          : s.phase === "SYNTHESIS"
+            ? String(payload.view["synthCurrentLabel"] ?? "")
+            : "";
     }
   }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
@@ -1002,6 +1037,9 @@ $("btnCloseDay").addEventListener("click", () => void sendControl({ type: "hook"
 $("btnCloseNight").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeNight" }));
 $("btnTwoPeaks").addEventListener("click", () => void sendControl({ type: "hook", hook: "twoPeaks" }));
 $("btnCfPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "cfPage" }));
+$("btnCfPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "cfPageBack" }));
+$("btnSynthPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "synthPage" }));
+$("btnSynthPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "synthPageBack" }));
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();

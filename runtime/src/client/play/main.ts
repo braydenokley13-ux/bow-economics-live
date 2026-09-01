@@ -2161,8 +2161,17 @@ function renderFHPlay(view: Record<string, unknown>): void {
         <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
           <div class="fh-price-readout numeric" id="fhPriceReadout">$${price}</div>
-          <input class="price-dial-input" type="range" id="fhPriceDial" min="${view["priceMin"]}" max="${view["priceMax"]}" step="${view["priceStep"]}" value="${price}" />
-          <div class="price-dial-ends"><span>$${view["priceMin"]}</span><span>season plan $${market.planPrice}</span><span>$${view["priceMax"]}</span></div>
+          <!-- gate-l1-visual P2 + N2: the track carried the reserved three-zone
+               CAP ramp (a semantic token spent on a non-cap meaning) and the
+               season-plan price was printed CENTRED under a $10-$120 track while
+               the plan sits ~13% along it — a mislabelled axis on the control the
+               whole lesson turns on. Drawn well, and the plan is a notch AT its
+               own price. -->
+          <div class="fh-dial" style="--plan-frac:${((market.planPrice - Number(view["priceMin"])) / Math.max(1, Number(view["priceMax"]) - Number(view["priceMin"]))).toFixed(4)};">
+            <input class="price-dial-input" type="range" id="fhPriceDial" min="${view["priceMin"]}" max="${view["priceMax"]}" step="${view["priceStep"]}" value="${price}" />
+            <div class="fh-dial-notch" aria-hidden="true"><span class="fh-dial-tick"></span><span class="fh-dial-tick-label">PLAN $${market.planPrice}</span></div>
+          </div>
+          <div class="price-dial-ends"><span>$${view["priceMin"]}</span><span>$${view["priceMax"]}</span></div>
           <!-- gate-l1-play P10 (BLOCKING dissent play-l1-renewals-unexplained):
                the rule that drives half the scoreboard, beside the dial that
                drives it, before the commit. -->

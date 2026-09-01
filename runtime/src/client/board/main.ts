@@ -686,12 +686,12 @@ function fhPlotScrim(x: number, y: number, w: number, h: number): string {
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" style="fill:rgba(8,13,20,0.62);"/>`;
 }
 
-function fhCurveSvg(points: FHPoint[], markets: string[], widthFrac = 0.84): string {
+function fhCurveSvg(points: FHPoint[], markets: string[], widthFrac = 0.84, plotHeight = 324): string {
   const W = 960;
   const { font, mL, mB, scale } = fhAxisType(widthFrac, W);
   const mR = 24;
   const mT = 18;
-  const H = 324 + mT + mB;
+  const H = plotHeight + mT + mB;
   const xMin = 10;
   const xMax = 120;
   const yMax = Math.max(5000, ...points.map((p) => p.turnout)) * 1.12;
@@ -771,7 +771,7 @@ function fhMoneySvg(p: FHTwoPeaksB): string {
   // 1.56% before this — the peak prices, which ARE the beat, were the smallest
   // live text on the frame.
   const { font, mL, mB } = fhAxisType(0.32, W);
-  const H = 168 + 22 + mB;
+  const H = 150 + 22 + mB;
   const mR = 10;
   const mT = 22;
   const xMin = Math.min(...series.map((s) => s.price));
@@ -1065,13 +1065,13 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
           <div class="fh-cf-col">
             ${
               cfPoints.length > 0
-                ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"], 0.44)}</div>${fhLegend(cfPoints)}`
+                ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"], 0.44, 240)}</div>${fhLegend(cfPoints)}`
                 : ""
             }
-            <div class="synthesis-note fh-cf-summary" id="fhCfSummary">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
-            ${pageCount > 1 ? `<div class="fh-cf-pager-hint">The whole room's desks are on this card — your teacher walks the groups.</div>` : ""}
           </div>
         </div>
+        <div class="synthesis-note fh-cf-summary" id="fhCfSummary">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
+        ${pageCount > 1 ? `<div class="fh-cf-pager-hint">The whole room's desks are on this card — your teacher walks the groups.</div>` : ""}
         <div class="synthesis-note" style="font-size:1vw;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>`;
       return;
     }

@@ -73,6 +73,10 @@ const {
   totalPeakPrice,
   // gate-l1-econ-r3 R9: P16's dominance limb now judges the SHIPPED row.
   repeatRowFor,
+  // gate-l1-econ-r3 W3-R10: P16 now judges the CARD-LEVEL copy layered on the
+  // row, not just the row — the defect was a true row under a false sentence.
+  repeatSummary,
+  pathDependenceCardBody,
   // gate-l1-econ-r3 R5: P14's new limb (v) judges every PRINTED season line
   // against the model's own exact Pareto frontier.
   seasonFrontier,
@@ -774,7 +778,7 @@ console.log("");
   }
   check(
     "P14",
-    "R1 — at SEASON scale the two books still trade off: the never-move-the-dial line is not Pareto-dominated, and cash-max pays for it in renewals",
+    "R1/R5 — at SEASON scale the two books still trade off: the never-move-the-dial line is not dominated BY THE MOST-CASH LINE (limb i), every printed season line sits on the model's own Pareto frontier, and the staged renewals corner beats the flat line on BOTH books (limb v.c — i.e. the flat line IS dominated, by a line the card prints)",
     ok,
     rows,
   );
@@ -792,11 +796,16 @@ console.log("");
   // THE THRESHOLD, AND WHY IT IS THE ONE IT IS.
   // The Player gate asked for >= 10% of capacity. That is the right bar for a
   // projector bar chart read without numbers, and this model cannot pay it: 10% of
-  // capacity across a ~30-point renewals swing needs about 66 fans per renewal point,
-  // and an exact season DP sweep over (renewalFans 10-60) x (planSlope 1.2-3.6) shows
-  // P14 failing at EVERY point with renewalFans >= 30 — the cash-max season starts
-  // buying renewal points back and the two-book frontier inverts again, which is the
-  // `econ-l1-season-books` defect round 2 repaired. Truth beats drama (charter), so
+  // capacity across a ~30-point renewals swing needs about 66 fans per renewal point.
+  // An exact season DP sweep over (renewalFans 10-60) x (planSlope 1.2-3.6) found no
+  // passing point at renewalFans >= 30 INSIDE THAT BOX; `gate-l1-econ-r3` R8/W3-R13
+  // then showed the box was the limit, not the model — 30/4.5, 30/6.0 and 35/6.0 pass
+  // all four P14 bars in both markets. So the honest statement is: past some point the
+  // cash-max season starts buying renewal points back and the two-book frontier
+  // inverts again (the `econ-l1-season-books` defect round 2 repaired), and that point
+  // is above the constants this build ships rather than at them. What is NOT reachable
+  // at any of those settings is the Player gate's 10%-of-capacity bar, which needs
+  // ~80 fans a point. Truth beats drama (charter), so
   // the bar here is what the model can honestly carry with P14 intact:
   //
   //    on a repeat desk with NO Night-4 spend and a renewals move of >= 20 points,
@@ -902,6 +911,7 @@ console.log("");
   let cases = 0;
   let inversions = 0;
   let flooredCases = 0;
+  let oneSidedCases = 0;
   let worstResidual = 0;
   for (const market of MARKETS) {
     const spendLevels = [0, Math.round(market.eventMax / 2), market.eventMax];
@@ -921,7 +931,28 @@ console.log("");
       }
       return p;
     })();
-    for (const n1Price of [market.planPrice, PRICE_MIN, market.planPrice + 20, flooringPrice, PRICE_MAX]) {
+    // W3-R10: the main sweep reached only both-nights-floored prices, so the
+    // one-sided band ($82-$84 New York, $58 Memphis) was invisible to it. The
+    // price where exactly ONE of the two nights floors is found and swept.
+    const oneSidedPrice = (() => {
+      for (const price of PRICE_GRID) {
+        let renewals = RENEWALS_START;
+        let carry = 0;
+        let rawN1 = null;
+        let rawN5 = null;
+        for (const card of CARDS) {
+          const curve = curveFor(market, card, renewals, carry);
+          const raw = Math.round(curve.base - curve.sens * price);
+          if (card.id === "N1") rawN1 = raw;
+          if (card.id === "N5") rawN5 = raw;
+          renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, price, 0)));
+          carry = 0;
+        }
+        if ((rawN1 < 0) !== (rawN5 < 0)) return price;
+      }
+      return null;
+    })();
+    for (const n1Price of [market.planPrice, PRICE_MIN, market.planPrice + 20, flooringPrice, PRICE_MAX, ...(oneSidedPrice === null ? [] : [oneSidedPrice])]) {
       for (const n5Price of [n1Price, n1Price + 10]) {
         for (const n4Spend of spendLevels) {
           // Run the five nights exactly as the reducer does.
@@ -956,6 +987,7 @@ console.log("");
           const rawN1 = Math.round(n1.curve.base - n1.curve.sens * n1.price);
           const rawN5 = Math.round(n5.curve.base - n5.curve.sens * n5.price);
           const isFloored = rawN1 < 0 || rawN5 < 0;
+          const isBothFloored = rawN1 < 0 && rawN5 < 0;
 
           // The SHIPPED row for exactly these two nights — the thing the board
           // and the desk both print. Everything below judges the product, not a
@@ -972,6 +1004,10 @@ console.log("");
 
           if (isFloored) {
             flooredCases += 1;
+            if (!isBothFloored) oneSidedCases += 1;
+            // W3-R10: the row must say WHICH case it is, because the two cases
+            // need different sentences and every consumer read the OR as an AND.
+            if (shipped.bothFloored !== isBothFloored) ok = false;
             // R6's contract for the floored band: no channel may be named, and
             // the printed sentence may not assert a channel size as the reason a
             // crowd changed. The card used to print
@@ -1026,7 +1062,103 @@ console.log("");
   rows.push(
     `R9: the dominance limb compares the SHIPPED repeatRowFor().biggestChannel against this harness's own recompute — the old form (top.size < max(sizes)) was a tautology and could not fail`,
   );
-  check("P16", "R4/R6/R9 — the Night 5 decomposition closes exactly against the model off the demand floor, flags the floor, and never names the smaller channel", ok, rows);
+
+  /* ---- W3-R10: the ONE-SIDED floor, and the copy layered on top of the row ----
+   *
+   * `floored` is `rawN1 < 0 || rawN5 < 0`. Correct. But every consumer read it as
+   * an AND: at $58 Memphis a desk that drew 670 people on Night 1 and 0 on Night
+   * 5 was described by the synthesis card as one where "at that price nobody
+   * walked in either time" and by the board summary as "nobody came either
+   * night" — in the same clause that printed the 670. The band is narrow ($82-$84
+   * New York, $58 Memphis) and it is exactly the corner a pair reaches by trying
+   * "higher price, more money".
+   *
+   * The old sweep could not see it: of its 60 cases, 24 were floored and ALL 24
+   * were both-nights floored. So this limb hunts a one-sided pair per market
+   * DELIBERATELY, and then puts the two card-level sites under test — which is
+   * where the false sentence lived, and where nothing was testing at all.
+   */
+  const flatSeason = (market, price, n4Spend) => {
+    let renewals = RENEWALS_START;
+    let carry = 0;
+    let cash = 0;
+    const settled = [];
+    for (const card of CARDS) {
+      const spend = card.id === "N4" ? Math.min(n4Spend, cash < 0 ? 0 : market.eventMax) : 0;
+      const curve = curveFor(market, card, renewals, carry);
+      const st = settleNight(market, curve, price, spend, false, card.bowlOffer);
+      settled.push({ card, price, spend, curve, s: st, renewalsBefore: renewals });
+      cash += st.net;
+      renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, price, spend)));
+      carry = Math.round(market.eventFans * spend);
+    }
+    const n1 = settled.find((x) => x.card.id === "N1");
+    const n5 = settled.find((x) => x.card.id === "N5");
+    const n4 = settled.find((x) => x.card.id === "N4");
+    const row = repeatRowFor(
+      { deskNumber: 1, marketId: market.id, crestIndex: 0, joinedAtNight: 0, cash, renewals, price, spend: 0, openBowl: false, locked: true, nights: [] },
+      market,
+      { cardId: "N1", price, spend: n1.spend, openBowl: false, auto: false, stock: false, renewalsBefore: n1.renewalsBefore, renewalsAfter: n1.renewalsBefore, renewalMove: 0, cashAfter: 0, settlement: n1.s, hidden: n1.curve },
+      { cardId: "N5", price, spend: n5.spend, openBowl: false, auto: false, stock: false, renewalsBefore: n5.renewalsBefore, renewalsAfter: n5.renewalsBefore, renewalMove: 0, cashAfter: 0, settlement: n5.s, hidden: n5.curve },
+      n4.spend,
+    );
+    const rawN1 = Math.round(n1.curve.base - n1.curve.sens * price);
+    const rawN5 = Math.round(n5.curve.base - n5.curve.sens * price);
+    return { row, rawN1, rawN5 };
+  };
+
+  let oneSidedFound = 0;
+  let bothFoundCases = 0;
+  for (const market of MARKETS) {
+    let oneSided = null;
+    let bothSided = null;
+    for (const price of PRICE_GRID) {
+      for (const spend of [0, market.eventMax]) {
+        const probe = flatSeason(market, price, spend);
+        const isOne = (probe.rawN1 < 0) !== (probe.rawN5 < 0);
+        if (isOne && !oneSided) oneSided = { ...probe, price };
+        if (probe.rawN1 < 0 && probe.rawN5 < 0 && !bothSided) bothSided = { ...probe, price };
+      }
+    }
+    if (!oneSided) {
+      ok = false;
+      rows.push(`${market.id.padEnd(10)} W3-R10: NO one-sided floored case found — this limb is not sweeping the band it exists for`);
+      continue;
+    }
+    oneSidedFound += 1;
+    const { row } = oneSided;
+    // The row itself must say which case it is.
+    if (row.floored !== true || row.bothFloored !== false) ok = false;
+    // The three copy sites, on a room that contains exactly this desk.
+    const card = pathDependenceCardBody([row], [row]);
+    const summary = repeatSummary([row]);
+    const bigger = Math.max(row.n1Turnout, row.n5Turnout);
+    if (bigger <= 0) ok = false; // if nobody came either night this is not a one-sided case
+    for (const sentence of [card, summary]) {
+      if (/nobody walked in either time/.test(sentence)) ok = false;
+      if (/nobody came either night/.test(sentence)) ok = false;
+      if (/nobody wanted in at all/.test(sentence)) ok = false;
+      // and it must still SAY that a crowd hit zero on one of the two nights
+      if (!/one of the two nights|before the door/i.test(sentence)) ok = false;
+    }
+    rows.push(
+      `${market.id.padEnd(10)} W3-R10 one-sided floor at $${oneSided.price}: crowds ${row.n1Turnout.toLocaleString()} then ${row.n5Turnout.toLocaleString()} · ` +
+        `floored=${row.floored} bothFloored=${row.bothFloored} · card + summary say "one of the two nights", never "either time"`,
+    );
+    // The both-nights branch must still be reachable and must still be used, or
+    // this repair would just have deleted the true sentence along with the false one.
+    if (bothSided) {
+      bothFoundCases += 1;
+      const bothCard = pathDependenceCardBody([bothSided.row], [bothSided.row]);
+      if (bothSided.row.bothFloored !== true) ok = false;
+      if (!/nobody walked in either time/.test(bothCard)) ok = false;
+      if (bothSided.row.n1Turnout !== 0 || bothSided.row.n5Turnout !== 0) ok = false;
+    }
+  }
+  rows.push(
+    `W3-R10: ${oneSidedCases} one-sided floored cases inside the main sweep; ${oneSidedFound}/${MARKETS.length} markets probed directly for the one-sided band, ${bothFoundCases} both-nights controls — the card opener and the board summary are under test in both branches`,
+  );
+  check("P16", "R4/R6/R9/W3-R10 — the Night 5 decomposition closes exactly against the model off the demand floor, flags the floor (both-nights vs one-sided), never names the smaller channel, and the card + board sentences layered on the row are true of the case they describe", ok, rows);
 }
 
 /* --------------------------------------------------------------- verdict -- */

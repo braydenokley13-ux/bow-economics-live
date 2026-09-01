@@ -22,8 +22,12 @@ import {
   RENEWALS_START,
   REVEAL_STEPS,
   TWO_PEAKS_CARD_ID,
+  CF_ROWS_PER_PAGE,
   bestFoundSeason,
   computeAggregate,
+  orderRepeatRows,
+  pathDependenceCardBody,
+  repeatSummary,
   curveFor,
   fullHouseModule,
   renewalDelta,
@@ -659,6 +663,78 @@ test("a late seat gets an honest playable desk, not a broken one", () => {
   assert.equal(view.history.every((h) => h.stock), true, "the covered nights must be labelled as covered");
 });
 
+
+/* ------------------------------------------- the demand floor, said honestly -- */
+
+test("W3-R10: a one-sided demand floor is never described as 'nobody came either night'", () => {
+  // $58 Memphis flat is the corner the econ critic reached: 670 people on Night
+  // 1, nobody on Night 5. `floored` is an OR over the two nights, and all three
+  // copy sites used to read it as an AND — printing "at that price nobody walked
+  // in either time" in the same clause as the 670.
+  let state = seated(2);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, { "seat-1": 58, "seat-2": 58 });
+  const rows = computeAggregate(state).repeatCard;
+  const mem = rows.find((r) => r.marketId === "memphis")!;
+  assert.equal(mem.floored, true, "$58 Memphis must trip the demand floor on one of the two nights");
+  assert.equal(mem.bothFloored, false, "this is the ONE-SIDED case");
+  assert.ok(mem.n1Turnout > 0, "Night 1 drew a real crowd — that is what makes the old sentence false");
+  assert.equal(mem.n5Turnout, 0);
+
+  const card = pathDependenceCardBody([mem], [mem]);
+  const summary = repeatSummary([mem]);
+  for (const sentence of [card, summary]) {
+    assert.equal(/nobody walked in either time/.test(sentence), false, `false over a crowd of ${mem.n1Turnout}: ${sentence}`);
+    assert.equal(/nobody came either night/.test(sentence), false, sentence);
+    assert.equal(/nobody wanted in at all/.test(sentence), false, sentence);
+    assert.match(sentence, /one of the two nights/i, "the honest fact must still be said");
+  }
+  // The both-nights branch must survive: at $120 nobody comes either time, and
+  // there the strong sentence is TRUE and must still be printed.
+  let both = seated(1);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) both = playNight(both, { "seat-1": PRICE_MAX });
+  const bothRow = computeAggregate(both).repeatCard[0]!;
+  assert.equal(bothRow.bothFloored, true);
+  assert.match(pathDependenceCardBody([bothRow], [bothRow]), /nobody walked in either time/);
+});
+
+/* --------------------------------------------- the paged repeat card's order -- */
+
+test("W3-2: no COUNTERFACTUAL group repeats a row while a differing row is un-shown", () => {
+  // A clustered room is what a real room produces: the model is deterministic,
+  // so two desks in the same market on the same line produce byte-identical
+  // rows. Grouping by desk number put two of them in group 1 and every row worth
+  // arguing about in group 4.
+  let state = seated(6);
+  // seats 1/3/5 are New York, 2/4/6 Memphis. Desks 1 and 3 play an identical
+  // line; desk 5 differs; the Memphis desks cluster the same way.
+  const flat = { "seat-1": 24, "seat-2": 16, "seat-3": 24, "seat-4": 16, "seat-5": 40, "seat-6": 34 };
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, flat);
+  const rows = computeAggregate(state).repeatCard;
+  assert.equal(rows.length, 6);
+  const sig = (r: (typeof rows)[number]): string => `${r.marketId}|${r.n1Price}|${r.n1Turnout}|${r.n5Turnout}|${r.channelLine}`;
+  const allSigs = rows.map(sig);
+  assert.ok(new Set(allSigs).size < allSigs.length, "this fixture must actually contain duplicate rows");
+  for (let from = 0; from < rows.length; from += CF_ROWS_PER_PAGE) {
+    const group = rows.slice(from, from + CF_ROWS_PER_PAGE);
+    const groupSigs = group.map(sig);
+    const shownElsewhere = rows.filter((r) => !group.includes(r)).map(sig);
+    const duplicated = groupSigs.length !== new Set(groupSigs).size;
+    const differingUnshown = shownElsewhere.some((x) => !groupSigs.includes(x));
+    assert.equal(
+      duplicated && differingUnshown,
+      false,
+      `a group reads one row twice while a differing row waits: ${groupSigs.join(" || ")}`,
+    );
+  }
+  // Every desk is still on the card — ordering, never dropping.
+  assert.equal(new Set(rows.map((r) => r.deskHandle)).size, 6);
+  assert.deepEqual(
+    orderRepeatRows(rows).map((r) => r.deskHandle).sort(),
+    rows.map((r) => r.deskHandle).sort(),
+    "ordering is a permutation",
+  );
+});
+
 /* ------------------------------------------------------------- synthesis -- */
 
 test("synthesis cards are computed from this class's locked-at-time numbers", () => {
@@ -668,16 +744,44 @@ test("synthesis cards are computed from this class's locked-at-time numbers", ()
   const prices = { "seat-1": 34, "seat-2": 24, "seat-3": 70, "seat-4": 46 };
   for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, prices);
   const agg = computeAggregate(state);
-  const board = fullHouseModule.boardView(state, "SYNTHESIS") as { cards: { id: string; body: string }[] };
-  const ids = board.cards.map((c) => c.id);
-  assert.deepEqual(ids, ["revenue", "shifters", "loss-leader", "path-dependence", "two-books", "real-world"]);
+  // W3: the projector shows ONE card at a time under the teacher's own pager (it
+  // was a six-card dashboard grid shrunk to 11.2px bodies to make it fit). Every
+  // card must still reach the room, in order, and the pager must wrap.
+  type SynthBoard = {
+    cards: { id: string; body: string }[];
+    cardCount: number;
+    synthPage: number;
+    synthPageCount: number;
+    synthRail: boolean;
+  };
+  const seen: { id: string; body: string }[] = [];
+  let pageState = state;
+  const pages = (fullHouseModule.boardView(pageState, "SYNTHESIS") as SynthBoard).synthPageCount;
+  assert.equal(pages, 6, "six cards, one per projector frame");
+  for (let i = 0; i < pages; i += 1) {
+    const frame = fullHouseModule.boardView(pageState, "SYNTHESIS") as SynthBoard;
+    assert.equal(frame.cards.length, 1, "more than one card on a projector frame");
+    assert.equal(frame.synthPage, i + 1);
+    // The sourcing rail and the exit question land on the last card only.
+    assert.equal(frame.synthRail, i === pages - 1);
+    seen.push(frame.cards[0]!);
+    const next = act(pageState, { type: "teacher:synthPage" } as unknown as LessonAction, "SYNTHESIS", "teacher");
+    assert.ok(next.ok, "the teacher's synthesis pager was rejected");
+    pageState = next.state;
+  }
+  assert.deepEqual(
+    seen.map((c) => c.id),
+    ["revenue", "shifters", "loss-leader", "path-dependence", "two-books", "real-world"],
+  );
+  // Wraps, so a teacher who wants a card back never hits a dead control.
+  assert.equal((fullHouseModule.boardView(pageState, "SYNTHESIS") as SynthBoard).synthPage, 1);
 
   // The revenue card must quote a price this room actually charged.
-  const revenue = board.cards.find((c) => c.id === "revenue")!;
+  const revenue = seen.find((c) => c.id === "revenue")!;
   assert.match(revenue.body, /\$34|\$70/);
   // The Two Peaks card must quote the peaks computed off a REAL desk's frozen curve.
   const peak = agg.twoPeaks[0]!;
-  const lossLeader = board.cards.find((c) => c.id === "loss-leader")!;
+  const lossLeader = seen.find((c) => c.id === "loss-leader")!;
   assert.ok(lossLeader.body.includes(`$${peak.ticketPeakPrice}`) && lossLeader.body.includes(`$${peak.totalPeakPrice}`));
   assert.ok(peak.gapSteps >= 2);
 });
