@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:53:16.652Z",
+  "updatedAt": "2026-09-01T07:39:46.287Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -2909,15 +2909,75 @@
           "model": "claude-opus-5",
           "reason": "Wave-4 opening bundle per the analyst: claim-audit property family (mutation-proven), occlusion-aware fold instruments with real-click driving, the three carried L2 blockers (play lock-bar set, econ B3/B7/B8, projector bar-timing off-by-one) and the L1 pager fix-forward if the intent check demands it",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T06:53:16.652Z",
+          "completedAt": "2026-09-01T07:39:45.452Z",
+          "sections": {
+            "what-changed": "Claim-audit family with STRUCTURAL binding (ClaimAtom/claim()/claimWord(); every claim string interpolates the rendered computed value and declares its asserted sign/quantifier/bound; spilloverClaim() the single source for three formerly hand-written copies; moduleClaims(state) sweeps all claim surfaces; harness P11 recomputes independently). B7 externalPct gated and honest; B8 exact roomJointGain published beside labelled partials; B3 price-control selection with driver:price; R-1/N-3 boundary corrected with the prescribed-timing pinned. Occlusion instrument: elementFromPoint at three points per element on split/KEPT/road/dials/LOCK, seeded sold-out week asserted present, real mouse-drag dial driving. Play blockers: fixed-height shell + two-column decision surface (dial 139..161 vs bar 539..600), honest free-rider line, N-5 post-hoc price counterfactual. L1 pager untouched with README note for the critic.",
+            "evidence": "Lead re-ran, exit 0: l2-tests-w4 (403/403), l2-tuning-w4 (12/12; P11 224 rooms / 70,628 atoms / 0 disagreements), l2-e2e-w4 (124 occlusion probes, 2 sold-out, 35 real drives), l1-e2e-w4. Builder mutation proofs: 3/3 caught (wrong sign, wrong quantifier, wrong bound at 124%); instrument caught N-2 live pre-fix. Git anomaly explained: source edits were captured by lead WIP snapshot commits mid-build.",
+            "claims": "Deterministic only. The audit covers every surface registered in moduleClaims; an unregistered future surface is invisible to it (disclosed).",
+            "known-gaps": "Two joint computations differ by up to $6,944 in magnitude (0 sign disagreements; scope difference, README-disclosed, not student-facing); N-5 re-prices one week; two-column layout unseen by visual/projector critics; owning critics still to re-adjudicate."
+          },
+          "evidenceIds": [
+            "l2-tests-w4",
+            "l2-tuning-w4",
+            "l2-e2e-w4",
+            "l1-e2e-w4"
+          ],
+          "cost": {
+            "tokens": 1297887,
+            "toolUses": 640
+          }
+        },
+        "w4-play-adjudicate": {
+          "assignmentId": "w4-play-adjudicate",
+          "role": "player-gameplay-critic",
+          "actor": "player-gameplay-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic adjudication of play-l2-below-bar after the W4 bundle (occlusion-fixed decision surface, N-5 ceiling fix)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T07:39:45.724Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w4-econ-adjudicate": {
+          "assignmentId": "w4-econ-adjudicate",
+          "role": "economic-truth-critic",
+          "actor": "economic-truth-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic adjudication of econ-l2-evidence-surfaces after the claim-audit family (B3/B7/B8)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T07:39:46.007Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w4-projector-adjudicate": {
+          "assignmentId": "w4-projector-adjudicate",
+          "role": "classroom-projector-critic",
+          "actor": "classroom-projector-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic adjudication of proj-l2-bar-timing plus the never-performed L1 pager intent check",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T07:39:46.287Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
           "cost": null
         }
       },
-      "evidenceIds": [],
+      "evidenceIds": [
+        "l2-tests-w4",
+        "l2-tuning-w4",
+        "l2-e2e-w4",
+        "l1-e2e-w4"
+      ],
       "claimIds": [],
       "dissentIds": [],
       "meetingIds": [],
@@ -4696,6 +4756,97 @@
       },
       "recordedAt": "2026-09-01T06:51:35.926Z",
       "actor": "product-analyst"
+    },
+    "l2-tests-w4": {
+      "id": "l2-tests-w4",
+      "wave": 4,
+      "kind": "test",
+      "label": "Suite after W4 bundle (403/403)",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-tests-w4--record.json",
+      "sha256": "9e0cf3e175cd3b5ce336c3db1ee00a38b6355bfb4c5ad3ecdfd6d0eecf923ada",
+      "size": 100738,
+      "metadata": {
+        "tags": [
+          "wave-4"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T07:37:08.191Z",
+      "actor": "lead-integrator"
+    },
+    "l2-tuning-w4": {
+      "id": "l2-tuning-w4",
+      "wave": 4,
+      "kind": "test",
+      "label": "L2 harness 12/12 incl. claim-audit P11 (224 rooms, 70,628 atoms, 0 disagreements; 3/3 mutants caught in builder run)",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-tuning-w4--record.json",
+      "sha256": "a290f1ecb257e97494ac3aa630466926d223b434a5ff2ee2b1d26af505de8716",
+      "size": 8243,
+      "metadata": {
+        "tags": [
+          "wave-4"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l2-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T07:37:09.150Z",
+      "actor": "lead-integrator"
+    },
+    "l2-e2e-w4": {
+      "id": "l2-e2e-w4",
+      "wave": 4,
+      "kind": "e2e",
+      "label": "L2 e2e: 124 occlusion probes incl. seeded sold-out weeks, 35 real dial drives",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-e2e-w4--record.json",
+      "sha256": "8da6ffcdca175215cc0947bea44b61f42d7f9e5e07940039277c0194c1618848",
+      "size": 1123,
+      "metadata": {
+        "tags": [
+          "wave-4"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l2.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T07:38:12.547Z",
+      "actor": "lead-integrator"
+    },
+    "l1-e2e-w4": {
+      "id": "l1-e2e-w4",
+      "wave": 4,
+      "kind": "e2e",
+      "label": "L1 e2e at W4 head",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-w4--record.json",
+      "sha256": "bc89ef8bb3da2f5fa84d6ba65f0a52b1e80d29915c6374f42cc9bac3729f36d6",
+      "size": 3350,
+      "metadata": {
+        "tags": [
+          "wave-4",
+          "regression"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T07:39:26.308Z",
+      "actor": "regression-hunter"
     }
   },
   "claims": {
@@ -5382,14 +5533,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 56,
+    "agentsActivated": 59,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 88,
+    "evidenceRecorded": 92,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 279,
-  "eventHead": "6f6b0a14bf2772b453f9478ccaad13de9b1ef7b9f9087dc59a6b0222714c6fbe",
+  "eventCount": 287,
+  "eventHead": "24477aa6a3c2793ab1d92787995bc4bb8ac08f4d79019cfdeb19879907518c49",
   "warnings": []
 }
