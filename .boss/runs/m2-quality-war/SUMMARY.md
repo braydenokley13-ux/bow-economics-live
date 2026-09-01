@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `287:24477aa6a3c2793ab1d92787995bc4bb8ac08f4d79019cfdeb19879907518c49`  
-Updated: 2026-09-01T07:39:46.287Z
+Event head: `290:9c2a546b8e23a268973c19ae4674adaa056d4ae63ec01c41e30efd360a2ed302`  
+Updated: 2026-09-01T07:50:49.503Z
 
 ## Founder intent
 
@@ -57,6 +57,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l2-tuning-w4 — test — L2 harness 12/12 incl. claim-audit P11 (224 rooms, 70,628 atoms, 0 disagreements; 3/3 mutants caught in builder run)
 - l2-e2e-w4 — e2e — L2 e2e: 124 occlusion probes incl. seeded sold-out weeks, 35 real dial drives
 - l1-e2e-w4 — e2e — L1 e2e at W4 head
+- w4-projector-adj — projector-report — W4 projector adjudication: proj-l2-bar-timing DISCHARGED (prescribed timing verified, two-arm probe); L1 PAGER INTENT SATISFIED (desk numbers are the unique key); privacy + fit clean incl. new two-column play at 1024x600. NEW blockers W4-1 (release copy prints 'some desks had already locked' when none had) and W4-2 (/teach stage-5 mirror byte-identical across four arms, contradicting the board in one) — both claim-audit-class strings on surfaces unregistered in moduleClaims
 
 ## Claim ledger
 
@@ -64,7 +65,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 
 ## Dissent
 
-- No dissent recorded
+- proj-l2-mirror-claims — classroom-reliability/blocking/open — Two W4 successors, both the claim-vs-model class on surfaces UNREGISTERED in moduleClaims (the builder's disclosed audit limitation): W4-1 — the prescribed release path prints 'some desks had already locked' when none had; W4-2 — the /teach stage-5 mirror is byte-identical across all four release arms, promising 'this board refuses to choose' even in the arm where the board already ruled the bar out. Fix: compute both strings from state AND register them (and the teacher director/mirror surface generally) in moduleClaims so the audit family sees them. GATE_L2_PROJECTOR.md W4 section.
 
 ## Latest gate
 
