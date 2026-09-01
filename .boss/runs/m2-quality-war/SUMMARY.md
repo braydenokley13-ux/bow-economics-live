@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `141:346b87646275653a6afb867ab69ffea1d74ecef6feb29a56bef68131878e4af2`  
-Updated: 2026-09-01T01:51:56.759Z
+Event head: `143:f268836353d9d9957c7ee678a056fe7af5b5f74427c6e589ef320404384cfb12`  
+Updated: 2026-09-01T02:01:55.800Z
 
 ## Founder intent
 
@@ -97,6 +97,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-tests-r3 — test — Full suite after final repair round
 - l1-tuning-r3 — test — Tuning harness 16 properties (P15 repeat scale, P16 decomposition identity)
 - l1-e2e-r3 — e2e — e2e with fold + receipt assertions after round 3
+- gate-l1-teacher-r3 — teacher-transfer-report — Teacher narrow re-check r3: all 7 claims CONFIRMED from rendered /teach in a live session to Night 5 + 7 reveals; Jump-to-REVEAL guard verified mid-play; TRANSFER: READY (scoped); dissent night5-now DISCHARGED
 
 ## Claim ledger
 
@@ -120,7 +121,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-teacher-dissent — undefined/undefined/open — undefined
 - econ-l1-n5-attribution — economic-truth/blocking/open — The round-2 retune made Night-4 spend carry the dominant Night-5 channel, but the NIGHT 5 WAS NIGHT 1 reveal still credits renewals: NY 14,142 -> 15,202 (+1,060) decomposes as renewals -140 vs carry +1,200, yet the copy attributes the change to the renewals book. HOUSE_RULES[1] ('nothing else moves it') is now false and contradicts rule 2. Narrow attribution/copy repair: decompose the N5 delta honestly on the reveal and fix the rule text. GATE_L1_ECON_R2.md.
 - recheck2-l1-econ-dissent — undefined/undefined/open — undefined
-- teacher-l1-night5-now — teacher-transfer/blocking/open — Nights 4-5 share one NOW block (fullHouse.ts:2191, block2 = nightIndex>=3): on Night 5 the console instructs the teacher to read Night 4's card and watch for capacity buys, contradicting the adjacent projector mirror on the same screen. TRANSFER stays NOT READY on this alone; line-level fix. Also carried non-blocking: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. GATE_L1_TEACHER.md re-run section.
+- teacher-l1-night5-now — teacher-transfer/blocking/resolved — Nights 4-5 share one NOW block (fullHouse.ts:2191, block2 = nightIndex>=3): on Night 5 the console instructs the teacher to read Night 4's card and watch for capacity buys, contradicting the adjacent projector mirror on the same screen. TRANSFER stays NOT READY on this alone; line-level fix. Also carried non-blocking: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. GATE_L1_TEACHER.md re-run section.
 - recheck2-l1-teacher-dissent — undefined/undefined/open — undefined
 - play-l1-repairs-below-fold — gameplay/blocking/open — Two of four claimed board repairs render below the projector fold at 1366x768/1600x900/1920x1080 (REVEAL-5 renewals rule top 764/895/1073; COUNTERFACTUAL scatter top 720/839/1007) while /teach tells the teacher the rule is on the screen now. Also blocking: N5-repeats-N1 felt delta shrunk to +170/-360 with the round-1 FULL HOUSE unreachable (same N5 economy the econ dissent flags for attribution — rebalance and attribute together); spend receipt reports payoff but never waste. GATE_L1_PLAY.md r2 section.
 - recheck2-l1-play-dissent — undefined/undefined/open — undefined

@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T01:51:56.759Z",
+  "updatedAt": "2026-09-01T02:01:55.800Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -984,7 +984,8 @@
         "gate-l1-play-r2",
         "l1-tests-r3",
         "l1-tuning-r3",
-        "l1-e2e-r3"
+        "l1-e2e-r3",
+        "gate-l1-teacher-r3"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1959,6 +1960,24 @@
       },
       "recordedAt": "2026-09-01T01:51:31.296Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-teacher-r3": {
+      "id": "gate-l1-teacher-r3",
+      "wave": 2,
+      "kind": "teacher-transfer-report",
+      "label": "Teacher narrow re-check r3: all 7 claims CONFIRMED from rendered /teach in a live session to Night 5 + 7 reveals; Jump-to-REVEAL guard verified mid-play; TRANSFER: READY (scoped); dissent night5-now DISCHARGED",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-teacher-r3--GATE_L1_TEACHER.md",
+      "sha256": "c3f6dd1fd5ac00e2fff3061af59bdbd5c206024361c8494fd59784d80e8251b7",
+      "size": 43738,
+      "metadata": {
+        "tags": [
+          "teacher-transfer",
+          "wave-2",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:01:55.550Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -2297,9 +2316,12 @@
         "gate-l1-teacher-r2"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T01:17:44.484Z",
-      "actor": "teacher-transfer-critic"
+      "actor": "teacher-transfer-critic",
+      "resolution": "Narrow re-check on the rendered surface: Night 5 has its own NOW block and repeat-price WATCH FOR, no contradiction with the projector mirror; guard covers Jump to REVEAL; all seven claims confirmed. Critic's explicit line: DISSENT teacher-l1-night5-now: DISCHARGED; TRANSFER: READY (scoped to the named claims). GATE_L1_TEACHER.md narrow re-check section.",
+      "resolvedAt": "2026-09-01T02:01:55.800Z",
+      "resolvedBy": "lead-integrator"
     },
     "recheck2-l1-teacher-dissent": {
       "id": "recheck2-l1-teacher-dissent",
@@ -2362,11 +2384,11 @@
     "agentsActivated": 29,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 47,
+    "evidenceRecorded": 48,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 141,
-  "eventHead": "346b87646275653a6afb867ab69ffea1d74ecef6feb29a56bef68131878e4af2",
+  "eventCount": 143,
+  "eventHead": "f268836353d9d9957c7ee678a056fe7af5b5f74427c6e589ef320404384cfb12",
   "warnings": []
 }
