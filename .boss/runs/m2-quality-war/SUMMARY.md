@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `144:f42d5a21c62c043b14c0815334646d24b492f66ce5c0b76542ae9908ae27a0ea`  
-Updated: 2026-09-01T02:02:10.600Z
+Event head: `146:3d0372839471b60663e1eb860b7956a58f7236272185d246f509ab56ee7cf317`  
+Updated: 2026-09-01T02:03:21.614Z
 
 ## Founder intent
 
@@ -50,7 +50,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - builder — lead-integrator — completed-with-concerns — claude-opus-5
 - economic-truth-critic — lead-integrator — active — claude-opus-5
-- player-gameplay-critic — lead-integrator — active — claude-opus-5
+- player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed — claude-sonnet-5
 
 ## Required evidence
@@ -98,6 +98,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-tuning-r3 — test — Tuning harness 16 properties (P15 repeat scale, P16 decomposition identity)
 - l1-e2e-r3 — e2e — e2e with fold + receipt assertions after round 3
 - gate-l1-teacher-r3 — teacher-transfer-report — Teacher narrow re-check r3: all 7 claims CONFIRMED from rendered /teach in a live session to Night 5 + 7 reveals; Jump-to-REVEAL guard verified mid-play; TRANSFER: READY (scoped); dissent night5-now DISCHARGED
+- gate-l1-play-r3 — gameplay-report — Play re-check r3: RATING STRONG; felt-scale accepted (P12 downgraded); waste receipt + REVEAL-5 fold confirmed incl. at 10 desks; NOT DISCHARGED: COUNTERFACTUAL rows 5-10 + class summary below fold at 10 desks (rows.map uncapped; e2e asserts only elements above the overflow)
 
 ## Claim ledger
 

@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:02:10.600Z",
+  "updatedAt": "2026-09-01T02:03:21.614Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -933,12 +933,23 @@
           "model": "claude-opus-5",
           "reason": "Rule on fold placement + felt-scale: is +600/-380..-900 enough for the repeat beat, given the critic's own 10%-of-capacity bar is unmet by construction",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T01:51:56.529Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T02:03:21.614Z",
+          "sections": {
+            "what-the-student-plays": "Unchanged loop; two sessions (4 desks covering plan-line/floor-line/wasted-spend, then 10 desks for scale).",
+            "pull-rating": "RATING: STRONG (held). The decomposed repeat beat accepted at +600/-900/-380 scale; P12 downgraded from blocking.",
+            "biggest-failure": "COUNTERFACTUAL fold moved onto load-bearing content at class size: at 10 desks rows 5-10 and the class summary fall below the 768px fold (stage scrollHeight 1823; 4 of 10 rows visible even at 1080p); board rows.map has no cap and the e2e asserts only elements that sit above the overflow.",
+            "moment-by-moment-notes": "REVEAL-5 rule in-viewport at both resolutions and at 10 desks; /teach claims now truthful; waste receipt renders both branches; beat numbers exact.",
+            "required-repairs": "Cap/paginate/compress the COUNTERFACTUAL rows so the summary and all rows are reachable at 12+ desks, and extend the e2e to assert the LAST row + summary in-viewport at class size. DISSENT play-l1-repairs-below-fold: NOT DISCHARGED (REVEAL half discharged; COUNTERFACTUAL half open). Real-classroom test must watch whether the repeat beat reads at the accepted scale."
+          },
+          "evidenceIds": [
+            "gate-l1-play-r3"
+          ],
+          "cost": {
+            "tokens": 91542,
+            "toolUses": 33
+          }
         },
         "recheck3-l1-teacher": {
           "assignmentId": "recheck3-l1-teacher",
@@ -997,7 +1008,8 @@
         "l1-tests-r3",
         "l1-tuning-r3",
         "l1-e2e-r3",
-        "gate-l1-teacher-r3"
+        "gate-l1-teacher-r3",
+        "gate-l1-play-r3"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1990,6 +2002,24 @@
       },
       "recordedAt": "2026-09-01T02:01:55.550Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-play-r3": {
+      "id": "gate-l1-play-r3",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "Play re-check r3: RATING STRONG; felt-scale accepted (P12 downgraded); waste receipt + REVEAL-5 fold confirmed incl. at 10 desks; NOT DISCHARGED: COUNTERFACTUAL rows 5-10 + class summary below fold at 10 desks (rows.map uncapped; e2e asserts only elements above the overflow)",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-play-r3--GATE_L1_PLAY.md",
+      "sha256": "6df970c682c0f154a15b5ccb850d7e1c506e0b05222f6ac3f227661b181c49f7",
+      "size": 71398,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "wave-2",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:03:07.253Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -2396,11 +2426,11 @@
     "agentsActivated": 29,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 48,
+    "evidenceRecorded": 49,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 144,
-  "eventHead": "f42d5a21c62c043b14c0815334646d24b492f66ce5c0b76542ae9908ae27a0ea",
+  "eventCount": 146,
+  "eventHead": "3d0372839471b60663e1eb860b7956a58f7236272185d246f509ab56ee7cf317",
   "warnings": []
 }
