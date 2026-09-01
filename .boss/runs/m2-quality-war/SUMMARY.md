@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `159:bfcb0f4cbdf6040987c797ee37164396187767494336cc657fa6727feebb3ced`  
-Updated: 2026-09-01T02:13:54.881Z
+Event head: `168:93b95e22a81c54cd87952a628e7c845a1038aed875e0602b33bf6c639e7c62a0`  
+Updated: 2026-09-01T02:15:29.927Z
 
 ## Founder intent
 
@@ -53,7 +53,9 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed — claude-sonnet-5
 - product-analyst — lead-integrator — completed-with-concerns — claude-opus-5
-- regression-hunter — regression-hunter — active — claude-sonnet-5
+- regression-hunter — regression-hunter — completed — claude-sonnet-5
+- experience-director — lead-integrator — completed — claude-opus-5
+- lead-integrator — lead-integrator — active — claude-fable-5
 
 ## Required evidence
 
@@ -103,6 +105,11 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-play-r3 — gameplay-report — Play re-check r3: RATING STRONG; felt-scale accepted (P12 downgraded); waste receipt + REVEAL-5 fold confirmed incl. at 10 desks; NOT DISCHARGED: COUNTERFACTUAL rows 5-10 + class summary below fold at 10 desks (rows.map uncapped; e2e asserts only elements above the overflow)
 - gate-l1-econ-r3 — economic-truth-report — Econ re-check r3: N5 attribution DISCHARGED (probe wider than P16: residual 0, biggestChannel 168/168, 18/18 inversions named). Tradeoff SPLIT: frontier REAL (22/24 undominated, marginal cost rising 50x) — accept-with-reason on felt-scale; zero-headroom refuted (30/4.5 passes with headroom). NEW BLOCKING: two-books card prices renewals 47-70x too steep vs a Pareto-dominated baseline. Non-blocking: demand-floor identity edge; HOUSE_RULES[2] +2 false in 62-65% of states
 - analyst-wave2 — analyst-report — Wave-2 analyst: REPAIR. Catches: counterfactual fails at 10 desks and its e2e guard cannot see it at any class size; N5 discharge unqualified while /play still misattributes; two-books baseline laundered as narrow and worsened across rounds (47-70x); M1 browser evidence stale by one round; 30/4.5 refutes builder ceiling with +720 beat; P16 dominance limb tautological; visual/projector never re-adjudicated; formal dissent against any PASS
+- m1-e2e-l2-final — e2e — M1 L2 e2e at current head
+- m1-e2e-l2ea-final — e2e — M1 L2 early-advance e2e at current head
+- m1-e2e-l3-final — e2e — M1 L3 full-chain e2e at current head
+- m1-e2e-l3ea-final — e2e — M1 L3 early-advance e2e at current head
+- wave2-git-diff — git-diff — Wave 2 runtime diff from the wave-1 checkpoint to head (full stat in metadata file)
 
 ## Claim ledger
 

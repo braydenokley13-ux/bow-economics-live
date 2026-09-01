@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T02:14:27.144Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-l2.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[e2e] starting server...\n[e2e] server up on http://localhost:4301\n[e2e] === L1: playing Draft Day through the real API to produce genuine carried state ===\n[e2e] all three L1 teams built and locked their rosters\n[e2e] L1 session ed304840-d2af-4daa-b555-c86245625b54 ended (code BOWEKE) — this is the real, ended-class seed for L2\n[e2e] === L2: driving /teach, /play x4, /board through real Chromium pages ===\n[e2e] L2 session created, code BOWX9E\n[e2e] all four teams joined L2\n[e2e] Alpha/Beta/Gamma claimed their carried L1 franchises; Delta claimed a stock expansion franchise\n[e2e] Alpha stood pat\n[e2e] Beta cut its Scorer and signed the veteran\n[e2e] Gamma bid $40 and Delta bid $10 on the same scarce target (Deshawn Ruiz)\n[e2e] teacher revealed all four deadline targets\n[e2e] confirmed: Gamma's bid WON, Delta's bid LOST — verified from their own REVEAL screens\n[e2e] Delta rescued its open PLAYMAKER slot\n[e2e] SYNTHESIS cards rendered on the board with real session numbers\n[e2e] reached COMPLETE on /board\n[e2e] zero console errors across all 6 pages\n[e2e] PASS — full L2 arc verified end to end.\n",
+  "stderr": ""
+}

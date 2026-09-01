@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:13:54.881Z",
+  "updatedAt": "2026-09-01T02:15:29.927Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1026,8 +1026,55 @@
           "model": "claude-sonnet-5",
           "reason": "Analyst caught the M1 browser evidence as stale by one repair round after shared-file edits; deterministic re-run of all four M1 e2e proofs plus the full suite at the current head",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T02:13:54.881Z",
+          "completedAt": "2026-09-01T02:15:28.795Z",
+          "sections": {
+            "regressions-found": "None. All four M1 e2e proofs (L2, L2 early-advance, L3 full-chain, L3 early-advance) re-run green at the current head — after the round-3 shared-file edits the analyst flagged as post-dating the prior regression evidence. Full suite green at the same head (l1-tests-r3).",
+            "paths-exercised": "M1 L2 sealed-bid deadline full arc; L2 teacher early-advance; L3 four-day market full L1->L2->L3 chain; L3 early-advance; all via the rerunnable Playwright proofs with zero-console-error assertions.",
+            "verdict": "M1 unregressed at the current head, browser-level, closing the analyst's stale-evidence gap."
+          },
+          "evidenceIds": [
+            "m1-e2e-l2-final",
+            "m1-e2e-l2ea-final",
+            "m1-e2e-l3-final",
+            "m1-e2e-l3ea-final",
+            "l1-tests-r3"
+          ],
+          "cost": null
+        },
+        "wave2-direction": {
+          "assignmentId": "wave2-direction",
+          "role": "experience-director",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Wave-2 experience direction was fixed by the Wave-1 selection: DESIGN_C's L1 section + ARCHITECTURE_SELECTION BC-4 (preserve the verified STRONG beats) served as the binding direction artifacts for the build",
+          "ephemeral": false,
+          "status": "completed",
+          "activatedAt": "2026-09-01T02:14:15.767Z",
+          "completedAt": "2026-09-01T02:14:16.030Z",
+          "sections": {
+            "direction": "Direction for the Wave-2 build was frozen at selection: DESIGN_C_FIRSTPRINCIPLES.md L1 (fantasy, loop, phases, synthesis) plus ARCHITECTURE_SELECTION.md BC-4 (the three play-verified STRONG beats are the identity of the lesson and may not be lost in polish). The build and all three repair rounds were steered against these artifacts.",
+            "experience-risks": "Ranked at selection: classroom-fidelity risk to the STRONG loop (settled: STRONG held through three independent gate rounds), reveal pacing dead air, class-evidence legibility at scale (materialized — open dissent).",
+            "non-negotiables": "BC-4's beats; blind pre-commit; two non-collapsible books; teacher-paced reveals with fallbacks; board privacy.",
+            "open-questions": "Felt pull with real students (D10 rung); the class-scale argue frame (carried to Wave 3)."
+          },
+          "evidenceIds": [
+            "arch-selection",
+            "design-c",
+            "gate-l1-play-r3"
+          ],
+          "cost": null
+        },
+        "wave2-integration": {
+          "assignmentId": "wave2-integration",
+          "role": "lead-integrator",
+          "actor": "lead-integrator",
+          "model": "claude-fable-5",
+          "reason": "Wave-2 run coherence, dependency order, evidence completeness, and the wave verdict decision",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T02:15:29.927Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -1067,7 +1114,12 @@
         "gate-l1-teacher-r3",
         "gate-l1-play-r3",
         "gate-l1-econ-r3",
-        "analyst-wave2"
+        "analyst-wave2",
+        "m1-e2e-l2-final",
+        "m1-e2e-l2ea-final",
+        "m1-e2e-l3-final",
+        "m1-e2e-l3ea-final",
+        "wave2-git-diff"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -2567,6 +2619,116 @@
       },
       "recordedAt": "2026-09-01T02:12:36.099Z",
       "actor": "lead-integrator"
+    },
+    "m1-e2e-l2-final": {
+      "id": "m1-e2e-l2-final",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "M1 L2 e2e at current head",
+      "path": ".boss/runs/m2-quality-war/evidence/m1-e2e-l2-final--record.json",
+      "sha256": "55e2d916e4232d9538c8a671cc697278bd5bd5a25bdfc0aea90411e95e57f0ec",
+      "size": 1327,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "regression"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l2.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:14:27.171Z",
+      "actor": "regression-hunter"
+    },
+    "m1-e2e-l2ea-final": {
+      "id": "m1-e2e-l2ea-final",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "M1 L2 early-advance e2e at current head",
+      "path": ".boss/runs/m2-quality-war/evidence/m1-e2e-l2ea-final--record.json",
+      "sha256": "7e037821d0e003f7ecefe6c7d14ee8a11d31cc45ea5031431b32ed6aaf7b54ba",
+      "size": 995,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "regression"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l2-early-advance.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:14:51.845Z",
+      "actor": "regression-hunter"
+    },
+    "m1-e2e-l3-final": {
+      "id": "m1-e2e-l3-final",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "M1 L3 full-chain e2e at current head",
+      "path": ".boss/runs/m2-quality-war/evidence/m1-e2e-l3-final--record.json",
+      "sha256": "f06108c675273b5c80d9bf5ba223b7be8d1d0541d61648427594b30a437600cc",
+      "size": 2208,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "regression"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l3.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:15:04.991Z",
+      "actor": "regression-hunter"
+    },
+    "m1-e2e-l3ea-final": {
+      "id": "m1-e2e-l3ea-final",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "M1 L3 early-advance e2e at current head",
+      "path": ".boss/runs/m2-quality-war/evidence/m1-e2e-l3ea-final--record.json",
+      "sha256": "ede3809f04a29b2e76a94f499a6a56690e563649650d3330c70596fa90ffeb4b",
+      "size": 1321,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "regression"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l3-early-advance.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:15:06.963Z",
+      "actor": "regression-hunter"
+    },
+    "wave2-git-diff": {
+      "id": "wave2-git-diff",
+      "wave": 2,
+      "kind": "git-diff",
+      "label": "Wave 2 runtime diff from the wave-1 checkpoint to head (full stat in metadata file)",
+      "path": ".boss/runs/m2-quality-war/evidence/wave2-git-diff--wave2-runtime.diff",
+      "sha256": "949b46c532c4af06bb3e8066d5775771c657a314b32c7901c389accbbb252051",
+      "size": 359731,
+      "metadata": {
+        "fromCheckpoint": "344639a2",
+        "statFile": "wave2-diff-stat.txt",
+        "tags": [
+          "wave-2"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:15:29.688Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -3019,14 +3181,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 31,
+    "agentsActivated": 33,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 51,
+    "evidenceRecorded": 56,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 159,
-  "eventHead": "bfcb0f4cbdf6040987c797ee37164396187767494336cc657fa6727feebb3ced",
+  "eventCount": 168,
+  "eventHead": "93b95e22a81c54cd87952a628e7c845a1038aed875e0602b33bf6c639e7c62a0",
   "warnings": []
 }
