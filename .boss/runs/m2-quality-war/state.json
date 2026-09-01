@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:01:55.800Z",
+  "updatedAt": "2026-09-01T02:02:10.600Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -947,12 +947,24 @@
           "model": "claude-sonnet-5",
           "reason": "Narrow confirm of TT-R1 (Night-5 NOW block) and the carried teacher items; bounded verification, no full protocol re-run",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T01:51:56.759Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T02:02:10.600Z",
+          "sections": {
+            "before-verdict": "Not applicable — narrow recheck scoped to the prior dissent's items.",
+            "during-verdict": "All seven claims CONFIRMED from rendered /teach in a live 3-desk session to Night 5 and through all seven reveal presses: distinct Night-5 NOW + repeat-price WATCH FOR with no on-screen contradiction; retiring flags; shared confirm guard on Advance and Jump-to-REVEAL; done-conditional wrap-up ASK; student-sentence quote instead of identifier; prep pointer; projector-mirror stage claim gated ===.",
+            "failure-recovery-verdict": "Jump-to-REVEAL guard fired mid-play, named the loss, dismissal left state unchanged; zero console errors.",
+            "synthesis-verdict": "Not re-tested (out of scope this round; prior verdict stands).",
+            "hidden-knowledge-findings": "None within scope; TT-R4 (Restore untooltipped) remains open as a carried minor.",
+            "required-repairs": "None generated. TRANSFER: READY (scoped). DISSENT teacher-l1-night5-now: DISCHARGED."
+          },
+          "evidenceIds": [
+            "gate-l1-teacher-r3"
+          ],
+          "cost": {
+            "tokens": 110296,
+            "toolUses": 55
+          }
         }
       },
       "evidenceIds": [
@@ -2388,7 +2400,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 143,
-  "eventHead": "f268836353d9d9957c7ee678a056fe7af5b5f74427c6e589ef320404384cfb12",
+  "eventCount": 144,
+  "eventHead": "f42d5a21c62c043b14c0815334646d24b492f66ce5c0b76542ae9908ae27a0ea",
   "warnings": []
 }
