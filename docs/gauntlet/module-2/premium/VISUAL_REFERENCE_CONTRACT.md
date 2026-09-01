@@ -99,7 +99,9 @@ arena, the claim limb).** **W3 = §E + §F (projector frames, `/teach`) + synthe
 - Module 1 rendered output unchanged (M1 pixel baseline); Module-2 tokens scoped by module id.
 - Every new sentence on an M2 surface is a registered module constant; no new real-world sports fact without Sports Reality verification.
 - The six synthesis cards, their order, staging and bodies are not this wave's to change (E27); the wave adds computed visuals only (R-5, W3).
-- `SIMPLIFICATIONS` records the two arena simplifications with misconception risk (R-7).
+- `SIMPLIFICATIONS` records the two arena simplifications with misconception risk (R-7) and the renewals-reference-price entry (R-10: the forgiveness line moves per card and is never printed; a pair generalising "high price loses renewals" from Nights 1–3 is wrong on Night 4 — let it happen, then name why).
+- **R-9 (blocking, module change through Economic Truth):** `studentView` REVEAL carries `twoPeaks` only when `twoPeaksReleased && revealStage >= NIGHT_COUNT + 1`, matching `boardView`; discharged by a module test asserting the field is absent at every lower stage. A client-only gate is not the permanent fix.
+- **FL-V11:** no renewals visual may encode a monotone price-up → renewals-down relationship (false on Night 4 in both markets); no down-arrow tied to the dial, no red/green split on the slider track.
 
 ## H. Analyst additions (appended at wave-1 close)
 

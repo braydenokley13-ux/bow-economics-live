@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:32:23.257Z",
+  "updatedAt": "2026-09-01T20:36:21.112Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -282,11 +282,25 @@
           "model": "claude-opus-5",
           "reason": "Rulings on every reference element that would expose hidden information, collapse the two books, or overstate the model; rendered-claim baseline",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:14:04.283Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T20:36:21.099Z",
+          "sections": {
+            "mechanism-verdicts": "STRUCTURAL FINDING FIRST: Full House registers NO ClaimAtom and NO test in this repo reads a line of runtime/src/client/**. ClaimAtom/Claimed/ClaimSurface and the COVERAGE/VALUE/QUANTIFIER/LEVEL/RENDER limbs exist only in L3 (writeTheRule.ts:766-818,2300). L1's protection is entirely server-side payload discipline (fullHouse.test.ts:181 BLIND COMMIT walks every pre-lock number and forbids the key substrings preview/project/estimate/expected/forecast; :223 FORBIDDEN_KEYS + forbidden curve values across every surface x phase) plus 16 constant properties in l1-tuning-harness.mjs, of which exactly ONE (P16, lines 1133/1152) renders product strings (pathDependenceCardBody, repeatSummary). Consequence: a builder can compute a projected attendance inside play/main.ts, print a target band, label CASH as 'Total Profit', or draw a fitted demand curve, and npm test stays 461/461 green and the harness still says ALL 16 PROPERTIES HOLD. OBSERVED this session: cd runtime && npm test -> exit 0, 461/461, 17.8s; node docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs -> 'VERDICT: ALL 16 PROPERTIES HOLD'. MECHANISM CHECKS I RAN AGAINST THE SHIPPED BUILD (runtime/dist/modules/fullHouse.js): (1) cash-best price is $34/$48/$40/$90/$34 (New York) and $24/$36/$30/$84/$24 (Memphis) on N1-N5, at fills of 60.0-81.8% -- so the reference's 'Target: $110-$120' is not merely a leak, it is loss-making, turnout 0 and net -$520,000 (NY) / -$280,000 (MEM) on N1,N2,N3,N5. (2) fillPct = turnout/seatsOpen and seatsOpen changes with the Night-4 upper bowl: at NY N4 $84 the same 17,100 crowd renders as 86.4% (bowl closed) or 77.0% (bowl open); at $60 opening the bowl LOWERS fill 100%->93.2% while raising turnout and zeroing turnaways. Any 'of Capacity' label or fixed-bowl arena drawing is false on Night 4. (3) CurvePoint -- the only per-desk record any board frame receives -- carries no money at all (marketId, cardId, deskHandle, price, turnout, fillPct, soldOut). Per-desk cash/renewals are never on the projector; board money is per-market medians at the season-books stage. (4) The pre-lock student payload already carries the pair's own history with per-night price/turnout/fillPct/net, so a 'your own nights' chart adds no information -- but only N1 and N5 share a card, so it can never hold two comparable points before the last night. Evidence: econ-adaptation-rulings-report, -npmtest, -probe-optima, -probe-fill. TWO KID-BASELINE FINDINGS ADJUDICATED. K1 CONFIRMED, blocking for the rebuilt /play REVEAL surface: onPhaseExit force-sets twoPeaksReleased=true on leaving PLAY (fullHouse.ts:2029); boardView REVEAL then correctly gates the panel at revealStage >= NIGHT_COUNT+1 (press 6 of 7, fullHouse.ts:2522-2523); but studentView REVEAL has NO revealStage gate at all (fullHouse.ts:2246-2249) and hands every desk its own market's ticketPeakPrice, totalPeakPrice, gapDollars, gapSteps and three revenue figures the instant REVEAL opens -- the answer to the centrepiece reveal, six presses before the room sees it. Same class of defect as gate-l1-projector repair 3, surviving on the surface that repair did not touch. NOT VERIFIED: whether play/main.ts paints it today or drops the field; the payload leak is real either way and the rebuild is about to re-author that renderer. K2 CONFIRMED as model behaviour and NOT a defect, but a live false-lesson risk for the rebuilt renewals visual: OBSERVED over PRICE_GRID at RENEWALS_START, renewalDelta at $90 is -20 on N1/N2/N3/N5 in both markets but +9 (New York) and +10 (Memphis) on N4, and renewals keep GAINING up to $114 / $104 -- because renewalReferencePrice rises to $111.40 / $101.50 on a draw-97 no-TV card. The model is right and renewalRuleFor is true, but the reference price is never printed, so a pair that generalised 'high price costs renewals' from Nights 1-3 meets the opposite on Night 4.",
+            "false-lesson-risks": "FL-V1 BLOCKING -- 'Why didn't the highest price always win?' as a printed projector prompt. It presupposes a class result the model refutes. OBSERVED over 4,000 simulated 6-desk classes per cell: the highest-priced desk ALSO has the highest cash on Night 4 in 98.7% (timid $10-$40), 100.0% (mid $20-$60) and 31.6% (spread) of classes; on N1/N3/N5 with a timid room it still wins 37-58%. The frame would be refuted by the table printed directly above it. FL-V2 BLOCKING -- 'Your Goal: Maximize Revenue' and 'maximize revenue AND fill your arena'. Three false claims at once: the registered OBJECTIVE_COPY says the opposite ('two books... they do not add up to one number'); ticket revenue and total revenue peak at different prices (ticketPeak $42 vs totalPeak $34 at NY N1; $98 vs $90 at NY N4) which is the entire Two Peaks reveal; and revenue and fill CONFLICT -- OBSERVED, the cash-best price does NOT fill the building on 8 of 10 market-nights, the best reachable sellout is worth 34%/68%/28%/93%/34% of best cash at New York on N1-N5, and Memphis CANNOT sell out at any legal price on N1, N3 or N5. FL-V3 BLOCKING -- 'Strong Round! You're building momentum. Keep optimizing to maximize profits.' plus a trophy. Beyond D4, 'Strong' is an evaluation the model cannot make (no single objective) and it overrules the module's own teacher script, which instructs the teacher in HOOK: 'DO NOT evaluate them -- no good, no that's high. You are collecting, not marking.' 'Momentum' names a streak mechanic that does not exist; the model has two named carried channels, non-directional. FL-V4 BLOCKING -- 'Higher prices reduce demand' as a PRE-LOCK footnote on the demand card. teacherDirector HOOK dontExplainYet says verbatim: 'Do not tell them the crowd shrinks when the price goes up. They find that in their own numbers at the first reveal.' The screen would hand over the finding the seven-stage reveal exists to produce. FL-V5 BLOCKING -- a balance-scale illustration for Tradeoffs. A scale is a picture of commensurability; the card it illustrates is titled TWO BOOKS, NO EXCHANGE RATE and its body says 'You cannot add a dollar to a renewal'. The visual would refute the module's central formalization. FL-V6 BLOCKING -- 'Weather' as a demand-shifter chip. Not in curveFor; contradicts registered HOUSE_RULES[1] ('there is no luck in this game'); and SIMPLIFICATIONS[8] records the opposite as deliberate design ('No randomness at all: no weather, no injuries, no winning streak... every outcome must be attributable to the pair's own decision, or the debrief is a shrug'). FL-V7 IMPORTANT -- bare night-over-night delta pills ('+1,250 attendance'). I am partly OVERTURNING the Boss lead's PRELIMINARY ADAPTATION here: N2->N3 is a comparison across two different demand worlds and an arrow pill makes the price attribution typographically. This is exactly the B5 defect removed from revenueCardBody and the reason shifterCardBody refuses to quote two prices without saying 'part of that gap is the price'. The only same-card comparison the lesson licenses is N1->N5, and it must render repeatRowFor's computed channel split, not an arrow -- a bare delta re-opens dissent econ-l1-n5-attribution. FL-V8 IMPORTANT -- a fill gauge or arena picture given hero treatment on the results screen teaches 'fill the building', false on 8 of 10 market-nights, and re-creates the R8 small-market defect visually: Memphis desks structurally cannot show a full house on 3 of 5 nights. FL-V9 IMPORTANT -- 'TOTAL REVENUE' as the label for gate (price x people). The reference's own $114 x 15,250 = $1,739,000 is ticket money; labelling it total revenue pre-empts and contradicts THE TICKET IS NOT THE PRODUCT on the adjacent card. FL-V10 ADVISORY, pre-existing -- ARGUE_PROMPT asserts 'Somebody in this room made more money by charging less'. OBSERVED it holds season-wide in 84.5% of the worst room swept (4 desks, all prices $10-$40) and 100% elsewhere; acceptable season-wide, must never be promoted to a per-night projector headline where the sample collapses to one market x one night. Evidence: econ-adaptation-rulings-report, -probe-highestprice, -probe-fill, -probes. FL-V11 BLOCKING for the rebuilt renewals visual (kid finding K2) -- any renewals visual encoding a monotone 'price up -> renewals down' relationship: no down-arrow tied to the price dial, no red-above/green-below split on the slider track, no gauge whose needle is driven by price. OBSERVED false on Night 4 in BOTH markets (renewalDelta +9 NY / +10 MEM at $90, still gaining to $114 / $104) -- on the single night the room remembers most -- and it would also be a pre-lock preview by construction. Allowed instead: renewalRuleFor / HOUSE_RULES[4] / RENEWALS_RULE_BOARD verbatim, and the settled renewalsBefore -> renewalsAfter after the lock. FL-V12 BLOCKING (kid finding K1) -- the /play REVEAL surface must not render Two Peaks before the board has released it; today's studentView hands it over at stage 0.",
+            "dominant-strategies": "No NEW dominant strategy is created by any reference element, because the references add no mechanism -- but three of them would REVEAL or MANUFACTURE one. (1) The pre-lock projection (projected attendance/revenue/profit + the demand-at-a-glance curve with the live price plotted on it) converts the price dial from reasoning into a sweep: with an outcome that moves as the dial moves, the dominant strategy is 'drag until the number peaks', and BC-4's whole claim ('this is what makes it reasoning rather than search') is void. Same for a vertical rule at the current price on a chart of realized turnouts -- the reader builds the projection by interpolation, and BC-4 does not care who does the arithmetic. (2) 'Target: $110-$120' hands over a purported optimum. OBSERVED it is not even the model's optimum: cash-best is $24-$48 on four of five nights and $84-$90 on Night 4, and $110-$120 returns turnout 0 and a full-bill loss on N1/N2/N3/N5. It would install a dominant-looking strategy that is dominated. (3) A fill hero or a celebratory sellout treatment installs 'price low, sell out' as the perceived dominant strategy. OBSERVED it is dominated on 8 of 10 market-nights (a sellout is worth 28-68% of best cash on the quiet nights) -- the picture would teach the losing line. RE-CONFIRMED FROM THE MODEL, unchanged by this wave and not re-derived by me beyond the checks named: the season two-book frontier has no dominant book; the Night-4 upper-bowl option is strictly dominated and declared; there is no cheap-is-kind exploit. NOT VERIFIED by me this round: the season-frontier dominance sweep, the Night-3 spend result, and gate items N4/N6/N7/N8/N9 -- I relied on GATE_L1_ECON_R3.md's W3 adjudication for those and did not re-derive them.",
+            "synthesis-map-verdict": "The module ships SIX synthesis cards computed from the class's own locked-at-time numbers (D15, fullHouse.test.ts:740/789), staged one page at a time (SYNTH_CARDS_PER_PAGE = 1) with a student mirror: REVENUE = PRICE x PEOPLE, THE CARD MOVED THE CROWD, THE TICKET IS NOT THE PRODUCT, NIGHT 5 WAS NIGHT 1, TWO BOOKS NO EXCHANGE RATE, YOUR JOB IS REAL. The reference's four cards are a subset plus one invention. VERDICT: the card set, its order, its staging and its bodies are NOT this visual wave's to change; the wave gives them the reference's grammar (badge, name, one computed visual, one takeaway) and nothing else. Card-by-card: (a) 'Demand curve with the pair's point' -- ALLOWED only as the class's realized dots for ONE market x ONE card; a smooth fitted curve is FORBIDDEN, it draws the hidden object and asserts a shape SIMPLIFICATIONS[0] records as a modelling choice whose named risk is 'a student may think... a club knows its own line'. (b) 'Revenue equation' -- ALLOWED with exact caption replacement: price x people = GATE (ticket money), + in-arena = the night's total, - bill - event money = CASH. Numbers from revenueCardBody's chosen group (same market, same card, high.turnout<low.turnout guard) or the pair's own history, never a worked example. (c) 'Demand Shifters incl. Weather' -- Weather FORBIDDEN (see FL-V6). ALLOWED chip set: DAY, THE VISITING CLUB'S DRAW /100, TV -- and, in a VISUALLY SEPARATE group labelled 'carried from an earlier night', YOUR RENEWALS and LAST NIGHT'S EVENT MONEY. The event-money chip may never sit in the 'what moved tonight's crowd' group: HOUSE_RULES[2] and spendRuleFor both say it lands on the NEXT night, and SIMPLIFICATIONS[2] records confusing the two channels as the module's named misconception risk. (d) 'Tradeoffs balance scale' -- scale FORBIDDEN (FL-V5); replacement is two axes, the season frontier the model already computes (seasonFrontier / bestFoundSeason / renewalsCornerSeason / renewalMarginalCost) with the two printed corners marked and the rising-marginal-cost sentence beside it; do not draw a smooth convex curve, SIMPLIFICATIONS[4] records that the rise is a trend and not monotone (7 local drops NY, 8 MEM). (e) The two cards the reference has no slot for -- THE TICKET IS NOT THE PRODUCT and NIGHT 5 WAS NIGHT 1 -- must survive; the second is the module's most-repaired string, the only one under a harness render limb (P16), and its branch logic (floored, bothFloored, renewalsLed, biggestChannel) must not be re-authored in the client. (f) The synthesis 'Key Insight -- Higher prices reduced demand' is ALLOWED at SYNTHESIS only, past tense, and only as the computed guarded line, never a hardcoded literal -- revenueCardBody carries the guard and an honest fallback for rooms that produced no comparable pair, and a literal would be false in exactly those rooms. (g) 'Plan Next Round' FORBIDDEN; the exit is EXIT_PROMPT verbatim plus BEYOND_SPORTS_LINE. The experienced-moment -> class-result -> real-example -> formal-term -> beyond-sports chain is intact in the module today and none of my rulings weaken it; four of the reference's visual choices would break its last two links.",
+            "required-repairs": "R-1 BLOCKING, must land before or with the first rebuilt surface -- A RENDERED-CLAIM LIMB ON THE CLIENT. Every economic-truth protection in L1 stops at the module boundary. Discharge: extend runtime/scripts/e2e-m2l1.cjs so at every pre-lock PLAY state it harvests all text and numbers from #gameBody, imports dist/modules/fullHouse.js, recomputes settleNight(market, curveFor(...), currentPrice, currentSpend, openBowl, bowlOffered) for the dials as set, and asserts none of turnout/gate/inArena/total/net/fillPct/turnedAway/curve.base/curve.sens appears in the DOM, and that the rendered text contains none of project, forecast, estimate, expected, preview (outside the registered HOUSE_RULES[0] sentence saying there is none), target, profit, readiness, momentum, time remaining. MUTATION LIMB -- not discharged until it is shown to bite: inject a client-side projection into a scratch copy of dist/client/play/main.js, re-run, record the limb going red; repeat with a 'Target $110-$120' literal. A limb that has not failed is not evidence (P16 precedent). Cheap complement in the same wave: a source-level test greping runtime/src/client/{play,board}/main.ts for the same vocabulary in rendered template literals, so npm test alone catches the label class. R-2 BLOCKING before the results/projector surfaces ship -- FIX THE FILL DENOMINATOR EVERYWHERE. Every fill number, bar, gauge and arena picture is labelled 'of the seats you opened tonight' / 'of the seats that desk opened'; 'of Capacity' is forbidden. If /board draws a per-desk arena, CurvePoint must gain seatsOpen and openBowl -- a module change that returns through Economic Truth before it ships. R-3 BLOCKING -- TWO BOOKS STAY TWO BOOKS ON EVERY SURFACE. No single money hero on the student results screen; NO per-desk revenue or profit column on the projector (CurvePoint carries no money and adding it is the money leaderboard fullHouse.test.ts:813 exists to prevent); the labels 'profit', 'after costs', and 'total revenue' for gate are forbidden. CASH renders as the module's chain (tickets gate + in-arena = total, - bill - event money - bowl cost = CASH); RENEWALS renders at equal figure weight beside it with one registered sentence saying they do not add up. The projector CLASS RESULTS table's legal columns are exactly: DESK (deskHandle + market crest, stable order never sorted by outcome) / TICKET PRICE / WHO CAME (+bar) / FILL (+soldOut) -- one frame is one night in one building, and money appears once, as per-market medianCash and medianRenewals at the season-books stage. R-4 BLOCKING -- THE EVALUATIVE AND TARGET-BEARING COPY DOES NOT SHIP: the target band, the trophy/'Strong Round'/'momentum'/'maximize profits' footer, the presupposing 'Why didn't the highest price always win?' prompt, 'Maximize Revenue' as a single goal, the pre-lock 'Higher prices reduce demand' footnote, and any adaptive pre-lock advisory copy keyed to the dial (that slot may only render registered rule text: HOUSE_RULES, spendRuleFor, renewalRuleFor, MODELED_DOLLARS_LINE, spendReceipt.label). All projector prompts come from ADAPT_QUESTIONS, ARGUE_PROMPT, EXIT_PROMPT, verbatim. 'Forecast' is forbidden as a label anywhere on any surface. R-5 before the wave closes -- SYNTHESIS VISUALS ARE COMPUTED AND TWO ARE RE-DRAWN: realized dots not a fitted curve; a two-axis frontier not a balance scale; DAY/DRAW/TV chips with RENEWALS and LAST NIGHT'S EVENT MONEY in a separately labelled 'carried' group, and no Weather. Six cards, order and bodies unchanged. R-6 before the wave closes -- TEACHER SURFACE: no Proj. Attendance, no Readiness score (use the three-state pill from locked/nightsPlayed plus teacherWatchFor's registered flags stalled / repeat-price / held-price / turned-away), no countdown (elapsed clock only, beside teacherDirector's registered minuteBudget and timeCut, teacher-only, no auto-advance). If the clock ships, the session start timestamp must be exposed server-side: createdAt exists on SessionRow (runtime/src/server/types.ts:46) but does not reach /teach today, and a client-only clock resets on refresh. 'Open Projector View' opens /board; the /teach DOM is never mirrored to the projector, because boardView is structurally never handed a seat identity (fullHouse.test.ts:263). 'Class Chat' and 'Add Time' are omitted; the 28/30 denominator is omitted. The reveal control is the staged #btnRevealNext, never labelled as a one-shot 'Reveal Class Results' -- the one-shot dump is the exact defect gate-l1-projector repair 3 removed. R-7 before the wave closes -- RECORD TWO NEW SIMPLIFICATIONS introduced by the arena picture, each with its misconception risk: (a) seats drawn as an evenly lit proportion of one undifferentiated pool (no tiers, no sections, no view quality) risks 'the cheap seats filled first', a mechanism this model does not have; (b) the Night-4 upper bowl as a third state changes the denominator, so opening it LOWERS the fill picture while raising turnout and zeroing turnaways -- a student reading the picture alone concludes opening was worse. R-8 ADVISORY -- ARGUE_PROMPT's outcome assertion is safe season-wide (84.5% worst case, 100% elsewhere) but must not be promoted to a per-night projector headline. WHAT IS ALLOWED WITHOUT CHANGE, so builders are not over-constrained: the arena-fill picture on /play pre-reveal (the pair's own settled data, settled night only, own desk only, seatsOpen denominator); the arena-fill picture on /board for CLOSED nights only (boardView PLAY already filters curves to settledCards, R13) but NOT in the held all-nights-done frame, which stays held; the ARENA OUTCOME panel as the flagship consequence visual with the four encoding rules; a factual sellout headline ('FULL HOUSE - 17,794 of 17,794 - 7,796 turned away') with an edge flash, provided no word or glyph grades it and resaleNote renders verbatim so turned-away fans are never read as lost money; the radial fill gauge as one figure among the row but never the hero; 'Round 3 of 4' relabelled 'Night N of 5'; and the pre-lock 'your own nights so far' chart under its four constraints (dots only never a joined or fitted line, each dot tagged with its card, no mark for the pending night and no vertical rule at the current dial price, own desk only). R-9 BLOCKING (kid finding K1) -- gate Two Peaks on the student surface to match the board: studentView REVEAL must carry twoPeaks only when state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1, exactly as boardView does. A client-side-only gate is not acceptable as the permanent fix, because section 0 shows nothing tests the client; the payload is where the guarantee belongs. Module change, returns through Economic Truth. Discharge: a test asserting studentView REVEAL twoPeaks is empty at every revealStage below NIGHT_COUNT+1, for a state where twoPeaksReleased is true. R-10 before the wave closes (kid finding K2) -- add a SIMPLIFICATIONS entry recording that the renewals forgiveness line is a modelled construct (renewalReferencePrice) that moves per card and is never printed, with the misconception risk stated: a pair generalising 'high price loses renewals' from Nights 1-3 will be wrong on Night 4, and the teacher should let that happen and then name why. GATE_L1_ECON_R3.md W3 already lists renewalReferencePrice as a modelled construct missing from the ledger; this is the same gap with a measured consequence."
+          },
+          "evidenceIds": [
+            "econ-adaptation-rulings-report",
+            "econ-adaptation-rulings-probes",
+            "econ-adaptation-rulings-npmtest",
+            "econ-adaptation-rulings-probe-optima",
+            "econ-adaptation-rulings-probe-highestprice",
+            "econ-adaptation-rulings-probe-fill",
+            "econ-adaptation-rulings-probe-renewals"
+          ],
           "cost": null
         },
         "premium-direction": {
@@ -405,13 +419,21 @@
         "second-visual-review-board-cf",
         "second-visual-review-board-synth1",
         "second-visual-review-board-complete",
-        "second-visual-review-measurements"
+        "second-visual-review-measurements",
+        "econ-adaptation-rulings-report",
+        "econ-adaptation-rulings-probes",
+        "econ-adaptation-rulings-npmtest",
+        "econ-adaptation-rulings-probe-optima",
+        "econ-adaptation-rulings-probe-highestprice",
+        "econ-adaptation-rulings-probe-fill",
+        "econ-adaptation-rulings-probe-renewals"
       ],
       "claimIds": [],
       "dissentIds": [
         "kid-b-casual-baseline-dissent",
         "baseline-browser-qa-dissent",
-        "kid-a-basketball-baseline-dissent"
+        "kid-a-basketball-baseline-dissent",
+        "econ-adaptation-rulings-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1470,6 +1492,126 @@
       },
       "recordedAt": "2026-09-01T20:32:04.696Z",
       "actor": "visual-critic-2"
+    },
+    "econ-adaptation-rulings-report": {
+      "id": "econ-adaptation-rulings-report",
+      "wave": 1,
+      "kind": "economic-truth-report",
+      "label": "ECON_ADAPTATION_RULINGS — 30 pre-build rulings on the founder reference elements (forbidden / allowed / allowed-with-exact-replacement), the rendered-claim baseline, and 8 binding builder repairs",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/econ-adaptation-rulings-report--ECON_ADAPTATION_RULINGS.md",
+      "sha256": "c9189411a89d30d7b64c2e8d79834a277f56b7392a0d1666cdf923a2a70c5f37",
+      "size": 52488,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "m2l1-full-house",
+          "pre-build",
+          "blocking"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:36:19.519Z",
+      "actor": "econ-truth-w1"
+    },
+    "econ-adaptation-rulings-probes": {
+      "id": "econ-adaptation-rulings-probes",
+      "wave": 1,
+      "kind": "note",
+      "label": "Manifest of the five model probes run against the shipped build, plus the npm test log",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/econ-adaptation-rulings-probes--probes-manifest.md",
+      "sha256": "6f75beffafa60171a51ba823f996405ffaf397cdbab5e22dc58ea7f6976eed87",
+      "size": 1211,
+      "metadata": {
+        "tags": [
+          "computed",
+          "model-probe"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:36:19.752Z",
+      "actor": "econ-truth-w1"
+    },
+    "econ-adaptation-rulings-npmtest": {
+      "id": "econ-adaptation-rulings-npmtest",
+      "wave": 1,
+      "kind": "note",
+      "label": "cd runtime && npm test — exit 0, 461/461 pass, this session (baseline). Includes tests 286/287/288, the three M2 tuning-harness wrappers.",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/econ-adaptation-rulings-npmtest--npm-test.log",
+      "sha256": "274f1d4f664035f176dc893e132e2cb847641dc602fe62172583d2c0f5e8daae",
+      "size": 111433,
+      "metadata": {
+        "tags": [
+          "technically-verified",
+          "baseline"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:36:19.973Z",
+      "actor": "econ-truth-w1"
+    },
+    "econ-adaptation-rulings-probe-optima": {
+      "id": "econ-adaptation-rulings-probe-optima",
+      "wave": 1,
+      "kind": "note",
+      "label": "probe1.mjs — cash-best / gate-best / sellout ceiling per market x card (source of the 'Target $110-$120 is loss-making on 4 of 5 nights' finding)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/econ-adaptation-rulings-probe-optima--probe1.mjs",
+      "sha256": "9d0ab2bd3bc8a340a8fd859d4b6a8c8d7009f181bbb1069b66b57e15a4689496",
+      "size": 1367,
+      "metadata": {
+        "tags": [
+          "computed"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:36:20.201Z",
+      "actor": "econ-truth-w1"
+    },
+    "econ-adaptation-rulings-probe-highestprice": {
+      "id": "econ-adaptation-rulings-probe-highestprice",
+      "wave": 1,
+      "kind": "note",
+      "label": "probe2.mjs — 'Why didn't the highest price always win?' is false in 98.7-100% of realistic classes on Night 4",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/econ-adaptation-rulings-probe-highestprice--probe2.mjs",
+      "sha256": "e80fe60fe413c8d350f4e4b973b1a64e1e5b54f9e8bcfa76430b52b7a9092430",
+      "size": 1737,
+      "metadata": {
+        "tags": [
+          "computed",
+          "false-lesson"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:36:20.423Z",
+      "actor": "econ-truth-w1"
+    },
+    "econ-adaptation-rulings-probe-fill": {
+      "id": "econ-adaptation-rulings-probe-fill",
+      "wave": 1,
+      "kind": "note",
+      "label": "probe3.mjs / probe4.mjs — fill denominator changes with the Night-4 bowl (86.4% vs 77.0% at the same 17,100 crowd); the cash-best price does not fill the building on 8 of 10 market-nights; Memphis cannot sell out at all on N1/N3/N5",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/econ-adaptation-rulings-probe-fill--probe4.mjs",
+      "sha256": "3704c1faa886badac95e38b1fdda755d037d129adef383b24387cc4066a62976",
+      "size": 870,
+      "metadata": {
+        "tags": [
+          "computed",
+          "false-lesson"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:36:20.641Z",
+      "actor": "econ-truth-w1"
+    },
+    "econ-adaptation-rulings-probe-renewals": {
+      "id": "econ-adaptation-rulings-probe-renewals",
+      "wave": 1,
+      "kind": "note",
+      "label": "probe6.mjs — renewalDelta swept over PRICE_GRID per market x card: -20 at $90 on N1/N2/N3/N5 but +9 (NY) / +10 (MEM) on N4, gaining to $114 / $104 (kid finding K2)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/econ-adaptation-rulings-probe-renewals--probe6.mjs",
+      "sha256": "62b489c74606c2f2f64a74593ec92dfdee182faa547da8e528f5696369bff3f0",
+      "size": 1254,
+      "metadata": {
+        "tags": [
+          "computed",
+          "false-lesson"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:36:20.872Z",
+      "actor": "econ-truth-w1"
     }
   },
   "claims": {},
@@ -1523,6 +1665,23 @@
       "status": "open",
       "recordedAt": "2026-09-01T20:31:40.535Z",
       "actor": "kid-a-basketball"
+    },
+    "econ-adaptation-rulings-dissent": {
+      "id": "econ-adaptation-rulings-dissent",
+      "wave": 1,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "Four reference elements must never ship in any form, and one structural gap must be closed before the rebuild starts. (1) Pre-lock 'Projected Attendance / Projected Revenue / Projected Profit' and the demand-at-a-glance curve with the live price plotted on it: BC-4 and fullHouse.ts:9-15 forbid any revenue preview and anything derived from the pending action in the pre-lock view; a moving projection also converts the price dial from reasoning into a sweep, voiding the STRONG-rated blind-commit loop. (2) 'Target: $110-$120': reveals a purported optimum and is wrong in this model -- OBSERVED cash-best is $24-$48 on four of five nights and $84-$90 on Night 4, while $110-$120 returns turnout 0 and a full-bill loss (-$520,000 NY / -$280,000 MEM) on N1, N2, N3 and N5. (3) The trophy plus 'Strong Round! You're building momentum. Keep optimizing to maximize profits.': reward chrome under D4, an evaluative claim the model cannot make (no single objective), and a direct overruling of the module's own teacher script, which instructs 'DO NOT evaluate them -- no good, no that's high. You are collecting, not marking.' (4) The projector CLASS RESULTS per-desk TOTAL REVENUE and TOTAL PROFIT columns and the prompt 'Why didn't the highest price always win?': CurvePoint carries no money at all, so those columns require adding per-desk money to boardView -- precisely the money leaderboard fullHouse.test.ts:813 (D4/R13) exists to prevent -- and the prompt presupposes a class result the model refutes: OBSERVED over 4,000 simulated 6-desk classes per cell, the highest-priced desk also has the highest cash on Night 4 in 98.7% (timid pricing) and 100.0% (mid pricing) of classes, so the frame would be refuted by the table printed above it. STRUCTURAL GAP: Full House registers no ClaimAtom and no test in this repository reads a line of runtime/src/client/**; all four of the above can be built in the client with npm test staying 461/461 green and the L1 harness still reporting ALL 16 PROPERTIES HOLD. R-1 (a rendered-claim limb on the client, with a mutation limb proving it bites) must land before or with the first rebuilt surface, or this wave ships its economics unaudited. ADDED after adjudicating two kid-baseline findings: (5) the rebuilt /play REVEAL surface must not render Two Peaks before the board releases it -- studentView REVEAL has no revealStage gate (fullHouse.ts:2246-2249) while boardView gates at press 6 of 7 (2522-2523), so every desk currently holds the centrepiece answer six presses early; and (6) no renewals visual may encode a monotone price-up-renewals-down relationship -- OBSERVED renewalDelta is +9 (New York) and +10 (Memphis) at $90 on Night 4 and keeps gaining to $114 / $104, so the intuitive gauge would be false on the night the room remembers most.",
+      "evidenceIds": [
+        "econ-adaptation-rulings-report",
+        "econ-adaptation-rulings-probe-optima",
+        "econ-adaptation-rulings-probe-highestprice",
+        "econ-adaptation-rulings-npmtest"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T20:36:21.112Z",
+      "actor": "econ-truth-w1"
     }
   },
   "meetings": {},
@@ -1568,11 +1727,11 @@
     "agentsActivated": 9,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 59,
+    "evidenceRecorded": 66,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 79,
-  "eventHead": "c59bd238f2e5969e3d0f41fc41ed18d4bdf3765ed6270989a177ba4941af8578",
+  "eventCount": 88,
+  "eventHead": "0cee38b58cb2056f6bf1fb7cae313068baa791b64c5e0d73c1614be8661c3fa2",
   "warnings": []
 }
