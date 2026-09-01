@@ -2870,16 +2870,31 @@ function renderHLPlay(view: Record<string, unknown>): void {
           <div class="fh-blind-note">No preview. Nothing on this screen tells you what this week will make.</div>
         </div>`;
 
+  // play N-2 (BLOCKING). Reordering and shrinking had already been tried: the
+  // dials still measured 595..617 in a 600px viewport at the moment of
+  // decision, because a single 640px column cannot hold the week card, the
+  // schedule strip AND the decision surface above a Chromebook fold. The
+  // decision surface now gets its own column beside the context it is read
+  // against, so the pair sees what it is deciding and the two dials it decides
+  // with at the same time, without scrolling. The settlement, when there is
+  // one, spans both columns above them — it is still the thing the bell lands.
   body.innerHTML = `
-    <div id="hlPlayRoot">
-      ${justSettled ? "" : hlTopStrip(view)}
-      ${justSettled ? `<div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}${hlTopStrip(view)}` : ""}
-      ${weekCardHtml}
-      ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [], !justSettled)}
-      ${dialsHtml}
-      ${justSettled ? "" : last ? hlWeekResultHtml(last, `Week ${last.week} — how it went`) : ""}
-      <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks so far</div>
-      ${hlHistoryHtml(history)}
+    <div id="hlPlayRoot" class="hl-decide">
+      ${
+        justSettled
+          ? `<div class="hl-span"><div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}${hlTopStrip(view)}</div>`
+          : `<div class="hl-span">${hlTopStrip(view)}</div>`
+      }
+      <div class="hl-col-context">
+        ${weekCardHtml}
+        ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [], !justSettled)}
+        ${justSettled ? "" : last ? hlWeekResultHtml(last, `Week ${last.week} — how it went`) : ""}
+        <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks so far</div>
+        ${hlHistoryHtml(history)}
+      </div>
+      <div class="hl-col-decide">
+        ${dialsHtml}
+      </div>
     </div>
     ${
       locked

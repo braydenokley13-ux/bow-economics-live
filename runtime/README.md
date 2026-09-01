@@ -590,8 +590,19 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**388 tests, 388 passing** (`node --test`, no test framework dependency), run
-this session — 354 of them Module 1, the shared runtime and Module 2 Lesson 1,
+**403 tests, 403 passing** (`node --test`, no test framework dependency), run
+this session (wave 4, `w4-l2-closeout`). Six of them are new and belong to the
+claim-audit work: `CLAIM AUDIT` (every rendered board/synthesis/ADAPT claim
+string recomputed against the reducer in sign, quantifier and bound), econ B7
+(no printed share above 100%, none at 0% beside measured spillover), econ B8
+(the room-total sentence never disagrees in sign with the joint effect),
+projector R-1 / play N-3 (the Handed-To-You bar clause is true about the room at
+every release point, and the DOWN branch never contradicts it), play N-4 (a desk
+that gave nothing is told what it chose), and play N-5 (the post-hoc price
+counterfactual reproduces the week it re-prices and never claims a better price
+keeps less). Two pre-existing tests were rewritten to assert the repaired
+behaviour rather than the falsified behaviour they were pinning. The rest are
+354 for Module 1, the shared runtime and Module 2 Lesson 1,
 unchanged, plus 34 new `hostTheLeague.test.ts` tests for Module 2 Lesson 2:
 the interdependence identity (decomposition residual 0 with no negative block
 over a 15k-state sweep), C5's instantiation test (delete the visitor term and
@@ -743,7 +754,49 @@ three static pages), not a general-purpose framework being reinvented.
   elapsed clock against absolute-minute TIME CUT triggers), N4 (Pause vs Freeze
   are undistinguished on the surface). (l) Still open from `gate-l2-projector`:
   P-3 (freeze blanks the projector — the /teach mirror now tells the truth about
-  it, but the board still shows one word), P-4, P-5, P-6, P-8, P-9.
+  it, but the board still shows one word), P-4, P-5, P-6, P-8, P-9. (m) **After
+  the wave-4 claim-audit round:** every claim-carrying string in this lesson is
+  now built by a builder that interpolates `ClaimAtom.rendered` (rendered *from*
+  the computed value) and emits the relations it asserts; `moduleClaims(state)`
+  sweeps them and the harness's P11 recomputes each one. A claim-carrying
+  surface added without registering it in `moduleClaims` is invisible to the
+  audit — that is the one way to reintroduce the defect class, and it is not
+  detected automatically. (n) The room-total sentence now publishes the JOINT
+  effect (`choiceTotals.roomJointGain`) beside the sum of per-desk partials.
+  Two independent computations of that joint figure — the module's re-settled
+  arithmetic and the harness's all-zero replay through the reducer — agree in
+  sign in every swept room but differ by up to **$6,944** in magnitude, because
+  the replay lets league-office clubs re-derive their reinvest *dollars* from a
+  poorer door while the arithmetic version holds bots at their actual spend per
+  the module's declared carve-out. The printed figure is the carve-out-matched
+  one; the discrepancy is a scope difference, not an error, and is not disclosed
+  on any student-facing surface. (o) The post-hoc price counterfactual (play
+  N-5) re-prices **one settled week only**. A different price would have bought
+  a different reinvest dollar and therefore a different Draw the following week;
+  the card says so in words but does not model it, and no surface shows what a
+  different price would have done to the *season*. (p) The free-rider's block
+  (play N-4) is now honestly *presented* — "chose to give nothing", with what
+  the room's spending put in its building — but it still shows three zeroes.
+  The play critic's N-4 also floated a non-degenerate counterfactual (e.g. the
+  same schedule at 20% back in); that was out of this bundle's scope and is not
+  built.
+- **Module 2 Lesson 1 — the COUNTERFACTUAL pager label (`gate-l1-projector`
+  W3F-1), NOT VERIFIED, flagged for the owning critic.** `analyst-wave3` refuted
+  the closure of `proj-l1-cf-pager-label` on provenance: the dissent was
+  resolved by the lead integrator on an e2e exit code, and `GATE_L1_PROJECTOR.md`
+  still ends at W3 FINAL with W3F-1 recorded as BLOCKING; no owning-critic
+  adjudication line exists. This wave deliberately did **not** touch the label.
+  The intent question the critic has to rule on: the shipped repair replaced the
+  false positional range ("DESKS 1-3 OF 12" over rows headed Desk 2, Desk 3, Desk
+  4) with named desks, but `cfPageDeskNames` (`fullHouse.ts:709-713`) renders
+  `deskHandle.split(" · ")[0]`, which **drops the franchise name** — the pager
+  reads "Group 1 of 4 — Desk 2, Desk 3, Desk 4" while the rows underneath are
+  headed "Desk 2 · Memphis". The false identity claim is gone and desk numbers
+  are unique, so nothing on the projector is untrue; what is unverified is
+  whether a teacher reading the pager aloud against club-headed rows satisfies
+  W3F-1's intent, or whether the finding wanted the handle carried whole. Same
+  drop in the three `/teach` labels (`fullHouse.ts:2373-2380`). This is the
+  projector critic's call, not the builder's.
 - The teacher-key/rejoin-lockout mechanisms are new as of this round and
   have only been exercised by unit tests and one manual Playwright pass
   (which exercises the *happy* teacher-key path via normal UI clicks, not

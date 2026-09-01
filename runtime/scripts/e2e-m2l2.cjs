@@ -73,6 +73,10 @@ const BACK_ROW_FLOOR_PCT = 2.6;
 const boardFramesChecked = [];
 const ellipsisScans = [];
 const foldChecks = [];
+const occlusionChecks = [];
+const nonVacuityProofs = [];
+const realDialDrives = [];
+const soldOutSettlements = [];
 
 async function assertFullyVisible(page, selector, label) {
   const result = await page.evaluate((sel) => {
@@ -207,18 +211,102 @@ async function assertNoEllipsization(board, label) {
 
 /* -------------------------------------------------- the Chromebook fold -- */
 
+/* ------------------------------------------------------ the occlusion -- */
+
 /**
- * `gate-l2-play` R1 (BLOCKING). At 1024x600 the bell used to leave the pair
- * looking at the REINVEST instruction paragraph for a week that had not started,
- * with the decomposition's bottom edge at y=749, KEPT at ~1050 and the
- * externality sentence — the one the whole synthesis is built on — at y=1103,
- * in a 600px viewport. The consequence of the week the room had just played was
- * ~500px below the fold.
+ * THE OCCLUSION INSTRUMENT.
+ *
+ * `analyst-wave3` finding (6), on a source read: "`assertSettlementAboveFold`
+ * tests only `top >= -1 && bottom <= vh+1` — geometry, never
+ * `elementFromPoint` — so z-index occlusion by `#hlLockBar` is undetectable by
+ * construction." That is exactly how the build shipped a settlement the play
+ * critic then found unreadable: on a sold-out week `#hlRoad` measured 531..584
+ * inside a 600px viewport — geometrically perfect — under a fixed lock bar
+ * occupying 539..600 at z-index 20. The externality sentence the entire
+ * synthesis is built on was behind an opaque bar, and the guard passed it.
+ *
+ * This probes what the pair's finger would hit. For each named element it takes
+ * three points inside the element's own box — centre, lower third, and an inset
+ * top-left corner — and requires `document.elementFromPoint` to return that
+ * element or something inside it. "In the box" is no longer accepted as "in the
+ * field of view".
+ *
+ * Proven non-vacuous in-run by `proveOcclusionInstrumentBites` below.
+ */
+async function probeOcclusion(desk, targets) {
+  return desk.evaluate((sels) => {
+    const out = [];
+    for (const { sel, name } of sels) {
+      const el = document.querySelector(sel);
+      if (!el) {
+        out.push({ name, sel, found: false });
+        continue;
+      }
+      const r = el.getBoundingClientRect();
+      const points = [
+        { at: "centre", x: r.left + r.width / 2, y: r.top + r.height / 2 },
+        { at: "lower third", x: r.left + r.width / 2, y: r.top + r.height * (2 / 3) },
+        { at: "inset top-left", x: r.left + 8, y: r.top + 6 },
+      ];
+      out.push({
+        name,
+        sel,
+        found: true,
+        rect: { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right) },
+        vh: window.innerHeight,
+        vw: window.innerWidth,
+        probes: points.map((p) => {
+          const inViewport = p.x >= 0 && p.x <= window.innerWidth && p.y >= 0 && p.y <= window.innerHeight;
+          const hit = inViewport ? document.elementFromPoint(p.x, p.y) : null;
+          return {
+            at: p.at,
+            x: Math.round(p.x),
+            y: Math.round(p.y),
+            inViewport,
+            top: !!hit && (hit === el || el.contains(hit)),
+            hit: hit ? `${hit.tagName.toLowerCase()}${hit.id ? `#${hit.id}` : ""}${typeof hit.className === "string" && hit.className ? `.${hit.className.split(/\s+/)[0]}` : ""}` : "nothing",
+          };
+        }),
+      });
+    }
+    return out;
+  }, targets);
+}
+
+function assertUnoccluded(results, label) {
+  for (const r of results) {
+    assert.ok(r.found, `${label}: ${r.name} (${r.sel}) is not in the DOM at all`);
+    assert.equal(r.vh, 600, `${label}: the occlusion guard must run at the 1024x600 classroom shape, got ${r.vw}x${r.vh}`);
+    for (const p of r.probes) {
+      assert.ok(
+        p.inViewport,
+        `${label}: ${r.name} has a probe point OFF SCREEN at ${p.at} (${p.x},${p.y}) — box ${r.rect.top}..${r.rect.bottom} in a ${r.vh}px viewport`,
+      );
+      assert.ok(
+        p.top,
+        `${label}: ${r.name} is OCCLUDED at its ${p.at} (${p.x},${p.y}) — the top element there is ${p.hit}, not ${r.sel}. Box ${r.rect.top}..${r.rect.bottom} in a ${r.vh}px viewport.`,
+      );
+    }
+    occlusionChecks.push(`${label}: ${r.name}`);
+  }
+}
+
+/**
+ * `gate-l2-play` R1/N-1 (BLOCKING). The settlement the bell lands must be
+ * legible — not merely box-inside-viewport — for the decomposition, the KEPT
+ * figure and the externality road card, on a normal week AND on a sold-out week
+ * where the FULL HOUSE banner pushes everything down.
  *
  * Asserted with NO manual scroll of any kind: whatever the page does on its own
  * after the bell is what a grade-5 pair gets.
  */
 async function assertSettlementAboveFold(desk, label) {
+  const results = await probeOcclusion(desk, [
+    { sel: "#hlSplit", name: "the decomposition (#hlSplit)" },
+    { sel: "[data-hl-kept]", name: "the KEPT figure" },
+    { sel: "#hlRoad", name: "the externality road card (#hlRoad)" },
+  ]);
+  assertUnoccluded(results, label);
   const m = await desk.evaluate(() => {
     const box = (sel) => {
       const el = document.querySelector(sel);
@@ -228,38 +316,42 @@ async function assertSettlementAboveFold(desk, label) {
     };
     return {
       vh: window.innerHeight,
-      vw: window.innerWidth,
       scrollY: Math.round(window.scrollY),
-      split: box("#hlSplit"),
-      kept: box("[data-hl-kept]"),
-      road: box("#hlRoad"),
+      mainScroll: Math.round(document.querySelector("main")?.scrollTop ?? 0),
+      soldOut: !!document.querySelector(".fh-sellout"),
       dial: box("#hlPriceDial"),
       lock: box("#hlLock"),
+      bar: box("#hlLockBar"),
     };
   });
-  assert.equal(m.vh, 600, `${label}: the fold guard must run at the 1024x600 classroom shape, got ${m.vw}x${m.vh}`);
-  for (const [name, sel] of [["the decomposition (#hlSplit)", "split"], ["the KEPT figure", "kept"], ["the road card (#hlRoad)", "road"]]) {
-    const b = m[sel];
-    assert.ok(b, `${label}: ${name} is not on the screen at all after the bell`);
-    assert.ok(
-      b.top >= -1 && b.bottom <= m.vh + 1,
-      `${label}: ${name} is NOT above the fold after the bell — box ${b.top}..${b.bottom} in a ${m.vh}px viewport (page is at scrollY ${m.scrollY})`,
-    );
-  }
+  // The band the lesson may lay content in ends where the lock bar begins.
+  const bandBottom = m.bar ? m.bar.top : m.vh;
   assert.ok(
-    m.dial === null || m.dial.top >= m.vh,
-    `${label}: next week's price dial is occupying the fold at the moment the result lands — box ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}`,
+    m.dial === null || m.dial.top >= bandBottom - 1,
+    `${label}: next week's price dial is occupying the fold at the moment the result lands — box ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}, content band ends at ${bandBottom}`,
   );
-  assert.ok(m.lock && m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is not reachable without scrolling — box ${m.lock && m.lock.top}..${m.lock && m.lock.bottom}`);
-  foldChecks.push(label);
+  assert.ok(m.lock && m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is not reachable — box ${m.lock && m.lock.top}..${m.lock && m.lock.bottom}`);
+  foldChecks.push(`${label}${m.soldOut ? " [SOLD OUT week]" : ""}`);
+  if (m.soldOut) soldOutSettlements.push(label);
+  return m;
 }
 
 /**
- * `gate-l2-play` R2 (BLOCKING). First contact: LOCK IT IN was at y=650 in a
- * 600px viewport, and the schedule strip — the surface the whole anticipation
- * mechanic runs on — was at y~900.
+ * `gate-l2-play` R2/N-2 (BLOCKING). First contact. R2's falsifiable clause
+ * asserted the button and the schedule strip and never the decision surface, so
+ * the repair moved the defect instead of clearing it: both dials measured
+ * 595..617 under the fixed lock bar, and a pair could complete a turn at the
+ * default $56 / 0% without ever seeing a dial. BOTH dials are now asserted
+ * unoccluded and on screen at the moment of decision.
  */
 async function assertPrelockFold(desk, label) {
+  const results = await probeOcclusion(desk, [
+    { sel: "#hlPriceDial", name: "the PRICE dial" },
+    { sel: "#hlShareUp", name: "the REINVEST stepper (+)" },
+    { sel: "#hlShareDown", name: "the REINVEST stepper (-)" },
+    { sel: "#hlLock", name: "LOCK IT IN" },
+  ]);
+  assertUnoccluded(results, label);
   const m = await desk.evaluate(() => {
     const box = (el) => {
       if (!el) return null;
@@ -286,20 +378,101 @@ async function assertPrelockFold(desk, label) {
   foldChecks.push(label);
 }
 
+/**
+ * NON-VACUITY, proven on a live frame in this run rather than argued.
+ *
+ * The lock bar is temporarily grown in memory until it covers the card, the
+ * SAME probe is re-run, and the run fails if the probe still reports the card
+ * as the top element. Then the bar is restored and the honest probe is
+ * re-asserted, so the proof cannot leave the page poisoned.
+ */
+async function proveOcclusionInstrumentBites(desk, sel, name) {
+  const before = await probeOcclusion(desk, [{ sel, name }]);
+  assertUnoccluded(before, `non-vacuity baseline for ${name}`);
+  const grew = await desk.evaluate((s) => {
+    const bar = document.getElementById("hlLockBar");
+    const el = document.querySelector(s);
+    if (!bar || !el) return false;
+    const r = el.getBoundingClientRect();
+    bar.dataset.e2ePrevHeight = bar.style.height || "";
+    bar.style.height = `${Math.ceil(window.innerHeight - r.top + 10)}px`;
+    return true;
+  }, sel);
+  assert.ok(grew, `non-vacuity: could not stage the occlusion of ${name}`);
+  const poisoned = await probeOcclusion(desk, [{ sel, name }]);
+  const stillTop = poisoned[0].probes.filter((p) => p.top).map((p) => p.at);
+  await desk.evaluate(() => {
+    const bar = document.getElementById("hlLockBar");
+    if (bar) {
+      bar.style.height = bar.dataset.e2ePrevHeight || "";
+      delete bar.dataset.e2ePrevHeight;
+    }
+  });
+  assert.equal(
+    stillTop.length,
+    0,
+    `NON-VACUITY FAILED: with the lock bar deliberately raised over ${name}, the occlusion probe still reported it as the top element at ${stillTop.join(", ")}. The instrument cannot see the defect it exists to catch.`,
+  );
+  const after = await probeOcclusion(desk, [{ sel, name }]);
+  assertUnoccluded(after, `non-vacuity restore for ${name}`);
+  nonVacuityProofs.push(`${name}: poisoned frame caught at all ${poisoned[0].probes.length} probe points`);
+}
+
 /* --------------------------------------------------------- UI helpers -- */
 
+/**
+ * The price dial, driven the way a pair drives it.
+ *
+ * `analyst-wave3` finding (6): "`setPrice` sets the slider via `$eval` — the
+ * instrument never has to see or reach the control, so a dial hidden under the
+ * bar can never fail the e2e." A programmatic `el.value = x` works on an
+ * element that is off screen, behind an opaque bar, or zero-sized. A real
+ * pointer press does not: Playwright's mouse dispatches at viewport
+ * coordinates, so it hits whatever is actually on top.
+ *
+ * Drag to land near the target, then arrow-key to the exact legal step — both
+ * are real input events on a focused control.
+ */
 async function setPrice(page, price) {
   await page.waitForSelector("#hlPriceDial");
-  await page.$eval(
-    "#hlPriceDial",
-    (el, value) => {
-      el.value = String(value);
-      el.dispatchEvent(new Event("input", { bubbles: true }));
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+  // A pair that has just read a settlement scrolls down to the dials. The
+  // no-scroll fold assertions have already run by this point; what must stay
+  // true here is that the control is REACHED by a real pointer, at real
+  // viewport coordinates, hitting whatever is actually on top.
+  const handle = await page.$("#hlPriceDial");
+  await handle.scrollIntoViewIfNeeded();
+  const dial = await page.$eval("#hlPriceDial", (el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y, w: r.width, h: r.height, min: Number(el.min), max: Number(el.max) };
+  });
+  assert.ok(dial.w > 40 && dial.h > 8, `the price dial is not a reachable control: ${dial.w}x${dial.h}`);
+  const frac = (price - dial.min) / (dial.max - dial.min);
+  const thumb = 11; // half the rendered thumb, so the track fraction maps sanely
+  const targetX = dial.x + thumb + frac * (dial.w - thumb * 2);
+  const cy = dial.y + dial.h / 2;
+  // The pointer must actually land on the dial: if anything is on top of it at
+  // its own centre, this is the defect play N-2 names, not a flaky test.
+  const topAtDial = await page.evaluate(
+    ({ x, y }) => {
+      const el = document.getElementById("hlPriceDial");
+      const hit = document.elementFromPoint(x, y);
+      return { ok: !!hit && (hit === el || el.contains(hit)), hit: hit ? `${hit.tagName.toLowerCase()}${hit.id ? `#${hit.id}` : ""}` : "nothing" };
     },
-    price,
+    { x: dial.x + dial.w / 2, y: cy },
   );
+  assert.ok(topAtDial.ok, `the price dial cannot be pressed: the top element at its centre is ${topAtDial.hit}`);
+  await page.mouse.move(dial.x + dial.w / 2, cy);
+  await page.mouse.down();
+  await page.mouse.move(targetX, cy, { steps: 6 });
+  await page.mouse.up();
+  // Fine-tune to the exact legal step with the keyboard, still real input.
+  for (let i = 0; i < 70; i += 1) {
+    const cur = Number(await page.$eval("#hlPriceDial", (el) => el.value));
+    if (cur === price) break;
+    await page.keyboard.press(cur < price ? "ArrowRight" : "ArrowLeft");
+  }
   await page.waitForFunction((p) => document.getElementById("hlPriceReadout")?.textContent === `$${p}`, price);
+  realDialDrives.push(`$${price}`);
 }
 
 async function setShare(page, share) {
@@ -408,8 +581,12 @@ async function main() {
     assert.equal(preLock.hasResult, false, "the pre-lock screen showed a settled week");
     assert.equal(preLock.hasSplit, false, "the pre-lock screen showed a decomposition");
     assert.match(preLock.text, /No preview/, "the pre-lock screen must say there is no preview");
-    // play R2: first contact, no manual scroll, on every desk in the room.
+    // play R2/N-2: first contact, no manual scroll, on every desk in the room —
+    // both dials and the button, by hit test, not by geometry.
     for (let i = 0; i < DESKS; i += 1) await assertPrelockFold(desks[i], `week 1 first contact, desk ${i + 1}`);
+    // ...and the instrument is proven able to see an occluded dial before any
+    // of those passes is allowed to mean anything.
+    await proveOcclusionInstrumentBites(desks[0], "#hlPriceDial", "the PRICE dial at first contact");
 
     // The board shows nothing about a week that is still open.
     const openWeekBoard = await board.evaluate(() => ({ bars: document.querySelectorAll("[data-hl-bar]").length, text: document.body.innerText }));
@@ -431,7 +608,13 @@ async function main() {
     }
     await board.screenshot({ path: path.join(SCREEN_DIR, "04-board-week1.png") });
 
-    const PRICES = [22, 30, 36, 42, 48, 52, 56, 62, 68, 74, 84, 96];
+    // play N-1 asks for the sold-out case explicitly, because that is where the
+    // FULL HOUSE banner pushes the road card under the lock bar. Desks 1 and 3
+    // (the two big-market clubs) are seeded at the $10 floor in week 1 — the
+    // exact probe the play critic's R-B session used, and the most common naive
+    // grade-5 strategy. If no desk sells out, this run FAILS rather than
+    // quietly reporting a normal-week-only pass.
+    const PRICES = [10, 30, 10, 42, 48, 52, 56, 62, 68, 74, 84, 96];
     const SHARES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 0, 20, 40];
     for (let i = 0; i < DESKS; i += 1) {
       await waitForWeek(desks[i], 1);
@@ -444,9 +627,18 @@ async function main() {
     for (const p of desks) await waitForWeek(p, 2);
     console.log("[e2e-m2l2] week 1 settled");
 
-    // play R1: the consequence, staged. Asserted on every desk, immediately
-    // after the bell, with no manual scroll of any kind.
+    // play R1/N-1: the consequence, staged AND legible. Asserted on every desk,
+    // immediately after the bell, with no manual scroll of any kind.
     for (let i = 0; i < DESKS; i += 1) await assertSettlementAboveFold(desks[i], `after the week 1 bell, desk ${i + 1}`);
+    assert.ok(
+      soldOutSettlements.length > 0,
+      `the sold-out case was never exercised: no desk rendered FULL HOUSE in week 1 at the seeded floor prices, so the occlusion assertions only covered normal weeks. Seed prices must be lowered until a building fills.`,
+    );
+    console.log(`[e2e-m2l2] sold-out settlements probed for occlusion: ${soldOutSettlements.length} (${soldOutSettlements.slice(0, 3).join(", ")})`);
+    // Non-vacuity on the exact card the play critic found behind the bar, on a
+    // sold-out frame.
+    const soldOutIndex = Number(soldOutSettlements[0].match(/desk (\d+)/)[1]) - 1;
+    await proveOcclusionInstrumentBites(desks[soldOutIndex], "#hlRoad", "the externality road card on a SOLD-OUT week");
 
     // BC-5 on the private surface: the desk's own three blocks, on its own device.
     await desks[0].waitForSelector("#hlSplit");
@@ -621,10 +813,15 @@ async function main() {
     await teach.screenshot({ path: path.join(SCREEN_DIR, "21-teach-director.png"), fullPage: true });
 
     assert.deepEqual(consoleErrors, [], `console errors:\n${consoleErrors.join("\n")}`);
+    assert.equal(nonVacuityProofs.length, 2, "both occlusion non-vacuity proofs must have run");
+    assert.ok(realDialDrives.length >= DESKS * 2, `the price dial must be driven by real pointer input on every desk, got ${realDialDrives.length} drives`);
     console.log(
       `[e2e-m2l2] PASS — ${boardFramesChecked.length / 2} board frames checked at 2 projector shapes, ` +
-        `${ellipsisScans.length / 2} frames scanned for silent truncation, ${foldChecks.length} 1024x600 fold assertions, zero console errors`,
+        `${ellipsisScans.length / 2} frames scanned for silent truncation, ${foldChecks.length} 1024x600 fold assertions, ` +
+        `${occlusionChecks.length} elementFromPoint occlusion probes (${soldOutSettlements.length} on sold-out settlements), ` +
+        `${realDialDrives.length} price dials driven by real mouse drag + keyboard, zero console errors`,
     );
+    for (const p of nonVacuityProofs) console.log(`[e2e-m2l2] NON-VACUITY — ${p}`);
   } catch (error) {
     failure = error;
   } finally {

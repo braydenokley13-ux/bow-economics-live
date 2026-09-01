@@ -2543,15 +2543,17 @@ body.fh-compact-play .hl-road { margin-top: 7px; padding: 8px 10px; font-size: 1
 body.fh-compact-play .fh-kept { margin-top: 7px; }
 /* play N-1: on a sold-out week the three-part FULL HOUSE block pushed #hlRoad
    into the lock bar's band. Nothing is deleted — the banner becomes one row, so
-   the externality sentence stays on the first screen after the bell. */
-body.fh-compact-play .fh-sellout {
+   the externality sentence stays on the first screen after the bell.
+   Scoped to `hl-has-lockbar`, which only M2 L2 sets: `fh-compact-play` is
+   shared with M2 L1's Full House screen, and this bundle does not touch L1. */
+body.hl-has-lockbar .fh-sellout {
   display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
   padding: 5px 9px; margin-top: 6px;
 }
-body.fh-compact-play .fh-sellout-title { font-size: 13px; margin: 0; }
-body.fh-compact-play .fh-sellout-sub { font-size: 11.5px; margin: 0; }
-body.fh-compact-play .fh-sellout-turned { margin: 0; gap: 5px; }
-body.fh-compact-play .fh-sellout-turned .numeric { font-size: 13px; }
+body.hl-has-lockbar .fh-sellout-title { font-size: 13px; margin: 0; }
+body.hl-has-lockbar .fh-sellout-sub { font-size: 11.5px; margin: 0; }
+body.hl-has-lockbar .fh-sellout-turned { margin: 0; gap: 5px; }
+body.hl-has-lockbar .fh-sellout-turned .numeric { font-size: 13px; }
 body.fh-compact-play .hl-pricecf { margin-top: 7px; padding: 7px 9px; }
 body.fh-compact-play .hl-pricecf-row { font-size: 12px; padding: 1px 4px; }
 body.fh-compact-play .hl-pricecf-verdict { font-size: 12px; margin-top: 5px; }
@@ -2678,6 +2680,38 @@ body.hl-has-lockbar main {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-bottom: 10px;
+  /* The decision surface needs a second column; one 640px column cannot hold
+     the week card, the schedule strip and both dials above a 600px fold. */
+  max-width: 1000px;
+}
+
+/* THE DECISION SURFACE (play N-2). Context on the left, the two dials on the
+   right, the settlement — when the bell has just rung — spanning both above
+   them. Collapses to one column on anything narrower than a Chromebook. */
+.hl-decide {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  gap: 12px;
+  align-items: start;
+}
+.hl-decide > .hl-span {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.hl-decide > .hl-col-context,
+.hl-decide > .hl-col-decide {
+  min-width: 0;
+}
+.hl-decide > .hl-col-decide > .fh-dials {
+  margin-top: 0 !important;
+}
+@media (max-width: 899px) {
+  .hl-decide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hl-decide > .hl-col-decide {
+    order: -1;
+  }
 }
 
 .hl-bell-head {

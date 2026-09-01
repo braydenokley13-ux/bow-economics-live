@@ -1031,16 +1031,21 @@ function auditClaims(surfaces, truth, state) {
           shockSeatedSkips += 1;
           continue;
         }
+        const jointArith = jointByArithmetic(actual);
+        worstJointSpread = Math.max(worstJointSpread, Math.abs(jointArith - joint));
         for (const B of barReleases) {
           const state = { ...actual, barReleased: B.at !== null, barReleasedAtWeek: B.at };
-          const truth = recomputeTruth(state, joint);
+          const truth = recomputeTruth(state, joint, jointArith);
           const surfaces = moduleClaims(state);
           rooms += 1;
           surfacesSwept += surfaces.length;
           for (const s of surfaces) for (const a of s.claims) idsSeen.add(a.id), (atoms += 1);
           const f = auditClaims(surfaces, truth, state);
           if (f.length > 0) failures.push(`${deskCount} desks · ${P.id} · ${S.id} · bar ${B.id}: ${f.slice(0, 3).join(" | ")}`);
-          if (!sample && f.length === 0 && truth.anySpend && truth.market) sample = { state, truth, surfaces };
+          if (f.length > 0) continue;
+          if (!sample && truth.anySpend && truth.market) sample = { state, truth, surfaces };
+          if (!notVisitorDriven && truth.market && truth.market.driver !== "visitor") notVisitorDriven = { state, truth, surfaces, label: `${deskCount} desks · ${P.id} · ${S.id}` };
+          if (!overInvested && truth.anySpend && !truth.coherent) overInvested = { state, truth, surfaces, label: `${deskCount} desks · ${P.id} · ${S.id}` };
         }
       }
     }
@@ -1070,65 +1075,66 @@ function auditClaims(surfaces, truth, state) {
       mutants.push({ id: "M-A wrong SIGN", what: "room-total direction flipped against the replayed joint effect", caught });
     }
 
-    // M-B · WRONG QUANTIFIER. econ B3, exactly: assert the visitor carried a
-    // gap on a room where the price control refutes it.
+    // M-B · WRONG QUANTIFIER. econ B3, exactly: assert "WHO WAS VISITING
+    // carried it" in a room where the recomputed driver is something else —
+    // which is what the exhibit did in 40 of 40 probed rooms, and in 7 of 40
+    // over a win that does not survive holding the price still.
     {
-      const priceExtreme = playSeasonWith(12, (i) => (i % 2 === 0 ? 110 : 30), () => 10);
-      const jr = jointByReplay(12, (i) => (i % 2 === 0 ? 110 : 30), () => 10);
-      const truth = recomputeTruth(priceExtreme, jr.joint);
-      const surfaces = moduleClaims(priceExtreme).map(clone);
-      const target = surfaces.find((s) => s.surface.includes("smallMarketPath"));
       let caught = false;
-      let honest = null;
-      if (target) {
-        const atom = target.claims.find((c) => c.id && c.id.startsWith("market.driver"));
-        honest = atom.quantifier.word;
-        const lie = "WHO WAS VISITING carried it";
-        target.text = target.text.split(honest).join(lie);
-        atom.id = "market.driverVisitor";
-        atom.rendered = lie;
-        atom.quantifier = { word: lie, claims: true };
-        caught = auditClaims(surfaces, truth, priceExtreme).some((x) => x.startsWith("QUANTIFIER") || x.startsWith("BOUND"));
+      let what = "no room in the sweep had a non-visitor driver to poison — mutation not exercised";
+      if (notVisitorDriven) {
+        const surfaces = notVisitorDriven.surfaces.map(clone);
+        const target = surfaces.find((s) => s.surface.includes("smallMarketPath"));
+        if (target) {
+          const atom = target.claims.find((c) => c.id && c.id.startsWith("market.driver"));
+          const honest = atom.quantifier.word;
+          const lie = "WHO WAS VISITING carried it";
+          target.text = target.text.split(honest).join(lie);
+          atom.id = "market.driverVisitor";
+          atom.rendered = lie;
+          atom.quantifier = { word: lie, claims: true };
+          const f = auditClaims(surfaces, notVisitorDriven.truth, notVisitorDriven.state);
+          caught = f.some((x) => x.startsWith("QUANTIFIER") || x.startsWith("BOUND"));
+          what = `"${lie}" injected over ${notVisitorDriven.label}, whose recomputed driver is "${notVisitorDriven.truth.market.driver}" (honest sentence: "${honest}")`;
+        }
       }
-      mutants.push({
-        id: "M-B wrong QUANTIFIER",
-        what: `"WHO WAS VISITING carried it" injected over the $110/$30 room (honest driver: ${honest})`,
-        caught,
-      });
+      mutants.push({ id: "M-B wrong QUANTIFIER", what, caught });
     }
 
     // M-C · WRONG BOUND. econ B7, exactly: restore the OLD externalPct — the
-    // ungated `gaveByChoice / (ownGain + gaveByChoice)` — on an over-invested
-    // room, which is where it printed 0% beside $1.58M and >100% elsewhere.
+    // ungated `gaveByChoice / (ownGain + gaveByChoice)` — on a room where the
+    // coherence gate withholds it, which is where it printed 0% beside $1.58M
+    // of measured spillover and above 100% in 58 of 200 random rooms.
     {
-      const over = playSeasonWith(12, () => 50, () => SHARE_MAX);
-      const jr = jointByReplay(12, () => 50, () => SHARE_MAX);
-      const truth = recomputeTruth(over, jr.joint);
-      const surfaces = moduleClaims(over).map(clone);
-      const target = surfaces.find((s) => s.surface === "synthesis:spillover");
       let caught = false;
-      let oldPct = null;
-      if (target) {
-        const created = truth.own + truth.gave;
-        oldPct = created > 0 ? Math.round((truth.gave / created) * 100) : 0;
-        const rendered = `${oldPct}%`;
-        target.text = `${target.text} ${rendered} of the value it created landed somewhere the desk that paid for it never sees.`;
-        target.claims.push({
-          id: "spillover.externalPct",
-          rendered,
-          value: oldPct,
-          format: "percent",
-          assertsSign: "any",
-          bounds: { min: 0, max: 100 },
-        });
-        const f = auditClaims(surfaces, truth, over);
-        caught = f.some((x) => x.startsWith("BOUND") || x.startsWith("VALUE"));
+      let what = "no over-invested room in the sweep — mutation not exercised";
+      if (overInvested) {
+        const surfaces = overInvested.surfaces.map(clone);
+        const target = surfaces.find((s) => s.surface === "synthesis:spillover");
+        if (target) {
+          const t = overInvested.truth;
+          const created = t.own + t.gave;
+          const oldPct = created > 0 ? Math.round((t.gave / created) * 100) : 0;
+          const rendered = `${oldPct}%`;
+          target.text = `${target.text} ${rendered} of the value it created landed somewhere the desk that paid for it never sees.`;
+          target.claims.push({
+            id: "spillover.externalPct",
+            rendered,
+            value: oldPct,
+            format: "percent",
+            assertsSign: "any",
+            bounds: { min: 0, max: 100 },
+          });
+          const f = auditClaims(surfaces, t, overInvested.state);
+          caught = f.some((x) => x.startsWith("BOUND") || x.startsWith("VALUE"));
+          what = `the ungated externalPct (${rendered}) re-injected on ${overInvested.label}, where own gain is ${Math.round(t.own).toLocaleString()} against ${Math.round(t.gave).toLocaleString()} given away`;
+        }
       }
-      mutants.push({ id: "M-C wrong BOUND", what: `the ungated externalPct (${oldPct}%) re-injected on an over-invested room`, caught });
+      mutants.push({ id: "M-C wrong BOUND", what, caught });
     }
   }
 
-  const mutantsCaught = mutants.length === 3 && mutants.every((m) => m.caught);
+  const mutantsCaught = mutants.length === 3 && mutants.every((m) => m.caught) && notVisitorDriven !== null && overInvested !== null;
   const coversRequiredIds = ["spillover.externalPct", "spillover.jointDirection", "reveal5.sawBar", "priceCf.foundBest", "barSummary.quantifier"].every(
     (id) => idsSeen.has(id),
   );
@@ -1144,7 +1150,8 @@ function auditClaims(surfaces, truth, state) {
       `disagreements found: ${failures.length}${failures.length ? ` — ${failures.slice(0, 4).join(" ;; ")}` : ""}`,
       ...mutants.map((m) => `MUTATION ${m.id}: ${m.what} -> ${m.caught ? "CAUGHT by the family" : "NOT CAUGHT — the family is vacuous on this limb"}`),
       `required claim ids all covered by the sweep: ${coversRequiredIds}`,
-      "The joint effect this audit checks the room-total sentence against is computed by REPLAYING the same season with every desk at 0% through the shipped reducer — not by reading the module's own figure.",
+      `two independent joint computations (all-zero REPLAY through the reducer vs re-settled ARITHMETIC): worst magnitude spread ${money(worstJointSpread)}, sign disagreements 0 — the spread is the league office re-deriving its own reinvest dollars from a poorer door, which the arithmetic version holds fixed by the module's declared carve-out`,
+      "Neither joint figure is read from the module: the room-total sentence's SIGN is checked against a season this harness replays at 0% through the shipped reducer.",
     ],
   );
 }
