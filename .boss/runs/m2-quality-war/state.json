@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:30:55.359Z",
+  "updatedAt": "2026-09-01T12:30:57.339Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -6771,6 +6771,13 @@
       "reason": "known-good: L2 fully clear (STRONG, econ discharged at root, teacher READY, projector/privacy clean); pre-L3-build checkpoint",
       "at": "2026-09-01T09:17:06.999Z",
       "actor": "lead-integrator"
+    },
+    {
+      "commit": "8a9ff2f967f659c7fd85599df753e565762045bb",
+      "branch": "claude/module-2-money-motion-quality-77dedf",
+      "reason": "known-good: wave 4 closed, full module built and gated, all suites green at head",
+      "at": "2026-09-01T12:30:57.339Z",
+      "actor": "lead-integrator"
     }
   ],
   "overrides": [],
@@ -6793,7 +6800,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 376,
-  "eventHead": "7680198d9df1de005d9f3384646dff2f78db0411e868a097a6c369be2daa2043",
+  "eventCount": 377,
+  "eventHead": "deab14fb79f6619cef9070f5d00756d8f27bfb262eb37d42e6f33043c3c3b481",
   "warnings": []
 }
