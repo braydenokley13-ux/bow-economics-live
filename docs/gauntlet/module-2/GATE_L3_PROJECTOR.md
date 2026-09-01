@@ -328,3 +328,126 @@ Screenshots: `docs/gauntlet/module-2/screens-l3-projector/` (82 files).
 None recorded. If the run elects to ship on B4 by keeping both the superlative and the privacy line,
 record this as formal dissent from the Classroom / Projector role: the projector must not print a
 rule it breaks in the frame above it.
+
+---
+
+## RE-CHECK AFTER W4 FINAL REPAIR
+
+Owning-critic confirm-or-refute of dissent `proj-l3-board-integrity` (B1-B4 + the Kings choreography
+note). Boss run `m2-quality-war`, assignment `recheck-l3-projector`. Fresh instrument, independently
+written (fit / ink-collision / privacy guards reimplemented, not the builder's), mechanics borrowed
+from `runtime/scripts/e2e-m2l3.cjs`. Real Chromium against `runtime/dist/server/index.js` on
+**PORT 4415**, isolated snapshot, **server killed at the end**. No repository implementation state
+changed.
+
+**Method.** Session A: 12 desks at 1024x600 joined under realistic student names ("Maya & Eli",
+"Noah & Aviva" …), 1 `/teach` at 1440x900, and **two live `/board` pages — 1366x768 and 1920x1080 —
+attached for the whole session, never resized**. Full arc LOBBY -> HOOK -> PLAY rounds 1-3 -> two-thirds
+test -> adoption -> three season weeks (one desk never locks in wk1) -> REVEAL 5 staged presses ->
+CONSEQUENCE -> COUNTERFACTUAL -> ARGUE (two presses) -> SYNTHESIS 7 cards -> COMPLETE. Session B:
+6 desks, maximum disagreement -> two-thirds test fails -> status-quo arm -> `Operate the league
+office's rule` -> that arm run through the season to **REVEAL stage 5**.
+**42 frame labels x 2 shapes = 84 audits.** Each audit: `#stage` scrollHeight vs clientHeight;
+line-level ink collision (every text line measured as ink with a Range against every painted
+non-ancestor element); and a privacy scan of the full board **`innerHTML`** for join names, seat ids
+and rejoin PINs. Screenshots: `docs/gauntlet/module-2/screens-l3-projector/r1-*.png` (76 files,
+`--1366x768` / `--1920x1080` suffixes).
+
+### B1 — histogram overprinting the veil · **REPAIRED (observed, both shapes, rounds 2 and 3)**
+
+The repro is dead at both shapes and in both rounds. Measured at round-2 open and round-3 open:
+
+| shape | veil box | hist container | tallest bar | tick |
+|---|---|---|---|---|
+| 1366x768 | 197..254 | 262..446 | 262..421 | 424..446 |
+| 1920x1080 | 275..356 | 367..626 | 367..591 | 594..626 |
+
+`barsAboveContainer = 0`, `barsOverVeil = 0`, `ticksBelowContainer = 0` — identical at both shapes,
+both rounds. The bar column now tops out **exactly at** its container top instead of 20px above it,
+and the tick label lives inside the well. 8px of clear air at 1366x768, 11px at 1920x1080.
+`r1-05-round2-histogram--*.png`, `r1-05-round3-histogram--*.png`.
+**Guard non-vacuity proven in-run, by my instrument, not the builder's:** poisoning the live round-2
+frame (bar grown up through the veil) made my ink scan report **2 collisions at 1366x768 ("… binds
+two seasons. And next season o…" under `div.wr-board-histbar`, 73x25px) and 2 at 1920x1080
+(103x35px)**; restoring the frame returned it clean. The instrument can see the defect it cleared.
+Also repaired in passing (was non-blocking item 8): the frame now carries a round label and an axis
+caption — `ROUND 1 · SHARE OF LOCAL MONEY · MIDDLE NUMBER 30% …` at 2.85% of screen height, with `%`
+on every tick and the ±10 band drawn in gold on the columns.
+
+### B2 — stale round counter · **REPAIRED (observed, rounds 2 and 3)**
+
+At the instant round 2 opened, before any desk had revised: projector reads **"0 of 12 desks have a
+number in THIS round"**; `/teach` NOW block reads **"Round 2 of 3. 0/12 desks have a number in THIS
+round"**; the pacing control reads **"Close round 2 of 3 (0/12 in)"**. Identical at round-3 open
+("Close round 3 of 3 (0/12 in)"). The teacher's **WATCH FOR list is populated in both rounds** —
+"12 of 12 desks have not put a number in this round", Desk 1 · New York through Desk 12 · Chicago —
+which was empty for two of three rounds before. The two-thirds gauge stays consistent with the
+histogram actually on the board (0 of 12 at round-2 open from round 1's spread; 6 of 12 at round-3
+open from round 2's), and `/teach` names its basis: "On that histogram right now".
+
+### B3 — untruthful teacher mirror on the league-office arm · **REPAIRED (observed, arm run to REVEAL stage 5)**
+
+With the fallback rule in force at SHARE 30% · CONDITION ON, `/teach` now prints arm-specific copy
+that matches the board word for word: *"The league office's rule is in force at SHARE 30% · CONDITION
+ON. This room did NOT write it, the old 5% rule does NOT hold, and nobody here voted for what is about
+to happen."* The status-quo script is gone. Regex scan of the `/teach` panel at every one of the five
+reveal stages on that arm: **0 occurrences** of the status-quo script and **0 occurrences of "5%"**.
+`r1-21-arm-leagueoffice--*.png`, `r1-23-arm-lo-reveal[1-5]--*.png`. The status-quo arm remains
+board-truthful and teacher-truthful in its own right (`r1-20-arm-statusquo--*.png`).
+
+### B4 — the board's privacy self-contradiction · **REPAIRED (observed)**
+
+REVEAL stage 2 now reads *"The biggest single swing at any one desk was $1,048,525 — find your own
+row in the table and see whose it was."* **No desk is named.** Finale card 4 likewise: *"The club in
+this room whose name pulled hardest on the road put $1,340,780 into OTHER clubs' buildings"* — the
+"Desk 7 · Indiana" attribution is gone. Regex scan across all five reveal stages and all seven finale
+cards: **0 matches** for a desk-named superlative. `r1-10-reveal-stage2--*.png`,
+`r1-16-finale-card4--*.png`.
+
+### The Kings capstone · **REPAIRED — the tally is genuinely committed and shown BEFORE the reveal**
+
+Observed at 12/12 voted, before any press: the board reads *"Nobody has seen the vote."* — no tally,
+no 22-8. The commit is real. **Press 1** ("Show THIS ROOM's tally (the owners come next)") prints
+*"This room voted 9 to deny and 3 to approve. Nobody has seen what the owners did."* at **3.11% of
+screen height** — above the 2.6% back-row floor — and `/22-8/` is **absent from the entire board
+`innerText`**. The desks' vote controls are **both disabled** at that moment (`{"a":true,"d":true}`),
+so the room cannot chase its own tally. **Press 2** ("Read the owners' 22-8 vote") clears the term
+sheets and gives 22-8 the frame, with 16-of-30, the March 2026 30-0 expansion vote, and "Nobody is
+scored against the owners". `r1-13-argue-held--*.png`, `r1-14-argue-press1-roomtally--*.png`,
+`r1-15-argue-press2-reveal--*.png`. The control's own labels teach the choreography to a teacher who
+has never seen it — that is the repair doing more than it was asked.
+
+### Fit / privacy / stability, unregressed (observed, 84 audits)
+
+- **0 `#stage` overflows** at either shape on any of the 42 frames visited, in either arm.
+- **0 ink collisions** anywhere — the new guard's own standard, applied to every frame, not just the
+  histogram.
+- **0 privacy leaks.** Full-`innerHTML` scan of every audited frame for all 12 join names, seat ids
+  and rejoin PINs: **0 hits**, including LOBBY, both commit-then-reveal holds, both fallback arms and
+  COMPLETE. Student names appear only in `/teach`'s LIVE JOIN LIST, where they belong.
+- **0 console errors** on `/teach`, both `/board` pages and all 18 desks across both sessions.
+
+### Residuals (non-blocking; none blocks release)
+
+1. **The privacy promise is still slightly wider than the truth.** Stage 2 and finale card 1 publish
+   the maximum swing *value* ($1,048,525) under "No desk's money is ever ranked on this screen", and
+   instruct the room to attribute it. One press later, stage 3 prints that exact figure as Desk 8 ·
+   L.A. Lakers' NET. Marginal exposure is **zero** — the stage-3 table already publishes all twelve
+   desks' money by design — so this is a copy overstatement, not a leak. Narrow the line to what it
+   actually guarantees (no desk is put at the top or bottom of a list).
+2. **`writeTheRule.ts:1846` says "under its own rule" unconditionally.** On the league-office arm the
+   board prints that phrase at REVEAL stage 5 while its own headline reads "This room did not write
+   it." Same family as B3, now on the board, on a fallback arm.
+3. Carried forward, unrepaired, and re-observed this session: the post-season hold frame still reads
+   "0 of 12 desks locked in" under a stale rookie card (`r1-08-season-done--*.png`, prior item 6); the
+   live progress line still renders at **1.96%**, under the back-row floor (prior item 7); REVEAL
+   still opens on "HOLDING · Stage 0 of 5" (`r1-09-reveal-holding--*.png`, prior item 9). Prior items
+   10-13 not re-exercised this session.
+4. **Drama.** Press 1 of the capstone appends the room's verdict to the bottom of a frame still
+   carrying 300 words of setup and both term sheets. The beat exists now; it does not yet own the
+   projector the way press 2 does. Clearing to the question plus the tally would cost nothing.
+5. **NOT VERIFIED:** non-16:9 projectors (1280x800, 1024x768); class sizes other than 12 and 6;
+   pairs-on-one-device and freeze/rejoin were exercised in the original gate, not re-exercised here.
+   Nothing here is classroom-proven (D10).
+
+**DISSENT proj-l3-board-integrity: DISCHARGED**
