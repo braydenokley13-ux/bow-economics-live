@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T05:26:37.104Z",
+  "updatedAt": "2026-09-01T05:26:50.532Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2036,12 +2036,24 @@
           "model": "claude-opus-5",
           "reason": "Independent L2 gate on the built lesson",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T05:12:08.201Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T05:26:50.484Z",
+          "sections": {
+            "before-verdict": "Cold zero-student rehearsal + four live sessions (up to 7 desks, late joiner, never-committed desk, misclicks, refreshes; zero console errors). The prescribed rehearsal fails its job: never renders WATCH FOR, collapses the 5-card synthesis to a placeholder (B5).",
+            "during-verdict": "Director layer present and mostly carries the lesson, but B3: WATCH FOR makes a never-locked desk the argument's protagonist with no auto signal; B2: a new /teach tab shows only START A SESSION despite stored code+key — one stray navigation strands the room.",
+            "failure-recovery-verdict": "B1 (worst): bare /board silently renders a DIFFERENT session — once a previous class's synthesis; no code entry on /board, /teach never prints the projector URL. Misclick guards otherwise present.",
+            "synthesis-verdict": "Economics and reveal scripting correct and class-computed; B4: ADAPT answer key cites a board that cannot be revealed back.",
+            "hidden-knowledge-findings": "Non-blocking: SEVEN REVEALS over five stages; TIME CUT names a nonexistent card; no elapsed clock; Pause vs Freeze unexplained; no confirm on close-week at 0 locked.",
+            "required-repairs": "B1-B5 blocking (dissent teacher-l2-not-ready). TRANSFER: NOT READY."
+          },
+          "evidenceIds": [
+            "gate-l2-teacher"
+          ],
+          "cost": {
+            "tokens": 121837,
+            "toolUses": 42
+          }
         },
         "gate-l2-projector": {
           "assignmentId": "gate-l2-projector",
@@ -2085,7 +2097,8 @@
         "w3-projector-final-dissent",
         "sr-l2-anchor-copy",
         "gate-l2-sr-dissent",
-        "teacher-l2-not-ready"
+        "teacher-l2-not-ready",
+        "gate-l2-teacher-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -4107,6 +4120,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T05:26:37.104Z",
       "actor": "teacher-transfer-critic"
+    },
+    "gate-l2-teacher-dissent": {
+      "id": "gate-l2-teacher-dissent",
+      "wave": 3,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T05:26:50.532Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "meetings": {},
@@ -4148,7 +4170,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 227,
-  "eventHead": "193276980a49e2254088f395250a3b2cf36552001fa23550c4104c571c0256bf",
+  "eventCount": 229,
+  "eventHead": "269163926db6e1492530672d9d21765def4a41b9abdb628a9c620f565266d677",
   "warnings": []
 }
