@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `353:29bf80904b6fb9b98404c6526b035b86aa3877ec2529644e13d1131997ea0700`  
-Updated: 2026-09-01T11:17:35.550Z
+Event head: `362:e60a211695059f7af3e0a01a567f56675108351a33736d25814eb342a3710b57`  
+Updated: 2026-09-01T12:14:18.865Z
 
 ## Founder intent
 
@@ -49,7 +49,12 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
-- builder — builder-w4-r3 — active — claude-opus-5
+- builder — builder-w4-r3 — completed-with-concerns — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- sports-reality-director — sports-reality-director — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
 
 ## Required evidence
 
@@ -90,6 +95,9 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - gate-l3-play — gameplay-report — L3 play gate: RATING FUNCTIONAL. Stage-0's three causes genuinely fixed (histogram+band moves proposals; CONDITION has teeth; club visible). BLOCKING: the vote is not sealed — after round 3 closes, a late submission replaces the vote and moved the adopted rule 25->30% silently; never-submits counted as 5% votes with no notice; REVEAL->COMPLETE is 28 minutes with one student action (device byte-identical across five stages); Kings is a two-button poll with no term sheets; BC-1 arrows render but never say why NY didn't move; fallback calls a 0% failure 'your rule'. Kill condition not met
 - gate-l3-projector — projector-report — L3 projector gate: BLOCKED. B1 histogram bars print through the veil sentence (both shapes, invisible to all three shipped guards); B2 closeRound never clears proposal so round 2 opens reading 12/12 in and WATCH FOR empty; B3 /teach prints status-quo copy on the league-office arm while a 30%/ON rule is on the board; B4 REVEAL stage 2 names a desk's biggest swing directly above a no-desk-ranked promise. Clean: fit 0 overflows, 0 truncation, tier 2.67-3.74%, 0 leaks in 90 scans, no timers, fallbacks + freeze + refresh + rejoin all work. Best moment the moved/flat arrows; Kings one press not commit-then-reveal
 - gate-l3-teacher — teacher-transfer-report — L3 teacher gate: TRANSFER NOT READY, six blockers. B1 CONSEQUENCE ASK static+directional while the console's computed line reads the opposite; B2 unlinked runs lose the phase's instrument with no substitute or create-time warning; B3 Advance/Jump unguarded through PLAY (one click kills vote + three weeks; L2 guards this — regression); B4 late joiner stranded on 409 while /teach counts them joined; B5 rehearsal skips PLAY and trains the fatal gesture; B6 director claims a screen explains the 5% default — it does not. Strong: WATCH FOR, staged reveals, flat-arrow ASK, Kings capstone, finale cards, recovery
+- l3-tests-r1 — test — Suite after w4 final repair (455/455)
+- l3-tuning-r1 — test — L3 harness 10/10: 663 atoms/171 surfaces, COVERAGE limb refuses unaudited atoms, 8/8 mutants incl. value-drift/quantifier-invert/quantifier-frozen; adoption 29%/71% measured
+- l3-e2e-r1 — e2e — L3 e2e: sealed-vote 409 with median unmoved, announced observer, 16 ink scans, guard proven non-vacuous
 
 ## Claim ledger
 

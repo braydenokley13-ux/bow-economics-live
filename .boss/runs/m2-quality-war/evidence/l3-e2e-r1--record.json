@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-01T12:13:54.083Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-m2l3.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[e2e-m2l3] session BOWEJ4\n[e2e-m2l3] 12 pairs joined\n[e2e-m2l3] SEALED VOTE — post-close submission refused with HTTP 409; the room's middle number did not move\n[e2e-m2l3] LATE JOINER — landed as an announced observer, with the teacher told\n[e2e-m2l3] adopted: ADOPTED — SHARE 30% · CONDITION OFF. 12 of 12 desks landed inside ten points of the room's middle number.\n[e2e-m2l3] week 1 settled\n[e2e-m2l3] week 2 settled\n[e2e-m2l3] week 3 settled\n[e2e-m2l3] PASS — 26 board frames checked at 2 projector shapes, 25 frames scanned for silent truncation, 22 board privacy scans, 51 1024x600 first-contact assertions (rule rounds + all three weeks, every desk), 16 frames scanned for text-vs-ink overprint, 342 elementFromPoint occlusion probes, 71 dials driven by real mouse drag + keyboard, 7 finale cards paged, zero console errors\n[e2e-m2l3] NON-VACUITY — the SHARE dial at first contact: poisoned frame caught at all 3 probe points\n[e2e-m2l3] NON-VACUITY — ink collision on PLAY round 2 (histogram frame): staged histogram-through-copy overprint caught, frame restored clean\n[e2e-m2l3] NON-VACUITY — the PRICE dial on a season week: poisoned frame caught at all 3 probe points\n[e2e-m2l3] deliberate refusals observed (expected, not defects): 1\n",
+  "stderr": ""
+}

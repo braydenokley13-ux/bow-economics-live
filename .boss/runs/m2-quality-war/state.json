@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T11:17:35.550Z",
+  "updatedAt": "2026-09-01T12:14:18.865Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3303,8 +3303,90 @@
           "model": "claude-opus-5",
           "reason": "Wave-4 final repair (3 of 3): the converging L3 blocker set from all five gates — sealed vote, value-level claim audit, signature reachability, board integrity, capstone facts + term sheets + commit-then-reveal, teacher B1-B6 incl. the computed-ASK class",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T11:17:35.550Z",
+          "completedAt": "2026-09-01T12:14:17.370Z",
+          "sections": {
+            "what-changed": "A: vote sealed in the reducer (propose refused past round count; runAdoption reads the recorded round); true abstention (counts in the denominator, never the median), said on desk/board/WATCH FOR; late joiner takes a league-office club or lands as an announced observer. B: audit COVERAGE limb refuses any atom without an independently recomputed value/predicate; the live falsehood branched; teach adopted-arm script + consequence ASK registered — question and answer key from one atom. C: outcome-adaptive reveal chosen (per the econ ruling against retuning); stage 4 branches; arrowWhyLine always says why; counterfactual at the refused share; dollars/week common basis; bonfire closed; no 0% 'your rule' framing. D: 16/30 relocation / 23/30 expansion, both term sheets rendered ($625M/$534M/~$255M), two-press commit-then-reveal, Knicks contradiction fixed, dates. E: ink-collision guard (proven non-vacuous) + tick-aware column budget; closeRound clears proposals; desk-naming dropped. F: per-stage desk lens + predict-the-arrow; PLAY confirm guards; rehearsal instruction rewritten.",
+            "evidence": "Lead re-ran, exit 0: l3-tests-r1 (455/455), l3-tuning-r1 (10/10; 663 atoms/171 surfaces; 8/8 mutants incl. the three dissent-named classes; adoption 29.0%/71.0% measured over 15,625 profiles), l3-e2e-r1 (sealed-vote 409 with median unmoved; announced observer; 16 ink scans; guard bites). e2e-m2l2 + e2e-m2l1 green (shared clients).",
+            "claims": "The seal is model-enforced, not UI-only; the audit's value and quantifier classes are closed by construction (an unregistered atom fails). Abstention-with-full-denominator reasoned, not play-tested.",
+            "known-gaps": "Reveal half still ~28 min (lens shipped; the merge/cut halves NOT DONE); no elapsed clock vs TIME CUT minutes; rehearsal fixed by instruction not mode; histogram not split by market size; finale cards 6/7 adjacency; undecided desks dropped from split lines. Builder certifies nothing; independent re-gating required."
+          },
+          "evidenceIds": [
+            "l3-tests-r1",
+            "l3-tuning-r1",
+            "l3-e2e-r1"
+          ],
+          "cost": {
+            "tokens": 1300000,
+            "toolUses": 675
+          }
+        },
+        "recheck-l3-play": {
+          "assignmentId": "recheck-l3-play",
+          "role": "player-gameplay-critic",
+          "actor": "player-gameplay-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T12:14:17.664Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "recheck-l3-econ": {
+          "assignmentId": "recheck-l3-econ",
+          "role": "economic-truth-critic",
+          "actor": "economic-truth-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T12:14:17.977Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "recheck-l3-teacher": {
+          "assignmentId": "recheck-l3-teacher",
+          "role": "teacher-transfer-critic",
+          "actor": "teacher-transfer-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T12:14:18.278Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "recheck-l3-sr": {
+          "assignmentId": "recheck-l3-sr",
+          "role": "sports-reality-director",
+          "actor": "sports-reality-director",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T12:14:18.569Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "recheck-l3-projector": {
+          "assignmentId": "recheck-l3-projector",
+          "role": "classroom-projector-critic",
+          "actor": "classroom-projector-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T12:14:18.865Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -3335,7 +3417,10 @@
         "gate-l3-econ",
         "gate-l3-play",
         "gate-l3-projector",
-        "gate-l3-teacher"
+        "gate-l3-teacher",
+        "l3-tests-r1",
+        "l3-tuning-r1",
+        "l3-e2e-r1"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5619,6 +5704,77 @@
       },
       "recordedAt": "2026-09-01T11:17:13.499Z",
       "actor": "teacher-transfer-critic"
+    },
+    "l3-tests-r1": {
+      "id": "l3-tests-r1",
+      "wave": 4,
+      "kind": "test",
+      "label": "Suite after w4 final repair (455/455)",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-tests-r1--record.json",
+      "sha256": "9a731a5cf7b79b3cb6d16e9297e009531ce4f8132fef50a19297f9f3948f94dd",
+      "size": 112724,
+      "metadata": {
+        "tags": [
+          "wave-4",
+          "l3"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:11:53.116Z",
+      "actor": "lead-integrator"
+    },
+    "l3-tuning-r1": {
+      "id": "l3-tuning-r1",
+      "wave": 4,
+      "kind": "test",
+      "label": "L3 harness 10/10: 663 atoms/171 surfaces, COVERAGE limb refuses unaudited atoms, 8/8 mutants incl. value-drift/quantifier-invert/quantifier-frozen; adoption 29%/71% measured",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-tuning-r1--record.json",
+      "sha256": "088bf623c373e6444aec68f448757fae67e48fc46abe025542cf9a0836604bba",
+      "size": 12510,
+      "metadata": {
+        "tags": [
+          "wave-4",
+          "l3"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l3-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:11:53.786Z",
+      "actor": "lead-integrator"
+    },
+    "l3-e2e-r1": {
+      "id": "l3-e2e-r1",
+      "wave": 4,
+      "kind": "e2e",
+      "label": "L3 e2e: sealed-vote 409 with median unmoved, announced observer, 16 ink scans, guard proven non-vacuous",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-e2e-r1--record.json",
+      "sha256": "b7a5cf675e24fa6bef8cd4e337c294ffed17e449a7f651748000692d4d576c58",
+      "size": 1467,
+      "metadata": {
+        "tags": [
+          "wave-4",
+          "l3"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l3.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T12:13:54.122Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -6473,14 +6629,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 72,
+    "agentsActivated": 77,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 112,
+    "evidenceRecorded": 115,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 353,
-  "eventHead": "29bf80904b6fb9b98404c6526b035b86aa3877ec2529644e13d1131997ea0700",
+  "eventCount": 362,
+  "eventHead": "e60a211695059f7af3e0a01a567f56675108351a33736d25814eb342a3710b57",
   "warnings": []
 }
