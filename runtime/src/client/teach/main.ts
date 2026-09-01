@@ -22,6 +22,7 @@ const roomEl = $("room");
 const controlsEl = $("controls");
 const rosterEl = $("roster");
 const aggregateEl = $("aggregate");
+const directorEl = $("director");
 
 let currentCode: string | null = null;
 // B1 repair (VERIFY_L2.md): what the Advance button's confirm() warning needs to know, refreshed every render()

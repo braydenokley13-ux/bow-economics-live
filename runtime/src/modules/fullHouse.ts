@@ -1228,6 +1228,47 @@ export const SOURCE_NOTES: readonly string[] = [
 ];
 
 /**
+ * The simplifications ledger — `gate-l1-econ` N1, carried unrepaired through the
+ * recheck and now built. Every place this model knowingly departs from the real
+ * economics, what changed, and what a student could wrongly conclude from it.
+ * It lives on the TEACHER surface: it is what a teacher needs in order to answer
+ * a sharp student honestly, and putting it on the projector would spend board
+ * space the room needs for evidence.
+ */
+export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string }[] = [
+  {
+    what: "One straight demand line per night, with a fixed slope printed nowhere.",
+    why: "A five-night lesson cannot fit a real demand system, and a curved one would make the arithmetic unreadable for grade 5.",
+    risk: "A student may think real demand is a straight line, or that a club knows its own line. Neither is true — real clubs estimate it and are often wrong.",
+  },
+  {
+    what: "Renewals move the crowd, but only a little (10 fans per renewal point).",
+    why: "Renewals ARE partly next year's ticket demand, so the channel is real. It is deliberately small: when it was large, chasing renewals also maximised cash and the two books stopped trading off at all.",
+    risk: "A student may conclude renewals barely matter. They matter enormously — they matter NEXT season, which is outside these five nights, and that is exactly why the two books do not add up.",
+  },
+  {
+    what: "Season-ticket holders reward a strong walk-up price on a big night.",
+    why: "Modelled from the real 'my plan was a bargain' effect that variable pricing leans on.",
+    risk: "Real renewal behaviour is far noisier and depends on winning, service and the schedule, none of which are in this model.",
+  },
+  {
+    what: "In-arena spend is a flat per-head number ($18 New York, $12 Memphis).",
+    why: "It makes the Two Peaks reveal checkable by eye.",
+    risk: "Real per-head spend varies with who comes, what night it is, and what is open.",
+  },
+  {
+    what: "Dollars are shrunk to classroom size and one night stands for a whole home season.",
+    why: "Real Knicks gate revenue per night runs into the millions; the numbers would stop being readable.",
+    risk: "The magnitudes are not real club financials and should never be quoted as such. MODELED_DOLLARS_LINE says so before the first price.",
+  },
+  {
+    what: "No randomness at all: no weather, no injuries, no winning streak.",
+    why: "Every outcome must be attributable to the pair's own decision, or the debrief is a shrug.",
+    risk: "Real pricing desks are guessing under genuine uncertainty; this room is not.",
+  },
+];
+
+/**
  * gate-l1-econ B3 / gate-l1-play P3. The old version of this told the room the
  * six real clubs moved buildings "for exactly the reason some of you just paid
  * to open more seats" — a real-world citation blessing a decision this model
@@ -1659,11 +1700,35 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       deskCount: desks.length,
       twoPeaksReleased: state.twoPeaksReleased,
       twoPeaksAvailable: state.nightIndex >= 3 && !state.twoPeaksReleased,
+      twoPeaksReason:
+        state.twoPeaksReleased
+          ? "Already on the projector."
+          : state.nightIndex < 3
+            ? "Available after the Night 3 bell — the panel is drawn on that night's own curve."
+            : "Ready. Releasing it prints the profit-making price band on the projector, so holding it until after Night 4 keeps the biggest decision of the lesson blind.",
       revealStage: state.revealStage,
       totalRevealSteps: REVEAL_STEPS,
+      // TT-B2 (HK-3): name the stage the next press lands, the stage now on the
+      // projector, and the line to say as each one arrives.
+      revealStages: REVEAL_STAGES,
+      nextRevealStage: REVEAL_STAGES[state.revealStage] ?? null,
+      currentRevealStage: REVEAL_STAGES[state.revealStage - 1] ?? null,
       desks,
       aggregate: computeAggregate(state),
-      watchFor: teacherWatchFor(state),
+      watchFor: teacherWatchFor(state, phase),
+      // TT-B1 (HK-1): the per-phase director script.
+      director: teacherDirector(state, phase),
+      // TT-B3: what is on the projector RIGHT NOW, in every phase — not just PLAY.
+      projectorNow: projectorMirror(state, phase),
+      // TT-B9 (HK-5): the mechanics that exist only on the student screen.
+      studentScreen: studentScreenMechanics(state),
+      // gate-l1-econ N1: where this model knowingly departs from the real thing.
+      simplifications: SIMPLIFICATIONS,
+      // TT-B6 (HK-2): what ringing the bell will do to a desk that never locked.
+      bellNote:
+        state.nightIndex >= NIGHT_COUNT
+          ? "All five nights are in the books."
+          : `Ringing the bell settles Night ${Math.min(state.nightIndex + 1, NIGHT_COUNT)} for every desk at once. Any desk that has not locked settles at its own season-plan price and is marked AUTO on its own screen — nobody is skipped and nobody gets a zero.`,
     });
   },
 
@@ -1947,6 +2012,95 @@ export type DirectorPanel = {
   trigger: string | null;
   timeCut: string;
 };
+
+/**
+ * `ON THE PROJECTOR RIGHT NOW`, alive in every phase — TT-B3.
+ *
+ * It used to exist only while a night card was open, so it vanished for
+ * REVEAL, ADAPT, COUNTERFACTUAL and SYNTHESIS: the four phases where the
+ * projector IS the lesson and the teacher is narrating it with their back to
+ * the room.
+ */
+function projectorMirror(state: FullHouseState, phase: CanonicalPhase): { title: string; lines: string[] } {
+  const card = openCard(state);
+  switch (phase) {
+    case "LOBBY":
+      return {
+        title: "Desks joining",
+        lines: ["\"You are not the GM today. You run the building.\"", "Both clubs, both buildings and both seat counts are up, with each desk's assignment as it lands."],
+      };
+    case "HOOK":
+      return {
+        title: "The brief",
+        lines: [
+          "Both markets, the two books in plain words, and all five night cards with day, visiting role, Draw and TV listing.",
+          "Also up: the modelling caveats and the money-scale line.",
+        ],
+      };
+    case "PLAY":
+      if (!card) {
+        return {
+          title: "Five nights, in the books — the picture is being held",
+          lines: ["The room has NOT seen the class chart yet. It goes up one night at a time in REVEAL."],
+        };
+      }
+      return {
+        title: `${card.label} — tonight's card`,
+        lines: [
+          `${card.day} vs ${card.visitor} · Draw ${card.draw}/100 · ${card.tv} TV${card.bowlOffer ? " · capacity option offered" : ""}`,
+          ...card.notes,
+          `Desks locked in: ${Object.values(state.desks).filter((d) => d.locked).length} of ${Object.keys(state.desks).length}. Nothing about tonight's crowd is on the projector until you ring the bell.`,
+          ...(state.nightIndex > 0 ? [`Class marks up for: ${CARDS.slice(0, state.nightIndex).map((c) => c.id).join(", ")}.`] : []),
+          ...(state.twoPeaksReleased ? ["The Two Peaks money view is up."] : []),
+        ],
+      };
+    case "REVEAL": {
+      const current = REVEAL_STAGES[state.revealStage - 1] ?? null;
+      return {
+        title: current ? `Stage ${current.stage} of ${REVEAL_STEPS} — ${current.name}` : "Waiting for the first press",
+        lines: current
+          ? [
+              current.headline,
+              ...(state.revealStage <= NIGHT_COUNT ? [`Marks up for: ${CARDS.slice(0, state.revealStage).map((c) => c.id).join(", ")}.`] : []),
+              ...(state.revealStage >= NIGHT_COUNT ? ["The room's total turned-away count is up."] : []),
+              ...(state.revealStage >= RENEWALS_REVEAL_STAGE ? ["The renewals rule is on the screen in full."] : []),
+              ...(state.revealStage >= NIGHT_COUNT + 1 ? ["The Two Peaks money view is up."] : []),
+              ...(state.revealStage >= REVEAL_STEPS ? ["The per-market season books are up."] : []),
+            ]
+          : ["An empty chart frame and \"Waiting for your teacher to put up the first night.\""],
+      };
+    }
+    case "ADAPT":
+      return {
+        title: "The class chart and the three questions",
+        lines: [
+          "Every desk-night as one mark: colour = building, shape = night, no joining line, key on the chart.",
+          ...ADAPT_QUESTIONS,
+        ],
+      };
+    case "COUNTERFACTUAL":
+      return {
+        title: "Night 1 against Night 5, desk by desk",
+        lines: [
+          "Each desk's two crowds on the same card, its renewals either side, and the class chart underneath for the argument.",
+          `Prompt on screen: "${ARGUE_PROMPT}"`,
+          "This board names desks publicly, worst line included.",
+        ],
+      };
+    case "SYNTHESIS":
+      return {
+        title: "WHAT ECONOMICS DID WE JUST USE?",
+        lines: [
+          "Six cards, every number computed from this class's own nights: REVENUE = PRICE x PEOPLE · THE CARD MOVED THE CROWD · THE TICKET IS NOT THE PRODUCT · NIGHT 5 WAS NIGHT 1 · TWO BOOKS, NO EXCHANGE RATE · YOUR JOB IS REAL.",
+          "Then the outside-sports row, then the dated sources.",
+        ],
+      };
+    case "COMPLETE":
+      return { title: "Closing card", lines: [COMPLETE_COPY] };
+    default:
+      return { title: "", lines: [] };
+  }
+}
 
 /** What the STUDENT screen is offering right now — a surface the teacher never sees (HK-5, TT-B9). */
 function studentScreenMechanics(state: FullHouseState): string[] {

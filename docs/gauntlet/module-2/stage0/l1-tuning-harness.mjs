@@ -270,14 +270,22 @@ console.log("");
         minGap = Math.min(minGap, Math.abs(cashBest.p - renewBest.p));
       }
     }
+    // gate-l1-econ-r1 N-d: this row used to hard-code `market.planPrice` as the
+    // renewals-best price, so it printed "N4 cash $90 vs renewals $24" while the
+    // true renewals-best on that card was $108-$112 — a stale line in the very
+    // artifact that certifies the tuning. It is now computed, like the assertion
+    // above it always was.
     const nominal = CARDS.map((card) => {
       const curve = curveFor(market, card, RENEWALS_START, 0);
       let cashBest = { p: null, v: -Infinity };
+      let renBest = { p: null, v: -Infinity };
       for (const p of PRICE_GRID) {
         const cash = settleNight(market, curve, p, 0, false, card.bowlOffer).net;
+        const ren = renewalDelta(market, card, p, 0);
         if (cash > cashBest.v) cashBest = { p, v: cash };
+        if (ren > renBest.v) renBest = { p, v: ren };
       }
-      return `${card.id} cash $${cashBest.p} vs renewals $${market.planPrice}`;
+      return `${card.id} cash $${cashBest.p} vs renewals $${renBest.p} (${renBest.v >= 0 ? "+" : ""}${renBest.v})`;
     });
     rows.push(`${market.id.padEnd(10)} ${nominal.join(" · ")}`);
   }
@@ -592,6 +600,120 @@ console.log("");
     rows.push(`${" ".repeat(11)}printed plan: prices ${printed.plan.prices.map((p) => `$${p}`).join(" ")} · spend ${printed.plan.spends.map((s) => `$${fmt(s)}`).join(" ")}`);
   }
   check("P13", "B2 — nothing an outside search finds beats the season line the COUNTERFACTUAL card prints", ok, rows);
+}
+
+/* ------------------------- P14 — the two books trade off AT SEASON SCALE too -- */
+{
+  // gate-l1-econ-r1 R1 (BLOCKING dissent `econ-l1-season-books`). P5 and P12 are
+  // NIGHT-level and both passed while the season-level frontier was inverted: the
+  // max-cash season also ended with MORE renewals than never touching the dial
+  // (New York $2,743,440 at 92% against a flat plan's $1,291,132 at 80%), so the
+  // two notes the COUNTERFACTUAL card prints beside those rows were false and
+  // FL1 was rebuilt at the only scale the debrief reports.
+  //
+  // The season level is where the product makes its claim, so this is where the
+  // claim is pinned. Exact forward DP over (renewals x carry) across all 56
+  // prices and every spend level on all five nights — a global optimum for the
+  // policy space `replayPlan` covers, not a heuristic search. Sweeping a shadow
+  // price on renewals traces the whole season Pareto frontier.
+  //
+  // Falsifiable limbs, matching R1's own discharge conditions:
+  //   (i)   the flat-plan line the card prints is NOT Pareto-dominated by the
+  //         most-cash line: it must end at least SEASON_RENEWAL_MARGIN points
+  //         ahead on the renewals book, in BOTH markets;
+  //   (ii)  the season cash-maximising policy gives up at least
+  //         SEASON_RENEWAL_RANGE points of the reachable season renewals range;
+  //   (iii) buying the top of that range costs at least SEASON_CASH_SHARE of
+  //         season cash — i.e. renewals are not free;
+  //   (iv)  the frontier is a curve, not a cliff: at least 4 distinct
+  //         (cash, renewals) points, so intermediate lines are real choices.
+  const SEASON_RENEWAL_MARGIN = 15;
+  const SEASON_RENEWAL_RANGE = 30;
+  const SEASON_CASH_SHARE = 0.04;
+  const LAMBDAS = [0, 500, 1000, 2000, 4000, 8000, 16000, 32000, 1e9];
+
+  const clamp01 = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const spendLevelsFor = (market) => {
+    const out = [];
+    for (let s = 0; s <= market.eventMax; s += 5000) out.push(s);
+    return out;
+  };
+  /** Exact forward DP; returns the policy maximising cash + lambda * endingRenewals. */
+  const dpSeason = (market, lambda) => {
+    const levels = spendLevelsFor(market);
+    let states = new Map([[`${RENEWALS_START}|0`, { cash: 0, renewals: RENEWALS_START, carry: 0, path: [] }]]);
+    for (const card of CARDS) {
+      const next = new Map();
+      for (const st of states.values()) {
+        const curve = curveFor(market, card, st.renewals, st.carry);
+        for (const p of PRICE_GRID) {
+          for (const s of levels) {
+            if (st.cash < 0 && s !== 0) continue; // the reducer's debt lock
+            const settlement = settleNight(market, curve, p, s, false, card.bowlOffer);
+            const cash = st.cash + settlement.net;
+            const ren = clamp01(st.renewals + renewalDelta(market, card, p, s), 0, 100);
+            const carry = Math.round(market.eventFans * s);
+            const key = `${ren}|${carry}`;
+            const prev = next.get(key);
+            if (!prev || cash > prev.cash) next.set(key, { cash, renewals: ren, carry, path: [...st.path, { p, s }] });
+          }
+        }
+      }
+      states = next;
+    }
+    let best = null;
+    for (const st of states.values()) {
+      const score = st.cash + lambda * st.renewals;
+      if (!best || score > best.score) best = { ...st, score };
+    }
+    return best;
+  };
+
+  const rows = [];
+  let ok = true;
+  for (const market of MARKETS) {
+    const flat = replayPlan(market, { prices: CARDS.map(() => market.planPrice), spends: CARDS.map(() => 0) });
+    const frontier = [];
+    for (const lambda of LAMBDAS) {
+      const b = dpSeason(market, lambda);
+      // Every DP path is replayed through the shipped reducer path, so nothing
+      // here is an upper bound the product cannot actually reach.
+      const verify = replayPlan(market, { prices: b.path.map((x) => x.p), spends: b.path.map((x) => x.s) });
+      if (verify.cash !== b.cash || verify.renewals !== b.renewals) ok = false;
+      frontier.push({ lambda, cash: b.cash, renewals: b.renewals, prices: b.path.map((x) => x.p), spends: b.path.map((x) => x.s) });
+    }
+    const cashMax = frontier[0];
+    const renMax = frontier[frontier.length - 1];
+    const distinct = new Set(frontier.map((f) => `${f.cash}|${f.renewals}`)).size;
+    const flatMargin = flat.renewals - cashMax.renewals;
+    const renRange = renMax.renewals - cashMax.renewals;
+    const cashShare = (cashMax.cash - renMax.cash) / Math.max(1, cashMax.cash);
+    const printed = bestFoundSeason(market);
+    // The card's own "most cash we could find" line must BE the cash-max corner
+    // of this frontier: if it were not, the row the room reads is not the row
+    // this property is about.
+    if (printed.cash !== cashMax.cash || printed.renewals !== cashMax.renewals) ok = false;
+    if (!(flatMargin >= SEASON_RENEWAL_MARGIN)) ok = false;
+    if (!(renRange >= SEASON_RENEWAL_RANGE)) ok = false;
+    if (!(cashShare >= SEASON_CASH_SHARE)) ok = false;
+    if (distinct < 4) ok = false;
+    rows.push(
+      `${market.id.padEnd(10)} never move the dial $${fmt(flat.cash)} / ${flat.renewals}%  ·  most cash $${fmt(cashMax.cash)} / ${cashMax.renewals}%  ·  most renewals $${fmt(renMax.cash)} / ${renMax.renewals}%`,
+    );
+    rows.push(
+      `${" ".repeat(11)}flat line ends ${flatMargin} renewal points AHEAD of the most-cash line (bar ${SEASON_RENEWAL_MARGIN}) · ` +
+        `the cash-max season gives up ${renRange} points of the reachable range (bar ${SEASON_RENEWAL_RANGE}) · ` +
+        `buying them back costs $${fmt(cashMax.cash - renMax.cash)} = ${(cashShare * 100).toFixed(2)}% of season cash (bar ${(SEASON_CASH_SHARE * 100).toFixed(0)}%)`,
+    );
+    rows.push(`${" ".repeat(11)}frontier: ${frontier.map((f) => `${f.renewals}%@$${fmt(f.cash)}`).join(" → ")} (${distinct} distinct points)`);
+    rows.push(`${" ".repeat(11)}the card's printed "most cash" line matches the DP corner exactly: ${printed.cash === cashMax.cash && printed.renewals === cashMax.renewals}`);
+  }
+  check(
+    "P14",
+    "R1 — at SEASON scale the two books still trade off: the never-move-the-dial line is not Pareto-dominated, and cash-max pays for it in renewals",
+    ok,
+    rows,
+  );
 }
 
 /* --------------------------------------------------------------- verdict -- */

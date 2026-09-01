@@ -73,6 +73,15 @@
     </div>
   </section>
 
+  <!-- gate-l1-teacher TT-B1 (BLOCKING): the per-phase director panel. The design
+       carried a complete NOW / ASK / DON'T EXPLAIN YET / TRIGGER / TIME CUT
+       script with minute budgets and exactly one fragment of it had reached the
+       product. -->
+  <section id="director" class="card" hidden>
+    <h2 id="directorHeading">Directing this phase</h2>
+    <div id="directorBody"></div>
+  </section>
+
   <section id="controls" class="card" hidden>
     <h2>Phase</h2>
     <div class="phaserow" id="phaseRow"></div>
@@ -85,12 +94,12 @@
       <button id="btnEnd" class="btn btn-danger">End session</button>
     </div>
     <div class="row" style="margin-top:8px;">
-      <button id="btnShock" class="btn btn-danger">⚡ Trigger shock event</button>
+      <button id="btnShock" class="btn btn-danger"><span class="btn-glyph" aria-hidden="true">!</span>Trigger shock event</button>
       <button id="btnCounterfactual" class="btn">Rerun counterfactual</button>
-      <button id="btnRevealNext" class="btn btn-primary">🎙️ Reveal next</button>
-      <button id="btnCloseDay" class="btn btn-primary">🔔 Close signing day</button>
-      <button id="btnCloseNight" class="btn btn-primary">🔔 Open the doors</button>
-      <button id="btnTwoPeaks" class="btn">📈 Release the Two Peaks</button>
+      <button id="btnRevealNext" class="btn btn-primary">Reveal next</button>
+      <button id="btnCloseDay" class="btn btn-primary">Close signing day</button>
+      <button id="btnCloseNight" class="btn btn-primary">Open the doors</button>
+      <button id="btnTwoPeaks" class="btn">Release the Two Peaks</button>
     </div>
   </section>
 

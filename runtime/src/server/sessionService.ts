@@ -347,8 +347,15 @@ export class SessionService {
         return this.buildTeacherPayload(
           await this.patch(session, { frozen: true, paused: true }, /* checkpoint */ true),
         );
+      // gate-l1-projector, blocking classroom-reliability defect: `freeze` sets
+      // BOTH flags, and `unfreeze` used to clear only `frozen`. Observed in a
+      // real session: the teacher freezes to get the room's attention, presses
+      // the button now labelled "Unfreeze", and the projector goes from FROZEN
+      // to PAUSED with no control anywhere still reading "Unfreeze" — a dead
+      // room and no message explaining it. Freeze is one gesture, so unfreeze is
+      // its exact inverse: it clears what freeze set.
       case "unfreeze":
-        return this.buildTeacherPayload(await this.patch(session, { frozen: false }));
+        return this.buildTeacherPayload(await this.patch(session, { frozen: false, paused: false }));
       case "hook": {
         const result = mod.reduce(
           session.state,

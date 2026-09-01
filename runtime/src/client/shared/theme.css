@@ -4,14 +4,45 @@
  * One committed dark palette: this is a broadcast control room at night,
  * not a light-mode app.
  *
- * Fonts: the identity doc names Bebas Neue / Inter / Space Grotesk via
- * Google Fonts, but this runtime promises zero external dependencies and
- * zero internet access on the classroom LAN (see runtime/README.md) — a
- * teacher's laptop five minutes before class cannot depend on a CDN being
- * reachable. The doc itself sanctions this: "All ship a system fallback
- * stack so a slow Chromebook never blocks on a webfont." This file uses
- * those fallback stacks directly, permanently, not as a loading fallback.
+ * Fonts: the identity doc names Bebas Neue / Inter / Space Grotesk. The
+ * runtime promises zero external dependencies and zero internet access on the
+ * classroom LAN (runtime/README.md), so nothing here may reach a CDN — but the
+ * previous resolution of that constraint was to declare the families and ship
+ * no font file, with "Arial Narrow" listed AHEAD of Bebas Neue and "Courier
+ * New" behind Space Grotesk. Rendered result (gate-l1-visual P1, repo-wide, M1
+ * included): every dollar figure in the product was set in Courier.
+ *
+ * Both families are now SELF-HOSTED, latin subset, served off this origin from
+ * shared/fonts/. No network call, no CDN, no runtime cost beyond 36KB.
+ *
+ * LICENSING: Bebas Neue and Space Grotesk are both released under the SIL Open
+ * Font License 1.1, which permits bundling and redistribution with the software
+ * (the OFL's only hard conditions are that the fonts are not sold on their own
+ * and that reserved font names are not reused on a modified font — neither is
+ * done here; the files are the unmodified Google Fonts latin subsets). The
+ * license text is not vendored; if this ships beyond the classroom pilot,
+ * include OFL.txt alongside the .woff2 files.
  */
+
+@font-face {
+  font-family: "Bebas Neue";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/bebas-neue-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("./fonts/space-grotesk-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 :root {
   --surface-void: #0a0d12;
@@ -36,9 +67,10 @@
   --series-2: #c98500;
   --series-3: #d9598f;
 
-  --font-display: "Arial Narrow", "Bebas Neue", Impact, Haettenschweiler, sans-serif;
-  --font-ui: "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
-  --font-number: "Space Grotesk", "Courier New", "IBM Plex Mono", monospace;
+  /* The real faces first; the system stack is a genuine fallback, not the default. */
+  --font-display: "Bebas Neue", "Arial Narrow", Impact, Haettenschweiler, sans-serif;
+  --font-ui: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-number: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
 
   --ease-decel: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -942,8 +974,10 @@ body {
   margin-top: 10px;
 }
 .bid-stepper button {
-  width: 36px;
-  height: 36px;
+  /* gate-l1-projector repair 6: 36x36 measured, under the 44px touch target two
+     students share on one Chromebook trackpad. */
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   font-size: 18px;
   font-weight: 800;
@@ -1836,4 +1870,215 @@ body {
   line-height: 1.5;
   color: var(--ink-primary);
   margin-bottom: 8px;
+}
+
+
+/* ---------------------------------------------- M2 L1 repair round 2 · /play -- */
+
+/* gate-l1-projector repair 6 / gate-l1-visual H3: the rejoin PIN is recovery
+   chrome, not the hero of a decision surface. */
+.pinrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pin-reopen {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--ink-muted);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.pin-reopen:hover {
+  color: var(--ink-secondary);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+/* One strip instead of a header block plus a two-tile scoreboard: buys ~60px of
+   the first viewport back so the dial and LOCK IT IN clear a 600px Chromebook. */
+.fh-topstrip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: var(--surface-panel);
+}
+.fh-topstrip-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  font-size: 17px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fh-topstrip-book {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fh-topstrip-book .numeric {
+  font-size: 17px;
+  color: var(--accent-gold);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.fh-topstrip-book.debt .numeric {
+  color: var(--over-the-line);
+}
+
+/* gate-l1-play P10 (BLOCKING): the renewals rule, beside the dial it governs. */
+.fh-renewal-rule {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--accent-blue);
+  background: rgba(77, 162, 232, 0.07);
+  border-radius: 0 8px 8px 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-secondary);
+}
+
+/* The night-spend receipt (gate-l1-play P2, second clause). */
+.fh-receipt {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--accent-gold);
+}
+
+.fh-spend-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.fh-spend-row .bid-stepper {
+  flex: 1;
+}
+.fh-rule-details {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+.fh-rule-details > summary {
+  cursor: pointer;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.fh-rule-details p {
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+
+/* gate-l1-visual P2: the one irreversible bet in the lesson was a default OS
+   checkbox in a thin red row. It is a plate now — a physical, costly,
+   one-night switch, in the Cap Room register, with no hue ramp. */
+.fh-bowl-plate {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "state main cost"
+    "state note note";
+  align-items: center;
+  gap: 2px 12px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--surface-inset);
+  color: var(--ink-secondary);
+  transition: border-color 140ms var(--ease-decel), background 140ms var(--ease-decel);
+}
+.fh-bowl-plate:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.fh-bowl-plate.on {
+  border-color: var(--accent-gold);
+  background: rgba(244, 185, 66, 0.09);
+  color: var(--ink-primary);
+}
+.fh-bowl-state {
+  grid-area: state;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  font-size: 15px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid currentColor;
+  color: var(--ink-muted);
+}
+.fh-bowl-plate.on .fh-bowl-state {
+  color: var(--accent-gold);
+}
+.fh-bowl-main {
+  grid-area: main;
+  font-size: 13.5px;
+  color: var(--ink-primary);
+}
+.fh-bowl-cost {
+  grid-area: cost;
+  font-size: 17px;
+  color: var(--accent-gold);
+}
+.fh-bowl-note {
+  grid-area: note;
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+
+/* gate-l1-visual H2 / D1: FULL HOUSE as a moment, not a table cell. */
+.fh-sellout {
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--accent-gold);
+  background: linear-gradient(180deg, rgba(244, 185, 66, 0.16), rgba(244, 185, 66, 0.04));
+  text-align: center;
+}
+.fh-sellout-title {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--accent-gold);
+}
+.fh-sellout-sub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+}
+.fh-sellout-turned {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(244, 185, 66, 0.28);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+.fh-sellout-turned .numeric {
+  font-size: 26px;
+  color: var(--ink-primary);
+}
+.fh-sellout-turned span:last-child {
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+}
+.fh-result.soldout {
+  border-color: rgba(244, 185, 66, 0.4);
 }
