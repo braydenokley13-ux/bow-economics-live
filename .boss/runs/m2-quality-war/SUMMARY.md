@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `201:467740f4d8012d90d252af8bd596c053281ac8cae333fa18cf40459a343473ab`  
-Updated: 2026-09-01T03:55:08.757Z
+Event head: `204:d11f5bac472a8d6160c21eb196255346f5d2a9768fca426daacf0c2a1363a2ee`  
+Updated: 2026-09-01T03:57:58.169Z
 
 ## Founder intent
 
@@ -68,6 +68,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l1-tests-w3b — test — Suite after fit repair (354/354)
 - l1-e2e-w3b — e2e — Every-frame fit e2e: 28 frames x 2 shapes + back-row type
 - w3-visual-final — visual-report — W3 final visual re-grade: PREMIUM CLAUSE NOT AFFIRMED (SERVICEABLE-NOT-PREMIUM, blocking: NO — 'polish wave, not a classroom gate'). Both SCHOOL-UI states left the band (staged synthesis 2.85% vh; PLAY strip + fitting Two Peaks); emoji verified gone by rendered scan + grep. Remaining distance itemized (play room/motions, analysis-frame ramp, teach monitor wall); P9 routed to projector, CF colour to CVD owner
+- w3-projector-final — projector-report — W3 final projector adjudication: FIT CONDITION DISCHARGED — 31 frames x 2 shapes, 0px overflow, evidence tier 2.61-2.85%, punchline 3.2%, SYNTHESIS pager builds; privacy PASS (62 scans); fallbacks PASS live incl. unfreeze + server restart. BLOCKING regression W3F-1: CF pager labels desk ranges that no longer match after interest ordering. Non-blocking W3F-2..5
 
 ## Claim ledger
 
@@ -75,7 +76,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 
 ## Dissent
 
-- No dissent recorded
+- proj-l1-cf-pager-label — classroom-reliability/blocking/open — Regression from orderRepeatRows: the CF pager's board label claims desk ranges ('DESKS 1-3 OF 12') over reordered rows (Desk 2/3/4; group 4 reads '10-12' over 11/12/1) — the room is told to look at the wrong desks. fullHouse.ts:2551/:2355/:2361. One-line-class fix: label groups by group number/actual desk names, and assert label-vs-rows consistency in e2e. GATE_L1_PROJECTOR.md §W3 FINAL
 
 ## Latest gate
 

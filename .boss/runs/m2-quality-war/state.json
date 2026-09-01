@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T03:55:08.757Z",
+  "updatedAt": "2026-09-01T03:57:58.169Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1929,10 +1929,13 @@
         "w3-econ-adj",
         "l1-tests-w3b",
         "l1-e2e-w3b",
-        "w3-visual-final"
+        "w3-visual-final",
+        "w3-projector-final"
       ],
       "claimIds": [],
-      "dissentIds": [],
+      "dissentIds": [
+        "proj-l1-cf-pager-label"
+      ],
       "meetingIds": [],
       "gates": [],
       "verdict": null,
@@ -3284,6 +3287,23 @@
       },
       "recordedAt": "2026-09-01T03:54:57.865Z",
       "actor": "visual-experience-director"
+    },
+    "w3-projector-final": {
+      "id": "w3-projector-final",
+      "wave": 3,
+      "kind": "projector-report",
+      "label": "W3 final projector adjudication: FIT CONDITION DISCHARGED — 31 frames x 2 shapes, 0px overflow, evidence tier 2.61-2.85%, punchline 3.2%, SYNTHESIS pager builds; privacy PASS (62 scans); fallbacks PASS live incl. unfreeze + server restart. BLOCKING regression W3F-1: CF pager labels desk ranges that no longer match after interest ordering. Non-blocking W3F-2..5",
+      "path": ".boss/runs/m2-quality-war/evidence/w3-projector-final--GATE_L1_PROJECTOR.md",
+      "sha256": "59d2879e26650c2758af40e60978b5b21371c69ec373c250a9bde8b69b810686",
+      "size": 34780,
+      "metadata": {
+        "tags": [
+          "projector",
+          "wave-3"
+        ]
+      },
+      "recordedAt": "2026-09-01T03:57:57.686Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "claims": {
@@ -3703,9 +3723,12 @@
         "analyst-wave2"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T02:12:36.348Z",
-      "actor": "product-analyst"
+      "actor": "product-analyst",
+      "resolution": "Both grounds now closed with owning-critic artifacts: (1) the projector's own 'must fit its content' condition is DISCHARGED by its owning critic on a 12-desk live pass (31 frames x 2 shapes, 0px overflow, evidence tier at floor, fallbacks re-verified live); (2) the premium clause has an affirmative rendered-output artifact — verdict SERVICEABLE-NOT-PREMIUM, explicitly blocking:NO ('polish wave, not a classroom gate'), with the remaining distance itemized. The honest visual status is carried to the ship case as an open quality item, not laundered as premium. Successor regression tracked as proj-l1-cf-pager-label.",
+      "resolvedAt": "2026-09-01T03:57:58.169Z",
+      "resolvedBy": "lead-integrator"
     },
     "analyst-wave2-dissent": {
       "id": "analyst-wave2-dissent",
@@ -3715,6 +3738,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T02:12:55.901Z",
       "actor": "lead-integrator"
+    },
+    "proj-l1-cf-pager-label": {
+      "id": "proj-l1-cf-pager-label",
+      "wave": 3,
+      "category": "classroom-reliability",
+      "severity": "blocking",
+      "finding": "Regression from orderRepeatRows: the CF pager's board label claims desk ranges ('DESKS 1-3 OF 12') over reordered rows (Desk 2/3/4; group 4 reads '10-12' over 11/12/1) — the room is told to look at the wrong desks. fullHouse.ts:2551/:2355/:2361. One-line-class fix: label groups by group number/actual desk names, and assert label-vs-rows consistency in e2e. GATE_L1_PROJECTOR.md §W3 FINAL",
+      "evidenceIds": [
+        "w3-projector-final"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T03:57:57.928Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "meetings": {},
@@ -3752,11 +3789,11 @@
     "agentsActivated": 41,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 67,
+    "evidenceRecorded": 68,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 201,
-  "eventHead": "467740f4d8012d90d252af8bd596c053281ac8cae333fa18cf40459a343473ab",
+  "eventCount": 204,
+  "eventHead": "d11f5bac472a8d6160c21eb196255346f5d2a9768fca426daacf0c2a1363a2ee",
   "warnings": []
 }
