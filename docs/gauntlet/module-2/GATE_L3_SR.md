@@ -450,3 +450,149 @@ term-start re-check.
 readiness with `A1` unrepaired — a false institutional rule taught as the justification for the
 room's own constitution is not a copy blemish, and CLAUDE.md §8 is explicit that a fun simulation
 teaching false economics fails.
+
+---
+
+## RE-CHECK AFTER W4 FINAL REPAIR
+
+Owning-critic confirm-or-refute of dissent `sr-l3-capstone-facts`. Re-read 2026-09-01 against
+`runtime/src/modules/writeTheRule.ts` and the L3 client copy in
+`runtime/src/client/{play,board,teach}/main.ts`. No server run. Every repaired claim checked
+verbatim against the fact base established above; new claims introduced by the repair swept and
+verified separately.
+
+**Highest-severity first: the repair closed both blocking findings and introduced a new false
+real-world claim on the same term sheet it added (`N1`), plus a mislabeled market-size figure
+(`N2`). `N1` is in my blocking category.**
+
+### The repaired claims, verbatim
+
+| Claim | Where | Verdict |
+| --- | --- | --- |
+| `A1` voting rule — "Moving the Kings only needed a simple majority — 16 of the 30 owners — and it still lost 22-8 on May 15, 2013" | C8 `institution-design` `inSports`, l.2099 | **CONFIRMED.** Matches the NBA Constitution (relocation by majority of all Members) and the verified 22-8 tally. |
+| `A1` supermajority relocated to expansion — "expanding to 32 clubs takes 23 of the 30" | same rail | **CONFIRMED.** 3/4 of 30 = 23; matches this gate's verified expansion base. |
+| `A1` "In March 2026 those same owners voted 30-0 just to EXPLORE Seattle and Las Vegas" | same rail | **CONFIRMED** on substance. One-word hedge noted at `N4`. |
+| The false "16-14" hypothetical | anywhere in the module | **CONFIRMED REMOVED.** No occurrence of "16-14" survives in `runtime/src`. No supermajority-for-relocation claim survives. |
+| `ADOPT_COPY` two-thirds justification (l.1633) | unchanged | **CONFIRMED CORRECT.** It argues from the pot's ownership, never from a claimed league rule, exactly as this gate required. |
+| `A2` term sheets exist as data — `TERM_SHEETS` (l.1685-1708), `ARGUE_TERM_SHEET_NOTE` (l.1710) | module | **CONFIRMED.** |
+| `A2` rendered on `/play` | `play/main.ts` l.3531, 3538-3550 | **CONFIRMED.** Both sheets and the note render in the ARGUE branch. |
+| `A2` rendered on `/board` | `board/main.ts` l.1697, 1861, 1869 | **CONFIRMED.** Sheets render pre-reveal; note carried in the pre-reveal synthesis line. |
+| `A2` figures — Seattle **$625M** valuation, **$409M** for the Maloofs' 65%; Sacramento **$534M** | l.1689-1702 | **CONFIRMED** verbatim against this gate's verified figures (CBS Sports / SI / Bleacher Report, Apr-May 2013 · verifiedAsOf 2026-09-01). |
+| `A2` `/teach` no longer false — "Both term sheets are on their screens with the numbers on them — $625M from Seattle against $534M from Sacramento" (l.2708); "Read both term sheets off their screens…" (l.2989) | `teacherView` | **CONFIRMED.** `/teach` now describes the shipped surfaces. Random-teacher contradiction closed. One precision defect at `N3`. |
+| `A4` subsidy — "About $255M of CITY money… capped at 47.7% of its cost. Sacramento borrowed $273M in 2015 against roughly $18M of payments a year running to 2050." | Sacramento column, l.1704 | **CONFIRMED** verbatim against the municipal record verified at `A4`. |
+| `A4` `subsidy-coda` contradiction — old "Nothing you played today was about public money" | l.2211-2217 | **CONFIRMED REMOVED,** and converted to the callback this gate recommended. Causal overreach noted at `N5`. |
+| `A4` ledger line | `SOURCE_NOTES` Sacramento entry, l.1745 | **CONFIRMED.** Carries $255M / 47.7% / $534.6M / $273M / 2050 and the 16-of-30 rule. |
+| Knicks gate contradiction (`A3`) — "about $230M a club a year. For a small-market club that is several times what it takes at the gate. For the biggest — the Knicks took a record $193M at the gate in 2024-25 — it is about the same money." | C5 `shared-product`, l.2134 | **CONFIRMED.** The universal quantifier is gone; $76B/11/30 = $230.3M checks; $230M vs $193M is now stated as "about the same," which is true. The `C-2` pattern is closed. The small-market half is **inferred** (small-market NBA gate ≈$40-70M/yr), not separately re-verified this session. |
+| 2016-17 sharing stamp (`A5`) — "In the leaked 2016-17 league year 14 of 30 clubs lost money BEFORE revenue sharing and 9 after…" | C6 rail, l.2048 | **CONFIRMED.** The projector surface now carries the season. `BC-3` satisfied. |
+| Expansion epilogue (`S1`) — `ARGUE_REVEAL_COPY` (l.1714): "in March 2026 the Board of Governors voted 30-0 to formally explore expansion to Seattle and Las Vegas, and only those two, targeting 2028-29. That final vote needs 23 of the 30 owners, and as of September 2026 it has not happened." | module | **CONFIRMED** against the verified March 2026 / July 2026 base. Correctly dated and written as unresolved. |
+| `S1` second surface — `path-dependence` rail (l.2196) and `SOURCE_NOTES` (l.1747, "due a re-check every term… had not been taken as of 2026-09-01") | module | **CONFIRMED,** including the term-start re-check instruction this gate asked for. |
+
+### New claims introduced by the repair
+
+#### N1 — HIGH (blocking category: economic-truth). REFUTED. The Seattle column calls the 2013 Seattle arena privately financed. It was not.
+
+`TERM_SHEETS`, Seattle column, l.1693:
+
+> "A new arena in Seattle, privately financed by the buying group."
+
+The Hansen/Ballmer SoDo plan was a **public-private** deal. The September/October 2012 MOU approved
+by the Seattle City Council (7-2) and the King County Council (unanimous) provided **direct public
+investment of up to $200M** toward a ~$490M arena, issued as city and county bonds repaid from
+arena-generated revenue, with Hansen guaranteeing the bond debt and covering construction
+shortfalls. Observed, 2026-09-01: Wikipedia "Sonics Arena" and its cited contemporaneous KING-TV /
+council coverage.
+
+This is materially worse than a stray fact, because the repair built the capstone's economics on
+the contrast it creates. The term sheet now reads **Seattle = private money, Sacramento = $255M of
+city money**, and the `subsidy-coda` (l.2212) teaches that conclusion outright: "You voted on public
+money today… that is what beat a bid worth $91M more." The real 2013 choice was **~$255M of city
+money against up to $200M of public money** — a difference in degree, not in kind. As shipped, the
+room votes on, and is then formally taught, a public-versus-private distinction that did not exist.
+This is exactly the class of error `A1` was: a real institution rendered with a rule it did not
+have, used to carry the lesson's own point.
+
+**Repair (one line, no new research needed):** replace the Seattle bullet with "A new arena in
+SoDo, about $490M — with up to $200M of city and county bond money in it too, repaid out of arena
+revenue and guaranteed by the buyers." Then the `subsidy-coda`'s claim must soften from "public
+money is what beat it" to the true and stronger version: **both** bids wanted public money, and
+Sacramento's council put up more of it, faster, without a public vote.
+
+#### N2 — MODERATE. REFUTED. The market-size line mislabels a metro rank as a television-market rank, in both directions.
+
+`TERM_SHEETS`, Sacramento column, l.1705: "The 27th-largest US television market keeps a club.
+Seattle, the 12th, does not get one."
+
+Per the 2025-26 Nielsen DMA rankings, **Sacramento-Stockton-Modesto is #20** and **Seattle-Tacoma
+is #13**. The 2013 ranks were materially the same (Seattle ~#12-13, Sacramento ~#20). "27th" is
+Sacramento's approximate *metro-area population* rank, not a TV-market rank; the line pairs it with
+a DMA-style figure for Seattle, so the two numbers are not on the same scale and the gap is
+overstated at 15 ranks when the real gap is 7. Observed, 2026-09-01: Wikipedia list of North
+American media markets, 2025-26 Nielsen DMAs. Material because market size is the module's central
+economic variable and this is the only market-size fact on the surface the room votes from.
+
+**Repair:** "Sacramento is the 20th-largest US television market. Seattle, the 13th, does not get a
+club." Both verified; the point survives intact.
+
+#### N3 — LOW-MODERATE. Valuation is described as cash on two surfaces.
+
+`/teach` NOW (l.2989): "Seattle is the bigger cheque by about $91M." Sacramento column (l.1702):
+"about $91M less than Seattle put up." $91M is the **valuation** gap ($625M - $534M). The cash gap
+to the Maloofs was smaller — $409M for 65% against roughly $347M at a $534M valuation, about $62M.
+"Worth $91M more" (used correctly in `subsidy-coda`, l.2212) is accurate; "cheque" and "put up" are
+not. Repair: say "valuation" in both places.
+
+#### N4 — LOW. "Those same owners" / "the same Board of Governors."
+
+l.2099 and l.2196 assert institutional continuity across thirteen years. True of the Board as an
+institution, loose about the individuals (substantial ownership turnover since 2013). The
+institutional reading is the one the economics wants; a one-word hedge ("the same board") removes
+the ambiguity. Not blocking.
+
+#### N5 — LOW-MODERATE. The `subsidy-coda` now states a monocausal explanation of the 22-8 vote.
+
+l.2212: "that is what beat a bid worth $91M more." The `A4` repair was to make the $255M visible;
+as written it has become the sole cause. The vote's reported drivers also included reluctance to
+move a club out of a committed market and what relocation does to every other owner's leverage —
+which is precisely what the `/teach` ASK at l.2998 tells the teacher to elicit. The card now
+answers a question the module deliberately leaves open. Repair: "that is a large part of what beat
+a bid worth $91M more."
+
+#### N6 — LOW. The Ballmer gloss (`A9`) has the tense wrong.
+
+`ARGUE_COPY` (l.1678): "Ballmer had just run Microsoft and would buy the Clippers a year later." In
+January 2013 Ballmer **was the sitting CEO** of Microsoft (2000 - February 2014); he bought the
+Clippers in August 2014, about nineteen months later. Stable record · verifiedAsOf 2026-09-01.
+Repair: "Ballmer was running Microsoft at the time and would buy the Clippers in 2014." The gloss
+itself was the right call and improves the fandom-test result.
+
+### Status of the seven lower findings (not demanded)
+
+| Finding | Status |
+| --- | --- |
+| `A3` national-vs-gate quantifier | **CLOSED** (l.2134). |
+| `A4` public money in the capstone | **CLOSED** on the Sacramento side (l.1704, 1745, 2212-2217); reopened asymmetrically by `N1` on the Seattle side. |
+| `A5` 2016-17 stamp | **CLOSED** (l.2048). |
+| `A6` prior knowledge | **CLOSED.** `ARGUE_COPY` l.1678: "Some of you may already know how this ended — vote what you would have voted in that room in 2013, and be ready to defend it either way." |
+| `A7` "real league scale" | **PARTIALLY CLOSED.** `HORIZON_LINE` (l.1723) now reads "scaled DOWN from real league scale — roughly a twentieth… what is real is the PROPORTIONS," which is honest and matches the constants ($950K/week national against ~$19M/month real). The second half — ledger the scale factor in `SIMPLIFICATIONS` — was **not** done; no entry mentions the factor. Open, low. |
+| `A8` sharing labeling precision | **CLOSED** (`SIMPLIFICATIONS` entry 4, l.1769: eligibility conditions, market size not reinvestment, "our CONDITION dial is ours," ~half of net local revenue). |
+| `A9` unglossed proper nouns | **CLOSED** with the defect at `N6`. |
+
+`S2` / `S3` / `S4` unchanged and require no repair: figures remain honestly stamped, `capacityNote`
+is still "· 2025-26" (batch re-stamp when the league publishes), and `S3`'s optional "use the age as
+path-dependence material" was not taken, which is a choice rather than a defect now the stamp is on
+the rail. The rights-source posture is unchanged and correct: the repair added only public
+municipal record, reported valuations and Nielsen-style market ranks; no marks, logos, likeness or
+proprietary data entered any surface; living individuals are still described by reported action
+only; the deliberate omission of the Sacramento mayor's name survived the repair but is still not
+ledgered, so a future enrichment pass may read it as a gap.
+
+### Verdict
+
+The dissent's two named grounds are repaired and verified. But the same repair put a false
+real-world claim about the 2013 Seattle bid on the capstone term sheet and wired the finale's
+subsidy card to it, and a second, mislabeled market-size figure beside it. `N1` is the same failure
+mode as `A1` — a real institution given a fact it did not have, then used to carry the lesson's
+conclusion — on the module's most reality-loaded beat. It is economic-truth and it is one line to
+fix.
+
+DISSENT sr-l3-capstone-facts: NOT DISCHARGED
