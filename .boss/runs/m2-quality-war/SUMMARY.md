@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `371:186cf180f19b03d843a5e7285fa7b0b2cd65472ac82386109132ebf25bbf4c3c`  
-Updated: 2026-09-01T12:28:39.951Z
+Event head: `373:887ccb63de40696544a1e880764657045178bcf4cf677ce6d4947a396467d066`  
+Updated: 2026-09-01T12:30:35.457Z
 
 ## Founder intent
 
@@ -102,6 +102,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - recheck-l3-projector — projector-report — L3 projector re-check: DISCHARGED. B1 dead both shapes with critic's own ink guard proven non-vacuous in-run; B2 truthful 0/12 counts + populated WATCH FOR; B3 arm-specific /teach; B4 desk-naming gone (0 matches; 0 leaks in 84 full-innerHTML audits). Kings genuinely two-press with the room's tally alone before 22-8. Non-blocking: privacy line overstates, :1846 arm-conditional, carried items 6/7/9
 - recheck-l3-play — gameplay-report — L3 play re-check: RATING STRONG. Seal observed (post-close propose -> 409, median unmoved, VOTE SEALED); abstainer excluded from median; 5 distinct lens cards + prediction resolved both arms; term sheets both surfaces with two-press 22-8; fallback honestly labelled. DISCHARGED. Non-blocking: back half length/duplication, middle-case why-line, card-2 wording on a failed vote
 - recheck-l3-econ — economic-truth-report — L3 econ re-check: bonfire closed ($3 residual vs $5.09M before), dollars bar + teacher strings + F2 repaired, composition true both branches, vote correctly not retuned, outcome-adaptive teaching RULED to discharge reachability. NOT DISCHARGED (narrowed): R1 registered atom != rendered string on /play (A9 drift passes 10/10); R2 harness not wired into npm test; R3 'Under the rule you wrote' beside NOT ADOPTED on 13 combos; R4 stage-4/5 contradiction (arrowsMovedAny guarded only in noL2)
+- recheck-l3-teacher — teacher-transfer-report — L3 teacher re-check: all six blockers FIXED from the rendered surfaces (computed ASK agrees everywhere; guards mid-vote and mid-season; observer/takeover branches with no 409; rehearsal names interior controls; substitute ASK + common-basis bar + LOBBY warning). TRANSFER: READY. Non-blocking N9-N11 only
 
 ## Claim ledger
 
@@ -119,7 +120,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - gate-l3-play-dissent — undefined/undefined/open — undefined
 - proj-l3-board-integrity — classroom-reliability/blocking/resolved — Four L3 board/teach integrity blockers: B1 histogram bars overprint the veil sentence on rounds 2/3 at both shapes (column budget omits the tick label; invisible to the fit, truncation, and overlap guards — extend the overlap guard to catch it); B2 closeRound never clears proposal (round 2 opens claiming 12/12 in; WATCH FOR empty two of three rounds); B3 /teach prints STATUS_QUO_COPY on the league-office arm while an adopted 30%/ON rule is on the board (claim-audit class — register the arm surface); B4 REVEAL stage 2 names 'the biggest single swing at Desk 9' directly above 'No desk's money is ever ranked on this screen'. Kings should be commit-then-reveal choreography, not one press (= play finding). GATE_L3_PROJECTOR.md.
 - gate-l3-projector-dissent — undefined/undefined/open — undefined
-- teacher-l3-not-ready — teacher-transfer/blocking/open — L3 TRANSFER NOT READY on six blockers, worst: B1 — the CONSEQUENCE phase's scripted ASK ('Whose effort went DOWN?') is static and directional while the console's own computed line above it read 'Effort went UP by 20%' — the teacher is directed in writing to ask a question the room's evidence refutes at the module's central discussion beat (claim-audit class: the ASK must be computed); B3 — Advance/Jump unguarded through PLAY, a regression against the L1/L2 confirm-guard pattern. Plus B2 (unlinked runs lose the instrument silently), B4 (post-vote late joiner stranded while counted as joined), B5 (rehearsal trains the fatal gesture), B6 (director overclaims a student screen). GATE_L3_TEACHER.md.
+- teacher-l3-not-ready — teacher-transfer/blocking/resolved — L3 TRANSFER NOT READY on six blockers, worst: B1 — the CONSEQUENCE phase's scripted ASK ('Whose effort went DOWN?') is static and directional while the console's own computed line above it read 'Effort went UP by 20%' — the teacher is directed in writing to ask a question the room's evidence refutes at the module's central discussion beat (claim-audit class: the ASK must be computed); B3 — Advance/Jump unguarded through PLAY, a regression against the L1/L2 confirm-guard pattern. Plus B2 (unlinked runs lose the instrument silently), B4 (post-vote late joiner stranded while counted as joined), B5 (rehearsal trains the fatal gesture), B6 (director overclaims a student screen). GATE_L3_TEACHER.md.
 - gate-l3-teacher-dissent — undefined/undefined/open — undefined
 
 ## Latest gate

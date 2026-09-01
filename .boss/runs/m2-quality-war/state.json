@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:28:39.951Z",
+  "updatedAt": "2026-09-01T12:30:35.457Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3457,7 +3457,8 @@
         "recheck-l3-sr",
         "recheck-l3-projector",
         "recheck-l3-play",
-        "recheck-l3-econ"
+        "recheck-l3-econ",
+        "recheck-l3-teacher"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5885,6 +5886,24 @@
       },
       "recordedAt": "2026-09-01T12:28:27.397Z",
       "actor": "economic-truth-critic"
+    },
+    "recheck-l3-teacher": {
+      "id": "recheck-l3-teacher",
+      "wave": 4,
+      "kind": "teacher-transfer-report",
+      "label": "L3 teacher re-check: all six blockers FIXED from the rendered surfaces (computed ASK agrees everywhere; guards mid-vote and mid-season; observer/takeover branches with no 409; rehearsal names interior controls; substitute ASK + common-basis bar + LOBBY warning). TRANSFER: READY. Non-blocking N9-N11 only",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l3-teacher--GATE_L3_TEACHER.md",
+      "sha256": "0f1b09f007dfb39614fe0f430098fefbb55e073c89ad4e1f1b1fb5f0fcbdb23d",
+      "size": 29128,
+      "metadata": {
+        "tags": [
+          "teacher-transfer",
+          "wave-4",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T12:30:35.173Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "claims": {
@@ -6685,9 +6704,12 @@
         "gate-l3-teacher"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T11:17:13.794Z",
-      "actor": "teacher-transfer-critic"
+      "actor": "teacher-transfer-critic",
+      "resolution": "Owning critic reproduced all six repros against the repaired build: the CONSEQUENCE line/ASK/WATCH-FOR/key agree from one computed source, both advance controls guard mid-vote and mid-season, the post-vote late joiner lands as observer or takeover with WATCH FOR raised, the rehearsal names the interior controls, the abstention explanation is on the pair's own screen, and unlinked runs get a substitute question with a LOBBY warning. Explicit lines: TRANSFER: READY; DISSENT teacher-l3-not-ready: DISCHARGED.",
+      "resolvedAt": "2026-09-01T12:30:35.457Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l3-teacher-dissent": {
       "id": "gate-l3-teacher-dissent",
@@ -6748,11 +6770,11 @@
     "agentsActivated": 77,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 119,
+    "evidenceRecorded": 120,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 371,
-  "eventHead": "186cf180f19b03d843a5e7285fa7b0b2cd65472ac82386109132ebf25bbf4c3c",
+  "eventCount": 373,
+  "eventHead": "887ccb63de40696544a1e880764657045178bcf4cf677ce6d4947a396467d066",
   "warnings": []
 }
