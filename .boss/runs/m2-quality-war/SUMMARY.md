@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `105:8f8b44e360bcd9e686df12528ae115efbb444eb5e33284515780e0a4cfc6226f`  
-Updated: 2026-09-01T00:13:09.399Z
+Event head: `107:325d61899a874160ad2d353318063c0498f2837fff512e092069dcf38a28c429`  
+Updated: 2026-09-01T00:13:26.304Z
 
 ## Founder intent
 
@@ -41,7 +41,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - builder — lead-integrator — completed — claude-opus-5
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
-- teacher-transfer-critic — lead-integrator — active — claude-opus-5
+- teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — lead-integrator — active — claude-opus-5
 - visual-experience-director — lead-integrator — active — claude-opus-5
 
@@ -98,6 +98,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - play-l1-renewals-unexplained — gameplay/blocking/open — The renewals undercut mechanism works in play (desk that filled the building five nights under plan fell 50%->25%) but NO student surface — dial, recap, seven reveal stages, ADAPT, COUNTERFACTUAL, six synthesis cards — ever states that undercutting the season-plan price costs renewals. Uninterpretable consequence = the exact failure class just repaired on the spend dial, relocated. Also blocking: COUNTERFACTUAL board's largest instruction tells the room to argue from dots that are not rendered in that phase. GATE_L1_PLAY.md re-rate section.
 - recheck-l1-play-dissent — undefined/undefined/open — undefined
 - teacher-l1-not-ready — teacher-transfer/blocking/open — Fresh-context teacher verdict NOT READY: /teach is a status board, not a director — identical render across LOBBY/HOOK/PLAY, projector context vanishing exactly when REVEAL begins, blind n/7 reveal counter with no names or lines, unhighlighted stalled desks. HK-1: the design doc's complete director script (NOW/ASK/DON'T EXPLAIN YET/TRIGGER/TIME CUT with per-phase minute budgets, DESIGN_C_FIRSTPRINCIPLES.md:253-270) reached the product as a single fragment, so every economics line must be invented live — hidden founder knowledge by construction. Nine blocking repairs in GATE_L1_TEACHER.md.
+- gate-l1-teacher-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 

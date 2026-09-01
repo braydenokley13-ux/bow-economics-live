@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T00:13:09.399Z",
+  "updatedAt": "2026-09-01T00:13:26.304Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -725,12 +725,24 @@
           "model": "claude-opus-5",
           "reason": "Fresh-context random-teacher gate on the repaired lesson, cold protocol (teacher-facing material first)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T23:56:20.541Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T00:13:26.289Z",
+          "sections": {
+            "before-verdict": "Cold-run: the game, two books, and night cards are learnable from playing a seat; the teacher's own control rhythm is not — /teach renders identically in LOBBY/HOOK/PLAY and gives no preparation view of what students will see per phase.",
+            "during-verdict": "Status board, not a director: ON THE PROJECTOR RIGHT NOW vanishes exactly when REVEAL begins; the seven reveal stages are a blind n/7 counter with no names and no lines; stalled desks are unhighlighted grey and still read 'dialling' after the window closes; one WATCH FOR flag renders with an empty desk list post-PLAY.",
+            "failure-recovery-verdict": "Largely solid: student refresh, rejoin PIN, code-less /board, pause/freeze messaging, late join, auto-commit all work; reveals correctly gated (Two Peaks disabled until Night 3 played).",
+            "synthesis-verdict": "SYNTHESIS board genuinely strong — six cards computed from the class's own numbers, loss-leader WHY in readable words, dated anchors, outside-sports row; a stranger can deliver it as written.",
+            "hidden-knowledge-findings": "HK-1 (worst): the complete director script — NOW / ASK / DON'T EXPLAIN YET / TRIGGER / TIME CUT with per-phase minute budgets — exists in DESIGN_C_FIRSTPRINCIPLES.md:253-270 and reached the product as one fragment ('your best ADAPT voice'); every economics line must be invented live. Full list in GATE_L1_TEACHER.md.",
+            "required-repairs": "Nine blocking repairs listed in the report; overall line TRANSFER: NOT READY. Dissent teacher-l1-not-ready recorded."
+          },
+          "evidenceIds": [
+            "gate-l1-teacher"
+          ],
+          "cost": {
+            "tokens": 116035,
+            "toolUses": 40
+          }
         },
         "gate-l1-projector": {
           "assignmentId": "gate-l1-projector",
@@ -797,7 +809,8 @@
         "recheck-l1-econ-dissent",
         "play-l1-renewals-unexplained",
         "recheck-l1-play-dissent",
-        "teacher-l1-not-ready"
+        "teacher-l1-not-ready",
+        "gate-l1-teacher-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1793,6 +1806,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T00:13:09.399Z",
       "actor": "teacher-transfer-critic"
+    },
+    "gate-l1-teacher-dissent": {
+      "id": "gate-l1-teacher-dissent",
+      "wave": 2,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T00:13:26.304Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -1827,7 +1849,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 105,
-  "eventHead": "8f8b44e360bcd9e686df12528ae115efbb444eb5e33284515780e0a4cfc6226f",
+  "eventCount": 107,
+  "eventHead": "325d61899a874160ad2d353318063c0498f2837fff512e092069dcf38a28c429",
   "warnings": []
 }
