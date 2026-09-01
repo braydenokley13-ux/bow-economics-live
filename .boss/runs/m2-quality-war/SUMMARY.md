@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `340:eb5c2e0139ba505c5f5e0a58f4d5aab539ebe4bd1678b43a2e06deda01170ef5`  
-Updated: 2026-09-01T11:11:27.888Z
+Event head: `342:9939cf343f10c041c0674a1800f70fb4cf2afd5ffdc1773eff796b6726d3ef2e`  
+Updated: 2026-09-01T11:13:57.249Z
 
 ## Founder intent
 
@@ -86,6 +86,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l3-e2e — e2e — L3 e2e: 25 frames x 2 shapes, 342 occlusion probes, 51 first-contact at 1024x600, 71 real drives, 7 finale cards, zero console errors
 - gate-l3-sr — sports-reality-report — L3 SR gate: CLEAR WITH REPAIRS. Kings facts all verified (Jan-2013 sale, 22-8 May 15 2013, $534M record, Golden 1 2016); beat genuinely debatable. BLOCKING A1: finale teaches supermajority for relocation — real rule is simple majority 16/30 (expansion 23/30); A2: /teach promises term sheets 'on their screens' that no surface renders ($625M vs $534M verified). Also: Knicks gate contradiction (C-2 recurrence), missing $255M subsidy, undated 2016-17 figures, expansion copy a season behind (Mar-2026 BOG 30-0 explore vote)
 - gate-l3-econ — economic-truth-report — L3 econ gate: BC-1 SOUND by independent proof (ancillary deletion -> $0 moves everywhere; closed form matches shipped brute force; reinvest up to 5 steps; uniform-tax mutant froze every argmax). DISSENT l3-sharing-argmax DISCHARGED. VERDICT BLOCKED: claim audit magnitude-blind (doubled pot-total prints $15.3M vs true $7.6M, suite green; live instance ships at 6 desks); 71% of proposal profiles incl. 100% of sincere play land on status-quo 5% where the BC-1 payload is null yet the teacher script asks the flat-arrow question; L2/L3 reinvest bases differ 62.5%; 50% pot bonfire at zero compliance. Summit ruling: TRUE economics, keep — but a rehearsal surface still asserts the withdrawn claim
+- gate-l3-play — gameplay-report — L3 play gate: RATING FUNCTIONAL. Stage-0's three causes genuinely fixed (histogram+band moves proposals; CONDITION has teeth; club visible). BLOCKING: the vote is not sealed — after round 3 closes, a late submission replaces the vote and moved the adopted rule 25->30% silently; never-submits counted as 5% votes with no notice; REVEAL->COMPLETE is 28 minutes with one student action (device byte-identical across five stages); Kings is a two-button poll with no term sheets; BC-1 arrows render but never say why NY didn't move; fallback calls a 0% failure 'your rule'. Kill condition not met
 
 ## Claim ledger
 
@@ -99,6 +100,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - econ-l3-claim-audit-vacuous — economic-truth/blocking/open — The L3 claim audit cannot detect a wrong NUMBER: doubling pot-total prints $15,284,066 against a true $7,642,033 with the suite green 41/41 (inverted and frozen quantifiers also survive) — P9's mutant proof does not establish printed-economics-matches-model at magnitude, unlike L2's level-audited family. A live instance already ships: at 6 desks the synthesis card prints '$17,100,000 — more than the whole room took at the gate' against a $17,605,406 gate. Extend the audit to value-level (the L2 method) and fix the live instance. GATE_L3_ECON.md.
 - econ-l3-signature-reachability — economic-truth/blocking/open — 71.0% of 15,625 proposal profiles — including 100% of sincere play — land on the status-quo 5% share where the entire BC-1 payload is null, yet reveal stage 4 still scripts 'why didn't the big market move?' with no desk sold out. The signature moment must be reachable by the play the room actually produces (adoption dynamics/status-quo level retune, or the reveal must adapt to the outcome that occurred). Also: L2/L3 reinvest bases differ 62.5% (contaminating the before/after bar); a 50% pot bonfire at zero compliance; a rehearsal teacher surface still asserts the withdrawn interior-summit claim. GATE_L3_ECON.md.
 - gate-l3-econ-dissent — undefined/undefined/open — undefined
+- play-l3-below-bar — gameplay/blocking/open — L3 rates FUNCTIONAL on five bounded causes: (1) VOTE NOT SEALED — with the histogram on the projector, a late dial submission after round-3 close silently replaces the vote (observed: adopted rule 25%->30%, supporters 3/3->2/3) and never-submitting desks are counted as 5% votes with no notice; (2) REVEAL->COMPLETE is 28 director-budgeted minutes with ONE student action and a byte-identical student device across five stages; (3) the Kings capstone is a two-button poll whose promised term sheets don't exist (= SR A2); (4) the flat-beside-moved arrows render but no surface says why (= econ reachability finding); (5) the fallback replays the counterfactual at 0% and calls the failure 'your rule'. Kill condition not met. GATE_L3_PLAY.md.
 
 ## Latest gate
 
