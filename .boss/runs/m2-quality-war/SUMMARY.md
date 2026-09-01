@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `174:a3dabbbccbdf1900ff4a6a15ffa7dc6622716afd20a1a8ce39c71789ba818a26`  
-Updated: 2026-09-01T02:16:33.059Z
+Event head: `183:46441f01451fe93d09b79e487257333a3b86ffab3b73b0d82e9f7e2e782c106a`  
+Updated: 2026-09-01T02:46:57.187Z
 
 ## Founder intent
 
@@ -33,7 +33,11 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 
 ## Role status
 
-- builder — builder-l1-closeout — active — claude-opus-5
+- builder — builder-l1-closeout — completed — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
+- visual-experience-director — visual-experience-director — active — claude-opus-5
 
 ## Required evidence
 
@@ -50,7 +54,10 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 
 ## Evidence recorded
 
-- No evidence recorded yet
+- l1-tests-w3 — test — Full suite after close-out bundle
+- l1-tuning-w3 — test — Tuning harness 16 props after close-out (P16 falsifiable)
+- l1-e2e-w3 — e2e — 12-desk e2e: all rows + summary in-viewport across 4 groups, both resolutions, no stage overflow
+- m1-e2e-w3 — e2e — M1 L3 e2e at close-out head (shared files)
 
 ## Claim ledger
 

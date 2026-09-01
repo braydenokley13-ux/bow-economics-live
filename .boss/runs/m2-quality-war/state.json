@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:16:33.059Z",
+  "updatedAt": "2026-09-01T02:46:57.187Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1740,15 +1740,86 @@
           "model": "claude-opus-5",
           "reason": "Wave-3 opening bundle: the analyst's repair list — class-scale counterfactual frame + honest per-row e2e instrument, frontier-staged two-books card, HOUSE_RULES[2] bound, N5 /play attribution parity, P16 dead limb",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T02:16:33.059Z",
+          "completedAt": "2026-09-01T02:46:56.219Z",
+          "sections": {
+            "what-changed": "All six close-out items: paged counterfactual (CF_ROWS_PER_PAGE=3 measured, class summary out of the paged column, teacher paging control) with an honest 12-desk per-row+summary e2e instrument; frontier-staged two-books card via exact seasonFrontier() DP reproducing the econ critic's independent DP exactly (22/24, $0 gap, $715->$51,478 marginal cost); HOUSE_RULES[2] bounded + demand-floor card killed; /play N5 channel-decomposition parity; P16 made falsifiable (shipped-vs-recompute); projector SPLIT+TIGHTEN so no board phase scrolls; /play P&L rebuilt as a box score and SYNTHESIS recomposed (visual partial: two plates verified in-register from source+render, not re-graded).",
+            "evidence": "Re-run by lead via evidence command, all exit 0: l1-tests-w3 (352/352), l1-tuning-w3 (16/16), l1-e2e-w3 (12 desks, all rows+summary in-viewport across 4 groups at both resolutions, zero console errors), m1-e2e-w3 (M1 green at head).",
+            "claims": "Deterministic only; builder certifies nothing — owning critics re-adjudicate play/econ/projector/visual.",
+            "known-gaps": "No new unit tests for the paging state (covered by harness+e2e only); visual/projector re-grade pending; ~90ms first-call frontier cost; 15-desk paging inferred not measured; D10 unchanged."
+          },
+          "evidenceIds": [
+            "l1-tests-w3",
+            "l1-tuning-w3",
+            "l1-e2e-w3",
+            "m1-e2e-w3"
+          ],
+          "cost": null
+        },
+        "w3-play-adjudicate": {
+          "assignmentId": "w3-play-adjudicate",
+          "role": "player-gameplay-critic",
+          "actor": "player-gameplay-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic adjudication of the paged counterfactual at class scale (dissent play-l1-repairs-below-fold)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T02:46:56.482Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w3-econ-adjudicate": {
+          "assignmentId": "w3-econ-adjudicate",
+          "role": "economic-truth-critic",
+          "actor": "economic-truth-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic adjudication of the frontier-staged card, HOUSE_RULES bound, P16 falsifiability (dissent econ-l1-two-book-baseline)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T02:46:56.719Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w3-projector-adjudicate": {
+          "assignmentId": "w3-projector-adjudicate",
+          "role": "classroom-projector-critic",
+          "actor": "classroom-projector-critic",
+          "model": "claude-opus-5",
+          "reason": "Owning-critic re-adjudication of the must-fit-its-content condition after SPLIT+TIGHTEN (part of analyst-no-pass-wave2)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T02:46:56.956Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w3-visual-regrade": {
+          "assignmentId": "w3-visual-regrade",
+          "role": "visual-experience-director",
+          "actor": "visual-experience-director",
+          "model": "claude-opus-5",
+          "reason": "Affirmative re-grade of the repaired surfaces against the premium bar (part of analyst-no-pass-wave2)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T02:46:57.187Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
           "cost": null
         }
       },
-      "evidenceIds": [],
+      "evidenceIds": [
+        "l1-tests-w3",
+        "l1-tuning-w3",
+        "l1-e2e-w3",
+        "m1-e2e-w3"
+      ],
       "claimIds": [],
       "dissentIds": [],
       "meetingIds": [],
@@ -2880,6 +2951,97 @@
       },
       "recordedAt": "2026-09-01T02:15:29.688Z",
       "actor": "lead-integrator"
+    },
+    "l1-tests-w3": {
+      "id": "l1-tests-w3",
+      "wave": 3,
+      "kind": "test",
+      "label": "Full suite after close-out bundle",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-tests-w3--record.json",
+      "sha256": "0f15b514547eb8f1cfbec1233fc605af8ba66881e7f2e0b6e6024c7fad1a4ad0",
+      "size": 88295,
+      "metadata": {
+        "tags": [
+          "wave-3"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:45:22.721Z",
+      "actor": "lead-integrator"
+    },
+    "l1-tuning-w3": {
+      "id": "l1-tuning-w3",
+      "wave": 3,
+      "kind": "test",
+      "label": "Tuning harness 16 props after close-out (P16 falsifiable)",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-tuning-w3--record.json",
+      "sha256": "ceaa7aeab1cfa91dc11247f214db3adf3cc0164218ec7cf143f69b07873b315f",
+      "size": 13679,
+      "metadata": {
+        "tags": [
+          "wave-3"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:45:35.841Z",
+      "actor": "lead-integrator"
+    },
+    "l1-e2e-w3": {
+      "id": "l1-e2e-w3",
+      "wave": 3,
+      "kind": "e2e",
+      "label": "12-desk e2e: all rows + summary in-viewport across 4 groups, both resolutions, no stage overflow",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-w3--record.json",
+      "sha256": "1c0007f2637ba5573bd6e6a61f25afd539e787b0445e574b9cba3042e690be85",
+      "size": 2970,
+      "metadata": {
+        "tags": [
+          "wave-3"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:46:24.174Z",
+      "actor": "lead-integrator"
+    },
+    "m1-e2e-w3": {
+      "id": "m1-e2e-w3",
+      "wave": 3,
+      "kind": "e2e",
+      "label": "M1 L3 e2e at close-out head (shared files)",
+      "path": ".boss/runs/m2-quality-war/evidence/m1-e2e-w3--record.json",
+      "sha256": "bb5274db048d05f2f3b3b31fe06341c9eb14363c3c4762e3c78f8615cea3223c",
+      "size": 2208,
+      "metadata": {
+        "tags": [
+          "wave-3",
+          "regression"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l3.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T02:46:39.285Z",
+      "actor": "regression-hunter"
     }
   },
   "claims": {
@@ -3339,14 +3501,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 34,
+    "agentsActivated": 38,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 56,
+    "evidenceRecorded": 60,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 174,
-  "eventHead": "a3dabbbccbdf1900ff4a6a15ffa7dc6622716afd20a1a8ce39c71789ba818a26",
+  "eventCount": 183,
+  "eventHead": "46441f01451fe93d09b79e487257333a3b86ffab3b73b0d82e9f7e2e782c106a",
   "warnings": []
 }
