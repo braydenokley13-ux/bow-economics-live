@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `295:4babe2eaa15bce7a7644f514a8e15e0809cf490ddc7f8a683eb0f0c796f13906`  
-Updated: 2026-09-01T07:52:18.233Z
+Event head: `302:c0d25a522f4c9b6fab423b7e82f5b3d3e98497b4fde34ac3fc143dc145f53e83`  
+Updated: 2026-09-01T08:27:41.902Z
 
 ## Founder intent
 
@@ -37,7 +37,10 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - player-gameplay-critic — player-gameplay-critic — completed-with-concerns — claude-opus-5
 - economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
-- builder — builder-w4-r1 — active — claude-opus-5
+- builder — builder-w4-r1 — completed — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — active — claude-sonnet-5
 
 ## Required evidence
 
@@ -61,6 +64,9 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - w4-projector-adj — projector-report — W4 projector adjudication: proj-l2-bar-timing DISCHARGED (prescribed timing verified, two-arm probe); L1 PAGER INTENT SATISFIED (desk numbers are the unique key); privacy + fit clean incl. new two-column play at 1024x600. NEW blockers W4-1 (release copy prints 'some desks had already locked' when none had) and W4-2 (/teach stage-5 mirror byte-identical across four arms, contradicting the board in one) — both claim-audit-class strings on surfaces unregistered in moduleClaims
 - w4-play-adj — gameplay-report — W4 play adjudication: NOT DISCHARGED, RATING FUNCTIONAL (upper end). Week-1 first contact clean (decomposition->KEPT->externality->price counterfactual all visible); N-3/R-4 hold; N-5 real (changed the critic's week-2 price). Blocking N-6/N-7: at weeks 2/3 1024x600 both dials + visiting club + shock + schedule sit below the band — only LOCK is live reading '$56 · 0% back in'; double-press committed the free-ride default. N-5 verdict behind lock bar every week; sold-out hides the $522,856 line; 14/14 cards say 'you were wrong' (tone). Repairable, not structural
 - w4-econ-adj — economic-truth-report — W4 econ adjudication: NOT DISCHARGED, narrowed. B3 PASS (driver 25/10/2/3, 0/40 credit visitor against independent price control, 37/37 figures match), B7/B8 discharged, all four source injections bit, $6,944 benign. Survives on N11: spilloverClaim null branch prints over-investment for rooms that are jointly better off (173/177 plausible rooms; should branch on roomJointGain — under-provision, not over-investment) and N12: an audit limb recomputing its own print condition (can never fail). FL-K unbound play claim false 16/96; composition percentages unregistered
+- l2-tests-w4r1 — test — Suite after w4 repair 1 (407/407)
+- l2-tuning-w4r1 — test — L2 harness 12/12: 336 rooms, 114,678 atoms, 0 disagreements; 6/6 mutants caught incl. wrong-noun and mirror-vs-board
+- l2-e2e-w4r1 — e2e — L2 e2e: 36 first-contact assertions across all weeks x 12 desks, 499 occlusion probes
 
 ## Claim ledger
 
