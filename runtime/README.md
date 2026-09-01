@@ -173,11 +173,24 @@ and nothing derived from the pending action. Asserted in
 `fullHouse.test.ts` by settling the pending action and proving none of its
 quantities appear in the payload.
 
-**Two books (R4).** CASH and RENEWALS. RENEWALS is a *tent* peaked at the
-season-ticket plan price — price far above it and plan holders quit, far
-below it and the plan looks worthless — so neither error direction is
-dominated on both books, and the cash-best price is never the renewals-best
-price in any reachable state.
+**Two books (R4).** CASH and RENEWALS. RENEWALS answers to the season-ticket
+plan price and to what a plan holder thinks the night is worth: price well
+under the plan price and the plan looks worthless, price above what the night
+is worth and they quit, and in between (well above it on a big card) the plan
+looks like a bargain. Neither error direction is dominated, and the cash-best
+price is never the renewals-best price in any reachable state.
+
+The tension holds at SEASON scale too, which it did not after repair round 1:
+the max-cash season used to end with MORE renewals than never touching the
+dial, so the two notes printed beside those rows on the student device were
+false (`gate-l1-econ-r1` R1, blocking dissent `econ-l1-season-books`). Cause:
+`renewalFans` was 60/55, which made a renewal point worth ~$3,100 of
+later-night cash — renewals were lagged cash, not a rival book. Repaired at
+the constants (`renewalFans` 10, `planSlope` 1.8, `eventRenewalDollars`
+$60,000/$30,000) and pinned by harness **P14**, an exact season DP:
+New York never-move-the-dial **$1,215,532 / 80%** against most-cash
+**$2,359,868 / 53%**; Memphis **$830,312 / 80%** against **$1,923,684 / 54%**.
+Every COUNTERFACTUAL note is now read off those two rows rather than asserted.
 
 **BC-2 (the two constant defects the selection econ review named) is
 repaired at the shipped constants.** R6: worst error-cost asymmetry is now
@@ -188,17 +201,27 @@ cards (was capped at 75.3% at any legal price); the board carries fill % and
 sold-out nights, a non-money success metric, so the small market's path is
 visible inside L1. Re-verify with
 `node docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs` from the repo
-root (11 properties, exit 0 only when all hold; it imports the built module
+root (14 properties, exit 0 only when all hold; it imports the built module
 so it can never drift from the shipped constants).
 
-**Teacher controls.** `🔔 Open the doors` settles every desk simultaneously
+**Teacher controls.** `Open the doors` settles every desk simultaneously
 against the card printed before anyone touched a dial (a desk that never
-locked auto-commits at the plan price, flagged `auto` on its own screen);
-`📈 Release the Two Peaks` is a manual reveal, unavailable until Night 3 has
-actually been played; `🎙️ Reveal next` stages the seven REVEAL beats (five
-night curves, Two Peaks, per-market books). Every one of them has an
-automatic fallback: leaving PLAY closes all remaining nights and releases
-Two Peaks; leaving REVEAL plays out every remaining stage.
+locked auto-commits at the plan price, flagged `auto` on its own screen — the
+button carries that as a tooltip); `Release the Two Peaks` is a manual reveal,
+unavailable until Night 3 has actually been played and carrying its own reason
+either way; `Reveal next` names the beat it will land ("Reveal 4 of 7 —
+Night 4 — the shock"). Every one of them has an automatic fallback: leaving
+PLAY closes all remaining nights and releases Two Peaks; leaving REVEAL plays
+out every remaining stage.
+
+**Director layer.** `/teach` renders a per-phase director panel for this
+lesson — NOW with a minute budget, ON THE PROJECTOR RIGHT NOW (alive in every
+phase, not just PLAY), WATCH FOR computed from live state with desks named as
+data, TRIGGER, ASK with the answers, DON'T EXPLAIN YET, TIME CUT, the seven
+named reveal beats with a line for each, what the student screen is offering,
+and the simplifications ledger. Ported from `DESIGN_C_FIRSTPRINCIPLES.md`'s
+"TEACHER FLOW"; see `teacherDirector()` in `fullHouse.ts`. It is intelligence,
+not a script to read aloud.
 
 **Board privacy.** Desks appear as `Desk 4 · Memphis Grizzlies` with a
 crest — never a student name, never a seat id. Markets are assigned
@@ -209,11 +232,27 @@ never ranked; no board surface sorts by money.
 the nights it missed played at the plan price by "the desk manager,"
 labelled `covered` on its own history — real books, not a blank sheet.
 
+**Self-hosted fonts.** `src/client/shared/fonts/` holds the latin subsets of
+Bebas Neue (display) and Space Grotesk (numerals), 36KB total, copied into
+`dist/client/shared/fonts/` at build time and served off this origin. No CDN
+and no network call — the zero-internet promise is unchanged. Both are SIL
+Open Font License 1.1; the license text is not vendored (see the note at the
+top of `theme.css`). Before this the repo declared the families and shipped no
+font file, with "Arial Narrow" ahead of Bebas and "Courier New" behind Space
+Grotesk, so every dollar figure in BOTH modules rendered in Courier
+(`gate-l1-visual` P1).
+
 **End-to-end proof.** `node scripts/e2e-m2l1.cjs` (after `npm run build`)
 drives one teacher, one projector and four Chromebook-shaped student pages
 through the whole arc, including a late joiner at Night 3, a desk that never
 locks Night 5, the teacher-released Two Peaks, and all seven reveal stages.
-Screenshots land in `docs/gauntlet/module-2/screens-l1/`.
+It also asserts the SYNTHESIS heading and the first row of cards are *fully
+inside the viewport* at 1366x768 and 1920x1080 — rendered boxes, not strings
+in `innerText` — because `#stage` used to centre-flex inside
+`body{overflow:hidden}` and silently behead its own peak beats while text
+assertions passed (`gate-l1-projector` repair 2). `#stage` scrolls now, so
+nothing is ever unreachable. Screenshots land in
+`docs/gauntlet/module-2/screens-l1/`.
 
 ## Repair charter round 1 (post-verification)
 
@@ -392,7 +431,11 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 - The teacher's **advance** control walks `phases` in order; **reveal**
   jumps straight to a `REVEAL` phase if the module declares one; **pause**
   is a resumable hold; **freeze** is a harder stop (implies pause) meant as
-  the moment before **one-click recovery**; **hook** forwards to `reduce()`
+  the moment before **one-click recovery** — and **unfreeze clears both
+  flags**, because freeze is one gesture and its inverse has to be one gesture
+  (`gate-l1-projector`: unfreeze used to clear only `frozen`, leaving the
+  projector reading PAUSED with no control anywhere still saying "Unfreeze").
+  A deliberate pause that a freeze was layered on top of is NOT restored; **hook** forwards to `reduce()`
   as a synthetic `{ type: "teacher:<hookName>" }` action — a module that
   wants a shock-event or rerun-counterfactual button handles that type
   itself and rejects anything it doesn't recognize (see `lobbyDemo.ts`'s
