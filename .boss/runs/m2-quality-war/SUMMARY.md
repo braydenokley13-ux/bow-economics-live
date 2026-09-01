@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `418:fbc8b8ae4b56d1a5149139844f9ac940bcb1a3d6b887dedf67c14bd93f374f7a`  
-Updated: 2026-09-01T13:30:05.323Z
+Event head: `422:3d6f75661c359ed8a8256e166f2661b55bd66df4478d1b70d95b87b032d53b91`  
+Updated: 2026-09-01T13:34:29.426Z
 
 ## Founder intent
 
@@ -37,7 +37,9 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - sports-reality-director — sports-reality-director — completed — claude-sonnet-5
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
 - product-analyst — product-analyst — completed-with-concerns — claude-opus-5
-- builder — builder-w5-dereg — active — claude-sonnet-5
+- builder — builder-w5-dereg — completed — claude-sonnet-5
+- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
 
 ## Required evidence
 
@@ -80,6 +82,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - final-e2e-m1l3-retry — e2e — FINAL HEAD: M1 L3 full-chain e2e retry (pre-existing race documented in E2E_L3_FLAKE_NOTE.md; this run green proves the product path at head)
 - analyst-program — analyst-report — Program analyst: REPAIR (narrow). Confirmed: 28/29 resolutions provenance-clean, ratings unqualified at head, no rung inflation, honest flake ledger, premium carried UNMET. Caught: L1/L2 TRANSFER READY predate later teacher-copy repairs (stale verdicts, no re-affirmation); D20 overclaims the audit's coverage vs the critic's own W5-3 wording; flake-note rate attribution uncorrected; pager ruling artifact unpinned; Box Office still selectable; README counts stale. Six cheap required items + the honest founder risk list
 - l1-projector-gate-doc — projector-report — Pin: GATE_L1_PROJECTOR.md at final head incl. the W4 ADJUDICATION carrying the owning critic's L1 PAGER INTENT: SATISFIED ruling (analyst row-3 artifact fix)
+- final-suite-postdereg — test — Suite after Box Office deregistration (458/458)
 
 ## Claim ledger
 
