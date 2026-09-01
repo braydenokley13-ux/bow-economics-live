@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `225:bb72728fdc94783f5332de6d90177b11b9e6f52ae47a8b4cd32e197da7cf9d24`  
-Updated: 2026-09-01T05:23:49.108Z
+Event head: `227:193276980a49e2254088f395250a3b2cf36552001fa23550c4104c571c0256bf`  
+Updated: 2026-09-01T05:26:37.104Z
 
 ## Founder intent
 
@@ -82,6 +82,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l2-e2e — e2e — L2 12-desk three-surface e2e, 22 frames x 2 shapes fit, zero console errors
 - l1-e2e-postl2 — e2e — L1 e2e regression after L2's shared-file changes
 - gate-l2-sr — sports-reality-report — L2 SR gate: CLEAR WITH REPAIRS. Dated facts survived independent verification (cap chain exact, $76B deal, arena renames). BLOCKING-1: profile anchor-club sentences print verbatim under 15 wrong clubs (Detroit reads 'biggest market'; Denver reads '2025 champions'; Lakers 'OWNS its building' — AEG owns it). BLOCKING-2: MODELED_DOLLARS_LINE universals falsified by desks' own bars. Also: 'NY highest gate' repair fails vs shared curves; header/README contradiction; Fever kept half-operated; SR-10 cut sound
+- gate-l2-teacher — teacher-transfer-report — L2 teacher gate: TRANSFER NOT READY. B1 bare /board silently renders a DIFFERENT session (once a previous class's synthesis); B2 new /teach tab strands the room despite stored code+key; B3 WATCH FOR makes a never-locked desk the protagonist; B4 ADAPT answer key cites a board with no reveal-back control; B5 prescribed rehearsal never renders WATCH FOR and collapses synthesis. Synthesis economics + reveal scripting correct and class-computed. Zero console errors
 
 ## Claim ledger
 
@@ -93,6 +94,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - w3-projector-final-dissent — undefined/undefined/open — undefined
 - sr-l2-anchor-copy — sports-reality/blocking/open — L2 blocking pair: (1) each market profile's anchor-club sentence renders verbatim under 15 other real clubs — Detroit/Chicago/Philly/Boston read 'the biggest market in American sports', Denver/Utah/Portland/Sacramento read 'the 2025 champions', Lakers read 'OWNS its building' (AEG owns Crypto.com Arena) — false real-world claims on student surfaces in any class of nine; (2) MODELED_DOLLARS_LINE's two universals are falsified by desks' own projector bars (Boston/Lakers local media > national in week 1; gate share 8% at dial extremes vs 'a fifth to a quarter'). Plus: header 'NY highest gate' claim fails against shared curves and contradicts the README. GATE_L2_SR.md.
 - gate-l2-sr-dissent — undefined/undefined/open — undefined
+- teacher-l2-not-ready — teacher-transfer/blocking/open — L2 TRANSFER NOT READY on five blocking findings, worst two: B1 — a bare /board URL (no ?code) silently renders a DIFFERENT session's content (observed: a previous class's COMPLETE synthesis card), with no code entry on /board and /teach never printing the projector URL — a live-class wrong-projector hazard; B4 — ADAPT question 3's answer key cites the WHAT YOU GAVE/GOT board (REVEAL stage 2) with no reveal-back control. Plus B2 (stranded new /teach tab), B3 (WATCH FOR protagonist never locked, no auto signal), B5 (prescribed rehearsal renders no WATCH FOR, collapses synthesis). GATE_L2_TEACHER.md.
 
 ## Latest gate
 
