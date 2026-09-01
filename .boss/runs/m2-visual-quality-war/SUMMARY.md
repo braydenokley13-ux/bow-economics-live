@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `10:b7605b372e9ea7bfbdbd312774a2d1916c00a91927b0b455ee276e7f20ee7466`  
-Updated: 2026-09-01T20:14:04.917Z
+Event head: `19:1aa949db78f378fb628828cfba86a5146abd103d502a4da0f25976ea8f32b6dc`  
+Updated: 2026-09-01T20:23:53.434Z
 
 ## Founder intent
 
@@ -36,7 +36,7 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 - player-gameplay-critic — kid-b-casual — active — claude-sonnet-5
 - player-gameplay-critic — kid-c-nonsports — active — claude-opus-5
 - economic-truth-critic — econ-truth-w1 — active — claude-opus-5
-- experience-director — experience-director-w1 — active — claude-opus-5
+- experience-director — experience-director-w1 — completed-with-concerns — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
 
 ## Required evidence
@@ -51,7 +51,14 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 
 ## Evidence recorded
 
-- No evidence recorded yet
+- premium-direction-memo — direction — Experience Director premium direction memo for Module 2 (per-surface, per-beat) with Boss lead rulings on Q1-Q7
+- premium-direction-play-prelock — screenshot — /play pre-lock night desk, 1366x768 - PIN in hero slot, LOCK IT IN at y~686, honesty line correctly placed
+- premium-direction-play-lockedwait — screenshot — /play locked-waiting - ~300px dead black; the unclaimed H1 half-beat
+- premium-direction-play-sellout — screenshot — /play sellout - FULL HOUSE loud, but the building never appears
+- premium-direction-board-playframe — screenshot — /board PLAY 1920 - card + locked counter only; no class evidence table frame exists
+- premium-direction-board-twopeaks — screenshot — /board Two Peaks 1920 - headline sits below the charts
+- premium-direction-board-books — screenshot — /board season books 1920 - caveat set heavier than the room's own number
+- premium-direction-teach — screenshot — /teach 1920 - stacked prose column, ~880px dead screen, no director rail
 
 ## Claim ledger
 
