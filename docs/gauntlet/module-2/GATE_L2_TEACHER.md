@@ -564,3 +564,115 @@ put the teacher in front of the room saying something the product then contradic
 
 **DISSENT teacher-l2-w5: recorded.** Re-affirmation withheld until B-1 and B-2 are
 repaired and re-run on the never-locked arm and the prescribed-release arm.
+
+## W5 NARROW CONFIRM
+
+Owning-critic confirm of dissent `teacher-l2-final-head`, narrow to B-1, B-2, N-1, N-3.
+Fresh live session on **port 4433** (`Confirm run 4433`, code BOWE4X, 7 desks + projector +
+teacher console, 1366x768 board). Mechanics only were taken from
+`runtime/scripts/e2e-m2l2.cjs`; every assertion in that script was ignored and every verdict
+below is read off the rendered surface of my own driver, not off the builder's asserts.
+Arms rebuilt to match the original repro: desk 7 never presses LOCK in any of the three weeks;
+desk 1 locks every week and chooses 0% every week (both finish on $0); the Handed-To-You bar is
+released at the prescribed moment — after the week-2 bell, week 3 open, 0/7 locked.
+Zero console errors on all nine surfaces for the whole run, including the late joiner.
+
+### B-1 — the never-locked desk is told it chose — **FIXED**
+
+Read on three surfaces at ADAPT, in the same session, at the same instant:
+
+- Desk 7's own device: header `WHAT YOUR OWN DECISIONS DID — NOBODY AT THIS DESK PRESSED LOCK,
+  SO THESE WEEKS RAN AT THE HOUSE DEFAULT`; body "These zeroes are not a decision — they are the
+  weeks that ran without you... That is not you choosing to give nothing; it is you not having
+  chosen yet." The "YOU SPENT NOTHING, AND THAT IS A DECISION" / "Those three zeroes... are your
+  decision" copy I read in W5 is gone from this desk.
+- Desk 1 (locked, 0% x3, identical $0): `YOU LOCKED IN AND SPENT NOTHING, AND THAT IS A
+  DECISION` — "you locked in and you chose to give nothing back". Desk 3 (spender) gets the third
+  branch. Three distinct branches at the same $0 arithmetic.
+- `/teach` WATCH FOR carries the collision line I asked for and quotes the device verbatim:
+  "Their own screen agrees with you: it reads \"These zeroes are not a decision — they are the
+  weeks that ran without you\"... Go to the desk and say the same." I checked the quoted string
+  character-for-character against desk 7's rendered text; it matches. The ADAPT answer key
+  repeats it. Desk 1 stays in a separate `CHOSE to put nothing back` entry; desk 7 is not in it.
+- Aggregate panel flags Desk 7 `never locked a week — 3 settled AUTO`.
+
+Inferred (source read after judging): one exported `neverLockedFor` atom
+(`runtime/src/modules/hostTheLeague.ts:898`) with 23 call sites; `spend === 0` no longer decides
+any copy branch. Observed behaviour matches.
+
+### B-2 — `ON THE PROJECTOR RIGHT NOW` at the prescribed bar release — **FIXED**
+
+Held the bar through week 2, released it on the panel's own TRIGGER with week 3 open and 0/7
+locked; read the mirror and the board at the same beat.
+
+- Pre-release mirror: "Every pairing in the league... The star-departure card is up beside it:
+  Los Angeles Lakers, Draw 10. Desks locked in: 0 of 7... the Handed-To-You bar is not up."
+  Board at that instant: 9 pairings with HOSTS + Draw, the Lakers card, `0/7 locked in`, no bars.
+  True on every clause.
+- Post-release mirror: "the bar has REPLACED the schedule. The projector is holding the week strip
+  (0 of 7 locked in), the group pager, the Handed-To-You bars, \"Point at the club that paid for
+  your night\", and the summary line. That is all of it. The pairing grid and the star-departure
+  card are NOT on the frame any more — there is no control to put them back, and there does not
+  need to be: every pair has this week's pairing and every Draw on its own device."
+  Board at that instant (DOM): `pairs 0, bars 5, departure cards 0, the word HOSTS absent`;
+  text holds `WEEK 3 OF 3`, `0/7 locked in`, `GROUP 1 OF 2 — DESK 1..DESK 5`, five bars, the
+  legend, "Point at the club that paid for your night." and the 46% summary. Every clause of the
+  mirror is on the board and nothing on the board is missing from the mirror. The lock count is
+  the board's own. The missing-control complaint is answered in copy rather than left silent.
+- Stage-5 mirror on this arm: "you released it after the week-2 bell and NOT ONE desk had locked
+  week 3 yet... Ask the whole room, not a subset" — matches the board's stage-5 text.
+
+### N-1 — lesson-keyed prep note — **FIXED (for L2)**
+
+`m2l2-host-league`: "This lesson has exactly two interior controls: the week bell... and the
+Handed-To-You bar, which you release ONCE, by hand... straight after the week-2 bell, before the
+room prices week 3." No vote, no round step, no two-thirds test. `m2l3-write-rule` keeps its own
+round step and two-thirds test; `m1l3` and `m2l1` have their own. Observed: `m1l1-draft-day`
+(the default selection), `m1l2-trade-deadline` and `lobby-demo` still get the generic note with no
+interior control named — out of scope for L2, noted for their own gates.
+
+### N-3 — ADAPT late join, announced observer — **FIXED; observer-only accepted**
+
+Device: `YOU ARRIVED AFTER THE LAST WEEK CLOSED` — "there is no club left to hand you — the three
+weeks are already in the books. Pull your chair up to the nearest desk and read their screen with
+them... You are not missing a turn, because nobody is taking one." No "finding your club…" hang;
+no 409 loop (zero console errors on that page). `/teach` gains a `now`-urgency WATCH FOR entry
+naming the pair, the reason, and the action ("pair them with a desk near the door"). The ADAPT
+board still held its 5 bars after the join — the room's evidence did not move under the class.
+
+**Ruling on the deliberate divergence:** observer-only satisfies the finding. My finding was that
+the device stalls silently and the teacher is given no direction, not that a bot must take the
+seat. Seating a club at ADAPT would retro-change room totals the class has already had read to it
+from the projector; the builder's divergence is the better economics and the better classroom
+move, and the copy makes the observer's status a stated fact rather than a failure.
+
+### New findings this confirm (both non-blocking, neither in the dissent)
+
+- **N-6.** The free-rider WATCH FOR label is a fixed string,
+  `"CHOSE to put nothing back, two weeks running"` (`hostTheLeague.ts:3871,3985`), while the
+  predicate is `>= 2` chosen weeks at 0%. Desk 1 chose 0% in all THREE weeks and the teacher is
+  told "two weeks running". The intervention is unaffected; the number the teacher may say out
+  loud is wrong. Make the label count the desk's own weeks.
+- **N-7.** The abstention paragraph on the student device renders a lowercase sentence start:
+  "...they are the weeks that ran without you. nobody at this desk pressed LOCK in any week..."
+  (interpolation at `hostTheLeague.ts:2563`). It is on the one screen the teacher is instructed to
+  stand over and read with a pair.
+
+### Still open from W5, unchanged and still non-blocking
+
+N-2 (REVEAL stage 2 fit proven only at the e2e desk counts), N-4 (`/teach` stage 5 does not tell
+the teacher the direction the room moved before the board prints "The room went DOWN"), N-5 (the
+room-average reinvest percentage in the ADAPT key still includes the abstaining desk's forced 0%;
+this run printed "this room's dials averaged 17%").
+
+### Not verified in this confirm
+
+Late join during PLAY or REVEAL; second-device Reopen; misclick/Restore and refresh/restart paths
+(confirmed in W5, not re-exercised here); the non-room constants in the answer key; any classroom
+with real children.
+
+**TRANSFER: READY (at final head)**
+
+**DISSENT teacher-l2-final-head: DISCHARGED.** B-1 and B-2 are repaired on the arms that produced
+them, verified from the rendered surfaces on port 4433. N-1 and N-3 are repaired for this lesson.
+N-6 and N-7 are recorded as non-blocking copy defects and do not hold the gate.
