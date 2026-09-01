@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T05:23:28.556Z",
+  "updatedAt": "2026-09-01T05:23:49.108Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2011,12 +2011,23 @@
           "model": "claude-opus-5",
           "reason": "Independent L2 gate on the built lesson",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T05:12:07.921Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T05:23:49.074Z",
+          "sections": {
+            "real-world-anchors": "Inventory in GATE_L2_SR.md: 20 real buildings verified incl. current renames; cap chain exact; $76B deal; Warriors $833M vs Knicks $620M; Luka/Harrison; Fever anchor kept, accurate, half-operated; SR-10 cut ruled sound.",
+            "accuracy-findings": "BLOCKING-1: anchor-club profile sentences verbatim under 15 wrong clubs (false claims on student surfaces). BLOCKING-2: MODELED_DOLLARS_LINE universals falsified by the product's own bars. MODERATE: header 'NY highest gate' fails vs shared curves; header/README gate-share contradiction (README is the reproducible one); 2026 Knicks title undercuts the anti-money-buys-wins counter.",
+            "staleness-findings": "Dated set current as of 2026-09-01; renames verified.",
+            "rights-source-considerations": "Names/facts only; no new flags.",
+            "recommendation": "CLEAR WITH REPAIRS — the two blocking items are copy/derivation fixes, tracked as dissent sr-l2-anchor-copy."
+          },
+          "evidenceIds": [
+            "gate-l2-sr"
+          ],
+          "cost": {
+            "tokens": 144224,
+            "toolUses": 33
+          }
         },
         "gate-l2-teacher": {
           "assignmentId": "gate-l2-teacher",
@@ -2071,7 +2082,8 @@
       "dissentIds": [
         "proj-l1-cf-pager-label",
         "w3-projector-final-dissent",
-        "sr-l2-anchor-copy"
+        "sr-l2-anchor-copy",
+        "gate-l2-sr-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -4051,6 +4063,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T05:23:28.556Z",
       "actor": "sports-reality-director"
+    },
+    "gate-l2-sr-dissent": {
+      "id": "gate-l2-sr-dissent",
+      "wave": 3,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T05:23:49.108Z",
+      "actor": "sports-reality-director"
     }
   },
   "meetings": {},
@@ -4092,7 +4113,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 223,
-  "eventHead": "5e0af0338c604283f9bc04365b3fd2cbaaede0dceb4becc10ab434a1b4fa9d48",
+  "eventCount": 225,
+  "eventHead": "bb72728fdc94783f5332de6d90177b11b9e6f52ae47a8b4cd32e197da7cf9d24",
   "warnings": []
 }
