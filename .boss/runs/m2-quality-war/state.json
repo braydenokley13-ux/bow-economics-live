@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:07:22.544Z",
+  "updatedAt": "2026-09-01T02:12:36.348Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1035,7 +1035,8 @@
         "l1-e2e-r3",
         "gate-l1-teacher-r3",
         "gate-l1-play-r3",
-        "gate-l1-econ-r3"
+        "gate-l1-econ-r3",
+        "analyst-wave2"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1062,7 +1063,8 @@
         "play-l1-repairs-below-fold",
         "recheck2-l1-play-dissent",
         "econ-l1-two-book-baseline",
-        "recheck3-l1-econ-dissent"
+        "recheck3-l1-econ-dissent",
+        "analyst-no-pass-wave2"
       ],
       "meetingIds": [],
       "gates": [],
@@ -2066,6 +2068,23 @@
       },
       "recordedAt": "2026-09-01T02:07:01.141Z",
       "actor": "lead-integrator"
+    },
+    "analyst-wave2": {
+      "id": "analyst-wave2",
+      "wave": 2,
+      "kind": "analyst-report",
+      "label": "Wave-2 analyst: REPAIR. Catches: counterfactual fails at 10 desks and its e2e guard cannot see it at any class size; N5 discharge unqualified while /play still misattributes; two-books baseline laundered as narrow and worsened across rounds (47-70x); M1 browser evidence stale by one round; 30/4.5 refutes builder ceiling with +720 beat; P16 dominance limb tautological; visual/projector never re-adjudicated; formal dissent against any PASS",
+      "path": ".boss/runs/m2-quality-war/evidence/analyst-wave2--ANALYST_WAVE2.md",
+      "sha256": "489b0682e88a477297f6e03e7940201b2d1b123580ade594c1f1487d9ff5d774",
+      "size": 7991,
+      "metadata": {
+        "tags": [
+          "analyst",
+          "wave-2"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:12:36.099Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -2468,6 +2487,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T02:07:22.300Z",
       "actor": "lead-integrator"
+    },
+    "analyst-no-pass-wave2": {
+      "id": "analyst-no-pass-wave2",
+      "wave": 2,
+      "category": "process",
+      "severity": "blocking",
+      "finding": "Analyst dissents against any PASS verdict for Wave 2: the premium-visual contract clause has no affirmative artifact (visual verdict SERVICEABLE-NOT-PREMIUM, never re-graded), and the projector critic's 'stage must fit its content' discharge condition was substituted with a scrollbar and never re-adjudicated by its owning critic. ANALYST_WAVE2.md.",
+      "evidenceIds": [
+        "analyst-wave2"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T02:12:36.348Z",
+      "actor": "product-analyst"
     }
   },
   "meetings": {},
@@ -2498,11 +2531,11 @@
     "agentsActivated": 30,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 50,
+    "evidenceRecorded": 51,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 152,
-  "eventHead": "7f0b50e5439d14a1b905301f0010d0eb8cf4beb627b10a0cf9172e9078ea050f",
+  "eventCount": 154,
+  "eventHead": "e2dec86b9adf0bee095f7d7c42abb23cb64ce7f6a6d801cfac85fa6985a0baa9",
   "warnings": []
 }

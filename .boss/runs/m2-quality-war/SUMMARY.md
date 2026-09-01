@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `152:7f0b50e5439d14a1b905301f0010d0eb8cf4beb627b10a0cf9172e9078ea050f`  
-Updated: 2026-09-01T02:07:22.544Z
+Event head: `154:e2dec86b9adf0bee095f7d7c42abb23cb64ce7f6a6d801cfac85fa6985a0baa9`  
+Updated: 2026-09-01T02:12:36.348Z
 
 ## Founder intent
 
@@ -101,6 +101,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-teacher-r3 — teacher-transfer-report — Teacher narrow re-check r3: all 7 claims CONFIRMED from rendered /teach in a live session to Night 5 + 7 reveals; Jump-to-REVEAL guard verified mid-play; TRANSFER: READY (scoped); dissent night5-now DISCHARGED
 - gate-l1-play-r3 — gameplay-report — Play re-check r3: RATING STRONG; felt-scale accepted (P12 downgraded); waste receipt + REVEAL-5 fold confirmed incl. at 10 desks; NOT DISCHARGED: COUNTERFACTUAL rows 5-10 + class summary below fold at 10 desks (rows.map uncapped; e2e asserts only elements above the overflow)
 - gate-l1-econ-r3 — economic-truth-report — Econ re-check r3: N5 attribution DISCHARGED (probe wider than P16: residual 0, biggestChannel 168/168, 18/18 inversions named). Tradeoff SPLIT: frontier REAL (22/24 undominated, marginal cost rising 50x) — accept-with-reason on felt-scale; zero-headroom refuted (30/4.5 passes with headroom). NEW BLOCKING: two-books card prices renewals 47-70x too steep vs a Pareto-dominated baseline. Non-blocking: demand-floor identity edge; HOUSE_RULES[2] +2 false in 62-65% of states
+- analyst-wave2 — analyst-report — Wave-2 analyst: REPAIR. Catches: counterfactual fails at 10 desks and its e2e guard cannot see it at any class size; N5 discharge unqualified while /play still misattributes; two-books baseline laundered as narrow and worsened across rounds (47-70x); M1 browser evidence stale by one round; 30/4.5 refutes builder ceiling with +720 beat; P16 dominance limb tautological; visual/projector never re-adjudicated; formal dissent against any PASS
 
 ## Claim ledger
 
@@ -130,6 +131,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - recheck2-l1-play-dissent — undefined/undefined/open — undefined
 - econ-l1-two-book-baseline — economic-truth/blocking/open — The two-books synthesis card prices renewal points 47-70x too steep because it compares against a Pareto-dominated baseline line rather than the frontier; narrow fix — compute the card's price-per-point along the true frontier. Also open: reframe P14's zero-headroom source comment (30/4.5 passes with headroom, refuting the builder's ceiling claim); non-blocking demand-floor identity edge (a '0 then 0' card reachable from $58 Memphis) and HOUSE_RULES[2] +2 clause false in 62-65% of states. GATE_L1_ECON_R3.md.
 - recheck3-l1-econ-dissent — undefined/undefined/open — undefined
+- analyst-no-pass-wave2 — process/blocking/open — Analyst dissents against any PASS verdict for Wave 2: the premium-visual contract clause has no affirmative artifact (visual verdict SERVICEABLE-NOT-PREMIUM, never re-graded), and the projector critic's 'stage must fit its content' discharge condition was substituted with a scrollbar and never re-adjudicated by its owning critic. ANALYST_WAVE2.md.
 
 ## Latest gate
 
