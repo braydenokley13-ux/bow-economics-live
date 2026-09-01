@@ -929,3 +929,215 @@ distribution I have named in all three rounds. **B9** and **B10** are narrow, bo
 touch the model.
 
 A decision to proceed does not erase this dissent.
+
+## W4 FINAL RULING
+
+Boss run `m2-quality-war`, assignment `w4-econ-final`. Owning-critic FINAL ruling on dissent
+`econ-l2-evidence-surfaces`, against the W4 repair-1 tree (`b1119e1`). Fresh probes, current dist,
+builder's tally not accepted as evidence.
+
+**Evidence status.** Observed (computation, this session): `npm run build --prefix runtime` exit 0;
+`npm test --prefix runtime` **407/407 pass**; `l2-tuning` against current dist **exit 0, 12/12**
+(P11 self-reports 336 rooms / 20,448 surfaces / 114,678 atoms / 86 ids / 0 disagreements / 6 of 6
+mutants caught / 0 shock-seated skips / under-provision 90 · over-investment 126). Six probe scripts
+of my own driving compiled `runtime/dist/modules/hostTheLeague.js` through the real reducer: a
+348-room null-branch sweep with my own 0%-replay joint, a source-level wrong-noun injection into a
+sandboxed dist run against a sandboxed harness, a 240-desk-instance dealt-line check, a 36-room
+composition check, a room-level marginal-gradient sweep, and a private-vs-room optimum sweep.
+Not verified by me: every real-world fact (`gate-l2-sr`); any play, projector, visual or teacher
+rating; anything about a real room. No browser session. Boss evidence ids referenced:
+`gate-l2-econ`, `recheck-l2-econ`, `l2-tuning`, `l2-tuning-w4r1`, `l2-tests-r1`, `analyst-wave3`.
+
+### mechanism-verdicts
+
+**N17 — HIGHEST SEVERITY. NEW, BLOCKING. The replacement noun is a MARGINAL claim decided by a
+TOTAL, and the model contradicts it in 97% of the rooms where it prints.** (observed)
+
+The repaired under-provision arm (module :1803–1806) prints:
+
+> "… but the room as a whole came out ahead, so **less went back in than this room's own numbers
+> would justify**."
+
+"Less went back in than justified" is a statement about the room's LEVEL of reinvestment against the
+room's own optimum. `roomJointGain > 0` is a statement about the TOTAL against a zero baseline. They
+are different quantities, and this model separates them sharply. Room desk-cash by uniform share,
+through the real reducer, flat $50:
+
+```
+ 8 desks:  0% 26,349,834 · 5% 28,096,463 · 10% 28,718,394 (MAX) · 15% 28,665,739
+           20% 28,190,409 · 25% 27,516,310 · 30% 26,844,011 · 35% 25,992,514 · 40% 25,114,118
+12 desks:  max at 15% (42,744,972); 25% 41,057,110; 30% 40,040,942
+ the null branch fires ONLY at share >= 25% in these rooms — i.e. only strictly ABOVE the
+ room's own optimum. It never fires anywhere the sentence could be true.
+```
+
+The harness's own showcase room is the counterexample. `l2-tuning` selects 8 desks · flat-$50 ·
+all-25% as the M-D subject and reports it "$1,166,476 BETTER off", so the card tells that room it put
+in less than its numbers justify. That same room would have been **$1,202,084 better off at 10%**.
+
+Over 160 random plausible-price rooms ($30–$70), the arm fired in 86:
+
+```
+every desk +5pp  -> the ROOM is jointly WORSE off in 68 of 86   (worst -$715,588)
+every desk -5pp  -> the ROOM is jointly BETTER off in 75 of 86
+room-level gradient contradicts the printed sentence in 83 of 86 (97%)
+```
+
+The wedge the sentence gestures at is real and sits somewhere else: measured private best response
+(desk 1, constant share, others held) is **5%** against a room optimum of **10–15%**, at $40/$50/$60
+and 8/12 desks, in 24 of 24 configurations. Under-provision is a true property of this model at the
+Nash point and a false description of the rooms where this clause prints. Same three surfaces as
+N11 — `board:reveal-2:ledgerSummary`, `teach:adapt-q3:answerKey`, `synthesis:spillover`. **BLOCKING.**
+
+**N18 — NEW, BLOCKING (paired). The repaired audit limb is genuinely independent of the module's code
+path but audits a different proposition than the clause asserts.** (observed)
+
+I read the limb's path before probing it. `expectedBranchNoun` (harness :842–843) is computed from
+`joint`, returned by `jointByReplay` (:689–695) — two full seasons through the shipped reducer with
+every dial at 0%, differencing desk cash. It touches neither `created` nor `coherent` nor any module
+aggregate, and `auditClaims` (:984–995) compares the printed WORD to it rather than calling `check`.
+`mutantsCaught` (:1379) requires `underProvided !== null`, so the limb cannot silently go
+unexercised. N12's tautology is genuinely gone. But the proposition it verifies is sign(joint) — the
+total — while the clause asserts the level. So 12/12 over 114,678 atoms does not certify this clause
+either, for the same reason at one level up. **BLOCKING.**
+
+**N19 — B9 and B10 discharge on their stated conditions. Verified by my own probes.** (observed)
+
+348 rooms (300 random $30–$70 plus a 48-room uniform ladder), 183 firing the null branch:
+
+```
+printed noun vs MY OWN 0%-replay joint      : 183 of 183 match, 0 mismatches
+"over-invest" on a surface of a better-off room : 0
+my replay vs module roomJointGain, sign      : 0 disagreements in 183 rooms
+arms by my replay: under 168 · over 15 · level 0   (the shipped card printed over in all)
+```
+
+Source-level injection (not the builder's in-memory mutant): I flipped the under arm's word to
+"this room over-invested" in a sandboxed copy of dist and ran a sandboxed harness — **P11 FAIL, 90
+disagreements, exit 1**, with the QUANTIFIER word-compare and the forbidden-phrase BINDING each
+firing on their own line. M-D deletes `atom.absent` before auditing, so the word-compare limb is
+proven to bite alone. The branch-noun family is non-vacuous.
+
+**N20 — FL-K and the composition gap are closed.** (observed) 240 desk-instances (24 rooms,
+$50/$70/$90/$110 × 10/25/40% × 8/12 desks): printed `desk.dealtPct` equals my recompute in 240 of
+240, `desk.boughtShare` is its complement in 240 of 240, both rendered fragments present in the text,
+and no static "most of it" survives anywhere. The bought share is the majority in 29 of 240, worst
+12 desks @ $90 all-40% desk 7 at **60% bought** — the exact instance FL-K was raised on, now printed
+as a number. `synthesis:composition`: 36 rooms, all four percentages match my recompute within
+0.05pp and every rendered fragment is present in the body, 0 mismatches.
+
+**N21 — Two unbound rendered claims remain; one is false. Non-blocking, required.** (observed)
+
+- `synthesis:composition` **title** — "THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS" — is an unbound
+  superlative and is false for **28–30 of 100 desk-instances at every price probed** ($30/$50/$70/
+  $90/$110). Example: 8 desks, all-0%, Desk 6 · Boston — national $2,850,000 against local media
+  $2,886,000. The four percentages beneath it are now atoms; the sentence above them is not.
+- `board:reveal-2:ledgerSummary` trailer (module :1840) — "every dollar drawing power moved, **most
+  of it Draw nobody bought**" — is the FL-K quantifier at room scope, unbound. Measured TRUE in 24 of
+  24 rooms probed (to $110 / all-40%). Record it, bind it, do not panic about it.
+- `moduleClaims`' `push` still drops a zero-atom surface silently; only synthesis cards are pushed
+  unconditionally, so the new zero-atom detector sees synthesis and nothing else. N14 is half-closed.
+
+**N22 — Mechanism re-confirms; the model is not what is wrong here.** Nothing in this wave touched
+`settleHome`, `nextDraw`, `drawGain`, `localMediaFor` or the grids. 407/407, 12/12. The new
+private-vs-room measurement (5% against 10–15%) is a positive finding: the externality wedge this
+module is named for is really in the model, and it is bigger than the module currently says out loud.
+
+### false-lesson-risks
+
+| id | False lesson | Evidence | Severity |
+|---|---|---|---|
+| **FL-L** | **"Your room should have put MORE back in."** N17. Printed on the projector, the SPILLOVER card and the teacher's answer key in rooms where a uniform one-step increase makes the room jointly worse off — 68 of 86 measured, 83 of 86 counting the down-move. The firing region (share >= 25%) never overlaps the region where the sentence is true (below the 10–15% room optimum). | observed, real reducer | **BLOCKING** |
+| **FL-J** | "Putting money into your club was too much money." The W4 blocker. **CLEARED.** 183 of 183 null-branch rooms name the arm my own replay names; 0 rooms carry "over-invest" while better off; source-level injection caught. | observed | **CLEARED** |
+| **FL-K** | "Most of what your Draw moved was money you were handed." **CLEARED.** The label is computed and bound, exact in 240 of 240 desk-instances, and prints "60% BOUGHT" in the room it used to lie about. | observed | **CLEARED** |
+| **FL-M** | "The national check is the biggest check." False for ~30% of desk-instances at every realistic price; unbound title. | observed | non-blocking |
+| **FL-A** | REFUTED at W4, unchanged. | observed | CLEARED |
+| FL-B, FL-F, FL-G, FL-H, FL-I | Unchanged. FL-B/FL-F discharged at RE-CHECK; FL-G, FL-H, FL-I open as R-h, R-f, R-d. | observed | non-blocking |
+
+### dominant-strategies
+
+**No new dominant strategy, and no exploit is created by the claim layer** — every atom is read-only
+over settled weeks and nothing in `moduleClaims` is reachable before commitment. P1–P10 re-pass at
+the shipped constants this session. My constant-share best-response probe returns 5% for desk 1 in
+all 24 configurations tested, which is a restricted strategy space (one share for all three weeks)
+and is consistent with, not a contradiction of, `gate-l2-econ`'s per-week 15%/10%/0% enumeration —
+recorded so nobody reads it later as a new finding. The residual `smallMarketPathFrom` selection
+note and the negative-block legibility question stand unchanged from the W4 section.
+
+### synthesis-map-verdict
+
+| card | W4 verdict | this ruling |
+|---|---|---|
+| `shared-product` | PASS | **PASS**, atom-bound. |
+| `spillover` | FAIL (wrong noun, N11) | **FAIL, third distinct ground.** The noun now matches the joint truth in 183 of 183 rooms I drove, and B9/B10 discharge exactly as written. The clause the repair attached to that noun — "less went back in than this room's own numbers would justify" — is contradicted by the room's own books in 83 of 86 rooms where it prints (N17). |
+| `composition` | PASS, UNREGISTERED | **PASS on arithmetic and now REGISTERED** (4 atoms, 0 mismatches in 36 rooms). Its TITLE is an unbound superlative false for ~30% of desks (FL-M). |
+| `market-size` | PASS | **PASS**, unchanged. |
+| `beyond` | contingent | unchanged, `gate-l2-sr`'s. |
+
+The chain still holds and EXTERNALITY/SPILLOVER are still earned at SYNTHESIS and withheld before
+it. The map's break is again one clause on one card, and it is again the clause that tells the room
+what its own economics means.
+
+**Simplifications ledger: still nine entries, unchanged (verified this session).** R-c's "always
+clearable, at any legal price, from any state" is byte-identical; no entry added for the joint-figure
+scope (N15), the by-choice carve-outs, the never-binding weekly bill (R-d), the attribution ordering
+(R-e), `visitorDrawFans` (R-f) or the local-media annuity (R-g). Ceteris paribus is still disclosed
+to the room only as "Desk by desk, adding up what reinvesting was worth to each desk's OWN cash" —
+better than round 2, still not the counterfactual itself.
+
+### required-repairs
+
+**BLOCKING — economic-truth.**
+
+- **B11 (N17, FL-L).** Remove the marginal clause from the under-provision arm. The honest sentence
+  is the one B9 asked for and the card already contains: every desk that spent was privately worse
+  off, and the room as a whole was still better off than if nobody had spent — which is what
+  `jointLine` prints three clauses later. If a level noun is wanted, branch it on a room-level
+  GRADIENT (room cash at the actual dials versus one share step up and down), not on
+  `sign(roomJointGain)`. Discharge: a property test asserting no surface tells a room it put in less
+  than its numbers justify in any room where a uniform one-step increase lowers room cash, plus the
+  86-room gradient cross-tab recorded.
+- **B12 (N18).** Audit the clause that is printed, not the total beside it. `spillover.branchNoun`'s
+  limb must recompute the proposition the sentence asserts. Discharge: a mutation that prints the
+  under-provision clause over a room whose one-step-up room cash is LOWER, and is caught.
+
+**NON-BLOCKING — required, recorded.**
+
+- Bind or correct the `synthesis:composition` title (FL-M): "the biggest check" is false for ~30% of
+  desk-instances at every realistic price.
+- Bind the room-scope "most of it Draw nobody bought" trailer on `board:reveal-2:ledgerSummary`
+  (module :1840). True in 24 of 24 rooms probed; unbound.
+- Make `moduleClaims` detectable for non-synthesis zero-atom surfaces too — `push` still drops them.
+- Ledger, still: the joint-figure scope (N15), the by-choice carve-outs, R-c … R-h. Six rounds of
+  recording, none addressed.
+
+### Overall
+
+**SOUND MODEL. THE CLAIM LAYER IS NOW A REAL INSTRUMENT. THE SENTENCE IT GUARDS IS STILL WRONG.**
+
+Everything I asked for in B9 and B10 was delivered and I verified it myself rather than accepting
+the tally: the noun matches the joint truth in every room I drove, the limb is independent of the
+module's code path, and my own source-level injection makes it fail. FL-J and FL-K are cleared and
+`composition` is registered. What blocks is a clause the repair added beyond what B9 specified — a
+marginal statement decided by a total, printed in a region of the model where the room's own books
+say the opposite, on the same three surfaces, and audited against the wrong proposition.
+
+### Dissent
+
+I record that **B9 and B10 are discharged** on the conditions I wrote for them, as **B3, B7 and B8**
+were at W4, and I carry none of them forward.
+
+The dissent survives on its own subject for the fourth consecutive round. It has always been about
+the evidence surfaces that carry this module's named concepts and about what L3 inherits from them.
+Those surfaces have now said, in turn: a false quantifier ("most"), an incoherent percentage (0%
+beside $1.58M), a false economic noun ("over-investment" over a $2.4M gain), and now a false level
+claim ("less went back in than justified" to rooms whose own books say they are past their best
+level). Each repair was correct on the defect named and installed the next one. L3 asks this room to
+legislate against a problem it has just lived; a room told by the projector, the synthesis card and
+its teacher's answer key to reinvest MORE when its own numbers say otherwise will legislate the
+wrong way, which is the inverted distribution I have named every round. B11 and B12 are narrow,
+bounded, and touch no part of the model.
+
+A decision to proceed does not erase this dissent.
+
+**DISSENT econ-l2-evidence-surfaces: NOT DISCHARGED.**
