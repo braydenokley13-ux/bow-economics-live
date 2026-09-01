@@ -1273,6 +1273,12 @@ export type RoundSummary = {
   median: number;
   conditionYes: number;
   submitted: number;
+  /** Live desks that put no number in this round — a true abstention. */
+  abstained: number;
+  /** Desks inside +/-ADOPT_BAND of the middle number, and how many are needed. */
+  inBand: number;
+  needed: number;
+  liveDesks: number;
 };
 
 export type PotFlowRow = {
@@ -1294,8 +1300,17 @@ export type ReinvestEraRow = {
   deskHandle: string;
   deskNumber: number;
   sizeLabel: string;
+  /** Dial positions. NOT like-for-like across the two lessons — see below. */
   l2: number | null;
   l3: number;
+  /**
+   * The like-for-like pair (econ B3/F3). The L2 dial spends a share of DOOR
+   * MONEY, the L3 dial a share of LOCAL REVENUE (door money + local media), so
+   * the same dollars read up to 1.95x apart as percentages. Every before/after
+   * comparison the lesson prints is computed on these two figures instead.
+   */
+  l2Dollars: number | null;
+  l3Dollars: number;
 };
 
 export type ArrowRow = {
@@ -1336,33 +1351,52 @@ export type WriteRuleAggregate = {
   l2Mean: number | null;
   l3Mean: number;
   arrows: ArrowRow[];
+  /**
+   * The same arrows recomputed at `arrowsWouldMoveShare` — used only when the
+   * rule in force moved nothing, so the reveal can teach the branch it actually
+   * landed on ("the room kept the old rule; here is what would have moved").
+   */
+  arrowsWouldMove: ArrowRow[];
+  arrowsWouldMoveShare: number;
+  arrowsMovedAny: boolean;
   counterfactual: CounterfactualRow[];
   counterfactualShare: number;
   rookieSlot: number | null;
   weeksPlayed: number;
+  l2MeanDollars: number | null;
+  l3MeanDollars: number;
 };
 
 const sizeLabelOf = (club: Club): string => profileOf(club).sizeLabel;
 
 export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
-  const rounds: RoundSummary[] = state.closedRounds.map((r) => ({
-    round: r.round,
-    bins: binsFrom(r.shares),
-    median: r.median,
-    conditionYes: r.conditions.filter(Boolean).length,
-    submitted: r.shares.length,
-  }));
-  const liveShares = live.map((c) => c.proposal?.share).filter((s): s is number => typeof s === "number");
+  const summarise = (round: number, shares: (number | null)[], conditions: (boolean | null)[], liveDesks: number): RoundSummary => {
+    const voted = shares.filter((s): s is number => s !== null);
+    const median = voted.length > 0 ? snapShare(medianOf(voted)) : STATUS_QUO_SHARE;
+    const rawMedian = voted.length > 0 ? medianOf(voted) : STATUS_QUO_SHARE;
+    return {
+      round,
+      bins: binsFrom(voted),
+      median,
+      conditionYes: conditions.filter((c) => c === true).length,
+      submitted: voted.length,
+      abstained: Math.max(0, liveDesks - voted.length),
+      // The live gauge the room never had: how many desks would pass right now.
+      inBand: voted.filter((s) => Math.abs(s - rawMedian) <= ADOPT_BAND + 1e-9).length,
+      needed: Math.ceil((liveDesks * ADOPT_NUMERATOR) / ADOPT_DENOMINATOR),
+      liveDesks,
+    };
+  };
+  const rounds: RoundSummary[] = state.closedRounds.map((r) => summarise(r.round, r.shares, r.conditions, r.shares.length));
   const liveRound: RoundSummary | null =
-    state.stage === "rounds" && liveShares.length > 0
-      ? {
-          round: state.roundIndex + 1,
-          bins: binsFrom(liveShares),
-          median: snapShare(medianOf(liveShares)),
-          conditionYes: live.filter((c) => c.proposal?.condition).length,
-          submitted: liveShares.length,
-        }
+    state.stage === "rounds"
+      ? summarise(
+          state.roundIndex + 1,
+          live.map((c) => c.proposal?.share ?? null),
+          live.map((c) => c.proposal?.condition ?? null),
+          live.length,
+        )
       : null;
 
   const potFlows: PotFlowRow[] = live.map((c): PotFlowRow => {
@@ -1390,14 +1424,29 @@ export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
     sizeLabel: sizeLabelOf(c),
     l2: c.l2Reinvest,
     l3: c.weeks.length > 0 ? c.weeks.reduce((a, w) => a + w.reinvest, 0) / c.weeks.length : c.reinvest,
+    l2Dollars: c.l2ReinvestDollars,
+    l3Dollars: c.weeks.length > 0 ? c.weeks.reduce((a, w) => a + w.reinvestSpend, 0) / c.weeks.length : 0,
   }));
   const l3Mean = reinvestEra.length > 0 ? reinvestEra.reduce((a, r) => a + r.l3, 0) / reinvestEra.length : 0;
   const l2Rows = reinvestEra.filter((r) => r.l2 !== null);
   const l2Mean = l2Rows.length > 0 ? l2Rows.reduce((a, r) => a + (r.l2 ?? 0), 0) / l2Rows.length : state.l2MeanReinvest;
+  const l3MeanDollars = reinvestEra.length > 0 ? reinvestEra.reduce((a, r) => a + r.l3Dollars, 0) / reinvestEra.length : 0;
+  const dollarRows = reinvestEra.filter((r) => r.l2Dollars !== null);
+  const l2MeanDollars = dollarRows.length > 0 ? dollarRows.reduce((a, r) => a + (r.l2Dollars ?? 0), 0) / dollarRows.length : null;
 
   const arrows: ArrowRow[] = live.map((c) => arrowFor(state, c));
+  const arrowsMovedAny = arrows.some((a) => a.reinvestSteps > 0 || a.priceSteps > 0);
+  // BC-1's payload is null at the modal outcome (status quo 5%), where nothing
+  // moves. Rather than ask the room a question its own frame refutes, the reveal
+  // teaches THAT branch: here is the rule you kept, and here is what would have
+  // moved. Same instrument, same brute force, a share the room actually named.
+  const wouldMoveShare = state.adopted && state.adopted.runnerUp > state.adopted.share ? state.adopted.runnerUp : REAL_RULE_SHARE;
+  const arrowsWouldMove: ArrowRow[] =
+    !arrowsMovedAny && arrows.length > 0 && state.adopted
+      ? live.map((c) => arrowFor({ ...state, adopted: hypotheticalRule(wouldMoveShare, state.adopted!.condition) }, c))
+      : [];
 
-  const cfShare = state.adopted?.runnerUp ?? STATUS_QUO_SHARE;
+  const cfShare = state.adopted?.runnerUp ?? REAL_RULE_SHARE;
   const counterfactual: CounterfactualRow[] = state.counterfactualRun ? counterfactualRows(state, cfShare) : [];
 
   return {
@@ -1424,10 +1473,15 @@ export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
     l2Mean,
     l3Mean,
     arrows,
+    arrowsWouldMove,
+    arrowsWouldMoveShare: wouldMoveShare,
+    arrowsMovedAny,
     counterfactual,
     counterfactualShare: cfShare,
     rookieSlot: state.rookieSlot,
     weeksPlayed: state.weekIndex,
+    l2MeanDollars,
+    l3MeanDollars,
   };
 }
 
@@ -1576,8 +1630,31 @@ export const ADOPT_COPY =
 export const STATUS_QUO_COPY =
   "You could not agree. Real leagues have that problem too, and this is a legitimate outcome, not a failure. The old rule holds — 5% — and we are about to find out what not agreeing costs.";
 
-export const SEASON_COPY =
+/** The league office's arm needs its own script, not the status quo's (projector B3). */
+export const LEAGUE_OFFICE_COPY =
+  "The league office's rule is in force at SHARE 30% · CONDITION ON. This room did NOT write it, the old 5% rule does NOT hold, and nobody here voted for what is about to happen. Say that plainly — a rule you did not write is still a rule you live under, and that is worth more at the debrief than a rule they chose.";
+
+/** What the season is, per arm. The failed-vote room did not write a rule. */
+export const SEASON_COPY_VOTED =
   "Three weeks under your own rule. Same building, same dials, same league. The only thing that changed is the rule you wrote.";
+export const SEASON_COPY_STATUS_QUO =
+  "Three weeks under the old rule — the one that was already there, because this room could not agree on a new one. Same building, same dials, same league. Nothing about the rule changed, and that is the result you are about to live in.";
+export const SEASON_COPY_LEAGUE_OFFICE =
+  "Three weeks under the league office's rule. Same building, same dials, same league. This room did not write this one — somebody else did, and you play under it anyway.";
+
+export const seasonCopyFor = (how: AdoptedRule["how"] | undefined): string =>
+  how === "voted" ? SEASON_COPY_VOTED : how === "leagueOffice" ? SEASON_COPY_LEAGUE_OFFICE : SEASON_COPY_STATUS_QUO;
+
+/** The closing frame, per arm. A failed vote is not "your rule" (gate-l3-play repair 4). */
+export const completeTitleFor = (how: AdoptedRule["how"] | undefined): string =>
+  how === "voted" ? "YOUR RULE" : how === "leagueOffice" ? "THE RULE YOU PLAYED UNDER" : "THE RULE THAT HELD";
+
+export const completeCopyFor = (how: AdoptedRule["how"] | undefined): string =>
+  how === "voted"
+    ? "Your rule is the artifact you keep. Write it on the board next to the real league's, and argue about it again in a year."
+    : how === "leagueOffice"
+      ? "You did not write this one — the league office did, because the room ran out of road. Write it on the board next to the rule you were arguing for, and argue about it again in a year."
+      : "You could not agree, so the old rule held. That is the artifact you keep, and it is a real result: write the number you WERE arguing for on the board next to it, and argue about it again in a year.";
 
 export const ROOKIE_COPY =
   "The rookie has landed. In this league the pick went to the club with the least money in the bank after week 1. That is NOT how the real league does it: the NBA uses a lottery precisely so that losing is never a guaranteed reward — since 2019 the three worst records each have a 14.0% chance at the first pick, and the worst record has no guarantee at all.";
@@ -1588,12 +1665,43 @@ export const COUNTERFACTUAL_HONESTY =
   "We can show you what the money would have done. We cannot show you what you would have done. That is why we played it instead of arguing about it.";
 
 export const ARGUE_COPY =
-  "January 2013. The Maloof family agrees to sell the Sacramento Kings to a Seattle group led by Chris Hansen and Steve Ballmer, who plan to move the club and bring back the SuperSonics — Seattle lost the Sonics to Oklahoma City in 2008 after a public-money fight. Sacramento's mayor puts together a rival bid under Vivek Ranadive with a downtown arena plan. Seattle's offer is worth more money. You are the Board of Governors. You vote on the two term sheets in front of you.";
+  "January 2013. The Maloof family agrees to sell the Sacramento Kings to a Seattle group led by Chris Hansen and Steve Ballmer — Ballmer had just run Microsoft and would buy the Clippers a year later — who plan to move the club and bring back the SuperSonics. Seattle lost the Sonics to Oklahoma City in 2008 after a public-money fight. Sacramento's mayor puts together a rival bid under Vivek Ranadive with a downtown arena plan. You are the Board of Governors. Read both term sheets before you vote. Some of you may already know how this ended — vote what you would have voted in that room in 2013, and be ready to defend it either way.";
 
 export const ARGUE_PROMPT = "Approve the sale and the move to Seattle, or deny it and keep the club in Sacramento?";
 
+/** SR A2: the two bids, on the student device and on the projector, with dates. */
+export type TermSheet = { id: string; city: string; headline: string; lines: string[] };
+
+export const TERM_SHEETS: readonly TermSheet[] = [
+  {
+    id: "seattle",
+    city: "SEATTLE — Hansen / Ballmer",
+    headline: "$625M valuation",
+    lines: [
+      "$409M in cash for the Maloof family's 65% of the club.",
+      "The club relocates. The SuperSonics name comes back to a city that lost its team in 2008.",
+      "A new arena in Seattle, privately financed by the buying group.",
+      "This is the higher offer. Every owner in the room owns a club that could be moved one day too.",
+    ],
+  },
+  {
+    id: "sacramento",
+    city: "SACRAMENTO — Ranadive",
+    headline: "$534M valuation",
+    lines: [
+      "A then-record price for an NBA franchise — and about $91M less than Seattle put up.",
+      "The club stays. A new arena goes downtown instead of a move.",
+      "About $255M of CITY money goes into that arena, capped at 47.7% of its cost. Sacramento borrowed $273M in 2015 against roughly $18M of payments a year running to 2050.",
+      "The 27th-largest US television market keeps a club. Seattle, the 12th, does not get one.",
+    ],
+  },
+];
+
+export const ARGUE_TERM_SHEET_NOTE =
+  "Both figures are the reported 2013 valuations. Sacramento's public-money number is the city's own record, approved without a public vote.";
+
 export const ARGUE_REVEAL_COPY =
-  "On May 15, 2013 the owners voted 22-8 to deny the relocation. The Kings sold in Sacramento at a then-record $534M valuation and Golden 1 Center opened downtown in 2016. And it is not finished: as of summer 2026 Seattle is a frontrunner, with Las Vegas, in an NBA expansion process the commissioner says is on track for a determination by the end of 2026.";
+  "On May 15, 2013 the owners voted 22-8 to deny the relocation. Relocation only needed a simple majority — 16 of 30 — so the Seattle side lost by far more than the rule required. The Kings sold in Sacramento at a then-record $534M valuation and Golden 1 Center opened downtown in 2016, about $255M of it city money. And it is not finished: in March 2026 the Board of Governors voted 30-0 to formally explore expansion to Seattle and Las Vegas, and only those two, targeting 2028-29. That final vote needs 23 of the 30 owners, and as of September 2026 it has not happened.";
 
 export const EXIT_PROMPT =
   "Name one thing you did differently in the last three weeks than you did in the last lesson — and name the rule that made you do it.";
@@ -1602,7 +1710,7 @@ export const COMPLETE_COPY =
   "Your rule is the artifact you keep. Write it on the board next to the real league's, and argue about it again in a year.";
 
 export const HORIZON_LINE =
-  "One 'week' here stands for about a month of a real season. That compression is the one thing this lesson scales; the dollars are at real league scale and are modeled on real market differences, not measured from any club's books.";
+  "One 'week' here stands for about a month of a real season. The dollars are scaled DOWN from real league scale — roughly a twentieth — so a class can hold them; what is real is the PROPORTIONS between the gate, the local television money and the national check. The curves are modeled on real market differences, not measured from any club's books.";
 
 export const MODELED_DOLLARS_LINE =
   "These demand curves are MODELED on real market differences. They are not any club's actual measured demand. Buildings, capacities, market sizes and every dated figure on the board are real.";
@@ -1615,6 +1723,8 @@ export const HOUSE_RULES: readonly string[] = [
   "Then three weeks under whatever rule the room ends up with: set your price, set how much of the week's money you put back into the club.",
   "Your share of the pot arrives every week. So does everybody else's, out of yours.",
   "The national television check is the same for every club, every week, and the pot never touches it.",
+  "A desk that never puts a number in has abstained. It is not counted in the room's middle number — and it cannot be inside the ten-point band, so the two-thirds test counts it as a desk that did not back the rule.",
+  "If the condition is on and NO club meets it in a week, there is nobody to pay the docked half to, so it goes back to everybody. The condition can move money between clubs. It can never destroy it.",
 ];
 
 export const SOURCE_NOTES: readonly string[] = [
@@ -1622,9 +1732,9 @@ export const SOURCE_NOTES: readonly string[] = [
   "2024-25 luxury tax: about $456M paid by ten clubs; the Suns paid the most at about $152M; each of the twenty non-tax clubs received about $11.4M. 2026-27 lines: tax $200.428M, first apron $209.015M, second apron $221.686M.",
   "Revenue sharing: in one leaked league year (2016-17 reporting) 14 of 30 clubs lost money before revenue sharing and 9 after; Memphis received about $32M, the league's most; the Lakers still cleared about $115M after paying in. In 2021-22 ten high-revenue clubs paid $163.6M into the pool, with the Warriors and Lakers alone over $88M of it.",
   "Green Bay Packers FY2025, reported July 2026: $453.2M per club in shared national revenue, up 4.8%; total Packers revenue $719M; metro population about 320,000 — and the same record-revenue report showed an operating loss.",
-  "Sacramento: the owners voted 22-8 on May 15, 2013 to deny relocation; the club sold at a then-record $534M valuation; Golden 1 Center opened 2016. Seattle lost the Sonics to Oklahoma City in 2008; Climate Pledge Arena was later rebuilt with about $1.15B of private money. Milwaukee approved about $250M of public money in 2015 under a relocation threat and won the 2021 title.",
+  "Sacramento: the owners voted 22-8 on May 15, 2013 to deny relocation; relocation is decided by a simple majority of the Board of Governors (16 of 30), not by a supermajority. The Hansen/Ballmer group raised to a $625M valuation ($409M for the Maloofs' 65%); the Ranadive group bought at a then-record $534M. Golden 1 Center opened 2016; the Sacramento City Council approved about $255M in land and cash toward it (capped at 47.7% of the $534.6M cost) without a public vote, and the city issued $273M of bonds in August 2015 against roughly $18M a year running to 2050. Seattle lost the Sonics to Oklahoma City in 2008; Climate Pledge Arena was later rebuilt with about $1.15B of private money. Milwaukee approved about $250M of public money in 2015 under a relocation threat and won the 2021 title.",
   "NBA draft lottery: since the 2019 reform the three worst records each hold a 14.0% chance at the first pick.",
-  "As of summer 2026 the league has 30 clubs; Seattle and Las Vegas are in an expansion process the commissioner says is on track for a determination by the end of 2026.",
+  "Expansion, as of 2026-09-01 and due a re-check every term: in March 2026 the Board of Governors voted 30-0 to formally explore expansion to Seattle and Las Vegas exclusively, targeting 2028-29, with PJT Partners advising; a final vote requires 23 of 30 governors and had not been taken as of 2026-09-01. In July 2026 the commissioner said the process was on track for a determination by year end. The league still has 30 clubs.",
 ];
 
 export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string }[] = [
@@ -1646,7 +1756,7 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
   {
     what: "The league office's fallback rule is a 30% share with the condition on.",
     why: "The teacher needs a real rule to operate if the room cannot write one or the period runs short.",
-    risk: "It is MODELED on the NBA's design (a percentage of local revenue into an equally split pool, with conditions attached), not a quotation of the real rate, which is not public.",
+    risk: "It is MODELED on the NBA's design — a percentage of local revenue into an equally split pool, with ELIGIBILITY conditions attached. The real conditions turn on market size and on performance rules for receiving clubs, not on a reinvestment floor; our CONDITION dial is ours. The plan's exact terms are not published; the design is widely reported as roughly half of each club's net local revenue.",
   },
   {
     what: "Sharing is a TRANSFER with a real cost to the payer. This lesson never claims that a big market's own money is better off under a high share.",
@@ -1657,6 +1767,16 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     what: "Revenue is never profit anywhere in this lesson, and the module never claims it is.",
     why: "Every number here is money in, before what a club owes anybody.",
     risk: "'More revenue = better run' is the false lesson. The Packers' record-revenue-with-an-operating-loss line is on the board in synthesis for exactly this reason.",
+  },
+  {
+    what: "Three weeks is too short a horizon to price what a rule costs, and this lesson says so rather than hiding it.",
+    why: "Inside three weeks the money a club SAVES by putting less back is bigger than the gate it loses, so the league's total bank balance actually RISES with the share. The cost lands in Draw, next season, and this lesson never prices a point of Draw in dollars on any student surface.",
+    risk: "A room reading only its own bank balances can conclude that high sharing made this league richer. It did not — it moved the bill to a season we do not play. Say the horizon out loud at CONSEQUENCE; it is on the board there.",
+  },
+  {
+    what: "The Lesson 2 and Lesson 3 reinvest dials share a scale and not a base, so the before/after bar is drawn in DOLLARS, not in dial percentages.",
+    why: "Lesson 2 spends a share of door money; Lesson 3 spends a share of local revenue, which also includes local television. The same dollars read up to 1.95x apart as percentages, so a percentage-point 'effort fell by Z' sentence would be a units artifact dressed up as behaviour.",
+    risk: "If a future pass reintroduces a percentage-point comparison across the two lessons, it will be measuring the bases, not the room.",
   },
 ];
 
@@ -1680,29 +1800,54 @@ export function adoptionLineClaimed(agg: WriteRuleAggregate): Claimed {
       claims: [share, condition, office],
     };
   }
+  // Abstention honesty on the board tally: a desk with no number in is named as
+  // an abstention, never folded into the median as a 5% nobody proposed.
+  const lastRound = agg.rounds.length > 0 ? agg.rounds[agg.rounds.length - 1]! : null;
+  const abstained = lastRound ? lastRound.abstained : 0;
+  const abstainAtom = claim("adopted-abstained", abstained, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: rule.liveDesks } });
+  const abstainText =
+    abstained > 0
+      ? ` ${abstainAtom.rendered} desk${abstained === 1 ? "" : "s"} put no number in at all — an abstention counts in the two-thirds, and it can never be inside the band.`
+      : "";
   const text =
     rule.how === "voted"
-      ? `${passed.rendered} — SHARE ${share.rendered} · ${condition.rendered}. ${supporting.rendered} of ${desks.rendered} desks landed inside ten points of the room's middle number.`
-      : `${passed.rendered} — the old rule holds at SHARE ${share.rendered} · ${condition.rendered}. Only ${supporting.rendered} of ${desks.rendered} desks landed inside ten points of the middle number, and two-thirds were needed.`;
-  return { text, claims: [share, supporting, desks, passed, condition] };
+      ? `${passed.rendered} — SHARE ${share.rendered} · ${condition.rendered}. ${supporting.rendered} of ${desks.rendered} desks landed inside ten points of the room's middle number.${abstainText}`
+      : `${passed.rendered} — the old rule holds at SHARE ${share.rendered} · ${condition.rendered}. Only ${supporting.rendered} of ${desks.rendered} desks landed inside ten points of the middle number, and two-thirds were needed.${abstainText}`;
+  return { text, claims: abstained > 0 ? [share, supporting, desks, passed, condition, abstainAtom] : [share, supporting, desks, passed, condition] };
 }
 
+/**
+ * The before/after bar, drawn in DOLLARS A WEEK.
+ *
+ * econ B3/F3: the two lessons' reinvest dials share a scale (0-40 in 5s) and NOT
+ * a base — L2 spends a share of door money, L3 a share of local revenue, which
+ * differ by up to 1.95x per club and by 62.5% league-wide. A room that put back
+ * the identical dollars in both lessons read 38.5% lower on the L3 dial, and the
+ * module then called that difference "effort went down" and named it moral
+ * hazard. The comparison is now made on the only figure the two lessons share:
+ * what each club actually SPENT, per week.
+ */
 export function reinvestEraLineClaimed(agg: WriteRuleAggregate): Claimed {
   const l3 = claim("era-l3-mean", agg.l3Mean, "percent1", { assertsSign: "nonNegative", bounds: { min: 0, max: REINVEST_MAX } });
-  if (agg.l2Mean === null) {
+  const l3d = claim("era-l3-dollars", agg.l3MeanDollars, "money", { assertsSign: "nonNegative" });
+  if (agg.l2MeanDollars === null) {
     const word = claimWord("era-no-l2", "no Lesson 2 numbers", true);
     return {
-      text: `This room put back ${l3.rendered} of its money, on average, across three weeks under its own rule. There are ${word.rendered} linked to this session, so the before-and-after bar has one bar in it.`,
-      claims: [l3, word],
+      text: `This room put back ${l3d.rendered} a week on average — ${l3.rendered} of what came through its doors — across three weeks under its own rule. There are ${word.rendered} linked to this session, so the before-and-after bar has one bar in it. Use the rule's own before-and-after instead: the arrows at stage 4.`,
+      claims: [l3, l3d, word],
     };
   }
-  const l2 = claim("era-l2-mean", agg.l2Mean, "percent1", { assertsSign: "nonNegative", bounds: { min: 0, max: REINVEST_MAX } });
-  const delta = agg.l3Mean - agg.l2Mean;
-  const deltaAtom = claim("era-delta", Math.abs(delta), "percent1", { assertsSign: "nonNegative" });
-  const direction = claimWord("era-direction", delta < -0.05 ? "went down" : delta > 0.05 ? "went up" : "did not move", delta < -0.05);
+  const l2d = claim("era-l2-dollars", agg.l2MeanDollars, "money", { assertsSign: "nonNegative" });
+  const delta = agg.l3MeanDollars - agg.l2MeanDollars;
+  const deltaAtom = claim("era-delta-dollars", Math.abs(delta), "money", { assertsSign: "nonNegative" });
+  const direction = claimWord(
+    "era-direction",
+    delta < -1 ? "went down" : delta > 1 ? "went up" : "did not move",
+    delta < -1,
+  );
   return {
-    text: `Last lesson this room put back ${l2.rendered} of its money, with no rule at all. Under the rule you wrote, it put back ${l3.rendered}. Effort ${direction.rendered} by ${deltaAtom.rendered}.`,
-    claims: [l2, l3, deltaAtom, direction],
+    text: `Last lesson this room put back ${l2d.rendered} a week into its own clubs, with no rule at all. Under the rule you wrote, it put back ${l3d.rendered} a week. Effort ${direction.rendered} by ${deltaAtom.rendered} a week. Both figures are DOLLARS, because the two lessons' dials are percentages of different money.`,
+    claims: [l2d, l3d, deltaAtom, direction],
   };
 }
 
@@ -1711,6 +1856,32 @@ export function reinvestEraLineClaimed(agg: WriteRuleAggregate): Claimed {
  * not, with the reason attached. Every figure here is brute-forced through the
  * shipped settlement, so this sentence cannot say anything the model does not do.
  */
+/**
+ * WHY THE FLAT ARROW IS FLAT — the sentence the frame never said.
+ *
+ * gate-l3-play repair 5: the arrows rendered and the economics did not. "Why
+ * didn't New York move?" was asked implicitly by the title and answered nowhere,
+ * so the module's signature beat was a teacher-transfer dependency rather than a
+ * playable one. This is computed from the same rows the frame draws, names the
+ * desks it is about, and is printed BESIDE the arrows on the projector and on
+ * every desk's own lens.
+ */
+export function arrowWhyLine(agg: WriteRuleAggregate): string {
+  const rows = agg.arrows;
+  if (rows.length === 0) return "";
+  const full = rows.filter((r) => r.priceSteps === 0 && r.soldOut);
+  const flat = rows.filter((r) => r.priceSteps === 0);
+  const movedPrice = rows.filter((r) => r.priceSteps > 0);
+  if (movedPrice.length === 0 && flat.length === rows.length) {
+    return "Nobody's best price moved. A rule this small takes too little of each extra dollar to change what a seat is worth — and the buildings that fill could not have moved anyway, because you cannot discount a seat you do not have.";
+  }
+  if (full.length === 0) {
+    return `${movedPrice.length} club${movedPrice.length === 1 ? "" : "s"} could sell more seats by charging less, so the rule moved what a seat is worth to them. The flat rows are already selling everything the tax touches, so there is nothing for a cheaper seat to buy.`;
+  }
+  const names = full.slice(0, 2).map((r) => r.deskHandle).join(" and ");
+  return `${names} ${full.length === 1 ? "sold" : "sold"} every seat in the building at that price. You cannot discount a seat you do not have, so a tax on what you sell cannot move a number that is already capped. The clubs with empty seats CAN sell more by charging less, and that is why their arrows moved and these did not.`;
+}
+
 export function arrowLineClaimed(agg: WriteRuleAggregate): Claimed {
   const rows = agg.arrows;
   if (rows.length === 0 || !agg.adopted) return { text: "The arrows are drawn once a rule is in force and a week is on the books.", claims: [] };
@@ -1725,6 +1896,25 @@ export function arrowLineClaimed(agg: WriteRuleAggregate): Claimed {
   const flatCount = claim("arrow-flat-price-count", flat.length, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: rows.length } });
   const priceMovedCount = claim("arrow-moved-price-count", movedPrice.length, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: rows.length } });
   const anyFlat = claimWord("arrow-any-flat-price", "did not move at all", flat.length > 0);
+  // The status-quo branch is the modal outcome (econ F1: 71% of proposal
+  // profiles), and at 5% NOTHING moves. Saying "fell from 15% to 15% — 0 clicks"
+  // over a null instrument is not a beat; the honest beat is the rule the room
+  // kept, plus what the number it argued about would have done.
+  if (!agg.arrowsMovedAny) {
+    const wouldRows = agg.arrowsWouldMove;
+    const wouldMoved = wouldRows.filter((r) => r.reinvestSteps > 0);
+    const wouldBiggest = [...wouldRows].sort((a, b) => b.reinvestSteps - a.reinvestSteps)[0] ?? null;
+    const heldWord = claimWord("arrow-nothing-moved", "did not move a single dial", true, "clicks of the dial");
+    const cfShareAtom = claim("arrow-would-share", agg.arrowsWouldMoveShare, "percent", { assertsSign: "nonNegative", bounds: { min: SHARE_MIN, max: SHARE_MAX } });
+    const wouldCount = claim("arrow-would-move-count", wouldMoved.length, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: rows.length } });
+    const wouldSteps = claim("arrow-would-biggest-steps", wouldBiggest ? wouldBiggest.reinvestSteps : 0, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: REINVEST_GRID.length - 1 } });
+    return {
+      text:
+        `The rule this room ended up with ${heldWord.rendered}. The best price and the best thing to put back are exactly where they were with no rule at all, at all ${rows.length} desks. ` +
+        `At ${cfShareAtom.rendered} — the number this room argued about and did not pass — ${wouldCount.rendered} of ${rows.length} desks would have moved, the biggest by ${wouldSteps.rendered} clicks of the dial. That is what the room decided not to do.`,
+      claims: [heldWord, cfShareAtom, wouldCount, wouldSteps],
+    };
+  }
   return {
     text:
       `Under this rule the best thing to put back into ${biggest.deskHandle} fell from ${fromAtom.rendered} to ${toAtom.rendered} — ${stepsAtom.rendered} clicks of the dial. ` +
@@ -1740,11 +1930,16 @@ export function potLineClaimed(agg: WriteRuleAggregate): Claimed {
   const receivers = agg.potFlows.filter((f) => f.net > 0);
   const payerCount = claim("pot-payers", payers.length, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: agg.potFlows.length } });
   const receiverCount = claim("pot-receivers", receivers.length, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: agg.potFlows.length } });
-  const biggestNet = [...agg.potFlows].sort((a, b) => b.net - a.net)[0];
+  // projector B4: this line used to name the desk with the biggest swing on the
+  // same frame that promises "No desk's money is ever ranked on this screen."
+  // The magnitude is the teaching object; the name was the ranking. The name
+  // goes, the promise stays, and the per-desk table at stage 3 is still in desk
+  // order and still attributed, exactly as the privacy line describes.
+  const biggestNet = [...agg.potFlows].sort((a, b) => Math.abs(b.net) - Math.abs(a.net))[0];
   const bigAtom = claim("pot-biggest-net", biggestNet ? Math.abs(biggestNet.net) : 0, "money", { assertsSign: "nonNegative" });
   const word = claimWord("pot-two-sided", "paid more in than they took out", payers.length > 0);
   return {
-    text: `${total.rendered} went through the pot over three weeks. ${payerCount.rendered} desks ${word.rendered}; ${receiverCount.rendered} took out more than they put in. The biggest single swing was ${bigAtom.rendered}${biggestNet ? ` at ${biggestNet.deskHandle}` : ""}.`,
+    text: `${total.rendered} went through the pot over three weeks. ${payerCount.rendered} desks ${word.rendered}; ${receiverCount.rendered} took out more than they put in. The biggest single swing at any one desk was ${bigAtom.rendered} — find your own row in the table and see whose it was.`,
     claims: [total, payerCount, receiverCount, bigAtom, word],
   };
 }
@@ -1820,18 +2015,27 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
   /* --- C6 revenue sharing: both halves --- */
   {
     const pot = potLineClaimed(agg);
+    // econ B7, the summit ruling: the payers really did end worse off, no
+    // arithmetic in this lesson makes them whole, and the counter is an argument
+    // owners actually have rather than a sum the class can settle. The card says
+    // all of that in the room's own numbers instead of leaving it in the ledger.
+    const payers = agg.potFlows.filter((f) => f.net < 0);
+    const worstPayer = [...payers].sort((a, b) => a.net - b.net)[0] ?? null;
+    const transferTruth = worstPayer
+      ? `REDISTRIBUTION IS A TRANSFER, NOT A FREE LUNCH. ${payers.length} desk${payers.length === 1 ? "" : "s"} in this room ended the three weeks down on the pot, the worst by ${money(Math.abs(worstPayer.net))}, and nothing in this lesson's arithmetic gives it back. That is what a transfer is.`
+      : "REDISTRIBUTION IS A TRANSFER, NOT A FREE LUNCH. Nobody in this room ended down on the pot this time, which is a fact about the rule you wrote, not a fact about sharing.";
     cards.push({
       id: "revenue-sharing",
       title: "SHARING HELPED — AND HERE IS WHAT IT COST",
-      body: pot.text,
+      body: `${pot.text} ${transferTruth}`,
       rails: {
         rememberWhen:
           agg.potFlows.length > 0
             ? `Week 1, the moment the pot formed: money left ${agg.potFlows.filter((f) => f.net < 0).length} desks and came back out in equal portions to every club in the league, including the ones it had just left.`
             : "The week the pot formed and the money moved sideways across the room.",
-        ourClass: pot.text,
+        ourClass: `${pot.text} ${transferTruth} And the honest horizon: three weeks shows the transfer, but the cost of the effort that stopped lands in Draw, next season, which this lesson never prices in dollars.`,
         inSports:
-          "In one leaked league year 14 of 30 clubs lost money BEFORE revenue sharing and 9 after. Memphis received about $32M, the most in the league — and the Lakers still cleared about $115M after paying in. In 2021-22 ten clubs paid $163.6M into the pool, the Warriors and Lakers alone over $88M of it.",
+          "In the leaked 2016-17 league year 14 of 30 clubs lost money BEFORE revenue sharing and 9 after. Memphis received about $32M, the most in the league — and the Lakers still cleared about $115M after paying in. In 2021-22 ten clubs paid $163.6M into the pool, the Warriors and Lakers alone over $88M of it. The payers agree to it in a collectively bargained deal because there is no league to sell without 29 solvent opponents. They argue about it every time the deal comes up, and they are not being stupid either way.",
         economistsCall: "REVENUE SHARING. REDISTRIBUTION. And the cost half has a name too: MORAL HAZARD — when sharing takes away the reason to try.",
         outsideSports: "Tips pooled across a restaurant's whole staff. A group grade. Taxes. A chore jar with one sibling who has worked out that the jar pays either way.",
       },
@@ -1848,8 +2052,11 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
       title: "YOU DESIGNED AN INCENTIVE, THEN LIVED UNDER IT",
       body: `${era.text} ${arrows.text}`,
       rails: {
-        rememberWhen:
-          "The moment somebody in this room said out loud that there was no point trying to sell the building out any more. Nobody told them to feel that. The rule did.",
+        // econ B1: this rail scripted a memory the status-quo branch does not
+        // produce. It now names the moment the room's OWN result had.
+        rememberWhen: agg.arrowsMovedAny
+          ? "The moment somebody in this room worked out that trying harder had got cheaper to skip. Nobody told them to feel that. The rule did."
+          : "The moment the room could not agree, and the old rule held. Nothing about anybody's best move changed — which is also what a rule does when it is small enough.",
         ourClass: `${era.text} ${arrows.text}`,
         inSports:
           "The luxury tax is a price, not a wall: about $456M paid by ten clubs in 2024-25, the Suns the most at about $152M, and each of the twenty non-tax clubs receiving about $11.4M. Boston was never banned from spending. It was charged, and it chose.",
@@ -1873,8 +2080,13 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
             ? `Round ${agg.rounds.length}: the room's middle number was ${snapShare(agg.rounds[agg.rounds.length - 1]!.median)}%, and the desks nowhere near it had to decide whether to move.`
             : "The three rounds where the room's numbers came together, or did not.",
         ourClass: adoption.text,
+        // SR A1 (BLOCKING): the old rail asserted an NBA rule that does not
+        // exist — relocation is decided by a SIMPLE MAJORITY of the Board of
+        // Governors, 16 of 30 — and cited a vote governed by the opposite rule
+        // as its evidence. The real supermajority is current and checkable, and
+        // it sits on the same institution.
         inSports:
-          "Two-thirds is not a decoration. The pot is the big markets' money, so real leagues make the big markets be bought rather than outvoted — which is why owners' votes on money take supermajorities, and why the Sacramento vote on May 15, 2013 was 22-8 rather than 16-14.",
+          "Moving the Kings only needed a simple majority — 16 of the 30 owners — and it still lost 22-8 on May 15, 2013, so the Seattle side lost by far more than the rule required. The votes that add OWNERS are the ones that need a supermajority: expanding to 32 clubs takes 23 of the 30. In March 2026 those same owners voted 30-0 just to EXPLORE Seattle and Las Vegas. When money is being divided, leagues make the payers be bought rather than outvoted — which is the argument behind your own two-thirds.",
         economistsCall: "INSTITUTIONAL DESIGN. UNINTENDED CONSEQUENCE. The rule you write is a machine, and it keeps running after you leave the room.",
         outsideSports: "Every system you are inside — this class, this town, this country — was designed by somebody. It could have been designed differently, and that would have changed what people wanted to do.",
       },
@@ -1891,8 +2103,11 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
     const biggest = [...roadRows].sort((a, b) => b.given - a.given)[0];
     const givenAtom = claim("synth-road-given", biggest ? biggest.given : 0, "money", { assertsSign: "nonNegative" });
     const word = claimWord("synth-road-someone-else", "on somebody else's books", roadRows.length > 0);
+    // projector B4: the same privacy self-contradiction the pot line carried.
+    // The magnitude teaches; the desk name ranked one desk's money on a frame
+    // that promises no desk's money is ever ranked.
     const body = biggest
-      ? `${biggest.handle} put ${givenAtom.rendered} into other clubs' buildings over three weeks — money that landed ${word.rendered}, not theirs.`
+      ? `The club in this room whose name pulled hardest on the road put ${givenAtom.rendered} into OTHER clubs' buildings over three weeks — money that landed ${word.rendered}, not theirs.`
       : "No week has been played yet, so the road ledger is empty.";
     cards.push({
       id: "shared-product",
@@ -1902,7 +2117,11 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
         rememberWhen: "The week the rookie landed somewhere else and your building filled anyway — because of a club you do not run.",
         ourClass: body,
         inSports:
-          "LeBron James left Cleveland in 2010 and that club's ticket demand and franchise value cratered — and thirty other buildings felt it too. The national television deal is about $76B over eleven years, 2025-26 through 2035-36, split equally, and it is several times any one club's gate.",
+        // SR A3: "several times ANY one club's gate" is false for the biggest
+        // markets and is contradicted by this module's own printed Knicks
+        // figure. $76B / 11 years / 30 clubs is about $230M a club a year,
+        // against a record $193M Knicks gate in 2024-25 — 1.2x, not "several".
+          "LeBron James left Cleveland in 2010 and that club's ticket demand and franchise value cratered — and thirty other buildings felt it too. The national television deal is about $76B over eleven years, 2025-26 through 2035-36, split equally: about $230M a club a year. For a small-market club that is several times what it takes at the gate. For the biggest — the Knicks took a record $193M at the gate in 2024-25 — it is about the same money. That gap IS the market-size argument you just voted on.",
         economistsCall: "SHARED PRODUCT (joint product). SPILLOVER — an ECONOMIST would say EXTERNALITY.",
         outsideSports: "One great store that brings the whole mall its foot traffic. A street where one shop closing empties the block. A band that needs the other bands on the bill.",
       },
@@ -1917,14 +2136,24 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
     const national = rows.reduce((a, c) => a + c.weeks.length * NATIONAL, 0);
     const gateAtom = claim("synth-gate-total", gate, "money", { assertsSign: "nonNegative" });
     const natAtom = claim("synth-national-total", national, "money", { assertsSign: "nonNegative" });
-    const word = claimWord("synth-national-bigger", "more than the whole room took at the gate", national > gate);
+    // econ F2 (BLOCKING): this card asserted a comparative the model
+    // contradicts — reachable at six desks, the minimum league — while the
+    // audit could not see it. The comparative is now BRANCHED, and the concept
+    // is stated so it survives both branches: what you control least is what you
+    // control least, whether or not it happens to be the larger pile this week.
+    const nationalBigger = national > gate;
+    const word = claimWord(
+      "synth-national-bigger",
+      nationalBigger ? "more than the whole room took at the gate" : "and every dollar of it arrived whether this room sold a seat or not",
+      nationalBigger,
+    );
     const body =
       rows.length > 0
-        ? `This room sold ${gateAtom.rendered} of tickets in three weeks. The national television check, which nobody in this room set and the pot never touched, was ${natAtom.rendered} — ${word.rendered}.`
+        ? `This room sold ${gateAtom.rendered} of tickets in three weeks — every dollar of it decided by your dials, and taxed by your rule. The national television check, which nobody in this room set and the pot never touched, was ${natAtom.rendered} — ${word.rendered}.`
         : "No week has been played yet, so there is nothing to decompose.";
     cards.push({
       id: "composition",
-      title: "THE MONEY YOU CONTROL LEAST IS THE MONEY THAT PAYS YOU MOST",
+      title: "THE MONEY YOU ARGUED OVER IS NOT THE MONEY THAT PAYS YOU",
       body,
       rails: {
         rememberWhen: "The week you looked at what your price actually earned next to the check that arrived whatever you did.",
@@ -1954,7 +2183,7 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
           : "Your opening card today, and the spread across the league that you did not choose.",
         ourClass: body,
         inSports:
-          "Seattle refused public arena money in 2006 and lost the Sonics to Oklahoma City in 2008. Climate Pledge Arena was later rebuilt with about $1.15B of PRIVATE money, and as of summer 2026 Seattle is a frontrunner for expansion. Milwaukee approved about $250M of public money in 2015 under an explicit relocation threat, kept the Bucks, and won the 2021 title. Both cities' verdicts are still open.",
+          "Seattle refused public arena money in 2006 and lost the Sonics to Oklahoma City in 2008. Climate Pledge Arena was later rebuilt with about $1.15B of PRIVATE money — and in March 2026 the same Board of Governors that kept the Kings in Sacramento voted 30-0 to explore giving Seattle a club, targeting 2028-29. The owners have to vote again to finish it: 23 of the 30 have to say yes, and as of September 2026 they have not voted. Milwaukee approved about $250M of public money in 2015 under an explicit relocation threat, kept the Bucks, and won the 2021 title. Both cities' verdicts are still open.",
         economistsCall: "PATH DEPENDENCE. Where you can go next depends on where you have already been.",
         outsideSports: "The subject you picked in eighth grade. A town that built its highway one way in 1960. Nothing about today started today.",
       },
@@ -1966,13 +2195,16 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
   cards.push({
     id: "subsidy-coda",
     title: "WHO PAYS FOR THE BUILDING?",
+    // SR A4: the room voted on Sacramento twenty minutes ago, and the operative
+    // fact in that vote was $255M of city money. The old copy claimed nothing in
+    // the lesson was about public money, which the capstone contradicts.
     body:
-      "Nothing you played today was about public money — on purpose. But every arena in this league sits in a town that had to decide whether to help pay for it, and the mainstream economics finding is that stadium subsidies rarely pay off for the city that grants them.",
+      "You voted on public money today and may not have noticed. Sacramento's winning bid was about $255M of CITY money toward a downtown arena, borrowed in 2015 against payments running to 2050 — that is what beat a bid worth $91M more. Every arena in this league sits in a town that had to make that call, and the mainstream economics finding is that stadium subsidies rarely pay off for the city that grants them.",
     rails: {
-      rememberWhen: "Your building's weekly bill, on your own screen, every week — and the fact that somebody, somewhere, had to agree to build it.",
-      ourClass: "Every club in this league operated a building it did not have to pay to construct. That was a simplification, and this card is where we admit it.",
+      rememberWhen: "The Sacramento term sheet, and the line on it that said about $255M of it was the city's money.",
+      ourClass: "Every club in this league operated a building it did not have to pay to construct. That was a simplification, and this card is where we admit it — and where the vote you just cast turns out to have been about it anyway.",
       inSports:
-        "Seattle, 2006: no public money, no team by 2008. Milwaukee, 2015: about $250M of public money under an explicit relocation threat, and a title in 2021. Seattle rebuilt privately for about $1.15B and may get a club back anyway.",
+        "Seattle, 2006: no public money, no team by 2008. Milwaukee, 2015: about $250M of public money under an explicit relocation threat, and a title in 2021. Sacramento, 2013-16: about $255M of city money and the club stayed. Seattle rebuilt privately for about $1.15B and may get a club back anyway.",
       economistsCall: "PUBLIC SUBSIDY. OPPORTUNITY COST — the money a town spends on an arena is money it does not spend on something else.",
       outsideSports: "Any time a town gives up money to keep something it wants. Outcome is not decision quality, in both directions.",
     },
@@ -2025,15 +2257,102 @@ export function transferLineClaimed(row: PotFlowRow): Claimed {
   };
 }
 
-export function consequenceAnswerClaimed(state: WriteRuleState, agg: WriteRuleAggregate): Claimed {
+/**
+ * THE CONSEQUENCE BEAT — one atom set, one direction, one question.
+ *
+ * gate-l3-teacher B1 (blocking): the module printed a computed line saying
+ * "Effort went UP by 20%" and, one row below it in the same panel, directed the
+ * teacher to ask "Whose effort went DOWN?" with an answer key insisting the
+ * answer was "it stopped being worth it". A random competent teacher was being
+ * told, in writing and on the projector, to ask the class a question this
+ * class's own evidence refutes. The question and the line are now computed from
+ * the same place and cannot disagree: whichever way the room moved, the ASK
+ * moves with it, and the unlinked branch asks about the rule's own before/after
+ * instead of a lesson that was never linked (B2).
+ */
+export type ConsequenceBeat = {
+  direction: "down" | "up" | "flat" | "noL2";
+  question: string;
+  answer: string;
+  claimed: Claimed;
+};
+
+export function consequenceBeat(state: WriteRuleState, agg: WriteRuleAggregate): ConsequenceBeat {
   const era = reinvestEraLineClaimed(agg);
-  const dropped = agg.reinvestEra.filter((r) => r.l2 !== null && r.l3 < (r.l2 ?? 0) - 0.01).length;
+  const dollarRows = agg.reinvestEra.filter((r) => r.l2Dollars !== null);
+  const dropped = dollarRows.filter((r) => r.l3Dollars < (r.l2Dollars ?? 0) - 1).length;
+  const rose = dollarRows.filter((r) => r.l3Dollars > (r.l2Dollars ?? 0) + 1).length;
+  const delta = agg.l2MeanDollars === null ? 0 : agg.l3MeanDollars - agg.l2MeanDollars;
+  const direction: ConsequenceBeat["direction"] =
+    agg.l2MeanDollars === null ? "noL2" : delta < -1 ? "down" : delta > 1 ? "up" : "flat";
+
   const droppedAtom = claim("consequence-dropped-desks", dropped, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: agg.reinvestEra.length } });
-  const word = claimWord("consequence-nobody-decided", "nobody had to decide to try less", dropped > 0);
+  const roseAtom = claim("consequence-rose-desks", rose, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: agg.reinvestEra.length } });
+
+  if (direction === "noL2") {
+    // The unlinked room has no before-bar at all, and the module used to count
+    // desks against a lesson that did not exist. It has a perfectly good
+    // rule-driven before/after of its own: the arrows.
+    const word = claimWord("consequence-no-l2-instrument", "no Lesson 2 to measure against", true, "put back less than they did last lesson");
+    const question = agg.arrowsMovedAny
+      ? "Under this rule, what became the best thing to do with a dollar — and did anybody DECIDE that, or did it just stop being worth it?"
+      : "Under this rule, nothing about anybody's best move changed. Why not — and what would it have taken?";
+    return {
+      direction,
+      question,
+      answer:
+        "There is no Lesson 2 bar in this room, so do not fish for one. The evidence is the arrow frame you just put up: the best thing to put back, with the rule and without it, computed from this room's own three weeks.",
+      claimed: {
+        text: `${era.text} This session has ${word.rendered}, so the question below is asked about the rule's own before-and-after — the stage 4 arrows — and not about last lesson. Take three answers before you name anything.`,
+        claims: [...era.claims, word],
+      },
+    };
+  }
+  if (direction === "up") {
+    const word = claimWord("consequence-nobody-decided", "nobody had to decide to try harder", true);
+    return {
+      direction,
+      question: "Whose effort went UP — and what was it about the rule that paid you for it?",
+      answer:
+        "The honest answer is the CONDITION, if the room voted it in: it pays a club for putting money back, so putting money back got more valuable, not less. Nobody decided to care more. The rule made trying worth more. That is the same mechanism as moral hazard, running the other way — say so.",
+      claimed: {
+        text: `${era.text} ${roseAtom.rendered} desks put back MORE dollars a week than they did last lesson and ${droppedAtom.rendered} put back less — and ${word.rendered}. Ask the question, take the answers, and do not name the mechanism until somebody has described it.`,
+        claims: [...era.claims, droppedAtom, roseAtom, word],
+      },
+    };
+  }
+  if (direction === "flat") {
+    const word = claimWord("consequence-nobody-decided", "nobody had to decide anything", true);
+    return {
+      direction,
+      question: "The room put back about the same as last lesson. Did the rule change what you WANTED to do — or only what it cost you?",
+      answer:
+        "Both answers are defensible and the room should argue about it. The transfer moved money; the effort did not move much. That is a rule that redistributed without changing behaviour, which is a real and unusual outcome — name it as one.",
+      claimed: {
+        text: `${era.text} ${droppedAtom.rendered} desks put back fewer dollars a week than last lesson and ${roseAtom.rendered} put back more — and ${word.rendered}. Take three answers before you name anything.`,
+        claims: [...era.claims, droppedAtom, roseAtom, word],
+      },
+    };
+  }
+  const word = claimWord("consequence-nobody-decided", "nobody had to decide to try less", true);
   return {
-    text: `${era.text} ${droppedAtom.rendered} desks put back less than they did last lesson — and ${word.rendered}. Ask the question, take the answers, and do not name moral hazard until somebody has described it.`,
-    claims: [...era.claims, droppedAtom, word],
+    direction,
+    question: "Whose effort went down? Did anybody DECIDE to try less — or did it just stop being worth it?",
+    answer: "The answer you are fishing for is the second half: it stopped being worth it. Nobody decided anything.",
+    claimed: {
+      text: `${era.text} ${droppedAtom.rendered} desks put back fewer dollars a week than they did last lesson and ${roseAtom.rendered} put back more — and ${word.rendered}. Ask the question, take the answers, and do not name moral hazard until somebody has described it.`,
+      claims: [...era.claims, droppedAtom, roseAtom, word],
+    },
   };
+}
+
+export function consequenceAnswerClaimed(state: WriteRuleState, agg: WriteRuleAggregate): Claimed {
+  return consequenceBeat(state, agg).claimed;
+}
+
+/** The projector/desk question — the SAME atom set the answer key came from. */
+export function consequenceQuestionFor(state: WriteRuleState, agg: WriteRuleAggregate): string {
+  return consequenceBeat(state, agg).question;
 }
 
 export function revealMirrorClaimed(state: WriteRuleState, agg: WriteRuleAggregate): Claimed {
@@ -2070,20 +2389,31 @@ export function revealStagesFor(state: WriteRuleState): RevealStage[] {
       headline: `Every desk's own two numbers, side by side. ${BOARD_PRIVACY_LINE}`,
       say: "This is the column the room needs to attribute a gain. A desk that went up went up from the transfer, from its own dial, or from both — and now they can tell which.",
     },
+    // econ B1 / gate-l3-play repair 5: the stage-4 script used to direct the
+    // teacher to ask "why didn't the big market move?" even when NO desk was
+    // sold out and NOTHING had moved — a false-premise question at the module's
+    // designated peak, in its single most likely outcome. The beat now branches
+    // on what actually happened, and the WHY is on the frame either way.
     {
       stage: 4,
-      name: "The arrow that moved, and the one that did not",
+      name: agg.arrowsMovedAny ? "The arrow that moved, and the one that did not" : "The rule you kept, and what would have moved",
       headline: arrowLineClaimed(agg).text,
-      say: `Ask it in these words: "why didn't ${flatDeskName(agg) ?? "the big market"} move?" The answer is on their own screen — their building was already full, and you cannot discount a seat you do not have.`,
+      say: !agg.arrowsMovedAny
+        ? `Do NOT ask why a big market did not move — nothing moved, and the arithmetic is the payload here. Ask it in these words: "what would it have taken to change anybody's mind?" Then read the ${agg.arrowsWouldMoveShare}% column beside it: that is the rule this room argued about and did not pass, and those are the dials it would have moved. The room chose the quiet outcome, and this is what the quiet outcome costs.`
+        : flatDeskName(agg)
+          ? `Ask it in these words: "why didn't ${flatDeskName(agg)}'s PRICE move?" — name the price arrow, because that row's put-back arrow DID move and a student who says "but it did" is right. The answer is on the frame: their building was already full, and you cannot discount a seat you do not have.`
+          : `Ask it in these words: "why did some clubs' best price come down and others' not move at all?" The answer is on the frame: a club with empty seats can sell more by charging less; a club that sells out has nothing for a cheaper seat to buy.`,
     },
     {
       stage: 5,
       name: "What you changed about yourselves",
       headline: reinvestEraLineClaimed(agg).text,
       say:
-        rule && rule.share >= 25
-          ? "Nobody was told this would happen. Say that out loud before you say anything else."
-          : "A low share, so the second bar may barely move. That is the honest result of the rule this room wrote, and it is worth the same six words: nobody was told this would happen.",
+        agg.l2MeanDollars === null
+          ? "No Lesson 2 is linked, so this bar has one bar in it and you should say so plainly. The rule's own before-and-after is the frame you just left — use that instead, and do not fish for a fall that has nothing to be measured against."
+          : rule && rule.share >= 25
+            ? "Nobody was told this would happen. Say that out loud before you say anything else. Both figures are DOLLARS a week — the two lessons' dials are percentages of different money, so percentages would not be comparing the same thing."
+            : "A low share, so the second bar may barely move. That is the honest result of the rule this room wrote, and it is worth the same six words: nobody was told this would happen.",
     },
   ];
 }
@@ -2131,7 +2461,13 @@ function rehearsalWatchFor(phase: CanonicalPhase): WatchFlag[] {
       sample(
         "A BIG-MARKET desk arguing FOR sharing",
         ["Desk 1 · New York"],
-        "Pull that voice immediately. It is the whole lesson: sharing is not charity here, it pays the payer through the product. Do not say that sentence — make them say it.",
+        // econ F8 (BLOCKING): this sample used to train a first-time teacher to
+        // elicit "sharing pays the payer through the product" as "the whole
+        // lesson". SIMPLIFICATIONS entry 5 withdrew exactly that proposition —
+        // at the shipped constants every big market's own best share is 0%. The
+        // live `big-for-sharing` flag was already repaired; this was the stale
+        // copy, and the rehearsal panel is what a teacher reads BEFORE class.
+        "Pull that voice right now — it lands ten times harder from a student than from you. Ask only: why would you pay for that? Do not answer it for them, and do not tell them sharing pays the payer back. In this model it does not: the payers really do end worse off, and the counter is an argument the real owners have, not a sum this class can settle.",
         "now",
       ),
       sample(
@@ -2146,6 +2482,12 @@ function rehearsalWatchFor(phase: CanonicalPhase): WatchFlag[] {
         "Do not correct it. This is the moral-hazard beat arriving on its own, and you want it in their handwriting at CONSEQUENCE, not in yours now.",
         "later",
       ),
+      sample(
+        "The interior of PLAY is where this rehearsal has to go",
+        ["Close round 1 of 3", "Run the two-thirds test", "Close week 1"],
+        "Advance ▸ jumps STRAIGHT OUT of PLAY to REVEAL and skips the histogram, the two-thirds test, the adoption print, all three weeks, the week bell and the rookie card — about half the period. To rehearse those, press the three PLAY controls in order: the rule step three times, then once more for the two-thirds test, then once more to open the season, then the week bell three times. Only then advance.",
+        "now",
+      ),
     );
   }
   return flags;
@@ -2155,6 +2497,31 @@ export function teacherWatchFor(state: WriteRuleState, phase: CanonicalPhase): W
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
   if (live.length === 0) return rehearsalWatchFor(phase);
   const out: WatchFlag[] = [];
+
+  // gate-l3-teacher B4: a pair that arrives after the league closes must never
+  // be silent on this console again.
+  const observers = state.observerSeats ?? [];
+  if (observers.length > 0) {
+    out.push({
+      id: "late-observers",
+      label: `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the league closed and could not be given a club`,
+      desks: observers.map((_, i) => `Late pair ${i + 1}`),
+      action:
+        "Every club in this league is already being run. Seat them with a neighbouring desk and tell that desk they now have four people. Their own device says the same thing and shows them the rule in force, so they are not staring at a blank screen.",
+      urgency: "now",
+    });
+  }
+  const handed = live.filter((c) => c.handedOver).map(deskHandleFor);
+  if (handed.length > 0 && (phase === "PLAY" || phase === "HOOK")) {
+    out.push({
+      id: "handed-over",
+      label: "Took over a league-office club after the vote had started",
+      desks: handed,
+      action:
+        "They did not write this rule and their club's earlier weeks were played by the league office. Their own screen says so. Give them ten seconds on what the rule in force is before the next bell.",
+      urgency: "now",
+    });
+  }
 
   if (phase === "HOOK") {
     const undecided = live.filter((c) => c.hookPick === null).map(deskHandleFor);
@@ -2176,7 +2543,12 @@ export function teacherWatchFor(state: WriteRuleState, phase: CanonicalPhase): W
         id: "round-open",
         label: `${notIn.length} of ${live.length} desks have not put a number in this round`,
         desks: notIn,
-        action: "Close the round when you are ready. A desk with no number in counts as the old 5% rule for the median, and its own screen says so — nobody is skipped.",
+        // gate-l3-teacher B6: this line used to claim an affordance the desk did
+        // not have AND describe a rule the module no longer runs. Both halves
+        // are now true — the copy below is on the desk's own proposal screen,
+        // word for word, whenever it has no number in.
+        action:
+          "Close the round when you are ready. A desk with no number in has ABSTAINED: it is not counted in the room's middle number, and it cannot be inside the ten-point band, so the two-thirds test counts it as a desk that did not back the rule. Its own screen says exactly that. Nobody is skipped and nothing is invented for them.",
         urgency: "now",
       });
     }
@@ -2234,13 +2606,26 @@ export function teacherWatchFor(state: WriteRuleState, phase: CanonicalPhase): W
 
   if (phase === "CONSEQUENCE" || phase === "SYNTHESIS") {
     const agg = computeAggregate(state);
-    const dropped = agg.reinvestEra.filter((r) => r.l2 !== null && r.l3 < (r.l2 ?? 0) - 0.01);
+    // Dollars, not dial positions — the two lessons' dials are percentages of
+    // different money (econ B3).
+    const dropped = agg.reinvestEra.filter((r) => r.l2Dollars !== null && r.l3Dollars < (r.l2Dollars ?? 0) - 1);
+    const rose = agg.reinvestEra.filter((r) => r.l2Dollars !== null && r.l3Dollars > (r.l2Dollars ?? 0) + 1);
     if (dropped.length > 0) {
       out.push({
         id: "effort-down",
-        label: "Put back LESS this lesson than last lesson",
+        label: "Put back FEWER DOLLARS a week this lesson than last lesson",
         desks: dropped.map((r) => r.deskHandle),
         action: "These are the desks to ask first. The question is never 'why did you stop trying' — it is 'did you decide to try less, or did it just stop being worth it?'",
+        urgency: "now",
+      });
+    }
+    if (rose.length > 0) {
+      out.push({
+        id: "effort-up",
+        label: "Put back MORE DOLLARS a week this lesson than last lesson",
+        desks: rose.map((r) => r.deskHandle),
+        action:
+          "Ask these desks what paid them for it. If the room voted the CONDITION in, that is the answer, and it is the same mechanism as moral hazard running the other way. Do not let the discussion assume effort fell if this list is the longer one.",
         urgency: "now",
       });
     }
@@ -2263,7 +2648,8 @@ export function teacherWatchFor(state: WriteRuleState, phase: CanonicalPhase): W
         id: "kings-undecided",
         label: `${undecided.length} of ${live.length} desks have not voted on Sacramento`,
         desks: undecided,
-        action: "Both term sheets are on their screens with the numbers. Give them thirty seconds and reveal — an undecided desk still argues.",
+        action:
+          "Both term sheets are on their screens with the numbers on them — $625M from Seattle against $534M from Sacramento, and the ~$255M of city money in the Sacramento column. Give them thirty seconds and show the room's own tally; an undecided desk still argues.",
         urgency: "now",
       });
     }
@@ -2294,13 +2680,16 @@ function projectorMirror(state: WriteRuleState, phase: CanonicalPhase): { title:
       };
     case "PLAY": {
       if (state.stage === "rounds") {
+        const last = agg.rounds.length > 0 ? agg.rounds[agg.rounds.length - 1]! : null;
         return {
           title: `Round ${Math.min(state.roundIndex + 1, ROUND_COUNT)} of ${ROUND_COUNT} — writing the rule`,
           lines: [
             state.closedRounds.length === 0
               ? "The veil announcement and the two dials. NO histogram — round 1 is deliberately blind so nobody copies the room."
-              : `The anonymous histogram from round ${state.closedRounds.length}, unsorted, no names, no money, with the running middle number.`,
-            "Lock progress only. Nothing about anybody's club is on this screen.",
+              : `The anonymous histogram from round ${state.closedRounds.length}, unsorted, no names, no money, with the running middle number, the ten-point band drawn on it, and the live in-band count.`,
+            last
+              ? `On that histogram right now: ${last.inBand} of ${last.liveDesks} desks are inside the band and ${last.needed} are needed.${last.abstained > 0 ? ` ${last.abstained} abstained and cannot be inside it.` : ""}`
+              : "Lock progress only. Nothing about anybody's club is on this screen.",
           ],
         };
       }
@@ -2323,13 +2712,20 @@ function projectorMirror(state: WriteRuleState, phase: CanonicalPhase): { title:
       };
     }
     case "CONSEQUENCE":
-      return { title: "What you changed about yourselves", lines: [reinvestEraLineClaimed(agg).text, CONSEQUENCE_QUESTION] };
+      return { title: "What you changed about yourselves", lines: [reinvestEraLineClaimed(agg).text, consequenceQuestionFor(state, agg)] };
     case "COUNTERFACTUAL":
       return { title: "The rule you did not write", lines: [counterfactualLineClaimed(agg).text, COUNTERFACTUAL_HONESTY] };
     case "ARGUE":
       return {
         title: "SACRAMENTO, 2013 — the Board of Governors",
-        lines: [state.kingsRevealed ? kingsSplitLineClaimed(agg).text : "Both term sheets, no result. Nobody has seen the vote.", ARGUE_PROMPT],
+        lines: [
+          state.kingsRevealed
+            ? kingsSplitLineClaimed(agg).text
+            : state.kingsSplitShown
+              ? `This room's own tally is up, alone: ${agg.kingsSplit.deny} to deny, ${agg.kingsSplit.approve} to approve. The owners' 22-8 is NOT on the screen yet — let the room sit with its own verdict first.`
+              : "Both term sheets with their real figures, no result. Nobody has seen the vote — not even this room's own.",
+          ARGUE_PROMPT,
+        ],
       };
     case "SYNTHESIS":
       return {
@@ -2404,10 +2800,16 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
           minuteBudget: "8 min for all three rounds",
           now: [
             "Read the veil announcement TWICE, word for word: the rule binds two seasons, and next season one club in this room gets a rookie who moves buildings. Nobody knows which.",
-            `Round ${Math.min(state.roundIndex + 1, ROUND_COUNT)} of ${ROUND_COUNT}. ${submitted}/${live} desks have a number in.`,
+            `Round ${Math.min(state.roundIndex + 1, ROUND_COUNT)} of ${ROUND_COUNT}. ${submitted}/${live} desks have a number in THIS round — every desk starts each round with nothing in, so this counter is honest in rounds 2 and 3 as well.`,
             state.closedRounds.length === 0
               ? "Round 1 shows NO histogram. That is deliberate — a room that sees the median first writes the median, and then nobody has reasoned."
-              : "The histogram is up: anonymous, unsorted, no money, no names.",
+              : (() => {
+                  const last = agg.rounds[agg.rounds.length - 1]!;
+                  return `The histogram is up: anonymous, unsorted, no money, no names, with the ten-point band drawn on it. Right now ${last.inBand} of ${last.liveDesks} desks would pass; ${last.needed} are needed. Say that number out loud — the two-thirds tension is the engine of this vote and it used to be invisible until it was over.`;
+                })(),
+            state.roundIndex >= ROUND_COUNT
+              ? "The vote is SEALED. Nothing a desk touches now can change the rule — the two-thirds test runs on the numbers that were in when the round closed."
+              : "If the room stalls or you are short of time, `Operate the league office's rule` beside this control ends the vote and puts a real 30% rule in force. It cannot be undone.",
           ],
           ask: [
             { q: "Somebody at the low end — why?", answer: "Never editorialise. Collect it and move to the next voice." },
@@ -2429,11 +2831,18 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
         return {
           phase,
           minuteBudget: "2 min",
+          // projector B3 (BLOCKING): `how === "voted" ? ... : STATUS_QUO_COPY`
+          // routed the LEAGUE-OFFICE arm into the status-quo script, so the one
+          // control a teacher reaches for when the room stalls told them to say
+          // "the old rule holds — 5%" while a 30% rule was in force and printed
+          // on the projector behind them. Three arms, three scripts.
           now: [
             adoptionLineClaimed(agg).text,
             rule.how === "voted"
               ? "Print it and read it. Do not congratulate the room and do not warn them about anything."
-              : STATUS_QUO_COPY,
+              : rule.how === "leagueOffice"
+                ? LEAGUE_OFFICE_COPY
+                : STATUS_QUO_COPY,
           ],
           ask: [{ q: "Whose money is this rule about to move?", answer: "Anything. You are only making sure they know the rule is live before they touch a dial." }],
           dontExplainYet: ["What the rule will do to the reinvest dial. Twelve minutes from now they will show you."],
@@ -2676,18 +3085,37 @@ const withClub = (state: WriteRuleState, club: Club): WriteRuleState => {
   return { ...state, clubs };
 };
 
+/**
+ * SEALING A ROUND.
+ *
+ * Two defects met here. (1) The round never sealed: with the full histogram and
+ * the middle number on the projector, a desk could still drag its dial and press
+ * PUT IT IN, and that late number replaced its round-3 vote and changed the rule
+ * the class adopted (gate-l3-play, probe D). (2) `closeRound` never cleared
+ * `club.proposal`, so rounds 2 and 3 opened with the board and the console both
+ * asserting the room was finished before anybody had moved, and the teacher's
+ * "no number in" list was empty for two of three rounds (gate-l3-projector B2).
+ *
+ * One repair answers both: a closed round is RECORDED (per live desk, with
+ * `null` for an abstention) and the live control is CLEARED. Adoption reads the
+ * recording, so nothing a desk does after the close can touch the adopted rule;
+ * every "submitted" count is now genuinely per-round; and a desk that wants a
+ * different number in round 2 has to say it again, out loud, on the record.
+ */
 export function closeRound(state: WriteRuleState): WriteRuleState {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
-  const shares = live.map((c) => c.proposal?.share ?? STATUS_QUO_SHARE);
-  const conditions = live.map((c) => c.proposal?.condition ?? STATUS_QUO_CONDITION);
+  const shares = live.map((c) => c.proposal?.share ?? null);
+  const conditions = live.map((c) => c.proposal?.condition ?? null);
+  const votedShares = shares.filter((s): s is number => s !== null);
   const closed = {
     round: state.roundIndex + 1,
     shares,
     conditions,
-    median: snapShare(medianOf(shares)),
+    median: votedShares.length > 0 ? snapShare(medianOf(votedShares)) : STATUS_QUO_SHARE,
+    slots: live.map((c) => c.slot),
   };
   const clubs = state.clubs.map((c) =>
-    c.seatId !== null && c.slot < state.leagueSize ? { ...c, proposals: [...c.proposals, c.proposal] } : c,
+    c.seatId !== null && c.slot < state.leagueSize ? { ...c, proposals: [...c.proposals, c.proposal], proposal: null } : c,
   );
   return {
     ...state,
@@ -2714,7 +3142,8 @@ export function adoptLeagueOfficeRule(state: WriteRuleState): WriteRuleState {
       supporting: 0,
       liveDesks: live,
       median: REAL_RULE_SHARE,
-      runnerUp: STATUS_QUO_SHARE,
+      // Never below the rule in force, and never 0% (gate-l3-play repair 4).
+      runnerUp: SHARE_MAX,
     },
     stage: "adopted",
   };
@@ -2824,6 +3253,11 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair proposes a rule" };
       if (ctx.phase !== "PLAY") return { ok: false, reason: `the rule is written in PLAY (session is in ${ctx.phase})` };
       if (state.stage !== "rounds") return { ok: false, reason: "the offer rounds are closed" };
+      // THE VOTE IS SEALED. Round 3 has closed and the two-thirds test is next:
+      // no number arriving now can change the rule this room adopts.
+      if (state.roundIndex >= ROUND_COUNT) {
+        return { ok: false, reason: "the vote is sealed — round 3 closed and the two-thirds test runs on the numbers that were in" };
+      }
       const share = action["share"];
       const condition = action["condition"];
       if (!isValidShare(share)) return { ok: false, reason: `share must be ${SHARE_MIN}-${SHARE_MAX}% in ${SHARE_STEP}-point steps` };
