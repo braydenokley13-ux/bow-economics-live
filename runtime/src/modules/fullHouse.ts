@@ -117,18 +117,32 @@ export type Market = {
    * (+1.0%) and -360 (-2.1%) on two of three repeat desks, and at New York the
    * undercutting desk's punishment could not land at all, because $10 sold the
    * building out on BOTH nights. Raised to 25 with `planSlope` 1.8 -> 3.6 to pay
-   * for it. THE CONFLICT IS REAL AND THIS IS THE CEILING, measured by an exact
-   * season DP over (renewalFans 10-60) x (planSlope 1.2-3.6), both markets:
-   * every point at renewalFans >= 30 fails P14 at every planSlope tried,
-   * because a renewal point becomes worth more future cash than the cheapest
-   * points on the frontier cost, and the cash-max season starts buying them
-   * back — which is exactly the `econ-l1-season-books` defect round 2 repaired.
-   * The Player gate's ask (a repeat delta >= 10% of capacity) needs about 66
-   * fans a point; P14 breaks at 30. Truth over drama, per charter: 25 is the
-   * largest value at which all four P14 bars still hold, it roughly triples the
-   * felt delta, and the beat is carried the rest of the way by the printed
-   * per-desk decomposition (`repeatRowFor`) rather than by bar length. Recorded
-   * as a tradeoff in `SIMPLIFICATIONS` and asserted by harness P15.
+   * for it.
+   *
+   * `gate-l1-econ-r3` R8 CORRECTS THIS COMMENT. It used to read "THE CONFLICT IS
+   * REAL AND THIS IS THE CEILING ... every point at renewalFans >= 30 fails P14
+   * at every planSlope tried." The conflict half stands. The CEILING claim is
+   * REFUTED and is withdrawn: what was actually swept here was
+   * (renewalFans 10-60) x (planSlope 1.2-3.6), so planSlope was never raised
+   * above 3.6 at renewalFans 30. The Economic Truth critic's independent
+   * 84-point sweep (renewalFans 10-100 x planSlope 1.2-6.0, fine spend grid,
+   * both markets) found `renewalFans 30 / planSlope 4.5` and `30 / 6.0` pass all
+   * four P14 bars in BOTH markets WITH headroom on the margin bar (16/15 and
+   * 17/16 against a bar of 15) and give a +720 Night-5 beat instead of +600.
+   * 25/3.6 is therefore not the only truthful pair — it is the pair this build
+   * shipped and kept, per RULING 2's ACCEPTED-WITH-REASON on the felt-scale
+   * tradeoff and the wave's explicit non-goal of further constant retuning.
+   * Do not cite this comment as a reason not to sweep.
+   *
+   * What IS structural, and is not a tuning question: the Player gate's felt bar
+   * (a repeat delta >= 10% of a real 19,800 / 17,794-seat building) needs about
+   * 82 (NY) / 74 (MEM) fans a point on the honest plan-price line, while P14
+   * breaks somewhere above 30 — the two regions are disjoint by more than 3x and
+   * no pair satisfies both, because real arena capacity is a founder invariant
+   * (CLAUDE.md §3) and cannot move. Truth over drama, per charter: the beat is
+   * carried by the printed per-desk decomposition (`repeatRowFor`) rather than
+   * by bar length. Recorded as a tradeoff in `SIMPLIFICATIONS`, asserted by
+   * harness P15.
    */
   readonly renewalFans: number;
   /** In-arena spend per fan (hidden pre-lock; revealed only as a settled dollar total). */
@@ -276,7 +290,11 @@ export const marketFacts = (m: Market): MarketFacts => ({
 export function spendRuleFor(m: Market): string {
   const dollarsPerFan = Math.round(1 / m.eventFans);
   const renewalPoints = Math.round((m.eventMax / m.eventRenewalDollars) * 10) / 10;
-  return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It does one more thing, tonight: people who had a good night out are readier to renew, so the full $${m.eventMax.toLocaleString()} dial is worth about +${renewalPoints} renewal ${renewalPoints === 1 ? "point" : "points"} — real, but small next to what your price does.`;
+  // gate-l1-econ-r3 R7: "worth about +2 renewal points" was false in 62-65% of
+  // card-price states — the dial buys zero whenever the night's price has already
+  // driven `renewalDelta` to its +12 ceiling or -20 floor, which is where a
+  // cash-playing desk usually is. Stated as a ceiling with the zero case named.
+  return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $${m.eventMax.toLocaleString()} dial is worth AT MOST +${renewalPoints} renewal ${renewalPoints === 1 ? "point" : "points"} — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.`;
 }
 
 /**
@@ -959,6 +977,17 @@ export type RepeatRow = {
   seatedDelta: number;
   /** True when either night was capacity-clamped, so the seated delta is not the wanted delta. */
   clamped: boolean;
+  /**
+   * `gate-l1-econ-r3` R6: true when either night's demand was FLOORED at zero —
+   * the price was above where this curve crosses the axis, so `wanted` was
+   * clamped UP to 0 and the three channels below did not reach the door. The
+   * identity (`wantedDelta` = renewals + spend + price fans) does not close in
+   * this band: measured, 102 of 224 flat seasons break it, worst residual
+   * +1,250 fans, reachable from $84 (New York) and $58 (Memphis) upward. The row
+   * had a branch for the clamp at the top and none for the floor at the bottom,
+   * so the card printed "0 then 0 — 0 people, and that is renewals -1,250".
+   */
+  floored: boolean;
   /** The name of the biggest channel behind this row: "renewals", "spend", "price" or "none". */
   biggestChannel: "renewals" | "spend" | "price" | "none";
   /** One projector-length sentence, computed from the four terms above. */
@@ -1022,6 +1051,13 @@ export function repeatRowFor(
   const wantedDelta = wantedN5 - wantedN1;
   const seatedDelta = n5.settlement.turnout - n1.settlement.turnout;
   const clamped = n1.settlement.soldOut || n5.settlement.soldOut;
+  // R6: the OTHER clamp. `settleNight` floors `wanted` at 0, so above the price
+  // where this curve crosses the axis the channels move a demand base nobody can
+  // see. Read off the same curve the night settled on (D15), never recomputed.
+  const rawWantedN1 = Math.round(n1.hidden.base - n1.hidden.sens * n1.price);
+  const rawWantedN5 = Math.round(n5.hidden.base - n5.hidden.sens * n5.price);
+  const floored = rawWantedN1 < 0 || rawWantedN5 < 0;
+  const bothFloored = rawWantedN1 < 0 && rawWantedN5 < 0;
   const samePrice = n1.price === n5.price;
 
   const channels: { id: "renewals" | "spend" | "price"; size: number }[] = [
@@ -1030,7 +1066,11 @@ export function repeatRowFor(
     { id: "price", size: samePrice ? 0 : Math.abs(priceFans) },
   ];
   const top = channels.reduce((a, b) => (b.size > a.size ? b : a));
-  const biggestChannel = top.size === 0 ? "none" : top.id;
+  // R6: a floored row has no readable channel. The three moves are real moves of
+  // the demand BASE, but no crowd registered them, so this row may not be
+  // counted toward any "the biggest thing that changed was X" claim on any
+  // surface. `repeatSummary` and `pathDependenceCardBody` both filter on it.
+  const biggestChannel: RepeatRow["biggestChannel"] = floored ? "none" : top.size === 0 ? "none" : top.id;
 
   const say = (n: number): string => `${n > 0 ? "+" : ""}${n.toLocaleString()}`;
   const parts: string[] = [];
@@ -1038,7 +1078,15 @@ export function repeatRowFor(
   if (carryFans !== 0) parts.push(`Night 4's $${n4Spend.toLocaleString()} of event money ${say(carryFans)}`);
   if (!samePrice && priceFans !== 0) parts.push(`their own price change ${say(priceFans)}`);
   let channelLine: string;
-  if (parts.length === 0) {
+  if (floored) {
+    // R6. Never assert a channel size over a crowd that did not move. Say what
+    // actually happened: the price was above where anybody in this model still
+    // wanted a ticket, so the carried-over moves had nothing to act on.
+    const moved = parts.length === 0 ? "nothing carried over" : parts.join(", ");
+    channelLine = bothFloored
+      ? `nobody wanted in at $${n5.price} on either night, so the crowd was 0 both times — underneath it ${moved}, and none of it could reach the door`
+      : `${say(seatedDelta)} people — at this price demand ran out before the door on one of the two nights, so the crowd cannot show what moved underneath it (${moved})`;
+  } else if (parts.length === 0) {
     channelLine = "nothing carried over: same renewals, no event money, same price";
   } else if (clamped && seatedDelta !== wantedDelta) {
     channelLine = `wanted in ${say(wantedDelta)} (${parts.join(", ")}) · seats only allowed ${say(seatedDelta)}`;
@@ -1328,7 +1376,15 @@ export const HOUSE_RULES: readonly string[] = [
   // by up to 1,200. Both were disclosed elsewhere on the same screen; the
   // sentence saying they did not exist was the only false one.
   "Everything NEW about tonight is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Two things you already did come with you as well — your RENEWALS, and the event money you spent LAST night. Nothing else moves tonight's crowd; there is no luck in this game.",
-  "Money you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it. It also nudges RENEWALS up a little on the night you spend it: the whole dial is worth about two points.",
+  // gate-l1-econ-r3 R7: the third clause used to read "the whole dial is worth
+  // about two points" flat. Measured over all 280 card-price states per market,
+  // the dial buys EXACTLY ZERO renewal points in 62% (New York) / 65% (Memphis)
+  // of them — including at each night's cash-best price on Nights 1, 2 and 5 —
+  // because `renewalDelta` clamps to [-20, +12] AFTER the spend term is added.
+  // A pre-commit claim on the student's own screen may not be false two-thirds
+  // of the time, so the ceiling is stated as a ceiling and the zero case is
+  // named. Same bound, same words, in `spendRuleFor`.
+  "Money you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it. It can also nudge RENEWALS up on the night you spend it: the whole dial is worth AT MOST two points, and often nothing at all — if your price has already pushed renewals to the top or the bottom of what they can move in one night, the money buys none.",
   "Your building's bill is due every night whether 200 people come or 19,000 do.",
   // gate-l1-econ-r1 N-a and N-b, both measured: the bargain arm peaks at +12 on
   // Night 3 (draw 88, national TV) exactly as it does on Night 4 (draw 97, no
@@ -1386,6 +1442,12 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     what: "Two different things you did on earlier nights arrive on tonight's crowd: your renewals, and last night's event money.",
     why: "Both are real building economics — a season-ticket base is who shows up before anyone buys a walk-up ticket, and a promotion sells the NEXT night, not the one you paid for it on.",
     risk: "They are easy to confuse for one another, and the event-money channel can be the bigger one on Night 5. Never attribute a Night-5 crowd change to renewals without checking the desk's own split on the board — the model prints both.",
+  },
+  {
+    // gate-l1-econ-r3 R7's ledger limb.
+    what: "The event-money dial's renewals value is a ceiling, not a rate: at most +2 points, and exactly zero at most prices.",
+    why: "One night can only move renewals within a fixed band (-20 to +12 points). The spend term is added inside that band, so once your price has already driven the night to the top or the bottom of it, more money buys no more points. Measured over every card-and-price state in the model, the dial buys zero points in 62% (New York) and 65% (Memphis) of them — including at the cash-best price on Nights 1, 2 and 5.",
+    risk: "A pair can read '+2 points' as a rate they can always buy and spend for it. The student screen and the house rules now say 'at most', and name the zero case. If a desk spends and its renewals do not move, that is the model being consistent, not a bug — say so.",
   },
   {
     what: "Season-ticket holders reward a strong walk-up price on a big night.",
