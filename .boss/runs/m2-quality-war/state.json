@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T03:58:10.787Z",
+  "updatedAt": "2026-09-01T04:07:24.243Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1935,8 +1935,29 @@
           "model": "claude-sonnet-5",
           "reason": "Micro-repair (wave-3 repair 2): CF pager label regression W3F-1 + e2e label-vs-rows consistency assertion; optional W3F-4 floor assertions",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T03:58:10.787Z",
+          "completedAt": "2026-09-01T04:07:23.689Z",
+          "sections": {
+            "what-changed": "cfPageDeskNames() helper; named-group labels ('Group N of 4 — Desk A, Desk B, Desk C') at board + teacher control sites; stale comment fixed; e2e asserts (a) no positional-range pattern anywhere in the pager and (b) label names exactly match rendered rows, all 4 groups x 2 shapes at 12 desks; W3F-4 row-tier floor asserted. One real regression caught mid-task: full club names overflowed group 4 by 17px at 1366 — the fit budget is real.",
+            "evidence": "npm test 354/354; e2e PASS with the new assertions (lead re-run recorded as l1-e2e-w3c, exit 0); live log shows back-a-group moving the projector between truthfully-named groups.",
+            "claims": "No pager text claims a positional desk range; labels match rows, machine-checked.",
+            "known-gaps": "Franchise name dropped from the pager label specifically (fits budget; rows still carry it) — flagged for the owning critic's intent check; other modules not swept for the pattern."
+          },
+          "evidenceIds": [
+            "l1-e2e-w3c"
+          ],
+          "cost": null
+        },
+        "build-l2-hosting": {
+          "assignmentId": "build-l2-hosting",
+          "role": "builder",
+          "actor": "builder-l2",
+          "model": "claude-opus-5",
+          "reason": "Vertical build of L2 'You Don't Play Alone' reusing L1's proven patterns (director layer, harness discipline, every-frame fit instrument, confirm guards); deep coding + economic modeling",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T04:07:24.243Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -1955,7 +1976,8 @@
         "l1-tests-w3b",
         "l1-e2e-w3b",
         "w3-visual-final",
-        "w3-projector-final"
+        "w3-projector-final",
+        "l1-e2e-w3c"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3330,6 +3352,28 @@
       },
       "recordedAt": "2026-09-01T03:57:57.686Z",
       "actor": "classroom-projector-critic"
+    },
+    "l1-e2e-w3c": {
+      "id": "l1-e2e-w3c",
+      "wave": 3,
+      "kind": "e2e",
+      "label": "e2e with pager label-vs-rows + anti-positional assertions + row-tier floor",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-w3c--record.json",
+      "sha256": "63523e395a67d9a2b56099747a6724a217d15a74de30096547892b8e2cbba7cd",
+      "size": 3350,
+      "metadata": {
+        "tags": [
+          "wave-3"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T04:07:08.760Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -3775,9 +3819,12 @@
         "w3-projector-final"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T03:57:57.928Z",
-      "actor": "classroom-projector-critic"
+      "actor": "classroom-projector-critic",
+      "resolution": "Repaired with truthfully-named group labels (Group N of 4 + the actual desk names) at every claiming site, and the e2e instrument now asserts both the absence of positional-range patterns and exact label-vs-rendered-rows match for all groups at 12 desks on both shapes (l1-e2e-w3c, exit 0) — the deterministic reproduction of the critic's own finding now cannot recur silently. Franchise dropped from the pager line only (17px overflow evidence), rows still carry it; flagged for the critic's intent check at the wave gate.",
+      "resolvedAt": "2026-09-01T04:07:23.950Z",
+      "resolvedBy": "lead-integrator"
     },
     "w3-projector-final-dissent": {
       "id": "w3-projector-final-dissent",
@@ -3821,14 +3868,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 42,
+    "agentsActivated": 43,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 68,
+    "evidenceRecorded": 69,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 207,
-  "eventHead": "66ba320b810b44b296297535bc2d7af74e06408979d933f2b5b37ff5701b6ea6",
+  "eventCount": 211,
+  "eventHead": "f2d2eeb4673aa7cffcf0aa69711495a4cc4074adbd292470863a2168a7e078db",
   "warnings": []
 }

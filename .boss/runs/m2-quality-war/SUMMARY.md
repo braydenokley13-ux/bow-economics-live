@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `207:66ba320b810b44b296297535bc2d7af74e06408979d933f2b5b37ff5701b6ea6`  
-Updated: 2026-09-01T03:58:10.787Z
+Event head: `211:f2d2eeb4673aa7cffcf0aa69711495a4cc4074adbd292470863a2168a7e078db`  
+Updated: 2026-09-01T04:07:24.243Z
 
 ## Founder intent
 
@@ -41,7 +41,8 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - builder — builder-w3-fit — completed — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - visual-experience-director — visual-experience-director — completed-with-concerns — claude-opus-5
-- builder — builder-w3-micro — active — claude-sonnet-5
+- builder — builder-w3-micro — completed — claude-sonnet-5
+- builder — builder-l2 — active — claude-opus-5
 
 ## Required evidence
 
@@ -70,6 +71,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l1-e2e-w3b — e2e — Every-frame fit e2e: 28 frames x 2 shapes + back-row type
 - w3-visual-final — visual-report — W3 final visual re-grade: PREMIUM CLAUSE NOT AFFIRMED (SERVICEABLE-NOT-PREMIUM, blocking: NO — 'polish wave, not a classroom gate'). Both SCHOOL-UI states left the band (staged synthesis 2.85% vh; PLAY strip + fitting Two Peaks); emoji verified gone by rendered scan + grep. Remaining distance itemized (play room/motions, analysis-frame ramp, teach monitor wall); P9 routed to projector, CF colour to CVD owner
 - w3-projector-final — projector-report — W3 final projector adjudication: FIT CONDITION DISCHARGED — 31 frames x 2 shapes, 0px overflow, evidence tier 2.61-2.85%, punchline 3.2%, SYNTHESIS pager builds; privacy PASS (62 scans); fallbacks PASS live incl. unfreeze + server restart. BLOCKING regression W3F-1: CF pager labels desk ranges that no longer match after interest ordering. Non-blocking W3F-2..5
+- l1-e2e-w3c — e2e — e2e with pager label-vs-rows + anti-positional assertions + row-tier floor
 
 ## Claim ledger
 
@@ -77,7 +79,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 
 ## Dissent
 
-- proj-l1-cf-pager-label — classroom-reliability/blocking/open — Regression from orderRepeatRows: the CF pager's board label claims desk ranges ('DESKS 1-3 OF 12') over reordered rows (Desk 2/3/4; group 4 reads '10-12' over 11/12/1) — the room is told to look at the wrong desks. fullHouse.ts:2551/:2355/:2361. One-line-class fix: label groups by group number/actual desk names, and assert label-vs-rows consistency in e2e. GATE_L1_PROJECTOR.md §W3 FINAL
+- proj-l1-cf-pager-label — classroom-reliability/blocking/resolved — Regression from orderRepeatRows: the CF pager's board label claims desk ranges ('DESKS 1-3 OF 12') over reordered rows (Desk 2/3/4; group 4 reads '10-12' over 11/12/1) — the room is told to look at the wrong desks. fullHouse.ts:2551/:2355/:2361. One-line-class fix: label groups by group number/actual desk names, and assert label-vs-rows consistency in e2e. GATE_L1_PROJECTOR.md §W3 FINAL
 - w3-projector-final-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
