@@ -946,6 +946,14 @@ export type ChoiceTotals = {
    * `baselineDrawPathFor`, and the joint figure needs no re-simulation.
    */
   roomJointGain: number;
+  /**
+   * The room's own books read at every setting on the dial (econ N17/B11). The
+   * joint figure above is a TOTAL against a zero baseline and can never decide
+   * a question about LEVEL; this is the level, computed from the same family.
+   * Any sentence that tells the room how much SHOULD have gone back in must be
+   * built from this and from nothing else.
+   */
+  roomOptimum: RoomOptimum;
   /** `ownGain + gaveByChoice` — the value reinvesting created, own books plus other people's. */
   created: number;
   /**
@@ -1352,6 +1360,149 @@ export function roomJointGain(state: HostLeagueState, baselines: ReadonlyMap<num
   return Math.round(actual - joint);
 }
 
+/**
+ * How wide the room's "sweet spot" is allowed to be, as a fraction of the FULL
+ * SPREAD of its own room-cash-by-share curve.
+ *
+ * This is a rendering tolerance, not a game constant: it decides only how many
+ * neighbouring dial settings are close enough to the room's best to be named
+ * beside it, and it is scale-free so it means the same thing in an 8-desk $30
+ * room and a 12-desk $110 one. Nothing in the reducer, the grids or the
+ * settlement reads it.
+ */
+export const OPTIMUM_BAND_TOLERANCE = 0.05;
+
+/**
+ * THE ROOM'S OWN BOOKS AT ONE UNIFORM DIAL SETTING (econ N17 / B11).
+ *
+ * `roomJointGain` answers ONE counterfactual — "what if nobody had put anything
+ * back" — and answers it as a total against a zero baseline. It cannot decide a
+ * question about LEVEL. This is the same computation, generalised: the identical
+ * season, the identical schedule and the identical prices, with every desk's
+ * reinvest dial pinned at `share` instead of at 0.
+ *
+ * It is the same family and the same carve-outs, deliberately:
+ *  - `stock` weeks, bot clubs and the pinned star-departure club keep their
+ *    ACTUAL spend and (for the pinned club) their actual Draw path, exactly as
+ *    `baselineDrawPathFor` declares;
+ *  - only live desks' cash is counted, exactly as `roomJointGain` counts it;
+ *  - `roomCashAtUniformShare(state, 0)` is by construction the same number
+ *    `roomJointGain` subtracts (a test asserts it).
+ *
+ * It cannot reuse `baselineDrawPathFor` because above 0% the counterfactual is
+ * COUPLED: what a desk spends is a share of a door that depends on the visiting
+ * desk's counterfactual Draw. So the whole league is marched forward one week at
+ * a time, every home night settled before any Draw is written back — the same
+ * ordering `settleWeek` uses, so no club's counterfactual can depend on the
+ * order the loop happened to visit it.
+ */
+export function roomCashAtUniformShare(state: HostLeagueState, share: number): number {
+  const inLeague = state.clubs.slice(0, state.leagueSize);
+  const weekCount = inLeague.reduce((n, c) => Math.max(n, c.weeks.length), 0);
+  const draw = new Map<number, number>();
+  for (const c of inLeague) draw.set(c.slot, c.weeks[0]?.hostDrawBefore ?? c.draw);
+
+  let cash = 0;
+  for (let i = 0; i < weekCount; i += 1) {
+    const homes = new Map<number, HomeSettlement>();
+    for (const c of inLeague) {
+      const w = c.weeks[i];
+      if (!w) continue;
+      const visitorDraw = draw.get(w.visitorSlot) ?? w.visitorDrawBefore;
+      homes.set(c.slot, settleHome(profileOf(c), defOf(c).capacity, draw.get(c.slot)!, visitorDraw, w.home.price));
+    }
+    const after = new Map<number, number>();
+    for (const c of inLeague) {
+      const w = c.weeks[i];
+      if (!w) continue;
+      const profile = profileOf(c);
+      const before = draw.get(c.slot)!;
+      const home = homes.get(c.slot)!;
+      const isMine = c.seatId !== null && !w.stock;
+      const spend = isMine ? Math.round((share / 100) * home.doorMoney) : w.reinvestPaid;
+      if (c.seatId !== null) cash += home.doorMoney + localMediaFor(profile, before) + w.national - w.bill - spend;
+      after.set(c.slot, state.shockSlot === c.slot ? (c.weeks[i + 1]?.hostDrawBefore ?? c.draw) : nextDraw(profile, before, spend));
+    }
+    for (const [slot, d] of after) draw.set(slot, d);
+  }
+  return Math.round(cash);
+}
+
+/**
+ * The room's own answer to "how much SHOULD have gone back in" — computed, not
+ * asserted, and computed from the room's own books rather than from the sign of
+ * anything.
+ *
+ * `relation` is the only thing any surface is allowed to turn a direction word
+ * on, and it is deliberately conservative in two ways (econ N17 / FL-L):
+ *  - a direction is named only where the room's actual level sits OUTSIDE the
+ *    band, and
+ *  - only where a one-step move in that direction actually raises the room's
+ *    cash. The critic's blocking finding was a card that told 68 of 86 rooms to
+ *    put MORE back in while a uniform +5pp step made those rooms jointly WORSE
+ *    off; that sentence is now unreachable, because `"below"` cannot be
+ *    returned unless the +5pp step measurably pays.
+ * Where the two disagree the relation is `"unclear"` and no direction may print.
+ */
+export type RoomOptimum = {
+  /** Room cash at every setting on the dial's own grid, in `SHARE_GRID` order. */
+  byShare: readonly number[];
+  /** The grid share the room's own books do best at (lowest share on a tie). */
+  bestShare: number;
+  /** The band around `bestShare` within `OPTIMUM_BAND_TOLERANCE` of the spread. */
+  bandLo: number;
+  bandHi: number;
+  /** The room's actual mean chosen share, over live desks' non-stock weeks. */
+  actualShare: number;
+  /** Room cash at `actualShare`, and one dial step either side of it. */
+  cashAtActual: number;
+  cashOneStepUp: number | null;
+  cashOneStepDown: number | null;
+  relation: "below" | "inside" | "above" | "unclear";
+};
+
+export function roomOptimumFor(state: HostLeagueState): RoomOptimum {
+  const byShare = SHARE_GRID.map((s) => roomCashAtUniformShare(state, s));
+  let bestIdx = 0;
+  for (let i = 1; i < byShare.length; i += 1) if (byShare[i]! > byShare[bestIdx]!) bestIdx = i;
+  const max = byShare[bestIdx]!;
+  const min = byShare.reduce((m, v) => Math.min(m, v), max);
+  const floor = max - (max - min) * OPTIMUM_BAND_TOLERANCE;
+  let lo = bestIdx;
+  let hi = bestIdx;
+  while (lo > 0 && byShare[lo - 1]! >= floor) lo -= 1;
+  while (hi < byShare.length - 1 && byShare[hi + 1]! >= floor) hi += 1;
+
+  let chosenWeeks = 0;
+  let chosenShare = 0;
+  for (const c of state.clubs.slice(0, state.leagueSize)) {
+    if (c.seatId === null) continue;
+    for (const w of c.weeks) {
+      if (w.stock) continue;
+      chosenShare += w.share;
+      chosenWeeks += 1;
+    }
+  }
+  const actualShare = chosenWeeks === 0 ? 0 : Math.round(chosenShare / chosenWeeks);
+  const cashAtActual = roomCashAtUniformShare(state, actualShare);
+  const cashOneStepUp = actualShare + SHARE_STEP <= SHARE_MAX ? roomCashAtUniformShare(state, actualShare + SHARE_STEP) : null;
+  const cashOneStepDown = actualShare - SHARE_STEP >= SHARE_MIN ? roomCashAtUniformShare(state, actualShare - SHARE_STEP) : null;
+  const bandLo = SHARE_GRID[lo]!;
+  const bandHi = SHARE_GRID[hi]!;
+  const relation: RoomOptimum["relation"] =
+    actualShare < bandLo
+      ? cashOneStepUp !== null && cashOneStepUp > cashAtActual
+        ? "below"
+        : "unclear"
+      : actualShare > bandHi
+        ? cashOneStepDown !== null && cashOneStepDown > cashAtActual
+          ? "above"
+          : "unclear"
+        : "inside";
+
+  return { byShare, bestShare: SHARE_GRID[bestIdx]!, bandLo, bandHi, actualShare, cashAtActual, cashOneStepUp, cashOneStepDown, relation };
+}
+
 export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
   const inLeague = state.clubs.slice(0, state.leagueSize);
@@ -1448,6 +1599,7 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
       receivedByChoice,
       ownGain,
       roomJointGain: roomJointGain(state, baselines),
+      roomOptimum: roomOptimumFor(state),
       created,
       externalPct: coherent ? Math.round((gaveByChoice / created) * 100) : null,
       anySpend: spend > 0,
@@ -1801,9 +1953,18 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
     // branch word itself is an atom carrying the opposite noun as a forbidden
     // phrase, so the audit checks the word and not merely the numbers beside it.
     if (ct.roomJointGain > 0) {
-      const word = "less went back in than this room's own numbers would justify";
+      // econ N17 / FL-L (BLOCKING). This arm used to end "…so LESS WENT BACK IN
+      // THAN THIS ROOM'S OWN NUMBERS WOULD JUSTIFY" — a claim about the LEVEL of
+      // reinvestment, decided by the SIGN of a total. The arm fires only at
+      // shares >= 25%, and the room's own books peak at 10-15%, so the sentence
+      // printed in exactly the region where it is false: a uniform +5pp step
+      // made the room jointly WORSE off in 68 of 86 measured rooms. The noun
+      // this branch is entitled to is the one the joint figure actually decides
+      // — better off or worse off, counted as one set of books. The level is a
+      // separate sentence, built from `roomOptimum` (see `levelLine`).
+      const word = "the room as a whole still came out ahead";
       claims.push(claimWord("spillover.branchNoun", word, true, "over-invest"));
-      externalLine = `This room spent ${spend.rendered} on Draw and put ${gave.rendered} of it on OTHER clubs' books. Desk by desk that spending reads as a loss, because the desk that pays for Draw keeps only part of what the Draw earns — but the room as a whole came out ahead, so ${word}. There is no share to print here: you cannot take a percentage of a number that went the wrong way for the desks who paid.`;
+      externalLine = `This room spent ${spend.rendered} on Draw and put ${gave.rendered} of it on OTHER clubs' books. Desk by desk that spending reads as a loss, because the desk that pays for Draw keeps only part of what the Draw earns — but ${word}. There is no share to print here: you cannot take a percentage of a number that went the wrong way for the desks who paid.`;
     } else if (ct.roomJointGain < 0) {
       const word = "this room over-invested";
       claims.push(claimWord("spillover.branchNoun", word, true, "less went back in than"));
@@ -1815,6 +1976,38 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
     }
   }
 
+  // THE LEVEL COLUMN (econ N17 / B11). The one place any surface is allowed to
+  // say anything about how much SHOULD have gone back in — and it says it by
+  // printing the room's OWN computed range rather than a direction word.
+  //
+  // `roomOptimum` runs this room's identical season at every setting on the
+  // dial, through the same computation family `roomJointGain` uses, and reports
+  // the band its own books do best in. The range prints always; a direction
+  // prints only where the room's level is outside that band AND a one-step move
+  // that way measurably pays. Where those disagree, `relation` is `"unclear"`
+  // and this sentence names no direction at all.
+  const opt = ct.roomOptimum;
+  const bandLo = claim("spillover.bandLo", opt.bandLo, "percent", { bounds: { min: SHARE_MIN, max: SHARE_MAX } });
+  const bandHi = claim("spillover.bandHi", opt.bandHi, "percent", { bounds: { min: SHARE_MIN, max: SHARE_MAX } });
+  const level = claim("spillover.actualShare", opt.actualShare, "percent", { bounds: { min: SHARE_MIN, max: SHARE_MAX } });
+  const relationWord =
+    opt.relation === "below"
+      ? "under that band"
+      : opt.relation === "above"
+        ? "over that band"
+        : opt.relation === "inside"
+          ? "inside that band"
+          : "on neither side of that band";
+  const relationTail =
+    opt.relation === "below"
+      ? ", so putting more back in would have left this room holding more money, not less"
+      : opt.relation === "above"
+        ? ", so the dollars past it cost this room more than they brought back"
+        : "";
+  claims.push(bandLo, bandHi, level, claimWord("spillover.levelRelation", relationWord, true));
+  const range = opt.bandLo === opt.bandHi ? `at ${bandLo.rendered}` : `between ${bandLo.rendered} and ${bandHi.rendered}`;
+  const levelLine = `Run this room's own books at every setting on the dial and the room keeps the most ${range} — and this room's dials averaged ${level.rendered}, ${relationWord}${relationTail}.`;
+
   // The joint column — the room counted as one set of books.
   const direction = ct.roomJointGain > 0 ? "better off" : ct.roomJointGain < 0 ? "worse off" : "exactly level";
   const jointLine =
@@ -1823,7 +2016,7 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
       : `Counted as one room instead of desk by desk — because a dollar that lands on another desk's books is still a dollar in this room — reinvesting left this room ${joint.rendered} ${direction}.`;
   claims.push(claimWord("spillover.jointDirection", direction, true));
 
-  return { text: `${privateLine} ${externalLine} ${jointLine}`, claims };
+  return { text: `${privateLine} ${externalLine} ${jointLine} ${levelLine}`, claims };
 }
 
 export function giveAndTakeSummaryClaimed(agg: HostLeagueAggregate): Claimed {
@@ -3980,7 +4173,7 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
         "Putting money back into your club paid YOU and it paid the buildings you visited. Across this room, reinvesting was worth $612,000 to the desks' own books and put $498,000 on other clubs' books — 45% of the value it created landed somewhere the desk that paid for it never sees. A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER — the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money simply does not land where the effort goes.",
       ),
       stand(
-        "THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS",
+        "THE CHECK NOBODY CONTROLS",
         `For Desk 5 · Milwaukee, the national check was 55.6% of everything the club earned and the gate was 16.6%. For Desk 8 · L.A. Lakers it was 29.1% against a gate of 26.3%. Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national check that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
       ),
       stand(
@@ -4066,15 +4259,29 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   const leastNat = showLeast ? claim("composition.leastNationalPct", leastDependent!.nationalPct, "percent1", { bounds: { min: 0, max: 100 } }) : null;
   const leastGate = showLeast ? claim("composition.leastGatePct", leastDependent!.gatePct, "percent1", { bounds: { min: 0, max: 100 } }) : null;
   for (const a of [mostNat, mostGate, leastNat, leastGate]) if (a) compClaims.push(a);
+  // econ N21 / FL-M. The title was "THE BIGGEST CHECK IS THE ONE NOBODY
+  // CONTROLS" — an unbound superlative, and false for 28-30 of every 100 desk
+  // instances at every price probed (a desk's local media routinely beats its
+  // national check). The title now claims only what is true of every desk in
+  // the league — the national check is the one nobody controls — and the
+  // superlative it used to assert is printed as a COUNTED fact in the body,
+  // where the audit can recompute it.
+  const nationalBiggest = pipes.filter((p) => p.national >= p.gate && p.national >= p.inArena && p.national >= p.localMedia).length;
+  const natCount = claim("composition.nationalBiggestCount", nationalBiggest, "int", { bounds: { min: 0, max: pipes.length } });
+  const deskCount = claim("composition.pipeDeskCount", pipes.length, "int", { bounds: { min: 0 } });
+  const natWord = `on ${natCount.rendered} of ${deskCount.rendered} desks`;
+  if (pipes.length > 0) compClaims.push(natCount, deskCount, claimWord("composition.nationalBiggestQuantifier", natWord, true));
   cards.push({
     id: "composition",
     claims: compClaims,
-    title: "THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS",
+    title: "THE CHECK NOBODY CONTROLS",
     body: `${
       mostDependent && mostNat && mostGate
         ? `For ${mostDependent.deskHandle}, the national check was ${mostNat.rendered} of everything the club earned and the gate was ${mostGate.rendered}.`
         : ""
-    }${showLeast && leastNat && leastGate ? ` For ${leastDependent!.deskHandle} it was ${leastNat.rendered} against a gate of ${leastGate.rendered}.` : ""} Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national check that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
+    }${showLeast && leastNat && leastGate ? ` For ${leastDependent!.deskHandle} it was ${leastNat.rendered} against a gate of ${leastGate.rendered}.` : ""}${
+      pipes.length > 0 ? ` That national check was the single biggest of the four pipes ${natWord} in this room tonight — and it is the one pipe no desk here can move a dollar of.` : ""
+    } Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national check that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
   });
 
   const path = agg.smallMarketPath;
