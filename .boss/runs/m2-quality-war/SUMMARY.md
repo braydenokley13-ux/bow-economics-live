@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `221:c659f3995ea62312f956f747106b29da45880ea180442d955d5fa5932e31d232`  
-Updated: 2026-09-01T05:12:08.453Z
+Event head: `223:5e0af0338c604283f9bc04365b3fd2cbaaede0dceb4becc10ab434a1b4fa9d48`  
+Updated: 2026-09-01T05:23:28.556Z
 
 ## Founder intent
 
@@ -81,6 +81,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l2-tuning — test — L2 harness: 11 properties (no dominant line, visitor swing 2.19-2.61x, residual 0 over 473,984 states, no unwinnable seat)
 - l2-e2e — e2e — L2 12-desk three-surface e2e, 22 frames x 2 shapes fit, zero console errors
 - l1-e2e-postl2 — e2e — L1 e2e regression after L2's shared-file changes
+- gate-l2-sr — sports-reality-report — L2 SR gate: CLEAR WITH REPAIRS. Dated facts survived independent verification (cap chain exact, $76B deal, arena renames). BLOCKING-1: profile anchor-club sentences print verbatim under 15 wrong clubs (Detroit reads 'biggest market'; Denver reads '2025 champions'; Lakers 'OWNS its building' — AEG owns it). BLOCKING-2: MODELED_DOLLARS_LINE universals falsified by desks' own bars. Also: 'NY highest gate' repair fails vs shared curves; header/README contradiction; Fever kept half-operated; SR-10 cut sound
 
 ## Claim ledger
 
@@ -90,6 +91,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 
 - proj-l1-cf-pager-label — classroom-reliability/blocking/resolved — Regression from orderRepeatRows: the CF pager's board label claims desk ranges ('DESKS 1-3 OF 12') over reordered rows (Desk 2/3/4; group 4 reads '10-12' over 11/12/1) — the room is told to look at the wrong desks. fullHouse.ts:2551/:2355/:2361. One-line-class fix: label groups by group number/actual desk names, and assert label-vs-rows consistency in e2e. GATE_L1_PROJECTOR.md §W3 FINAL
 - w3-projector-final-dissent — undefined/undefined/open — undefined
+- sr-l2-anchor-copy — sports-reality/blocking/open — L2 blocking pair: (1) each market profile's anchor-club sentence renders verbatim under 15 other real clubs — Detroit/Chicago/Philly/Boston read 'the biggest market in American sports', Denver/Utah/Portland/Sacramento read 'the 2025 champions', Lakers read 'OWNS its building' (AEG owns Crypto.com Arena) — false real-world claims on student surfaces in any class of nine; (2) MODELED_DOLLARS_LINE's two universals are falsified by desks' own projector bars (Boston/Lakers local media > national in week 1; gate share 8% at dial extremes vs 'a fifth to a quarter'). Plus: header 'NY highest gate' claim fails against shared curves and contradicts the README. GATE_L2_SR.md.
 
 ## Latest gate
 
