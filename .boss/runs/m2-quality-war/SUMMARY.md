@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `402:4dfb7381e4333a010d6da988e53e0a76671be480e35680abf119f78259a30652`  
-Updated: 2026-09-01T13:13:56.149Z
+Event head: `411:1985b5bb27fb09e6b51a4665d8c9418925c7e14567dd2882b6452f31356a02ea`  
+Updated: 2026-09-01T13:20:15.978Z
 
 ## Founder intent
 
@@ -67,6 +67,15 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - l3-e2e-w5 — e2e — L3 e2e at close-out head
 - w5-sr-confirm — sports-reality-report — SR w5 narrow confirm: N1 (Seattle SoDo up-to-$200M public bonds; both-sides-public coda; MOU ledgered) and N2 (DMA 20/13) verified verbatim; single-source data with no divergent client copy; no new unverified claim. DISCHARGED
 - w5-econ-confirm — economic-truth-report — Econ w5 final confirm: R1 (shared builder + RENDER limb bites), R2 (harness wrapper 3/3 and fails under A9), R3 (0 occurrences across full trajectory), R4 (five arm-direction drives) all CONFIRMED. No live false lesson at head. Non-blocking future-drift exposure recorded (W5-1..3). Both dissents DISCHARGED
+- final-suite — test — FINAL HEAD: full runtime suite incl. all three M2 harnesses (458 tests)
+- final-e2e-m2l1 — e2e — FINAL HEAD: M2 L1 e2e
+- final-e2e-m2l2 — e2e — FINAL HEAD: M2 L2 e2e
+- final-e2e-m2l3 — e2e — FINAL HEAD: M2 L3 e2e
+- final-e2e-m1l2 — e2e — FINAL HEAD: M1 L2 e2e
+- final-e2e-m1l2ea — e2e — FINAL HEAD: M1 L2 early-advance e2e
+- final-e2e-m1l3ea — e2e — FINAL HEAD: M1 L3 early-advance e2e
+- final-e2e-m1l3 — e2e — FINAL HEAD: M1 L3 full-chain e2e (known flaky pre-existing race; one attempt recorded honestly)
+- final-e2e-m1l3-retry — e2e — FINAL HEAD: M1 L3 full-chain e2e retry (pre-existing race documented in E2E_L3_FLAKE_NOTE.md; this run green proves the product path at head)
 
 ## Claim ledger
 

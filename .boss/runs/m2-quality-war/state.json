@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T13:13:56.149Z",
+  "updatedAt": "2026-09-01T13:20:15.978Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3693,7 +3693,16 @@
         "l3-tuning-w5",
         "l3-e2e-w5",
         "w5-sr-confirm",
-        "w5-econ-confirm"
+        "w5-econ-confirm",
+        "final-suite",
+        "final-e2e-m2l1",
+        "final-e2e-m2l2",
+        "final-e2e-m2l3",
+        "final-e2e-m1l2",
+        "final-e2e-m1l2ea",
+        "final-e2e-m1l3ea",
+        "final-e2e-m1l3",
+        "final-e2e-m1l3-retry"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -6399,6 +6408,215 @@
       },
       "recordedAt": "2026-09-01T13:13:55.272Z",
       "actor": "economic-truth-critic"
+    },
+    "final-suite": {
+      "id": "final-suite",
+      "wave": 5,
+      "kind": "test",
+      "label": "FINAL HEAD: full runtime suite incl. all three M2 harnesses (458 tests)",
+      "path": ".boss/runs/m2-quality-war/evidence/final-suite--record.json",
+      "sha256": "8293dccb375dfeb338d7d681d97f611d61e6d69df9772efdadd993b77497e87e",
+      "size": 113664,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:14:33.955Z",
+      "actor": "lead-integrator"
+    },
+    "final-e2e-m2l1": {
+      "id": "final-e2e-m2l1",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M2 L1 e2e",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m2l1--record.json",
+      "sha256": "a934a0f1717852e9d9a6372a609ab256965fa8c4b63abb2aac148ddb35f2d1d9",
+      "size": 3350,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:15:47.813Z",
+      "actor": "lead-integrator"
+    },
+    "final-e2e-m2l2": {
+      "id": "final-e2e-m2l2",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M2 L2 e2e",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m2l2--record.json",
+      "sha256": "7e69fba296c10f36ca1420c239b537fd5152c79fb188c9ea8a2b0649ba42403b",
+      "size": 1212,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l2.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:16:54.282Z",
+      "actor": "lead-integrator"
+    },
+    "final-e2e-m2l3": {
+      "id": "final-e2e-m2l3",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M2 L3 e2e",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m2l3--record.json",
+      "sha256": "2ace4e6fc71061b734a0095a0a1703206c7ff8598c3d901494a179fc76614731",
+      "size": 1467,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l3.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:19:05.134Z",
+      "actor": "lead-integrator"
+    },
+    "final-e2e-m1l2": {
+      "id": "final-e2e-m1l2",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M1 L2 e2e",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m1l2--record.json",
+      "sha256": "0cf6ee98fc95a4a1958729ffd5f23aa27e9d6b2939a91349f391f705f0e10438",
+      "size": 1327,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l2.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:19:15.331Z",
+      "actor": "regression-hunter"
+    },
+    "final-e2e-m1l2ea": {
+      "id": "final-e2e-m1l2ea",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M1 L2 early-advance e2e",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m1l2ea--record.json",
+      "sha256": "ed111d227232c11096b6b05acbf876119c61ca357fe766db3eeda1487d153cee",
+      "size": 995,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l2-early-advance.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:19:33.813Z",
+      "actor": "regression-hunter"
+    },
+    "final-e2e-m1l3ea": {
+      "id": "final-e2e-m1l3ea",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M1 L3 early-advance e2e",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m1l3ea--record.json",
+      "sha256": "5302f4658aaab0d4e7e3453c02a972bf6a7307d52d88a18d7278e0b3aa0853a0",
+      "size": 1321,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l3-early-advance.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:19:35.973Z",
+      "actor": "regression-hunter"
+    },
+    "final-e2e-m1l3": {
+      "id": "final-e2e-m1l3",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M1 L3 full-chain e2e (known flaky pre-existing race; one attempt recorded honestly)",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m1l3--record.json",
+      "sha256": "d747ada2306088f567ae0f93ea32d3e44b84ceabf7f283b753a0bdbff70ec88f",
+      "size": 2063,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l3.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:19:51.235Z",
+      "actor": "regression-hunter"
+    },
+    "final-e2e-m1l3-retry": {
+      "id": "final-e2e-m1l3-retry",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "FINAL HEAD: M1 L3 full-chain e2e retry (pre-existing race documented in E2E_L3_FLAKE_NOTE.md; this run green proves the product path at head)",
+      "path": ".boss/runs/m2-quality-war/evidence/final-e2e-m1l3-retry--record.json",
+      "sha256": "f2ac6d56e8ed4b62de9c06e9ed581a6ed8d052cc9140eaf86c5befc8944fc661",
+      "size": 2208,
+      "metadata": {
+        "tags": [
+          "wave-5",
+          "final"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-l3.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:20:15.978Z",
+      "actor": "regression-hunter"
     }
   },
   "claims": {
@@ -7281,11 +7499,11 @@
     "agentsActivated": 80,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 135,
+    "evidenceRecorded": 144,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 402,
-  "eventHead": "4dfb7381e4333a010d6da988e53e0a76671be480e35680abf119f78259a30652",
+  "eventCount": 411,
+  "eventHead": "1985b5bb27fb09e6b51a4665d8c9418925c7e14567dd2882b6452f31356a02ea",
   "warnings": []
 }

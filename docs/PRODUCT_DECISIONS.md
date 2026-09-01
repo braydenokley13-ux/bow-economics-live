@@ -224,3 +224,49 @@ Standing consequences:
 - **Owner:** CEO (program mandated by Founder instruction this session)
 - **Evidence:** docs/development/ECONOMICS_BOSS_PORT.md; tools/boss/test/ (44/44 this session);
   `npm run boss:doctor` green this session; source audit against bow-decision-challenges@9313c91.
+
+## D20. Module 2 "Money in Motion" — architecture ruling, build, and program acceptance
+
+MODULE 2 PROGRAM RULING (first real Economics Boss run, `m2-quality-war`, Level 3 Quality War).
+Architecture war: three genuinely competing candidates (A: Box Office evolved; B: refound; C:
+clean-room first principles, produced with the existing prototype withheld from its context) were
+judged on played Stage-0 prototypes plus independent Sports Reality, Economic Truth, and Gameplay
+reviews — all three converged on **Candidate C** without a meeting. The Box Office lesson and
+both losing candidates were killed on evidence (sunk cost received no vote); Box Office's
+operate-don't-choose patterns survive inside C. Decision record with the binding build charter
+BC-1..BC-7: `docs/gauntlet/module-2/ARCHITECTURE_SELECTION.md`.
+
+The module as built: **L1 "Full House"** (price the night blind against real NBA night cards,
+CASH/RENEWALS two books, Two Peaks reveal), **L2 "You Don't Play Alone"** (host the league —
+the visiting club's Draw is the dominant term in your gate; reinvest-in-Draw; decomposition
+reveal), **L3 "Writing the Rule"** (rule dials → sealed two-thirds vote → lived-under season →
+Kings 22-8 commit-then-reveal capstone → the revisit-able "Economics You Learned" finale).
+L2→L3 seeds via the m1 opaque-seed pattern; L1→L2 deliberately does not seed (D9 grounds
+recorded in the module header).
+
+Verification: each lesson passed independent fresh-context gates for gameplay (all three
+**STRONG**), economic truth (every blocking finding repaired and re-verified by the owning
+critic, including BC-1 proven by independent computation — sharing moves behavior through the
+differential reinvest instrument, capacity-bound markets honestly immobile), teacher transfer
+(**TRANSFER: READY** on all three), classroom/projector (fit, privacy, fallbacks, choreography),
+and sports reality (all real-world facts dated and verified, Kings capstone facts confirmed).
+Durable module discipline established: **every rendered claim on any surface is a computed,
+audited atom** (value/quantifier/bound/noun/level + rendered-string drift, mutation-proven), and
+e2e instruments assert occlusion/ellipsization/ink-collision at class size on both projector
+shapes plus 1024x600 first-contact.
+
+Open at ruling time, carried to the founder: the visual premium clause is **VERIFIED-UNMET**
+(three consecutive advisory SERVICEABLE-NOT-PREMIUM re-grades, explicitly non-blocking for
+classroom use — founder decides: accept, or commission an independent second visual review and a
+polish wave); a pre-existing M1 L3 client race makes its e2e flaky (documented with a bounded fix
+path in `docs/gauntlet/module-2/E2E_L3_FLAKE_NOTE.md`; not a Module 2 regression — reproduced at
+a pre-M2 checkpoint); non-blocking backlogs live in the gate docs. D10 in full force: all three
+lessons are **classroom-ready candidates**; nothing is classroom-proven until it survives a real
+class.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-01
+- **Owner:** CEO (program activated by Founder instruction; founder controls merge to main)
+- **Evidence:** `.boss/runs/m2-quality-war/` (event-sourced run history, 100+ evidence records);
+  docs/gauntlet/module-2/ (design war, gates, re-checks, analyst reports); final-head sweep
+  evidence ids final-suite, final-e2e-m2l1/l2/l3, final-e2e-m1l2/l2ea/l3ea/l3-retry.
