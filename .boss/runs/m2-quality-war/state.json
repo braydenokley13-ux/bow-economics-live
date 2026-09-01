@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T08:27:41.902Z",
+  "updatedAt": "2026-09-01T08:34:25.110Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3072,7 +3072,8 @@
         "w4-econ-adj",
         "l2-tests-w4r1",
         "l2-tuning-w4r1",
-        "l2-e2e-w4r1"
+        "l2-e2e-w4r1",
+        "w4-projector-final"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5064,6 +5065,23 @@
       },
       "recordedAt": "2026-09-01T08:27:19.229Z",
       "actor": "lead-integrator"
+    },
+    "w4-projector-final": {
+      "id": "w4-projector-final",
+      "wave": 4,
+      "kind": "projector-report",
+      "label": "W4 mirror confirm: arms A and C driven live to stage 5 — false lock-count claim gone at prescribed timing, /teach mirror arm-specific and matching its board (arms B/D by unit test + mutation sweep, read not re-driven). DISCHARGED",
+      "path": ".boss/runs/m2-quality-war/evidence/w4-projector-final--GATE_L2_PROJECTOR.md",
+      "sha256": "7928681378a8d1b8979834f6650bd5d4c0145c9adea2336d3d9e2960b073813c",
+      "size": 39321,
+      "metadata": {
+        "tags": [
+          "projector",
+          "wave-4"
+        ]
+      },
+      "recordedAt": "2026-09-01T08:34:24.800Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "claims": {
@@ -5723,9 +5741,12 @@
         "w4-projector-adj"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T07:50:49.503Z",
-      "actor": "classroom-projector-critic"
+      "actor": "classroom-projector-critic",
+      "resolution": "Owning critic drove two release arms live to stage 5: the false lock-count claim is gone at the prescribed timing and the /teach stage-5 mirror is arm-specific, matching its own board copy in each arm (remaining arms pinned by unit tests + the six-arm mutation sweep with M-E/M-F caught). Explicit line: DISSENT proj-l2-mirror-claims: DISCHARGED. GATE_L2_PROJECTOR.md W4 FINAL CONFIRM.",
+      "resolvedAt": "2026-09-01T08:34:25.110Z",
+      "resolvedBy": "lead-integrator"
     }
   },
   "meetings": {},
@@ -5770,11 +5791,11 @@
     "agentsActivated": 63,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 98,
+    "evidenceRecorded": 99,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 302,
-  "eventHead": "c0d25a522f4c9b6fab423b7e82f5b3d3e98497b4fde34ac3fc143dc145f53e83",
+  "eventCount": 304,
+  "eventHead": "4fb82424fed0094f6a028be49e1ff87e615a98be5875dd7fdac02242fdbc5083",
   "warnings": []
 }

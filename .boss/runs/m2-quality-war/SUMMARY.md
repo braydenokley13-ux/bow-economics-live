@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `302:c0d25a522f4c9b6fab423b7e82f5b3d3e98497b4fde34ac3fc143dc145f53e83`  
-Updated: 2026-09-01T08:27:41.902Z
+Event head: `304:4fb82424fed0094f6a028be49e1ff87e615a98be5875dd7fdac02242fdbc5083`  
+Updated: 2026-09-01T08:34:25.110Z
 
 ## Founder intent
 
@@ -67,6 +67,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l2-tests-w4r1 — test — Suite after w4 repair 1 (407/407)
 - l2-tuning-w4r1 — test — L2 harness 12/12: 336 rooms, 114,678 atoms, 0 disagreements; 6/6 mutants caught incl. wrong-noun and mirror-vs-board
 - l2-e2e-w4r1 — e2e — L2 e2e: 36 first-contact assertions across all weeks x 12 desks, 499 occlusion probes
+- w4-projector-final — projector-report — W4 mirror confirm: arms A and C driven live to stage 5 — false lock-count claim gone at prescribed timing, /teach mirror arm-specific and matching its board (arms B/D by unit test + mutation sweep, read not re-driven). DISCHARGED
 
 ## Claim ledger
 
@@ -74,7 +75,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 
 ## Dissent
 
-- proj-l2-mirror-claims — classroom-reliability/blocking/open — Two W4 successors, both the claim-vs-model class on surfaces UNREGISTERED in moduleClaims (the builder's disclosed audit limitation): W4-1 — the prescribed release path prints 'some desks had already locked' when none had; W4-2 — the /teach stage-5 mirror is byte-identical across all four release arms, promising 'this board refuses to choose' even in the arm where the board already ruled the bar out. Fix: compute both strings from state AND register them (and the teacher director/mirror surface generally) in moduleClaims so the audit family sees them. GATE_L2_PROJECTOR.md W4 section.
+- proj-l2-mirror-claims — classroom-reliability/blocking/resolved — Two W4 successors, both the claim-vs-model class on surfaces UNREGISTERED in moduleClaims (the builder's disclosed audit limitation): W4-1 — the prescribed release path prints 'some desks had already locked' when none had; W4-2 — the /teach stage-5 mirror is byte-identical across all four release arms, promising 'this board refuses to choose' even in the arm where the board already ruled the bar out. Fix: compute both strings from state AND register them (and the teacher director/mirror surface generally) in moduleClaims so the audit family sees them. GATE_L2_PROJECTOR.md W4 section.
 
 ## Latest gate
 
