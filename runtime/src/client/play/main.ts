@@ -2824,15 +2824,24 @@ function fhAckKey(): string | null {
   if (!creds) return null;
   return `bow-fh-ack:${creds.sessionCode}:${creds.seatId}`;
 }
-function fhAckRead(): number {
+function fhAckRead(history: FHNight[]): number {
+  // A desk that joins mid-window arrives with nights the room covered for it.
+  // Those are not this pair's decisions, so they are acknowledged on arrival
+  // and the pair lands on the dials; the covered nights stay printed in YOUR
+  // NIGHTS SO FAR and in the night list, flagged as covered.
+  const covered = history.filter((n) => n.stock).length;
   try {
     const key = fhAckKey();
-    if (!key) return 0;
+    if (!key) return covered;
     const raw = window.localStorage.getItem(key);
-    const n = raw === null ? 0 : Number(raw);
+    if (raw === null) {
+      fhAckWrite(covered);
+      return covered;
+    }
+    const n = Number(raw);
     return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
   } catch {
-    return 0;
+    return covered;
   }
 }
 function fhAckWrite(n: number): void {
@@ -2881,7 +2890,7 @@ function renderFHPlay(view: Record<string, unknown>): void {
   fhBindResize();
   const history = (view["history"] as FHNight[]) ?? [];
   const settled = history.length;
-  const ack = fhAckRead();
+  const ack = fhAckRead(history);
   const allDone = Boolean(view["allNightsDone"]);
   const card = view["card"] as FHCard | undefined;
   const locked = Boolean(view["locked"]);
