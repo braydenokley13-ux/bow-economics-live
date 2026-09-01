@@ -815,3 +815,239 @@ teacher too.
 I do not raise P12 (the subliminal repeat-card crowd) as a dissent this round, because the
 attribution now survives in text on `/play` and in SYNTHESIS. I record that I will dissent against
 any classroom-release decision that leaves the module's finale beat unreadable on the board.
+
+---
+
+# FINAL RE-CHECK (ROUND 3)
+
+Same Player / Gameplay critic, fresh context. Boss run `m2-quality-war`, assignment
+`recheck3-l1-play`. I did not build any part of these repairs. Final confirm-or-refute on the
+BLOCKING dissent `play-l1-repairs-below-fold`.
+
+**Method (observed unless marked).** Rebuilt `runtime/dist` this session. Shipped server on **PORT
+4352**, real Chromium, mechanics driven the way `runtime/scripts/e2e-m2l1.cjs` drives them (range
+input, +/- buttons, LOCK IT IN, teacher's own buttons) but on **my own desk lines, not the builder's
+script**. Projector measured at **1366x768** and **1920x1080**; desks at the 1024x600 Chromebook
+shape, pairs on one device.
+
+*Session A — 4 desks, the three cases the assignment names:*
+
+| desk | market | line played | role |
+|---|---|---|---|
+| 1 · Rae & Ben | New York | **$24 (plan) x5**, no spend | plan-line desk |
+| 2 · Nour & Ivy | Memphis | **$10 (floor) x5**, no spend | floor-line desk |
+| 3 · Ari & Tal | New York | **$10 (floor) x5**, no spend | floor-line desk |
+| 4 · Sam & Jo | Memphis | **$16 (plan) + max $60,000 event spend x5** | wasted-spend desk |
+
+*Session B — 10 desks* (one price each, spread $10–$60 across the dial), run to COUNTERFACTUAL for
+one purpose only: to measure the repaired board layout at a real class size. Zero console errors
+across all pages in session A (*observed*). Server killed; **port 4352 confirmed closed** (connection
+refused, 0 `dist/server/index.js` processes).
+
+Screenshots `r3-01…r3-12` in `docs/gauntlet/module-2/screens-l1-gate/`.
+
+Boss evidence referenced: `gate-l1-play-r1`, `gate-l1-play-r2` (my two prior sessions),
+`l1-e2e-r3` / `l1-tests-r3` / `l1-tuning-r3` (the builder's round-3 proofs — **not re-run by me, not
+inherited**), `gate-l1-projector`, `gate-l1-teacher`, `econ-l1-n5-attribution`. The builder's
+exact-season-DP claim that P14 breaks at `renewalFans >= 30` is an economics finding I did **not**
+re-derive: **NOT VERIFIED by me**, and it belongs to the Economic Truth gate, not this one. Real
+students, real timing and real discussion volume remain **NOT VERIFIED**.
+
+---
+
+## The highest-severity finding first
+
+**The COUNTERFACTUAL fold was moved onto the load-bearing content, not removed — and it is
+measurably worse at classroom scale than it was in round 2.** *Measured*, session B, ten desks,
+1366x768, no scrolling:
+
+| element | rendered box | visible in 768px? |
+|---|---|---|
+| prompt ("…using those dots, not a guess") | 74–143 | yes |
+| `#fhCfScatter` | 150–408 | yes |
+| Desk 1 / 2 / 3 repeat rows | 150–299 / 307–455 / 463–611 | yes |
+| Desk 4 repeat row | 619–**767** | on the line |
+| Desks **5, 6, 7, 8, 9, 10** repeat rows | 775 – **1,704** | **no — entirely below the fold** |
+| class summary ("10 desks charged the SAME price… 3 were moved most by their own renewals, 1 by the event money") | **1,715–1,757** | **no — 947px below the fold** |
+| `#stage` | scrollHeight **1,823** vs clientHeight 768 | the room sees **42%** of the frame |
+
+At 1920x1080 the same frame measures scrollHeight **2,557**, grid bottom **2,391**, and
+**4 of 10 repeat rows fully visible**. `r3-11-board-counterfactual-1366-10desks.png`,
+`r3-12-board-counterfactual-1920-10desks.png`.
+
+Two things make this the top finding rather than a layout nit.
+
+1. **It lands on the exact content the round-3 argument says now carries the beat.** The builder's
+   position is that a smaller crowd delta is acceptable because "the beat is carried the rest of the
+   way by the printed per-desk decomposition rather than by bar length." At ten desks, six of ten
+   desks' decompositions and the class-level summary of the beat are the content off the screen.
+2. **The shipped regression guard is structurally blind to it.** `e2e-m2l1.cjs` asserts
+   `assertFullyVisible` on `#fhCfScatter` and `#stage > .exit-prompt` only. Both sit at the **top**
+   of the new two-column layout; everything that overflows overflows **beneath** them. Those two
+   assertions therefore pass at any class size, including one where the room sees nothing but four
+   rows. The board renders `rows.map(...)` in `runtime/src/client/board/main.ts` with **no cap, no
+   slice, no pagination, no per-row visibility assertion**.
+
+Round 2's version of this frame showed the room the repeat rows and the summary and hid the scatter.
+Round 3's shows the room the scatter and hides most of the repeat rows and the summary. With four
+desks that is a near-wash; with a real class it is a net loss, because rows scale with the room and
+the scatter does not.
+
+## Confirmed repairs
+
+**REVEAL stage 5 — CONFIRMED, and it holds at scale.** *Measured*: `#fhRenewalsRule` renders at
+**101–255** in a 768px viewport, **141–357** in a 1080px viewport, and **101–255 again with ten
+desks** — it is fixed-height copy, so class size cannot push it off. It sits in a bordered plate in
+body-plus type directly under the headline and above a compacted chart, exactly as claimed
+(`r3-03-board-reveal5-1366.png`, `r3-04-board-reveal5-1920.png`, `r3-10-…-10desks.png`). Round 2
+measured this same element at top **764 of 768** and **1073 of 1080**. `/teach` now says something
+true: "The renewals rule is on the screen in full, directly under the headline and above the chart."
+**This half of the dissent is discharged outright.**
+
+**Spend-waste receipt (P2 second clause) — CONFIRMED.** *Observed* on Desk 4's pre-lock screen,
+three separate nights, ruling on the money after the fact and naming it:
+
+- N3 and N5 screens: *"Last night's $60,000 bought nothing. It brought about 960 more people to the
+  door — and the building sold out anyway, so…"*
+- N4 screen: *"Last night's $60,000 bought about 960 extra people, and every one of them got in and
+  paid tonight's price."*
+
+It confirms **and** refutes, which is what the repair had to do. Two residuals, both narrow: the
+verdict is per-night and transient, so no cumulative "$120,000 of your $300,000 bought nothing" line
+reaches REVEAL, COUNTERFACTUAL or SYNTHESIS (*observed* — absent from `desk4` end-of-play and
+COUNTERFACTUAL text); and **Night 5's spend is never ruled on at all**, because there is no Night 6
+screen to carry the verdict. I read the verdict pre-lock each night; whether it persists on the
+post-lock recap is **NOT VERIFIED**.
+
+**N5 beat numbers — CONFIRMED exactly as claimed.** *Observed* on the board, session A:
+
+| desk | price both nights | N1 | N5 | delta | % of N1 crowd | % of capacity | renewals |
+|---|---|---|---|---|---|---|---|
+| 1 · NY plan $24 | $24 | 16,862 | 17,462 | **+600** | +3.56% | +3.0% | 50% → 74% |
+| 2 · MEM floor $10 | $10 | 16,750 | 15,850 | **−900** | −5.37% | −5.1% | 50% → 14% |
+| 3 · NY floor $10 | $10 | 19,800 | 19,420 | **−380** | −1.92% | −1.9% | 50% → 0% |
+| 4 · MEM plan + spend | $16 | 14,740 | 16,500 | +1,760 | +11.9% | +9.9% | 50% → 82% |
+
+Session B's Memphis plan-line desk reproduced **+600 (+4.07%)**. The claimed "+3.6% / +4.1%" and
+"−380 NY / −900 MEM" are exact. The floor line is no longer structurally 0.
+
+**Channel decomposition — CONFIRMED on the board, and it is honest.** *Observed*:
+`renewals 50% → 74% · +600 people, and that is renewals +600` · `renewals 50% → 0% · wanted in
+−1,250 (renewals −1,250) · seats only allowed −380` · `renewals 50% → 82% · +1,760 people, and that
+is renewals +800 and Night 4's $60,000 of event money +960`. The clamp case refuses to launder
+−1,250 of lost demand into a −380 headline, and the mixed case refuses to call event money
+"renewals." That is better teaching than a bigger unattributed bar would have been.
+
+## Does the beat READ at +600 / −380 / −900?
+
+**In the numerals and the sentence: yes. In the picture: no, and that has not changed.** *Measured*
+off `r3-07-board-counterfactual-1366.png`: on a ~600px bar, Desk 1's +600 is ~21px of bar, Desk 3's
+−380 is ~16px, and session B's +300 desk is ~5px. A student across a classroom is reading
+**16,862 → 17,462** and the sentence under it; they are not reading the bar. My round-2 P12 bar (a
+delta ≥10% of capacity, legible off bar length without the number) is **unmet by construction** at
+the shipped constants — only Desk 4, and only with event money on top of renewals, reaches 9.9%.
+
+**Ruling on the assignment's question: I accept the smaller-but-decomposed beat as
+STRONG-compatible, and I downgrade P12 from BLOCKING to non-blocking.** The reason is not the
+tuning argument (which I did not verify) — it is that what replaced the missing drama is *better
+than the drama would have been*. "+600 people, and that is renewals +600" is a sentence a 5th
+grader can read, own, and argue with, and it survives the case a bar cannot survive at all: the
+sold-out desk whose punishment was invisible in round 2 now prints "wanted in −1,250 · seats only
+allowed −380". A vivid bar that hid the clamp would have taught something false. This is the right
+trade.
+
+**But the acceptance is conditional on delivery, and delivery is what fails.** A decomposition the
+room cannot see is not a substitute for a crowd the room cannot see. Six of ten desks' sentences and
+the class summary are off the projector.
+
+## Also observed this session
+
+- **Per-desk `/play` COUNTERFACTUAL does not carry the decomposition.** Desk 4's own screen shows
+  `$16 · 14,740 · renewals 50%` → `$16 · 16,500 · renewals 82%` under "Same price both nights. The
+  only thing that changed was you." A pair reading only their own device will attribute all +1,760
+  to renewals — the `econ-l1-n5-attribution` defect, still live on the private surface. Only the
+  board decomposes it, and Desk 4's board row is the one clipped at the fold (`r3-08-desk4-…png`).
+- **REVEAL 5 bottom clipping (minor).** The "These demand curves are modeled on real market
+  differences…" footnote measures 739–**775** in a 768px viewport — sliced mid-sentence on the
+  projector (`r3-03-…png`). This is the 1d contradiction footnote, now visibly cut in half.
+- **The COUNTERFACTUAL scatter is compacted to 617x257 rendered.** With session A's four low-priced
+  lines all 20 marks pile into roughly a 90x60px smudge in the leftmost eighth of a fixed $10–$120
+  axis (`r3-07-…-1366.png`), while ~60% of the plot area is empty. Session B's wider price spread
+  renders legibly (`r3-11-…png`), so this is data-dependent, not unconditional — but the axis is
+  fixed regardless of what the room actually priced, so a class that clusters gets an unreadable
+  chart under a prompt in the largest type on the board telling them to read it.
+- **Strongest single surface, unchanged and improved:** Desk 3's private card — `What you actually
+  did $150,440 · 0%` against `Same price every night ($24) $1,238,212 · 80%`. That is the screen
+  that produces "our decision caused that?"
+- Blind pre-commit, board privacy, the single synchronized bell, the seven named reveal stages, and
+  zero console errors all re-verified intact (*observed*).
+
+## Rating
+
+**RATING: STRONG**
+
+Held for the third round, and this round's gains are real: the renewals rule finally reaches the
+projector at every shape and every class size, the event dial finally gets ruled on after the fact
+in both directions, and the N5 beat traded volume for honesty in a trade I endorse. Not MAGNETIC,
+unchanged from round 2: after the fifth bell no student device accepts input for the rest of the
+period, and the loudest moment the repeat card can produce is still not reachable by a line a pair is
+likely to find. Not below STRONG: the private `/play` counterfactual is untouched by the fold defect,
+and it is the sharpest argue-fuel in the lesson.
+
+The rating is on the play. The dissent below blocks release independently of it.
+
+## Repairs still required (updated)
+
+**BLOCKING (student-pull):**
+
+- **P11-b (carried, re-scoped) — the COUNTERFACTUAL repeat rows and the class summary must reach the
+  room at classroom scale.** *Test:* with **12 desks** joined, at 1366x768 and 1920x1080, with no
+  scrolling, every repeat row and the `repeatSummary` line are fully inside the viewport — by
+  capping/paginating rows under teacher control, compacting the row, or splitting the frame into
+  teacher-advanced beats. And the e2e must assert **per-row** visibility at that desk count, not
+  `#fhCfScatter` alone. Measured today at ten desks: 6 of 10 rows and the summary off-screen at
+  1366x768; 6 of 10 rows off-screen at 1920x1080.
+
+**NON-BLOCKING, in order:** put the channel decomposition on the desk's own `/play` COUNTERFACTUAL
+card, not only on the board (`econ-l1-n5-attribution` residual on the private surface) · scale the
+scatter's price axis to the room's actual price range · REVEAL-5 footnote clipped at 775/768 and the
+1d contradiction it still contains · **P12 (downgraded)** the repeat bars remain near-subliminal;
+the beat now lives entirely in numerals and sentences · no cumulative statement of total wasted event
+money, and Night 5's spend is never ruled on · stages 1–3 of REVEAL still say nothing about their own
+dots (P4 remainder) · within-desk mark overlap (R5 remainder) · Chromebook fold buries LOCK IT IN and
+the FULL HOUSE plate (P9) · top-of-dial dead zone (P7) · the unfurnished wait (P5).
+
+## Dissent
+
+**DISSENT `play-l1-repairs-below-fold`: NOT DISCHARGED.**
+
+Scoped precisely, because half of it is genuinely fixed:
+
+- **REVEAL stage 5 / the renewals rule — DISCHARGED.** Measured fully in-viewport at 1366x768,
+  1920x1080, and at ten desks. `/teach` no longer asserts something the projector is not showing.
+- **COUNTERFACTUAL — NOT DISCHARGED.** The named element (`#fhCfScatter`) was hoisted above the
+  fold, but it was hoisted *over* the room's own evidence, and at real class size the majority of
+  the repeat rows and the entire class-level summary of the beat now render off the projector. The
+  defect the dissent names — board content the room is instructed to read that does not reach the
+  room — is present in the same phase, at the same shapes, on content that round 2 could see. The
+  e2e assertion written to guard this repair cannot detect it at any class size.
+
+I am not holding this on a technicality. If the round-3 answer to the felt-scale problem is "the
+printed decomposition carries the beat," then the printed decomposition reaching the projector is
+load-bearing, and today it does not.
+
+**Felt-scale concern discharged with a real-classroom watch item.** I accept +600 / −380 / −900 as
+STRONG-compatible, so the real-classroom test must watch for four specific things and report them:
+
+1. **Do students say the delta out loud, or does the teacher have to?** If the room reads
+   "16,862 → 17,462" as "basically the same," the beat did not land regardless of the sentence.
+2. **Does anyone spontaneously use the channel sentence in argument** — "yours went up because of
+   renewals, ours because we spent on Night 4" — or does it read as board decoration?
+3. **The undercutting desk specifically.** The $10 desk ended at 0% renewals and lost 380 seated
+   people. Does that pair experience a punishment, or do they leave the room believing that filling
+   the building at $10 worked out fine? This is the single most likely false lesson in the lesson.
+4. **What the teacher does when the rows overflow.** Whether they scroll, skip, or read only the top
+   four desks — and whether desks 5+ notice that the board never showed their night.
+
+I will dissent against any classroom-release decision that leaves the COUNTERFACTUAL frame
+unreadable at real class size.
