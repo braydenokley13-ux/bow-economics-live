@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:07:01.628Z",
+  "updatedAt": "2026-09-01T02:07:22.544Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -919,12 +919,23 @@
           "model": "claude-opus-5",
           "reason": "Confirm-or-refute the N5 attribution repair and adjudicate the builder-flagged frontier-margin tradeoff (P14 at its bar with zero headroom)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T01:51:56.303Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T02:07:22.279Z",
+          "sections": {
+            "mechanism-verdicts": "N5 attribution repair CONFIRMED wider than the builder's harness: identity residual 0 across 168 full-season cases; biggestChannel correct 168/168; all 18 sign inversions correctly name spend; rendered card verified in five sessions. DISSENT econ-l1-n5-attribution: DISCHARGED.",
+            "false-lesson-risks": "NEW BLOCKING (econ-l1-two-book-baseline): the two-books card prices renewal points 47-70x too steep by comparing against a Pareto-dominated baseline instead of the frontier. Non-blocking: demand-floor identity edge ('0 then 0' card reachable from $58 Memphis); HOUSE_RULES[2] +2 clause false in 62-65% of states.",
+            "dominant-strategies": "Frontier is REAL at the round-3 constants: 22/24 undominated points, renewal points cost 7.54%/6.01% of season cash with marginal cost rising 50x across the frontier.",
+            "synthesis-map-verdict": "Tradeoff ruling SPLIT: accept-with-reason on felt-scale (the conflict is structural; economics keeps truth), but margin-at-bar indicts P14's limb, not the economics — 30/4.5 passes with headroom, refuting the builder's ceiling claim; reframe the source comment.",
+            "required-repairs": "Fix the two-books card baseline (frontier pricing); reframe P14 headroom comment; the two non-blocking items. All narrow and deterministic."
+          },
+          "evidenceIds": [
+            "gate-l1-econ-r3"
+          ],
+          "cost": {
+            "tokens": 148423,
+            "toolUses": 34
+          }
         },
         "recheck3-l1-play": {
           "assignmentId": "recheck3-l1-play",
@@ -976,6 +987,20 @@
             "tokens": 110296,
             "toolUses": 55
           }
+        },
+        "analyst-wave2": {
+          "assignmentId": "analyst-wave2",
+          "role": "product-analyst",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Fresh read-only reconciliation of Wave 2 claims against recorded evidence before the wave verdict; attempts to disprove success",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T02:07:22.544Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -1036,7 +1061,8 @@
         "recheck2-l1-teacher-dissent",
         "play-l1-repairs-below-fold",
         "recheck2-l1-play-dissent",
-        "econ-l1-two-book-baseline"
+        "econ-l1-two-book-baseline",
+        "recheck3-l1-econ-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -2433,6 +2459,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T02:07:01.628Z",
       "actor": "economic-truth-critic"
+    },
+    "recheck3-l1-econ-dissent": {
+      "id": "recheck3-l1-econ-dissent",
+      "wave": 2,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T02:07:22.300Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -2460,14 +2495,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 29,
+    "agentsActivated": 30,
     "gateFailures": 0,
     "claimsContradicted": 1,
     "evidenceRecorded": 50,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 149,
-  "eventHead": "5f401b5652f3433c53216f280e4f4c326b3ddcb3d3881677393c7a89d4f1a983",
+  "eventCount": 152,
+  "eventHead": "7f0b50e5439d14a1b905301f0010d0eb8cf4beb627b10a0cf9172e9078ea050f",
   "warnings": []
 }

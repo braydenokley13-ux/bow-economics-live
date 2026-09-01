@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `149:5f401b5652f3433c53216f280e4f4c326b3ddcb3d3881677393c7a89d4f1a983`  
-Updated: 2026-09-01T02:07:01.628Z
+Event head: `152:7f0b50e5439d14a1b905301f0010d0eb8cf4beb627b10a0cf9172e9078ea050f`  
+Updated: 2026-09-01T02:07:22.544Z
 
 ## Founder intent
 
@@ -49,9 +49,10 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - builder — lead-integrator — completed-with-concerns — claude-opus-5
-- economic-truth-critic — lead-integrator — active — claude-opus-5
+- economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed — claude-sonnet-5
+- product-analyst — lead-integrator — active — claude-opus-5
 
 ## Required evidence
 
@@ -128,6 +129,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - play-l1-repairs-below-fold — gameplay/blocking/open — Two of four claimed board repairs render below the projector fold at 1366x768/1600x900/1920x1080 (REVEAL-5 renewals rule top 764/895/1073; COUNTERFACTUAL scatter top 720/839/1007) while /teach tells the teacher the rule is on the screen now. Also blocking: N5-repeats-N1 felt delta shrunk to +170/-360 with the round-1 FULL HOUSE unreachable (same N5 economy the econ dissent flags for attribution — rebalance and attribute together); spend receipt reports payoff but never waste. GATE_L1_PLAY.md r2 section.
 - recheck2-l1-play-dissent — undefined/undefined/open — undefined
 - econ-l1-two-book-baseline — economic-truth/blocking/open — The two-books synthesis card prices renewal points 47-70x too steep because it compares against a Pareto-dominated baseline line rather than the frontier; narrow fix — compute the card's price-per-point along the true frontier. Also open: reframe P14's zero-headroom source comment (30/4.5 passes with headroom, refuting the builder's ceiling claim); non-blocking demand-floor identity edge (a '0 then 0' card reachable from $58 Memphis) and HOUSE_RULES[2] +2 clause false in 62-65% of states. GATE_L1_ECON_R3.md.
+- recheck3-l1-econ-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
