@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `65:65b15b765478fae8926ca706246c0ae83a29e63c7ee9f60b6f6c909a23682305`  
-Updated: 2026-09-01T20:31:40.535Z
+Event head: `78:ab1c4ca964225acec034e19e251232538e0fe7091a09979b3682b645cca8246d`  
+Updated: 2026-09-01T20:32:04.919Z
 
 ## Founder intent
 
@@ -30,7 +30,7 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 
 ## Role status
 
-- visual-experience-director — visual-critic-2 — active — claude-opus-5
+- visual-experience-director — visual-critic-2 — completed-with-concerns — claude-opus-5
 - browser-qa — browser-qa-w1 — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — kid-a-basketball — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-b-casual — completed-with-concerns — claude-sonnet-5
@@ -98,6 +98,18 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 - kid-a-basketball-baseline-board-shock — screenshot — Board at REVEAL stage 4 'NIGHT 4 · THE SHOCK': an unlabelled dot cloud plus ~130 words of paragraph; no desk is identifiable and nothing depicts the shock
 - kid-a-basketball-baseline-synth-card — screenshot — Synthesis card 3 of 6 on the projector: title plus one text paragraph, no computed visual, identical 'flights and hotels' trailer repeated under all six cards
 - kid-a-basketball-baseline-cf-strong — screenshot — COUNTERFACTUAL student screen: NIGHT 1 $34 -> 14,142 vs NIGHT 5 $34 -> 13,342, '-800 people, and that is renewals -800' — the clearest cause-and-effect surface in the build
+- second-visual-review-report — visual-report — REVIEW_VISUAL_2 — second independent visual review of M2 L1 (verdict, hierarchy findings, production gaps, reference conflicts, do-not-regress, direction)
+- second-visual-review-manifest — browser-trace — Screenshot manifest for the full driven session (100 PNGs: /play /teach /board across LOBBY→COMPLETE, 4 desks + late joiner + stalled desk) plus live measurements and console-error log
+- second-visual-review-play-prelock — screenshot — /play Night 1 pre-lock at the Chromebook design target — 616px column in a 1366px viewport, rejoin PIN (32px) larger than the price hero (28px)
+- second-visual-review-play-sellout — screenshot — /play at the Night-4 sellout, 1366x768 — FULL HOUSE begins at y≈745 in a 768px viewport; the loudest beat in the lesson is a sliver under the next decision
+- second-visual-review-play-sellout-full — screenshot — Same desk, full page — the 470px consequence block that the viewport cuts (headline, turned-away, fill, CAME × PRICE = TICKET MONEY, ledger, KEPT, renewals)
+- second-visual-review-teach-top — screenshot — /teach at page top during PLAY — join code and URLs own the first viewport; bell/reveal at 1288px and first desk tile at 1670px in an 1826px document
+- second-visual-review-teach-tiles — screenshot — /teach desk tiles after PLAY — 140px tiles with handle/status wrapping into '& Talin the books'
+- second-visual-review-board-reveal5 — screenshot — /board REVEAL stage 5 at 1920x1080 — five text blocks and one compressed chart; the disclaimer outweighs the evidence
+- second-visual-review-board-cf — screenshot — /board COUNTERFACTUAL at 1366x768 — bar value chips colliding with bar ends, framed plot box, 4-line bold summary as the largest block
+- second-visual-review-board-synth1 — screenshot — /board SYNTHESIS card 1 of 6 — 'REVENUE = PRICE × PEOPLE' rendered as six lines of prose with no computed visual
+- second-visual-review-board-complete — screenshot — /board COMPLETE — closing copy overprinting the backdrop's hard-edged rectangle; wireframe stands in for the arena asset
+- second-visual-review-measurements — note — Live getComputedStyle/getBoundingClientRect measurements: /teach scroll geometry, /play type sizes and colours, /board largest rendered type, #hud, keyframe inventory, reduced-motion, 1024x600 lock-control position with and without the PIN card
 
 ## Claim ledger
 

@@ -600,3 +600,23 @@ room made more money by charging less"). OBSERVED it holds season-wide in 84.5% 
 swept (4 desks, all prices $10–$40) and 100% elsewhere. Acceptable as a season-wide prompt; it must
 not be promoted to a per-night headline or a projector hero line, where the sample collapses to one
 market × one night and the claim becomes as fragile as E17.
+
+---
+
+## 6. NOTE ON `VISUAL_REFERENCE_CONTRACT.md` (read after it appeared mid-assignment)
+
+The contract's row **G6** lists as a non-negotiable: *"Every rendered economic claim audited
+(ClaimAtom / render-drift limbs keep biting)."* **For Lesson 1 that is not true today** (§0):
+Full House registers no ClaimAtom, and no test in this repository reads a line of
+`runtime/src/client/**`. G6 is a statement of intent, not of state. **R-1 is what makes G6 true**,
+and until R-1 lands the contract must not be read as though an audit is already holding the line.
+
+Row-by-row bindings from this document, for whoever fills the contract:
+A6 → E2/E3/E27(a). A7 → E12/E19/E20 + R-2 + R-7. B3 → E2 **FORBIDDEN**, replaced by E3.
+B5 → E1 **FORBIDDEN**, replaced by the four printed-fact / own-books cards. B6 → E5.
+B1/D1 → E4 (two-book goal card). C2 → E11 + R-2. C3 → E9 (both halves ruled, including the
+overturn of the night-over-night PRELIMINARY ADAPTATION). C4 → E12. C5 → E14 **FORBIDDEN**.
+C6 → E15. D3 → E27 (four reference cards mapped onto the module's six; Weather and the balance
+scale forbidden). E1/E2 → E16 **revenue and profit columns FORBIDDEN**, legal column set given.
+E3 → E17 **prompt FORBIDDEN**, registered prompts only. E4 → E18. F1 → E24/E25.
+F3 → E22/E23 **both FORBIDDEN**, replacements given. F5 → E21/E26.

@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:31:40.535Z",
+  "updatedAt": "2026-09-01T20:32:04.919Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -128,11 +128,29 @@
           "model": "claude-opus-5",
           "reason": "Founder-commissioned SECOND INDEPENDENT visual review; routed to a different model family instance than the Boss lead for independence",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:14:03.157Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T20:32:04.919Z",
+          "sections": {
+            "visual-verdict": "VERIFIED-UNMET overall, from a full AGENT-PLAYTESTED session on port 4401 (4 desks, late joiner at Night 3, one desk stalling Night 5, all 5 nights, all 7 reveal stages, all 6 synthesis cards, COMPLETE; 100 screenshots; zero console errors). Per surface: /play VERIFIED-UNMET; /teach VERIFIED-UNMET; /board VERIFIED-UNMET (closest of the three); synthesis frames VERIFIED-UNMET (weakest in the module). The product is a carefully-reasoned instrument rendered as a document: almost every premium decision in the founder references is a decision about space, and two of three surfaces have no spatial system. /play is a 616px column centred in a 1366px viewport with 750px of unused black; /teach is an 1826px scroll whose bell, reveal control and first desk tile all sit below the fold at 1920x1080. Performance budget: NOT VERIFIED - no Chromebook budget document exists in the repo and no Chromebook was used; desktop proxies only (/play load 63ms, /board first stage paint 103ms, lock-to-settled 63-83ms, 50 DOM nodes).",
+            "hierarchy-findings": "H1 (highest severity, one-surface fix with the largest grade delta): /teach buries every live control and the whole monitor wall below the fold - measured at page top, btnCloseNight top=1288px, btnRevealNext=1289px, btnAdvance=1242px, first .teamtile=1670px, in viewports of 1080px and 768px (45-teach-play-TOP-1366x768.png, 46-…-1920x1080.png); the teacher scrolls a document to ring the bell mid-class. H2: there is no result state - a settled night is appended under the NEXT night's dials, so the Night-4 sellout headline begins at y~745 in a 768px viewport (24-play-night4-sellout.png) and the 470px consequence block is off-screen (24b-…-full.png). H3: measured, the rejoin PIN renders 32px and the ticket price 28px on the Night-1 decision screen (PIN auto-collapses after 20s per play/main.ts:99, so this is the first 20 seconds of the first decision); nothing on /play exceeds 32px all lesson, against a reference hero of 72-96px / >=64px re-composed. H4: on a live /board PLAY frame the largest rendered element is the lock counter '0/2' at 57.6px; no board state anywhere carries a 72-96px figure. H5: standing caveats outweigh the evidence - REVEAL stage 5 puts five text blocks and one chart on the projector, and at 1366x768 the frame fits by shrinking the chart to ~490x210 while the five-line rule keeps its size (31-board-reveal-stage5@1920x1080/@1366x768). H6: .fh-blind-note - the line that declares the blindness deliberate - renders 11px in ink-muted, under VISUAL_IDENTITY's own '>=14px only' floor. H7: locked-waiting and the synthesis mirror are undesigned - a sentence over ~400px of black, five times a lesson (15-…, 40-…). H8: first contact is a login form with no lesson identity (01-play-join-1366x768.png). H9: measured, at 1366x768 the play column is 616px and the document is 815px (scrolls by 47px); at 1024x600 #fhLock top=664px with the PIN up and 553px collapsed - reachable, not composed.",
+            "production-quality-gaps": "P1: the 'PLAN $24' tick label is struck through by the slider knob at the default price, every night, both viewports (11c-clip-price-dial.png). P2: counterfactual bar value chips collide with and overhang their bars on the projector frame the room argues from (36-board-counterfactual@1366x768.png). P3: teacher desk tiles wrap into unreadable text - Desk 3 renders '& Talin the books' (29-teach-books-closed@1366x768.png). P4: build chrome is permanently on the projector - #hud renders 'v5 · PLAY' … 'v90 · COMPLETE' at 12px, opacity 1, including the ceremonial close. P5: the arena does not exist - the backdrop is diagonal bands plus two hard-edged bordered rectangles, and the closing copy on COMPLETE overprints one of those borders, which VISUAL_IDENTITY explicitly forbids; the reference's fill-encoding arena outcome panel is absent. P6: charts sit inside visible bounding boxes (both the identity and reference forbid a frame box), marks carry no separating ring so overlapping desk-nights fuse, and the 'N1 Tue' legend swatch is a near-black dot on near-black. P7: the synthesis cards carry no visuals - the card literally titled 'REVENUE = PRICE × PEOPLE' is six lines of prose with 260px of dead space, while the settlement box score already renders CAME × PRICE = TICKET MONEY as a real equation elsewhere. P8: the lesson's final projector frame is five paragraphs of ~17px source citations (~1.6% of screen height, under the 2.6% back-row floor) beneath an exit prompt smaller than the line above it. P9: the identity's motion vocabulary is unimplemented on M2 - all four keyframes belong to Module 1 selectors, no fh- element carries an animation, so there is no commitment settle, sellout flash, staggered mark population or synthesis rise; prefers-reduced-motion IS correctly wired (measured 80ms). P10: price, spend and bowl are three equal-weight blocks, so the screen never says which decision is the decision.",
+            "direction": "Ranked by grade movement per unit of work; 1-3 are most of the distance. (1) Rebuild /teach as a fixed monitor wall - persistent header, persistent bottom control bar (advance/bell/reveal/Two Peaks), desk grid in the middle, director rail scrolling inside itself; nothing a teacher touches during a night may be below the fold at 1366x768; fix the tile text wrap in the same pass. (2) Give the settled night its own state on /play above the fold, and make that the place the drawn arena earns itself (fill-encoded bowl, whole-bowl sellout, one edge flash); this also gives the dead locked-waiting screen something to be. (3) One hero per state on all three surfaces - price >=64px on /play with the PIN never larger, one 72-96px figure per board frame, standing caveats demoted to a fixed small footnote rail, #hud off the projector. (4) Give the six synthesis cards computed visuals using the class's own numbers, and move the source notes off the final frame. (5) Then introduce the reference's card grid into /play's 750px of unused width - after (2), so it is designed around the decision/consequence split rather than retro-fitted. (6) Then the craft pass: tick/knob overprint, bar-chip collisions, chart frames and mark rings and the invisible legend swatch, backdrop overprint, 11px muted copy, and the motion vocabulary inside the existing reduced-motion collapse. Reference conflicts needing a founder ruling BEFORE the grid work, because they touch the shared theme that Module 1 also renders: violet-only accent with no gold (conflicts with VISUAL_IDENTITY's accent-gold = money and would make M1 and M2 look like two products), and 'no condensed display face on student/teacher' (conflicts with Bebas Neue eyebrows now in use). Fifteen reference decisions that would cause concrete problems if implemented literally are enumerated in the report's reference-conflicts section - six confirm the spec's own PRELIMINARY flags (pre-lock revenue preview, single 'maximize revenue' goal, the target-price pill, the trophy/momentum footer, vs-projected deltas, a single 'profit' column), nine are additional, including: a student-side history curve with a live current-price marker is still a demand preview; green-for-positive on both books invites the summing the lesson forbids; a 220px sidebar costs the 1024x600 decision column it cannot afford; a per-desk 'Readiness' score is a rank a teacher will read aloud; a paginated /teach desk grid removes the surface's whole purpose; and the projector table must be designed at 1366x768 with 15 desks first, not compressed afterwards. Ten currently-good things must not regress - listed in the report's do-not-regress section, led by the on-screen declaration of blind commitment, the two books never being summed on any surface, projector privacy, the market-colour/night-shape mark system with no joining stroke, the Two Peaks choreography, and the box-score equation."
+          },
+          "evidenceIds": [
+            "second-visual-review-report",
+            "second-visual-review-manifest",
+            "second-visual-review-play-prelock",
+            "second-visual-review-play-sellout",
+            "second-visual-review-play-sellout-full",
+            "second-visual-review-teach-top",
+            "second-visual-review-teach-tiles",
+            "second-visual-review-board-reveal5",
+            "second-visual-review-board-cf",
+            "second-visual-review-board-synth1",
+            "second-visual-review-board-complete",
+            "second-visual-review-measurements"
+          ],
           "cost": null
         },
         "baseline-browser-qa": {
@@ -361,7 +379,19 @@
         "kid-a-basketball-baseline-1024",
         "kid-a-basketball-baseline-board-shock",
         "kid-a-basketball-baseline-synth-card",
-        "kid-a-basketball-baseline-cf-strong"
+        "kid-a-basketball-baseline-cf-strong",
+        "second-visual-review-report",
+        "second-visual-review-manifest",
+        "second-visual-review-play-prelock",
+        "second-visual-review-play-sellout",
+        "second-visual-review-play-sellout-full",
+        "second-visual-review-teach-top",
+        "second-visual-review-teach-tiles",
+        "second-visual-review-board-reveal5",
+        "second-visual-review-board-cf",
+        "second-visual-review-board-synth1",
+        "second-visual-review-board-complete",
+        "second-visual-review-measurements"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -1208,6 +1238,224 @@
       },
       "recordedAt": "2026-09-01T20:31:40.279Z",
       "actor": "kid-a-basketball"
+    },
+    "second-visual-review-report": {
+      "id": "second-visual-review-report",
+      "wave": 1,
+      "kind": "visual-report",
+      "label": "REVIEW_VISUAL_2 — second independent visual review of M2 L1 (verdict, hierarchy findings, production gaps, reference conflicts, do-not-regress, direction)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-report--REVIEW_VISUAL_2.md",
+      "sha256": "c7af2ee5d7b0784c14c636531df2fd893ddf96a75a49f27f115ac7129140ed31",
+      "size": 27316,
+      "metadata": {
+        "tags": [
+          "visual",
+          "module-2",
+          "second-review",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:02.010Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-manifest": {
+      "id": "second-visual-review-manifest",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Screenshot manifest for the full driven session (100 PNGs: /play /teach /board across LOBBY→COMPLETE, 4 desks + late joiner + stalled desk) plus live measurements and console-error log",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-manifest--MANIFEST.md",
+      "sha256": "eaa71a073530700bc1f6de22c67ff94c12b803e32ae300709539fd5416b69da9",
+      "size": 9242,
+      "metadata": {
+        "tags": [
+          "browser-trace",
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "viewport-1920x1080",
+          "zero-console-errors"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:02.261Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-play-prelock": {
+      "id": "second-visual-review-play-prelock",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/play Night 1 pre-lock at the Chromebook design target — 616px column in a 1366px viewport, rejoin PIN (32px) larger than the price hero (28px)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-play-prelock--11-play-night1-prelock-1366x768.png",
+      "sha256": "eeef91f415f8400690370c0e5e111449e69b2a39bc14a2cee9ffc651a9ef81a6",
+      "size": 95117,
+      "metadata": {
+        "tags": [
+          "surface-play",
+          "viewport-1366x768",
+          "hierarchy"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:02.516Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-play-sellout": {
+      "id": "second-visual-review-play-sellout",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/play at the Night-4 sellout, 1366x768 — FULL HOUSE begins at y≈745 in a 768px viewport; the loudest beat in the lesson is a sliver under the next decision",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-play-sellout--24-play-night4-sellout.png",
+      "sha256": "854dbea560a40725a5e2f23cbea1b13761e85c422309adc17ee1c7856dfaebe8",
+      "size": 101398,
+      "metadata": {
+        "tags": [
+          "surface-play",
+          "viewport-1366x768",
+          "below-the-fold"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:02.757Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-play-sellout-full": {
+      "id": "second-visual-review-play-sellout-full",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Same desk, full page — the 470px consequence block that the viewport cuts (headline, turned-away, fill, CAME × PRICE = TICKET MONEY, ledger, KEPT, renewals)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-play-sellout-full--24b-play-night4-sellout-full.png",
+      "sha256": "784495ea212777dfce96b31049c0be4df5d7a29c4147e29251ba5a6f1357ed8a",
+      "size": 177851,
+      "metadata": {
+        "tags": [
+          "surface-play",
+          "fullpage",
+          "do-not-regress"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:03.028Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-teach-top": {
+      "id": "second-visual-review-teach-top",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/teach at page top during PLAY — join code and URLs own the first viewport; bell/reveal at 1288px and first desk tile at 1670px in an 1826px document",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-teach-top--45-teach-play-TOP-1366x768.png",
+      "sha256": "587f700ba51435d7bd4ced8cffa4e5a74fdb4a3ff3eec86295a77e027de33d24",
+      "size": 87837,
+      "metadata": {
+        "tags": [
+          "surface-teach",
+          "viewport-1366x768",
+          "controls-below-fold"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:03.258Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-teach-tiles": {
+      "id": "second-visual-review-teach-tiles",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/teach desk tiles after PLAY — 140px tiles with handle/status wrapping into '& Talin the books'",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-teach-tiles--29-teach-books-closed-1366x768.png",
+      "sha256": "24c208bb0a416e29b81fb4b99981df43b867b64f0c194b28f935519117444929",
+      "size": 108338,
+      "metadata": {
+        "tags": [
+          "surface-teach",
+          "viewport-1366x768",
+          "text-defect"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:03.485Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-board-reveal5": {
+      "id": "second-visual-review-board-reveal5",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/board REVEAL stage 5 at 1920x1080 — five text blocks and one compressed chart; the disclaimer outweighs the evidence",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-board-reveal5--31-board-reveal-stage5-1920x1080.png",
+      "sha256": "7a3f909e6665d2c50fa69b623ee97f2240d8360039ae663d14627cfa8655cd4e",
+      "size": 1267406,
+      "metadata": {
+        "tags": [
+          "surface-board",
+          "viewport-1920x1080",
+          "hierarchy"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:03.748Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-board-cf": {
+      "id": "second-visual-review-board-cf",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/board COUNTERFACTUAL at 1366x768 — bar value chips colliding with bar ends, framed plot box, 4-line bold summary as the largest block",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-board-cf--36-board-counterfactual-1366x768.png",
+      "sha256": "1fb7c1163fbf1980d54728d761adbfa1bb195731af2dc9fa6ad91aadedd74bc1",
+      "size": 815225,
+      "metadata": {
+        "tags": [
+          "surface-board",
+          "viewport-1366x768",
+          "craft-defect"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:04.002Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-board-synth1": {
+      "id": "second-visual-review-board-synth1",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/board SYNTHESIS card 1 of 6 — 'REVENUE = PRICE × PEOPLE' rendered as six lines of prose with no computed visual",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-board-synth1--39-board-synthesis-card1-1920x1080.png",
+      "sha256": "63558848dfefdfb064291f79d12e9f21ca3ba399384e0fa3f4914411735d9937",
+      "size": 1131109,
+      "metadata": {
+        "tags": [
+          "surface-board",
+          "synthesis",
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:04.237Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-board-complete": {
+      "id": "second-visual-review-board-complete",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "/board COMPLETE — closing copy overprinting the backdrop's hard-edged rectangle; wireframe stands in for the arena asset",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-board-complete--42-board-complete-1920x1080.png",
+      "sha256": "a056a1909a992be2fcabbbb05df93212ecb2049f8736d088310487db22079c9d",
+      "size": 861987,
+      "metadata": {
+        "tags": [
+          "surface-board",
+          "viewport-1920x1080",
+          "backdrop"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:04.466Z",
+      "actor": "visual-critic-2"
+    },
+    "second-visual-review-measurements": {
+      "id": "second-visual-review-measurements",
+      "wave": 1,
+      "kind": "note",
+      "label": "Live getComputedStyle/getBoundingClientRect measurements: /teach scroll geometry, /play type sizes and colours, /board largest rendered type, #hud, keyframe inventory, reduced-motion, 1024x600 lock-control position with and without the PIN card",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/second-visual-review-measurements--supplement.json",
+      "sha256": "a66b999e9b3c54ed5f5565304276289e6abd248ff960b37c6dbceeffbd764478",
+      "size": 3335,
+      "metadata": {
+        "tags": [
+          "measured",
+          "not-a-performance-budget"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:32:04.696Z",
+      "actor": "visual-critic-2"
     }
   },
   "claims": {},
@@ -1306,11 +1554,11 @@
     "agentsActivated": 8,
     "gateFailures": 0,
     "claimsContradicted": 0,
-    "evidenceRecorded": 47,
+    "evidenceRecorded": 59,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 65,
-  "eventHead": "65b15b765478fae8926ca706246c0ae83a29e63c7ee9f60b6f6c909a23682305",
+  "eventCount": 78,
+  "eventHead": "ab1c4ca964225acec034e19e251232538e0fe7091a09979b3682b645cca8246d",
   "warnings": []
 }

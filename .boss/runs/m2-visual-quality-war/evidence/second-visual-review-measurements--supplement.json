@@ -1,0 +1,38 @@
+[
+  {
+    "what": "/teach @1920x1080 scroll geometry (page top)",
+    "value": "{\"docHeight\":1826,\"viewport\":1080,\"revealBtnTop\":1289.03125,\"closeBtnTop\":1288.03125,\"advanceTop\":1242.03125,\"firstTileTop\":1670.03125}"
+  },
+  {
+    "what": "/teach @1366x768 scroll geometry (page top)",
+    "value": "{\"docHeight\":1826,\"viewport\":768,\"closeBtnTop\":1288.03125,\"firstTileTop\":1670.03125}"
+  },
+  {
+    "what": "/play computed type at the decision screen",
+    "value": "{\"priceReadout\":{\"text\":\"$24\",\"fontFamily\":\"\\\"Space Grotesk\\\"\",\"fontSize\":\"28px\",\"weight\":\"700\",\"color\":\"rgb(244, 185, 66)\",\"w\":590,\"h\":31,\"top\":367},\"pinDisplay\":{\"text\":\"5317\",\"fontFamily\":\"\\\"Space Grotesk\\\"\",\"fontSize\":\"32px\",\"weight\":\"800\",\"color\":\"rgb(244, 185, 66)\",\"w\":331,\"h\":40,\"top\":77},\"cash\":null,\"cardNight\":{\"text\":\"Night 1 of 5\",\"fontFamily\":\"\\\"Bebas Neue\\\"\",\"fontSize\":\"17px\",\"weight\":\"400\",\"color\":\"rgb(244, 185, 66)\",\"w\":82,\"h\":20,\"top\":204},\"lockBtn\":{\"text\":\"LOCK IT IN\",\"fontFamily\":\"Inter\",\"fontSize\":\"14px\",\"weight\":\"600\",\"color\":\"rgb(27, 20, 6)\",\"w\":590,\"h\":44,\"top\":664},\"eyebrow\":null,\"bodyCopy\":{\"text\":\"No preview. Nothing on this \",\"fontFamily\":\"Inter\",\"fontSize\":\"11px\",\"weight\":\"400\",\"color\":\"rgb(115, 123, 140)\",\"w\":590,\"h\":13,\"top\":714}}"
+  },
+  {
+    "what": "price readout font stack",
+    "value": "{\"declared\":\"\\\"Space Grotesk\\\", \\\"Segoe UI\\\", system-ui, sans-serif\",\"size\":\"28px\"}"
+  },
+  {
+    "what": "@keyframes defined in loaded stylesheets",
+    "value": "[\"@keyframes arrive\",\"@keyframes fadeSlideIn\",\"@keyframes tearShake\",\"@keyframes settle\"]"
+  },
+  {
+    "what": "transition/animation on key /play elements",
+    "value": "{\"#fhLock\":{\"transition\":\"background 0.16s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.16s cubic-bezier(0.22, 1, 0.36, 1), transform 0.16s cubic-bezier(0.22, 1, 0.36, 1)\",\"animation\":\"none 0s ease 0s 1 normal none running\"},\"#fhPriceDial\":{\"transition\":\"all\",\"animation\":\"none 0s ease 0s 1 normal none running\"},\"#fhBowl\":null,\".fh-card\":{\"transition\":\"all\",\"animation\":\"none 0s ease 0s 1 normal none running\"},\".fh-result\":null}"
+  },
+  {
+    "what": "/board PLAY frame: largest rendered type",
+    "value": "{\"vh\":1080,\"top\":[{\"t\":\"0/2\",\"px\":57.6,\"cls\":\"num\"},{\"t\":\"Tonight's Card\",\"px\":46.08,\"cls\":\"label\"},{\"t\":\"Night 1 of 5\",\"px\":38.4,\"cls\":\"fh-board-night\"},{\"t\":\"22\",\"px\":34.56,\"cls\":\"num\"},{\"t\":\"Tuesday  ·  a club that ha\",\"px\":32.64,\"cls\":\"fh-board-matchup\"},{\"t\":\"A quiet Tuesday. Nothing a\",\"px\":21.12,\"cls\":\"\"},{\"t\":\"These demand curves are mo\",\"px\":21.12,\"cls\":\"synthesis-note\"},{\"t\":\"Desks locked in\",\"px\":19.2,\"cls\":\"lbl\"}]}"
+  },
+  {
+    "what": "/board #hud (dev/version chrome visible on the projector)",
+    "value": "{\"text\":\"v5 · PLAY\",\"size\":\"12px\",\"opacity\":\"1\"}"
+  },
+  {
+    "what": "prefers-reduced-motion: reduce on /play",
+    "value": "{\"matches\":true,\"lockTransition\":\"background 0.08s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.08s cubic-bezier(0.22, 1, 0.36, 1), transform 0.08s cubic-bezier(0.22, 1, 0.36, 1)\"}"
+  }
+]
