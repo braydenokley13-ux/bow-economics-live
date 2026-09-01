@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `321:417c07aeac80fe3955e8847fc3077ef4b50639c0e46bd376372373221335926b`  
-Updated: 2026-09-01T09:17:06.999Z
+Event head: `330:15801600785a2f7dd6d6fcc3b26cc02bd6e9d29ca5481e0252d1be52fd8aeabf`  
+Updated: 2026-09-01T10:54:55.370Z
 
 ## Founder intent
 
@@ -43,7 +43,12 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - classroom-projector-critic — classroom-projector-critic — completed — claude-sonnet-5
 - builder — builder-w4-r2 — completed — claude-opus-5
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
-- builder — builder-l3 — active — claude-opus-5
+- builder — builder-l3 — completed-with-concerns — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- sports-reality-director — sports-reality-director — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
 
 ## Required evidence
 
@@ -76,6 +81,9 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l2-tests-w4r2 — test — Suite after repair 2 (411/411)
 - l2-tuning-w4r2 — test — L2 harness 12/12, 8/8 mutants incl. level-shift and costly-prescription
 - w4-econ-confirm — economic-truth-report — Econ final confirm: N17/FL-L discharged at root (1,395 own-reducer rooms; band/level/gradient 0 disagreements; 461 prescriptions 0 contradicted, was 83/86; strong reading 174/174); N18 limb independent. FL-N minor (band edge 0.582% below true max) + 5 non-blocking. DISCHARGED
+- l3-tests — test — Suite after L3 build (452/452)
+- l3-tuning — test — L3 harness 10/10: BC-1a differential response >=3 steps; BC-1b two markets move $6-8 while capacity-bound stay flat; BC-1c move vanishes without the untaxed stream; claim audit 438 atoms/109 surfaces, 5/5 mutants
+- l3-e2e — e2e — L3 e2e: 25 frames x 2 shapes, 342 occlusion probes, 51 first-contact at 1024x600, 71 real drives, 7 finale cards, zero console errors
 
 ## Claim ledger
 
