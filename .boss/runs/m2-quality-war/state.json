@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T08:42:32.715Z",
+  "updatedAt": "2026-09-01T09:05:48.681Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3107,6 +3107,20 @@
           "sections": null,
           "evidenceIds": [],
           "cost": null
+        },
+        "w4-econ-confirm": {
+          "assignmentId": "w4-econ-confirm",
+          "role": "economic-truth-critic",
+          "actor": "economic-truth-critic",
+          "model": "claude-opus-5",
+          "reason": "Final confirm of the computed-prescription repair (B11/B12) — the last open ground of econ-l2-evidence-surfaces",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T09:05:48.681Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -3122,7 +3136,9 @@
         "l2-e2e-w4r1",
         "w4-projector-final",
         "w4-econ-final",
-        "w4-play-final"
+        "w4-play-final",
+        "l2-tests-w4r2",
+        "l2-tuning-w4r2"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5165,6 +5181,52 @@
       },
       "recordedAt": "2026-09-01T08:42:14.656Z",
       "actor": "player-gameplay-critic"
+    },
+    "l2-tests-w4r2": {
+      "id": "l2-tests-w4r2",
+      "wave": 4,
+      "kind": "test",
+      "label": "Suite after repair 2 (411/411)",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-tests-w4r2--record.json",
+      "sha256": "c8e9728b75dc5cc7ef11c9aea6d3625cc8244ec77bb130d105ceeb65febb09e1",
+      "size": 102995,
+      "metadata": {
+        "tags": [
+          "wave-4"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T09:05:46.938Z",
+      "actor": "lead-integrator"
+    },
+    "l2-tuning-w4r2": {
+      "id": "l2-tuning-w4r2",
+      "wave": 4,
+      "kind": "test",
+      "label": "L2 harness 12/12, 8/8 mutants incl. level-shift and costly-prescription",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-tuning-w4r2--record.json",
+      "sha256": "e0b7940db7798eb012d49b8099f7c86bbccc53754746d1c5e78df1b42fcd95cf",
+      "size": 11313,
+      "metadata": {
+        "tags": [
+          "wave-4"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l2-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T09:05:48.383Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -5874,14 +5936,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 64,
+    "agentsActivated": 65,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 101,
+    "evidenceRecorded": 103,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 311,
-  "eventHead": "edcab6168bc928dac6ecb53a8b92bff1bf79f50e8e6f27e4edad9118eb43da39",
+  "eventCount": 314,
+  "eventHead": "46a19c5c51cc15cae3937333bb880ab5c11e90d4630828db7317d64167085ed7",
   "warnings": []
 }
