@@ -2541,6 +2541,21 @@ body.fh-compact-play .fh-fill-track { margin-top: 5px; }
 body.fh-compact-play .hl-split-rows { gap: 2px; }
 body.fh-compact-play .hl-road { margin-top: 7px; padding: 8px 10px; font-size: 13px; line-height: 1.35; }
 body.fh-compact-play .fh-kept { margin-top: 7px; }
+/* play N-1: on a sold-out week the three-part FULL HOUSE block pushed #hlRoad
+   into the lock bar's band. Nothing is deleted — the banner becomes one row, so
+   the externality sentence stays on the first screen after the bell. */
+body.fh-compact-play .fh-sellout {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 5px 9px; margin-top: 6px;
+}
+body.fh-compact-play .fh-sellout-title { font-size: 13px; margin: 0; }
+body.fh-compact-play .fh-sellout-sub { font-size: 11.5px; margin: 0; }
+body.fh-compact-play .fh-sellout-turned { margin: 0; gap: 5px; }
+body.fh-compact-play .fh-sellout-turned .numeric { font-size: 13px; }
+body.fh-compact-play .hl-pricecf { margin-top: 7px; padding: 7px 9px; }
+body.fh-compact-play .hl-pricecf-row { font-size: 12px; padding: 1px 4px; }
+body.fh-compact-play .hl-pricecf-verdict { font-size: 12px; margin-top: 5px; }
+body.fh-compact-play .hl-ledger-block { margin-top: 7px; padding-top: 6px; }
 body.fh-compact-play .fh-bowl-plate {
   margin-top: 8px;
   padding: 7px 10px;
@@ -2633,7 +2648,37 @@ body.fh-compact-play .fh-receipt {
 .hl-lockbar-vals { font-size: 13px; color: var(--ink-secondary); }
 .hl-lockbar-vals b { font-family: var(--font-number); font-size: 16px; color: var(--accent-gold); }
 .hl-lockbar .btn { min-height: 44px; min-width: 190px; font-size: 15px; }
-body.hl-has-lockbar main { padding-bottom: 76px; }
+
+/* `gate-l2-play` N-1 and N-2, both BLOCKING; `analyst-wave3` "the fold defect
+   rotated rather than cleared".
+   Round 2 pinned LOCK IT IN to the bottom of the VIEWPORT and reserved space
+   for it with `padding-bottom` on `main`. Padding at the end of a document does
+   nothing for a fixed bar sitting on top of content at scrollY 0, so the bar
+   simply moved the defect: on a sold-out week the FULL HOUSE banner pushed
+   `#hlRoad` to 531..584 under a bar occupying 539..600, and at first contact
+   BOTH dials measured 595..617 — a pair could complete a turn at the default
+   $56 / 0% without ever seeing a dial. `elementFromPoint` at the road card's own
+   centre returned `#hlLockBar`.
+   The fix is a fixed-height shell rather than a bigger z-index or a smaller
+   card: the body is exactly one viewport tall with the bar's height as bottom
+   padding, and `main` becomes the scroll container inside what is left. The
+   bar's band is body padding — no lesson content can be laid out in it at any
+   scroll position, so occlusion is impossible by construction rather than by
+   measurement, and LOCK IT IN stays reachable at every scroll position, which
+   is what the bar was for. */
+body.hl-has-lockbar {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  padding-bottom: calc(var(--hl-lockbar-h, 68px) + env(safe-area-inset-bottom, 0px));
+}
+body.hl-has-lockbar main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 10px;
+}
 
 .hl-bell-head {
   font-family: var(--font-display); font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
@@ -2656,6 +2701,18 @@ body.hl-has-lockbar main { padding-bottom: 76px; }
   margin-top: 10px; padding: 8px 10px; border-radius: 10px; font-size: 12.5px; line-height: 1.45;
   background: rgba(139,124,240,0.14); border: 1px solid rgba(139,124,240,0.4); color: var(--ink-primary);
 }
+/* ---- /play: the post-hoc price counterfactual (gate-l2-play N-5) ---- */
+.hl-pricecf { margin-top: 10px; padding: 9px 10px; border-radius: 12px; background: rgba(77,162,232,0.10); border: 1px solid rgba(77,162,232,0.35); }
+.hl-pricecf-rows { display: flex; flex-direction: column; gap: 3px; }
+.hl-pricecf-row {
+  display: grid; grid-template-columns: 52px 1fr auto auto; gap: 8px; align-items: baseline;
+  font-size: 12.5px; color: var(--ink-secondary); padding: 2px 4px; border-radius: 6px;
+}
+.hl-pricecf-row .numeric { color: var(--ink-primary); }
+.hl-pricecf-row.you { background: rgba(244,185,66,0.14); color: var(--ink-primary); }
+.hl-pricecf-row.best { background: rgba(77,162,232,0.16); }
+.hl-pricecf-verdict { margin-top: 6px; font-size: 12.5px; line-height: 1.4; color: var(--ink-primary); }
+
 .hl-give { margin-top: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.04); }
 .hl-give-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-secondary); padding: 3px 0; }
 .hl-give-row.net { border-top: 1px solid rgba(255,255,255,0.14); margin-top: 4px; padding-top: 6px; color: var(--ink-primary); font-weight: 600; }

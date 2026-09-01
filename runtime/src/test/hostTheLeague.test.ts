@@ -842,7 +842,16 @@ test("econ B1/B6: no surface or script attributes `gave` to a desk's spending", 
   for (let w = 0; w < WEEK_COUNT; w += 1) mixed = playWeek(mixed, () => 50, (i) => (i % 2 === 0 ? 0 : SHARE_MAX));
   const mixedAgg = computeAggregate(mixed);
   const card = synthesisCards(mixed, mixedAgg).find((c) => c.id === "spillover")!;
-  assert.match(card.body, new RegExp(`${mixedAgg.choiceTotals.externalPct}% of the value it created`));
+  const mixedPct = mixedAgg.choiceTotals.externalPct;
+  if (mixedPct !== null) {
+    assert.match(card.body, new RegExp(`${mixedPct}% of the value it created`));
+  } else {
+    // econ B7: this is the OVER-INVESTED room the old card printed "0% of the
+    // value it created landed somewhere the desk that paid for it never sees"
+    // over, in the same paragraph as the dollars that did exactly that.
+    assert.match(card.body, /over-investment AND spillover/, "an over-invested room must get the honest branch, not a percentage");
+    assert.equal(/% of the value it created/.test(card.body), false, "no share may print where the value created went the wrong way");
+  }
   const namedGiver = [...mixedAgg.giveAndTake].sort((a, b) => b.gaveByChoice - a.gaveByChoice)[0]!;
   assert.ok(namedGiver.spend > 0, "the card may only name a giver that actually spent");
   assert.match(card.body, new RegExp(namedGiver.deskHandle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
@@ -852,8 +861,77 @@ test("econ B1/B6: no surface or script attributes `gave` to a desk's spending", 
   const q3 = (teach["director"] as { ask: { q: string; answer: string | null }[] }).ask.at(-1)!;
   assert.equal(/by a distance/i.test(String(q3.answer)), false, "the falsified ADAPT Q3 magnitude must be gone");
   assert.match(String(q3.answer), /BOTH/, "the true answer is that the dial pays the desk AND the buildings it visits");
-  assert.match(String(q3.answer), new RegExp(`${mixedAgg.choiceTotals.externalPct}%`), "the answer key must carry the room's measured share");
+  assert.equal(
+    String(q3.answer).includes(spilloverClaim(mixedAgg.choiceTotals).text),
+    true,
+    "the answer key must be the SAME computed sentence the card and the board carry, not a second hand-written copy of it",
+  );
   assert.match(String(q3.answer), /own screen/, "the ADAPT Q3 answer must point at a surface the teacher can actually put up");
+});
+
+test("econ B7 (N9): no printed share is ever above 100%, and none is 0% while a room gave money away", () => {
+  // The measured failure: `externalPct = gaveByChoice / (ownGain + gaveByChoice)`
+  // printed 0% beside $1,577,412 of spillover in the alternating 0%/40% room
+  // (and in the one-spender-versus-eleven-free-riders room), and above 100% in
+  // 58 of 200 random rooms, because `ownGain` goes negative whenever the room
+  // over-invests. Every one of those rooms is reachable and several are the
+  // likeliest teacher set-pieces in the lesson.
+  const patterns: { label: string; share: (i: number) => number }[] = [
+    { label: "all 10%", share: () => 10 },
+    { label: "all 20%", share: () => 20 },
+    { label: "all 25%", share: () => 25 },
+    { label: "all 40%", share: () => SHARE_MAX },
+    { label: "alternating 0/40", share: (i) => (i % 2 === 0 ? 0 : SHARE_MAX) },
+    { label: "one spender, rest free-riding", share: (i) => (i === 0 ? SHARE_MAX : 0) },
+  ];
+  for (const p of patterns) {
+    let room = seated(12);
+    for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => 50, p.share);
+    const agg = computeAggregate(room);
+    const ct = agg.choiceTotals;
+    if (ct.externalPct !== null) {
+      assert.ok(ct.externalPct >= 0 && ct.externalPct <= 100, `${p.label}: printed share ${ct.externalPct}% is outside 0-100`);
+      assert.ok(
+        !(ct.externalPct === 0 && ct.gaveByChoice > 0),
+        `${p.label}: printed 0% beside ${ct.gaveByChoice} of measured spillover`,
+      );
+    }
+    // Wherever the share is withheld, the room is told why, in dollars.
+    const body = synthesisCards(room, agg).find((c) => c.id === "spillover")!.body;
+    if (ct.externalPct === null && ct.anySpend) {
+      assert.match(body, /over-investment AND spillover/, `${p.label}: the honest over-investment sentence must fire`);
+    }
+    // And the "paid YOU" claim never prints against a negative private column.
+    if (ct.ownGain < 0) assert.equal(/paid YOU/.test(body), false, `${p.label}: "paid YOU" printed against ${ct.ownGain}`);
+  }
+});
+
+test("econ B8 (N10): the room-total sentence never disagrees in SIGN with the joint effect", () => {
+  // The measured failure: in a mixed 0-40% room the board and the SPILLOVER
+  // card told the class reinvesting cost these desks $1,153,068 when the room
+  // was $546,124 better off for having done it. The private column is a sum of
+  // one-desk-at-a-time partials; the residue is `receivedByChoice`, which the
+  // split charges to the payer and never returns to the room's books.
+  const patterns: ((i: number) => number)[] = [() => 10, () => 20, (i) => (i % 3) * 15, (i) => (i % 2 === 0 ? 0 : SHARE_MAX), () => SHARE_MAX];
+  for (const share of patterns) {
+    for (const price of [30, 50, 70]) {
+      let room = seated(8);
+      for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => price, share);
+      const agg = computeAggregate(room);
+      const ct = agg.choiceTotals;
+      if (!ct.anySpend) continue;
+      const text = spilloverClaim(ct).text;
+      const saysBetter = /better off/.test(text);
+      const saysWorse = /worse off/.test(text);
+      const sign = Math.sign(ct.roomJointGain);
+      if (sign > 0) assert.ok(saysBetter && !saysWorse, `joint +${ct.roomJointGain} but the sentence says: ${text}`);
+      if (sign < 0) assert.ok(saysWorse && !saysBetter, `joint ${ct.roomJointGain} but the sentence says: ${text}`);
+      // The private column may still be negative — it just may never be the
+      // room-level verdict. It must be labelled as a per-desk sum.
+      assert.match(text, /Desk by desk/, "the sum of partials must be labelled as a sum of partials");
+      assert.match(text, /Counted as one room/, "the joint figure must be published beside it");
+    }
+  }
 });
 
 test("play R4 / econ B3: the small-market exhibit attributes from the decomposition, and prints both prices", () => {
@@ -872,25 +950,41 @@ test("play R4 / econ B3: the small-market exhibit attributes from the decomposit
       path.smallDoorMoney - path.bigDoorMoney,
       "the attribution must decompose the gap exactly, not approximately",
     );
-    // The printed cause must be the block that actually carried the gap.
-    const parts: Record<string, number> = {
-      visitor: path.gapFromVisitor,
-      "building-and-price": path.gapFromBuildingAndPrice,
-      "own-draw": path.gapFromOwnDraw,
-    };
-    const biggest = Object.entries(parts).sort((a, b) => b[1] - a[1])[0]![0];
-    assert.equal(path.driver, biggest, `the exhibit named ${path.driver} but the blocks say ${biggest}`);
-    if (path.driver !== "visitor") {
-      assert.equal(/won it on WHO WAS VISITING/.test(path.line), false, "a price-driven gap may never be attributed to the visitor");
+    // econ B3, round 3. A causal claim about MARKET SIZE may only print when
+    // the win survives holding the price still. In this $110-vs-$30 room it
+    // does not, and the exhibit must say so instead of naming a block.
+    if (!path.survivesPriceControl) {
+      assert.equal(path.driver, "price", "a win that vanishes under the price control was carried by price");
+      assert.match(path.line, /THE PRICE GAP carried it/);
+      assert.equal(/WHO WAS VISITING carried it/.test(path.line), false, "a price-driven gap may never be attributed to the visitor");
+    } else {
+      const parts: Record<string, number> = {
+        visitor: path.gapFromVisitor,
+        "building-and-price": path.gapFromBuildingAndPrice,
+        "own-draw": path.gapFromOwnDraw,
+      };
+      const biggest = Object.entries(parts).sort((a, b) => b[1] - a[1])[0]![0];
+      const claimable = path.gapFromVisitor <= path.smallDoorMoney - path.bigDoorMoney;
+      if (biggest === "visitor" && claimable) assert.equal(path.driver, "visitor");
+      assert.notEqual(path.driver, "price", "a surviving win must name a block, not price");
     }
+    // A block larger than the gap it explains must never print alone: all three
+    // block figures are on the exhibit, every time.
+    assert.ok(path.line.includes(`${money(path.gapFromVisitor)} the visiting club`), `the visitor block must print: ${path.line}`);
+    assert.ok(path.line.includes(`${money(path.gapFromBuildingAndPrice)} the building and the price`), `the building block must print: ${path.line}`);
+    assert.ok(path.line.includes(`${money(path.gapFromOwnDraw)} that desk's own Draw`), `the own-Draw block must print: ${path.line}`);
+    // ...and the two price-controlled figures the room needs to check it.
+    assert.ok(path.line.includes(money(path.gapAtSmallPrice)) && path.line.includes(money(path.gapAtBigPrice)), "both controlled gaps must print");
   }
-  // A room priced uniformly is where the visitor SHOULD carry it, and does.
+  // A room priced uniformly is where the visitor SHOULD carry it, and does —
+  // and where the price control is vacuous, which is the point of running it.
   let flat = seated(10);
   for (let w = 0; w < WEEK_COUNT; w += 1) flat = playWeek(flat, () => 50, () => 10);
   const flatPath = computeAggregate(flat).smallMarketPath;
   if (flatPath.found) {
+    assert.equal(flatPath.survivesPriceControl, true, "at one price for the whole room the win cannot be a price gap");
     assert.equal(flatPath.driver, "visitor");
-    assert.match(flatPath.line, /WHO WAS VISITING/);
+    assert.match(flatPath.line, /WHO WAS VISITING carried it/);
   }
 });
 

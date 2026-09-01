@@ -2422,6 +2422,19 @@ type HLWeek = {
   drawMove: number;
   road: { host: string; hostFull: string; hostDraw: number; dollars: number; fans: number; line: string };
   decompositionLine: string;
+  priceCf?: HLPriceCf;
+};
+/** play N-5: the post-hoc price counterfactual for one settled night. */
+type HLPriceCf = {
+  yourPrice: number;
+  yourKept: number;
+  rows: { price: number; turnout: number; kept: number; delta: number; you: boolean; soldOut: boolean }[];
+  bestPrice: number;
+  bestKept: number;
+  bestDelta: number;
+  foundBest: boolean;
+  line: string;
+  verdict: string;
 };
 type HLMine = {
   fromBuilding: number;
@@ -2656,6 +2669,39 @@ function renderHLHook(view: Record<string, unknown>): void {
     <div class="banner" style="margin-top:8px;">${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</div>`;
 }
 
+/**
+ * `gate-l2-play` N-5 — the rating ceiling, and the only feature in this bundle.
+ *
+ * The re-check's cause for FUNCTIONAL: "the price dial has consequence but no
+ * counterfactual — nothing anywhere tells a pair what $46 would have taken on
+ * the night they priced $78." This is that, on the settlement screen, after the
+ * bell, for the week that just happened: same visitor, same Draws, same
+ * building, same reinvest share, only the price moves. Every figure is computed
+ * by the module (`priceCounterfactualFor`), never here.
+ */
+function hlPriceCfHtml(w: HLWeek): string {
+  const cf = w.priceCf;
+  if (!cf || cf.rows.length < 2) return "";
+  return `
+    <div class="hl-pricecf" id="hlPriceCf">
+      <div class="hl-split-title">What another price would have done</div>
+      <div class="hl-pricecf-rows">
+        ${cf.rows
+          .map(
+            (r) => `<div class="hl-pricecf-row${r.you ? " you" : ""}${r.price === cf.bestPrice && !r.you ? " best" : ""}">
+              <span class="numeric">$${r.price}</span>
+              <span>${r.you ? "what you charged" : r.price === cf.bestPrice ? "the best on the dial" : r.price < cf.yourPrice ? "cheaper" : "dearer"}</span>
+              <span class="numeric">${r.turnout.toLocaleString()} came${r.soldOut ? " · full" : ""}</span>
+              <span class="numeric ${r.kept < 0 ? "neg" : ""}">${money(r.kept)}</span>
+            </div>`,
+          )
+          .join("")}
+      </div>
+      <div class="hl-pricecf-verdict">${escapeHtml(cf.verdict)}</div>
+      <div class="hl-give-note">${escapeHtml(cf.line)}</div>
+    </div>`;
+}
+
 function hlWeekResultHtml(w: HLWeek, title: string): string {
   const sellout = w.soldOut
     ? `<div class="fh-sellout">
@@ -2691,6 +2737,7 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
         <span class="fh-kept-num numeric">${money(w.net)}</span>
       </div>
       <div class="hl-road" id="hlRoad">${escapeHtml(w.road.line)}</div>
+      ${hlPriceCfHtml(w)}
       <div class="hl-ledger-block">
         <div class="fh-result-row"><span>Ticket money</span><span class="numeric">${money(w.gate)}</span></div>
         <div class="fh-result-row"><span>Spent inside the building</span><span class="numeric">${money(w.inArena)}</span></div>
@@ -2844,12 +2891,23 @@ function renderHLPlay(view: Record<string, unknown>): void {
     }`;
   document.body.classList.toggle("hl-has-lockbar", !locked);
 
+  // play N-1/N-2: the shell reserves the lock bar's band as body padding, so
+  // the bar's real rendered height has to be the number the CSS reserves. Read
+  // it rather than hard-coding it — the button's min-height, the safe-area
+  // inset and the pair's font settings all move it.
+  const lockBar = document.getElementById("hlLockBar");
+  if (lockBar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(lockBar.getBoundingClientRect().height)}px`);
+  else document.body.style.removeProperty("--hl-lockbar-h");
+
   // The bell put a result on this screen. Land the pair ON it, not on next
   // week's dial. Instant, never smooth: a mid-animation scroll position is not
-  // a real reachable state to leave a student in.
+  // a real reachable state to leave a student in. `main` is the scroll
+  // container while the lock bar is up, so both have to be reset.
   if (justSettled && hlLastSettledSeen !== `${weekNumber}|${history.length}`) {
     hlLastSettledSeen = `${weekNumber}|${history.length}`;
     window.scrollTo({ top: 0, behavior: "auto" });
+    const scroller = document.querySelector("main");
+    if (scroller) scroller.scrollTop = 0;
   }
 
   if (locked) return;
@@ -2942,11 +3000,13 @@ function renderHLReveal(view: Record<string, unknown>): void {
              <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
              <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
              <div class="hl-give-note">This is not money you kept or lost. It is money that moved because of drawing power — yours and theirs.</div>
-             <div class="hl-give-sub" id="hlGiveChoice">What your own DECISIONS did — you spent ${money(give.spend)}</div>
+             <div class="hl-give-sub" id="hlGiveChoice">${
+               give.spend > 0 ? `What your own DECISIONS did — you spent ${money(give.spend)}` : "What your own DECISIONS did — you spent nothing, and that is a decision"
+             }</div>
              <div class="hl-give-row"><span>Of the above, what YOUR spending put in other buildings</span><span class="numeric">${money(give.gaveByChoice)}</span></div>
              <div class="hl-give-row"><span>What OTHER desks' spending put in yours</span><span class="numeric">${money(give.receivedByChoice)}</span></div>
              <div class="hl-give-row net"><span>What your spending was worth to YOUR OWN cash</span><span class="numeric ${give.ownGain < 0 ? "neg" : ""}">${money(give.ownGain)}</span></div>
-             <div class="hl-give-note">Same schedule, same prices, same everything — except you put nothing back. That is the only fair thing to compare yourself to, because nobody chose their calendar. Your Draw went from ${give.drawStart} to ${give.drawEnd}; you put an average of ${give.meanShare}% of your door money back in.</div>
+             <div class="hl-give-note" id="hlGiveLine">${escapeHtml(String(view["giveLine"] ?? ""))} Your Draw went from ${give.drawStart} to ${give.drawEnd}; you put an average of ${give.meanShare}% of your door money back in.</div>
            </div>`
         : ""
     }

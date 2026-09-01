@@ -1076,9 +1076,18 @@ export type ClaimAtom = {
   bounds?: { min?: number; max?: number };
   /**
    * A quantifier or causal word the sentence uses, with the predicate it
-   * claims. The audit recomputes the predicate independently.
+   * claims. The audit recomputes the predicate independently and fails on
+   * disagreement; `word` must be present in the rendered surface.
    */
   quantifier?: { word: string; claims: boolean };
+  /**
+   * A phrase that must NOT appear anywhere in the rendered surface. This is how
+   * a self-contradiction is made falsifiable rather than proof-read: the DOWN
+   * branch of reveal 5 may not name the Handed-To-You bar as a candidate cause
+   * on a frame that has just told the room nothing on it can be about the bar
+   * (`gate-l2-play` N-3, second residual).
+   */
+  absent?: string;
 };
 
 export type Claimed = { text: string; claims: readonly ClaimAtom[] };
@@ -1107,8 +1116,16 @@ export function claim(
 }
 
 /** A claim about a WORD rather than a number — the quantifier limb of the audit. */
-export function claimWord(id: string, word: string, claims: boolean): ClaimAtom {
-  return { id, rendered: word, value: claims ? 1 : 0, format: "int", assertsSign: "any", quantifier: { word, claims } };
+export function claimWord(id: string, word: string, claims: boolean, absent?: string): ClaimAtom {
+  return {
+    id,
+    rendered: word,
+    value: claims ? 1 : 0,
+    format: "int",
+    assertsSign: "any",
+    quantifier: { word, claims },
+    ...(absent === undefined ? {} : { absent }),
+  };
 }
 
 /** One claim-carrying surface: the rendered text plus every relation it asserts. */
@@ -1475,11 +1492,32 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
  * and drew 152 people. The board asserted a cause the decomposition the class
  * had just learned directly refutes, and a synthesis card repeated it verbatim.
  *
- * Now: the gap is SPLIT by the same three blocks the room has been reading all
- * lesson — they sum to the gap exactly — the selector prefers a pair the
- * visitor block actually carries, and when no such pair exists the sentence
- * names the real driver instead. Both desks' prices are printed either way, so
- * the room can always check the claim against the exhibit.
+ * Round 2 split the gap by the same three blocks the room has been reading all
+ * lesson and computed the driver instead of asserting it. The econ gate refuted
+ * that repair (B3, NOT DISCHARGED, second round): splitting the gap does not
+ * control for price, because price moves all three blocks. Measured over 40
+ * rooms, `driver` came back `"visitor"` in **40 of 40** — the selector searched
+ * every small x big x week pair and *preferred* a visitor-driven one, which is
+ * selection on the conclusion across a candidate set large enough that a
+ * confirming pair is essentially always available — while **7 of 40** printed
+ * pairs failed a price control outright (worst: a "win" of $195,668 that is a
+ * loss of $212,172 at $60 and $169,932 at $100, i.e. the entire win was the
+ * price gap), and **23 of 40** printed a visitor block LARGER THAN THE WHOLE
+ * GAP it was explaining (worst 220%), with the other two blocks computed and
+ * never rendered.
+ *
+ * Round 3, this one:
+ *
+ *  1. **The price control is a selection filter, not a footnote.** Every
+ *     candidate pair is re-settled with both clubs at the SAME ticket price —
+ *     once at each side's own price, everything else held — and a pair may only
+ *     carry a market-size causal claim if the small market still wins at BOTH.
+ *  2. **A pair that fails the control is not discarded, it is told truthfully.**
+ *     `driver` becomes `"price"` and the sentence says the win is the price gap
+ *     and shows the room the two controlled figures.
+ *  3. **All three block figures always print**, beside both door figures. A
+ *     block larger than the gap it explains can therefore never print alone,
+ *     and the room can always reconcile the arithmetic it is shown.
  */
 export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
   const empty: SmallMarketPath = {
@@ -1499,8 +1537,12 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
     gapFromVisitor: 0,
     gapFromBuildingAndPrice: 0,
     gapFromOwnDraw: 0,
+    gapAtSmallPrice: 0,
+    gapAtBigPrice: 0,
+    survivesPriceControl: false,
     driver: "none",
     line: "This room's schedule did not put a small-market desk in front of a big visitor on the same week a big-market desk hosted a weak one, so there is no honest pair here to compare. Look at the bars instead: the visitor block is the one that moves.",
+    claims: [],
   };
   type Cand = { club: Club; w: SettledWeek };
   const smalls: Cand[] = [];
@@ -1524,8 +1566,22 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
     own: s.w.home.ownDollars - b.w.home.ownDollars,
   });
 
-  type Best = { small: Cand; big: Cand; gap: number; parts: ReturnType<typeof splitGap>; visitorDriven: boolean };
-  let bestVisitorDriven: Best | null = null;
+  /** The same night at a different ticket price. Everything else held. */
+  const doorAtPrice = (c: Cand, price: number): number =>
+    settleHome(profileOf(c.club), defOf(c.club).capacity, c.w.hostDrawBefore, c.w.visitorDrawBefore, price).doorMoney;
+
+  type Best = {
+    small: Cand;
+    big: Cand;
+    gap: number;
+    parts: ReturnType<typeof splitGap>;
+    visitorDriven: boolean;
+    atSmall: number;
+    atBig: number;
+    survives: boolean;
+  };
+  let bestControlledVisitor: Best | null = null;
+  let bestControlled: Best | null = null;
   let bestAny: Best | null = null;
   for (const s of smalls) {
     for (const b of bigs) {
@@ -1533,19 +1589,27 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
       const gap = s.w.home.doorMoney - b.w.home.doorMoney;
       if (gap <= 0) continue;
       const parts = splitGap(s, b);
-      const visitorDriven = parts.visitor > 0 && parts.visitor >= parts.bare && parts.visitor >= parts.own;
-      const cand: Best = { small: s, big: b, gap, parts, visitorDriven };
+      const atSmall = doorAtPrice(s, s.w.home.price) - doorAtPrice(b, s.w.home.price);
+      const atBig = doorAtPrice(s, b.w.home.price) - doorAtPrice(b, b.w.home.price);
+      const survives = atSmall > 0 && atBig > 0;
+      // A block bigger than the gap it explains cannot be that gap's cause.
+      const visitorDriven = parts.visitor > 0 && parts.visitor >= parts.bare && parts.visitor >= parts.own && parts.visitor <= gap;
+      const cand: Best = { small: s, big: b, gap, parts, visitorDriven, atSmall, atBig, survives };
       if (!bestAny || gap > bestAny.gap) bestAny = cand;
-      if (visitorDriven && (!bestVisitorDriven || gap > bestVisitorDriven.gap)) bestVisitorDriven = cand;
+      if (survives && (!bestControlled || gap > bestControlled.gap)) bestControlled = cand;
+      if (survives && visitorDriven && (!bestControlledVisitor || gap > bestControlledVisitor.gap)) bestControlledVisitor = cand;
     }
   }
-  const best = bestVisitorDriven ?? bestAny;
+  const best = bestControlledVisitor ?? bestControlled ?? bestAny;
   if (!best) return empty;
   const s = best.small;
   const b = best.big;
   const parts = best.parts;
-  const driver: SmallMarketPath["driver"] =
-    parts.visitor >= parts.bare && parts.visitor >= parts.own
+  // The driver is what survives the control. A win that vanishes when both
+  // clubs charge the same price was carried by PRICE, whatever the blocks say.
+  const driver: SmallMarketPath["driver"] = !best.survives
+    ? "price"
+    : parts.visitor >= parts.bare && parts.visitor >= parts.own && parts.visitor <= best.gap
       ? "visitor"
       : parts.bare >= parts.own
         ? "building-and-price"
@@ -1553,15 +1617,43 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
 
   const smallPrice = s.w.home.price;
   const bigPrice = b.w.home.price;
+  const claims: ClaimAtom[] = [];
+  const gapClaim = claim("market.gap", best.gap, "money", { assertsSign: "positive" });
+  const visitorBlock = claim("market.gapFromVisitor", parts.visitor, "money");
+  const bareBlock = claim("market.gapFromBuildingAndPrice", parts.bare, "money");
+  const ownBlock = claim("market.gapFromOwnDraw", parts.own, "money");
+  const atSmall = claim("market.gapAtSmallPrice", best.atSmall, "money");
+  const atBig = claim("market.gapAtBigPrice", best.atBig, "money");
+  claims.push(gapClaim, visitorBlock, bareBlock, ownBlock, atSmall, atBig);
+
   const setup = `${deskHandleFor(s.club)} runs one of the league's smallest markets. Hosting ${CLUBS[s.w.visitorSlot]!.short} at Draw ${s.w.visitorDrawBefore}, priced at $${smallPrice}, that building took ${money(s.w.home.doorMoney)} through the door. ${deskHandleFor(b.club)} runs one of the biggest. Hosting ${CLUBS[b.w.visitorSlot]!.short} at Draw ${b.w.visitorDrawBefore}, priced at $${bigPrice}, it took ${money(b.w.home.doorMoney)}.`;
-  const attribution =
-    driver === "visitor"
-      ? `The small market won that week by ${money(best.gap)}, and the three blocks say why: ${money(parts.visitor)} of that gap is the visiting club. WHO WAS VISITING carried it.`
-      : driver === "building-and-price"
-        ? `The small market won that week by ${money(best.gap)} — but do not credit the visitor for it. Split the gap by the same three blocks you have been reading all lesson and ${money(parts.bare)} of it is BUILDING AND PRICE${
-            smallPrice === bigPrice ? "" : ` — $${smallPrice} against $${bigPrice}`
-          }, against ${money(parts.visitor)} from the visiting club. The bigger market priced itself out of its own night.`
-        : `The small market won that week by ${money(best.gap)}, and the biggest single block in the gap is that desk's OWN Draw: ${money(parts.own)} of it, against ${money(parts.visitor)} from the visiting club. That desk built this, over three weeks, with its reinvest dial.`;
+
+  // The whole split, every time. No single block ever prints alone.
+  const blocks = `The gap is ${gapClaim.rendered}, and here is all of it: ${visitorBlock.rendered} the visiting club, ${bareBlock.rendered} the building and the price, ${ownBlock.rendered} that desk's own Draw. Those three are the gap, exactly.`;
+
+  // The control, printed either way, so the room can check the claim.
+  const control = best.survives
+    ? `Hold the price still and it still holds: at $${smallPrice} both ways the small market is ${atSmall.rendered} ahead, at $${bigPrice} both ways ${atBig.rendered} ahead.`
+    : `Now hold the price still. At $${smallPrice} both ways the gap is ${atSmall.rendered}; at $${bigPrice} both ways it is ${atBig.rendered}. The win does not survive charging the same price.`;
+
+  let attribution: string;
+  if (driver === "price") {
+    const word = "THE PRICE GAP carried it";
+    claims.push(claimWord("market.driverPrice", word, true));
+    attribution = `${word}, not the market: these two desks charged $${smallPrice} and $${bigPrice} for the same product.`;
+  } else if (driver === "visitor") {
+    const word = "WHO WAS VISITING carried it";
+    claims.push(claimWord("market.driverVisitor", word, true));
+    attribution = `The biggest block is the visiting club, and the win survives the price control, so ${word}.`;
+  } else if (driver === "building-and-price") {
+    const word = "BUILDING AND PRICE carried it";
+    claims.push(claimWord("market.driverBuilding", word, true));
+    attribution = `The biggest block is not the visitor — ${word}${smallPrice === bigPrice ? "" : `, at $${smallPrice} against $${bigPrice}`}. Do not credit the visiting club for this one.`;
+  } else {
+    const word = "THAT DESK'S OWN DRAW carried it";
+    claims.push(claimWord("market.driverOwn", word, true));
+    attribution = `The biggest block is not the visitor and not the building: ${word}. That desk built this, over three weeks, with its reinvest dial.`;
+  }
 
   return {
     found: true,
@@ -1580,8 +1672,12 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
     gapFromVisitor: Math.round(parts.visitor),
     gapFromBuildingAndPrice: Math.round(parts.bare),
     gapFromOwnDraw: Math.round(parts.own),
+    gapAtSmallPrice: Math.round(best.atSmall),
+    gapAtBigPrice: Math.round(best.atBig),
+    survivesPriceControl: best.survives,
     driver,
-    line: `${setup} ${attribution}`,
+    line: `${setup} ${blocks} ${control} ${attribution}`,
+    claims,
   };
 }
 
@@ -1686,18 +1782,41 @@ export function giveAndTakeSummary(agg: HostLeagueAggregate): string {
   return giveAndTakeSummaryClaimed(agg).text;
 }
 
-export function barSummaryFrom(rows: readonly HomeDecomposition[], visitorLed: number): string {
-  if (rows.length === 0) return "No desk has played a home week yet.";
+export function barSummaryFromClaimed(rows: readonly HomeDecomposition[], visitorLed: number): Claimed {
+  if (rows.length === 0) return { text: "No desk has played a home week yet.", claims: [] };
   const totalVisitor = rows.reduce((s, r) => s + r.fromVisitorDraw, 0);
   const totalDoor = rows.reduce((s, r) => s + r.fromBuilding + r.fromOwnDraw + r.fromVisitorDraw, 0);
   const pct = totalDoor > 0 ? Math.round((totalVisitor / totalDoor) * 100) : 0;
+  const claims: ClaimAtom[] = [];
+  // The SPILLOVER quantifier limb the analyst named: "every" / "all N" / "N of
+  // N" are the only three shapes this sentence may take, and which one prints
+  // is recomputed from `visitorLedCount` by the audit.
+  const led = claim("barSummary.visitorLedCount", visitorLed, "int", { bounds: { min: 0, max: rows.length } });
+  const pctClaim = claim("barSummary.visitorPct", pct, "percent", { bounds: { min: 0, max: 100 } });
+  claims.push(led, pctClaim);
   const lead =
     visitorLed === 0
-      ? "On every bar in this room, the visiting clubs were NOT the biggest block — the buildings and the prices were."
+      ? (() => {
+          claims.push(claimWord("barSummary.quantifier", "On every bar in this room, the visiting clubs were NOT the biggest block", true));
+          return "On every bar in this room, the visiting clubs were NOT the biggest block — the buildings and the prices were.";
+        })()
       : visitorLed === rows.length
-        ? `On all ${rows.length} bars, the biggest block at the door is the visiting club.`
-        : `On ${visitorLed} of ${rows.length} bars, the biggest block at the door is the visiting club.`;
-  return `${lead} Across the room, ${pct}% of every dollar that came through a door was brought by a club somebody else was running. Nobody in this room decided that about their own building.`;
+        ? (() => {
+            claims.push(claimWord("barSummary.quantifier", `On all ${rows.length} bars`, true));
+            return `On all ${rows.length} bars, the biggest block at the door is the visiting club.`;
+          })()
+        : (() => {
+            claims.push(claimWord("barSummary.quantifier", `On ${led.rendered} of ${rows.length} bars`, true));
+            return `On ${led.rendered} of ${rows.length} bars, the biggest block at the door is the visiting club.`;
+          })();
+  return {
+    text: `${lead} Across the room, ${pctClaim.rendered} of every dollar that came through a door was brought by a club somebody else was running. Nobody in this room decided that about their own building.`,
+    claims,
+  };
+}
+
+export function barSummaryFrom(rows: readonly HomeDecomposition[], visitorLed: number): string {
+  return barSummaryFromClaimed(rows, visitorLed).text;
 }
 
 /* ------------------------------------------------------------ the copy -- */
@@ -1910,10 +2029,148 @@ function slateFor(state: HostLeagueState, slot: number) {
   return out;
 }
 
-function viewWeek(state: HostLeagueState, w: SettledWeek) {
+/**
+ * THE POST-HOC PRICE COUNTERFACTUAL — `gate-l2-play` N-5, the rating ceiling.
+ *
+ * The re-check's precise diagnosis of why this lesson caps at FUNCTIONAL:
+ * "only one of the two dials carries a consequence the desk can feel inside the
+ * lesson. The price dial has consequence but no counterfactual — nothing
+ * anywhere tells a pair what $46 would have taken on the night they priced
+ * $78." The reinvest dial got its within-desk counterfactual in the last round;
+ * the dial the pair actually touches every week still had none, so across three
+ * weeks a pair plays one live dial and one dial the game says does not pay.
+ *
+ * This is that counterfactual and nothing more: the SAME settled night — same
+ * visitor, same Draw on both sides, same building, same reinvest share — priced
+ * differently. It is computed only after the bell, so the build's no-preview
+ * rule is untouched: nothing here can be read before the pair commits.
+ *
+ * Two honesty constraints, both load-bearing:
+ *  - it reports that WEEK's KEPT on the same arithmetic the week itself used
+ *    (door money + local media + national - bill - the same reinvest share of a
+ *    different door), so at the price they actually charged it must reproduce
+ *    `w.net` exactly. The audit asserts that identity — it is what makes the
+ *    exhibit a measurement rather than an illustration;
+ *  - it does NOT re-run the weeks after it. A different price would have bought
+ *    a different reinvest dollar and therefore a different Draw next week, and
+ *    the card says so out loud rather than quietly implying the whole season
+ *    would have followed.
+ */
+export type PriceCounterfactualRow = { price: number; turnout: number; kept: number; delta: number; you: boolean; soldOut: boolean };
+export type PriceCounterfactual = {
+  yourPrice: number;
+  yourKept: number;
+  rows: PriceCounterfactualRow[];
+  bestPrice: number;
+  bestKept: number;
+  bestDelta: number;
+  foundBest: boolean;
+  line: string;
+  verdict: string;
+  claims: readonly ClaimAtom[];
+};
+
+export function priceCounterfactualFor(state: HostLeagueState, club: Club, w: SettledWeek): PriceCounterfactual {
+  const profile = profileOf(club);
+  const capacity = defOf(club).capacity;
+  const keptAt = (price: number): { kept: number; turnout: number; soldOut: boolean } => {
+    const home = settleHome(profile, capacity, w.hostDrawBefore, w.visitorDrawBefore, price);
+    const reinvest = Math.round((w.share / 100) * home.doorMoney);
+    return { kept: home.doorMoney + w.localMedia + w.national - w.bill - reinvest, turnout: home.turnout, soldOut: home.soldOut };
+  };
+
+  const yours = keptAt(w.price);
+  let bestPrice = w.price;
+  let bestKept = yours.kept;
+  for (const p of PRICE_GRID) {
+    const k = keptAt(p).kept;
+    if (k > bestKept) {
+      bestKept = k;
+      bestPrice = p;
+    }
+  }
+
+  // Two probes either side of what they actually charged, snapped to the legal
+  // grid, so the pair reads a shape rather than a single alternative.
+  const snap = (p: number): number => Math.min(PRICE_MAX, Math.max(PRICE_MIN, Math.round((p - PRICE_MIN) / PRICE_STEP) * PRICE_STEP + PRICE_MIN));
+  const probes = new Set<number>([snap(w.price - 20), w.price, snap(w.price + 20), bestPrice]);
+  const rows: PriceCounterfactualRow[] = [...probes]
+    .sort((a, b) => a - b)
+    .map((price) => {
+      const k = keptAt(price);
+      return { price, turnout: k.turnout, kept: k.kept, delta: k.kept - yours.kept, you: price === w.price, soldOut: k.soldOut };
+    });
+
+  const foundBest = bestPrice === w.price;
+  const yourKept = claim("priceCf.yourKept", yours.kept, "money");
+  const bestKeptClaim = claim("priceCf.bestKept", bestKept, "money");
+  const bestDelta = claim("priceCf.bestDelta", bestKept - yours.kept, "money", { assertsSign: "nonNegative", bounds: { min: 0 } });
+  const claims: ClaimAtom[] = [
+    yourKept,
+    bestKeptClaim,
+    bestDelta,
+    foundBest
+      ? claimWord("priceCf.foundBest", "the best price on the board for that night", true)
+      : claimWord("priceCf.foundBest", "would have kept", false),
+  ];
+
+  const verdict = foundBest
+    ? `At $${w.price} you found the best price on the board for that night. Nothing on the dial beats ${yourKept.rendered}.`
+    : `$${bestPrice} would have kept ${bestKeptClaim.rendered} — ${bestDelta.rendered} more than you did. It was on the dial the whole time, and nothing on this screen told you.`;
+
+  return {
+    yourPrice: w.price,
+    yourKept: yours.kept,
+    rows,
+    bestPrice,
+    bestKept,
+    bestDelta: bestKept - yours.kept,
+    foundBest,
+    line: "Same night. Same visitor. Same Draw on both sides. Same building. Only the price moves — and this is that ONE week's KEPT, not a re-run of the weeks after it.",
+    verdict,
+    claims,
+  };
+}
+
+/**
+ * `gate-l2-play` N-4 (BLOCKING for STRONG). A desk that free-rode all lesson
+ * read its "WHAT YOUR OWN DECISIONS DID" block as $0 / $0 / $0 under a sentence
+ * describing a counterfactual identical to what it did. Three zeroes are the
+ * arithmetically correct answer and a blank presentation of it: the observed
+ * desk free-rode three weeks, finished 2nd of 6 in cash, and neither its card
+ * nor the board ever told it what its choice was.
+ *
+ * The zeroes stay — inventing a number here would be exactly the confound the
+ * by-choice instrument exists to remove. What changes is that the block says
+ * what they mean, and puts beside them the one figure a free-rider's own card
+ * was never showing: what the rest of the room's spending put in ITS building.
+ */
+export function deskChoiceLineClaimed(row: GiveAndTakeRow): Claimed {
+  const got = claim("desk.receivedByChoice", row.receivedByChoice, "money", { assertsSign: "nonNegative" });
+  const spent = claim("desk.spend", row.spend, "money", { assertsSign: row.spend > 0 ? "positive" : "zero" });
+  if (row.spend > 0) {
+    const own = claim("desk.ownGain", row.ownGain, "money");
+    return {
+      text: `Same schedule, same prices, same everything — except you put nothing back. That is the only fair thing to compare yourself to, because nobody chose their calendar. You put ${spent.rendered} back in; other desks' spending put ${got.rendered} in your building.`,
+      claims: [spent, got, own, claimWord("desk.choseNothing", "you put nothing back", false, "chose to give nothing")],
+    };
+  }
+  const nothing = claimWord("desk.choseNothing", "chose to give nothing", true);
+  return {
+    text:
+      row.receivedByChoice > 0
+        ? `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club, so nothing you did put a dollar in anybody else's building, and there is no "what if you had not" to compare, because you did not. And you received ${got.rendered} from the room: that is what OTHER desks chose to spend, turning up in your building on the nights they visited you.`
+        : `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club, and this time nobody else's spending reached your building either: ${got.rendered} came your way from anybody else's choices. Every zero in this block is somebody's decision, including yours.`,
+    claims: [spent, got, nothing],
+  };
+}
+
+function viewWeek(state: HostLeagueState, club: Club, w: SettledWeek) {
   const visitorDef = CLUBS[w.visitorSlot]!;
   const roadDef = CLUBS[w.roadHostSlot]!;
+  const priceCf = priceCounterfactualFor(state, club, w);
   return {
+    priceCf,
     week: w.week + 1,
     price: w.price,
     share: w.share,
@@ -2235,7 +2492,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       const club = state.clubs[slot]!;
       const profile = profileOf(club);
       const identity = deskIdentity(state, club);
-      const history = club.weeks.map((w) => viewWeek(state, w));
+      const history = club.weeks.map((w) => viewWeek(state, club, w));
       const shockClub = state.shockSlot !== null ? clubCard(state, state.shockSlot) : null;
 
       switch (phase) {
@@ -2339,6 +2596,10 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             history,
             mine,
             give,
+            // play N-4: the free-riding desk's block is three zeroes, and the
+            // sentence under it has to be about ITS decision, not about a
+            // counterfactual identical to what it did.
+            giveLine: give ? deskChoiceLineClaimed(give).text : "",
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
             questions: phase === "ADAPT" ? ADAPT_QUESTIONS : [],
@@ -2675,38 +2936,100 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
  *
  * The bar can only be named as a candidate when the room actually saw it before
  * it played week 3. `barReleasedAtWeek` is the controlling variable for that.
+ *
+ * `gate-l2-projector` R-1 and `gate-l2-play` N-3, both BLOCKING, both the same
+ * off-by-one. `barReleasedAtWeek` is `state.weekIndex` at press time, and
+ * `weekIndex` is already `WEEK_COUNT - 1` the moment the week-2 bell lands —
+ * so the test `barReleasedAtWeek < WEEK_COUNT - 1` scored the release that
+ * `/teach` itself prescribes ("it lands hardest after WEEK 2 — hold it one more
+ * week if you can") as "after week 3", and the projector printed "This room did
+ * NOT see the Handed-To-You bar before it played week 3" to a room that had
+ * been reading the bar while it priced week 3. Confirmed by two-arm probe by
+ * the projector critic and independently observed by the play critic.
+ *
+ * The honest boundary is the week-3 BELL, not the week-2 bell: `weekIndex`
+ * advances only when a week settles, so `barReleasedAtWeek <= WEEK_COUNT - 1`
+ * is exactly "released before week 3 was locked in". Releases at or after the
+ * final bell — including `onPhaseExit`'s fallback release and the automatic
+ * release on the first REVEAL press, both of which stamp `WEEK_COUNT` — score
+ * as not seen, which is true of them.
+ *
+ * A release DURING the last week is a third case and gets its own clause: some
+ * desks had already locked. It still makes the bar a candidate cause, and the
+ * DOWN branch may name the bar in exactly the cases where this predicate holds
+ * and in no others (the old DOWN sentence named it unconditionally, four
+ * sentences after asserting nothing on the frame could be about it).
  */
-export function reinvestChangeLine(agg: HostLeagueAggregate, state: HostLeagueState): string {
+export function sawBarBeforeWeek3(state: HostLeagueState): boolean {
+  return state.barReleased && state.barReleasedAtWeek !== null && state.barReleasedAtWeek <= WEEK_COUNT - 1;
+}
+
+/** True only for a release inside the final week's open window — before its bell, after it opened. */
+export function barReleasedDuringLastWeek(state: HostLeagueState): boolean {
+  return sawBarBeforeWeek3(state) && state.barReleasedAtWeek === WEEK_COUNT - 1;
+}
+
+export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostLeagueState): Claimed {
   const [w1, w2, w3] = agg.meanShareByWeek;
   const HORIZON =
     "Read that with the last-week rule in your hand: week 3 was the end. Every desk's screen said so before it priced — Draw bought in week 3 earns nothing else in this lesson. A desk doing the arithmetic had a reason to put the dial DOWN in week 3 whatever it thought of the bar. That is not cynicism, it is the horizon: investment dies when there is no tomorrow to collect in.";
   if (w3 === null || w3 === undefined) {
-    return `Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth. ${HORIZON}`;
+    return { text: `Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth. ${HORIZON}`, claims: [] };
   }
   const before = [w1, w2].filter((x): x is number => typeof x === "number");
-  if (before.length === 0) return `Only one week is in the books, so there is no before and after to compare. ${HORIZON}`;
+  if (before.length === 0) return { text: `Only one week is in the books, so there is no before and after to compare. ${HORIZON}`, claims: [] };
   const mean = Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
   const delta = Math.round((w3 - mean) * 10) / 10;
 
-  // The bar is only a candidate cause if the room saw it BEFORE it played the
-  // last week. Otherwise nothing on this frame can be about the bar at all.
-  const sawBarBeforeWeek3 = state.barReleased && state.barReleasedAtWeek !== null && state.barReleasedAtWeek < WEEK_COUNT - 1;
-  const barClause = sawBarBeforeWeek3
-    ? "This room did see the Handed-To-You bar before it played week 3, so the bar is one of the things that could have moved it."
-    : "This room did NOT see the Handed-To-You bar before it played week 3, so nothing on this frame can be about the bar.";
+  // The bar is only a candidate cause if the room saw it BEFORE the last bell.
+  // Otherwise nothing on this frame can be about the bar at all.
+  const saw = sawBarBeforeWeek3(state);
+  const duringLast = barReleasedDuringLastWeek(state);
+  const claims: ClaimAtom[] = [];
+  const barClause = !saw
+    ? "This room did NOT see the Handed-To-You bar before it played week 3, so nothing on this frame can be about the bar."
+    : duringLast
+      ? "This room saw the Handed-To-You bar DURING week 3, before the last bell — some desks had already locked — so the bar is one of the things that could have moved it, for the desks that had not."
+      : "This room did see the Handed-To-You bar before it played week 3, so the bar is one of the things that could have moved it.";
+  claims.push(
+    claimWord(
+      "reveal5.sawBar",
+      !saw ? "did NOT see the Handed-To-You bar" : duringLast ? "saw the Handed-To-You bar DURING week 3" : "did see the Handed-To-You bar",
+      saw,
+      saw ? "did NOT see the Handed-To-You bar" : "could have moved it",
+    ),
+  );
 
   const numbers = `Weeks 1-2: ${mean}% of the door money, on average. Week 3: ${w3}%${
     Math.abs(delta) < 1 ? " — level" : ` — ${delta > 0 ? "up" : "down"} ${Math.abs(delta)} points`
   }.`;
+
+  // play N-3, second residual: the DOWN sentence used to name the bar
+  // unconditionally, four sentences after asserting nothing on the frame could
+  // be about it. It may name the bar exactly when the room saw it.
+  const downLine = saw
+    ? "The room went DOWN. At least two things could have done that and this board will not choose between them: the last-week rule, which every desk was shown, and whatever they made of the bar. Ask them which one it was — and believe them."
+    : "The room went DOWN. This room never saw the bar in time, so the bar is not on the table: the last-week rule, which every desk was shown, is the cause this board can see. Ask them whether that is really why — and believe them.";
+  if (Math.abs(delta) >= 1 && delta < 0) {
+    claims.push(
+      saw
+        ? claimWord("reveal5.barNamedAsCause", "whatever they made of the bar", true)
+        : claimWord("reveal5.barNamedAsCause", "the bar is not on the table", false, "whatever they made of the bar"),
+    );
+  }
 
   const direction =
     Math.abs(delta) < 1
       ? "The room held its dial where it was. Under the last-week rule that is itself a move: holding steady in a week the arithmetic told them to cut is a choice about something other than this week's cash. Ask them what."
       : delta > 0
         ? "The room went UP — against the last-week rule, which pushed the other way. Whatever moved these desks, it was not the arithmetic of this lesson. Ask them."
-        : "The room went DOWN. At least two things could have done that and this board will not choose between them: the last-week rule, which every desk was shown, and whatever they made of the bar. Ask them which one it was — and believe them.";
+        : downLine;
 
-  return `${numbers} ${HORIZON} ${barClause} ${direction}`;
+  return { text: `${numbers} ${HORIZON} ${barClause} ${direction}`, claims };
+}
+
+export function reinvestChangeLine(agg: HostLeagueAggregate, state: HostLeagueState): string {
+  return reinvestChangeLineClaimed(agg, state).text;
 }
 
 /* --------------------------------------------------------- teacher aids -- */
@@ -3039,14 +3362,69 @@ function studentScreenMechanics(state: HostLeagueState): string[] {
  * carries its own two numbers under that exact heading, and the teacher is told
  * so.
  */
-export function adaptSpendAnswer(state: HostLeagueState): string {
+export function adaptSpendAnswerClaimed(state: HostLeagueState): Claimed {
   const ct = computeAggregate(state).choiceTotals;
   const where =
     "You do not need the reveal board back for this — every pair has its own two numbers on its own screen right now, under WHAT YOU GAVE, WHAT YOU GOT. Tell them to read their own.";
   if (!ct.anySpend) {
-    return `Careful — nobody in this room put anything back, so this question has no spending to be about. Ask it the other way: what would it have cost you, and who else would it have paid? ${where}`;
+    return {
+      text: `Careful — nobody in this room put anything back, so this question has no spending to be about. Ask it the other way: what would it have cost you, and who else would it have paid? ${where}`,
+      claims: [],
+    };
   }
-  return `BOTH, and this room's own numbers say in what proportion: reinvesting was worth ${money(ct.ownGain)} to these desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books — ${ct.externalPct}% of it landed elsewhere. So do not tell them the buildings took it all. The honest answer is that it pays you back, slowly, through your local money and your own gate — AND it pays somebody else at the same time, on the night, and you never see that part. That is the problem, not a wrong. Say the next lesson is about what a league does with it. ${where}`;
+  // econ B7/B8 reached this answer key verbatim through a second hand-written
+  // copy of the same sentence. There is now exactly one builder.
+  const spill = spilloverClaim(ct);
+  return {
+    text: `BOTH, and this room's own numbers say in what proportion. ${spill.text} So do not tell them the buildings took it all. The honest answer is that it pays you back, slowly, through your local money and your own gate — AND it pays somebody else at the same time, on the night, and you never see that part. That is the problem, not a wrong. Say the next lesson is about what a league does with it. ${where}`,
+    claims: spill.claims,
+  };
+}
+
+export function adaptSpendAnswer(state: HostLeagueState): string {
+  return adaptSpendAnswerClaimed(state).text;
+}
+
+/**
+ * EVERY claim-carrying surface in this lesson, in one sweep.
+ *
+ * This is the entry point for the claim-audit family (`P11` in the L2 tuning
+ * harness): for each surface it returns the exact string the room is shown and
+ * every relation that string asserts, so the audit can recompute each relation
+ * from the reducer and fail on disagreement in sign, quantifier or bound.
+ *
+ * A surface missing from this list is a surface the audit cannot see, so adding
+ * a claim-carrying board/synthesis/ADAPT string without adding it here is the
+ * one way to reintroduce the defect class. The harness asserts the sweep
+ * actually covers the ids it names.
+ */
+export function moduleClaims(state: HostLeagueState): ClaimSurface[] {
+  const agg = computeAggregate(state);
+  const out: ClaimSurface[] = [];
+  const push = (surface: string, c: Claimed): void => {
+    if (c.claims.length > 0) out.push({ surface, text: c.text, claims: c.claims });
+  };
+
+  push("board:reveal-1:barSummary", barSummaryFromClaimed(agg.homeRevenueDecomposition, agg.visitorLedCount));
+  push("board:reveal-2:ledgerSummary", giveAndTakeSummaryClaimed(agg));
+  const path = agg.smallMarketPath;
+  if (path.found) push("board:reveal-4:smallMarketPath", { text: path.line, claims: path.claims });
+  push("board:reveal-5:changeLine", reinvestChangeLineClaimed(agg, state));
+  push("teach:adapt-q3:answerKey", adaptSpendAnswerClaimed(state));
+  for (const card of synthesisCards(state, agg)) {
+    if (card.claims && card.claims.length > 0) push(`synthesis:${card.id}`, { text: card.body, claims: card.claims });
+  }
+  for (const row of agg.giveAndTake) {
+    push(`play:desk-${row.deskNumber}:choiceLine`, deskChoiceLineClaimed(row));
+  }
+  for (const club of state.clubs.slice(0, state.leagueSize)) {
+    if (club.seatId === null) continue;
+    for (const w of club.weeks) {
+      const cf = priceCounterfactualFor(state, club, w);
+      push(`play:desk-${club.deskNumber}:week-${w.week + 1}:priceCounterfactual`, { text: `${cf.line} ${cf.verdict}`, claims: cf.claims });
+    }
+  }
+  return out;
 }
 
 export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): DirectorPanel {
@@ -3286,7 +3664,7 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
 
 /* ------------------------------------------------------------ synthesis -- */
 
-export type SynthesisCard = { id: string; title: string; body: string };
+export type SynthesisCard = { id: string; title: string; body: string; claims?: readonly ClaimAtom[] };
 
 /** Every card is computed from THIS class's own weeks — never scripted, never recomputed against numbers the room did not play. */
 export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate): SynthesisCard[] {
@@ -3331,10 +3709,12 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   const pct = totalDoor > 0 ? Math.round((totalVisitor / totalDoor) * 100) : 0;
   const biggest = [...agg.visitorLedger].sort((a, b) => b.gateLift - a.gateLift)[0] ?? null;
 
+  const pctClaim = claim("sharedProduct.visitorPct", pct, "percent", { bounds: { min: 0, max: 100 } });
   cards.push({
     id: "shared-product",
+    claims: [pctClaim],
     title: "SHARED PRODUCT",
-    body: `${pct}% of every dollar that came through a door in this room was brought by a club somebody else was running.${
+    body: `${pctClaim.rendered} of every dollar that came through a door in this room was brought by a club somebody else was running.${
       biggest
         ? ` The single biggest example is ${biggest.hostHandle}'s week ${biggest.week}: ${biggest.visitorClub} visited at Draw ${biggest.visitorDraw} and put ${money(biggest.gateLift)} on ${biggest.hostHandle.split(" · ")[0]}'s books.`
         : ""
@@ -3356,20 +3736,32 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   const ct = agg.choiceTotals;
   const biggestGiver = [...agg.giveAndTake].sort((a, b) => b.gaveByChoice - a.gaveByChoice)[0] ?? null;
   const biggestTaker = [...agg.giveAndTake].sort((a, b) => b.netByChoice - a.netByChoice)[0] ?? null;
+  const spill = spilloverClaim(ct);
+  const spillClaims: ClaimAtom[] = [...spill.claims];
+  const namedGiver =
+    biggestGiver && biggestGiver.gaveByChoice > 0
+      ? (() => {
+          const spent = claim("spillover.giverSpend", biggestGiver.spend, "money", { assertsSign: "positive" });
+          const put = claim("spillover.giverGave", biggestGiver.gaveByChoice, "money", { assertsSign: "positive" });
+          spillClaims.push(spent, put);
+          return ` ${biggestGiver.deskHandle} put ${spent.rendered} back into its club, and ${put.rendered} of what that bought turned up in other people's buildings.`;
+        })()
+      : "";
+  const namedTaker =
+    biggestTaker && biggestGiver && biggestTaker.slot !== biggestGiver.slot && biggestTaker.netByChoice > 0
+      ? (() => {
+          const ahead = claim("spillover.takerNet", biggestTaker.netByChoice, "money", { assertsSign: "positive" });
+          spillClaims.push(ahead);
+          return ` ${biggestTaker.deskHandle} came out ${ahead.rendered} ahead on money other desks chose to spend.`;
+        })()
+      : "";
   cards.push({
     id: "spillover",
     title: "SPILLOVER",
     body: ct.anySpend
-      ? `Putting money back into your club paid YOU and it paid the buildings you visited. Across this room, reinvesting was worth ${money(ct.ownGain)} to the desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books — ${ct.externalPct}% of the value it created landed somewhere the desk that paid for it never sees.${
-          biggestGiver && biggestGiver.gaveByChoice > 0
-            ? ` ${biggestGiver.deskHandle} put ${money(biggestGiver.spend)} back into its club, and ${money(biggestGiver.gaveByChoice)} of what that bought turned up in other people's buildings.`
-            : ""
-        }${
-          biggestTaker && biggestGiver && biggestTaker.slot !== biggestGiver.slot && biggestTaker.netByChoice > 0
-            ? ` ${biggestTaker.deskHandle} came out ${money(biggestTaker.netByChoice)} ahead on money other desks chose to spend.`
-            : ""
-        } A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER — the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money simply does not land where the effort goes.`
-      : `Nobody in this room put a single dollar back into their club, so nobody here gave anything they CHOSE to give. Every dollar that filled your building came from the Draw you were dealt and from who the schedule sent you — and it still did not land where it was earned. That is the point, and it is sharper this way: a cost or a benefit that lands on somebody who did not choose it is a SPILLOVER, the grown-up word is EXTERNALITY, and it does not need anybody to be generous. It only needs the thing you sell to be made by two clubs.`,
+      ? `Putting money back into your club pays two sets of books at once. ${spill.text}${namedGiver}${namedTaker} A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER — the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money simply does not land where the effort goes.`
+      : `${spill.text} Every dollar that filled your building came from the Draw you were dealt and from who the schedule sent you — and it still did not land where it was earned. That is the point, and it is sharper this way: a cost or a benefit that lands on somebody who did not choose it is a SPILLOVER, the grown-up word is EXTERNALITY, and it does not need anybody to be generous. It only needs the thing you sell to be made by two clubs.`,
+    claims: spillClaims,
   });
 
   const pipes = [...agg.pipes].sort((a, b) => b.nationalPct - a.nationalPct);
@@ -3392,6 +3784,7 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   const path = agg.smallMarketPath;
   cards.push({
     id: "market-size",
+    claims: path.claims,
     title: "MARKET SIZE IS NOT DESTINY",
     body: path.found
       ? `${path.line} Market size is real and you did not choose it. It is also not the only thing in the arithmetic — and Oklahoma City, one of the league's smallest markets, won the 2025 title.`
