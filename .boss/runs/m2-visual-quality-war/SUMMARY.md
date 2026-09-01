@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `159:50e79be7d30520186bf302702d6079d439d714cf0a2d8d4a28c0bf4ca2610583`  
-Updated: 2026-09-01T21:09:43.687Z
+Event head: `166:8f3c0762dcb63747782bf964ea5bcd2e30af60c9910bad7fc48d6b78e57452c7`  
+Updated: 2026-09-01T21:15:45.834Z
 
 ## Founder intent
 
@@ -32,7 +32,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 
 - builder — builder-a — completed-with-concerns — claude-opus-5
 - builder — builder-b — active — claude-opus-5
-- builder — builder-c — active — claude-opus-5
+- builder — builder-c — completed-with-concerns — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
 - sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
 - browser-qa — browser-qa-w2base — completed — claude-sonnet-5
@@ -69,6 +69,12 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - lane-a-tile-1024 — screenshot — Lane A render at 1024 width (rail-collapse breakpoint)
 - lane-a-contrast-proof — note — Module-2 contrast/CVD proof: 39 pairings, 0 failures after three token repairs; deuteranopia finding (LOCKED/STALLED 4.7 dE) enforced by glyph+label in pill()
 - lane-a-identity-layer — note — VISUAL_IDENTITY.md Module 2 layer section (the ticket office; violet accent; Inter; arena as instrument; no team-colour badge fills)
+- lane-c-mutation-a — note — R-1 mutation A: injected a client-rendered turnout number (no flagged word) into a scratch dist; the browser limb failed the run on the number half (exit 1)
+- lane-c-mutation-b — note — R-1 mutation B: injected a literal Target: $110–$120 into a scratch dist; the browser limb failed the run on the word half (exit 1)
+- lane-c-e2e-clean — note — R-1 clean run against HEAD's renderer (pre-Lane-B splice): 56 pre-lock desk states audited, 27 numeric-coincidence abstentions logged, zero console errors, PASS (exit 0)
+- lane-c-source-limb-mutation — note — clientClaims source test: mutation (projection + target literal appended to board/main.ts, then restored) fails with three hits
+- lane-c-source-limb-clean — note — clientClaims source test clean at head (27 allowlisted non-claims with reasons)
+- lane-c-npm-test — note — cd runtime && npm test after Lane C: 468/468 (lane-run log; authentic command record re-taken by the lead at the wave head)
 
 ## Claim ledger
 
