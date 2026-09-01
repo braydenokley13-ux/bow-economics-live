@@ -1313,8 +1313,18 @@ function hlBarHtml(bars: HLBar[]): string {
 
 function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): void {
   const honesty = String(view["honestyLine"] ?? "");
-  stage.classList.remove("fh-tight", "fh-synth", "hl-tight");
+  stage.classList.remove("fh-tight", "fh-synth", "hl-tight", "hl-ledger-frame");
   stage.classList.add("hl-tight");
+  // gate-l2-teacher W5 N-2 (non-blocking): REVEAL stage 2 overflowed 1366x768 by
+  // 2px in a 7-desk room (#stage 770 vs 768) while every other frame fit exactly
+  // at both shapes. The frame's height is not a function of the desk count — the
+  // ledger is paged at 5 rows whatever the room — it is a function of how many
+  // lines the computed summary sentence WRAPS to, which varies by branch and by
+  // this room's own numbers. So the guard cannot be discharged by testing more
+  // desk counts; the frame needs headroom for another wrapped line. This is the
+  // existing fit discipline applied one frame further: spacing gives way, type
+  // never does, so the 2.6%-of-screen-height back-row floor is untouched.
+  if (mode === "reveal" && Number(view["revealStage"] ?? 0) === 2) stage.classList.add("hl-ledger-frame");
   switch (mode) {
     case "lobby": {
       const league = (view["league"] as HLClubB[]) ?? [];

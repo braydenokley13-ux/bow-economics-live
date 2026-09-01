@@ -2479,6 +2479,19 @@ function renderHostLeague(s: SessionInfo, view: Record<string, unknown>): void {
       hlSeatRequested = true;
       outbox?.submit({ type: "takeSeat" });
     }
+    // gate-l2-teacher W5 N-3: a pair joining after the last week closed used to
+    // sit on "finding your club…" for the rest of the period while their join
+    // request 409'd in a loop. The runtime now records them and says so; this is
+    // L3's landing, with L2's honest reason.
+    if (view["observer"]) {
+      body.innerHTML = `
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">You arrived after the last week closed</div>
+          <p style="margin:0 0 10px; font-size:16px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+          <p style="margin:0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["observerAction"] ?? ""))}</p>
+        </div>`;
+      return;
+    }
     body.innerHTML = `<div class="banner">You're in — finding your club…</div>`;
     return;
   }

@@ -39,7 +39,12 @@ import {
   botShareFor,
   computeAggregate,
   dealtLineClaimed,
+  deskChoiceHeadingClaimed,
   deskChoiceLineClaimed,
+  neverLockedFor,
+  neverLockedFramingClaimed,
+  playBoardComposition,
+  teachPlayMirrorClaimed,
   drawGain,
   hostSlotFor,
   hostTheLeagueModule,
@@ -193,8 +198,171 @@ test("phase guards: dials only in PLAY, teacher hooks only from the teacher", ()
   assert.match(bad(act(state, { type: "teacher:closeWeek" }, "PLAY", "seat-1")), /only the teacher/);
   assert.match(bad(act(state, { type: "teacher:closeWeek" }, "HOOK", "teacher")), /weeks close during PLAY/);
   assert.match(bad(act(state, { type: "setPrice", price: 40 }, "PLAY", "teacher")), /only a seated pair/);
-  assert.match(bad(act(state, { type: "takeSeat" }, "REVEAL", "seat-9")), /clubs are handed out/);
   assert.match(bad(act(state, { type: "nope" }, "PLAY")), /unknown action/);
+});
+
+/**
+ * `gate-l2-teacher` W5 N-3. A pair joining after the last week closed used to be
+ * refused ("clubs are handed out in LOBBY, HOOK or PLAY"), which the device
+ * retried in a 409 loop under "You're in — finding your club…" for the rest of
+ * the period, while `/teach` listed them and said nothing about what to do.
+ * They are recorded as observers now: accepted, told the truth, and named to the
+ * teacher — and no club is invented for them, because seating a desk after the
+ * weeks are closed would re-derive numbers the room has already been shown.
+ */
+/**
+ * `gate-l2-teacher` W5 B-1 (BLOCKING). The desk that never pressed LOCK was
+ * told by its own device that it had CHOSEN, on the same beat `/teach` was
+ * telling the teacher that pair "did not choose 0%, they chose nothing". Both
+ * desks below spend exactly $0, so no arithmetic distinguishes them; only the
+ * abstention atom does, and every surface must read it.
+ */
+test("W5 B-1: a desk that never locked is never told it chose, and the desk that chose zero still is", () => {
+  // Desk 1 never presses LOCK. Desk 2 locks in and picks 0% every week.
+  let state = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) {
+    for (const [i, seatId] of Object.keys(state.seatToSlot).entries()) {
+      if (i === 0) continue; // desk 1 abstains, all three weeks
+      state = ok(act(state, { type: "setPrice", price: 44 }, "PLAY", seatId));
+      state = ok(act(state, { type: "setShare", share: i === 1 ? 0 : 20 }, "PLAY", seatId));
+      state = ok(act(state, { type: "lock" }, "PLAY", seatId));
+    }
+    state = ok(act(state, { type: "teacher:closeWeek" }, "PLAY", "teacher"));
+  }
+
+  const agg = computeAggregate(state);
+  const abstainer = agg.giveAndTake.find((r) => r.neverLocked);
+  const chooser = agg.giveAndTake.find((r) => !r.neverLocked && r.spend === 0);
+  assert.ok(abstainer, "the abstaining desk is on the ledger");
+  assert.ok(chooser, "and so is a desk that locked in and chose 0%");
+  assert.equal(abstainer!.spend, 0);
+  assert.equal(chooser!.spend, 0, "both spent exactly $0 — the arithmetic cannot tell them apart");
+  assert.equal(abstainer!.chosenWeeks, 0);
+  assert.ok(chooser!.chosenWeeks > 0);
+
+  // One predicate, read the same way everywhere.
+  const abstainClub = state.clubs.find((c) => c.deskNumber === abstainer!.deskNumber)!;
+  const chooseClub = state.clubs.find((c) => c.deskNumber === chooser!.deskNumber)!;
+  assert.equal(neverLockedFor(abstainClub), true);
+  assert.equal(neverLockedFor(chooseClub), false);
+
+  // The abstaining desk's own card and heading.
+  const aLine = deskChoiceLineClaimed(abstainer!).text;
+  const aHead = deskChoiceHeadingClaimed(abstainer!).text;
+  assert.doesNotMatch(aLine, /chose to give nothing/, "the abstaining desk is not told it chose to give nothing");
+  assert.doesNotMatch(aLine, /they are your decision/, "nor that the zeroes are its decision");
+  assert.doesNotMatch(aHead, /that is a decision/, "and the heading above them does not say it either");
+  assert.match(aLine, /not a decision/, "it is told what actually happened instead");
+  assert.match(aHead, /nobody at this desk pressed LOCK/);
+
+  // The chooser is still told, plainly, that it decided. The lesson needs this.
+  const cLine = deskChoiceLineClaimed(chooser!).text;
+  const cHead = deskChoiceHeadingClaimed(chooser!).text;
+  assert.match(cLine, /chose to give nothing/);
+  assert.match(cHead, /that is a decision/);
+
+  // /teach: the two WATCH FOR limbs, and the give/take framing line.
+  const teach = hostTheLeagueModule.teacherView(state, "ADAPT") as Record<string, unknown>;
+  const flags = teach["watchFor"] as { id: string; desks: string[]; action: string }[];
+  const never = flags.find((f) => f.id === "never-locked");
+  const rider = flags.find((f) => f.id === "free-rider");
+  assert.ok(never!.desks.some((d) => d.includes(`Desk ${abstainer!.deskNumber}`)));
+  assert.ok(!never!.desks.some((d) => d.includes(`Desk ${chooser!.deskNumber}`)));
+  assert.ok(rider!.desks.some((d) => d.includes(`Desk ${chooser!.deskNumber}`)));
+  assert.ok(!rider!.desks.some((d) => d.includes(`Desk ${abstainer!.deskNumber}`)), "the abstaining desk is never the free-rider example");
+  assert.match(never!.action, /not a decision/, "the teacher is quoted the words on that pair's own screen");
+
+  const framing = neverLockedFramingClaimed(state);
+  assert.ok(framing, "the give/take framing carries a line for this room");
+  assert.match(framing!.text, new RegExp(`Desk ${abstainer!.deskNumber}`));
+  assert.match(framing!.text, /treat them as absent/);
+  const q2 = (teach["director"] as { ask: { q: string; answer: string | null }[] }).ask[1]!;
+  assert.match(String(q2.answer), /treat them as absent/, "and it is attached to the question that sends the room to those numbers");
+
+  // A room where everybody locked prints no framing line at all.
+  assert.equal(neverLockedFramingClaimed(fullSession(6)), null);
+
+  // The sweep sees both surfaces for both desks.
+  const surfaces = moduleClaims(state).map((s) => s.surface);
+  for (const n of [abstainer!.deskNumber, chooser!.deskNumber]) {
+    assert.ok(surfaces.includes(`play:desk-${n}:choiceLine`));
+    assert.ok(surfaces.includes(`play:desk-${n}:choiceHeading`));
+  }
+  assert.ok(surfaces.includes("teach:give-take:neverLocked"));
+});
+
+/**
+ * `gate-l2-teacher` W5 B-2 (BLOCKING). At the bar release `/teach` itself
+ * prescribes, the ON-THE-PROJECTOR mirror described a pairing grid, a
+ * star-departure card and a bar "underneath the schedule" — while the projector
+ * held only the bar. The mirror is composed from the frame `boardView` sends.
+ */
+test("W5 B-2: the PLAY mirror is composed from the board frame, on both sides of the bar release", () => {
+  let state = seated(7);
+  for (let w = 0; w < WEEK_COUNT - 1; w += 1) state = playWeek(state, () => 50, (i) => (i % 2 === 0 ? 0 : 20));
+
+  // Week 3 open, nothing locked into it, bar still held.
+  const held = state;
+  const heldFrame = hostTheLeagueModule.boardView(held, "PLAY") as Record<string, unknown>;
+  const heldMirror = teachPlayMirrorClaimed(held).text;
+  assert.ok((heldFrame["pairings"] as unknown[]).length > 0, "the board is holding the schedule");
+  assert.equal((heldFrame["bars"] as unknown[]).length, 0, "and no bar");
+  assert.match(heldMirror, /Every pairing in the league/);
+  assert.match(heldMirror, /the Handed-To-You bar is not up/);
+
+  // The prescribed press.
+  const up = ok(act(held, { type: "teacher:handedTo" }, "PLAY", "teacher"));
+  const upFrame = hostTheLeagueModule.boardView(up, "PLAY") as Record<string, unknown>;
+  const upMirror = teachPlayMirrorClaimed(up).text;
+  assert.equal((upFrame["pairings"] as unknown[]).length, 0, "the bar takes the frame — no pairings are sent");
+  assert.equal(upFrame["shock"], null, "and no star-departure card");
+  assert.ok((upFrame["bars"] as unknown[]).length > 0, "the bar is up");
+  assert.doesNotMatch(upMirror, /underneath the schedule/, "the exact false sentence W5 B-2 found");
+  assert.doesNotMatch(upMirror, /Every pairing in the league/, "no pairing grid is claimed on a frame that has none");
+  assert.doesNotMatch(upMirror, /star-departure card is up/, "no departure card either");
+  assert.match(upMirror, /REPLACED the schedule/);
+  assert.match(upMirror, new RegExp(`${upFrame["lockedCount"]} of ${upFrame["deskCount"]} locked in`), "and the lock count is the board's own");
+
+  // The composition the two surfaces share.
+  const comp = playBoardComposition(up);
+  assert.equal(comp.barsUp, true);
+  assert.equal(comp.showsPairings, false);
+  assert.equal(comp.showsShock, false);
+  assert.equal(comp.lockedCount, upFrame["lockedCount"]);
+
+  // /teach's own panel, not just the builder.
+  const panel = (hostTheLeagueModule.teacherView(up, "PLAY") as Record<string, unknown>)["projectorNow"] as { title: string; lines: string[] };
+  assert.match(panel.title, /REPLACED the schedule/);
+  assert.deepEqual(panel.lines, [upMirror]);
+  assert.ok(moduleClaims(up).some((s) => s.surface === "teach:play:projectorMirror"));
+});
+
+test("a pair arriving after the weeks close is recorded as an observer, not refused", () => {
+  const state = seated(4);
+  const late = ok(act(state, { type: "takeSeat" }, "ADAPT", "seat-9"));
+  assert.deepEqual(late.observerSeats, ["seat-9"], "the late pair is recorded");
+  assert.equal(late.seatToSlot["seat-9"], undefined, "and is NOT given a club");
+  assert.equal(late.deskCount, state.deskCount, "so no desk count moves after the season");
+  // Idempotent: the device retries, and a retry may not duplicate the record.
+  const again = ok(act(late, { type: "takeSeat" }, "ADAPT", "seat-9"));
+  assert.deepEqual(again.observerSeats, ["seat-9"], "a retry does not duplicate the pair");
+
+  const view = hostTheLeagueModule.studentView(late, "seat-9", "ADAPT") as Record<string, unknown>;
+  assert.equal(view["seated"], false);
+  assert.equal(view["observer"], true, "the device is told it is an observer rather than left searching");
+  assert.doesNotMatch(String(view["message"]), /finding your club/i, "and never left on the lie");
+  assert.match(String(view["observerAction"]), /nearest desk/i, "and is told what to do instead");
+
+  const teach = hostTheLeagueModule.teacherView(late, "ADAPT") as Record<string, unknown>;
+  const flags = teach["watchFor"] as { id: string; desks: string[]; action: string }[];
+  const flag = flags.find((f) => f.id === "late-observers");
+  assert.ok(flag, "/teach gets a WATCH FOR entry for the pair standing in the doorway");
+  assert.equal(flag!.desks.length, 1);
+  assert.match(flag!.action, /no club left to hand them/i);
+
+  // A seat that already has a club is untouched by the late path.
+  const seatedLate = ok(act(late, { type: "takeSeat" }, "SYNTHESIS", "seat-1"));
+  assert.deepEqual(seatedLate.observerSeats, ["seat-9"], "an already-seated pair is never recorded as an observer");
 });
 
 test("dial validation rejects off-grid prices and shares", () => {

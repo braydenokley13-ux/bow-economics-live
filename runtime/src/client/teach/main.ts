@@ -77,6 +77,41 @@ const BELL_GLYPH = `<span class="btn-glyph" aria-hidden="true">◗</span>`;
 const GLYPH_HIT = `<span class="btn-glyph" aria-hidden="true">/</span>`;
 const GLYPH_WARN = `<span class="btn-glyph" aria-hidden="true">!</span>`;
 
+/**
+ * The pre-session rehearsal note, per lesson — `gate-l2-teacher` W5 N-1.
+ *
+ * The shipped note was written for M2 L3 and never changed with the picker, so
+ * a teacher preparing M2 L2 was told to rehearse a round step and a two-thirds
+ * test that do not exist in this lesson, and warned about throwing away a vote
+ * this lesson never takes. What every version says is the part that is true of
+ * all of them (rehearse cold, do not press Advance ▸ through PLAY); what changes
+ * is the list of interior controls, which is the whole point of the paragraph.
+ */
+const REHEARSE_COMMON =
+  "Never run this lesson before? Create a session now with nobody in it and walk the console. The directing panel — what to say, what to ask, what to hold back, and the line for each reveal — is all there with zero students.";
+
+function rehearseNoteFor(lessonId: string): string {
+  const advanceWarning =
+    "<strong>Do not just press Advance ▸ through PLAY:</strong> in PLAY that button jumps straight past the interior, which is about half the period, and in a real class it settles everything still open in one click.";
+  switch (lessonId) {
+    case WRITE_RULE_ID:
+      return `${REHEARSE_COMMON} ${advanceWarning} Rehearse PLAY with its own controls — the <strong>round step</strong> (once per round, then once more for the two-thirds test, then once more to open the season) and the <strong>week bell</strong> (once per week) — and use Advance ▸ only to leave a phase that is finished.`;
+    case HOST_LEAGUE_ID:
+      return `${REHEARSE_COMMON} ${advanceWarning} This lesson has exactly two interior controls and no vote: the <strong>week bell</strong>, which you press once per week to settle every building in the league at the same moment, and the <strong>Handed-To-You bar</strong>, which you release ONCE, by hand, at the moment the panel tells you to — straight after the week-2 bell, before the room prices week 3. Rehearse both, then rehearse the five <strong>reveal presses</strong> and the <strong>synthesis cards</strong>, one press each. Use Advance ▸ only to leave a phase that is finished.`;
+    case FULL_HOUSE_ID:
+      return `${REHEARSE_COMMON} ${advanceWarning} Rehearse PLAY with the <strong>night bell</strong> (once per night) and the staged <strong>reveal presses</strong>, and use Advance ▸ only to leave a phase that is finished.`;
+    case FREE_AGENCY_ID:
+      return `${REHEARSE_COMMON} ${advanceWarning} Rehearse PLAY with the <strong>signing-day close</strong> (once per day) — leaving PLAY early permanently ends the signing window, and a day that was never opened is never played. Use Advance ▸ only to leave a phase that is finished.`;
+    default:
+      return `${REHEARSE_COMMON} ${advanceWarning} Walk every phase and press each of that phase's own controls at least once before the room is in front of you, and use Advance ▸ only to leave a phase that is finished.`;
+  }
+}
+
+function syncRehearseNote(): void {
+  const note = document.getElementById("rehearseNote");
+  if (note) note.innerHTML = rehearseNoteFor($<HTMLSelectElement>("lesson").value);
+}
+
 async function loadLessons(): Promise<void> {
   const { lessons } = await apiFetch<{ lessons: Lesson[] }>("/api/lessons");
   const select = $<HTMLSelectElement>("lesson");
@@ -89,7 +124,11 @@ async function loadLessons(): Promise<void> {
     option.textContent = `${lesson.title} (${lesson.phases.join(" → ")})`;
     select.appendChild(option);
   }
-  select.addEventListener("change", () => void syncSourceSessionRow());
+  select.addEventListener("change", () => {
+    syncRehearseNote();
+    void syncSourceSessionRow();
+  });
+  syncRehearseNote();
   await syncSourceSessionRow();
 }
 

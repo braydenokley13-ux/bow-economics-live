@@ -571,6 +571,19 @@ export type HostLeagueState = {
    * read goes through `lockedAtBarRelease()`.
    */
   lockedAtBarRelease: number | null;
+  /**
+   * `gate-l2-teacher` W5 N-3. Pairs who arrived after the last week was closed.
+   *
+   * A device that joined during ADAPT used to be refused with a bare 409, retry
+   * in a loop, and sit on "You're in — finding your club…" for the rest of the
+   * period while `/teach` listed the pair in the join list and said nothing
+   * about them. L3 already had the honest landing (`observerSeats`), and this is
+   * that pattern, with one deliberate difference recorded below in `seatLate`.
+   *
+   * Optional at read time: a snapshot written before this field existed is
+   * still a valid session, and must boot rather than quarantine.
+   */
+  observerSeats?: string[];
   revealStage: number;
   barPage: number;
   synthPage: number;
@@ -694,6 +707,34 @@ function seatDesk(state: HostLeagueState, seatId: SeatId): ReduceResult<HostLeag
     ok: true,
     state: { ...next, clubs, seatToSlot: { ...next.seatToSlot, [seatId]: slot }, deskCount: deskNumber },
   };
+}
+
+/** Pairs recorded as observers, tolerant of a snapshot written before the field existed. */
+export const observersOf = (state: HostLeagueState): readonly string[] => state.observerSeats ?? [];
+
+/**
+ * THE LATE ARRIVAL, AFTER THE SEASON — `gate-l2-teacher` W5 N-3.
+ *
+ * L3 offers a late pair a HANDOVER first (take over a league-office club) and
+ * falls back to OBSERVER. This lesson deliberately takes only the observer
+ * limb once the weeks are closed, and the reason is the lesson's own evidence:
+ * every figure the room has already been shown — the bars, the by-choice
+ * ledger, the room's joint effect, the sweet-spot band, every synthesis card —
+ * is computed over the LIVE desks. Seating a new desk during REVEAL or ADAPT
+ * would silently re-derive numbers the teacher has already read out loud to the
+ * room, and put a bar on the projector for a club nobody in the room played.
+ * A 409 was wrong; rewriting the class's own evidence to avoid it is worse.
+ *
+ * So: they are recorded, their device is told the truth and told what to do,
+ * and `/teach` gets a WATCH FOR entry that names them. Nothing is silent, and
+ * nothing the room has already seen moves. During PLAY a late pair still gets a
+ * real club — that path is unchanged, and it is the one that matters.
+ */
+function seatLate(state: HostLeagueState, seatId: SeatId): ReduceResult<HostLeagueState> {
+  if (state.seatToSlot[seatId] !== undefined) return { ok: true, state };
+  const observers = observersOf(state);
+  if (observers.includes(seatId)) return { ok: true, state };
+  return { ok: true, state: { ...state, observerSeats: [...observers, seatId] } };
 }
 
 /* --------------------------------------------------------------- bots -- */
@@ -2860,9 +2901,10 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
   reduce(state, action: LessonAction, ctx: ReduceContext): ReduceResult<HostLeagueState> {
     if (action.type === "takeSeat") {
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair can take a club" };
-      if (ctx.phase !== "LOBBY" && ctx.phase !== "HOOK" && ctx.phase !== "PLAY") {
-        return { ok: false, reason: `clubs are handed out in LOBBY, HOOK or PLAY (session is in ${ctx.phase})` };
-      }
+      // W5 N-3: after the weeks are closed there is no club to hand out, but a
+      // refusal is not an answer either — the device retried forever. Record the
+      // pair instead; their screen and /teach both get told.
+      if (ctx.phase !== "LOBBY" && ctx.phase !== "HOOK" && ctx.phase !== "PLAY") return seatLate(state, ctx.seatId);
       return seatDesk(state, ctx.seatId);
     }
 
@@ -2958,13 +3000,27 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
     if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock"];
-    return [];
+    // W5 N-3: still offered, so a late device gets an answer instead of a 409 loop.
+    return ["takeSeat"];
   },
 
   studentView(state, seatId, phase) {
     const slot = state.seatToSlot[seatId];
     const view = ((): Record<string, unknown> => {
-      if (slot === undefined) return { phase, seated: false, message: "You're in! Finding your club…" };
+      if (slot === undefined) {
+        // W5 N-3: "finding your club…" was true in LOBBY and a lie afterwards.
+        if (observersOf(state).includes(seatId)) {
+          return {
+            phase,
+            seated: false,
+            observer: true,
+            message: "You got here after the last week closed, so there is no club left to hand you — the three weeks are already in the books.",
+            observerAction:
+              "Pull your chair up to the nearest desk and read their screen with them. Everything from here is the whole room's: the board, the argument, and the questions. You are not missing a turn, because nobody is taking one.",
+          };
+        }
+        return { phase, seated: false, observer: false, message: "You're in! Finding your club…" };
+      }
       const club = state.clubs[slot]!;
       const profile = profileOf(club);
       const identity = deskIdentity(state, club);
@@ -3831,7 +3887,21 @@ function rehearsalWatchFor(phase: CanonicalPhase): WatchFlag[] {
 function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFlag[] {
   const out: WatchFlag[] = [];
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
-  if (live.length === 0) return rehearsalWatchFor(phase);
+  // W5 N-3. This comes FIRST and before the rehearsal short-circuit: a pair
+  // standing in the doorway is the most urgent thing on the panel, and the
+  // teacher had no line for them at all.
+  const observers = observersOf(state);
+  if (observers.length > 0) {
+    out.push({
+      id: "late-observers",
+      label: `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the last week closed and could not be given a club`,
+      desks: observers.map((_, i) => `Late pair ${i + 1}`),
+      action:
+        "There is no club left to hand them — the weeks are in the books and seating them now would change numbers this room has already been shown. Their screen says so and tells them to pull up to the nearest desk; say the same out loud and pair them with a desk near the door. Everything from here — the board, the argument, the synthesis — is the whole room's, so they lose nothing but the three weeks.",
+      urgency: "now",
+    });
+  }
+  if (live.length === 0) return [...out, ...rehearsalWatchFor(phase)];
   const windowOpen = phase === "PLAY" && state.weekIndex < WEEK_COUNT;
 
   if (windowOpen && live.length > 0) {

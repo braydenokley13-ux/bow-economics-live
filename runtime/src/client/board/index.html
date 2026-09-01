@@ -390,6 +390,19 @@
   #stage.hl-tight .label { margin-bottom: .5vh; }
   #stage.hl-tight .synthesis-note { margin-top: .6vh; }
   #stage.hl-tight .exit-prompt { margin-top: .5vh; }
+  /* gate-l2-teacher W5 N-2. REVEAL stage 2 is the tallest frame in the lesson:
+     the pager, five ledger rows of two stacked bars each, the legend, a computed
+     summary that wraps to a variable number of lines, and the shock foot. It
+     overflowed 1366x768 by 2px in a 7-desk room. Every value below is SPACING —
+     no font-size, no bar height, nothing that touches the back-row legibility
+     floor — and together they reclaim roughly 11px at 768, so another wrapped
+     line of the summary still lands inside the frame. Declared AFTER .hl-tight
+     because the two selectors have identical specificity. */
+  #stage.hl-ledger-frame .hl-ledger { gap: .45vh; margin-top: .5vh; }
+  #stage.hl-ledger-frame .hl-ledger-bars { gap: .18vh; }
+  #stage.hl-ledger-frame .hl-legend { margin-top: .5vh; }
+  #stage.hl-ledger-frame .hl-summary { margin-top: .45vh; }
+  #stage.hl-ledger-frame .hl-foot { margin-top: .45vh; }
 
   .hl-club-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .7vw; max-width: 88vw; margin-top: 1.4vh; }
   .hl-club-grid.tight { grid-template-columns: repeat(7, 1fr); gap: .5vw; margin-top: 1vh; }
