@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `271:0521e164330275e4c61a62184b62538e293a9de27bdb37060b2875d5f14b1906`  
-Updated: 2026-09-01T06:51:36.486Z
+Event head: `272:fe38d0af309aacce5176ad0f80c420de2df98f9ea59d8b119615f897acff1739`  
+Updated: 2026-09-01T06:51:57.932Z
 
 ## Founder intent
 
@@ -129,7 +129,78 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 
 ## Latest gate
 
-- Gate not evaluated
+Recommendation: **REPAIR**
+
+- FAIL — role:browser-qa: browser-qa is required and incomplete.
+- PASS — role:builder: builder completed.
+- PASS — role:classroom-projector-critic: classroom-projector-critic completed.
+- PASS — role:economic-truth-critic: economic-truth-critic completed.
+- FAIL — role:experience-director: experience-director is required and incomplete.
+- FAIL — role:lead-integrator: lead-integrator is required and incomplete.
+- PASS — role:player-gameplay-critic: player-gameplay-critic completed.
+- FAIL — role:product-analyst: product-analyst is required and incomplete.
+- FAIL — role:regression-hunter: regression-hunter is required and incomplete.
+- PASS — role:sports-reality-director: sports-reality-director completed.
+- PASS — role:teacher-transfer-critic: teacher-transfer-critic completed.
+- PASS — role:visual-experience-director: visual-experience-director completed.
+- PASS — blocking-role:classroom-projector-critic: classroom-projector-critic blocking review is present.
+- PASS — blocking-role:economic-truth-critic: economic-truth-critic blocking review is present.
+- PASS — blocking-role:sports-reality-director: sports-reality-director blocking review is present.
+- PASS — blocking-role:teacher-transfer-critic: teacher-transfer-critic blocking review is present.
+- PASS — role-independence: Builders and independent reviewers are different actors.
+- FAIL — analyst-contract: Independent Analyst is missing.
+- PASS — evidence:analyst-report: analyst-report evidence is present.
+- FAIL — evidence:browser-trace: browser-trace evidence is required.
+- PASS — evidence:economic-truth-report: economic-truth-report evidence is present.
+- PASS — evidence:gameplay-report: gameplay-report evidence is present.
+- FAIL — evidence:git-diff: git-diff evidence is required.
+- PASS — evidence:projector-report: projector-report evidence is present.
+- PASS — evidence:sports-reality-report: sports-reality-report evidence is present.
+- PASS — evidence:teacher-transfer-report: teacher-transfer-report evidence is present.
+- PASS — evidence:test: test evidence is an authentic passing command record.
+- PASS — evidence:visual-report: visual-report evidence is present.
+- PASS — evidence-integrity:l1-tests-w3: Evidence l1-tests-w3 hash is intact.
+- PASS — evidence-integrity:l1-tuning-w3: Evidence l1-tuning-w3 hash is intact.
+- PASS — evidence-integrity:l1-e2e-w3: Evidence l1-e2e-w3 hash is intact.
+- PASS — evidence-integrity:m1-e2e-w3: Evidence m1-e2e-w3 hash is intact.
+- PASS — evidence-integrity:w3-play-adj: Evidence w3-play-adj hash is intact.
+- PASS — evidence-integrity:w3-projector-adj: Evidence w3-projector-adj hash is intact.
+- PASS — evidence-integrity:w3-visual-regrade: Evidence w3-visual-regrade hash is intact.
+- PASS — evidence-integrity:w3-econ-adj: Evidence w3-econ-adj hash is intact.
+- PASS — evidence-integrity:l1-tests-w3b: Evidence l1-tests-w3b hash is intact.
+- PASS — evidence-integrity:l1-e2e-w3b: Evidence l1-e2e-w3b hash is intact.
+- PASS — evidence-integrity:w3-visual-final: Evidence w3-visual-final hash is intact.
+- PASS — evidence-integrity:w3-projector-final: Evidence w3-projector-final hash is intact.
+- PASS — evidence-integrity:l1-e2e-w3c: Evidence l1-e2e-w3c hash is intact.
+- PASS — evidence-integrity:l2-tests: Evidence l2-tests hash is intact.
+- PASS — evidence-integrity:l2-tuning: Evidence l2-tuning hash is intact.
+- PASS — evidence-integrity:l2-e2e: Evidence l2-e2e hash is intact.
+- PASS — evidence-integrity:l1-e2e-postl2: Evidence l1-e2e-postl2 hash is intact.
+- PASS — evidence-integrity:gate-l2-sr: Evidence gate-l2-sr hash is intact.
+- PASS — evidence-integrity:gate-l2-teacher: Evidence gate-l2-teacher hash is intact.
+- PASS — evidence-integrity:gate-l2-econ: Evidence gate-l2-econ hash is intact.
+- PASS — evidence-integrity:gate-l2-projector: Evidence gate-l2-projector hash is intact.
+- PASS — evidence-integrity:gate-l2-play: Evidence gate-l2-play hash is intact.
+- PASS — evidence-integrity:l2-tests-r1: Evidence l2-tests-r1 hash is intact.
+- PASS — evidence-integrity:l2-e2e-r1: Evidence l2-e2e-r1 hash is intact.
+- PASS — evidence-integrity:e2e-l3-flake-note: Evidence e2e-l3-flake-note hash is intact.
+- PASS — evidence-integrity:recheck-l2-sr: Evidence recheck-l2-sr hash is intact.
+- PASS — evidence-integrity:recheck-l2-teacher: Evidence recheck-l2-teacher hash is intact.
+- PASS — evidence-integrity:recheck-l2-play: Evidence recheck-l2-play hash is intact.
+- PASS — evidence-integrity:recheck-l2-econ: Evidence recheck-l2-econ hash is intact.
+- PASS — evidence-integrity:recheck-l2-projector: Evidence recheck-l2-projector hash is intact.
+- PASS — evidence-integrity:l1-e2e-final-head: Evidence l1-e2e-final-head hash is intact.
+- PASS — evidence-integrity:analyst-wave3: Evidence analyst-wave3 hash is intact.
+- FAIL — claim-ledger-present: Level 2+ wave needs at least one explicit progress claim.
+- PASS — claims-reconciled: All claims are confirmed.
+- FAIL — blocking-dissent: Blocking dissent remains: econ-l2-evidence-surfaces, play-l2-below-bar, proj-l2-bar-timing, visual-l1-premium-unmet, analyst-no-pass-wave3.
+- PASS — meetings-closed: All meetings are closed.
+- PASS — meeting-budget: Meeting count 0/2.
+- FAIL — agent-budget: Agent soft budget exceeded: 22/14.
+- PASS — failure-budget: Repairs 0/3; waves 3/6.
+- PASS — ownership-conflicts: No active ownership conflicts.
+- PASS — config-integrity: Harness constitution is unchanged since run creation.
+- PASS — protected-branch: Branch claude/module-2-money-motion-quality-77dedf is not protected.
 
 ## Decision pending
 
