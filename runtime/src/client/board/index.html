@@ -169,6 +169,18 @@
   .fh-repeat-bar { height: 3.4vh; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end;
     padding-right: .5vw; font-family: var(--font-number); font-size: 1.5vw; font-weight: 800; color: #06121d; min-width: 6vw;
     transition: width 600ms var(--ease-decel); }
+  /* P11-b: the paged COUNTERFACTUAL group. Type stays at the evidence tier the
+     projector review asked for (>=2.6% of screen height) — only the vertical
+     padding and the bar height give ground, because it is the ROW COUNT that
+     scales with the class, not the row. */
+  .fh-cf-grid .fh-repeat-row { padding: .55vh 1.2vw; }
+  .fh-cf-grid .fh-repeat-bar { height: 2.9vh; }
+  .fh-cf-grid .fh-repeat-bars { gap: .25vh; margin: .35vh 0; }
+  .fh-cf-grid .fh-repeat-board { gap: .7vh; }
+  .fh-cf-pager { font-family: var(--font-display); font-size: 1.25vw; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent-gold); text-align: left; width: 100%; margin-bottom: .5vh; }
+  .fh-cf-summary { margin-top: 1.2vh; text-align: left; max-width: none; font-size: 1.15vw; color: var(--ink-secondary); }
+  .fh-cf-pager-hint { margin-top: .8vh; font-size: .95vw; color: var(--ink-muted); text-align: left; }
   .fh-repeat-bar.n1 { background: var(--series-1); }
   .fh-repeat-bar.n5 { background: var(--accent-violet); }
   .fh-repeat-renew { font-size: 1.5vw; color: var(--ink-secondary); }

@@ -2265,6 +2265,23 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
     renewalsAtN1: number;
     renewalsAtN5: number;
     samePrice: boolean;
+    // `econ-l1-n5-attribution` residual on the PRIVATE surface (wave-2 analyst
+    // catch; `gate-l1-play` recheck3 "Also observed"). The board decomposed this
+    // desk's crowd change into its channels while the desk's own card showed
+    // only two crowds and two renewals figures beside "the only thing that
+    // changed was you" — so a pair reading their own device attributed all of
+    // Desk 4's +1,760 to renewals when it was renewals +800 and event money
+    // +960. Same computed split, same function (`repeatRowFor`), both surfaces.
+    renewalsFans: number;
+    carryFans: number;
+    n4Spend: number;
+    priceFans: number;
+    seatedDelta: number;
+    wantedDelta: number;
+    clamped: boolean;
+    floored: boolean;
+    biggestChannel: "renewals" | "spend" | "price" | "none";
+    channelLine: string;
   } | null;
   const replays = (view["replays"] as FHReplay[]) ?? [];
   $("gameBody").innerHTML = `
@@ -2277,7 +2294,19 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
                <div><span class="fh-repeat-label">Night 1</span><span class="numeric">$${repeat.n1Price}</span><span class="numeric big">${repeat.n1Turnout.toLocaleString()}</span><span class="fh-repeat-sub">renewals ${repeat.renewalsAtN1}%</span></div>
                <div><span class="fh-repeat-label">Night 5</span><span class="numeric">$${repeat.n5Price}</span><span class="numeric big">${repeat.n5Turnout.toLocaleString()}</span><span class="fh-repeat-sub">renewals ${repeat.renewalsAtN5}%</span></div>
              </div>
-             <div class="fh-peaks-note">${repeat.samePrice ? "Same price both nights. The only thing that changed was you." : "You changed the price — so compare the renewals column too."}</div>
+             <div class="fh-repeat-split" id="fhRepeatSplit">
+               <span class="fh-repeat-split-label">Where that change came from</span>
+               <span class="fh-repeat-split-line">${escapeHtml(repeat.channelLine)}</span>
+             </div>
+             <div class="fh-peaks-note">${
+               repeat.samePrice
+                 ? repeat.biggestChannel === "renewals"
+                   ? "Same price both nights. The biggest thing that changed was your own renewals."
+                   : repeat.biggestChannel === "spend"
+                     ? "Same price both nights — and the biggest thing that changed was NOT your renewals. It was the event money you spent the night before."
+                     : "Same price both nights. Read the split above before you decide what changed it."
+                 : "You changed the price — so part of the gap is the price. The split above says how much."
+             }</div>
            </div>`
         : ""
     }

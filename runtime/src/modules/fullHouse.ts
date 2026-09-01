@@ -640,7 +640,30 @@ export type FullHouseState = {
   nightIndex: number;
   twoPeaksReleased: boolean;
   revealStage: number;
+  /**
+   * Which group of COUNTERFACTUAL repeat rows is on the projector, 0-based.
+   *
+   * `gate-l1-play` recheck3 P11-b (BLOCKING dissent `play-l1-repairs-below-fold`)
+   * and the analyst's biggest-failure finding: the board rendered `rows.map(...)`
+   * with no cap, so at ten desks six rows and the class summary were off a
+   * 1366x768 projector (and six rows off at 1920x1080), while the largest type on
+   * the board told the room to argue from them. The rows scale with the class;
+   * the screen does not. The remedy chosen is a hard cap plus teacher paging —
+   * the argue beat stays ONE LOOK per group instead of one scroll, and the class
+   * summary is out of the paged column so it is on screen for every group.
+   */
+  cfPage: number;
 };
+
+/**
+ * Repeat rows per COUNTERFACTUAL group. Four is what fits beside the scatter at
+ * 1366x768 with the class summary still on screen — asserted per-row by
+ * `runtime/scripts/e2e-m2l1.cjs` at a 12-desk session, not assumed here.
+ */
+export const CF_ROWS_PER_PAGE = 4;
+
+/** How many teacher-advanced groups this room's repeat card needs. */
+export const cfPageCount = (rowCount: number): number => Math.max(1, Math.ceil(rowCount / CF_ROWS_PER_PAGE));
 
 export const REVEAL_STEPS = NIGHT_COUNT + 2; // one per night curve, then Two Peaks, then the season books
 
@@ -1110,6 +1133,7 @@ export function repeatRowFor(
     wantedDelta,
     seatedDelta,
     clamped,
+    floored,
     biggestChannel,
     channelLine,
   };
@@ -1293,6 +1317,175 @@ export function bestFoundSeason(market: Market): { cash: number; renewals: numbe
   return outcome;
 }
 
+/* ------------------------------------------------- the season frontier -- */
+
+export type FrontierPoint = {
+  /** Renewals this season ends on. */
+  renewals: number;
+  /** The most cash this model will give up while ending on exactly that many renewal points. */
+  cash: number;
+  plan: SeasonPlan;
+};
+
+const frontierCache = new Map<MarketId, readonly FrontierPoint[]>();
+
+/**
+ * `gate-l1-econ-r3` R5 (BLOCKING dissent `econ-l1-two-book-baseline`).
+ *
+ * The module's central formalization — two books that do not add up — was staged
+ * on the projector against "never moved the dial", which is **Pareto-dominated**:
+ * measured, New York 84% @ $2,391,834 beats it by $1,153,622 AND four renewal
+ * points, Memphis 80% @ $1,947,068 beats it by $1,101,636 at equal renewals. The
+ * room was therefore led to infer that protecting a season-ticket base costs
+ * about $1.2M when the model charges $25,050 — wrong by 47x (NY) / 70x (MEM), on
+ * the last surface of the last beat.
+ *
+ * This is the fix: the model's own exact frontier, so every season line the
+ * product PRINTS can be one nobody can beat on both books at once.
+ *
+ * Exact, not heuristic. Forward dynamic program over the complete reachable
+ * state space (renewals 0-100) x (fans carried in from last night's event
+ * spend), keeping the maximum cash in every state — which is exact here because
+ * cash enters the model in exactly one other place (a desk in debt may not
+ * spend), and more cash is never worse for that constraint. Then the true Pareto
+ * set is extracted over the FINAL states, which is strictly stronger than a
+ * lambda sweep: it finds points inside the convex hull too.
+ *
+ * Cost: ~5 x (states x 56 prices x spend levels) plain-array iterations per
+ * market, run once and cached. It is never on a per-poll path — `replaysFor` and
+ * `synthesisCards` both read the cache.
+ */
+export function seasonFrontier(market: Market): readonly FrontierPoint[] {
+  const cached = frontierCache.get(market.id);
+  if (cached) return cached;
+
+  const spendLevels = SPEND_LEVELS(market);
+  const carryOf = spendLevels.map((s) => Math.round(market.eventFans * s));
+  const S = 101 * spendLevels.length;
+  const key = (r: number, si: number): number => r * spendLevels.length + si;
+  // Renewal moves depend on (card, price, spend) only — never on the state — so
+  // the whole table is computed once per night instead of once per state.
+  const deltaTable = CARDS.map((card) =>
+    PRICE_GRID.map((price) => spendLevels.map((spend) => renewalDelta(market, card, price, spend))),
+  );
+
+  const NEG = Number.NEGATIVE_INFINITY;
+  let cash = new Float64Array(S).fill(NEG);
+  // One (back-pointer, choice) layer per night, so the exact five-night plan
+  // behind any frontier point can be walked out. `choice` packs the price index
+  // and the spend index into one integer.
+  const trailBack: Int32Array[] = [];
+  const trailChoice: Int32Array[] = [];
+  cash[key(RENEWALS_START, 0)] = 0;
+
+  for (let n = 0; n < CARDS.length; n += 1) {
+    const nextCash = new Float64Array(S).fill(NEG);
+    const nextBack = new Int32Array(S).fill(-1);
+    const nextChoice = new Int32Array(S).fill(-1);
+    const nightDeltas = deltaTable[n]!;
+    for (let r = 0; r <= 100; r += 1) {
+      for (let si0 = 0; si0 < spendLevels.length; si0 += 1) {
+        const from = key(r, si0);
+        const have = cash[from]!;
+        if (have === NEG) continue;
+        const curve = curveFor(market, CARDS[n]!, r, carryOf[si0]!);
+        const canSpend = have >= 0; // the same rule replayPlan applies: no dial while in debt
+        for (let pi = 0; pi < PRICE_GRID.length; pi += 1) {
+          const price = PRICE_GRID[pi]!;
+          const q = Math.min(market.capacity, Math.max(0, Math.round(curve.base - curve.sens * price)));
+          const netBeforeSpend = price * q + market.ancillary * q - market.bill;
+          const priceDeltas = nightDeltas[pi]!;
+          for (let si = 0; si < spendLevels.length; si += 1) {
+            const spend = spendLevels[si]!;
+            if (spend > 0 && !canSpend) continue;
+            const value = have + netBeforeSpend - spend;
+            const nr = clamp(r + priceDeltas[si]!, 0, 100);
+            const to = key(nr, si);
+            if (value > nextCash[to]!) {
+              nextCash[to] = value;
+              nextBack[to] = from;
+              nextChoice[to] = pi * spendLevels.length + si;
+            }
+          }
+        }
+      }
+    }
+    trailBack.push(nextBack);
+    trailChoice.push(nextChoice);
+    cash = nextCash;
+  }
+
+  // Best cash per final renewals level, then the true Pareto set.
+  const bestByRenewals = new Float64Array(101).fill(NEG);
+  const bestState = new Int32Array(101).fill(-1);
+  for (let r = 0; r <= 100; r += 1) {
+    for (let si = 0; si < spendLevels.length; si += 1) {
+      const k = key(r, si);
+      if (cash[k]! > bestByRenewals[r]!) {
+        bestByRenewals[r] = cash[k]!;
+        bestState[r] = k;
+      }
+    }
+  }
+  const frontier: FrontierPoint[] = [];
+  let bestSoFar = NEG;
+  for (let r = 100; r >= 0; r -= 1) {
+    const c = bestByRenewals[r]!;
+    if (c === NEG) continue;
+    if (c <= bestSoFar) continue; // dominated: some higher-renewals season made at least as much
+    bestSoFar = c;
+    // Walk the trail back for the exact five-night plan behind this point.
+    const prices: number[] = new Array(CARDS.length).fill(market.planPrice);
+    const spends: number[] = new Array(CARDS.length).fill(0);
+    let k = bestState[r]!;
+    for (let n = CARDS.length - 1; n >= 0; n -= 1) {
+      const ch = trailChoice[n]![k]!;
+      prices[n] = PRICE_GRID[Math.floor(ch / spendLevels.length)]!;
+      spends[n] = spendLevels[ch % spendLevels.length]!;
+      k = trailBack[n]![k]!;
+    }
+    frontier.push({ renewals: r, cash: Math.round(c), plan: { prices, spends } });
+  }
+  // Highest renewals first, cash rising as renewals fall.
+  const out: readonly FrontierPoint[] = frontier;
+  frontierCache.set(market.id, out);
+  return out;
+}
+
+/** The undominated season that ends on the MOST renewals this model allows. */
+export function renewalsCornerSeason(market: Market): FrontierPoint {
+  return seasonFrontier(market)[0]!;
+}
+
+/**
+ * What one renewal point actually costs on this model, at both ends of the
+ * frontier — R5 limb (ii). The whole economic content of the two-book claim is
+ * that this number is NOT constant: cheap points first, ruinous points last.
+ */
+export function renewalMarginalCost(market: Market): { cheapest: number; dearest: number; averageOverRange: number; range: number } {
+  const f = seasonFrontier(market);
+  let cheapest = Number.POSITIVE_INFINITY;
+  let dearest = 0;
+  for (let i = 0; i + 1 < f.length; i += 1) {
+    const dearer = f[i]!; // more renewals, less cash
+    const cheaper = f[i + 1]!;
+    const points = dearer.renewals - cheaper.renewals;
+    if (points <= 0) continue;
+    const perPoint = (cheaper.cash - dearer.cash) / points;
+    if (perPoint < cheapest) cheapest = perPoint;
+    if (perPoint > dearest) dearest = perPoint;
+  }
+  const top = f[0]!;
+  const bottom = f[f.length - 1]!;
+  const range = top.renewals - bottom.renewals;
+  return {
+    cheapest: Number.isFinite(cheapest) ? Math.round(cheapest) : 0,
+    dearest: Math.round(dearest),
+    averageOverRange: range > 0 ? Math.round((bottom.cash - top.cash) / range) : 0,
+    range,
+  };
+}
+
 /**
  * gate-l1-econ-r1 R2 (BLOCKING): the two notes printed beside these rows used to
  * ASSERT a tradeoff ("renewals stay high" on the flat line; "look at what it
@@ -1308,22 +1501,37 @@ function replaysFor(desk: Desk): SeasonReplay[] {
   const flatPlan = replayPlan(market, { prices: CARDS.map(() => market.planPrice), spends: CARDS.map(() => 0) });
   const strongest = bestFoundSeason(market);
   const spentOn = CARDS.filter((_c, i) => (strongest.plan.spends[i] ?? 0) > 0).map((c) => c.label.replace("Night ", "N"));
-  const renewalGap = flatPlan.renewals - strongest.renewals;
-  const cashGap = strongest.cash - flatPlan.cash;
+  // `gate-l1-econ-r3` R5 limb (i): the renewals-friendly row the room is asked to
+  // read must be one nobody can beat on BOTH books. "Never moved the dial" is
+  // not that row — it is beaten outright — so it stays as the honest "what if we
+  // did nothing" line and says out loud that it is beatable, while the frontier's
+  // own maximum-renewals season carries the two-book comparison.
+  const renewalsCorner = renewalsCornerSeason(market);
+  const marginal = renewalMarginalCost(market);
+  const renewalGap = renewalsCorner.renewals - strongest.renewals;
+  const cashGap = strongest.cash - renewalsCorner.cash;
+  const beatsFlatCash = renewalsCorner.cash - flatPlan.cash;
+  const beatsFlatPoints = renewalsCorner.renewals - flatPlan.renewals;
   const flatNote =
-    renewalGap > 0
-      ? `Never moved the dial. Nobody's plan ever looked like a waste or a rip-off, so this line ends ${renewalGap} renewal ${renewalGap === 1 ? "point" : "points"} ahead of the strongest one — and $${Math.abs(cashGap).toLocaleString()} behind it in cash.`
+    beatsFlatCash > 0 && beatsFlatPoints >= 0
+      ? `Never moved the dial. Safe, and beatable on BOTH books at once: the renewals line below ends $${beatsFlatCash.toLocaleString()} ahead of it in cash${
+          beatsFlatPoints > 0 ? ` and ${beatsFlatPoints} renewal ${beatsFlatPoints === 1 ? "point" : "points"} ahead of it` : " at the same renewals"
+        }. Doing nothing is not what protecting your plan holders costs.`
       : `Never moved the dial. It leaves money on the table on the big nights, and on this room's numbers it does not buy a better renewals book either.`;
   const strongNote =
     renewalGap > 0
       ? `Not a proven maximum — the best line we could search out: a different price on every night, and event money on ${
           spentOn.length === 0 ? "no night at all" : spentOn.join(" and ")
-        }. It made $${Math.abs(cashGap).toLocaleString()} more than never moving the dial, and it paid ${renewalGap} renewal ${
+        }. Against the renewals line above it, it made $${Math.abs(cashGap).toLocaleString()} more and paid ${renewalGap} renewal ${
           renewalGap === 1 ? "point" : "points"
         } for it. There is no exchange rate between those two numbers. You have to choose.`
       : `Not a proven maximum — the best line we could search out: a different price on every night, and event money on ${
           spentOn.length === 0 ? "no night at all" : spentOn.join(" and ")
         }. On this model it is ahead on both books, so on these five nights the money did not cost the plan holders anything.`;
+  const renewalsNote =
+    renewalGap > 0
+      ? `The other corner: no line in this model ends with more season-ticket holders than ${renewalsCorner.renewals}%, and this is the most cash we could find that still gets there. The ${renewalGap} points between this line and the one below it are NOT all the same price — the cheapest cost about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. Protecting the base starts cheap and ends expensive.`
+      : `The other corner: the most renewals this model will end on. At these numbers it is not behind on cash either.`;
   return [
     {
       label: "What you actually did",
@@ -1336,6 +1544,12 @@ function replaysFor(desk: Desk): SeasonReplay[] {
       cash: flatPlan.cash,
       renewals: flatPlan.renewals,
       note: flatNote,
+    },
+    {
+      label: "The best renewals book we could find",
+      cash: renewalsCorner.cash,
+      renewals: renewalsCorner.renewals,
+      note: renewalsNote,
     },
     {
       label: "The most cash we could find",
@@ -1667,7 +1881,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
   phases: PHASES,
 
   initialState() {
-    return { desks: {}, deskOrder: [], nightIndex: 0, twoPeaksReleased: false, revealStage: 0 };
+    return { desks: {}, deskOrder: [], nightIndex: 0, twoPeaksReleased: false, revealStage: 0, cfPage: 0 };
   },
 
   /**
@@ -1723,6 +1937,17 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       if (state.nightIndex < 3) return { ok: false, reason: "play Night 3 first — the panel is drawn on that night's curve" };
       if (state.twoPeaksReleased) return { ok: false, reason: "the Two Peaks panel is already up" };
       return { ok: true, state: { ...state, twoPeaksReleased: true } };
+    }
+    if (action.type === "teacher:cfPage") {
+      if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher pages the Night 1 vs Night 5 card" };
+      if (ctx.phase !== "COUNTERFACTUAL") {
+        return { ok: false, reason: `the repeat card is paged during COUNTERFACTUAL (session is in ${ctx.phase})` };
+      }
+      const pages = cfPageCount(computeAggregate(state).repeatCard.length);
+      if (pages <= 1) return { ok: false, reason: "every desk on this card is already on the projector" };
+      // Wraps on purpose: a teacher who wants the first group back at the end of
+      // the argument must never hit a dead control in front of the room.
+      return { ok: true, state: { ...state, cfPage: ((state.cfPage ?? 0) + 1) % pages } };
     }
     if (action.type === "teacher:revealNext") {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher advances the reveal" };
@@ -1875,13 +2100,23 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         case "COUNTERFACTUAL": {
           const n1 = desk.nights.find((n) => n.cardId === "N1");
           const n5 = desk.nights.find((n) => n.cardId === "N5");
+          // `gate-l1-play` recheck3 / analyst wave-2 catch: `econ-l1-n5-attribution`
+          // was discharged on BOARD evidence while the same defect stayed live on
+          // this private surface — the desk's own card showed the two crowds and
+          // the two renewals figures and nothing else, so a pair reading only
+          // their own device attributed the whole change to renewals (Desk 4's
+          // +1,760 was renewals +800 and event money +960). The desk now gets the
+          // same computed decomposition the board prints, from the same function.
+          const n5Index = n5 ? desk.nights.indexOf(n5) : -1;
+          const beforeN5 = n5Index > 0 ? desk.nights[n5Index - 1] : undefined;
+          const row = n1 && n5 ? repeatRowFor(desk, market, n1, n5, beforeN5?.spend ?? 0) : null;
           return {
             phase,
             seated: true,
             ...identity,
             books: booksFor(desk),
             repeat:
-              n1 && n5
+              n1 && n5 && row
                 ? {
                     n1Price: n1.price,
                     n1Turnout: n1.settlement.turnout,
@@ -1890,6 +2125,16 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
                     renewalsAtN1: n1.renewalsBefore,
                     renewalsAtN5: n5.renewalsBefore,
                     samePrice: n1.price === n5.price,
+                    renewalsFans: row.renewalsFans,
+                    carryFans: row.carryFans,
+                    n4Spend: row.n4Spend,
+                    priceFans: row.priceFans,
+                    seatedDelta: row.seatedDelta,
+                    wantedDelta: row.wantedDelta,
+                    clamped: row.clamped,
+                    floored: row.floored,
+                    biggestChannel: row.biggestChannel,
+                    channelLine: row.channelLine,
                   }
                 : null,
             replays: replaysFor(desk),
@@ -1954,6 +2199,32 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             : "Ready. Releasing it prints the profit-making price band on the projector, so holding it until after Night 4 keeps the biggest decision of the lesson blind.",
       revealStage: state.revealStage,
       totalRevealSteps: REVEAL_STEPS,
+      // P11-b: the teacher's own control for the paged repeat card, named the
+      // way the reveal button is named — what the next press will put up.
+      ...((): Record<string, unknown> => {
+        const rows = computeAggregate(state).repeatCard;
+        const pages = cfPageCount(rows.length);
+        const page = Math.min(Math.max(0, state.cfPage ?? 0), pages - 1);
+        const nextPage = pages <= 1 ? page : (page + 1) % pages;
+        const from = nextPage * CF_ROWS_PER_PAGE;
+        const to = Math.min(rows.length, from + CF_ROWS_PER_PAGE);
+        return {
+          cfPage: page + 1,
+          cfPageCount: pages,
+          cfRowTotal: rows.length,
+          cfPageAvailable: phase === "COUNTERFACTUAL" && pages > 1,
+          cfNextPageLabel:
+            pages <= 1
+              ? rows.length === 0
+                ? "No desk has played both Night 1 and Night 5 yet."
+                : `All ${rows.length} desk${rows.length === 1 ? "" : "s"} are on the projector.`
+              : `Next group — desks ${from + 1}-${to} of ${rows.length}`,
+          cfPageNote:
+            pages <= 1
+              ? "The whole repeat card fits on the projector in one look."
+              : `The projector shows ${CF_ROWS_PER_PAGE} desks at a time so every row stays readable from the back. The class summary underneath stays up for every group. Pressing past the last group comes back round to the first.`,
+        };
+      })(),
       // TT-B2 (HK-3): name the stage the next press lands, the stage now on the
       // projector, and the line to say as each one arrives.
       revealStages: REVEAL_STAGES,
@@ -2096,11 +2367,29 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             honestyLine: BOARD_HONESTY_LINE,
           };
 
-        case "COUNTERFACTUAL":
+        case "COUNTERFACTUAL": {
+          // P11-b: cap what goes up at once, and let the teacher walk the room
+          // through the groups. The class summary is computed over EVERY row —
+          // it is the class-level statement — and rendered outside the paged
+          // column so it never leaves the screen.
+          const allRows = agg.repeatCard;
+          const pages = cfPageCount(allRows.length);
+          const page = Math.min(Math.max(0, state.cfPage ?? 0), pages - 1);
+          const from = page * CF_ROWS_PER_PAGE;
+          const shown = allRows.slice(from, from + CF_ROWS_PER_PAGE);
           return {
             mode: "counterfactual",
-            repeatCard: agg.repeatCard,
-            repeatSummary: repeatSummary(agg.repeatCard),
+            repeatCard: shown,
+            repeatRowTotal: allRows.length,
+            cfPage: page + 1,
+            cfPageCount: pages,
+            cfPageLabel:
+              allRows.length === 0
+                ? "No desk has played both nights yet."
+                : pages === 1
+                  ? `All ${allRows.length} desk${allRows.length === 1 ? "" : "s"} that played both nights`
+                  : `Desks ${from + 1}-${from + shown.length} of ${allRows.length} · group ${page + 1} of ${pages}`,
+            repeatSummary: repeatSummary(allRows),
             // gate-l1-play 1a (BLOCKING P1-b): ARGUE_PROMPT tells the room to
             // read dots "on the board". The scatter existed in REVEAL and ADAPT
             // only, so the designated argue-fuel pointed off-screen at the exact
@@ -2111,6 +2400,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             prompt: ARGUE_PROMPT,
             honestyLine: BOARD_HONESTY_LINE,
           };
+        }
 
         case "SYNTHESIS":
           return {
@@ -2371,7 +2661,8 @@ function projectorMirror(state: FullHouseState, phase: CanonicalPhase): { title:
       return {
         title: "Night 1 against Night 5, desk by desk",
         lines: [
-          "Each desk's two crowds on the same card, its renewals either side, and the class chart underneath for the argument.",
+          `Up to ${CF_ROWS_PER_PAGE} desks at a time — their two crowds on the same card, their renewals either side, and each one's own split.`,
+          "Beside them: the class chart, and the class summary, which stays on screen for every group.",
           `Prompt on screen: "${ARGUE_PROMPT}"`,
           "This board names desks publicly, worst line included.",
         ],
@@ -2592,15 +2883,16 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
         phase,
         minuteBudget: "inside the 6 min with REVEAL",
         now: [
-          "Every desk is looking at its own season next to two other lines: never moving the dial, and the most cash the model could find.",
-          "Expect a student to say \"so doing nothing was better\". That is the whole lesson arriving early — take it seriously and put it to the room.",
+          "Every desk is looking at its own season next to three other lines: never moving the dial, the best renewals book the model could find, and the most cash it could find.",
+          "Expect a student to say \"so doing nothing was better\". Doing nothing is NOT the price of keeping your plan holders — the renewals line beats it on both books at once. Put that to the room; it is the whole lesson arriving early.",
+          `The repeat card underneath goes up ${CF_ROWS_PER_PAGE} desks at a time — press the group button and walk the room through them so every row is readable from the back.`,
           "This board ranks desks in public, including the worst one. Frame it before you show it: this is a room full of people who priced blind, and the interesting desks are the surprising ones, not the winning ones.",
         ],
         ask: [
           {
-            q: "Doing nothing kept the most season-ticket holders. Was doing nothing better?",
+            q: "Which line kept the most season-ticket holders, and what did it give up?",
             answer:
-              "It depends which book you are being paid on, and nothing in the game converts one into the other. The most-cash line makes far more money and ends with far fewer renewals. Both are real answers; that is what \"no exchange rate\" means.",
+              "The renewals line — and it is not the do-nothing line, which is beaten on both books. Compare the renewals line with the most-cash line: the points between them are real money, and they get dearer the higher you go. The first few are cheap; the last one is brutal. Nothing in the game converts a renewal into a dollar, which is what \"no exchange rate\" means.",
           },
           {
             q: ARGUE_PROMPT,
@@ -2667,15 +2959,27 @@ function repeatSummary(rows: readonly RepeatRow[]): string {
   // R4: "the only thing that changed was five nights of their own choices" is
   // true, but the room was left to assume WHICH choice. Name the channels by
   // how many desks each one led, computed from the rows themselves.
-  const byRenewals = same.filter((r) => r.biggestChannel === "renewals").length;
-  const bySpend = same.filter((r) => r.biggestChannel === "spend").length;
+  // gate-l1-econ-r3 R6: a floored desk (nobody wanted in at its price) has no
+  // readable channel, so it is counted separately and never inside a "moved most
+  // by" claim — the old line could say "3 were moved most by their own renewals"
+  // about desks whose crowd was 0 on both nights.
+  const readable = same.filter((r) => !r.floored);
+  const floored = same.length - readable.length;
+  const byRenewals = readable.filter((r) => r.biggestChannel === "renewals").length;
+  const bySpend = readable.filter((r) => r.biggestChannel === "spend").length;
   const led =
-    bySpend === 0
-      ? "For every one of them the biggest carried-over thing was their own renewals."
-      : byRenewals === 0
-        ? "For every one of them the biggest carried-over thing was the event money they spent on Night 4, which lands on the next night."
-        : `${byRenewals} were moved most by their own renewals, ${bySpend} by the event money they spent on Night 4 — it lands on the next night, and this is the next night.`;
-  return `${same.length} desk${same.length === 1 ? "" : "s"} charged the SAME price on Night 1 and Night 5. ${up} drew a bigger crowd the second time, ${down} drew a smaller one. Same day, same visitor, same price — everything that changed, they did on an earlier night. ${led}`;
+    readable.length === 0
+      ? "On every one of them the price was above what anybody in this model would pay, so nobody came either night — and a crowd of nobody cannot show what moved underneath it."
+      : bySpend === 0
+        ? `For every one of the ${readable.length} that drew a crowd, the biggest carried-over thing was their own renewals.`
+        : byRenewals === 0
+          ? `For every one of the ${readable.length} that drew a crowd, the biggest carried-over thing was the event money they spent on Night 4, which lands on the next night.`
+          : `${byRenewals} were moved most by their own renewals, ${bySpend} by the event money they spent on Night 4 — it lands on the next night, and this is the next night.`;
+  const flooredLine =
+    floored > 0 && readable.length > 0
+      ? ` ${floored} priced high enough that nobody wanted in at all, so ${floored === 1 ? "its" : "their"} crowd cannot show what changed underneath it.`
+      : "";
+  return `${same.length} desk${same.length === 1 ? "" : "s"} charged the SAME price on Night 1 and Night 5. ${up} drew a bigger crowd the second time, ${down} drew a smaller one. Same day, same visitor, same price — everything that changed, they did on an earlier night. ${led}${flooredLine}`;
 }
 
 /* ------------------------------------------------------------ synthesis -- */
@@ -2729,15 +3033,26 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
   // the card names is one the room's own evidence shows — and if a retune ever
   // collapses it again, this sentence changes with it instead of going false.
   const bestFill = agg.books.map((b) => `${b.club} ${b.bestFillPct}%`).join(" · ");
+  // `gate-l1-econ-r3` R5 (BLOCKING dissent `econ-l1-two-book-baseline`), limbs
+  // (i) and (ii): this sentence used to compare the cash corner against "never
+  // touching the dial" — a Pareto-DOMINATED season — which made the card imply
+  // that 15 renewal points cost $1,178,672 when the model charges $25,050 for
+  // them (47x New York / 70x Memphis). Both lines quoted here are now corners of
+  // the model's own exact frontier (`seasonFrontier`), so the exchange rate the
+  // room infers is the model's true average marginal cost over exactly that
+  // range — and the card says the thing that makes it economics rather than a
+  // pair of numbers: the points are not all the same price.
   const seasonTradeoff = ((): string => {
     const market = MARKETS[0]!;
-    const flat = replayPlan(market, { prices: CARDS.map(() => market.planPrice), spends: CARDS.map(() => 0) });
     const strong = bestFoundSeason(market);
-    const gap = flat.renewals - strong.renewals;
+    const corner = renewalsCornerSeason(market);
+    const marginal = renewalMarginalCost(market);
+    const gap = corner.renewals - strong.renewals;
     if (gap <= 0) {
       return "On this model, over five nights, the two books did not pull against each other as hard as they do night by night — the choice is sharpest inside one night.";
     }
-    return `Over the whole five nights at the ${market.club}: the most cash we could find was $${strong.cash.toLocaleString()} and ended at ${strong.renewals}% renewals; never touching the dial made $${flat.cash.toLocaleString()} and ended at ${flat.renewals}%. More money, fewer season-ticket holders. There is no rate that turns one into the other.`;
+    const perPoint = Math.round((strong.cash - corner.cash) / gap);
+    return `Over the whole five nights at the ${market.club}: the most cash we could find was $${strong.cash.toLocaleString()}, ending at ${strong.renewals}% renewals. The most season-ticket holders we could find was ${corner.renewals}%, and the best that line could make was $${corner.cash.toLocaleString()}. So ${gap} renewal points cost $${(strong.cash - corner.cash).toLocaleString()} — about $${perPoint.toLocaleString()} a point on average. But they do not cost the same: the cheapest points go for about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.`;
   })();
   cards.push({
     id: "two-books",
@@ -2802,7 +3117,13 @@ function revenueCardBody(agg: FullHouseAggregate): string {
  * `renewalsFans` and `carryFans` are computed in `repeatRowFor`.
  */
 function pathDependenceCardBody(repeat: readonly RepeatRow[], same: readonly RepeatRow[]): string {
-  const quoted = (same.length > 0 ? same : repeat).slice(0, 3);
+  // gate-l1-econ-r3 R6: quote desks whose crowd can actually show the split.
+  // A floored desk prints "0 then 0" and the verdict under it used to say the
+  // biggest thing that changed was its renewals — self-refuting on the projector.
+  const pool = same.length > 0 ? same : repeat;
+  const readable = pool.filter((r) => !r.floored);
+  const quoted = (readable.length > 0 ? readable : pool).slice(0, 3);
+  const allFloored = readable.length === 0 && pool.length > 0;
   if (quoted.length === 0) {
     return `No desk in this room has played both Night 1 and Night 5 yet. ${RENEWALS_RULE_BOARD}`;
   }
@@ -2815,10 +3136,13 @@ function pathDependenceCardBody(repeat: readonly RepeatRow[], same: readonly Rep
   const renewalsLed = quoted.filter((r) => r.biggestChannel === "renewals").length;
   const opener =
     same.length > 0
-      ? `${same.length} desk${same.length === 1 ? "" : "s"} charged the same price on both nights. Same day, same visiting club, same price — and a different crowd walked in.`
+      ? `${same.length} desk${same.length === 1 ? "" : "s"} charged the same price on both nights. Same day, same visiting club, same price — and ${
+          allFloored ? "at that price nobody walked in either time" : "a different crowd walked in"
+        }.`
       : `${repeat.length} desk${repeat.length === 1 ? "" : "s"} played that card twice and every one of them changed the price too, so part of every gap below is the price.`;
-  const verdict =
-    renewalsLed === quoted.length
+  const verdict = allFloored
+    ? "Nothing carried over could show up in a crowd of nobody. That is the order of operations in this building: the price decides whether there is a crowd at all, and only then can anything you did earlier move it."
+    : renewalsLed === quoted.length
       ? "For every desk on this card the biggest thing that changed was its own renewals: four nights of their own pricing decided who walked in on the fifth."
       : renewalsLed === 0
         ? "Read the split: on these desks renewals were NOT the biggest thing that changed. Last night's event money was — it lands on the next night, and Night 5 is the next night. Both are the same idea: what you did earlier decided what tonight could be."

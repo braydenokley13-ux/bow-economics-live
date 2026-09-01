@@ -920,15 +920,28 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
       // pointed off-screen at the exact moment the argument was asked for.
       const cfPoints = (view["curves"] as FHPoint[]) ?? [];
       const max = Math.max(1, ...rows.flatMap((r) => [r.n1Turnout, r.n5Turnout]));
+      // `gate-l1-play` recheck3 P11-b (BLOCKING dissent `play-l1-repairs-below-fold`)
+      // and the wave-2 analyst's biggest-failure finding: this grid rendered
+      // `rows.map(...)` uncapped. At ten desks, six repeat rows AND the class
+      // summary were off a 1366x768 projector (six rows off at 1920x1080 too),
+      // under a prompt in the largest type on the board telling the room to argue
+      // from exactly that evidence — and the e2e guard asserted only `#fhCfScatter`
+      // and the prompt, both at the TOP of the layout, so it could never see it.
+      // The module now hands over ONE teacher-advanced group of at most
+      // CF_ROWS_PER_PAGE rows; the class summary is computed over every row and
+      // rendered outside the paged column, so it is on screen for every group.
+      const pageCount = Number(view["cfPageCount"] ?? 1);
+      const pageLabel = String(view["cfPageLabel"] ?? "");
       stage.innerHTML = `
         <div class="label">Night 1 vs Night 5 — The Same Card</div>
         <div class="exit-prompt" style="max-width:88vw;">${escapeHtml(String(view["prompt"] ?? ""))}</div>
         <div class="fh-cf-grid">
           <div class="fh-cf-col">
-            <div class="fh-repeat-board">${rows
+            ${pageLabel ? `<div class="fh-cf-pager" id="fhCfPager">${escapeHtml(pageLabel)}</div>` : ""}
+            <div class="fh-repeat-board" id="fhCfRows">${rows
               .map(
                 (r) => `
-              <div class="fh-repeat-row">
+              <div class="fh-repeat-row" data-cf-row="1">
                 <div class="fh-repeat-handle">${escapeHtml(r.deskHandle)}${r.samePrice ? ` <span class="fh-repeat-same">same price $${r.n1Price}</span>` : ` <span class="fh-repeat-same diff">$${r.n1Price} → $${r.n5Price}</span>`}</div>
                 <div class="fh-repeat-bars">
                   <div class="fh-repeat-bar n1" style="width:${(r.n1Turnout / max) * 100}%"><span>${r.n1Turnout.toLocaleString()}</span></div>
@@ -945,9 +958,10 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
                 ? `<div class="scatter-wrap" id="fhCfScatter">${fhCurveSvg(cfPoints, ["new-york", "memphis"])}</div>${fhLegend(cfPoints)}`
                 : ""
             }
+            <div class="synthesis-note fh-cf-summary" id="fhCfSummary">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
+            ${pageCount > 1 ? `<div class="fh-cf-pager-hint">The whole room's desks are on this card — your teacher walks the groups.</div>` : ""}
           </div>
         </div>
-        <div class="synthesis-note" style="max-width:88vw;">${escapeHtml(String(view["repeatSummary"] ?? ""))}</div>
         <div class="synthesis-note" style="font-size:1vw;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>`;
       return;
     }

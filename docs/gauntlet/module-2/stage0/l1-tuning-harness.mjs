@@ -816,14 +816,48 @@ console.log("");
   // spend level, in both markets, including the case the dissent found (renewals DOWN
   // and the crowd UP), and including capacity-clamped nights where the seated delta
   // is deliberately NOT the wanted delta.
+  //
+  // `gate-l1-econ-r3` R9 — THE DEAD LIMB, FIXED. This property used to contain
+  //     if (top.size > 0 && top.size < Math.max(...channels.map(c => c.size))) ok = false;
+  // where `top.size` IS that maximum, so the condition could never be true and
+  // the limb tested nothing — while being cited in the repair's own discharge
+  // argument. A property that cannot fail is not evidence. The limb now compares
+  // the SHIPPED `repeatRowFor`'s own `biggestChannel` against this harness's
+  // independent recompute, which is falsifiable: swap two channel labels in the
+  // product and this fails.
+  //
+  // `gate-l1-econ-r3` R6 — THE FLOOR. The sweep used to reach only planPrice,
+  // PRICE_MIN and planPrice+20, none of which cross either market's zero-demand
+  // threshold, so it could not see that the identity does NOT close where
+  // `settleNight` floors `wanted` at 0 ($84+ New York, $58+ Memphis). Prices
+  // above the threshold are swept now, and the floored band is held to its own
+  // contract: the row must FLAG itself, must name no channel, and its copy must
+  // not assert a channel size over a crowd that did not move.
   const rows = [];
   let ok = true;
   let cases = 0;
   let inversions = 0;
+  let flooredCases = 0;
   let worstResidual = 0;
   for (const market of MARKETS) {
     const spendLevels = [0, Math.round(market.eventMax / 2), market.eventMax];
-    for (const n1Price of [market.planPrice, PRICE_MIN, market.planPrice + 20]) {
+    // A price comfortably past where this market's biggest card still has buyers.
+    const flooringPrice = (() => {
+      let p = PRICE_MIN;
+      for (const price of PRICE_GRID) {
+        const anyDemand = CARDS.some((card) => {
+          const c = curveFor(market, card, 0, 0);
+          return Math.round(c.base - c.sens * price) > 0;
+        });
+        if (!anyDemand) {
+          p = price;
+          break;
+        }
+        p = price;
+      }
+      return p;
+    })();
+    for (const n1Price of [market.planPrice, PRICE_MIN, market.planPrice + 20, flooringPrice, PRICE_MAX]) {
       for (const n5Price of [n1Price, n1Price + 10]) {
         for (const n4Spend of spendLevels) {
           // Run the five nights exactly as the reducer does.
@@ -852,23 +886,60 @@ console.log("");
           const wantedN1 = n1.s.turnout + n1.s.turnedAway;
           const wantedN5 = n5.s.turnout + n5.s.turnedAway;
           const residual = wantedN5 - wantedN1 - (renewalsFans + carryFans + priceFans);
-          if (Math.abs(residual) > Math.abs(worstResidual)) worstResidual = residual;
-          // The identity must close exactly — a non-zero residual means a channel
-          // the board is not naming.
-          if (residual !== 0) ok = false;
-          // And the board must never credit the smaller channel: whichever term is
-          // biggest by absolute size is the one `biggestChannel` has to name.
-          const channels = [
-            { id: "renewals", size: Math.abs(renewalsFans) },
-            { id: "spend", size: Math.abs(carryFans) },
-            { id: "price", size: n5.price === n1.price ? 0 : Math.abs(priceFans) },
-          ];
-          const top = channels.reduce((a, b) => (b.size > a.size ? b : a));
-          if (top.size > 0 && top.size < Math.max(...channels.map((c) => c.size))) ok = false;
-          // The dissent's own case: same price, renewals DOWN, crowd UP.
-          if (n5.price === n1.price && renewalsFans < 0 && wantedN5 > wantedN1) {
-            inversions += 1;
-            if (top.id === "renewals") ok = false; // never name renewals here
+          // R6: the identity is only claimed where demand is off its floor. Above
+          // the zero-demand price `settleNight` clamps `wanted` UP to 0, so the
+          // three channels move a base nobody can see.
+          const rawN1 = Math.round(n1.curve.base - n1.curve.sens * n1.price);
+          const rawN5 = Math.round(n5.curve.base - n5.curve.sens * n5.price);
+          const isFloored = rawN1 < 0 || rawN5 < 0;
+
+          // The SHIPPED row for exactly these two nights — the thing the board
+          // and the desk both print. Everything below judges the product, not a
+          // local recompute of it.
+          const shipped = repeatRowFor(
+            { deskNumber: 1, marketId: market.id, crestIndex: 0, joinedAtNight: 0, cash, renewals, price: n5.price, spend: 0, openBowl: false, locked: true, nights: [] },
+            market,
+            { cardId: "N1", price: n1.price, spend: n1.spend, openBowl: false, auto: false, stock: false, renewalsBefore: n1.renewalsBefore, renewalsAfter: n1.renewalsBefore, renewalMove: 0, cashAfter: 0, settlement: n1.s, hidden: n1.curve },
+            { cardId: "N5", price: n5.price, spend: n5.spend, openBowl: false, auto: false, stock: false, renewalsBefore: n5.renewalsBefore, renewalsAfter: n5.renewalsBefore, renewalMove: 0, cashAfter: 0, settlement: n5.s, hidden: n5.curve },
+            n4.spend,
+          );
+
+          if (shipped.floored !== isFloored) ok = false;
+
+          if (isFloored) {
+            flooredCases += 1;
+            // R6's contract for the floored band: no channel may be named, and
+            // the printed sentence may not assert a channel size as the reason a
+            // crowd changed. The card used to print
+            // "0 then 0 — 0 people, and that is renewals -1,250".
+            if (shipped.biggestChannel !== "none") ok = false;
+            if (/and that is renewals/.test(shipped.channelLine)) ok = false;
+            if (!/could reach the door|before the door/.test(shipped.channelLine)) ok = false;
+          } else {
+            if (Math.abs(residual) > Math.abs(worstResidual)) worstResidual = residual;
+            // The identity must close exactly — a non-zero residual means a
+            // channel the board is not naming.
+            if (residual !== 0) ok = false;
+            // R9's replacement limb: the board must never credit the smaller
+            // channel, checked against the SHIPPED field rather than against the
+            // local variable it was derived from.
+            const channels = [
+              { id: "renewals", size: Math.abs(renewalsFans) },
+              { id: "spend", size: Math.abs(carryFans) },
+              { id: "price", size: n5.price === n1.price ? 0 : Math.abs(priceFans) },
+            ];
+            const top = channels.reduce((a, b) => (b.size > a.size ? b : a));
+            const expected = top.size === 0 ? "none" : top.id;
+            if (shipped.biggestChannel !== expected) ok = false;
+            // The sentence must carry the size of every channel that actually
+            // moved, so no reader can be told a cause without its magnitude.
+            if (renewalsFans !== 0 && !shipped.channelLine.includes(`renewals ${renewalsFans > 0 ? "+" : ""}${renewalsFans.toLocaleString()}`)) ok = false;
+            if (carryFans !== 0 && !shipped.channelLine.includes(`event money +${carryFans.toLocaleString()}`)) ok = false;
+            // The dissent's own case: same price, renewals DOWN, crowd UP.
+            if (n5.price === n1.price && renewalsFans < 0 && wantedN5 > wantedN1) {
+              inversions += 1;
+              if (shipped.biggestChannel === "renewals") ok = false; // never name renewals here
+            }
           }
           cases += 1;
         }
@@ -879,11 +950,19 @@ console.log("");
         `Night-4 event money max ${Math.round(market.eventFans * market.eventMax)} fans`,
     );
   }
-  rows.push(`${cases} price x spend combinations swept per identity; worst residual ${worstResidual} fans (must be 0)`);
+  rows.push(
+    `${cases} price x spend combinations swept, of which ${cases - flooredCases} have demand off its floor; worst residual across those ${worstResidual} fans (must be 0)`,
+  );
+  rows.push(
+    `${flooredCases} swept cases price above the market's zero-demand line (R6): every one is flagged floored by the shipped row, names NO channel, and prints no "and that is renewals ..." claim`,
+  );
   rows.push(
     `${inversions} swept cases have the crowd UP while renewals went DOWN — exactly the case the dissent found; in every one of them the larger channel is the Night-4 event money, and that is what the card is required to name`,
   );
-  check("P16", "R4 — the Night 5 decomposition closes exactly against the model, and the board never names the smaller channel", ok, rows);
+  rows.push(
+    `R9: the dominance limb compares the SHIPPED repeatRowFor().biggestChannel against this harness's own recompute — the old form (top.size < max(sizes)) was a tautology and could not fail`,
+  );
+  check("P16", "R4/R6/R9 — the Night 5 decomposition closes exactly against the model off the demand floor, flags the floor, and never names the smaller channel", ok, rows);
 }
 
 /* --------------------------------------------------------------- verdict -- */

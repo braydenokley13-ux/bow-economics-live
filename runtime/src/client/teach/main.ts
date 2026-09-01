@@ -247,6 +247,20 @@ function render(payload: TeacherPayload): void {
       closeNight.title = String(payload.view["bellNote"] ?? "");
     }
   }
+  // `gate-l1-play` recheck3 P11-b: the COUNTERFACTUAL repeat card is paged so
+  // every row stays fully on the projector at class size. The teacher walks the
+  // groups; the control names what the next press will put up, to the same
+  // standard as the reveal button and the bell.
+  {
+    const cfPage = $<HTMLButtonElement>("btnCfPage");
+    cfPage.hidden = !isFullHouse || s.phase !== "COUNTERFACTUAL";
+    if (isFullHouse) {
+      const available = Boolean(payload.view["cfPageAvailable"]);
+      cfPage.disabled = s.ended || !available;
+      cfPage.textContent = String(payload.view["cfNextPageLabel"] ?? "Next group of desks");
+      cfPage.title = String(payload.view["cfPageNote"] ?? "");
+    }
+  }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
   // simultaneously and deterministically, then advances the day counter. A close with zero offers is legal.
   $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency;
@@ -982,6 +996,7 @@ $("btnRevealNext").addEventListener("click", () => void sendControl({ type: "hoo
 $("btnCloseDay").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeDay" }));
 $("btnCloseNight").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeNight" }));
 $("btnTwoPeaks").addEventListener("click", () => void sendControl({ type: "hook", hook: "twoPeaks" }));
+$("btnCfPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "cfPage" }));
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();
