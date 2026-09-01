@@ -370,3 +370,265 @@ it has just lived. If the room's evidence board names the desk that spent nothin
 and the desk that spent the maximum as a taker, and if the projector tells the room a price gap was a
 market-size result, then L3 will be arguing about a distribution the room never actually produced. A
 decision to proceed does not erase this dissent.
+
+---
+
+## RE-CHECK AFTER L2 REPAIR
+
+Boss run `m2-quality-war`, assignment `recheck-l2-econ`. Owning-critic confirm-or-refute of dissent
+`econ-l2-evidence-surfaces` against the consolidated repair (`repair-l2-round1`). Same critic, fresh
+probes, current tree.
+
+**Evidence status.**
+
+- **Observed (computation, this session):** `npm run build --prefix runtime` (exit 0);
+  `npm test --prefix runtime` → **397/397 pass**, matching `l2-tests-r1`; `l2-tuning` harness re-run
+  against current dist → **exit 0, 11/11**. Ten fresh probe scripts driving the compiled
+  `runtime/dist/modules/hostTheLeague.js` through the real reducer (`takeSeat` → `setPrice`/`setShare`
+  → `lock` → `teacher:closeWeek`): 12-desk correlation rooms, a 200-room random price/share sweep, a
+  200-room *plausible* sweep (prices within ±$20 of house price), a 40-room small-market price-control
+  sweep, a full break-even audit over all four profiles × Draw 20–100, an 8-desk × 9-share week-3
+  backward-induction sweep, and two source-level mutants of `baselineDrawPathFor` run against a
+  sandboxed copy of the harness.
+- **Not verified by me:** any real-world sports fact (`gate-l2-sr`); any gameplay, projector, visual or
+  teacher-transfer rating; anything about how this plays in a room. No browser session. Boss evidence
+  ids referenced: `gate-l2-econ`, `l2-tuning`, `l2-tests-r1`, `l2-e2e-r1`, `sel-econ-review`.
+- Two `dist/server/index.js` processes were left running by an earlier assignment; both killed.
+
+### Claim-by-claim
+
+**C1 — by-choice instrument feeds board / SPILLOVER / ADAPT Q3 / student card / P3.
+CONFIRMED (instrument), with a NEW BLOCKING defect in the aggregate it publishes.**
+
+Correlation attack re-run on the identical room from N1 (12 desks, $50 for all, six at 0%, six at 40%):
+
+```
+                corr with startDraw     corr with meanShare
+dealt   gave         0.959                   0.644      <- the old, confounded instrument
+gaveByChoice         0.175                   0.918      <- the shipped instrument
+netByChoice         -0.309                  -0.854
+spend                0.399                   0.955
+```
+
+The corrected instrument tracks the decision, not the deal. **The old inversion is gone:** every $0
+spender now shows `gaveByChoice` $0 (Desk 11 New Orleans, startDraw 72, spend $0 → gave-by-choice $0,
+against $1,523,568 on the dealt ledger), and the room's biggest giver is Desk 12 · Chicago —
+startDraw 28, spend $1,112,561, gave-by-choice $404,248. **The room's biggest giver can no longer be a
+$0 spender: CONFIRMED.** In an all-zero 12-desk room every by-choice figure is exactly 0 while the
+dealt ledger still spreads $1,838,864, and `giveAndTakeSummary` says so out loud. N1 and FL-C are
+discharged as to the instrument. Board (`board/main.ts:1417-1428`), student card
+(`play/main.ts:2945-2949`), `spillover`, `adaptSpendAnswer` and harness P3 all read the by-choice
+fields. Sign audit over 200 random rooms: no negative `gaveByChoice`, no negative `receivedByChoice`,
+no zero-spend desk with a non-zero by-choice figure.
+
+**N9 — NEW, BLOCKING. `choiceTotals.externalPct` is degenerate, and it prints on the SPILLOVER card,
+the reveal-2 caption and the ADAPT Q3 answer key.** (observed)
+
+`externalPct = created > 0 ? round(gaveByChoice / created * 100) : 0` where
+`created = ownGain + gaveByChoice` (module :1223–1229). `ownGain` is the sum of per-desk private
+partials and goes negative in any room that over-invests. Measured, real reducer, 12 desks:
+
+```
+room                       ownGain        gaveByChoice   externalPct PRINTED
+all 10% @ $50           +$2,009,355        $2,250,116        53%     ok
+all 15% @ $50           +$1,597,258        $2,774,784        63%     ok
+all 20% @ $50             +$644,340        $3,052,688        83%     ok
+all 25% @ $50             -$516,816        $3,247,296       119%     <- over 100%
+alternating 0%/40%      -$2,944,850        $1,577,412         0%     <- zero, with $1.58M given
+all 40% @ $50           -$4,474,764        $3,617,232         0%     <- zero, with $3.62M given
+one desk 40%, rest 0%     -$501,426          $348,412         0%     <- the free-rider demo room
+```
+
+`externalPct > 100%` in **58 of 200** random rooms. The 0% branch fires in the three most likely
+teacher-set-piece rooms in the lesson, including the one-spender-versus-eleven-free-riders room. The
+shipped card in the alternating room reads:
+
+> "Putting money back into your club paid YOU and it paid the buildings you visited. Across this room,
+> reinvesting was worth **-$2,944,850** to the desks' own books and put $1,577,412 on other clubs'
+> books — **0% of the value it created landed somewhere the desk that paid for it never sees.**"
+
+Three defects in one sentence: "paid YOU" against a negative figure; a printed 0% beside a printed
+$1,577,412 that contradicts it; and the module's own named concept quantified at zero in the room that
+demonstrates it best. This is N3 in a new form — the repair replaced a false quantifier ("most") with a
+computed number that is false or incoherent across a large, reachable and pedagogically likely part of
+the space. The same string is on the projector caption and in the teacher's ADAPT Q3 answer key.
+
+**N10 — NEW, BLOCKING. The aggregate sentence reverses sign against the joint effect it appears to
+describe.** (observed)
+
+`ownGain` totals are a sum of one-desk-at-a-time partials. Compared with the joint quantity a room
+would take the sentence to mean — this room's cash against the same room where nobody reinvested,
+same prices, same schedule:
+
+```
+room               sum of partials (PRINTED)     joint effect (actual - nobody-spends)
+all 10% @ $50            +$2,009,355                    +$3,865,331
+all 20% @ $50              +$644,340                    +$3,208,920
+mixed 0-40% @ $50        -$1,153,068                      +$546,124   <- SIGN REVERSAL
+all 40% @ $50            -$4,474,764                    -$1,345,012
+all 15% @ $30            +$1,040,789                    +$2,377,233
+```
+
+In the mixed room the board and the SPILLOVER card tell a class that reinvesting cost them $1.15M when
+the room is $546,124 better off for having done it — the residue is `receivedByChoice`, which the split
+charges to the payer's external column and never returns to the room's own books. The per-desk partial
+is the right instrument and I do not dispute it; the *room-total* sentence built on a sum of partials
+teaches "investing destroyed value" where the true lesson is "investing created value that landed on
+other people's books." Decomposition check: `sum(ownGain) + sum(receivedByChoice)` tracks the joint
+figure to within 0.2–13%, so the fix is a sentence, not a model change.
+
+**C2 — the $110-vs-$30 case: does the printed driver now name price? REFUTED.**
+
+Both prices are now printed on the exhibit — that half is CONFIRMED (`smallMarketPathFrom` :1379,
+board `main.ts:1456`). The causal sentence is not repaired. Replayed the exact adversarial room from
+FL-A (12 desks, odd desks $110, even desks $30, all 0%):
+
+```
+PRINTED: "Desk 2 · Memphis ... priced at $30, that building took $612,612 ... Desk 3 · Golden State
+... priced at $110, it took $31,944. The small market won that week by $580,668, and the three blocks
+say why: $236,184 of that gap is the visiting club. WHO WAS VISITING carried it."
+
+driver = "visitor"    (Memphis hostDraw 58 / visitor 67; Golden State hostDraw 26 / visitor 34)
+
+Same two nights, price held constant:
+  both at $30 : Memphis $612,612  vs  Golden State $669,864   -> the SMALL MARKET LOSES by $57,252
+  both at $50 : Memphis $724,532  vs  Golden State $699,984   -> small wins by $24,548
+  both at $110: Memphis $364,292  vs  Golden State  $31,944   -> small wins by $332,348
+```
+
+At the small market's own price the result **reverses**. The board still asserts "WHO WAS VISITING
+carried it" over an $80 price gap, which is R9 failing on the projector and in a synthesis card — the
+identical finding, in the identical room. Splitting the gap by the three blocks does not control for
+price, because price moves all three blocks: Golden State's BUILDING-AND-PRICE block is $0 at $110 and
+$422,760 at $30. The `gapFromBuildingAndPrice` figure is measured at each side's own price and
+therefore cannot carry the price effect.
+
+Sweep of 40 rooms (10 price patterns × 4 share patterns), price-controlling the printed pair at each
+side's own price:
+
+- **driver = "visitor" in 40 of 40 rooms.** The `building-and-price` and `own-draw` branches never
+  fired in any probed room. `smallMarketPathFrom` searches every small×big×week pair and *prefers* a
+  visitor-driven one (`bestVisitorDriven ?? bestAny`, :1362–1365) — selection on the conclusion across
+  a large candidate set, so a confirming pair is essentially always available. The "name the real
+  driver" repair is effectively unreachable.
+- **7 of 40 printed pairs fail the price control** (the small market's win does not survive at both
+  sides' prices). Worst: `random2/0%` — "Desk 5 · Milwaukee won by $195,668 … WHO WAS VISITING carried
+  it" ($60 vs New York's $100), where the small market **loses at both common prices**: -$212,172 at
+  $60 and -$169,932 at $100. The entire "win" is the price gap.
+- **23 of 40 rooms print a visitor block larger than the whole gap.** Worst: gap $300,564, printed
+  "$660,464 of that gap is the visiting club" (220%), with `bare` $0 and `own` -$359,900 computed and
+  never rendered. Board stage 4 renders `path.line` only (`board/main.ts:1457`), so a class cannot
+  reconcile the arithmetic it is shown.
+
+**B3 stands. NOT DISCHARGED.**
+
+**C3 — audit of every rewritten rule against the model.**
+
+| rule | verdict |
+|---|---|
+| `reinvestRuleFor` (B4/FL-E) | **CONFIRMED.** No numeric break-even is printed. The shape printed *is* the model: break-even share is non-decreasing in Draw on all four profiles (5% at Draw 20–60, 10% at 65–75, 15% at 80, 25% at 85), break-even **dollars** non-decreasing too ($17,752 → $306,360), and no legal share holds a Draw from **90** upward (`DRAW_GAIN_MAX` term = 3.40 < `DRAW_DECAY` 4 at unlimited spend) — "near the top of the scale" is accurate against `DRAW_MAX` 100. Profile-independent as the comment claims. No curve leaked (R2 intact). |
+| `OBJECTIVE_COPY` (B5/FL-D/N5) | **CONFIRMED.** The false "You cannot turn Draw back into cash" is gone; the replacement ("pays you back … through your local media money and your own gate, a week late — and it pays the buildings you visit at the same time") is true of `localMediaFor`, `ownDrawFans` and `visitorDrawFans`, and the two-book structure survives. |
+| `reinvestChangeLine` week-3 horizon (R-b/FL-F) | **CONFIRMED.** The horizon paragraph is emitted on **every** branch (level / up / down / week-3-unplayed / single-week), verified by execution, and `barReleasedAtWeek` is a real controlling variable. The underlying claim is true of the model: re-measured, cash-optimal week-3 share is **0% for all 8 desks**, cost of 40% $210,651–$508,776. `REVEAL_STAGES[4].say` teaches it and explicitly refuses to resolve the two causes. |
+| `giveAndTakeSummary` (N1) | CONFIRMED as to the instrument; carries the N9/N10 aggregate defects. |
+| `HOOK_COPY` "most of the reason people show up" (R-h) | **NOT REPAIRED.** Unchanged. |
+| `SIMPLIFICATIONS[5]` "always clearable, at any legal price, from any state" (R-c) | **NOT REPAIRED, still false.** Reachable counterexample re-measured: 12 desks, all $120, all 0% → Chicago week 3 net **-$60,000**. |
+| `SIMPLIFICATIONS[7]` "within 3x" (R-c) | **NOT REPAIRED.** Unchanged. |
+| ledger entries R-d (bill never binds), R-e (attribution order-dependence), R-f (`visitorDrawFans` ≈ 1.33×`ownDrawFans`), R-g (local-media annuity drives ~92% of the dial) | **NOT ADDED.** `SIMPLIFICATIONS` is still nine entries, unchanged. |
+
+**C4 — is the by-choice counterfactual itself honest? PARTIALLY CONFIRMED.**
+
+The construction is sound: the never-reinvested path with schedule, prices and every other club's Draw
+held at actual is a clean partial derivative, week 1 is identical under both paths by construction, and
+the three carve-outs (stock weeks, bot clubs, the pinned shock club) are the right ones — pretending a
+spending path could have dodged an exogenous announced shock would invent a decision nobody had (R7).
+No misleading **per-desk** sign was found in 200 random rooms.
+
+Two honesty gaps:
+
+- **Ceteris-paribus is disclosed on the private surface only.** The student card says it
+  (`play/main.ts:2949`: "Same schedule, same prices, same everything — except you put nothing back").
+  The projector caption, the SPILLOVER card and the ADAPT Q3 answer key say nothing about holding
+  other desks' prices and Draws fixed. The formalization card is the one surface where the assumption
+  must be visible. **Non-blocking, required.**
+- **The three carve-outs are an unrecorded simplification.** They exist only in a source comment
+  (module :1041–1059). Per CLAUDE.md §3 a modelling choice this load-bearing belongs in
+  `SIMPLIFICATIONS` with its misconception risk. **Non-blocking, required.**
+- Minor: 83 desk-instances across 200 *random* rooms spend > $0 and show `gaveByChoice` $0 (worst:
+  L.A. Lakers, spend $1,124,826, empty gave bar) — sell-out clamping or a road host at a price where
+  nobody comes. In 200 **plausible** rooms (prices within ±$20 of house price) this occurs **0 times in
+  2,120 spender-desks**, so it is an extreme-price artefact. **Non-blocking, name it.**
+
+**C5 — does P3 actually bite? CONFIRMED.**
+
+Harness re-run against current dist: exit 0, 11/11. Two source-level mutants of `baselineDrawPathFor`,
+applied to a sandboxed copy of dist and run through a sandboxed copy of the harness:
+
+```
+M1  counterfactual spend := actual spend (by-choice collapses to 0)
+    -> P3 FAIL: feeder spent $844,418, gaveByChoice $0.       harness exit 1
+M2  baseline path pinned to a fixed floor (Draw 10) — the old dealt confound reintroduced
+    -> P3 FAIL on the CONTROL limb: "by-choice instrument silent = false";
+       banker spent $0 but shows gaveByChoice $836,468.       harness exit 1
+```
+
+The control limb catches exactly the confound B2 named. **B2 DISCHARGED.**
+
+### Disposition of the original blocking set
+
+| id | status |
+|---|---|
+| B1 (give/take instrument measures the deal) | **DISCHARGED** — corr with meanShare 0.918 vs 0.175 with startDraw; $0 spenders read $0 |
+| B2 (harness P3 confounded) | **DISCHARGED** — mutation-tested, control limb bites |
+| B3 (small-market cause asserted without price control) | **NOT DISCHARGED** — reverses under price control in the same room; driver="visitor" 40/40 |
+| B4 (false break-even on a student screen) | **DISCHARGED** |
+| B5 (`OBJECTIVE_COPY`) | **DISCHARGED** |
+| B6 ("most" quantifier on the SPILLOVER card) | **NOT DISCHARGED** — replaced by `externalPct`, which prints 0% or >100% (N9) |
+| R-a (ADAPT Q1 over-attribution) | DISCHARGED — answer key now carries the 19–30% proportion |
+| R-b (reveal 5 horizon) | DISCHARGED |
+| R-c, R-d, R-e, R-f, R-g, R-h | **NOT REPAIRED** |
+
+### required-repairs (this round)
+
+**BLOCKING — economic-truth.**
+
+- **B7 (N9).** `externalPct` must not print when `created <= 0`, and must not print above 100%. State
+  the two dollar figures and let the split be read, or branch to an honest over-investment sentence
+  ("this room spent $6.58M and $1.58M of it landed on other people's books, while the room's own books
+  are $2.94M worse — that is over-investment plus spillover, and both are real"). Also fix "paid YOU"
+  against a negative `ownGain`. Discharge: a property test asserting no printed percentage exceeds 100
+  and none is 0 while `gaveByChoice > 0`.
+- **B8 (N10).** The room-total sentence must not read as a joint effect. Either label it as a sum of
+  per-desk private returns, or publish the joint figure beside it. Discharge: a test asserting the
+  printed total does not disagree in **sign** with `cash(actual) - cash(nobody-spends)` at the same
+  prices.
+- **B3 (unchanged).** Either require the compared pair to be within one or two price steps, or drop
+  "WHO WAS VISITING carried it" and print all three block figures beside both door figures on the
+  projector. A block larger than the gap it explains must never print alone.
+
+**NON-BLOCKING — required, recorded.**
+
+- Disclose the ceteris-paribus assumption on the SPILLOVER card and the reveal-2 caption, not only on
+  the student device.
+- Add the by-choice carve-outs (stock weeks, bot clubs, pinned shock club) to `SIMPLIFICATIONS`.
+- R-c, R-d, R-e, R-f, R-g, R-h remain open and unaddressed.
+
+### Overall
+
+The **mechanism** re-confirms: no dominant line, interior optimum, real externality, exact
+decomposition, no RNG, no unwinnable seat, 397/397, 11/11. The instrument repair is genuine and well
+made — B1, B2, B4, B5 are properly discharged and the mutation test shows the harness now defends
+them. The lesson still fails this gate on the two surfaces that carry its two named concepts: the
+SPILLOVER card's quantifier is false or incoherent in reachable rooms (a new form of the same defect),
+and the MARKET SIZE claim still asserts a cause that reverses under price control in the exact room the
+original gate probed.
+
+### Dissent
+
+**DISSENT econ-l2-evidence-surfaces: NOT DISCHARGED.**
+
+I maintain formal dissent against advancing L2 to a classroom rung or building L3 on this lesson's
+output while **B3**, **B7** and **B8** stand. B1 no longer supports the dissent; B3 does, unchanged,
+and B6 has been replaced by a worse defect — a synthesis card that prints "0% of the value it created
+landed somewhere the desk that paid for it never sees" in the same paragraph as $1,577,412 that did
+exactly that. L3 opens on the room's belief about who paid whom. A decision to proceed does not erase
+this dissent.
