@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T01:18:02.301Z",
+  "updatedAt": "2026-09-01T01:18:46.197Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -901,7 +901,8 @@
         "l1-e2e-r2",
         "m1-e2e-regression",
         "gate-l1-econ-r2",
-        "gate-l1-teacher-r2"
+        "gate-l1-teacher-r2",
+        "gate-l1-play-r2"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -924,7 +925,8 @@
         "econ-l1-n5-attribution",
         "recheck2-l1-econ-dissent",
         "teacher-l1-night5-now",
-        "recheck2-l1-teacher-dissent"
+        "recheck2-l1-teacher-dissent",
+        "play-l1-repairs-below-fold"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1784,6 +1786,25 @@
       },
       "recordedAt": "2026-09-01T01:17:44.019Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-play-r2": {
+      "id": "gate-l1-play-r2",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "L1 play re-check 2: RATING STRONG (held). Renewals-unexplained repairs CONFIRMED on dial/synthesis; DISCHARGED. New blocking: REVEAL-5 renewals rule and COUNTERFACTUAL scatter render below projector fold at all three resolutions while /teach claims on-screen; N5 repeat-beat delta shrunk (+170/-360, round-1 FULL HOUSE unreachable); spend receipt shows payoff only",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-play-r2--GATE_L1_PLAY.md",
+      "sha256": "d0c61440753aa6ddc1bcb268d4a06eef0b23c592ed12085e96ff0b97d0990a44",
+      "size": 55793,
+      "metadata": {
+        "rating": "STRONG",
+        "tags": [
+          "gameplay",
+          "wave-2",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T01:18:45.703Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -2047,9 +2068,12 @@
         "gate-l1-play-r1"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T00:11:25.798Z",
-      "actor": "player-gameplay-critic"
+      "actor": "player-gameplay-critic",
+      "resolution": "Re-verified in a full session: the undercut-costs-renewals rule renders on the dial pre-commit and the SYNTHESIS card, COUNTERFACTUAL points at a rendered scatter, receipts and jitter confirmed. Critic's explicit line: DISSENT play-l1-renewals-unexplained: DISCHARGED. Remaining fold/scale items tracked as play-l1-repairs-below-fold.",
+      "resolvedAt": "2026-09-01T01:18:45.948Z",
+      "resolvedBy": "lead-integrator"
     },
     "recheck-l1-play-dissent": {
       "id": "recheck-l1-play-dissent",
@@ -2131,6 +2155,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T01:18:02.301Z",
       "actor": "lead-integrator"
+    },
+    "play-l1-repairs-below-fold": {
+      "id": "play-l1-repairs-below-fold",
+      "wave": 2,
+      "category": "gameplay",
+      "severity": "blocking",
+      "finding": "Two of four claimed board repairs render below the projector fold at 1366x768/1600x900/1920x1080 (REVEAL-5 renewals rule top 764/895/1073; COUNTERFACTUAL scatter top 720/839/1007) while /teach tells the teacher the rule is on the screen now. Also blocking: N5-repeats-N1 felt delta shrunk to +170/-360 with the round-1 FULL HOUSE unreachable (same N5 economy the econ dissent flags for attribution — rebalance and attribute together); spend receipt reports payoff but never waste. GATE_L1_PLAY.md r2 section.",
+      "evidenceIds": [
+        "gate-l1-play-r2"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T01:18:46.197Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "meetings": {},
@@ -2161,11 +2199,11 @@
     "agentsActivated": 25,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 43,
+    "evidenceRecorded": 44,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 128,
-  "eventHead": "0a04743fd7bf129f8716fcee774e72da2912a814a6edb5bffb73762aa29702ec",
+  "eventCount": 131,
+  "eventHead": "e4caee750f0f89d481037644c3b7839f1301f214500485cb00aaa7f3249232b2",
   "warnings": []
 }

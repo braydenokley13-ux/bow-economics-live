@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `128:0a04743fd7bf129f8716fcee774e72da2912a814a6edb5bffb73762aa29702ec`  
-Updated: 2026-09-01T01:18:02.301Z
+Event head: `131:e4caee750f0f89d481037644c3b7839f1301f214500485cb00aaa7f3249232b2`  
+Updated: 2026-09-01T01:18:46.197Z
 
 ## Founder intent
 
@@ -89,6 +89,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - m1-e2e-regression — e2e — M1 L3 e2e re-run after shared-file changes (theme.css, sessionService, static router)
 - gate-l1-econ-r2 — economic-truth-report — L1 econ re-check 2: independent exact DP reproduces P14 corners exactly (NY flat $1.22M/80% vs most-cash $2.36M/53%; 8-point convex frontier; buying every point costs 6.99%/6.00% of cash). R1-R3 met, season dissent DISCHARGED. NEW BLOCKING: N5-was-N1 copy credits renewals (-140 term) while N4-spend carry (+1200) dominates; HOUSE_RULES[1] false
 - gate-l1-teacher-r2 — teacher-transfer-report — L1 teacher re-run: all nine blocking repairs FIXED from the surface; HK-1 DISCHARGED (director script reached the product and exceeded the design). New blocking TT-R1: Nights 4-5 NOW block is Night 4's script verbatim (fullHouse.ts:2191 block2 = nightIndex>=3) contradicting the adjacent projector mirror. Non-blocking carried: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. TRANSFER: NOT READY on TT-R1 alone
+- gate-l1-play-r2 — gameplay-report — L1 play re-check 2: RATING STRONG (held). Renewals-unexplained repairs CONFIRMED on dial/synthesis; DISCHARGED. New blocking: REVEAL-5 renewals rule and COUNTERFACTUAL scatter render below projector fold at all three resolutions while /teach claims on-screen; N5 repeat-beat delta shrunk (+170/-360, round-1 FULL HOUSE unreachable); spend receipt shows payoff only
 
 ## Claim ledger
 
@@ -106,7 +107,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-play-dissent — undefined/undefined/open — undefined
 - econ-l1-season-books — economic-truth/blocking/resolved — Season-level two-book tension sign flipped by the repair-round-1 retune: the product's own printed best line ends 92%/96% renewals vs flat-plan 80%, beating flat plan by $1.45M/$1.38M on BOTH books — the CASH-vs-RENEWALS tradeoff the lesson teaches does not exist at season level; both notes on the season synthesis card are false; the spend-to-renewals channel (13-15 points) is undisclosed on any surface. Also: two false HOUSE_RULES clauses (national-TV qualifier; +1 one step below plan) and stale copy on N1/N2/N3/N5 + harness P5 printed row. R1-R3 prescriptions in GATE_L1_ECON_R1.md.
 - recheck-l1-econ-dissent — undefined/undefined/open — undefined
-- play-l1-renewals-unexplained — gameplay/blocking/open — The renewals undercut mechanism works in play (desk that filled the building five nights under plan fell 50%->25%) but NO student surface — dial, recap, seven reveal stages, ADAPT, COUNTERFACTUAL, six synthesis cards — ever states that undercutting the season-plan price costs renewals. Uninterpretable consequence = the exact failure class just repaired on the spend dial, relocated. Also blocking: COUNTERFACTUAL board's largest instruction tells the room to argue from dots that are not rendered in that phase. GATE_L1_PLAY.md re-rate section.
+- play-l1-renewals-unexplained — gameplay/blocking/resolved — The renewals undercut mechanism works in play (desk that filled the building five nights under plan fell 50%->25%) but NO student surface — dial, recap, seven reveal stages, ADAPT, COUNTERFACTUAL, six synthesis cards — ever states that undercutting the season-plan price costs renewals. Uninterpretable consequence = the exact failure class just repaired on the spend dial, relocated. Also blocking: COUNTERFACTUAL board's largest instruction tells the room to argue from dots that are not rendered in that phase. GATE_L1_PLAY.md re-rate section.
 - recheck-l1-play-dissent — undefined/undefined/open — undefined
 - teacher-l1-not-ready — teacher-transfer/blocking/resolved — Fresh-context teacher verdict NOT READY: /teach is a status board, not a director — identical render across LOBBY/HOOK/PLAY, projector context vanishing exactly when REVEAL begins, blind n/7 reveal counter with no names or lines, unhighlighted stalled desks. HK-1: the design doc's complete director script (NOW/ASK/DON'T EXPLAIN YET/TRIGGER/TIME CUT with per-phase minute budgets, DESIGN_C_FIRSTPRINCIPLES.md:253-270) reached the product as a single fragment, so every economics line must be invented live — hidden founder knowledge by construction. Nine blocking repairs in GATE_L1_TEACHER.md.
 - gate-l1-teacher-dissent — undefined/undefined/open — undefined
@@ -114,6 +115,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - recheck2-l1-econ-dissent — undefined/undefined/open — undefined
 - teacher-l1-night5-now — teacher-transfer/blocking/open — Nights 4-5 share one NOW block (fullHouse.ts:2191, block2 = nightIndex>=3): on Night 5 the console instructs the teacher to read Night 4's card and watch for capacity buys, contradicting the adjacent projector mirror on the same screen. TRANSFER stays NOT READY on this alone; line-level fix. Also carried non-blocking: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. GATE_L1_TEACHER.md re-run section.
 - recheck2-l1-teacher-dissent — undefined/undefined/open — undefined
+- play-l1-repairs-below-fold — gameplay/blocking/open — Two of four claimed board repairs render below the projector fold at 1366x768/1600x900/1920x1080 (REVEAL-5 renewals rule top 764/895/1073; COUNTERFACTUAL scatter top 720/839/1007) while /teach tells the teacher the rule is on the screen now. Also blocking: N5-repeats-N1 felt delta shrunk to +170/-360 with the round-1 FULL HOUSE unreachable (same N5 economy the econ dissent flags for attribution — rebalance and attribute together); spend receipt reports payoff but never waste. GATE_L1_PLAY.md r2 section.
 
 ## Latest gate
 
