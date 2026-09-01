@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:53:11.557Z",
+  "updatedAt": "2026-09-01T02:55:12.509Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1804,12 +1804,23 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic re-adjudication of the must-fit-its-content condition after SPLIT+TIGHTEN (part of analyst-no-pass-wave2)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T02:46:56.956Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T02:55:12.509Z",
+          "sections": {
+            "session-choreography-verdict": "NOT DISCHARGED: the SPLIT+TIGHTEN repair reached only its four named frames; 10 of 24 board frames overflow at 1366x768 AND 1920x1080 (worst: PLAY after bell N4, +280/+392px). Reveal stages now named; CF paging carries 12/12.",
+            "board-privacy-verdict": "PASS — 48 rendered scans, zero names or seat tokens.",
+            "teacher-fallback-verdict": "Every beat manual and labelled; freeze/unfreeze not re-verified this pass (code reads repaired; prior deterministic test stands).",
+            "classroom-drama-notes": "REVEAL Two Peaks intact as a room moment; the PLAY release orphans its punchline off-screen; the compacted SVG axis fell to 1.30-1.56%, below the 2.6% floor. 49 w3- screenshots.",
+            "required-repairs": "Un-stack PLAY Two Peaks; fit stage-4 anchor/sourcing lines; every-frame fit: assertStageScrollable (e2e-m2l1.cjs:100) must assert scrollHeight<=clientHeight on EVERY board frame the e2e visits, not a named subset. PROJECTOR FIT CONDITION: NOT DISCHARGED."
+          },
+          "evidenceIds": [
+            "w3-projector-adj"
+          ],
+          "cost": {
+            "tokens": 95849,
+            "toolUses": 35
+          }
         },
         "w3-visual-regrade": {
           "assignmentId": "w3-visual-regrade",
@@ -1831,7 +1842,8 @@
         "l1-tuning-w3",
         "l1-e2e-w3",
         "m1-e2e-w3",
-        "w3-play-adj"
+        "w3-play-adj",
+        "w3-projector-adj"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -3072,6 +3084,23 @@
       },
       "recordedAt": "2026-09-01T02:52:57.288Z",
       "actor": "player-gameplay-critic"
+    },
+    "w3-projector-adj": {
+      "id": "w3-projector-adj",
+      "wave": 3,
+      "kind": "projector-report",
+      "label": "W3 projector adjudication: NOT DISCHARGED. Repair reached only its four fh-tight/SPLIT frames; 10 of 24 board frames overflow at both resolutions (worst PLAY-after-bell N4 +280/+392px); PLAY Two Peaks release orphans its punchline; compacted axis 1.30-1.56% below floor; assertStageScrollable must assert fit on every frame. Privacy PASS (48 scans)",
+      "path": ".boss/runs/m2-quality-war/evidence/w3-projector-adj--GATE_L1_PROJECTOR.md",
+      "sha256": "631058b0e0f542577c1788f9009831ab658b4127030ed0929e0a02fe4924eff3",
+      "size": 24088,
+      "metadata": {
+        "tags": [
+          "projector",
+          "wave-3"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:54:58.826Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "claims": {
@@ -3537,11 +3566,11 @@
     "agentsActivated": 38,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 61,
+    "evidenceRecorded": 62,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 186,
-  "eventHead": "95bce3261ef9628477b612eb647fe08d985d5f3280c9480cb98b155296a112cd",
+  "eventCount": 188,
+  "eventHead": "6dfcfc74dfe01fbee963b9bd8218a6f4f26b3d827a820794341b2f6a731e63cc",
   "warnings": []
 }

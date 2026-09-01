@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `186:95bce3261ef9628477b612eb647fe08d985d5f3280c9480cb98b155296a112cd`  
-Updated: 2026-09-01T02:53:11.557Z
+Event head: `188:6dfcfc74dfe01fbee963b9bd8218a6f4f26b3d827a820794341b2f6a731e63cc`  
+Updated: 2026-09-01T02:55:12.509Z
 
 ## Founder intent
 
@@ -36,7 +36,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - builder — builder-l1-closeout — completed — claude-opus-5
 - player-gameplay-critic — player-gameplay-critic — completed — claude-opus-5
 - economic-truth-critic — economic-truth-critic — active — claude-opus-5
-- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - visual-experience-director — visual-experience-director — active — claude-opus-5
 
 ## Required evidence
@@ -59,6 +59,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l1-e2e-w3 — e2e — 12-desk e2e: all rows + summary in-viewport across 4 groups, both resolutions, no stage overflow
 - m1-e2e-w3 — e2e — M1 L3 e2e at close-out head (shared files)
 - w3-play-adj — gameplay-report — W3 play adjudication: all 12 rows + summary verified at both resolutions, stage fits exactly, paging one-look-per-group, RATING STRONG. DISCHARGED. Non-blocking: summary type 2.05% vs 2.6% floor; group ordering/dedup
+- w3-projector-adj — projector-report — W3 projector adjudication: NOT DISCHARGED. Repair reached only its four fh-tight/SPLIT frames; 10 of 24 board frames overflow at both resolutions (worst PLAY-after-bell N4 +280/+392px); PLAY Two Peaks release orphans its punchline; compacted axis 1.30-1.56% below floor; assertStageScrollable must assert fit on every frame. Privacy PASS (48 scans)
 
 ## Claim ledger
 
