@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:59:00.823Z",
+  "updatedAt": "2026-09-01T13:03:00.289Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3608,8 +3608,48 @@
           "model": "claude-opus-5",
           "reason": "Wave-5 close-out micro-set: SR N1/N2 one-line facts; econ R1 rendered-output audit, R2 harness wired into npm test, R3/R4 arm-copy fixes",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T12:31:32.990Z",
+          "completedAt": "2026-09-01T13:02:59.665Z",
+          "sections": {
+            "what-changed": "All six items at the source: Seattle line carries the 2012 MOU's up-to-$200M public bonds with subsidy-coda retaught as both-sides-public; DMA #20/#13; render-vs-atom closed by a single builder shared by viewWeek and moduleClaims plus a RENDER limb diffing registered text against shipped view strings (with a RENDER-DRIFT mutation limb); all three M2 harnesses wired into npm test; the arm is an atom with the-rule-you-wrote absent-forbidden off the voted arm; arrowsMovedAny guards every arm's questions, keys, and atom.",
+            "evidence": "Lead re-ran, exit 0: l3-tests-w5 (458/458 incl. harness wrappers), l3-tuning-w5 (10/10; 9 mutation limbs caught), l3-e2e-w5. Builder A9 proof: control exit 0, drifted /play string exit 1 via the RENDER limb, suite exit 1; forbidden phrase 0 occurrences; stage-4/5 agree.",
+            "claims": "A9 fails the suite; repo never mutated during proofs.",
+            "known-gaps": "RENDER harvest covers end-state + ADOPTED variant, not full trajectory; L1/L2 registries unswept by the RENDER limb (their audits stand on the earlier method); SR N3-N6 + econ R5-R7 non-blocking remain open; discharge belongs to the owning critics."
+          },
+          "evidenceIds": [
+            "l3-tests-w5",
+            "l3-tuning-w5",
+            "l3-e2e-w5"
+          ],
+          "cost": {
+            "tokens": 445959,
+            "toolUses": 279
+          }
+        },
+        "w5-sr-confirm": {
+          "assignmentId": "w5-sr-confirm",
+          "role": "sports-reality-director",
+          "actor": "sports-reality-director",
+          "model": "claude-sonnet-5",
+          "reason": "Narrow owning-critic confirm of the two one-line fact fixes (N1 Seattle MOU, N2 DMA)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T13:02:59.980Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w5-econ-confirm": {
+          "assignmentId": "w5-econ-confirm",
+          "role": "economic-truth-critic",
+          "actor": "economic-truth-critic",
+          "model": "claude-opus-5",
+          "reason": "Final owning-critic confirm of R1-R4 (RENDER limb + arm atom + guard) with own injections",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T13:03:00.289Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -3626,7 +3666,10 @@
         "w5-module-file",
         "w5-harness-file",
         "w5-suite-wrapper",
-        "w5-r3r4-arm"
+        "w5-r3r4-arm",
+        "l3-tests-w5",
+        "l3-tuning-w5",
+        "l3-e2e-w5"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -6230,6 +6273,74 @@
       },
       "recordedAt": "2026-09-01T12:59:00.823Z",
       "actor": "builder-w5"
+    },
+    "l3-tests-w5": {
+      "id": "l3-tests-w5",
+      "wave": 5,
+      "kind": "test",
+      "label": "Suite after close-out (458/458 incl. the three harnesses as tests)",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-tests-w5--record.json",
+      "sha256": "94681c58ac8883d50cb2d13a05170fe675092978204add954b45c9d59916e30f",
+      "size": 113659,
+      "metadata": {
+        "tags": [
+          "wave-5"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:00:36.633Z",
+      "actor": "lead-integrator"
+    },
+    "l3-tuning-w5": {
+      "id": "l3-tuning-w5",
+      "wave": 5,
+      "kind": "test",
+      "label": "L3 harness 10/10 with RENDER limb; 9 mutation limbs caught",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-tuning-w5--record.json",
+      "sha256": "1d26a126e5fe9c8fb62cd1bc4ce62a981df607c762d5176900d4759a1be0548f",
+      "size": 12789,
+      "metadata": {
+        "tags": [
+          "wave-5"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l3-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:00:40.154Z",
+      "actor": "lead-integrator"
+    },
+    "l3-e2e-w5": {
+      "id": "l3-e2e-w5",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "L3 e2e at close-out head",
+      "path": ".boss/runs/m2-quality-war/evidence/l3-e2e-w5--record.json",
+      "sha256": "bd223c6d69b5635c903bb10c1bc9333b7de3213cef4f742d643756777db8023b",
+      "size": 1467,
+      "metadata": {
+        "tags": [
+          "wave-5"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l3.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T13:02:41.693Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -7100,14 +7211,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 78,
+    "agentsActivated": 80,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 130,
+    "evidenceRecorded": 133,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 389,
-  "eventHead": "0a464bc0501c2425ba9cfb20b492a5bc5b3036816eed35f6e0a59ba4b35ef637",
+  "eventCount": 395,
+  "eventHead": "4987bd0901462eea447dffcd0db772b1648b1b319dd59cc8f934d1bbf649a262",
   "warnings": []
 }

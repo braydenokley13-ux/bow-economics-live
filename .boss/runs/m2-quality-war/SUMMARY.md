@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `389:0a464bc0501c2425ba9cfb20b492a5bc5b3036816eed35f6e0a59ba4b35ef637`  
-Updated: 2026-09-01T12:59:00.823Z
+Event head: `395:4987bd0901462eea447dffcd0db772b1648b1b319dd59cc8f934d1bbf649a262`  
+Updated: 2026-09-01T13:03:00.289Z
 
 ## Founder intent
 
@@ -33,7 +33,9 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 
 ## Role status
 
-- builder — builder-w5 — active — claude-opus-5
+- builder — builder-w5 — completed — claude-opus-5
+- sports-reality-director — sports-reality-director — active — claude-sonnet-5
+- economic-truth-critic — economic-truth-critic — active — claude-opus-5
 
 ## Required evidence
 
@@ -60,6 +62,9 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - w5-harness-file — test — L3 tuning harness with the RENDER limb and the A9 mutation limb
 - w5-suite-wrapper — test — node:test wrapper that spawns the three M2 harnesses
 - w5-r3r4-arm — economic-truth-report — sincere 6-desk status-quo arm, no arrow movement: era line, answer key, ASK and the 'Under the rule you wrote' sweep
+- l3-tests-w5 — test — Suite after close-out (458/458 incl. the three harnesses as tests)
+- l3-tuning-w5 — test — L3 harness 10/10 with RENDER limb; 9 mutation limbs caught
+- l3-e2e-w5 — e2e — L3 e2e at close-out head
 
 ## Claim ledger
 
