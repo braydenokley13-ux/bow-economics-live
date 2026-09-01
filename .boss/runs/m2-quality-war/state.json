@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:20:34.650Z",
+  "updatedAt": "2026-09-01T12:24:28.144Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3432,7 +3432,8 @@
         "l3-tests-r1",
         "l3-tuning-r1",
         "l3-e2e-r1",
-        "recheck-l3-sr"
+        "recheck-l3-sr",
+        "recheck-l3-projector"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5805,6 +5806,24 @@
       },
       "recordedAt": "2026-09-01T12:20:18.969Z",
       "actor": "sports-reality-director"
+    },
+    "recheck-l3-projector": {
+      "id": "recheck-l3-projector",
+      "wave": 4,
+      "kind": "projector-report",
+      "label": "L3 projector re-check: DISCHARGED. B1 dead both shapes with critic's own ink guard proven non-vacuous in-run; B2 truthful 0/12 counts + populated WATCH FOR; B3 arm-specific /teach; B4 desk-naming gone (0 matches; 0 leaks in 84 full-innerHTML audits). Kings genuinely two-press with the room's tally alone before 22-8. Non-blocking: privacy line overstates, :1846 arm-conditional, carried items 6/7/9",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l3-projector--GATE_L3_PROJECTOR.md",
+      "sha256": "e7537bb354e58b0d1cfd4d4e8f68d3698ae8fe2d68250b91bd9c9fac6968f06b",
+      "size": 33139,
+      "metadata": {
+        "tags": [
+          "projector",
+          "wave-4",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T12:24:27.835Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "claims": {
@@ -6576,9 +6595,12 @@
         "gate-l3-projector"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T11:16:25.849Z",
-      "actor": "classroom-projector-critic"
+      "actor": "classroom-projector-critic",
+      "resolution": "Owning critic re-audited 42 frames x 2 shapes: histogram overprint dead (own ink guard proven non-vacuous on a poisoned frame), round counts truthful with WATCH FOR populated, the league-office arm's /teach copy arm-specific and matching the board, desk-named superlatives gone with zero identity leaks, and the Kings capstone genuinely commit-then-reveal (room tally alone before 22-8, desk votes disabled between presses). Explicit line: DISSENT proj-l3-board-integrity: DISCHARGED. Non-blocking residuals recorded.",
+      "resolvedAt": "2026-09-01T12:24:28.144Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l3-projector-dissent": {
       "id": "gate-l3-projector-dissent",
@@ -6662,11 +6684,11 @@
     "agentsActivated": 77,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 116,
+    "evidenceRecorded": 117,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 364,
-  "eventHead": "84c5783c7f150f31a1bde1be163457da71319f740278a86b54f2c84290234f54",
+  "eventCount": 366,
+  "eventHead": "7a1b25bd1116e29ba2fe4425eeac70524b89a9657893d5c11ee75e1839ca939a",
   "warnings": []
 }

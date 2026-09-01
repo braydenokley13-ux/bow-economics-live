@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `364:84c5783c7f150f31a1bde1be163457da71319f740278a86b54f2c84290234f54`  
-Updated: 2026-09-01T12:20:34.650Z
+Event head: `366:7a1b25bd1116e29ba2fe4425eeac70524b89a9657893d5c11ee75e1839ca939a`  
+Updated: 2026-09-01T12:24:28.144Z
 
 ## Founder intent
 
@@ -99,6 +99,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l3-tuning-r1 — test — L3 harness 10/10: 663 atoms/171 surfaces, COVERAGE limb refuses unaudited atoms, 8/8 mutants incl. value-drift/quantifier-invert/quantifier-frozen; adoption 29%/71% measured
 - l3-e2e-r1 — e2e — L3 e2e: sealed-vote 409 with median unmoved, announced observer, 16 ink scans, guard proven non-vacuous
 - recheck-l3-sr — sports-reality-report — L3 SR re-check: all five repairs CONFIRMED verbatim (16/30 + 23/30, term sheets on all surfaces, Knicks fix, dates, epilogue); A3-A9 closed. NOT DISCHARGED on two repair-introduced facts: N1 Seattle 'privately financed' is false (2012 MOU carried up to $200M city/county bonds — the private-vs-public contrast subsidy-coda now teaches); N2 DMA ranks (Sacramento #20, Seattle #13, not 27/12). Both one-line
+- recheck-l3-projector — projector-report — L3 projector re-check: DISCHARGED. B1 dead both shapes with critic's own ink guard proven non-vacuous in-run; B2 truthful 0/12 counts + populated WATCH FOR; B3 arm-specific /teach; B4 desk-naming gone (0 matches; 0 leaks in 84 full-innerHTML audits). Kings genuinely two-press with the room's tally alone before 22-8. Non-blocking: privacy line overstates, :1846 arm-conditional, carried items 6/7/9
 
 ## Claim ledger
 
@@ -114,7 +115,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - gate-l3-econ-dissent — undefined/undefined/open — undefined
 - play-l3-below-bar — gameplay/blocking/open — L3 rates FUNCTIONAL on five bounded causes: (1) VOTE NOT SEALED — with the histogram on the projector, a late dial submission after round-3 close silently replaces the vote (observed: adopted rule 25%->30%, supporters 3/3->2/3) and never-submitting desks are counted as 5% votes with no notice; (2) REVEAL->COMPLETE is 28 director-budgeted minutes with ONE student action and a byte-identical student device across five stages; (3) the Kings capstone is a two-button poll whose promised term sheets don't exist (= SR A2); (4) the flat-beside-moved arrows render but no surface says why (= econ reachability finding); (5) the fallback replays the counterfactual at 0% and calls the failure 'your rule'. Kill condition not met. GATE_L3_PLAY.md.
 - gate-l3-play-dissent — undefined/undefined/open — undefined
-- proj-l3-board-integrity — classroom-reliability/blocking/open — Four L3 board/teach integrity blockers: B1 histogram bars overprint the veil sentence on rounds 2/3 at both shapes (column budget omits the tick label; invisible to the fit, truncation, and overlap guards — extend the overlap guard to catch it); B2 closeRound never clears proposal (round 2 opens claiming 12/12 in; WATCH FOR empty two of three rounds); B3 /teach prints STATUS_QUO_COPY on the league-office arm while an adopted 30%/ON rule is on the board (claim-audit class — register the arm surface); B4 REVEAL stage 2 names 'the biggest single swing at Desk 9' directly above 'No desk's money is ever ranked on this screen'. Kings should be commit-then-reveal choreography, not one press (= play finding). GATE_L3_PROJECTOR.md.
+- proj-l3-board-integrity — classroom-reliability/blocking/resolved — Four L3 board/teach integrity blockers: B1 histogram bars overprint the veil sentence on rounds 2/3 at both shapes (column budget omits the tick label; invisible to the fit, truncation, and overlap guards — extend the overlap guard to catch it); B2 closeRound never clears proposal (round 2 opens claiming 12/12 in; WATCH FOR empty two of three rounds); B3 /teach prints STATUS_QUO_COPY on the league-office arm while an adopted 30%/ON rule is on the board (claim-audit class — register the arm surface); B4 REVEAL stage 2 names 'the biggest single swing at Desk 9' directly above 'No desk's money is ever ranked on this screen'. Kings should be commit-then-reveal choreography, not one press (= play finding). GATE_L3_PROJECTOR.md.
 - gate-l3-projector-dissent — undefined/undefined/open — undefined
 - teacher-l3-not-ready — teacher-transfer/blocking/open — L3 TRANSFER NOT READY on six blockers, worst: B1 — the CONSEQUENCE phase's scripted ASK ('Whose effort went DOWN?') is static and directional while the console's own computed line above it read 'Effort went UP by 20%' — the teacher is directed in writing to ask a question the room's evidence refutes at the module's central discussion beat (claim-audit class: the ASK must be computed); B3 — Advance/Jump unguarded through PLAY, a regression against the L1/L2 confirm-guard pattern. Plus B2 (unlinked runs lose the instrument silently), B4 (post-vote late joiner stranded while counted as joined), B5 (rehearsal trains the fatal gesture), B6 (director overclaims a student screen). GATE_L3_TEACHER.md.
 - gate-l3-teacher-dissent — undefined/undefined/open — undefined
