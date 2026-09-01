@@ -1,0 +1,441 @@
+# GATE — Teacher Transfer, Module 2 Lesson 2 "You Don't Play Alone" (`m2l2-host-league`)
+
+Fresh-context gate. Boss run `m2-quality-war`, assignment `gate-l2-teacher`.
+
+**Cold protocol as executed.** The only repo file read before judgment was
+`runtime/scripts/e2e-m2l2.cjs` (mechanics only, assertions ignored). Everything
+else in the "before/during/after" sections below was learned from `/teach`,
+`/board` and `/play` on a live server at PORT 4374. Sessions run:
+`BOWPPH` (zero-student rehearsal, all 8 phases), `BOWGRT` (5 desks,
+close-week misclick), `BOW3HE` (6 desks, Advance-during-PLAY misclick +
+Restore), `BOW36Y` (6 desks + 1 late joiner + 1 desk that never commits, full
+arc through COMPLETE, 5 reveals, 5 synthesis cards, desk refresh, board
+refresh), `BOWX6P`/`BOWD9U` (pause / freeze / jump / console-recovery probes).
+Zero console errors on any surface in any session. Only after all of that were
+`runtime/README.md` §"Module 2, Lesson 2" and
+`docs/gauntlet/module-2/DESIGN_C_FIRSTPRINCIPLES.md` read.
+
+Evidence ids: `gate-l2-teacher` (this report and the live sessions above,
+observed), `l2-e2e` / `l2-tests` / `l2-tuning` (existing, not re-run this
+gate — NOT VERIFIED by me), `readme-l2l3` and `design-c` (read at step 2 only).
+
+---
+
+## before-verdict
+
+**NOT READY.**
+
+What the product alone did give me, observed under `gate-l2-teacher` in the
+zero-student rehearsal `BOWPPH`: the /teach landing page tells a first-time
+teacher to create an empty session and press Advance through every phase, and
+that rehearsal does carry NOW (with a per-phase minute budget), ON THE
+PROJECTOR RIGHT NOW, TRIGGER, ASK (question + answer key), DON'T EXPLAIN YET,
+THE BELL, TIME CUT, and two expandable panels — "What the students are looking
+at" (the four market profiles with weekly bills and house prices, and the exact
+reinvest-dial semantics: a 0-40% share in 5s of this week's door money, blind)
+and "Where this model simplifies the real thing" (nine ledgered
+simplifications, each with a named misconception risk). The league, the
+three-week schedule, the two books (CASH vs DRAW), the week bell and the
+control rhythm are all learnable from those surfaces without a document.
+
+Three preparation defects block the exceptional-class standard:
+
+1. **The console never tells the teacher what URL to put the projector on.**
+   Observed: every /teach frame prints `JOIN AT http://localhost:4374/PLAY WITH
+   CODE / BOWxxxx`. Zero occurrences of a `/board` URL across all 60+ captured
+   /teach frames. A stranger teacher must guess `/board?code=BOWxxxx`. See also
+   failure-recovery-verdict — guessing wrong is silent and damaging.
+2. **The rehearsal the product recommends does not rehearse the two beats that
+   matter most.** Observed: with zero desks, WATCH FOR — the only panel that
+   diagnoses the room — never renders at all (it first appeared in `BOWGRT`
+   once desks existed). And SYNTHESIS, which the console itself calls "the part
+   the simulation does not do for you," collapses to a single placeholder card
+   titled YOU DON'T PLAY ALONE reading "No weeks are in the books yet"; the
+   live deck is five cards (SHARED PRODUCT / SPILLOVER / THE BIGGEST CHECK IS
+   THE ONE NOBODY CONTROLS / MARKET SIZE IS NOT DESTINY / AND ONE MORE THING,
+   `BOW36Y`). A teacher who rehearses exactly as instructed meets five unseen
+   cards live, in the last seven minutes of the period.
+3. **The prep copy miscounts its own reveals.** Observed on every REVEAL /teach
+   frame: the heading reads **"THE SEVEN REVEALS"** above a list numbered 1/5
+   to 5/5. A teacher preparing from this surface budgets seven beats.
+
+Non-blocking but material: TIME CUT cues are keyed to absolute wall-clock
+marks ("Past minute 44", "minute 46", "minute 55") and **there is no elapsed
+clock anywhere on /teach** (searched every text node for a `mm:ss` or
+minute/timer string in `BOW7AP`; the only hit was prose). Inferred consequence:
+the cut logic is unusable without the teacher running their own stopwatch from
+a start time the product never marks. `readme-l2l3` known gap (c) independently
+records that the lesson "has never been timed against a real 50-60 minute
+period."
+
+The per-phase budgets themselves are coherent and were verified live:
+LOBBY 2 + HOOK 4 + PLAY wk1-2 12 + PLAY wk3 5 + REVEAL 8 + ADAPT 5 + ARGUE 6 +
+SYNTHESIS 7 + COMPLETE 1 = 50 min. The PLAY panel re-writes its NOW per week
+(week 1 "read the schedule and get out of the way", week 2 "read the
+star-departure card slowly… do not soften it", week 3 "watch the reinvest dial,
+not the price"), so the control rhythm is legible from the surface.
+
+## during-verdict
+
+**NOT READY** — on one cause, at the emotional peak of the lesson.
+
+Who is stuck is answered well and was observed live in `BOW36Y`: WATCH FOR
+names every unlocked desk by number and club ("7 of 7 desks have not locked
+this week"), the aggregate panel carries `n/N LOCKED IN` and the week counter,
+the close-week button itself is labelled `◗Close week 2 (0/7 locked)`, and each
+desk card shows club, market profile, cash, Draw, live dial position ("still
+dialling $56 · 0%"), last week's fill % and this week's opponent. Room-ready is
+a teacher call, and the panel says so and tells the teacher the consequence of
+calling it early.
+
+Two WATCH FOR groups carry the lesson's actual beats and were observed firing
+on real state, not as static copy: "Hosting a big Draw this week — their
+building is going to fill" (with "watch whether they RAISE it") and "Hosting a
+collapsed Draw this week — through no fault of their own" (with "This is the
+emotional risk of the lesson. Frame it as economics, never as blame").
+
+Free-riding **is** a WATCH FOR — and it is wrong. Observed in `BOW3HE` and
+`BOW36Y`: at REVEAL the group "Put nothing back, two weeks running" listed
+Desk 6, the desk that **never locked a single week in the entire lesson** and
+was auto-settled at house price with 0% reinvest by construction, alongside
+desks that deliberately chose 0%. The panel's instruction is "Save these desks
+for the WHAT YOU GAVE, WHAT YOU GOT board; their row is the one that starts the
+argument." The product therefore directs the teacher to hold up a
+never-participating pair, in front of the room, as the author of a strategic
+choice they did not make. Nothing on any desk card marks a desk as having
+auto-settled — the AUTO flag exists only on the student's own private screen
+(observed in `BOW36Y`: "WEEK 1 — HOW IT WENT VS INDIANA · DRAW 26 AUTO").
+
+Also blocking, and it lands in the argue phase the assignment asks about: the
+ADAPT answer key cites a board the teacher cannot display. Observed in
+`BOW36Y`, the ADAPT ASK for question 3 ("Who got most of that money back — you,
+or the buildings you visited?") answers "the WHAT YOU GAVE, WHAT YOU GOT board
+has each desk's two numbers." That board is REVEAL stage 2. At ADAPT the
+projector shows the Handed-To-You bar plus the three questions, and the control
+column has no reveal-back control at all — the full button inventory is
+`btnRevealNext`, `btnBarPage`/`btnBarPageBack`, `btnSynthPage`/`btnSynthPageBack`
+(and the reveal button reads "Every reveal has played" once spent). The one
+ADAPT question that carries the spillover payoff and sets up Lesson 3 is the one
+question whose evidence cannot be put back on the screen.
+
+Reveal timing and the "what to SAY" problem are otherwise handled: the reveal
+control names the next beat on the button face before it is pressed ("Reveal 2
+of 5 — Who paid for whose night — the visitor ledger"), the five-item list marks
+one item "on the projector" and the next "next press", and each carries its own
+one-line instruction. The interdependence line is scripted and does land — the
+board's own bar caption computed from `BOW36Y`'s class read "On 5 of 7 bars,
+the biggest block at the door is the visiting club. Across the room, 47% of
+every dollar that came through a door was brought by a club somebody else was
+running." Bar paging is explicit and names the desks in each group ("Next group
+— group 2 of 2: Desk 6, Desk 7").
+
+## failure-recovery-verdict
+
+**NOT READY.**
+
+Highest severity first.
+
+**`/board` with no `?code=` silently attaches to a different session, with no
+error and no code entry.** Observed twice under `gate-l2-teacher`: loading bare
+`http://localhost:4374/board` rendered `YOU DON'T PLAY ALONE — COMPLETE` — the
+closing synthesis frame of the previous session (`v147`) — and on a second
+probe rendered a *different* session's live week-1 schedule (`BOWX6P`, 3 desks).
+There is no field on /board to enter a code, no "wrong room" state, and (see
+before-verdict) no place on /teach that prints the correct projector URL. The
+projector-failure path a real teacher hits — laptop rebooted, bookmark opened,
+URL retyped without the code — therefore ends with the room staring at another
+class's board, and in the case I observed, at this lesson's final synthesis
+card before the class has played a single week. That is a reveal-spoiling
+failure with no in-product recovery.
+
+**The teacher console cannot be recovered outside its original tab.** Observed:
+`localStorage` holds `bow-teach-session-code` and `bow-teach-session-key`, and a
+same-tab reload restores the live room fully (verified mid-PLAY in `BOWX6P`:
+room visible, phase PLAY, 3 desks, WATCH FOR intact). But a new tab in the same
+browser, and a fresh browser context, both render only "START A SESSION" with
+no resume control and no code field (`BOWD9U`). A teacher who closes the tab,
+clicks the wordmark, or opens /teach on a second machine sees only one available
+move — create a new session — which strands the whole room on the old code.
+`readme-l2l3`'s own last known-gap bullet records that "a lost-teacher-key
+recovery scenario" has never been exercised; this gate exercised it and it
+fails.
+
+What does recover, observed:
+
+- **Misclick — Advance pressed during PLAY.** Guarded by a confirm that states
+  the real consequence: "Week 2 of 3 is still open (0/6 desks locked in). This
+  is not the week bell — advancing now settles this week for every club AND ends
+  the season early, so 1 week will never be played. 6 desks have not locked;
+  they settle on whatever is on their dials right now. Continue?" Same idiom on
+  Jump to REVEAL. If accepted anyway, **Restore last good state** returned the
+  session from REVEAL to PLAY week 2 with all state intact (`BOW3HE`).
+- **Misclick — Close week pressed with nobody locked.** No confirm. Observed in
+  `BOWGRT`: pressing `◗Close week 1 (0/5 locked)` settled the entire league at
+  house price instantly and moved to week 2. The button label carries the count,
+  which is the only guard. Lower consequence than Advance, and Restore is
+  available, but this is the misclick most likely early in a period.
+- **Desk refresh** mid-week: restores club, cash, Draw, dials and history.
+- **Board refresh**: restores the current frame.
+- **A desk that never commits**: auto-settled every week at house price, marked
+  AUTO on its own screen, never skipped, never zeroed. Correct — but invisible
+  to the teacher (see during-verdict).
+- **Late joiner** (joined during week 2, `BOW36Y`): claimed Desk 7 · L.A.
+  Lakers, inherited the club's real books with a synthetic week 1 marked
+  `COVERED`, got a rejoin PIN, and appeared in WATCH FOR immediately. Nothing on
+  any teacher surface explains "covered" (zero occurrences of the word in any
+  /teach frame) or flags that a desk inherited a club — see
+  hidden-knowledge-findings.
+- **Bot handover** is legible on the student and board surfaces ("league
+  office" beside every bot club, on desk cards and the schedule).
+- **Pause** and **Freeze** both work and produce distinct student copy
+  ("Paused — everything you've done is saved. We'll pick back up shortly." vs
+  "Your teacher has frozen the session. Hang tight.") and distinct board frames
+  (PAUSED / FROZEN). Which to use when is nowhere on the surface.
+
+Not verified by me: server restart / snapshot quarantine, PIN LOCKED / Unlock
+flow, `l2-e2e` / `l2-tests` / `l2-tuning` (not re-run this gate).
+
+## synthesis-verdict
+
+**READY.**
+
+The five-card deck was delivered live off the board in `BOW36Y` and the
+economics is correct and correctly ordered, with every number computed from the
+class's own weeks:
+
+1. **SHARED PRODUCT** — "47% of every dollar that came through a door in this
+   room was brought by a club somebody else was running," with the room's own
+   largest instance named (Desk 1 · New York, week 3, Oklahoma City at Draw 73,
+   $858,186). Definition given as "one thing, made by two clubs, sold once."
+2. **SPILLOVER** — the give/got pair for two named desks (Desk 4 gave
+   $2,226,218, got $536,192; Desk 1 got $1,622,130, gave $887,948), then "A cost
+   or a benefit that lands on somebody who did not choose it is a SPILLOVER —
+   the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money
+   simply does not land where the effort goes." That is the externality, stated
+   correctly (uncompensated third-party effect), non-moralised, and earned from
+   lived numbers rather than asserted.
+3. **THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS** — the four pipes with two
+   desks' real percentages (Milwaukee national 55.6% vs gate 16.6%; Lakers 29.1%
+   vs 26.3%), and the honesty clause the teacher panel also scripts: the check
+   is not free money, the networks get to say when your team plays.
+4. **MARKET SIZE IS NOT DESTINY** — the room's own arithmetic (small-market
+   Memphis $785,680 vs big-market Golden State $523,212 on a specific week),
+   plus OKC's 2025 title as the real-world counter.
+5. **AND ONE MORE THING** — the Module 1 cap bridge (2025-26 cap +10% to
+   $154.647M; 2026-27 $164.961M), the exit question, and eight dated sources
+   with verification dates and an explicit rights line.
+
+The beyond-sports step is present on every card as a fixed footer: "One great
+store that brings the whole mall its foot traffic. A group project where one
+person's work sets everybody's grade. A street where one shop closing empties
+the block. A band that needs the other bands on the bill to fill the room."
+Four generalizations, all genuinely externality/interdependence, none
+sports-dependent. It is one static line rather than a per-card generalization —
+adequate, not tailored.
+
+The sequencing discipline transfers: DON'T EXPLAIN YET withholds REVENUE
+SHARING at every phase and releases SPILLOVER only at ADAPT and EXTERNALITY only
+at SYNTHESIS, and the last card names revenue sharing as *next* lesson's rule.
+The full chain the mission requires is walkable from the surface: experienced
+moment (your building half empty because the club you hosted lost its star) →
+class result (the Handed-To-You bar and the give/got ledger, computed) → real
+sports (LeBron 2010/2014 on the ledger card, Luka/Dallas at ARGUE with the
+Flagg lottery attached in the same breath, Chase Center at the pipes card,
+Lakers/Grizzlies local media at HOOK) → formal term (SHARED PRODUCT,
+SPILLOVER/EXTERNALITY) → outside sports (the footer). ARGUE is armed: the board
+carries the Dallas exhibit with its counter-case and a non-resolving prompt, and
+the panel says "Do not let this become a conversation about whether the trade
+was good. It is a conversation about who else it cost."
+
+Two non-blocking defects. The SYNTHESIS TIME CUT reads "Say YOU DON'T PLAY ALONE
+and THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS" — but no live card is titled
+YOU DON'T PLAY ALONE (that title exists only on the zero-student placeholder),
+so under time pressure the instruction points at a card that is not in the deck.
+And reveal stage 5's board reads "down 1 points".
+
+## hidden-knowledge-findings
+
+Behaviour a competent stranger cannot get from the surfaces, all observed under
+`gate-l2-teacher`:
+
+- **The projector URL.** Never printed. Only the /play join URL and code are on
+  /teach. Founder knowledge: `/board?code=XXXXXX`.
+- **How to get the teacher console back.** The code and key are in
+  localStorage, but no surface offers resume, and no surface tells the teacher
+  that same-tab reload works and a new tab does not.
+- **Pause vs Freeze.** Two adjacent buttons, no on-surface distinction. Which
+  one is for a fire drill and which is for "screens down, eyes here" is not
+  derivable.
+- **"COVERED".** A late joiner's inherited week appears on the student screen as
+  `COVERED` and the word never appears on any teacher surface. When the student
+  asks where their week 1 came from, the answer is founder knowledge.
+- **Which desks auto-settled.** Only the student's own private screen carries
+  AUTO. The teacher cannot see, at any point, that a desk has never once
+  committed — and the free-rider WATCH FOR actively mislabels them.
+- **Where the period actually is.** Absolute-minute TIME CUT triggers with no
+  clock; the teacher must know to start their own timer at the LOBBY press.
+- **Board update latency.** The projector trailed a teacher press by roughly one
+  poll (observed at 700 ms wait: board one version behind; matched at 1300 ms).
+  Inferred, not stated anywhere: do not talk into the press.
+
+## required-repairs
+
+### Blocking (teacher-transfer)
+
+- **B1 — `/board` with no code must not render another session.** Bare `/board`
+  currently attaches silently to some other live session and, in one observed
+  case, put a previous class's COMPLETE synthesis card on the projector. Ship a
+  code-entry state on /board, and print the projector URL (`/board?code=…`)
+  beside the join URL on every /teach frame. (`gate-l2-teacher`, sessions
+  `BOWX6P`, `BOW36Y`.)
+- **B2 — Teacher console must offer a visible resume.** A fresh /teach load in a
+  new tab or a second machine shows only "START A SESSION" while the live code
+  and key sit in localStorage. Add a resume affordance (auto-resume plus a code
+  + key entry). Failing this, one stray navigation ends the class.
+  (`gate-l2-teacher`, `BOWD9U`; `readme-l2l3` known gap, last bullet.)
+- **B3 — WATCH FOR must not present an auto-settled desk as a free-rider.**
+  Split "Put nothing back, two weeks running" into desks that *chose* 0% and
+  desks that were auto-settled, and add a cumulative "has never locked a week"
+  flag to the desk card, with different director copy for each. As shipped, the
+  panel directs the teacher to make a never-participating pair the protagonist
+  of the argument. (`gate-l2-teacher`, `BOW3HE`, `BOW36Y`.)
+- **B4 — ADAPT's third question must be answerable from the projector.** Its
+  answer key cites the WHAT YOU GAVE, WHAT YOU GOT board, which is REVEAL stage
+  2 and cannot be recalled — there is no reveal-back control. Either add a
+  reveal-back / recall control, or put the give-and-take figures on the ADAPT
+  frame. (`gate-l2-teacher`, `BOW36Y`.)
+- **B5 — The rehearsal the product prescribes must rehearse SYNTHESIS and WATCH
+  FOR.** With zero desks, WATCH FOR never renders and the five-card deck
+  collapses to one placeholder. Ship an explicit rehearsal mode that renders the
+  five card *templates* and sample WATCH FOR groups over stand-in figures,
+  clearly marked as rehearsal, or amend the landing-page promise so it does not
+  claim the whole period is rehearsable. (`gate-l2-teacher`, `BOWPPH`.)
+
+### Non-blocking
+
+- **N1 —** "THE SEVEN REVEALS" heading over a five-stage list, on every REVEAL
+  /teach frame.
+- **N2 —** SYNTHESIS TIME CUT names a card title ("YOU DON'T PLAY ALONE") that
+  does not exist in the live deck; say "card 1, SHARED PRODUCT" or retitle.
+- **N3 —** No elapsed clock on /teach against absolute-minute TIME CUT triggers.
+  A session timer started at the first Advance would make every cut usable.
+- **N4 —** Pause and Freeze need one line each on the teacher surface saying
+  what they are for.
+- **N5 —** `◗Close week N` has no confirmation when 0 desks are locked, unlike
+  Advance and Jump to REVEAL which both carry consequence-stating confirms.
+- **N6 —** Reveal stage 5 board copy: "down 1 points".
+- **N7 —** "COVERED" needs one line of teacher-facing explanation when a late
+  desk claims a club mid-lesson.
+
+---
+
+**TRANSFER: NOT READY**
+
+Formal dissent is recorded in advance of any contrary decision on B1 and B4: a
+projector that can silently show another class's closing card, and a scripted
+discussion question whose evidence cannot be put on screen, are both
+teacher-transfer failures regardless of how well the rest of the console
+directs.
+
+---
+
+## RE-CHECK AFTER L2 REPAIR
+
+Owning-critic confirm-or-refute of dissent `teacher-l2-not-ready`, Boss run
+`m2-quality-war`, assignment `recheck-l2-teacher`. Cold-style: the only repo
+file read before driving the product was `runtime/scripts/e2e-m2l2.cjs`
+(mechanics only). Live server PORT 4383 (`npm run build` run this session).
+Sessions driven: `BOWDV7` (zero-student rehearsal, all 8 phases, synthesis
+paged), `BOWHYM` (7 desks, 3 weeks, desk 6 chose 0% twice, desk 7 never locked
+once, through SYNTHESIS), `BOW3FR` (mid-session new-tab probe), `BOWT7F`
+(0-locked close-week probe + second-machine reopen), `BOWRXH` (board code-entry
+probe). Zero console errors and zero pageerrors on every surface in every
+session. Evidence id: `recheck-l2-teacher` (observed).
+
+### The five repros
+
+**B1 — bare `/board`. FIXED.** Observed: bare `http://localhost:4383/board`
+loaded in a fresh browser context while `BOWHYM` was live renders a
+`WHICH ROOM?` state with a `#boardCodeInput` field — "This projector is not
+pointed at a room yet. Type your class code" — and no session content. Entering
+the live code puts the correct room up and rewrites the URL to `?code=`, so a
+projector refresh keeps the room (`BOWRXH`). Every `/teach` frame in every
+phase, including LOBBY, now prints `PUT THE PROJECTOR ON
+HTTP://LOCALHOST:4383/BOARD?CODE=<code>` beside the join line (11 of 11
+captured frames).
+
+**B2 — teacher console outside its tab. FIXED.** Observed in `BOW3FR`: a new
+tab in the same browser, opened mid-PLAY with `bow-teach-session-code` and
+`bow-teach-session-key` in localStorage, renders the live room directly —
+`LIVE · V5`, `2 JOINED`, `DIRECTING PLAY`, full control column, `#room` not
+hidden. A genuinely fresh context correctly falls back to START A SESSION plus
+a `Reopen a session from another device` form; driven with code + key it
+reopened `BOWT7F` at PLAY on the right code.
+
+**B3 — never-locked vs chose-zero. FIXED, both limbs.** Observed in `BOWHYM`
+at REVEAL: desk 7, which never locked once, is its own WATCH FOR group — "Has
+never locked a week — every week settled automatically … they did not choose
+0%, they chose nothing. Go to the desk. Do NOT use them on the gave/got board
+and do not name them in the argument: they are not the free-rider case, they
+are the pair you have not reached yet." The free-rider group is now titled
+"CHOSE to put nothing back, two weeks running" and contained only desks 4 and 6,
+both of which locked at 0%. The group also fires during PLAY, not only at
+REVEAL. The desk card itself carries the cumulative flag: `Desk 7 · Indiana …
+never locked a week — 2 settled AUTO`.
+
+**B4 — ADAPT question 3. FIXED.** Observed in `BOWHYM`: the answer key now ends
+"You do not need the reveal board back for this — every pair has its own two
+numbers on its own screen right now, under WHAT YOU GAVE, WHAT YOU GOT. Tell
+them to read their own." Verified against the students' actual ADAPT screens:
+desk 1 carries WHAT YOU GAVE, WHAT YOU GOT with both figures ($893,640 out /
+$934,142 in, net $40,502) plus the by-choice split ($188,992 / $127,602 /
+$78,052); desk 7 carries the same panel with $0 in the by-choice rows. The
+question is answerable from the surface the pair is already holding.
+
+**B5 — the prescribed rehearsal. FIXED.** Observed in `BOWDV7` with zero desks:
+WATCH FOR renders at every phase, prefixed `REHEARSAL — this panel is a sample,
+because nobody has joined`, with sample groups including the big-Draw host, the
+collapsed-Draw host, the never-locked desk and the CHOSE-zero desk, each with
+its live director copy. SYNTHESIS pages five cards, not one placeholder —
+`card 1 of 5 — REHEARSAL — SHARED PRODUCT` through `card 5 of 5 — REHEARSAL —
+AND ONE MORE THING` — and the board renders each card in full with the
+`REHEARSAL` marker on the frame. The rehearsal labelling disappears once real
+desks exist (`BOWHYM` groups carry no prefix).
+
+### Non-blocking notes
+
+- **N1 FIXED.** The REVEAL heading now reads `THE 5 REVEALS`; zero occurrences
+  of "SEVEN REVEALS" across all captured frames.
+- **N2 FIXED.** The SYNTHESIS TIME CUT now reads "Past minute 55? Say card 1,
+  SHARED PRODUCT, and card 2, SPILLOVER, and stop."
+- **N5 FIXED.** `◗Close week 1 (0/3 locked)` now raises a consequence-stating
+  confirm — "Nobody has locked in yet — 0 of 3 desks. This is the week bell …
+  every desk that has not locked settles at its club's house price with nothing
+  reinvested, marked AUTO. Ring it anyway?" — and dismissing it leaves the week
+  open (`BOWT7F`).
+- N3, N4, N7 NOT re-verified as fixed: no elapsed clock appeared on any
+  `/teach` frame, and no Pause/Freeze or "COVERED" explanatory copy appeared.
+  Unchanged, still non-blocking.
+- N6 NOT VERIFIED this re-check — reveal stage 5 board copy was not sampled.
+
+### New, non-blocking, introduced by the repairs
+
+- **N8 — a mistyped code on `/board` strands the projector with no way back.**
+  Observed in `BOWRXH`: entering `BOWZZZ` navigates to `/board?code=BOWZZZ`,
+  which renders `CONNECTING… / reconnecting…` indefinitely (probed to t+29s),
+  with the code field gone and no "no such room" state. Strictly safer than the
+  old silent cross-session attach, and `/teach` now prints the correct URL, so
+  the teacher has a visible recovery — but the field should come back on an
+  unknown code.
+- **N9 — the teacher key is never displayed, and the reopen panel says it was.**
+  Observed: `runtime/src/client/teach/index.html:90` reads "It is shown once, on
+  the console that created the session," and `#reopenKey` asks the teacher to
+  "paste the key issued when the session was created." No `/teach` frame in any
+  session printed the key; it is only written to localStorage
+  (`runtime/src/client/teach/main.ts:132-134`). The same-machine path is covered
+  by auto-resume, so this is not blocking, but the second-machine form is
+  unusable and its instruction is false.
+
+**TRANSFER: READY**
+
+**DISSENT teacher-l2-not-ready: DISCHARGED**

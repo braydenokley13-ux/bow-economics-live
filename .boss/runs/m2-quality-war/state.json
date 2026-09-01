@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:37:37.828Z",
+  "updatedAt": "2026-09-01T06:43:12.540Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2237,7 +2237,8 @@
         "l2-tests-r1",
         "l2-e2e-r1",
         "e2e-l3-flake-note",
-        "recheck-l2-sr"
+        "recheck-l2-sr",
+        "recheck-l2-teacher"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3918,6 +3919,24 @@
       },
       "recordedAt": "2026-09-01T06:37:26.268Z",
       "actor": "sports-reality-director"
+    },
+    "recheck-l2-teacher": {
+      "id": "recheck-l2-teacher",
+      "wave": 3,
+      "kind": "teacher-transfer-report",
+      "label": "L2 teacher re-check: B1-B5 all FIXED live (board code entry, projector URL on every teach frame, resume-not-strand, free-riders = 0%-lockers only with never-locked separated, Q3 repointed to live panel, rehearsal renders fully). TRANSFER: READY. Two new non-blocking (mistyped board code strands CONNECTING; teacher-key copy claims shown-once falsely)",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l2-teacher--GATE_L2_TEACHER.md",
+      "sha256": "930ca9c34e1488b6a706445e8b59ca60aeeedafa559318302a08fa22aa37225b",
+      "size": 26540,
+      "metadata": {
+        "tags": [
+          "teacher-transfer",
+          "wave-3",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T06:43:12.278Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "claims": {
@@ -4415,9 +4434,12 @@
         "gate-l2-teacher"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T05:26:37.104Z",
-      "actor": "teacher-transfer-critic"
+      "actor": "teacher-transfer-critic",
+      "resolution": "Owning critic reproduced all five original repros against the repaired build: bare /board asks WHICH ROOM with a code field; every /teach frame prints the projector URL; a new tab auto-resumes; never-locked desks separated from chosen free-riders with explicit do-not-use guidance; ADAPT Q3 repoints to the pair's live panel; the rehearsal renders WATCH FOR and full synthesis. Explicit lines: TRANSFER: READY; DISSENT teacher-l2-not-ready: DISCHARGED. Two new non-blocking items recorded (N8/N9). GATE_L2_TEACHER.md re-check section.",
+      "resolvedAt": "2026-09-01T06:43:12.540Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l2-teacher-dissent": {
       "id": "gate-l2-teacher-dissent",
@@ -4533,11 +4555,11 @@
     "agentsActivated": 54,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 82,
+    "evidenceRecorded": 83,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 254,
-  "eventHead": "2f5a8d449518a91edffaa07bb8809603ff9bd916e8117e826b811c1a30a42016",
+  "eventCount": 256,
+  "eventHead": "7f4077bf7620a166e9bc63b3591ecf6a18cf13efeba00403ff2a32ae029ba5c0",
   "warnings": []
 }

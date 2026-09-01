@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `254:2f5a8d449518a91edffaa07bb8809603ff9bd916e8117e826b811c1a30a42016`  
-Updated: 2026-09-01T06:37:37.828Z
+Event head: `256:7f4077bf7620a166e9bc63b3591ecf6a18cf13efeba00403ff2a32ae029ba5c0`  
+Updated: 2026-09-01T06:43:12.540Z
 
 ## Founder intent
 
@@ -96,6 +96,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - l2-e2e-r1 — e2e — L2 e2e: fold assertions at 1024x600, truncation scans, 22 frames x 2 shapes
 - e2e-l3-flake-note — analysis — M1 L3 e2e flake attribution: reproduces at pre-L2 checkpoint 5cf1a58 (1/6) and HEAD (3/6), same failure mode — pre-existing faPlayMounted remount race, not a wave regression; disposition + bounded fix path recorded
 - recheck-l2-sr — sports-reality-report — L2 SR re-check: BLOCKING-1 repaired (per-club identityLine only via deskIdentity, verified true per club) and BLOCKING-2 repaired (gate shares 18.9-25.0% recomputed, hedged claims hold). MODERATE-3 retracted, MODERATE-4 reconciled. New MINOR: golden-state superlative shared by four tied clubs. Staleness minors carried. Dissent discharged
+- recheck-l2-teacher — teacher-transfer-report — L2 teacher re-check: B1-B5 all FIXED live (board code entry, projector URL on every teach frame, resume-not-strand, free-riders = 0%-lockers only with never-locked separated, Q3 repointed to live panel, rehearsal renders fully). TRANSFER: READY. Two new non-blocking (mistyped board code strands CONNECTING; teacher-key copy claims shown-once falsely)
 
 ## Claim ledger
 
@@ -107,7 +108,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - w3-projector-final-dissent — undefined/undefined/open — undefined
 - sr-l2-anchor-copy — sports-reality/blocking/resolved — L2 blocking pair: (1) each market profile's anchor-club sentence renders verbatim under 15 other real clubs — Detroit/Chicago/Philly/Boston read 'the biggest market in American sports', Denver/Utah/Portland/Sacramento read 'the 2025 champions', Lakers read 'OWNS its building' (AEG owns Crypto.com Arena) — false real-world claims on student surfaces in any class of nine; (2) MODELED_DOLLARS_LINE's two universals are falsified by desks' own projector bars (Boston/Lakers local media > national in week 1; gate share 8% at dial extremes vs 'a fifth to a quarter'). Plus: header 'NY highest gate' claim fails against shared curves and contradicts the README. GATE_L2_SR.md.
 - gate-l2-sr-dissent — undefined/undefined/open — undefined
-- teacher-l2-not-ready — teacher-transfer/blocking/open — L2 TRANSFER NOT READY on five blocking findings, worst two: B1 — a bare /board URL (no ?code) silently renders a DIFFERENT session's content (observed: a previous class's COMPLETE synthesis card), with no code entry on /board and /teach never printing the projector URL — a live-class wrong-projector hazard; B4 — ADAPT question 3's answer key cites the WHAT YOU GAVE/GOT board (REVEAL stage 2) with no reveal-back control. Plus B2 (stranded new /teach tab), B3 (WATCH FOR protagonist never locked, no auto signal), B5 (prescribed rehearsal renders no WATCH FOR, collapses synthesis). GATE_L2_TEACHER.md.
+- teacher-l2-not-ready — teacher-transfer/blocking/resolved — L2 TRANSFER NOT READY on five blocking findings, worst two: B1 — a bare /board URL (no ?code) silently renders a DIFFERENT session's content (observed: a previous class's COMPLETE synthesis card), with no code entry on /board and /teach never printing the projector URL — a live-class wrong-projector hazard; B4 — ADAPT question 3's answer key cites the WHAT YOU GAVE/GOT board (REVEAL stage 2) with no reveal-back control. Plus B2 (stranded new /teach tab), B3 (WATCH FOR protagonist never locked, no auto signal), B5 (prescribed rehearsal renders no WATCH FOR, collapses synthesis). GATE_L2_TEACHER.md.
 - gate-l2-teacher-dissent — undefined/undefined/open — undefined
 - econ-l2-evidence-surfaces — economic-truth/blocking/open — L2's mechanism is real but its evidence surfaces mislead: (B1) the give/take board is confounded with inherited Draw — corr(gave, startDraw)=0.959 vs corr(gave, meanShare)=0.644, so the room's biggest 'giver' spent $0 and a max-reinvest desk reads as a taker; it feeds ADAPT Q3, the SPILLOVER synthesis card (names a desk, credits spending it never did), and harness P3's free-riding limb (reproduces at zero reinvest). (B3) smallMarketPathFrom prints 'it won it on WHO WAS VISITING' without controlling for price ($110-vs-$30 reachable case) — Candidate A's killer defect class rebuilt. Also blocking: two false printed rules ('cannot turn Draw back into cash' — $25,912/point; 'about a fifth keeps your Draw' — measured 5-10%, unachievable above 85). Week-3 dominated reinvest disclosed at dial, unhandled by REVEAL 5. Do not advance or build L3 while B1/B3 stand. GATE_L2_ECON.md.
 - gate-l2-econ-dissent — undefined/undefined/open — undefined
