@@ -2719,17 +2719,30 @@ body.hl-has-lockbar main {
 .hl-decide > .hl-col-decide .fh-dials { margin-top: 8px !important; padding: 10px 12px !important; }
 .hl-decide > .hl-col-decide .hl-slate-block { margin-top: 8px !important; }
 .hl-decide > .hl-col-decide .hl-matchup { grid-template-columns: 1fr; gap: 4px; }
-.hl-decide > .hl-col-decide .hl-matchup-side { display: grid; grid-template-columns: 92px 1fr auto; gap: 6px; align-items: baseline; padding: 4px 8px; }
-.hl-decide > .hl-col-decide .hl-matchup-label { font-size: 9.5px; grid-row: 1; }
-.hl-decide > .hl-col-decide .hl-matchup-club { font-size: 15px; grid-row: 1; }
-.hl-decide > .hl-col-decide .hl-matchup-who { font-size: 10px; grid-row: 1; text-align: right; }
-.hl-decide > .hl-col-decide .hl-matchup-draw { grid-column: 1 / -1; grid-row: 2; margin-top: 0; font-size: 11px; }
+/* One line per club: label, club, who is running it, its Draw. */
+.hl-decide > .hl-col-decide .hl-matchup-side { display: grid; grid-template-columns: 72px auto 1fr auto; gap: 6px; align-items: baseline; padding: 3px 8px; }
+.hl-decide > .hl-col-decide .hl-matchup-label { font-size: 9.5px; grid-row: 1; grid-column: 1; }
+.hl-decide > .hl-col-decide .hl-matchup-club { font-size: 15px; grid-row: 1; grid-column: 2; }
+.hl-decide > .hl-col-decide .hl-matchup-who { font-size: 10px; grid-row: 1; grid-column: 3; }
+.hl-decide > .hl-col-decide .hl-matchup-draw { grid-row: 1; grid-column: 4; margin-top: 0; font-size: 11px; gap: 4px; }
 .hl-decide > .hl-col-decide .fh-slate-row {
   font-size: 11px; padding: 2px 5px; gap: 6px; white-space: nowrap;
   grid-template-columns: 62px 1fr 1fr;
 }
 .hl-decide > .hl-col-decide .fh-slate { gap: 3px; margin-top: 3px; }
-.hl-decide > .hl-col-decide .fh-price-readout { font-size: 26px; margin: 2px 0; }
+/* The decision column has to hold the whole decision set above a 600px
+   Chromebook fold in the WORST frame the lesson can produce, not the average
+   one: the desk HOSTING the departed star gets a three-line shock card, which
+   is 15px taller than every other desk's, and that desk is exactly the one with
+   the most to decide. Everything here is sized against that frame. */
+.hl-decide > .hl-col-decide .fh-price-readout { font-size: 22px; margin: 1px 0; }
+.hl-decide > .hl-col-decide .fh-dial { margin-top: 2px; }
+.hl-decide > .hl-col-decide .price-dial-ends { margin-top: 1px; }
+.hl-decide > .hl-col-decide .hl-week-card { padding: 7px 10px; }
+.hl-decide > .hl-col-decide .hl-matchup-side { padding: 2px 8px; }
+.hl-decide > .hl-col-decide .fh-slate { gap: 2px; }
+.hl-decide > .hl-col-decide .fh-slate-row { padding: 1px 5px; }
+.hl-decide > .hl-col-decide .hl-shock { padding: 4px 8px; margin-top: 5px; line-height: 1.25; }
 .hl-decide > .hl-col-decide .hl-reinvest-rule { font-size: 11.5px; line-height: 1.3; margin-top: 5px; }
 .hl-decide > .hl-col-decide .fh-blind-note { margin-top: 6px; font-size: 11px; }
 .hl-decide > .hl-col-decide .hl-shock { font-size: 11.5px; line-height: 1.3; padding: 5px 8px; margin-top: 6px; }

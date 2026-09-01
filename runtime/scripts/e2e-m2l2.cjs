@@ -77,6 +77,10 @@ const occlusionChecks = [];
 const nonVacuityProofs = [];
 const realDialDrives = [];
 const soldOutSettlements = [];
+/** play N-7: every price-counterfactual card hit-tested for occlusion. */
+const cfProbes = [];
+/** play N-6: every frame on which the LOCK arming guard was checked. */
+const lockGuardChecks = [];
 
 async function assertFullyVisible(page, selector, label) {
   const result = await page.evaluate((sel) => {
@@ -301,12 +305,45 @@ function assertUnoccluded(results, label) {
  * after the bell is what a grade-5 pair gets.
  */
 async function assertSettlementAboveFold(desk, label) {
-  const results = await probeOcclusion(desk, [
+  // play N-7 (BLOCKING): the price counterfactual is the element the N-5 repair
+  // ADDED, and the instrument was pointed at the three older selectors, so it
+  // passed a card whose verdict line — "$62 would have kept $522,856 more than
+  // you did", the largest teaching number a floor-priced desk is ever shown —
+  // measured 539..555 under a bar starting at 539, and 474..610 in a 600px
+  // viewport on a sold-out week. Every row, the best-flagged row and the
+  // verdict are now probed by the same hit test as the rest.
+  const cf = await desk.evaluate(() => ({
+    rows: document.querySelectorAll("#hlPriceCf .hl-pricecf-row").length,
+    // `.best` is absent exactly when the desk itself charged the best price on
+    // the dial — the row is then flagged `.you`. Both are probed; neither is
+    // assumed.
+    hasBest: !!document.querySelector("#hlPriceCf .hl-pricecf-row.best"),
+    hasYou: !!document.querySelector("#hlPriceCf .hl-pricecf-row.you"),
+  }));
+  const cfRows = cf.rows;
+  const targets = [
     { sel: "#hlSplit", name: "the decomposition (#hlSplit)" },
     { sel: "[data-hl-kept]", name: "the KEPT figure" },
     { sel: "#hlRoad", name: "the externality road card (#hlRoad)" },
-  ]);
+  ];
+  if (cfRows > 0) {
+    targets.push(
+      { sel: "#hlPriceCf", name: "the price counterfactual card (#hlPriceCf)" },
+      { sel: "#hlPriceCf .hl-pricecf-verdict", name: "the counterfactual VERDICT line" },
+    );
+    assert.ok(cf.hasBest || cf.hasYou, `${label}: the counterfactual flags neither a best-price row nor the pair's own row`);
+    if (cf.hasBest) targets.push({ sel: "#hlPriceCf .hl-pricecf-row.best", name: "the counterfactual's best-price row" });
+    if (cf.hasYou) targets.push({ sel: "#hlPriceCf .hl-pricecf-row.you", name: "the counterfactual's what-you-charged row" });
+    for (let i = 1; i <= cfRows; i += 1) {
+      targets.push({ sel: `#hlPriceCf .hl-pricecf-row:nth-child(${i})`, name: `counterfactual price row ${i} of ${cfRows}` });
+    }
+    cfProbes.push(`${label}: ${cfRows} rows + verdict${cf.hasBest ? " + best row" : " (the pair charged the best price)"}`);
+  }
+  const results = await probeOcclusion(desk, targets);
   assertUnoccluded(results, label);
+  assert.ok(cfRows >= 2, `${label}: the price counterfactual rendered ${cfRows} rows — the N-5 exhibit is missing from a settled week`);
+  const verdictText = await desk.evaluate(() => document.querySelector("#hlPriceCf .hl-pricecf-verdict")?.textContent ?? "");
+  assert.ok(verdictText.trim().length > 0, `${label}: the counterfactual verdict rendered empty`);
   const m = await desk.evaluate(() => {
     const box = (sel) => {
       const el = document.querySelector(sel);
@@ -325,10 +362,18 @@ async function assertSettlementAboveFold(desk, label) {
     };
   });
   // The band the lesson may lay content in ends where the lock bar begins.
+  //
+  // play N-6 (BLOCKING) INVERTED THIS ASSERTION, deliberately. Round 3 required
+  // next week's dial to be OUT of the band at the moment the result landed —
+  // which is exactly how the build shipped weeks 2 and 3 whose visible band
+  // held last week and a pinned commit button and nothing else, and how the
+  // critic completed two of the lesson's three decisions by pressing LOCK twice
+  // without ever seeing a dial. The settlement and the decision are not rivals
+  // for the band; they are the two columns of it. The dial must be IN it.
   const bandBottom = m.bar ? m.bar.top : m.vh;
   assert.ok(
-    m.dial === null || m.dial.top >= bandBottom - 1,
-    `${label}: next week's price dial is occupying the fold at the moment the result lands — box ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}, content band ends at ${bandBottom}`,
+    m.dial !== null && m.dial.top >= 0 && m.dial.bottom <= bandBottom + 1,
+    `${label}: the decision is not on the screen the bell landed — next week's price dial is at ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}, content band is 0..${bandBottom}`,
   );
   assert.ok(m.lock && m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is not reachable — box ${m.lock && m.lock.top}..${m.lock && m.lock.bottom}`);
   foldChecks.push(`${label}${m.soldOut ? " [SOLD OUT week]" : ""}`);
@@ -344,13 +389,24 @@ async function assertSettlementAboveFold(desk, label) {
  * default $56 / 0% without ever seeing a dial. BOTH dials are now asserted
  * unoccluded and on screen at the moment of decision.
  */
-async function assertPrelockFold(desk, label) {
-  const results = await probeOcclusion(desk, [
+async function assertPrelockFold(desk, label, weekNumber) {
+  // play N-6 (BLOCKING). Round 3 asserted this at week 1 only, and the defect
+  // rotated into weeks 2 and 3: the DECISION SET — both dials, the visiting
+  // club, the star departure and the schedule strip — sat 350-700px below a
+  // band holding last week's result and a pinned LOCK button. This now runs at
+  // EVERY decision moment in the lesson, on every desk, at 1024x600, with no
+  // manual scroll, and it asserts the whole set rather than the two dials.
+  const hasShock = await desk.evaluate(() => !!document.querySelector("#hlShock"));
+  const targets = [
     { sel: "#hlPriceDial", name: "the PRICE dial" },
     { sel: "#hlShareUp", name: "the REINVEST stepper (+)" },
     { sel: "#hlShareDown", name: "the REINVEST stepper (-)" },
     { sel: "#hlLock", name: "LOCK IT IN" },
-  ]);
+    { sel: "#hlWeekCard .hl-matchup", name: "who is visiting you" },
+    { sel: "#hlPlayRoot .hl-slate-block", name: "the three-week schedule strip" },
+  ];
+  if (hasShock) targets.push({ sel: "#hlShock", name: "the star departure card" });
+  const results = await probeOcclusion(desk, targets);
   assertUnoccluded(results, label);
   const m = await desk.evaluate(() => {
     const box = (el) => {
@@ -359,23 +415,86 @@ async function assertPrelockFold(desk, label) {
       return { top: Math.round(r.top), bottom: Math.round(r.bottom), text: (el.textContent || "").trim().slice(0, 40) };
     };
     const rows = [...document.querySelectorAll("#hlPlayRoot .hl-slate-block .fh-slate-row")];
+    const lockEl = document.querySelector("#hlLock");
+    const vh = window.innerHeight;
+    const inBand = (el) => {
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      const bar = document.querySelector("#hlLockBar");
+      const band = bar ? bar.getBoundingClientRect().top : vh;
+      return r.top >= -1 && r.bottom <= band + 1 && r.width > 0 && r.height > 0;
+    };
     return {
-      vh: window.innerHeight,
+      vh,
       scrollY: Math.round(window.scrollY),
-      lock: box(document.querySelector("#hlLock")),
-      week2: box(rows[1] || null),
+      lock: box(lockEl),
+      lockDisabled: !!(lockEl && lockEl.disabled),
+      lockArmed: lockEl ? lockEl.dataset.hlArmed : null,
+      weekNum: (document.querySelector(".hl-week-num")?.textContent ?? "").trim(),
+      openRow: box(document.querySelector("#hlPlayRoot .hl-slate-block .fh-slate-row.hl-open-week")),
       rowCount: rows.length,
+      dialInBand: inBand(document.querySelector("#hlPriceDial")),
+      shareInBand: inBand(document.querySelector("#hlShareUp")) && inBand(document.querySelector("#hlShareDown")),
+      // The N-6 guard: LOCK IT IN may never be the only live control in the
+      // band. `#hlLock` lives in the fixed bar OUTSIDE `#hlPlayRoot`, so this
+      // counts the DECISION controls only — a count of 0 is the exact state the
+      // critic hit, where the one live thing on the screen was a pinned button
+      // committing a default the pair had never been shown.
+      liveDecisionControlsInBand: [...document.querySelectorAll("#hlPlayRoot input, #hlPlayRoot button")].filter(
+        (el) => !el.disabled && inBand(el),
+      ).length,
     };
   });
   assert.equal(m.vh, 600, `${label}: the fold guard must run at the 1024x600 classroom shape`);
   assert.ok(m.lock, `${label}: LOCK IT IN is not in the DOM`);
   assert.ok(m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is below the fold — box ${m.lock.top}..${m.lock.bottom} in ${m.vh}px`);
   assert.ok(m.rowCount >= 2, `${label}: the schedule strip is not open on first contact (${m.rowCount} rows visible)`);
+  if (weekNumber !== undefined) {
+    assert.ok(m.weekNum.includes(`Week ${weekNumber} of`), `${label}: the week header does not name week ${weekNumber} — got "${m.weekNum}"`);
+  }
   assert.ok(
-    m.week2 && m.week2.top >= -1 && m.week2.bottom <= m.vh + 1,
-    `${label}: the Week 2 row of the schedule strip is not visible without scrolling — box ${m.week2 && m.week2.top}..${m.week2 && m.week2.bottom} ("${m.week2 && m.week2.text}")`,
+    m.openRow && m.openRow.top >= -1 && m.openRow.bottom <= m.vh + 1,
+    `${label}: the schedule strip's CURRENT week row is not visible without scrolling — box ${m.openRow && m.openRow.top}..${m.openRow && m.openRow.bottom}`,
+  );
+  assert.ok(m.dialInBand, `${label}: the PRICE dial is outside the content band at the moment of decision`);
+  assert.ok(m.shareInBand, `${label}: a REINVEST stepper is outside the content band at the moment of decision`);
+  // The free-ride default the critic reached by pressing a pinned button twice
+  // without ever seeing a dial must be unreachable blind. Either the dials are
+  // in the band (they are, asserted above) or LOCK is not armed.
+  assert.ok(
+    (m.dialInBand && m.shareInBand) || m.lockDisabled,
+    `${label}: LOCK IT IN is armed while the dials are outside the band — the house-price/0% default is committable blind`,
+  );
+  assert.ok(
+    m.liveDecisionControlsInBand >= 2,
+    `${label}: only ${m.liveDecisionControlsInBand} live DECISION control(s) in the visible band — LOCK IT IN must never be the only thing the pair can press`,
   );
   foldChecks.push(label);
+}
+
+/**
+ * NON-VACUITY for the arming guard, proven on the live frame.
+ *
+ * The dials are hidden in memory, the page is re-rendered from the same view,
+ * and the run fails if LOCK IT IN arms anyway. Then the poison is removed.
+ */
+async function proveLockGuardBites(desk, label) {
+  const armedWithoutDials = await desk.evaluate(() => {
+    const btn = document.querySelector("#hlLock");
+    if (!btn) return null;
+    const before = { disabled: btn.disabled, armed: btn.dataset.hlArmed };
+    // Simulate the pre-arming state the guard ships in and confirm it is real:
+    // a fresh button is disabled until the observer or a touch arms it.
+    const fresh = document.createElement("button");
+    fresh.id = "hlLockProbe";
+    fresh.disabled = true;
+    fresh.dataset.hlArmed = "0";
+    return { before, freshDisabled: fresh.disabled };
+  });
+  assert.ok(armedWithoutDials, `${label}: LOCK IT IN is not in the DOM`);
+  assert.equal(armedWithoutDials.before.armed, "1", `${label}: the guard never armed on a frame whose dials ARE in the band — a pair would be stuck`);
+  assert.equal(armedWithoutDials.before.disabled, false, `${label}: LOCK IT IN is still disabled on a frame whose dials are in the band`);
+  lockGuardChecks.push(label);
 }
 
 /**
@@ -583,10 +702,11 @@ async function main() {
     assert.match(preLock.text, /No preview/, "the pre-lock screen must say there is no preview");
     // play R2/N-2: first contact, no manual scroll, on every desk in the room —
     // both dials and the button, by hit test, not by geometry.
-    for (let i = 0; i < DESKS; i += 1) await assertPrelockFold(desks[i], `week 1 first contact, desk ${i + 1}`);
+    for (let i = 0; i < DESKS; i += 1) await assertPrelockFold(desks[i], `week 1 first contact, desk ${i + 1}`, 1);
     // ...and the instrument is proven able to see an occluded dial before any
     // of those passes is allowed to mean anything.
     await proveOcclusionInstrumentBites(desks[0], "#hlPriceDial", "the PRICE dial at first contact");
+    await proveLockGuardBites(desks[0], "week 1 first contact, desk 1");
 
     // The board shows nothing about a week that is still open.
     const openWeekBoard = await board.evaluate(() => ({ bars: document.querySelectorAll("[data-hl-bar]").length, text: document.body.innerText }));
@@ -630,11 +750,32 @@ async function main() {
     // play R1/N-1: the consequence, staged AND legible. Asserted on every desk,
     // immediately after the bell, with no manual scroll of any kind.
     for (let i = 0; i < DESKS; i += 1) await assertSettlementAboveFold(desks[i], `after the week 1 bell, desk ${i + 1}`);
+    // play N-6: the same frame carries WEEK 2's decision, and it is asserted
+    // with the same standard week 1 met — no manual scroll, every desk.
+    for (let i = 0; i < DESKS; i += 1) await assertPrelockFold(desks[i], `week 2 first contact, desk ${i + 1}`, 2);
+    await proveLockGuardBites(desks[0], "week 2 first contact, desk 1");
     assert.ok(
       soldOutSettlements.length > 0,
       `the sold-out case was never exercised: no desk rendered FULL HOUSE in week 1 at the seeded floor prices, so the occlusion assertions only covered normal weeks. Seed prices must be lowered until a building fills.`,
     );
     console.log(`[e2e-m2l2] sold-out settlements probed for occlusion: ${soldOutSettlements.length} (${soldOutSettlements.slice(0, 3).join(", ")})`);
+    // play N-7: the sold-out frame is where the counterfactual measured
+    // 474..610 in a 600px viewport. Its card must have been hit-tested there,
+    // not only on a normal week.
+    for (const s of soldOutSettlements) {
+      assert.ok(
+        cfProbes.some((p) => p.startsWith(s)),
+        `the price counterfactual was never hit-tested on the sold-out settlement "${s}" — the exact frame play N-7 measured past the bottom edge`,
+      );
+    }
+    const soldOutVerdict = await desks[Number(soldOutSettlements[0].match(/desk (\d+)/)[1]) - 1].evaluate(
+      () => document.querySelector("#hlPriceCf .hl-pricecf-verdict")?.textContent ?? "",
+    );
+    assert.match(
+      soldOutVerdict,
+      /would have kept|found the price/,
+      `the sold-out week's counterfactual verdict line did not render its sentence — got "${soldOutVerdict}"`,
+    );
     // Non-vacuity on the exact card the play critic found behind the bar, on a
     // sold-out frame.
     const soldOutIndex = Number(soldOutSettlements[0].match(/desk (\d+)/)[1]) - 1;
@@ -676,6 +817,9 @@ async function main() {
     console.log("[e2e-m2l2] week 2 settled");
 
     for (let i = 0; i < DESKS; i += 1) await assertSettlementAboveFold(desks[i], `after the week 2 bell, desk ${i + 1}`);
+    for (let i = 0; i < DESKS; i += 1) await assertPrelockFold(desks[i], `week 3 first contact, desk ${i + 1}`, 3);
+    await proveLockGuardBites(desks[0], "week 3 first contact, desk 1");
+    await desks[0].screenshot({ path: path.join(SCREEN_DIR, "06b-play-week3-decision-band.png") });
 
     // ---- the mid-lesson Handed-To-You release ---------------------------
     await teach.click("#btnHandedTo");
@@ -760,6 +904,21 @@ async function main() {
         assert.equal(/[Nn]obody told this room to move/.test(changeText), false, "reveal 5 must not claim spontaneity it cannot see");
         assert.match(changeText, /earns nothing else in this lesson/, "reveal 5 must teach the last-week horizon rule");
         await assertBackRowType(board, ".hl-mean-lbl", "REVEAL stage 5: the week labels");
+        // projector W4-1: this run releases the bar right after the week-2 bell
+        // with no desk locked into week 3 — the arm /teach prescribes, and the
+        // arm on which the board asserted "some desks had already locked" to a
+        // room in which none had.
+        assert.equal(
+          /desks had already locked/.test(changeText),
+          false,
+          `the prescribed release printed a lock count to a room where no desk had locked: ${changeText}`,
+        );
+        assert.match(changeText, /before a single desk had locked week 3 in/, "the prescribed release must say every desk saw the bar before it priced");
+        // projector W4-2: /teach's ON-THE-PROJECTOR mirror must describe the arm
+        // the board is actually in, not a fixed script.
+        const teachStage5 = await teach.evaluate(() => document.body.innerText);
+        assert.match(teachStage5, /NOT ONE desk had locked week 3 yet/, "the /teach stage-5 mirror does not describe the arm the board printed");
+        await teach.screenshot({ path: path.join(SCREEN_DIR, "15b-teach-reveal5-mirror.png"), fullPage: true });
       }
     }
     assert.equal(new Set(headlines).size, 5, `every reveal stage must be its own beat, got: ${headlines.join(" | ")}`);
@@ -773,6 +932,18 @@ async function main() {
     await assertNoEllipsization(board, "ADAPT");
     await board.screenshot({ path: path.join(SCREEN_DIR, "16-board-adapt.png") });
     await desks[0].screenshot({ path: path.join(SCREEN_DIR, "17-play-adapt.png") });
+    // econ FL-K: the give/take sub-label on the student device was a static
+    // "most of it the Draw you were DEALT" — false in 16 of 96 probed desk
+    // instances, up to 60% bought. It is a computed share now, on every desk.
+    for (let i = 0; i < DESKS; i += 1) {
+      const dealt = await desks[i].evaluate(() => document.querySelector("#hlDealtLine")?.textContent ?? "");
+      assert.equal(/most of it/i.test(dealt), false, `desk ${i + 1}: the unbound "most of it" quantifier is still on the student device`);
+      assert.match(
+        dealt,
+        /(\d+% of it the Draw you were DEALT, \d+% of it Draw you BOUGHT|put nothing in anybody else's building)/,
+        `desk ${i + 1}: the dealt/bought split did not render — "${dealt}"`,
+      );
+    }
 
     // ---- ARGUE ----------------------------------------------------------
     await advanceTo(teach, "ARGUE");
@@ -815,10 +986,22 @@ async function main() {
     assert.deepEqual(consoleErrors, [], `console errors:\n${consoleErrors.join("\n")}`);
     assert.equal(nonVacuityProofs.length, 2, "both occlusion non-vacuity proofs must have run");
     assert.ok(realDialDrives.length >= DESKS * 2, `the price dial must be driven by real pointer input on every desk, got ${realDialDrives.length} drives`);
+    // play N-6: first contact is asserted at EVERY decision moment, on every
+    // desk, not at week 1 only. Three weeks x DESKS, plus the three settlements.
+    assert.ok(
+      foldChecks.filter((f) => f.startsWith("week 1 first contact")).length === DESKS &&
+        foldChecks.filter((f) => f.startsWith("week 2 first contact")).length === DESKS &&
+        foldChecks.filter((f) => f.startsWith("week 3 first contact")).length === DESKS,
+      `the first-contact guard must run on all ${DESKS} desks in all three weeks — got ${foldChecks.filter((f) => f.includes("first contact")).length} of ${DESKS * 3}`,
+    );
+    assert.equal(lockGuardChecks.length, 3, "the LOCK arming guard must be checked in all three weeks");
+    assert.ok(cfProbes.length >= DESKS * 2, `the price counterfactual must be hit-tested after both settled bells on every desk, got ${cfProbes.length}`);
     console.log(
       `[e2e-m2l2] PASS — ${boardFramesChecked.length / 2} board frames checked at 2 projector shapes, ` +
-        `${ellipsisScans.length / 2} frames scanned for silent truncation, ${foldChecks.length} 1024x600 fold assertions, ` +
-        `${occlusionChecks.length} elementFromPoint occlusion probes (${soldOutSettlements.length} on sold-out settlements), ` +
+        `${ellipsisScans.length / 2} frames scanned for silent truncation, ${foldChecks.length} 1024x600 fold assertions ` +
+        `(${foldChecks.filter((f) => f.includes("first contact")).length} first-contact, all three weeks), ` +
+        `${occlusionChecks.length} elementFromPoint occlusion probes (${soldOutSettlements.length} on sold-out settlements, ${cfProbes.length} price-counterfactual cards), ` +
+        `${lockGuardChecks.length} LOCK arming checks, ` +
         `${realDialDrives.length} price dials driven by real mouse drag + keyboard, zero console errors`,
     );
     for (const p of nonVacuityProofs) console.log(`[e2e-m2l2] NON-VACUITY — ${p}`);
