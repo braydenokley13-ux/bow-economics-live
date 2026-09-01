@@ -742,3 +742,174 @@ and week-3 decision moments holds last week's result and a commit button, with b
 the visiting club and the schedule strip below it** — so two of three decisions are skippable
 at the surface the pair actually sees — and the new price counterfactual's verdict is behind
 the same pinned bar the instrument was built to police. Repairable; kill condition not met.
+
+---
+
+## W4 FINAL RULING
+
+Owning-critic FINAL ruling on dissent `play-l2-below-bar`. Run `m2-quality-war`, assignment
+`w4-play-final`. Played in real Chromium (`/opt/pw-browsers`) against the built runtime on
+**PORT 4393**; server killed, no listener remains on 4393, no `dist/server/index.js` process
+survives, no repository implementation state touched. Screenshots: `screens-l2-gate/w4f-*`.
+
+Evidence produced: `w4-play-final` (this section + `screens-l2-gate/w4f-*`). Evidence read as
+build claims, not verdicts: the W4 repair-1 claim (per-week two-column decision band, PIN
+auto-collapse, LOCK arming guard, 36 first-contact e2e assertions). Not read: other W4 critic
+verdicts — fresh context.
+
+**Sessions played** — all desks at the 1024×600 pairs-on-one-device default, teacher 1280×900,
+board 1600×900.
+
+| id | desks | line |
+| --- | --- | --- |
+| F-A | 6, three full weeks + REVEAL/ADAPT/ARGUE/SYNTHESIS | D1 me, adaptive off the counterfactual ($78 → $66 → $50) · D2 free-ride (house price, 0% ×3) · D3 **$10 floor ×3** (sold-out probe) · D4 house + 40% ×3 · D5 **$120 ceiling** · D6 **blind: presses LOCK only, never touches a dial, all three weeks** |
+| F-B | 3 | instrument pass: PIN card at join, bell-transition sampling at 120/300/700/1500 ms, scroll reachability, instant-relock probe |
+| F-C, F-D | 6 × 2 | reveal-ladder passes: bar released **after all six locked week 3**, and **immediately after the week-2 bell with zero desks locked** |
+
+Zero console errors on `/play`, `/teach`, `/board` in every session (observed).
+
+### (1) N-6 and N-7 — DISCHARGED
+
+**N-6 DISCHARGED (observed, 6 desks × 3 weeks, `scrollY 0`, no manual scroll of any kind).**
+The decision exists on the screen at every decision moment, not only at first contact. Week 3
+first contact, desk 1, the exact frame that failed last round:
+
+```
+evidence column (left, 608px)          decision column (right, 356px)
+decomposition   155..257               week card / VISITING YOU  83..237
+KEPT            262..301               star departure           187..229
+road card       306..351               schedule strip           245..313
+price cf        356..524               PRICE dial               372..394
+  cf verdict    454..485               REINVEST − / +           463..507
+                                       LOCK IT IN               548..592
+lock bar 539..600 — no lesson content is laid out in its band at any scroll position
+```
+
+Every one of those returns itself under `elementFromPoint` at centre, lower third and inset
+corner, on all six desks in all three weeks (`w4f-02`, `w4f-04`, `w4f-05`, `w4f-10`). The
+shape is identical week to week, so the pair learns the screen once. The PIN card is real at
+join (90..193, 103px, `w4f-21`) and is already collapsed by the time PLAY renders even when
+the teacher advances inside 10 seconds (`w4f-22`) — verified, not assumed.
+
+*Correction to one builder claim, recorded because it is stated wrongly and does not change
+the verdict:* LOCK does **not** ship disabled in practice. It arms immediately — `disabled
+false`, `data-hl-armed="1"` — at every week's first contact, because the dials are in the band.
+The blind line is therefore still reachable and I ran it: **desk 6 completed all three weeks by
+pressing the pinned button alone**, committing house price / 0% each time, and desk 2
+committed week 2 **57 ms after the bell** without reading a number. That satisfies N-6 as I
+wrote it (the alternative clause applies only "until [the dials in band] holds", and it holds),
+so N-6 is discharged — but the blind double-press is not unreachable, it is merely no longer
+blind. See the recorded findings below.
+
+**N-7 DISCHARGED.** `#hlPriceCf`, `.hl-pricecf-verdict`, the `.best` row and the `.you` row all
+return themselves under `elementFromPoint` at centre and lower third on normal weeks **and** on
+the sold-out week where FULL HOUSE renders: desk 3 priced $10, sold 18,064 of 18,064, and the
+line that was behind the bar last round — "$62 would have kept $1,160,904 — **$522,856** more
+than you did" — measured 484..515, unoccluded, with the whole card in the band (`w4f-05`,
+`w4f-06`). The $120 dead zone also now carries a real number instead of `0 · $0` nothing.
+
+### (2) The bell-landing judgment call — the settlement moved into the evidence column: RULED, IT STILL LANDS
+
+The N-1 clause it inverts is discharged as satisfied by other means. Ruling on the substance,
+not the wording:
+
+- **It is still the payoff.** KEPT renders as the largest object on the screen (~30px, green,
+  against 11.5–16px everywhere else), the settlement occupies 588 of 976px, it is first in
+  reading order, and the decomposition bar is the only picture on the frame. Nothing about
+  moving it into a 60%-width column demoted it (`w4f-04`, `w4f-05`).
+- **Co-presence made the payoff *do* something, which the full-width span never did.** Observed
+  on my own line: week 1 at $78, card named $66 → I priced week 2 at $66; the week-2 card named
+  **$50**, because the visitor had changed → week 3 at $50, 94.8% full, $1,528,768, my best
+  week. Under the old span the pair read the result and then scrolled 350–700px to a decision
+  that had lost the number. Experience → consequence → adaptation now closes inside one screen.
+- **What the move cost, and it is real: the bell has no punctuation.** Sampled at
+  120/300/700/1500 ms after `closeWeek`, the settlement appears as a silent DOM swap between
+  120 and 300 ms with `animation-name: none` and `opacity 1` throughout (`w4f-23-*`). The only
+  marker that a week ended is `THE WEEK IS IN THE BOOKS` at **12px** — smaller than the body
+  copy under it — and the next week's dials are live and LOCK is armed in the same frame.
+- **Second cost:** the four revenue pipes, the weekly bill and the history table are now below
+  the fold inside the evidence column (reachable — `main` is the scroll container, 780px of
+  content in a 512px band, wheel-scrolls cleanly, `w4f-24`), so the bell delivers the
+  decomposition and the counterfactual but no longer delivers the ledger.
+
+**Ruling: the settlement in the evidence column LANDS.** The placement is right; the missing
+piece is punctuation, not staging, and that is a bounded repair (see F-1).
+
+### (3) RATING: STRONG
+
+The cause I named in the W4 adjudication — "at the week-2 and week-3 decision moments the band
+contains last week and a pinned button that commits this week, and nothing else" — is gone, and
+what replaced it is a genuine mechanic rather than a rearrangement. What the pair now plays,
+every week, in one 1024×600 frame with no scroll: read who is visiting and what their Draw is,
+read all three of your weeks with every opponent's live Draw on them, absorb the star
+departure, set two dials, commit blind — then the bell, three named blocks that sum to the
+crowd, KEPT, "your Draw put 4,726 people in their building and $349,724 on THEIR books, you do
+not get any of it", and a table of what four other prices would have taken on that exact night.
+The interdependence is felt privately, not only on the projector: the best price on my dial
+moved $66 → $50 between weeks because another desk's club came to my building instead.
+
+The class surfaces hold up under the two release timings a real teacher will produce: the
+bar-release clause is now correctly conditioned (released after the week-2 bell with nobody
+locked, the board reads "**before a single desk had locked week 3 in**" — old N-9 fixed,
+`w4f-28-*`), and the small-market beat still prints both prices and holds the price still both
+ways (`w4f-29-*`). Reveal 3 states the room's own reinvest arithmetic against itself rather
+than flattering it.
+
+That is above FUNCTIONAL. It is not MAGNETIC, and the distance is stated in the residuals
+below — chiefly that only one of the two dials is a live decision, and that the room's cash
+column rewards not playing.
+
+**DISSENT play-l2-below-bar: DISCHARGED**
+
+### Recorded findings — none blocking, all observed this session
+
+**F-1. The bell needs punctuation.** A silent 12px swap is not a moment. Give the settlement
+one arrival beat (a marker the size of the number it announces, and/or a brief hold before the
+next week's LOCK arms). Cheapest remaining pull win in the build.
+
+**F-2. Doing nothing won.** Final cash: **desk 6, which never touched a dial, $4,053,620**;
+desk 2, free-ride at house price, $3,753,456; **desk 1, me, reading every counterfactual and
+repricing every week, $3,618,957.** The private counterfactual does tell each desk it left
+money on the table, and that is the luck-controlled instrument — but the only cross-desk number
+the room can see rewards the pair that did the least. Previously recorded as a soft line (the
+graded gate's AUTO desk finished 2nd of 4); at 6 desks the rank order inverted completely. This
+belongs on the classroom-release checklist, not on this dissent.
+
+**F-3. N-10 stands.** The reinvest dial still has no "what another share would have done" row,
+while the room's own board printed "these desks spent more on Draw than their own books got
+back: **−$505,400**" and "reinvesting left this room **$171,004** worse off," and week 3 tells
+desks it earns nothing more. One dial is a decision; the other is a donation the lesson asks
+them to make. Defensible as the spillover thesis; it is also why this is STRONG and not
+MAGNETIC.
+
+**F-4. N-11 stands, verified again.** After the final bell the student device shows a
+five-column table and "Look up at the board" — no decomposition, no road card, no
+counterfactual (`w4f-12`, `w4f-13`). The best-informed decision of the lesson is the one with no
+payoff screen.
+
+**F-5. N-8, partly moved.** `foundBest` is no longer unreachable — one desk got "At $44 you
+found the best price on the board for that night" — but across this session 17 settlements
+still printed "It was on the dial the whole time, and nothing on this screen told you,"
+including gaps of **$676 on $1,224,564**. A tolerance band would let the dial be won.
+
+**F-6. Old R5 confirmed still present** (was NOT VERIFIED last round): desk 3's recap header
+reads "WEEK 1 — HOW IT WENT VS OKLAHOMA CITY · **DRAW 71**" with the strip two inches below
+reading "W1 · played HOST Oklahoma City **75**", on the same screen.
+
+**F-7. Typography floor on the shared device.** The coexistence is paid for in type size: the
+road card is 12px, the counterfactual rows 11.5px, the star departure 11.5px, the cf verdict
+12px — for two students sharing one Chromebook. Legible, not comfortable. Shared finding with
+the visual and projector desks.
+
+**F-8. Free-rider prompt mismatch.** Desk 2's ADAPT card asks "You put money into your Draw.
+Who got that money back?" four lines under "you spent nothing, and that is a decision."
+
+### Not verified in this ruling
+
+12-desk scale (played at 6; the shipped `l2-e2e` asserts 12 — read as build claim), board
+privacy, teacher transfer, economic truth of the demand model, projector back-row legibility,
+rights/source. Those belong to their owning critics.
+
+### Formal dissent
+
+None. `play-l2-below-bar` is discharged; the findings above are recorded, not dissented.
