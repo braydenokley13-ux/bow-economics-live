@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T13:04:43.206Z",
+  "updatedAt": "2026-09-01T13:13:56.149Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3659,12 +3659,23 @@
           "model": "claude-opus-5",
           "reason": "Final owning-critic confirm of R1-R4 (RENDER limb + arm atom + guard) with own injections",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T13:03:00.289Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T13:13:56.149Z",
+          "sections": {
+            "mechanism-verdicts": "R1-R4 all CONFIRMED by own injections and drives (RENDER limb bites; wrapper fails under A9; 0 forbidden occurrences across the full trajectory; five arm-direction drives agree).",
+            "false-lesson-risks": "None live at head. Future-drift exposure recorded: two novel drifts survive the harvest scope (trajectory + union blobs), and unregistered prose remains invisible by construction — W5-1..3 non-blocking.",
+            "dominant-strategies": "Unchanged; no new exploit.",
+            "synthesis-map-verdict": "One tail branch un-gated in 0/328 reachable rooms (non-blocking).",
+            "required-repairs": "Non-blocking only. Both dissents DISCHARGED."
+          },
+          "evidenceIds": [
+            "w5-econ-confirm"
+          ],
+          "cost": {
+            "tokens": 116811,
+            "toolUses": 45
+          }
         }
       },
       "evidenceIds": [
@@ -3681,7 +3692,8 @@
         "l3-tests-w5",
         "l3-tuning-w5",
         "l3-e2e-w5",
-        "w5-sr-confirm"
+        "w5-sr-confirm",
+        "w5-econ-confirm"
       ],
       "claimIds": [],
       "dissentIds": [],
@@ -6370,6 +6382,23 @@
       },
       "recordedAt": "2026-09-01T13:04:42.596Z",
       "actor": "sports-reality-director"
+    },
+    "w5-econ-confirm": {
+      "id": "w5-econ-confirm",
+      "wave": 5,
+      "kind": "economic-truth-report",
+      "label": "Econ w5 final confirm: R1 (shared builder + RENDER limb bites), R2 (harness wrapper 3/3 and fails under A9), R3 (0 occurrences across full trajectory), R4 (five arm-direction drives) all CONFIRMED. No live false lesson at head. Non-blocking future-drift exposure recorded (W5-1..3). Both dissents DISCHARGED",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-econ-confirm--GATE_L3_ECON.md",
+      "sha256": "9a59961ffc3c6dc5d4a83547de5021244efe020acab9b270001b0e98107818e9",
+      "size": 52628,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "wave-5"
+        ]
+      },
+      "recordedAt": "2026-09-01T13:13:55.272Z",
+      "actor": "economic-truth-critic"
     }
   },
   "claims": {
@@ -7084,9 +7113,12 @@
         "gate-l3-econ"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T11:11:08.588Z",
-      "actor": "economic-truth-critic"
+      "actor": "economic-truth-critic",
+      "resolution": "Owning critic's final confirm: the render-vs-atom class is closed at the source (shared builder; RENDER limb bites the critic's own A9 injection and the harness wrapper fails inside npm test under it), value/quantifier/bound/noun/level classes all mutation-proven. Explicit line: DISSENT econ-l3-claim-audit-vacuous: DISCHARGED. Non-blocking future-drift exposures W5-1..3 recorded for the backlog.",
+      "resolvedAt": "2026-09-01T13:13:55.562Z",
+      "resolvedBy": "lead-integrator"
     },
     "econ-l3-signature-reachability": {
       "id": "econ-l3-signature-reachability",
@@ -7098,9 +7130,12 @@
         "gate-l3-econ"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T11:11:08.880Z",
-      "actor": "economic-truth-critic"
+      "actor": "economic-truth-critic",
+      "resolution": "Owning critic's final confirm: outcome-adaptive teaching rules reachability discharged (already so ruled), and the remaining arm-copy defects R3/R4 are verified fixed across the full trajectory and five arm-direction drives. Explicit line: DISSENT econ-l3-signature-reachability: DISCHARGED. One tail branch (no-payers 'rule you wrote', 0/328 reachable rooms) recorded non-blocking.",
+      "resolvedAt": "2026-09-01T13:13:55.850Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l3-econ-dissent": {
       "id": "gate-l3-econ-dissent",
@@ -7246,11 +7281,11 @@
     "agentsActivated": 80,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 134,
+    "evidenceRecorded": 135,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 398,
-  "eventHead": "9e5e697aba4212647d702ddf32f5daeb362e04c626cfc9e763ec6fb759a2890e",
+  "eventCount": 402,
+  "eventHead": "4dfb7381e4333a010d6da988e53e0a76671be480e35680abf119f78259a30652",
   "warnings": []
 }
