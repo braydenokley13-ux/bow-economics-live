@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `257:5e41dcca17cc89e39db8e6edc6f0785606ba0d7cae01ac648df50c2b4951e811`  
-Updated: 2026-09-01T06:43:24.050Z
+Event head: `261:c03d16bf0446fa0ccd8355c12c3c998499e2477c8e35e3d7be013577f42955b5`  
+Updated: 2026-09-01T06:44:07.515Z
 
 ## Founder intent
 
@@ -49,8 +49,8 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - builder — builder-l2-repair — completed-with-concerns — claude-opus-5
-- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
-- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — completed-with-concerns — claude-opus-5
+- economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
 - sports-reality-director — sports-reality-director — completed — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
@@ -97,6 +97,8 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - e2e-l3-flake-note — analysis — M1 L3 e2e flake attribution: reproduces at pre-L2 checkpoint 5cf1a58 (1/6) and HEAD (3/6), same failure mode — pre-existing faPlayMounted remount race, not a wave regression; disposition + bounded fix path recorded
 - recheck-l2-sr — sports-reality-report — L2 SR re-check: BLOCKING-1 repaired (per-club identityLine only via deskIdentity, verified true per club) and BLOCKING-2 repaired (gate shares 18.9-25.0% recomputed, hedged claims hold). MODERATE-3 retracted, MODERATE-4 reconciled. New MINOR: golden-state superlative shared by four tied clubs. Staleness minors carried. Dissent discharged
 - recheck-l2-teacher — teacher-transfer-report — L2 teacher re-check: B1-B5 all FIXED live (board code entry, projector URL on every teach frame, resume-not-strand, free-riders = 0%-lockers only with never-locked separated, Q3 repointed to live panel, rehearsal renders fully). TRANSFER: READY. Two new non-blocking (mistyped board code strands CONNECTING; teacher-key copy claims shown-once falsely)
+- recheck-l2-play — gameplay-report — L2 play re-check: R1-R4 substantially CONFIRMED (bell lands settlement-first at 600px; $10-vs-$46 gap split correctly). NOT DISCHARGED: sold-out weeks put the externality card under the fixed lock bar (observed 3x); dials 595..617 behind the bar at decision moment; two bar-copy residuals; free-rider instrument reads $0/$0/$0. RATING FUNCTIONAL — remaining cause 'only one dial carries felt consequence' is repairable, not structural; kill condition explicitly not met
+- recheck-l2-econ — economic-truth-report — L2 econ re-check: instrument repair REAL (corr 0.918 chosen-shares vs 0.175 inherited; biggest giver = max spender) — B1/B2/B4/B5 discharged. NOT DISCHARGED overall: B3 unchanged (driver=visitor in 40/40 rooms, 7/40 fail price control), and two NEW blockers from the repair — externalPct prints 0% beside $1.58M given and >100% in 58/200 rooms; room-total ownGain reverses sign (-$1.15M printed vs +$0.55M actual)
 
 ## Claim ledger
 

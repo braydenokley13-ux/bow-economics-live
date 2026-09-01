@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:43:24.050Z",
+  "updatedAt": "2026-09-01T06:44:07.515Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2136,12 +2136,23 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic confirm-or-refute of the consolidated L2 repair against its own gate findings",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T06:32:56.855Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T06:44:06.982Z",
+          "sections": {
+            "what-the-student-plays": "Two re-check sessions incl. a 1024x600 seat; unchanged loop.",
+            "pull-rating": "RATING: FUNCTIONAL — holds. Remaining cause: only one dial carries felt consequence. Repairable, not structural; kill condition explicitly not met.",
+            "biggest-failure": "On sold-out weeks the externality card sits under the fixed lock bar (observed 3x, elementFromPoint returns the bar); both dials measure 595..617 — behind the bar at the decision moment (fold rotated, not closed).",
+            "moment-by-moment-notes": "R1 confirmed with the sold-out exception; R2 confirmed as written; R3 confirmed in substance with two bar-copy residuals; R4 confirmed ($10-vs-$46 split correctly, both prices printed); free-rider instrument confirmed but prints $0/$0/$0 for the free-rider.",
+            "required-repairs": "Sold-out-week card placement vs lock bar; dial fold; bar-copy residuals; free-rider zero-line presentation; the one-dial pull cause. DISSENT play-l2-below-bar: NOT DISCHARGED."
+          },
+          "evidenceIds": [
+            "recheck-l2-play"
+          ],
+          "cost": {
+            "tokens": 109170,
+            "toolUses": 45
+          }
         },
         "recheck-l2-econ": {
           "assignmentId": "recheck-l2-econ",
@@ -2150,12 +2161,23 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic confirm-or-refute of the consolidated L2 repair against its own gate findings",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T06:32:57.180Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T06:44:07.515Z",
+          "sections": {
+            "mechanism-verdicts": "Instrument repair real: corr(gaveByChoice, meanShare) 0.918 vs 0.175 with startDraw (was 0.644/0.959); every $0 spender reads $0; biggest giver is the max spender. B1/B2/B4/B5 DISCHARGED. 397/397 + 11/11 re-run.",
+            "false-lesson-risks": "NEW: 'investing destroyed value' (room-total ownGain sign reversal: printed -$1,153,068 vs actual +$546,124) and 'spillover was 0%' (externalPct prints 0% beside $1,577,412 given; >100% in 58/200 rooms). B3 unchanged: market-size card driver=visitor in 40/40 rooms, 7/40 fail price control. SIMPLIFICATIONS[5] still false.",
+            "dominant-strategies": "Unchanged; week-3 zero-optimum confirmed and now taught.",
+            "synthesis-map-verdict": "spillover card FAIL (new quantifiers); market-size card FAIL (B3).",
+            "required-repairs": "B3, B7 (externalPct), B8 (ownGain sign). DISSENT econ-l2-evidence-surfaces: NOT DISCHARGED."
+          },
+          "evidenceIds": [
+            "recheck-l2-econ"
+          ],
+          "cost": {
+            "tokens": 134347,
+            "toolUses": 45
+          }
         },
         "recheck-l2-teacher": {
           "assignmentId": "recheck-l2-teacher",
@@ -2250,7 +2272,9 @@
         "l2-e2e-r1",
         "e2e-l3-flake-note",
         "recheck-l2-sr",
-        "recheck-l2-teacher"
+        "recheck-l2-teacher",
+        "recheck-l2-play",
+        "recheck-l2-econ"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3949,6 +3973,42 @@
       },
       "recordedAt": "2026-09-01T06:43:12.278Z",
       "actor": "teacher-transfer-critic"
+    },
+    "recheck-l2-play": {
+      "id": "recheck-l2-play",
+      "wave": 3,
+      "kind": "gameplay-report",
+      "label": "L2 play re-check: R1-R4 substantially CONFIRMED (bell lands settlement-first at 600px; $10-vs-$46 gap split correctly). NOT DISCHARGED: sold-out weeks put the externality card under the fixed lock bar (observed 3x); dials 595..617 behind the bar at decision moment; two bar-copy residuals; free-rider instrument reads $0/$0/$0. RATING FUNCTIONAL — remaining cause 'only one dial carries felt consequence' is repairable, not structural; kill condition explicitly not met",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l2-play--GATE_L2_PLAY.md",
+      "sha256": "e76ef0b44202a299c19ad7de4449f13b0b7c0637faa6f533e72c156c62fa668a",
+      "size": 35910,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "wave-3",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T06:43:43.496Z",
+      "actor": "player-gameplay-critic"
+    },
+    "recheck-l2-econ": {
+      "id": "recheck-l2-econ",
+      "wave": 3,
+      "kind": "economic-truth-report",
+      "label": "L2 econ re-check: instrument repair REAL (corr 0.918 chosen-shares vs 0.175 inherited; biggest giver = max spender) — B1/B2/B4/B5 discharged. NOT DISCHARGED overall: B3 unchanged (driver=visitor in 40/40 rooms, 7/40 fail price control), and two NEW blockers from the repair — externalPct prints 0% beside $1.58M given and >100% in 58/200 rooms; room-total ownGain reverses sign (-$1.15M printed vs +$0.55M actual)",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l2-econ--GATE_L2_ECON.md",
+      "sha256": "d6ec25cef372c1fcb53585dece37f8e0190623944214cdded99ac904e121a685",
+      "size": 48191,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "wave-3",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T06:44:07.244Z",
+      "actor": "economic-truth-critic"
     }
   },
   "claims": {
@@ -4567,11 +4627,11 @@
     "agentsActivated": 54,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 83,
+    "evidenceRecorded": 85,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 257,
-  "eventHead": "5e41dcca17cc89e39db8e6edc6f0785606ba0d7cae01ac648df50c2b4951e811",
+  "eventCount": 261,
+  "eventHead": "c03d16bf0446fa0ccd8355c12c3c998499e2477c8e35e3d7be013577f42955b5",
   "warnings": []
 }

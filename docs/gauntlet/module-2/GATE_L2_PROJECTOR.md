@@ -262,3 +262,132 @@ paged for the rest of the room.
 PROJECTOR FIT CONDITION (overflow/clipping): **DISCHARGED** — 60 measurements, zero overflow, zero
 clipped elements, both shapes.
 PROJECTOR LEGIBILITY + SCHEDULE READABILITY: **NOT DISCHARGED** — P-1, P-2.
+
+---
+
+## RE-CHECK AFTER L2 REPAIR
+
+Owning-critic confirm-or-refute of blocking dissent `proj-l2-truncation` after the consolidated L2
+repair. Evidence id: `gate-l2-projector-r1`. Fresh session, PORT 4385, isolated snapshot, built from
+`runtime/dist` at commit `49f90b2`. Independent instrument again (mechanics borrowed from
+`runtime/scripts/e2e-m2l2.cjs`, all guards rewritten); the shipped guard was exercised only as a
+subject, never as my evidence. Screenshots: `screens-l2-projector/r1-*.png` (59 files).
+
+### Session exercised (observed, this session)
+
+One 12-desk session, 1 `/teach` (1440x900) + **two live `/board` pages held at 1366x768 and
+1920x1080 for the whole session** (no resize-and-restore) + 12 `/play` desks at 1024x600:
+LOBBY -> HOOK -> PLAY wk1 (12/12 locked) -> bell -> wk2 star departure -> bell -> mid-lesson
+Handed-To-You release, all 3 groups paged -> wk3 with one desk that never locks -> bell
+(auto-commit observed true) -> REVEAL 5 presses (**freeze + unfreeze at stage 3**) -> ADAPT ->
+ARGUE -> SYNTHESIS 5 cards -> COMPLETE.
+**29 board frames x 2 shapes = 58 measurements.** Each measurement runs five independent truncation
+detectors (declared `text-overflow:ellipsis`; Range-measured rendered text box vs the element's own
+content box, *including* when overflow is `visible`; clipped-vertically; `-webkit-line-clamp`;
+`scrollWidth > clientWidth`), a full font-size census (1496 text elements), a `#stage` fit check in
+both axes, and a rendered-output privacy scan of `innerText` + whole-document `innerHTML`.
+
+### 1. Truncation — the dissent's subject (observed)
+
+**Zero offenders in 58 measurements, at both shapes, on every frame from LOBBY to COMPLETE.**
+The week-1 and week-2 schedules at 12 desks now render every club whole at 1366x768 and 1920x1080 —
+`Desk 3 · Golden State / HOSTS Oklahoma City DRAW 71`, `Desk 10 · Philadelphia / HOSTS New Orleans
+DRAW 72`, plus the league-office row `Toronto / HOSTS New York DRAW 44` (13 rows)
+(`r1-03-week1-schedule--1366x768.png`, `--1920x1080.png`, `r1-05-week2-shock--*.png`,
+`r1-06-week3-schedule--*.png`). The two-line pair card uses the space the old frame wasted; no
+`white-space:nowrap` and no `text-overflow` survive in that block.
+
+**Non-vacuity, proven twice on a live frame (observed).** I re-injected
+`.hl-pair-host,.hl-pair-visitor{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}` into the
+running 12-desk board at 1366x768: my detector named **26 offenders** (13 hosts + 13 visitors), and
+the **shipped `e2e-m2l2.cjs` predicate, run verbatim on the same poisoned frame, named the same 26**.
+The shipped guard can see the defect it claims to guard. (The repair note's "13 named offenders" is a
+different frame/desk count; not contradicted, not re-derived — inferred.)
+
+### 2. Evidence tier vs the 2.6% floor (observed, measured)
+
+Every element P-2 named now renders at **2.67% of screen height at both shapes** (1.5vw; minimum
+across all instances, not the first match):
+
+| element | instances | min measured | example |
+|---|---|---|---|
+| `.hl-bar-foot` | 62 | 2.67% | `Memphis $243,040 · Golden State $211,002` |
+| `.hl-ledger-draw` | 10 | 2.67% | `spent $339,434 · dealt $905,108/$1.18M` |
+| `.hl-pipe-nums` | 12 | 2.67% | `gate 24.3% · national 34.2%` |
+| `.hl-mean-lbl` | 6 | 2.67% | `WEEK 1` |
+| `.hl-ledger-bar b` / handles / `.hl-pair-*` / `.hl-summary` | 500+ | 2.67% | — |
+
+P-6's `.hl-week-strip-*` and `.hl-chip-who/.hl-chip-size` also clear it (2.67%). The gave/got dollar
+values are out of the dark-ink-inside-the-bar position and onto the row foot.
+
+Residual sub-floor type, **new observation, non-blocking**: the colour-key legends that make the
+bars interpretable render at **2.13%** — `the club visiting you`, `what YOUR spending put on other
+clubs' books`, `national — identical for every club` (`r1-10-reveal1-g1--1366x768.png`,
+`r1-12-reveal-stage2--*.png`, `r1-13-reveal-stage3--*.png`). Also `hosts` on the schedule 2.13%, the
+word `DRAW` on lobby chips 1.78% (its numeral 2.67%), the model-honesty foot 1.87%, and the
+SYNTHESIS card-5 source lines 1.69%. Nothing here is a number the room must read; the legend is the
+one worth raising next.
+
+### 3. Fit, privacy, coupling, fallback (observed)
+
+- **Fit: zero overflow, zero clipping, both axes, 58/58 measurements.** No regression from the
+  layout change.
+- **Privacy: zero hits.** 58 scans of board `innerText` + full `innerHTML` for 36 deliberately
+  distinctive joined-name tokens (`Pair N Zylq<N>xn Krevanti<N>`) and for `seatId` / `rejoinPin` /
+  `data-seat` / `pin=`: nothing. The board's only identifiers remain `Desk N · <real club>`.
+- **Zero console errors** across 15 pages for the whole session.
+- **Freeze mid-reveal, board vs /teach (P-3, half repaired):** the board still blanks to the single
+  word `FROZEN` (`r1-13-frozen-midreveal--1366x768.png`), but **/teach no longer lies about it**.
+  ON-THE-PROJECTOR now reads `FROZEN — one word on an otherwise empty projector · The board is NOT
+  showing the lesson. Every student device has lost its controls... · Do not say "look at the board"
+  until you press...` (`r1-14-teach-while-frozen.png`). The truthfulness defect in
+  teacher-fallback-verdict is **discharged**; the blank projector itself is unchanged.
+- Unfreeze restored the exact beat (`FOUR PIPES, ONE CLUB`), measured clean at both shapes.
+- Bell auto-commit on the desk that never locked: still correct.
+
+### 4. NEW BLOCKING FINDING (classroom-reliability) — not part of this dissent
+
+**R-1. On the canonical teacher path, REVEAL stage 5 tells the room something untrue about itself.**
+Observed: I released the Handed-To-You bar after the week-2 bell and paged all three groups **before
+any desk priced week 3** — the arc this gate praised, and the arc `/teach` itself prescribes ("The
+Handed-To-You bar is available. It lands hardest after WEEK 2 — hold it one more week if you can",
+`hostTheLeague.ts:2894`). Stage 5 then printed, on the projector:
+`This room did NOT see the Handed-To-You bar before it played week 3, so nothing on this frame can
+be about the bar.` (`r1-15-reveal-stage5--1366x768.png`, `--1920x1080.png`).
+Cause (observed in source, confirmed by controlled probe): `sawBarBeforeWeek3 = ... barReleasedAtWeek
+< WEEK_COUNT - 1` (`hostTheLeague.ts:2433`). `barReleasedAtWeek` is `state.weekIndex` at press time,
+which is already `2` the moment the week-2 bell lands, so the recommended release scores as "after".
+Two-arm probe on an isolated server (PORT 4386, 4 desks): release **during** week 2 -> `This room
+did see the Handed-To-You bar...`; release **after the week-2 bell** (12-desk session above) -> the
+false clause. Room consequence: the projector disclaims the exact "did the room change its mind?"
+payoff the mid-lesson release exists to create, while /teach's stage-5 coaching asks the room that
+question. This is a surface-coupling truth defect, not a truncation one, and it is blocking under
+classroom-reliability.
+
+### 5. Status of the eight non-blocking items (noted, not demanded)
+
+- **P-3 freeze** — half done: mirror truthful (observed); board still blanks (observed).
+- **P-4 `WAITING`** — open. REVEAL stage 0 still opens on `WAITING / Waiting for your teacher to put
+  up the first beat.` (`r1-09-reveal-stage0--1366x768.png`).
+- **P-5 stage 5** — open as a *chart*: still three near-identical gold bars (17.5% / 17.5% / 16.3%)
+  with the copy carrying the whole argument (`r1-15-reveal-stage5--1366x768.png`). The copy is much
+  stronger and now names the last-week horizon; the back-row read of a 1.2-point move is unchanged.
+- **P-6 type** — done (2.67%).
+- **P-7 `/play` 1024x600 fold** — the repair added fold assertions to the shipped e2e; **not
+  re-measured by me this session** (inferred, NOT VERIFIED here).
+- **P-8 ADAPT paging line** — open: the ADAPT mirror still says only "The Handed-To-You bar stays up
+  beside the questions", never that the room is seeing 5 of 12 desks (`hostTheLeague.ts:2718-2721`,
+  observed in the live director panel).
+- **P-9 duplicate-join console error** — NOT VERIFIED (duplicate join not exercised this session).
+
+### Not verified (unchanged)
+
+A real projector in a real room; colour-vision separation of the five-segment palette; student-device
+rejoin-by-PIN; `Restore last good state`; any real student. Nothing here is classroom-proven (D10).
+
+PROJECTOR FIT CONDITION (overflow/clipping): **DISCHARGED** — 58 measurements, zero findings.
+PROJECTOR LEGIBILITY + SCHEDULE READABILITY (P-1, P-2): **DISCHARGED** — measured, both shapes, with
+a non-vacuous instrument.
+BOARD TRUTH ABOUT THE ROOM (R-1, new): **NOT DISCHARGED** — blocking, classroom-reliability.
+
+DISSENT proj-l2-truncation: DISCHARGED
