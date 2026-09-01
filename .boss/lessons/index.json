@@ -1,4 +1,150 @@
 {
   "schemaVersion": 1,
-  "lessons": []
+  "lessons": [
+    {
+      "id": "claim-atoms-from-birth",
+      "statement": "Every rendered claim string on any surface (student, board, AND teacher director/mirror) must be a computed, audited atom from the first commit of a module — hand-written claim copy was the single largest defect class across all three M2 lessons (pooled curves, false attributions, wrong nouns, wrong magnitudes, wrong-arm scripts), and every instance was eliminated only once claims were structurally bound and swept (value/quantifier/bound/noun/level plus rendered-string drift, mutation-proven).",
+      "status": "observation",
+      "scope": [
+        "economic-model",
+        "claims",
+        "synthesis"
+      ],
+      "confidence": 0.9,
+      "sourceRuns": [
+        "m2-quality-war"
+      ],
+      "evidence": [
+        "gate-l1-econ-r1",
+        "w4-econ-confirm",
+        "recheck-l3-econ",
+        "w5-econ-confirm"
+      ],
+      "counterexamples": [],
+      "createdAt": "2026-09-01T13:22:23.205Z",
+      "updatedAt": "2026-09-01T13:22:23.205Z",
+      "reviewAt": "2026-12-01T00:00:00Z",
+      "founderApproval": null,
+      "history": []
+    },
+    {
+      "id": "instrument-nonvacuity",
+      "statement": "A verification instrument is not done until it is proven non-vacuous by mutation: geometry-only fold assertions missed z-index occlusion, atom-only audits missed rendered-string drift, a dominance limb was tautological, and a fit guard missed ink overprint — in each case the repaired instrument was accepted only after a seeded defect demonstrably failed it.",
+      "status": "observation",
+      "scope": [
+        "verification",
+        "e2e",
+        "harness"
+      ],
+      "confidence": 0.9,
+      "sourceRuns": [
+        "m2-quality-war"
+      ],
+      "evidence": [
+        "analyst-wave3",
+        "gate-l3-econ",
+        "recheck-l3-projector",
+        "l3-tuning-w5"
+      ],
+      "counterexamples": [],
+      "createdAt": "2026-09-01T13:22:23.426Z",
+      "updatedAt": "2026-09-01T13:22:23.426Z",
+      "reviewAt": "2026-12-01T00:00:00Z",
+      "founderApproval": null,
+      "history": []
+    },
+    {
+      "id": "owning-critic-discharge",
+      "statement": "A blocking dissent may be resolved only on the owning critic's explicit discharge line in their own gate artifact — the one resolution closed on an instrument exit code alone was caught by the analyst as a provenance violation and had to be re-adjudicated.",
+      "status": "observation",
+      "scope": [
+        "process",
+        "dissent"
+      ],
+      "confidence": 0.95,
+      "sourceRuns": [
+        "m2-quality-war"
+      ],
+      "evidence": [
+        "analyst-wave3",
+        "w4-projector-adj"
+      ],
+      "counterexamples": [],
+      "createdAt": "2026-09-01T13:22:23.655Z",
+      "updatedAt": "2026-09-01T13:22:23.655Z",
+      "reviewAt": "2026-12-01T00:00:00Z",
+      "founderApproval": null,
+      "history": []
+    },
+    {
+      "id": "critic-actor-identity",
+      "statement": "Critic role activations and completions must be ledgered under the critic role's own actor identity, not the lead's — lead-actor bookkeeping made genuinely independent reviews read as self-certification at the wave gate.",
+      "status": "observation",
+      "scope": [
+        "process",
+        "independence"
+      ],
+      "confidence": 0.85,
+      "sourceRuns": [
+        "m2-quality-war"
+      ],
+      "evidence": [
+        "analyst-wave2"
+      ],
+      "counterexamples": [],
+      "createdAt": "2026-09-01T13:22:23.882Z",
+      "updatedAt": "2026-09-01T13:22:23.882Z",
+      "reviewAt": "2026-12-01T00:00:00Z",
+      "founderApproval": null,
+      "history": []
+    },
+    {
+      "id": "clean-room-candidates",
+      "statement": "In a design war, at least one candidate should be produced genuinely clean-room (prior implementation and its analyses redacted from context): the sunk-cost-blind candidate won the M2 architecture war on all three independent rankings.",
+      "status": "observation",
+      "scope": [
+        "design-war",
+        "architecture"
+      ],
+      "confidence": 0.75,
+      "sourceRuns": [
+        "m2-quality-war"
+      ],
+      "evidence": [
+        "arch-selection",
+        "sel-econ-review",
+        "sel-sr-review",
+        "play-review"
+      ],
+      "counterexamples": [],
+      "createdAt": "2026-09-01T13:22:24.148Z",
+      "updatedAt": "2026-09-01T13:22:24.148Z",
+      "reviewAt": "2026-12-01T00:00:00Z",
+      "founderApproval": null,
+      "history": []
+    },
+    {
+      "id": "agent-budget-prior",
+      "statement": "A Level-3 quality war over a three-lesson flagship consumed roughly four times the soft agent budget of 14 (build + gate + repair + re-adjudication cycles across six review functions); the routing prior for flagship module wars should budget accordingly rather than treat the overrun as an anomaly.",
+      "status": "observation",
+      "scope": [
+        "process",
+        "budget"
+      ],
+      "confidence": 0.7,
+      "sourceRuns": [
+        "m2-quality-war"
+      ],
+      "evidence": [
+        "analyst-wave2",
+        "analyst-wave3"
+      ],
+      "counterexamples": [],
+      "createdAt": "2026-09-01T13:22:24.373Z",
+      "updatedAt": "2026-09-01T13:22:24.373Z",
+      "reviewAt": "2026-12-01T00:00:00Z",
+      "founderApproval": null,
+      "history": []
+    }
+  ]
 }
