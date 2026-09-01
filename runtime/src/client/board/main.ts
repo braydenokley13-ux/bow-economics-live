@@ -617,9 +617,9 @@ function fhCardBanner(card: FHCardB): string {
  */
 const FH_NIGHT_SHAPE: Record<string, string> = { N1: "circle", N2: "square", N3: "triangle", N4: "diamond", N5: "ring" };
 
-function fhMark(cx: number, cy: number, cardId: string, color: string, big: boolean, title: string): string {
-  const r = big ? 11 : 8.5;
-  const ring = `stroke:var(--surface-panel); stroke-width:2;`;
+function fhMark(cx: number, cy: number, cardId: string, color: string, big: boolean, title: string, scale = 1): string {
+  const r = (big ? 11 : 8.5) * scale;
+  const ring = `stroke:var(--surface-panel); stroke-width:${(2 * scale).toFixed(1)};`;
   const t = `<title>${escapeHtml(title)}</title>`;
   switch (FH_NIGHT_SHAPE[cardId]) {
     case "square":
@@ -653,34 +653,68 @@ function fhJitter(seed: string, span: number): number {
   return (((h >>> 0) % 1000) / 1000 - 0.5) * 2 * span;
 }
 
-function fhCurveSvg(points: FHPoint[], markets: string[]): string {
+/**
+ * The projector's back-row legibility floor is 2.6% of screen height
+ * (`gate-l1-projector`). HTML type holds it because it is set in `vw`; SVG type
+ * does not, because it scales with the box the chart is drawn in — the W3
+ * re-adjudication measured this same chart at 2.86% full width, 1.56% compacted
+ * and 1.30% in the two-column COUNTERFACTUAL, i.e. the compaction repair bought
+ * fit by shrinking the evidence.
+ *
+ * So the caller states how wide the chart will actually render, as a fraction of
+ * the viewport, and the type is sized from it. On a 16:9 projector,
+ * `renderedPx = font * frac * vw / W` and `2.6% of height = 0.026 * vw * 9/16`,
+ * so `font >= 0.014625 * W / frac`. Margins, mark size and tick density follow
+ * the type rather than the other way round.
+ */
+function fhAxisType(frac: number, viewBoxWidth: number): { font: number; mL: number; mB: number; scale: number } {
+  const font = Math.max(18, Math.ceil((0.014625 * viewBoxWidth) / Math.max(0.05, frac)));
+  return {
+    font,
+    mL: Math.round(font * 3.4 + 18),
+    mB: Math.round(font * 2.4 + 10),
+    scale: font / 18,
+  };
+}
+
+/**
+ * gate-l1-visual P3: the analysis backdrop's brightest point sits inside the
+ * plot rect and its faint specks render at chart-mark size inside it. The plot
+ * area gets its own quiet ground so the data is never read against the art.
+ */
+function fhPlotScrim(x: number, y: number, w: number, h: number): string {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" style="fill:rgba(8,13,20,0.62);"/>`;
+}
+
+function fhCurveSvg(points: FHPoint[], markets: string[], widthFrac = 0.84): string {
   const W = 960;
-  const H = 400;
-  const mL = 84;
+  const { font, mL, mB, scale } = fhAxisType(widthFrac, W);
   const mR = 24;
   const mT = 18;
-  const mB = 58;
+  const H = 324 + mT + mB;
   const xMin = 10;
   const xMax = 120;
   const yMax = Math.max(5000, ...points.map((p) => p.turnout)) * 1.12;
   const x = (price: number) => mL + ((price - xMin) / (xMax - xMin)) * (W - mL - mR);
   const y = (t: number) => H - mB - (t / yMax) * (H - mT - mB);
+  // Big type needs fewer labels or they collide with each other.
+  const xTicks = font > 24 ? [10, 45, 80, 120] : [10, 30, 50, 70, 90, 120];
+  const yTicks = font > 24 ? 3 : 4;
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" class="scatter-svg" role="img" aria-label="Ticket price against how many people came, one mark per desk-night, coloured by market and shaped by night">`;
-  svg += `<line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
-  svg += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.10); stroke-width:1;"/>`;
-  for (const px of [10, 30, 50, 70, 90, 120]) {
-    // gate-l1-projector repair 4: the evidence tier measured 1.39-1.78% of
-    // screen height. The chart now scales with the viewport and its labels are
-    // set to clear 2.6% of screen height at 1366x768 and 1920x1080 alike.
-    svg += `<text x="${x(px)}" y="${H - mB + 24}" text-anchor="middle" style="font:600 18px Inter, sans-serif; fill:var(--ink-secondary);">$${px}</text>`;
+  svg += fhPlotScrim(mL, mT, W - mL - mR, H - mT - mB);
+  svg += `<line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.18); stroke-width:1;"/>`;
+  svg += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.18); stroke-width:1;"/>`;
+  for (const px of xTicks) {
+    svg += `<text x="${x(px)}" y="${H - mB + font + 6}" text-anchor="middle" style="font:600 ${font}px Inter, sans-serif; fill:var(--ink-secondary);">$${px}</text>`;
   }
-  for (let i = 0; i <= 4; i += 1) {
-    const t = Math.round((yMax * i) / 4);
-    svg += `<text x="${mL - 10}" y="${y(t) + 6}" text-anchor="end" style="font:600 18px Inter, sans-serif; fill:var(--ink-secondary);">${(t / 1000).toFixed(0)}k</text>`;
+  for (let i = 0; i <= yTicks; i += 1) {
+    const t = Math.round((yMax * i) / yTicks);
+    svg += `<text x="${mL - 10}" y="${y(t) + font * 0.34}" text-anchor="end" style="font:600 ${font}px Inter, sans-serif; fill:var(--ink-secondary);">${(t / 1000).toFixed(0)}k</text>`;
   }
-  svg += `<text x="${(mL + (W - mR)) / 2}" y="${H - 8}" text-anchor="middle" style="font:17px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">TICKET PRICE</text>`;
-  svg += `<text x="16" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 16 ${(mT + H - mB) / 2})" style="font:17px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">PEOPLE WHO CAME</text>`;
+  svg += `<text x="${(mL + (W - mR)) / 2}" y="${H - 6}" text-anchor="middle" style="font:${font}px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">TICKET PRICE</text>`;
+  const yTitleX = Math.round(font * 0.9);
+  svg += `<text x="${yTitleX}" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 ${yTitleX} ${(mT + H - mB) / 2})" style="font:${font}px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">PEOPLE WHO CAME</text>`;
 
   // No joining stroke: five nights are five demand worlds and a line through
   // them is a false picture (gate-l1-play P1). One mark per desk-night, shaped
@@ -690,12 +724,13 @@ function fhCurveSvg(points: FHPoint[], markets: string[]): string {
     const color = FH_SERIES[p.marketId] ?? "var(--accent-blue)";
     const seed = `${p.deskHandle}|${p.cardId}`;
     svg += fhMark(
-      x(p.price) + fhJitter(seed, 11),
-      y(p.turnout) + fhJitter(`${seed}|y`, 8),
+      x(p.price) + fhJitter(seed, 11 * scale),
+      y(p.turnout) + fhJitter(`${seed}|y`, 8 * scale),
       p.cardId,
       color,
       p.soldOut,
       `${p.deskHandle} · ${p.cardId} · $${p.price} · ${p.turnout.toLocaleString()} came · ${p.fillPct}% full`,
+      scale,
     );
   }
   svg += `</svg>`;
@@ -731,11 +766,14 @@ function fhMoneySvg(p: FHTwoPeaksB): string {
   const series = p.moneySeries ?? [];
   if (series.length < 3) return "";
   const W = 420;
-  const H = 210;
-  const mL = 46;
+  // Same floor as the class chart: this panel renders at ~32vw, so its own type
+  // has to be sized in the viewBox to clear 2.6% of screen height. It measured
+  // 1.56% before this — the peak prices, which ARE the beat, were the smallest
+  // live text on the frame.
+  const { font, mL, mB } = fhAxisType(0.32, W);
+  const H = 168 + 22 + mB;
   const mR = 10;
-  const mT = 14;
-  const mB = 28;
+  const mT = 22;
   const xMin = Math.min(...series.map((s) => s.price));
   const xMax = Math.max(...series.map((s) => s.price));
   const yMax = Math.max(...series.map((s) => s.total)) * 1.1;
@@ -747,22 +785,44 @@ function fhMoneySvg(p: FHTwoPeaksB): string {
     const point = series.reduce((a, b) => (Math.abs(b.price - price) < Math.abs(a.price - price) ? b : a));
     return (
       `<line x1="${x(point.price)}" y1="${y(point[key])}" x2="${x(point.price)}" y2="${H - mB}" style="stroke:${color}; stroke-width:1.5; stroke-dasharray:3 3; opacity:.7;"/>` +
-      `<circle cx="${x(point.price)}" cy="${y(point[key])}" r="6" style="fill:${color}; stroke:var(--surface-panel); stroke-width:2;"/>` +
-      `<text x="${x(point.price)}" y="${y(point[key]) - 10}" text-anchor="middle" style="font:12px Inter, sans-serif; fill:${color};">${escapeHtml(label)}</text>`
+      `<circle cx="${x(point.price)}" cy="${y(point[key])}" r="7" style="fill:${color}; stroke:var(--surface-panel); stroke-width:2;"/>` +
+      `<text x="${x(point.price)}" y="${y(point[key]) - 12}" text-anchor="middle" style="font:700 ${font}px Inter, sans-serif; fill:${color};">${escapeHtml(label)}</text>`
     );
   };
+  const yTitleX = Math.round(font * 0.8);
   return `
     <svg viewBox="0 0 ${W} ${H}" class="fh-money-svg" role="img" aria-label="Money against ticket price: tickets alone, and tickets plus what people spend inside, each with its own peak">
-      <line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.12); stroke-width:1;"/>
-      <line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.12); stroke-width:1;"/>
+      ${fhPlotScrim(mL, mT, W - mL - mR, H - mT - mB)}
+      <line x1="${mL}" y1="${H - mB}" x2="${W - mR}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.2); stroke-width:1;"/>
+      <line x1="${mL}" y1="${mT}" x2="${mL}" y2="${H - mB}" style="stroke:rgba(255,255,255,0.2); stroke-width:1;"/>
       <path d="${path("total")}" fill="none" stroke="var(--accent-gold)" stroke-width="3"/>
       <path d="${path("ticket")}" fill="none" stroke="var(--ink-secondary)" stroke-width="2" stroke-dasharray="5 4"/>
       ${mark(p.ticketPeakPrice, "ticket", "var(--ink-secondary)", `$${p.ticketPeakPrice}`)}
       ${mark(p.totalPeakPrice, "total", "var(--accent-gold)", `$${p.totalPeakPrice}`)}
-      <text x="${(mL + W - mR) / 2}" y="${H - 6}" text-anchor="middle" style="font:11px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">TICKET PRICE</text>
-      <text x="14" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 14 ${(mT + H - mB) / 2})" style="font:11px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-muted);">MONEY IN</text>
+      <text x="${(mL + W - mR) / 2}" y="${H - 6}" text-anchor="middle" style="font:${font}px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">TICKET PRICE</text>
+      <text x="${yTitleX}" y="${(mT + H - mB) / 2}" text-anchor="middle" transform="rotate(-90 ${yTitleX} ${(mT + H - mB) / 2})" style="font:${font}px Inter, sans-serif; letter-spacing:.08em; fill:var(--ink-secondary);">MONEY IN</text>
     </svg>
     <div class="fh-money-key"><span class="fh-money-swatch dash"></span>Tickets alone<span class="fh-money-swatch solid"></span>Tickets + what they spend inside</div>`;
+}
+
+/**
+ * `gate-l1-projector` W3 repair 1 (BLOCKING): every PLAY frame that carries the
+ * room's own evidence overflowed the projector — +152px with the class chart up,
+ * +280px once the Two Peaks money view landed, with the punchline
+ * "The cheaper ticket made more money." entirely below the fold at the moment
+ * the teacher releases it. The cause is composition, not type size: the full
+ * card banner (175px) and the KPI tile (92px) were stacked ABOVE a panel that
+ * needs the whole screen, and every pair already has tonight's card on its own
+ * device. While evidence is up, the card and the lock count collapse into one
+ * strip so the evidence gets the frame. Nothing shrinks.
+ */
+function fhPlayStrip(card: FHCardB, locked: number, deskCount: number): string {
+  return `
+    <div class="fh-play-strip">
+      <span class="fh-play-strip-night">${escapeHtml(card.label)} of ${card.of}</span>
+      <span class="fh-play-strip-card">${escapeHtml(card.day)} · ${escapeHtml(card.visitor)} · DRAW ${card.draw}</span>
+      <span class="fh-play-strip-locked"><span class="num">${locked}/${deskCount}</span> locked in</span>
+    </div>`;
 }
 
 function fhTwoPeaksPanel(peaks: FHTwoPeaksB[]): string {
