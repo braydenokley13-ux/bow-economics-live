@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `369:8f2ceb58e48d870212107bf0ff63d26862d65433eb43d315fe3de83c230db7b2`  
-Updated: 2026-09-01T12:27:48.908Z
+Event head: `371:186cf180f19b03d843a5e7285fa7b0b2cd65472ac82386109132ebf25bbf4c3c`  
+Updated: 2026-09-01T12:28:39.951Z
 
 ## Founder intent
 
@@ -51,7 +51,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - builder — builder-w4-r3 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
-- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed — claude-opus-5
@@ -101,6 +101,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - recheck-l3-sr — sports-reality-report — L3 SR re-check: all five repairs CONFIRMED verbatim (16/30 + 23/30, term sheets on all surfaces, Knicks fix, dates, epilogue); A3-A9 closed. NOT DISCHARGED on two repair-introduced facts: N1 Seattle 'privately financed' is false (2012 MOU carried up to $200M city/county bonds — the private-vs-public contrast subsidy-coda now teaches); N2 DMA ranks (Sacramento #20, Seattle #13, not 27/12). Both one-line
 - recheck-l3-projector — projector-report — L3 projector re-check: DISCHARGED. B1 dead both shapes with critic's own ink guard proven non-vacuous in-run; B2 truthful 0/12 counts + populated WATCH FOR; B3 arm-specific /teach; B4 desk-naming gone (0 matches; 0 leaks in 84 full-innerHTML audits). Kings genuinely two-press with the room's tally alone before 22-8. Non-blocking: privacy line overstates, :1846 arm-conditional, carried items 6/7/9
 - recheck-l3-play — gameplay-report — L3 play re-check: RATING STRONG. Seal observed (post-close propose -> 409, median unmoved, VOTE SEALED); abstainer excluded from median; 5 distinct lens cards + prediction resolved both arms; term sheets both surfaces with two-press 22-8; fallback honestly labelled. DISCHARGED. Non-blocking: back half length/duplication, middle-case why-line, card-2 wording on a failed vote
+- recheck-l3-econ — economic-truth-report — L3 econ re-check: bonfire closed ($3 residual vs $5.09M before), dollars bar + teacher strings + F2 repaired, composition true both branches, vote correctly not retuned, outcome-adaptive teaching RULED to discharge reachability. NOT DISCHARGED (narrowed): R1 registered atom != rendered string on /play (A9 drift passes 10/10); R2 harness not wired into npm test; R3 'Under the rule you wrote' beside NOT ADOPTED on 13 combos; R4 stage-4/5 contradiction (arrowsMovedAny guarded only in noL2)
 
 ## Claim ledger
 

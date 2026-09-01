@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:27:48.908Z",
+  "updatedAt": "2026-09-01T12:28:39.951Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3343,12 +3343,23 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T12:14:17.977Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T12:28:39.951Z",
+          "sections": {
+            "mechanism-verdicts": "Bonfire closed by observation (F4 case: in $10,189,377 / out $10,189,374, $3 destroyed vs $5,094,681 before); dollars bar, both teacher strings, and the F2 card repaired; vote correctly not retuned; outcome-adaptive teaching RULED to discharge signature reachability.",
+            "false-lesson-risks": "Narrowed remainders: R3 status-quo arm prints 'Under the rule you wrote' beside NOT ADOPTED on 13 surface/phase combos; R4 stage-4 vs stage-5/answer-key contradiction (arrowsMovedAny guarded only in noL2).",
+            "dominant-strategies": "Unchanged.",
+            "synthesis-map-verdict": "composition true in both branches; rememberWhen rails still scripted (non-blocking).",
+            "required-repairs": "R1 registered-atom vs rendered-string drift on /play (A9 injection passes 10/10 — the audit must compare rendered output, not just atoms); R2 wire the harness into npm test; R3; R4. DISSENT econ-l3-claim-audit-vacuous: NOT DISCHARGED; DISSENT econ-l3-signature-reachability: NOT DISCHARGED (on R3/R4 copy only — reachability itself discharged)."
+          },
+          "evidenceIds": [
+            "recheck-l3-econ"
+          ],
+          "cost": {
+            "tokens": 152642,
+            "toolUses": 66
+          }
         },
         "recheck-l3-teacher": {
           "assignmentId": "recheck-l3-teacher",
@@ -3445,7 +3456,8 @@
         "l3-e2e-r1",
         "recheck-l3-sr",
         "recheck-l3-projector",
-        "recheck-l3-play"
+        "recheck-l3-play",
+        "recheck-l3-econ"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5855,6 +5867,24 @@
       },
       "recordedAt": "2026-09-01T12:27:48.613Z",
       "actor": "player-gameplay-critic"
+    },
+    "recheck-l3-econ": {
+      "id": "recheck-l3-econ",
+      "wave": 4,
+      "kind": "economic-truth-report",
+      "label": "L3 econ re-check: bonfire closed ($3 residual vs $5.09M before), dollars bar + teacher strings + F2 repaired, composition true both branches, vote correctly not retuned, outcome-adaptive teaching RULED to discharge reachability. NOT DISCHARGED (narrowed): R1 registered atom != rendered string on /play (A9 drift passes 10/10); R2 harness not wired into npm test; R3 'Under the rule you wrote' beside NOT ADOPTED on 13 combos; R4 stage-4/5 contradiction (arrowsMovedAny guarded only in noL2)",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l3-econ--GATE_L3_ECON.md",
+      "sha256": "52e203d113b63e1dd37c6b704833383bc7c608fcd3e435331fa43883a202810a",
+      "size": 43651,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "wave-4",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T12:28:27.397Z",
+      "actor": "economic-truth-critic"
     }
   },
   "claims": {
@@ -6718,11 +6748,11 @@
     "agentsActivated": 77,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 118,
+    "evidenceRecorded": 119,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 369,
-  "eventHead": "8f2ceb58e48d870212107bf0ff63d26862d65433eb43d315fe3de83c230db7b2",
+  "eventCount": 371,
+  "eventHead": "186cf180f19b03d843a5e7285fa7b0b2cd65472ac82386109132ebf25bbf4c3c",
   "warnings": []
 }
