@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `53:0ac8d21c258c58bb3f3295ace55199f217a41d81ad1b472d342ea9730e557509`  
-Updated: 2026-09-01T20:31:18.520Z
+Event head: `65:65b15b765478fae8926ca706246c0ae83a29e63c7ee9f60b6f6c909a23682305`  
+Updated: 2026-09-01T20:31:40.535Z
 
 ## Founder intent
 
@@ -32,7 +32,7 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 
 - visual-experience-director — visual-critic-2 — active — claude-opus-5
 - browser-qa — browser-qa-w1 — completed-with-concerns — claude-sonnet-5
-- player-gameplay-critic — kid-a-basketball — active — claude-opus-5
+- player-gameplay-critic — kid-a-basketball — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-b-casual — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — kid-c-nonsports — completed-with-concerns — claude-opus-5
 - economic-truth-critic — econ-truth-w1 — active — claude-opus-5
@@ -88,6 +88,16 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 - kid-c-board-cf — screenshot — /board COUNTERFACTUAL at 1920x1080: named desk rows include only desks that held the SAME price on N1 and N5 — a desk that adapted its price is never named in front of the room
 - kid-c-play-cf — screenshot — /play COUNTERFACTUAL: 'WHERE THAT CHANGE CAME FROM' channel split and the WHAT IF alternate lines — the one place this persona can say what they would do differently
 - kid-c-adapt-worksheet — screenshot — /play ADAPT: three numbered discussion questions on a dark card above the personal ledger — the most school-like state in the lesson
+- kid-a-basketball-baseline-report — gameplay-report — Kid A (basketball obsessive) full-pass playtest of M2L1 Full House — SIMULATED KID / AGENT-PLAYTESTED
+- kid-a-basketball-baseline-manifest — browser-trace — Screenshot manifest: 60 frames across LOBBY/HOOK/5 nights/REVEAL x7/ADAPT/COUNTERFACTUAL/SYNTHESIS x6/COMPLETE, 4 desks + teacher + projector, port 4403
+- kid-a-basketball-baseline-fold-measure — screenshot — BLOCKING: after the bell at 1366x768 the night result renders at top=758px and the box score at top=813px in a 768px viewport, scrollY=0, no auto-scroll
+- kid-a-basketball-baseline-result-viewport — screenshot — Night 1 consequence at the kid's viewport: the screen is filled by tomorrow's card and a dial reset to $24; 'NIGHT 1 — HOW IT WENT' is a sliver at the bottom edge
+- kid-a-basketball-baseline-sellout-cut — screenshot — BLOCKING: Desk 3 sells out Night 4 (19,800/19,800, 6,525 turned away) and the FULL HOUSE panel is cut off by the bottom of the 1366x768 viewport
+- kid-a-basketball-baseline-reveal-frozen — screenshot — Student device at REVEAL stage 4 — byte-identical (md5 05aa7a5185a8c10e1dcbde46ce5b736f) to stages 0,1,2,3,5,6,7; Two Peaks already visible at stage 0 before the board shows it
+- kid-a-basketball-baseline-1024 — screenshot — At 1024x600 the LOCK IT IN control sits at top=664px in a 600px viewport — the lesson's primary action is off the bottom of the screen
+- kid-a-basketball-baseline-board-shock — screenshot — Board at REVEAL stage 4 'NIGHT 4 · THE SHOCK': an unlabelled dot cloud plus ~130 words of paragraph; no desk is identifiable and nothing depicts the shock
+- kid-a-basketball-baseline-synth-card — screenshot — Synthesis card 3 of 6 on the projector: title plus one text paragraph, no computed visual, identical 'flights and hotels' trailer repeated under all six cards
+- kid-a-basketball-baseline-cf-strong — screenshot — COUNTERFACTUAL student screen: NIGHT 1 $34 -> 14,142 vs NIGHT 5 $34 -> 13,342, '-800 people, and that is renewals -800' — the clearest cause-and-effect surface in the build
 
 ## Claim ledger
 
@@ -97,6 +107,7 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 
 - kid-b-casual-baseline-dissent — student-pull/blocking/open — For the casual/low-reading grade 5-6 student pairs-on-one-device persona, the current M2L1 Full House build should not ship to a real classroom as-is. Every per-night result card renders below the fold behind the next night's full pricing UI on a 1366x768 student viewport (confirmed at two consecutive night transitions), inverting the founder's own preserved reference decision that the consequence gets a separate, larger screen state than the decision. A fast, low-reading student can play all five nights end to end -- dial, LOCK IT IN, dial, LOCK IT IN -- without ever reading a single one of her own result cards, leaving the experience->consequence->adaptation loop that is this lesson's core promise dependent entirely on a compact header number and, later, the class board -- not on anything her own device reliably shows her at the moment it matters.
 - baseline-browser-qa-dissent — classroom-reliability/important/open — /teach at 1366x768 (the design-target teacher viewport) has no sticky/fixed anchor for its session-pacing controls (PHASE chips, Advance, Open the doors, Release the Two Peaks, End session) and no scroll-management on phase change, so those controls are inconsistently below the fold depending on how much director-note text renders for a given beat -- confirmed by DOM measurement and by grep (no position:sticky/fixed rule for this panel in theme.css; no scrollIntoView/scrollTo call in teach/main.ts). This is not a hard trap, but it is real live-pacing friction on the surface CLAUDE.md names as where 'teacher paces phases' -- a teacher mid-class should not have to hunt for the button that advances the room.
+- kid-a-basketball-baseline-dissent — student-pull/blocking/open — M2L1 Full House should not ship to a real grades 5-6 class as-is for the sports-fluent student. At the classroom's own 1366x768 viewport the night result renders at top=758px and the box score at top=813px with scrollY=0 and no auto-scroll, so the consequence of the pair's own decision is offscreen after every bell; the lesson's title event, the sellout, is cut off by the bottom of the screen; at 1024x600 the LOCK IT IN control itself is below the fold. Across the seven-stage teacher-paced reveal the student device is byte-identical in all eight captured frames (md5 05aa7a5185a8c10e1dcbde46ce5b736f) and already displays THE TWO PEAKS at stage 0, while the board still reads 'waiting for your teacher' - the lesson's punchline reaches every desk six stages before the room. Renewals fall 50% to 0% with no alarm state and no per-night explanation, and the printed renewals rule mispredicts the student's own largest result. The economics underneath is alive and worth keeping; the surface, staging and pacing currently prevent a real classroom from experiencing it. SIMULATED KID / AGENT-PLAYTESTED - not human-tested.
 
 ## Latest gate
 
