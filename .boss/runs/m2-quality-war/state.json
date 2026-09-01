@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T11:11:08.880Z",
+  "updatedAt": "2026-09-01T11:11:27.888Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3191,12 +3191,23 @@
           "model": "claude-opus-5",
           "reason": "Independent L3 gate on the built finale lesson",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T10:54:54.541Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T11:11:27.848Z",
+          "sections": {
+            "mechanism-verdicts": "BC-1 SOUND, proven independently: ancillary deletion drives every market's price move to exactly $0 (from $6/$6/$6); closed form p*=B/2k-a/2kappa matches the shipped brute force; reinvest moves up to 5 dial steps (OKC 35%->10%); the uniform-tax mutant froze every argmax and was caught. DISSENT l3-sharing-argmax: DISCHARGED — the run's oldest dissent closes on the built lesson.",
+            "false-lesson-risks": "BLOCKED overall on seven new findings. Worst: the claim audit is magnitude-blind (doubled pot-total survives the suite; a live wrong number ships at 6 desks). Second: 71% of proposal profiles — 100% of sincere play — land on the status-quo 5% where the BC-1 payload is null, yet the teacher script asks the flat-arrow question regardless. Also: L2/L3 reinvest bases differ 62.5%; a 50% pot bonfire at zero compliance; a rehearsal surface asserts the withdrawn summit claim.",
+            "dominant-strategies": "Headcount trap does not fire; no dominant proposal (P4 confirmed over 3,125 profiles/club).",
+            "synthesis-map-verdict": "Summit ruling: big-markets-want-zero-sharing is TRUE economics, honestly recorded — do not tune it away; the synthesis must teach it, and the one surface still asserting the withdrawn claim must be fixed.",
+            "required-repairs": "Dissents econ-l3-claim-audit-vacuous (value-level audit per the L2 method + fix the live instance) and econ-l3-signature-reachability (adoption dynamics or outcome-adaptive reveal; base reconciliation; bonfire; rehearsal surface)."
+          },
+          "evidenceIds": [
+            "gate-l3-econ"
+          ],
+          "cost": {
+            "tokens": 163429,
+            "toolUses": 47
+          }
         },
         "gate-l3-sr": {
           "assignmentId": "gate-l3-sr",
@@ -3281,7 +3292,8 @@
         "sr-l3-capstone-facts",
         "gate-l3-sr-dissent",
         "econ-l3-claim-audit-vacuous",
-        "econ-l3-signature-reachability"
+        "econ-l3-signature-reachability",
+        "gate-l3-econ-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -6221,6 +6233,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T11:11:08.880Z",
       "actor": "economic-truth-critic"
+    },
+    "gate-l3-econ-dissent": {
+      "id": "gate-l3-econ-dissent",
+      "wave": 4,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T11:11:27.888Z",
+      "actor": "economic-truth-critic"
     }
   },
   "meetings": {},
@@ -6276,7 +6297,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 338,
-  "eventHead": "3aa55392a28c4cdad3eac8e62d97fd52631920ba3e1f43a8b0a0f78df731d1c5",
+  "eventCount": 340,
+  "eventHead": "eb5c2e0139ba505c5f5e0a58f4d5aab539ebe4bd1678b43a2e06deda01170ef5",
   "warnings": []
 }

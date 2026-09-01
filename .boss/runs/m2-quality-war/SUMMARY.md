@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `338:3aa55392a28c4cdad3eac8e62d97fd52631920ba3e1f43a8b0a0f78df731d1c5`  
-Updated: 2026-09-01T11:11:08.880Z
+Event head: `340:eb5c2e0139ba505c5f5e0a58f4d5aab539ebe4bd1678b43a2e06deda01170ef5`  
+Updated: 2026-09-01T11:11:27.888Z
 
 ## Founder intent
 
@@ -45,7 +45,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
 - builder — builder-l3 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
-- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
@@ -98,6 +98,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - gate-l3-sr-dissent — undefined/undefined/open — undefined
 - econ-l3-claim-audit-vacuous — economic-truth/blocking/open — The L3 claim audit cannot detect a wrong NUMBER: doubling pot-total prints $15,284,066 against a true $7,642,033 with the suite green 41/41 (inverted and frozen quantifiers also survive) — P9's mutant proof does not establish printed-economics-matches-model at magnitude, unlike L2's level-audited family. A live instance already ships: at 6 desks the synthesis card prints '$17,100,000 — more than the whole room took at the gate' against a $17,605,406 gate. Extend the audit to value-level (the L2 method) and fix the live instance. GATE_L3_ECON.md.
 - econ-l3-signature-reachability — economic-truth/blocking/open — 71.0% of 15,625 proposal profiles — including 100% of sincere play — land on the status-quo 5% share where the entire BC-1 payload is null, yet reveal stage 4 still scripts 'why didn't the big market move?' with no desk sold out. The signature moment must be reachable by the play the room actually produces (adoption dynamics/status-quo level retune, or the reveal must adapt to the outcome that occurred). Also: L2/L3 reinvest bases differ 62.5% (contaminating the before/after bar); a 50% pot bonfire at zero compliance; a rehearsal teacher surface still asserts the withdrawn interior-summit claim. GATE_L3_ECON.md.
+- gate-l3-econ-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
