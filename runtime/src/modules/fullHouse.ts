@@ -1728,6 +1728,59 @@ export const HOUSE_RULES: readonly string[] = [
   "RENEWALS follow your season-ticket plan price and what tonight is worth to the people who hold that plan. Charge well UNDER the plan price and the plan looks like a waste, so they stop buying it. Charge above what tonight is worth to them and they quit. The bigger the visiting club's Draw, the higher the price they will forgive — and a national-TV listing pulls that line back down, because they can watch it at home for nothing.",
 ];
 
+/**
+ * The Module-2 Lesson-1 interface copy the /play surface renders.
+ *
+ * Every economic sentence and every claim-bearing label on the student screen
+ * comes from here, not from a client literal (ECON_ADAPTATION_RULINGS R-1/R-2/R-3,
+ * VISUAL_REFERENCE_CONTRACT G). The renderer's job is layout; the words are the
+ * module's. `twoBooksLine` is SLICED out of `OBJECTIVE_COPY` rather than retyped
+ * so the two can never drift apart.
+ */
+export const FULL_HOUSE_UI_COPY = {
+  /** The bell line on the locked-waiting state. Teacher-paced, never a timer. */
+  doorsLine: "Doors open when your teacher rings the bell.",
+  /**
+   * R-2: `fillPct` is turnout / seatsOpen, and `seatsOpen` changes on Night 4.
+   * Every fill figure on this surface carries this qualifier. "of capacity" is
+   * forbidden, because on the bowl night it is false.
+   */
+  fillQualifier: "of the seats you opened tonight",
+  /** The settled night's hero label — the crowd, not the money (E10/C2). */
+  whoCameLabel: "WHO CAME",
+  historyTitle: "YOUR NIGHTS SO FAR",
+  historyCaption: "One dot per night. Two nights are only comparable when the card is the same.",
+  /** Verbatim first clause of OBJECTIVE_COPY — printed wherever CASH and RENEWALS appear together (R-3). */
+  twoBooksLine: `${OBJECTIVE_COPY.split(". ")[0]}.`,
+  /** The CASH decomposition chain's labels. No label here says "profit" or "revenue" (R-3). */
+  chainLabels: {
+    tickets: "TICKETS",
+    inArena: "IN-ARENA",
+    bill: "BUILDING BILL",
+    event: "EVENT MONEY",
+    bowl: "UPPER BOWL",
+    cash: "CASH",
+    renewals: "RENEWALS",
+  },
+} as const;
+
+/**
+ * The next-night control's label, composed server-side from the printed facts of
+ * the night the desk is about to play — day, Draw and TV, the same three the
+ * slate has published since HOOK. It carries nothing derived from a pending
+ * action (BC-4). Null when there is no next night.
+ */
+function nextNightLabelFor(card: NightCard | null, index: number): string | null {
+  if (!card) return null;
+  const tv = card.tv === "national" ? "national TV" : card.tv === "local" ? "local TV" : "not on TV";
+  return `NEXT: NIGHT ${index + 1} → ${card.day} · Draw ${card.draw} · ${tv}`;
+}
+
+/** `FULL_HOUSE_UI_COPY` plus the one label that depends on which night is open. */
+function uiCopyFor(card: NightCard | null, index: number) {
+  return { ...FULL_HOUSE_UI_COPY, nextNightLabel: nextNightLabelFor(card, index) };
+}
+
 export const BOARD_HONESTY_LINE =
   "These demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours.";
 
@@ -1811,6 +1864,25 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     what: "No randomness at all: no weather, no injuries, no winning streak.",
     why: "Every outcome must be attributable to the pair's own decision, or the debrief is a shrug.",
     risk: "Real pricing desks are guessing under genuine uncertainty; this room is not.",
+  },
+  // m2-visual-quality-war R-7: the drawn arena is a picture of the model that the
+  // model does not make. Two entries, one per thing the picture adds.
+  {
+    what: "The drawn arena lights seats as one evenly-lit proportion of a single pool: no price tiers, no sections, no view quality.",
+    why: "The model has one undifferentiated seat pool, and a lit proportion is the only honest picture of it. Drawing tiers would draw a mechanism that is not in the arithmetic.",
+    risk: "A student reads the lit ring as \"the cheap seats filled first\" — a mechanism this model does not have, and one that would change every answer if it did. Say that tonight every seat in the building is the same seat at the same price.",
+  },
+  {
+    what: "The Night-4 upper bowl is a third state of the same picture: opening it changes the denominator the fill is drawn against.",
+    why: "`seatsOpen` grows when the bowl opens, so the same crowd draws a shorter bar — the picture is honest about the building, not about the decision.",
+    risk: "Opening the bowl LOWERS the fill picture while RAISING turnout and zeroing turnaways. A student reading the picture alone concludes opening was worse, when what changed was the denominator. Every fill figure is labelled \"of the seats you opened tonight\" for exactly this reason; read the turnout beside it, not the bar alone.",
+  },
+  // m2-visual-quality-war R-10 (econ K2): measured, not theoretical — on Night 4
+  // renewals GAIN at the season-high price in both markets.
+  {
+    what: "The renewals forgiveness line is a modelled construct (`renewalReferencePrice`) that moves with the card and is never printed.",
+    why: "The rules state its shape in words — charge well under the plan price and the plan looks like a waste; charge above what tonight is worth to them and they quit; a bigger Draw raises the line and a national-TV listing pulls it back down — but printing the number would hand the pair the answer to the night before they set the dial.",
+    risk: "A pair that generalises \"a high price loses renewals\" from Nights 1-3 will be wrong on Night 4, where the line sits above $100 and renewals GAIN at the season-high price in both markets. Let that happen, then name why: what moved was not their price, it was what the night was worth to the people holding the plan.",
   },
 ];
 
@@ -1903,6 +1975,23 @@ export function spendVerdictFor(
   return { carryFans: carryFansIn, seated, wasted, label };
 }
 
+/**
+ * The settled night's headline, composed here rather than in the renderer so the
+ * client never assembles an economic claim out of loose numbers (R-1). Both
+ * forms are settled facts only. The sellout form leads with the crowd and the
+ * two denominators, never with a grading word (D4 / R-4). Numbers are formatted
+ * exactly as the surfaces format them (`Number.toLocaleString()`); the price is
+ * a whole-dollar dial position and carries no separator.
+ */
+function resultHeadlineFor(night: SettledNight): string {
+  const nightNumber = CARDS.findIndex((c) => c.id === night.cardId) + 1;
+  const s = night.settlement;
+  if (s.soldOut) {
+    return `FULL HOUSE · ${s.turnout.toLocaleString()} of ${s.seatsOpen.toLocaleString()} · ${s.turnedAway.toLocaleString()} turned away`;
+  }
+  return `NIGHT ${nightNumber} · ${s.turnout.toLocaleString()} CAME AT $${night.price}`;
+}
+
 /** The ONLY function that turns a settled night into something a view may carry. `hidden` never crosses it. */
 function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
   return {
@@ -1937,6 +2026,9 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
       night.settlement.turnedAway > 0
         ? `${night.settlement.turnedAway.toLocaleString()} people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it.`
         : null,
+    // R-1: the headline is composed server-side from settled facts, so the
+    // renderer prints a sentence instead of building one.
+    resultHeadline: resultHeadlineFor(night),
     // R6/P2: was last night's event money confirmed or refuted by this night?
     spendVerdict: spendVerdictFor(market, night, carryFansIn),
     marketId: market.id,
@@ -2120,7 +2212,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
     const desk = state.desks[seatId];
     const view = ((): Record<string, unknown> => {
       if (!desk) {
-        return { phase, seated: false, message: "You're in! Taking a desk…" };
+        return { phase, seated: false, uiCopy: uiCopyFor(null, 0), message: "You're in! Taking a desk…" };
       }
       const market = marketOf(desk);
       const identity = deskIdentity(desk);
@@ -2137,6 +2229,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             ...identity,
             message: `You have Desk ${desk.deskNumber}. Tonight you run the ${market.club}' building — ${market.building}.`,
             plainLine: market.plainLine,
+            uiCopy: uiCopyFor(null, 0),
           };
 
         case "HOOK":
@@ -2152,6 +2245,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             horizonLine: HORIZON_LINE,
             modeledDollarsLine: MODELED_DOLLARS_LINE,
             slate: slateView(),
+            uiCopy: uiCopyFor(null, 0),
           };
 
         case "PLAY": {
@@ -2165,6 +2259,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               allNightsDone: true,
               books: booksFor(desk),
               history,
+              lastNight,
+              uiCopy: uiCopyFor(null, state.nightIndex),
               message: "All five nights are in the books. Look up at the board.",
             };
           }
@@ -2212,6 +2308,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
                 : null,
             history,
             lastNight,
+            // R-1 / contract G: every claim-bearing label and sentence this desk
+            // renders comes from the module. `nextNightLabel` names the night the
+            // desk is about to play (the open card), from its printed facts only.
+            uiCopy: uiCopyFor(card, state.nightIndex),
             message: desk.locked
               ? "Locked. Nothing to do but find out — the doors open when your teacher rings the bell."
               : "No preview. Read the card, read your own nights, and commit.",
@@ -2227,10 +2327,19 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             history,
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
-            twoPeaksReleased: state.twoPeaksReleased,
-            twoPeaks: state.twoPeaksReleased
-              ? computeAggregate(state).twoPeaks.filter((t) => t.marketId === desk.marketId)
-              : [],
+            // R-9 (econ K2 / contract G, BLOCKING): `onPhaseExit` force-sets
+            // `twoPeaksReleased` when PLAY closes, so this desk used to carry its
+            // own market's peak prices, gap and revenue figures from REVEAL stage
+            // 0 — six teacher presses before the room is shown them. The gate now
+            // mirrors `boardView` exactly (`revealStage >= NIGHT_COUNT + 1`), on
+            // the payload rather than in the renderer, because a client-side gate
+            // is the class of protection nothing in this repo tests.
+            twoPeaksReleased: state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1,
+            twoPeaks:
+              state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1
+                ? computeAggregate(state).twoPeaks.filter((t) => t.marketId === desk.marketId)
+                : [],
+            uiCopy: uiCopyFor(null, state.nightIndex),
             message: "Your five nights, in the books. Look up at the board for the room's.",
           };
 
@@ -2242,6 +2351,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             books: booksFor(desk),
             history,
             questions: ADAPT_QUESTIONS,
+            uiCopy: uiCopyFor(null, state.nightIndex),
             message: "Talk to your partner before you answer out loud.",
           };
 
@@ -2289,17 +2399,34 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             honestLimit:
               "We can show you what the money would have done. We cannot show you what you would have done — that is why you played it.",
             prompt: ARGUE_PROMPT,
+            uiCopy: uiCopyFor(null, state.nightIndex),
           };
         }
 
         case "SYNTHESIS":
-          return { phase, seated: true, ...identity, books: booksFor(desk), message: "Look up at the board.", exitPrompt: EXIT_PROMPT };
+          return {
+            phase,
+            seated: true,
+            ...identity,
+            books: booksFor(desk),
+            message: "Look up at the board.",
+            exitPrompt: EXIT_PROMPT,
+            uiCopy: uiCopyFor(null, state.nightIndex),
+          };
 
         case "COMPLETE":
-          return { phase, seated: true, ...identity, books: booksFor(desk), message: COMPLETE_COPY, exitPrompt: EXIT_PROMPT };
+          return {
+            phase,
+            seated: true,
+            ...identity,
+            books: booksFor(desk),
+            message: COMPLETE_COPY,
+            exitPrompt: EXIT_PROMPT,
+            uiCopy: uiCopyFor(null, state.nightIndex),
+          };
 
         default:
-          return { phase, seated: true, ...identity };
+          return { phase, seated: true, ...identity, uiCopy: uiCopyFor(null, state.nightIndex) };
       }
     })();
     return tag(view);
