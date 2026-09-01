@@ -3,7 +3,7 @@
 Run `m2-visual-quality-war`. Frozen by the Boss lead at the close of wave 1 from: the founder
 references (`docs/gauntlet/module-2/VISUAL_REFERENCE_SPEC.md`), the second independent visual
 review (`REVIEW_VISUAL_2.md`, VERIFIED-UNMET), the economic-truth adaptation rulings
-(`ECON_ADAPTATION_RULINGS.md`, E1–E30, R-1–R-10), the experience direction (`DIRECTION.md`, with
+(`ECON_ADAPTATION_RULINGS.md`, E1–E30, R-1–R-8), the experience direction (`DIRECTION.md`, with
 the Boss lead's Q1–Q7 rulings), the three kid baselines (`KID_A/B/C_BASELINE.md`), and the
 baseline browser QA (`BASELINE_QA.md`). Analyst additions (`ANALYST_W1.md`) are appended in §H.
 
@@ -105,64 +105,4 @@ arena, the claim limb).** **W3 = §E + §F (projector frames, `/teach`) + synthe
 
 ## H. Analyst additions (appended at wave-1 close)
 
-The analyst read this contract while it was still a skeleton (a mid-wave race) and recorded a blocking
-process dissent against opening the build on that state. The rows above were filled before wave 2
-opened; the analyst's required acceptance measurements are reproduced here verbatim and are binding
-on wave 2 (they supersede any looser wording in the rows above where the two differ).
-
-Boss lead disposition of the analyst's eight repair actions: (1) econ report recorded, role completed,
-dissent in ledger; (2) `w1-suite` and `w1-l1-harness` recorded as authentic command evidence; (3) the
-Module 1 pixel baseline is recorded (`w1-m1-baseline-manifest`, `w1-m1-baseline-compare`, three
-byte-stable board frames) — Draft Day join/lobby/hook/first-PLAY on three surfaces; the wave-2
-regression hunter extends it to L2/L3 key states at the wave-2 base head before comparing; (4) row G
-rewritten as the R-1 requirement (no audit exists on the client today); (5) Q1: the founder's written
-instruction for this run (section 8) names accent usage among the reference decisions to preserve and
-the references carry no gold — recorded as a Boss lead application of that instruction on a
-founder-escalated question, with contrast/CVD proof of the Module-2 ramp added as a wave-2 Lane A
-deliverable and the two-books colour rule (RENEWALS never green) binding; (6) R-9 (Two Peaks student
-gate) carved into wave 2 Lane C as a module change with a test; (7) the renewals-rule misprediction is
-ruled model-consistent (econ K2 → R-10); suppressing the repeated `renewalRuleFor` box is NOT ruled —
-wave 2 renders it every night, compactly, until Economic Truth rules; (8) Q7 routed to a bounded Sports
-Reality review in wave 2 (drawn bowl, crest text marks, club wordmarks).
-
-### Required contract items — the acceptance measurements wave 2 must be judged against
-
-Every row of `VISUAL_REFERENCE_CONTRACT.md` needs a cell in `Acceptance evidence` that a critic can falsify with a screenshot or a DOM measurement. `ECON_ADAPTATION_RULINGS.md` §6 already supplies the row-by-row econ bindings (A6, A7, B1/D1, B3, B5, B6, C2–C6, D3, E1–E4, F1, F3, F5). The rows with **no** binding from any wave-1 role and which therefore must be authored: **A1, A2, A3, A4, A5, A8, A9, A10, B2, B4, B7, B8, C1, D2, D4, E5, F2, F4, F6**. A2 and A4 are the disputed rows (gold vs violet; condensed display face) and must carry the Q1 ruling text verbatim plus the `VISUAL_IDENTITY.md` update commitment.
-
-Measurements the wave-1 reports already imply, stated so they can go straight into cells:
-
-**`/play` (wave-2 scope)**
-- **C1.** After the bell, at 1366x768 with `scrollY=0`: the settled night's headline, turnout/fill figure, the `CAME × PRICE = TICKET MONEY` chain, `KEPT` and the renewals movement all have `getBoundingClientRect().bottom ≤ 768`, **and** the next night's `#fhLock` is *not* in the same first viewport. Asserted at all five nights, including a sellout night and a zero-attendance night. *(Today: result top 655–758px, KEPT at ~886. Fails.)*
-- **C4/B4.** Sellout: `FULL HOUSE` headline `top < 200px` and the turned-away count `bottom ≤ 768` at `scrollY=0`; the turned-away count is the second-largest figure on the frame. *(Today: headline at y≈745. Fails.)*
-- **A5/B2.** `#fhPriceReadout` computed `font-size ≥ 64px` at 1366x768; **no** other element in the pre-lock state exceeds it; `#pinDisplay` is strictly smaller at every moment, including the first 20 seconds after join. *(Today: 28px price vs 32px PIN. Fails.)*
-- **Viewport.** At 1024x600 with the PIN card **un-collapsed**: `#fhLock` and its caption both have `bottom ≤ 600` at `scrollY=0`. *(Today: `#fhLock.top = 664`; with the PIN collapsed, `553` with the caption at 603–616. Fails both.)*
-- **C2 (dashboard test, from `premium-direction-memo` risk 2).** At most **two** figures ≥34px on the settled-night state.
-- **C2 (hero-identity test, risk 3).** On the settled night the largest figure is the **turnout**, not the money.
-- **B3/G (blind commit).** On every pre-lock state, no element's text is a function of the pending price/spend/bowl other than the dial's own dollar echo. Discharged by `ECON` R-1's e2e limb **plus** its mutation proof: inject a client-side projection into a scratch `dist`, record the limb going red; inject a `Target $110–$120` literal, record the same.
-- **C4/A7.** Every fill number, bar, gauge and arena picture is labelled "of the seats you opened tonight"; the string "of Capacity" appears **zero** times on any night the bowl can open (`ECON` R-2).
-- **B6/H6.** `.fh-blind-note` computed `font-size ≥ 14px` and its colour passes the identity's contrast floor at that size. *(Today: 11px in `rgb(115,123,140)`. Fails.)*
-- **B2/P1.** At the default dial position the tick label's bounding box does not intersect the knob's, at 1366x768 **and** 1024x600. *(Today: the knob strikes through "PLAN $24". Fails — OBSERVED by me in three frames.)*
-- **A10/P9.** Every new animation ships a `prefers-reduced-motion` rule; measured duration ≤120ms under `reduce`; no money figure uses overshoot/spring easing.
-- **G/two books.** No rendered figure is a function of both books; CASH and RENEWALS never share font-family + size + colour in the same row (`premium-direction-memo` NN3, and the standing offender is OBSERVED today in the desk header).
-- **H7.** No `/play` state has more than 200px of contiguous empty region below its last content block at 1366x768.
-
-**`/board`**
-- **E1/E5.** At 1920x1080 **and** 1366x768 with **15 desks**, every frame fits without clipping (`#stage` is `overflow:hidden` — clipping is silent), exactly **one** element ≥72px, and **no** caveat/footnote element has font-weight or font-size ≥ the claim it qualifies.
-- **A6.** Zero border/rect around any plot; every mark carries a separating ring; every legend swatch passes contrast against `--surface-void`. *(Today: framed plots and a near-black "N1 Tue" swatch. Fails.)*
-- **E2 (class results, Q2/wave 3).** Columns limited to DESK / TICKET PRICE / WHO CAME + bar / FILL. **No** per-desk revenue column, **no** per-desk profit column, **no** collapsed "profit" (`ECON` E16, blocking dissent). Stable desk order asserted by test, never sorted by outcome. Pages past 8 desks (Q4). Prompts come from `ADAPT_QUESTIONS` / `ARGUE_PROMPT` / `EXIT_PROMPT` verbatim; the reference prompt "Why didn't the highest price always win?" does not ship (`ECON` E17, blocking dissent — it is false in 99–100% of rooms on Night 4).
-- **Privacy.** `fullHouse.test.ts:263` (boardView never handed a seat id) stays green; zero student names on any `/board` frame.
-- **P2.** Value-chip bounding boxes do not intersect bar-end bounding boxes at 1366x768 with 12 desks. *(Today: four collisions OBSERVED in one frame. Fails.)*
-- **P4.** `#hud` absent from `/board` unless a query flag is set. *(Today: `v79 · REVEAL`, `v83 · COUNTERFACTUAL`, `v84 · SYNTHESIS` render on every public frame including COMPLETE. Fails.)*
-- **D3/P7.** Each of the six synthesis cards carries a visual computed from the class's own locked numbers; the demand card is realized dots for **one market × one card** (never a fitted curve); the tradeoffs card is a **two-axis frontier**, never a balance scale; the shifter chips are DAY / DRAW / TV with RENEWALS and LAST NIGHT'S EVENT MONEY in a separately-labelled "carried" group; **"Weather" appears zero times** (`ECON` E27).
-
-**`/teach`**
-- **F4/F5.** At 1366x768, in **every** phase and at every director-note length, `#btnAdvance`, `#btnCloseNight`, `#btnRevealNext` and the first `.teamtile` all have `bottom ≤ 768` at `scrollY=0` — asserted by e2e at every phase, at 4 and 12 desks. *(Today: `#btnCloseNight.top = 1288`, `#btnAdvance.top = 1242`, first tile at 1670, in an 1826px document. Fails.)*
-- **F1.** Elapsed clock only, teacher-only; no countdown; if the clock ships, the session start timestamp is exposed server-side (`createdAt` exists on `SessionRow` but does not reach `/teach` today — `ECON` E24/R-6).
-- **F3.** No `Proj. Attendance`, no `Readiness` score; three-state pill plus `teacherWatchFor` flags only.
-- **P3.** Desk-tile text does not wrap mid-token at 12–15 desks, measured by rendered line boxes, not `textContent`.
-
-**Cross-cutting**
-- **Forbidden-vocabulary grep** over rendered template literals in `runtime/src/client/{play,board,teach}/main.ts`: `project`, `forecast`, `estimate`, `expected`, `preview` (outside `HOUSE_RULES[0]`), `target`, `profit`, `readiness`, `momentum`, `time remaining`, `Strong Round`, `trophy`, `Forecast` — count **0**.
-- **M1 regression:** the wave-2 base-head M1 baseline diffed frame-for-frame after the build.
-- **Selector stability:** `node runtime/scripts/e2e-m2l1.cjs` and `e2e-m2l1-misclick.cjs` green — these are the drift limb the rebuild will actually feel, since every selector the wave touches is asserted there.
-- **Record `SIMPLIFICATIONS`** for the two new arena-picture simplifications (evenly-lit seat pool; the Night-4 denominator change) before the wave closes (`ECON` R-7).
+_Pending `ANALYST_W1.md`._

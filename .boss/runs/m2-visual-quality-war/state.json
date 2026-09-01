@@ -21,12 +21,12 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:36:46.822Z",
+  "updatedAt": "2026-09-01T20:44:59.095Z",
   "currentWave": 1,
   "waves": {
     "1": {
       "number": 1,
-      "status": "active",
+      "status": "closed",
       "contract": {
         "hypothesis": "Module 2 'Money in Motion' can cross the standing premium bar — premium interactive sports-business media, never technically-functional school UI — by implementing the five founder-approved reference mockups faithfully on the real product (Full House student surface first, then /teach, projector/class reveal, and the economics synthesis), deviating from a reference decision only for a recorded concrete reason (functional mismatch, classroom usability, economic truth, technical feasibility, viewport failure, demonstrably stronger implementation), without weakening the hidden-information pricing loop, the two-book economics, the audited rendered-claim discipline, teacher transfer, or projector privacy; and a fresh independent visual critic, fresh gameplay critic, three simulated kid critics (basketball obsessive, casual sports, non-sports), economic truth, classroom/projector and teacher-transfer reviewers will affirm that at the final head.",
         "whyThisMatters": "Three consecutive independent visual re-grades left Module 2 at SERVICEABLE-NOT-PREMIUM (D20, carried to the founder). The founder has now supplied a visual direction and activated a bounded quality war. If the product cannot reach premium sports-business media on its flagship lesson, the co-primary emotional north star (students genuinely want more) is at risk regardless of how correct the economics is; if it reaches premium by exposing hidden information or adding reward chrome, it fails the primary north star. This wave establishes, with fresh evidence, whether premium is genuinely unmet and why, and freezes the reference-to-product contract before any pixel is built.",
@@ -338,11 +338,29 @@
           "model": "claude-fable-5-1",
           "reason": "deterministic activation",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:14:04.704Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T20:44:58.313Z",
+          "sections": {
+            "state": "Wave 1 audit complete. Second independent visual review: VERIFIED-UNMET on /play, /teach, /board and the synthesis frames, independently re-derived (analyst corroborated six citations). Kid baselines: A WEAK (blocking), B WEAK (blocking), C FUNCTIONAL (no dissent); one shared structural cause (the settled night renders below the fold beneath the next decision; the building is never drawn) that the prior STRONG gate had listed non-blocking, re-rated under the founder's reference bar, plus one new correctness defect (Two Peaks reaches every desk at reveal stage 0; econ R-9). Econ rulings E1-E30 with six FORBIDDEN reference elements (blocking dissent) and R-1..R-10 binding builder rules; the L1 client has no rendered-claim audit today (R-1 is the wave-2 precondition). Direction memo fixed the cinematic budget (B1-B4, H1-H2). Baseline browser truth: 169 frames, 0 console errors; teach controls below the fold at 1366x768 (classroom-reliability dissent, important, wave 3). Contract frozen; prototypes (design tile, arena renderer) ready to port; Inter vendoring candidate secured.",
+            "dependencies": "Wave 2 build depends on: the frozen contract (w1-contract-frozen); Lane C landing R-1/R-9/uiCopy before critics run; Lane A tokens before Lane B composes; the M1 baseline extension by the regression hunter at the wave-2 base head; a bounded Sports Reality review of the drawn bowl and text marks; an Economic Truth addendum on suppressing the repeated renewals-rule box.",
+            "decisions-needed": "For the founder at the ship case (not blocking now): Q1 gold retired to floodlight warmth in Module 2 (Boss application of the founder's section-8 instruction); Q5 first-sellout-only full sequence. No founder decision blocks the build.",
+            "next-action": "Record verdict REPAIR for wave 1 (audit complete; build is the repair), close wave 1, checkpoint, open wave 2 with the build contract, activate builder lanes A/B/C and launch them in parallel; browser-qa, fresh critics, regression hunter, sports reality and analyst follow the build."
+          },
+          "evidenceIds": [
+            "w1-contract-frozen",
+            "w1-suite",
+            "w1-l1-harness",
+            "w1-m1-baseline-manifest",
+            "second-visual-review-report",
+            "econ-adaptation-rulings-report",
+            "premium-direction-memo",
+            "kid-a-basketball-baseline-report",
+            "kid-b-baseline-report",
+            "kid-c-report",
+            "baseline-browser-qa-report",
+            "analyst-w1-report"
+          ],
           "cost": null
         },
         "analyst-w1": {
@@ -352,11 +370,29 @@
           "model": "claude-opus-5",
           "reason": "Level 3 required; independent reconciliation of the second visual review, kid baselines and econ rulings before the build wave",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:32:23.257Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T20:43:54.293Z",
+          "sections": {
+            "evidence-review": "Highest severity: the wave's terminal deliverable does not exist — VISUAL_REFERENCE_CONTRACT.md is OBSERVED at STATUS DRAFT SKELETON with all 33 rows' Required implementation / Allowed adaptation / Acceptance evidence cells empty; zero acceptance measurements exist in the repository. On file and authentic: browser-trace (baseline-browser-qa-manifest, -manifest-class12; distinct actor, no builder ran), visual-report (second-visual-review-report: VERIFIED-UNMET, H1-H9 ranked, 15 reference conflicts), three gameplay-reports (kid-a-basketball-baseline-report, kid-b-baseline-report, kid-c-report), all three correctly labelled SIMULATED KID / AGENT-PLAYTESTED with no human claim anywhere. I re-derived rather than accepted six load-bearing claims: OBSERVED the fold defect myself in 18-play-night2-with-night1-result.png vs 18b (result header y~655, KEPT y~886, renewals y~910 in a 768px viewport); OBSERVED the sellout cut (FULL HOUSE at y~745); OBSERVED /teach page top showing only join code and URLs; OBSERVED the framed plot box, invisible N1 legend swatch and v79 HUD on the projector; OBSERVED four bar-chip collisions on the CF frame; OBSERVED the 1024x600 lock control off-screen. One correction: DIRECTION.md's claim that the modelling caveat is set 'bolder and brighter' than the claim overstates — it is bolder, but grey and smaller. NOT ON FILE / NOT VERIFIED: economic-truth-report is unrecorded in events.jsonl (file exists on disk, role econ-truth-w1 still active, zero EvidenceRecorded events, four blocking econ dissents therefore not in the ledger); no test evidence recorded and I did not run npm test; no git-diff (correct for a read-only audit wave, belongs to wave 2); NO Module 1 pixel baseline exists anywhere in wave-1 evidence, so contract row G's citation of one is false; no Chromebook performance budget; no contrast/CVD proof for the violet/green M2 ramp Q1(a) mandates; no Sports Reality role ran though Q7 (bowl must not resemble MSG/FedExForum) was answered by the lead; whether wave-1 activity modified product code or run state is NOT VERIFIED by me (read-only, cannot run git status).",
+            "disproof-attempts": "(1) Premium unmet — FAILED to disprove. The second review genuinely re-derived: its H1 (/teach scroll) does not overlap the prior gate's H1 (projector clipping), and the two disagree on a fact (I OBSERVED no clipping at synthesis card 1 today), which is what independent re-derivation looks like. No surface meets: no /play element exceeds 32px anywhere, no /board frame carries a 72-96px figure, every scatter sits in a frame box, the arena and the class-results table do not exist. The verdict does not rest only on space — H6, P1, P2, P4, P5, P6, P7, P9 are craft/asset/identity-law findings, five of which I confirmed by eye. PARTIAL HIT: H9 and direction item 5 ('introduce the grid', '750px of unused width') are composition preference, not reference law, and collide with DIRECTION experience-risk 6 and the 1024x600 failure; the contract must settle this with a measurement, not taste. (2) Kid independence — FAILED to disprove leakage as the cause. Three ports, three price lines, no shared numbers, and decisively they do NOT converge on severity: Kid A WEAK/blocking, Kid B WEAK/blocking, Kid C FUNCTIONAL with no dissent on the same facts. Leaked framing produces matching verdicts; this did not. Each finds what the others miss. One real vector: Kid B frames its finding in VISUAL_REFERENCE_SPEC section 2's own words; the framing was supplied, the measurement was not, and I reproduced the fact myself. Individual assignment prompts NOT VERIFIED. Minor: kid-b's ledger dissent text omits the SIMULATED KID label its report carries. (3) Blocking student-pull dissents — PARTIALLY SUCCEEDED. OBSERVED at GATE_L1_PLAY.md:987-1018 the prior independent critic rated STRONG a third round while listing 'Chromebook fold buries LOCK IT IN and the FULL HOUSE plate (P9)' as NON-BLOCKING. Viewport truth did not change; the bar (reference section 2, new this wave) and the persona did. Kid A's blocking severity IS supported by new evidence (byte-identical reveal frames, the Two Peaks spoiler, renewals 50->0 with no alarm). Kid B's rests entirely on the already-known fold defect — a legitimate re-rating, not a discovery. Kid C saw it and did not dissent. The lead must not present this to the founder as three independent discoveries: it is one known structural defect re-rated, plus one genuinely new defect, plus one non-dissent. (4) Pass condition — NOT MET. browser-trace, visual-report and three gameplay-reports are on file and authentic; economic-truth-report is substantively complete but unrecorded with its role still active; the frozen reference-to-product contract, which the pass condition's own terminal clause requires, does not exist. (5) Law/non-goal conflicts — four found, none a law breach. Genuine trap: the 'consequence gates the next decision' proposal (visual direction 2, Kid C repair 1) must name its mechanism and state that bell auto-commit survives it. Authority: Q1 was labelled founder-blocking by the Experience Director and 'not a builder's call' by the visual critic, and was ruled by the Boss lead — it retires the shipped product's money accent with no CVD proof for the replacement and interacts with reference-conflict 6 (two green figures invite summing the two books). Scope: Kid A R8 (invent a visiting club with a record) is Sports Reality work with no Sports Reality reviewer; Kid B repair 2 (suppress the repeated renewalRuleFor box) decides whether a registered claim reaches the screen and needs Economic Truth sign-off. Clean: nothing proposes a pre-lock preview, a summed book, reward chrome, a student timer, a countdown, seat-private board data, or an M1 change. (6) Kid A's Two Peaks spoiler — REAL, WORSE THAN STATED, ORPHANED. OBSERVED in source: studentView REVEAL gates twoPeaks on state.twoPeaksReleased alone (fullHouse.ts:2230-2233) while boardView gates on revealStage >= NIGHT_COUNT+1 (2522-2523), and onPhaseExit sets the flag unconditionally on leaving PLAY (2030). The punchline reaches every desk at stage 0 in EVERY session, not only when a teacher skips the button. In scope for the program, assigned to no wave under the Q6 scoping, and DIRECTION section 9's 'subordinate reveal mirror' is unreachable by restyle because the mirror currently shows strictly more than the board. Two further orphans: nobody adjudicated whether the printed renewals rule mispredicting Kid A's own largest result is a model or copy defect, or the silent 50->0 renewals collapse.",
+            "biggest-failure": "The contract this entire wave exists to produce is empty, and the wave is being closed as if it were not. contract.md:12 names the purpose as establishing whether premium is unmet AND freezing the reference-to-product contract before any pixel is built. The audit half was done well and I confirmed it independently. The freeze half does not exist: VISUAL_REFERENCE_CONTRACT.md has 33 rows and zero filled Required implementation, Allowed adaptation or Acceptance evidence cells — not one px threshold, fold position, figure count or viewport assertion. This outranks every screen defect for a specific reason: ECON_ADAPTATION_RULINGS section 0 establishes that no test in this repository reads a single line of runtime/src/client/**, so a builder can compute a pre-lock projection, print a target band, or label CASH as 'Total Profit' while npm test stays 461/461 green and the L1 harness reports all 16 properties holding. Wave 1 proved that a written contract with measurements is the ONLY control on wave 2 — and then did not write one. Compounding it, the skeleton that does exist asserts two protections that do not exist: row G6 claims every rendered economic claim is audited (ECON section 6 says this is false for L1 today) and row G claims a Module 1 pixel baseline is in wave-1 evidence (OBSERVED: every one of the 100+ recorded frames is M2 L1). A contract handed to a builder asserting protections that are absent is worse than one with blank cells.",
+            "recommendation": "REPAIR for wave 1 — bounded, no review needs re-running. Not PASS: the pass condition's terminal clause (a frozen reference-to-product contract) is unmet, the economic-truth-report is unrecorded with its role still active, and two contract non-negotiables assert protections that do not exist. Not ROLLBACK: the trigger is review activity modifying product code or run state; nothing indicates it, but I could not verify read-only — the lead should run git status and git diff --stat against 128236a2856e847ac38129a8b318bd13e7b2ebce before freezing. Not KILL: the kill condition requires VERIFIED-MET; the review returned VERIFIED-UNMET and I corroborated six of its citations across three surfaces. REPAIR ACTIONS BEFORE WAVE 2 OPENS: (1) record ECON_ADAPTATION_RULINGS.md as economic-truth-report evidence and complete econ-truth-w1 with its four blocking dissents (E1, E8, E14, E16/E17); (2) actually run npm test and the L1 tuning harness this session and record a test artifact; (3) capture the Module 1 pixel baseline at the wave-2 base head, by the independent Browser QA, before any build, and correct row G to cite it; (4) correct row G6 to state that L1 registers no ClaimAtom and no test reads runtime/src/client/**, and make ECON R-1 with its mutation limb a wave-2 precondition; (5) return Q1 to the founder, or record it as a lead ruling on a founder-escalated question and commission re-rendered contrast/CVD proof for the new M2 ramp; (6) assign the Two Peaks student-mirror stage gate to a wave with an explicit carve-out from 'restyle only, no new mechanics'; (7) route to Economic Truth the renewals-rule misprediction and the repeated-guidance-box suppression; (8) route Q7 to a Sports Reality reviewer. REQUIRED CONTRACT ITEMS FOR WAVE 2 — every row needs a falsifiable Acceptance evidence cell. ECON section 6 already supplies bindings for A6, A7, B1/D1, B3, B5, B6, C2-C6, D3, E1-E4, F1, F3, F5; rows still unauthored are A1, A2, A3, A4, A5, A8, A9, A10, B2, B4, B7, B8, C1, D2, D4, E5, F2, F4, F6, with A2 and A4 carrying the Q1 ruling verbatim plus the VISUAL_IDENTITY.md update commitment. Acceptance measurements: /play — C1 after the bell at 1366x768 scrollY=0 the settled night's headline, turnout/fill, CAME x PRICE = TICKET MONEY chain, KEPT and renewals movement all have bottom <= 768 AND the next night's #fhLock is not in the same viewport, at all five nights including a sellout and a zero-attendance night; C4 sellout headline top < 200px with the turned-away count bottom <= 768 and second-largest on the frame; A5/B2 #fhPriceReadout >= 64px with no larger element and #pinDisplay strictly smaller including the first 20s; 1024x600 with the PIN card un-collapsed, #fhLock and its caption both bottom <= 600 at scrollY=0; at most two figures >= 34px on the settled-night state; the largest figure on the settled night is the turnout not the money; blind commit discharged by ECON R-1's e2e limb PLUS its mutation proof (inject a projection, record red; inject a target band, record red); every fill number/bar/picture labelled 'of the seats you opened tonight' with zero occurrences of 'of Capacity' on any bowl night; .fh-blind-note >= 14px passing contrast; the price tick label's box does not intersect the knob at 1366x768 and 1024x600; every new animation has a prefers-reduced-motion rule measured <= 120ms with no spring easing on money; no figure is a function of both books and CASH/RENEWALS never share font-family+size+colour in a row; no state has > 200px of contiguous empty region below its last content block. /board — every frame fits without clipping at 1920x1080 AND 1366x768 with 15 desks, exactly one element >= 72px, no caveat with weight or size >= the claim it qualifies; zero plot frames, separating rings on every mark, legend swatches passing contrast; class-results columns limited to DESK / TICKET PRICE / WHO CAME+bar / FILL with no per-desk revenue or profit and no collapsed profit, stable desk order asserted by test, paging past 8 desks, prompts from ADAPT_QUESTIONS/ARGUE_PROMPT/EXIT_PROMPT verbatim and the presupposing reference prompt absent; fullHouse.test.ts:263 stays green and zero student names on any frame; CF value chips do not intersect bar ends at 1366x768 with 12 desks; #hud absent unless a query flag is set; six synthesis cards each with a visual computed from the class's own numbers, the demand card as realized dots for one market x one card never a fitted curve, the tradeoffs card a two-axis frontier never a balance scale, shifter chips DAY/DRAW/TV with carried items in a separate labelled group and zero occurrences of 'Weather'. /teach — in every phase at every director-note length at 1366x768, #btnAdvance, #btnCloseNight, #btnRevealNext and the first .teamtile all bottom <= 768 at scrollY=0, asserted by e2e at 4 and 12 desks; elapsed clock only with createdAt exposed server-side or no clock; no Proj. Attendance and no Readiness score; desk-tile text does not wrap mid-token at 12-15 desks measured by rendered line boxes. Cross-cutting — forbidden-vocabulary grep over rendered template literals in client play/board/teach main.ts returning 0 for project/forecast/estimate/expected/preview(outside HOUSE_RULES[0])/target/profit/readiness/momentum/time remaining/Strong Round/trophy/Forecast; M1 baseline diffed frame-for-frame after the build; e2e-m2l1.cjs and e2e-m2l1-misclick.cjs green as the selector drift limb; the two new arena-picture SIMPLIFICATIONS recorded with their misconception risks."
+          },
+          "evidenceIds": [
+            "analyst-w1-report",
+            "analyst-w1-contract-empty",
+            "analyst-w1-twopeaks-source",
+            "analyst-w1-prior-strong-fold",
+            "analyst-w1-verify-fold-viewport",
+            "analyst-w1-verify-fold-fullpage",
+            "analyst-w1-verify-sellout",
+            "analyst-w1-verify-teach-top",
+            "analyst-w1-verify-board-reveal5",
+            "analyst-w1-verify-board-cf",
+            "analyst-w1-verify-1024-lock",
+            "analyst-w1-verify-synth1"
+          ],
           "cost": null
         }
       },
@@ -426,21 +462,770 @@
         "econ-adaptation-rulings-probe-optima",
         "econ-adaptation-rulings-probe-highestprice",
         "econ-adaptation-rulings-probe-fill",
-        "econ-adaptation-rulings-probe-renewals"
+        "econ-adaptation-rulings-probe-renewals",
+        "w1-suite",
+        "w1-l1-harness",
+        "w1-m1-baseline-manifest",
+        "w1-m1-baseline-compare",
+        "w1-m1-04-board",
+        "w1-m1-07-board",
+        "w1-m1-10-board",
+        "analyst-w1-report",
+        "analyst-w1-contract-empty",
+        "analyst-w1-twopeaks-source",
+        "analyst-w1-prior-strong-fold",
+        "analyst-w1-verify-fold-viewport",
+        "analyst-w1-verify-fold-fullpage",
+        "analyst-w1-verify-sellout",
+        "analyst-w1-verify-teach-top",
+        "analyst-w1-verify-board-reveal5",
+        "analyst-w1-verify-board-cf",
+        "analyst-w1-verify-1024-lock",
+        "analyst-w1-verify-synth1",
+        "w1-contract-frozen",
+        "w1-analyst-report-doc"
       ],
       "claimIds": [],
       "dissentIds": [
         "kid-b-casual-baseline-dissent",
         "baseline-browser-qa-dissent",
         "kid-a-basketball-baseline-dissent",
-        "econ-adaptation-rulings-dissent"
+        "econ-adaptation-rulings-dissent",
+        "analyst-w1-dissent"
       ],
       "meetingIds": [],
-      "gates": [],
-      "verdict": null,
-      "repairs": 0,
+      "gates": [
+        {
+          "gate": "wave",
+          "wave": 1,
+          "evaluatedCommit": "6aa2685413554a0e875983e47342232648f1bdf7",
+          "evaluatedBranch": "claude/economics-boss-module-2-8s591f",
+          "eligible": false,
+          "recommendation": "REPAIR",
+          "checks": [
+            {
+              "id": "role:browser-qa",
+              "passed": true,
+              "message": "browser-qa completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:builder",
+              "passed": false,
+              "message": "builder is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:economic-truth-critic",
+              "passed": true,
+              "message": "economic-truth-critic completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:experience-director",
+              "passed": true,
+              "message": "experience-director completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:lead-integrator",
+              "passed": true,
+              "message": "lead-integrator completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:player-gameplay-critic",
+              "passed": true,
+              "message": "player-gameplay-critic completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:product-analyst",
+              "passed": true,
+              "message": "product-analyst completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:regression-hunter",
+              "passed": false,
+              "message": "regression-hunter is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:visual-experience-director",
+              "passed": true,
+              "message": "visual-experience-director completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-role:economic-truth-critic",
+              "passed": true,
+              "message": "economic-truth-critic blocking review is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role-independence",
+              "passed": true,
+              "message": "Builders and independent reviewers are different actors.",
+              "severity": "blocking"
+            },
+            {
+              "id": "analyst-contract",
+              "passed": true,
+              "message": "Analyst output contract is complete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:analyst-report",
+              "passed": true,
+              "message": "analyst-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:browser-trace",
+              "passed": true,
+              "message": "browser-trace evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:economic-truth-report",
+              "passed": true,
+              "message": "economic-truth-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:gameplay-report",
+              "passed": true,
+              "message": "gameplay-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:git-diff",
+              "passed": false,
+              "message": "git-diff evidence is required.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:test",
+              "passed": true,
+              "message": "test evidence is an authentic passing command record.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:visual-report",
+              "passed": true,
+              "message": "visual-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-memo",
+              "passed": true,
+              "message": "Evidence premium-direction-memo hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-play-prelock",
+              "passed": true,
+              "message": "Evidence premium-direction-play-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-play-lockedwait",
+              "passed": true,
+              "message": "Evidence premium-direction-play-lockedwait hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-play-sellout",
+              "passed": true,
+              "message": "Evidence premium-direction-play-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-board-playframe",
+              "passed": true,
+              "message": "Evidence premium-direction-board-playframe hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-board-twopeaks",
+              "passed": true,
+              "message": "Evidence premium-direction-board-twopeaks hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-board-books",
+              "passed": true,
+              "message": "Evidence premium-direction-board-books hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:premium-direction-teach",
+              "passed": true,
+              "message": "Evidence premium-direction-teach hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-baseline-report",
+              "passed": true,
+              "message": "Evidence kid-b-baseline-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-shot-night1-prelock",
+              "passed": true,
+              "message": "Evidence kid-b-shot-night1-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-shot-night1-result-viewport",
+              "passed": true,
+              "message": "Evidence kid-b-shot-night1-result-viewport hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-shot-night1-result-full",
+              "passed": true,
+              "message": "Evidence kid-b-shot-night1-result-full hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-shot-night2-result-full",
+              "passed": true,
+              "message": "Evidence kid-b-shot-night2-result-full hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-shot-play-summary-table",
+              "passed": true,
+              "message": "Evidence kid-b-shot-play-summary-table hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-shot-board-two-peaks",
+              "passed": true,
+              "message": "Evidence kid-b-shot-board-two-peaks hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-b-shot-board-counterfactual",
+              "passed": true,
+              "message": "Evidence kid-b-shot-board-counterfactual hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-report",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-manifest",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-manifest-class12",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-manifest-class12 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-console",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-console hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-console-class12",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-console-class12 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-teach-cutoff-1366",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-teach-cutoff-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-teach-cutoff-1920",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-teach-cutoff-1920 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-adapt-overlap",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-adapt-overlap hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-cf12-overlap",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-cf12-overlap hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-lock-1024",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-lock-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:baseline-browser-qa-lobby-1024",
+              "passed": true,
+              "message": "Evidence baseline-browser-qa-lobby-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-report",
+              "passed": true,
+              "message": "Evidence kid-c-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-manifest",
+              "passed": true,
+              "message": "Evidence kid-c-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-fold-viewport",
+              "passed": true,
+              "message": "Evidence kid-c-fold-viewport hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-fold-fullpage",
+              "passed": true,
+              "message": "Evidence kid-c-fold-fullpage hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-sellout",
+              "passed": true,
+              "message": "Evidence kid-c-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-n1-decision",
+              "passed": true,
+              "message": "Evidence kid-c-n1-decision hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-board-shock",
+              "passed": true,
+              "message": "Evidence kid-c-board-shock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-board-cf",
+              "passed": true,
+              "message": "Evidence kid-c-board-cf hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-play-cf",
+              "passed": true,
+              "message": "Evidence kid-c-play-cf hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-c-adapt-worksheet",
+              "passed": true,
+              "message": "Evidence kid-c-adapt-worksheet hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-report",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-manifest",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-fold-measure",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-fold-measure hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-result-viewport",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-result-viewport hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-sellout-cut",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-sellout-cut hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-reveal-frozen",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-reveal-frozen hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-1024",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-board-shock",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-board-shock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-synth-card",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-synth-card hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:kid-a-basketball-baseline-cf-strong",
+              "passed": true,
+              "message": "Evidence kid-a-basketball-baseline-cf-strong hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-report",
+              "passed": true,
+              "message": "Evidence second-visual-review-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-manifest",
+              "passed": true,
+              "message": "Evidence second-visual-review-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-play-prelock",
+              "passed": true,
+              "message": "Evidence second-visual-review-play-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-play-sellout",
+              "passed": true,
+              "message": "Evidence second-visual-review-play-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-play-sellout-full",
+              "passed": true,
+              "message": "Evidence second-visual-review-play-sellout-full hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-teach-top",
+              "passed": true,
+              "message": "Evidence second-visual-review-teach-top hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-teach-tiles",
+              "passed": true,
+              "message": "Evidence second-visual-review-teach-tiles hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-board-reveal5",
+              "passed": true,
+              "message": "Evidence second-visual-review-board-reveal5 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-board-cf",
+              "passed": true,
+              "message": "Evidence second-visual-review-board-cf hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-board-synth1",
+              "passed": true,
+              "message": "Evidence second-visual-review-board-synth1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-board-complete",
+              "passed": true,
+              "message": "Evidence second-visual-review-board-complete hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:second-visual-review-measurements",
+              "passed": true,
+              "message": "Evidence second-visual-review-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:econ-adaptation-rulings-report",
+              "passed": true,
+              "message": "Evidence econ-adaptation-rulings-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:econ-adaptation-rulings-probes",
+              "passed": true,
+              "message": "Evidence econ-adaptation-rulings-probes hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:econ-adaptation-rulings-npmtest",
+              "passed": true,
+              "message": "Evidence econ-adaptation-rulings-npmtest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:econ-adaptation-rulings-probe-optima",
+              "passed": true,
+              "message": "Evidence econ-adaptation-rulings-probe-optima hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:econ-adaptation-rulings-probe-highestprice",
+              "passed": true,
+              "message": "Evidence econ-adaptation-rulings-probe-highestprice hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:econ-adaptation-rulings-probe-fill",
+              "passed": true,
+              "message": "Evidence econ-adaptation-rulings-probe-fill hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:econ-adaptation-rulings-probe-renewals",
+              "passed": true,
+              "message": "Evidence econ-adaptation-rulings-probe-renewals hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-suite",
+              "passed": true,
+              "message": "Evidence w1-suite hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-l1-harness",
+              "passed": true,
+              "message": "Evidence w1-l1-harness hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-m1-baseline-manifest",
+              "passed": true,
+              "message": "Evidence w1-m1-baseline-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-m1-baseline-compare",
+              "passed": true,
+              "message": "Evidence w1-m1-baseline-compare hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-m1-04-board",
+              "passed": true,
+              "message": "Evidence w1-m1-04-board hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-m1-07-board",
+              "passed": true,
+              "message": "Evidence w1-m1-07-board hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-m1-10-board",
+              "passed": true,
+              "message": "Evidence w1-m1-10-board hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-report",
+              "passed": true,
+              "message": "Evidence analyst-w1-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-contract-empty",
+              "passed": true,
+              "message": "Evidence analyst-w1-contract-empty hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-twopeaks-source",
+              "passed": true,
+              "message": "Evidence analyst-w1-twopeaks-source hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-prior-strong-fold",
+              "passed": true,
+              "message": "Evidence analyst-w1-prior-strong-fold hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-fold-viewport",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-fold-viewport hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-fold-fullpage",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-fold-fullpage hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-sellout",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-teach-top",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-teach-top hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-board-reveal5",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-board-reveal5 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-board-cf",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-board-cf hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-1024-lock",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-1024-lock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-w1-verify-synth1",
+              "passed": true,
+              "message": "Evidence analyst-w1-verify-synth1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-contract-frozen",
+              "passed": true,
+              "message": "Evidence w1-contract-frozen hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w1-analyst-report-doc",
+              "passed": true,
+              "message": "Evidence w1-analyst-report-doc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "claim-ledger-present",
+              "passed": false,
+              "message": "Level 2+ wave needs at least one explicit progress claim.",
+              "severity": "blocking"
+            },
+            {
+              "id": "claims-reconciled",
+              "passed": true,
+              "message": "All claims are confirmed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-dissent",
+              "passed": false,
+              "message": "Blocking dissent remains: kid-b-casual-baseline-dissent, baseline-browser-qa-dissent, kid-a-basketball-baseline-dissent, econ-adaptation-rulings-dissent.",
+              "severity": "blocking"
+            },
+            {
+              "id": "meetings-closed",
+              "passed": true,
+              "message": "All meetings are closed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "meeting-budget",
+              "passed": true,
+              "message": "Meeting count 0/2.",
+              "severity": "blocking"
+            },
+            {
+              "id": "agent-budget",
+              "passed": true,
+              "message": "Agent count 9/14.",
+              "severity": "blocking"
+            },
+            {
+              "id": "failure-budget",
+              "passed": true,
+              "message": "Repairs 0/8; waves 1/6.",
+              "severity": "blocking"
+            },
+            {
+              "id": "ownership-conflicts",
+              "passed": true,
+              "message": "No active ownership conflicts.",
+              "severity": "blocking"
+            },
+            {
+              "id": "config-integrity",
+              "passed": true,
+              "message": "Harness constitution is unchanged since run creation.",
+              "severity": "blocking"
+            },
+            {
+              "id": "protected-branch",
+              "passed": true,
+              "message": "Branch claude/economics-boss-module-2-8s591f is not protected.",
+              "severity": "blocking"
+            }
+          ],
+          "blockingFailures": [
+            "role:builder",
+            "role:regression-hunter",
+            "evidence:git-diff",
+            "claim-ledger-present",
+            "blocking-dissent"
+          ],
+          "at": "2026-09-01T20:44:58.615Z",
+          "actor": "boss-lead"
+        }
+      ],
+      "verdict": {
+        "wave": 1,
+        "verdict": "REPAIR",
+        "reason": "Audit wave complete and reconciled: premium is VERIFIED-UNMET by a second independent review; the contract is frozen with measurements; the blocking student-pull dissents (Kid A, Kid B) and the blocking econ dissent on six forbidden reference elements are the build's targets and stay open into wave 2; the analyst's process dissent is resolved by the recorded repairs. No builder ran; the wave is closed as REPAIR = proceed to the Full House build under the frozen contract.",
+        "evidenceIds": [
+          "w1-contract-frozen",
+          "analyst-w1-report",
+          "second-visual-review-report"
+        ],
+        "at": "2026-09-01T20:44:58.876Z",
+        "actor": "boss-lead"
+      },
+      "repairs": 1,
       "startedAt": "2026-09-01T20:13:41.264Z",
-      "closedAt": null
+      "closedAt": "2026-09-01T20:44:59.095Z"
     }
   },
   "evidence": {
@@ -1612,6 +2397,395 @@
       },
       "recordedAt": "2026-09-01T20:36:20.872Z",
       "actor": "econ-truth-w1"
+    },
+    "w1-suite": {
+      "id": "w1-suite",
+      "wave": 1,
+      "kind": "test",
+      "label": "Wave-1 baseline: cd runtime && npm test (build + full suite incl. the three M2 harness wrappers) at the audit head",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-suite--record.json",
+      "sha256": "2dc79086da7a9cced19afc898cd72bf779761e99f00ecb7c61e77c375406e363",
+      "size": 114220,
+      "metadata": {
+        "tags": [
+          "test",
+          "wave-1"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T20:43:17.457Z",
+      "actor": "boss-lead"
+    },
+    "w1-l1-harness": {
+      "id": "w1-l1-harness",
+      "wave": 1,
+      "kind": "test",
+      "label": "Wave-1 baseline: L1 tuning harness (16 properties incl. the P16 render limb)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-l1-harness--record.json",
+      "sha256": "bf15de207cd3907bca3abb30228db6e4a33963a66a031a6131030d331339bda0",
+      "size": 14555,
+      "metadata": {
+        "tags": [
+          "test",
+          "wave-1"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T20:43:29.584Z",
+      "actor": "boss-lead"
+    },
+    "w1-m1-baseline-manifest": {
+      "id": "w1-m1-baseline-manifest",
+      "wave": 1,
+      "kind": "browser-trace",
+      "label": "Module 1 (Draft Day) pixel baseline at the audit head: 10 frames (play/teach 1366x768, board 1920x1080) at join, lobby, hook, first PLAY; captured by independent Browser QA with tools/shots-m1.cjs (scratch)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-m1-baseline-manifest--manifest.json",
+      "sha256": "3902403df370a7c11524d8a0d8bd6bb57741077f26a9261b5ce016818b8df4bd",
+      "size": 1893,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "baseline",
+          "regression"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:48.651Z",
+      "actor": "browser-qa-w1"
+    },
+    "w1-m1-baseline-compare": {
+      "id": "w1-m1-baseline-compare",
+      "wave": 1,
+      "kind": "note",
+      "label": "Two independent runs compared by sha256: all three /board frames byte-identical; /play and /teach differ only by the random session code and rejoin PIN (documented, scrubbable)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-m1-baseline-compare--compare-result.json",
+      "sha256": "2a603bf6bee4d3eba201836ba1332c974b4ab070964910f901cd385a3ee8ccc4",
+      "size": 2217,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "baseline",
+          "regression"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:48.894Z",
+      "actor": "browser-qa-w1"
+    },
+    "w1-m1-04-board": {
+      "id": "w1-m1-04-board",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Module 1 baseline frame m1-04-board-lobby@1920x1080 (byte-stable across runs)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-m1-04-board--m1-04-board-lobby-1920x1080.png",
+      "sha256": "3b77dd066ced90a9109646cc9e7c39f8577689e3cebf5fd1e723bc1fc46a5a30",
+      "size": 759596,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "baseline",
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:49.145Z",
+      "actor": "browser-qa-w1"
+    },
+    "w1-m1-07-board": {
+      "id": "w1-m1-07-board",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Module 1 baseline frame m1-07-board-hook@1920x1080 (byte-stable across runs)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-m1-07-board--m1-07-board-hook-1920x1080.png",
+      "sha256": "064a078f625ff65ac85b5d03ab51475ecbfc410fec26b83c2d98ffb3cbbae4ca",
+      "size": 824862,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "baseline",
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:49.384Z",
+      "actor": "browser-qa-w1"
+    },
+    "w1-m1-10-board": {
+      "id": "w1-m1-10-board",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Module 1 baseline frame m1-10-board-play@1920x1080 (byte-stable across runs)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-m1-10-board--m1-10-board-play-1920x1080.png",
+      "sha256": "685791e7be0a7d3eb42dcc03dceca32a1320741439800576c2176357818db251",
+      "size": 751662,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "baseline",
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:49.626Z",
+      "actor": "browser-qa-w1"
+    },
+    "analyst-w1-report": {
+      "id": "analyst-w1-report",
+      "wave": 1,
+      "kind": "analyst-report",
+      "label": "ANALYST_W1 — wave-1 reconciliation: premium VERIFIED-UNMET corroborated independently; pass condition NOT met (contract is an empty skeleton, econ report unrecorded, no M1 baseline, row G6 false); recommendation REPAIR with the wave-2 acceptance measurement set",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-report--ANALYST_W1.md",
+      "sha256": "7c8c1c7473c935a4f821440631494a5f4d62c8d18381b67c36a307c519271843",
+      "size": 35120,
+      "metadata": {
+        "tags": [
+          "wave-1",
+          "reconciliation",
+          "read-only",
+          "recommendation-repair"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:51.367Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-contract-empty": {
+      "id": "analyst-w1-contract-empty",
+      "wave": 1,
+      "kind": "note",
+      "label": "OBSERVED: VISUAL_REFERENCE_CONTRACT.md is STATUS DRAFT SKELETON — all 33 rows (A1-A10, B1-B8, C1-C6, D1-D4, E1-E5, F1-F6) have empty Required implementation / Allowed adaptation / Acceptance evidence cells; zero acceptance measurements exist. Row G asserts an M1 pixel baseline in wave-1 evidence that does not exist, and row G6 asserts a ClaimAtom audit that ECON_ADAPTATION_RULINGS section 0 shows is false for L1.",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-contract-empty--VISUAL_REFERENCE_CONTRACT.md",
+      "sha256": "c5aa7b54cfdc7f9e709c38aea9f256802c0c60a657a38bbafe7820361684ab4a",
+      "size": 23276,
+      "metadata": {
+        "tags": [
+          "pass-condition",
+          "blocking",
+          "contract-freeze"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:51.597Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-twopeaks-source": {
+      "id": "analyst-w1-twopeaks-source",
+      "wave": 1,
+      "kind": "note",
+      "label": "OBSERVED in source: studentView REVEAL gates twoPeaks on state.twoPeaksReleased alone (fullHouse.ts:2230-2233) while boardView REVEAL gates on revealStage >= NIGHT_COUNT+1 (fullHouse.ts:2522-2523); onPhaseExit sets twoPeaksReleased unconditionally on leaving PLAY (fullHouse.ts:2030). The Two Peaks therefore reach every student device at reveal stage 0 in EVERY session, not only when a teacher skips the release button — worse than Kid A stated, and assigned to no wave under the Q6 scoping.",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-twopeaks-source--fullHouse.ts",
+      "sha256": "9455e1032ca8cee898820b75cdc84d53d69b7310b8d6d8d6d566254fa95503af",
+      "size": 173215,
+      "metadata": {
+        "tags": [
+          "correctness-defect",
+          "reveal-staging",
+          "orphaned-scope"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:51.834Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-prior-strong-fold": {
+      "id": "analyst-w1-prior-strong-fold",
+      "wave": 1,
+      "kind": "note",
+      "label": "OBSERVED: GATE_L1_PLAY.md:987-1018 — the prior independent gameplay critic rated STRONG for a third round while listing 'Chromebook fold buries LOCK IT IN and the FULL HOUSE plate (P9)' as NON-BLOCKING. Viewport truth did not change between that gate and the kid dissents; the bar (reference spec section 2) and the persona did. Kid A's blocking severity carries new evidence (reveal freeze / Two Peaks spoiler); Kid B's rests entirely on the already-known fold defect; Kid C saw the same facts and recorded no dissent.",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-prior-strong-fold--GATE_L1_PLAY.md",
+      "sha256": "91980cdc69ff06d533c392d08b66f03399d7356f13823d4d78137af8f7690040",
+      "size": 82511,
+      "metadata": {
+        "tags": [
+          "dissent-proportionality",
+          "reconciliation"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:52.073Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-fold-viewport": {
+      "id": "analyst-w1-verify-fold-viewport",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Analyst re-verification of the fold defect (viewport truth, 1366x768): the whole screen is Night 2's card + dial + LOCK IT IN; 'NIGHT 1 — HOW IT WENT' starts at y~655 and the box score is cut mid-figure",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-fold-viewport--18-play-night2-with-night1-result.png",
+      "sha256": "7d414a1009eafb3af28397bd1a357da947596c6b0d65aaa080b9cd1a8cfdd96f",
+      "size": 105419,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "analyst-reverified",
+          "fold"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:52.312Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-fold-fullpage": {
+      "id": "analyst-w1-verify-fold-fullpage",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Same state fullPage — KEPT $215,384 at y~886 and 'Renewals 50% -> 30% (-20)' at y~910, both off the 768px viewport; also shows the PLAN $24 tick label struck through by the dial knob (P1) and CASH/RENEWALS in identical gold in the desk header",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-fold-fullpage--18b-play-night2-with-night1-result-full.png",
+      "sha256": "860f2bf8ea1b9244ecccef0639629897ad478eebda3625e27832064493dbb0b0",
+      "size": 132945,
+      "metadata": {
+        "tags": [
+          "fullpage",
+          "analyst-reverified",
+          "fold",
+          "two-books"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:52.618Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-sellout": {
+      "id": "analyst-w1-verify-sellout",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Analyst re-verification of the sellout cut at 1366x768: the viewport is entirely Night 5's dials; 'FULL HOUSE' first appears at y~745 as a sliver at the bottom edge",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-sellout--24-play-night4-sellout.png",
+      "sha256": "854dbea560a40725a5e2f23cbea1b13761e85c422309adc17ee1c7856dfaebe8",
+      "size": 101398,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "analyst-reverified",
+          "sellout"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:52.855Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-teach-top": {
+      "id": "analyst-w1-verify-teach-top",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Analyst re-verification of /teach page top at 1366x768 during PLAY: the join code and two localhost URLs own the first viewport; visible content ends inside the director notes at 'ASK'; no pacing control is on screen",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-teach-top--45-teach-play-TOP-1366x768.png",
+      "sha256": "587f700ba51435d7bd4ced8cffa4e5a74fdb4a3ff3eec86295a77e027de33d24",
+      "size": 87837,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "analyst-reverified",
+          "classroom-reliability"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:53.085Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-board-reveal5": {
+      "id": "analyst-w1-verify-board-reveal5",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Analyst re-verification of /board REVEAL stage 5 at 1920x1080: renewals-rule paragraph owns the top third, scatter sits inside a bordered plot box, 'N1 Tue' legend swatch is near-black on near-black, 'v79 - REVEAL' HUD top-right, no 72-96px hero figure anywhere. Correction: the modelling caveat is bolder but NOT brighter/larger than the claim — DIRECTION.md overstates by one term",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-board-reveal5--31-board-reveal-stage5-1920x1080.png",
+      "sha256": "7a3f909e6665d2c50fa69b623ee97f2240d8360039ae663d14627cfa8655cd4e",
+      "size": 1267406,
+      "metadata": {
+        "tags": [
+          "viewport-1920x1080",
+          "analyst-reverified",
+          "projector"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:53.336Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-board-cf": {
+      "id": "analyst-w1-verify-board-cf",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Analyst re-verification of /board COUNTERFACTUAL at 1366x768: four value chips collide with bar ends ('15,812' overhangs into the card edge); the 4-line bold summary is the largest block; all three named rows are 'same price' desks — a desk that adapted is never named (Kid C's structural exclusion, confirmed)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-board-cf--36-board-counterfactual-1366x768.png",
+      "sha256": "1fb7c1163fbf1980d54728d761adbfa1bb195731af2dc9fa6ad91aadedd74bc1",
+      "size": 815225,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "analyst-reverified",
+          "projector"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:53.581Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-1024-lock": {
+      "id": "analyst-w1-verify-1024-lock",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Analyst re-verification at 1024x600 first contact: the rejoin PIN card owns the top ~140px, the dial card is cut mid-way, LOCK IT IN is off the bottom of the screen",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-1024-lock--12-play-night1-prelock-1024x600.png",
+      "sha256": "ca32d5ceea08792389b5f9c900cde0df97be0492ac6b00ddc7df8ab7c09f168e",
+      "size": 79416,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "analyst-reverified",
+          "viewport-failure"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:53.812Z",
+      "actor": "analyst-w1"
+    },
+    "analyst-w1-verify-synth1": {
+      "id": "analyst-w1-verify-synth1",
+      "wave": 1,
+      "kind": "screenshot",
+      "label": "Analyst re-verification of /board SYNTHESIS card 1 of 6 at 1920x1080: 'REVENUE = PRICE x PEOPLE' is five lines of prose with no computed visual and ~250px of dead space beneath, at the ceremonial close",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/analyst-w1-verify-synth1--39-board-synthesis-card1-1920x1080.png",
+      "sha256": "63558848dfefdfb064291f79d12e9f21ca3ba399384e0fa3f4914411735d9937",
+      "size": 1131109,
+      "metadata": {
+        "tags": [
+          "viewport-1920x1080",
+          "analyst-reverified",
+          "synthesis"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:43:54.058Z",
+      "actor": "analyst-w1"
+    },
+    "w1-contract-frozen": {
+      "id": "w1-contract-frozen",
+      "wave": 1,
+      "kind": "note",
+      "label": "VISUAL_REFERENCE_CONTRACT.md frozen at wave-1 close: rows A1-F6 filled (required implementation, allowed adaptation with ruling ids, acceptance evidence), section G rewritten as the R-1 requirement, section H carrying the analyst's binding acceptance measurements verbatim and the disposition of its eight repair actions",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-contract-frozen--VISUAL_REFERENCE_CONTRACT.md",
+      "sha256": "2cff09f862a4e3661023f8f1351a61fa3287ccf00b0ec16bc6c85b8224553f91",
+      "size": 32339,
+      "metadata": {
+        "tags": [
+          "contract",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:44:57.627Z",
+      "actor": "boss-lead"
+    },
+    "w1-analyst-report-doc": {
+      "id": "w1-analyst-report-doc",
+      "wave": 1,
+      "kind": "note",
+      "label": "ANALYST_W1.md as persisted (verbatim from the analyst's report)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w1-analyst-report-doc--ANALYST_W1.md",
+      "sha256": "7c8c1c7473c935a4f821440631494a5f4d62c8d18381b67c36a307c519271843",
+      "size": 35120,
+      "metadata": {
+        "tags": [
+          "analyst",
+          "wave-1"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:44:57.858Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {},
@@ -1682,6 +2856,26 @@
       "status": "open",
       "recordedAt": "2026-09-01T20:36:21.112Z",
       "actor": "econ-truth-w1"
+    },
+    "analyst-w1-dissent": {
+      "id": "analyst-w1-dissent",
+      "wave": 1,
+      "category": "process",
+      "severity": "blocking",
+      "finding": "Blocking on the decision to open the wave-2 build, not on acceptance of the wave-1 audit evidence. The audit is strong and I corroborated its load-bearing claims independently, but the build must not open because: (a) VISUAL_REFERENCE_CONTRACT.md is an empty 33-row skeleton with zero acceptance measurements, while ECON_ADAPTATION_RULINGS section 0 establishes that no test in this repository reads a line of runtime/src/client/** — the written contract is the ONLY control on this wave, and a builder can ship a client-computed pre-lock projection, a target band, or a 'Total Profit' label with npm test at 461/461 green and the L1 harness reporting all 16 properties holding; (b) that skeleton asserts two protections that do not exist — row G6's ClaimAtom audit (false for L1 per ECON section 6) and row G's Module 1 pixel baseline (OBSERVED absent: every one of the 100+ recorded wave-1 frames is M2 L1), so 'Module 1 rendered output unchanged' is currently unfalsifiable while Q1(a) touches the shared theme; (c) the economic-truth-report carrying four blocking economic-truth dissents (E1 pre-lock projections, E8 target band, E14 reward footer, E16/E17 per-desk money columns and the presupposing prompt) is not recorded in events.jsonl and its role is still active; (d) Q1, labelled founder-blocking by the Experience Director and 'not a builder's call' by the visual critic, was ruled by the Boss lead, retires the shipped product's money accent, has no contrast/CVD proof for its replacement ramp, and interacts with reference-conflict 6 where green applied to both books invites the summing the module forbids; (e) the one correctness defect wave 1 surfaced — studentView REVEAL gating twoPeaks on state.twoPeaksReleased alone (fullHouse.ts:2230-2233) while boardView gates on revealStage >= NIGHT_COUNT+1 (2522-2523), with onPhaseExit setting the flag unconditionally (2030), so the lesson's punchline reaches every desk at stage 0 in every session — belongs to no wave under the Q6 scoping, and DIRECTION section 9's subordinate reveal mirror is unreachable by restyle. Separately recorded for the lead's reading of the evidence: the fold defect was already listed NON-BLOCKING by an independent critic who rated STRONG three rounds (GATE_L1_PLAY.md:987-1018); it must not be presented to the founder as a new discovery.",
+      "evidenceIds": [
+        "analyst-w1-report",
+        "analyst-w1-contract-empty",
+        "analyst-w1-twopeaks-source",
+        "analyst-w1-prior-strong-fold"
+      ],
+      "blocking": true,
+      "status": "resolved",
+      "recordedAt": "2026-09-01T20:43:54.307Z",
+      "actor": "analyst-w1",
+      "resolution": "Every repair action taken before the build opens: (a) the contract is frozen with filled rows and the analyst's own acceptance measurements bound verbatim in section H (w1-contract-frozen); (b) section G no longer asserts an existing client claim audit — it states R-1 as a wave-2 precondition with mutation proof; the Module 1 pixel baseline now exists in evidence (w1-m1-baseline-manifest, w1-m1-baseline-compare, three byte-stable board frames) and is extended by the wave-2 regression hunter; (c) the economic-truth report is recorded and its role completed with the blocking econ dissent in the ledger (econ-adaptation-rulings-report); (d) Q1 is recorded as a Boss lead application of the founder's section-8 instruction on a founder-escalated question, with contrast/CVD proof and the two-books colour rule as wave-2 deliverables, overturnable by the founder at the ship case; (e) R-9 (student Two Peaks gate) is carved into wave 2 Lane C as a module change with a test; test evidence recorded authentically (w1-suite, w1-l1-harness); Q7 routed to a bounded Sports Reality review in wave 2; the fold defect is presented to the founder as a known, previously non-blocking defect re-rated under the new bar plus one new correctness defect (analyst-w1-prior-strong-fold).",
+      "resolvedAt": "2026-09-01T20:44:58.087Z",
+      "resolvedBy": "boss-lead"
     }
   },
   "meetings": {},
@@ -1731,18 +2925,18 @@
   "shipCases": [],
   "metrics": {
     "waves": 1,
-    "repairs": 0,
+    "repairs": 1,
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
     "agentsActivated": 9,
-    "gateFailures": 0,
+    "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 66,
+    "evidenceRecorded": 87,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 89,
-  "eventHead": "052f83342086fdcb70238b8abc82d000f3514579e88183597ae605f7234349a7",
+  "eventCount": 117,
+  "eventHead": "a59ebc7c3f410648a94bccdc2aa3992abc6cb2f7d7c2eee95d34bd7acd7adcc7",
   "warnings": []
 }

@@ -1,0 +1,78 @@
+{
+  "port": "4407",
+  "out": "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/m1-baseline",
+  "sessionCode": "BOWUEL",
+  "capturedAt": "2026-09-01T20:20:55.534Z",
+  "shots": [
+    {
+      "file": "m1-01-play-join@1366x768.png",
+      "surface": "play",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": []
+    },
+    {
+      "file": "m1-02-play-lobby@1366x768.png",
+      "surface": "play",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": []
+    },
+    {
+      "file": "m1-03-teach-lobby@1366x768.png",
+      "surface": "teach",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:20:49 PM",
+        "8:20:50 PM"
+      ]
+    },
+    {
+      "file": "m1-04-board-lobby@1920x1080.png",
+      "surface": "board",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": []
+    },
+    {
+      "file": "m1-05-play-hook@1366x768.png",
+      "surface": "play",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": []
+    },
+    {
+      "file": "m1-06-teach-hook@1366x768.png",
+      "surface": "teach",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:20:49 PM",
+        "8:20:50 PM"
+      ]
+    },
+    {
+      "file": "m1-07-board-hook@1920x1080.png",
+      "surface": "board",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": []
+    },
+    {
+      "file": "m1-08-play-play@1366x768.png",
+      "surface": "play",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": []
+    },
+    {
+      "file": "m1-09-teach-play@1366x768.png",
+      "surface": "teach",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:20:49 PM",
+        "8:20:50 PM"
+      ]
+    },
+    {
+      "file": "m1-10-board-play@1920x1080.png",
+      "surface": "board",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": []
+    }
+  ],
+  "consoleErrors": []
+}
