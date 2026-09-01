@@ -2524,6 +2524,18 @@ body.fh-compact-play .bid-stepper {
 body.fh-compact-play .fh-blind-note {
   margin-top: 6px;
 }
+/* M2 L2 (gate-l2-play R2): first contact at 1024x600 must reach LOCK IT IN and
+   the schedule strip without scrolling. */
+body.fh-compact-play .hl-week-card { padding: 8px 11px; margin-top: 0; }
+body.fh-compact-play .hl-matchup { gap: 6px; }
+body.fh-compact-play .hl-reinvest-rule { margin-top: 6px; font-size: 12.5px; line-height: 1.35; }
+body.fh-compact-play .hl-reinvest-more { margin-top: 4px; }
+body.fh-compact-play .hl-slate-block { margin-top: 6px !important; }
+body.fh-compact-play .hl-slate-block > summary { font-size: 12px; }
+body.fh-compact-play .fh-slate-row { padding: 3px 0; font-size: 12px; }
+body.fh-compact-play .hl-split { margin-top: 7px; padding: 8px; }
+body.fh-compact-play .hl-road { margin-top: 7px; padding: 8px 10px; font-size: 13px; line-height: 1.35; }
+body.fh-compact-play .fh-kept { margin-top: 7px; }
 body.fh-compact-play .fh-bowl-plate {
   margin-top: 8px;
   padding: 7px 10px;
@@ -2588,7 +2600,43 @@ body.fh-compact-play .fh-receipt {
   background: rgba(189,138,18,0.14); border: 1px solid rgba(244,185,66,0.4); color: var(--ink-primary);
 }
 .hl-shock.mine { background: rgba(217,89,143,0.16); border-color: rgba(217,89,143,0.5); }
-.hl-reinvest-rule { margin-top: 8px; font-size: 12px; line-height: 1.45; color: var(--ink-secondary); }
+.hl-reinvest-rule { margin-top: 8px; font-size: 13px; line-height: 1.4; color: var(--ink-primary); }
+.hl-reinvest-more { margin-top: 6px; }
+.hl-give-sub {
+  margin-top: 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--accent-gold); border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;
+}
+.hl-give-sub:first-of-type { border-top: none; padding-top: 0; }
+.hl-identity {
+  margin: 8px 0 0; padding: 7px 10px; border-radius: 8px; font-size: 12.5px; line-height: 1.4;
+  background: rgba(244,185,66,0.10); border-left: 2px solid rgba(244,185,66,0.5); color: var(--ink-primary);
+}
+.hl-reinvest-more > summary { font-size: 12px; }
+
+/* ---- /play: the Chromebook fold for M2 L2 (gate-l2-play R1/R2, BLOCKING) ----
+   The primary action is pinned to the bottom of the viewport so it is reachable
+   at every scroll position in every week, including while the pair is reading
+   the week that just settled. Also gate-l2-projector P-7. */
+.hl-lockbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 14px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: rgba(11,15,22,0.96);
+  border-top: 1px solid rgba(244,185,66,0.35);
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.45);
+}
+.hl-lockbar-vals { font-size: 13px; color: var(--ink-secondary); }
+.hl-lockbar-vals b { font-family: var(--font-number); font-size: 16px; color: var(--accent-gold); }
+.hl-lockbar .btn { min-height: 44px; min-width: 190px; font-size: 15px; }
+body.hl-has-lockbar main { padding-bottom: 76px; }
+
+.hl-bell-head {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent-gold); margin: 2px 0 4px;
+}
+/* The accounting sits UNDER the consequence: the decomposition, KEPT and the
+   road card are what the bell has to land, and the itemised pipes follow. */
+.hl-ledger-block { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); }
 .fh-slate-row.hl-open-week { color: var(--ink-primary); background: rgba(244,185,66,0.10); }
 
 /* ---- /play: the decomposition split ---- */

@@ -53,15 +53,34 @@
  *   - This lesson's dollars are shrunk to classroom size by the same factor L1
  *     uses (modeled ticket prices $10-$120 against real NBA averages), about
  *     5x. $4.9M / 5 ~ $950,000 — `NATIONAL`, identical for every club.
- *   - Gate is a fifth to a quarter of NBA club revenue (C's own R11 ledger). At
- *     the shipped constants a New York home week at a neutral matchup takes
- *     ~$660,000 at the gate against ~$2.79M of total weekly revenue: 23.7%.
- *     Memphis: 22.7%. Both inside the ledgered band.
- *   - National is therefore the single tallest pipe on every club's bar (New
- *     York 34%, Memphis 51%) WITHOUT being 52% of the biggest market's total,
- *     which was C-2's specific complaint.
- *   - New York has the league's highest gate at every comparable matchup
- *     (SR-1), which C's printed table violated.
+ *   - Gate is a fifth to a quarter of NBA club revenue NEAR A CLUB'S HOUSE
+ *     PRICE (C's own R11 ledger). Recomputed from the shipped constants at
+ *     neutral Draw 40/40, each profile at its own housePrice: New York @ $56
+ *     takes $665,280 at the gate + $213,840 in-arena + $830,000 local +
+ *     $950,000 national = $2,659,120 total, gate 25.0%, national 35.7%.
+ *     Memphis @ $44: $352,880 + $96,240 + $470,000 + $950,000 = $1,869,120,
+ *     gate 18.9%, national 50.8%. These are the README's figures and they
+ *     reproduce; an earlier version of this header printed 23.7% / 22.7% /
+ *     $2.79M, which did not (`gate-l2-sr` MODERATE-4 — the README wins).
+ *     Away from the house price the share moves a long way (8.1% at $120,
+ *     8.4% at $10), which is why MODELED_DOLLARS_LINE no longer states the
+ *     band as a universal.
+ *   - National is the single tallest pipe on a TYPICAL club's bar without
+ *     being 52% of the biggest market's total, which was C-2's specific
+ *     complaint. It is not tallest everywhere: `localMediaFor` overtakes
+ *     `NATIONAL` at Draw 50 on the new-york profile and Draw 54 on
+ *     golden-state, so Boston (startDraw 55) and the Lakers (68) out-earn the
+ *     national check on local money from week 1. That is the reinvest dial
+ *     working, not a defect — but no copy may call national "the biggest pipe
+ *     for every club".
+ *   - This header previously claimed "New York has the league's highest gate
+ *     at every comparable matchup (SR-1)". RETRACTED (`gate-l2-sr`
+ *     MODERATE-3): `wantedAt()` is capacity-independent and `turnout =
+ *     min(capacity, wanted)`, so on any sold-out week at equal price Chicago
+ *     (20,917), Philadelphia (20,478) and Detroit (20,332) — all on the
+ *     new-york profile — strictly out-gate Madison Square Garden's 19,812.
+ *     The profile carries the demand curve; the club carries its own real
+ *     building. No surface asserts a real-world gate ranking.
  *
  * NO RNG ANYWHERE. Every number in this lesson is a pure function of the
  * schedule, the printed Draws and the room's own committed dials. The one
@@ -525,6 +544,15 @@ export type HostLeagueState = {
   shockSlot: number | null;
   /** Teacher-released mid-lesson decomposition (the Handed-To-You bar + the pipe table). */
   barReleased: boolean;
+  /**
+   * The `weekIndex` at the moment the bar went up, or null.
+   *
+   * REVEAL stage 5 asks whether the room changed its mind AFTER seeing the bar.
+   * Without this, the beat cannot tell a room that saw the bar before week 3
+   * from a room that never saw it at all, and it asserted the bar as the cause
+   * either way (`gate-l2-play` R3, `gate-l2-econ` FL-F).
+   */
+  barReleasedAtWeek: number | null;
   revealStage: number;
   barPage: number;
   synthPage: number;
@@ -582,9 +610,9 @@ export const REVEAL_STAGES: readonly RevealStage[] = [
   },
   {
     stage: 5,
-    name: "Did the room change its mind?",
-    headline: "WHAT YOU DID AFTER YOU SAW IT",
-    say: "The room's own reinvest, before and after it saw who was filling its buildings. Do not tell them what it means.",
+    name: "Did the room change its mind — or run out of tomorrow?",
+    headline: "WHAT YOU DID IN THE LAST WEEK",
+    say: "The room's own reinvest per week, with the last-week rule printed beside it. Say the rule out loud — week 3 was the end, and Draw bought then earns nothing else in this lesson — and THEN ask them why the room did what it did. Do not resolve it: this board deliberately refuses to choose between the rule and the bar.",
   },
 ];
 
@@ -823,20 +851,68 @@ export type VisitorLedgerRow = {
   hostSoldOut: boolean;
 };
 
-/** What one desk gave the league through its Draw, and what the league gave it. */
+/**
+ * What one desk gave the league through its Draw, and what the league gave it.
+ *
+ * TWO INSTRUMENTS, AND THEY MEASURE DIFFERENT THINGS. `gate-l2-econ` N1
+ * (BLOCKING, and the wave's highest-severity finding) established that the
+ * `gave`/`received` pair measures the DEAL, not the DECISION: `gave` correlated
+ * 0.959 with `startDraw` and only 0.644 with mean reinvest share, so in a room
+ * where every desk reinvested nothing the board still printed gave/received
+ * spreads of $293,088-$1,523,568 and named a desk that spent $0 as the room's
+ * biggest giver. Three surfaces read it as if it measured spending.
+ *
+ * So the row now carries both, and every surface that asks a question about a
+ * DECISION reads the `...ByChoice` fields:
+ *
+ *   - `gave` / `received` / `net` — the dealt totals. True, and the right
+ *     magnitude for "a basketball night is a shared product". Mostly the Draw
+ *     you were handed.
+ *   - `gaveByChoice` / `receivedByChoice` / `netByChoice` / `ownGain` — the
+ *     same dollars recomputed against a strict counterfactual in which THIS
+ *     desk (or, for `receivedByChoice`, the desk visiting it) reinvested
+ *     nothing all lesson, every other input held at what actually happened.
+ *     Zero reinvest anywhere in the room makes every one of these exactly $0,
+ *     which is what makes free-riding visible instead of confounded.
+ *
+ * `ownGain` is the same counterfactual run on the desk's own books: what
+ * reinvesting was worth to ITS cash, on ITS schedule. That is the luck control
+ * `gate-l2-play`'s free-rider finding asked for — a within-desk comparison on
+ * the same calendar, so a kind schedule cannot masquerade as a good decision.
+ */
 export type GiveAndTakeRow = {
   slot: number;
   deskNumber: number;
   deskHandle: string;
   club: string;
-  /** Dollars this club's Draw generated in OTHER buildings. */
+  /** Dollars this club's Draw generated in OTHER buildings. Mostly dealt, not bought. */
   gave: number;
-  /** Dollars visiting clubs generated in THIS building. */
+  /** Dollars visiting clubs generated in THIS building. Mostly dealt, not bought. */
   received: number;
   net: number;
+  /** Dollars this desk reinvested across the season. */
+  spend: number;
+  /** Of `gave`, the part that exists because THIS desk chose to reinvest. */
+  gaveByChoice: number;
+  /** Of `received`, the part that exists because the VISITING desks chose to reinvest. */
+  receivedByChoice: number;
+  netByChoice: number;
+  /** What reinvesting was worth to this desk's OWN cash, same schedule, same prices. */
+  ownGain: number;
   meanShare: number;
   drawStart: number;
   drawEnd: number;
+};
+
+/** Room-level totals of the by-choice instrument. Every figure is $0 in a room that never reinvested. */
+export type ChoiceTotals = {
+  spend: number;
+  gaveByChoice: number;
+  receivedByChoice: number;
+  ownGain: number;
+  /** Of the value reinvesting created (own gain + what it put in other buildings), the share that landed elsewhere. */
+  externalPct: number;
+  anySpend: boolean;
 };
 
 export type PipeRow = {
@@ -861,11 +937,19 @@ export type SmallMarketPath = {
   smallVisitorClub: string;
   smallVisitorDraw: number;
   smallDoorMoney: number;
+  smallPrice: number;
   bigHandle: string;
   bigClub: string;
   bigVisitorClub: string;
   bigVisitorDraw: number;
   bigDoorMoney: number;
+  bigPrice: number;
+  /** The door-money gap, split by the SAME three blocks the room has been reading all lesson. They sum to the gap exactly. */
+  gapFromVisitor: number;
+  gapFromBuildingAndPrice: number;
+  gapFromOwnDraw: number;
+  /** Which block actually carried the gap. Computed, never asserted. */
+  driver: "visitor" | "building-and-price" | "own-draw" | "none";
   line: string;
 };
 
@@ -894,6 +978,8 @@ export type HostLeagueAggregate = {
   homeRevenueDecomposition: HomeDecomposition[];
   visitorLedger: VisitorLedgerRow[];
   giveAndTake: GiveAndTakeRow[];
+  /** Room totals of the by-choice instrument (econ B1). All zero in a room that never reinvested. */
+  choiceTotals: ChoiceTotals;
   pipes: PipeRow[];
   smallMarketPath: SmallMarketPath;
   /** The room's mean reinvest share, per week — the C7 evidence for "did seeing it change you?". */
@@ -952,6 +1038,105 @@ function decompositionFor(state: HostLeagueState, club: Club): HomeDecomposition
   };
 }
 
+/**
+ * The Draw this club would have carried into each of its settled weeks if the
+ * DESK had reinvested nothing all lesson.
+ *
+ * Three deliberate carve-outs, all so the counterfactual stays honest rather
+ * than flattering:
+ *  - `stock` weeks (a club the league office ran before a desk claimed it) keep
+ *    their actual spend: they are not this desk's decisions.
+ *  - bot clubs keep their actual spend for the same reason — the instrument
+ *    measures what THIS ROOM chose, and a bot chose nothing.
+ *  - the star-departure club is pinned to its actual path. The shock is
+ *    exogenous, announced before commitment and lands on a league-office club
+ *    (R7); pretending a spending path could have avoided it would invent a
+ *    decision nobody had.
+ *
+ * Week 1 is identical under both paths by construction — reinvest buys Draw
+ * that arrives NEXT week — so the counterfactual only ever diverges where the
+ * model says it should.
+ */
+export function baselineDrawPathFor(state: HostLeagueState, club: Club): number[] {
+  const profile = profileOf(club);
+  const out: number[] = [];
+  const pinned = state.shockSlot === club.slot;
+  let d = club.weeks[0]?.hostDrawBefore ?? club.draw;
+  for (const w of club.weeks) {
+    if (pinned) d = w.hostDrawBefore;
+    out.push(d);
+    const counterfactualSpend = club.seatId !== null && !w.stock ? 0 : w.reinvestPaid;
+    d = nextDraw(profile, d, counterfactualSpend);
+  }
+  return out;
+}
+
+/**
+ * The by-choice ledger for one desk: the same dollars the dealt ledger reports,
+ * recomputed with this desk's reinvest set to zero and everything else — the
+ * schedule, every price, every other club's Draw — held at what actually
+ * happened. Each figure is a clean partial derivative of one decision.
+ */
+export function choiceLedgerFor(
+  state: HostLeagueState,
+  club: Club,
+  baselines: ReadonlyMap<number, number[]>,
+): { spend: number; gaveByChoice: number; receivedByChoice: number; ownGain: number } {
+  const profile = profileOf(club);
+  const capacity = defOf(club).capacity;
+  const mine = baselines.get(club.slot) ?? [];
+  let spend = 0;
+  let gaveByChoice = 0;
+  let receivedByChoice = 0;
+  let cashActual = 0;
+  let cashBaseline = 0;
+
+  club.weeks.forEach((w, i) => {
+    const myBaselineDraw = mine[i] ?? w.hostDrawBefore;
+    const isMine = club.seatId !== null && !w.stock;
+    spend += isMine ? w.reinvestPaid : 0;
+
+    // GAVE BY CHOICE — my Draw's effect on the building I visited, at my draw
+    // vs at my never-reinvested draw. Their price, their Draw, their building.
+    const roadHost = state.clubs[w.roadHostSlot];
+    const roadWeek = roadHost?.weeks.find((x) => x.week === w.week);
+    if (roadHost && roadWeek) {
+      const counterfactual = settleHome(
+        profileOf(roadHost),
+        defOf(roadHost).capacity,
+        w.roadHostDrawBefore,
+        myBaselineDraw,
+        roadWeek.home.price,
+      ).visitorDollars;
+      gaveByChoice += w.roadDollars - counterfactual;
+    }
+
+    // RECEIVED BY CHOICE — the visitor's effect on MY building, at their draw
+    // vs at their never-reinvested draw. My price, my Draw, my building.
+    const visitor = state.clubs[w.visitorSlot];
+    if (visitor) {
+      const vPath = baselines.get(visitor.slot) ?? [];
+      const vIndex = visitor.weeks.findIndex((x) => x.week === w.week);
+      const visitorBaselineDraw = vIndex >= 0 ? (vPath[vIndex] ?? w.visitorDrawBefore) : w.visitorDrawBefore;
+      const counterfactual = settleHome(profile, capacity, w.hostDrawBefore, visitorBaselineDraw, w.home.price).visitorDollars;
+      receivedByChoice += w.home.visitorDollars - counterfactual;
+    }
+
+    // OWN GAIN — my own books, same schedule, same prices, nothing put back.
+    cashActual += w.net;
+    const homeB = settleHome(profile, capacity, myBaselineDraw, w.visitorDrawBefore, w.home.price);
+    const reinvestB = isMine ? 0 : w.reinvestPaid;
+    cashBaseline += homeB.doorMoney + localMediaFor(profile, myBaselineDraw) + w.national - w.bill - reinvestB;
+  });
+
+  return {
+    spend: Math.round(spend),
+    gaveByChoice: Math.round(gaveByChoice),
+    receivedByChoice: Math.round(receivedByChoice),
+    ownGain: Math.round(cashActual - cashBaseline),
+  };
+}
+
 export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
   const inLeague = state.clubs.slice(0, state.leagueSize);
@@ -998,12 +1183,18 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
   }
   visitorLedger.sort((a, b) => a.week - b.week || a.hostSlot - b.hostSlot);
 
+  // One baseline path per club in the league — the visitor-side term needs the
+  // OTHER desk's counterfactual, so they are all built before any row is.
+  const baselines = new Map<number, number[]>();
+  for (const c of inLeague) baselines.set(c.slot, baselineDrawPathFor(state, c));
+
   const giveAndTake: GiveAndTakeRow[] = live
     .filter((c) => c.weeks.length > 0)
     .map((c) => {
       const gave = c.weeks.reduce((sum, w) => sum + w.roadDollars, 0);
       const received = c.weeks.reduce((sum, w) => sum + w.home.visitorDollars, 0);
       const shares = c.weeks.map((w) => w.share);
+      const choice = choiceLedgerFor(state, c, baselines);
       return {
         slot: c.slot,
         deskNumber: c.deskNumber ?? 0,
@@ -1012,12 +1203,33 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
         gave,
         received,
         net: received - gave,
+        spend: choice.spend,
+        gaveByChoice: choice.gaveByChoice,
+        receivedByChoice: choice.receivedByChoice,
+        netByChoice: choice.receivedByChoice - choice.gaveByChoice,
+        ownGain: choice.ownGain,
         meanShare: shares.length === 0 ? 0 : Math.round(shares.reduce((a, b) => a + b, 0) / shares.length),
         drawStart: c.weeks[0]!.hostDrawBefore,
         drawEnd: c.draw,
       };
     })
     .sort((a, b) => a.deskNumber - b.deskNumber);
+
+  const choiceTotals: ChoiceTotals = (() => {
+    const spend = giveAndTake.reduce((s, r) => s + r.spend, 0);
+    const gaveByChoice = giveAndTake.reduce((s, r) => s + r.gaveByChoice, 0);
+    const receivedByChoice = giveAndTake.reduce((s, r) => s + r.receivedByChoice, 0);
+    const ownGain = giveAndTake.reduce((s, r) => s + r.ownGain, 0);
+    const created = ownGain + gaveByChoice;
+    return {
+      spend,
+      gaveByChoice,
+      receivedByChoice,
+      ownGain,
+      externalPct: created > 0 ? Math.round((gaveByChoice / created) * 100) : 0,
+      anySpend: spend > 0,
+    };
+  })();
 
   const pipes: PipeRow[] = live
     .filter((c) => c.weeks.length > 0)
@@ -1063,6 +1275,7 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
     homeRevenueDecomposition: decomposition,
     visitorLedger,
     giveAndTake,
+    choiceTotals,
     pipes,
     smallMarketPath: smallMarketPathFrom(state),
     meanShareByWeek,
@@ -1076,6 +1289,20 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
  * asserted: a SMALL-market desk hosting a strong visitor out-earning a
  * BIG-market desk hosting a weak one. If the room's schedule never produced the
  * pair, the board says exactly that instead of inventing one.
+ *
+ * `gate-l2-econ` B3 / FL-A and `gate-l2-play` R4 (both BLOCKING). This selector
+ * used to maximise the door-money gap subject only to
+ * `smallVisitorDraw > bigVisitorDraw` and then print "and it won it on WHO WAS
+ * VISITING" over the result. In a reachable room (odd desks $110, even desks
+ * $30) it printed that sentence over an $80 price gap: Philadelphia priced $110
+ * and drew 152 people. The board asserted a cause the decomposition the class
+ * had just learned directly refutes, and a synthesis card repeated it verbatim.
+ *
+ * Now: the gap is SPLIT by the same three blocks the room has been reading all
+ * lesson — they sum to the gap exactly — the selector prefers a pair the
+ * visitor block actually carries, and when no such pair exists the sentence
+ * names the real driver instead. Both desks' prices are printed either way, so
+ * the room can always check the claim against the exhibit.
  */
 export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
   const empty: SmallMarketPath = {
@@ -1085,11 +1312,17 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
     smallVisitorClub: "",
     smallVisitorDraw: 0,
     smallDoorMoney: 0,
+    smallPrice: 0,
     bigHandle: "",
     bigClub: "",
     bigVisitorClub: "",
     bigVisitorDraw: 0,
     bigDoorMoney: 0,
+    bigPrice: 0,
+    gapFromVisitor: 0,
+    gapFromBuildingAndPrice: 0,
+    gapFromOwnDraw: 0,
+    driver: "none",
     line: "This room's schedule did not put a small-market desk in front of a big visitor on the same week a big-market desk hosted a weak one, so there is no honest pair here to compare. Look at the bars instead: the visitor block is the one that moves.",
   };
   type Cand = { club: Club; w: SettledWeek };
@@ -1104,18 +1337,55 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
     }
   }
   if (smalls.length === 0 || bigs.length === 0) return empty;
-  let best: { small: Cand; big: Cand; gap: number } | null = null;
+
+  // The gap, split by the same three blocks the room has been reading all
+  // lesson. They sum to the door-money gap exactly, because each side's three
+  // blocks sum to its own door money exactly (BC-5, residual 0).
+  const splitGap = (s: Cand, b: Cand) => ({
+    visitor: s.w.home.visitorDollars - b.w.home.visitorDollars,
+    bare: s.w.home.bareDollars - b.w.home.bareDollars,
+    own: s.w.home.ownDollars - b.w.home.ownDollars,
+  });
+
+  type Best = { small: Cand; big: Cand; gap: number; parts: ReturnType<typeof splitGap>; visitorDriven: boolean };
+  let bestVisitorDriven: Best | null = null;
+  let bestAny: Best | null = null;
   for (const s of smalls) {
     for (const b of bigs) {
       if (s.w.visitorDrawBefore <= b.w.visitorDrawBefore) continue;
       const gap = s.w.home.doorMoney - b.w.home.doorMoney;
       if (gap <= 0) continue;
-      if (!best || gap > best.gap) best = { small: s, big: b, gap };
+      const parts = splitGap(s, b);
+      const visitorDriven = parts.visitor > 0 && parts.visitor >= parts.bare && parts.visitor >= parts.own;
+      const cand: Best = { small: s, big: b, gap, parts, visitorDriven };
+      if (!bestAny || gap > bestAny.gap) bestAny = cand;
+      if (visitorDriven && (!bestVisitorDriven || gap > bestVisitorDriven.gap)) bestVisitorDriven = cand;
     }
   }
+  const best = bestVisitorDriven ?? bestAny;
   if (!best) return empty;
   const s = best.small;
   const b = best.big;
+  const parts = best.parts;
+  const driver: SmallMarketPath["driver"] =
+    parts.visitor >= parts.bare && parts.visitor >= parts.own
+      ? "visitor"
+      : parts.bare >= parts.own
+        ? "building-and-price"
+        : "own-draw";
+
+  const smallPrice = s.w.home.price;
+  const bigPrice = b.w.home.price;
+  const setup = `${deskHandleFor(s.club)} runs one of the league's smallest markets. Hosting ${CLUBS[s.w.visitorSlot]!.short} at Draw ${s.w.visitorDrawBefore}, priced at $${smallPrice}, that building took ${money(s.w.home.doorMoney)} through the door. ${deskHandleFor(b.club)} runs one of the biggest. Hosting ${CLUBS[b.w.visitorSlot]!.short} at Draw ${b.w.visitorDrawBefore}, priced at $${bigPrice}, it took ${money(b.w.home.doorMoney)}.`;
+  const attribution =
+    driver === "visitor"
+      ? `The small market won that week by ${money(best.gap)}, and the three blocks say why: ${money(parts.visitor)} of that gap is the visiting club. WHO WAS VISITING carried it.`
+      : driver === "building-and-price"
+        ? `The small market won that week by ${money(best.gap)} — but do not credit the visitor for it. Split the gap by the same three blocks you have been reading all lesson and ${money(parts.bare)} of it is BUILDING AND PRICE${
+            smallPrice === bigPrice ? "" : ` — $${smallPrice} against $${bigPrice}`
+          }, against ${money(parts.visitor)} from the visiting club. The bigger market priced itself out of its own night.`
+        : `The small market won that week by ${money(best.gap)}, and the biggest single block in the gap is that desk's OWN Draw: ${money(parts.own)} of it, against ${money(parts.visitor)} from the visiting club. That desk built this, over three weeks, with its reinvest dial.`;
+
   return {
     found: true,
     smallHandle: deskHandleFor(s.club),
@@ -1123,12 +1393,18 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
     smallVisitorClub: CLUBS[s.w.visitorSlot]!.short,
     smallVisitorDraw: s.w.visitorDrawBefore,
     smallDoorMoney: s.w.home.doorMoney,
+    smallPrice,
     bigHandle: deskHandleFor(b.club),
     bigClub: CLUBS[b.club.slot]!.short,
     bigVisitorClub: CLUBS[b.w.visitorSlot]!.short,
     bigVisitorDraw: b.w.visitorDrawBefore,
     bigDoorMoney: b.w.home.doorMoney,
-    line: `${deskHandleFor(s.club)} runs one of the league's smallest markets. Hosting ${CLUBS[s.w.visitorSlot]!.short} at Draw ${s.w.visitorDrawBefore}, that building took ${money(s.w.home.doorMoney)} through the door. ${deskHandleFor(b.club)} runs one of the biggest. Hosting ${CLUBS[b.w.visitorSlot]!.short} at Draw ${b.w.visitorDrawBefore}, it took ${money(b.w.home.doorMoney)}. The small market won that week, and it won it on WHO WAS VISITING.`,
+    bigPrice,
+    gapFromVisitor: Math.round(parts.visitor),
+    gapFromBuildingAndPrice: Math.round(parts.bare),
+    gapFromOwnDraw: Math.round(parts.own),
+    driver,
+    line: `${setup} ${attribution}`,
   };
 }
 
@@ -1156,8 +1432,18 @@ const PHASES: readonly CanonicalPhase[] = ["LOBBY", "HOOK", "PLAY", "REVEAL", "A
 export const HOOK_COPY =
   "Same job as last lesson, bigger world. This room is the league now. Every week you HOST one club and you VISIT another — and every club in this league is somebody's desk. You still set the price. What you no longer own is most of the reason people show up.";
 
+/**
+ * `gate-l2-econ` B5 / FL-D. The shipped line used to end "You cannot turn Draw
+ * back into cash", which is false of this model: a Draw point pays $12,000 a
+ * week in local media plus $4,704-$7,722 on every home night, and the econ gate
+ * measured a real exchange rate of $25,912 per Draw point on the
+ * Memphis-profile frontier. A student reasoning correctly from the printed rule
+ * reached the wrong dial. The two-book structure survives the correction: the
+ * books still do not convert on demand, and the return is slow, partial and
+ * shared.
+ */
 export const OBJECTIVE_COPY =
-  "Two books again, and they still do not add up to one number. CASH is what your club keeps. DRAW is how many people your club's name puts in SOMEBODY ELSE'S building. You can buy Draw with cash. You cannot turn Draw back into cash.";
+  "Two books again, and they still do not add up to one number. CASH is what your club keeps. DRAW is how many people your club's name puts in a building — yours, and somebody else's. You can buy Draw with cash. Draw pays you back the other way slowly: through your local media money and your own gate, a week late — and it pays the buildings you visit at the same time, on the same night, and you never see that part.";
 
 export const HOOK_QUESTION = "Same league. Same rules. Why?";
 
@@ -1180,8 +1466,16 @@ export const BOARD_HONESTY_LINE =
 export const HORIZON_LINE =
   "Three weeks here stand in for a whole season. Each week is one home game and one road game; a real NBA club plays 41 at home.";
 
+/**
+ * `gate-l2-sr` BLOCKING-2. Both clauses shipped as universals and both are
+ * falsified by the board's own per-desk pipe bar rendered beside them: gate
+ * share is 25.0% at a New York house price but 8.1% at $120 and 8.4% at $10,
+ * and local media overtakes the national check at Draw 50 on the new-york
+ * profile (Boston starts at 55, the Lakers at 68 — before anybody prices).
+ * Quantified honestly, and the bars are invited to be the evidence.
+ */
 export const MODELED_DOLLARS_LINE =
-  "The dollars are shrunk to classroom size, all of them by the same amount, so the SHARES are the real story: gate money is about a fifth to a quarter of a club's revenue, and the national check is the biggest single pipe for every club in this league.";
+  "The dollars are shrunk to classroom size, all of them by the same amount, so the SHARES are the real story. Near a club's house price the gate is about a fifth to a quarter of what it earns — price far above or far below that and the share moves a long way. For most clubs here the national check is the biggest single pipe, and a club that builds a big Draw can push its local money past it. The bars on this board say which is which; do not take our word for it.";
 
 /** BC-3: every real figure in product copy carries its date. */
 export const SOURCE_NOTES: readonly string[] = [
@@ -1262,8 +1556,8 @@ export const ARGUE_PROMPT = "The ticket price never changed. The curve did. Who 
 
 export const ADAPT_QUESTIONS: readonly string[] = [
   "Look at your biggest home week and your smallest. Which block on your bar changed the most between them?",
-  "Somebody in this room made your best week. Who, and what did they do to make it?",
-  "You put money into your Draw. Who got most of that money back — you, or the buildings you visited?",
+  "Somebody in this room made your best week. Who was it, and how much of it did they choose?",
+  "You put money into your Draw. Who got that money back — you, or the buildings you visited?",
 ];
 
 export const EXIT_PROMPT = "Name one week where your money went up or down because of a decision you did not make.";
@@ -1398,20 +1692,69 @@ function deskIdentity(state: HostLeagueState, club: Club) {
     capacity: def.capacity,
     capacityNote: def.capacityNote,
     profile: profileFacts(profile),
+    // BLOCKING-1: present only where it is true of THIS club. Sixteen of the
+    // twenty clubs carry nothing here, and their screens say nothing about a
+    // named club they are not.
+    identityLine: def.identityLine ?? null,
     joinedAtWeek: club.joinedAtWeek,
   };
 }
 
 const booksFor = (club: Club) => ({ cash: club.cash, draw: club.draw, inDebt: club.cash < 0 });
 
-/** The reinvest dial's payback rule, printed BEFORE the commitment. A rule of the game, not a preview. */
-export function reinvestRuleFor(profile: MarketProfile, weekNumber: number): string {
+export type ReinvestRule = {
+  /** Always visible, at the dial. Kept short on purpose — see below. */
+  line: string;
+  /** The mechanics, behind a disclosure. Same words, off the fold. */
+  detail: string[];
+};
+
+/**
+ * The reinvest dial's payback rule, printed BEFORE the commitment. A rule of
+ * the game, not a preview.
+ *
+ * `gate-l2-econ` B4 / FL-E (BLOCKING). This used to end "About a fifth of your
+ * door money keeps your Draw where it is; more than that grows it." Measured
+ * break-even (drawGain >= DRAW_DECAY) at house price, every profile: Draw 20-50
+ * needs 5%, Draw 60-70 needs 10%, Draw 80 needs 20%, and at Draw 90 NO legal
+ * share holds it. Desks start at Draw 26-72, so the printed number was 2-4x too
+ * high for most of the room and unreachable at the top, and a student following
+ * it over-spent by roughly $200,000-$400,000 a season.
+ *
+ * The number is gone rather than retuned, and it is not replaced by a computed
+ * one: the true break-even depends on the week's door money, which depends on
+ * `base0`/`sens` — printing it would be a demand-curve preview and would breach
+ * R2. What is printed instead is the true SHAPE of the rule, which is
+ * state-dependent, non-leaking, and checkable in `hostTheLeague.test.ts`:
+ * holding a Draw costs more the higher it already is, and above the high 80s no
+ * share on this dial can hold it at all (at Draw 89, DRAW_GAIN_MAX * 0.11 =
+ * 3.74 < DRAW_DECAY = 4, at any spend whatsoever).
+ *
+ * `gate-l2-play` R10 / R1-R2 (the fold). The old rule was one ~90-word block
+ * sitting between the dials and LOCK IT IN on every single week, and at
+ * 1024x600 it was the reason the primary action was at y=650 in a 600px
+ * viewport. `line` is what stays at the dial; `detail` is the same content one
+ * disclosure away. Nothing was deleted, it was moved off the fold.
+ */
+/** Profile-independent by construction: the maintenance shape is set by DRAW_GAIN_MAX, DRAW_DECAY and the ceiling term, none of which vary by market. */
+export function reinvestRuleFor(weekNumber: number): ReinvestRule {
   const last = weekNumber >= WEEK_COUNT;
-  return `REINVEST takes a share of what comes through your door THIS week and puts it back into the club. It buys DRAW, and the Draw arrives NEXT week — never this one, and this week's books are visibly worse for it. It climbs fastest when your Draw is low and barely moves when your Draw is already high; the ceiling is the same for every club in this league. Put in nothing and your Draw slips 4 points. ${
-    last
-      ? "This is the LAST week. Draw you buy now brings you no more money in this lesson — it is what your club carries into the next one."
-      : "About a fifth of your door money keeps your Draw where it is; more than that grows it."
-  }`;
+  return {
+    line: last
+      ? "LAST WEEK. Draw you buy now earns you nothing more in this lesson — it is what your club carries into the next one."
+      : "Reinvest buys DRAW. It costs you this week; the Draw arrives next week.",
+    detail: [
+      "It takes a share of what comes through your door THIS week and puts it back into the club. This week's books are visibly worse for it.",
+      "The Draw arrives NEXT week — never this one. Put nothing back and your Draw slips 4 points a week.",
+      "It climbs fastest when your Draw is low and barely moves when your Draw is already high, so holding a Draw steady costs more the higher it already is — and near the top of the scale no share on this dial can hold it at all.",
+      "The ceiling is the same for every club in this league. No amount of big-market money reaches a Draw a small market cannot reach.",
+      ...(last
+        ? [
+            "This is the last week of the lesson. Draw bought now brings you no more money here — it is what your club carries into the next lesson. That is the whole calculation, and it is yours to make.",
+          ]
+        : []),
+    ],
+  };
 }
 
 /* --------------------------------------------------------------- module -- */
@@ -1479,6 +1822,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       weekIndex: 0,
       shockSlot: null,
       barReleased: false,
+      barReleasedAtWeek: null,
       revealStage: 0,
       barPage: 0,
       synthPage: 0,
@@ -1501,7 +1845,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
         next = settleWeek(next, first);
         first = false;
       }
-      if (!next.barReleased) next = { ...next, barReleased: true };
+      if (!next.barReleased) next = { ...next, barReleased: true, barReleasedAtWeek: next.weekIndex };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };
     return next;
@@ -1552,7 +1896,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       }
       if (state.weekIndex < 1) return { ok: false, reason: "close week 1 first — the bar is drawn on weeks the room has played" };
       if (state.barReleased) return { ok: false, reason: "the Handed-To-You bar is already up" };
-      return { ok: true, state: { ...state, barReleased: true } };
+      return { ok: true, state: { ...state, barReleased: true, barReleasedAtWeek: state.weekIndex } };
     }
 
     if (action.type === "teacher:revealNext") {
@@ -1563,7 +1907,16 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       // ledger beat opens on whatever group the teacher happened to leave the
       // bar on two minutes earlier, which reads as a skipped page in front of
       // the room.
-      return { ok: true, state: { ...state, revealStage: state.revealStage + 1, barReleased: true, barPage: 0 } };
+      return {
+        ok: true,
+        state: {
+          ...state,
+          revealStage: state.revealStage + 1,
+          barReleased: true,
+          barReleasedAtWeek: state.barReleased ? state.barReleasedAtWeek : state.weekIndex,
+          barPage: 0,
+        },
+      };
     }
 
     if (action.type === "teacher:barPage" || action.type === "teacher:barPageBack") {
@@ -1685,7 +2038,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             shareStep: SHARE_STEP,
             books: booksFor(club),
             rules: HOUSE_RULES,
-            reinvestRule: reinvestRuleFor(profile, weekNumber),
+            reinvestRule: reinvestRuleFor(weekNumber),
             modeledDollarsLine: MODELED_DOLLARS_LINE,
             history,
             lastSettled: history[history.length - 1] ?? null,
@@ -1761,6 +2114,12 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
         draw: c.draw,
         inDebt: c.cash < 0,
         weeksPlayed: c.weeks.length,
+        // gate-l2-teacher B3 / hidden-knowledge: AUTO existed only on the
+        // student's own private screen, so the teacher could not see, at any
+        // point, that a desk had never once committed.
+        autoWeeks: c.weeks.filter((w) => w.auto).length,
+        neverLocked: c.weeks.length >= 1 && c.weeks.every((w) => w.auto || w.stock),
+        coveredWeeks: c.weeks.filter((w) => w.stock).length,
         joinedAtWeek: c.joinedAtWeek,
         hostingThisWeek: state.weekIndex < WEEK_COUNT ? CLUBS[visitorSlotFor(c.slot, state.weekIndex, state.leagueSize)]!.short : null,
         lastFillPct: c.weeks[c.weeks.length - 1]?.home.fillPct ?? null,
@@ -1946,7 +2305,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             warriorsLine: state.revealStage === 3 ? WARRIORS_LINE : null,
             smallMarketPath: state.revealStage === 4 ? agg.smallMarketPath : null,
             meanShareByWeek: state.revealStage === 5 ? agg.meanShareByWeek : null,
-            changeLine: state.revealStage === 5 ? reinvestChangeLine(agg) : null,
+            changeLine: state.revealStage === 5 ? reinvestChangeLine(agg, state) : null,
             honestyLine: BOARD_HONESTY_LINE,
           };
         }
@@ -2007,19 +2366,62 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
   },
 };
 
-export function reinvestChangeLine(agg: HostLeagueAggregate): string {
+/**
+ * REVEAL stage 5, rebuilt. Three findings land on this one beat:
+ *
+ *  - `gate-l2-play` R3 (BLOCKING). The shipped line ended "Nobody told this
+ *    room to move" and fired in BOTH directions — a 10-point fall in one played
+ *    session and a 19-point rise in another produced the same sentence. Worse,
+ *    in the session that fell, the fall was caused by THE APP'S OWN week-3 copy
+ *    telling every desk that reinvest no longer pays this lesson. The board
+ *    credited the bar for a move the product scripted. That claim is gone: the
+ *    beat now states the direction, names every candidate cause it can actually
+ *    see, and refuses to pick between them.
+ *  - `gate-l2-econ` FL-F (repair required). The instrument had no controlling
+ *    variable. Week 3 is structurally different: reinvest in the last week buys
+ *    Draw that no week-3 quantity consumes, so the cash-optimal week-3 share is
+ *    measured at 0% for EVERY desk (40% costs $216,901-$568,155). A flat
+ *    reading is therefore already a large attitude change and a fall is
+ *    rational play. The control is now printed beside the numbers.
+ *  - `gate-l2-econ` dominant-strategies, "honest at the dial and unhandled at
+ *    the projector". The horizon effect is real economics — investment dies
+ *    when there is no tomorrow — and this is where it gets taught rather than
+ *    left as an unexplained dip.
+ *
+ * The bar can only be named as a candidate when the room actually saw it before
+ * it played week 3. `barReleasedAtWeek` is the controlling variable for that.
+ */
+export function reinvestChangeLine(agg: HostLeagueAggregate, state: HostLeagueState): string {
   const [w1, w2, w3] = agg.meanShareByWeek;
+  const HORIZON =
+    "Read that with the last-week rule in your hand: week 3 was the end. Every desk's screen said so before it priced — Draw bought in week 3 earns nothing else in this lesson. A desk doing the arithmetic had a reason to put the dial DOWN in week 3 whatever it thought of the bar. That is not cynicism, it is the horizon: investment dies when there is no tomorrow to collect in.";
   if (w3 === null || w3 === undefined) {
-    return "Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth.";
+    return `Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth. ${HORIZON}`;
   }
   const before = [w1, w2].filter((x): x is number => typeof x === "number");
-  if (before.length === 0) return "No week before the bar to compare against.";
+  if (before.length === 0) return `Only one week is in the books, so there is no before and after to compare. ${HORIZON}`;
   const mean = Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
   const delta = Math.round((w3 - mean) * 10) / 10;
-  if (Math.abs(delta) < 1) {
-    return `Before the bar: ${mean}% of the door money, on average. After it: ${w3}%. The room barely moved. That is a real answer too — ask them why not.`;
-  }
-  return `Before the bar: ${mean}% of the door money, on average. After it: ${w3}% — ${delta > 0 ? "up" : "down"} ${Math.abs(delta)} points. Nobody told this room to move. Ask them what they saw.`;
+
+  // The bar is only a candidate cause if the room saw it BEFORE it played the
+  // last week. Otherwise nothing on this frame can be about the bar at all.
+  const sawBarBeforeWeek3 = state.barReleased && state.barReleasedAtWeek !== null && state.barReleasedAtWeek < WEEK_COUNT - 1;
+  const barClause = sawBarBeforeWeek3
+    ? "This room did see the Handed-To-You bar before it played week 3, so the bar is one of the things that could have moved it."
+    : "This room did NOT see the Handed-To-You bar before it played week 3, so nothing on this frame can be about the bar.";
+
+  const numbers = `Weeks 1-2: ${mean}% of the door money, on average. Week 3: ${w3}%${
+    Math.abs(delta) < 1 ? " — level" : ` — ${delta > 0 ? "up" : "down"} ${Math.abs(delta)} points`
+  }.`;
+
+  const direction =
+    Math.abs(delta) < 1
+      ? "The room held its dial where it was. Under the last-week rule that is itself a move: holding steady in a week the arithmetic told them to cut is a choice about something other than this week's cash. Ask them what."
+      : delta > 0
+        ? "The room went UP — against the last-week rule, which pushed the other way. Whatever moved these desks, it was not the arithmetic of this lesson. Ask them."
+        : "The room went DOWN. At least two things could have done that and this board will not choose between them: the last-week rule, which every desk was shown, and whatever they made of the bar. Ask them which one it was — and believe them.";
+
+  return `${numbers} ${HORIZON} ${barClause} ${direction}`;
 }
 
 /* --------------------------------------------------------- teacher aids -- */
@@ -2032,9 +2434,79 @@ export type WatchFlag = {
   urgency: "now" | "later";
 };
 
+/**
+ * `gate-l2-teacher` B5 (BLOCKING). The /teach landing page tells a first-time
+ * teacher to create an empty session and press Advance through every phase, and
+ * promises the whole period is rehearsable that way. It was not: with zero
+ * desks WATCH FOR never rendered at all, because every flag is computed off
+ * live desks. A teacher who rehearsed exactly as instructed met the room's only
+ * diagnostic panel for the first time in front of a class.
+ *
+ * These are the real flags with stand-in desks, every label prefixed REHEARSAL
+ * so they can never be mistaken for a live room, and they render ONLY when the
+ * session has no desks in it at all.
+ */
+function rehearsalWatchFor(phase: CanonicalPhase): WatchFlag[] {
+  const sample = (label: string, desks: string[], action: string, urgency: "now" | "later"): WatchFlag => ({
+    id: `rehearsal-${label.toLowerCase().replace(/[^a-z]+/g, "-").slice(0, 24)}`,
+    label: `REHEARSAL — ${label}`,
+    desks,
+    action,
+    urgency,
+  });
+  const flags: WatchFlag[] = [
+    sample(
+      "this panel is a sample, because nobody has joined",
+      ["Desk 1 · New York", "Desk 2 · Memphis"],
+      "With a real class this panel is computed live and names your actual desks. You are seeing the shapes so none of them is new to you at 11:40 on the day.",
+      "now",
+    ),
+  ];
+  if (phase === "PLAY") {
+    flags.push(
+      sample(
+        "Hosting a big Draw this week — their building is going to fill",
+        ["Desk 3 · Boston"],
+        "Say nothing about the price. Watch whether they RAISE it. If they charge last week's number into a full house they will feel it, and that is the cleanest thing you can debrief.",
+        "later",
+      ),
+      sample(
+        "Hosting a collapsed Draw this week — through no fault of their own",
+        ["Desk 4 · Denver"],
+        "This is the emotional risk of the lesson. Frame it as economics, never as blame: they did not choose their schedule, and the desk that visits them is not their enemy.",
+        "now",
+      ),
+      sample(
+        "Has never locked a week — every week settled automatically",
+        ["Desk 5 · Chicago"],
+        "A participation problem, not a strategy. Go to the desk. Never use these on the gave/got board — they did not choose 0%, they chose nothing.",
+        "now",
+      ),
+    );
+  }
+  if (phase === "REVEAL" || phase === "ADAPT" || phase === "SYNTHESIS") {
+    flags.push(
+      sample(
+        "CHOSE to put nothing back, two weeks running",
+        ["Desk 6 · Indiana"],
+        "These desks locked in and picked zero — that is a decision, and it is what Lesson 3 exists to argue about. Do not call it cheating. Read the by-choice column, not the dealt one.",
+        "later",
+      ),
+      sample(
+        "Reinvesting hard every week",
+        ["Desk 2 · Memphis"],
+        "Ask them at ADAPT who got the money their Draw earned. Some of it landed in the buildings they visited, and the room's own totals say how much.",
+        "later",
+      ),
+    );
+  }
+  return flags;
+}
+
 function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFlag[] {
   const out: WatchFlag[] = [];
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+  if (live.length === 0) return rehearsalWatchFor(phase);
   const windowOpen = phase === "PLAY" && state.weekIndex < WEEK_COUNT;
 
   if (windowOpen && live.length > 0) {
@@ -2083,18 +2555,47 @@ function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFl
     }
   }
 
-  const bankers = live.filter((c) => c.weeks.length >= 2 && c.weeks.every((w) => w.share === 0)).map(deskHandleFor);
+  // `gate-l2-teacher` B3 (BLOCKING). This flag used to sweep up the desk that
+  // NEVER LOCKED A SINGLE WEEK and was auto-settled at house price with 0%
+  // reinvest by construction, and then instructed the teacher to make that pair
+  // the protagonist of the room's argument — a strategic choice they did not
+  // make. Never-locked is now its own flag with its own director copy, and
+  // "put nothing back" counts only weeks a desk actually committed.
+  const neverLocked = live.filter((c) => c.weeks.length >= 1 && c.weeks.every((w) => w.auto || w.stock)).map(deskHandleFor);
+  if (neverLocked.length > 0) {
+    out.push({
+      id: "never-locked",
+      label: "Has never locked a week — every week settled automatically",
+      desks: neverLocked,
+      action:
+        "This is a participation problem, not a strategy. Their weeks were settled at the club's house price with nothing reinvested because nobody pressed the button — they did not choose 0%, they chose nothing. Go to the desk. Do NOT use them on the gave/got board and do not name them in the argument: they are not the free-rider case, they are the pair you have not reached yet.",
+      urgency: "now",
+    });
+  }
+
+  const bankers = live
+    .filter((c) => {
+      const chosen = c.weeks.filter((w) => !w.auto && !w.stock);
+      return chosen.length >= 2 && chosen.every((w) => w.share === 0);
+    })
+    .map(deskHandleFor);
   if (bankers.length > 0) {
     out.push({
       id: "free-rider",
-      label: "Put nothing back, two weeks running",
+      label: "CHOSE to put nothing back, two weeks running",
       desks: bankers,
-      action: "Do not call this out as cheating — it is a legitimate line and it is the exact behaviour Lesson 3 exists to argue about. Save these desks for the WHAT YOU GAVE, WHAT YOU GOT board; their row is the one that starts the argument.",
+      action:
+        "These desks locked in and picked zero — that is a decision, and it is the exact behaviour Lesson 3 exists to argue about. Do not call it cheating. Save them for the WHAT YOU GAVE, WHAT YOU GOT board and read the by-choice column, not the dealt one: a desk that spent nothing gave nothing IT chose to give, however big the Draw it was handed.",
       urgency: "later",
     });
   }
 
-  const heavy = live.filter((c) => c.weeks.length >= 2 && c.weeks.every((w) => w.share >= 30)).map(deskHandleFor);
+  const heavy = live
+    .filter((c) => {
+      const chosen = c.weeks.filter((w) => !w.auto && !w.stock);
+      return chosen.length >= 2 && chosen.every((w) => w.share >= 30);
+    })
+    .map(deskHandleFor);
   if (heavy.length > 0) {
     out.push({
       id: "heavy-invest",
@@ -2236,6 +2737,31 @@ function studentScreenMechanics(state: HostLeagueState): string[] {
     "A desk that visits a bot club still sees the money its own Draw put on those books. Bot clubs are labelled 'league office' everywhere they appear.",
   );
   return lines;
+}
+
+/**
+ * ADAPT question 3's answer key, computed from the room's own by-choice ledger.
+ *
+ * Two blocking findings meet on this one string. `gate-l2-econ` B1: the shipped
+ * answer was "the buildings they visited, BY A DISTANCE", which is false of the
+ * model — the local-media Draw term is a private annuity worth $12,000 per Draw
+ * point per week and drives ~92% of the reinvest decision, so a desk that
+ * reinvests keeps roughly half of what it creates and takes all of it back
+ * privately at the margin. `gate-l2-teacher` B4: the same answer sent the
+ * teacher to the WHAT YOU GAVE, WHAT YOU GOT board, which is REVEAL stage 2 and
+ * cannot be put back on the projector — there is no reveal-back control. It now
+ * points at the surface that IS live during ADAPT: every pair's own device
+ * carries its own two numbers under that exact heading, and the teacher is told
+ * so.
+ */
+export function adaptSpendAnswer(state: HostLeagueState): string {
+  const ct = computeAggregate(state).choiceTotals;
+  const where =
+    "You do not need the reveal board back for this — every pair has its own two numbers on its own screen right now, under WHAT YOU GAVE, WHAT YOU GOT. Tell them to read their own.";
+  if (!ct.anySpend) {
+    return `Careful — nobody in this room put anything back, so this question has no spending to be about. Ask it the other way: what would it have cost you, and who else would it have paid? ${where}`;
+  }
+  return `BOTH, and this room's own numbers say in what proportion: reinvesting was worth ${money(ct.ownGain)} to these desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books — ${ct.externalPct}% of it landed elsewhere. So the honest answer is not "the buildings they visited, by a distance". It is: it pays you back, slowly, through your local money and your own gate — AND it pays somebody else at the same time, on the night, and you never see that part. That is the problem, not a wrong. Say the next lesson is about what a league does with it. ${where}`;
 }
 
 export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): DirectorPanel {
@@ -2393,11 +2919,12 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
           },
           {
             q: ADAPT_QUESTIONS[1]!,
-            answer: "Name the desk and let them answer for themselves. Whatever they did, they did it to raise their OWN Draw — and it paid off in somebody else's building. That is a spillover, and it is the reason leagues are not thirty separate businesses.",
+            answer:
+              "Name the desk and let them answer for themselves — but hold the honest proportion in your head, because it is the whole difference between economics and blame. Most of any club's Draw was DEALT, not bought: moving the whole room from 0% to 40% for three straight weeks only moves the visitor block about 30%, and at realistic dials it is nearer 19%. So the true answer is usually 'whoever was dealt the club the schedule sent you' plus a slice somebody chose. Ask the second half out loud: what could they have done to make it bigger, and would it have been worth it to them?",
           },
           {
             q: ADAPT_QUESTIONS[2]!,
-            answer: "The buildings they visited, by a distance — the WHAT YOU GAVE, WHAT YOU GOT board has each desk's two numbers. A desk that reinvested hard usually gave more than it got. Do not call that unfair; call it the problem, and say the next lesson is about what a league does with it.",
+            answer: adaptSpendAnswer(state),
           },
         ],
         dontExplainYet: [
@@ -2450,7 +2977,10 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
         ],
         dontExplainYet: ["Nothing. This is the beat where every term gets said out loud — except the rule itself, which is next lesson's."],
         trigger: null,
-        timeCut: "Past minute 55? Say YOU DON'T PLAY ALONE and THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS, and stop. Those two are the lesson.",
+        // gate-l2-teacher N2: this named a card title ("YOU DON'T PLAY ALONE")
+        // that exists nowhere in the live deck — it was the zero-student
+        // placeholder's title. Cards are named by number and live title now.
+        timeCut: "Past minute 55? Say card 1, SHARED PRODUCT, and card 2, SPILLOVER, and stop. Those two are the lesson.",
       };
 
     case "COMPLETE":
@@ -2475,13 +3005,38 @@ export type SynthesisCard = { id: string; title: string; body: string };
 
 /** Every card is computed from THIS class's own weeks — never scripted, never recomputed against numbers the room did not play. */
 export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate): SynthesisCard[] {
+  // `gate-l2-teacher` B5 (BLOCKING). The rehearsal the product prescribes ran
+  // with zero desks, and the five-card deck collapsed to one placeholder titled
+  // YOU DON'T PLAY ALONE — a title that exists nowhere in the live deck, and
+  // which the SYNTHESIS time-cut then told the teacher to say. A teacher who
+  // rehearsed as instructed met five unseen cards in the last seven minutes of
+  // a real period. These are the five real card TEMPLATES with stand-in
+  // figures, every one marked REHEARSAL in the title so no live room could
+  // read them as its own arithmetic.
   if (agg.homeRevenueDecomposition.length === 0) {
+    const stand = (title: string, body: string): SynthesisCard => ({
+      id: `rehearsal-${title.toLowerCase().replace(/[^a-z]+/g, "-").slice(0, 24)}`,
+      title: `REHEARSAL — ${title}`,
+      body: `${body}\n\nEvery figure above is a STAND-IN. With a real class this card is computed from your room's own weeks and names your own desks.`,
+    });
     return [
-      {
-        id: "shared-product",
-        title: "YOU DON'T PLAY ALONE",
-        body: "No weeks are in the books yet. Once the room plays, this card fills in with the class's own numbers.",
-      },
+      stand(
+        "SHARED PRODUCT",
+        "44% of every dollar that came through a door in this room was brought by a club somebody else was running. The single biggest example is Desk 1 · New York's week 3: Oklahoma City visited at Draw 73 and put $858,186 on New York's books. You cannot play a basketball game on your own, so you cannot earn a basketball game's money on your own either. Economists call that a SHARED PRODUCT — one thing, made by two clubs, sold once.",
+      ),
+      stand(
+        "SPILLOVER",
+        "Putting money back into your club paid YOU and it paid the buildings you visited. Across this room, reinvesting was worth $612,000 to the desks' own books and put $498,000 on other clubs' books — 45% of the value it created landed somewhere the desk that paid for it never sees. A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER — the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money simply does not land where the effort goes.",
+      ),
+      stand(
+        "THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS",
+        `For Desk 5 · Milwaukee, the national check was 55.6% of everything the club earned and the gate was 16.6%. For Desk 8 · L.A. Lakers it was 29.1% against a gate of 26.3%. Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national check that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
+      ),
+      stand(
+        "MARKET SIZE IS NOT DESTINY",
+        "Desk 4 · Oklahoma City runs one of the league's smallest markets. Hosting Boston at Draw 68, priced at $52, that building took $785,680 through the door. Desk 3 · Golden State runs one of the biggest. Hosting Indiana at Draw 24, priced at $56, it took $523,212. The small market won that week by $262,468, and the three blocks say why: $301,004 of that gap is the visiting club. WHO WAS VISITING carried it. Market size is real and you did not choose it. It is also not the only thing in the arithmetic.",
+      ),
+      stand("AND ONE MORE THING", `${M1_BRIDGE_LINE} Next lesson this room decides how much of the money you just counted gets shared — and then lives under its own rule.`),
     ];
   }
   const cards: SynthesisCard[] = [];
@@ -2501,17 +3056,35 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
     } You cannot play a basketball game on your own, so you cannot earn a basketball game's money on your own either. Economists call that a SHARED PRODUCT — one thing, made by two clubs, sold once.`,
   });
 
-  const give = [...agg.giveAndTake].sort((a, b) => a.net - b.net);
-  const biggestGiver = give[0] ?? null;
-  const biggestTaker = give[give.length - 1] ?? null;
+  // `gate-l2-econ` N1 / N3 / B1 / B6 (BLOCKING x2). This card used to open
+  // "most of what it earned did not land on your books" — false on totals
+  // (52/48 the desk's own way at the private optimum) — and then name the
+  // MINIMUM-`net` desk as the room's biggest giver. In a probed 12-desk room
+  // that desk was New Orleans, which reinvested $0 all season and was simply
+  // dealt startDraw 72: the card named a real desk in the room and attributed
+  // to its spending something it never spent.
+  //
+  // It now reads the by-choice instrument, prints the MEASURED share instead of
+  // a quantifier, and handles the case the old card could not see at all — a
+  // room where nobody reinvested has no givers, and saying so is the honest
+  // card and the more interesting one.
+  const ct = agg.choiceTotals;
+  const biggestGiver = [...agg.giveAndTake].sort((a, b) => b.gaveByChoice - a.gaveByChoice)[0] ?? null;
+  const biggestTaker = [...agg.giveAndTake].sort((a, b) => b.netByChoice - a.netByChoice)[0] ?? null;
   cards.push({
     id: "spillover",
     title: "SPILLOVER",
-    body: `When you put money into your club, most of what it earned did not land on your books. ${
-      biggestGiver && biggestTaker && biggestGiver.slot !== biggestTaker.slot
-        ? `${biggestGiver.deskHandle} put ${money(biggestGiver.gave)} into other people's buildings and got ${money(biggestGiver.received)} back. ${biggestTaker.deskHandle} got ${money(biggestTaker.received)} and gave ${money(biggestTaker.gave)}.`
-        : ""
-    } A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER — the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money simply does not land where the effort goes.`,
+    body: ct.anySpend
+      ? `Putting money back into your club paid YOU and it paid the buildings you visited. Across this room, reinvesting was worth ${money(ct.ownGain)} to the desks' own books and put ${money(ct.gaveByChoice)} on other clubs' books — ${ct.externalPct}% of the value it created landed somewhere the desk that paid for it never sees.${
+          biggestGiver && biggestGiver.gaveByChoice > 0
+            ? ` ${biggestGiver.deskHandle} put ${money(biggestGiver.spend)} back into its club, and ${money(biggestGiver.gaveByChoice)} of what that bought turned up in other people's buildings.`
+            : ""
+        }${
+          biggestTaker && biggestGiver && biggestTaker.slot !== biggestGiver.slot && biggestTaker.netByChoice > 0
+            ? ` ${biggestTaker.deskHandle} came out ${money(biggestTaker.netByChoice)} ahead on money other desks chose to spend.`
+            : ""
+        } A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER — the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money simply does not land where the effort goes.`
+      : `Nobody in this room put a single dollar back into their club, so nobody here gave anything they CHOSE to give. Every dollar that filled your building came from the Draw you were dealt and from who the schedule sent you — and it still did not land where it was earned. That is the point, and it is sharper this way: a cost or a benefit that lands on somebody who did not choose it is a SPILLOVER, the grown-up word is EXTERNALITY, and it does not need anybody to be generous. It only needs the thing you sell to be made by two clubs.`,
   });
 
   const pipes = [...agg.pipes].sort((a, b) => b.nationalPct - a.nationalPct);

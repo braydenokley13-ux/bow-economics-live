@@ -2433,11 +2433,25 @@ type HLMine = {
   visitorLed: boolean;
   visitors: { week: number; club: string; short: string; draw: number; dollars: number; live: boolean; deskNumber: number | null }[];
 };
-type HLGive = { gave: number; received: number; net: number; meanShare: number; drawStart: number; drawEnd: number };
+type HLGive = {
+  gave: number;
+  received: number;
+  net: number;
+  spend: number;
+  gaveByChoice: number;
+  receivedByChoice: number;
+  netByChoice: number;
+  ownGain: number;
+  meanShare: number;
+  drawStart: number;
+  drawEnd: number;
+};
 
 let hlSeatRequested = false;
 let hlMountKey: string | null = null;
 let hlLocalPrice: number | null = null;
+/** Which settlement this device has already been scrolled to, so a re-render never yanks the page back. */
+let hlLastSettledSeen: string | null = null;
 
 function renderHostLeague(s: SessionInfo, view: Record<string, unknown>): void {
   const body = $("gameBody");
@@ -2460,6 +2474,7 @@ function renderHostLeague(s: SessionInfo, view: Record<string, unknown>): void {
         <div class="panel" style="padding:18px;">
           <p style="margin:0 0 10px; font-size:16px; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
           <p style="margin:0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["plainLine"] ?? ""))}</p>
+          ${hlIdentityHtml(view)}
         </div>
         <div class="banner" style="margin-top:12px;">Waiting for your teacher to start.</div>`;
       return;
@@ -2500,6 +2515,20 @@ function renderHostLeague(s: SessionInfo, view: Record<string, unknown>): void {
     default:
       body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
   }
+}
+
+/**
+ * `gate-l2-sr` BLOCKING-1. The profile's sentence renders under every club on
+ * that profile, so it may only say what is true of all of them; anything
+ * club-specific comes from `identityLine`, which the module supplies only where
+ * it is true. Sixteen of twenty clubs render nothing here, which is the point:
+ * silence is correct, and "Detroit is the biggest market in American sports"
+ * was not.
+ */
+function hlIdentityHtml(view: Record<string, unknown>): string {
+  const line = view["identityLine"];
+  if (typeof line !== "string" || line.length === 0) return "";
+  return `<p class="hl-identity">${escapeHtml(line)}</p>`;
 }
 
 function hlDeskHeader(view: Record<string, unknown>): string {
@@ -2555,10 +2584,16 @@ function hlClubLine(label: string, club: HLClub, tone: string): string {
     </div>`;
 }
 
-function hlSlateHtml(slate: HLSlateRow[]): string {
+/**
+ * The anticipation surface. `forceOpen` is true on the weeks where the pair is
+ * about to price with nothing else competing for the fold — play R2 asks for at
+ * least the Week 2 row to be visible on first contact without scrolling, and a
+ * collapsed <details> cannot satisfy that.
+ */
+function hlSlateHtml(slate: HLSlateRow[], forceOpen = false): string {
   if (slate.length === 0) return "";
   return `
-    <details class="fa-rules" style="margin-top:12px;" ${slate.some((r) => r.open) ? "open" : ""}>
+    <details class="fa-rules hl-slate-block" style="margin-top:10px;" ${forceOpen || slate.some((r) => r.open) ? "open" : ""}>
       <summary>The three-week schedule — who visits you, and whose building you are in</summary>
       <div class="fh-slate">
         ${slate
@@ -2609,6 +2644,7 @@ function renderHLHook(view: Record<string, unknown>): void {
       </div>
       <div class="fh-stamp" style="margin-top:6px;">${escapeHtml(String(view["capacityNote"] ?? ""))}</div>
       <p style="margin:10px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(String(view["plainLine"] ?? ""))}</p>
+      ${hlIdentityHtml(view)}
     </div>
     ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [])}
     <details class="fa-rules" style="margin-top:12px;">
@@ -2650,19 +2686,21 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
           <div class="hl-split-row"><span class="hl-key visitor"></span><span>${escapeHtml(w.visitor)} visiting (Draw ${w.visitorDraw})</span><span class="numeric">${w.visitorFans.toLocaleString()} · ${money(w.visitorDollars)}</span></div>
         </div>
       </div>
-      <div class="fh-result-row"><span>Ticket money</span><span class="numeric">${money(w.gate)}</span></div>
-      <div class="fh-result-row"><span>Spent inside the building</span><span class="numeric">${money(w.inArena)}</span></div>
-      <div class="fh-result-row"><span>Local media and sponsors</span><span class="numeric">${money(w.localMedia)}</span></div>
-      <div class="fh-result-row"><span>National television check</span><span class="numeric">${money(w.national)}</span></div>
-      <div class="fh-result-row total"><span>Money in</span><span class="numeric">${money(w.gate + w.inArena + w.localMedia + w.national)}</span></div>
-      <div class="fh-result-row"><span>Weekly bill</span><span class="numeric neg">-${money(w.bill)}</span></div>
-      ${w.reinvestPaid > 0 ? `<div class="fh-result-row"><span>Put back into the club (${w.share}%)</span><span class="numeric neg">-${money(w.reinvestPaid)}</span></div>` : ""}
-      <div class="fh-kept ${w.net < 0 ? "neg" : ""}">
+      <div class="fh-kept ${w.net < 0 ? "neg" : ""}" data-hl-kept="1">
         <span class="fh-kept-label">Kept</span>
         <span class="fh-kept-num numeric">${money(w.net)}</span>
       </div>
-      <div class="fh-result-row"><span>Draw</span><span class="numeric">${w.hostDrawBefore} → ${w.drawAfter} (${w.drawMove >= 0 ? "+" : ""}${w.drawMove})</span></div>
       <div class="hl-road" id="hlRoad">${escapeHtml(w.road.line)}</div>
+      <div class="hl-ledger-block">
+        <div class="fh-result-row"><span>Ticket money</span><span class="numeric">${money(w.gate)}</span></div>
+        <div class="fh-result-row"><span>Spent inside the building</span><span class="numeric">${money(w.inArena)}</span></div>
+        <div class="fh-result-row"><span>Local media and sponsors</span><span class="numeric">${money(w.localMedia)}</span></div>
+        <div class="fh-result-row"><span>National television check</span><span class="numeric">${money(w.national)}</span></div>
+        <div class="fh-result-row total"><span>Money in</span><span class="numeric">${money(w.gate + w.inArena + w.localMedia + w.national)}</span></div>
+        <div class="fh-result-row"><span>Weekly bill</span><span class="numeric neg">-${money(w.bill)}</span></div>
+        ${w.reinvestPaid > 0 ? `<div class="fh-result-row"><span>Put back into the club (${w.share}%)</span><span class="numeric neg">-${money(w.reinvestPaid)}</span></div>` : ""}
+        <div class="fh-result-row"><span>Draw</span><span class="numeric">${w.hostDrawBefore} → ${w.drawAfter} (${w.drawMove >= 0 ? "+" : ""}${w.drawMove})</span></div>
+      </div>
     </div>`;
 }
 
@@ -2693,6 +2731,7 @@ function renderHLPlay(view: Record<string, unknown>): void {
   document.body.classList.toggle("fh-compact-play", !view["allWeeksDone"]);
   if (view["allWeeksDone"]) {
     hlMountKey = null;
+    document.body.classList.remove("hl-has-lockbar");
     body.innerHTML = `
       ${hlDeskHeader(view)}
       ${hlBooksHtml(view["books"] as HLBooks)}
@@ -2716,9 +2755,34 @@ function renderHLPlay(view: Record<string, unknown>): void {
   const price = locked ? Number(view["price"]) : hlLocalPrice;
   const share = Number(view["share"] ?? 0);
 
-  body.innerHTML = `
-    <div id="hlPlayRoot">
-      ${hlTopStrip(view)}
+  const rule = (view["reinvestRule"] as { line: string; detail: string[] } | undefined) ?? { line: "", detail: [] };
+
+  // ---------------------------------------------------------------- the fold
+  // `gate-l2-play` R1/R2 (BLOCKING, and the reason the lesson rated FUNCTIONAL
+  // rather than STRONG). Measured live at 1024x600: after the week bell the
+  // page was 1543px tall, auto-landed the pair at y=261 with the REINVEST
+  // instruction paragraph at eye level, and put #hlSplit's bottom edge at 749,
+  // KEPT at ~1050 and #hlRoad — the externality sentence the whole synthesis is
+  // built on — at 1103. The consequence of the week the room had just played
+  // was ~500px below the fold, underneath the controls for a week that had not
+  // started. A grade-5 pair that does not think to scroll experiences the bell
+  // as nothing happening.
+  //
+  // Three changes, and they are ordering changes rather than deletions:
+  //  1. When a week has just settled, the SETTLEMENT is first in the document
+  //     and the page is put at the top, so the decomposition, KEPT and the road
+  //     card are what lands. Next week's dials are below it, where they belong
+  //     at that moment.
+  //  2. LOCK IT IN moved into a bar pinned to the bottom of the viewport, so
+  //     the primary action is reachable at every scroll position in every week
+  //     — including while the pair is still reading the result. (This is also
+  //     `gate-l2-projector` P-7's recommendation.)
+  //  3. The ~90-word REINVEST paragraph that used to sit between the dials and
+  //     the button on every single week is one line at the dial plus a
+  //     disclosure. Nothing was deleted; it was moved off the fold (play R10).
+  const justSettled = last !== null && last.week === weekNumber - 1;
+  const settlementHtml = justSettled ? hlWeekResultHtml(last!, `Week ${last!.week} — how it went`) : "";
+  const weekCardHtml = `
       <div class="hl-week-card" id="hlWeekCard">
         <div class="hl-week-top">
           <span class="hl-week-num">Week ${weekNumber} of ${view["weekCount"]}</span>
@@ -2729,12 +2793,11 @@ function renderHLPlay(view: Record<string, unknown>): void {
           ${hlClubLine("You are visiting", visiting, "away")}
         </div>
         ${shock ? `<div class="hl-shock ${shock.hostingThem ? "mine" : ""}" id="hlShock">${escapeHtml(shock.line)}</div>` : ""}
-      </div>
-      ${
-        locked
-          ? `<div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-             <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>`
-          : `
+      </div>`;
+  const dialsHtml = locked
+    ? `<div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+       <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>`
+    : `
         <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
           <div class="fh-price-readout numeric" id="hlPriceReadout">$${price}</div>
@@ -2752,37 +2815,81 @@ function renderHLPlay(view: Record<string, unknown>): void {
             </div>
             <span class="fh-lag">of what comes through your door this week</span>
           </div>
-          <div class="hl-reinvest-rule">${escapeHtml(String(view["reinvestRule"] ?? ""))}</div>
-          <button class="btn btn-primary full" id="hlLock" style="margin-top:12px; min-height:44px;">LOCK IT IN</button>
+          <div class="hl-reinvest-rule">${escapeHtml(rule.line)}</div>
+          <details class="fa-rules hl-reinvest-more">
+            <summary>How the reinvest dial works</summary>
+            <ul>${rule.detail.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+          </details>
           <div class="fh-blind-note">No preview. Nothing on this screen tells you what this week will make.</div>
-        </div>`
-      }
-      ${last ? hlWeekResultHtml(last, `Week ${last.week} — how it went`) : ""}
-      ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [])}
+        </div>`;
+
+  body.innerHTML = `
+    <div id="hlPlayRoot">
+      ${hlTopStrip(view)}
+      ${justSettled ? `<div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}` : ""}
+      ${weekCardHtml}
+      ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [], !justSettled)}
+      ${dialsHtml}
+      ${justSettled ? "" : last ? hlWeekResultHtml(last, `Week ${last.week} — how it went`) : ""}
       <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks so far</div>
       ${hlHistoryHtml(history)}
-    </div>`;
+    </div>
+    ${
+      locked
+        ? ""
+        : `<div class="hl-lockbar" id="hlLockBar">
+             <span class="hl-lockbar-vals">Week ${weekNumber} · <b id="hlLockPrice">$${price}</b> · <b id="hlLockShare">${share}%</b> back in</span>
+             <button class="btn btn-primary" id="hlLock">LOCK IT IN</button>
+           </div>`
+    }`;
+  document.body.classList.toggle("hl-has-lockbar", !locked);
+
+  // The bell put a result on this screen. Land the pair ON it, not on next
+  // week's dial. Instant, never smooth: a mid-animation scroll position is not
+  // a real reachable state to leave a student in.
+  if (justSettled && hlLastSettledSeen !== `${weekNumber}|${history.length}`) {
+    hlLastSettledSeen = `${weekNumber}|${history.length}`;
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
 
   if (locked) return;
 
   const dial = $<HTMLInputElement>("hlPriceDial");
   const readout = $("hlPriceReadout");
+  const lockPrice = document.getElementById("hlLockPrice");
+  const lockShare = document.getElementById("hlLockShare");
   dial.addEventListener("input", () => {
     hlLocalPrice = Number(dial.value);
     readout.textContent = `$${dial.value}`;
+    if (lockPrice) lockPrice.textContent = `$${dial.value}`;
   });
   dial.addEventListener("change", () => outbox?.submit({ type: "setPrice", price: Number(dial.value) }));
 
   let localShare = share;
   const shareReadout = $("hlShareReadout");
+  const shareUp = $<HTMLButtonElement>("hlShareUp");
+  const shareDown = $<HTMLButtonElement>("hlShareDown");
+  const shareMin = Number(view["shareMin"] ?? 0);
+  const shareMax = Number(view["shareMax"] ?? 40);
+  // play R11: the + button stayed enabled at the 40% cap and the last click did
+  // nothing at all.
+  const syncShareButtons = () => {
+    shareUp.disabled = localShare >= shareMax;
+    shareDown.disabled = localShare <= shareMin;
+  };
   const stepShare = (dir: number) => {
     const step = Number(view["shareStep"] ?? 5);
-    localShare = Math.max(Number(view["shareMin"] ?? 0), Math.min(Number(view["shareMax"] ?? 40), localShare + dir * step));
+    const next = Math.max(shareMin, Math.min(shareMax, localShare + dir * step));
+    if (next === localShare) return;
+    localShare = next;
     shareReadout.textContent = `${localShare}%`;
+    if (lockShare) lockShare.textContent = `${localShare}%`;
+    syncShareButtons();
     outbox?.submit({ type: "setShare", share: localShare });
   };
-  $("hlShareUp").addEventListener("click", () => stepShare(1));
-  $("hlShareDown").addEventListener("click", () => stepShare(-1));
+  syncShareButtons();
+  shareUp.addEventListener("click", () => stepShare(1));
+  shareDown.addEventListener("click", () => stepShare(-1));
   $("hlLock").addEventListener("click", () => {
     if (confirm(`Lock week ${weekNumber} at $${dial.value} with ${localShare}% back into the club? You cannot change it after this.`)) {
       outbox?.submit({ type: "setPrice", price: Number(dial.value) });
@@ -2830,10 +2937,16 @@ function renderHLReveal(view: Record<string, unknown>): void {
       give
         ? `<div class="hl-give" id="hlGive">
              <div class="hl-split-title">What you gave, what you got</div>
+             <div class="hl-give-sub">Everything your Draw moved — most of it the Draw you were DEALT</div>
              <div class="hl-give-row"><span>Your Draw put this on OTHER clubs' books</span><span class="numeric">${money(give.gave)}</span></div>
              <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
              <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
-             <div class="hl-give-note">Your Draw went from ${give.drawStart} to ${give.drawEnd}. You put an average of ${give.meanShare}% of your door money back in.</div>
+             <div class="hl-give-note">This is not money you kept or lost. It is money that moved because of drawing power — yours and theirs.</div>
+             <div class="hl-give-sub" id="hlGiveChoice">What your own DECISIONS did — you spent ${money(give.spend)}</div>
+             <div class="hl-give-row"><span>Of the above, what YOUR spending put in other buildings</span><span class="numeric">${money(give.gaveByChoice)}</span></div>
+             <div class="hl-give-row"><span>What OTHER desks' spending put in yours</span><span class="numeric">${money(give.receivedByChoice)}</span></div>
+             <div class="hl-give-row net"><span>What your spending was worth to YOUR OWN cash</span><span class="numeric ${give.ownGain < 0 ? "neg" : ""}">${money(give.ownGain)}</span></div>
+             <div class="hl-give-note">Same schedule, same prices, same everything — except you put nothing back. That is the only fair thing to compare yourself to, because nobody chose their calendar. Your Draw went from ${give.drawStart} to ${give.drawEnd}; you put an average of ${give.meanShare}% of your door money back in.</div>
            </div>`
         : ""
     }

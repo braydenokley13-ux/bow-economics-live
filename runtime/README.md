@@ -303,11 +303,18 @@ figure. Everything here is on **one** scale: one week is one home date; the
 real per-club national share (~$200M/yr over 41 dates ≈ $4.9M/date) shrunk by
 the same ~5× this product shrinks ticket prices gives `NATIONAL = $950,000`,
 identical for every club. At the shipped constants a New York home week at a
-neutral matchup takes ~$660k at the gate against ~$2.66M of weekly revenue
-(24.8%); Memphis is 18.9%. Both sit inside the ledgered fifth-to-a-quarter
-band, New York has the league's highest gate, and the national check is the
-tallest single pipe for almost every club without being half of the biggest
-market's revenue.
+neutral matchup takes $665,280 at the gate against $2,659,120 of weekly revenue
+(25.0%); Memphis is 18.9%. Both sit inside the ledgered fifth-to-a-quarter band
+*at the house price* — away from it the share moves a long way (8.1% at $120),
+so the student-facing caption no longer states the band as a universal. The
+national check is the tallest single pipe for a typical club without being half
+of the biggest market's revenue; it is **not** tallest for every club (local
+media overtakes it above Draw 50 on the new-york profile, so Boston and the
+Lakers clear it from week 1). The earlier claim that "New York has the league's
+highest gate" is **retracted** (`gate-l2-sr` MODERATE-3): demand is
+capacity-independent and turnout is clamped, so a bigger building on the same
+profile out-gates Madison Square Garden on a sold-out night. The module header
+carries the same corrected derivation.
 
 **No RNG anywhere.** Schedule, bots and the week-2 star departure are pure
 functions of state. The departure lands on the lowest-numbered league-office
