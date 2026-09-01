@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `211:f2d2eeb4673aa7cffcf0aa69711495a4cc4074adbd292470863a2168a7e078db`  
-Updated: 2026-09-01T04:07:24.243Z
+Event head: `221:c659f3995ea62312f956f747106b29da45880ea180442d955d5fa5932e31d232`  
+Updated: 2026-09-01T05:12:08.453Z
 
 ## Founder intent
 
@@ -42,7 +42,12 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - visual-experience-director — visual-experience-director — completed-with-concerns — claude-opus-5
 - builder — builder-w3-micro — completed — claude-sonnet-5
-- builder — builder-l2 — active — claude-opus-5
+- builder — builder-l2 — completed-with-concerns — claude-opus-5
+- player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- sports-reality-director — sports-reality-director — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
 
 ## Required evidence
 
@@ -72,6 +77,10 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - w3-visual-final — visual-report — W3 final visual re-grade: PREMIUM CLAUSE NOT AFFIRMED (SERVICEABLE-NOT-PREMIUM, blocking: NO — 'polish wave, not a classroom gate'). Both SCHOOL-UI states left the band (staged synthesis 2.85% vh; PLAY strip + fitting Two Peaks); emoji verified gone by rendered scan + grep. Remaining distance itemized (play room/motions, analysis-frame ramp, teach monitor wall); P9 routed to projector, CF colour to CVD owner
 - w3-projector-final — projector-report — W3 final projector adjudication: FIT CONDITION DISCHARGED — 31 frames x 2 shapes, 0px overflow, evidence tier 2.61-2.85%, punchline 3.2%, SYNTHESIS pager builds; privacy PASS (62 scans); fallbacks PASS live incl. unfreeze + server restart. BLOCKING regression W3F-1: CF pager labels desk ranges that no longer match after interest ordering. Non-blocking W3F-2..5
 - l1-e2e-w3c — e2e — e2e with pager label-vs-rows + anti-positional assertions + row-tier floor
+- l2-tests — test — Full suite after L2 build (388/388)
+- l2-tuning — test — L2 harness: 11 properties (no dominant line, visitor swing 2.19-2.61x, residual 0 over 473,984 states, no unwinnable seat)
+- l2-e2e — e2e — L2 12-desk three-surface e2e, 22 frames x 2 shapes fit, zero console errors
+- l1-e2e-postl2 — e2e — L1 e2e regression after L2's shared-file changes
 
 ## Claim ledger
 
