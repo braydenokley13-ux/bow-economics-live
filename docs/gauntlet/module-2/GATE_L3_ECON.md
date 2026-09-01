@@ -708,3 +708,130 @@ harness. None of them requires a redesign.
 **Both dissents stand.** They are recorded so a later reconciliation cannot treat the
 claim-vs-model defect class as closed, or the signature as true-of-its-arm, on the strength of a
 harness that passes. *Nothing here is classroom-proven (D10).*
+
+---
+
+## W5 FINAL CONFIRM
+
+Boss run `m2-quality-war`, assignment `w5-econ-confirm`. Owning-critic final confirm of R1-R4,
+fresh context, not the builder. Method this session: `npm run build` clean at HEAD (`e47deaa`);
+`npm test` **458 pass / 0 fail**; `node --test dist/test/m2Harnesses.test.js` **3/3**;
+`l3-tuning-harness.mjs` exit 0, **10/10, 1443 atoms / 360 surfaces / 6 rooms**. Five injections of
+my own into an isolated `dist/` copy in the scratchpad; five arm x direction drives of the shipped
+reducer; a 400-room full-season sweep. Repo product code never modified. No server left running.
+No git operations.
+
+### R2 — the instrument is in the suite: **CONFIRMED (observed)**
+`src/test/m2Harnesses.test.ts` spawns all three M2 harnesses against the build `npm test` just
+produced, asserts exit 0 **and** the `VERDICT: ALL N PROPERTIES HOLD` line. I proved the wrapper
+bites rather than trusting it: with my A9 injection in a mirrored tree the wrapper goes
+**3/3 pass -> 2 pass / 1 fail**, `l3-tuning-harness.mjs exited 1`. This dissent's own stated
+discharge condition — "a value-drift mutant fails **the suite**" — is now literally true.
+
+### R1 — registered = rendered: **CONFIRMED, with a scoped residual**
+`viewWeek` and `moduleClaims` both call `weekTransferClaimed` -> `weekFlowRow`; every per-week
+`/play` line is registered (`play:desk-N:week-W:transferLine`), and the RENDER limb diffs each
+registered sentence against the strings the shipped view functions really emit.
+
+| probe | mine | result |
+|---|---|---|
+| **A9 re-run** — `paidIn x 1.4` on the `viewWeek` path only | re-run of my original | control exit 0 -> **mutant exit 1**, RENDER named every desk/week row |
+| **B1 (novel)** — `tookOut x 0.6` on `transferSeasonLine`, `/play` REVEAL + CONSEQUENCE only | new, different `/play` string | **CAUGHT**, RENDER `play:desk-N:transferLine` |
+| **B2 (novel)** — drift only the `/play` **and** `/board` copies of the consequence question | new | **SURVIVED**, harness 10/10 exit 0 |
+| **B3 (novel)** — drift the `/play` week line only while `weekIndex < WEEK_COUNT` | new | **SURVIVED**, harness 10/10 exit 0 |
+
+**Ruling on the disclosed limitation (end-state + ADOPTED variant, not full trajectory): it is a
+real narrowing, and it is not a material hole in this dissent.** Two measured residuals, both
+*hypothetical future drift*, neither present at head:
+
+- **B3** is A9 displaced in time. `renderedBlobs` harvests one end state (plus the `adopted`
+  variant) at `revealStage: 5`, so a week row that is false during weeks 1-2 and true at the whistle
+  is invisible. Measured under B3: the student device reads *"You paid $728,541 into the pot and took
+  **$1,262,767** back out. On the pot alone, $179,512 left you"* — not arithmetic — for two of the
+  three weeks of live play, and the harness passes.
+- **B2** is a scope, not a horizon, gap: `auditRendered` picks its haystack by the surface id's
+  **family prefix**, so `teach:consequence:ask` is diffed against the `/teach` blob only. The same
+  question is rendered on `/play` (`studentView` REVEAL, CONSEQUENCE) and on `/board`
+  (`boardView` CONSEQUENCE) and neither render is audited. Measured: projector and desk read
+  *"Whose effort went **UP**?"* while the registered string and the room's own dollar bar both say
+  it went down — the gate-l3-teacher B1 defect, on the projector — harness exit 0.
+
+I do not block on either. The defect the dissent was **recorded on** — a shipped divergence between
+the audited sentence and the rendered sentence — is closed at head and is now machine-policed, on my
+own novel injection and not only on the builder's. What remains is that the limb's *harvest* is
+narrower than the product's *render surface*, which is an instrument-durability item, not a false
+economics claim in the build. **Repair, non-blocking: harvest the trajectory (every `revealStage`
+and every settled `weekIndex`), and match each registered sentence against the union of all three
+blobs rather than its own family prefix.**
+
+### R3 — the arm is an atom: **CONFIRMED (observed)**
+`eraArmAtom` returns `claimWord("era-arm", …, how === "voted", absent: "the rule you wrote")`, and
+the forbidden phrase is enforced in **both** instruments (harness BINDING limb line 606; suite
+`writeTheRule.test.ts:648`). My own sweep of the sincere status-quo arm (6 desks, BIG propose 0%,
+small 60%, adopted `statusQuo` 5%) over **every phase x `revealStage` 0-5, all three surfaces, all
+six seats, plus the whole 15-snapshot trajectory**: **0 prose occurrences** of "the rule you wrote".
+The status-quo era line now reads *"…across three weeks under **the old rule this room did not
+replace**"*; the league-office arm reads *"the league office's rule"*; the voted arm keeps the true
+phrase. The 13 combinations named in the re-check are clear.
+
+Two observations, neither blocking:
+- The only remaining hits in that arm are the atom's own `absent` **metadata**, which `studentView`
+  ships to the device inside `cards[].claims[]`. It is payload, not printed prose. Cosmetic.
+- **One residual of the same class on a surface the atom does not cover.** The `revenue-sharing`
+  card's no-payers branch is not arm-gated and prints *"…which is a fact about **the rule you
+  wrote**, not a fact about sharing."* Reachable off the voted arm only when the pot is empty at
+  SYNTHESIS — i.e. a room taken to the debrief before a week settles. My sweep of **400 full-season
+  rooms (328 non-voted arms): 0 hits.** Tail, not modal. It does show the guard is site-by-site: the
+  `absent` check protects only the surface carrying the `era-arm` atom, and this card carries none.
+  **Repair, non-blocking:** take `eraArmAtom` into that branch.
+
+### R4 — `arrowsMovedAny` guards every arm: **CONFIRMED (observed)**
+Driven through the shipped reducer, five arm x direction combinations, each printing the registered
+ASK, the projector/desk question, the answer key and the atom set:
+
+| arm | direction | `arrowsMovedAny` | answer key |
+|---|---|---|---|
+| status quo 5% | **down** (R4's exact case) | **false** | *"**Do NOT fish for moral hazard here.** …the fall is theirs, not the rule's."* |
+| voted 40% | down | true | *"…it stopped being worth it."* |
+| voted 40% | up | true | the CONDITION, moral hazard running the other way |
+| status quo 5% | up | **false** | *"**Do NOT credit the rule here.** …desks put back more anyway."* |
+| league office 30% | down | true | *"…it stopped being worth it."* |
+
+`consequence-rule-moved` is registered on **all four** branches (`down`/`up`/`flat`/`noL2`), the
+question text carries the guard, and `consequenceAskClaimed` returns `beat.question` itself, so
+stage 4 ("exactly where they were with no rule at all") and stage 5 can no longer contradict each
+other. R4 met in full.
+
+### RULINGS
+
+### DISSENT econ-l3-claim-audit-vacuous: DISCHARGED
+
+The dissent's recorded content was that the audit **cannot detect a wrong printed number**, and its
+stated discharge condition was "until B5 lands and a value-drift mutant fails the suite." Both halves
+are now observed by me: VALUE / QUANTIFIER / COVERAGE / LEVEL / RENDER all bite on my own injections,
+`truthFor` re-derives from `state.clubs[*].weeks[*]` rather than from the aggregate the copy reads,
+the rendered/registered split that survived last round is closed and machine-caught (A9 exit 1, and
+my novel B1), and the whole instrument reddens `npm test`. B2 and B3 are a **new and narrower**
+finding about the RENDER limb's harvest scope; they are recorded above as non-blocking repairs and
+are not grounds to keep a dissent alive on terms it never stated. **DISCHARGED.**
+
+### DISSENT econ-l3-signature-reachability: DISCHARGED
+
+The architectural question was ruled last round: outcome-adaptive teaching discharges reachability,
+and BC-1 is a real computed payload in both arms. R3 and R4 were the two remaining blocking items and
+both are met on my own measurement — 0 prose occurrences of the forbidden phrase across every
+surface, phase and reveal stage of the status-quo arm, and the incentive guard on every branch of the
+consequence beat, verified across five arm x direction drives. The residuals (the un-gated
+`revenue-sharing` no-payers branch; R5/R6/R7 from the re-check) are tail cases and unatomed rails, all
+non-blocking. **DISCHARGED.**
+
+### CARRIED, NON-BLOCKING — for the module's repair ledger
+
+- **W5-1 (R1 residual)** RENDER limb: harvest the trajectory, not one end state, and match each
+  registered sentence against the union of the three blobs, not its own family prefix. Two of my
+  novel drifts survive today.
+- **W5-2 (R3 residual)** Arm-gate the `revenue-sharing` card's no-payers branch with `eraArmAtom`.
+- **W5-3** Rendered-but-unregistered prose is still structurally invisible to the audit (the R5/R6
+  class). W5-1 and W5-2 narrow it; they do not close it.
+
+*Nothing here is classroom-proven (D10). No real class has run this lesson.*
