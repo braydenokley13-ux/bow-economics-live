@@ -100,15 +100,37 @@ export type Market = {
   readonly drawSens: number;
   readonly weekendSens: number;
   readonly tvSens: Readonly<Record<TvKind, number>>;
-  /** Fans of demand base per renewal point above/below 50. */
+  /**
+   * Fans of demand base per renewal point above/below 50.
+   *
+   * `gate-l1-econ-r1` R1 (BLOCKING dissent `econ-l1-season-books`): this was 60
+   * (New York) / 55 (Memphis), which made a renewal point worth ~$3,100 of
+   * later-night cash and therefore made RENEWALS *lagged cash* rather than a
+   * rival book. The season cash-maximising line then also maximised renewals
+   * (New York $2,743,440 at 92% against a flat plan's $1,291,132 at 80%), so
+   * the two books never traded off at the scale the COUNTERFACTUAL card
+   * reports. Cut to 10: renewals still move who shows up on the repeat card
+   * (harness P6), but they are next season's money, not this season's.
+   */
   readonly renewalFans: number;
   /** In-arena spend per fan (hidden pre-lock; revealed only as a settled dollar total). */
   readonly ancillary: number;
   /** Fans added to NEXT night's base per dollar of tonight's event spend. */
   readonly eventFans: number;
-  /** Dollars of event spend that buy one renewal point tonight. */
+  /**
+   * Dollars of event spend that buy one renewal point tonight. The whole dial
+   * is worth about +2 points in both markets — small, real, and now printed on
+   * the student's own screen before the commitment (`spendRuleFor`), which is
+   * `gate-l1-econ-r1` R3's first discharge limb: the channel exists, so it is
+   * disclosed with its magnitude rather than left as an unattributable bonus.
+   */
   readonly eventRenewalDollars: number;
-  /** Renewal points lost per $1 the price sits ABOVE what tonight is worth to a plan holder. */
+  /**
+   * Renewal points lost per $1 the price sits ABOVE what tonight is worth to a
+   * plan holder. Raised from 0.6 to 1.8 by R1: at 0.6 the gouge arm could not
+   * outweigh the tent peak plus the bargain bonus anywhere a cash-maximising
+   * desk would price, so a maximising season lost nothing on the second book.
+   */
   readonly planSlope: number;
   /**
    * Dollars between the season-plan price and what a plan holder thinks the
@@ -150,11 +172,11 @@ export const MARKETS: readonly Market[] = [
     drawSens: 1.289,
     weekendSens: -25,
     tvSens: { none: 0, local: 15, national: 45 },
-    renewalFans: 60,
+    renewalFans: 10,
     ancillary: 18,
     eventFans: 0.01,
-    eventRenewalDollars: 24_000,
-    planSlope: 0.6,
+    eventRenewalDollars: 60_000,
+    planSlope: 1.8,
     premiumSpan: 92,
     capacityNote: "listed basketball capacity 19,812 · 2025-26",
   },
@@ -177,11 +199,11 @@ export const MARKETS: readonly Market[] = [
     drawSens: 2.06,
     weekendSens: -30,
     tvSens: { none: 0, local: 18, national: 55 },
-    renewalFans: 55,
+    renewalFans: 10,
     ancillary: 12,
     eventFans: 0.016,
-    eventRenewalDollars: 10_000,
-    planSlope: 0.6,
+    eventRenewalDollars: 30_000,
+    planSlope: 1.8,
     premiumSpan: 90,
     capacityNote: "modeled seat count · published figures range 16,667-18,119",
   },
@@ -228,7 +250,24 @@ export const marketFacts = (m: Market): MarketFacts => ({
  */
 export function spendRuleFor(m: Market): string {
   const dollarsPerFan = Math.round(1 / m.eventFans);
-  return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them.`;
+  const renewalPoints = Math.round((m.eventMax / m.eventRenewalDollars) * 10) / 10;
+  return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It does one more thing, tonight: people who had a good night out are readier to renew, so the full $${m.eventMax.toLocaleString()} dial is worth about +${renewalPoints} renewal ${renewalPoints === 1 ? "point" : "points"} — real, but small next to what your price does.`;
+}
+
+/**
+ * `gate-l1-play` P10 (BLOCKING dissent `play-l1-renewals-unexplained`): the
+ * renewals book drives half the outcome and half the argument, and no student
+ * surface stated the rule that governs it. This is that rule, per market, in
+ * the pair's own numbers — printed beside the price dial BEFORE the commit,
+ * again at the renewals reveal stage, and again on the synthesis card.
+ *
+ * It is a rule of the game, not a preview: it names no crowd, no dollar and no
+ * price that is "right". Verified against the model at the shipped constants
+ * (renewals at the plan price +6; one dial step under it +1; two steps under
+ * -4; at the $10 floor -20 New York / -9 Memphis).
+ */
+export function renewalRuleFor(m: Market): string {
+  return `Your season-ticket holders paid $${m.planPrice} a seat. Price a night well UNDER that and their plan looks like a waste — renewals fall, even when the building is full. Price it ABOVE what they think that night is worth and they quit. In between — and on a big night, a bit over — the plan looks like a bargain and more of them come back.`;
 }
 
 /* --------------------------------------------------------------- cards -- */
@@ -556,6 +595,81 @@ export type FullHouseState = {
 };
 
 export const REVEAL_STEPS = NIGHT_COUNT + 2; // one per night curve, then Two Peaks, then the season books
+
+/**
+ * The seven reveal beats, named.
+ *
+ * `gate-l1-teacher` TT-B2 / HK-3 and `gate-l1-projector` repair 5: the teacher
+ * pressed a button labelled "Reveal next" seven times without knowing what any
+ * press would put on the projector. Each stage now carries the name the button
+ * shows, the headline the board opens the beat on, and ONE short line the
+ * teacher can say as it lands. The SAY lines are intelligence, not a script:
+ * they are what a teacher who does not know the economics needs in order to
+ * name the thing the room is looking at, in their own words.
+ */
+export type RevealStage = {
+  /** 1-based stage number. */
+  stage: number;
+  /** Short name for the button and the teacher's "now on the projector" mirror. */
+  name: string;
+  /** The headline the board puts up when this stage lands. */
+  headline: string;
+  /** One line for the teacher. Short on purpose. */
+  say: string;
+};
+
+export const REVEAL_STAGES: readonly RevealStage[] = [
+  {
+    stage: 1,
+    name: "Night 1 — the quiet Tuesday",
+    headline: "NIGHT 1 · THE QUIET TUESDAY",
+    say: "One night, one building, everybody's price. Ask what happens to the crowd as you read left to right.",
+  },
+  {
+    stage: 2,
+    name: "Night 2 — Saturday",
+    headline: "NIGHT 2 · SATURDAY",
+    say: "Same room, different day. The dots sit higher — that is the card, not the price.",
+  },
+  {
+    stage: 3,
+    name: "Night 3 — the big visitor, on national TV",
+    headline: "NIGHT 3 · BIG VISITOR, NATIONAL TV",
+    say: "Two things pulling opposite ways on one card. Nobody had to guess: both were printed.",
+  },
+  {
+    stage: 4,
+    name: "Night 4 — the shock",
+    headline: "NIGHT 4 · THE SHOCK",
+    say: "This is the night the building ran out. Ask the desks that turned people away what they would do again.",
+  },
+  {
+    stage: 5,
+    name: "Night 5 — Night 1's card again, and the renewals rule",
+    headline: "NIGHT 5 · NIGHT 1'S CARD AGAIN",
+    say: "Same card as Night 1. The only thing that changed is who kept their season-ticket holders — and that rule is on the screen now.",
+  },
+  {
+    stage: 6,
+    name: "The Two Peaks — the money view",
+    headline: "THE TWO PEAKS",
+    say: "Two money lines from one desk's own night. Let them find the second peak before you name it.",
+  },
+  {
+    stage: 7,
+    name: "The season, market by market",
+    headline: "THE SEASON, MARKET BY MARKET",
+    say: "Two books, side by side. Ask which one they were playing for — and whether they knew.",
+  },
+];
+
+/** The renewals rule lands on the projector with Night 5, where the room can see it caused something. */
+export const RENEWALS_REVEAL_STAGE = 5;
+
+/** The same rule as `renewalRuleFor`, said once for a room holding two different plan prices. */
+export const RENEWALS_RULE_BOARD = `THE RENEWALS RULE, out loud: season-ticket holders paid ${MARKETS.map(
+  (m) => `$${m.planPrice} a seat at the ${m.club}`,
+).join(" and ")}. Price a night well UNDER your own plan price and their plan looks like a waste — renewals fall even when the building is full. Price it above what they think that night is worth and they quit. The bigger the visiting club's Draw, the higher the price they forgive; a national-TV listing pulls that line back down.`;
 
 const openCard = (state: FullHouseState): NightCard | null => CARDS[state.nightIndex] ?? null;
 
@@ -1000,11 +1114,37 @@ export function bestFoundSeason(market: Market): { cash: number; renewals: numbe
   return outcome;
 }
 
+/**
+ * gate-l1-econ-r1 R2 (BLOCKING): the two notes printed beside these rows used to
+ * ASSERT a tradeoff ("renewals stay high" on the flat line; "look at what it
+ * costs on the renewals side" on the strong line) that the same card's own
+ * numbers refuted — at the old constants the strongest line beat the flat plan
+ * by $1.45M AND twelve renewal points. Both notes are now READ OFF the two
+ * rows, so a copy sentence can never again contradict the number beside it: the
+ * strong line's note only claims a renewals cost when it has one, and says so
+ * with the size of the gap.
+ */
 function replaysFor(desk: Desk): SeasonReplay[] {
   const market = marketOf(desk);
   const flatPlan = replayPlan(market, { prices: CARDS.map(() => market.planPrice), spends: CARDS.map(() => 0) });
   const strongest = bestFoundSeason(market);
   const spentOn = CARDS.filter((_c, i) => (strongest.plan.spends[i] ?? 0) > 0).map((c) => c.label.replace("Night ", "N"));
+  const renewalGap = flatPlan.renewals - strongest.renewals;
+  const cashGap = strongest.cash - flatPlan.cash;
+  const flatNote =
+    renewalGap > 0
+      ? `Never moved the dial. Nobody's plan ever looked like a waste or a rip-off, so this line ends ${renewalGap} renewal ${renewalGap === 1 ? "point" : "points"} ahead of the strongest one — and $${Math.abs(cashGap).toLocaleString()} behind it in cash.`
+      : `Never moved the dial. It leaves money on the table on the big nights, and on this room's numbers it does not buy a better renewals book either.`;
+  const strongNote =
+    renewalGap > 0
+      ? `Not a proven maximum — the best line we could search out: a different price on every night, and event money on ${
+          spentOn.length === 0 ? "no night at all" : spentOn.join(" and ")
+        }. It made $${Math.abs(cashGap).toLocaleString()} more than never moving the dial, and it paid ${renewalGap} renewal ${
+          renewalGap === 1 ? "point" : "points"
+        } for it. There is no exchange rate between those two numbers. You have to choose.`
+      : `Not a proven maximum — the best line we could search out: a different price on every night, and event money on ${
+          spentOn.length === 0 ? "no night at all" : spentOn.join(" and ")
+        }. On this model it is ahead on both books, so on these five nights the money did not cost the plan holders anything.`;
   return [
     {
       label: "What you actually did",
@@ -1016,15 +1156,13 @@ function replaysFor(desk: Desk): SeasonReplay[] {
       label: `Same price every night ($${market.planPrice})`,
       cash: flatPlan.cash,
       renewals: flatPlan.renewals,
-      note: "Never moved the dial. Renewals stay high; the big nights leave money on the table.",
+      note: flatNote,
     },
     {
-      label: "The best five nights we could find",
+      label: "The most cash we could find",
       cash: strongest.cash,
       renewals: strongest.renewals,
-      note: `Not a proven maximum — the best line we could search out: a different price on every night, and event money on ${
-        spentOn.length === 0 ? "no night at all" : spentOn.join(" and ")
-      }. Look at what it costs on the renewals side.`,
+      note: strongNote,
     },
   ];
 }
@@ -1054,9 +1192,14 @@ export const OBJECTIVE_COPY =
 export const HOUSE_RULES: readonly string[] = [
   "Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.",
   "Everything that will move tonight's crowd is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Nothing else moves it.",
-  "Money you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it.",
+  "Money you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it. It also nudges RENEWALS up a little on the night you spend it: the whole dial is worth about two points.",
   "Your building's bill is due every night whether 200 people come or 19,000 do.",
-  "RENEWALS follow your season-ticket plan price and what tonight is worth. Charge BELOW the plan price and the plan looks like a waste, so they stop buying it. Charge far above what tonight is worth and they quit. On a big night — high Draw, not on national TV — a strong price makes their plan look like a bargain and MORE of them come back.",
+  // gate-l1-econ-r1 N-a and N-b, both measured: the bargain arm peaks at +12 on
+  // Night 3 (draw 88, national TV) exactly as it does on Night 4 (draw 97, no
+  // TV) — national TV moves WHERE the forgiveness line sits ($56 vs $112 in New
+  // York), never whether the arm fires. And one dial step under the plan price
+  // is still +1, so "below the plan price" had to become "well under".
+  "RENEWALS follow your season-ticket plan price and what tonight is worth to the people who hold that plan. Charge well UNDER the plan price and the plan looks like a waste, so they stop buying it. Charge above what tonight is worth to them and they quit. The bigger the visiting club's Draw, the higher the price they will forgive — and a national-TV listing pulls that line back down, because they can watch it at home for nothing.",
 ];
 
 export const BOARD_HONESTY_LINE =
@@ -1097,8 +1240,19 @@ export const SOURCE_NOTES: readonly string[] = [
 export const SHOCK_REVEAL_COPY =
   "That night was modeled on a real one. Indiana Fever home attendance went from 4,066 a game in 2023 to 17,036 a game in 2024 — best in the WNBA — and six opposing clubs moved Fever games out of their own buildings and into bigger ones. They could not raise the price: those tickets were already sold. You could. That is the difference: buying seats is what a club does when it cannot change the price. Opening more of this building never beat pricing it right — it only ever handed part of the money back to a desk that had already priced too low.";
 
+/**
+ * gate-l1-econ N3 / gate-l1-econ-r1 N-c. The old line claimed Night 4 was "the
+ * one night where charging too little hurts more than charging too much" and
+ * that on the other four the two mistakes "cost about the same". Measured at
+ * the shipped constants (renewals 50, no spend, bowl closed): at $10 and $20
+ * either side of a night's best price the two errors cost within 2% of each
+ * other on EVERY card in BOTH markets — so Night 4 was not special there. It is
+ * only at $30 out that the building bites: New York Night 4 low -$205,200 vs
+ * high -$135,000 (1.52x), Memphis -$207,996 vs -$135,000 (1.54x). This copy
+ * says exactly that and nothing more.
+ */
 export const CAPACITY_DEFENCE_COPY =
-  "Night 4 is the one night where charging too little hurts more than charging too much, and that is not a trick — it is the building. Once every seat is sold, a cheaper ticket brings nobody new; it just charges less to the same full house. On the other four nights the two mistakes cost about the same.";
+  "Miss the best price by a couple of dollars and it costs about the same whether you went over or under — on every card, in both buildings, the two mistakes are close to even. Miss it by a lot and the building starts to matter. Once every seat is sold, a cheaper ticket brings nobody new; it just charges less to the same full house. On Night 4, being $30 under the best price cost about half again as much as being $30 over it.";
 
 export const DYNAMIC_PRICING_COPY =
   "The thing you just did five times with one dial, real clubs built software to do every hour. The San Francisco Giants started it in 2009 and ran a full season of it in 2010; variable and dynamic pricing are standard across the NBA now. Your job exists.";
@@ -1377,6 +1531,25 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             spendStep: SPEND_STEP,
             books: booksFor(desk),
             rules: HOUSE_RULES,
+            // gate-l1-play P10: the rule that governs half the scoreboard, beside
+            // the dial that drives it, before the commit. Arithmetic on printed
+            // facts only — it names no crowd, no dollar and no "right" price.
+            renewalRule: renewalRuleFor(market),
+            // gate-l1-play "no receipt" (P2's second clause): last night's event
+            // money, converted at the rate the pair was shown before they spent
+            // it, so the dial can be confirmed or refuted instead of taken on
+            // faith. Restates a published rule; discloses no hidden constant.
+            spendReceipt:
+              lastNight && lastNight.spend > 0
+                ? {
+                    spend: lastNight.spend,
+                    fans: carryFansFor(desk, market),
+                    label: `Last night you put $${lastNight.spend.toLocaleString()} into making it an event. That bought about ${carryFansFor(
+                      desk,
+                      market,
+                    ).toLocaleString()} extra people into tonight's building — if there is room for them.`,
+                  }
+                : null,
             history,
             lastNight,
             message: desk.locked
@@ -1526,14 +1699,23 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
 
         case "PLAY": {
           if (!card) {
+            // gate-l1-projector repair 3: the last bell used to dump all 25
+            // desk-night marks and the room's turned-away total onto the
+            // projector automatically, then REVEAL wiped them and replayed the
+            // same five nights one press at a time. The centrepiece reveal was
+            // pre-spoiled and then repeated. The bell now closes on a held
+            // state; the staged REVEAL is the first time the room sees the
+            // whole picture.
             return {
               mode: "play",
               allNightsDone: true,
-              curves: agg.curves,
+              curves: [],
+              held: true,
               twoPeaksReleased: state.twoPeaksReleased,
               twoPeaks: state.twoPeaksReleased ? agg.twoPeaks : [],
               honestyLine: BOARD_HONESTY_LINE,
               message: "Five nights, in the books.",
+              subMessage: "Nobody has seen the room's numbers yet. They go up one night at a time.",
             };
           }
           const settledCards = CARDS.slice(0, state.nightIndex).map((c) => c.id);
@@ -1562,19 +1744,29 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         case "REVEAL": {
           const shown = Math.min(state.revealStage, NIGHT_COUNT);
           const shownCards = CARDS.slice(0, shown).map((c) => c.id);
+          const stage = REVEAL_STAGES[state.revealStage - 1] ?? null;
           return {
             mode: "reveal",
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
+            // gate-l1-play "REVEAL stages 1-5 spend four of their five beats
+            // silently": every press now names its own beat on the projector.
+            stageName: stage?.name ?? null,
+            stageHeadline: stage?.headline ?? null,
             shownCards,
             curves: agg.curves.filter((p) => shownCards.includes(p.cardId)),
             twoPeaksReleased: state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1,
             twoPeaks: state.revealStage >= NIGHT_COUNT + 1 ? agg.twoPeaks : [],
             booksReleased: state.revealStage >= REVEAL_STEPS,
             books: state.revealStage >= REVEAL_STEPS ? agg.books : [],
-            totalTurnedAway: agg.totalTurnedAway,
-            shockCopy: SHOCK_REVEAL_COPY,
-            capacityDefence: CAPACITY_DEFENCE_COPY,
+            // Held until every night is up: at stage 0 this counted nights the
+            // room had not been shown yet (gate-l1-projector).
+            totalTurnedAway: state.revealStage >= NIGHT_COUNT ? agg.totalTurnedAway : null,
+            shockCopy: state.revealStage >= 4 ? SHOCK_REVEAL_COPY : null,
+            capacityDefence: state.revealStage >= 4 ? CAPACITY_DEFENCE_COPY : null,
+            // gate-l1-play P10: the renewals rule reaches the room on the beat
+            // where its consequence is on screen — Night 5 against Night 1.
+            renewalsRule: state.revealStage >= RENEWALS_REVEAL_STAGE ? RENEWALS_RULE_BOARD : null,
             honestyLine: BOARD_HONESTY_LINE,
           };
         }
@@ -1586,6 +1778,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             curves: agg.curves,
             twoPeaks: agg.twoPeaks,
             capacityDefence: CAPACITY_DEFENCE_COPY,
+            renewalsRule: RENEWALS_RULE_BOARD,
             honestyLine: BOARD_HONESTY_LINE,
           };
 
@@ -1594,6 +1787,11 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             mode: "counterfactual",
             repeatCard: agg.repeatCard,
             repeatSummary: repeatSummary(agg.repeatCard),
+            // gate-l1-play 1a (BLOCKING P1-b): ARGUE_PROMPT tells the room to
+            // read dots "on the board". The scatter existed in REVEAL and ADAPT
+            // only, so the designated argue-fuel pointed off-screen at the exact
+            // moment the argument was asked for.
+            curves: agg.curves,
             honestLimit:
               "We can show you what the money would have done. We cannot show you what you would have done. That is why we played it instead of arguing about it.",
             prompt: ARGUE_PROMPT,
@@ -1641,19 +1839,341 @@ function sameRun(desk: Desk): number {
   return best;
 }
 
-function teacherWatchFor(state: FullHouseState): string[] {
-  const out: string[] = [];
+/**
+ * WATCH FOR, restructured.
+ *
+ * `gate-l1-teacher` TT-B7/TT-B8: flags were flat strings, a stalled desk was
+ * invisible (small grey `dialling $24` in a chip identical in weight to
+ * `LOCKED $34`), and the reviewer observed the Night-4 flag rendering with an
+ * EMPTY desk list from REVEAL onward. That last defect does not reproduce from
+ * the reducer at any phase (a four-desk session driven to COMPLETE names the
+ * desk correctly in every phase), so rather than guess at a render path, each
+ * flag now carries its desks as DATA, is never emitted with an empty list, and
+ * the client renders the list from that array instead of parsing a sentence.
+ */
+export type WatchFlag = {
+  id: string;
+  /** The thing the teacher should notice. */
+  label: string;
+  /** Named desks, never empty when the flag is emitted. */
+  desks: string[];
+  /** What to do with it, in a stranger's words. */
+  action: string;
+  /** `now` = act on it this minute; `later` = park it for a named phase. */
+  urgency: "now" | "later";
+};
+
+function teacherWatchFor(state: FullHouseState, phase: CanonicalPhase): WatchFlag[] {
+  const out: WatchFlag[] = [];
   const desks = Object.values(state.desks);
+  const windowOpen = phase === "PLAY" && state.nightIndex < NIGHT_COUNT;
+
+  if (windowOpen && desks.length > 0) {
+    const stalled = desks.filter((d) => !d.locked).map((d) => deskHandle(d));
+    if (stalled.length > 0) {
+      out.push({
+        id: "stalled",
+        label: `${stalled.length} of ${desks.length} desks have not locked tonight`,
+        desks: stalled,
+        action: "Ring the bell when you are ready — an unlocked desk settles at its own season-plan price and is marked AUTO on its own screen. Nobody is skipped and nobody gets a zero.",
+        urgency: "now",
+      });
+    }
+  }
   const flat = desks.filter((d) => sameRun(d) >= 3).map((d) => deskHandle(d));
-  if (flat.length > 0) out.push(`Held the same price 3+ nights: ${flat.join(", ")} — your best ADAPT voice.`);
+  if (flat.length > 0) {
+    out.push({
+      id: "held-price",
+      label: "Held the same price 3+ nights",
+      desks: flat,
+      action: "Call on this desk when you reach the ADAPT questions — a desk that never moved the dial is the clearest contrast in the room.",
+      urgency: "later",
+    });
+  }
   const soldOut = desks.filter((d) => d.nights.some((n) => n.settlement.turnedAway > 500)).map((d) => deskHandle(d));
-  if (soldOut.length > 0) out.push(`Turned away 500+ fans on some night: ${soldOut.join(", ")} — ask what the card told them.`);
+  if (soldOut.length > 0) {
+    out.push({
+      id: "turned-away",
+      label: "Turned away 500+ fans on some night",
+      desks: soldOut,
+      action: "Ask what on the card should have told them, before you say anything about the answer.",
+      urgency: "later",
+    });
+  }
   const debt = desks.filter((d) => d.cash < 0).map((d) => deskHandle(d));
-  if (debt.length > 0) out.push(`Carrying debt (night-spend dial locked at $0): ${debt.join(", ")}.`);
+  if (debt.length > 0) {
+    out.push({
+      id: "debt",
+      label: "In the red — their night-spend dial is locked at $0 until the books clear",
+      desks: debt,
+      action: "This is recoverable and usually recovers on its own; one good night clears it. Say so if the pair looks sunk.",
+      urgency: "now",
+    });
+  }
   const bowl = desks.filter((d) => d.nights.some((n) => n.openBowl)).map((d) => deskHandle(d));
-  if (bowl.length > 0) out.push(`Opened more of the building on Night 4: ${bowl.join(", ")}.`);
-  if (out.length === 0) out.push("Nothing flagged yet — the room is still early.");
-  return out;
+  if (bowl.length > 0) {
+    out.push({
+      id: "bowl",
+      label: "Paid to open more of the building on Night 4",
+      desks: bowl,
+      action: "Keep this for the Night 4 reveal. Opening seats never beat pricing the night right — it only ever refunds part of a price that was already too low.",
+      urgency: "later",
+    });
+  }
+  return out.filter((f) => f.desks.length > 0);
+}
+
+/**
+ * The live-direction script — `gate-l1-teacher` TT-B1 (BLOCKING, HK-1).
+ *
+ * The design carried a complete NOW / ASK / DON'T EXPLAIN YET / TRIGGER /
+ * TIME CUT director's script with per-phase minute budgets
+ * (`docs/gauntlet/module-2/DESIGN_C_FIRSTPRINCIPLES.md`, "TEACHER FLOW (for a
+ * teacher who has never seen this)"). Exactly one fragment of it had reached
+ * the product. This is the port.
+ *
+ * It is intelligence, not a teleprompter. NOW says what should be happening;
+ * ASK carries the question for this beat and, where the room can stall, the
+ * answer the teacher needs to have; DON'T EXPLAIN YET names what to withhold;
+ * TRIGGER is computed from live state; TIME CUT says what to drop.
+ */
+export type DirectorPanel = {
+  phase: CanonicalPhase;
+  minuteBudget: string;
+  now: string[];
+  ask: { q: string; answer: string | null }[];
+  dontExplainYet: string[];
+  /** Computed from live state — null when nothing is due. */
+  trigger: string | null;
+  timeCut: string;
+};
+
+/** What the STUDENT screen is offering right now — a surface the teacher never sees (HK-5, TT-B9). */
+function studentScreenMechanics(state: FullHouseState): string[] {
+  const card = openCard(state);
+  const lines = MARKETS.map(
+    (m) =>
+      `${m.club}: season plan $${m.planPrice} a seat · building bill $${m.bill.toLocaleString()} a night · ${m.capacity.toLocaleString()} seats · event dial $0-$${m.eventMax.toLocaleString()} (about $${Math.round(
+        1 / m.eventFans,
+      ).toLocaleString()} per extra person NEXT night, and about +${Math.round((m.eventMax / m.eventRenewalDollars) * 10) / 10} renewal points at the top of the dial).`,
+  );
+  lines.push(
+    "Both desks price blind: no preview of any kind exists on the student screen. They see tonight's card, tomorrow's card, the five-night slate and their own history.",
+  );
+  if (card?.bowlOffer) {
+    lines.push(
+      `Tonight only, the student screen also offers the capacity option: ${MARKETS.map(
+        (m) => `${m.club} +${m.bowlSeats.toLocaleString()} seats for $${m.bowlCost.toLocaleString()}`,
+      ).join(" · ")}, paid whether they fill or not. It is a deliberate trap: it never beats pricing the night right.`,
+    );
+  }
+  lines.push(
+    "A desk in the red has its event dial locked at $0 with the reason printed. It is recoverable — one good night clears it.",
+  );
+  return lines;
+}
+
+export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): DirectorPanel {
+  const nightNumber = Math.min(state.nightIndex + 1, NIGHT_COUNT);
+  const deskCount = Object.keys(state.desks).length;
+  const lockedCount = Object.values(state.desks).filter((d) => d.locked).length;
+  const twoPeaksDue = state.nightIndex >= 3 && !state.twoPeaksReleased;
+  const timeCut =
+    "Past minute 45? Drop the Night 4 capacity-option discussion and go straight to the Night 1 vs Night 5 chart. It carries the lesson on its own.";
+
+  switch (phase) {
+    case "LOBBY":
+      return {
+        phase,
+        minuteBudget: "2 min",
+        now: [
+          "Pairs join at /play on one device. Markets are handed out by desk number — odd desks run New York, even desks run Memphis — and the board shows the assignment as it happens.",
+          "Read the board line out loud: \"You are not the GM today. You run the building.\"",
+          `${deskCount} desk${deskCount === 1 ? "" : "s"} in so far.`,
+        ],
+        ask: [{ q: "Who has ever bought a ticket to anything? Who decided what it cost?", answer: null }],
+        dontExplainYet: ["Do not explain the two books yet — the board does it in HOOK.", "Say nothing about price yet."],
+        trigger: deskCount === 0 ? "Nobody has joined yet. The join URL and code are at the top of this console." : null,
+        timeCut,
+      };
+
+    case "HOOK":
+      return {
+        phase,
+        minuteBudget: "3 min",
+        now: [
+          "Read Night 1's card off the board out loud: Tuesday, a club that has lost four straight, Draw 22, no TV.",
+          "Take three numbers from the room and write them on the board. DO NOT evaluate them — no \"good\", no \"that's high\". You are collecting, not marking.",
+          "Then say the two books once, in the board's own words, and move on.",
+        ],
+        ask: [
+          { q: "Tuesday. The visiting team has lost four in a row. What is a seat worth?", answer: null },
+          { q: "Why that number and not double it?", answer: null },
+        ],
+        dontExplainYet: [
+          "The words DEMAND, REVENUE and ELASTICITY. None of them are said in the first 30 minutes — the room earns them at SYNTHESIS.",
+          "Do not tell them the crowd shrinks when the price goes up. They find that in their own numbers at the first reveal.",
+        ],
+        trigger: null,
+        timeCut,
+      };
+
+    case "PLAY": {
+      const block2 = state.nightIndex >= 3;
+      const done = state.nightIndex >= NIGHT_COUNT;
+      return {
+        phase,
+        minuteBudget: done ? "wrap up — move to REVEAL" : block2 ? "Nights 4-5: 8 min" : "Nights 1-3: 11 min",
+        now: done
+          ? [
+              "All five nights are in the books. The projector is holding — the room has NOT seen the class picture yet.",
+              "Advance to REVEAL and put it up one night at a time.",
+            ]
+          : block2
+            ? [
+                `Night ${nightNumber} of ${NIGHT_COUNT}. Read Night 4's card slowly — the room should feel it. "The biggest night of the five. Demand is going to run past what this building holds."`,
+                "Watch who raises the price and who pays to open more of the building. Do not tell them which is right.",
+                `${lockedCount}/${deskCount} desks locked in.`,
+              ]
+            : [
+                `Night ${nightNumber} of ${NIGHT_COUNT}. Read tonight's card off the board, then get out of the way. Pairs price blind — there is no preview on their screen and there is not supposed to be.`,
+                "Ring the bell yourself when the room is ready. Every desk settles at the same moment.",
+                `${lockedCount}/${deskCount} desks locked in.`,
+              ],
+        ask: [
+          { q: "What on tonight's card is different from last night's?", answer: null },
+          { q: "(after the bell) Who is surprised? Say the number you expected first.", answer: null },
+        ],
+        dontExplainYet: [
+          "Still no DEMAND, REVENUE or ELASTICITY.",
+          "Do not tell the room that the cheap ticket can make more money. That is the Two Peaks reveal and it is worth more if they get there first.",
+        ],
+        trigger: twoPeaksDue
+          ? "TRIGGER: Night 3 is played — the Two Peaks release is live. Best moment is right after the Night 3 bell, or hold it until after Night 4 if you want the biggest decision of the lesson to stay blind. Your call; the button waits."
+          : state.nightIndex < 3
+            ? "The Two Peaks release unlocks after the Night 3 bell."
+            : null,
+        timeCut,
+      };
+    }
+
+    case "REVEAL":
+      return {
+        phase,
+        minuteBudget: "REVEAL + COUNTERFACTUAL: 6 min",
+        now: [
+          "Seven presses, one beat each. The next one is named on the button — read it before you press it.",
+          "Between presses, say one sentence and stop. The line for each stage is under the button.",
+          "Let the room look. Silence here is working time, not dead air.",
+        ],
+        ask: [{ q: "Same night, same visitor. Why did more people come the second time?", answer: "Their own renewals. Desks that kept their season-ticket holders walked into Night 5 with a bigger base than they had on Night 1 — same card, different building underneath it." }],
+        dontExplainYet: ["Hold the words until SYNTHESIS. Name the thing, not the term."],
+        trigger:
+          state.revealStage < REVEAL_STEPS
+            ? `Next press: ${REVEAL_STAGES[state.revealStage]?.name ?? "the next stage"} (${state.revealStage + 1} of ${REVEAL_STEPS}).`
+            : "Every stage has played. Move on to ADAPT.",
+        timeCut,
+      };
+
+    case "ADAPT":
+      return {
+        phase,
+        minuteBudget: "4 min",
+        now: [
+          "Ask the three questions IN THIS ORDER. Take answers from desks, not from yourself.",
+          "The chart is on the projector. Point at it; make them point at it.",
+        ],
+        ask: [
+          {
+            q: ADAPT_QUESTIONS[0]!,
+            answer:
+              "Saturday's card (Night 2) had a better visiting club and a day people can come out on, so the same price drew a bigger crowd and the best price sat higher. The day, the Draw and the TV listing were all printed before anyone locked.",
+          },
+          {
+            q: ADAPT_QUESTIONS[1]!,
+            answer:
+              "Yes — that is the Two Peaks. Every person who comes also spends inside the building, so a cheaper ticket that brings more people can beat a dearer ticket that brings fewer. The ticket is not the only thing you sell.",
+          },
+          {
+            q: ADAPT_QUESTIONS[2]!,
+            answer:
+              "Renewals. Four nights of their own pricing moved their season-ticket base, and that base is who shows up. Price well under your own plan price and the plan looks like a waste; price above what the night is worth to a plan holder and they quit.",
+          },
+        ],
+        dontExplainYet: [
+          "You can now say DEMAND if the room gets there. Still hold ELASTICITY.",
+          "If the room stalls, re-ask smaller: \"Point at two dots the same colour and the same shape. Which one charged more? Which one drew more?\"",
+        ],
+        trigger: null,
+        timeCut,
+      };
+
+    case "COUNTERFACTUAL":
+      return {
+        phase,
+        minuteBudget: "inside the 6 min with REVEAL",
+        now: [
+          "Every desk is looking at its own season next to two other lines: never moving the dial, and the most cash the model could find.",
+          "Expect a student to say \"so doing nothing was better\". That is the whole lesson arriving early — take it seriously and put it to the room.",
+          "This board ranks desks in public, including the worst one. Frame it before you show it: this is a room full of people who priced blind, and the interesting desks are the surprising ones, not the winning ones.",
+        ],
+        ask: [
+          {
+            q: "Doing nothing kept the most season-ticket holders. Was doing nothing better?",
+            answer:
+              "It depends which book you are being paid on, and nothing in the game converts one into the other. The most-cash line makes far more money and ends with far fewer renewals. Both are real answers; that is what \"no exchange rate\" means.",
+          },
+          {
+            q: ARGUE_PROMPT,
+            answer:
+              "Steer them to Night 1 or Night 3, where the crowd moves hard against the price. Night 4 is the trap: the building is full at several prices, so the higher price can also be the bigger money there.",
+          },
+        ],
+        dontExplainYet: ["Do not resolve the argument for them yet — SYNTHESIS is one screen away."],
+        trigger: null,
+        timeCut,
+      };
+
+    case "SYNTHESIS":
+      return {
+        phase,
+        minuteBudget: "7 min",
+        now: [
+          "This is the part the simulation does not do for you. Name each thing they already felt, in order, off the board's own cards.",
+          "Every card on that board is computed from THIS class's numbers — you can point at any figure and it belongs to somebody in the room.",
+        ],
+        ask: [
+          {
+            q: "If revenue is price times people, why did the cheaper ticket make more money?",
+            answer:
+              "Because \"people\" moves when price moves, and because the ticket is not the only thing they buy. Revenue is still price x people; the point is that you cannot raise one without moving the other.",
+          },
+          {
+            q: "Why is Memphis's median renewals different from New York's?",
+            answer:
+              "It is not the market — it is the plan price. Renewals answer to how far tonight's price sits from your own season-plan price, and the two buildings sell different plans ($24 vs $16). Two desks pricing \"the same\" are not doing the same thing.",
+          },
+          { q: EXIT_PROMPT, answer: "No single right answer. You want the card named, not the night." },
+        ],
+        dontExplainYet: ["Nothing. This is the beat where every term gets said out loud."],
+        trigger: null,
+        timeCut: "Past minute 55? Say REVENUE = PRICE x PEOPLE, say the Two Peaks card, and stop. Those two are the lesson.",
+      };
+
+    case "COMPLETE":
+      return {
+        phase,
+        minuteBudget: "1 min",
+        now: ["Read the closing line off the board and tell them what the next lesson does to their building."],
+        ask: [{ q: EXIT_PROMPT, answer: null }],
+        dontExplainYet: [],
+        trigger: null,
+        timeCut,
+      };
+
+    default:
+      return { phase, minuteBudget: "", now: [], ask: [], dontExplainYet: [], trigger: null, timeCut };
+  }
 }
 
 function repeatSummary(rows: readonly RepeatRow[]): string {
@@ -1714,15 +2234,33 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
         ? `${same.length} desk${same.length === 1 ? "" : "s"} charged the same price on both. ${same
             .slice(0, 3)
             .map((r) => `${r.deskHandle}: ${r.n1Turnout.toLocaleString()} then ${r.n5Turnout.toLocaleString()}`)
-            .join(" · ")}. Same day, same visiting club, same price — different building. Four nights of your own choices moved your renewals, and renewals move who shows up.`
-        : `${repeat.length} desk${repeat.length === 1 ? "" : "s"} played that card twice and every one of them changed the price, so compare crowds against the renewals column: the desks that carried more season-ticket holders into Night 5 started from a bigger base than they had on Night 1.`,
+            .join(" · ")}. Same day, same visiting club, same price — and a different crowd walked in, because four nights of your own choices had already moved your renewals. ${RENEWALS_RULE_BOARD}`
+        : `${repeat.length} desk${repeat.length === 1 ? "" : "s"} played that card twice and every one of them changed the price, so compare crowds against the renewals column: the desks that carried more season-ticket holders into Night 5 started from a bigger base than they had on Night 1. ${RENEWALS_RULE_BOARD}`,
   });
 
+  // gate-l1-econ-r1 R1/R2: the season claim on this card is now READ OFF the two
+  // season lines the COUNTERFACTUAL card printed, in the same market, rather than
+  // asserted. At the shipped constants the most-cash line ends 26-27 renewal
+  // points below the never-move-the-dial line in both markets, so the tradeoff
+  // the card names is one the room's own evidence shows — and if a retune ever
+  // collapses it again, this sentence changes with it instead of going false.
   const bestFill = agg.books.map((b) => `${b.club} ${b.bestFillPct}%`).join(" · ");
+  const seasonTradeoff = ((): string => {
+    const market = MARKETS[0]!;
+    const flat = replayPlan(market, { prices: CARDS.map(() => market.planPrice), spends: CARDS.map(() => 0) });
+    const strong = bestFoundSeason(market);
+    const gap = flat.renewals - strong.renewals;
+    if (gap <= 0) {
+      return "On this model, over five nights, the two books did not pull against each other as hard as they do night by night — the choice is sharpest inside one night.";
+    }
+    return `Over the whole five nights at the ${market.club}: the most cash we could find was $${strong.cash.toLocaleString()} and ended at ${strong.renewals}% renewals; never touching the dial made $${flat.cash.toLocaleString()} and ended at ${flat.renewals}%. More money, fewer season-ticket holders. There is no rate that turns one into the other.`;
+  })();
   cards.push({
     id: "two-books",
     title: "TWO BOOKS, NO EXCHANGE RATE",
-    body: `Best full house each market managed: ${bestFill}. Median renewals: ${agg.books.map((b) => `${b.club} ${b.medianRenewals}%`).join(" · ")}. You cannot add a dollar to a renewal, and no price is best on both. Every night you chose which book to feed.`,
+    body: `Best full house each market managed: ${bestFill}. Median renewals: ${agg.books
+      .map((b) => `${b.club} ${b.medianRenewals}%`)
+      .join(" · ")}. You cannot add a dollar to a renewal, and no price is best on both. ${seasonTradeoff}`,
   });
 
   cards.push({
@@ -1779,9 +2317,14 @@ function shifterCardBody(agg: FullHouseAggregate): string {
     if (pair) {
       return `${market.club}: somebody charged $${pair.a.price} on the quiet Tuesday and drew ${pair.a.turnout.toLocaleString()}. Somebody charged the same $${pair.a.price} on Saturday against a better visiting club and drew ${pair.b.turnout.toLocaleString()}. Same price, different crowd. The day, the visiting club's Draw and the TV listing were all printed on the card before anyone locked.`;
     }
+    // gate-l1-econ N5 (unrepaired at the recheck): this fallback used to quote two
+    // DIFFERENT prices and then close with "nothing else moved the crowd", which
+    // reads as evidence that the card alone moved it when the price moved too.
+    // No desk in this room charged the same price on both cards, so the honest
+    // move is to say the comparison is not clean and name the second cause.
     const bestN1 = n1.reduce((a, b) => (b.turnout > a.turnout ? b : a));
     const bestN2 = n2.reduce((a, b) => (b.turnout > a.turnout ? b : a));
-    return `${market.club}: the best Tuesday crowd in this room was ${bestN1.turnout.toLocaleString()} at $${bestN1.price}; the best Saturday crowd was ${bestN2.turnout.toLocaleString()} at $${bestN2.price}. The day, the visiting club's Draw and the TV listing were printed on the card before anyone locked — nothing else moved the crowd.`;
+    return `${market.club}: the best Tuesday crowd in this room was ${bestN1.turnout.toLocaleString()} at $${bestN1.price}; the best Saturday crowd was ${bestN2.turnout.toLocaleString()} at $${bestN2.price}. Those are two different prices, so this pair does not prove it on its own — part of that gap is the price. What the card can tell you is on the board: find two desks in the SAME building charging the SAME price on the two nights, and whatever is left over is the day, the Draw and the TV listing.`;
   }
   return "The day, the visiting club's Draw and the TV listing were printed on every card before anyone locked. Nothing else moved the crowd — there is no luck in this model.";
 }
