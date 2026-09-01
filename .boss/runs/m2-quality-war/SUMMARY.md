@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `305:ee38002d2c3d2f03301a63662986757791940aa5221d36c81c5737b8c0cfeeab`  
-Updated: 2026-09-01T08:34:39.479Z
+Event head: `307:b368f91b1eaa50f6f55688b473e189ec11814fcb084691832f67f5d27ad3d6a3`  
+Updated: 2026-09-01T08:40:00.062Z
 
 ## Founder intent
 
@@ -39,7 +39,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
 - builder — builder-w4-r1 — completed — claude-opus-5
 - player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
-- economic-truth-critic — economic-truth-critic — active — claude-opus-5
+- economic-truth-critic — economic-truth-critic — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed — claude-sonnet-5
 
 ## Required evidence
@@ -68,6 +68,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l2-tuning-w4r1 — test — L2 harness 12/12: 336 rooms, 114,678 atoms, 0 disagreements; 6/6 mutants caught incl. wrong-noun and mirror-vs-board
 - l2-e2e-w4r1 — e2e — L2 e2e: 36 first-contact assertions across all weeks x 12 desks, 499 occlusion probes
 - w4-projector-final — projector-report — W4 mirror confirm: arms A and C driven live to stage 5 — false lock-count claim gone at prescribed timing, /teach mirror arm-specific and matching its board (arms B/D by unit test + mutation sweep, read not re-driven). DISCHARGED
+- w4-econ-final — economic-truth-report — W4 econ final: NOT DISCHARGED, third ground. N11's replacement copy overshoots — 'put MORE back in' contradicted in 83/86 rooms (room cash peaks at 10-15% share; the under-provision arm fires only at >=25%; the showcase room would be $1.2M better at 10%). N18 limb independent but audits sign only, not level. FL-J/K/A cleared; composition PASS+registered; market-size + shared-product PASS. B11/B12: the prescription must be computed from the room optimum and audited at level, not direction
 
 ## Claim ledger
 
