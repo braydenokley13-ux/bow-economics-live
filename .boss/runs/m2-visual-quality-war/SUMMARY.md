@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `133:78bd8fd58b30c49a5c2c58c91d82616c9341e3cb018501d513c2097059d2fb46`  
-Updated: 2026-09-01T20:45:35.715Z
+Event head: `135:5a72994c17bfbc39d25cc5dc26895ecbf66ea3ec9f4c13e646b350d932489638`  
+Updated: 2026-09-01T20:47:31.321Z
 
 ## Founder intent
 
@@ -34,6 +34,8 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - builder — builder-b — active — claude-opus-5
 - builder — builder-c — active — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
+- sports-reality-director — sports-reality-w2 — active — claude-sonnet-5
+- browser-qa — browser-qa-w2base — active — claude-sonnet-5
 
 ## Required evidence
 

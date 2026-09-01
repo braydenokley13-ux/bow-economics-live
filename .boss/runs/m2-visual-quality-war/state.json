@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:45:35.715Z",
+  "updatedAt": "2026-09-01T20:47:31.321Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1376,6 +1376,34 @@
           "ephemeral": false,
           "status": "active",
           "activatedAt": "2026-09-01T20:45:35.715Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "bowl-rights-review": {
+          "assignmentId": "bowl-rights-review",
+          "role": "sports-reality-director",
+          "actor": "sports-reality-w2",
+          "model": "claude-sonnet-5",
+          "reason": "Analyst item 8 / direction Q7: the drawn bowl must not resemble an identifiable building; crest text marks and club wordmarks on new surfaces; rights/source surfacing",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T20:47:31.072Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "m1-baseline-extended": {
+          "assignmentId": "m1-baseline-extended",
+          "role": "browser-qa",
+          "actor": "browser-qa-w2base",
+          "model": "claude-sonnet-5",
+          "reason": "Analyst item 3: Module 1 pixel baseline at the wave-2 base head across L1/L2/L3 key states, before the build lands",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T20:47:31.321Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -3204,14 +3232,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 13,
+    "agentsActivated": 15,
     "gateFailures": 1,
     "claimsContradicted": 0,
     "evidenceRecorded": 87,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 133,
-  "eventHead": "78bd8fd58b30c49a5c2c58c91d82616c9341e3cb018501d513c2097059d2fb46",
+  "eventCount": 135,
+  "eventHead": "5a72994c17bfbc39d25cc5dc26895ecbf66ea3ec9f4c13e646b350d932489638",
   "warnings": []
 }
