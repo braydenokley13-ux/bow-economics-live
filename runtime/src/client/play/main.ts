@@ -2455,6 +2455,8 @@ type HLGive = {
   received: number;
   net: number;
   spend: number;
+  /** W5 B-1: this desk never pressed LOCK — abstention, not a choice of zero. */
+  neverLocked: boolean;
   gaveByChoice: number;
   receivedByChoice: number;
   netByChoice: number;
@@ -3116,13 +3118,18 @@ function renderHLReveal(view: Record<string, unknown>): void {
              <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
              <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
              <div class="hl-give-note">This is not money you kept or lost. It is money that moved because of drawing power — yours and theirs.</div>
-             <div class="hl-give-sub" id="hlGiveChoice">${
-               give.spend > 0 ? `What your own DECISIONS did — you spent ${money(give.spend)}` : "What your own DECISIONS did — you spent nothing, and that is a decision"
-             }</div>
+             <div class="hl-give-sub" id="hlGiveChoice">${escapeHtml(String(view["giveHeading"] ?? ""))}</div>
              <div class="hl-give-row"><span>Of the above, what YOUR spending put in other buildings</span><span class="numeric">${money(give.gaveByChoice)}</span></div>
              <div class="hl-give-row"><span>What OTHER desks' spending put in yours</span><span class="numeric">${money(give.receivedByChoice)}</span></div>
              <div class="hl-give-row net"><span>What your spending was worth to YOUR OWN cash</span><span class="numeric ${give.ownGain < 0 ? "neg" : ""}">${money(give.ownGain)}</span></div>
-             <div class="hl-give-note" id="hlGiveLine">${escapeHtml(String(view["giveLine"] ?? ""))} Your Draw went from ${give.drawStart} to ${give.drawEnd}; you put an average of ${give.meanShare}% of your door money back in.</div>
+             <div class="hl-give-note" id="hlGiveLine">${escapeHtml(String(view["giveLine"] ?? ""))} Your Draw went from ${give.drawStart} to ${give.drawEnd}; ${
+               // W5 B-1: the same distinction, one clause later. "you put an
+               // average of 0% back in" is a decision sentence too, and the
+               // abstaining desk never made it.
+               give.neverLocked
+                 ? `the house default put an average of ${give.meanShare}% of your door money back in.`
+                 : `you put an average of ${give.meanShare}% of your door money back in.`
+             }</div>
            </div>`
         : ""
     }

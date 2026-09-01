@@ -841,19 +841,52 @@ function jointByArithmetic(state) {
 }
 
 /** A season at explicit per-desk price/share functions, through the real reducer. */
-function playSeasonWith(deskCount, priceOf, shareOf) {
+function playSeasonWith(deskCount, priceOf, shareOf, opts = {}) {
+  // `neverLock` is `gate-l2-teacher` W5 B-1's subject: a desk (1-based index)
+  // that never presses LOCK in any week, so every one of its weeks is
+  // auto-committed by the bell at its club's HOUSE price with nothing
+  // reinvested. It is a different object from a desk that locks in and picks
+  // 0%, and until W5 three surfaces disagreed about which one it was.
+  const neverLock = opts.neverLock ?? new Set();
+  const stopAfterWeeks = opts.stopAfterWeeks ?? WEEK_COUNT;
   let state = hostTheLeagueModule.initialState({ sessionId: "claims", seatIds: [] });
   for (let i = 1; i <= deskCount; i += 1) state = apply(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`);
-  for (let w = 0; w < WEEK_COUNT; w += 1) {
+  for (let w = 0; w < stopAfterWeeks; w += 1) {
     for (let i = 1; i <= deskCount; i += 1) {
+      if (neverLock.has(i)) continue;
       const seatId = `seat-${i}`;
       state = apply(state, { type: "setPrice", price: priceOf(i - 1, w) }, "PLAY", seatId);
       state = apply(state, { type: "setShare", share: shareOf(i - 1, w) }, "PLAY", seatId);
       state = apply(state, { type: "lock" }, "PLAY", seatId);
     }
+    if (opts.beforeBell) state = opts.beforeBell(state, w);
     state = apply(state, { type: "teacher:closeWeek" }, "PLAY", "teacher");
   }
   return state;
+}
+
+/**
+ * The prices and shares a season ACTUALLY settled at, read back off the state.
+ *
+ * The counterfactual replays below (`jointByReplay`, `levelByReplay`) have to
+ * reproduce the module's own counterfactual semantics to be comparable to it:
+ * `roomCashAtShares` holds every week's settled PRICE fixed and varies only the
+ * share, and it treats an AUTO week as one of the desk's own weeks. A replay
+ * driven by the harness's `priceOf` would put a never-locked desk on a price it
+ * never charged, so its counterfactuals would be about a different room. Reading
+ * the prices back makes the two comparable without copying any module code.
+ */
+function dialsFromState(state, deskCount) {
+  const bySeat = new Map();
+  for (const c of state.clubs) {
+    if (c.seatId === null) continue;
+    const i = Number(String(c.seatId).replace("seat-", ""));
+    bySeat.set(i, c.weeks);
+  }
+  const priceOf = (i, w) => bySeat.get(i + 1)?.[w]?.home.price ?? bySeat.get(i + 1)?.[w]?.price ?? 50;
+  const shareOf = (i, w) => bySeat.get(i + 1)?.[w]?.share ?? 0;
+  void deskCount;
+  return { priceOf, shareOf };
 }
 
 /**
@@ -916,6 +949,26 @@ function recomputeMarketPath(state) {
         ? "building-and-price"
         : "own-draw";
   return { ...best, driver };
+}
+
+/**
+ * WHAT THE PROJECTOR IS ACTUALLY HOLDING IN PLAY — read off `boardView`.
+ *
+ * `gate-l2-teacher` W5 B-2. This is deliberately NOT a re-derivation from
+ * `state`: the finding was that `/teach`'s mirror described a frame nobody had
+ * checked against the frame, so the only useful recomputation is the frame
+ * itself. It is the same cross-surface shape M-F proved for the stage-5 mirror,
+ * moved to the beat the teacher is told to press the bar at.
+ */
+function boardPlayFrame(state) {
+  const bv = hostTheLeagueModule.boardView(state, "PLAY");
+  return {
+    barsUp: (bv.bars ?? []).length > 0,
+    showsPairings: (bv.pairings ?? []).length > 0,
+    showsShock: bv.shock !== null && bv.shock !== undefined,
+    lockedCount: bv.lockedCount ?? null,
+    allWeeksDone: Boolean(bv.allWeeksDone),
+  };
 }
 
 /** Every fact the audit needs, recomputed from state by this harness. */
@@ -1109,6 +1162,19 @@ function auditClaims(surfaces, truth, state) {
       if ((a.id === "reveal5.lockedAtRelease" || a.id === "teach5.lockedAtRelease") && a.value !== truth.lockedAtRelease) {
         fail.push(`VALUE ${at}: printed ${a.value} desks locked at release, recomputed ${truth.lockedAtRelease}`);
       }
+      // W5 B-2: the lock count the PLAY mirror reads off the week strip, against
+      // the count the board is actually printing on that strip.
+      if (a.id === "teachPlay.lockedCount") {
+        const b = boardPlayFrame(state);
+        if (b.lockedCount !== null && a.value !== b.lockedCount) {
+          fail.push(`VALUE ${at}: the mirror says ${a.value} desks locked in, the board's own week strip prints ${b.lockedCount}`);
+        }
+      }
+      // W5 B-1: the count of abstaining desks in the teacher's framing line.
+      if (a.id === "teachGiveTake.neverLockedCount") {
+        const n = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize).filter((c) => c.weeks.length >= 1 && c.weeks.every((w) => w.auto || w.stock)).length;
+        if (a.value !== n) fail.push(`VALUE ${at}: the framing line names ${a.value} abstaining desks, recomputed ${n}`);
+      }
       if (truth.market) {
         if (a.id === "market.gap" && !near(a.value, truth.market.gap)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.gap}`);
         if (a.id === "market.gapFromVisitor" && !near(a.value, truth.market.parts.visitor)) fail.push(`VALUE ${at}: ${a.value} vs recomputed ${truth.market.parts.visitor}`);
@@ -1225,6 +1291,51 @@ function auditClaims(surfaces, truth, state) {
             const deskNo = m ? Number(m[1]) : null;
             const row = truth.agg.giveAndTake.find((r) => r.deskNumber === deskNo);
             if (row) check((truth.spendBySlot.get(row.slot) ?? 0) === 0, `desk ${deskNo} chose to give nothing`);
+            break;
+          }
+          // W5 B-1. THE ABSTENTION ATOM. Recomputed here straight off the settled
+          // weeks — a desk every one of whose weeks carries `auto` or `stock`
+          // never pressed LOCK — and DELIBERATELY not off `spend`, because
+          // `spend === 0` is exactly the quantity the shipped copy branched on
+          // and exactly why the abstaining desk was told it had chosen. Every
+          // surface that names a decision carries this atom on BOTH arms, so the
+          // limb bites whichever way the copy drifts.
+          case "desk.neverLocked": {
+            const m = surface.surface.match(/play:desk-(\d+):/);
+            const deskNo = m ? Number(m[1]) : null;
+            const club = state.clubs.find((c) => c.seatId !== null && c.deskNumber === deskNo);
+            if (club) {
+              const abstained = club.weeks.length >= 1 && club.weeks.every((w) => w.auto || w.stock);
+              check(abstained, `desk ${deskNo} never pressed LOCK in any week`);
+              // BOUND, and the whole point of the finding: abstention and
+              // choosing zero are DIFFERENT, and the room's own arithmetic
+              // cannot tell them apart. If the two ever coincide as predicates
+              // across the sweep, this atom is not measuring what it claims to.
+              const spentNothing = (truth.spendBySlot.get(club.slot) ?? 0) === 0;
+              if (abstained && !spentNothing) fail.push(`BOUND ${at}: desk ${deskNo} never locked yet the ledger says it spent`);
+            }
+            break;
+          }
+          case "teachGiveTake.neverLocked": {
+            const n = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize).filter((c) => c.weeks.length >= 1 && c.weeks.every((w) => w.auto || w.stock)).length;
+            check(n > 0, "at least one desk in this room never pressed LOCK");
+            break;
+          }
+          // W5 B-2. MIRROR vs BOARD, at the PLAY beat. The predicate is
+          // recomputed from the frame the module's own `boardView` sends the
+          // projector, so a panel cannot leave the board without the teacher's
+          // description of it failing here.
+          case "teachPlay.barsUp": {
+            const b = boardPlayFrame(state);
+            check(b.barsUp, "the Handed-To-You bar has the projector frame");
+            break;
+          }
+          case "teachPlay.showsPairings": {
+            const b = boardPlayFrame(state);
+            check(b.showsPairings, "the pairing grid is on the projector frame");
+            if (!b.showsPairings && /star-departure card is up/.test(surface.text)) {
+              fail.push(`QUANTIFIER ${at}: the mirror puts the star-departure card on a frame the board is not showing it on`);
+            }
             break;
           }
           case "priceCf.foundBest": {
@@ -1401,6 +1512,140 @@ function auditClaims(surfaces, truth, state) {
       }
     }
   }
+
+  // ---- THE TWO ARMS THE SEASON SWEEP ABOVE CANNOT REACH ------------------
+  //
+  // `gate-l2-teacher` W5, both blocking findings, both invisible to the sweep
+  // above for the same structural reason: every room it builds locks every desk
+  // in every week, and every room it builds has already finished week 3. So the
+  // abstaining desk never existed in it, and neither did the moment the teacher
+  // is actually told to press the bar — mid-lesson, with week 3 still open.
+  //
+  //  - B-1 ROOM: desk 1 never presses LOCK all lesson (auto-committed at the
+  //    house price, $0 back, three weeks); desk 2 locks in and picks 0% every
+  //    week. Same $0 spend, different objects. Every desk-facing surface must
+  //    say something different about them.
+  //  - B-2 ROOM: week 3 open, no desk locked into it, the Handed-To-You bar
+  //    released — the exact arm `/teach`'s own TRIGGER prescribes, and the arm
+  //    the shipped mirror described a schedule and a departure card onto.
+  let neverLockedRoom = null;
+  let neverLockedFailures = [];
+  {
+    const deskCount = 8;
+    const neverLock = new Set([1]);
+    const priceOf = () => 50;
+    // Desk 2 CHOOSES zero every week; the rest run a mixed dial.
+    const shareOf = (i, w) => (i === 1 ? 0 : SHARE_GRID[(i * 2 + w) % SHARE_GRID.length]);
+    const actual = playSeasonWith(deskCount, priceOf, shareOf, { neverLock });
+    if (actual.shockSlot === null || actual.clubs[actual.shockSlot].seatId === null) {
+      // The counterfactuals must reproduce the module's own: prices held at what
+      // each week actually settled at (the house price on an auto week), shares
+      // varied. Read back, never re-derived.
+      const dials = dialsFromState(actual, deskCount);
+      const cfPrice = dials.priceOf;
+      const nobody = playSeasonWith(deskCount, cfPrice, () => 0);
+      const joint = Math.round(cashOfRoom(actual) - cashOfRoom(nobody));
+      const lvl = levelByReplay(deskCount, cfPrice, dials.shareOf, actual);
+      const jointArith = jointByArithmetic(actual);
+      const state = { ...actual, barReleased: true, barReleasedAtWeek: WEEK_COUNT - 1, lockedAtBarRelease: 0 };
+      const truth = recomputeTruth(state, joint, jointArith, lvl);
+      const surfaces = moduleClaims(state);
+      rooms += 1;
+      surfacesSwept += surfaces.length;
+      for (const s of surfaces) {
+        for (const a of s.claims) idsSeen.add(a.id), (atoms += 1);
+        if (s.claims.length === 0 && !MAY_SHIP_ZERO_ATOMS(s.surface)) zeroAtomSurfaces.add(s.surface);
+      }
+      neverLockedFailures = auditClaims(surfaces, truth, state);
+      const abstainer = truth.agg.giveAndTake.find((r) => r.neverLocked);
+      const chooser = truth.agg.giveAndTake.find((r) => !r.neverLocked && r.spend === 0);
+      neverLockedRoom = { state, truth, surfaces, abstainer, chooser, label: `${deskCount} desks · flat-$50 · desk 1 NEVER LOCKED, desk 2 chose 0%` };
+    }
+  }
+
+  // The two surfaces the finding is literally about, compared to each other.
+  let abstentionSeparated = false;
+  let abstentionEvidence = "the never-locked room was not built — the branch is NOT exercised";
+  if (neverLockedRoom && neverLockedRoom.abstainer && neverLockedRoom.chooser) {
+    const { surfaces, abstainer, chooser } = neverLockedRoom;
+    const textFor = (deskNo, kind) => surfaces.find((s) => s.surface === `play:desk-${deskNo}:${kind}`)?.text ?? "";
+    const aLine = textFor(abstainer.deskNumber, "choiceLine");
+    const aHead = textFor(abstainer.deskNumber, "choiceHeading");
+    const cLine = textFor(chooser.deskNumber, "choiceLine");
+    const cHead = textFor(chooser.deskNumber, "choiceHeading");
+    const teachLine = surfaces.find((s) => s.surface === "teach:give-take:neverLocked")?.text ?? "";
+    const watch = hostTheLeagueModule.teacherView(neverLockedRoom.state, "ADAPT").watchFor ?? [];
+    const abstentionFlag = watch.find((f) => f.id === "never-locked");
+    const riderFlag = watch.find((f) => f.id === "free-rider");
+    const checks = [
+      // The desk's OWN screen: the abstaining desk is never told it decided.
+      [!/that is a decision/.test(aHead) && !/chose to give nothing/.test(aLine) && !/they are your decision/.test(aLine), "the abstaining desk's own card and heading do not tell it that it chose"],
+      [/not a decision/.test(aLine), "the abstaining desk's card names the zeroes as something other than a decision"],
+      // The chooser is still told, plainly, that it chose.
+      [/chose to give nothing/.test(cLine) && /that is a decision/.test(cHead), "the desk that locked in and picked 0% is still told it decided"],
+      // The two desks have the same arithmetic and different copy — the whole finding.
+      [abstainer.spend === 0 && chooser.spend === 0, "both desks spent exactly $0, so nothing but the atom can tell them apart"],
+      [aLine !== cLine && aHead !== cHead, "and their two screens nevertheless say different things"],
+      // /teach carries the collision line, and names the desk.
+      [teachLine.includes(`Desk ${abstainer.deskNumber}`), "the give/take framing line names the abstaining desk to the teacher"],
+      [/treat them as absent/.test(teachLine) && /free-rider example/.test(teachLine), "and tells the teacher to treat them as absent, not as the free-rider example"],
+      [Boolean(abstentionFlag) && abstentionFlag.desks.some((d) => d.includes(`Desk ${abstainer.deskNumber}`)), "WATCH FOR flags the abstaining desk under never-locked"],
+      [!riderFlag || !riderFlag.desks.some((d) => d.includes(`Desk ${abstainer.deskNumber}`)), "and never under the free-rider flag"],
+      [Boolean(riderFlag) && riderFlag.desks.some((d) => d.includes(`Desk ${chooser.deskNumber}`)), "while the chose-0% desk IS the free-rider flag"],
+      [Boolean(abstentionFlag) && abstentionFlag.action.includes("not a decision"), "and the teacher is quoted the exact words on that pair's screen"],
+    ];
+    abstentionSeparated = checks.every(([ok]) => ok);
+    abstentionEvidence = checks.map(([ok, what]) => `${ok ? "yes" : "NO"} — ${what}`).join(" ; ");
+  }
+
+  // B-2's room: week 3 open, nobody locked into it, the bar released.
+  let barMidWeekRoom = null;
+  let barMidWeekFailures = [];
+  {
+    const deskCount = 7;
+    const priceOf = () => 50;
+    const shareOf = (i, w) => SHARE_GRID[(i + w) % SHARE_GRID.length];
+    // Two weeks played and closed; week 3 open with nothing locked into it; the
+    // bar released at exactly the moment /teach's TRIGGER names.
+    const twoWeeks = playSeasonWith(deskCount, priceOf, shareOf, { stopAfterWeeks: WEEK_COUNT - 1 });
+    const state = apply(twoWeeks, { type: "teacher:handedTo" }, "PLAY", "teacher");
+    const held = twoWeeks;
+    const frameUp = boardPlayFrame(state);
+    const frameHeld = boardPlayFrame(held);
+    const surfaces = moduleClaims(state);
+    const heldSurfaces = moduleClaims(held);
+    for (const s of [...surfaces, ...heldSurfaces]) for (const a of s.claims) idsSeen.add(a.id);
+    // Only the mirror limb is audited here: this state is mid-season, so the
+    // season-level joint/level replays are not defined for it and are not asked
+    // for. `auditClaims` is given the mirror surfaces alone with a null-truth.
+    const mirrorOnly = (list) => list.filter((s) => s.surface === "teach:play:projectorMirror");
+    const stubTruth = { agg: computeAggregate(state), spendBySlot: new Map(), level: null, market: null, composition: {}, joint: 0 };
+    barMidWeekFailures = [
+      ...auditClaims(mirrorOnly(surfaces), { ...stubTruth, agg: computeAggregate(state) }, state),
+      ...auditClaims(mirrorOnly(heldSurfaces), { ...stubTruth, agg: computeAggregate(held) }, held),
+    ];
+    barMidWeekRoom = {
+      state,
+      held,
+      frameUp,
+      frameHeld,
+      surfaces: mirrorOnly(surfaces),
+      heldSurfaces: mirrorOnly(heldSurfaces),
+      label: `${deskCount} desks · week ${WEEK_COUNT} open, 0 locked into it, bar RELEASED (the /teach-prescribed press)`,
+    };
+  }
+
+  // Was the beat actually the one the finding is about? Recomputed off the board.
+  const barBeatIsTheOne =
+    barMidWeekRoom !== null &&
+    barMidWeekRoom.frameUp.barsUp &&
+    !barMidWeekRoom.frameUp.showsPairings &&
+    !barMidWeekRoom.frameUp.showsShock &&
+    !barMidWeekRoom.frameUp.allWeeksDone &&
+    // and the same room one press earlier is the opposite frame, so the mirror
+    // is not simply saying "no schedule" everywhere.
+    !barMidWeekRoom.frameHeld.barsUp &&
+    barMidWeekRoom.frameHeld.showsPairings;
 
   // ---- NON-VACUITY BY MUTATION -------------------------------------------
   // Three in-memory mutants of exactly what the lesson renders — one per limb.
@@ -1635,11 +1880,83 @@ function auditClaims(surfaces, truth, state) {
       }
       mutants.push({ id: "M-H wrong LEVEL — the PRESCRIPTION (econ N17/FL-L, B12)", what: `${what}${how.length ? ` — first disagreement: ${how[0]}` : ""}`, caught });
     }
+
+    // M-I · THE ABSTAINING DESK IS TOLD IT CHOSE. `gate-l2-teacher` W5 B-1,
+    // verbatim: put the free-rider copy — the copy the CHOSE-0% desk correctly
+    // gets — back on the desk that never pressed LOCK. Both desks spent exactly
+    // $0, so no arithmetic in this file can tell them apart; only the atom can.
+    // If this is not caught, the abstention branch is decoration.
+    {
+      let caught = false;
+      let how = [];
+      let what = "no never-locked room was built — the mutation is NOT exercised";
+      if (neverLockedRoom && neverLockedRoom.abstainer) {
+        const t = neverLockedRoom.truth;
+        const deskNo = neverLockedRoom.abstainer.deskNumber;
+        const surfaces = neverLockedRoom.surfaces.map(clone);
+        let touched = 0;
+        for (const s of surfaces) {
+          if (!s.surface.startsWith(`play:desk-${deskNo}:`)) continue;
+          const atom = s.claims.find((c) => c.id === "desk.neverLocked");
+          if (!atom) continue;
+          const lie = s.surface.endsWith("choiceHeading") ? "you locked in" : "You locked in";
+          s.text = s.text.split(atom.quantifier.word).join(lie);
+          atom.rendered = lie;
+          atom.quantifier = { word: lie, claims: false };
+          delete atom.absent;
+          touched += 1;
+        }
+        const f = auditClaims(surfaces, t, neverLockedRoom.state);
+        caught = touched > 0 && f.some((x) => x.startsWith("QUANTIFIER") && x.includes("desk.neverLocked"));
+        how = f.filter((x) => x.includes("desk.neverLocked")).slice(0, 1);
+        what = `the "you locked in and chose" copy injected on ${touched} surface(s) of desk ${deskNo}, which pressed LOCK in 0 of ${neverLockedRoom.state.clubs.find((c) => c.deskNumber === deskNo).weeks.length} weeks and spent exactly $0 — the same $0 as desk ${neverLockedRoom.chooser ? neverLockedRoom.chooser.deskNumber : "?"}, which chose it`;
+      }
+      mutants.push({ id: "M-I ABSTENTION TOLD IT CHOSE (teacher W5 B-1)", what: `${what}${how.length ? ` — first disagreement: ${how[0]}` : ""}`, caught });
+    }
+
+    // M-J · TEACHER MIRROR CONTRADICTS THE BOARD, AT THE BAR RELEASE. M-F's
+    // shape at the beat `gate-l2-teacher` W5 B-2 found unrepaired: re-inject the
+    // shipped sentences — "Every pairing in the league", the star-departure card
+    // and "The Handed-To-You bar is up underneath the schedule" — onto the frame
+    // that holds only the bar. The recomputation is the board's own frame.
+    {
+      let caught = false;
+      let how = [];
+      let what = "no bar-released mid-week room was built — the mutation is NOT exercised";
+      if (barMidWeekRoom) {
+        const surfaces = barMidWeekRoom.surfaces.map(clone);
+        const target = surfaces.find((s) => s.surface === "teach:play:projectorMirror");
+        if (target) {
+          const pairs = target.claims.find((c) => c.id === "teachPlay.showsPairings");
+          const bars = target.claims.find((c) => c.id === "teachPlay.barsUp");
+          const lie = "Every pairing in the league";
+          target.text = `${target.text.split(pairs.quantifier.word).join(lie)}: who hosts whom, with both clubs' Draw printed. The star-departure card is up. The Handed-To-You bar is up underneath the schedule.`;
+          pairs.rendered = lie;
+          pairs.quantifier = { word: lie, claims: true };
+          delete pairs.absent;
+          bars.quantifier = { word: bars.quantifier.word, claims: false };
+          delete bars.absent;
+          const f = auditClaims(surfaces, { agg: computeAggregate(barMidWeekRoom.state), spendBySlot: new Map(), level: null, market: null, composition: {}, joint: 0 }, barMidWeekRoom.state);
+          caught = f.some((x) => x.startsWith("QUANTIFIER") && (x.includes("teachPlay.showsPairings") || x.includes("teachPlay.barsUp")));
+          how = f.filter((x) => x.includes("teachPlay.")).slice(0, 1);
+          what = `the shipped "schedule + departure card + bar underneath the schedule" mirror re-injected on ${barMidWeekRoom.label}, a frame whose boardView sends ${barMidWeekRoom.frameUp.showsPairings ? "pairings" : "NO pairings"}, ${barMidWeekRoom.frameUp.showsShock ? "a departure card" : "NO departure card"} and ${barMidWeekRoom.frameUp.barsUp ? "the bar" : "no bar"}`;
+        }
+      }
+      mutants.push({ id: "M-J TEACHER MIRROR vs BOARD at the BAR RELEASE (teacher W5 B-2)", what: `${what}${how.length ? ` — first disagreement: ${how[0]}` : ""}`, caught });
+    }
   }
 
   const mutantsCaught =
-    mutants.length === 8 &&
+    mutants.length === 10 &&
     mutants.every((m) => m.caught) &&
+    // W5 B-1/B-2: a mutation that was never exercised is not a proof, so the two
+    // new subjects are required to EXIST, exactly as the older subjects are.
+    neverLockedRoom !== null &&
+    neverLockedRoom.abstainer !== undefined &&
+    neverLockedRoom.chooser !== undefined &&
+    abstentionSeparated &&
+    barMidWeekRoom !== null &&
+    barBeatIsTheOne &&
     notVisitorDriven !== null &&
     overInvested !== null &&
     underProvided !== null &&
@@ -1665,8 +1982,22 @@ function auditClaims(surfaces, truth, state) {
     "composition.mostNationalPct",
     "priceCf.foundBest",
     "barSummary.quantifier",
+    // W5 B-1/B-2.
+    "desk.neverLocked",
+    "teachGiveTake.neverLocked",
+    "teachGiveTake.neverLockedCount",
+    "teachPlay.barsUp",
+    "teachPlay.showsPairings",
+    "teachPlay.lockedCount",
   ].every((id) => idsSeen.has(id));
-  const ok = failures.length === 0 && mutantsCaught && coversRequiredIds && sample !== null && zeroAtomSurfaces.size === 0;
+  const ok =
+    failures.length === 0 &&
+    neverLockedFailures.length === 0 &&
+    barMidWeekFailures.length === 0 &&
+    mutantsCaught &&
+    coversRequiredIds &&
+    sample !== null &&
+    zeroAtomSurfaces.size === 0;
 
   check(
     "P11",
@@ -1678,6 +2009,14 @@ function auditClaims(surfaces, truth, state) {
       `disagreements found: ${failures.length}${failures.length ? ` — ${failures.slice(0, 4).join(" ;; ")}` : ""}`,
       ...mutants.map((m) => `MUTATION ${m.id}: ${m.what} -> ${m.caught ? "CAUGHT by the family" : "NOT CAUGHT — the family is vacuous on this limb"}`),
       `required claim ids all covered by the sweep: ${coversRequiredIds}`,
+      `W5 B-1 ABSTENTION ROOM (a desk that NEVER pressed LOCK beside a desk that locked in and chose 0%, both $0): ${
+        neverLockedRoom ? `${neverLockedRoom.label} — audit disagreements ${neverLockedFailures.length}${neverLockedFailures.length ? ` — ${neverLockedFailures.slice(0, 3).join(" ;; ")}` : ""}` : "NOT BUILT — the branch is not exercised"
+      }`,
+      `W5 B-1 the two desks are separated on every surface: ${abstentionSeparated} — ${abstentionEvidence}`,
+      `W5 B-2 BAR-RELEASE ROOM (the beat /teach's own TRIGGER prescribes): ${
+        barMidWeekRoom ? `${barMidWeekRoom.label} — audit disagreements ${barMidWeekFailures.length}${barMidWeekFailures.length ? ` — ${barMidWeekFailures.slice(0, 3).join(" ;; ")}` : ""}` : "NOT BUILT"
+      }`,
+      `W5 B-2 the board frame at that beat, read off boardView: bar ${barMidWeekRoom?.frameUp.barsUp} · pairings ${barMidWeekRoom?.frameUp.showsPairings} · departure card ${barMidWeekRoom?.frameUp.showsShock}; one press earlier: bar ${barMidWeekRoom?.frameHeld.barsUp} · pairings ${barMidWeekRoom?.frameHeld.showsPairings} — the mirror flips with the frame: ${barBeatIsTheOne}`,
       `SPILLOVER branch noun, decided ONLY by the replayed joint effect: jointly ahead ${branchNounUnder} rooms · over-investment ${branchNounOver} · exactly level ${branchNounLevel} (econ N11: the shipped card said "over-investment" in every one of these)`,
       `SPILLOVER LEVEL arms (econ N17/B11), decided by the room's own replayed cash-by-share curve and its replayed one-step gradient: ${
         Object.entries(levelArms)

@@ -826,6 +826,40 @@ export const deskHandleFor = (club: Club): string => `Desk ${club.deskNumber} ·
 export const clubHandleFor = (club: Club): string =>
   club.seatId === null ? `${CLUBS[club.slot]!.short} · league office` : deskHandleFor(club);
 
+/**
+ * THE ABSTENTION ATOM — `gate-l2-teacher` W5 B-1 (BLOCKING).
+ *
+ * A desk that NEVER pressed LOCK in any week is not a chooser. Its weeks were
+ * auto-committed at the league office's house price with nothing reinvested
+ * because nobody touched the console — the outcome is $0 spend, and the outcome
+ * is the ONLY thing it shares with the desk that locked in and picked 0%.
+ *
+ * The defect this exists to make unrepeatable: three surfaces each recomputed
+ * "did this desk choose nothing?" from a DIFFERENT quantity. `/teach`'s WATCH
+ * FOR read `weeks.every(auto || stock)` and told the teacher "they did not
+ * choose 0%, they chose nothing"; the same desk's own device read `spend === 0`
+ * and told the pair "Those three zeroes are not missing numbers — they are your
+ * decision... You chose to give nothing back". The teacher was sent to a desk
+ * to say the opposite of what that desk's screen said, in the lesson's most
+ * delicate moment.
+ *
+ * So there is now exactly ONE predicate, and every surface that distinguishes
+ * ABSTENTION from CHOICE reads it: the desk's own ADAPT card, its heading, the
+ * WATCH FOR entries (both limbs), the give/take teacher framing, and the claim
+ * sweep that audits all of them. `spend === 0` still decides what the ARITHMETIC
+ * says; it never again decides what the room is TOLD it chose.
+ *
+ * `stock` weeks (the league office ran the club before this pair claimed it) are
+ * not this desk's non-decisions either, so they cannot rescue a desk from the
+ * flag — but a desk whose weeks are ALL stock never had a console to press, and
+ * a desk with no settled weeks at all has abstained from nothing yet.
+ */
+export const neverLockedFor = (club: Club): boolean =>
+  club.seatId !== null && club.weeks.length >= 1 && club.weeks.every((w) => w.auto || w.stock);
+
+/** Of a desk's settled weeks, the ones it actually committed itself. */
+export const chosenWeeksFor = (club: Club): SettledWeek[] => club.weeks.filter((w) => !w.auto && !w.stock);
+
 /** One desk's whole home season, decomposed. Every field is dollars, and they sum exactly. */
 export type HomeDecomposition = {
   slot: number;
@@ -910,6 +944,14 @@ export type GiveAndTakeRow = {
   net: number;
   /** Dollars this desk reinvested across the season. */
   spend: number;
+  /**
+   * W5 B-1. TRUE when this desk never locked a week — an ABSTENTION, not a
+   * choice of zero. Read `neverLockedFor`, never `spend === 0`, wherever a
+   * surface is about to tell somebody what they decided.
+   */
+  neverLocked: boolean;
+  /** Weeks this desk actually committed itself. Zero on an abstaining desk. */
+  chosenWeeks: number;
   /** Of `gave`, the part that exists because THIS desk chose to reinvest. */
   gaveByChoice: number;
   /** Of `received`, the part that exists because the VISITING desks chose to reinvest. */
@@ -1607,6 +1649,8 @@ export function computeAggregate(state: HostLeagueState): HostLeagueAggregate {
         received,
         net: received - gave,
         spend: choice.spend,
+        neverLocked: neverLockedFor(c),
+        chosenWeeks: chosenWeeksFor(c).length,
         gaveByChoice: choice.gaveByChoice,
         receivedByChoice: choice.receivedByChoice,
         netByChoice: choice.receivedByChoice - choice.gaveByChoice,
@@ -2457,26 +2501,85 @@ export function priceCounterfactualFor(state: HostLeagueState, club: Club, w: Se
  * what they mean, and puts beside them the one figure a free-rider's own card
  * was never showing: what the rest of the room's spending put in ITS building.
  */
+const LOCKED_IN = "You locked in";
+
 export function deskChoiceLineClaimed(row: GiveAndTakeRow): Claimed {
   const got = claim("desk.receivedByChoice", row.receivedByChoice, "money", { assertsSign: "nonNegative" });
   const spent = claim("desk.spend", row.spend, "money", { assertsSign: row.spend > 0 ? "positive" : "zero" });
+  // The same atom on the OTHER side of the branch. Without it, only the
+  // abstention arm is audited and the copy could drift back on the arms that
+  // outnumber it 20:1 — which is exactly how the defect shipped.
+  const notNeverLocked = claimWord("desk.neverLocked", LOCKED_IN, false, "nobody at this desk pressed LOCK");
+  // W5 B-1 (BLOCKING). The ABSTENTION branch, and it comes FIRST — before the
+  // arithmetic branch, because `spend === 0` is true of this desk too and used
+  // to capture it. This pair never pressed LOCK, so nothing on this block is a
+  // decision they made, and the card may not tell them it is. It says what
+  // actually happened to their club instead, and leaves the door open: the
+  // teacher walking over has been told the same thing by /teach.
+  if (row.neverLocked) {
+    const abstained = claimWord("desk.neverLocked", "nobody at this desk pressed LOCK", true, "chose to give nothing");
+    return {
+      text: `These zeroes are not a decision — they are the weeks that ran without you. ${abstained.rendered} in any week, so the league office settled your club at its house price with nothing put back: ${spent.rendered}, every week, marked AUTO in your own history above. That is not you choosing to give nothing; it is you not having chosen yet.${
+        row.receivedByChoice > 0
+          ? ` What IS yours: ${got.rendered} landed in your building because OTHER desks chose to spend, on the nights they visited you.`
+          : ` And nobody else's spending reached your building either — ${got.rendered} came your way from anybody else's choices.`
+      }`,
+      claims: [spent, got, abstained],
+    };
+  }
   if (row.spend > 0) {
     const own = claim("desk.ownGain", row.ownGain, "money", {
       assertsSign: row.ownGain > 0 ? "positive" : row.ownGain < 0 ? "negative" : "zero",
     });
     const verdict = row.ownGain > 0 ? "ahead" : row.ownGain < 0 ? "behind" : "exactly level";
     return {
-      text: `Same schedule, same prices, same everything — except you put nothing back. That is the only fair thing to compare yourself to, because nobody chose their calendar. You put ${spent.rendered} back in, and on your own books that left you ${own.rendered} — ${verdict}. Other desks' spending put ${got.rendered} in your building.`,
-      claims: [spent, got, own, claimWord("desk.ownGainDirection", verdict, true), claimWord("desk.choseNothing", "you put nothing back", false, "chose to give nothing")],
+      text: `Same schedule, same prices, same everything — except you put nothing back. That is the only fair thing to compare yourself to, because nobody chose their calendar. ${LOCKED_IN} and put ${spent.rendered} back in, and on your own books that left you ${own.rendered} — ${verdict}. Other desks' spending put ${got.rendered} in your building.`,
+      claims: [
+        spent,
+        got,
+        own,
+        claimWord("desk.ownGainDirection", verdict, true),
+        claimWord("desk.choseNothing", "you put nothing back", false, "chose to give nothing"),
+        notNeverLocked,
+      ],
     };
   }
   const nothing = claimWord("desk.choseNothing", "chose to give nothing", true);
   return {
     text:
       row.receivedByChoice > 0
-        ? `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club: ${spent.rendered}, every week. So nothing you did put a dollar in anybody else's building, and there is no "what if you had not" to compare, because you did not. And you received ${got.rendered} from the room — that is what OTHER desks chose to spend, turning up in your building on the nights they visited you.`
-        : `Those three zeroes are not missing numbers — they are your decision. You ${nothing.rendered} back to your club: ${spent.rendered}, every week. And this time nobody else's spending reached your building either — ${got.rendered} came your way from anybody else's choices. Every zero in this block is somebody's decision, including yours.`,
-    claims: [spent, got, nothing],
+        ? `Those zeroes are not missing numbers — they are your decision. ${LOCKED_IN} and you ${nothing.rendered} back to your club: ${spent.rendered}, every week you played. So nothing you did put a dollar in anybody else's building, and there is no "what if you had not" to compare, because you did not. And you received ${got.rendered} from the room — that is what OTHER desks chose to spend, turning up in your building on the nights they visited you.`
+        : `Those zeroes are not missing numbers — they are your decision. ${LOCKED_IN} and you ${nothing.rendered} back to your club: ${spent.rendered}, every week you played. And this time nobody else's spending reached your building either — ${got.rendered} came your way from anybody else's choices. Every zero in this block is somebody's decision, including yours.`,
+    claims: [spent, got, nothing, notNeverLocked],
+  };
+}
+
+/**
+ * The desk block's HEADING, W5 B-1's second half.
+ *
+ * The heading was a hand-written ternary in `client/play/main.ts` branching on
+ * `give.spend > 0`, so the abstaining desk's screen was topped by "YOU SPENT
+ * NOTHING, AND THAT IS A DECISION" no matter what the sentence underneath was
+ * repaired to say. It is computed here, from the same one atom, and swept.
+ */
+export function deskChoiceHeadingClaimed(row: GiveAndTakeRow): Claimed {
+  if (row.neverLocked) {
+    const abstained = claimWord("desk.neverLocked", "nobody at this desk pressed LOCK", true, "that is a decision");
+    return {
+      text: `What your own DECISIONS did — ${abstained.rendered}, so these weeks ran at the house default`,
+      claims: [abstained],
+    };
+  }
+  if (row.spend > 0) {
+    const spent = claim("desk.spend", row.spend, "money", { assertsSign: "positive" });
+    return {
+      text: `What your own DECISIONS did — you locked in and spent ${spent.rendered}`,
+      claims: [spent, claimWord("desk.neverLocked", "you locked in", false, "nobody at this desk pressed LOCK")],
+    };
+  }
+  return {
+    text: "What your own DECISIONS did — you locked in and spent nothing, and that is a decision",
+    claims: [claimWord("desk.neverLocked", "you locked in", false, "nobody at this desk pressed LOCK")],
   };
 }
 
@@ -2973,6 +3076,9 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             // sentence under it has to be about ITS decision, not about a
             // counterfactual identical to what it did.
             giveLine: give ? deskChoiceLineClaimed(give).text : "",
+            // W5 B-1: the heading was the last hand-written branch on `spend`,
+            // and it sat directly above the repaired sentence contradicting it.
+            giveHeading: give ? deskChoiceHeadingClaimed(give).text : "",
             // econ FL-K: the "most of it was DEALT" sub-label is computed, not asserted.
             dealtLine: give ? dealtLineClaimed(give).text : "",
             revealStage: state.revealStage,
@@ -3173,20 +3279,28 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
               honestyLine: BOARD_HONESTY_LINE,
             };
           }
-          const pairings = scheduleFor(state.weekIndex, state.leagueSize).map((p) => ({
-            host: clubCard(state, p.host),
-            visitor: clubCard(state, p.visitor),
-          }));
+          // W5 B-2: the frame is composed ONCE, here, and the same composition
+          // is what /teach's mirror is written from. The board client already
+          // dropped the pairing grid and the departure card the moment the bar
+          // went up (the projector cannot scroll); shipping them anyway is what
+          // let the teacher's description of the frame drift off the frame.
+          const comp = playBoardComposition(state);
+          const pairings = comp.showsPairings
+            ? scheduleFor(state.weekIndex, state.leagueSize).map((p) => ({
+                host: clubCard(state, p.host),
+                visitor: clubCard(state, p.visitor),
+              }))
+            : [];
           return {
             mode: "play",
-            weekNumber: openWeekNumber(state),
+            weekNumber: comp.weekNumber,
             weekCount: WEEK_COUNT,
             pairings,
             lockedCount: agg.lockedCount,
             deskCount: agg.deskCount,
             shock:
-              state.shockSlot !== null && state.weekIndex >= 1
-                ? { club: CLUBS[state.shockSlot]!.name, short: CLUBS[state.shockSlot]!.short, draw: state.clubs[state.shockSlot]!.draw }
+              comp.showsShock
+                ? { club: CLUBS[state.shockSlot!]!.name, short: CLUBS[state.shockSlot!]!.short, draw: state.clubs[state.shockSlot!]!.draw }
                 : null,
             barReleased: state.barReleased,
             bars: state.barReleased ? pagedBars : [],
@@ -3470,6 +3584,104 @@ export function reinvestChangeLine(agg: HostLeagueAggregate, state: HostLeagueSt
 }
 
 /**
+ * WHAT THE PROJECTOR IS ACTUALLY HOLDING DURING PLAY — `gate-l2-teacher` W5 B-2.
+ *
+ * The composition of the PLAY frame was decided in THREE places: `boardView`
+ * (which shipped `pairings` and `shock` unconditionally), the board client
+ * (which throws both away the moment the Handed-To-You bar is up, because the
+ * projector cannot scroll and a panel has to give up the frame), and
+ * `projectorMirror` (which described the frame from scratch, by hand). So at the
+ * single highest-stakes control press in the lesson — releasing the bar at the
+ * moment `/teach` itself prescribes — the teacher's mirror read "Every pairing
+ * in the league... The star-departure card is up... The Handed-To-You bar is up
+ * underneath the schedule" while the projector held only the week strip, the
+ * pager, the bars, the legend and the summary. Three of four sentences false,
+ * with the room still pricing week 3.
+ *
+ * There is now ONE decision. `boardView` composes the frame from this, the board
+ * client renders exactly what `boardView` sends, and the mirror is written from
+ * the same object — so a panel cannot leave the projector without leaving the
+ * teacher's description of it at the same time.
+ */
+export type PlayBoardComposition = {
+  allWeeksDone: boolean;
+  /** The Handed-To-You bar has the frame. When true, the schedule is NOT on it. */
+  barsUp: boolean;
+  weekNumber: number;
+  /** The pairing grid — surrendered to the bar, which is why it is a computed flag. */
+  showsPairings: boolean;
+  /** The star-departure card — the same surrender, and W5 B-2's second false sentence. */
+  showsShock: boolean;
+  shockClubName: string | null;
+  shockDraw: number | null;
+  lockedCount: number;
+  deskCount: number;
+};
+
+export function playBoardComposition(state: HostLeagueState): PlayBoardComposition {
+  const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+  const allWeeksDone = state.weekIndex >= WEEK_COUNT;
+  const barsUp = state.barReleased;
+  const shockUp = state.shockSlot !== null && state.weekIndex >= 1;
+  return {
+    allWeeksDone,
+    barsUp,
+    weekNumber: openWeekNumber(state),
+    showsPairings: !allWeeksDone && !barsUp,
+    showsShock: !allWeeksDone && !barsUp && shockUp,
+    shockClubName: state.shockSlot !== null ? CLUBS[state.shockSlot]!.name : null,
+    shockDraw: state.shockSlot !== null ? state.clubs[state.shockSlot]!.draw : null,
+    lockedCount: live.filter((c) => c.locked).length,
+    deskCount: live.length,
+  };
+}
+
+/**
+ * `/teach`'s ON-THE-PROJECTOR mirror for PLAY, written FROM the composition
+ * above rather than from a second reading of the state. Every sentence is
+ * gated on the flag that decides whether the panel it describes is on the
+ * projector at all, and the two arms — schedule up, bar up — say opposite
+ * things about the schedule because the projector does.
+ */
+export function teachPlayMirrorClaimed(state: HostLeagueState): Claimed {
+  const c = playBoardComposition(state);
+  if (c.allWeeksDone) {
+    const word = c.barsUp ? "the bar is on the projector" : "the projector is still holding";
+    return {
+      text: c.barsUp
+        ? `Three weeks are in the books and ${word}: the Handed-To-You bar for the group you have paged to, its legend and its summary line, and nothing else. The schedule is gone — every pair has this week's pairing on its own device.`
+        : `Three weeks are in the books and ${word}: the room has NOT seen the whole picture yet, and there is no schedule and no bar on the frame. It goes up one beat at a time in REVEAL.`,
+      claims: [claimWord("teachPlay.barsUp", word, c.barsUp, c.barsUp ? "the projector is still holding" : "the bar is on the projector")],
+    };
+  }
+  const lock = claim("teachPlay.lockedCount", c.lockedCount, "int", { assertsSign: "nonNegative", bounds: { min: 0, max: MAX_DESKS } });
+  if (c.barsUp) {
+    // The arm W5 B-2 was written against. Note what is NOT said: no pairings, no
+    // departure card, and explicitly not "underneath the schedule".
+    const word = "the bar has REPLACED the schedule";
+    return {
+      text: `Week ${c.weekNumber} of ${WEEK_COUNT} — and ${word}. The projector is holding the week strip (${lock.rendered} of ${c.deskCount} locked in), the group pager, the Handed-To-You bars, "Point at the club that paid for your night", and the summary line. That is all of it. The pairing grid and the star-departure card are NOT on the frame any more — there is no control to put them back, and there does not need to be: every pair has this week's pairing and every Draw on its own device. Point at the bars, not at the schedule.`,
+      claims: [
+        lock,
+        claimWord("teachPlay.barsUp", word, true, "underneath the schedule"),
+        claimWord("teachPlay.showsPairings", "The pairing grid and the star-departure card are NOT on the frame", false, "Every pairing in the league"),
+      ],
+    };
+  }
+  const pairings = "Every pairing in the league";
+  return {
+    text: `Week ${c.weekNumber} of ${WEEK_COUNT} — the schedule. ${pairings}: who hosts whom, with both clubs' Draw printed.${
+      c.showsShock ? ` The star-departure card is up beside it: ${c.shockClubName}, Draw ${c.shockDraw}.` : ""
+    } Desks locked in: ${lock.rendered} of ${c.deskCount}. Nothing about this week's crowds is on the projector until you close the week, and the Handed-To-You bar is not up.`,
+    claims: [
+      lock,
+      claimWord("teachPlay.barsUp", "the Handed-To-You bar is not up", false, "the bar has REPLACED the schedule"),
+      claimWord("teachPlay.showsPairings", pairings, true, "are NOT on the frame"),
+    ],
+  };
+}
+
+/**
  * `/teach`'s ON-THE-PROJECTOR mirror for REVEAL stage 5.
  *
  * `gate-l2-projector` W4-2 (BLOCKING). The shipped mirror was one hard-coded
@@ -3674,21 +3886,26 @@ function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFl
   // the protagonist of the room's argument — a strategic choice they did not
   // make. Never-locked is now its own flag with its own director copy, and
   // "put nothing back" counts only weeks a desk actually committed.
-  const neverLocked = live.filter((c) => c.weeks.length >= 1 && c.weeks.every((w) => w.auto || w.stock)).map(deskHandleFor);
+  const neverLocked = live.filter(neverLockedFor).map(deskHandleFor);
   if (neverLocked.length > 0) {
     out.push({
       id: "never-locked",
       label: "Has never locked a week — every week settled automatically",
       desks: neverLocked,
       action:
-        "This is a participation problem, not a strategy. Their weeks were settled at the club's house price with nothing reinvested because nobody pressed the button — they did not choose 0%, they chose nothing. Go to the desk. Do NOT use them on the gave/got board and do not name them in the argument: they are not the free-rider case, they are the pair you have not reached yet.",
+        // W5 B-1: the second sentence is new, and it is the whole repair on
+        // this surface. The teacher was already told to treat this pair as
+        // absent; what they were NOT told is what that pair's own screen says
+        // while they walk over. It now says the same thing, and the teacher
+        // knows it does, so the two surfaces cannot collide in front of the room.
+        "This is a participation problem, not a strategy. Their weeks were auto-committed at the club's house price with nothing reinvested because nobody pressed the button — they did not choose 0%, they chose nothing. Their own screen agrees with you: it reads \"These zeroes are not a decision — they are the weeks that ran without you\", and it does not tell them they chose anything. Go to the desk and say the same. Do NOT use them on the gave/got board and do not name them in the argument: they are not the free-rider case, they are the pair you have not reached yet.",
       urgency: "now",
     });
   }
 
   const bankers = live
     .filter((c) => {
-      const chosen = c.weeks.filter((w) => !w.auto && !w.stock);
+      const chosen = chosenWeeksFor(c);
       return chosen.length >= 2 && chosen.every((w) => w.share === 0);
     })
     .map(deskHandleFor);
@@ -3775,24 +3992,18 @@ function projectorMirror(state: HostLeagueState, phase: CanonicalPhase): { title
         ],
       };
     case "PLAY": {
-      if (state.weekIndex >= WEEK_COUNT) {
-        return {
-          title: state.barReleased ? "Three weeks in the books — the bar is up" : "Three weeks in the books — the picture is being held",
-          lines: state.barReleased
-            ? ["The Handed-To-You bar is on the projector for the group you have paged to."]
-            : ["The room has NOT seen the whole picture yet. It goes up one beat at a time in REVEAL."],
-        };
-      }
+      // W5 B-2: composed from the frame `boardView` actually sends, never
+      // re-described here. The title branches on the same one flag.
+      const c = playBoardComposition(state);
       return {
-        title: `Week ${openWeekNumber(state)} of ${WEEK_COUNT} — the schedule`,
-        lines: [
-          "Every pairing in the league: who hosts whom, with both clubs' Draw printed.",
-          `Desks locked in: ${locked} of ${live}. Nothing about this week's crowds is on the projector until you close the week.`,
-          ...(state.shockSlot !== null && state.weekIndex >= 1
-            ? [`The star-departure card is up: ${CLUBS[state.shockSlot]!.name}, Draw ${state.clubs[state.shockSlot]!.draw}.`]
-            : []),
-          ...(state.barReleased ? ["The Handed-To-You bar is up underneath the schedule."] : []),
-        ],
+        title: c.allWeeksDone
+          ? c.barsUp
+            ? "Three weeks in the books — the bar has the frame"
+            : "Three weeks in the books — the picture is being held"
+          : c.barsUp
+            ? `Week ${c.weekNumber} of ${WEEK_COUNT} — the bar has REPLACED the schedule`
+            : `Week ${c.weekNumber} of ${WEEK_COUNT} — the schedule`,
+        lines: [teachPlayMirrorClaimed(state).text],
       };
     }
     case "REVEAL": {
@@ -3892,6 +4103,33 @@ export function adaptSpendAnswer(state: HostLeagueState): string {
 }
 
 /**
+ * THE GIVE/TAKE FRAMING LINE FOR THE ABSTAINING DESK — `gate-l2-teacher` W5 B-1.
+ *
+ * The give/take INSTRUMENT already separates abstention from choice: a desk that
+ * never locked has $0 in every by-choice column because it never spent, and the
+ * WATCH FOR panel refuses to put it on the gave/got board. What the teacher was
+ * never handed was a SENTENCE — so at the beat where the room is pointed at the
+ * gave/got numbers and asked who gave, the one desk that must not be named as
+ * the free-rider had no line attached to it anywhere in the give/take framing.
+ *
+ * The line is computed from the same `neverLockedFor` atom, names this room's
+ * actual desks, and appears in the ADAPT answer key beside the question that
+ * sends the room to those numbers. In a room where every desk locked at least
+ * once it is not printed at all, because there is nothing to say.
+ */
+export function neverLockedFramingClaimed(state: HostLeagueState): Claimed | null {
+  const abstained = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize).filter(neverLockedFor);
+  if (abstained.length === 0) return null;
+  const handles = abstained.map(deskHandleFor).join(", ");
+  const n = claim("teachGiveTake.neverLockedCount", abstained.length, "int", { assertsSign: "positive", bounds: { min: 1, max: MAX_DESKS } });
+  const word = claimWord("teachGiveTake.neverLocked", "never locked", true, "chose to put nothing back");
+  return {
+    text: `${n.rendered} desk${abstained.length === 1 ? "" : "s"} in this room ${word.rendered} a week — ${handles}. Those weeks were auto-committed at the league office's default price with nothing reinvested, so their $0 is an ABSENCE, not a decision. Do not read them off the gave/got board and do not make them the free-rider example: treat them as absent. Their own screens say the same words you do — "these zeroes are not a decision — they are the weeks that ran without you". The desks worth naming here are the ones who locked in and still put nothing back.`,
+    claims: [n, word],
+  };
+}
+
+/**
  * EVERY claim-carrying surface in this lesson, in one sweep.
  *
  * This is the entry point for the claim-audit family (`P11` in the L2 tuning
@@ -3921,6 +4159,14 @@ export function moduleClaims(state: HostLeagueState): ClaimSurface[] {
   // the two are audited against one recomputed release arm.
   push("teach:reveal-5:projectorMirror", teachStage5MirrorClaimed(state));
   push("teach:adapt-q3:answerKey", adaptSpendAnswerClaimed(state));
+  // W5 B-1: the abstention framing the teacher is handed at the gave/got beat,
+  // audited against the same predicate the desk's own card branches on. Absent
+  // (not empty) in a room where every desk locked at least one week.
+  const framing = neverLockedFramingClaimed(state);
+  if (framing) push("teach:give-take:neverLocked", framing);
+  // W5 B-2: the PLAY-phase ON-THE-PROJECTOR mirror, composed from the same
+  // board frame the projector renders. See `playBoardComposition`.
+  push("teach:play:projectorMirror", teachPlayMirrorClaimed(state));
   for (const card of synthesisCards(state, agg)) {
     // econ N14: a card that ships zero atoms used to vanish from the sweep
     // silently. `beyond` is the one legitimate case — it carries real-world
@@ -3932,6 +4178,9 @@ export function moduleClaims(state: HostLeagueState): ClaimSurface[] {
   }
   for (const row of agg.giveAndTake) {
     push(`play:desk-${row.deskNumber}:choiceLine`, deskChoiceLineClaimed(row));
+    // W5 B-1: the heading over the same three zeroes, swept beside the sentence
+    // it sits on top of — the two used to branch on different quantities.
+    push(`play:desk-${row.deskNumber}:choiceHeading`, deskChoiceHeadingClaimed(row));
     // econ FL-K: the give/take sub-label is a computed share, and swept.
     push(`play:desk-${row.deskNumber}:dealtLine`, dealtLineClaimed(row));
   }
@@ -4100,8 +4349,12 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
           },
           {
             q: ADAPT_QUESTIONS[1]!,
-            answer:
-              "Name the desk and let them answer for themselves — but hold the honest proportion in your head, because it is the whole difference between economics and blame. Most of any club's Draw was DEALT, not bought: moving the whole room from 0% to 40% for three straight weeks only moves the visitor block about 30%, and at realistic dials it is nearer 19%. So the true answer is usually 'whoever was dealt the club the schedule sent you' plus a slice somebody chose. Ask the second half out loud: what could they have done to make it bigger, and would it have been worth it to them?",
+            answer: `Name the desk and let them answer for themselves — but hold the honest proportion in your head, because it is the whole difference between economics and blame. Most of any club's Draw was DEALT, not bought: moving the whole room from 0% to 40% for three straight weeks only moves the visitor block about 30%, and at realistic dials it is nearer 19%. So the true answer is usually 'whoever was dealt the club the schedule sent you' plus a slice somebody chose. Ask the second half out loud: what could they have done to make it bigger, and would it have been worth it to them?${
+              // W5 B-1: this is the beat that sends the room to the gave/got
+              // numbers. The abstaining desk gets its line HERE, where the
+              // teacher is about to name desks, not three panels away.
+              neverLockedFramingClaimed(state) ? ` ${neverLockedFramingClaimed(state)!.text}` : ""
+            }`,
           },
           {
             q: ADAPT_QUESTIONS[2]!,
