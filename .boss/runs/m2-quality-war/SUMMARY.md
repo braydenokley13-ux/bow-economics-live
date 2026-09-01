@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `429:9908271cb47e529408f6079210e5d1ce1e42e1a7b859392fb2b77843ed98c0c5`  
-Updated: 2026-09-01T13:59:04.055Z
+Event head: `434:c8eefef300a5e9102f9aca19eb136897598968c18e45159911043956e3d497c4`  
+Updated: 2026-09-01T14:39:15.299Z
 
 ## Founder intent
 
@@ -40,7 +40,8 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - builder — builder-w5-dereg — completed — claude-sonnet-5
 - teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
-- builder — builder-w5-l2fix — active — claude-opus-5
+- builder — builder-w5-l2fix — completed — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
 
 ## Required evidence
 
@@ -86,6 +87,9 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - final-suite-postdereg — test — Suite after Box Office deregistration (458/458)
 - w5-teacher-l1 — teacher-transfer-report — L1 fresh re-affirmation at FINAL HEAD: TRANSFER READY. Changed surfaces exercised cold at 7 desks (CF pager labels match rows all groups both directions; staged synthesis with class-computed cards; all 7 SAY lines; guarded advance + restore; freeze/refresh/late-join clean; zero console errors). Seven non-blocking notes incl. the key-shown-once false copy and bad-board-code hang (runtime-wide, carried)
 - w5-teacher-l2 — teacher-transfer-report — L2 fresh re-affirmation at FINAL HEAD: NOT READY. B-1: never-locked desk 7 framed as 'chose nothing... not the free-rider case' on /teach while its own device says 'YOU SPENT NOTHING AND THAT IS A DECISION... you chose' — no teacher line for the collision; B-2: post-release ON-THE-PROJECTOR claims schedule + departure card + bar while the board holds only the bar. Strong elsewhere: prescribed TRIGGER truthful both arms, guarded advance + restore + snapshot restart recovered, synthesis chain complete and numerically agreeing. N-1..N-5 non-blocking incl. late-join hang at ADAPT
+- l2-tests-w5b — test — Suite after L2 teacher fix (461/461)
+- l2-tuning-w5b — test — L2 harness 12/12: 337 rooms/128,728 atoms/0 disagreements; M-I abstention + M-J mirror mutants bite
+- l2-e2e-w5b — e2e — L2 e2e with abstention/mirror/late-observer assertions
 
 ## Claim ledger
 

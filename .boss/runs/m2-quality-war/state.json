@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T13:59:04.055Z",
+  "updatedAt": "2026-09-01T14:39:15.299Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3785,8 +3785,34 @@
           "model": "claude-opus-5",
           "reason": "Wave-5 repair 2: L2 final-head teacher blockers B-1/B-2 (one abstention-vs-choice atom across surfaces + board-state-composed mirror) plus cheap N-1/N-2/N-3",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T13:59:04.055Z",
+          "completedAt": "2026-09-01T14:39:15.000Z",
+          "sections": {
+            "what-changed": "B-1: neverLockedFor single predicate feeding an abstention branch before chose-zero on every surface incl. a teacher line quoting the desk's screen (registered atoms; M-I mutant bites). B-2: playBoardComposition(state) is the one decision about the PLAY frame; the mirror is written from it per arm/stage (M-J bites). N-1 lesson-keyed prep note; N-2 ledger-frame fit (root cause was summary wrap, not desk count — corrected the finding); N-3 announced-observer path post-PLAY (deliberate scope divergence from takeover recorded: seating during REVEAL/ADAPT would rewrite read-aloud class evidence).",
+            "evidence": "Lead re-ran, exit 0: l2-tests-w5b (461/461), l2-tuning-w5b (12/12; 337 rooms/128,728 atoms/0 disagreements; M-I + M-J bite; abstention + prescribed-release rooms audited clean), l2-e2e-w5b (named assertions for all five items; identical-$0 desks render different truthful copy; mirror asserts the three false sentences absent). L3 e2e green (seed regression).",
+            "claims": "Blockers made falsifiable, not proof-read; discharge is the owning critic's call.",
+            "known-gaps": "N-4/N-5 untouched (N-5 now more visible: the forced 0% enters a room-average WATCH FOR excludes it from); two-extra-line summary wrap untested; builder's git-status confusion was the lead's WIP snapshots (explained)."
+          },
+          "evidenceIds": [
+            "l2-tests-w5b",
+            "l2-tuning-w5b",
+            "l2-e2e-w5b"
+          ],
+          "cost": {
+            "tokens": 257386,
+            "toolUses": 190
+          }
+        },
+        "w5-teacher-l2-confirm": {
+          "assignmentId": "w5-teacher-l2-confirm",
+          "role": "teacher-transfer-critic",
+          "actor": "teacher-transfer-critic",
+          "model": "claude-opus-5",
+          "reason": "Narrow owning-critic confirm of B-1/B-2 (+N-1/N-3) at head — the final artifact before the ship case",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T14:39:15.299Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -3822,7 +3848,10 @@
         "l1-projector-gate-doc",
         "final-suite-postdereg",
         "w5-teacher-l1",
-        "w5-teacher-l2"
+        "w5-teacher-l2",
+        "l2-tests-w5b",
+        "l2-tuning-w5b",
+        "l2-e2e-w5b"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -6835,6 +6864,74 @@
       },
       "recordedAt": "2026-09-01T13:59:03.056Z",
       "actor": "teacher-transfer-critic"
+    },
+    "l2-tests-w5b": {
+      "id": "l2-tests-w5b",
+      "wave": 5,
+      "kind": "test",
+      "label": "Suite after L2 teacher fix (461/461)",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-tests-w5b--record.json",
+      "sha256": "08f44140df3f9f989e7d2a3d0d57069d03e04df0b96ffe9eefeeda77e3ee210b",
+      "size": 114422,
+      "metadata": {
+        "tags": [
+          "wave-5"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T14:37:45.093Z",
+      "actor": "lead-integrator"
+    },
+    "l2-tuning-w5b": {
+      "id": "l2-tuning-w5b",
+      "wave": 5,
+      "kind": "test",
+      "label": "L2 harness 12/12: 337 rooms/128,728 atoms/0 disagreements; M-I abstention + M-J mirror mutants bite",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-tuning-w5b--record.json",
+      "sha256": "69587ae9a1fe14d99b05ef49533796f95d1cb35ea4274cd5fa18c42744034b41",
+      "size": 13783,
+      "metadata": {
+        "tags": [
+          "wave-5"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l2-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T14:37:46.901Z",
+      "actor": "lead-integrator"
+    },
+    "l2-e2e-w5b": {
+      "id": "l2-e2e-w5b",
+      "wave": 5,
+      "kind": "e2e",
+      "label": "L2 e2e with abstention/mirror/late-observer assertions",
+      "path": ".boss/runs/m2-quality-war/evidence/l2-e2e-w5b--record.json",
+      "sha256": "44add787ab5f9f99fc998853f90f1d7f6785ba3fc27f9eb06cce38e2c942b95a",
+      "size": 2077,
+      "metadata": {
+        "tags": [
+          "wave-5"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l2.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T14:38:58.785Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -7760,14 +7857,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 85,
+    "agentsActivated": 86,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 149,
+    "evidenceRecorded": 152,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 429,
-  "eventHead": "9908271cb47e529408f6079210e5d1ce1e42e1a7b859392fb2b77843ed98c0c5",
+  "eventCount": 434,
+  "eventHead": "c8eefef300a5e9102f9aca19eb136897598968c18e45159911043956e3d497c4",
   "warnings": []
 }
