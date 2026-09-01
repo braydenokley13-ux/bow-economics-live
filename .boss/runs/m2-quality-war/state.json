@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:24:41.792Z",
+  "updatedAt": "2026-09-01T12:27:48.908Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3444,7 +3444,8 @@
         "l3-tuning-r1",
         "l3-e2e-r1",
         "recheck-l3-sr",
-        "recheck-l3-projector"
+        "recheck-l3-projector",
+        "recheck-l3-play"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5835,6 +5836,25 @@
       },
       "recordedAt": "2026-09-01T12:24:27.835Z",
       "actor": "classroom-projector-critic"
+    },
+    "recheck-l3-play": {
+      "id": "recheck-l3-play",
+      "wave": 4,
+      "kind": "gameplay-report",
+      "label": "L3 play re-check: RATING STRONG. Seal observed (post-close propose -> 409, median unmoved, VOTE SEALED); abstainer excluded from median; 5 distinct lens cards + prediction resolved both arms; term sheets both surfaces with two-press 22-8; fallback honestly labelled. DISCHARGED. Non-blocking: back half length/duplication, middle-case why-line, card-2 wording on a failed vote",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l3-play--GATE_L3_PLAY.md",
+      "sha256": "f766deb95d682d51c03ac23bb77260107583361345ba2fea1e46328ae0e58211",
+      "size": 31991,
+      "metadata": {
+        "rating": "STRONG",
+        "tags": [
+          "gameplay",
+          "wave-4",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T12:27:48.613Z",
+      "actor": "player-gameplay-critic"
     }
   },
   "claims": {
@@ -6583,9 +6603,12 @@
         "gate-l3-play"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T11:13:57.249Z",
-      "actor": "player-gameplay-critic"
+      "actor": "player-gameplay-critic",
+      "resolution": "Owning critic's re-check across three sessions (adopted, not-adopted, polarized): RATING STRONG. The vote seal is observed live (409, median unmoved, controls disabled), abstention arithmetic honest, the reveal half carries five distinct lens cards and a resolved prediction, the Kings capstone runs two-press with real term sheets, and the fallback arm is honestly framed. Explicit line: DISSENT play-l3-below-bar: DISCHARGED. Non-blocking notes recorded.",
+      "resolvedAt": "2026-09-01T12:27:48.908Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l3-play-dissent": {
       "id": "gate-l3-play-dissent",
@@ -6695,11 +6718,11 @@
     "agentsActivated": 77,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 117,
+    "evidenceRecorded": 118,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 367,
-  "eventHead": "5160ce677f3da30090fbd635cc6b385549f5db04ee0a7742d4e6d699b9f8aeb1",
+  "eventCount": 369,
+  "eventHead": "8f2ceb58e48d870212107bf0ff63d26862d65433eb43d315fe3de83c230db7b2",
   "warnings": []
 }
