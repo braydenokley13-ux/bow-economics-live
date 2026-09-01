@@ -107,8 +107,8 @@ export type MarketProfile = {
   readonly sens: number;
   /** Fans of home demand per point of the HOST's own Draw above the league floor. */
   readonly ownDrawFans: number;
-  /** Fans of home demand per point of the VISITING club's Draw above the league floor. */
-  readonly visitorFans: number;
+  /** Fans of home demand per point of the VISITING club's Draw above the league floor. Deliberately NOT named `visitorFans`: that is a settled OUTCOME field on every view, and a hidden constant may never share a key name with a published one. */
+  readonly visitorDrawFans: number;
   /** Dollars of reinvest that count as one unit of "effort" toward Draw. */
   readonly effortScale: number;
   /** Local media + sponsorship dollars per Draw point per week. */
@@ -142,13 +142,13 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     plainLine: "The biggest market in American sports, and the league's biggest gate.",
     sizeLabel: "BIG MARKET",
     bill: 1_600_000,
-    localBase: 600_000,
+    localBase: 470_000,
     ancillary: 18,
     base0: 21_120,
     sens: 165,
     ownDrawFans: 104,
-    visitorFans: 139,
-    effortScale: 219_000,
+    visitorDrawFans: 139,
+    effortScale: 132_000,
     drawDollars: 12_000,
     housePrice: 56,
   },
@@ -158,13 +158,13 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     plainLine: "A big market that OWNS its building, so it keeps the concert money too.",
     sizeLabel: "BIG MARKET · OWNS THE BUILDING",
     bill: 1_550_000,
-    localBase: 520_000,
+    localBase: 420_000,
     ancillary: 22,
     base0: 19_800,
     sens: 158,
     ownDrawFans: 99,
-    visitorFans: 132,
-    effortScale: 214_000,
+    visitorDrawFans: 132,
+    effortScale: 129_000,
     drawDollars: 12_000,
     housePrice: 56,
   },
@@ -179,8 +179,8 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     base0: 15_600,
     sens: 150,
     ownDrawFans: 89,
-    visitorFans: 118,
-    effortScale: 126_000,
+    visitorDrawFans: 118,
+    effortScale: 76_000,
     drawDollars: 12_000,
     housePrice: 46,
   },
@@ -195,8 +195,8 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     base0: 14_400,
     sens: 145,
     ownDrawFans: 84,
-    visitorFans: 112,
-    effortScale: 112_000,
+    visitorDrawFans: 112,
+    effortScale: 67_000,
     drawDollars: 12_000,
     housePrice: 44,
   },
@@ -348,7 +348,7 @@ export function settleHome(
       Math.round(
         profile.base0 +
           profile.ownDrawFans * (hd - DRAW_START) +
-          profile.visitorFans * (vd - DRAW_START) -
+          profile.visitorDrawFans * (vd - DRAW_START) -
           profile.sens * price,
       ),
     );
@@ -549,7 +549,7 @@ export const REVEAL_STAGES: readonly RevealStage[] = [
     stage: 3,
     name: "The four pipes — where the money actually comes from",
     headline: "FOUR PIPES, ONE CLUB",
-    say: "The tallest block is the one nobody in this room can move. Let that sit before you name it.",
+    say: "For almost every club here the tallest block is the one nobody in this room can move. If a desk out-gated it, ask that desk what it charged.",
   },
   {
     stage: 4,
@@ -605,6 +605,9 @@ function withLeagueSize(state: HostLeagueState, size: number): HostLeagueState {
 function seatDesk(state: HostLeagueState, seatId: SeatId): ReduceResult<HostLeagueState> {
   if (state.seatToSlot[seatId] !== undefined) return { ok: true, state };
   const deskNumber = state.deskCount + 1;
+  if (deskNumber > MAX_DESKS) {
+    return { ok: false, reason: `this league is full — it seats ${MAX_DESKS} desks and every club already has one` };
+  }
   let next = state;
   if (!next.leagueFrozen) {
     next = withLeagueSize(next, Math.max(MIN_LEAGUE, Math.min(CLUBS.length, deskNumber + 2)));
@@ -1145,6 +1148,7 @@ export const HOUSE_RULES: readonly string[] = [
   "REINVEST buys DRAW, and Draw lands NEXT week — never this week. It never buys wins, and the ceiling is the same for every club in this league, so no amount of big-market money buys a Draw a small market cannot reach.",
   "Put nothing back and your Draw slips 4 points a week. Put money in and it climbs — fast when your Draw is low, barely at all when it is already high.",
   "Your bill is due every week whether 400 people come or 19,000 do. The national television check arrives every week too, and it is exactly the same number for every club in this league — nobody in this room can move it.",
+  "When both Draws on the card are high, your building is going to sell out. Once every seat is sold a cheaper ticket brings nobody new — it just charges less to the same full house. On those weeks, being under the right price costs you more than being over it.",
 ];
 
 export const BOARD_HONESTY_LINE =
@@ -1205,6 +1209,11 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     risk: "A club does not make its money in three nights. Say the horizon line out loud before the first price.",
   },
   {
+    what: "On a week when the building sells out, under-pricing costs more than over-pricing by the same amount.",
+    why: "It is the arithmetic of a full house, not a moral: below the sell-out price every extra dollar is pure gain on the same crowd, while above it you start losing people. Everywhere the building does NOT fill, the two mistakes cost within 3x of each other, measured at every reachable Draw pair.",
+    risk: "The mirror of the usual worry: not 'charging high is greedy' but 'charging low is safe'. It is not safe on a big week, and the card tells them the week is big before they price — both Draws are printed. HOUSE_RULES says the sentence; say it again if a desk sells out cheap.",
+  },
+  {
     what: "No randomness at all: no injuries, no weather, no winning streaks.",
     why: "Every outcome has to be attributable to a decision somebody in this room made, or the debrief is a shrug.",
     risk: "Real front offices are guessing under genuine uncertainty. This room is not — it is reasoning under printed information, which is a different and easier thing.",
@@ -1243,7 +1252,7 @@ export const M1_BRIDGE_LINE =
   "One last thing, and it goes back to Module 1. The 2025-26 salary cap rose the most the rules allow — 10%, to $154.647M — and 6.7% again to $164.961M for 2026-27. One television contract raised every club's budget. The cap you fought inside of in Module 1 is made out of the money you just counted.";
 
 export const COMPLETE_COPY =
-  "That is You Don't Play Alone. You priced your own building, you watched somebody else's club fill it or empty it, and you found out that the biggest cheque any of you got was the one nobody in this room could move. Next lesson: this room writes the rule that decides how much of it gets shared.";
+  "That is You Don't Play Alone. You priced your own building, you watched somebody else's club fill it or empty it, and you found out that the biggest check any of you got was the one nobody in this room could move. Next lesson: this room writes the rule that decides how much of it gets shared.";
 
 /* ------------------------------------------------------- view builders -- */
 
@@ -1253,7 +1262,6 @@ export type ProfileFacts = {
   sizeLabel: string;
   plainLine: string;
   bill: number;
-  ancillary: number;
   housePrice: number;
 };
 export const profileFacts = (m: MarketProfile): ProfileFacts => ({
@@ -1261,7 +1269,6 @@ export const profileFacts = (m: MarketProfile): ProfileFacts => ({
   sizeLabel: m.sizeLabel,
   plainLine: m.plainLine,
   bill: m.bill,
-  ancillary: m.ancillary,
   housePrice: m.housePrice,
 });
 
@@ -1529,7 +1536,11 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher advances the reveal" };
       if (ctx.phase !== "REVEAL") return { ok: false, reason: `the reveal advances during REVEAL (session is in ${ctx.phase})` };
       if (state.revealStage >= REVEAL_STEPS) return { ok: false, reason: "every reveal stage has already played" };
-      return { ok: true, state: { ...state, revealStage: state.revealStage + 1, barReleased: true } };
+      // Each staged beat opens on the FIRST group of desks. Without this the
+      // ledger beat opens on whatever group the teacher happened to leave the
+      // bar on two minutes earlier, which reads as a skipped page in front of
+      // the room.
+      return { ok: true, state: { ...state, revealStage: state.revealStage + 1, barReleased: true, barPage: 0 } };
     }
 
     if (action.type === "teacher:barPage" || action.type === "teacher:barPageBack") {
@@ -1896,12 +1907,16 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             totalRevealSteps: REVEAL_STEPS,
             stageName: stage?.name ?? null,
             stageHeadline: stage?.headline ?? null,
-            bars: state.revealStage >= 1 ? pagedBars : [],
+            // One beat per press: each REVEAL stage owns its whole frame, so
+            // nothing from the previous press is still on the projector under
+            // it. `hostTheLeague.test.ts` asserts exactly one panel per stage.
+            bars: state.revealStage === 1 ? pagedBars : [],
             barPageLabel,
-            barSummary: state.revealStage >= 1 ? agg.barSummary : "",
+            barSummary: state.revealStage === 1 ? agg.barSummary : "",
             barInstruction: state.revealStage === 1 ? "Point at the club that paid for your night." : "",
             feverCopy: state.revealStage === 1 ? FEVER_REVEAL_COPY : null,
-            ledger: state.revealStage === 2 ? agg.giveAndTake : [],
+            ledger: state.revealStage === 2 ? agg.giveAndTake.slice(barPage * BARS_PER_PAGE, barPage * BARS_PER_PAGE + BARS_PER_PAGE) : [],
+            ledgerTotal: agg.giveAndTake.length,
             shockCopy: state.revealStage === 2 ? SHOCK_REVEAL_COPY : null,
             pipes: state.revealStage === 3 ? agg.pipes : [],
             pipesCopy: state.revealStage === 3 ? PIPES_REVEAL_COPY : null,
@@ -2181,7 +2196,7 @@ function projectorMirror(state: HostLeagueState, phase: CanonicalPhase): { title
 function studentScreenMechanics(state: HostLeagueState): string[] {
   const lines = MARKET_PROFILES.map(
     (m) =>
-      `${m.sizeLabel} (modeled on the ${m.anchorClub}): weekly bill ${money(m.bill)} · about $${m.ancillary} spent inside the building per person · the league office prices these clubs at $${m.housePrice}.`,
+      `${m.sizeLabel} (modeled on the ${m.anchorClub}): weekly bill ${money(m.bill)} · the league office prices these clubs at $${m.housePrice}.`,
   );
   lines.push(
     "Both dials are blind: no preview of any kind exists on the student screen. They see this week's pairing, every club's Draw, the three-week schedule and their own history.",
@@ -2328,7 +2343,7 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
           {
             q: "Whose money is the tallest block on every single bar?",
             answer:
-              "The national television check — identical for every club here, and nobody in this room can move it by a dollar. Then say the part that keeps it honest: it is not free money. The networks pay about $76 billion over eleven years and in exchange they get to say when your team plays.",
+              "For almost every club in this room it is the national television check — identical for everybody, and nobody here can move it by a dollar. Read the printed percentages rather than asserting it: if a desk priced high into big visitors its own gate can beat the check, and that desk is worth asking. Then say the part that keeps it honest either way: it is not free money. The networks pay about $76 billion over eleven years and in exchange they get to say when your team plays.",
           },
         ],
         dontExplainYet: ["Hold REVENUE SHARING until the last card of SYNTHESIS, where it is named as the NEXT lesson, not this one."],
@@ -2405,14 +2420,14 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
             answer: "Because the thing you sell is a game, and a game takes two clubs. Half of what filled your building was a club you do not control. The grown-up words are SHARED PRODUCT and SPILLOVER.",
           },
           {
-            q: "The national cheque is the same for everybody and nobody in this room can move it. Is that fair?",
+            q: "The national check is the same for everybody and nobody in this room can move it. Is that fair?",
             answer: "Do not answer it — that is next lesson, and this is the question that opens it. What you CAN say is what it costs: the league sells one product to the networks, and to sell it, it gives up start times, the schedule and the playoff format.",
           },
           { q: EXIT_PROMPT, answer: "No single right answer. You want a week named, and a club named that is not their own." },
         ],
         dontExplainYet: ["Nothing. This is the beat where every term gets said out loud — except the rule itself, which is next lesson's."],
         trigger: null,
-        timeCut: "Past minute 55? Say YOU DON'T PLAY ALONE and THE BIGGEST CHEQUE IS THE ONE NOBODY CONTROLS, and stop. Those two are the lesson.",
+        timeCut: "Past minute 55? Say YOU DON'T PLAY ALONE and THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS, and stop. Those two are the lesson.",
       };
 
     case "COMPLETE":
@@ -2481,16 +2496,16 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   const leastDependent = pipes[pipes.length - 1] ?? null;
   cards.push({
     id: "composition",
-    title: "THE BIGGEST CHEQUE IS THE ONE NOBODY CONTROLS",
+    title: "THE BIGGEST CHECK IS THE ONE NOBODY CONTROLS",
     body: `${
       mostDependent
-        ? `For ${mostDependent.deskHandle}, the national cheque was ${mostDependent.nationalPct}% of everything the club earned and the gate was ${mostDependent.gatePct}%.`
+        ? `For ${mostDependent.deskHandle}, the national check was ${mostDependent.nationalPct}% of everything the club earned and the gate was ${mostDependent.gatePct}%.`
         : ""
     }${
       leastDependent && mostDependent && leastDependent.slot !== mostDependent.slot
         ? ` For ${leastDependent.deskHandle} it was ${leastDependent.nationalPct}% against a gate of ${leastDependent.gatePct}%.`
         : ""
-    } Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national cheque that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
+    } Four pipes, four different shapes: the gate you set tonight, the in-arena money that follows BODIES and not price, the local money that grows slowly with your Draw, and one fixed national check that is identical for every club and that nobody in this room can move. ${PIPES_REVEAL_COPY}`,
   });
 
   const path = agg.smallMarketPath;

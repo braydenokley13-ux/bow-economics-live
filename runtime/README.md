@@ -254,6 +254,117 @@ assertions passed (`gate-l1-projector` repair 2). `#stage` scrolls now, so
 nothing is ever unreachable. Screenshots land in
 `docs/gauntlet/module-2/screens-l1/`.
 
+## Module 2, Lesson 2 — You Don't Play Alone (`m2l2-host-league`)
+
+Module 2's interdependence lesson, built against `DESIGN_C_FIRSTPRINCIPLES.md`
+(L2) and the binding charter's BC-3, BC-5 and BC-7. Every desk runs a real NBA
+club's building inside **one league**. Each week you HOST one club and VISIT
+another, and every club in the league is either another desk or the league
+office. Your home gate is a direct function of the visiting club's **DRAW** —
+and that Draw is another desk's own doing.
+
+**Phases:** `LOBBY → HOOK → PLAY → REVEAL → ADAPT → ARGUE → SYNTHESIS →
+COMPLETE`. All three weeks live inside PLAY, paced by a teacher **week bell**
+("Close the week"). The design's mid-lesson decomposition reveal is a
+teacher-released panel *during* PLAY (`Release the Handed-To-You bar`), exactly
+the pattern L1's Two Peaks release established, so the room plays its last week
+knowing what it now knows and the board can then show whether the room changed
+its mind. COUNTERFACTUAL is not declared: this lesson's counterfactual is
+another desk's decision, which the room lived rather than replayed.
+
+**Two books that do not add up (R4):** CASH and DRAW. The reinvest dial trades
+one for the other and there is no exchange rate — a Draw point is not a dollar,
+and most of the money a Draw point earns lands on *other* desks' books.
+
+**The decomposition is computed, not asserted (BC-5).** `settleHome` runs the
+same clamped settlement three times — at the league Draw floor for both clubs,
+then with the host's own Draw, then with the visitor's — and returns the three
+differences. They sum to the turnout exactly, are non-negative by monotonicity,
+and survive the capacity clamp (on a sold-out night the visitor block is
+exactly the extra people the visitor got through the door). Residual is 0 by
+construction in fans and in dollars, swept over 473,984 states by the tuning
+harness and over 15k+ states in the suite. This is the repair for the Stage-0
+attribution defect `PLAY_REVIEW.md` named, where the prototype printed "what
+your decision did (your own draw × your open sections)" over a figure that did
+not move when Draw went 30 → 100.
+
+**Blind commitment is structural.** `base0`, `sens`, `ownDrawFans`,
+`visitorDrawFans`, `effortScale`, `localBase` and `drawDollars` are
+module-scope constants and are never serialized to any view, pre- or post-lock.
+The pre-lock payload carries this week's pairing, every club's printed Draw,
+the three-week schedule, the dial positions and the desk's own history — and
+nothing derived from the pending price or share.
+
+**Pipe magnitudes, re-derived (SELECTION_SR_REVIEW C-2).** C-2 found Design C's
+indicative L2 pipe table inconsistent with its own gate-share ledger, with
+SR-1 ("the Knicks have the league's highest gate") and with its own horizon
+compression — a per-night-sized gate printed beside a per-season-sized national
+figure. Everything here is on **one** scale: one week is one home date; the
+real per-club national share (~$200M/yr over 41 dates ≈ $4.9M/date) shrunk by
+the same ~5× this product shrinks ticket prices gives `NATIONAL = $950,000`,
+identical for every club. At the shipped constants a New York home week at a
+neutral matchup takes ~$660k at the gate against ~$2.66M of weekly revenue
+(24.8%); Memphis is 18.9%. Both sit inside the ledgered fifth-to-a-quarter
+band, New York has the league's highest gate, and the national check is the
+tallest single pipe for almost every club without being half of the biggest
+market's revenue.
+
+**No RNG anywhere.** Schedule, bots and the week-2 star departure are pure
+functions of state. The departure lands on the lowest-numbered league-office
+club — chosen *exogenously*, because choosing it by "highest Draw" would have
+taught the opposite of the lesson (reinvest, and get punished for it) — and it
+is printed on every desk's card before anybody prices week 2.
+
+**Bots and late joiners.** Clubs with no desk are run by the league office on a
+published share ladder and are labelled as such on every surface. A desk that
+joins late claims a club that has been playing all along and inherits its real
+books, marked `covered` on its own screen. The league always keeps at least two
+league-office clubs, and it seats at most 18 desks.
+
+**Tuning harness.** `node docs/gauntlet/module-2/stage0/l2-tuning-harness.mjs`
+(after `npm run build`) — 11 falsifiable properties with an honest exit code,
+run against the built module and the *real reducer*, so every season it plays
+is a season a class could play. At the shipped constants all 11 hold: no
+dominant reinvest line (an adaptive line beats always-max, always-zero and
+copy-the-leader at both a big-market and a small-market seat, by $123k-$870k);
+the externality is material (a Draw-90 visitor draws 2.2-2.6× a Draw-15
+visitor's crowd at the same price); free-riding is punished *and* visible in
+the room's own give-and-take ledger; no seat can be stranded (every club clears
+its weekly bill from every reachable state, with $242k-$291k of room at the
+cash-best price in the worst case); the decomposition residual is 0; the
+cash-best price moves $28-$32 with the visitor's Draw; error costs are
+symmetric off the capacity clamp (worst ratio 1.02) and, on the clamp, run
+against the *low* price at every offset so the model never teaches that
+charging less is the safe mistake; every building can fill; the Draw ceiling
+settles at 87 for every market.
+
+**End-to-end proof.** `node scripts/e2e-m2l2.cjs` (after `npm run build`)
+drives one teacher, one projector and **twelve** Chromebook-shaped student
+pages through the whole arc. Twelve is the point: the Handed-To-You bar is
+paged five desks at a time, and a guard that only sees four desks cannot fail
+at the size the fit defect appears. Every board frame is asserted to FIT at
+1366×768 *and* 1920×1080 (`scrollHeight <= clientHeight`, not "reachable by
+scrolling"), the evidence tier is asserted above the 2.6%-of-height back-row
+floor, and the run also proves the pre-lock screen shows no outcome, the board
+shows nothing about an open week, the star departure reaches every desk before
+week 2 is priced, the week bell auto-commits a desk that never locked, and all
+five reveal stages render their own beat. Screenshots land in
+`docs/gauntlet/module-2/screens-l2/`.
+
+**No L1 → L2 seeding, deliberately.** D9 persists state only where yesterday's
+choice creates today's problem, and in this lesson today's problem is created
+by the *other desks' decisions today* — the visitor term is the whole
+mechanism. Three specific reasons, recorded in the module header: BC-5 binds
+the decomposition to be attributable from the UI alone, and a carried per-desk
+demand term adds a fourth channel nobody in the room created this lesson; L1
+runs two markets across every desk while L2 gives every desk its own club, so
+the design's "carry your market forward" limb is not implementable as written;
+and L1's carried cash would be mechanically inert, because the equal national
+check clears any carried debt inside week 1. What is carried is the lesson-level
+chain, in copy. If a later gate wants mechanical continuity, the cheapest
+honest limb is L1 renewals → this club's `base0` offset, printed on a
+how-you-got-here card and named inside the `fromBuilding` block.
+
 ## Repair charter round 1 (post-verification)
 
 A fresh-context verification round produced three rulings — gameplay
@@ -327,6 +438,7 @@ scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof 
                 e2e-l2-early-advance.cjs     — focused probe: advancing out of REVEAL early
                 e2e-l3.cjs                   — rerunnable Playwright L3 proof (full L1->L2->L3 arc)
                 e2e-l3-early-advance.cjs     — focused probe: advancing out of PLAY early
+                e2e-m2l2.cjs                 — rerunnable 12-desk M2 L2 proof (every board frame fits, both shapes)
 ```
 
 **Teacher authentication (R1).** `POST /api/sessions` issues a per-session
@@ -454,12 +566,18 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**345 tests, 345 passing** (`node --test`, no test framework dependency) —
-313 of them Module 1 and the shared runtime, unchanged, plus 32 new
-`fullHouse.test.ts` tests for Module 2 Lesson 1 (blind-commit and
-demand-constant leak assertions across every phase and surface, the BC-2
-retune properties, repeat-card renewal movement, locked-at-time synthesis,
-teacher-fallback behaviour, late-seat handling).
+**388 tests, 388 passing** (`node --test`, no test framework dependency), run
+this session — 354 of them Module 1, the shared runtime and Module 2 Lesson 1,
+unchanged, plus 34 new `hostTheLeague.test.ts` tests for Module 2 Lesson 2:
+the interdependence identity (decomposition residual 0 with no negative block
+over a 15k-state sweep), C5's instantiation test (delete the visitor term and
+every home week returns a different number), hidden-constant and cross-desk
+cash leak assertions across every phase and surface, the board carrying no
+seat identity and no desk's cash at all, schedule properties (every club hosts
+one and visits one, no self-hosting, no repeated pairing, most live desks host
+live desks), bot and replay determinism, the exogenous star departure,
+teacher-fallback behaviour, the paged bar's wrap-around, and late-seat
+handling. Module 2 Lesson 1's `fullHouse.test.ts` block is unchanged.
 Coverage: PIN/token crypto round-trips (`crypto.test.ts`); the `lobby-demo`
 reducer/aggregate/views including rejected malformed and out-of-phase
 actions (`lobbyDemo.test.ts`); the `m1l1-draft-day` reducer, market design
@@ -530,8 +648,8 @@ three static pages), not a general-purpose framework being reinvented.
 - No client-side module registry — `/play`, `/teach`, and `/board`'s
   renderers special-case each module's view shape by its `module` tag
   (`lobby-demo`, `m1l1-draft-day`, `m2-box-office`, `m1l2-trade-deadline`,
-  `m1l3-free-agency`, `m2l1-full-house`, with a generic JSON-dump fallback
-  for anything else).
+  `m1l3-free-agency`, `m2l1-full-house`, `m2l2-host-league`, with a generic
+  JSON-dump fallback for anything else).
   Adding another real lesson module means writing its render functions too;
   the *server* contract is fully generic today, the client shell is not yet.
 - `GET /api/sessions` (the session list) is still unauthenticated — it
@@ -558,6 +676,26 @@ three static pages), not a general-purpose framework being reinvented.
   optimum. (e) The Night-4 capacity option never beats simply pricing the
   shock night correctly — it is a hedge for a desk that priced low, and the
   debrief must say so rather than present it as a rival strategy.
+- **Module 2 Lesson 2 (`m2l2-host-league`) known gaps.** (a) Real content is
+  *dated* in `SOURCE_NOTES` but has **not** been re-verified by an independent
+  sports-reality pass this wave; arena capacities and the club→market-size
+  groupings come from model knowledge against `SPORTS_REALITY_INPUT.md`'s four
+  verified markets. (b) Only four market profiles exist, so two real clubs of
+  the same market size share one demand curve — a deliberate honesty trade
+  (inventing twenty club-specific constants under real names is the failure the
+  architecture review flagged in a rival design), ledgered in
+  `SIMPLIFICATIONS`. (c) The lesson has never been timed against a real 50-60
+  minute period. (d) C3's "a decision turns on pipe composition" is instantiated
+  as the intertemporal trade (fast gate money now vs slow Draw money later), not
+  as a solvency squeeze: the equal national check clears every club's bill from
+  every reachable state, so cash pressure is never manufactured. (e) Design C's
+  L2 carries six real anchors; two were cut here (SR-10 entirely, SR-12 reduced
+  to one line) per the SR review's own watch item, and the M1 cap bridge lives
+  on the last synthesis card rather than as its own beat. (f) The national check
+  is the tallest single pipe for almost every desk but not for all of them — a
+  desk that prices high into marquee visitors, or a big market that reinvests
+  hard, can out-earn it; the board prints each desk's real percentages and the
+  director tells the teacher to ask that desk what it did.
 - The teacher-key/rejoin-lockout mechanisms are new as of this round and
   have only been exercised by unit tests and one manual Playwright pass
   (which exercises the *happy* teacher-key path via normal UI clicks, not

@@ -219,6 +219,10 @@ function renderGame(payload: StudentPayload): void {
     renderFullHouse(s, view);
     return;
   }
+  if (view["module"] === "m2l2-host-league") {
+    renderHostLeague(s, view);
+    return;
+  }
 
   // lobby-demo fallback (still registered, proves the runtime is genuinely generic)
   if (s.phase === "LOBBY") {
@@ -2362,6 +2366,480 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
       <div class="eyebrow" style="font-size:12px;">Be ready to argue</div>
       <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["prompt"] ?? ""))}</p>
     </div>`;
+}
+
+
+/* ------------------------------------------------ M2 L2 host the league -- */
+
+type HLClub = {
+  slot: number;
+  name: string;
+  short: string;
+  building: string;
+  capacity: number;
+  capacityNote: string;
+  draw: number;
+  live: boolean;
+  deskNumber: number | null;
+  handle: string;
+  starGone: boolean;
+  sizeLabel: string;
+};
+type HLProfile = { id: string; sizeLabel: string; plainLine: string; bill: number; housePrice: number };
+type HLBooks = { cash: number; draw: number; inDebt: boolean };
+type HLSlateRow = { week: number; settled: boolean; open: boolean; hosting: HLClub; visiting: HLClub };
+type HLWeek = {
+  week: number;
+  price: number;
+  share: number;
+  auto: boolean;
+  stock: boolean;
+  visitor: string;
+  visitorFull: string;
+  visitorDraw: number;
+  hostDrawBefore: number;
+  turnout: number;
+  capacity: number;
+  fillPct: number;
+  turnedAway: number;
+  soldOut: boolean;
+  bareFans: number;
+  ownFans: number;
+  visitorFans: number;
+  gate: number;
+  inArena: number;
+  doorMoney: number;
+  bareDollars: number;
+  ownDollars: number;
+  visitorDollars: number;
+  localMedia: number;
+  national: number;
+  bill: number;
+  reinvestPaid: number;
+  net: number;
+  cashAfter: number;
+  drawAfter: number;
+  drawMove: number;
+  road: { host: string; hostFull: string; hostDraw: number; dollars: number; fans: number; line: string };
+  decompositionLine: string;
+};
+type HLMine = {
+  fromBuilding: number;
+  fromOwnDraw: number;
+  fromVisitorDraw: number;
+  localMedia: number;
+  national: number;
+  total: number;
+  visitorLed: boolean;
+  visitors: { week: number; club: string; short: string; draw: number; dollars: number; live: boolean; deskNumber: number | null }[];
+};
+type HLGive = { gave: number; received: number; net: number; meanShare: number; drawStart: number; drawEnd: number };
+
+let hlSeatRequested = false;
+let hlMountKey: string | null = null;
+let hlLocalPrice: number | null = null;
+
+function renderHostLeague(s: SessionInfo, view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  if (view["seated"] === false) {
+    if (!hlSeatRequested) {
+      hlSeatRequested = true;
+      outbox?.submit({ type: "takeSeat" });
+    }
+    body.innerHTML = `<div class="banner">You're in — finding your club…</div>`;
+    return;
+  }
+  if (s.phase !== "PLAY") {
+    hlMountKey = null;
+    document.body.classList.remove("fh-compact-play");
+  }
+  switch (s.phase) {
+    case "LOBBY":
+      body.innerHTML = `
+        ${hlDeskHeader(view)}
+        <div class="panel" style="padding:18px;">
+          <p style="margin:0 0 10px; font-size:16px; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+          <p style="margin:0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["plainLine"] ?? ""))}</p>
+        </div>
+        <div class="banner" style="margin-top:12px;">Waiting for your teacher to start.</div>`;
+      return;
+    case "HOOK":
+      renderHLHook(view);
+      return;
+    case "PLAY":
+      renderHLPlay(view);
+      return;
+    case "REVEAL":
+    case "ADAPT":
+      renderHLReveal(view);
+      return;
+    case "ARGUE":
+      body.innerHTML = `
+        ${hlDeskHeader(view)}
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">February 2025</div>
+          <p style="margin:0; font-size:15px; line-height:1.55; color:var(--ink-primary);">${escapeHtml(String(view["argue"] ?? ""))}</p>
+        </div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Be ready to argue</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["prompt"] ?? ""))}</p>
+        </div>`;
+      return;
+    case "SYNTHESIS":
+      body.innerHTML = `
+        ${hlDeskHeader(view)}
+        <div class="banner">${escapeHtml(String(view["message"] ?? "Look up at the board."))}</div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
+        </div>`;
+      return;
+    case "COMPLETE":
+      body.innerHTML = `${hlDeskHeader(view)}<div class="banner">${escapeHtml(String(view["message"] ?? ""))}</div>`;
+      return;
+    default:
+      body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  }
+}
+
+function hlDeskHeader(view: Record<string, unknown>): string {
+  if (!view["club"]) return "";
+  return `
+    <div class="fh-desk-head">
+      <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 24)}"></span>
+      <span class="fh-desk-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
+      <span class="fh-desk-building">${escapeHtml(String(view["building"] ?? ""))}</span>
+    </div>`;
+}
+
+function hlTopStrip(view: Record<string, unknown>): string {
+  const books = view["books"] as HLBooks | undefined;
+  if (!books) return hlDeskHeader(view);
+  return `
+    <div class="fh-topstrip">
+      <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 20)}"></span>
+      <span class="fh-topstrip-name fh-desk-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
+      <span class="fh-topstrip-book ${books.inDebt ? "debt" : ""}"><span>Cash</span><span class="numeric">${money(books.cash)}</span></span>
+      <span class="fh-topstrip-book"><span>Draw</span><span class="numeric">${books.draw}</span></span>
+    </div>`;
+}
+
+function hlBooksHtml(books: HLBooks | undefined): string {
+  if (!books) return "";
+  return `
+    <div class="fh-books">
+      <div class="fh-book ${books.inDebt ? "debt" : ""}">
+        <div class="fh-book-label">Cash</div>
+        <div class="fh-book-value numeric">${money(books.cash)}</div>
+        ${books.inDebt ? `<div class="fh-book-note">In the red — one week's national check clears it.</div>` : ""}
+      </div>
+      <div class="fh-book">
+        <div class="fh-book-label">Draw</div>
+        <div class="fh-book-value numeric">${books.draw}</div>
+        <div class="fh-book-note">People your club's name puts in someone else's building</div>
+      </div>
+    </div>`;
+}
+
+function hlDrawPips(draw: number): string {
+  return Array.from({ length: 5 }, (_, i) => `<span class="fh-dot ${i < Math.round(draw / 20) ? "on" : ""}"></span>`).join("");
+}
+
+function hlClubLine(label: string, club: HLClub, tone: string): string {
+  return `
+    <div class="hl-matchup-side ${tone}">
+      <span class="hl-matchup-label">${escapeHtml(label)}</span>
+      <span class="hl-matchup-club">${escapeHtml(club.short)}</span>
+      <span class="hl-matchup-who">${club.live ? `Desk ${club.deskNumber}` : "league office"}</span>
+      <span class="hl-matchup-draw"><span class="fh-dots">${hlDrawPips(club.draw)}</span><span class="numeric">Draw ${club.draw}</span></span>
+    </div>`;
+}
+
+function hlSlateHtml(slate: HLSlateRow[]): string {
+  if (slate.length === 0) return "";
+  return `
+    <details class="fa-rules" style="margin-top:12px;" ${slate.some((r) => r.open) ? "open" : ""}>
+      <summary>The three-week schedule — who visits you, and whose building you are in</summary>
+      <div class="fh-slate">
+        ${slate
+          .map(
+            (r) =>
+              `<div class="fh-slate-row${r.open ? " hl-open-week" : ""}"><span>Week ${r.week}${r.open ? " · now" : r.settled ? " · played" : ""}</span><span>HOST ${escapeHtml(r.hosting.short)}</span><span class="numeric">Draw ${r.hosting.draw}</span><span>VISIT ${escapeHtml(r.visiting.short)}</span><span class="numeric">Draw ${r.visiting.draw}</span></div>`,
+          )
+          .join("")}
+      </div>
+      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">The pairings are fixed. The Draw numbers are not — every one of them is another desk still deciding.</p>
+    </details>`;
+}
+
+function hlLeagueTable(league: HLClub[]): string {
+  if (league.length === 0) return "";
+  return `
+    <details class="fa-rules" style="margin-top:12px;">
+      <summary>Every club in the league</summary>
+      <div class="fh-slate">
+        ${league
+          .map(
+            (c) =>
+              `<div class="fh-slate-row"><span>${escapeHtml(c.short)}</span><span>${escapeHtml(c.sizeLabel)}</span><span>${c.live ? `Desk ${c.deskNumber}` : "league office"}</span><span class="numeric">Draw ${c.draw}</span></div>`,
+          )
+          .join("")}
+      </div>
+    </details>`;
+}
+
+function renderHLHook(view: Record<string, unknown>): void {
+  const rules = (view["rules"] as string[]) ?? [];
+  const profile = view["profile"] as HLProfile;
+  $("gameBody").innerHTML = `
+    ${hlDeskHeader(view)}
+    <div class="panel" style="padding:18px;">
+      <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">You Don't Play Alone</div>
+      <p style="margin:0 0 12px; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+      <p style="margin:0; font-size:14px; line-height:1.5; color:var(--ink-secondary);">${escapeHtml(String(view["objective"] ?? ""))}</p>
+    </div>
+    ${hlBooksHtml(view["books"] as HLBooks)}
+    <div class="panel" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px; margin-bottom:6px;">Your club</div>
+      <div class="fh-market-facts">
+        <div><span>${escapeHtml(String(view["club"] ?? ""))}</span><span>${escapeHtml(String(view["building"] ?? ""))}</span></div>
+        <div><span>Seats</span><span class="numeric">${Number(view["capacity"] ?? 0).toLocaleString()}</span></div>
+        <div><span>Bill, every week</span><span class="numeric">${money(profile?.bill ?? 0)}</span></div>
+        <div><span>Market</span><span>${escapeHtml(profile?.sizeLabel ?? "")}</span></div>
+      </div>
+      <div class="fh-stamp" style="margin-top:6px;">${escapeHtml(String(view["capacityNote"] ?? ""))}</div>
+      <p style="margin:10px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(String(view["plainLine"] ?? ""))}</p>
+    </div>
+    ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [])}
+    <details class="fa-rules" style="margin-top:12px;">
+      <summary>How the three weeks work</summary>
+      <ul>${rules.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+    </details>
+    ${hlLeagueTable((view["league"] as HLClub[]) ?? [])}
+    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>
+    <div class="banner" style="margin-top:8px;">${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</div>`;
+}
+
+function hlWeekResultHtml(w: HLWeek, title: string): string {
+  const sellout = w.soldOut
+    ? `<div class="fh-sellout">
+         <div class="fh-sellout-title">FULL HOUSE</div>
+         <div class="fh-sellout-sub">${w.turnout.toLocaleString()} of ${w.capacity.toLocaleString()} seats · every one sold</div>
+         ${w.turnedAway > 0 ? `<div class="fh-sellout-turned"><span class="numeric">${w.turnedAway.toLocaleString()}</span><span>could not get in</span></div>` : ""}
+       </div>`
+    : "";
+  const door = Math.max(1, w.doorMoney);
+  return `
+    <div class="fh-result ${w.soldOut ? "soldout" : ""}">
+      <div class="fh-result-head">
+        <span>${escapeHtml(title)} <span class="fh-history-sub">vs ${escapeHtml(w.visitor)} · Draw ${w.visitorDraw}</span>${w.auto ? ' <span class="fh-flag">auto</span>' : ""}${w.stock ? ' <span class="fh-flag">covered</span>' : ""}</span>
+        <span class="numeric">$${w.price}${w.share > 0 ? ` · ${w.share}% back in` : ""}</span>
+      </div>
+      ${sellout}
+      <div class="fh-fill-track"><div class="fh-fill-bar ${w.soldOut ? "soldout" : ""}" style="width:${Math.min(100, w.fillPct)}%"></div></div>
+      <div class="hl-split" id="hlSplit">
+        <div class="hl-split-title">Who filled your building</div>
+        <div class="hl-split-bar">
+          <span class="hl-seg bare" style="width:${(w.bareDollars / door) * 100}%"></span>
+          <span class="hl-seg own" style="width:${(w.ownDollars / door) * 100}%"></span>
+          <span class="hl-seg visitor" style="width:${(w.visitorDollars / door) * 100}%"></span>
+        </div>
+        <div class="hl-split-rows">
+          <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at $${w.price}</span><span class="numeric">${w.bareFans.toLocaleString()} · ${money(w.bareDollars)}</span></div>
+          <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw (${w.hostDrawBefore})</span><span class="numeric">${w.ownFans.toLocaleString()} · ${money(w.ownDollars)}</span></div>
+          <div class="hl-split-row"><span class="hl-key visitor"></span><span>${escapeHtml(w.visitor)} visiting (Draw ${w.visitorDraw})</span><span class="numeric">${w.visitorFans.toLocaleString()} · ${money(w.visitorDollars)}</span></div>
+        </div>
+      </div>
+      <div class="fh-result-row"><span>Ticket money</span><span class="numeric">${money(w.gate)}</span></div>
+      <div class="fh-result-row"><span>Spent inside the building</span><span class="numeric">${money(w.inArena)}</span></div>
+      <div class="fh-result-row"><span>Local media and sponsors</span><span class="numeric">${money(w.localMedia)}</span></div>
+      <div class="fh-result-row"><span>National television check</span><span class="numeric">${money(w.national)}</span></div>
+      <div class="fh-result-row total"><span>Money in</span><span class="numeric">${money(w.gate + w.inArena + w.localMedia + w.national)}</span></div>
+      <div class="fh-result-row"><span>Weekly bill</span><span class="numeric neg">-${money(w.bill)}</span></div>
+      ${w.reinvestPaid > 0 ? `<div class="fh-result-row"><span>Put back into the club (${w.share}%)</span><span class="numeric neg">-${money(w.reinvestPaid)}</span></div>` : ""}
+      <div class="fh-kept ${w.net < 0 ? "neg" : ""}">
+        <span class="fh-kept-label">Kept</span>
+        <span class="fh-kept-num numeric">${money(w.net)}</span>
+      </div>
+      <div class="fh-result-row"><span>Draw</span><span class="numeric">${w.hostDrawBefore} → ${w.drawAfter} (${w.drawMove >= 0 ? "+" : ""}${w.drawMove})</span></div>
+      <div class="hl-road" id="hlRoad">${escapeHtml(w.road.line)}</div>
+    </div>`;
+}
+
+function hlHistoryHtml(history: HLWeek[]): string {
+  if (history.length === 0) {
+    return `<div class="fh-history-empty">Nothing behind you yet. Your first price is a judgement call — read who is visiting and what their Draw is.</div>`;
+  }
+  return `
+    <div class="fh-history">
+      <div class="fh-history-row head"><span>Week</span><span>Price</span><span>Came</span><span>Full</span><span>Kept</span></div>
+      ${history
+        .map(
+          (h) => `
+        <div class="fh-history-row ${h.stock ? "stock" : ""}">
+          <span>W${h.week} <span class="fh-history-sub">vs ${escapeHtml(h.visitor)} · D${h.visitorDraw}</span>${h.stock ? ' <span class="fh-flag">covered</span>' : ""}${h.auto ? ' <span class="fh-flag">auto</span>' : ""}</span>
+          <span class="numeric">$${h.price}</span>
+          <span class="numeric">${h.turnout.toLocaleString()}</span>
+          <span class="numeric">${h.fillPct}%</span>
+          <span class="numeric ${h.net < 0 ? "neg" : ""}">${money(h.net)}</span>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+function renderHLPlay(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  document.body.classList.toggle("fh-compact-play", !view["allWeeksDone"]);
+  if (view["allWeeksDone"]) {
+    hlMountKey = null;
+    body.innerHTML = `
+      ${hlDeskHeader(view)}
+      ${hlBooksHtml(view["books"] as HLBooks)}
+      <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+      ${hlHistoryHtml((view["history"] as HLWeek[]) ?? [])}`;
+    return;
+  }
+
+  const hosting = view["hosting"] as HLClub;
+  const visiting = view["visiting"] as HLClub;
+  const locked = Boolean(view["locked"]);
+  const history = (view["history"] as HLWeek[]) ?? [];
+  const last = view["lastSettled"] as HLWeek | null;
+  const shock = view["shock"] as { club: string; full: string; draw: number; hostingThem: boolean; line: string } | null;
+  const weekNumber = Number(view["weekNumber"] ?? 1);
+
+  const key = `${weekNumber}|${locked}|${history.length}`;
+  if (hlMountKey === key && document.getElementById("hlPlayRoot")) return;
+  hlMountKey = key;
+  if (hlLocalPrice === null || !locked) hlLocalPrice = Number(view["price"] ?? 44);
+  const price = locked ? Number(view["price"]) : hlLocalPrice;
+  const share = Number(view["share"] ?? 0);
+
+  body.innerHTML = `
+    <div id="hlPlayRoot">
+      ${hlTopStrip(view)}
+      <div class="hl-week-card" id="hlWeekCard">
+        <div class="hl-week-top">
+          <span class="hl-week-num">Week ${weekNumber} of ${view["weekCount"]}</span>
+          <span class="hl-week-cap">${Number(view["capacity"] ?? 0).toLocaleString()} seats</span>
+        </div>
+        <div class="hl-matchup">
+          ${hlClubLine("Visiting you", hosting, "host")}
+          ${hlClubLine("You are visiting", visiting, "away")}
+        </div>
+        ${shock ? `<div class="hl-shock ${shock.hostingThem ? "mine" : ""}" id="hlShock">${escapeHtml(shock.line)}</div>` : ""}
+      </div>
+      ${
+        locked
+          ? `<div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+             <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>`
+          : `
+        <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
+          <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
+          <div class="fh-price-readout numeric" id="hlPriceReadout">$${price}</div>
+          <div class="fh-dial">
+            <input class="price-dial-input" type="range" id="hlPriceDial" min="${view["priceMin"]}" max="${view["priceMax"]}" step="${view["priceStep"]}" value="${price}" />
+          </div>
+          <div class="price-dial-ends"><span>$${view["priceMin"]}</span><span>$${view["priceMax"]}</span></div>
+
+          <div class="eyebrow" style="font-size:12px; margin-top:12px;">Put back into the club <span class="fh-lag">arrives next week</span></div>
+          <div class="fh-spend-row">
+            <div class="bid-stepper">
+              <button type="button" class="btn" id="hlShareDown">−</button>
+              <span class="bid-stepper-readout" id="hlShareReadout">${share}%</span>
+              <button type="button" class="btn" id="hlShareUp">+</button>
+            </div>
+            <span class="fh-lag">of what comes through your door this week</span>
+          </div>
+          <div class="hl-reinvest-rule">${escapeHtml(String(view["reinvestRule"] ?? ""))}</div>
+          <button class="btn btn-primary full" id="hlLock" style="margin-top:12px; min-height:44px;">LOCK IT IN</button>
+          <div class="fh-blind-note">No preview. Nothing on this screen tells you what this week will make.</div>
+        </div>`
+      }
+      ${last ? hlWeekResultHtml(last, `Week ${last.week} — how it went`) : ""}
+      ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [])}
+      <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks so far</div>
+      ${hlHistoryHtml(history)}
+    </div>`;
+
+  if (locked) return;
+
+  const dial = $<HTMLInputElement>("hlPriceDial");
+  const readout = $("hlPriceReadout");
+  dial.addEventListener("input", () => {
+    hlLocalPrice = Number(dial.value);
+    readout.textContent = `$${dial.value}`;
+  });
+  dial.addEventListener("change", () => outbox?.submit({ type: "setPrice", price: Number(dial.value) }));
+
+  let localShare = share;
+  const shareReadout = $("hlShareReadout");
+  const stepShare = (dir: number) => {
+    const step = Number(view["shareStep"] ?? 5);
+    localShare = Math.max(Number(view["shareMin"] ?? 0), Math.min(Number(view["shareMax"] ?? 40), localShare + dir * step));
+    shareReadout.textContent = `${localShare}%`;
+    outbox?.submit({ type: "setShare", share: localShare });
+  };
+  $("hlShareUp").addEventListener("click", () => stepShare(1));
+  $("hlShareDown").addEventListener("click", () => stepShare(-1));
+  $("hlLock").addEventListener("click", () => {
+    if (confirm(`Lock week ${weekNumber} at $${dial.value} with ${localShare}% back into the club? You cannot change it after this.`)) {
+      outbox?.submit({ type: "setPrice", price: Number(dial.value) });
+      outbox?.submit({ type: "setShare", share: localShare });
+      outbox?.submit({ type: "lock" });
+    }
+  });
+}
+
+function renderHLReveal(view: Record<string, unknown>): void {
+  const history = (view["history"] as HLWeek[]) ?? [];
+  const mine = view["mine"] as HLMine | null;
+  const give = view["give"] as HLGive | null;
+  const questions = (view["questions"] as string[]) ?? [];
+  const total = Math.max(1, mine?.total ?? 1);
+  $("gameBody").innerHTML = `
+    ${hlDeskHeader(view)}
+    ${hlBooksHtml(view["books"] as HLBooks)}
+    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+    ${
+      mine
+        ? `<div class="hl-split" id="hlSeasonSplit">
+             <div class="hl-split-title">Your three weeks, where the money came from</div>
+             <div class="hl-split-bar">
+               <span class="hl-seg bare" style="width:${(mine.fromBuilding / total) * 100}%"></span>
+               <span class="hl-seg own" style="width:${(mine.fromOwnDraw / total) * 100}%"></span>
+               <span class="hl-seg visitor" style="width:${(mine.fromVisitorDraw / total) * 100}%"></span>
+               <span class="hl-seg local" style="width:${(mine.localMedia / total) * 100}%"></span>
+               <span class="hl-seg national" style="width:${(mine.national / total) * 100}%"></span>
+             </div>
+             <div class="hl-split-rows">
+               <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at your prices</span><span class="numeric">${money(mine.fromBuilding)}</span></div>
+               <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw</span><span class="numeric">${money(mine.fromOwnDraw)}</span></div>
+               <div class="hl-split-row"><span class="hl-key visitor"></span><span>The clubs who visited you</span><span class="numeric">${money(mine.fromVisitorDraw)}</span></div>
+               <div class="hl-split-row"><span class="hl-key local"></span><span>Local media and sponsors</span><span class="numeric">${money(mine.localMedia)}</span></div>
+               <div class="hl-split-row"><span class="hl-key national"></span><span>National television check</span><span class="numeric">${money(mine.national)}</span></div>
+             </div>
+             <div class="hl-split-visitors">${mine.visitors
+               .map((v) => `<span>W${v.week}: ${escapeHtml(v.short)} (Draw ${v.draw}) brought ${money(v.dollars)}</span>`)
+               .join("")}</div>
+           </div>`
+        : ""
+    }
+    ${
+      give
+        ? `<div class="hl-give" id="hlGive">
+             <div class="hl-split-title">What you gave, what you got</div>
+             <div class="hl-give-row"><span>Your Draw put this on OTHER clubs' books</span><span class="numeric">${money(give.gave)}</span></div>
+             <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
+             <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
+             <div class="hl-give-note">Your Draw went from ${give.drawStart} to ${give.drawEnd}. You put an average of ${give.meanShare}% of your door money back in.</div>
+           </div>`
+        : ""
+    }
+    ${questions.length > 0 ? `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">Talk to your partner</div><ol class="fh-questions">${questions.map((q) => `<li>${escapeHtml(q)}</li>`).join("")}</ol></div>` : ""}
+    <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks</div>
+    ${history.map((w) => hlWeekResultHtml(w, `Week ${w.week}`)).join("")}`;
 }
 
 function escapeHtml(s: string): string {

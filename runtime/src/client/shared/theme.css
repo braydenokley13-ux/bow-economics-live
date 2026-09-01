@@ -2535,3 +2535,75 @@ body.fh-compact-play .fh-receipt {
   font-size: 12px;
   line-height: 1.35;
 }
+
+/* =========================================================================
+   M2 L2 "You Don't Play Alone" — shared decomposition palette + /play surface
+
+   The five blocks of the Handed-To-You bar are defined once and used on both
+   the student device and the projector, so a pair looking down at their own
+   split and then up at the room's is looking at the same colours. The visiting
+   club's block is the only one in the warm accent: it is the block the desk
+   did not choose, and it has to be findable from the back of the room without
+   reading a number.
+
+   CVD note: the five blocks also differ in ORDER and in printed label on every
+   surface that carries them, so the reading never depends on hue alone.
+   ========================================================================= */
+.hl-seg { display: block; height: 100%; }
+.hl-seg.bare { background: #2f5f8f; }
+.hl-seg.own { background: #4da2e8; }
+.hl-seg.visitor { background: var(--accent-gold); }
+.hl-seg.local { background: #6b6f7a; }
+.hl-seg.national { background: #cfd3da; }
+.hl-seg.gave { background: var(--accent-violet); }
+.hl-seg.got { background: var(--accent-gold); }
+
+.hl-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.hl-key.bare { background: #2f5f8f; }
+.hl-key.own { background: #4da2e8; }
+.hl-key.visitor { background: var(--accent-gold); }
+.hl-key.local { background: #6b6f7a; }
+.hl-key.national { background: #cfd3da; }
+.hl-key.gave { background: var(--accent-violet); }
+.hl-key.got { background: var(--accent-gold); }
+
+/* ---- /play: the week card ---- */
+.hl-week-card {
+  background: var(--surface-panel); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px; padding: 12px 14px; margin-top: 10px;
+}
+.hl-week-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.hl-week-num { font-family: var(--font-display); letter-spacing: .08em; text-transform: uppercase; font-size: 13px; color: var(--accent-gold); }
+.hl-week-cap { font-size: 11px; color: var(--ink-muted); }
+.hl-matchup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hl-matchup-side { border-radius: 10px; padding: 8px 10px; background: rgba(255,255,255,0.04); display: flex; flex-direction: column; gap: 2px; }
+.hl-matchup-side.host { border-left: 3px solid var(--accent-gold); }
+.hl-matchup-side.away { border-left: 3px solid var(--accent-violet); }
+.hl-matchup-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); }
+.hl-matchup-club { font-family: var(--font-display); font-size: 17px; color: var(--ink-primary); letter-spacing: .02em; }
+.hl-matchup-who { font-size: 11px; color: var(--ink-secondary); }
+.hl-matchup-draw { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-secondary); margin-top: 2px; }
+.hl-shock {
+  margin-top: 10px; padding: 8px 10px; border-radius: 10px; font-size: 12.5px; line-height: 1.4;
+  background: rgba(189,138,18,0.14); border: 1px solid rgba(244,185,66,0.4); color: var(--ink-primary);
+}
+.hl-shock.mine { background: rgba(217,89,143,0.16); border-color: rgba(217,89,143,0.5); }
+.hl-reinvest-rule { margin-top: 8px; font-size: 12px; line-height: 1.45; color: var(--ink-secondary); }
+.fh-slate-row.hl-open-week { color: var(--ink-primary); background: rgba(244,185,66,0.10); }
+
+/* ---- /play: the decomposition split ---- */
+.hl-split { margin-top: 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.04); }
+.hl-split-title { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); margin-bottom: 6px; }
+.hl-split-bar { display: flex; height: 18px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.35); }
+.hl-split-rows { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.hl-split-row { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; font-size: 12.5px; color: var(--ink-secondary); }
+.hl-split-row .numeric { color: var(--ink-primary); }
+.hl-split-visitors { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--ink-muted); }
+.hl-road {
+  margin-top: 10px; padding: 8px 10px; border-radius: 10px; font-size: 12.5px; line-height: 1.45;
+  background: rgba(139,124,240,0.14); border: 1px solid rgba(139,124,240,0.4); color: var(--ink-primary);
+}
+.hl-give { margin-top: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.04); }
+.hl-give-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-secondary); padding: 3px 0; }
+.hl-give-row.net { border-top: 1px solid rgba(255,255,255,0.14); margin-top: 4px; padding-top: 6px; color: var(--ink-primary); font-weight: 600; }
+.hl-give-note { margin-top: 6px; font-size: 11.5px; color: var(--ink-muted); }

@@ -37,6 +37,8 @@ type AdvanceWarnState =
   // ends the whole five-night window at once, and every night nobody has played
   // yet settles on the spot.
   | { kind: "fh-play"; nightNumber: number; nightCount: number; lockedCount: number; deskCount: number }
+  // M2 L2: leaving PLAY settles every week still open, in one press.
+  | { kind: "hl-play"; weekNumber: number; weekCount: number; lockedCount: number; deskCount: number }
   | null;
 let advanceWarnState: AdvanceWarnState = null;
 // R1: the per-session teacher credential — required on every /control and
@@ -50,6 +52,7 @@ const TRADE_DEADLINE_ID = "m1l2-trade-deadline";
 const DRAFT_DAY_ID = "m1l1-draft-day";
 const FREE_AGENCY_ID = "m1l3-free-agency";
 const FULL_HOUSE_ID = "m2l1-full-house";
+const HOST_LEAGUE_ID = "m2l2-host-league";
 
 /**
  * gate-l1-visual P8 (reported repaired at round 4, and was not — the bell was
@@ -210,14 +213,15 @@ function render(payload: TeacherPayload): void {
   const isTradeDeadline = s.lessonModuleId === TRADE_DEADLINE_ID;
   const isFreeAgency = s.lessonModuleId === FREE_AGENCY_ID;
   const isFullHouse = s.lessonModuleId === FULL_HOUSE_ID;
+  const isHostLeague = s.lessonModuleId === HOST_LEAGUE_ID;
   $<HTMLButtonElement>("btnShock").hidden = !isDraftDay;
   $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
   $<HTMLButtonElement>("btnCounterfactual").hidden =
-    isDraftDay || isTradeDeadline || isFreeAgency || isFullHouse || s.lessonModuleId === "m2-box-office";
+    isDraftDay || isTradeDeadline || isFreeAgency || isFullHouse || isHostLeague || s.lessonModuleId === "m2-box-office";
   // The staged per-target auction theater (charter point 6, and L3's own staged finale): one click reveals
   // exactly the next not-yet-revealed step, so the teacher paces the reveal instead of dumping every result
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
-  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse;
+  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague;
   $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
   {
     // gate-l1-teacher TT-B2 / gate-l1-projector repair 5: "Reveal next" was a
@@ -226,7 +230,7 @@ function render(payload: TeacherPayload): void {
     const btn = $<HTMLButtonElement>("btnRevealNext");
     const next = payload.view["nextRevealStage"] as { stage: number; name: string } | null | undefined;
     const total = Number(payload.view["totalRevealSteps"] ?? 0);
-    btn.textContent = isFullHouse
+    btn.textContent = isFullHouse || isHostLeague
       ? next
         ? `Reveal ${next.stage} of ${total} — ${next.name}`
         : "Every reveal has played"
@@ -259,6 +263,46 @@ function render(payload: TeacherPayload): void {
       closeNight.title = String(payload.view["bellNote"] ?? "");
     }
   }
+  // M2 L2's own pacing controls: the week bell (every building in the league
+  // settles at once against the Draws printed before anybody touched a dial)
+  // and the manual Handed-To-You release, which is the mid-lesson reveal the
+  // room plays its last week under. Both teacher-triggered, never timed;
+  // leaving PLAY fires both automatically so nothing can be stranded.
+  {
+    const closeWeek = $<HTMLButtonElement>("btnCloseWeek");
+    const handedTo = $<HTMLButtonElement>("btnHandedTo");
+    closeWeek.hidden = !isHostLeague;
+    handedTo.hidden = !isHostLeague;
+    if (isHostLeague) {
+      const allDone = Boolean(payload.view["allWeeksDone"]);
+      closeWeek.disabled = s.ended || s.phase !== "PLAY" || allDone;
+      closeWeek.innerHTML = allDone
+        ? `${BELL_GLYPH}All three weeks are in the books`
+        : `${BELL_GLYPH}Close week ${escapeHtml(String(payload.view["weekNumber"]))} (${escapeHtml(String(payload.view["lockedCount"]))}/${escapeHtml(String(payload.view["deskCount"]))} locked)`;
+      closeWeek.title = String(payload.view["bellNote"] ?? "");
+      handedTo.disabled = s.ended || !payload.view["barAvailable"] || (s.phase !== "PLAY" && s.phase !== "REVEAL");
+      handedTo.textContent = payload.view["barReleased"] ? "The bar is on the projector" : "Release the Handed-To-You bar";
+      handedTo.title = String(payload.view["barReason"] ?? "");
+    }
+  }
+  // The bar is paged for the same reason L1's repeat card is: the rows scale
+  // with the class and the projector does not.
+  {
+    const barPage = $<HTMLButtonElement>("btnBarPage");
+    const barBack = $<HTMLButtonElement>("btnBarPageBack");
+    const paged = isHostLeague && (s.phase === "PLAY" || s.phase === "REVEAL" || s.phase === "ADAPT");
+    barPage.hidden = !paged;
+    barBack.hidden = !paged;
+    if (paged) {
+      const available = Boolean(payload.view["barPageAvailable"]);
+      barPage.disabled = s.ended || !available;
+      barBack.disabled = s.ended || !available;
+      barPage.textContent = String(payload.view["barNextPageLabel"] ?? "Next group of desks");
+      barBack.textContent = String(payload.view["barPrevPageLabel"] ?? "Back a group");
+      barPage.title = String(payload.view["barPageNote"] ?? "");
+      barBack.title = String(payload.view["barPageNote"] ?? "");
+    }
+  }
   // `gate-l1-play` recheck3 P11-b: the COUNTERFACTUAL repeat card is paged so
   // every row stays fully on the projector at class size. The teacher walks the
   // groups; the control names what the next press will put up, to the same
@@ -271,9 +315,22 @@ function render(payload: TeacherPayload): void {
     const pagerNow = $("pagerNow");
     cfPage.hidden = !isFullHouse || s.phase !== "COUNTERFACTUAL";
     cfBack.hidden = cfPage.hidden;
-    synthPage.hidden = !isFullHouse || s.phase !== "SYNTHESIS";
+    synthPage.hidden = !(isFullHouse || isHostLeague) || s.phase !== "SYNTHESIS";
     synthBack.hidden = synthPage.hidden;
-    pagerNow.hidden = cfPage.hidden && synthPage.hidden;
+    pagerNow.hidden = cfPage.hidden && synthPage.hidden && !(isHostLeague && (s.phase === "PLAY" || s.phase === "REVEAL" || s.phase === "ADAPT"));
+    if (isHostLeague) {
+      const synthAvailable = Boolean(payload.view["synthPageAvailable"]);
+      synthPage.disabled = s.ended || !synthAvailable;
+      synthBack.disabled = s.ended || !synthAvailable;
+      synthPage.textContent = String(payload.view["synthNextLabel"] ?? "Next card");
+      synthBack.textContent = String(payload.view["synthPrevLabel"] ?? "Back a card");
+      synthPage.title = String(payload.view["synthPageNote"] ?? "");
+      synthBack.title = String(payload.view["synthPageNote"] ?? "");
+      pagerNow.textContent =
+        s.phase === "SYNTHESIS"
+          ? String(payload.view["synthCurrentLabel"] ?? "")
+          : String(payload.view["barCurrentPageLabel"] ?? "");
+    }
     if (isFullHouse) {
       const available = Boolean(payload.view["cfPageAvailable"]);
       cfPage.disabled = s.ended || !available;
@@ -324,6 +381,14 @@ function render(payload: TeacherPayload): void {
       kind: "fh-play",
       nightNumber: Number(payload.view["nightNumber"] ?? 1),
       nightCount: Number(payload.view["nightCount"] ?? 5),
+      lockedCount: Number(payload.view["lockedCount"] ?? 0),
+      deskCount: Number(payload.view["deskCount"] ?? 0),
+    };
+  } else if (isHostLeague && s.phase === "PLAY" && !Boolean(payload.view["allWeeksDone"])) {
+    advanceWarnState = {
+      kind: "hl-play",
+      weekNumber: Number(payload.view["weekNumber"] ?? 1),
+      weekCount: Number(payload.view["weekCount"] ?? 3),
       lockedCount: Number(payload.view["lockedCount"] ?? 0),
       deskCount: Number(payload.view["deskCount"] ?? 0),
     };
@@ -379,7 +444,7 @@ function render(payload: TeacherPayload): void {
   $("aggregateBody").appendChild(renderAggregate(payload.view, payload.seats));
 
   // TT-B1/B2/B3: the director layer, only for the lesson that ships one.
-  if (payload.view["module"] === FULL_HOUSE_ID) {
+  if (payload.view["module"] === FULL_HOUSE_ID || payload.view["module"] === HOST_LEAGUE_ID) {
     directorEl.hidden = false;
     $("directorHeading").textContent = `Directing ${s.phase}`;
     $("directorBody").innerHTML = "";
@@ -563,6 +628,7 @@ function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): H
   if (view["module"] === TRADE_DEADLINE_ID) return renderTradeDeadlineAggregate(view, seats);
   if (view["module"] === FREE_AGENCY_ID) return renderFreeAgencyAggregate(view, seats);
   if (view["module"] === FULL_HOUSE_ID) return renderFullHouseAggregate(view, seats);
+  if (view["module"] === HOST_LEAGUE_ID) return renderHostLeagueAggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
@@ -942,6 +1008,88 @@ function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherS
   return wrap;
 }
 
+
+/* ------------------------------------------------- host league aggregate -- */
+
+type HLDeskStat = {
+  seatId: string;
+  deskNumber: number | null;
+  handle: string;
+  club: string;
+  sizeLabel: string;
+  locked: boolean;
+  price: number;
+  share: number;
+  cash: number;
+  draw: number;
+  inDebt: boolean;
+  weeksPlayed: number;
+  joinedAtWeek: number;
+  hostingThisWeek: string | null;
+  lastFillPct: number | null;
+};
+type HLDrawRow = { slot: number; handle: string; short: string; live: boolean; draw: number; starGone: boolean; sizeLabel: string };
+
+function renderHostLeagueAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
+  const desks = (view["desks"] as HLDeskStat[]) ?? [];
+  const agg = (view["aggregate"] as { drawTable?: HLDrawRow[] } | undefined) ?? {};
+  const draws = agg.drawTable ?? [];
+  const seatById = new Map(seats.map((s) => [s.id, s]));
+  const wrap = document.createElement("div");
+
+  const kpis = document.createElement("div");
+  kpis.className = "kpirow";
+  kpis.style.marginBottom = "14px";
+  kpis.innerHTML = `
+    <div class="kpi"><div class="num">${view["allWeeksDone"] ? "done" : `${view["weekNumber"]}/${view["weekCount"]}`}</div><div class="lbl">Week</div></div>
+    <div class="kpi"><div class="num">${view["lockedCount"]}/${view["deskCount"]}</div><div class="lbl">Locked in</div></div>
+    <div class="kpi"><div class="num" style="font-size:15px;">${view["barReleased"] ? "on the projector" : view["barAvailable"] ? "ready to release" : "not yet"}</div><div class="lbl">Handed-To-You bar</div></div>
+    <div class="kpi"><div class="num">${view["revealStage"]}/${view["totalRevealSteps"]}</div><div class="lbl">Reveal stages</div></div>`;
+  wrap.appendChild(kpis);
+
+  const shock = view["shock"] as { club: string; short: string; draw: number; live: boolean } | null;
+  if (shock) {
+    const row = document.createElement("div");
+    row.style.marginBottom = "12px";
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">The star departure</div>
+      <div style="font-size:13px; color:var(--ink-secondary);">${escapeHtml(shock.club)} — Draw ${shock.draw} for the rest of the season. ${shock.live ? "This club is run by a desk." : "This club is run by the league office."}</div>`;
+    wrap.appendChild(row);
+  }
+
+  if (draws.length > 0) {
+    const row = document.createElement("div");
+    row.style.marginBottom = "12px";
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Every club's Draw right now</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">${draws
+        .map(
+          (d) =>
+            `<span class="pill" style="font-size:10px; ${d.live ? "" : "opacity:.6;"}">${escapeHtml(d.short)} ${d.draw}${d.starGone ? " ✚" : ""}</span>`,
+        )
+        .join("")}</div>`;
+    wrap.appendChild(row);
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "teamgrid";
+  const windowClosed = Boolean(view["allWeeksDone"]);
+  for (const d of desks) {
+    const seat = seatById.get(d.seatId);
+    const tile = document.createElement("div");
+    tile.className = `teamtile${!windowClosed && !d.locked ? " stalled" : ""}`;
+    tile.innerHTML = `
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;"><strong>${escapeHtml(d.handle)}</strong></div>
+      <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : d.seatId}</span><span>${
+        windowClosed ? `finished · ${d.weeksPlayed} weeks` : d.locked ? `LOCKED $${d.price} · ${d.share}%` : `<span class="dir-stalled">still dialling $${d.price} · ${d.share}%</span>`
+      }</span></div>
+      <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">$${d.cash.toLocaleString()}</span><span>Draw ${d.draw}</span></div>
+      <div class="statline"><span>${escapeHtml(d.sizeLabel)}</span><span>${d.lastFillPct !== null ? `${d.lastFillPct}% full` : ""}</span></div>
+      ${d.hostingThisWeek ? `<div class="statline"><span>hosting ${escapeHtml(d.hostingThisWeek)}</span><span>${d.joinedAtWeek > 1 ? `joined W${d.joinedAtWeek}` : ""}</span></div>` : ""}`;
+    grid.appendChild(tile);
+  }
+  wrap.appendChild(grid);
+  return wrap;
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
@@ -999,6 +1147,22 @@ function confirmSkippingContent(via: "advance" | "reveal"): boolean {
           : ""
       } Continue?`,
     );
+  } else if (w?.kind === "hl-play") {
+    const remaining = w.weekCount - w.weekNumber;
+    const unlocked = Math.max(0, w.deskCount - w.lockedCount);
+    return confirm(
+      `${lead}Week ${w.weekNumber} of ${w.weekCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the week bell — ${
+        via === "reveal" ? "this button" : "advancing now"
+      } settles this week for every club AND ends the season early, so ${
+        remaining === 1 ? "1 week" : `${remaining} weeks`
+      } will never be played.${
+        unlocked > 0
+          ? ` ${unlocked} desk${unlocked === 1 ? "" : "s"} ${unlocked === 1 ? "has" : "have"} not locked; ${
+              unlocked === 1 ? "it settles" : "they settle"
+            } on whatever is on ${unlocked === 1 ? "its" : "their"} dials right now.`
+          : ""
+      } Continue?`,
+    );
   } else if (w?.kind === "fa-play") {
     const remainingDays = w.windowDays - w.day;
     return confirm(
@@ -1040,6 +1204,10 @@ $("btnCfPage").addEventListener("click", () => void sendControl({ type: "hook", 
 $("btnCfPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "cfPageBack" }));
 $("btnSynthPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "synthPage" }));
 $("btnSynthPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "synthPageBack" }));
+$("btnCloseWeek").addEventListener("click", () => void sendControl({ type: "hook", hook: "closeWeek" }));
+$("btnHandedTo").addEventListener("click", () => void sendControl({ type: "hook", hook: "handedTo" }));
+$("btnBarPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPage" }));
+$("btnBarPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPageBack" }));
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();

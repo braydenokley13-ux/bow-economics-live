@@ -82,6 +82,12 @@ function render(payload: BoardPayload): void {
     renderFullHouseBoard(view, mode);
     return;
   }
+  if (view["module"] === "m2l2-host-league") {
+    const mode = String(view["mode"] ?? "");
+    backdrop.classList.toggle("peak", mode === "reveal" || mode === "adapt" || mode === "argue" || mode === "synthesis");
+    renderHostLeagueBoard(view, mode);
+    return;
+  }
 
   backdrop.classList.remove("peak");
   const legacy = view as { mode?: string; tally?: Record<string, number>; total?: number; note?: string; pickedCount?: number };
@@ -1190,6 +1196,280 @@ function renderScatterSvg(points: ScatterPoint[], opts: { connect: boolean }): s
 
   svg += `</svg>`;
   return svg;
+}
+
+
+/* ------------------------------------------- M2 L2 host the league board -- */
+
+type HLClubB = {
+  slot: number;
+  name: string;
+  short: string;
+  building: string;
+  capacity: number;
+  draw: number;
+  live: boolean;
+  deskNumber: number | null;
+  handle: string;
+  starGone: boolean;
+  sizeLabel: string;
+};
+type HLBar = {
+  deskHandle: string;
+  club: string;
+  sizeLabel: string;
+  fromBuilding: number;
+  fromOwnDraw: number;
+  fromVisitorDraw: number;
+  localMedia: number;
+  national: number;
+  total: number;
+  visitorLed: boolean;
+  visitors: { week: number; short: string; draw: number; dollars: number }[];
+};
+type HLLedgerRow = { deskHandle: string; club: string; gave: number; received: number; net: number; meanShare: number; drawStart: number; drawEnd: number };
+type HLPipe = { deskHandle: string; club: string; sizeLabel: string; gate: number; inArena: number; localMedia: number; national: number; total: number; gatePct: number; nationalPct: number };
+type HLPath = { found: boolean; line: string };
+
+function hlMoney(n: number): string {
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `${n < 0 ? "-" : ""}$${(abs / 1_000_000).toFixed(2)}M`;
+  return `${n < 0 ? "-" : ""}$${Math.round(abs).toLocaleString()}`;
+}
+
+/**
+ * The Handed-To-You bar. One stacked bar per desk, sorted by desk number and
+ * never by money (R13). Five blocks, and the visiting club's is coloured apart
+ * from everything the desk itself decided so the room can see it across the
+ * room without reading a number.
+ */
+function hlBarHtml(bars: HLBar[]): string {
+  if (bars.length === 0) return "";
+  const max = Math.max(1, ...bars.map((b) => b.total));
+  return `<div class="hl-bars" id="hlBars">${bars
+    .map((b) => {
+      const w = (v: number) => `${(v / max) * 100}%`;
+      return `<div class="hl-bar-row" data-hl-bar="1">
+        <div class="hl-bar-handle">${escapeHtml(b.deskHandle)}</div>
+        <div class="hl-bar-track">
+          <span class="hl-seg bare" style="width:${w(b.fromBuilding)}"></span>
+          <span class="hl-seg own" style="width:${w(b.fromOwnDraw)}"></span>
+          <span class="hl-seg visitor" style="width:${w(b.fromVisitorDraw)}"></span>
+          <span class="hl-seg local" style="width:${w(b.localMedia)}"></span>
+          <span class="hl-seg national" style="width:${w(b.national)}"></span>
+        </div>
+        <div class="hl-bar-foot">${b.visitors.map((v) => `${escapeHtml(v.short)} ${hlMoney(v.dollars)}`).join(" · ")}</div>
+      </div>`;
+    })
+    .join("")}</div>
+    <div class="hl-legend">
+      <span><i class="hl-key bare"></i>your building &amp; your price</span>
+      <span><i class="hl-key own"></i>your own Draw</span>
+      <span><i class="hl-key visitor"></i>the club visiting you</span>
+      <span><i class="hl-key local"></i>local media</span>
+      <span><i class="hl-key national"></i>the national check</span>
+    </div>`;
+}
+
+function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): void {
+  const honesty = String(view["honestyLine"] ?? "");
+  stage.classList.remove("fh-tight", "fh-synth", "hl-tight");
+  stage.classList.add("hl-tight");
+  switch (mode) {
+    case "lobby": {
+      const league = (view["league"] as HLClubB[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">You Don't Play Alone</div>
+        <div class="banner" style="max-width:66vw;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        <div class="hl-club-grid">${league
+          .map(
+            (c) =>
+              `<div class="hl-club-chip ${c.live ? "live" : ""}"><span class="hl-chip-club">${escapeHtml(c.short)}</span><span class="hl-chip-who">${c.live ? `Desk ${c.deskNumber}` : "league office"}</span><span class="hl-chip-draw">DRAW <b>${c.draw}</b></span></div>`,
+          )
+          .join("")}</div>
+        <div class="synthesis-note">${Number(view["deskCount"] ?? 0)} desk${Number(view["deskCount"] ?? 0) === 1 ? "" : "s"} in a ${Number(view["leagueSize"] ?? 0)}-club league. Clubs with no desk are run by the league office and say so.</div>`;
+      return;
+    }
+
+    case "hook": {
+      const league = (view["league"] as HLClubB[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">Same League. Same Rules.</div>
+        <div class="hl-hook-real">${escapeHtml(String(view["realLine"] ?? ""))}</div>
+        <div class="exit-prompt hl-hook-q">${escapeHtml(String(view["question"] ?? ""))}</div>
+        <div class="hl-club-grid tight">${league
+          .map(
+            (c) =>
+              `<div class="hl-club-chip ${c.live ? "live" : ""}"><span class="hl-chip-club">${escapeHtml(c.short)}</span><span class="hl-chip-size">${escapeHtml(c.sizeLabel)}</span><span class="hl-chip-draw">DRAW <b>${c.draw}</b></span></div>`,
+          )
+          .join("")}</div>
+        <div class="synthesis-note">${escapeHtml(String(view["objective"] ?? ""))}</div>
+        <div class="exit-prompt hl-foot">${escapeHtml(honesty)} ${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
+      return;
+    }
+
+    case "play": {
+      const bars = (view["bars"] as HLBar[]) ?? [];
+      const barsUp = bars.length > 0;
+      if (view["allWeeksDone"]) {
+        stage.innerHTML = barsUp
+          ? `<div class="label">Who Filled Your Building?</div>
+             <div class="hl-bar-pager">${escapeHtml(String(view["barPageLabel"] ?? ""))}</div>
+             ${hlBarHtml(bars)}
+             <div class="synthesis-note hl-summary" id="hlBarSummary">${escapeHtml(String(view["barSummary"] ?? ""))}</div>`
+          : `<div class="label">Three Weeks, In The Books</div>
+             <div class="banner" style="max-width:70vw;">${escapeHtml(String(view["subMessage"] ?? ""))}</div>
+             <div class="synthesis-note">${escapeHtml(honesty)}</div>`;
+        return;
+      }
+      const pairings = ((view["pairings"] as { host: HLClubB; visitor: HLClubB }[]) ?? []).filter((p) => p.host.live || p.visitor.live);
+      const shock = view["shock"] as { club: string; short: string; draw: number } | null;
+      // The same trade L1's PLAY frame makes once evidence lands: while the
+      // Handed-To-You bar is up the schedule collapses to the strip, because
+      // every pair already has this week's pairing on its own device and the
+      // projector cannot scroll. Nothing shrinks; a panel gives up the frame.
+      stage.innerHTML = `
+        <div class="hl-week-strip">
+          <span class="hl-week-strip-num">WEEK ${view["weekNumber"]} OF ${view["weekCount"]}</span>
+          <span class="hl-week-strip-mid">${barsUp ? "Three weeks of home games, so far" : "Every club hosts one and visits one"}</span>
+          <span class="hl-week-strip-lock"><b>${view["lockedCount"]}/${view["deskCount"]}</b> locked in</span>
+        </div>
+        ${shock && !barsUp ? `<div class="hl-board-shock" id="hlBoardShock">${escapeHtml(shock.club)} have lost their best player. Their Draw is <b>${shock.draw}</b> for the rest of the season.</div>` : ""}
+        ${
+          barsUp
+            ? `<div class="hl-bar-pager">${escapeHtml(String(view["barPageLabel"] ?? ""))}</div>${hlBarHtml(bars)}
+               <div class="exit-prompt hl-instruction">${escapeHtml(String(view["barInstruction"] ?? ""))}</div>
+               <div class="synthesis-note hl-summary" id="hlBarSummary">${escapeHtml(String(view["barSummary"] ?? ""))}</div>`
+            : `<div class="hl-pairs">${pairings
+                .map(
+                  (p) =>
+                    `<div class="hl-pair ${p.host.live ? "live" : ""}"><span class="hl-pair-host">${escapeHtml(p.host.live ? p.host.handle : p.host.short)}</span><span class="hl-pair-arrow">hosts</span><span class="hl-pair-visitor">${escapeHtml(p.visitor.short)}</span><span class="hl-pair-draw">DRAW <b>${p.visitor.draw}</b></span></div>`,
+                )
+                .join("")}</div>
+               <div class="synthesis-note hl-foot">${escapeHtml(honesty)}</div>`
+        }`;
+      return;
+    }
+
+    case "reveal": {
+      const stageNo = Number(view["revealStage"] ?? 0);
+      const bars = (view["bars"] as HLBar[]) ?? [];
+      const ledger = (view["ledger"] as HLLedgerRow[]) ?? [];
+      const pipes = (view["pipes"] as HLPipe[]) ?? [];
+      const path = view["smallMarketPath"] as HLPath | null;
+      const means = (view["meanShareByWeek"] as (number | null)[] | null) ?? null;
+      let bodyHtml = "";
+      if (stageNo === 1) {
+        bodyHtml = `
+          <div class="hl-bar-pager">${escapeHtml(String(view["barPageLabel"] ?? ""))}</div>
+          ${hlBarHtml(bars)}
+          <div class="exit-prompt hl-instruction" id="hlInstruction">${escapeHtml(String(view["barInstruction"] ?? ""))}</div>
+          <div class="synthesis-note hl-summary" id="hlBarSummary">${escapeHtml(String(view["barSummary"] ?? ""))}</div>`;
+      } else if (stageNo === 2) {
+        const max = Math.max(1, ...ledger.flatMap((r) => [r.gave, r.received]));
+        bodyHtml = `
+          <div class="hl-bar-pager">${escapeHtml(String(view["barPageLabel"] ?? ""))}</div>
+          <div class="hl-ledger" id="hlLedger">${ledger
+            .map(
+              (r) => `<div class="hl-ledger-row" data-hl-ledger="1">
+                <span class="hl-ledger-handle">${escapeHtml(r.deskHandle)}</span>
+                <span class="hl-ledger-bars">
+                  <span class="hl-ledger-bar gave" style="width:${(r.gave / max) * 100}%"><b>${hlMoney(r.gave)}</b></span>
+                  <span class="hl-ledger-bar got" style="width:${(r.received / max) * 100}%"><b>${hlMoney(r.received)}</b></span>
+                </span>
+                <span class="hl-ledger-draw">Draw ${r.drawStart}→${r.drawEnd}</span>
+              </div>`,
+            )
+            .join("")}</div>
+          <div class="hl-legend"><span><i class="hl-key gave"></i>what your Draw put on other clubs' books</span><span><i class="hl-key got"></i>what visiting clubs put on yours</span></div>
+          <div class="synthesis-note hl-summary">${escapeHtml(String(view["shockCopy"] ?? ""))}</div>`;
+      } else if (stageNo === 3) {
+        const shown = pipes.length <= 3 ? pipes : [pipes[0]!, pipes[Math.floor(pipes.length / 2)]!, pipes[pipes.length - 1]!];
+        bodyHtml = `
+          <div class="hl-pipes" id="hlPipes">${shown
+            .map((p) => {
+              const w = (v: number) => `${(v / Math.max(1, p.total)) * 100}%`;
+              return `<div class="hl-pipe-row">
+                <span class="hl-pipe-handle">${escapeHtml(p.deskHandle)}<i>${escapeHtml(p.sizeLabel)}</i></span>
+                <span class="hl-bar-track">
+                  <span class="hl-seg bare" style="width:${w(p.gate)}"></span>
+                  <span class="hl-seg own" style="width:${w(p.inArena)}"></span>
+                  <span class="hl-seg local" style="width:${w(p.localMedia)}"></span>
+                  <span class="hl-seg national" style="width:${w(p.national)}"></span>
+                </span>
+                <span class="hl-pipe-nums">gate ${p.gatePct}% · national ${p.nationalPct}%</span>
+              </div>`;
+            })
+            .join("")}</div>
+          <div class="hl-legend"><span><i class="hl-key bare"></i>gate</span><span><i class="hl-key own"></i>inside the building</span><span><i class="hl-key local"></i>local media</span><span><i class="hl-key national"></i>national — identical for every club</span></div>
+          <div class="synthesis-note hl-summary">${escapeHtml(String(view["pipesCopy"] ?? ""))}</div>
+          <div class="synthesis-note hl-foot">${escapeHtml(String(view["warriorsLine"] ?? ""))}</div>`;
+      } else if (stageNo === 4) {
+        bodyHtml = `<div class="hl-path" id="hlPath">${escapeHtml(String(path?.line ?? ""))}</div>`;
+      } else if (stageNo >= 5) {
+        const shown = (means ?? []).map((m, i) => ({ week: i + 1, m }));
+        const maxM = Math.max(1, ...shown.map((x) => x.m ?? 0));
+        bodyHtml = `
+          <div class="hl-means" id="hlMeans">${shown
+            .map(
+              (x) =>
+                `<div class="hl-mean-col"><div class="hl-mean-num">${x.m === null ? "—" : `${x.m}%`}</div><div class="hl-mean-bar" style="height:${x.m === null ? 2 : Math.max(4, ((x.m ?? 0) / maxM) * 100)}%"></div><div class="hl-mean-lbl">WEEK ${x.week}</div></div>`,
+            )
+            .join("")}</div>
+          <div class="synthesis-note hl-summary" id="hlChange">${escapeHtml(String(view["changeLine"] ?? ""))}</div>`;
+      }
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["stageHeadline"] ?? "Waiting"))}</div>
+        ${bodyHtml || `<div class="banner">Waiting for your teacher to put up the first beat.</div>`}
+        <div class="exit-prompt hl-foot">${escapeHtml(honesty)}</div>`;
+      return;
+    }
+
+    case "adapt": {
+      const questions = (view["questions"] as string[]) ?? [];
+      const bars = (view["bars"] as HLBar[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">What Moved Your Money?</div>
+        <div class="fh-questions-board">${questions.map((q) => `<div>${escapeHtml(q)}</div>`).join("")}</div>
+        <div class="hl-bar-pager">${escapeHtml(String(view["barPageLabel"] ?? ""))}</div>
+        ${hlBarHtml(bars)}
+        <div class="synthesis-note hl-foot">${escapeHtml(honesty)}</div>`;
+      return;
+    }
+
+    case "argue":
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["headline"] ?? ""))}</div>
+        <div class="hl-argue" id="hlArgue">${escapeHtml(String(view["copy"] ?? ""))}</div>
+        <div class="exit-prompt hl-instruction">${escapeHtml(String(view["prompt"] ?? ""))}</div>
+        <div class="synthesis-note hl-foot">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>`;
+      return;
+
+    case "synthesis": {
+      const cards = (view["cards"] as { id: string; title: string; body: string }[]) ?? [];
+      const notes = (view["sourceNotes"] as string[]) ?? [];
+      stage.classList.add("fh-synth");
+      const railUp = Boolean(view["synthRail"]);
+      const pageLabel = String(view["synthPageLabel"] ?? "");
+      stage.innerHTML = `
+        <div class="label fh-synth-head">${escapeHtml(String(view["heading"] ?? ""))}</div>
+        ${pageLabel ? `<div class="fh-synth-pager" id="hlSynthPager">${escapeHtml(pageLabel)}</div>` : ""}
+        <div class="cardgrid">${cards.map((c) => `<div class="synthcard"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.body)}</p></div>`).join("")}</div>
+        <div class="fh-synth-close" id="hlSynthClose">${escapeHtml(String(view["beyondSports"] ?? ""))}</div>
+        ${railUp ? `<div class="exit-prompt fh-synth-exit">${escapeHtml(String(view["exitPrompt"] ?? ""))}</div>
+        <div class="fh-sources">${notes.map((n) => `<span>${escapeHtml(n)}</span>`).join("")}</div>` : ""}`;
+      return;
+    }
+
+    case "complete":
+      stage.innerHTML = `
+        <div class="label">You Don't Play Alone — Complete</div>
+        <div class="banner" style="max-width:70vw;">${escapeHtml(String(view["message"] ?? ""))}</div>`;
+      return;
+
+    default:
+      stage.innerHTML = `<div class="label">${escapeHtml(mode)}</div>`;
+  }
 }
 
 function escapeHtml(s: string): string {
