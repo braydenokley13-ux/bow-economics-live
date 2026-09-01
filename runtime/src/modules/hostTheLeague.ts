@@ -92,8 +92,17 @@ export type MarketProfile = {
   readonly id: MarketId;
   /** The real club this profile is modeled on, named as a typographic wordmark (no logos/marks). */
   readonly anchorClub: string;
-  /** One sentence a student who has never watched a game can act on. */
+  /**
+   * One sentence a student who has never watched a game can act on.
+   *
+   * `gate-l2-sr` BLOCKING-1: this string renders under EVERY club on the
+   * profile, so it may only say things that are true of every one of them. It
+   * describes the MODEL's market band and this profile's own printed operating
+   * facts — never a claim about a named real club. Club-specific facts live in
+   * `ClubDef.identityLine`, which is present only where it is true.
+   */
   readonly plainLine: string;
+  /** A neutral size band. Never a club's distinguishing fact (see BLOCKING-1). */
   readonly sizeLabel: string;
   /* ---- printed operating facts (these DO appear in views) ---- */
   /** Everything it costs to run the club for a week, packed into one line. */
@@ -139,7 +148,7 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
   {
     id: "new-york",
     anchorClub: "New York Knicks",
-    plainLine: "The biggest market in American sports, and the league's biggest gate.",
+    plainLine: "A big-market club: a large metro area, a big building, and local media money to match. Fans here will pay more per seat than a small market can ask.",
     sizeLabel: "BIG MARKET",
     bill: 1_600_000,
     localBase: 470_000,
@@ -155,8 +164,8 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
   {
     id: "golden-state",
     anchorClub: "Golden State Warriors",
-    plainLine: "A big market that OWNS its building, so it keeps the concert money too.",
-    sizeLabel: "BIG MARKET · OWNS THE BUILDING",
+    plainLine: "A big-market club with a strong building business — the people who come through the door here spend more once they are inside than anywhere else in this league.",
+    sizeLabel: "BIG MARKET",
     bill: 1_550_000,
     localBase: 420_000,
     ancillary: 22,
@@ -171,7 +180,7 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
   {
     id: "oklahoma-city",
     anchorClub: "Oklahoma City Thunder",
-    plainLine: "One of the league's smallest markets — and the 2025 champions.",
+    plainLine: "A small-market club: fewer people in the metro area, so a lower bill — and a dollar put back into the club goes further here than it does in a big market.",
     sizeLabel: "SMALL MARKET",
     bill: 1_050_000,
     localBase: 150_000,
@@ -187,7 +196,7 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
   {
     id: "memphis",
     anchorClub: "Memphis Grizzlies",
-    plainLine: "A small, lean market. Fewer people, and price matters more here.",
+    plainLine: "A small, lean market. Fewer people, price matters more here — and a dollar put back into the club buys more Draw than it would in a big market.",
     sizeLabel: "SMALL MARKET",
     bill: 950_000,
     localBase: 110_000,
@@ -228,17 +237,31 @@ export type ClubDef = {
   readonly capacityNote: string;
   readonly profileId: MarketId;
   readonly startDraw: number;
+  /**
+   * A dated, checkable fact about THIS club — present only where it is true of
+   * this club.
+   *
+   * `gate-l2-sr` BLOCKING-1: the four anchor clubs' identity sentences used to
+   * ride on the shared `MarketProfile.plainLine`, so "the biggest market in
+   * American sports, and the league's biggest gate" rendered under Detroit and
+   * "one of the league's smallest markets — and the 2025 champions" rendered
+   * under Denver. A student who knows no basketball has no defence against
+   * that. The profile now says only what is true of the model's market band;
+   * anything about a named club lives here, and sixteen clubs correctly carry
+   * nothing.
+   */
+  readonly identityLine?: string;
 };
 
 export const CLUBS: readonly ClubDef[] = [
-  { name: "New York Knicks", short: "New York", building: "Madison Square Garden", capacity: 19_812, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 44 },
-  { name: "Memphis Grizzlies", short: "Memphis", building: "FedExForum", capacity: 17_794, capacityNote: "modeled seat count · published figures range 16,667-18,119", profileId: "memphis", startDraw: 62 },
-  { name: "Golden State Warriors", short: "Golden State", building: "Chase Center", capacity: 18_064, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 30 },
-  { name: "Oklahoma City Thunder", short: "Oklahoma City", building: "Paycom Center", capacity: 18_203, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 71 },
+  { name: "New York Knicks", short: "New York", building: "Madison Square Garden", capacity: 19_812, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 44, identityLine: "The biggest market in American sports, and the league's biggest gate — about $193M in gate receipts in 2024-25, a franchise record and the largest in the NBA." },
+  { name: "Memphis Grizzlies", short: "Memphis", building: "FedExForum", capacity: 17_794, capacityNote: "modeled seat count · published figures range 16,667-18,119", profileId: "memphis", startDraw: 62, identityLine: "One of the league's smallest markets. In the leaked 2016-17 league year its local media deal was worth under $10M a year, against about $149M for the Lakers." },
+  { name: "Golden State Warriors", short: "Golden State", building: "Chase Center", capacity: 18_064, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 30, identityLine: "Paid for Chase Center itself — about $1.4B, privately financed, opened 2019 — and owns it, so it keeps the concert money and the real estate too. $833M of revenue in 2024-25, the highest in the NBA." },
+  { name: "Oklahoma City Thunder", short: "Oklahoma City", building: "Paycom Center", capacity: 18_203, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 71, identityLine: "One of the league's smallest markets — and the 2025 champions, 4-3 over Indiana." },
   { name: "Milwaukee Bucks", short: "Milwaukee", building: "Fiserv Forum", capacity: 17_341, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 38 },
   { name: "Boston Celtics", short: "Boston", building: "TD Garden", capacity: 19_156, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 55 },
   { name: "Indiana Pacers", short: "Indiana", building: "Gainbridge Fieldhouse", capacity: 17_274, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 26 },
-  { name: "Los Angeles Lakers", short: "L.A. Lakers", building: "Crypto.com Arena", capacity: 18_997, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 68 },
+  { name: "Los Angeles Lakers", short: "L.A. Lakers", building: "Crypto.com Arena", capacity: 18_997, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 68, identityLine: "One of the biggest markets in the league — and it does NOT own its building: AEG owns and operates Crypto.com Arena, and the Lakers are tenants on a lease running to 2041." },
   { name: "Denver Nuggets", short: "Denver", building: "Ball Arena", capacity: 19_520, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 34 },
   { name: "Philadelphia 76ers", short: "Philadelphia", building: "Xfinity Mobile Arena", capacity: 20_478, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 49 },
   { name: "New Orleans Pelicans", short: "New Orleans", building: "Smoothie King Center", capacity: 16_867, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 72 },
