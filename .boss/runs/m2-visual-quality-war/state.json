@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:52:30.082Z",
+  "updatedAt": "2026-09-01T21:03:28.870Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1418,11 +1418,24 @@
           "model": "claude-sonnet-5",
           "reason": "Analyst item 3: Module 1 pixel baseline at the wave-2 base head across L1/L2/L3 key states, before the build lands",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T20:47:31.321Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T21:03:28.870Z",
+          "sections": {
+            "paths-exercised": "Real compiled build of the wave-2 base commit (31fb8c8), isolated git worktree, own server per run (ports 4431/4432), never runtime/dist. L1 m1l1-draft-day: /play join -> lobby -> hook -> first PLAY -> a real API-placed+locked roster (own team, ALPHA_PICKS via the real /actions endpoint using a deviceToken captured from the real DOM join) -> REVEAL -> teacher-paced advance through CONSEQUENCE/ADAPT/COUNTERFACTUAL/ARGUE -> SYNTHESIS, across /play, /teach, /board. L2 m1l2-trade-deadline: linked via #sourceSession to a REAL, API-completed L1 class (Alpha/Beta/Gamma, exactly e2e-l2.cjs's picks/technique) -> lobby -> HOOK claim -> midseason report -> PLAY deadline-decision screen (#tdWall) -> one real standPat decision -> REVEAL (4 real revealNext advances). L3 m1l3-free-agency: linked via #sourceSession to a REAL, API-completed L1->L2 chain (exactly e2e-l3.cjs's technique: Alpha stood pat, Beta signed a veteran, Gamma won a sealed bid) -> lobby -> HOOK claim -> PLAY day-1 market -> one real offer submission (fa-value-df, DEFENDER, $5M) via the composer, tolerant of the documented N1 composer-race with one retry -> 4 real closeDay advances -> REVEAL (one partial reveal state). All three lessons captured at /play+/teach 1366x768 and /board 1920x1080. Two full end-to-end passes run (independent server boot + snapshot file each) to test byte-stability.",
+            "artifacts": "Capture script: /home/user/bow-economics-live/docs/gauntlet/module-2/premium/tools/shots-m1-extended.cjs. Compare script: /home/user/bow-economics-live/docs/gauntlet/module-2/premium/tools/compare-m1-ext.cjs. Two 38-frame capture sets + manifest.json each: /home/user/bow-economics-live/docs/gauntlet/module-2/premium/screens-m1-baseline-ext/ and .../screens-m1-baseline-ext-repeat/. sha256 compare result: .../screens-m1-baseline-ext/compare-result-extended.json (copied to scratch as compare-result.json). Pixel-diff crops for every non-identical frame (Pillow bounding-box crop, since pngjs is unavailable for a true per-pixel diff in this sandbox): /home/user/bow-economics-live/docs/gauntlet/module-2/premium/diff-crops/. Worktree removed; server processes killed; main checkout untouched by this role (the 3 modified index.html files in git status belong to the concurrent builder wave, not this capture).",
+            "defects": "No product-level defect found in the paths exercised: zero console errors / zero pageerrors across both full 38-frame passes (76 page-lifecycles total), and L1/L2/L3's linked-carry-forward mechanics (API-completed L1 -> L2, and L1->L2 -> L3) worked exactly as e2e-l2.cjs/e2e-l3.cjs document, including the L3 offer composer on the first attempt both times (no retry needed). STABILITY: 34/38 frames (89%) are byte-identical between the two independent runs after fixing two harness gaps found mid-task (an unscrubbed #joinUrl element that leaks location.origin/port, and reveal-click loops that used a fixed timeout instead of awaiting the /control response). 4 frames remain non-byte-stable, all diagnosed by exact pixel-diff bounding box, and all are CAPTURE-HARNESS timing races, not rendering nondeterminism in the product itself: (1) l1-11-play-locked-roster -- my wait selector `#btnLock[disabled]` also matches the roster's initial pre-placement state (the Lock button is disabled both before any placements AND after a successful lock), so one run's screenshot fired before the poll cycle picked up the just-placed/locked roster (crop shows an empty 0/5 wall vs the correct locked 5/5 wall) -- a wait-condition bug in my script, not the app. (2) l2-10-play-reveal -- the student /play REVEAL page polls independently on its own ~1.2s cadence from the teacher's revealNext clicks (documented precedent in e2e-l3.cjs's own comments); one run's screenshot landed a poll tick behind, showing an empty reveal card vs a populated 'UNSOLD' card in the other -- again a script-timing gap (a generic settle() where the reveal-arc scripts use a content-specific waitForFunction). (3)-(4) l3-05-teach-day1 and l3-09-teach-reveal differ by a sub-6-intensity pixel delta in a 140x26px region with zero pixels above a real-difference threshold -- imperceptible (font antialiasing/compression jitter), not a content difference. NOT A DEFECT but worth naming for Classroom/Projector review: this confirms /play's reveal content can visibly lag a teacher's rapid-fire revealNext clicks by more than one poll tick in practice, which is a real pacing fact a teacher-transfer/classroom reviewer may want to weigh (a fast teacher clicking through reveals faster than ~1.2s/click could momentarily show students stale content) -- flagged as an observation, not scored here.",
+            "not-verified": "Full-page (fullPage:true) content below the fold was not captured for any frame -- only viewport-truth screenshots were taken, per the brief's baseline scope. CONSEQUENCE (shock)/ADAPT repair mechanics on L1 were advanced through via #btnAdvance but never actually triggered (#btnShock never clicked) or exercised, since only REVEAL/SYNTHESIS were in scope -- their visual states are NOT VERIFIED by this run. L2's ADAPT/COUNTERFACTUAL/SYNTHESIS/COMPLETE phases and L3's COUNTERFACTUAL/SYNTHESIS/COMPLETE and full 4-factor staged reveal were not captured (out of this assignment's required scope: lobby/midseason-report/decision/reveal for L2, lobby/day-1-market/one-reveal-state for L3) -- NOT VERIFIED. A true per-pixel diff tool (pngjs) was unavailable in this sandbox for both compare-m1.cjs (the given starting point) and compare-m1-ext.cjs; stability is therefore sha256 byte-equality, supplemented ad hoc with a Python/Pillow bounding-box diff for the 4 non-identical frames -- not a standing part of the compare script itself. Whether the two remaining harness races (l1-11, l2-10) would also manifest as real classroom-visible flicker under normal (non-scripted, human-paced) use was not tested -- NOT VERIFIED either way; the underlying poll cadence is real (confirmed via source comments in e2e-l3.cjs) but a human teacher's actual click cadence was not reproduced here."
+          },
+          "evidenceIds": [
+            "m1-baseline-extended-manifest",
+            "m1-baseline-extended-compare",
+            "m1-baseline-extended-l1-locked-race",
+            "m1-baseline-extended-l1-locked-settled",
+            "m1-baseline-extended-l2-decision",
+            "m1-baseline-extended-l2-reveal-board",
+            "m1-baseline-extended-l3-day1-market"
+          ],
           "cost": null
         }
       },
@@ -1435,7 +1448,14 @@
         "bowl-rights-review-mock-student",
         "bowl-rights-review-mock-board",
         "bowl-rights-review-arena-source",
-        "bowl-rights-review-fullhouse-markets"
+        "bowl-rights-review-fullhouse-markets",
+        "m1-baseline-extended-manifest",
+        "m1-baseline-extended-compare",
+        "m1-baseline-extended-l1-locked-race",
+        "m1-baseline-extended-l1-locked-settled",
+        "m1-baseline-extended-l2-decision",
+        "m1-baseline-extended-l2-reveal-board",
+        "m1-baseline-extended-l3-day1-market"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3158,6 +3178,140 @@
       },
       "recordedAt": "2026-09-01T20:52:29.828Z",
       "actor": "sports-reality-w2"
+    },
+    "m1-baseline-extended-manifest": {
+      "id": "m1-baseline-extended-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "38-frame M1 extended pixel-baseline manifest (L1 Draft Day + L2 Trade Deadline + L3 Free Agency across /play, /teach, /board, with scrubbed clock/code/PIN strings noted per frame) -- run 1",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/m1-baseline-extended-manifest--manifest.json",
+      "sha256": "51fab931548898739c0f4394de1f455431f0e30eaef3b3017da2654b76486a1c",
+      "size": 11113,
+      "metadata": {
+        "tags": [
+          "m1l1-draft-day",
+          "m1l2-trade-deadline",
+          "m1l3-free-agency",
+          "viewport-1366x768",
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:03:27.134Z",
+      "actor": "browser-qa-w2base"
+    },
+    "m1-baseline-extended-compare": {
+      "id": "m1-baseline-extended-compare",
+      "wave": 2,
+      "kind": "note",
+      "label": "sha256 byte-equality compare of run1 vs run2 (post-fix): 34/38 identical; 4 non-stable frames diagnosed with pixel-diff crops in docs/gauntlet/module-2/premium/diff-crops/",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/m1-baseline-extended-compare--compare-result-extended.json",
+      "sha256": "73cb4336f1e363f278bbe63a4a678fb91e2c8e5280defbb561538fa693bff832",
+      "size": 7657,
+      "metadata": {
+        "tags": [
+          "stability",
+          "sha256",
+          "pixel-diff"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:03:27.375Z",
+      "actor": "browser-qa-w2base"
+    },
+    "m1-baseline-extended-l1-locked-race": {
+      "id": "m1-baseline-extended-l1-locked-race",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "L1 locked-roster /play, run 1 -- harness race: screenshot fired before the API-placed/locked roster had polled through, so the wall still reads 0/5 despite the lock call already completing server-side",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/m1-baseline-extended-l1-locked-race--l1-11-play-locked-roster-1366x768.png",
+      "sha256": "52f974ad22911db8eb64d0a80532bc41c9cf95a8d58af66e9f89388f52ee2844",
+      "size": 80894,
+      "metadata": {
+        "tags": [
+          "m1l1-draft-day",
+          "play",
+          "locked-roster",
+          "harness-race",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:03:27.614Z",
+      "actor": "browser-qa-w2base"
+    },
+    "m1-baseline-extended-l1-locked-settled": {
+      "id": "m1-baseline-extended-l1-locked-settled",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "L1 locked-roster /play, run 2 -- the correct settled render (roster wall LOCKED, 5/5 filled, cap AT THE CAP)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/m1-baseline-extended-l1-locked-settled--l1-11-play-locked-roster-1366x768.png",
+      "sha256": "0e775ccab70f0a11267eeec652fe3b4719cea5875898e1ef75536cc320d3d112",
+      "size": 91480,
+      "metadata": {
+        "tags": [
+          "m1l1-draft-day",
+          "play",
+          "locked-roster",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:03:27.863Z",
+      "actor": "browser-qa-w2base"
+    },
+    "m1-baseline-extended-l2-decision": {
+      "id": "m1-baseline-extended-l2-decision",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "L2 Trade Deadline decision screen (#tdWall) on /play, byte-stable across both runs",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/m1-baseline-extended-l2-decision--l2-06-play-deadline-decision-1366x768.png",
+      "sha256": "d350f4bde9c13f1cc9e03389c2fd9b3ffa703a9a9464ae6d901316a0da1fc9ea",
+      "size": 80140,
+      "metadata": {
+        "tags": [
+          "m1l2-trade-deadline",
+          "play",
+          "decision-screen",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:03:28.152Z",
+      "actor": "browser-qa-w2base"
+    },
+    "m1-baseline-extended-l2-reveal-board": {
+      "id": "m1-baseline-extended-l2-reveal-board",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "L2 Trade Deadline reveal theater on /board after 4 real revealNext advances, byte-stable across both runs",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/m1-baseline-extended-l2-reveal-board--l2-09-board-reveal-1920x1080.png",
+      "sha256": "5f813a521e729472b139082db2b6a32f90adcdb26add08104cd9a68584954384",
+      "size": 754862,
+      "metadata": {
+        "tags": [
+          "m1l2-trade-deadline",
+          "board",
+          "reveal",
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:03:28.393Z",
+      "actor": "browser-qa-w2base"
+    },
+    "m1-baseline-extended-l3-day1-market": {
+      "id": "m1-baseline-extended-l3-day1-market",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "L3 Free Agency day-1 market on /play, byte-stable across both runs",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/m1-baseline-extended-l3-day1-market--l3-04-play-day1-market-1366x768.png",
+      "sha256": "4108cfe281cbf153f0dcc66481194372ff9fe4ee21fbe480116c766893e86af4",
+      "size": 85415,
+      "metadata": {
+        "tags": [
+          "m1l3-free-agency",
+          "play",
+          "day-1-market",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-01T21:03:28.629Z",
+      "actor": "browser-qa-w2base"
     }
   },
   "claims": {},
@@ -3429,11 +3583,11 @@
     "agentsActivated": 15,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 96,
+    "evidenceRecorded": 103,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 146,
-  "eventHead": "38e63499d5157f2483667dd3ac9024d7d01664b449666877bfadb7c4937d04cf",
+  "eventCount": 154,
+  "eventHead": "d1771038ebea51a569d07132cd72b41387ef2089dd55ab2e1cd48f531f030515",
   "warnings": []
 }

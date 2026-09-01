@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `146:38e63499d5157f2483667dd3ac9024d7d01664b449666877bfadb7c4937d04cf`  
-Updated: 2026-09-01T20:52:30.082Z
+Event head: `154:d1771038ebea51a569d07132cd72b41387ef2089dd55ab2e1cd48f531f030515`  
+Updated: 2026-09-01T21:03:28.870Z
 
 ## Founder intent
 
@@ -35,7 +35,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - builder — builder-c — active — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
 - sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
-- browser-qa — browser-qa-w2base — active — claude-sonnet-5
+- browser-qa — browser-qa-w2base — completed — claude-sonnet-5
 
 ## Required evidence
 
@@ -58,6 +58,13 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - bowl-rights-review-mock-board — screenshot — Design-system style-tile mock board 1920 - crest circles with two-letter marks (NY/MEM/DEN/SAC/ORL/MIL) in uniform violet fill, plain club wordmarks below; 6 real clubs shown though the module only models New York and Memphis
 - bowl-rights-review-arena-source — note — arena.mjs read: procedural SVG bowl, generic key/paint markings only, no logos, no NBA marks, no team colors, no identifiable roof/architecture
 - bowl-rights-review-fullhouse-markets — note — fullHouse.ts MARKETS array + marketForDesk: only two markets exist (new-york, memphis), odd/even desk assignment, no other clubs modeled
+- m1-baseline-extended-manifest — browser-trace — 38-frame M1 extended pixel-baseline manifest (L1 Draft Day + L2 Trade Deadline + L3 Free Agency across /play, /teach, /board, with scrubbed clock/code/PIN strings noted per frame) -- run 1
+- m1-baseline-extended-compare — note — sha256 byte-equality compare of run1 vs run2 (post-fix): 34/38 identical; 4 non-stable frames diagnosed with pixel-diff crops in docs/gauntlet/module-2/premium/diff-crops/
+- m1-baseline-extended-l1-locked-race — screenshot — L1 locked-roster /play, run 1 -- harness race: screenshot fired before the API-placed/locked roster had polled through, so the wall still reads 0/5 despite the lock call already completing server-side
+- m1-baseline-extended-l1-locked-settled — screenshot — L1 locked-roster /play, run 2 -- the correct settled render (roster wall LOCKED, 5/5 filled, cap AT THE CAP)
+- m1-baseline-extended-l2-decision — screenshot — L2 Trade Deadline decision screen (#tdWall) on /play, byte-stable across both runs
+- m1-baseline-extended-l2-reveal-board — screenshot — L2 Trade Deadline reveal theater on /board after 4 real revealNext advances, byte-stable across both runs
+- m1-baseline-extended-l3-day1-market — screenshot — L3 Free Agency day-1 market on /play, byte-stable across both runs
 
 ## Claim ledger
 
