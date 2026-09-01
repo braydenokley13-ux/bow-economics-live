@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T00:08:00.051Z",
+  "updatedAt": "2026-09-01T00:08:18.302Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -674,12 +674,24 @@
           "model": "claude-opus-5",
           "reason": "Focused re-verification of repair round 1 against the econ gate's own blocking findings incl. the flagged season-gap shift from the renewals retune",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-08-31T23:56:20.074Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T00:08:18.284Z",
+          "sections": {
+            "mechanism-verdicts": "All four round-1 blockers independently re-verified FIXED by own computation (exact DP over prices x spend x nights + four-desk reducer session): weak dominance gone (38/110 undominated above-optimum states per market), tent low arm binds and HOUSE_RULES largely true, N4 an honest declared trap (-$95k/-$42k in all 42 cells, no congratulating copy, P11 tests the joint choice), cash ceiling exact ($0 DP gap).",
+            "false-lesson-risks": "NEW BLOCKING (econ-l1-season-books): the retune flipped the season-level two-book tension's sign — the best cash line ends 92%/96% renewals vs flat-plan 80%, winning BOTH books by $1.45M/$1.38M, so the season synthesis card's tradeoff claims are false and the spend-to-renewals channel (13-15 points) is undisclosed.",
+            "dominant-strategies": "Frontier width at season level is 1.15%/0.47% of cash — too narrow to carry the tension. Per-night tension is genuine.",
+            "synthesis-map-verdict": "Per-night teaching sound; season-level card must be rewritten or the tension mechanically restored (R1-R3 prescriptions in GATE_L1_ECON_R1.md). Minor: two false HOUSE_RULES clauses; stale copy N1/N2/N3/N5; harness P5 printed row stale.",
+            "required-repairs": "R1-R3 in the report. DISSENT econ-l1-renewals-tent: DISCHARGED; new dissent econ-l1-season-books recorded."
+          },
+          "evidenceIds": [
+            "gate-l1-econ-r1",
+            "l1-tuning-r1"
+          ],
+          "cost": {
+            "tokens": 125509,
+            "toolUses": 44
+          }
         },
         "recheck-l1-play": {
           "assignmentId": "recheck-l1-play",
@@ -768,7 +780,8 @@
         "gate-l1-econ-dissent",
         "play-board-curve-pooled",
         "gate-l1-play-dissent",
-        "econ-l1-season-books"
+        "econ-l1-season-books",
+        "recheck-l1-econ-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1677,6 +1690,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T00:08:00.051Z",
       "actor": "economic-truth-critic"
+    },
+    "recheck-l1-econ-dissent": {
+      "id": "recheck-l1-econ-dissent",
+      "wave": 2,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T00:08:18.302Z",
+      "actor": "lead-integrator"
     }
   },
   "meetings": {},
@@ -1711,7 +1733,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 96,
-  "eventHead": "9de2ff1f067d5267e3d32aa48903e9e3ba6c16814ef1a75e56df9192b8f3f9a5",
+  "eventCount": 98,
+  "eventHead": "f901c312709d6f61f63674a9f7f02943e928ea0ea3788e1732d7e2f4cda9e9a5",
   "warnings": []
 }
