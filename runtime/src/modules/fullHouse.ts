@@ -1259,7 +1259,10 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
   {
     what: "Dollars are shrunk to classroom size and one night stands for a whole home season.",
     why: "Real Knicks gate revenue per night runs into the millions; the numbers would stop being readable.",
-    risk: "The magnitudes are not real club financials and should never be quoted as such. MODELED_DOLLARS_LINE says so before the first price.",
+    // TT-R5: this risk line used to name a code identifier ("MODELED_DOLLARS_LINE
+    // says so") on a surface a stranger reads out loud. The student screen's own
+    // sentence is quoted instead, marked as the mirror it is.
+    risk: `The magnitudes are not real club financials and should never be quoted as such. Their screens already say so before the first price, in these words: "${MODELED_DOLLARS_LINE}"`,
   },
   {
     what: "No randomness at all: no weather, no injuries, no winning streak.",
@@ -1948,14 +1951,43 @@ function teacherWatchFor(state: FullHouseState, phase: CanonicalPhase): WatchFla
       });
     }
   }
+  // TT-R1's neighbour, and the beat the whole lesson turns on: on Night 5 the
+  // useful thing to watch is who is setting up a CLEAN repeat — same price as
+  // their own Night 1 — because those are the desks the COUNTERFACTUAL board
+  // and the NIGHT 5 WAS NIGHT 1 card can quote without a price confound.
+  if (windowOpen && state.nightIndex === NIGHT_COUNT - 1) {
+    const repeating = desks
+      .filter((d) => !d.locked && d.nights.find((n) => n.cardId === "N1")?.price === d.price)
+      .map((d) => deskHandle(d));
+    const repeated = desks
+      .filter((d) => d.locked && d.nights.find((n) => n.cardId === "N1")?.price === d.price)
+      .map((d) => deskHandle(d));
+    const clean = [...repeated, ...repeating];
+    if (clean.length > 0) {
+      out.push({
+        id: "repeat-price",
+        label: `${clean.length} desk${clean.length === 1 ? " is" : "s are"} sitting on their own Night 1 price`,
+        desks: clean,
+        action: "Say nothing to them. These are the desks the Night 1 vs Night 5 board can quote with no price confound — the crowd changed and the price did not.",
+        urgency: "now",
+      });
+    }
+  }
   const flat = desks.filter((d) => sameRun(d) >= 3).map((d) => deskHandle(d));
   if (flat.length > 0) {
+    // TT-R5: this said "when you reach the ADAPT questions" in every phase,
+    // including COMPLETE, long after that moment had passed.
+    const adaptDone = phase === "COUNTERFACTUAL" || phase === "SYNTHESIS" || phase === "COMPLETE";
     out.push({
       id: "held-price",
       label: "Held the same price 3+ nights",
       desks: flat,
-      action: "Call on this desk when you reach the ADAPT questions — a desk that never moved the dial is the clearest contrast in the room.",
-      urgency: "later",
+      action: adaptDone
+        ? "Already used, if you called on them at ADAPT. Their season line is the one the COUNTERFACTUAL card's \"same price every night\" row is about."
+        : phase === "ADAPT"
+          ? "Call on this desk NOW — a desk that never moved the dial is the clearest contrast in the room."
+          : "Call on this desk when you reach the ADAPT questions — a desk that never moved the dial is the clearest contrast in the room.",
+      urgency: phase === "ADAPT" ? "now" : "later",
     });
   }
   const soldOut = desks.filter((d) => d.nights.some((n) => n.settlement.turnedAway > 500)).map((d) => deskHandle(d));
@@ -1980,11 +2012,16 @@ function teacherWatchFor(state: FullHouseState, phase: CanonicalPhase): WatchFla
   }
   const bowl = desks.filter((d) => d.nights.some((n) => n.openBowl)).map((d) => deskHandle(d));
   if (bowl.length > 0) {
+    // TT-R5: "Keep this for the Night 4 reveal" was still on screen at COMPLETE,
+    // two phases after that reveal had played.
+    const revealDone = state.revealStage >= 4 || phase === "ADAPT" || phase === "COUNTERFACTUAL" || phase === "SYNTHESIS" || phase === "COMPLETE";
     out.push({
       id: "bowl",
       label: "Paid to open more of the building on Night 4",
       desks: bowl,
-      action: "Keep this for the Night 4 reveal. Opening seats never beat pricing the night right — it only ever refunds part of a price that was already too low.",
+      action: revealDone
+        ? "Already named on the projector at reveal stage 4. If it comes back up: opening seats never beat pricing the night right — it only ever refunds part of a price that was already too low."
+        : "Keep this for the Night 4 reveal. Opening seats never beat pricing the night right — it only ever refunds part of a price that was already too low.",
       urgency: "later",
     });
   }
@@ -2066,7 +2103,13 @@ function projectorMirror(state: FullHouseState, phase: CanonicalPhase): { title:
               current.headline,
               ...(state.revealStage <= NIGHT_COUNT ? [`Marks up for: ${CARDS.slice(0, state.revealStage).map((c) => c.id).join(", ")}.`] : []),
               ...(state.revealStage >= NIGHT_COUNT ? ["The room's total turned-away count is up."] : []),
-              ...(state.revealStage >= RENEWALS_REVEAL_STAGE ? ["The renewals rule is on the screen in full."] : []),
+              // `gate-l1-play` recheck2 `play-l1-repairs-below-fold`: the board
+              // only carries the rule ON its own stage (boardView sets
+              // `renewalsRule` at `=== RENEWALS_REVEAL_STAGE`), so `>=` told the
+              // teacher it was up through stages 6 and 7 when it was not.
+              ...(state.revealStage === RENEWALS_REVEAL_STAGE
+                ? ["The renewals rule is on the screen in full, directly under the headline and above the chart."]
+                : []),
               ...(state.revealStage >= NIGHT_COUNT + 1 ? ["The Two Peaks money view is up."] : []),
               ...(state.revealStage >= REVEAL_STEPS ? ["The per-market season books are up."] : []),
             ]
@@ -2176,31 +2219,58 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
       };
 
     case "PLAY": {
-      const block2 = state.nightIndex >= 3;
       const done = state.nightIndex >= NIGHT_COUNT;
+      // `gate-l1-teacher` recheck2 TT-R1 (BLOCKING): this used to be one
+      // `nightIndex >= 3` block covering Nights 4 AND 5, so on Night 5 the
+      // console told a stranger to read NIGHT 4's card ("demand is going to run
+      // past what this building holds") and to watch for capacity purchases —
+      // on a Draw-22 Tuesday with no capacity option, directly contradicting
+      // the `ON THE PROJECTOR RIGHT NOW` block beside it. Each of the three
+      // blocks is now its own night range.
+      const isNight4 = state.nightIndex === 3;
+      const isNight5 = state.nightIndex === NIGHT_COUNT - 1;
       return {
         phase,
-        minuteBudget: done ? "wrap up — move to REVEAL" : block2 ? "Nights 4-5: 8 min" : "Nights 1-3: 11 min",
+        minuteBudget: done ? "wrap up — move to REVEAL" : isNight5 ? "Night 5: 4 min" : isNight4 ? "Night 4: 4 min" : "Nights 1-3: 11 min",
         now: done
           ? [
               "All five nights are in the books. The projector is holding — the room has NOT seen the class picture yet.",
               "Advance to REVEAL and put it up one night at a time.",
             ]
-          : block2
+          : isNight4
             ? [
                 `Night ${nightNumber} of ${NIGHT_COUNT}. Read Night 4's card slowly — the room should feel it. "The biggest night of the five. Demand is going to run past what this building holds."`,
                 "Watch who raises the price and who pays to open more of the building. Do not tell them which is right.",
                 `${lockedCount}/${deskCount} desks locked in.`,
               ]
-            : [
-                `Night ${nightNumber} of ${NIGHT_COUNT}. Read tonight's card off the board, then get out of the way. Pairs price blind — there is no preview on their screen and there is not supposed to be.`,
-                "Ring the bell yourself when the room is ready. Every desk settles at the same moment.",
-                `${lockedCount}/${deskCount} desks locked in.`,
-              ],
-        ask: [
-          { q: "What on tonight's card is different from last night's?", answer: null },
-          { q: "(after the bell) Who is surprised? Say the number you expected first.", answer: null },
-        ],
+            : isNight5
+              ? [
+                  `Night ${nightNumber} of ${NIGHT_COUNT} — the payoff night. Read it as a repeat, not as a new card: "Same day, same visiting club, same TV as Night 1. Nothing on this card has changed."`,
+                  "There is no capacity option tonight and nothing is going to run out. The only thing that has changed since Night 1 is them.",
+                  "Say ONE sentence and stop: \"If you charge exactly what you charged on Night 1, will the same number of people walk in?\" Do not answer it — the reveal does.",
+                  `${lockedCount}/${deskCount} desks locked in.`,
+                ]
+              : [
+                  `Night ${nightNumber} of ${NIGHT_COUNT}. Read tonight's card off the board, then get out of the way. Pairs price blind — there is no preview on their screen and there is not supposed to be.`,
+                  "Ring the bell yourself when the room is ready. Every desk settles at the same moment.",
+                  `${lockedCount}/${deskCount} desks locked in.`,
+                ],
+        // TT-R5: the wrap-up ASK used to keep asking about "tonight's card"
+        // after the fifth bell, when there is no tonight.
+        ask: done
+          ? [
+              { q: "Before we look: whose Night 5 crowd was NOT the same as their Night 1 crowd?", answer: "Hold the answer. Reveal stage 5 puts both numbers on the projector and the room can read it off its own desks." },
+              { q: "Which night do you already know you got wrong?", answer: null },
+            ]
+          : [
+              {
+                q: isNight5 ? "Night 1's card is back. What is different about your building tonight?" : "What on tonight's card is different from last night's?",
+                answer: isNight5
+                  ? "Nothing on the card. What changed is their own renewals — and, for anyone who spent on Night 4, last night's event money. Do not say either out loud yet; both are named at the reveal."
+                  : null,
+              },
+              { q: "(after the bell) Who is surprised? Say the number you expected first.", answer: null },
+            ],
         dontExplainYet: [
           "Still no DEMAND, REVENUE or ELASTICITY.",
           "Do not tell the room that the cheap ticket can make more money. That is the Two Peaks reveal and it is worth more if they get there first.",
