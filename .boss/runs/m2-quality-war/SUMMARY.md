@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `412:43f77e0aae11e4f11e60c647a5c0ded207b58cb196b7d383234f4238fbd139c3`  
-Updated: 2026-09-01T13:21:20.123Z
+Event head: `417:1989fd536584eaa2644c18414b45e5bd074eb8038caeaf7603d7cc831abe723d`  
+Updated: 2026-09-01T13:29:19.852Z
 
 ## Founder intent
 
@@ -36,7 +36,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - builder — builder-w5 — completed — claude-opus-5
 - sports-reality-director — sports-reality-director — completed — claude-sonnet-5
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
-- product-analyst — product-analyst — active — claude-opus-5
+- product-analyst — product-analyst — completed-with-concerns — claude-opus-5
 
 ## Required evidence
 
@@ -77,6 +77,8 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - final-e2e-m1l3ea — e2e — FINAL HEAD: M1 L3 early-advance e2e
 - final-e2e-m1l3 — e2e — FINAL HEAD: M1 L3 full-chain e2e (known flaky pre-existing race; one attempt recorded honestly)
 - final-e2e-m1l3-retry — e2e — FINAL HEAD: M1 L3 full-chain e2e retry (pre-existing race documented in E2E_L3_FLAKE_NOTE.md; this run green proves the product path at head)
+- analyst-program — analyst-report — Program analyst: REPAIR (narrow). Confirmed: 28/29 resolutions provenance-clean, ratings unqualified at head, no rung inflation, honest flake ledger, premium carried UNMET. Caught: L1/L2 TRANSFER READY predate later teacher-copy repairs (stale verdicts, no re-affirmation); D20 overclaims the audit's coverage vs the critic's own W5-3 wording; flake-note rate attribution uncorrected; pager ruling artifact unpinned; Box Office still selectable; README counts stale. Six cheap required items + the honest founder risk list
+- l1-projector-gate-doc — projector-report — Pin: GATE_L1_PROJECTOR.md at final head incl. the W4 ADJUDICATION carrying the owning critic's L1 PAGER INTENT: SATISFIED ruling (analyst row-3 artifact fix)
 
 ## Claim ledger
 
@@ -84,7 +86,8 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 
 ## Dissent
 
-- No dissent recorded
+- analyst-program-no-pass — process/blocking/open — Program analyst dissents against a PASS carrying 'TRANSFER READY on all three' and 'every rendered claim mutation-proven' unqualified: L1/L2 teacher verdicts predate later teacher-facing repairs with no re-affirmation at head (the stale-verdict form of the recurring stale-proof defect), and D20's audit-coverage sentence exceeds the econ critic's own W5-3 wording. Six bounded required items in ANALYST_PROGRAM.md.
+- analyst-program-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 
