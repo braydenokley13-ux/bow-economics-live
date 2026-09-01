@@ -470,3 +470,169 @@ lesson's headline given that the reinvest dial is designed to grow the local pip
 past it. If a desk's whole successful strategy is to make national *not* be its
 biggest pipe, the caption may be fighting the mechanic rather than describing it.
 That is a mechanism question, not a fact question, and belongs to that review.
+
+---
+
+## RE-CHECK AFTER L2 REPAIR
+
+Owning-critic confirm-or-refute, assignment `recheck-l2-sr`, Boss run
+`m2-quality-war`. Re-read 2026-09-01 from source of truth:
+`runtime/src/modules/hostTheLeague.ts`, `runtime/src/client/play/main.ts`,
+`runtime/src/client/board/main.ts`, `runtime/src/client/teach/main.ts`,
+`runtime/README.md:290-318`. No server run, no git. No new real-world claim
+appeared that was not already verified in this report, so no new web research
+was required; all fact rulings below carry `verifiedAsOf: 2026-09-01` from the
+original pass.
+
+### BLOCKING-1 — REPAIRED (CONFIRMED)
+
+The repair is structural, not cosmetic: `MarketProfile.plainLine`/`sizeLabel`
+now carry only the model's market band, and a new optional
+`ClubDef.identityLine` (`hostTheLeague.ts:272`) carries club-specific facts.
+`deskIdentity()` (`:1716`) emits `identityLine` for the desk's own club only;
+`clubCard()` (`:1608-1625`) — the league list on `/play`, `/board`, `/teach` —
+does not carry it at all. `hlIdentityHtml()` (`play/main.ts:2528`) renders it
+at LOBBY (`:2477`) and HOOK (`:2647`) and renders nothing when absent. Observed
+by reading all four files. No other surface prints a club-specific claim; the
+teacher script's only anchor reference (`:2748`) is explicitly framed "modeled
+on the <anchor>", which is true.
+
+Every rendered identity line checked against this report's verified fact base:
+
+| Club | Rendered line | Ruling |
+| --- | --- | --- |
+| New York Knicks | biggest market, biggest gate, ~$193M receipts 2024-25, franchise record and NBA's largest | CONFIRMED true of the Knicks |
+| Golden State Warriors | privately financed ~$1.4B Chase Center, opened 2019, owns it; $833M revenue 2024-25, NBA's highest | CONFIRMED |
+| Oklahoma City Thunder | one of the smallest markets, 2025 champions 4-3 over Indiana | CONFIRMED |
+| Memphis Grizzlies | smallest markets; leaked 2016-17 local media under $10M vs ~$149M Lakers | CONFIRMED (SR-4, ESPN Sep 2017, correctly framed as one leaked year) |
+| L.A. Lakers | biggest markets, does NOT own its building; AEG owns/operates Crypto.com Arena, tenants on a lease to 2041 | CONFIRMED — the previously false "OWNS THE BUILDING" is now inverted to the true statement |
+| Miami Heat, Toronto Raptors | none | CONFIRMED — the unverified Miami "owns its building" inference and the Toronto inherit are gone |
+| Other 14 clubs | none | CONFIRMED — silence, which was the required outcome |
+
+The three specific falsehoods this report named are gone: Detroit/Boston/
+Philadelphia/Chicago no longer read "the biggest market in American sports";
+Denver/Sacramento/Utah/Portland no longer read "the 2025 champions"; the Lakers
+no longer read "OWNS its building". `sizeLabel` is now the neutral band
+"BIG MARKET"/"SMALL MARKET" everywhere it renders. Fandom-test qualification
+withdrawn: the non-fan's private screen no longer carries a false claim about
+a real club.
+
+Residual, NEW, MINOR — not blocking. The `golden-state` band line ("the people
+who come through the door here spend more once they are inside than anywhere
+else in this league", `:186`) renders under Golden State, the Lakers, Toronto
+and Miami, which all share `ancillary: 22`. As a strict superlative it cannot
+be true of four clubs at once — in the model it is a four-way tie, and two
+desks on that profile can see identical per-fan in-arena money on the board.
+This is a much milder instance of the same class (a band overclaim, not a
+named-club falsehood). Cheap copy fix: "…spend more once they are inside than
+they do in the small markets." The `new-york` band line is defensible for all
+five of its clubs; Detroit is the weakest fit ("local media money to match")
+but the sentence names no club and asserts no ranking.
+
+### BLOCKING-2 — REPAIRED (CONFIRMED)
+
+`MODELED_DOLLARS_LINE` (`:1495`) now reads "Near a club's house price the gate
+is about a fifth to a quarter of what it earns — price far above or far below
+that and the share moves a long way. For most clubs here the national check is
+the biggest single pipe, and a club that builds a big Draw can push its local
+money past it. The bars on this board say which is which."
+
+Recomputed from the shipped constants (neutral Draw 40/40, each profile at its
+own `housePrice`, `localMediaFor` at Draw 40, clamped at the anchor club's
+capacity):
+
+| Profile | Gate share at house price | National share |
+| --- | --- | --- |
+| new-york @ $56 | 25.0% | 35.7% |
+| golden-state @ $56 | 23.7% | 36.8% |
+| oklahoma-city @ $46 | 20.4% | 48.4% |
+| memphis @ $44 | 18.9% | 50.8% |
+
+Clause 1 CONFIRMED: all four sit inside "about a fifth to a quarter" at the
+house price, and the qualifier "near a club's house price" is exactly the
+condition under which the band holds; the follow-on clause states the
+off-house-price movement this report measured (8.1% at $120, 8.4% at $10).
+
+Clause 2 CONFIRMED: `localMediaFor` overtakes `NATIONAL` at Draw 50
+(new-york), 54 (golden-state), 77 (oklahoma-city), 80 (memphis). At the shipped
+`startDraw`s exactly two of twenty clubs — Boston (55) and the Lakers (68) —
+begin above their threshold, so "for most clubs here" is true at week 1 and the
+two exceptions are now explicitly the sentence's second half rather than its
+contradiction. Both universals are gone; both remaining claims survive the
+model's own ranges. The board's per-desk pipe bar is now invited as evidence
+rather than contradicted by the caption above it.
+
+Noted, not a finding: the hedge is a population claim at typical states, not a
+theorem. Gate can exceed the national check at high Draw and high price
+(new-york, Draws 100/100 at $100: gate ~$1.92M vs $950K), and more clubs cross
+the local-media threshold as Draws grow through week 3. "For most clubs here"
+survives both; "the bars say which is which" is the correct posture.
+
+### MODERATE-3 — REPAIRED (CONFIRMED)
+
+Both publication sites now retract rather than restate. Module header
+`:76-83`: "This header previously claimed 'New York has the league's highest
+gate at every comparable matchup (SR-1)'. RETRACTED", with the capacity-clamp
+reasoning (Chicago 20,917 / Philadelphia 20,478 / Detroit 20,332 vs MSG 19,812)
+reproduced correctly. `README.md` carries the same retraction. Verified
+against the code the claim was about: `wantedAt()` (`:387`) is still
+capacity-independent and `seatAt()` (`:397`) still clamps, so the retraction —
+not a constants change — is the accurate resolution. No surface asserts a
+real-world gate ranking; the Knicks' real gate primacy now appears only in the
+Knicks' own `identityLine`, where it is true.
+
+### MODERATE-4 — REPAIRED (CONFIRMED)
+
+Header `:56-64` now prints New York 25.0% / $2,659,120 and Memphis 18.9% /
+$1,869,120, matching `README.md` and matching my independent recomputation
+above to the dollar. The header explicitly records that the earlier 23.7% /
+22.7% / $2.79M figures did not reproduce and that the README wins. The
+header-vs-README conflict is closed with the reproducible side authoritative.
+
+### MODERATE-5 — NOT REPAIRED (status only; this report did not demand it)
+
+`SIMPLIFICATIONS[2]` (`:1524`) still rests the money-does-not-buy-wins counter
+solely on "Oklahoma City is one of the league's smallest markets and won the
+2025 title." The June 2026 Knicks championship is absorbed nowhere in the file
+(no 2026 title reference exists in `hostTheLeague.ts`). The `startDraw`
+"not a ranking" disclaimer is still teacher-spoken only
+(`SIMPLIFICATIONS[1]`: "Say so once, at the schedule"); no slate-level or
+board-level statement was added. Nothing is false as a result — the recommended
+two-directional line remains available and remains the stronger version.
+
+### MINOR-6 / MINOR-7 / MINOR-8 / capacity restamp — NOT REPAIRED (status only)
+
+- MINOR-6: header `:53-55` and README still justify the ~5x shrink by ticket
+  prices; the revenue route ($5.6M real national per club-date vs modeled
+  $950,000 = 5.9x) still unused.
+- MINOR-7: the chain still divides $200M — not $230.3M — by 41 dates in both
+  header and README. Conservatism still unstated.
+- MINOR-8: `SOURCE_NOTES[2]` still says 4,066; season record is 4,067.
+- `capacityNote` still stamped "listed basketball capacity · 2025-26" on all
+  twenty clubs, and `SOURCE_NOTES[7]` now repeats the 2025-26 stamp. Internally
+  consistent, still a season behind a 2026-27 first run.
+
+### Verified clean — re-checked, unchanged
+
+Nothing in the verified-clean set was disturbed by the repair. Cap chain,
+$76B deal, Warriors/Knicks revenue pair, Luka/Harrison sequence, all twenty
+buildings and capacities, and the season stamps at point of use all read as
+they did in the original pass. `SOURCE_NOTES[7]` was rewritten and its new
+self-describing claim — "a fact printed under one club is printed under that
+club only" — is itself true as of this read (observed in `deskIdentity` and
+`clubCard`). Rights posture unchanged: typographic wordmarks only, no logos,
+marks, photographs or likenesses; the Caitlin Clark naming inconsistency is
+unresolved and remains a founder call, not a blocker.
+
+### Ruling
+
+Both BLOCKING findings are repaired at the source of truth, and both were
+repaired at the right layer — BLOCKING-1 by separating profile economics from
+per-club identity rather than by deleting real content, BLOCKING-2 by
+quantifying rather than by removing the honesty apparatus. No real-world claim
+was weakened to achieve either. MODERATE-3 and MODERATE-4 are also closed. The
+open items (MODERATE-5, MINOR-6/7/8, the capacity restamp, and the new
+`golden-state` band superlative) are all non-blocking and none is a false
+statement about a named real club.
+
+**DISSENT sr-l2-anchor-copy: DISCHARGED**
