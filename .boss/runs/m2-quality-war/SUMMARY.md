@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `438:9b497b03df24fcff1177da7dccdb1fa1b6d5639c0924dbe09ff07f6890a0a8c6`  
-Updated: 2026-09-01T14:45:14.638Z
+Event head: `446:aeb7f99074c69ce3d22b17f6a37f93f7960b9818bb64aec027750c573110e45c`  
+Updated: 2026-09-01T14:45:57.444Z
 
 ## Founder intent
 
@@ -91,10 +91,13 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - l2-tuning-w5b — test — L2 harness 12/12: 337 rooms/128,728 atoms/0 disagreements; M-I abstention + M-J mirror mutants bite
 - l2-e2e-w5b — e2e — L2 e2e with abstention/mirror/late-observer assertions
 - w5-teacher-l2-confirm — teacher-transfer-report — L2 narrow confirm: B-1 FIXED (abstention vs chosen-zero distinct on identical $0, /teach quotes the desk verbatim), B-2 FIXED (mirror matches board exactly at the release: 0 pairs/5 bars/0 shock), N-1/N-3 FIXED (observer-only accepted). TRANSFER: READY (at final head). DISCHARGED. New non-blocking N-6/N-7
+- ship-case-wave-5-438 — ship-case — Ship case for wave 5
+- wave5-git-diff — git-diff — Wave 5 diff from the wave-4 checkpoint to head (close-out set, teacher fixes, dereg, state docs)
 
 ## Claim ledger
 
-- No claims recorded yet
+- w5-final-tests-pass — confirmed — Full runtime suite green at the program's final head (461/461 incl. the three M2 harnesses as tests)
+- w5-final-e2e-pass — confirmed — All three M2 lesson e2e proofs green at or after the final code change (L2 with abstention/mirror/late-observer assertions; L3 regression)
 
 ## Dissent
 
@@ -105,7 +108,82 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 
 ## Latest gate
 
-- Gate not evaluated
+Recommendation: **REPAIR**
+
+- FAIL — role:browser-qa: browser-qa is required and incomplete.
+- PASS — role:builder: builder completed.
+- FAIL — role:classroom-projector-critic: classroom-projector-critic is required and incomplete.
+- PASS — role:economic-truth-critic: economic-truth-critic completed.
+- FAIL — role:experience-director: experience-director is required and incomplete.
+- FAIL — role:lead-integrator: lead-integrator is required and incomplete.
+- FAIL — role:player-gameplay-critic: player-gameplay-critic is required and incomplete.
+- PASS — role:product-analyst: product-analyst completed.
+- FAIL — role:regression-hunter: regression-hunter is required and incomplete.
+- PASS — role:sports-reality-director: sports-reality-director completed.
+- PASS — role:teacher-transfer-critic: teacher-transfer-critic completed.
+- FAIL — role:visual-experience-director: visual-experience-director is required and incomplete.
+- FAIL — blocking-role:classroom-projector-critic: classroom-projector-critic cannot be omitted.
+- PASS — blocking-role:economic-truth-critic: economic-truth-critic blocking review is present.
+- PASS — blocking-role:sports-reality-director: sports-reality-director blocking review is present.
+- PASS — blocking-role:teacher-transfer-critic: teacher-transfer-critic blocking review is present.
+- PASS — role-independence: Builders and independent reviewers are different actors.
+- PASS — analyst-contract: Analyst output contract is complete.
+- PASS — evidence:analyst-report: analyst-report evidence is present.
+- PASS — evidence:browser-trace: browser-trace evidence is present.
+- PASS — evidence:economic-truth-report: economic-truth-report evidence is present.
+- FAIL — evidence:gameplay-report: gameplay-report evidence is required.
+- FAIL — evidence:git-diff: git-diff evidence is required.
+- PASS — evidence:projector-report: projector-report evidence is present.
+- PASS — evidence:sports-reality-report: sports-reality-report evidence is present.
+- PASS — evidence:teacher-transfer-report: teacher-transfer-report evidence is present.
+- PASS — evidence:test: test evidence is an authentic passing command record.
+- FAIL — evidence:visual-report: visual-report evidence is required.
+- PASS — evidence-integrity:w5-suite: Evidence w5-suite hash is intact.
+- PASS — evidence-integrity:w5-l3-harness: Evidence w5-l3-harness hash is intact.
+- PASS — evidence-integrity:w5-e2e-m2l3: Evidence w5-e2e-m2l3 hash is intact.
+- PASS — evidence-integrity:w5-e2e-m2l2: Evidence w5-e2e-m2l2 hash is intact.
+- PASS — evidence-integrity:w5-e2e-m2l1: Evidence w5-e2e-m2l1 hash is intact.
+- PASS — evidence-integrity:w5-a9-proof: Evidence w5-a9-proof hash is intact.
+- PASS — evidence-integrity:w5-module-file: Evidence w5-module-file hash is intact.
+- PASS — evidence-integrity:w5-harness-file: Evidence w5-harness-file hash is intact.
+- PASS — evidence-integrity:w5-suite-wrapper: Evidence w5-suite-wrapper hash is intact.
+- PASS — evidence-integrity:w5-r3r4-arm: Evidence w5-r3r4-arm hash is intact.
+- PASS — evidence-integrity:l3-tests-w5: Evidence l3-tests-w5 hash is intact.
+- PASS — evidence-integrity:l3-tuning-w5: Evidence l3-tuning-w5 hash is intact.
+- PASS — evidence-integrity:l3-e2e-w5: Evidence l3-e2e-w5 hash is intact.
+- PASS — evidence-integrity:w5-sr-confirm: Evidence w5-sr-confirm hash is intact.
+- PASS — evidence-integrity:w5-econ-confirm: Evidence w5-econ-confirm hash is intact.
+- PASS — evidence-integrity:final-suite: Evidence final-suite hash is intact.
+- PASS — evidence-integrity:final-e2e-m2l1: Evidence final-e2e-m2l1 hash is intact.
+- PASS — evidence-integrity:final-e2e-m2l2: Evidence final-e2e-m2l2 hash is intact.
+- PASS — evidence-integrity:final-e2e-m2l3: Evidence final-e2e-m2l3 hash is intact.
+- PASS — evidence-integrity:final-e2e-m1l2: Evidence final-e2e-m1l2 hash is intact.
+- PASS — evidence-integrity:final-e2e-m1l2ea: Evidence final-e2e-m1l2ea hash is intact.
+- PASS — evidence-integrity:final-e2e-m1l3ea: Evidence final-e2e-m1l3ea hash is intact.
+- PASS — evidence-integrity:final-e2e-m1l3: Evidence final-e2e-m1l3 hash is intact.
+- PASS — evidence-integrity:final-e2e-m1l3-retry: Evidence final-e2e-m1l3-retry hash is intact.
+- PASS — evidence-integrity:analyst-program: Evidence analyst-program hash is intact.
+- PASS — evidence-integrity:l1-projector-gate-doc: Evidence l1-projector-gate-doc hash is intact.
+- PASS — evidence-integrity:final-suite-postdereg: Evidence final-suite-postdereg hash is intact.
+- PASS — evidence-integrity:w5-teacher-l1: Evidence w5-teacher-l1 hash is intact.
+- PASS — evidence-integrity:w5-teacher-l2: Evidence w5-teacher-l2 hash is intact.
+- PASS — evidence-integrity:l2-tests-w5b: Evidence l2-tests-w5b hash is intact.
+- PASS — evidence-integrity:l2-tuning-w5b: Evidence l2-tuning-w5b hash is intact.
+- PASS — evidence-integrity:l2-e2e-w5b: Evidence l2-e2e-w5b hash is intact.
+- PASS — evidence-integrity:w5-teacher-l2-confirm: Evidence w5-teacher-l2-confirm hash is intact.
+- PASS — evidence-integrity:ship-case-wave-5-438: Evidence ship-case-wave-5-438 hash is intact.
+- FAIL — claim-ledger-present: Level 2+ wave needs at least one explicit progress claim.
+- PASS — claims-reconciled: All claims are confirmed.
+- PASS — blocking-dissent: No unresolved blocking dissent.
+- PASS — meetings-closed: All meetings are closed.
+- PASS — meeting-budget: Meeting count 0/2.
+- PASS — agent-budget: Agent count 9/14.
+- PASS — failure-budget: Repairs 0/3; waves 5/6.
+- PASS — ownership-conflicts: No active ownership conflicts.
+- PASS — config-integrity: Harness constitution is unchanged since run creation.
+- PASS — protected-branch: Branch claude/module-2-money-motion-quality-77dedf is not protected.
+- FAIL — clean-tree: Ship gate requires a clean tree; 4 path(s) changed.
+- PASS — rollback-checkpoint: Rollback checkpoint is recorded.
 
 ## Decision pending
 

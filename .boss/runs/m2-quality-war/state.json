@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T14:45:14.638Z",
+  "updatedAt": "2026-09-01T14:45:57.444Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3864,9 +3864,14 @@
         "l2-tests-w5b",
         "l2-tuning-w5b",
         "l2-e2e-w5b",
-        "w5-teacher-l2-confirm"
+        "w5-teacher-l2-confirm",
+        "ship-case-wave-5-438",
+        "wave5-git-diff"
       ],
-      "claimIds": [],
+      "claimIds": [
+        "w5-final-tests-pass",
+        "w5-final-e2e-pass"
+      ],
       "dissentIds": [
         "analyst-program-no-pass",
         "analyst-program-dissent",
@@ -3874,7 +3879,479 @@
         "w5-teacher-l2-dissent"
       ],
       "meetingIds": [],
-      "gates": [],
+      "gates": [
+        {
+          "gate": "ship",
+          "wave": 5,
+          "evaluatedCommit": "d1c7aa660d50f741d5897ed6285dc04ae6cb328c",
+          "evaluatedBranch": "claude/module-2-money-motion-quality-77dedf",
+          "eligible": false,
+          "recommendation": "REPAIR",
+          "checks": [
+            {
+              "id": "role:browser-qa",
+              "passed": false,
+              "message": "browser-qa is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:builder",
+              "passed": true,
+              "message": "builder completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:classroom-projector-critic",
+              "passed": false,
+              "message": "classroom-projector-critic is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:economic-truth-critic",
+              "passed": true,
+              "message": "economic-truth-critic completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:experience-director",
+              "passed": false,
+              "message": "experience-director is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:lead-integrator",
+              "passed": false,
+              "message": "lead-integrator is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:player-gameplay-critic",
+              "passed": false,
+              "message": "player-gameplay-critic is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:product-analyst",
+              "passed": true,
+              "message": "product-analyst completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:regression-hunter",
+              "passed": false,
+              "message": "regression-hunter is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:sports-reality-director",
+              "passed": true,
+              "message": "sports-reality-director completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:teacher-transfer-critic",
+              "passed": true,
+              "message": "teacher-transfer-critic completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:visual-experience-director",
+              "passed": false,
+              "message": "visual-experience-director is required and incomplete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-role:classroom-projector-critic",
+              "passed": false,
+              "message": "classroom-projector-critic cannot be omitted.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-role:economic-truth-critic",
+              "passed": true,
+              "message": "economic-truth-critic blocking review is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-role:sports-reality-director",
+              "passed": true,
+              "message": "sports-reality-director blocking review is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-role:teacher-transfer-critic",
+              "passed": true,
+              "message": "teacher-transfer-critic blocking review is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role-independence",
+              "passed": true,
+              "message": "Builders and independent reviewers are different actors.",
+              "severity": "blocking"
+            },
+            {
+              "id": "analyst-contract",
+              "passed": true,
+              "message": "Analyst output contract is complete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:analyst-report",
+              "passed": true,
+              "message": "analyst-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:browser-trace",
+              "passed": true,
+              "message": "browser-trace evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:economic-truth-report",
+              "passed": true,
+              "message": "economic-truth-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:gameplay-report",
+              "passed": false,
+              "message": "gameplay-report evidence is required.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:git-diff",
+              "passed": false,
+              "message": "git-diff evidence is required.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:projector-report",
+              "passed": true,
+              "message": "projector-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:sports-reality-report",
+              "passed": true,
+              "message": "sports-reality-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:teacher-transfer-report",
+              "passed": true,
+              "message": "teacher-transfer-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:test",
+              "passed": true,
+              "message": "test evidence is an authentic passing command record.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:visual-report",
+              "passed": false,
+              "message": "visual-report evidence is required.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-suite",
+              "passed": true,
+              "message": "Evidence w5-suite hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-l3-harness",
+              "passed": true,
+              "message": "Evidence w5-l3-harness hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-e2e-m2l3",
+              "passed": true,
+              "message": "Evidence w5-e2e-m2l3 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-e2e-m2l2",
+              "passed": true,
+              "message": "Evidence w5-e2e-m2l2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-e2e-m2l1",
+              "passed": true,
+              "message": "Evidence w5-e2e-m2l1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-a9-proof",
+              "passed": true,
+              "message": "Evidence w5-a9-proof hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-module-file",
+              "passed": true,
+              "message": "Evidence w5-module-file hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-harness-file",
+              "passed": true,
+              "message": "Evidence w5-harness-file hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-suite-wrapper",
+              "passed": true,
+              "message": "Evidence w5-suite-wrapper hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-r3r4-arm",
+              "passed": true,
+              "message": "Evidence w5-r3r4-arm hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:l3-tests-w5",
+              "passed": true,
+              "message": "Evidence l3-tests-w5 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:l3-tuning-w5",
+              "passed": true,
+              "message": "Evidence l3-tuning-w5 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:l3-e2e-w5",
+              "passed": true,
+              "message": "Evidence l3-e2e-w5 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-sr-confirm",
+              "passed": true,
+              "message": "Evidence w5-sr-confirm hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-econ-confirm",
+              "passed": true,
+              "message": "Evidence w5-econ-confirm hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-suite",
+              "passed": true,
+              "message": "Evidence final-suite hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m2l1",
+              "passed": true,
+              "message": "Evidence final-e2e-m2l1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m2l2",
+              "passed": true,
+              "message": "Evidence final-e2e-m2l2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m2l3",
+              "passed": true,
+              "message": "Evidence final-e2e-m2l3 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m1l2",
+              "passed": true,
+              "message": "Evidence final-e2e-m1l2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m1l2ea",
+              "passed": true,
+              "message": "Evidence final-e2e-m1l2ea hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m1l3ea",
+              "passed": true,
+              "message": "Evidence final-e2e-m1l3ea hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m1l3",
+              "passed": true,
+              "message": "Evidence final-e2e-m1l3 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-e2e-m1l3-retry",
+              "passed": true,
+              "message": "Evidence final-e2e-m1l3-retry hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:analyst-program",
+              "passed": true,
+              "message": "Evidence analyst-program hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:l1-projector-gate-doc",
+              "passed": true,
+              "message": "Evidence l1-projector-gate-doc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:final-suite-postdereg",
+              "passed": true,
+              "message": "Evidence final-suite-postdereg hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-teacher-l1",
+              "passed": true,
+              "message": "Evidence w5-teacher-l1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-teacher-l2",
+              "passed": true,
+              "message": "Evidence w5-teacher-l2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:l2-tests-w5b",
+              "passed": true,
+              "message": "Evidence l2-tests-w5b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:l2-tuning-w5b",
+              "passed": true,
+              "message": "Evidence l2-tuning-w5b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:l2-e2e-w5b",
+              "passed": true,
+              "message": "Evidence l2-e2e-w5b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w5-teacher-l2-confirm",
+              "passed": true,
+              "message": "Evidence w5-teacher-l2-confirm hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:ship-case-wave-5-438",
+              "passed": true,
+              "message": "Evidence ship-case-wave-5-438 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "claim-ledger-present",
+              "passed": false,
+              "message": "Level 2+ wave needs at least one explicit progress claim.",
+              "severity": "blocking"
+            },
+            {
+              "id": "claims-reconciled",
+              "passed": true,
+              "message": "All claims are confirmed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-dissent",
+              "passed": true,
+              "message": "No unresolved blocking dissent.",
+              "severity": "blocking"
+            },
+            {
+              "id": "meetings-closed",
+              "passed": true,
+              "message": "All meetings are closed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "meeting-budget",
+              "passed": true,
+              "message": "Meeting count 0/2.",
+              "severity": "blocking"
+            },
+            {
+              "id": "agent-budget",
+              "passed": true,
+              "message": "Agent count 9/14.",
+              "severity": "blocking"
+            },
+            {
+              "id": "failure-budget",
+              "passed": true,
+              "message": "Repairs 0/3; waves 5/6.",
+              "severity": "blocking"
+            },
+            {
+              "id": "ownership-conflicts",
+              "passed": true,
+              "message": "No active ownership conflicts.",
+              "severity": "blocking"
+            },
+            {
+              "id": "config-integrity",
+              "passed": true,
+              "message": "Harness constitution is unchanged since run creation.",
+              "severity": "blocking"
+            },
+            {
+              "id": "protected-branch",
+              "passed": true,
+              "message": "Branch claude/module-2-money-motion-quality-77dedf is not protected.",
+              "severity": "blocking"
+            },
+            {
+              "id": "clean-tree",
+              "passed": false,
+              "message": "Ship gate requires a clean tree; 4 path(s) changed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "rollback-checkpoint",
+              "passed": true,
+              "message": "Rollback checkpoint is recorded.",
+              "severity": "blocking"
+            }
+          ],
+          "blockingFailures": [
+            "role:browser-qa",
+            "role:classroom-projector-critic",
+            "role:experience-director",
+            "role:lead-integrator",
+            "role:player-gameplay-critic",
+            "role:regression-hunter",
+            "role:visual-experience-director",
+            "blocking-role:classroom-projector-critic",
+            "evidence:gameplay-report",
+            "evidence:git-diff",
+            "evidence:visual-report",
+            "claim-ledger-present",
+            "clean-tree"
+          ],
+          "at": "2026-09-01T14:45:24.689Z",
+          "actor": "lead-integrator"
+        }
+      ],
       "verdict": null,
       "repairs": 0,
       "startedAt": "2026-09-01T12:31:32.664Z",
@@ -6962,6 +7439,43 @@
       },
       "recordedAt": "2026-09-01T14:45:13.722Z",
       "actor": "teacher-transfer-critic"
+    },
+    "ship-case-wave-5-438": {
+      "id": "ship-case-wave-5-438",
+      "wave": 5,
+      "kind": "ship-case",
+      "label": "Ship case for wave 5",
+      "path": ".boss/runs/m2-quality-war/ship-cases/wave-5-d1c7aa660d50.md",
+      "sha256": "5e636ab52e9e2525a5579a80767f055b2bd5fa4ec1cc0993af455da9686edbaf",
+      "size": 9195,
+      "metadata": {
+        "runId": "m2-quality-war",
+        "wave": 5,
+        "branch": "claude/module-2-money-motion-quality-77dedf",
+        "commit": "d1c7aa660d50f741d5897ed6285dc04ae6cb328c",
+        "eligible": false,
+        "recommendation": "REPAIR",
+        "rollbackCommit": "8a9ff2f967f659c7fd85599df753e565762045bb"
+      },
+      "recordedAt": "2026-09-01T14:45:24.219Z",
+      "actor": "lead-integrator"
+    },
+    "wave5-git-diff": {
+      "id": "wave5-git-diff",
+      "wave": 5,
+      "kind": "git-diff",
+      "label": "Wave 5 diff from the wave-4 checkpoint to head (close-out set, teacher fixes, dereg, state docs)",
+      "path": ".boss/runs/m2-quality-war/evidence/wave5-git-diff--wave5.diff",
+      "sha256": "1c6db6a56117b1aef7941a2f9e5400a626e59e7dad07467a46fb0eaff914c822",
+      "size": 236074,
+      "metadata": {
+        "fromCheckpoint": "8a9ff2f9",
+        "tags": [
+          "wave-5"
+        ]
+      },
+      "recordedAt": "2026-09-01T14:45:56.124Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -7040,6 +7554,44 @@
       "reconciledAt": "2026-08-31T22:56:33.284Z",
       "checkedEvidence": [
         "l1-tuning"
+      ],
+      "reconciledBy": "lead-integrator"
+    },
+    "w5-final-tests-pass": {
+      "id": "w5-final-tests-pass",
+      "wave": 5,
+      "kind": "tests-pass",
+      "statement": "Full runtime suite green at the program's final head (461/461 incl. the three M2 harnesses as tests)",
+      "claimant": "builder-w5-l2fix",
+      "evidenceIds": [
+        "l2-tests-w5b"
+      ],
+      "metadata": {},
+      "status": "confirmed",
+      "reasons": [],
+      "recordedAt": "2026-09-01T14:45:56.450Z",
+      "reconciledAt": "2026-09-01T14:45:57.127Z",
+      "checkedEvidence": [
+        "l2-tests-w5b"
+      ],
+      "reconciledBy": "lead-integrator"
+    },
+    "w5-final-e2e-pass": {
+      "id": "w5-final-e2e-pass",
+      "wave": 5,
+      "kind": "e2e-pass",
+      "statement": "All three M2 lesson e2e proofs green at or after the final code change (L2 with abstention/mirror/late-observer assertions; L3 regression)",
+      "claimant": "builder-w5-l2fix",
+      "evidenceIds": [
+        "l2-e2e-w5b"
+      ],
+      "metadata": {},
+      "status": "confirmed",
+      "reasons": [],
+      "recordedAt": "2026-09-01T14:45:56.758Z",
+      "reconciledAt": "2026-09-01T14:45:57.444Z",
+      "checkedEvidence": [
+        "l2-e2e-w5b"
       ],
       "reconciledBy": "lead-integrator"
     }
@@ -7886,7 +8438,20 @@
   "harnessExperiments": [],
   "linkedLessons": [],
   "linkedPrecedents": [],
-  "shipCases": [],
+  "shipCases": [
+    {
+      "wave": 5,
+      "path": ".boss/runs/m2-quality-war/ship-cases/wave-5-d1c7aa660d50.md",
+      "runId": "m2-quality-war",
+      "branch": "claude/module-2-money-motion-quality-77dedf",
+      "commit": "d1c7aa660d50f741d5897ed6285dc04ae6cb328c",
+      "eligible": false,
+      "recommendation": "REPAIR",
+      "rollbackCommit": "8a9ff2f967f659c7fd85599df753e565762045bb",
+      "at": "2026-09-01T14:45:24.308Z",
+      "actor": "lead-integrator"
+    }
+  ],
   "metrics": {
     "waves": 5,
     "repairs": 3,
@@ -7894,13 +8459,13 @@
     "kills": 0,
     "meetings": 0,
     "agentsActivated": 86,
-    "gateFailures": 2,
+    "gateFailures": 3,
     "claimsContradicted": 1,
-    "evidenceRecorded": 153,
+    "evidenceRecorded": 155,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 438,
-  "eventHead": "9b497b03df24fcff1177da7dccdb1fa1b6d5639c0924dbe09ff07f6890a0a8c6",
+  "eventCount": 446,
+  "eventHead": "aeb7f99074c69ce3d22b17f6a37f93f7960b9818bb64aec027750c573110e45c",
   "warnings": []
 }
