@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `135:5a72994c17bfbc39d25cc5dc26895ecbf66ea3ec9f4c13e646b350d932489638`  
-Updated: 2026-09-01T20:47:31.321Z
+Event head: `146:38e63499d5157f2483667dd3ac9024d7d01664b449666877bfadb7c4937d04cf`  
+Updated: 2026-09-01T20:52:30.082Z
 
 ## Founder intent
 
@@ -34,7 +34,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - builder — builder-b — active — claude-opus-5
 - builder — builder-c — active — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
-- sports-reality-director — sports-reality-w2 — active — claude-sonnet-5
+- sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
 - browser-qa — browser-qa-w2base — active — claude-sonnet-5
 
 ## Required evidence
@@ -49,7 +49,15 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 
 ## Evidence recorded
 
-- No evidence recorded yet
+- bowl-rights-review-report — visual-report — Sports Reality W2 bounded rights/source review report
+- bowl-rights-review-manifest — browser-trace — Manifest of images viewed for this review
+- bowl-rights-review-arena-outcome-100 — screenshot — Arena outcome view at 100% fill (sellout) - generic bowl, violet lighting, generic key markings, no team colors or marks
+- bowl-rights-review-arena-outcome-72 — screenshot — Arena outcome view at 72% fill - partial lighting, no identifiable architecture
+- bowl-rights-review-arena-hero — screenshot — Arena hero backdrop at 1366px - dark/closed bowl, left fade
+- bowl-rights-review-mock-student — screenshot — Design-system style-tile mock student 1366 - 'DRAWN BOWL - PLACEHOLDER ASSET' label on lit arena panel; club name as plain text
+- bowl-rights-review-mock-board — screenshot — Design-system style-tile mock board 1920 - crest circles with two-letter marks (NY/MEM/DEN/SAC/ORL/MIL) in uniform violet fill, plain club wordmarks below; 6 real clubs shown though the module only models New York and Memphis
+- bowl-rights-review-arena-source — note — arena.mjs read: procedural SVG bowl, generic key/paint markings only, no logos, no NBA marks, no team colors, no identifiable roof/architecture
+- bowl-rights-review-fullhouse-markets — note — fullHouse.ts MARKETS array + marketForDesk: only two markets exist (new-york, memphis), odd/even desk assignment, no other clubs modeled
 
 ## Claim ledger
 
@@ -57,7 +65,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 
 ## Dissent
 
-- No dissent recorded
+- bowl-rights-review-dissent — rights-source/advisory/open — mock-board-1920.png (the wave-3 board mock) shows four real NBA clubs (Denver Nuggets, Sacramento Kings, Orlando Magic, Milwaukee Bucks) that do not exist in fullHouse.ts's MARKETS array and have never been Sports Reality verified (no capacity, building, or market-framing data exists for them, unlike New York/Memphis in GATE_L1_SR.md). These should not ship into a real class-results frame without either restricting desks to the two verified markets (repeating them per the existing odd/even marketForDesk assignment) or a fresh verification pass per additional club before wave 3 builds the frame.
 
 ## Latest gate
 

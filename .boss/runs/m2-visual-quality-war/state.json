@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:47:31.321Z",
+  "updatedAt": "2026-09-01T20:52:30.082Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1388,11 +1388,27 @@
           "model": "claude-sonnet-5",
           "reason": "Analyst item 8 / direction Q7: the drawn bowl must not resemble an identifiable building; crest text marks and club wordmarks on new surfaces; rights/source surfacing",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:47:31.072Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-01T20:52:30.064Z",
+          "sections": {
+            "real-world-anchors": "No new real-world facts introduced by the visual wave itself beyond the two verified markets already in fullHouse.ts and GATE_L1_SR.md (2026-08-31): New York Knicks/Madison Square Garden and Memphis Grizzlies/FedExForum (marketForDesk line 809 confirms only these two, odd/even desk assignment). One new anchor appears only in the mock-board-1920.png style tile, not in product code: four additional real NBA clubs (Denver Nuggets, Sacramento Kings, Orlando Magic, Milwaukee Bucks) drawn as desk rows. NOT VERIFIED, not present anywhere in fullHouse.ts's MARKETS array.",
+            "accuracy-findings": "Highest severity (advisory): mock-board-1920.png shows four real NBA clubs the product does not model (Denver, Sacramento, Orlando, Milwaukee) alongside New York/Memphis; if wave 3 literalizes a 6+ desk class this way, each new club needs its own Sports Reality verification (capacity/building/market framing) as New York and Memphis received. Arena architecture is CLEAR: OBSERVED generic isometric three-tier bowl (preview-outcome-100/72, preview-hero-1366), confirmed by reading arena.mjs (823 lines, no logo/team-color/NBA-mark tokens); does not resemble MSG's cable roof or FedExForum's exterior. Boundary given to builder: no real-building roof/truss silhouette, no team-color fills, no real team court/signage motifs, stay interior/top-down not exterior. Text marks are CLEAR: mock-board-1920.png crest circles are plain two-letter abbreviations in the single system violet accent (not team colors) paired with plain wordmarks, matching the already-cleared fullHouse.ts pattern; recommend writing 'no team-color fills on crest badges' into VISUAL_IDENTITY.md as a rights rule, not just an accent-palette side effect.",
+            "staleness-findings": "None new to this wave. Inherited: GATE_L1_SR.md F1 (BLOCKING, open) — Night 3's 'the defending champions' collides with the Knicks' actual June 2026 title; that is the card the Two Peaks reveal is drawn from and the one this wave's arena/board work renders more prominently. Not this wave's string to fix; flagged for Boss lead confirmation before classroom readiness.",
+            "rights-source-considerations": "The founder's photoreal reference render is fully replaced by our own procedural SVG (arena.mjs/arena.ts) with zero raster/licensed/scraped assets, removing the source-ownership question entirely for this wave; mock-student-1366.png even self-labels its arena panel 'PLACEHOLDER ASSET'. Residual: any future wave proposing a raster or AI-generated arena image reopens both licensing/provenance and a much higher trade-dress risk, and should route back through Sports Reality first. Club/building names continue to render as plain typographic facts consistent with prior clearance; no logos, likenesses, photography, or proprietary data found in any reviewed asset. The four extra real clubs in mock-board-1920.png are an open scope question, recorded as a formal dissent below.",
+            "recommendation": "Builders MAY ship the procedural SVG bowl as drawn and the typographic wordmarks/two-letter crest badges in the single violet accent. Builders MUST NOT draw a real-building-recognizable roof/truss/exterior silhouette, fill any badge/UI element with real team colors, approximate a real logo silhouette, add a raster/AI-generated arena asset without a fresh rights pass, or literalize the mock board's four extra real clubs into shipped desks without either restricting to the two verified markets or commissioning new Sports Reality verification per additional market. Escalate to the founder: (1) whether Module 2 will ever model more than two real NBA markets (scope + verification-cost call), (2) whether 'crest badges never take team colors' should be a written standing rights rule in VISUAL_IDENTITY.md rather than an incidental effect of the current palette choice. No blanket legal claims made."
+          },
+          "evidenceIds": [
+            "bowl-rights-review-report",
+            "bowl-rights-review-manifest",
+            "bowl-rights-review-arena-outcome-100",
+            "bowl-rights-review-arena-outcome-72",
+            "bowl-rights-review-arena-hero",
+            "bowl-rights-review-mock-student",
+            "bowl-rights-review-mock-board",
+            "bowl-rights-review-arena-source",
+            "bowl-rights-review-fullhouse-markets"
+          ],
           "cost": null
         },
         "m1-baseline-extended": {
@@ -1410,9 +1426,21 @@
           "cost": null
         }
       },
-      "evidenceIds": [],
+      "evidenceIds": [
+        "bowl-rights-review-report",
+        "bowl-rights-review-manifest",
+        "bowl-rights-review-arena-outcome-100",
+        "bowl-rights-review-arena-outcome-72",
+        "bowl-rights-review-arena-hero",
+        "bowl-rights-review-mock-student",
+        "bowl-rights-review-mock-board",
+        "bowl-rights-review-arena-source",
+        "bowl-rights-review-fullhouse-markets"
+      ],
       "claimIds": [],
-      "dissentIds": [],
+      "dissentIds": [
+        "bowl-rights-review-dissent"
+      ],
       "meetingIds": [],
       "gates": [],
       "verdict": null,
@@ -2979,6 +3007,157 @@
       },
       "recordedAt": "2026-09-01T20:44:57.858Z",
       "actor": "boss-lead"
+    },
+    "bowl-rights-review-report": {
+      "id": "bowl-rights-review-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "Sports Reality W2 bounded rights/source review report",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-report--SPORTS_REALITY_W2.md",
+      "sha256": "9f8a5af43247bd839f8e62d4c7e8e211e84f8c9eff40756e5823ffed2d8e492a",
+      "size": 9095,
+      "metadata": {
+        "tags": [
+          "rights-source",
+          "wave-2"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:27.874Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-manifest": {
+      "id": "bowl-rights-review-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of images viewed for this review",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-manifest--manifest.md",
+      "sha256": "69fc6ca7eea895e2c7ee2d30e0e0675c53a60d26ca91e6d6d107f3abd7492786",
+      "size": 830,
+      "metadata": {
+        "tags": [
+          "manifest"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:28.107Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-arena-outcome-100": {
+      "id": "bowl-rights-review-arena-outcome-100",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Arena outcome view at 100% fill (sellout) - generic bowl, violet lighting, generic key markings, no team colors or marks",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-arena-outcome-100--preview-outcome-100.png",
+      "sha256": "f0eb86bee4cb1f8fa58a06f683477284f6f93a17d61397e24726381671c1608b",
+      "size": 190151,
+      "metadata": {
+        "tags": [
+          "arena",
+          "outcome"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:28.354Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-arena-outcome-72": {
+      "id": "bowl-rights-review-arena-outcome-72",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Arena outcome view at 72% fill - partial lighting, no identifiable architecture",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-arena-outcome-72--preview-outcome-72.png",
+      "sha256": "00b4d736297f65a60e03dd8f9cdf613517c7eb4037fb6adcb10cd67720e30f17",
+      "size": 171153,
+      "metadata": {
+        "tags": [
+          "arena",
+          "outcome"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:28.617Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-arena-hero": {
+      "id": "bowl-rights-review-arena-hero",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Arena hero backdrop at 1366px - dark/closed bowl, left fade",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-arena-hero--preview-hero-1366.png",
+      "sha256": "b15721d4b959ea20cbcfcd25160d89cf65357a41a54290ffc60e0201d472d01e",
+      "size": 462056,
+      "metadata": {
+        "tags": [
+          "arena",
+          "hero"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:28.850Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-mock-student": {
+      "id": "bowl-rights-review-mock-student",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Design-system style-tile mock student 1366 - 'DRAWN BOWL - PLACEHOLDER ASSET' label on lit arena panel; club name as plain text",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-mock-student--mock-student-1366.png",
+      "sha256": "32c904226ba5f6fad3bf55db69d3d185eee6379e940b7afb1b7abea27b81314c",
+      "size": 244924,
+      "metadata": {
+        "tags": [
+          "mock",
+          "wordmark"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:29.104Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-mock-board": {
+      "id": "bowl-rights-review-mock-board",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Design-system style-tile mock board 1920 - crest circles with two-letter marks (NY/MEM/DEN/SAC/ORL/MIL) in uniform violet fill, plain club wordmarks below; 6 real clubs shown though the module only models New York and Memphis",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-mock-board--mock-board-1920.png",
+      "sha256": "d63ab40f1a93e760ef608ba214ddd441138e927b089a18bb516243c801749b6d",
+      "size": 295344,
+      "metadata": {
+        "tags": [
+          "mock",
+          "crest",
+          "wordmark"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:29.349Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-arena-source": {
+      "id": "bowl-rights-review-arena-source",
+      "wave": 2,
+      "kind": "note",
+      "label": "arena.mjs read: procedural SVG bowl, generic key/paint markings only, no logos, no NBA marks, no team colors, no identifiable roof/architecture",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-arena-source--arena.mjs",
+      "sha256": "c7124d59936f4e625ef27663421f792094fd1563f3d96ae449d4deb0a2dee57e",
+      "size": 34670,
+      "metadata": {
+        "tags": [
+          "source-read"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:29.582Z",
+      "actor": "sports-reality-w2"
+    },
+    "bowl-rights-review-fullhouse-markets": {
+      "id": "bowl-rights-review-fullhouse-markets",
+      "wave": 2,
+      "kind": "note",
+      "label": "fullHouse.ts MARKETS array + marketForDesk: only two markets exist (new-york, memphis), odd/even desk assignment, no other clubs modeled",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/bowl-rights-review-fullhouse-markets--fullHouse.ts",
+      "sha256": "b8fecb297969392d677aec4fac582a76deeb1e7a8d1c09e8deb5ba6f81ab7547",
+      "size": 180699,
+      "metadata": {
+        "tags": [
+          "source-read"
+        ]
+      },
+      "recordedAt": "2026-09-01T20:52:29.828Z",
+      "actor": "sports-reality-w2"
     }
   },
   "claims": {},
@@ -3069,6 +3248,21 @@
       "resolution": "Every repair action taken before the build opens: (a) the contract is frozen with filled rows and the analyst's own acceptance measurements bound verbatim in section H (w1-contract-frozen); (b) section G no longer asserts an existing client claim audit — it states R-1 as a wave-2 precondition with mutation proof; the Module 1 pixel baseline now exists in evidence (w1-m1-baseline-manifest, w1-m1-baseline-compare, three byte-stable board frames) and is extended by the wave-2 regression hunter; (c) the economic-truth report is recorded and its role completed with the blocking econ dissent in the ledger (econ-adaptation-rulings-report); (d) Q1 is recorded as a Boss lead application of the founder's section-8 instruction on a founder-escalated question, with contrast/CVD proof and the two-books colour rule as wave-2 deliverables, overturnable by the founder at the ship case; (e) R-9 (student Two Peaks gate) is carved into wave 2 Lane C as a module change with a test; test evidence recorded authentically (w1-suite, w1-l1-harness); Q7 routed to a bounded Sports Reality review in wave 2; the fold defect is presented to the founder as a known, previously non-blocking defect re-rated under the new bar plus one new correctness defect (analyst-w1-prior-strong-fold).",
       "resolvedAt": "2026-09-01T20:44:58.087Z",
       "resolvedBy": "boss-lead"
+    },
+    "bowl-rights-review-dissent": {
+      "id": "bowl-rights-review-dissent",
+      "wave": 2,
+      "category": "rights-source",
+      "severity": "advisory",
+      "finding": "mock-board-1920.png (the wave-3 board mock) shows four real NBA clubs (Denver Nuggets, Sacramento Kings, Orlando Magic, Milwaukee Bucks) that do not exist in fullHouse.ts's MARKETS array and have never been Sports Reality verified (no capacity, building, or market-framing data exists for them, unlike New York/Memphis in GATE_L1_SR.md). These should not ship into a real class-results frame without either restricting desks to the two verified markets (repeating them per the existing odd/even marketForDesk assignment) or a fresh verification pass per additional club before wave 3 builds the frame.",
+      "evidenceIds": [
+        "bowl-rights-review-mock-board",
+        "bowl-rights-review-fullhouse-markets"
+      ],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T20:52:30.082Z",
+      "actor": "sports-reality-w2"
     }
   },
   "meetings": {},
@@ -3235,11 +3429,11 @@
     "agentsActivated": 15,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 87,
+    "evidenceRecorded": 96,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 135,
-  "eventHead": "5a72994c17bfbc39d25cc5dc26895ecbf66ea3ec9f4c13e646b350d932489638",
+  "eventCount": 146,
+  "eventHead": "38e63499d5157f2483667dd3ac9024d7d01664b449666877bfadb7c4937d04cf",
   "warnings": []
 }
