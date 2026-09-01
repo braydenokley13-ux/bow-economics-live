@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `362:e60a211695059f7af3e0a01a567f56675108351a33736d25814eb342a3710b57`  
-Updated: 2026-09-01T12:14:18.865Z
+Event head: `364:84c5783c7f150f31a1bde1be163457da71319f740278a86b54f2c84290234f54`  
+Updated: 2026-09-01T12:20:34.650Z
 
 ## Founder intent
 
@@ -53,7 +53,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - player-gameplay-critic — player-gameplay-critic — active — claude-opus-5
 - economic-truth-critic — economic-truth-critic — active — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
-- sports-reality-director — sports-reality-director — active — claude-opus-5
+- sports-reality-director — sports-reality-director — completed-with-concerns — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
 
 ## Required evidence
@@ -98,6 +98,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l3-tests-r1 — test — Suite after w4 final repair (455/455)
 - l3-tuning-r1 — test — L3 harness 10/10: 663 atoms/171 surfaces, COVERAGE limb refuses unaudited atoms, 8/8 mutants incl. value-drift/quantifier-invert/quantifier-frozen; adoption 29%/71% measured
 - l3-e2e-r1 — e2e — L3 e2e: sealed-vote 409 with median unmoved, announced observer, 16 ink scans, guard proven non-vacuous
+- recheck-l3-sr — sports-reality-report — L3 SR re-check: all five repairs CONFIRMED verbatim (16/30 + 23/30, term sheets on all surfaces, Knicks fix, dates, epilogue); A3-A9 closed. NOT DISCHARGED on two repair-introduced facts: N1 Seattle 'privately financed' is false (2012 MOU carried up to $200M city/county bonds — the private-vs-public contrast subsidy-coda now teaches); N2 DMA ranks (Sacramento #20, Seattle #13, not 27/12). Both one-line
 
 ## Claim ledger
 
