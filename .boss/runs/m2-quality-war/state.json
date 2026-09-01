@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:26:05.777Z",
+  "updatedAt": "2026-09-01T06:32:31.928Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2142,7 +2142,8 @@
         "gate-l2-projector",
         "gate-l2-play",
         "l2-tests-r1",
-        "l2-e2e-r1"
+        "l2-e2e-r1",
+        "e2e-l3-flake-note"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3788,6 +3789,23 @@
       },
       "recordedAt": "2026-09-01T06:26:05.777Z",
       "actor": "lead-integrator"
+    },
+    "e2e-l3-flake-note": {
+      "id": "e2e-l3-flake-note",
+      "wave": 3,
+      "kind": "analysis",
+      "label": "M1 L3 e2e flake attribution: reproduces at pre-L2 checkpoint 5cf1a58 (1/6) and HEAD (3/6), same failure mode — pre-existing faPlayMounted remount race, not a wave regression; disposition + bounded fix path recorded",
+      "path": ".boss/runs/m2-quality-war/evidence/e2e-l3-flake-note--E2E_L3_FLAKE_NOTE.md",
+      "sha256": "18fa119e50d800d0b45919ce68989eb3ffdabdd24335e9055a0497e00eb7f3e4",
+      "size": 1356,
+      "metadata": {
+        "tags": [
+          "regression",
+          "wave-3"
+        ]
+      },
+      "recordedAt": "2026-09-01T06:32:31.928Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -4400,11 +4418,11 @@
     "agentsActivated": 49,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 80,
+    "evidenceRecorded": 81,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 244,
-  "eventHead": "a7702653881bf599046eb969ca05dcdf73d7ae6bf543043f2615df29b36a544e",
+  "eventCount": 245,
+  "eventHead": "adfa962b74d80d5ded18cd600c707ef51f77c9a8705c0c19f5b5a68b1bff4425",
   "warnings": []
 }

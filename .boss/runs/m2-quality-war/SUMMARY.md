@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `244:a7702653881bf599046eb969ca05dcdf73d7ae6bf543043f2615df29b36a544e`  
-Updated: 2026-09-01T06:26:05.777Z
+Event head: `245:adfa962b74d80d5ded18cd600c707ef51f77c9a8705c0c19f5b5a68b1bff4425`  
+Updated: 2026-09-01T06:32:31.928Z
 
 ## Founder intent
 
@@ -89,6 +89,7 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - gate-l2-play — gameplay-report — L2 play gate: RATING FUNCTIONAL (below STRONG bar). BC-5 passes in content (3/3 correct pre-reveal attributions incl. same-crowd-inverted-reasons week 2), fails in placement: settlement + externality card below the 1024x600 fold with auto-scroll landing on next week's dial — the bell appears to do nothing; LOCK below fold week 1. Two projector beats state causal claims play refutes (matches econ B1/B3). Interdependence genuinely felt; free-rider trap real but schedule-luck confounded; no dominant line; zero-ticket week keeps $734k. R1-R4 blocking
 - l2-tests-r1 — test — Suite after L2 repair (397/397)
 - l2-e2e-r1 — e2e — L2 e2e: fold assertions at 1024x600, truncation scans, 22 frames x 2 shapes
+- e2e-l3-flake-note — analysis — M1 L3 e2e flake attribution: reproduces at pre-L2 checkpoint 5cf1a58 (1/6) and HEAD (3/6), same failure mode — pre-existing faPlayMounted remount race, not a wave regression; disposition + bounded fix path recorded
 
 ## Claim ledger
 
