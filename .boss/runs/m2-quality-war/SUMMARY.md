@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `424:a25df03bfdacbfad0ea14e31db2ebedd31bfd3b6739b85e9746c43424ac22556`  
-Updated: 2026-09-01T13:51:35.099Z
+Event head: `429:9908271cb47e529408f6079210e5d1ce1e42e1a7b859392fb2b77843ed98c0c5`  
+Updated: 2026-09-01T13:59:04.055Z
 
 ## Founder intent
 
@@ -39,7 +39,8 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - product-analyst — product-analyst — completed-with-concerns — claude-opus-5
 - builder — builder-w5-dereg — completed — claude-sonnet-5
 - teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
-- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
+- builder — builder-w5-l2fix — active — claude-opus-5
 
 ## Required evidence
 
@@ -84,6 +85,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - l1-projector-gate-doc — projector-report — Pin: GATE_L1_PROJECTOR.md at final head incl. the W4 ADJUDICATION carrying the owning critic's L1 PAGER INTENT: SATISFIED ruling (analyst row-3 artifact fix)
 - final-suite-postdereg — test — Suite after Box Office deregistration (458/458)
 - w5-teacher-l1 — teacher-transfer-report — L1 fresh re-affirmation at FINAL HEAD: TRANSFER READY. Changed surfaces exercised cold at 7 desks (CF pager labels match rows all groups both directions; staged synthesis with class-computed cards; all 7 SAY lines; guarded advance + restore; freeze/refresh/late-join clean; zero console errors). Seven non-blocking notes incl. the key-shown-once false copy and bad-board-code hang (runtime-wide, carried)
+- w5-teacher-l2 — teacher-transfer-report — L2 fresh re-affirmation at FINAL HEAD: NOT READY. B-1: never-locked desk 7 framed as 'chose nothing... not the free-rider case' on /teach while its own device says 'YOU SPENT NOTHING AND THAT IS A DECISION... you chose' — no teacher line for the collision; B-2: post-release ON-THE-PROJECTOR claims schedule + departure card + bar while the board holds only the bar. Strong elsewhere: prescribed TRIGGER truthful both arms, guarded advance + restore + snapshot restart recovered, synthesis chain complete and numerically agreeing. N-1..N-5 non-blocking incl. late-join hang at ADAPT
 
 ## Claim ledger
 
@@ -93,6 +95,8 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 
 - analyst-program-no-pass — process/blocking/open — Program analyst dissents against a PASS carrying 'TRANSFER READY on all three' and 'every rendered claim mutation-proven' unqualified: L1/L2 teacher verdicts predate later teacher-facing repairs with no re-affirmation at head (the stale-verdict form of the recurring stale-proof defect), and D20's audit-coverage sentence exceeds the econ critic's own W5-3 wording. Six bounded required items in ANALYST_PROGRAM.md.
 - analyst-program-dissent — undefined/undefined/open — undefined
+- teacher-l2-final-head — teacher-transfer/blocking/open — L2 TRANSFER NOT READY at final head on two computed-claim-class items: B-1 — a desk that NEVER LOCKED is described on /teach as 'chose nothing... not the free-rider case' while its own device asserts 'you spent nothing and that is a decision... you chose' (never-locked is abstention, not choice; one atom must own the distinction across all surfaces, with a teacher line for the case); B-2 — after the prescribed bar release, ON THE PROJECTOR RIGHT NOW claims schedule + departure card + bar while the board holds only the bar (compose the mirror line from actual board state and register it). Non-blocking N-1 (L3 vocabulary in L2's prep note), N-2 (2px overflow at 7 desks), N-3 (late join at ADAPT loops 409 — port L3's observer/handover branch). GATE_L2_TEACHER.md W5 section.
+- w5-teacher-l2-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
 

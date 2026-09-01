@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T13:51:35.099Z",
+  "updatedAt": "2026-09-01T13:59:04.055Z",
   "currentWave": 5,
   "waves": {
     "1": {
@@ -3759,8 +3759,34 @@
           "model": "claude-opus-5",
           "reason": "Program-analyst item 1: fresh-context teacher re-affirmation of L2 at the final head (its READY verdict predates the mirror/lock-count/layout repairs)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T13:34:29.426Z",
+          "completedAt": "2026-09-01T13:59:03.681Z",
+          "sections": {
+            "before-verdict": "Strong (rehearsal path, drawers, previews); N-1: the prep note describes L3 controls for L2.",
+            "during-verdict": "Directed correctly through pacing/bell/WATCH FOR/reveal ladder; prescribed TRIGGER truthful on both arms. B-2 blocking: post-release mirror overclaims the board.",
+            "failure-recovery-verdict": "Best surface tested — guarded advance, restore, refreshes, unplanned server kill + snapshot restart all recovered. N-3: late join at ADAPT hangs on looping 409s.",
+            "synthesis-verdict": "Chain complete; card 2 / ADAPT key / reveal 2 agree numerically and reproduce the critic's dials.",
+            "hidden-knowledge-findings": "B-1 blocking: never-locked desk framed contradictorily across /teach and its own device with no teacher line.",
+            "required-repairs": "B-1, B-2 blocking (dissent teacher-l2-final-head); N-1..N-5 non-blocking. TRANSFER: NOT READY (at final head)."
+          },
+          "evidenceIds": [
+            "w5-teacher-l2"
+          ],
+          "cost": {
+            "tokens": 134249,
+            "toolUses": 48
+          }
+        },
+        "w5-l2-teacher-fix": {
+          "assignmentId": "w5-l2-teacher-fix",
+          "role": "builder",
+          "actor": "builder-w5-l2fix",
+          "model": "claude-opus-5",
+          "reason": "Wave-5 repair 2: L2 final-head teacher blockers B-1/B-2 (one abstention-vs-choice atom across surfaces + board-state-composed mirror) plus cheap N-1/N-2/N-3",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T13:59:04.055Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -3795,12 +3821,15 @@
         "analyst-program",
         "l1-projector-gate-doc",
         "final-suite-postdereg",
-        "w5-teacher-l1"
+        "w5-teacher-l1",
+        "w5-teacher-l2"
       ],
       "claimIds": [],
       "dissentIds": [
         "analyst-program-no-pass",
-        "analyst-program-dissent"
+        "analyst-program-dissent",
+        "teacher-l2-final-head",
+        "w5-teacher-l2-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -6789,6 +6818,23 @@
       },
       "recordedAt": "2026-09-01T13:51:34.774Z",
       "actor": "teacher-transfer-critic"
+    },
+    "w5-teacher-l2": {
+      "id": "w5-teacher-l2",
+      "wave": 5,
+      "kind": "teacher-transfer-report",
+      "label": "L2 fresh re-affirmation at FINAL HEAD: NOT READY. B-1: never-locked desk 7 framed as 'chose nothing... not the free-rider case' on /teach while its own device says 'YOU SPENT NOTHING AND THAT IS A DECISION... you chose' — no teacher line for the collision; B-2: post-release ON-THE-PROJECTOR claims schedule + departure card + bar while the board holds only the bar. Strong elsewhere: prescribed TRIGGER truthful both arms, guarded advance + restore + snapshot restart recovered, synthesis chain complete and numerically agreeing. N-1..N-5 non-blocking incl. late-join hang at ADAPT",
+      "path": ".boss/runs/m2-quality-war/evidence/w5-teacher-l2--GATE_L2_TEACHER.md",
+      "sha256": "354e1ba7ac45c131fe4ce489d73858177596cf7f9898025a5fa29a80a374d1c5",
+      "size": 35066,
+      "metadata": {
+        "tags": [
+          "teacher-transfer",
+          "wave-5"
+        ]
+      },
+      "recordedAt": "2026-09-01T13:59:03.056Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "claims": {
@@ -7636,6 +7682,29 @@
       "status": "open",
       "recordedAt": "2026-09-01T13:29:19.852Z",
       "actor": "product-analyst"
+    },
+    "teacher-l2-final-head": {
+      "id": "teacher-l2-final-head",
+      "wave": 5,
+      "category": "teacher-transfer",
+      "severity": "blocking",
+      "finding": "L2 TRANSFER NOT READY at final head on two computed-claim-class items: B-1 — a desk that NEVER LOCKED is described on /teach as 'chose nothing... not the free-rider case' while its own device asserts 'you spent nothing and that is a decision... you chose' (never-locked is abstention, not choice; one atom must own the distinction across all surfaces, with a teacher line for the case); B-2 — after the prescribed bar release, ON THE PROJECTOR RIGHT NOW claims schedule + departure card + bar while the board holds only the bar (compose the mirror line from actual board state and register it). Non-blocking N-1 (L3 vocabulary in L2's prep note), N-2 (2px overflow at 7 desks), N-3 (late join at ADAPT loops 409 — port L3's observer/handover branch). GATE_L2_TEACHER.md W5 section.",
+      "evidenceIds": [
+        "w5-teacher-l2"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T13:59:03.374Z",
+      "actor": "teacher-transfer-critic"
+    },
+    "w5-teacher-l2-dissent": {
+      "id": "w5-teacher-l2-dissent",
+      "wave": 5,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T13:59:03.739Z",
+      "actor": "teacher-transfer-critic"
     }
   },
   "meetings": {},
@@ -7691,14 +7760,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 84,
+    "agentsActivated": 85,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 148,
+    "evidenceRecorded": 149,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 424,
-  "eventHead": "a25df03bfdacbfad0ea14e31db2ebedd31bfd3b6739b85e9746c43424ac22556",
+  "eventCount": 429,
+  "eventHead": "9908271cb47e529408f6079210e5d1ce1e42e1a7b859392fb2b77843ed98c0c5",
   "warnings": []
 }
