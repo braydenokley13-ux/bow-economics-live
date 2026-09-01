@@ -697,10 +697,17 @@ function renderedBlobs(state) {
     if (v && typeof v === "object") { for (const x of Object.values(v)) walk(x, bag); }
   };
   const seats = state.clubs.filter((c) => c.seatId !== null).map((c) => c.seatId);
-  for (const phase of writeTheRuleModule.phases) {
-    walk(writeTheRuleModule.boardView(state, phase), bags.board);
-    walk(writeTheRuleModule.teacherView(state, phase), bags.teach);
-    for (const seatId of seats) walk(writeTheRuleModule.studentView(state, seatId, phase), bags.play);
+  // The claim registry is phase-free and stage-free, but the surfaces are not: a
+  // session passes through the ADOPTED stage on its way to the season, and the
+  // end-of-session state no longer renders it. The harvest therefore covers the
+  // stages a session passes through, not only the one it stopped on.
+  const variants = state.adopted && state.stage !== "adopted" ? [state, { ...state, stage: "adopted" }] : [state];
+  for (const variant of variants) {
+    for (const phase of writeTheRuleModule.phases) {
+      walk(writeTheRuleModule.boardView(variant, phase), bags.board);
+      walk(writeTheRuleModule.teacherView(variant, phase), bags.teach);
+      for (const seatId of seats) walk(writeTheRuleModule.studentView(variant, seatId, phase), bags.play);
+    }
   }
   const join = (xs) => ` ${xs.join(" ")} `;
   return { play: join(bags.play), board: join(bags.board), teach: join(bags.teach) };
@@ -1130,6 +1137,29 @@ function truthFor(state) {
       return false;
     });
 
+    // ---- THE RENDER MUTANT. econ re-check R1's own injection A9, in this
+    // harness's own hands: drift the number the STUDENT DEVICE prints on a week's
+    // pot row, leaving the registry untouched. Before the repair the registry did
+    // not contain the rendered sentence at all and nothing could see this. Now the
+    // audited sentence is missing from what /play emits, and the limb fails.
+    {
+      const registered = cleanRoom.surfaces.filter((s) => /^play:desk-\d+:week-\d+:transferLine$/.test(s.surface));
+      const target = registered[0] ?? null;
+      let caught = null;
+      let what = "no per-week /play transfer line is registered — the render limb has nothing to prove";
+      if (target) {
+        const paid = target.claims.find((a) => a.id.startsWith("transfer-paid-"));
+        const drifted = target.text.split(paid.rendered).join(fmt(paid.value * 1.4, paid.format));
+        const poisoned = { ...cleanRoom.blobs, play: cleanRoom.blobs.play.split(target.text).join(drifted) };
+        caught = auditRendered(cleanRoom.surfaces, poisoned).length > 0;
+        what = `A9 — the student device prints ${fmt(paid.value * 1.4, paid.format)} paid into the pot where the audited sentence says ${paid.rendered} (${target.surface})`;
+        if (!caught) fail.push(`MUTATION RENDER-DRIFT NOT CAUGHT: ${what}`);
+      } else {
+        fail.push("MUTATION RENDER-DRIFT NOT EXERCISED: no per-week /play transfer line is registered");
+      }
+      mutants.push({ id: "RENDER-DRIFT", what, caught });
+    }
+
     run("QUANTIFIER-INVERT", "invert `synth-national-bigger` — the live printed falsehood econ F2 found", (s) => {
       for (const surface of s) {
         for (const a of surface.claims) {
@@ -1186,11 +1216,11 @@ function truthFor(state) {
   rows.push(`claim-carrying surfaces shipping ZERO atoms (allowed only where nothing is computed from state): ${zeroAtom.size}${zeroAtom.size ? ` — ${[...zeroAtom].join(", ")}` : ""}`);
   for (const m of mutants) rows.push(`MUTATION ${m.id}: ${m.what} → ${m.caught === null ? "NOT EXERCISED (no eligible atom in the clean room)" : m.caught ? "CAUGHT" : "NOT CAUGHT — the family is vacuous on this limb"}`);
   const exercised = mutants.filter((m) => m.caught !== null).length;
-  if (exercised < 8) fail.push(`only ${exercised} of 8 mutation limbs were exercised — the audit's non-vacuity is not fully proven`);
+  if (exercised < 9) fail.push(`only ${exercised} of 9 mutation limbs were exercised — the audit's non-vacuity is not fully proven`);
 
   check(
     "P9",
-    `CLAIM AUDIT — ${atomsSwept} atoms across ${surfacesSwept} surfaces in ${rooms.length} rooms agree with the reducer in COVERAGE, BINDING, SIGN, QUANTIFIER, BOUND, VALUE and LEVEL, proven non-vacuous by ${exercised} mutations including value drift, an inverted quantifier and a frozen quantifier word`,
+    `CLAIM AUDIT — ${atomsSwept} atoms across ${surfacesSwept} surfaces in ${rooms.length} rooms agree with the reducer in COVERAGE, BINDING, SIGN, QUANTIFIER, BOUND, VALUE, LEVEL and RENDER (every audited sentence is a string the shipped views really emit), proven non-vacuous by ${exercised} mutations including value drift, a drifted /play render, an inverted quantifier and a frozen quantifier word`,
     fail.length === 0,
     [...rows, ...fail.slice(0, 12)],
   );

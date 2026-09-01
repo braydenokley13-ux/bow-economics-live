@@ -3490,6 +3490,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
               : ""
           }
           ${view["arrowWhy"] ? `<div class="hl-give-note" id="wrArrowWhy">${escapeHtml(String(view["arrowWhy"]))}</div>` : ""}
+          ${view["transferSeasonLine"] ? `<div class="hl-give-note" id="wrSeasonTransfer">${escapeHtml(String(view["transferSeasonLine"]))}</div>` : ""}
         </div>
         ${weeks.map((w) => wrWeekResult(w)).join("")}`;
       if (predictOpen) {
@@ -3509,6 +3510,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
         <div class="panel" style="padding:16px; margin-top:12px;">
           <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
           <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["question"] ?? ""))}</p>
+          ${view["transferSeasonLine"] ? `<div class="hl-give-note" id="wrSeasonTransfer">${escapeHtml(String(view["transferSeasonLine"]))}</div>` : ""}
         </div>
         ${weeks.map((w) => wrWeekResult(w)).join("")}`;
       return;

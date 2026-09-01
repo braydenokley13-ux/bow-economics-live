@@ -2406,7 +2406,7 @@ export function consequenceBeat(state: WriteRuleState, agg: WriteRuleAggregate):
     // desks against a lesson that did not exist. It has a perfectly good
     // rule-driven before/after of its own: the arrows.
     const word = claimWord("consequence-no-l2-instrument", "no Lesson 2 to measure against", true, "put back less than they did last lesson");
-    const question = agg.arrowsMovedAny
+    const question = moved
       ? "Under this rule, what became the best thing to do with a dollar — and did anybody DECIDE that, or did it just stop being worth it?"
       : "Under this rule, nothing about anybody's best move changed. Why not — and what would it have taken?";
     return {
@@ -2483,10 +2483,14 @@ export function consequenceAskClaimed(state: WriteRuleState, agg: WriteRuleAggre
   const beat = consequenceBeat(state, agg);
   const word = claimWord(
     "consequence-ask-direction",
-    beat.direction === "down" ? "went down" : beat.direction === "up" ? "went UP" : beat.direction === "flat" ? "about the same" : "under this rule",
+    beat.direction === "down" ? "went down" : beat.direction === "up" ? "went UP" : beat.direction === "flat" ? "about the same" : "Under this rule",
     beat.direction === "down",
   );
-  return { text: `${beat.question} [${word.rendered}] ${beat.answer}`, claims: [word] };
+  // R1: this used to be a composite string that no surface rendered — question,
+  // a bracketed atom and the answer key glued together for the registry alone.
+  // The audited sentence is now exactly the question /teach, /board and /play
+  // print, and the direction word lives inside that question.
+  return { text: beat.question, claims: [word] };
 }
 
 /**
@@ -2995,14 +2999,11 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
           // control a teacher reaches for when the room stalls told them to say
           // "the old rule holds — 5%" while a 30% rule was in force and printed
           // on the projector behind them. Three arms, three scripts.
-          now: [
-            adoptionLineClaimed(agg).text,
-            rule.how === "voted"
-              ? "Print it and read it. Do not congratulate the room and do not warn them about anything."
-              : rule.how === "leagueOffice"
-                ? LEAGUE_OFFICE_COPY
-                : STATUS_QUO_COPY,
-          ],
+          // R1: the arm script /teach reads and the arm script the audit checks
+          // are now the same string. It was registered as `teach:adopted:script`
+          // and assembled separately here, so the audited sentence was never the
+          // one on the teacher's screen.
+          now: [adoptionLineClaimed(agg).text, adoptedScriptClaimed(state, agg).text],
           ask: [{ q: "Whose money is this rule about to move?", answer: "Anything. You are only making sure they know the rule is live before they touch a dial." }],
           dontExplainYet: ["What the rule will do to the reinvest dial. Twelve minutes from now they will show you."],
           trigger: "Close the first week when the room is ready.",
@@ -3741,17 +3742,26 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           arrowWhy: state.revealStage >= 4 ? arrowWhyLine(agg) : null,
           weeks: club.weeks.map((w) => viewWeek(state, club, w)),
           transfer: flow,
+          // R1: the three-week attribution sentence was registered as a claim on
+          // `play:desk-N:transferLine` and rendered on no surface at all — the
+          // audited string was never seen and the seen string was never audited.
+          // It is now printed where its own numbers are, from the same call the
+          // sweep registers.
+          transferSeasonLine: flow ? transferLineClaimed(flow).text : null,
           question: consequenceQuestionFor(state, agg),
         });
       }
-      case "CONSEQUENCE":
+      case "CONSEQUENCE": {
+        const flow = agg.potFlows.find((f) => f.deskNumber === club.deskNumber) ?? null;
         return tag({
           ...base,
           message: "Look up at the board — and check your own transfer column while you do.",
           weeks: club.weeks.map((w) => viewWeek(state, club, w)),
-          transfer: agg.potFlows.find((f) => f.deskNumber === club.deskNumber) ?? null,
+          transfer: flow,
+          transferSeasonLine: flow ? transferLineClaimed(flow).text : null,
           question: consequenceQuestionFor(state, agg),
         });
+      }
       case "COUNTERFACTUAL":
         return tag({ ...base, message: COUNTERFACTUAL_HONESTY, weeks: club.weeks.map((w) => viewWeek(state, club, w)) });
       case "ARGUE":
