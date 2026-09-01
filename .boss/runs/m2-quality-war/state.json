@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T05:29:05.816Z",
+  "updatedAt": "2026-09-01T05:29:18.055Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2074,12 +2074,23 @@
           "model": "claude-opus-5",
           "reason": "Independent L2 gate on the built lesson",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T05:12:08.453Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T05:29:18.025Z",
+          "sections": {
+            "session-choreography-verdict": "FUNCTIONAL — all beats teacher-owned, no timers, 0.6-1.0s teacher->board, five distinct reveal stages. Blocking P-1: schedule cards silently ellipsize club names at 11-12 desks with a third of the frame empty (the fit instrument cannot see truncation).",
+            "board-privacy-verdict": "PASS — 60 rendered scans (innerText + innerHTML), every phase, both shapes; duplicate join refused privately; late join lands sanely.",
+            "teacher-fallback-verdict": "PASS with one defect: confirm-guards, bell auto-commit, onPhaseExit, board refresh, and full mid-class server restart all recover exactly; while frozen the board shows only FROZEN while /teach claims the schedule is up.",
+            "classroom-drama-notes": "Best: stage 1 WHO FILLED YOUR BUILDING. Worst: the schedule frame, WAITING at reveal open, FROZEN, stage 5's three identical bars. 76 screenshots.",
+            "required-repairs": "Blocking: P-1 truncation + assert-no-ellipsization in the instrument; P-2 evidence tier to floor. Eight non-blocking. Dissent proj-l2-truncation."
+          },
+          "evidenceIds": [
+            "gate-l2-projector"
+          ],
+          "cost": {
+            "tokens": 151833,
+            "toolUses": 56
+          }
         }
       },
       "evidenceIds": [
@@ -2115,7 +2126,8 @@
         "gate-l2-teacher-dissent",
         "econ-l2-evidence-surfaces",
         "gate-l2-econ-dissent",
-        "proj-l2-truncation"
+        "proj-l2-truncation",
+        "gate-l2-projector-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -4222,6 +4234,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T05:29:05.816Z",
       "actor": "classroom-projector-critic"
+    },
+    "gate-l2-projector-dissent": {
+      "id": "gate-l2-projector-dissent",
+      "wave": 3,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T05:29:18.055Z",
+      "actor": "classroom-projector-critic"
     }
   },
   "meetings": {},
@@ -4263,7 +4284,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 235,
-  "eventHead": "6d5776047768561c633463dbc5c70ca853dd85e501395980f1e2e8495c765c30",
+  "eventCount": 237,
+  "eventHead": "4a2893c66cb7b49c67ef9491b96112c1ac6dfecf71e7863cca33e15326a674da",
   "warnings": []
 }
