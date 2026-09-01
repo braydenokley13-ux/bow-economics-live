@@ -26,8 +26,8 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:15:51.424Z",
-  "currentWave": 2,
+  "updatedAt": "2026-09-01T02:16:33.059Z",
+  "currentWave": 3,
   "waves": {
     "1": {
       "number": 1,
@@ -1625,6 +1625,138 @@
       "repairs": 1,
       "startedAt": "2026-08-31T22:08:22.741Z",
       "closedAt": "2026-09-01T02:15:51.424Z"
+    },
+    "3": {
+      "number": 3,
+      "status": "active",
+      "contract": {
+        "hypothesis": "The three carried L1 blocking dissents can be discharged by narrow fixes verified by their owning critics (class-scale counterfactual frame with an honest per-row e2e instrument; frontier-staged two-books card; visual and projector re-adjudication of the repaired surfaces), and L2 'You Don't Play Alone' (host the league: visitor draw fills your building; reinvest-in-Draw) can then be built to the standard L1 reached — STRONG or better on independent play, economically true under the same harness discipline, teacher-ready via the established director layer, privacy-clean — at materially lower gate cost by reusing L1's proven patterns.",
+        "whyThisMatters": "L1 is one bounded bundle away from a clean anchor; L2 is the module's interdependence lesson (the deep unowned M2 concept per the economic contract) and the first test of whether the L1 patterns (director layer, tuning-harness discipline, board grammar, confirm-guards) genuinely transfer to a second lesson at lower cost.",
+        "uncertainties": [
+          "Whether the L2 hosting loop (FUNCTIONAL at Stage-0) can reach STRONG at classroom fidelity — the decomposition reveal must let a player attribute a night's gate correctly from the UI alone (BC-5).",
+          "Whether real class interdependence (my draw fills your building) stays legible and attributable at 6-15 desks.",
+          "Whether the reinvest-in-Draw dial carries real decisions across a multi-week season without dominating or dying.",
+          "Whether L1->L2 session seeding (renewals/books carrying forward) earns its cost per D9's persist-only-when-yesterday-creates-today's-problem rule."
+        ],
+        "requiredEvidence": [
+          "Owning-critic discharge of all three carried dissents (play fold at 12+ desks with per-row+summary e2e assertions; econ frontier-staged card; analyst clause closed via visual and projector re-adjudications on rendered output).",
+          "Full runtime suite green via evidence command; L2 module tests; an L2 tuning-harness family with honest exit codes.",
+          "Rerunnable three-surface L2 e2e with zero console errors and class-size assertions from day one.",
+          "Independent gameplay report on the built L2: STRONG or better, including the BC-5 attribution check.",
+          "Independent economic-truth report on L2 mechanisms (externality/joint-product instantiation, dominant-strategy hunt, synthesis chain).",
+          "Dated sports-reality verification of L2's real content (the Fever/arena-move anchors or successors).",
+          "Fresh-context teacher-transfer review of L2 using the director layer.",
+          "Classroom/projector review of L2's board grammar and fallbacks; board privacy verified.",
+          "M1 and M2-L1 regression evidence at the wave's final head.",
+          "Analyst reconciliation of the wave's claims."
+        ],
+        "nonGoals": [
+          "L3 implementation (next wave).",
+          "Re-litigating the felt-scale bar or further L1 constant retuning for drama (analyst: structural).",
+          "New harness properties beyond fixing P16's dead limb and L2's own family.",
+          "Broad visual polish beyond the dissent-driven repairs and L2's own premium bar.",
+          "Any claim of classroom readiness (D10 rung unchanged).",
+          "Module 1 changes beyond proven-regression fixes."
+        ],
+        "sacredConstraints": [
+          "All Wave-1/Wave-2 sacred constraints carry forward unchanged (D1-D19, BC-1..BC-7, board privacy, bearer key, teacher fallbacks, LessonModule boundary, founder merge control).",
+          "Open dissent l3-sharing-argmax remains visible; BC-1 governs the L3 wave, not this one.",
+          "The e2e instrument repair may not be weakened to pass (per-row and summary visibility at 12+ desks is the assertion).",
+          "Critic re-adjudications are owned by the original roles; ledger actors must show the owning role identity."
+        ],
+        "passCondition": "All three carried dissents resolved with owning-critic discharge lines; L2 built and independently gated STRONG+ with econ-sound mechanisms, teacher-ready flow, privacy-clean board; deterministic tier green at the final head including M1 and M2-L1 regression proofs; analyst reconciliation without a blocking no-pass dissent.",
+        "repairCondition": "Named findings with bounded repair paths remain within this wave's repair budget (3), each tracked as a dissent with an owning critic.",
+        "rollbackCondition": "L2 work regresses L1's verified behavior or Module 1 (test or e2e regressions attributable to this wave) beyond repair budget: revert to checkpoint 5cf1a58cc201e2d0e18239fcd2e7596b8e55ade2.",
+        "killCondition": "Independent play shows the hosting loop cannot exceed FUNCTIONAL at classroom fidelity for structural reasons after the budgeted repairs — the L2 slot returns to architecture-level rework rather than shipping a below-bar flagship.",
+        "iterationBudget": {
+          "maximumWaves": 6,
+          "maximumRepairs": 3,
+          "softTokenBudget": 0,
+          "reason": "Wave 3 of the program budget: one close-out bundle plus one lesson build, with the L1 gate roster reused in focused form rather than at full cost."
+        }
+      },
+      "contractAmendments": [],
+      "activation": {
+        "level": 3,
+        "levelName": "QUALITY_WAR",
+        "scopes": [
+          "economic-model",
+          "demand",
+          "revenue",
+          "teach",
+          "board",
+          "sports-reality",
+          "visual",
+          "gameplay"
+        ],
+        "roles": [
+          "browser-qa",
+          "builder",
+          "classroom-projector-critic",
+          "economic-truth-critic",
+          "experience-director",
+          "lead-integrator",
+          "player-gameplay-critic",
+          "product-analyst",
+          "regression-hunter",
+          "sports-reality-director",
+          "teacher-transfer-critic",
+          "visual-experience-director"
+        ],
+        "blockingRoles": [
+          "classroom-projector-critic",
+          "economic-truth-critic",
+          "sports-reality-director",
+          "teacher-transfer-critic"
+        ],
+        "evidence": [
+          "analyst-report",
+          "browser-trace",
+          "economic-truth-report",
+          "gameplay-report",
+          "git-diff",
+          "projector-report",
+          "sports-reality-report",
+          "teacher-transfer-report",
+          "test",
+          "visual-report"
+        ],
+        "matchedRules": [
+          "economic-model",
+          "sports-reality",
+          "teacher-surface",
+          "projector",
+          "gameplay",
+          "visual"
+        ],
+        "softAgentBudget": 14,
+        "softMeetingBudget": 2
+      },
+      "assignments": {
+        "closeout-l1": {
+          "assignmentId": "closeout-l1",
+          "role": "builder",
+          "actor": "builder-l1-closeout",
+          "model": "claude-opus-5",
+          "reason": "Wave-3 opening bundle: the analyst's repair list — class-scale counterfactual frame + honest per-row e2e instrument, frontier-staged two-books card, HOUSE_RULES[2] bound, N5 /play attribution parity, P16 dead limb",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T02:16:33.059Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        }
+      },
+      "evidenceIds": [],
+      "claimIds": [],
+      "dissentIds": [],
+      "meetingIds": [],
+      "gates": [],
+      "verdict": null,
+      "repairs": 0,
+      "startedAt": "2026-09-01T02:16:32.812Z",
+      "closedAt": null
     }
   },
   "evidence": {
@@ -3185,6 +3317,13 @@
       "reason": "known-good: architecture war closed, C selected, tree clean",
       "at": "2026-08-31T22:07:33.198Z",
       "actor": "lead-integrator"
+    },
+    {
+      "commit": "5cf1a58cc201e2d0e18239fcd2e7596b8e55ade2",
+      "branch": "claude/module-2-money-motion-quality-77dedf",
+      "reason": "known-good: Wave 2 closed, L1 built + gated, M1 unregressed at head",
+      "at": "2026-09-01T02:15:53.168Z",
+      "actor": "lead-integrator"
     }
   ],
   "overrides": [],
@@ -3195,19 +3334,19 @@
   "linkedPrecedents": [],
   "shipCases": [],
   "metrics": {
-    "waves": 2,
+    "waves": 3,
     "repairs": 1,
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 33,
+    "agentsActivated": 34,
     "gateFailures": 1,
     "claimsContradicted": 1,
     "evidenceRecorded": 56,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 171,
-  "eventHead": "e5ccae0181236a1031ff9eaec5167f0c895a994f0f8849cab54de5446e8bc215",
+  "eventCount": 174,
+  "eventHead": "a3dabbbccbdf1900ff4a6a15ffa7dc6622716afd20a1a8ce39c71789ba818a26",
   "warnings": []
 }
