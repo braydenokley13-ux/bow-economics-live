@@ -356,3 +356,114 @@ product ships "No link — stock/expansion franchises only" as a first-class
 option and tells the teacher it is fine; a first-time teacher has no completed
 L2 by construction; and the effort-went-up branch is reachable in a linked room
 too, because the CONDITION is designed to raise reinvestment.
+
+---
+
+## RE-CHECK AFTER W4 FINAL REPAIR
+
+Owning-critic confirm-or-refute of dissent `teacher-l3-not-ready`. Boss run
+`m2-quality-war`, assignment `recheck-l3-teacher`. All six original repros were
+re-run on **PORT 4413** against a freshly built server, mechanics taken only
+from `runtime/scripts/e2e-m2l3.cjs`. Every verdict below is read off the
+rendered surface (`/teach`, `/play`, `/board`), not off a repair note.
+
+Sessions run this recheck (all **observed**, evidence id `gate-l3-teacher`):
+`BOWTEW` and `BOW6WM` — zero-student rehearsals, the landing page's own
+prescription. `BOW49P` — 6 desks unlinked, one desk that never proposes, full
+arc to CONSEQUENCE, with guard probes and a post-vote late joiner.
+`BOW6VU` → `BOWXLX` — an M2 L2 run driven to COMPLETE at 0% put-back, then the
+**L2-linked** L3 run, so the room's effort rises. A second linked pair with a
+split L2 basis. A 3-desk league with unclaimed clubs, for the takeover branch.
+Zero console errors on any surface in any session, including the late joiner's
+device — the `409` is gone.
+
+### The six repros
+
+- **B1 — the `BOWERR` contradiction case. FIXED.** In `BOWXLX` the console and
+  the projector both read "Last lesson this room put back $0 a week … Under the
+  rule you wrote, it put back $618,224 a week. Effort went up by $618,224 a
+  week", and the ASK printed under it reads "Whose effort went **UP** — and what
+  was it about the rule that paid you for it?", with a matching answer key and a
+  WATCH FOR entry that says in as many words "Do not let the discussion assume
+  effort fell if this list is the longer one." Question and computed line agree.
+  Verified on the rendered surface in two independent linked runs. The `down`
+  and `flat` branches exist in `consequenceBeat` (`writeTheRule.ts`) off the same
+  direction atom — **inferred from source, not observed this recheck**.
+- **B2 — the unlinked run. FIXED.** In `BOW49P` CONSEQUENCE now reads "There are
+  no Lesson 2 numbers linked to this session, so the before-and-after bar has one
+  bar in it. Use the rule's own before-and-after instead: the arrows at stage 4",
+  and the substitute ASK — "Under this rule, what became the best thing to do
+  with a dollar — and did anybody DECIDE that, or did it just stop being worth
+  it?" — is on the board *and* the console, with the answer key "There is no
+  Lesson 2 bar in this room, so do not fish for one." The bar is computed in
+  dollars per week on a stated common basis (`LESSON 2 / WK` vs `LESSON 3 / WK`,
+  "Both figures are DOLLARS, because the two lessons' dials are percentages of
+  different money"), with honest `no L2` cells. LOBBY warns before the period
+  starts: "No Lesson 2 session is linked. Say so plainly."
+- **B3 — the mid-PLAY advance click. FIXED.** Both controls now guard, in both
+  sub-phases, and the phase did not move when I dismissed. Mid-vote `Advance ▸`:
+  "Round 1 of 3 is still open (5/6 desks have a number in, 1 abstaining so far).
+  This is NOT the round step and it is NOT the week bell — advancing now abandons
+  the rest of the vote AND the whole three-week season … Restore last good state
+  is the only way back." `Jump to REVEAL` carries its own labelled variant.
+  Mid-season: "Week 1 of 3 is still open (3/6 desks locked in) … ends the season
+  early, so 2 weeks will never be played. 3 desks have not locked; they settle at
+  their club's house price … marked AUTO."
+- **B4 — the post-vote late joiner. FIXED.** Observer branch (`BOW49P`, all six
+  clubs taken): the device reads "YOU ARRIVED AFTER THE LEAGUE CLOSED … Sit with
+  the desk next to you — you are on their club now", prints the rule in force,
+  and carries the how-today-works panel. No "finding your club…", no `409`.
+  `/teach` raises "1 pair arrived after the league closed and could not be given
+  a club — Late pair 1 … Seat them with a neighbouring desk." Takeover branch
+  (3 desks, 6 clubs, joined at week 2): the pair is seated on Desk 4 · Oklahoma
+  City with the played week 1 recap and the rule in force, and `/teach` raises
+  "Took over a league-office club after the vote had started."
+- **B5 — the rehearsal path. FIXED.** The landing page now reads "Do **not** just
+  press Advance ▸ through PLAY … Rehearse PLAY with its own controls — the round
+  step … and the week bell", and PLAY's WATCH FOR carries a rehearsal card,
+  "The interior of PLAY is where this rehearsal has to go", naming
+  `Close round 1 of 3` / `Run the two-thirds test` / `Close week 1` and the exact
+  press order. Walked literally with zero students in `BOW6WM`: five rule-step
+  presses reached ROUND 2, ROUND 3, ROUND 3 · SEALED, THE RULE THAT HELD, WEEK 1
+  OF 3, then three week bells reached WEEK 2, WEEK 3 and "All three weeks are in
+  the books". The prescribed rehearsal now rehearses the interior.
+- **B6 — the non-proposer screen. FIXED.** In `BOW49P` Desk 6 · Boston, holding
+  out in round 1, reads on its own device: "YOU HAVE NOT PUT A NUMBER IN … A desk
+  with no number in has ABSTAINED: it is not counted in the room's middle number,
+  and it cannot be inside the ten-point band — so the two-thirds test counts it
+  as a desk that did not back the rule." The director's claim ("Its own screen
+  says exactly that") is now true.
+
+### Residual, non-blocking, new this recheck
+
+- **N9 —** On the B4 takeover branch the director says "They did not write this
+  rule and their club's earlier weeks were played by the league office. **Their
+  own screen says so.**" The takeover desk's full screen carries the rule in
+  force and a `WEEK 1 — HOW IT WENT · AUTO` recap, but never says it took over a
+  league-office club or that the rule was voted before it arrived. Same defect
+  class as B6, on the new branch, with a much smaller payload.
+- **N10 —** In the `up` branch the console asserts "nobody had to decide to try
+  harder" as fact, while the answer key's honest answer is conditional — "the
+  CONDITION, **if** the room voted it in". In `BOWXLX` the adopted rule was
+  CONDITION **OFF** and effort still rose, and that case has a question but no
+  applicable key.
+- **N11 —** The observer late joiner is still counted in `JOINED` (7 for six
+  desks) and listed in the join list. The WATCH FOR entry now explains it, so it
+  no longer misleads.
+- N1, N2, N4–N8 from the original gate were **not re-tested** this recheck —
+  **NOT VERIFIED**. N3 is fixed in passing: the PLAY NOW panel now names
+  `Operate the league office's rule` and says what it does before it is pressed.
+
+**TRANSFER: READY**
+
+**DISSENT teacher-l3-not-ready: DISCHARGED**
+
+The dissent was recorded against treating B1 or B2 as cosmetic on the grounds
+that a well-run L3 follows a completed L2. Neither was treated that way: the
+CONSEQUENCE question is now computed from the same direction atom as the line
+above it, and the unlinked room got a real substitute instrument and a warning
+at create time and at LOBBY. Still **NOT VERIFIED** and unchanged from the
+original gate: the `down` and `flat` CONSEQUENCE branches on the rendered
+surface, economics correctness, sports-reality dating, projector legibility, and
+whether the period fits 50–60 minutes with real children. Nothing here is
+classroom-proven (D10).
