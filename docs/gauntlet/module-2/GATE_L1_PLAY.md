@@ -382,3 +382,222 @@ loop survived the port intact and every named cause above is bounded and tunable
 Integrator wishes to record STRONG on the strength of the loop alone, I dissent — the classroom
 layer is the thing this wave was built to prove, and P1 currently makes the room's own evidence
 argue against the lesson.
+
+---
+
+# RE-RATE AFTER REPAIR ROUND 1
+
+Same Player / Gameplay critic, fresh session, Boss run `m2-quality-war`, assignment `recheck-l1-play`.
+I did not build any part of the repair.
+
+**Method (observed unless marked).** Rebuilt `runtime/dist` this session, ran the shipped server on
+**PORT 4332**, real Chromium via Playwright, six pages: `/teach` (1280x900), `/board` (1600x900), four
+`/play` seats at 1024x600. One complete session, LOBBY → HOOK → 5 blind nights with the teacher's bell
+→ manual Two Peaks after N3 → 7 REVEAL stages → ADAPT → COUNTERFACTUAL → SYNTHESIS → COMPLETE. I read
+each screen before choosing the next price; no scripted line. Four deliberately different strategies:
+
+| desk | market | line played |
+|---|---|---|
+| 1 · Rae & Ben | New York | adaptive card-reader $20/$34/$44/$54+bowl/$40, event money on N1 and N3 |
+| 2 · Nour & Ivy | Memphis | season-plan $16 all five nights, **max $60,000 event spend every night** |
+| 3 · Ari & Tal | New York | high-price explorer $88/$70/$70/$70, then stalled on N5 (auto-committed $24) |
+| 4 · Sam & Jo | Memphis | under-plan $10–$12 all five nights, bowl on N4 |
+
+Final books: D1 $2,055,692 / 68% · D2 $729,584 / 100% · D3 $737,644 / 34% · D4 $530,660 / 25%.
+Zero console errors across all six pages (observed, this session — unlike the first gate, my server
+survived). Screenshots `docs/gauntlet/module-2/screens-l1-gate/r1-01…r1-18`. Server killed; port 4332
+confirmed closed. Boss evidence referenced: `arch-selection` (BC charter), `l1-e2e` /
+`l1-e2e-browser` (builder proof, not inherited), `l1-tuning-harness` (constants), `gate-l1-econ`
+(renewals tent). Real 10–11-year-olds, real timing and real discussion volume remain **NOT VERIFIED**;
+I rate structural pull, not felt pull.
+
+## 1 · Does the unpooled chart produce honest, legible argue-fuel?
+
+**Honest: yes. Legible: half the room. Money-comparable: no.**
+
+*Observed* `r1-11-board-reveal-allnights.png`, `r1-13-board-adapt.png`: 20 desk-nights, one mark each,
+**colour = market** (blue NY / orange MEM), **shape = night** (dot / square / triangle / diamond /
+ring), **no joining stroke**, an on-chart key naming both encodings, labelled axes ($10…$120 ·
+0k…25k), and the caption "Compare dots of the SAME colour and the SAME shape — that is one building on
+one night, and only that is a demand curve. Different nights are different crowds, so they are never
+joined up." No rendered series contains an upward-sloping segment, because there are no series. The
+picture no longer argues against the lesson. **P1's geometry test passes.**
+
+Three defects remain, in severity order.
+
+**1a — The COUNTERFACTUAL board tells the room to read dots that are not on the screen.** *Observed*
+`r1-14-board-counterfactual.png`: the instruction in the largest type on the board reads "Find one
+night on the board — one colour, one shape — where two desks in the same building charged different
+prices… Explain how, using those dots, not a guess." The scatter is **not rendered in the
+COUNTERFACTUAL phase** — it exists in REVEAL and ADAPT only. The room's designated argue-fuel points
+off-screen at the exact moment the argument is asked for. This is new: it was introduced by the repair
+rewriting the prompt to reference the chart without putting the chart on that phase.
+
+**1b — The Memphis half of the evidence is an unreadable blob.** *Observed*, same two shots: all ten
+Memphis desk-nights land between $10 and $16 and render as ~10 overlapping orange marks inside a
+~50px box; N1-dot, N2-square, N3-triangle and N5-ring are indistinguishable on a projector. This is
+not bad luck — the Memphis plan price is $16 and the renewals rule punishes undercutting it, so a
+Memphis room will bunch at the low end every time. Half the class is asked to argue from a smudge.
+The New York half is genuinely readable (blue N3 triangles at $44/12.8k vs $70/4.5k is a real,
+comparable, arguable pair).
+
+**1c — The chart shows people; the argument is about money.** The instruction asserts "Somebody in this
+room made more money by charging less," but PEOPLE WHO CAME is the only axis. To answer, a pair of
+grade-5 students must multiply 12,822 x $44 against 4,450 x $70 off gridline estimates. In this room
+the N4 blue diamonds actually **contradict** the assertion in money terms ($54 → 22,200 → $983,400 vs
+$70 → 17,400 → **$1,011,200**), so a sharp desk that picks the wrong comparable pair reaches the
+opposite conclusion and is right. *Inferred*: the assertion is safe on N1/N3 and false on N4; nothing
+on the board steers the room to a valid pair.
+
+**1d — Headline copy still contradicts its own caption.** The chart is still titled "THE ROOM'S OWN
+CURVE · N1 · N2 · N3 · N4 · N5" and the footnote still says "These demand curves are modeled on real
+market differences," two lines above a caption explaining that the picture is *not* a curve. P1's
+third clause ("stop calling the pooled picture a curve") is not discharged, though the harm is now
+copy-level, not geometry-level.
+
+## 2 · Does Two Peaks land as proof?
+
+**Yes — this is the strongest repair in the round.** *Observed* `r1-05-board-two-peaks.png`: two money
+panels, each with a dashed "tickets alone" curve and a solid "tickets + what they spend inside" curve,
+**both peaks marked with a labelled dot and a drop-line**, the peak prices in big type ($50 → $40 New
+York, $40 → $34 Memphis), a legend, the dial translation "$10 lower · 5 clicks of the dial," and the
+claim last: "The cheaper ticket made more money." The eye can verify the claim without the sentence:
+the solid peak is visibly left of and above the dashed peak. The room is no longer told a conclusion
+it cannot check. It also reappears per-market on `/play` at REVEAL (observed on Desk 2).
+
+Two smaller notes. (i) *Observed* text collision at 1600x900: "Tickets + what they spend inside peak
+at$34" — no space before the Memphis figure, and the "$50"/"$40" right-hand numbers crowd the label
+line. (ii) *Observed pacing*: released after Night 3, the panel prints the profit-maximising price band
+onto the projector **before the room prices Night 4**, the biggest decision of the lesson. Teacher-gated,
+so it is a teachable choice, not a leak — but `/teach` gives no guidance that holding it until after N4
+preserves the last blind decision.
+
+## 3 · Do tomorrow's card + payback line make the night-spend a reasoned decision?
+
+**Yes, before the commit. No, after it.**
+
+*Observed* `r1-01-play-night1-dials.png`: above the spend dial sits a boxed "TOMORROW · Night 2 ·
+Saturday · a solid playoff club · draw 51/100 · local TV" plus "Every $100 here brings about 1 extra
+person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside
+the building, so the money comes back only on a night you can charge for. It comes back as nothing at
+all if tomorrow sells out without them." Memphis correctly prints **$63**, its own conversion rate.
+On Night 5 the block becomes "AFTER TONIGHT — Nothing. Tonight is the last night of the five — money
+spent on the event tonight has no night left to land on." Two further honest guards *observed*: a desk
+in the red has the dial locked at $0 with the reason printed (Desk 3, N2 onward). The chain
+now exists: tomorrow's card + rate + waste condition = a decidable question. That is a real repair.
+
+What is missing is the **receipt**. Desk 2 spent $300,000 across five nights and Desk 1 $60,000; no
+night recap, no REVEAL stage, no `/play` season replay and no SYNTHESIS card ever says how many extra
+people that money brought, or that it was wasted. Desk 2's N2 and N4 both sold out — the exact
+"nothing at all" case the pre-commit copy warns about — and the recap prints "Making it an event
+−$60,000" beside "1,708 people wanted in and could not get a seat" **without connecting them**
+(observed, `r1-07-play-shock-soldout.png`). The rule is now stated; it is still never confirmed or
+refuted by the game. A pair that ignored the paragraph learns nothing afterwards.
+
+Also *observed*: the payback paragraph is three lines of the smallest grey type on the screen — the
+most economically load-bearing sentence in the student surface rendered at the lowest visual priority.
+
+## 4 · Regression check on the felt loop after the renewals retune
+
+**No regression. Pricing is now consequential in both directions — and the reason is invisible.**
+
+*Observed*, one session, four desks:
+
+| desk | price vs plan | renewals path |
+|---|---|---|
+| 1 · NY | above plan ($34/$44/$54 vs $24) | 50 → 47 → 55 → 65 → 72 → 68 |
+| 2 · MEM | exactly at plan, max spend | 50 → 62 → 74 → 86 → 98 → **100** |
+| 3 · NY | far above plan ($88, empty building) | 50 → **30** → 16 → 20 → 28 → 34 |
+| 4 · MEM | **below** plan ($10–$12), full houses | 50 → 43 → 37 → 33 → 29 → **25** |
+
+Desk 4 is the retune working: a desk that fills its building every night and still watches its second
+book fall for five straight nights. That is the two-books tension the module exists to teach, and it
+did not exist in the old shape. The `/play` two-scoreboard header keeps it in the pair's face all
+lesson. Desk 1 shows the other arm — above-plan pricing *gaining* renewals on big cards.
+
+**The regression risk this creates:** nothing anywhere tells a student that pricing below the season
+plan costs renewals. *Observed*, exhaustively across this session: `/play` prints only "Season plan
+$16 a seat"; the night recap prints the delta with no cause; the seven REVEAL stages, ADAPT,
+COUNTERFACTUAL and all six SYNTHESIS cards never state the rule. (Cross-checked against the shipped
+client copy: the only student-facing strings containing "season plan" are the card chip, the dial
+label, the empty-history line and the counterfactual row — no explanation anywhere.) So the dial that
+drives half the scoreboard is now exactly where the night-spend dial was before this repair round:
+consequential, honest, and unexplained. Desk 4's pair finishes the period at 25% renewals with a full
+building and no sentence to attribute it to. Per CLAUDE.md §1, uncertainty during play must become
+interpretable afterward — here it does not.
+
+Other loop beats re-verified this session (all *observed*): blind commitment intact ("No preview…");
+the bell as a single synchronized settle; FULL HOUSE + turned-away line intact, and **it now survives
+the bowl** (Desk 1 opened the bowl at $54, filled 22,200 and still turned away 700 — the repair kept
+the best sentence in the lesson on the yes-branch); N5-repeats-N1 landing hard on Desk 2 (14,740 →
+17,794 at an unchanged $16); the stalled desk auto-committed at the plan price and labelled `AUTO`;
+no student name on `/board` in any phase; the teacher's WATCH FOR panel naming three real desks for
+three real reasons (`r1-17-teach-console.png`).
+
+Still unrepaired from the first gate, and re-observed this session: the top-of-dial dead zone ($88 in
+New York on N1 → **0 of 19,800**, −$520,000, −20 renewals in one night — P7); the unfurnished
+`/play` wait (`r1-03`, no "how many desks are left" — P5); the Chromebook fold (the rejoin PIN still
+holds the top ~200px and LOCK IT IN sits at y≈947 in a 600px viewport, so every pair scrolls to price
+every night — P9); the SYNTHESIS card "NIGHT 5 WAS NIGHT 1" still ending "same price — **different
+building**" (P8). One new copy note: the repaired REVENUE card correctly quotes one market and one
+night, but the pair it quotes is "$20 and 17,950 came / $88 and 0 came" — the lesson's headline
+economics card now rests on the one number a sports-literate student will refuse to believe.
+
+## 5 · Rating
+
+**RATING: STRONG**
+
+Movement from FUNCTIONAL is earned on four things I verified this session, not inherited: the class
+evidence is no longer false (1); Two Peaks is a picture that proves its own sentence (2); the
+night-spend dial became a decidable question instead of an unsignposted trap (3); and the renewals
+retune gave under-pricing a real cost, which turns the two books from a display into a dilemma (4).
+The loop produces reasoning, surprise, attribution and argument, and the class layer now supplies
+argue-fuel that survives being read literally by a ten-year-old.
+
+Not MAGNETIC, for one reason above all others: **the second half of the period is still eleven teacher
+clicks during which no student device accepts input**, and five of those clicks (REVEAL stages 1–5)
+change nothing on the board except the chart title gaining "· N4" and five more dots appearing. There
+is no per-stage sentence, no callout, no "look what N3 did." *Observed* across all seven stages this
+session.
+
+**Biggest remaining boredom source: REVEAL stages 1–5 on the projector.** It is the moment the lesson
+converts private play into public evidence, and it currently spends four of its five beats silently.
+Runner-up, unchanged from the first gate: the five locked-and-waiting stretches on `/play`.
+
+*Not felt, only structural.* I cannot judge whether a real pair leans forward at the bell, whether the
+argument at ADAPT actually breaks out, or whether the room stays with a chart for four minutes. Those
+remain NOT VERIFIED until a real class plays it.
+
+## Repairs still required (updated)
+
+**BLOCKING (student-pull):**
+
+- **P1-b (new) — put the dots on the COUNTERFACTUAL board, or stop pointing at them.** *Test:* every
+  phase whose copy instructs the room to read the chart renders the chart in that phase.
+- **P10 (new) — name the renewals rule somewhere the student sees it.** *Test:* a pair that priced
+  below the season plan all five nights can state, by the end of the period, why their renewals fell
+  while their building was full. One dial-side line pre-commit plus one REVEAL or SYNTHESIS line is
+  enough; do not soften the mechanic.
+
+**NON-BLOCKING, in order:** separate the Memphis cluster (jitter, per-market panels, or a per-market
+x-scale) so the low-price half of the room is readable on a projector (1b) · give REVEAL stages 1–5 one
+sentence each (P4, unrepaired) · give the room a money view of its **own** dots, or steer the
+"charged less, made more" prompt to a valid pair, since N4 contradicts it (1c) · retitle the pooled
+chart and its footnote (1d) · print a receipt for the night-spend at settlement or REVEAL (P2 second
+clause) · P5, P7, P8, P9 unchanged from the first gate · fix the "peak at$34" text collision.
+
+## Dissent
+
+**DISSENT play-board-curve-pooled: DISCHARGED.**
+
+The joined polyline is gone, every mark is attributable to a market and a night by two independent
+encodings plus an on-screen key, the caption states the comparison rule in student language, and no
+rendered series contains a higher-price/higher-attendance segment. The residue — the surviving "CURVE"
+headline (1d), the Memphis cluster (1b), and the chart-less COUNTERFACTUAL instruction (1a) — is
+recorded above as separate findings, not as continuation of this dissent.
+
+**New dissent recorded: `play-l1-renewals-unexplained` (BLOCKING, student-pull).** The renewals book
+now drives half the outcome and half the classroom argument, and no student-facing surface states the
+rule that governs it at any point in the period. This is the same failure class the round just
+repaired on the night-spend dial, relocated. I do not consider the lesson classroom-ready while a desk
+can finish at 25% renewals with a full building and no available explanation.
