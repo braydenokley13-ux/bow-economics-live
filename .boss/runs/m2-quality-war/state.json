@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T02:03:21.614Z",
+  "updatedAt": "2026-09-01T02:07:01.628Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1009,7 +1009,8 @@
         "l1-tuning-r3",
         "l1-e2e-r3",
         "gate-l1-teacher-r3",
-        "gate-l1-play-r3"
+        "gate-l1-play-r3",
+        "gate-l1-econ-r3"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1034,7 +1035,8 @@
         "teacher-l1-night5-now",
         "recheck2-l1-teacher-dissent",
         "play-l1-repairs-below-fold",
-        "recheck2-l1-play-dissent"
+        "recheck2-l1-play-dissent",
+        "econ-l1-two-book-baseline"
       ],
       "meetingIds": [],
       "gates": [],
@@ -2020,6 +2022,24 @@
       },
       "recordedAt": "2026-09-01T02:03:07.253Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-econ-r3": {
+      "id": "gate-l1-econ-r3",
+      "wave": 2,
+      "kind": "economic-truth-report",
+      "label": "Econ re-check r3: N5 attribution DISCHARGED (probe wider than P16: residual 0, biggestChannel 168/168, 18/18 inversions named). Tradeoff SPLIT: frontier REAL (22/24 undominated, marginal cost rising 50x) — accept-with-reason on felt-scale; zero-headroom refuted (30/4.5 passes with headroom). NEW BLOCKING: two-books card prices renewals 47-70x too steep vs a Pareto-dominated baseline. Non-blocking: demand-floor identity edge; HOUSE_RULES[2] +2 false in 62-65% of states",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-econ-r3--GATE_L1_ECON_R3.md",
+      "sha256": "f4287bb102ba1b58350ea72a03f9eab288da8b417f121ee9f5118720af6889e3",
+      "size": 33250,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "wave-2",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T02:07:01.141Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -2335,9 +2355,12 @@
         "gate-l1-econ-r2"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T01:10:30.798Z",
-      "actor": "economic-truth-critic"
+      "actor": "economic-truth-critic",
+      "resolution": "Independently re-verified wider than the builder's own harness: decomposition identity residual 0 across 168 full-season cases, biggestChannel correct 168/168, all 18 sign inversions correctly naming spend, rendered card verified in five real sessions. Critic's explicit line: DISSENT econ-l1-n5-attribution: DISCHARGED. Successor finding tracked as econ-l1-two-book-baseline.",
+      "resolvedAt": "2026-09-01T02:07:01.381Z",
+      "resolvedBy": "lead-integrator"
     },
     "recheck2-l1-econ-dissent": {
       "id": "recheck2-l1-econ-dissent",
@@ -2396,6 +2419,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T01:19:02.440Z",
       "actor": "lead-integrator"
+    },
+    "econ-l1-two-book-baseline": {
+      "id": "econ-l1-two-book-baseline",
+      "wave": 2,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "The two-books synthesis card prices renewal points 47-70x too steep because it compares against a Pareto-dominated baseline line rather than the frontier; narrow fix — compute the card's price-per-point along the true frontier. Also open: reframe P14's zero-headroom source comment (30/4.5 passes with headroom, refuting the builder's ceiling claim); non-blocking demand-floor identity edge (a '0 then 0' card reachable from $58 Memphis) and HOUSE_RULES[2] +2 clause false in 62-65% of states. GATE_L1_ECON_R3.md.",
+      "evidenceIds": [
+        "gate-l1-econ-r3"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T02:07:01.628Z",
+      "actor": "economic-truth-critic"
     }
   },
   "meetings": {},
@@ -2426,11 +2463,11 @@
     "agentsActivated": 29,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 49,
+    "evidenceRecorded": 50,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 146,
-  "eventHead": "3d0372839471b60663e1eb860b7956a58f7236272185d246f509ab56ee7cf317",
+  "eventCount": 149,
+  "eventHead": "5f401b5652f3433c53216f280e4f4c326b3ddcb3d3881677393c7a89d4f1a983",
   "warnings": []
 }
