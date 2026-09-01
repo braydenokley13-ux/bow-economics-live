@@ -1378,7 +1378,8 @@ function auditClaims(surfaces, truth, state) {
     overInvested !== null &&
     underProvided !== null &&
     armCRoom !== null &&
-    armDRoom !== null;
+    armDRoom !== null &&
+    armARoom !== null;
   const coversRequiredIds = [
     "spillover.externalPct",
     "spillover.jointDirection",

@@ -2685,12 +2685,21 @@ body.hl-has-lockbar main {
   max-width: 1000px;
 }
 
-/* THE DECISION SURFACE (play N-2). Context on the left, the two dials on the
-   right, the settlement — when the bell has just rung — spanning both above
-   them. Collapses to one column on anything narrower than a Chromebook. */
+/* THE DECISION SURFACE (play N-2, then N-6).
+   EVIDENCE on the left — last week's settlement and the history table. THE
+   DECISION on the right — who is visiting, the star departure, the schedule
+   strip and both dials, together, in the same place in every week.
+
+   N-6: round 3 span-ed the settlement full width ABOVE both columns, which
+   cleared week 1 and pushed the entire decision set 350-700px below the fold in
+   weeks 2 and 3 — the pair could see last week and a pinned LOCK button and
+   nothing else. The settlement is evidence, so it lives in the evidence column
+   and the two coexist in the band instead of taking turns.
+   Collapses to one column on anything narrower than a Chromebook, decision
+   first, because on one column the decision is what the pair came for. */
 .hl-decide {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(316px, 356px);
   gap: 12px;
   align-items: start;
 }
@@ -2702,9 +2711,60 @@ body.hl-has-lockbar main {
 .hl-decide > .hl-col-decide {
   min-width: 0;
 }
-.hl-decide > .hl-col-decide > .fh-dials {
+.hl-decide > .hl-col-decide > .hl-week-card {
   margin-top: 0 !important;
 }
+/* N-6: inside the decision column the three parts of one decision sit tight
+   together, so the whole set clears a 600px Chromebook fold above the bar. */
+.hl-decide > .hl-col-decide .fh-dials { margin-top: 8px !important; padding: 10px 12px !important; }
+.hl-decide > .hl-col-decide .hl-slate-block { margin-top: 8px !important; }
+.hl-decide > .hl-col-decide .hl-matchup { grid-template-columns: 1fr; gap: 4px; }
+.hl-decide > .hl-col-decide .hl-matchup-side { display: grid; grid-template-columns: 92px 1fr auto; gap: 6px; align-items: baseline; padding: 4px 8px; }
+.hl-decide > .hl-col-decide .hl-matchup-label { font-size: 9.5px; grid-row: 1; }
+.hl-decide > .hl-col-decide .hl-matchup-club { font-size: 15px; grid-row: 1; }
+.hl-decide > .hl-col-decide .hl-matchup-who { font-size: 10px; grid-row: 1; text-align: right; }
+.hl-decide > .hl-col-decide .hl-matchup-draw { grid-column: 1 / -1; grid-row: 2; margin-top: 0; font-size: 11px; }
+.hl-decide > .hl-col-decide .fh-slate-row {
+  font-size: 11px; padding: 2px 5px; gap: 6px; white-space: nowrap;
+  grid-template-columns: 62px 1fr 1fr;
+}
+.hl-decide > .hl-col-decide .fh-slate { gap: 3px; margin-top: 3px; }
+.hl-decide > .hl-col-decide .fh-price-readout { font-size: 26px; margin: 2px 0; }
+.hl-decide > .hl-col-decide .hl-reinvest-rule { font-size: 11.5px; line-height: 1.3; margin-top: 5px; }
+.hl-decide > .hl-col-decide .fh-blind-note { margin-top: 6px; font-size: 11px; }
+.hl-decide > .hl-col-decide .hl-shock { font-size: 11.5px; line-height: 1.3; padding: 5px 8px; margin-top: 6px; }
+.hl-slate-terse { padding: 0; background: none; border: none; }
+
+/* play N-7 (BLOCKING). The price counterfactual's VERDICT — "$62 would have
+   kept $522,856 more than you did", the largest teaching number a floor-priced
+   desk is ever shown — measured 539..555 under a lock bar starting at 539, and
+   on a sold-out week the card ran to 610 in a 600px viewport. The evidence
+   column is compacted so the whole card, including its verdict and its
+   best-price row, clears the band at first contact on a normal week AND on a
+   sold-out one, where the FULL HOUSE banner pushes everything down. */
+.hl-decide > .hl-col-context .fh-result { padding: 7px 9px; }
+.hl-decide > .hl-col-context .fh-result-head { font-size: 12px; }
+.hl-decide > .hl-col-context .hl-split { margin-top: 5px; padding: 6px 8px; }
+.hl-decide > .hl-col-context .hl-split-title { margin-bottom: 4px; }
+.hl-decide > .hl-col-context .hl-split-row { font-size: 12px; }
+.hl-decide > .hl-col-context .hl-split-rows { margin-top: 5px; gap: 1px; }
+.hl-decide > .hl-col-context .fh-kept { margin-top: 5px; }
+.hl-decide > .hl-col-context .hl-road { margin-top: 5px; padding: 6px 9px; font-size: 12px; line-height: 1.3; }
+.hl-decide > .hl-col-context .hl-pricecf { margin-top: 5px; padding: 6px 9px; }
+.hl-decide > .hl-col-context .hl-pricecf-rows { gap: 2px; }
+.hl-decide > .hl-col-context .hl-pricecf-row { font-size: 11.5px; padding: 1px 4px; }
+.hl-decide > .hl-col-context .hl-pricecf-verdict { margin-top: 4px; font-size: 12px; line-height: 1.3; }
+.hl-decide > .hl-col-context .hl-give-note { margin-top: 4px; }
+.hl-decide > .hl-col-context .fh-sellout { padding: 5px 9px; margin-top: 5px; }
+.hl-decide > .hl-col-context .fh-fill-track { margin-top: 4px; }
+.hl-slate-terse .fh-slate { display: flex; flex-direction: column; }
+.hl-decide > .hl-col-decide .hl-week-top { font-size: 11px; }
+.hl-decide > .hl-col-decide .hl-reinvest-more { margin-top: 3px; }
+.hl-decide > .hl-col-decide .hl-reinvest-more > summary { font-size: 11px; }
+.hl-decide > .hl-col-decide .price-dial-ends { font-size: 11px; }
+.hl-decide > .hl-col-decide .eyebrow { font-size: 11px !important; }
+.hl-decide > .hl-col-decide .fh-spend-row { gap: 8px; }
+.hl-decide > .hl-col-decide .fh-lag { font-size: 10.5px; }
 @media (max-width: 899px) {
   .hl-decide {
     grid-template-columns: minmax(0, 1fr);

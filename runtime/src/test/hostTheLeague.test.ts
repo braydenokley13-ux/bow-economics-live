@@ -34,8 +34,10 @@ import {
   WEEK_COUNT,
   MODELED_DOLLARS_LINE,
   OBJECTIVE_COPY,
+  barReleaseArm,
   botShareFor,
   computeAggregate,
+  dealtLineClaimed,
   deskChoiceLineClaimed,
   drawGain,
   hostSlotFor,
@@ -48,6 +50,7 @@ import {
   reinvestRuleFor,
   sawBarBeforeWeek3,
   scheduleFor,
+  teachStage5MirrorClaimed,
   settleHome,
   spilloverClaim,
   synthesisCards,
@@ -904,10 +907,18 @@ test("econ B7 (N9): no printed share is ever above 100%, and none is 0% while a 
         `${p.label}: printed 0% beside ${ct.gaveByChoice} of measured spillover`,
       );
     }
-    // Wherever the share is withheld, the room is told why, in dollars.
+    // Wherever the share is withheld, the room is told why, in dollars — and
+    // told WHICH situation it is in. econ N11/B9: withholding the percentage is
+    // a fact about the denominator, never a verdict about the room.
     const body = synthesisCards(room, agg).find((c) => c.id === "spillover")!.body;
     if (ct.externalPct === null && ct.anySpend) {
-      assert.match(body, /over-investment AND spillover/, `${p.label}: the honest over-investment sentence must fire`);
+      assert.match(body, /no share to print here/, `${p.label}: the room must be told why the share is withheld`);
+      assert.match(body, new RegExp(money(ct.spend).replace(/[$,]/g, "\\$&")), `${p.label}: the dollars must print where the share cannot`);
+      if (ct.roomJointGain > 0) {
+        assert.match(body, /less went back in than this room's own numbers would justify/, `${p.label}: a room that came out ahead is under-provided, not over-invested`);
+      } else if (ct.roomJointGain < 0) {
+        assert.match(body, /this room over-invested/, `${p.label}: a room that came out behind over-invested`);
+      }
     }
     // And the "paid YOU" claim never prints against a negative private column.
     if (ct.ownGain < 0) assert.equal(/paid YOU/.test(body), false, `${p.label}: "paid YOU" printed against ${ct.ownGain}`);
@@ -1008,6 +1019,173 @@ test("play R4 / econ B3: the small-market exhibit attributes from the decomposit
   }
 });
 
+test("econ B9 (N11): no surface ever says over-investment in a room that came out jointly ahead", () => {
+  // The measured failure: the `externalPct === null` branch named the situation
+  // from `created = ownGain + gaveByChoice` — the aggregate the module's own
+  // ChoiceTotals docstring forbids using at room level — and printed
+  // "over-investment" in 173 of 177 plausible-price rooms that the joint figure,
+  // three clauses later on the same card, said were up to $2.4M BETTER off.
+  // Privately unprofitable and socially profitable is under-provision under a
+  // positive externality: the concept this module is named for, and the exact
+  // opposite of the noun that printed. It was on the projector, the SPILLOVER
+  // card and the teacher's answer key.
+  const prices: { label: string; f: (i: number) => number }[] = [
+    { label: "flat $50", f: () => 50 },
+    { label: "flat $70", f: () => 70 },
+    { label: "$110/$30", f: (i) => (i % 2 === 0 ? 110 : 30) },
+    { label: "spread", f: (i) => [30, 42, 56, 68, 84, 96, 46, 62][i % 8]! },
+  ];
+  const shares: { label: string; f: (i: number) => number }[] = [
+    { label: "all 10%", f: () => 10 },
+    { label: "all 25%", f: () => 25 },
+    { label: "all 30%", f: () => 30 },
+    { label: "all 40%", f: () => SHARE_MAX },
+    { label: "alternating 0/40", f: (i) => (i % 2 === 0 ? 0 : SHARE_MAX) },
+    { label: "one spender", f: (i) => (i === 0 ? SHARE_MAX : 0) },
+  ];
+  let ahead = 0;
+  let behind = 0;
+  let withheld = 0;
+  for (const P of prices) {
+    for (const S of shares) {
+      let room = seated(12);
+      for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, P.f, S.f);
+      const agg = computeAggregate(room);
+      const ct = agg.choiceTotals;
+      if (!ct.anySpend) continue;
+      if (ct.externalPct === null) withheld += 1;
+      if (ct.roomJointGain > 0) ahead += 1;
+      else if (ct.roomJointGain < 0) behind += 1;
+      // EVERY claim-carrying surface in the lesson, not only the SPILLOVER card:
+      // the same sentence reaches board:reveal-2, teach:adapt-q3 and synthesis.
+      for (const surface of moduleClaims(room)) {
+        if (ct.roomJointGain > 0) {
+          assert.equal(
+            /over-invest/i.test(surface.text),
+            false,
+            `${P.label} · ${S.label} · ${surface.surface}: "over-invest" printed in a room $${Math.round(ct.roomJointGain).toLocaleString()} BETTER off`,
+          );
+        }
+        if (ct.roomJointGain < 0 && ct.externalPct === null) {
+          assert.equal(
+            /less went back in than this room's own numbers would justify/.test(surface.text),
+            false,
+            `${P.label} · ${S.label} · ${surface.surface}: under-provision printed in a room that came out behind`,
+          );
+        }
+      }
+      // The branch word is an ATOM, so the audit can see it — not prose beside one.
+      const spill = spilloverClaim(ct);
+      if (ct.externalPct === null) {
+        const noun = spill.claims.find((c) => c.id === "spillover.branchNoun");
+        assert.ok(noun, `${P.label} · ${S.label}: the branch noun carries no claim atom`);
+        assert.equal(
+          noun!.rendered,
+          ct.roomJointGain > 0
+            ? "less went back in than this room's own numbers would justify"
+            : ct.roomJointGain < 0
+              ? "this room over-invested"
+              : "the room came out exactly level",
+          `${P.label} · ${S.label}: the branch noun is not the one roomJointGain names`,
+        );
+      }
+    }
+  }
+  // The cross-tab must be non-vacuous in BOTH directions or this proves nothing.
+  assert.ok(withheld > 0, "no room in the sweep withheld the share — the branch under test never fired");
+  assert.ok(ahead > 0, "no room in the sweep came out jointly ahead — the N11 case was never exercised");
+  assert.ok(behind > 0, "no room in the sweep came out jointly behind — the over-investment case was never exercised");
+});
+
+test("econ FL-K: the give/take sub-label prints the measured dealt share, never an unbound 'most'", () => {
+  // The measured failure: a static string on the student device — "Everything
+  // your Draw moved — MOST OF IT the Draw you were DEALT" — false in 16 of 96
+  // probed desk-instances (worst: 60% of a desk's give was BOUGHT, not dealt),
+  // and false in exactly the high-reinvest rooms the lesson wants to celebrate.
+  for (const share of [() => 0, () => 20, () => SHARE_MAX]) {
+    let room = seated(12);
+    for (let w = 0; w < WEEK_COUNT; w += 1) room = playWeek(room, () => 90, share);
+    const agg = computeAggregate(room);
+    for (const row of agg.giveAndTake) {
+      const line = dealtLineClaimed(row);
+      assert.equal(/most of it/i.test(line.text), false, `desk ${row.deskNumber}: the unbound quantifier is still on the student device`);
+      if (row.gave > 0) {
+        const dealtPct = Math.round((Math.max(0, row.gave - row.gaveByChoice) / row.gave) * 100);
+        assert.ok(line.text.includes(`${dealtPct}% of it the Draw you were DEALT`), `desk ${row.deskNumber}: printed share is not the computed one — ${line.text}`);
+        const atom = line.claims.find((c) => c.id === "desk.dealtPct");
+        assert.equal(atom?.value, dealtPct, `desk ${row.deskNumber}: the atom does not carry the printed value`);
+      }
+    }
+  }
+});
+
+test("projector W4-1: the stage-5 lock clause is true about the room on every release arm", () => {
+  // The measured failure, observed live on the arm /teach itself prescribes:
+  // "some desks had already locked" printed to a room in which ZERO desks had.
+  // `barReleasedAtWeek === WEEK_COUNT - 1` covers two different rooms and the
+  // copy asserted the messy one unconditionally.
+  const played = fullSession(6);
+  const arm = (at: number | null, lockedAt: number | null): HostLeagueState =>
+    ({ ...played, barReleased: at !== null, barReleasedAtWeek: at, lockedAtBarRelease: lockedAt }) as HostLeagueState;
+
+  const prescribed = arm(WEEK_COUNT - 1, 0);
+  assert.equal(barReleaseArm(prescribed), "lastWeekNoneLocked");
+  const prescribedLine = reinvestChangeLine(computeAggregate(prescribed), prescribed);
+  assert.equal(/desks had already locked/.test(prescribedLine), false, "the prescribed release must not claim desks had locked when none had");
+  assert.match(prescribedLine, /before a single desk had locked week 3 in/);
+
+  const midWeek = arm(WEEK_COUNT - 1, 4);
+  assert.equal(barReleaseArm(midWeek), "lastWeekSomeLocked");
+  const midLine = reinvestChangeLine(computeAggregate(midWeek), midWeek);
+  assert.match(midLine, /4 of 6 desks had already locked/, "a mid-week-3 release must print the measured lock count");
+
+  const never = arm(null, null);
+  assert.equal(barReleaseArm(never), "never");
+  const week2 = arm(1, 0);
+  assert.equal(barReleaseArm(week2), "beforeLastWeek");
+  // A snapshot written before the stamp existed asserts nothing either way.
+  const legacy = { ...played, barReleased: true, barReleasedAtWeek: WEEK_COUNT - 1 } as HostLeagueState;
+  delete (legacy as { lockedAtBarRelease?: unknown }).lockedAtBarRelease;
+  assert.equal(barReleaseArm(legacy), "lastWeekLockCountUnknown");
+  const legacyLine = reinvestChangeLine(computeAggregate(legacy), legacy);
+  assert.equal(/desks had already locked/.test(legacyLine), false);
+  assert.equal(/before a single desk had locked/.test(legacyLine), false);
+});
+
+test("projector W4-2: /teach's stage-5 mirror follows the clause the board actually printed", () => {
+  // The measured failure: the ON-THE-PROJECTOR mirror was byte-identical across
+  // all four release arms and told the teacher "this board deliberately refuses
+  // to choose" in the arm where the board had already chosen — coaching a
+  // two-candidate argument the screen behind them had closed.
+  const played = fullSession(6);
+  const arms: { at: number | null; lockedAt: number | null; label: string }[] = [
+    { at: null, lockedAt: null, label: "C · never pressed" },
+    { at: 1, lockedAt: 0, label: "B · during week 2" },
+    { at: WEEK_COUNT - 1, lockedAt: 0, label: "A · the prescribed release" },
+    { at: WEEK_COUNT - 1, lockedAt: 4, label: "D · mid week 3" },
+  ];
+  const seen = new Set<string>();
+  for (const a of arms) {
+    const state = { ...played, barReleased: a.at !== null, barReleasedAtWeek: a.at, lockedAtBarRelease: a.lockedAt } as HostLeagueState;
+    const mirror = teachStage5MirrorClaimed(state);
+    const boardLine = reinvestChangeLine(computeAggregate(state), state);
+    seen.add(mirror.text);
+    const boardChose = !sawBarBeforeWeek3(state);
+    if (boardChose) {
+      assert.match(boardLine, /the bar is not on the table|nothing on this frame can be about the bar/, `arm ${a.label}: the board did not in fact choose`);
+      assert.match(mirror.text, /this board has ALREADY chosen/, `arm ${a.label}: the mirror promises an open argument the board has closed`);
+      assert.equal(/refuses to choose/.test(mirror.text), false, `arm ${a.label}: the invariant coaching is still printed`);
+    } else {
+      assert.match(mirror.text, /refuses to choose/, `arm ${a.label}: the mirror must say the board is holding both candidates`);
+      assert.equal(/ALREADY chosen/.test(mirror.text), false, `arm ${a.label}`);
+    }
+    if (a.lockedAt !== null && a.lockedAt > 0 && a.at === WEEK_COUNT - 1) {
+      assert.match(mirror.text, /4 of 6 desks had already locked/, `arm ${a.label}: the mirror must name who could have used the bar`);
+    }
+  }
+  assert.equal(seen.size, arms.length, "the mirror is still invariant across arms — that is the defect");
+});
+
 test("projector R-1 / play N-3: the bar clause is true about the room at every release point, and the DOWN branch never contradicts it", () => {
   // The measured failure, two-arm probe by the projector critic and observed
   // independently by the play critic: `barReleasedAtWeek < WEEK_COUNT - 1`
@@ -1095,7 +1273,14 @@ test("CLAIM AUDIT: every rendered claim string agrees with the reducer in sign, 
       for (const a of surface.claims) {
         atoms += 1;
         // STRUCTURAL BINDING: the printed fragment is the value's rendering.
-        const rendered = a.format === "money" ? money(a.value) : a.format === "percent" ? `${Math.round(a.value)}%` : `${Math.round(a.value)}`;
+        const rendered =
+          a.format === "money"
+            ? money(a.value)
+            : a.format === "percent"
+              ? `${Math.round(a.value)}%`
+              : a.format === "percent1"
+                ? `${Math.round(a.value * 10) / 10}%`
+                : `${Math.round(a.value)}`;
         assert.equal(a.rendered, a.quantifier ? a.rendered : rendered, `${surface.surface}/${a.id}: rendered fragment drifted from its value`);
         assert.ok(surface.text.includes(a.rendered), `${surface.surface}/${a.id}: "${a.rendered}" is not on the surface`);
         if (a.absent !== undefined) {

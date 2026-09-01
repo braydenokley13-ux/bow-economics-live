@@ -2603,19 +2603,37 @@ function hlClubLine(label: string, club: HLClub, tone: string): string {
  * least the Week 2 row to be visible on first contact without scrolling, and a
  * collapsed <details> cannot satisfy that.
  */
-function hlSlateHtml(slate: HLSlateRow[], forceOpen = false): string {
+function hlSlateHtml(slate: HLSlateRow[], forceOpen = false, terse = false): string {
   if (slate.length === 0) return "";
+  const rows = slate
+    .map(
+      (r) =>
+        `<div class="fh-slate-row${r.open ? " hl-open-week" : ""}"><span>Week ${r.week}${r.open ? " · now" : r.settled ? " · played" : ""}</span><span>HOST ${escapeHtml(r.hosting.short)}</span><span class="numeric">Draw ${r.hosting.draw}</span><span>VISIT ${escapeHtml(r.visiting.short)}</span><span class="numeric">Draw ${r.visiting.draw}</span></div>`,
+    )
+    .join("");
+  // play N-6: inside the decision column the strip is the ANTICIPATION surface
+  // and nothing else — its 90-word footnote and its long summary are what
+  // pushed the dials 70px under the fold. The footnote moves into the block's
+  // own disclosure, so nothing is deleted and nothing is above the dials.
+  if (terse) {
+    const tight = slate
+      .map(
+        (r) =>
+          `<div class="fh-slate-row${r.open ? " hl-open-week" : ""}"><span>W${r.week}${r.open ? " · now" : r.settled ? " · played" : ""}</span><span>HOST ${escapeHtml(
+            r.hosting.short,
+          )} <span class="numeric">${r.hosting.draw}</span></span><span>AT ${escapeHtml(r.visiting.short)} <span class="numeric">${r.visiting.draw}</span></span></div>`,
+      )
+      .join("");
+    return `
+      <div class="hl-slate-block hl-slate-terse" style="margin-top:8px;">
+        <div class="eyebrow" style="font-size:11px; margin-bottom:2px;">The three weeks — pairings fixed, every Draw still moving</div>
+        <div class="fh-slate">${tight}</div>
+      </div>`;
+  }
   return `
     <details class="fa-rules hl-slate-block" style="margin-top:10px;" ${forceOpen || slate.some((r) => r.open) ? "open" : ""}>
       <summary>The three-week schedule — who visits you, and whose building you are in</summary>
-      <div class="fh-slate">
-        ${slate
-          .map(
-            (r) =>
-              `<div class="fh-slate-row${r.open ? " hl-open-week" : ""}"><span>Week ${r.week}${r.open ? " · now" : r.settled ? " · played" : ""}</span><span>HOST ${escapeHtml(r.hosting.short)}</span><span class="numeric">Draw ${r.hosting.draw}</span><span>VISIT ${escapeHtml(r.visiting.short)}</span><span class="numeric">Draw ${r.visiting.draw}</span></div>`,
-          )
-          .join("")}
-      </div>
+      <div class="fh-slate">${rows}</div>
       <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">The pairings are fixed. The Draw numbers are not — every one of them is another desk still deciding.</p>
     </details>`;
 }
@@ -2795,6 +2813,13 @@ function renderHLPlay(view: Record<string, unknown>): void {
   const shock = view["shock"] as { club: string; full: string; draw: number; hostingThem: boolean; line: string } | null;
   const weekNumber = Number(view["weekNumber"] ?? 1);
 
+  // play N-6 / projector W4-3: the rejoin-PIN card eats ~119px — a fifth of a
+  // 600px Chromebook — and it sat in the hero slot of the decision surface for
+  // any pair that joined inside the 20-second auto-collapse window, or rejoined
+  // mid-lesson. The decision surface owns the first viewport; the PIN collapses
+  // to the fixed reopen strip, which is one press away and always reachable.
+  hidePin();
+
   const key = `${weekNumber}|${locked}|${history.length}`;
   if (hlMountKey === key && document.getElementById("hlPlayRoot")) return;
   hlMountKey = key;
@@ -2827,6 +2852,28 @@ function renderHLPlay(view: Record<string, unknown>): void {
   //  3. The ~90-word REINVEST paragraph that used to sit between the dials and
   //     the button on every single week is one line at the dial plus a
   //     disclosure. Nothing was deleted; it was moved off the fold (play R10).
+  // ------------------------------------------------- the decision band (N-6)
+  // `gate-l2-play` N-6 (BLOCKING) — the finding that capped the lesson at
+  // FUNCTIONAL. Round 3 put the settlement in a full-width span ABOVE the two
+  // columns, which cleared week 1 and rotated the same defect into weeks 2 and
+  // 3: measured at 1024x600 with no manual scroll, the band held last week's
+  // result and a pinned LOCK button and NOTHING ELSE — both dials, the visiting
+  // club and the schedule strip were 350-700px below it, and the critic
+  // completed two of the lesson's three decisions by pressing LOCK twice
+  // without ever seeing a dial, committing the house-price/0% free-ride default
+  // both times.
+  //
+  // The shape is now the SAME in every week rather than reordered per week, and
+  // it is the split the surfaces actually are:
+  //   left column  = EVIDENCE. Last week's settlement (decomposition, KEPT, the
+  //                  road card, the price counterfactual) and the history table.
+  //   right column = THE DECISION. Who is visiting, the star departure, the
+  //                  three-week schedule strip, both dials — the whole decision
+  //                  set, in one place, the same place, every week.
+  // The span above holds only the bell head and the topstrip, so both columns
+  // start high enough that the decision set and the settlement coexist in the
+  // band instead of taking turns. Week 1 is not a special case any more; it is
+  // the same layout with an empty evidence column.
   const justSettled = last !== null && last.week === weekNumber - 1;
   const settlementHtml = justSettled ? hlWeekResultHtml(last!, `Week ${last!.week} — how it went`) : "";
   const weekCardHtml = `
@@ -2878,21 +2925,22 @@ function renderHLPlay(view: Record<string, unknown>): void {
   // against, so the pair sees what it is deciding and the two dials it decides
   // with at the same time, without scrolling. The settlement, when there is
   // one, spans both columns above them — it is still the thing the bell lands.
+  const evidenceHtml = justSettled
+    ? `<div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}`
+    : last
+      ? hlWeekResultHtml(last, `Week ${last.week} — how it went`)
+      : "";
   body.innerHTML = `
     <div id="hlPlayRoot" class="hl-decide">
-      ${
-        justSettled
-          ? `<div class="hl-span"><div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}${hlTopStrip(view)}</div>`
-          : `<div class="hl-span">${hlTopStrip(view)}</div>`
-      }
+      <div class="hl-span">${hlTopStrip(view)}</div>
       <div class="hl-col-context">
-        ${weekCardHtml}
-        ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [], !justSettled)}
-        ${justSettled ? "" : last ? hlWeekResultHtml(last, `Week ${last.week} — how it went`) : ""}
+        ${evidenceHtml}
         <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks so far</div>
         ${hlHistoryHtml(history)}
       </div>
-      <div class="hl-col-decide">
+      <div class="hl-col-decide" id="hlDecisionBand">
+        ${weekCardHtml}
+        ${hlSlateHtml((view["slate"] as HLSlateRow[]) ?? [], true, true)}
         ${dialsHtml}
       </div>
     </div>
@@ -2900,8 +2948,8 @@ function renderHLPlay(view: Record<string, unknown>): void {
       locked
         ? ""
         : `<div class="hl-lockbar" id="hlLockBar">
-             <span class="hl-lockbar-vals">Week ${weekNumber} · <b id="hlLockPrice">$${price}</b> · <b id="hlLockShare">${share}%</b> back in</span>
-             <button class="btn btn-primary" id="hlLock">LOCK IT IN</button>
+             <span class="hl-lockbar-vals" id="hlLockVals">Week ${weekNumber} · <b id="hlLockPrice">$${price}</b> · <b id="hlLockShare">${share}%</b> back in</span>
+             <button class="btn btn-primary" id="hlLock" disabled data-hl-armed="0">LOCK IT IN</button>
            </div>`
     }`;
   document.body.classList.toggle("hl-has-lockbar", !locked);
@@ -2914,10 +2962,10 @@ function renderHLPlay(view: Record<string, unknown>): void {
   if (lockBar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(lockBar.getBoundingClientRect().height)}px`);
   else document.body.style.removeProperty("--hl-lockbar-h");
 
-  // The bell put a result on this screen. Land the pair ON it, not on next
-  // week's dial. Instant, never smooth: a mid-animation scroll position is not
-  // a real reachable state to leave a student in. `main` is the scroll
-  // container while the lock bar is up, so both have to be reset.
+  // The bell put a result on this screen, and next week's decision beside it.
+  // Land the pair at the top of both. Instant, never smooth: a mid-animation
+  // scroll position is not a real reachable state to leave a student in. `main`
+  // is the scroll container while the lock bar is up, so both have to be reset.
   if (justSettled && hlLastSettledSeen !== `${weekNumber}|${history.length}`) {
     hlLastSettledSeen = `${weekNumber}|${history.length}`;
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -2931,6 +2979,55 @@ function renderHLPlay(view: Record<string, unknown>): void {
   const readout = $("hlPriceReadout");
   const lockPrice = document.getElementById("hlLockPrice");
   const lockShare = document.getElementById("hlLockShare");
+
+  // ------------------------------------------------ the arming guard (N-6)
+  // The second half of N-6: "until it holds, #hlLock must not commit a default
+  // the pair has not been shown." The layout above is meant to make both dials
+  // present at first contact in every week; this makes a REGRESSION of that
+  // layout impossible to walk into blind rather than merely unlikely.
+  //
+  // LOCK IT IN ships disabled and arms the first time the two dials have
+  // actually been on screen together (or the moment either is touched). If the
+  // band ever stops holding them — a narrower Chromebook, a longer club name, a
+  // future card inserted above — the pair is told to go and look at the dials
+  // instead of silently committing house price and 0% reinvest. In the intended
+  // layout this arms within one frame of first paint and the pair never sees it.
+  const lockBtn = document.getElementById("hlLock") as HTMLButtonElement | null;
+  const lockVals = document.getElementById("hlLockVals");
+  const lockValsHtml = lockVals?.innerHTML ?? "";
+  const seenDials = new Set<string>();
+  const armLock = (): void => {
+    if (!lockBtn || lockBtn.dataset["hlArmed"] === "1") return;
+    lockBtn.dataset["hlArmed"] = "1";
+    lockBtn.disabled = false;
+    if (lockVals) lockVals.innerHTML = lockValsHtml;
+  };
+  if (lockBtn) {
+    if (lockVals) lockVals.textContent = "Read the two dials before you commit";
+    const targets = [document.getElementById("hlPriceDial"), document.getElementById("hlShareUp"), document.getElementById("hlShareDown")].filter(
+      (el): el is HTMLElement => el !== null,
+    );
+    if (typeof IntersectionObserver === "function" && targets.length === 3) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) if (e.isIntersecting) seenDials.add(e.target.id);
+          if (seenDials.size === targets.length) {
+            armLock();
+            io.disconnect();
+          }
+        },
+        { threshold: 0.6 },
+      );
+      for (const t of targets) io.observe(t);
+    } else {
+      armLock(); // no observer available: never trap a pair behind a guard
+    }
+    for (const t of targets) {
+      t.addEventListener("pointerdown", armLock);
+      t.addEventListener("focus", armLock);
+      t.addEventListener("input", armLock);
+    }
+  }
   dial.addEventListener("input", () => {
     hlLocalPrice = Number(dial.value);
     readout.textContent = `$${dial.value}`;
