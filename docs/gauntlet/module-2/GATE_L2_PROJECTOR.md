@@ -527,3 +527,52 @@ BOARD TRUTH ABOUT THE ROOM: **NOT DISCHARGED** — W4-1 and W4-2, both new, both
 DISSENT proj-l2-bar-timing: DISCHARGED — the off-by-one at the week-2 bell is repaired and the
 prescribed-timing arm no longer prints the false negation; W4-1 and W4-2 are new findings on the same
 line and do not resurrect it.
+
+---
+
+## W4 FINAL CONFIRM
+
+Narrow owning-critic confirm of dissent `proj-l2-mirror-claims` (W4-1/W4-2 above). Fresh live
+session, PORT 4394, mechanics lifted from `runtime/scripts/e2e-m2l2.cjs` (independent driver script,
+guards rewritten, 4 desks per arm for speed — not the shipped harness). Two full sessions run
+end-to-end to REVEAL stage 5: **Arm A** (the `/teach`-prescribed release — pressed immediately after
+the week-2 bell, before any desk locked week 3) and **Arm C** (bar never pressed; relies on the
+`onPhaseExit` auto-release fallback on leaving PLAY). Zero console errors, both arms, all surfaces
+(teach/board/4 desks each).
+
+**1. Release copy states only what happened — lock counts truthful (observed).**
+
+- Arm A board (`#hlChange`): *"This room saw the Handed-To-You bar DURING week 3, before the last
+  bell and before a single desk had locked week 3 in — so every desk in this room priced its last
+  week having seen it..."* No claim of any locked desk, and none had locked at release time.
+  Asserted live: `/desks had already locked/` does NOT match; `/before a single desk had locked week
+  3 in/` does match. `screens-l2-projector/w4f-bar-release-A-prescribed--1366x768.png`,
+  `w4f-reveal5-A-prescribed--1366x768.png`, `--1920x1080.png`.
+- Arm C board: *"This room did NOT see the Handed-To-You bar before it played week 3, so nothing on
+  this frame can be about the bar."* Correct for a bar never pressed.
+  `w4f-reveal5-C-never--1366x768.png`, `--1920x1080.png`.
+- The false clause this dissent exists to kill (`some desks had already locked` on a release where
+  none had) did not print in either arm.
+
+**2. `/teach` stage-5 mirror describes the arm the board is actually in, and differs across arms
+(observed).**
+
+- Arm A mirror: *"Do not resolve it: this board deliberately refuses to choose between the rule and
+  the bar. This is the cleanest version of the beat: you released it after the week-2 bell and NOT
+  ONE desk had locked week 3 yet, so every pair in this room priced its last week having seen the
+  bar."* — matches the board's own "refuses to choose" posture. `w4f-teach-reveal5-A-prescribed.png`.
+- Arm C mirror: *"The bar never went up in time, so this board has ALREADY chosen: the frame says the
+  bar is not on the table and names the last-week rule as the only cause it can see. Do NOT offer the
+  bar as a second candidate — the screen behind you has closed it."* — matches the board's own
+  "already chosen" posture, and does not promise the open two-candidate argument Arm A's mirror
+  promises. `w4f-teach-reveal5-C-never.png`.
+- The two mirror texts are not byte-identical (asserted live); each is internally consistent with its
+  own arm's board copy, which is the whole of W4-2.
+
+**Not verified this session:** Arms B (during week 2) and D (mid-week-3, some locked) — not
+re-driven live here; W4-1/W4-2's own unit-test coverage of those two (`hostTheLeague.test.ts:1122`,
+`:1155`) and the builder's claimed six-arm mutation sweep (M-E/M-F caught) were read as source/evidence
+but not independently re-derived by this narrow confirm. Freeze, refresh, mid-class restart, real
+projector, any real student — unchanged from prior sections, not re-exercised.
+
+DISSENT proj-l2-mirror-claims: DISCHARGED
