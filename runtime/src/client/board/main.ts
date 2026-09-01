@@ -119,6 +119,15 @@ function render(payload: BoardPayload): void {
     renderHostLeagueBoard(view, mode);
     return;
   }
+  if (view["module"] === "m2l3-write-rule") {
+    const mode = String(view["mode"] ?? "");
+    backdrop.classList.toggle(
+      "peak",
+      mode === "adopted" || mode === "reveal" || mode === "consequence" || mode === "counterfactual" || mode === "argue" || mode === "synthesis",
+    );
+    renderWriteRuleBoard(view, mode);
+    return;
+  }
 
   backdrop.classList.remove("peak");
   const legacy = view as { mode?: string; tally?: Record<string, number>; total?: number; note?: string; pickedCount?: number };
@@ -1518,6 +1527,282 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
 
     default:
       stage.innerHTML = `<div class="label">${escapeHtml(mode)}</div>`;
+  }
+}
+
+/* ================= M2 L3 "Writing the Rule" — projector =====================
+   Every frame must FIT at 1366x768 and 1920x1080 with no scrolling, and every
+   EVIDENCE-tier string must clear the 2.6%-of-screen-height back-row floor
+   (1.46vw on a 16:9 screen). Evidence tiers here: the histogram ticks, the
+   adopted rule, the pot rows, the arrow rows, the era bars and the finale
+   rails. Footnotes (honesty line, sources) sit below the floor deliberately,
+   exactly as they do in L1 and L2.
+
+   Nothing on this surface formats a module number for itself: every dollar and
+   every percentage arrives pre-rendered, so the projector cannot disagree with
+   the reducer. */
+
+type WRPotRow = { deskHandle: string; sizeLabel: string; paidIn: number; tookOut: number; net: number; paidInText: string; tookOutText: string; netText: string; docked: boolean };
+type WRArrowRow = {
+  deskHandle: string;
+  sizeLabel: string;
+  clubShort: string;
+  priceAtZero: number;
+  priceAtAdopted: number;
+  priceSteps: number;
+  reinvestAtZero: number;
+  reinvestAtAdopted: number;
+  reinvestSteps: number;
+  soldOut: boolean;
+};
+type WREraRow = { deskHandle: string; sizeLabel: string; l2: number | null; l3: number };
+type WRCfRow = { deskHandle: string; netAdoptedText: string; netRunnerUpText: string; deltaText: string; delta: number };
+type WRBoardCard = {
+  id: string;
+  title: string;
+  rails: { rememberWhen: string; ourClass: string; inSports: string; economistsCall: string; outsideSports: string };
+};
+
+function wrHistBoard(h: { round: number; bins: { share: number; count: number }[]; median: number; conditionYes: number; submitted: number }): string {
+  const max = Math.max(1, ...h.bins.map((b) => b.count));
+  return `
+    <div class="wr-board-hist">
+      ${h.bins
+        .map(
+          (b) =>
+            `<div class="wr-board-histcol"><div class="wr-board-histbar" style="height:${Math.round((b.count / max) * 22) + 1}vh;"></div><div class="wr-board-histtick">${b.share}</div></div>`,
+        )
+        .join("")}
+    </div>
+    <div class="wr-board-median">MIDDLE NUMBER <b>${h.median}%</b> · ${h.conditionYes} of ${h.submitted} desks wanted the condition on</div>`;
+}
+
+function wrPotBoard(rows: WRPotRow[]): string {
+  if (rows.length === 0) return "";
+  const max = Math.max(1, ...rows.map((r) => Math.max(r.paidIn, r.tookOut)));
+  return `
+    <div class="wr-board-rows">
+      ${rows
+        .map(
+          (r) => `
+        <div class="wr-board-row" data-wr-pot>
+          <span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span>
+          <span class="wr-board-bars">
+            <span class="wr-board-bar paid" style="width:${Math.round((r.paidIn / max) * 100)}%"></span>
+            <span class="wr-board-bar took" style="width:${Math.round((r.tookOut / max) * 100)}%"></span>
+          </span>
+          <span class="wr-board-num">in ${escapeHtml(r.paidInText)}</span>
+          <span class="wr-board-num">out ${escapeHtml(r.tookOutText)}</span>
+          <span class="wr-board-num net ${r.net < 0 ? "neg" : ""}">${escapeHtml(r.netText)}</span>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+function wrArrowBoard(rows: WRArrowRow[]): string {
+  if (rows.length === 0) return "";
+  return `
+    <div class="wr-board-rows">
+      ${rows
+        .map(
+          (r) => `
+        <div class="wr-board-row arrow" data-wr-arrow>
+          <span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span>
+          <span class="wr-board-size">${escapeHtml(r.sizeLabel)}</span>
+          <span class="wr-board-arrow ${r.priceSteps === 0 ? "flat" : "moved"}">PRICE $${r.priceAtZero} ${r.priceSteps === 0 ? "—" : "→"} $${r.priceAtAdopted}</span>
+          <span class="wr-board-arrow ${r.reinvestSteps === 0 ? "flat" : "moved"}">PUT BACK ${r.reinvestAtZero}% ${r.reinvestSteps === 0 ? "—" : "→"} ${r.reinvestAtAdopted}%</span>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+function wrEraBoard(rows: WREraRow[]): string {
+  if (rows.length === 0) return "";
+  return `
+    <div class="wr-board-rows">
+      ${rows
+        .map(
+          (r) => `
+        <div class="wr-board-row era" data-wr-era>
+          <span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span>
+          <span class="wr-board-bars">
+            <span class="wr-board-bar l2" style="width:${Math.round(((r.l2 ?? 0) / 40) * 100)}%"></span>
+            <span class="wr-board-bar l3" style="width:${Math.round((r.l3 / 40) * 100)}%"></span>
+          </span>
+          <span class="wr-board-num">${r.l2 === null ? "no L2" : `L2 ${Math.round((r.l2 ?? 0) * 10) / 10}%`}</span>
+          <span class="wr-board-num">L3 ${Math.round(r.l3 * 10) / 10}%</span>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void {
+  stage.classList.remove("fh-tight", "fh-synth", "hl-tight", "wr-tight");
+  stage.classList.add("wr-tight");
+  const honesty = String(view["honestyLine"] ?? "");
+  const privacy = String(view["privacyLine"] ?? "");
+  const rule = view["rule"] as { share: number; condition: boolean; conditionMin: number } | null;
+  const ruleStrip = rule
+    ? `<div class="wr-board-rule" id="wrBoardRule">RULE IN FORCE — SHARE <b>${rule.share}%</b> · CONDITION <b>${rule.condition ? "ON" : "OFF"}</b></div>`
+    : "";
+
+  switch (mode) {
+    case "lobby": {
+      const league = (view["league"] as { short: string; deskNumber: number; live: boolean; draw: number; sizeLabel: string }[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        <div class="banner" style="max-width:66vw;">${escapeHtml(String(view["subtitle"] ?? ""))}</div>
+        <div class="hl-club-grid">${league
+          .map(
+            (c) =>
+              `<div class="hl-club-chip ${c.live ? "live" : ""}"><span class="hl-chip-club">${escapeHtml(c.short)}</span><span class="hl-chip-who">${c.live ? `Desk ${c.deskNumber}` : "league office"}</span><span class="hl-chip-draw">DRAW <b>${c.draw}</b></span></div>`,
+          )
+          .join("")}</div>
+        <div class="synthesis-note">${escapeHtml(String(view["seedNote"] ?? ""))}</div>
+        <div class="exit-prompt hl-foot">${escapeHtml(honesty)}</div>`;
+      return;
+    }
+
+    case "hook":
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        <div class="wr-board-copy" id="wrBoardHook">${escapeHtml(String(view["copy"] ?? ""))}</div>
+        <div class="exit-prompt wr-board-q">${escapeHtml(String(view["question"] ?? ""))}</div>
+        ${
+          view["revealed"]
+            ? `<div class="wr-board-reveal" id="wrBoardHookReveal">${escapeHtml(String(view["revealCopy"] ?? ""))}</div>
+               <div class="synthesis-note wr-board-split" id="wrBoardHookSplit">${escapeHtml(String(view["splitLine"] ?? ""))}</div>`
+            : `<div class="synthesis-note">Nobody has seen what Boston did.</div>`
+        }`;
+      return;
+
+    case "rounds": {
+      const held = Boolean(view["histogramHeld"]);
+      const h = view["histogram"] as { round: number; bins: { share: number; count: number }[]; median: number; conditionYes: number; submitted: number } | null;
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        <div class="wr-board-copy" id="wrBoardVeil">${escapeHtml(String(view["veil"] ?? ""))}</div>
+        ${held || !h ? `<div class="wr-board-held" id="wrBoardHeld">${escapeHtml(String(view["heldCopy"] ?? ""))}</div>` : wrHistBoard(h)}
+        <div class="synthesis-note">${Number(view["submitted"] ?? 0)} of ${Number(view["deskCount"] ?? 0)} desks have a number in. ${escapeHtml(privacy)}</div>
+        <div class="exit-prompt hl-foot">${escapeHtml(String(view["adoptCopy"] ?? ""))}</div>`;
+      return;
+    }
+
+    case "adopted":
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        ${ruleStrip}
+        <div class="wr-board-headline" id="wrBoardAdoption">${escapeHtml(String(view["adoptionLine"] ?? ""))}</div>
+        ${view["statusQuoCopy"] ? `<div class="wr-board-copy">${escapeHtml(String(view["statusQuoCopy"]))}</div>` : ""}`;
+      return;
+
+    case "season": {
+      const pairings = (view["pairings"] as { host: string; hostShort: string; visitorShort: string; visitorDraw: number }[]) ?? [];
+      const rookie = view["rookie"] as { club: string; copy: string } | undefined;
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        ${ruleStrip}
+        ${rookie ? `<div class="wr-board-rookie" id="wrBoardRookie">THE ROOKIE LANDED AT ${escapeHtml(rookie.club.toUpperCase())} — ${escapeHtml(rookie.copy)}</div>` : ""}
+        <div class="wr-board-pairs">${pairings
+          .map(
+            (p) =>
+              `<div class="wr-board-pair"><span class="wr-pair-host">${escapeHtml(p.hostShort)}</span><span class="wr-pair-v">hosts</span><span class="wr-pair-visitor">${escapeHtml(p.visitorShort)}</span><span class="wr-pair-draw">DRAW ${p.visitorDraw}</span></div>`,
+          )
+          .join("")}</div>
+        <div class="synthesis-note">${Number(view["lockedCount"] ?? 0)} of ${Number(view["deskCount"] ?? 0)} desks locked in. Nothing about this week's crowds is on this screen until your teacher closes the week.</div>`;
+      return;
+    }
+
+    case "reveal": {
+      const stageNo = Number(view["stage"] ?? 0);
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        ${ruleStrip}
+        <div class="wr-board-headline" id="wrBoardHeadline">${escapeHtml(String(view["headline"] ?? ""))}</div>
+        ${stageNo >= 3 ? wrPotBoard((view["potFlows"] as WRPotRow[]) ?? []) : ""}
+        ${stageNo >= 4 ? wrArrowBoard((view["arrows"] as WRArrowRow[]) ?? []) : ""}
+        ${stageNo >= 5 ? wrEraBoard((view["era"] as WREraRow[]) ?? []) : ""}
+        <div class="synthesis-note">Stage ${stageNo} of ${Number(view["totalStages"] ?? 5)}. ${escapeHtml(privacy)}</div>`;
+      return;
+    }
+
+    case "consequence":
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        ${ruleStrip}
+        <div class="wr-board-headline" id="wrBoardEra">${escapeHtml(String(view["eraLine"] ?? ""))}</div>
+        ${wrEraBoard((view["era"] as WREraRow[]) ?? [])}
+        <div class="exit-prompt wr-board-q">${escapeHtml(String(view["question"] ?? ""))}</div>`;
+      return;
+
+    case "counterfactual": {
+      const rows = (view["rows"] as WRCfRow[]) ?? [];
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        ${ruleStrip}
+        <div class="wr-board-headline" id="wrBoardCf">${escapeHtml(String(view["line"] ?? ""))}</div>
+        ${
+          rows.length > 0
+            ? `<div class="wr-board-rows">${rows
+                .map(
+                  (r) =>
+                    `<div class="wr-board-row" data-wr-cf><span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span><span class="wr-board-num">as played ${escapeHtml(r.netAdoptedText)}</span><span class="wr-board-num">at ${Number(view["share"] ?? 0)}% ${escapeHtml(r.netRunnerUpText)}</span><span class="wr-board-num net ${r.delta < 0 ? "neg" : ""}">${escapeHtml(r.deltaText)}</span></div>`,
+                )
+                .join("")}</div>`
+            : `<div class="wr-board-held">Waiting for your teacher to run the replay.</div>`
+        }
+        <div class="exit-prompt wr-board-q" id="wrBoardHonesty">${escapeHtml(String(view["honesty"] ?? ""))}</div>`;
+      return;
+    }
+
+    case "argue":
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        <div class="wr-board-copy" id="wrBoardArgue">${escapeHtml(String(view["copy"] ?? ""))}</div>
+        <div class="exit-prompt wr-board-q">${escapeHtml(String(view["prompt"] ?? ""))}</div>
+        ${
+          view["revealed"]
+            ? `<div class="wr-board-reveal" id="wrBoardKingsReveal">${escapeHtml(String(view["revealCopy"] ?? ""))}</div>
+               <div class="synthesis-note wr-board-split" id="wrBoardKingsSplit">${escapeHtml(String(view["splitLine"] ?? ""))}</div>`
+            : `<div class="synthesis-note">Nobody has seen the vote.</div>`
+        }`;
+      return;
+
+    case "synthesis": {
+      const card = view["card"] as WRBoardCard | null;
+      stage.classList.add("fh-synth");
+      stage.innerHTML = `
+        <div class="fh-synth-head label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        <div class="fh-synth-pager">Card ${Number(view["page"] ?? 1)} of ${Number(view["pageCount"] ?? 1)}</div>
+        ${
+          card
+            ? `<div class="wr-board-card" id="wrBoardCard">
+                 <h3>${escapeHtml(card.title)}</h3>
+                 <div class="wr-board-rail"><span>REMEMBER WHEN</span><p>${escapeHtml(card.rails.rememberWhen)}</p></div>
+                 <div class="wr-board-rail"><span>OUR CLASS</span><p id="wrBoardOurClass">${escapeHtml(card.rails.ourClass)}</p></div>
+                 <div class="wr-board-rail"><span>IN SPORTS</span><p>${escapeHtml(card.rails.inSports)}</p></div>
+                 <div class="wr-board-rail"><span>ECONOMISTS CALL THIS</span><p>${escapeHtml(card.rails.economistsCall)}</p></div>
+                 <div class="wr-board-rail"><span>OUTSIDE SPORTS</span><p>${escapeHtml(card.rails.outsideSports)}</p></div>
+               </div>`
+            : ""
+        }
+        <div class="exit-prompt">${escapeHtml(String(view["exitPrompt"] ?? ""))}</div>`;
+      return;
+    }
+
+    case "complete":
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        ${ruleStrip}
+        <div class="wr-board-headline">${escapeHtml(String(view["adoptionLine"] ?? ""))}</div>
+        <div class="wr-board-copy">${escapeHtml(String(view["copy"] ?? ""))}</div>`;
+      return;
+
+    default:
+      stage.innerHTML = `<div class="label">Writing the Rule</div>`;
   }
 }
 

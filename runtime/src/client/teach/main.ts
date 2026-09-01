@@ -43,6 +43,9 @@ type AdvanceWarnState =
 let advanceWarnState: AdvanceWarnState = null;
 /** M2 L2's week bell, when it would settle a league with nobody locked in (gate-l2-teacher N5). */
 let closeWeekWarn: string | null = null;
+let ruleStepWarn: string | null = null;
+let realRuleWarn: string | null = null;
+let commitRevealWarn: string | null = null;
 // R1: the per-session teacher credential — required on every /control and
 // GET /teacher call from here on. Held in memory plus localStorage (see
 // storage.ts) so a page refresh doesn't strand the teacher outside their
@@ -55,6 +58,7 @@ const DRAFT_DAY_ID = "m1l1-draft-day";
 const FREE_AGENCY_ID = "m1l3-free-agency";
 const FULL_HOUSE_ID = "m2l1-full-house";
 const HOST_LEAGUE_ID = "m2l2-host-league";
+const WRITE_RULE_ID = "m2l3-write-rule";
 
 /**
  * gate-l1-visual P8 (reported repaired at round 4, and was not — the bell was
@@ -90,25 +94,28 @@ async function syncSourceSessionRow(): Promise<void> {
   const row = $("sourceSessionRow");
   const label = $("sourceSessionLabel");
   const lessonId = $<HTMLSelectElement>("lesson").value;
-  if (lessonId !== TRADE_DEADLINE_ID && lessonId !== FREE_AGENCY_ID) {
+  if (lessonId !== TRADE_DEADLINE_ID && lessonId !== FREE_AGENCY_ID && lessonId !== WRITE_RULE_ID) {
     row.hidden = true;
     return;
   }
   row.hidden = false;
   label.textContent =
-    lessonId === FREE_AGENCY_ID
-      ? "Link to a completed Trade Deadline (L2, preferred) or Draft Day (L1) session — carries franchises into the signing window"
-      : "Link to a completed Draft Day (L1) session — carries each locked roster forward";
+    lessonId === WRITE_RULE_ID
+      ? "Link to a completed You Don't Play Alone (M2 L2) session — carries every club's Draw, bank balance and reinvest history into the rule vote"
+      : lessonId === FREE_AGENCY_ID
+        ? "Link to a completed Trade Deadline (L2, preferred) or Draft Day (L1) session — carries franchises into the signing window"
+        : "Link to a completed Draft Day (L1) session — carries each locked roster forward";
   const select = $<HTMLSelectElement>("sourceSession");
   select.innerHTML = `<option value="">No link — stock/expansion franchises only</option>`;
   try {
     const { sessions } = await apiFetch<{ sessions: { id: string; code: string; title: string; lessonModuleId: string; phase: string; ended: boolean }[] }>("/api/sessions");
-    const eligibleModuleIds = lessonId === FREE_AGENCY_ID ? [TRADE_DEADLINE_ID, DRAFT_DAY_ID] : [DRAFT_DAY_ID];
+    const eligibleModuleIds =
+      lessonId === WRITE_RULE_ID ? [HOST_LEAGUE_ID] : lessonId === FREE_AGENCY_ID ? [TRADE_DEADLINE_ID, DRAFT_DAY_ID] : [DRAFT_DAY_ID];
     const eligible = sessions.filter((s) => eligibleModuleIds.includes(s.lessonModuleId)).sort((a, b) => eligibleModuleIds.indexOf(a.lessonModuleId) - eligibleModuleIds.indexOf(b.lessonModuleId));
     for (const s of eligible) {
       const option = document.createElement("option");
       option.value = s.id;
-      const moduleLabel = s.lessonModuleId === TRADE_DEADLINE_ID ? "L2" : "L1";
+      const moduleLabel = s.lessonModuleId === HOST_LEAGUE_ID ? "M2 L2" : s.lessonModuleId === TRADE_DEADLINE_ID ? "L2" : "L1";
       option.textContent = `[${moduleLabel}] ${s.title || s.code} (${s.code}) — ${s.ended ? "ended" : `live, ${s.phase}`}`;
       select.appendChild(option);
     }
@@ -120,7 +127,10 @@ async function syncSourceSessionRow(): Promise<void> {
 async function createSession(): Promise<void> {
   const lessonModuleId = $<HTMLSelectElement>("lesson").value;
   const title = $<HTMLInputElement>("title").value.trim();
-  const sourceSessionId = lessonModuleId === TRADE_DEADLINE_ID || lessonModuleId === FREE_AGENCY_ID ? $<HTMLSelectElement>("sourceSession").value || undefined : undefined;
+  const sourceSessionId =
+    lessonModuleId === TRADE_DEADLINE_ID || lessonModuleId === FREE_AGENCY_ID || lessonModuleId === WRITE_RULE_ID
+      ? $<HTMLSelectElement>("sourceSession").value || undefined
+      : undefined;
   const payload = await apiFetch<TeacherPayload>("/api/sessions", {
     method: "POST",
     body: JSON.stringify({ lessonModuleId, title, sourceSessionId }),
@@ -218,14 +228,23 @@ function render(payload: TeacherPayload): void {
   const isFreeAgency = s.lessonModuleId === FREE_AGENCY_ID;
   const isFullHouse = s.lessonModuleId === FULL_HOUSE_ID;
   const isHostLeague = s.lessonModuleId === HOST_LEAGUE_ID;
+  const isWriteRule = s.lessonModuleId === WRITE_RULE_ID;
   $<HTMLButtonElement>("btnShock").hidden = !isDraftDay;
   $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
   $<HTMLButtonElement>("btnCounterfactual").hidden =
     isDraftDay || isTradeDeadline || isFreeAgency || isFullHouse || isHostLeague || s.lessonModuleId === "m2-box-office";
+  if (isWriteRule) {
+    // M2 L3 owns a real COUNTERFACTUAL phase: the season replayed under the
+    // runner-up share with every pair's actions held fixed.
+    const cf = $<HTMLButtonElement>("btnCounterfactual");
+    cf.hidden = false;
+    cf.disabled = s.ended || s.phase !== "COUNTERFACTUAL" || Boolean(payload.view["counterfactualRun"]);
+    cf.textContent = payload.view["counterfactualRun"] ? "The replay is on the projector" : "Replay the season under the runner-up rule";
+  }
   // The staged per-target auction theater (charter point 6, and L3's own staged finale): one click reveals
   // exactly the next not-yet-revealed step, so the teacher paces the reveal instead of dumping every result
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
-  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague;
+  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule;
   $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
   {
     // gate-l1-teacher TT-B2 / gate-l1-projector repair 5: "Reveal next" was a
@@ -234,7 +253,7 @@ function render(payload: TeacherPayload): void {
     const btn = $<HTMLButtonElement>("btnRevealNext");
     const next = payload.view["nextRevealStage"] as { stage: number; name: string } | null | undefined;
     const total = Number(payload.view["totalRevealSteps"] ?? 0);
-    btn.textContent = isFullHouse || isHostLeague
+    btn.textContent = isFullHouse || isHostLeague || isWriteRule
       ? next
         ? `Reveal ${next.stage} of ${total} — ${next.name}`
         : "Every reveal has played"
@@ -275,8 +294,19 @@ function render(payload: TeacherPayload): void {
   {
     const closeWeek = $<HTMLButtonElement>("btnCloseWeek");
     const handedTo = $<HTMLButtonElement>("btnHandedTo");
-    closeWeek.hidden = !isHostLeague;
+    closeWeek.hidden = !isHostLeague && !isWriteRule;
     handedTo.hidden = !isHostLeague;
+    if (isWriteRule) {
+      // M2 L3's season bell. Same control, same confirm discipline; the module
+      // supplies both the label and the consequence-stating warning.
+      const allDone = Boolean(payload.view["allWeeksDone"]);
+      closeWeek.disabled = s.ended || s.phase !== "PLAY" || allDone || !payload.view["seasonOpen"];
+      closeWeek.innerHTML = allDone
+        ? `${BELL_GLYPH}All three weeks are in the books`
+        : `${BELL_GLYPH}Close week ${escapeHtml(String(payload.view["weekNumber"]))} (${escapeHtml(String(payload.view["lockedCount"]))}/${escapeHtml(String(payload.view["deskCount"]))} locked)`;
+      closeWeek.title = String(payload.view["bellNote"] ?? "");
+      closeWeekWarn = (payload.view["closeWeekWarn"] as string | null) ?? null;
+    }
     if (isHostLeague) {
       const allDone = Boolean(payload.view["allWeeksDone"]);
       closeWeek.disabled = s.ended || s.phase !== "PLAY" || allDone;
@@ -327,9 +357,19 @@ function render(payload: TeacherPayload): void {
     const pagerNow = $("pagerNow");
     cfPage.hidden = !isFullHouse || s.phase !== "COUNTERFACTUAL";
     cfBack.hidden = cfPage.hidden;
-    synthPage.hidden = !(isFullHouse || isHostLeague) || s.phase !== "SYNTHESIS";
+    synthPage.hidden = !(isFullHouse || isHostLeague || isWriteRule) || s.phase !== "SYNTHESIS";
     synthBack.hidden = synthPage.hidden;
     pagerNow.hidden = cfPage.hidden && synthPage.hidden && !(isHostLeague && (s.phase === "PLAY" || s.phase === "REVEAL" || s.phase === "ADAPT"));
+    if (isWriteRule) {
+      const synthAvailable = Boolean(payload.view["synthPageAvailable"]);
+      synthPage.disabled = s.ended || !synthAvailable;
+      synthBack.disabled = s.ended || !synthAvailable;
+      synthPage.textContent = String(payload.view["synthNextLabel"] ?? "Next card");
+      synthBack.textContent = String(payload.view["synthPrevLabel"] ?? "Back a card");
+      synthPage.title = String(payload.view["synthPageNote"] ?? "");
+      synthBack.title = String(payload.view["synthPageNote"] ?? "");
+      pagerNow.textContent = s.phase === "SYNTHESIS" ? String(payload.view["synthCurrentLabel"] ?? "") : "";
+    }
     if (isHostLeague) {
       const synthAvailable = Boolean(payload.view["synthPageAvailable"]);
       synthPage.disabled = s.ended || !synthAvailable;
@@ -366,6 +406,30 @@ function render(payload: TeacherPayload): void {
           : s.phase === "SYNTHESIS"
             ? String(payload.view["synthCurrentLabel"] ?? "")
             : "";
+    }
+  }
+  // M2 L3's own pacing controls. Three buttons, each with a module-supplied
+  // consequence-stating confirm, because each of them is irreversible: closing
+  // a round records every silent desk at the status quo; the two-thirds test
+  // prints the rule the room will play under; the league office's rule replaces
+  // the room's own vote; a commit reveal locks out any desk still deciding.
+  {
+    const ruleStep = $<HTMLButtonElement>("btnRuleStep");
+    const realRule = $<HTMLButtonElement>("btnRealRule");
+    const commit = $<HTMLButtonElement>("btnCommitReveal");
+    ruleStep.hidden = !isWriteRule || s.phase !== "PLAY";
+    realRule.hidden = !isWriteRule || s.phase !== "PLAY";
+    commit.hidden = !isWriteRule || (s.phase !== "HOOK" && s.phase !== "ARGUE");
+    if (isWriteRule) {
+      ruleStep.disabled = s.ended || s.phase !== "PLAY" || !payload.view["ruleStepAvailable"];
+      ruleStep.textContent = String(payload.view["ruleStepLabel"] ?? "Close the round");
+      ruleStepWarn = (payload.view["ruleStepWarn"] as string | null) ?? null;
+      realRule.disabled = s.ended || s.phase !== "PLAY" || !payload.view["realRuleAvailable"];
+      realRule.title = String(payload.view["realRuleWarn"] ?? "");
+      realRuleWarn = (payload.view["realRuleWarn"] as string | null) ?? null;
+      commit.disabled = s.ended || !payload.view["commitRevealAvailable"];
+      commit.textContent = String(payload.view["commitRevealLabel"] ?? "Reveal");
+      commitRevealWarn = (payload.view["commitRevealWarn"] as string | null) ?? null;
     }
   }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
@@ -456,7 +520,7 @@ function render(payload: TeacherPayload): void {
   $("aggregateBody").appendChild(renderAggregate(payload.view, payload.seats));
 
   // TT-B1/B2/B3: the director layer, only for the lesson that ships one.
-  if (payload.view["module"] === FULL_HOUSE_ID || payload.view["module"] === HOST_LEAGUE_ID) {
+  if (payload.view["module"] === FULL_HOUSE_ID || payload.view["module"] === HOST_LEAGUE_ID || payload.view["module"] === WRITE_RULE_ID) {
     directorEl.hidden = false;
     $("directorHeading").textContent = `Directing ${s.phase}`;
     $("directorBody").innerHTML = "";
@@ -665,6 +729,7 @@ function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): H
   if (view["module"] === FREE_AGENCY_ID) return renderFreeAgencyAggregate(view, seats);
   if (view["module"] === FULL_HOUSE_ID) return renderFullHouseAggregate(view, seats);
   if (view["module"] === HOST_LEAGUE_ID) return renderHostLeagueAggregate(view, seats);
+  if (view["module"] === WRITE_RULE_ID) return renderWriteRuleAggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
@@ -1069,6 +1134,83 @@ type HLDeskStat = {
 };
 type HLDrawRow = { slot: number; handle: string; short: string; live: boolean; draw: number; starGone: boolean; sizeLabel: string };
 
+/**
+ * M2 L3's control-room panel. Deliberately narrow: the rule and where it came
+ * from, the pot's two columns per desk, and the before/after effort rows. No
+ * cash column anywhere — cash is never ranked on any surface in this module,
+ * and the teacher panel is a surface.
+ */
+function renderWriteRuleAggregate(view: Record<string, unknown>, _seats: TeacherSeat[]): HTMLElement {
+  const agg =
+    (view["aggregate"] as {
+      potFlows?: { deskHandle: string; paidInText: string; tookOutText: string; netText: string; net: number; docked: boolean }[];
+      reinvestEra?: { deskHandle: string; l2: number | null; l3: number }[];
+      rounds?: { round: number; median: number; submitted: number; conditionYes: number }[];
+      hookSplit?: { pay: number; breakup: number; undecided: number };
+      kingsSplit?: { deny: number; approve: number; undecided: number };
+    }) ?? {};
+  const rule = view["rule"] as { share: number; condition: boolean; how: string } | null;
+  const wrap = document.createElement("div");
+
+  const kpis = document.createElement("div");
+  kpis.className = "kpirow";
+  kpis.style.marginBottom = "14px";
+  kpis.innerHTML = `
+    <div class="kpi"><div class="num" style="font-size:15px;">${escapeHtml(String(view["stage"] ?? ""))}</div><div class="lbl">Stage</div></div>
+    <div class="kpi"><div class="num">${view["stage"] === "rounds" ? `${view["round"]}/${view["roundCount"]}` : `${view["weekNumber"]}/${view["weekCount"]}`}</div><div class="lbl">${view["stage"] === "rounds" ? "Round" : "Week"}</div></div>
+    <div class="kpi"><div class="num">${view["stage"] === "rounds" ? `${view["proposalCount"]}/${view["deskCount"]}` : `${view["lockedCount"]}/${view["deskCount"]}`}</div><div class="lbl">${view["stage"] === "rounds" ? "Numbers in" : "Locked in"}</div></div>
+    <div class="kpi"><div class="num" style="font-size:15px;">${rule ? `${rule.share}% · ${rule.condition ? "ON" : "OFF"}` : "not written"}</div><div class="lbl">Rule</div></div>`;
+  wrap.appendChild(kpis);
+
+  const line = document.createElement("div");
+  line.style.marginBottom = "12px";
+  line.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">The rule, as it stands</div>
+    <div style="font-size:13px; color:var(--ink-secondary);">${escapeHtml(String(view["adoptionLine"] ?? ""))}</div>`;
+  wrap.appendChild(line);
+
+  const rounds = agg.rounds ?? [];
+  if (rounds.length > 0) {
+    const row = document.createElement("div");
+    row.style.marginBottom = "12px";
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Closed rounds</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">${rounds
+        .map(
+          (r) =>
+            `<span class="chip">R${r.round} · middle ${r.median}% · ${r.submitted} in · ${r.conditionYes} for the condition</span>`,
+        )
+        .join("")}</div>`;
+    wrap.appendChild(row);
+  }
+
+  const flows = agg.potFlows ?? [];
+  if (flows.length > 0) {
+    const row = document.createElement("div");
+    row.style.marginBottom = "12px";
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Paid in / took out — sorted by desk number, never by money</div>
+      ${flows
+        .map(
+          (f) =>
+            `<div class="row" style="margin:3px 0; font-size:12.5px;"><span style="width:190px;">${escapeHtml(f.deskHandle)}</span><span style="width:110px; color:var(--ink-muted);">in ${escapeHtml(f.paidInText)}</span><span style="width:110px; color:var(--ink-muted);">out ${escapeHtml(f.tookOutText)}</span><span style="color:${f.net < 0 ? "var(--accent-violet)" : "var(--accent-gold)"};">${escapeHtml(f.netText)}${f.docked ? " · docked" : ""}</span></div>`,
+        )
+        .join("")}`;
+    wrap.appendChild(row);
+  }
+
+  const era = agg.reinvestEra ?? [];
+  if (era.length > 0) {
+    const row = document.createElement("div");
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Put back last lesson vs this lesson</div>
+      ${era
+        .map(
+          (e) =>
+            `<div class="row" style="margin:3px 0; font-size:12.5px;"><span style="width:190px;">${escapeHtml(e.deskHandle)}</span><span style="width:110px; color:var(--ink-muted);">${e.l2 === null ? "no L2 link" : `L2 ${Math.round(e.l2 * 10) / 10}%`}</span><span>L3 ${Math.round(e.l3 * 10) / 10}%</span></div>`,
+        )
+        .join("")}`;
+    wrap.appendChild(row);
+  }
+  return wrap;
+}
+
 function renderHostLeagueAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
   const desks = (view["desks"] as HLDeskStat[]) ?? [];
   const agg = (view["aggregate"] as { drawTable?: HLDrawRow[] } | undefined) ?? {};
@@ -1265,6 +1407,18 @@ $("btnCloseWeek").addEventListener("click", () => {
   void sendControl({ type: "hook", hook: "closeWeek" });
 });
 $("btnHandedTo").addEventListener("click", () => void sendControl({ type: "hook", hook: "handedTo" }));
+$("btnRuleStep").addEventListener("click", () => {
+  if (ruleStepWarn && !confirm(ruleStepWarn)) return;
+  void sendControl({ type: "hook", hook: "ruleStep" });
+});
+$("btnRealRule").addEventListener("click", () => {
+  if (realRuleWarn && !confirm(realRuleWarn)) return;
+  void sendControl({ type: "hook", hook: "realRule" });
+});
+$("btnCommitReveal").addEventListener("click", () => {
+  if (commitRevealWarn && !confirm(commitRevealWarn)) return;
+  void sendControl({ type: "hook", hook: "commitReveal" });
+});
 $("btnBarPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPage" }));
 $("btnBarPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPageBack" }));
 

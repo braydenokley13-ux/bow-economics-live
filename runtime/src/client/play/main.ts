@@ -223,6 +223,10 @@ function renderGame(payload: StudentPayload): void {
     renderHostLeague(s, view);
     return;
   }
+  if (view["module"] === "m2l3-write-rule") {
+    renderWriteRule(s, view);
+    return;
+  }
 
   // lobby-demo fallback (still registered, proves the runtime is genuinely generic)
   if (s.phase === "LOBBY") {
@@ -3125,6 +3129,707 @@ function renderHLReveal(view: Record<string, unknown>): void {
     ${questions.length > 0 ? `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">Talk to your partner</div><ol class="fh-questions">${questions.map((q) => `<li>${escapeHtml(q)}</li>`).join("")}</ol></div>` : ""}
     <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks</div>
     ${history.map((w) => hlWeekResultHtml(w, `Week ${w.week}`)).join("")}`;
+}
+
+/* ================= M2 L3 "Writing the Rule" — student device =================
+   Same architecture as L2, deliberately: the pinned commit bar, the two-column
+   decision band, the arming guard, and the same Cap Room type classes. The
+   Chromebook fold behaviour of this shell is the one thing in the module that
+   is already proven at 1024x600, so the finale inherits it rather than
+   re-inventing it under a deadline. Only the decisions are new. */
+
+let wrSeatRequested = false;
+let wrMountKey: string | null = null;
+let wrLocalPrice: number | null = null;
+let wrLocalShare: number | null = null;
+let wrLocalCondition: boolean | null = null;
+let wrLastSettledSeen: string | null = null;
+
+type WRRule = { share: number; condition: boolean; how: string; supporting: number; liveDesks: number; conditionMin: number } | null;
+type WRHistogram = { round: number; bins: { share: number; count: number }[]; median: number; conditionYes: number; submitted: number };
+type WRWeek = {
+  week: number;
+  price: number;
+  reinvest: number;
+  auto: boolean;
+  visitor: string;
+  visitorDraw: number;
+  turnout: number;
+  capacity: number;
+  soldOut: boolean;
+  turnedAway: number;
+  gate: number;
+  inArena: number;
+  localMedia: number;
+  national: number;
+  bill: number;
+  reinvestSpend: number;
+  paidIn: number;
+  tookOut: number;
+  potNet: number;
+  docked: boolean;
+  cashDelta: number;
+  cashAfter: number;
+  drawAfter: number;
+  roadDollarsGiven: number;
+  transferLine: string;
+};
+type WRSlateRow = { week: number; open: boolean; settled: boolean; hosting: { short: string; draw: number }; visiting: { short: string; draw: number } };
+type WRCard = {
+  id: string;
+  title: string;
+  body: string;
+  rails: { rememberWhen: string; ourClass: string; inSports: string; economistsCall: string; outsideSports: string };
+};
+
+function wrDeskHeader(view: Record<string, unknown>): string {
+  if (!view["club"]) return "";
+  return `
+    <div class="fh-desk-head" id="wrIdentity">
+      <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 24)}"></span>
+      <span class="fh-desk-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
+      <span class="fh-desk-building">${escapeHtml(String(view["sizeLabel"] ?? ""))} · ${escapeHtml(String(view["building"] ?? ""))}</span>
+    </div>`;
+}
+
+function wrRuleStrip(rule: WRRule): string {
+  if (!rule) return "";
+  return `
+    <div class="fh-topstrip" id="wrRuleStrip">
+      <span class="fh-topstrip-name fh-desk-name">RULE IN FORCE</span>
+      <span class="fh-topstrip-book"><span>Share</span><span class="numeric">${rule.share}%</span></span>
+      <span class="fh-topstrip-book"><span>Condition</span><span class="numeric">${rule.condition ? `${rule.conditionMin}%+` : "OFF"}</span></span>
+    </div>`;
+}
+
+function wrBooks(view: Record<string, unknown>): string {
+  return `
+    <div class="fh-books">
+      <div class="fh-book ${Number(view["cash"] ?? 0) < 0 ? "debt" : ""}">
+        <div class="fh-book-label">Cash</div>
+        <div class="fh-book-value numeric">${money(Number(view["cash"] ?? 0))}</div>
+      </div>
+      <div class="fh-book">
+        <div class="fh-book-label">Draw</div>
+        <div class="fh-book-value numeric">${Number(view["draw"] ?? 0)}</div>
+        <div class="fh-book-note">People your club's name puts in someone else's building</div>
+      </div>
+    </div>`;
+}
+
+function wrLeagueTable(view: Record<string, unknown>): string {
+  const league = (view["league"] as { deskNumber: number; short: string; sizeLabel: string; draw: number; live: boolean }[]) ?? [];
+  if (league.length === 0) return "";
+  return `
+    <details class="fa-rules" style="margin-top:12px;">
+      <summary>Every club in the league</summary>
+      <div class="fh-slate">
+        ${league
+          .map(
+            (c) =>
+              `<div class="fh-slate-row"><span>${escapeHtml(c.short)}</span><span>${escapeHtml(c.sizeLabel)}</span><span>${c.live ? `Desk ${c.deskNumber}` : "league office"}</span><span class="numeric">Draw ${c.draw}</span></div>`,
+          )
+          .join("")}
+      </div>
+    </details>`;
+}
+
+function wrHistogramHtml(h: WRHistogram | null, held: boolean, heldCopy: string): string {
+  if (held || !h) {
+    return `<div class="panel" id="wrHistogram" style="padding:14px; margin-top:10px;">
+      <div class="eyebrow" style="font-size:12px;">The room's numbers</div>
+      <p style="margin:8px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(heldCopy)}</p>
+    </div>`;
+  }
+  const max = Math.max(1, ...h.bins.map((b) => b.count));
+  return `
+    <div class="panel" id="wrHistogram" style="padding:14px; margin-top:10px;">
+      <div class="eyebrow" style="font-size:12px;">Round ${h.round} — every desk's number, no names</div>
+      <div class="wr-hist">
+        ${h.bins
+          .map(
+            (b) =>
+              `<div class="wr-hist-col"><div class="wr-hist-bar" style="height:${Math.round((b.count / max) * 46) + 2}px;"></div><div class="wr-hist-tick">${b.share}</div></div>`,
+          )
+          .join("")}
+      </div>
+      <div class="hl-give-note">Middle number: <b class="numeric">${h.median}%</b> · ${h.conditionYes} of ${h.submitted} desks wanted the condition on. Unsorted, no money, no names.</div>
+    </div>`;
+}
+
+function wrTransferHtml(w: WRWeek): string {
+  return `
+    <div class="hl-give" id="wrTransfer">
+      <div class="hl-split-title">Paid in, took out</div>
+      <div class="hl-give-row"><span>You paid into the pot</span><span class="numeric" data-wr-paid>${money(w.paidIn)}</span></div>
+      <div class="hl-give-row"><span>You took back out</span><span class="numeric" data-wr-took>${money(w.tookOut)}</span></div>
+      <div class="hl-give-row net"><span>Net from the pot</span><span class="numeric ${w.potNet < 0 ? "neg" : ""}" data-wr-net>${money(w.potNet)}</span></div>
+      ${w.docked ? `<div class="hl-give-note">Docked: you were under the condition the room voted in, so you collected half a share.</div>` : ""}
+      <div class="hl-give-note">${escapeHtml(w.transferLine)}</div>
+    </div>`;
+}
+
+function wrWeekResult(w: WRWeek): string {
+  return `
+    <div class="fh-result" id="wrResult">
+      <div class="hl-split-title">Week ${w.week} — how it went${w.auto ? " · AUTO" : ""}</div>
+      ${
+        w.soldOut
+          ? `<div class="fh-sellout"><div class="fh-sellout-title">FULL HOUSE</div><div class="fh-sellout-sub">${w.turnout.toLocaleString()} of ${w.capacity.toLocaleString()} seats · every one sold</div>${w.turnedAway > 0 ? `<div class="fh-sellout-turned"><span class="numeric">${w.turnedAway.toLocaleString()}</span><span>could not get in</span></div>` : ""}</div>`
+          : ""
+      }
+      <div class="hl-split" id="wrSplit">
+        <div class="hl-split-rows">
+          <div class="hl-split-row"><span>Gate at $${w.price}</span><span class="numeric">${money(w.gate)}</span></div>
+          <div class="hl-split-row"><span>Spent inside the building</span><span class="numeric">${money(w.inArena)}</span></div>
+          <div class="hl-split-row"><span>Local television</span><span class="numeric">${money(w.localMedia)}</span></div>
+          <div class="hl-split-row"><span>National check (never taxed)</span><span class="numeric">${money(w.national)}</span></div>
+          <div class="hl-split-row"><span>Building bill</span><span class="numeric neg">${money(-w.bill)}</span></div>
+          <div class="hl-split-row"><span>Put back into the club (${w.reinvest}%)</span><span class="numeric neg">${money(-w.reinvestSpend)}</span></div>
+        </div>
+      </div>
+      ${wrTransferHtml(w)}
+      <div class="hl-give-row net"><span>Cash this week</span><span class="numeric ${w.cashDelta < 0 ? "neg" : ""}" data-wr-kept>${money(w.cashDelta)}</span></div>
+      <div class="hl-give-note" id="wrRoad">Your Draw put ${money(w.roadDollarsGiven)} on THEIR books, in the building you visited. Your Draw next week: ${w.drawAfter}.</div>
+    </div>`;
+}
+
+function wrSlateHtml(slate: WRSlateRow[]): string {
+  if (slate.length === 0) return "";
+  return `
+    <div class="hl-slate-block hl-slate-terse" style="margin-top:8px;">
+      <div class="eyebrow" style="font-size:11px; margin-bottom:2px;">The three weeks — pairings fixed, every Draw still moving</div>
+      <div class="fh-slate">
+        ${slate
+          .map(
+            (r) =>
+              `<div class="fh-slate-row${r.open ? " hl-open-week" : ""}"><span>W${r.week}${r.open ? " · now" : r.settled ? " · played" : ""}</span><span>HOST ${escapeHtml(r.hosting.short)} <span class="numeric">${r.hosting.draw}</span></span><span>AT ${escapeHtml(r.visiting.short)} <span class="numeric">${r.visiting.draw}</span></span></div>`,
+          )
+          .join("")}
+      </div>
+    </div>`;
+}
+
+function wrCardsHtml(cards: WRCard[]): string {
+  return cards
+    .map(
+      (c) => `
+      <div class="panel wr-card" style="padding:14px; margin-top:10px;">
+        <div class="eyebrow" style="font-size:12px;">${escapeHtml(c.title)}</div>
+        <div class="wr-rail"><span>REMEMBER WHEN</span><p>${escapeHtml(c.rails.rememberWhen)}</p></div>
+        <div class="wr-rail"><span>OUR CLASS</span><p>${escapeHtml(c.rails.ourClass)}</p></div>
+        <div class="wr-rail"><span>IN SPORTS</span><p>${escapeHtml(c.rails.inSports)}</p></div>
+        <div class="wr-rail"><span>ECONOMISTS CALL THIS</span><p>${escapeHtml(c.rails.economistsCall)}</p></div>
+        <div class="wr-rail"><span>OUTSIDE SPORTS</span><p>${escapeHtml(c.rails.outsideSports)}</p></div>
+      </div>`,
+    )
+    .join("");
+}
+
+function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  if (view["seated"] === false) {
+    if (!wrSeatRequested) {
+      wrSeatRequested = true;
+      outbox?.submit({ type: "takeSeat" });
+    }
+    body.innerHTML = `<div class="banner">You're in — finding your club…</div>`;
+    return;
+  }
+  if (s.phase !== "PLAY") {
+    wrMountKey = null;
+    document.body.classList.remove("hl-has-lockbar", "fh-compact-play");
+  }
+  switch (s.phase) {
+    case "LOBBY":
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">Writing the Rule</div>
+          <p style="margin:0 0 10px; font-size:16px; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+          <p style="margin:0 0 8px; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["plainLine"] ?? ""))}</p>
+          ${view["identityLine"] ? `<p class="hl-identity">${escapeHtml(String(view["identityLine"]))}</p>` : ""}
+        </div>
+        <div class="panel" id="wrHowYouGotHere" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">How you got here</div>
+          <p style="margin:8px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(String(view["seedNote"] ?? ""))}</p>
+          ${view["l2Reinvest"] !== undefined ? `<p style="margin:6px 0 0; font-size:13px; color:var(--ink-secondary);">Last lesson you put back an average of <b class="numeric">${Number(view["l2Reinvest"])}%</b> of what came through your door.</p>` : ""}
+        </div>
+        ${wrBooks(view)}
+        <details class="fa-rules" style="margin-top:12px;" open>
+          <summary>How today works</summary>
+          <ul>${((view["houseRules"] as string[]) ?? []).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+        </details>
+        ${wrLeagueTable(view)}
+        <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
+      return;
+
+    case "HOOK": {
+      const revealed = Boolean(view["revealed"]);
+      const pick = view["pick"];
+      const split = view["split"] as { pay: number; breakup: number; undecided: number } | undefined;
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">Boston, June 2025</div>
+          <p style="margin:0; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+        </div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">${escapeHtml(String(view["question"] ?? ""))}</div>
+          <div class="wr-choice">
+            <button type="button" class="btn ${pick === "pay" ? "btn-primary" : ""}" id="wrHookPay" ${revealed ? "disabled" : ""}>PAY IT</button>
+            <button type="button" class="btn ${pick === "breakup" ? "btn-primary" : ""}" id="wrHookBreak" ${revealed ? "disabled" : ""}>BREAK IT UP</button>
+          </div>
+          ${pick ? `<div class="hl-give-note">Locked: ${pick === "pay" ? "pay it" : "break it up"}. Nobody is scored on this.</div>` : ""}
+        </div>
+        ${
+          revealed
+            ? `<div class="panel" id="wrHookReveal" style="padding:16px; margin-top:12px;">
+                 <div class="eyebrow" style="font-size:12px;">What happened</div>
+                 <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["revealCopy"] ?? ""))}</p>
+                 ${split ? `<div class="hl-give-note">This room: ${split.pay} pay it · ${split.breakup} break it up.</div>` : ""}
+               </div>`
+            : ""
+        }`;
+      if (!revealed) {
+        const send = (choice: string) => outbox?.submit({ type: "hookPick", choice });
+        document.getElementById("wrHookPay")?.addEventListener("click", () => send("pay"));
+        document.getElementById("wrHookBreak")?.addEventListener("click", () => send("breakup"));
+      }
+      return;
+    }
+
+    case "PLAY":
+      renderWRPlay(view);
+      return;
+
+    case "REVEAL":
+    case "CONSEQUENCE": {
+      const weeks = (view["weeks"] as WRWeek[]) ?? [];
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        ${wrRuleStrip(view["rule"] as WRRule)}
+        <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["question"] ?? ""))}</p>
+        </div>
+        ${weeks.map((w) => wrWeekResult(w)).join("")}`;
+      return;
+    }
+
+    case "COUNTERFACTUAL":
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        ${wrRuleStrip(view["rule"] as WRRule)}
+        <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        ${((view["weeks"] as WRWeek[]) ?? []).map((w) => wrWeekResult(w)).join("")}`;
+      return;
+
+    case "ARGUE": {
+      const revealed = Boolean(view["revealed"]);
+      const vote = view["vote"];
+      const split = view["split"] as { deny: number; approve: number; undecided: number } | undefined;
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">Sacramento, 2013 — the Board of Governors</div>
+          <p style="margin:0; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
+        </div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">${escapeHtml(String(view["prompt"] ?? ""))}</div>
+          <div class="wr-choice">
+            <button type="button" class="btn ${vote === "deny" ? "btn-primary" : ""}" id="wrKingsDeny" ${revealed ? "disabled" : ""}>DENY — KEEP IT IN SACRAMENTO</button>
+            <button type="button" class="btn ${vote === "approve" ? "btn-primary" : ""}" id="wrKingsApprove" ${revealed ? "disabled" : ""}>APPROVE — LET IT MOVE TO SEATTLE</button>
+          </div>
+          ${vote ? `<div class="hl-give-note">Locked: ${vote === "deny" ? "deny" : "approve"}. There is no score.</div>` : ""}
+        </div>
+        ${
+          revealed
+            ? `<div class="panel" id="wrKingsReveal" style="padding:16px; margin-top:12px;">
+                 <div class="eyebrow" style="font-size:12px;">The vote</div>
+                 <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["revealCopy"] ?? ""))}</p>
+                 ${split ? `<div class="hl-give-note">This room: ${split.deny} deny · ${split.approve} approve.</div>` : ""}
+               </div>`
+            : ""
+        }`;
+      if (!revealed) {
+        const send = (choice: string) => outbox?.submit({ type: "kingsVote", choice });
+        document.getElementById("wrKingsDeny")?.addEventListener("click", () => send("deny"));
+        document.getElementById("wrKingsApprove")?.addEventListener("click", () => send("approve"));
+      }
+      return;
+    }
+
+    case "SYNTHESIS":
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        ${wrRuleStrip(view["rule"] as WRRule)}
+        <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        <div class="panel" style="padding:16px; margin-top:12px;">
+          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
+          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
+        </div>
+        <div id="wrFinale">${wrCardsHtml((view["cards"] as WRCard[]) ?? [])}</div>
+        <details class="fa-rules" style="margin-top:12px;">
+          <summary>What this lesson simplified, and what it risks</summary>
+          <ul>${((view["simplifications"] as { what: string; why: string; risk: string }[]) ?? [])
+            .map((x) => `<li><b>${escapeHtml(x.what)}</b><br>${escapeHtml(x.why)}<br><i>Risk: ${escapeHtml(x.risk)}</i></li>`)
+            .join("")}</ul>
+        </details>
+        <details class="fa-rules" style="margin-top:8px;">
+          <summary>Where the real numbers came from</summary>
+          <ul>${((view["sources"] as string[]) ?? []).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>
+        </details>`;
+      return;
+
+    case "COMPLETE": {
+      const rule = view["rule"] as WRRule;
+      body.innerHTML = `
+        ${wrDeskHeader(view)}
+        <div class="banner">${escapeHtml(String(view["message"] ?? ""))}</div>
+        ${rule ? `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">Your rule</div><p style="margin:8px 0 0; font-size:16px; color:var(--ink-primary);">SHARE ${rule.share}% · CONDITION ${rule.condition ? "ON" : "OFF"}</p></div>` : ""}`;
+      return;
+    }
+
+    default:
+      body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
+  }
+}
+
+function renderWRPlay(view: Record<string, unknown>): void {
+  const mode = String(view["mode"] ?? "");
+  if (mode === "rounds") {
+    renderWRRounds(view);
+    return;
+  }
+  if (mode === "adopted") {
+    wrMountKey = null;
+    document.body.classList.remove("hl-has-lockbar", "fh-compact-play");
+    $("gameBody").innerHTML = `
+      ${wrDeskHeader(view)}
+      ${wrRuleStrip(view["rule"] as WRRule)}
+      <div class="panel" id="wrAdopted" style="padding:18px; margin-top:12px;">
+        <div class="eyebrow" style="font-size:12px;">The rule</div>
+        <p style="margin:8px 0 0; font-size:16px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["adoption"] ?? ""))}</p>
+        <p style="margin:10px 0 0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["seasonCopy"] ?? ""))}</p>
+      </div>
+      ${wrBooks(view)}`;
+    return;
+  }
+  renderWRSeason(view);
+}
+
+function renderWRRounds(view: Record<string, unknown>): void {
+  document.body.classList.remove("fh-compact-play");
+  const round = Number(view["round"] ?? 1);
+  const proposal = view["proposal"] as { share: number; condition: boolean } | null;
+  const grid = (view["shareGrid"] as number[]) ?? [0, 5, 10];
+  const key = `rounds|${round}|${proposal ? `${proposal.share}|${proposal.condition}` : "none"}|${Boolean(view["histogramHeld"])}`;
+  if (wrMountKey === key && document.getElementById("wrRoundsRoot")) return;
+  wrMountKey = key;
+  hidePin();
+  if (wrLocalShare === null) wrLocalShare = proposal?.share ?? 20;
+  if (wrLocalCondition === null) wrLocalCondition = proposal?.condition ?? false;
+  const share = wrLocalShare;
+  const condition = wrLocalCondition;
+
+  $("gameBody").innerHTML = `
+    <div id="wrRoundsRoot" class="hl-decide">
+      <div class="hl-span">${wrDeskHeader(view)}</div>
+      <div class="hl-col-context">
+        <div class="panel" id="wrVeil" style="padding:14px;">
+          <div class="eyebrow" style="font-size:12px;">Before you write anything</div>
+          <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["veil"] ?? ""))}</p>
+        </div>
+        <div class="panel" style="padding:14px; margin-top:10px;">
+          <div class="eyebrow" style="font-size:12px;">Your club, while you vote</div>
+          <div class="fh-market-facts">
+            <div><span>${escapeHtml(String(view["club"] ?? ""))}</span><span>${escapeHtml(String(view["sizeLabel"] ?? ""))}</span></div>
+            <div><span>Seats</span><span class="numeric">${Number(view["capacity"] ?? 0).toLocaleString()}</span></div>
+            <div><span>Bill, every week</span><span class="numeric">${money(Number(view["bill"] ?? 0))}</span></div>
+            <div><span>Your Draw</span><span class="numeric">${Number(view["draw"] ?? 0)}</span></div>
+            <div><span>Cash</span><span class="numeric">${money(Number(view["cash"] ?? 0))}</span></div>
+          </div>
+          <div class="hl-give-note">${escapeHtml(String(view["plainLine"] ?? ""))}</div>
+        </div>
+        ${wrHistogramHtml(view["histogram"] as WRHistogram | null, Boolean(view["histogramHeld"]), "Round 1 is blind on purpose. Everybody's numbers go up here once this round closes.")}
+      </div>
+      <div class="hl-col-decide" id="wrDecisionBand">
+        <div class="hl-week-card">
+          <div class="hl-week-top">
+            <span class="hl-week-num">Round ${round} of ${view["roundCount"]}</span>
+            <span class="hl-week-cap">${escapeHtml(String(view["sizeLabel"] ?? ""))}</span>
+          </div>
+          <div class="hl-give-note">${escapeHtml(String(view["ruleCopy"] ?? ""))}</div>
+        </div>
+        <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
+          <div class="eyebrow" style="font-size:12px;">SHARE — how much of every club's local money goes into the pot</div>
+          <div class="fh-price-readout numeric" id="wrShareReadout">${share}%</div>
+          <div class="fh-dial">
+            <input class="price-dial-input" type="range" id="wrShareDial" min="${grid[0]}" max="${grid[grid.length - 1]}" step="5" value="${share}" />
+          </div>
+          <div class="price-dial-ends"><span>${grid[0]}%</span><span>${grid[grid.length - 1]}%</span></div>
+
+          <div class="eyebrow" style="font-size:12px; margin-top:12px;">CONDITION</div>
+          <div class="fh-spend-row">
+            <button type="button" class="btn ${condition ? "btn-primary" : ""}" id="wrCondition" aria-pressed="${condition}">${condition ? "ON" : "OFF"}</button>
+            <span class="fh-lag">A club must put at least ${view["conditionMin"]}% back into its own product to collect its full share.</span>
+          </div>
+          <div class="fh-blind-note">No preview. Nothing on this screen tells you what a share will be worth to you.</div>
+        </div>
+        <div class="panel" style="padding:12px; margin-top:10px;">
+          <div class="hl-give-note">${escapeHtml(String(view["adoptCopy"] ?? ""))}</div>
+        </div>
+      </div>
+    </div>
+    <div class="hl-lockbar" id="wrLockBar">
+      <span class="hl-lockbar-vals" id="wrProposeVals">Round ${round} · <b id="wrProposeShare">${share}%</b> · condition <b id="wrProposeCond">${condition ? "ON" : "OFF"}</b></span>
+      <button class="btn btn-primary" id="wrPropose" disabled data-wr-armed="0">PUT IT IN</button>
+    </div>`;
+  document.body.classList.add("hl-has-lockbar");
+  const bar = document.getElementById("wrLockBar");
+  if (bar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(bar.getBoundingClientRect().height)}px`);
+
+  const dial = $<HTMLInputElement>("wrShareDial");
+  const readout = $("wrShareReadout");
+  const condBtn = $<HTMLButtonElement>("wrCondition");
+  const submit = $<HTMLButtonElement>("wrPropose");
+  const barShare = document.getElementById("wrProposeShare");
+  const barCond = document.getElementById("wrProposeCond");
+  const vals = document.getElementById("wrProposeVals");
+  const valsHtml = vals?.innerHTML ?? "";
+  if (vals) vals.textContent = "Read both controls before you put a number in";
+
+  // The same arming guard L2 ships: the commit control may never be the only
+  // live thing in the visible band, and it may never commit a default the pair
+  // has not been shown.
+  const seen = new Set<string>();
+  const arm = (): void => {
+    if (submit.dataset["wrArmed"] === "1") return;
+    submit.dataset["wrArmed"] = "1";
+    submit.disabled = false;
+    if (vals) vals.innerHTML = valsHtml;
+  };
+  const targets = [dial, condBtn];
+  if (typeof IntersectionObserver === "function") {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) seen.add(e.target.id);
+        if (seen.size === targets.length) {
+          arm();
+          io.disconnect();
+        }
+      },
+      { threshold: 0.6 },
+    );
+    for (const t of targets) io.observe(t);
+  } else {
+    arm();
+  }
+  for (const t of targets) {
+    t.addEventListener("pointerdown", arm);
+    t.addEventListener("focus", arm);
+    t.addEventListener("input", arm);
+  }
+
+  dial.addEventListener("input", () => {
+    wrLocalShare = Number(dial.value);
+    readout.textContent = `${dial.value}%`;
+    if (barShare) barShare.textContent = `${dial.value}%`;
+  });
+  condBtn.addEventListener("click", () => {
+    wrLocalCondition = !wrLocalCondition;
+    condBtn.textContent = wrLocalCondition ? "ON" : "OFF";
+    condBtn.setAttribute("aria-pressed", String(wrLocalCondition));
+    condBtn.classList.toggle("btn-primary", wrLocalCondition);
+    if (barCond) barCond.textContent = wrLocalCondition ? "ON" : "OFF";
+    arm();
+  });
+  submit.addEventListener("click", () => {
+    outbox?.submit({ type: "propose", share: Number(dial.value), condition: Boolean(wrLocalCondition) });
+    submit.textContent = "IN";
+  });
+}
+
+function renderWRSeason(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  const done = Boolean(view["done"]);
+  document.body.classList.toggle("fh-compact-play", !done);
+  const weeks = (view["weeks"] as WRWeek[]) ?? [];
+  if (done) {
+    wrMountKey = null;
+    document.body.classList.remove("hl-has-lockbar");
+    body.innerHTML = `
+      ${wrDeskHeader(view)}
+      ${wrRuleStrip(view["rule"] as WRRule)}
+      ${wrBooks(view)}
+      <div class="banner" style="margin-top:12px;">Three weeks in the books. Look up at the board.</div>
+      ${weeks.map((w) => wrWeekResult(w)).join("")}`;
+    return;
+  }
+
+  const weekNumber = Number(view["weekNumber"] ?? 1);
+  const locked = Boolean(view["locked"]);
+  const last = weeks.length > 0 ? weeks[weeks.length - 1]! : null;
+  const justSettled = last !== null && last.week === weekNumber - 1;
+  const rookie = view["rookie"] as { club: string; mine: boolean; copy: string } | undefined;
+  const visitor = view["visitor"] as { short: string; draw: number; deskNumber: number; live: boolean };
+  hidePin();
+
+  const key = `season|${weekNumber}|${locked}|${weeks.length}`;
+  if (wrMountKey === key && document.getElementById("wrPlayRoot")) return;
+  wrMountKey = key;
+  if (wrLocalPrice === null || !locked) wrLocalPrice = Number(view["price"] ?? 46);
+  const price = locked ? Number(view["price"]) : wrLocalPrice;
+  const reinvest = Number(view["reinvest"] ?? 0);
+
+  const dialsHtml = locked
+    ? `<div class="banner" style="margin-top:12px;">Locked in. Waiting for the rest of the league.</div>
+       <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${reinvest}% back into the club</span></div>`
+    : `
+      <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
+        <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
+        <div class="fh-price-readout numeric" id="wrPriceReadout">$${price}</div>
+        <div class="fh-dial">
+          <input class="price-dial-input" type="range" id="wrPriceDial" min="${view["priceMin"]}" max="${view["priceMax"]}" step="${view["priceStep"]}" value="${price}" />
+        </div>
+        <div class="price-dial-ends"><span>$${view["priceMin"]}</span><span>$${view["priceMax"]}</span></div>
+
+        <div class="eyebrow" style="font-size:12px; margin-top:12px;">Put back into the club <span class="fh-lag">arrives next week</span></div>
+        <div class="fh-spend-row">
+          <div class="bid-stepper">
+            <button type="button" class="btn" id="wrReinvestDown">−</button>
+            <span class="bid-stepper-readout" id="wrReinvestReadout">${reinvest}%</span>
+            <button type="button" class="btn" id="wrReinvestUp">+</button>
+          </div>
+          <span class="fh-lag">of what comes through your door this week</span>
+        </div>
+        <div class="fh-blind-note">${escapeHtml(String(view["noPreview"] ?? ""))}</div>
+      </div>`;
+
+  body.innerHTML = `
+    <div id="wrPlayRoot" class="hl-decide">
+      <div class="hl-span">${wrRuleStrip(view["rule"] as WRRule)}</div>
+      <div class="hl-col-context">
+        ${justSettled ? `<div class="hl-bell-head" id="wrBellHead">THE WEEK IS IN THE BOOKS</div>` : ""}
+        ${last ? wrWeekResult(last) : ""}
+      </div>
+      <div class="hl-col-decide" id="wrDecisionBand">
+        <div class="hl-week-card" id="wrWeekCard">
+          <div class="hl-week-top">
+            <span class="hl-week-num">Week ${weekNumber} of ${view["weekCount"]}</span>
+            <span class="hl-week-cap">${Number(view["capacity"] ?? 0).toLocaleString()} seats</span>
+          </div>
+          <div class="hl-matchup">
+            <div class="hl-matchup-side host">
+              <span class="hl-matchup-label">Visiting you</span>
+              <span class="hl-matchup-club">${escapeHtml(visitor?.short ?? "")}</span>
+              <span class="hl-matchup-who">${visitor?.live ? `Desk ${visitor.deskNumber}` : "league office"}</span>
+              <span class="hl-matchup-draw"><span class="numeric">Draw ${visitor?.draw ?? 0}</span></span>
+            </div>
+          </div>
+          ${rookie ? `<div class="hl-shock ${rookie.mine ? "mine" : ""}" id="wrRookie">${escapeHtml(rookie.mine ? `The rookie landed HERE — ${rookie.club}. ${rookie.copy}` : `The rookie landed at ${rookie.club}. ${rookie.copy}`)}</div>` : ""}
+        </div>
+        ${wrSlateHtml((view["slate"] as WRSlateRow[]) ?? [])}
+        ${dialsHtml}
+      </div>
+    </div>
+    ${
+      locked
+        ? ""
+        : `<div class="hl-lockbar" id="wrLockBar">
+             <span class="hl-lockbar-vals" id="wrLockVals">Week ${weekNumber} · <b id="wrLockPrice">$${price}</b> · <b id="wrLockReinvest">${reinvest}%</b> back in</span>
+             <button class="btn btn-primary" id="wrLock" disabled data-wr-armed="0">LOCK IT IN</button>
+           </div>`
+    }`;
+  document.body.classList.toggle("hl-has-lockbar", !locked);
+  const lockBar = document.getElementById("wrLockBar");
+  if (lockBar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(lockBar.getBoundingClientRect().height)}px`);
+  else document.body.style.removeProperty("--hl-lockbar-h");
+
+  if (justSettled && wrLastSettledSeen !== `${weekNumber}|${weeks.length}`) {
+    wrLastSettledSeen = `${weekNumber}|${weeks.length}`;
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const scroller = document.querySelector("main");
+    if (scroller) scroller.scrollTop = 0;
+  }
+  if (locked) return;
+
+  const dial = $<HTMLInputElement>("wrPriceDial");
+  const readout = $("wrPriceReadout");
+  const lockPrice = document.getElementById("wrLockPrice");
+  const lockReinvest = document.getElementById("wrLockReinvest");
+  const lockBtn = document.getElementById("wrLock") as HTMLButtonElement | null;
+  const lockVals = document.getElementById("wrLockVals");
+  const lockValsHtml = lockVals?.innerHTML ?? "";
+  const seenDials = new Set<string>();
+  const armLock = (): void => {
+    if (!lockBtn || lockBtn.dataset["wrArmed"] === "1") return;
+    lockBtn.dataset["wrArmed"] = "1";
+    lockBtn.disabled = false;
+    if (lockVals) lockVals.innerHTML = lockValsHtml;
+  };
+  if (lockBtn) {
+    if (lockVals) lockVals.textContent = "Read the two dials before you commit";
+    const targets = [document.getElementById("wrPriceDial"), document.getElementById("wrReinvestUp"), document.getElementById("wrReinvestDown")].filter(
+      (el): el is HTMLElement => el !== null,
+    );
+    if (typeof IntersectionObserver === "function" && targets.length === 3) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) if (e.isIntersecting) seenDials.add(e.target.id);
+          if (seenDials.size === targets.length) {
+            armLock();
+            io.disconnect();
+          }
+        },
+        { threshold: 0.6 },
+      );
+      for (const t of targets) io.observe(t);
+    } else {
+      armLock();
+    }
+    for (const t of targets) {
+      t.addEventListener("pointerdown", armLock);
+      t.addEventListener("focus", armLock);
+      t.addEventListener("input", armLock);
+    }
+  }
+  dial.addEventListener("input", () => {
+    wrLocalPrice = Number(dial.value);
+    readout.textContent = `$${dial.value}`;
+    if (lockPrice) lockPrice.textContent = `$${dial.value}`;
+  });
+  dial.addEventListener("change", () => outbox?.submit({ type: "setPrice", price: Number(dial.value) }));
+
+  let localReinvest = reinvest;
+  const rReadout = $("wrReinvestReadout");
+  const rUp = $<HTMLButtonElement>("wrReinvestUp");
+  const rDown = $<HTMLButtonElement>("wrReinvestDown");
+  const rMin = Number(view["reinvestMin"] ?? 0);
+  const rMax = Number(view["reinvestMax"] ?? 40);
+  const syncR = () => {
+    rUp.disabled = localReinvest >= rMax;
+    rDown.disabled = localReinvest <= rMin;
+  };
+  const stepR = (dir: number) => {
+    const step = Number(view["reinvestStep"] ?? 5);
+    const next = Math.max(rMin, Math.min(rMax, localReinvest + dir * step));
+    if (next === localReinvest) return;
+    localReinvest = next;
+    rReadout.textContent = `${localReinvest}%`;
+    if (lockReinvest) lockReinvest.textContent = `${localReinvest}%`;
+    syncR();
+    outbox?.submit({ type: "setReinvest", reinvest: localReinvest });
+  };
+  syncR();
+  rUp.addEventListener("click", () => stepR(1));
+  rDown.addEventListener("click", () => stepR(-1));
+  lockBtn?.addEventListener("click", () => {
+    outbox?.submit({ type: "lock" });
+    lockBtn.disabled = true;
+  });
 }
 
 function escapeHtml(s: string): string {

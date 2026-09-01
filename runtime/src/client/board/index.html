@@ -279,6 +279,77 @@
     justify-content: center; column-gap: 1.4vw; row-gap: .2vh; }
   #stage.fh-synth .fh-sources span { font-size: .95vw; color: var(--ink-muted); opacity: .8; line-height: 1.35; }
 
+
+  /* ================= M2 L3 "Writing the Rule" — projector ==================
+     Every frame FITS at 1366x768 and 1920x1080 with no scrolling, and every
+     EVIDENCE-tier string clears the 2.6%-of-screen-height back-row floor
+     (1.46vw on a 16:9 screen). Evidence tiers: the adopted rule, the histogram
+     ticks, the pot/arrow/era row handles and numbers, and the finale rails.
+     Footnotes (honesty line, sources) sit below the floor deliberately. */
+  #stage.wr-tight { padding-top: 1.4vh; padding-bottom: 1.4vh; }
+  #stage.wr-tight .label { margin-bottom: .4vh; }
+  #stage.wr-tight .synthesis-note { margin-top: .5vh; }
+  #stage.wr-tight .exit-prompt { margin-top: .5vh; }
+
+  .wr-board-rule { font-family: var(--font-display); font-size: 1.7vw; letter-spacing: .1em; color: var(--accent-gold);
+    border: 1px solid rgba(244,185,66,0.45); border-radius: 10px; padding: .5vh 1.4vw; margin-top: .6vh; }
+  .wr-board-rule b { font-family: var(--font-number); color: var(--ink-primary); }
+  .wr-board-copy { max-width: 80vw; font-size: 1.55vw; line-height: 1.35; color: var(--ink-primary); margin-top: .8vh; }
+  .wr-board-q { font-size: 1.8vw; line-height: 1.3; max-width: 82vw; }
+  .wr-board-headline { max-width: 88vw; font-size: 1.75vw; line-height: 1.32; color: var(--ink-primary);
+    background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.45); border-radius: 14px;
+    padding: .9vh 1.6vw; margin-top: .8vh; }
+  .wr-board-reveal { max-width: 84vw; font-size: 1.5vw; line-height: 1.35; color: var(--ink-primary);
+    background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.45); border-radius: 14px;
+    padding: .9vh 1.6vw; margin-top: .8vh; }
+  .wr-board-split { font-size: 1.5vw; color: var(--ink-primary); }
+  .wr-board-held { font-size: 1.6vw; color: var(--ink-secondary); max-width: 74vw; margin-top: 1.4vh;
+    border: 1px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 1.2vh 1.8vw; }
+  .wr-board-rookie { font-size: 1.5vw; line-height: 1.3; color: var(--ink-primary); max-width: 86vw; margin-top: .6vh;
+    border-left: 3px solid var(--accent-violet); padding: .5vh 1.2vw; text-align: left; }
+
+  .wr-board-hist { display: flex; align-items: flex-end; gap: .35vw; height: 24vh; margin-top: 1vh; width: 74vw; }
+  .wr-board-histcol { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .3vh; min-width: 0; }
+  .wr-board-histbar { width: 100%; border-radius: 4px 4px 0 0; background: var(--accent-gold); }
+  .wr-board-histtick { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); }
+  .wr-board-median { font-size: 1.6vw; color: var(--ink-primary); margin-top: .6vh; }
+  .wr-board-median b { font-family: var(--font-number); color: var(--accent-gold); }
+
+  .wr-board-rows { display: flex; flex-direction: column; gap: .35vh; width: 90vw; margin-top: .8vh; }
+  .wr-board-row { display: grid; grid-template-columns: 15vw minmax(0,1fr) 9vw 9vw 9vw; gap: .8vw; align-items: center;
+    background: rgba(19,24,34,0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: .35vh .9vw; text-align: left; }
+  .wr-board-row.arrow { grid-template-columns: 15vw 9vw minmax(0,1fr) minmax(0,1fr); }
+  .wr-board-row.era { grid-template-columns: 15vw minmax(0,1fr) 9vw 9vw; }
+  .wr-board-handle { font-size: 1.5vw; color: var(--ink-primary); }
+  .wr-board-size { font-size: 1.5vw; color: var(--ink-muted); letter-spacing: .06em; }
+  .wr-board-bars { display: flex; flex-direction: column; gap: .2vh; min-width: 0; }
+  .wr-board-bar { height: 1.1vh; border-radius: 3px; display: block; }
+  .wr-board-bar.paid { background: var(--accent-violet); }
+  .wr-board-bar.took { background: var(--accent-gold); }
+  .wr-board-bar.l2 { background: var(--ink-muted); }
+  .wr-board-bar.l3 { background: var(--accent-gold); }
+  .wr-board-num { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); text-align: right; }
+  .wr-board-num.net { color: var(--ink-primary); font-weight: 800; }
+  .wr-board-num.net.neg { color: var(--accent-violet); }
+  .wr-board-arrow { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); }
+  .wr-board-arrow.moved { color: var(--accent-gold); }
+  .wr-board-arrow.flat { color: var(--ink-muted); }
+
+  .wr-board-pairs { display: flex; flex-wrap: wrap; gap: .6vw; width: 90vw; margin-top: 1vh; justify-content: center; }
+  .wr-board-pair { display: flex; align-items: baseline; gap: .5vw; background: rgba(19,24,34,0.75);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: .4vh .9vw; }
+  .wr-pair-host { font-size: 1.5vw; color: var(--ink-primary); }
+  .wr-pair-v { font-size: 1.5vw; color: var(--ink-muted); }
+  .wr-pair-visitor { font-size: 1.5vw; color: var(--accent-gold); }
+  .wr-pair-draw { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); }
+
+  .wr-board-card { background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.4); border-radius: 16px;
+    padding: 1.1vh 2vw; margin-top: .5vh; max-width: 88vw; text-align: left; }
+  .wr-board-card h3 { font-family: var(--font-display); font-size: 2.1vw; letter-spacing: .05em; color: var(--accent-gold); margin: 0 0 .5vh; }
+  .wr-board-rail { margin-top: .45vh; }
+  .wr-board-rail > span { display: block; font-family: var(--font-display); font-size: 1.15vw; letter-spacing: .1em; color: var(--ink-muted); }
+  .wr-board-rail > p { margin: .05vh 0 0; font-size: 1.5vw; line-height: 1.26; color: var(--ink-primary); }
+
   /* ================= M2 L2 "You Don't Play Alone" — projector =================
      Every frame here must FIT at 1366x768 and 1920x1080 (the projector cannot
      scroll), and every EVIDENCE-tier string must clear the 2.6%-of-height

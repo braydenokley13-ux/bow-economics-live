@@ -143,7 +143,7 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     sens: 420,
     ownDrawFans: 120,
     visitorDrawFans: 160,
-    effortScale: 2_180_000,
+    effortScale: 1_245_000,
     drawDollars: 22_000,
     terminalDrawDollars: 130_000,
     housePrice: 58,
@@ -161,7 +161,7 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     sens: 415,
     ownDrawFans: 118,
     visitorDrawFans: 156,
-    effortScale: 1_790_000,
+    effortScale: 1_023_000,
     drawDollars: 20_000,
     terminalDrawDollars: 110_000,
     housePrice: 56,
@@ -179,9 +179,9 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     sens: 150,
     ownDrawFans: 89,
     visitorDrawFans: 118,
-    effortScale: 715_000,
+    effortScale: 550_000,
     drawDollars: 3_000,
-    terminalDrawDollars: 60_000,
+    terminalDrawDollars: 110_000,
     housePrice: 46,
   },
   {
@@ -197,7 +197,7 @@ export const MARKET_PROFILES: readonly MarketProfile[] = [
     sens: 145,
     ownDrawFans: 84,
     visitorDrawFans: 112,
-    effortScale: 528_000,
+    effortScale: 302_000,
     drawDollars: 2_500,
     terminalDrawDollars: 45_000,
     housePrice: 44,
@@ -790,9 +790,15 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
     const profile = profileOf(club);
     const def = defOf(club);
     const live = club.seatId !== null;
-    const auto = live ? !club.locked && !honorPendingDials : true;
-    const price = live && (club.locked || honorPendingDials) ? club.price : profile.housePrice;
-    const reinvest = live && (club.locked || honorPendingDials) ? club.reinvest : botReinvestFor(state, club, rule);
+    const committed = live && (club.locked || honorPendingDials);
+    const auto = live ? !committed : true;
+    // A LIVE desk that never locked settles at its club's house price with
+    // nothing reinvested — the exact sentence the bell's confirm, the WATCH FOR
+    // flag and the desk's own AUTO badge all promise. It is deliberately NOT the
+    // bot policy: a desk that chose nothing must not be credited with a choice.
+    // Only a league-office club (no seat) plays the bot line.
+    const price = committed ? club.price : profile.housePrice;
+    const reinvest = committed ? club.reinvest : live ? 0 : botReinvestFor(state, club, rule);
     const vSlot = visitorSlotFor(slot, week, size);
     const home = settleHome(profile, def.capacity, openingDraw[slot]!, openingDraw[vSlot]!, price);
     const localMedia = localMediaFor(profile, openingDraw[slot]!);
@@ -1040,7 +1046,7 @@ export function medianOf(values: readonly number[]): number {
   return sorted.length % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
 }
 
-/** Median snapped to the dial the room was actually given. */
+/** Median snapped to the dial the room was actually given; halves round UP. */
 export const snapShare = (value: number): number =>
   clamp(Math.round(value / SHARE_STEP) * SHARE_STEP, SHARE_MIN, SHARE_MAX);
 
@@ -1148,6 +1154,10 @@ export type PotFlowRow = {
   net: number;
   ownDialDelta: number;
   docked: boolean;
+  /** Rendered here so no surface ever formats a module number for itself. */
+  paidInText: string;
+  tookOutText: string;
+  netText: string;
 };
 
 export type ReinvestEraRow = {
@@ -1177,6 +1187,9 @@ export type CounterfactualRow = {
   netAdopted: number;
   netRunnerUp: number;
   delta: number;
+  netAdoptedText: string;
+  netRunnerUpText: string;
+  deltaText: string;
 };
 
 export type WriteRuleAggregate = {
@@ -1222,7 +1235,7 @@ export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
         }
       : null;
 
-  const potFlows: PotFlowRow[] = live.map((c) => {
+  const potFlows: PotFlowRow[] = live.map((c): PotFlowRow => {
     const paidIn = c.weeks.reduce((a, w) => a + w.pot.paidIn, 0);
     const tookOut = c.weeks.reduce((a, w) => a + w.pot.tookOut, 0);
     const ownDialDelta = c.weeks.reduce((a, w) => a + w.cashDelta - w.pot.net, 0);
@@ -1235,6 +1248,9 @@ export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
       net: tookOut - paidIn,
       ownDialDelta,
       docked: c.weeks.some((w) => w.pot.docked),
+      paidInText: money(paidIn),
+      tookOutText: money(tookOut),
+      netText: money(tookOut - paidIn),
     };
   });
 
@@ -1373,7 +1389,16 @@ export function counterfactualRows(state: WriteRuleState, share: number): Counte
     if (club.seatId === null) continue;
     const a = adoptedNets.get(club.slot) ?? 0;
     const b = cfNets.get(club.slot) ?? 0;
-    out.push({ deskHandle: deskHandleFor(club), deskNumber: club.deskNumber, netAdopted: a, netRunnerUp: b, delta: b - a });
+    out.push({
+      deskHandle: deskHandleFor(club),
+      deskNumber: club.deskNumber,
+      netAdopted: a,
+      netRunnerUp: b,
+      delta: b - a,
+      netAdoptedText: money(a),
+      netRunnerUpText: money(b),
+      deltaText: money(b - a),
+    });
   }
   return out;
 }
@@ -1493,6 +1518,11 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     risk: "It is MODELED on the NBA's design (a percentage of local revenue into an equally split pool, with conditions attached), not a quotation of the real rate, which is not public.",
   },
   {
+    what: "Sharing is a TRANSFER with a real cost to the payer. This lesson never claims that a big market's own money is better off under a high share.",
+    why: "The design document hoped the room's own arithmetic would show an interior best share above zero for EVERY market including the biggest — 'sharing pays the payer, through the product'. At the shipped constants it does not, and the reason is structural rather than a tuning miss: the big markets are capacity-bound (BC-1b's flat arrow), so a weaker visiting club costs them a sustainable price rather than a full building, and that is worth far less than what they pay in. Forcing the summit would have required a model in which a marquee visitor doubles Madison Square Garden's crowd, which is not true of a building that sells out.",
+    risk: "The room can conclude that sharing is simply theft from the big markets. The counter is real and is on the board rather than in the arithmetic: the league's own payers accept it in a collectively bargained agreement, and in the leaked year the Lakers still cleared about $115M after paying in. Teach it as an argument the owners actually have, not as a sum the class can settle.",
+  },
+  {
     what: "Revenue is never profit anywhere in this lesson, and the module never claims it is.",
     why: "Every number here is money in, before what a club owes anybody.",
     risk: "'More revenue = better run' is the false lesson. The Packers' record-revenue-with-an-operating-loss line is on the board in synthesis for exactly this reason.",
@@ -1509,12 +1539,20 @@ export function adoptionLineClaimed(agg: WriteRuleAggregate): Claimed {
   const desks = claim("adopted-live-desks", rule.liveDesks, "int", { assertsSign: "nonNegative" });
   const passed = claimWord("adopted-passed", rule.how === "voted" ? "ADOPTED" : "NOT ADOPTED", rule.how === "voted");
   const condition = claimWord("adopted-condition", rule.condition ? "CONDITION ON" : "CONDITION OFF", rule.condition);
+  // The atom list is per BRANCH, not per function: a sentence that does not
+  // render a figure may not ship an atom claiming it did. The league office's
+  // branch says nothing about desks or about a vote, so it carries neither.
+  if (rule.how === "leagueOffice") {
+    const office = claimWord("adopted-league-office", "This room did not write it", true, "ADOPTED");
+    return {
+      text: `The league office's rule is in force — SHARE ${share.rendered} · ${condition.rendered}. ${office.rendered}.`,
+      claims: [share, condition, office],
+    };
+  }
   const text =
     rule.how === "voted"
       ? `${passed.rendered} — SHARE ${share.rendered} · ${condition.rendered}. ${supporting.rendered} of ${desks.rendered} desks landed inside ten points of the room's middle number.`
-      : rule.how === "leagueOffice"
-        ? `The league office's rule is in force — SHARE ${share.rendered} · ${condition.rendered}. This room did not write it.`
-        : `${passed.rendered} — the old rule holds at SHARE ${share.rendered} · ${condition.rendered}. Only ${supporting.rendered} of ${desks.rendered} desks landed inside ten points of the middle number, and two-thirds were needed.`;
+      : `${passed.rendered} — the old rule holds at SHARE ${share.rendered} · ${condition.rendered}. Only ${supporting.rendered} of ${desks.rendered} desks landed inside ten points of the middle number, and two-thirds were needed.`;
   return { text, claims: [share, supporting, desks, passed, condition] };
 }
 
@@ -1648,9 +1686,6 @@ export type SynthesisCard = {
  */
 export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): SynthesisCard[] {
   const cards: SynthesisCard[] = [];
-  const rule = agg.adopted;
-  const shareAtom = claim("synth-share", rule?.share ?? STATUS_QUO_SHARE, "percent", { assertsSign: "nonNegative", bounds: { min: SHARE_MIN, max: SHARE_MAX } });
-
   /* --- C6 revenue sharing: both halves --- */
   {
     const pot = potLineClaimed(agg);
@@ -1810,7 +1845,10 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
       economistsCall: "PUBLIC SUBSIDY. OPPORTUNITY COST — the money a town spends on an arena is money it does not spend on something else.",
       outsideSports: "Any time a town gives up money to keep something it wants. Outcome is not decision quality, in both directions.",
     },
-    claims: [shareAtom],
+    // No atoms, deliberately: every sentence on this card is dated real-world
+    // content that Sports Reality owns and nothing here is computed from state.
+    // `moduleClaims` still registers it, so a future computed line added here
+    // without an atom is a detectable hole rather than an invisible one.
   });
 
   return cards;
@@ -2445,6 +2483,9 @@ function viewWeek(state: WriteRuleState, club: Club, w: SettledWeek) {
     net: w.pot.net,
     ownDialDelta: w.cashDelta - w.pot.net,
     docked: w.pot.docked,
+    paidInText: money(w.pot.paidIn),
+    tookOutText: money(w.pot.tookOut),
+    netText: money(w.pot.net),
   };
   const transfer = transferLineClaimed(flowRow);
   return {
@@ -2955,7 +2996,11 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       synthPageNote: "One card at a time on the projector. The pairs have the whole set on their own screens.",
       director: teacherDirector(state, phase),
       watchFor: teacherWatchFor(state, phase),
-      projectorMirror: projectorMirror(state, phase),
+      // The shell's director layer reads `projectorNow`; the same key name L1
+      // and L2 use, so /teach renders this lesson with no shell change.
+      projectorNow: projectorMirror(state, phase),
+      revealStages: revealStagesFor(state),
+      currentRevealStage: state.revealStage > 0 ? revealStagesFor(state)[state.revealStage - 1] ?? null : null,
       aggregate: agg,
       simplifications: SIMPLIFICATIONS,
       sources: SOURCE_NOTES,
