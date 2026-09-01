@@ -439,3 +439,128 @@ desks exist (`BOWHYM` groups carry no prefix).
 **TRANSFER: READY**
 
 **DISSENT teacher-l2-not-ready: DISCHARGED**
+
+## W5 RE-AFFIRMATION AT FINAL HEAD
+
+Fresh-context stranger-teacher re-run at the final head, cold protocol: port 4432,
+`runtime/scripts/e2e-m2l2.cjs` read for mechanics only (assertions ignored), no other
+repo file read before judging. One full live session (code BOW7LC, 7 desks + projector
++ teacher console), all three weeks, all five reveal stages, ADAPT / ARGUE / all five
+SYNTHESIS cards / COMPLETE.
+
+### Exercised
+
+- **Preparation cold:** `/teach` before any session; rehearsal panel with zero desks;
+  both `<details>` drawers ("What the students are looking at", "Where this model
+  simplifies the real thing").
+- **Bar release at the prescribed moment:** held through week 2, released on the
+  `TRIGGER: this is the moment` prompt after the week-2 bell with 0/7 desks locked into
+  week 3; paged both groups forward and back.
+- **Stage-5 mirror on two different arms:** (a) the degenerate arm produced by the
+  misclick below — bar never released, weeks auto-settled — where `/teach` read "The bar
+  never went up in time, so this board has ALREADY chosen... Do NOT offer the bar as a
+  second candidate"; (b) the prescribed arm — "you released it after the week-2 bell and
+  NOT ONE desk had locked week 3 yet... Ask the whole room, not a subset." Board text in
+  both arms matched the mirror. The per-arm computation is real and truthful.
+- **ADAPT give/take question + answer key vs the room's own numbers:** key printed
+  -$375,467 desk-by-desk, $2,226,567 spent, $919,480 landed on other clubs' books,
+  +$359,225 counted as one room, best band 10-15%, room average 14%. Cross-checked
+  against REVEAL stage 2 and SYNTHESIS card 2 (identical figures on all three surfaces)
+  and against the dials I actually set (mean of 300/21 desk-weeks = 14.3%; REVEAL 5
+  weekly means 10.7 / 11.4 / 20.7 reproduce exactly). The key's closing instruction
+  ("every pair has its own two numbers on its own screen right now, under WHAT YOU GAVE,
+  WHAT YOU GOT") verified true on desks 1, 4 and 7; the computed dealt/bought line
+  rendered per desk (100%/0%, 87%/13%).
+- **WATCH FOR free-rider / never-locked distinction:** desk 7 never locked in any week;
+  desks 1 and 2 chose 0% twice. `/teach` separated them correctly and dynamically —
+  "Has never locked a week... they did not choose 0%, they chose nothing... Do NOT use
+  them on the gave/got board" vs "CHOSE to put nothing back, two weeks running... read
+  the by-choice column". The by-choice group correctly disappeared when those desks
+  moved off zero in week 3.
+- **Misclick:** `Advance ▸` pressed during PLAY with week 1 open. Confirm dialog named
+  the exact consequence and the unlocked-desk count; accepting it ended the season and
+  jumped to REVEAL. `Restore last good state` returned the room to PLAY week 1, 6/7
+  locked, with every desk's locked recap intact on its own device.
+- **Refresh / failure recovery:** student refresh mid-week (locked state preserved),
+  projector refresh, `/teach` refresh (kept control). Unplanned bonus: the server process
+  was killed by the environment mid-ADAPT; after restart from the snapshot the session,
+  phase, all seven desks' three weeks and the teacher's control all came back and the
+  lesson continued to COMPLETE. Only environment-caused `ERR_CONNECTION_REFUSED` console
+  errors in that window.
+- **Late join:** a new pair joined during ADAPT.
+
+### New findings
+
+**BLOCKING — B-1. The student device tells the never-locked desk it CHOSE, contradicting
+the WATCH FOR instruction the teacher is given about that same desk.** Desk 7 never
+pressed LOCK in any week; all three weeks auto-settled. `/teach` WATCH FOR (correctly)
+says: "they did not choose 0%, they chose nothing... they are not the free-rider case,
+they are the pair you have not reached yet." Desk 7's own screen at ADAPT says:
+"WHAT YOUR OWN DECISIONS DID — YOU SPENT NOTHING, AND THAT IS A DECISION... Those three
+zeroes are not missing numbers — they are your decision. You chose to give nothing back
+to your club: $0, every week... Every zero in this block is somebody's decision,
+including yours." The branch is computed on spend == 0, not on ever-locked, so the one
+desk the module singles out as *not* a decision is the desk most emphatically told it
+decided. A teacher who walks over as instructed is contradicted by the device in the
+pair's hands, in the lesson's most delicate emotional moment. `/teach` gives the teacher
+no line for that collision. Repair is a copy branch on the never-locked state, not
+mechanics.
+
+**BLOCKING — B-2. `ON THE PROJECTOR RIGHT NOW` is false at the prescribed bar release.**
+Immediately after pressing "Release the Handed-To-You bar" at the moment `/teach` itself
+prescribes, the panel reads: "Week 3 of 3 — the schedule / Every pairing in the league:
+who hosts whom, with both clubs' Draw printed. / The star-departure card is up: Los
+Angeles Lakers, Draw 10. / The Handed-To-You bar is up underneath the schedule." The
+projector at that moment holds only the week strip, the bar pager, five bars, the legend,
+the instruction and the summary: no pairings (`HOSTS` absent from the board entirely), no
+departure card, and the bar is not underneath the schedule — it replaced it. Three of the
+four sentences the teacher would read or rely on are wrong, at the highest-stakes control
+press in the lesson, while the room is still pricing week 3. There is also no control to
+put the schedule back. (The group-level footer "On the projector now: group 1 of 2 —
+Desk 1..." *is* truthful; the defect is the phase-level mirror block only.) This is the
+same defect class W4 repaired for the stage-5 mirror, unrepaired at a different moment.
+
+**Non-blocking — N-1.** The pre-session rehearsal note on `/teach` is lesson-agnostic and
+describes controls L2 does not have: it tells a teacher preparing L2 to rehearse "the
+round step (once per round, then once more for the two-thirds test, then once more to
+open the season)" and warns that Advance would "throw away the vote and the whole
+season". Selecting M2 L2 does not change the text. A stranger teacher prepping tonight
+will hunt for a vote and a round step that do not exist in this lesson.
+
+**Non-blocking — N-2.** REVEAL stage 2 overflowed the projector by 2px at 1366x768 in
+this 7-desk room (`#stage` 770 vs 768); stages 1, 3, 4, 5, ADAPT, ARGUE and all five
+synthesis cards fit exactly at 1366x768 and 1920x1080. Trivial in the room, but it shows
+the fit guard is only proven at the desk counts the e2e runs.
+
+**Non-blocking — N-3.** Late join at ADAPT: the device correctly says "clubs are handed
+out in LOBBY, HOOK or PLAY (session is in ADAPT)" but then sits on "You're in — finding
+your club…" indefinitely while its join request 409s in a loop (the only non-network
+console error of the run). `/teach` shows the pair in the join list and says nothing
+about what to do with them. A teacher gets no direction for a common classroom event.
+
+**Non-blocking — N-4.** `/teach`'s stage-5 line stops at "refuses to choose", but the
+board also prints a partial conclusion for this arm — "The room went UP — against the
+last-week rule... Whatever moved these desks, it was not the arithmetic of this lesson."
+The teacher is not told the direction the room moved before facing it on the projector.
+
+**Non-blocking — N-5.** The stage-2 / ADAPT room-level numbers (the -$375,467 desk-by-desk
+loss, "no share to print here") include the never-locked desk's forced 0% in the room
+average, while WATCH FOR tells the teacher to exclude that desk from the gave/got board.
+Same tension as B-1, one level up.
+
+**Not verified.** The answer-key constants that are not room numbers ("0% to 40% moves
+the visitor block about 30%, at realistic dials nearer 19%"); the second-device `Reopen`
+path; the bar pager at 3+ groups; any classroom with real children.
+
+### Standing verdict
+
+Preparation, pacing, the reveal ladder, the bell, the misclick guard, Restore, refresh
+and mid-class restart recovery, and the experienced-moment → class-evidence → real-sports
+→ term → outside-sports chain across all five synthesis cards are all strong enough for a
+stranger teacher. B-1 and B-2 are both teacher-surface copy defects, both cheap, and both
+put the teacher in front of the room saying something the product then contradicts.
+
+**TRANSFER: NOT READY (at final head)**
+
+**DISSENT teacher-l2-w5: recorded.** Re-affirmation withheld until B-1 and B-2 are
+repaired and re-run on the never-locked arm and the prescribed-release arm.
