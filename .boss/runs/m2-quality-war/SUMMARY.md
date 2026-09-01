@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `93:f9c1d5d50c6d0de5c7289f2e7cecaa4082b174afe6902b1cc9b1bfac94c2fdd7`  
-Updated: 2026-09-01T00:07:35.544Z
+Event head: `96:9de2ff1f067d5267e3d32aa48903e9e3ba6c16814ef1a75e56df9192b8f3f9a5`  
+Updated: 2026-09-01T00:08:00.051Z
 
 ## Founder intent
 
@@ -75,6 +75,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-e2e-r1 — e2e — Three-surface e2e after repair round 1 (unpooled chart assertions)
 - l1-e2e-misclick — e2e — QA misclick scenario repro: guard present, cancel safe, accept honors set price
 - gate-l1-visual — visual-report — L1 visual gate: SERVICEABLE-NOT-PREMIUM. Board clips its own SYNTHESIS + live PLAY frames (overflow:hidden/100vh, both viewports); FULL HOUSE beat renders as 8 monospace chars below fold; theme.css font stacks put Arial Narrow ahead of Bebas with zero @font-face so all dollars render Courier repo-wide; N4 default OS checkbox; teach emoji glyphs. 69 screenshots
+- gate-l1-econ-r1 — economic-truth-report — L1 econ re-check: weak dominance FIXED (38/110 undominated above-optimum states), tent low arm FIXED, N4 trap FIXED, cash ceiling FIXED (DP gap $0). NEW BLOCKING: season two-book tension sign flipped — best cash line also wins renewals 92-96% vs flat 80% on both books; synthesis card notes false; undisclosed spend-to-renewals channel
 
 ## Claim ledger
 
@@ -86,10 +87,11 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 ## Dissent
 
 - qa-teacher-misclick — classroom-reliability/blocking/resolved — Teacher's primary Advance during PLAY silently ends the whole five-night play window (no confirmation; guard present in m1l2/m1l3, missing in m2l1-full-house) and settlement discards set-but-unlocked prices — one plausible tap destroys the core loop for the class, unrecoverable. Repro + screenshots in GATE_L1_QA.md.
-- econ-l1-renewals-tent — economic-truth/blocking/open — Built L1's RENEWALS tent low arm is unreachable (max below-plan penalty -2 at NY, never negative at Memphis), so every price above a night's cash optimum is weakly dominated on both books and the Pareto set collapses to [plan price, cash argmax] — FL3 by construction, the same class of defect that blocked Candidate A's L1. Also blocking: N4's open option never beats closed in any reachable cell yet SHOCK_REVEAL_COPY congratulates it citing six real clubs; the 'most cash' ceiling is beatable; the pooled REVENUE synthesis card compares across markets/cards misleadingly. Exhaustive computations in GATE_L1_ECON.md.
+- econ-l1-renewals-tent — economic-truth/blocking/resolved — Built L1's RENEWALS tent low arm is unreachable (max below-plan penalty -2 at NY, never negative at Memphis), so every price above a night's cash optimum is weakly dominated on both books and the Pareto set collapses to [plan price, cash argmax] — FL3 by construction, the same class of defect that blocked Candidate A's L1. Also blocking: N4's open option never beats closed in any reachable cell yet SHOCK_REVEAL_COPY congratulates it citing six real clubs; the 'most cash' ceiling is beatable; the pooled REVENUE synthesis card compares across markets/cards misleadingly. Exhaustive computations in GATE_L1_ECON.md.
 - gate-l1-econ-dissent — undefined/undefined/open — undefined
 - play-board-curve-pooled — gameplay/blocking/open — The board's class-evidence chart joins 25 desk-nights from five different demand worlds into one line labelled THE ROOM'S OWN CURVE, producing segments where a higher price drew a bigger crowd; COUNTERFACTUAL then instructs the room to argue from those two lines — the class-evidence layer manufactures false economics fuel. Blocking for the argue/synthesis beats. Detail + screenshots in GATE_L1_PLAY.md.
 - gate-l1-play-dissent — undefined/undefined/open — undefined
+- econ-l1-season-books — economic-truth/blocking/open — Season-level two-book tension sign flipped by the repair-round-1 retune: the product's own printed best line ends 92%/96% renewals vs flat-plan 80%, beating flat plan by $1.45M/$1.38M on BOTH books — the CASH-vs-RENEWALS tradeoff the lesson teaches does not exist at season level; both notes on the season synthesis card are false; the spend-to-renewals channel (13-15 points) is undisclosed on any surface. Also: two false HOUSE_RULES clauses (national-TV qualifier; +1 one step below plan) and stale copy on N1/N2/N3/N5 + harness P5 printed row. R1-R3 prescriptions in GATE_L1_ECON_R1.md.
 
 ## Latest gate
 
