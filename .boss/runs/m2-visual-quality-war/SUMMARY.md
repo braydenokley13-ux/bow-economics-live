@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **1**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `42:bd8d50fd77291092171a42e2e618b6b05c0596ae9250e12a8c9b396ecb85bde9`  
-Updated: 2026-09-01T20:31:02.869Z
+Event head: `53:0ac8d21c258c58bb3f3295ace55199f217a41d81ad1b472d342ea9730e557509`  
+Updated: 2026-09-01T20:31:18.520Z
 
 ## Founder intent
 
@@ -34,7 +34,7 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 - browser-qa — browser-qa-w1 — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — kid-a-basketball — active — claude-opus-5
 - player-gameplay-critic — kid-b-casual — completed-with-concerns — claude-sonnet-5
-- player-gameplay-critic — kid-c-nonsports — active — claude-opus-5
+- player-gameplay-critic — kid-c-nonsports — completed-with-concerns — claude-opus-5
 - economic-truth-critic — econ-truth-w1 — active — claude-opus-5
 - experience-director — experience-director-w1 — completed-with-concerns — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
@@ -78,6 +78,16 @@ Module 2 'Money in Motion' can cross the standing premium bar — premium intera
 - baseline-browser-qa-cf12-overlap — screenshot — DEFECT 2 at class scale — /board COUNTERFACTUAL page 1 @1366x768 (12 desks): dense cluster of overlapping marks, several individually unreadable
 - baseline-browser-qa-lock-1024 — screenshot — DEFECT 3 — /play @1024x600, Night 1 open: dial UI cuts off mid-card; DOM-measured lock control top=664 in a 600px viewport (check-lock-1024.cjs)
 - baseline-browser-qa-lobby-1024 — screenshot — /play @1024x600 first contact (LOBBY) — fits cleanly, no issue, for contrast with the Night 1 case
+- kid-c-report — gameplay-report — KID C BASELINE — non-sports grade 5-6 persona plays M2L1 Full House end to end (SIMULATED KID / AGENT-PLAYTESTED); pull rating, biggest failure, fan-cue audit, required repairs
+- kid-c-manifest — browser-trace — Manifest of all screenshots captured during the Kid C full pass (LOBBY through SYNTHESIS; /play at 1366x768, /board at 1920x1080) with filenames in play order
+- kid-c-fold-viewport — screenshot — Night 2 /play at 1366x768 viewport: next card + dials + LOCK IT IN fill the screen; Night 1's result is cut at the fold mid box-score
+- kid-c-fold-fullpage — screenshot — Same state fullPage: KEPT $162,100 and 'Renewals 50% -> 46% (-4)' render ~120-140px below the Chromebook fold
+- kid-c-sellout — screenshot — Night 5 /play fullPage: the FULL HOUSE / 22,200 of 22,200 / 2,150 could not get in panel and the honest 'last night's $20,000 bought nothing' verdict, all below the fold at y~760-1300
+- kid-c-n1-decision — screenshot — Night 1 pre-lock /play at 1366x768: price dial (knob overlapping the PLAN $24 label), Draw 22/100 with plain line, undefined event-spend dial, LOCK IT IN, ~610px column on a 1366px screen
+- kid-c-board-shock — screenshot — /board REVEAL stage 4 (Night 4 shock) at 1920x1080: two-colour four-shape scatter above a 45-word 'NOT a demand curve' caveat and a 6-line Indiana Fever paragraph
+- kid-c-board-cf — screenshot — /board COUNTERFACTUAL at 1920x1080: named desk rows include only desks that held the SAME price on N1 and N5 — a desk that adapted its price is never named in front of the room
+- kid-c-play-cf — screenshot — /play COUNTERFACTUAL: 'WHERE THAT CHANGE CAME FROM' channel split and the WHAT IF alternate lines — the one place this persona can say what they would do differently
+- kid-c-adapt-worksheet — screenshot — /play ADAPT: three numbered discussion questions on a dark card above the personal ledger — the most school-like state in the lesson
 
 ## Claim ledger
 
