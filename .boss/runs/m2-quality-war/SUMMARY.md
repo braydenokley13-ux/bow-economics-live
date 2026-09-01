@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `434:c8eefef300a5e9102f9aca19eb136897598968c18e45159911043956e3d497c4`  
-Updated: 2026-09-01T14:39:15.299Z
+Event head: `438:9b497b03df24fcff1177da7dccdb1fa1b6d5639c0924dbe09ff07f6890a0a8c6`  
+Updated: 2026-09-01T14:45:14.638Z
 
 ## Founder intent
 
@@ -41,7 +41,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — completed-with-concerns — claude-opus-5
 - builder — builder-w5-l2fix — completed — claude-opus-5
-- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
 
 ## Required evidence
 
@@ -90,6 +90,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - l2-tests-w5b — test — Suite after L2 teacher fix (461/461)
 - l2-tuning-w5b — test — L2 harness 12/12: 337 rooms/128,728 atoms/0 disagreements; M-I abstention + M-J mirror mutants bite
 - l2-e2e-w5b — e2e — L2 e2e with abstention/mirror/late-observer assertions
+- w5-teacher-l2-confirm — teacher-transfer-report — L2 narrow confirm: B-1 FIXED (abstention vs chosen-zero distinct on identical $0, /teach quotes the desk verbatim), B-2 FIXED (mirror matches board exactly at the release: 0 pairs/5 bars/0 shock), N-1/N-3 FIXED (observer-only accepted). TRANSFER: READY (at final head). DISCHARGED. New non-blocking N-6/N-7
 
 ## Claim ledger
 
@@ -97,9 +98,9 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 
 ## Dissent
 
-- analyst-program-no-pass — process/blocking/open — Program analyst dissents against a PASS carrying 'TRANSFER READY on all three' and 'every rendered claim mutation-proven' unqualified: L1/L2 teacher verdicts predate later teacher-facing repairs with no re-affirmation at head (the stale-verdict form of the recurring stale-proof defect), and D20's audit-coverage sentence exceeds the econ critic's own W5-3 wording. Six bounded required items in ANALYST_PROGRAM.md.
+- analyst-program-no-pass — process/blocking/resolved — Program analyst dissents against a PASS carrying 'TRANSFER READY on all three' and 'every rendered claim mutation-proven' unqualified: L1/L2 teacher verdicts predate later teacher-facing repairs with no re-affirmation at head (the stale-verdict form of the recurring stale-proof defect), and D20's audit-coverage sentence exceeds the econ critic's own W5-3 wording. Six bounded required items in ANALYST_PROGRAM.md.
 - analyst-program-dissent — undefined/undefined/open — undefined
-- teacher-l2-final-head — teacher-transfer/blocking/open — L2 TRANSFER NOT READY at final head on two computed-claim-class items: B-1 — a desk that NEVER LOCKED is described on /teach as 'chose nothing... not the free-rider case' while its own device asserts 'you spent nothing and that is a decision... you chose' (never-locked is abstention, not choice; one atom must own the distinction across all surfaces, with a teacher line for the case); B-2 — after the prescribed bar release, ON THE PROJECTOR RIGHT NOW claims schedule + departure card + bar while the board holds only the bar (compose the mirror line from actual board state and register it). Non-blocking N-1 (L3 vocabulary in L2's prep note), N-2 (2px overflow at 7 desks), N-3 (late join at ADAPT loops 409 — port L3's observer/handover branch). GATE_L2_TEACHER.md W5 section.
+- teacher-l2-final-head — teacher-transfer/blocking/resolved — L2 TRANSFER NOT READY at final head on two computed-claim-class items: B-1 — a desk that NEVER LOCKED is described on /teach as 'chose nothing... not the free-rider case' while its own device asserts 'you spent nothing and that is a decision... you chose' (never-locked is abstention, not choice; one atom must own the distinction across all surfaces, with a teacher line for the case); B-2 — after the prescribed bar release, ON THE PROJECTOR RIGHT NOW claims schedule + departure card + bar while the board holds only the bar (compose the mirror line from actual board state and register it). Non-blocking N-1 (L3 vocabulary in L2's prep note), N-2 (2px overflow at 7 desks), N-3 (late join at ADAPT loops 409 — port L3's observer/handover branch). GATE_L2_TEACHER.md W5 section.
 - w5-teacher-l2-dissent — undefined/undefined/open — undefined
 
 ## Latest gate
