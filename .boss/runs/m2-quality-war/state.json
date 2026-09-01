@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:32:57.950Z",
+  "updatedAt": "2026-09-01T06:37:26.550Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -2225,7 +2225,8 @@
         "gate-l2-play",
         "l2-tests-r1",
         "l2-e2e-r1",
-        "e2e-l3-flake-note"
+        "e2e-l3-flake-note",
+        "recheck-l2-sr"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3888,6 +3889,24 @@
       },
       "recordedAt": "2026-09-01T06:32:31.928Z",
       "actor": "lead-integrator"
+    },
+    "recheck-l2-sr": {
+      "id": "recheck-l2-sr",
+      "wave": 3,
+      "kind": "sports-reality-report",
+      "label": "L2 SR re-check: BLOCKING-1 repaired (per-club identityLine only via deskIdentity, verified true per club) and BLOCKING-2 repaired (gate shares 18.9-25.0% recomputed, hedged claims hold). MODERATE-3 retracted, MODERATE-4 reconciled. New MINOR: golden-state superlative shared by four tied clubs. Staleness minors carried. Dissent discharged",
+      "path": ".boss/runs/m2-quality-war/evidence/recheck-l2-sr--GATE_L2_SR.md",
+      "sha256": "2b1cbddfe3692f5e17f8ba460657cdfcf55e4656bb24a3d8c900984d56318b76",
+      "size": 38238,
+      "metadata": {
+        "tags": [
+          "sports-reality",
+          "wave-3",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T06:37:26.268Z",
+      "actor": "sports-reality-director"
     }
   },
   "claims": {
@@ -4359,9 +4378,12 @@
         "gate-l2-sr"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T05:23:28.556Z",
-      "actor": "sports-reality-director"
+      "actor": "sports-reality-director",
+      "resolution": "Owning critic re-verified from source: identity lines are per-club and each true of the club it renders under (five surviving lines checked against the verified fact base); the modeled-dollars universals recomputed and the hedged replacements hold; header/README reconciled to the reproducible derivation and the NY-highest-gate claim retracted. Explicit line: dissent discharged. GATE_L2_SR.md re-check section.",
+      "resolvedAt": "2026-09-01T06:37:26.550Z",
+      "resolvedBy": "lead-integrator"
     },
     "gate-l2-sr-dissent": {
       "id": "gate-l2-sr-dissent",
@@ -4500,11 +4522,11 @@
     "agentsActivated": 54,
     "gateFailures": 1,
     "claimsContradicted": 1,
-    "evidenceRecorded": 81,
+    "evidenceRecorded": 82,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 251,
-  "eventHead": "0968c51c8b7f2c56c97ac4c833dc626bbdbf24e8c0326abb52c755db0bb8033d",
+  "eventCount": 253,
+  "eventHead": "2c52dc7d2eaa129139202fa3040bb3114d0c26cebc091e28d0c6924b99bd2722",
   "warnings": []
 }
