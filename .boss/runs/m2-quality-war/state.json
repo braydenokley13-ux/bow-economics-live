@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T07:51:35.155Z",
+  "updatedAt": "2026-09-01T07:52:18.233Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -2961,12 +2961,23 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic adjudication of econ-l2-evidence-surfaces after the claim-audit family (B3/B7/B8)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T07:39:46.007Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T07:52:17.971Z",
+          "sections": {
+            "mechanism-verdicts": "B3/B7/B8 individually DISCHARGED: market-size PASS (driver 25 visitor / 10 own-draw / 2 price / 3 none; 0/40 credit the visitor against an independent price control; 37/37 control figures match); externalPct gated correctly; joint gain sign correct. All four source-level injections bit. The $6,944 discrepancy is benign (one unseated club's reinvest dollars, 0 live-desk drift).",
+            "false-lesson-risks": "N11 BLOCKING: spilloverClaim's null branch prints 'over-investment' while 173/177 plausible rooms firing it are jointly better off — privately unprofitable + socially profitable is UNDER-PROVISION; must branch on roomJointGain, not the room-level aggregate the module's own docstring forbids. N12 BLOCKING: one audit limb recomputes its own print condition (self-referential, can never fail; the word carries no atom). FL-K: an unbound play claim ('most of it the Draw you were DEALT') false in 16/96. Composition surface unregistered (4 computed percentages, 0 atoms). FL-A cleared.",
+            "dominant-strategies": "None new; the claim layer is read-only post-settlement.",
+            "synthesis-map-verdict": "market-size card PASS; spillover card still misnames its branch; composition card invisible to the audit.",
+            "required-repairs": "B9 branch on roomJointGain; B10 re-specify the self-referential limb; bind FL-K; register composition. R-c..R-h verified NOT REPAIRED (non-blocking backlog). DISSENT econ-l2-evidence-surfaces: NOT DISCHARGED (survives on N11)."
+          },
+          "evidenceIds": [
+            "w4-econ-adj"
+          ],
+          "cost": {
+            "tokens": 146570,
+            "toolUses": 50
+          }
         },
         "w4-projector-adjudicate": {
           "assignmentId": "w4-projector-adjudicate",
@@ -2981,6 +2992,20 @@
           "sections": null,
           "evidenceIds": [],
           "cost": null
+        },
+        "w4-repair1": {
+          "assignmentId": "w4-repair1",
+          "role": "builder",
+          "actor": "builder-w4-r1",
+          "model": "claude-opus-5",
+          "reason": "Wave-4 repair 1: the narrowed cross-critic set — econ N11/N12/FL-K/composition registration, projector W4-1/W4-2 mirror-claim registration, play N-6 per-week decision-band layout + N-7 verdict placement",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T07:52:18.233Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
         }
       },
       "evidenceIds": [
@@ -2989,7 +3014,8 @@
         "l2-e2e-w4",
         "l1-e2e-w4",
         "w4-projector-adj",
-        "w4-play-adj"
+        "w4-play-adj",
+        "w4-econ-adj"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -4896,6 +4922,23 @@
       },
       "recordedAt": "2026-09-01T07:51:06.418Z",
       "actor": "player-gameplay-critic"
+    },
+    "w4-econ-adj": {
+      "id": "w4-econ-adj",
+      "wave": 4,
+      "kind": "economic-truth-report",
+      "label": "W4 econ adjudication: NOT DISCHARGED, narrowed. B3 PASS (driver 25/10/2/3, 0/40 credit visitor against independent price control, 37/37 figures match), B7/B8 discharged, all four source injections bit, $6,944 benign. Survives on N11: spilloverClaim null branch prints over-investment for rooms that are jointly better off (173/177 plausible rooms; should branch on roomJointGain — under-provision, not over-investment) and N12: an audit limb recomputing its own print condition (can never fail). FL-K unbound play claim false 16/96; composition percentages unregistered",
+      "path": ".boss/runs/m2-quality-war/evidence/w4-econ-adj--GATE_L2_ECON.md",
+      "sha256": "90f96edc9762995c94de9d994bf7ab5010fe88fe2bb2696feef3cce7f03d4f63",
+      "size": 69459,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "wave-4"
+        ]
+      },
+      "recordedAt": "2026-09-01T07:51:58.902Z",
+      "actor": "economic-truth-critic"
     }
   },
   "claims": {
@@ -5599,14 +5642,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 59,
+    "agentsActivated": 60,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 94,
+    "evidenceRecorded": 95,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 292,
-  "eventHead": "6aa4ef05dbd9d7cd0db24037526c1ea929205fbf9aeeade0beae95aea8ab8036",
+  "eventCount": 295,
+  "eventHead": "4babe2eaa15bce7a7644f514a8e15e0809cf490ddc7f8a683eb0f0c796f13906",
   "warnings": []
 }
