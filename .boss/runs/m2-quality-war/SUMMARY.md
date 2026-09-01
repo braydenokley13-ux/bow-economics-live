@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `194:18622aaf881b48bff3c4a1dfc96a398bf86e26df2a69de5f9d9756be57b36e4f`  
-Updated: 2026-09-01T03:00:49.037Z
+Event head: `199:ad41ee76d81ed8cc755bae8357a194968389fee5f642148794c18af2658f78e9`  
+Updated: 2026-09-01T03:47:03.464Z
 
 ## Founder intent
 
@@ -38,7 +38,9 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
 - classroom-projector-critic — classroom-projector-critic — completed-with-concerns — claude-opus-5
 - visual-experience-director — visual-experience-director — completed-with-concerns — claude-opus-5
-- builder — builder-w3-fit — active — claude-opus-5
+- builder — builder-w3-fit — completed — claude-opus-5
+- classroom-projector-critic — classroom-projector-critic — active — claude-opus-5
+- visual-experience-director — visual-experience-director — active — claude-opus-5
 
 ## Required evidence
 
@@ -63,6 +65,8 @@ The three carried L1 blocking dissents can be discharged by narrow fixes verifie
 - w3-projector-adj — projector-report — W3 projector adjudication: NOT DISCHARGED. Repair reached only its four fh-tight/SPLIT frames; 10 of 24 board frames overflow at both resolutions (worst PLAY-after-bell N4 +280/+392px); PLAY Two Peaks release orphans its punchline; compacted axis 1.30-1.56% below floor; assertStageScrollable must assert fit on every frame. Privacy PASS (48 scans)
 - w3-visual-regrade — visual-report — W3 visual re-grade: PREMIUM CLAUSE NOT AFFIRMED — all three surfaces SERVICEABLE-NOT-PREMIUM; board SYNTHESIS + PLAY/Two-Peaks SCHOOL-UI (synthesis un-clipped by shrinking type to 11.2px/9.3px, not staging); P8 emoji repair reported done but still present (teach/main.ts:238,239,272,606,750); price dial unchanged. 82 screenshots. Advisory caveat: director previously advised D1-D3
 - w3-econ-adj — economic-truth-report — W3 econ adjudication: DISCHARGED — independent DP reproduces frontier point-for-point (22/24, 0 dominated, ratio 1.0000 vs prior 47-70x); all five HOUSE_RULES true (zero case exact); 8 Memphis repaired; P16 fails under four mutations. Five non-blocking: W3-R10 floored-OR read as both ('nobody walked in' over 670 people, 11/672 rooms), R11-R14
+- l1-tests-w3b — test — Suite after fit repair (354/354)
+- l1-e2e-w3b — e2e — Every-frame fit e2e: 28 frames x 2 shapes + back-row type
 
 ## Claim ledger
 
