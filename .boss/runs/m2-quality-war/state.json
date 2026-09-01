@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T12:24:28.144Z",
+  "updatedAt": "2026-09-01T12:24:41.792Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3396,12 +3396,23 @@
           "model": "claude-opus-5",
           "reason": "Owning-critic confirm-or-refute of the w4 final repair against its own L3 gate findings",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-01T12:14:18.865Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T12:24:41.792Z",
+          "sections": {
+            "session-choreography-verdict": "B1 dead at both shapes in rounds 2 and 3 (barsOverVeil=0; own ink guard proven non-vacuous on a poisoned frame); B2 dead (truthful 0/12 counts, WATCH FOR populated); 0 overflows, 0 ink collisions across 84 audits.",
+            "board-privacy-verdict": "Repaired: desk-named superlatives gone (0 matches across 5 stages + 7 cards); 0 identity leaks in 84 full-innerHTML scans. Non-blocking residual: the max-swing value still prints under the privacy promise (zero marginal exposure; line overstates).",
+            "teacher-fallback-verdict": "Repaired: league-office arm prints arm-specific copy matching the board; status-quo arm truthful; 0 console errors. Non-blocking: one board line says 'under its own rule' on an arm the room did not write.",
+            "classroom-drama-notes": "Kings genuinely two-press: room tally alone at press 1 with 22-8 absent and desk votes disabled; 22-8 lands at press 2. Press 1 appends to a dense frame rather than owning it. Carried holds: post-season locked-in line, HOLDING stage line, 1.96% progress line.",
+            "required-repairs": "Non-blocking only. DISSENT proj-l3-board-integrity: DISCHARGED."
+          },
+          "evidenceIds": [
+            "recheck-l3-projector"
+          ],
+          "cost": {
+            "tokens": 113365,
+            "toolUses": 46
+          }
         }
       },
       "evidenceIds": [
@@ -6688,7 +6699,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 366,
-  "eventHead": "7a1b25bd1116e29ba2fe4425eeac70524b89a9657893d5c11ee75e1839ca939a",
+  "eventCount": 367,
+  "eventHead": "5160ce677f3da30090fbd635cc6b385549f5db04ee0a7742d4e6d699b9f8aeb1",
   "warnings": []
 }
