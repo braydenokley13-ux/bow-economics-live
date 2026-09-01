@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `134:3bd07404e49e81083d4da669d41701d5b1859d856325d6fd22d77a754e2833d3`  
-Updated: 2026-09-01T01:19:02.668Z
+Event head: `141:346b87646275653a6afb867ab69ffea1d74ecef6feb29a56bef68131878e4af2`  
+Updated: 2026-09-01T01:51:56.759Z
 
 ## Founder intent
 
@@ -48,7 +48,10 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - economic-truth-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — lead-integrator — completed-with-concerns — claude-opus-5
 - teacher-transfer-critic — lead-integrator — completed-with-concerns — claude-opus-5
-- builder — lead-integrator — active — claude-opus-5
+- builder — lead-integrator — completed-with-concerns — claude-opus-5
+- economic-truth-critic — lead-integrator — active — claude-opus-5
+- player-gameplay-critic — lead-integrator — active — claude-opus-5
+- teacher-transfer-critic — lead-integrator — active — claude-sonnet-5
 
 ## Required evidence
 
@@ -91,6 +94,9 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-econ-r2 — economic-truth-report — L1 econ re-check 2: independent exact DP reproduces P14 corners exactly (NY flat $1.22M/80% vs most-cash $2.36M/53%; 8-point convex frontier; buying every point costs 6.99%/6.00% of cash). R1-R3 met, season dissent DISCHARGED. NEW BLOCKING: N5-was-N1 copy credits renewals (-140 term) while N4-spend carry (+1200) dominates; HOUSE_RULES[1] false
 - gate-l1-teacher-r2 — teacher-transfer-report — L1 teacher re-run: all nine blocking repairs FIXED from the surface; HK-1 DISCHARGED (director script reached the product and exceeded the design). New blocking TT-R1: Nights 4-5 NOW block is Night 4's script verbatim (fullHouse.ts:2191 block2 = nightIndex>=3) contradicting the adjacent projector mirror. Non-blocking carried: Jump-to-REVEAL unconfirmed, prep pointer, stale wrap-up ASK, MODELED_DOLLARS_LINE in teacher copy. TRANSFER: NOT READY on TT-R1 alone
 - gate-l1-play-r2 — gameplay-report — L1 play re-check 2: RATING STRONG (held). Renewals-unexplained repairs CONFIRMED on dial/synthesis; DISCHARGED. New blocking: REVEAL-5 renewals rule and COUNTERFACTUAL scatter render below projector fold at all three resolutions while /teach claims on-screen; N5 repeat-beat delta shrunk (+170/-360, round-1 FULL HOUSE unreachable); spend receipt shows payoff only
+- l1-tests-r3 — test — Full suite after final repair round
+- l1-tuning-r3 — test — Tuning harness 16 properties (P15 repeat scale, P16 decomposition identity)
+- l1-e2e-r3 — e2e — e2e with fold + receipt assertions after round 3
 
 ## Claim ledger
 

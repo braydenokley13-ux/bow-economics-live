@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T01:19:02.668Z",
+  "updatedAt": "2026-09-01T01:51:56.759Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -893,8 +893,62 @@
           "model": "claude-opus-5",
           "reason": "Final repair round (3 of 3): three narrow successor blockers — N5 economy rebalance + honest attribution (econ+play jointly), Night-5 NOW block, board fold placement — plus carried teacher/play minors. Scope-locked.",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T01:19:02.668Z",
+          "completedAt": "2026-09-01T01:51:56.073Z",
+          "sections": {
+            "what-changed": "All 4 charter items DONE. N5 economy: renewalFans 25 / planSlope 3.6 chosen by exact season-DP sweep (25 is the ceiling — >=30 breaks P14); repeatRowFor() computes each desk's exact channel split and the card names the largest channel from data, never prose; HOUSE_RULES[1] rewritten; P15 (repeat scale) + P16 (decomposition identity, residual 0 across 36 cases) added. Teacher: Night-5 NOW block + WATCH FOR, confirm guard shared by Advance and Jump-to-REVEAL, done-conditional wrap-up ASK, prep pointer, projectorMirror stage claim fixed. Board fold: REVEAL-5 rule above the chart, COUNTERFACTUAL two-column with scatter beside rows, e2e asserts both in-viewport at 1366x768 and 1920x1080. Spend receipt reports waste.",
+            "evidence": "Re-run by lead via evidence command, all exit 0: l1-tests-r3 (352/352), l1-tuning-r3 (16/16), l1-e2e-r3 (zero console errors, fold + receipt assertions). Misclick e2e green in builder run. N5 numbers: plan line +600 (+3.6%/+4.1%), floor line -380/-900 (was structurally 0); P14 corners NY flat $1.24M/80% vs cash-max $2.42M/65%, margin exactly at bar.",
+            "claims": "Deterministic only. Builder explicitly does not certify: whether Economic Truth accepts the frontier-margin tradeoff (P14 margin now 15/15, zero headroom) and whether Player accepts felt scale (its own >=10%-of-capacity bar unmet: best 5.4% — ~66 fans/point needed but P14 breaks at 30 renewalFans).",
+            "known-gaps": "P14 sits exactly on its bar — any future retune breaks it; play's felt-scale bar unmet by construction (recorded OPEN in P15 output and SIMPLIFICATIONS); carried minors N-h/N-i/N-j/N-k, TT-R4, P4 remainder, P7, P9, R5 remainder; prior gate reports quote stale constants."
+          },
+          "evidenceIds": [
+            "l1-tests-r3",
+            "l1-tuning-r3",
+            "l1-e2e-r3"
+          ],
+          "cost": {
+            "tokens": 673848,
+            "toolUses": 252
+          }
+        },
+        "recheck3-l1-econ": {
+          "assignmentId": "recheck3-l1-econ",
+          "role": "economic-truth-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Confirm-or-refute the N5 attribution repair and adjudicate the builder-flagged frontier-margin tradeoff (P14 at its bar with zero headroom)",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T01:51:56.303Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "recheck3-l1-play": {
+          "assignmentId": "recheck3-l1-play",
+          "role": "player-gameplay-critic",
+          "actor": "lead-integrator",
+          "model": "claude-opus-5",
+          "reason": "Rule on fold placement + felt-scale: is +600/-380..-900 enough for the repeat beat, given the critic's own 10%-of-capacity bar is unmet by construction",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T01:51:56.529Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "recheck3-l1-teacher": {
+          "assignmentId": "recheck3-l1-teacher",
+          "role": "teacher-transfer-critic",
+          "actor": "lead-integrator",
+          "model": "claude-sonnet-5",
+          "reason": "Narrow confirm of TT-R1 (Night-5 NOW block) and the carried teacher items; bounded verification, no full protocol re-run",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T01:51:56.759Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -927,7 +981,10 @@
         "m1-e2e-regression",
         "gate-l1-econ-r2",
         "gate-l1-teacher-r2",
-        "gate-l1-play-r2"
+        "gate-l1-play-r2",
+        "l1-tests-r3",
+        "l1-tuning-r3",
+        "l1-e2e-r3"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -1831,6 +1888,77 @@
       },
       "recordedAt": "2026-09-01T01:18:45.703Z",
       "actor": "lead-integrator"
+    },
+    "l1-tests-r3": {
+      "id": "l1-tests-r3",
+      "wave": 2,
+      "kind": "test",
+      "label": "Full suite after final repair round",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-tests-r3--record.json",
+      "sha256": "063dd99fb20f1f9b20bf83cec00af1750439a8c66408b9f22eff5ab9e726bba9",
+      "size": 88280,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "repair"
+        ],
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T01:50:57.813Z",
+      "actor": "lead-integrator"
+    },
+    "l1-tuning-r3": {
+      "id": "l1-tuning-r3",
+      "wave": 2,
+      "kind": "test",
+      "label": "Tuning harness 16 properties (P15 repeat scale, P16 decomposition identity)",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-tuning-r3--record.json",
+      "sha256": "7bdb4be077c3f86763f4b1347767279b05b6ad9c9c9e8e5612783e3bacb58f0f",
+      "size": 12323,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "repair"
+        ],
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T01:51:10.965Z",
+      "actor": "lead-integrator"
+    },
+    "l1-e2e-r3": {
+      "id": "l1-e2e-r3",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "e2e with fold + receipt assertions after round 3",
+      "path": ".boss/runs/m2-quality-war/evidence/l1-e2e-r3--record.json",
+      "sha256": "f8dd1feae4b92859155720aba3be686188c59f40f1f0b2eacee602fed52f0716",
+      "size": 2469,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "repair"
+        ],
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-01T01:51:31.296Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -2231,14 +2359,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 26,
+    "agentsActivated": 29,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 44,
+    "evidenceRecorded": 47,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 134,
-  "eventHead": "3bd07404e49e81083d4da669d41701d5b1859d856325d6fd22d77a754e2833d3",
+  "eventCount": 141,
+  "eventHead": "346b87646275653a6afb867ab69ffea1d74ecef6feb29a56bef68131878e4af2",
   "warnings": []
 }
