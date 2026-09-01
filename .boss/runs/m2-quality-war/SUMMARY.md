@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `118:56d31070f935df7504cc4a8006c429b65c0819aa757f696bcc71b13c977a6a23`  
-Updated: 2026-09-01T00:59:42.493Z
+Event head: `121:9350be8d6d64d6d40ece0b9aade59805eb2041af0aaca8eae0566ff95cf8b237`  
+Updated: 2026-09-01T01:10:30.798Z
 
 ## Founder intent
 
@@ -87,6 +87,7 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - l1-tuning-r2 — test — Tuning harness 14 properties incl. P14 season DP
 - l1-e2e-r2 — e2e — M2 L1 e2e with viewport-visibility assertions after round 2
 - m1-e2e-regression — e2e — M1 L3 e2e re-run after shared-file changes (theme.css, sessionService, static router)
+- gate-l1-econ-r2 — economic-truth-report — L1 econ re-check 2: independent exact DP reproduces P14 corners exactly (NY flat $1.22M/80% vs most-cash $2.36M/53%; 8-point convex frontier; buying every point costs 6.99%/6.00% of cash). R1-R3 met, season dissent DISCHARGED. NEW BLOCKING: N5-was-N1 copy credits renewals (-140 term) while N4-spend carry (+1200) dominates; HOUSE_RULES[1] false
 
 ## Claim ledger
 
@@ -102,12 +103,13 @@ Candidate C's L1 'Full House' can be built as a complete classroom lesson in the
 - gate-l1-econ-dissent — undefined/undefined/open — undefined
 - play-board-curve-pooled — gameplay/blocking/resolved — The board's class-evidence chart joins 25 desk-nights from five different demand worlds into one line labelled THE ROOM'S OWN CURVE, producing segments where a higher price drew a bigger crowd; COUNTERFACTUAL then instructs the room to argue from those two lines — the class-evidence layer manufactures false economics fuel. Blocking for the argue/synthesis beats. Detail + screenshots in GATE_L1_PLAY.md.
 - gate-l1-play-dissent — undefined/undefined/open — undefined
-- econ-l1-season-books — economic-truth/blocking/open — Season-level two-book tension sign flipped by the repair-round-1 retune: the product's own printed best line ends 92%/96% renewals vs flat-plan 80%, beating flat plan by $1.45M/$1.38M on BOTH books — the CASH-vs-RENEWALS tradeoff the lesson teaches does not exist at season level; both notes on the season synthesis card are false; the spend-to-renewals channel (13-15 points) is undisclosed on any surface. Also: two false HOUSE_RULES clauses (national-TV qualifier; +1 one step below plan) and stale copy on N1/N2/N3/N5 + harness P5 printed row. R1-R3 prescriptions in GATE_L1_ECON_R1.md.
+- econ-l1-season-books — economic-truth/blocking/resolved — Season-level two-book tension sign flipped by the repair-round-1 retune: the product's own printed best line ends 92%/96% renewals vs flat-plan 80%, beating flat plan by $1.45M/$1.38M on BOTH books — the CASH-vs-RENEWALS tradeoff the lesson teaches does not exist at season level; both notes on the season synthesis card are false; the spend-to-renewals channel (13-15 points) is undisclosed on any surface. Also: two false HOUSE_RULES clauses (national-TV qualifier; +1 one step below plan) and stale copy on N1/N2/N3/N5 + harness P5 printed row. R1-R3 prescriptions in GATE_L1_ECON_R1.md.
 - recheck-l1-econ-dissent — undefined/undefined/open — undefined
 - play-l1-renewals-unexplained — gameplay/blocking/open — The renewals undercut mechanism works in play (desk that filled the building five nights under plan fell 50%->25%) but NO student surface — dial, recap, seven reveal stages, ADAPT, COUNTERFACTUAL, six synthesis cards — ever states that undercutting the season-plan price costs renewals. Uninterpretable consequence = the exact failure class just repaired on the spend dial, relocated. Also blocking: COUNTERFACTUAL board's largest instruction tells the room to argue from dots that are not rendered in that phase. GATE_L1_PLAY.md re-rate section.
 - recheck-l1-play-dissent — undefined/undefined/open — undefined
 - teacher-l1-not-ready — teacher-transfer/blocking/open — Fresh-context teacher verdict NOT READY: /teach is a status board, not a director — identical render across LOBBY/HOOK/PLAY, projector context vanishing exactly when REVEAL begins, blind n/7 reveal counter with no names or lines, unhighlighted stalled desks. HK-1: the design doc's complete director script (NOW/ASK/DON'T EXPLAIN YET/TRIGGER/TIME CUT with per-phase minute budgets, DESIGN_C_FIRSTPRINCIPLES.md:253-270) reached the product as a single fragment, so every economics line must be invented live — hidden founder knowledge by construction. Nine blocking repairs in GATE_L1_TEACHER.md.
 - gate-l1-teacher-dissent — undefined/undefined/open — undefined
+- econ-l1-n5-attribution — economic-truth/blocking/open — The round-2 retune made Night-4 spend carry the dominant Night-5 channel, but the NIGHT 5 WAS NIGHT 1 reveal still credits renewals: NY 14,142 -> 15,202 (+1,060) decomposes as renewals -140 vs carry +1,200, yet the copy attributes the change to the renewals book. HOUSE_RULES[1] ('nothing else moves it') is now false and contradicts rule 2. Narrow attribution/copy repair: decompose the N5 delta honestly on the reveal and fix the rule text. GATE_L1_ECON_R2.md.
 
 ## Latest gate
 

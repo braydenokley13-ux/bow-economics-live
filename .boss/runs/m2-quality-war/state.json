@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T00:59:42.493Z",
+  "updatedAt": "2026-09-01T01:10:30.798Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -876,7 +876,8 @@
         "l1-tests-r2",
         "l1-tuning-r2",
         "l1-e2e-r2",
-        "m1-e2e-regression"
+        "m1-e2e-regression",
+        "gate-l1-econ-r2"
       ],
       "claimIds": [
         "l1-tests-pass",
@@ -895,7 +896,8 @@
         "play-l1-renewals-unexplained",
         "recheck-l1-play-dissent",
         "teacher-l1-not-ready",
-        "gate-l1-teacher-dissent"
+        "gate-l1-teacher-dissent",
+        "econ-l1-n5-attribution"
       ],
       "meetingIds": [],
       "gates": [],
@@ -1719,6 +1721,24 @@
       },
       "recordedAt": "2026-09-01T00:59:18.434Z",
       "actor": "lead-integrator"
+    },
+    "gate-l1-econ-r2": {
+      "id": "gate-l1-econ-r2",
+      "wave": 2,
+      "kind": "economic-truth-report",
+      "label": "L1 econ re-check 2: independent exact DP reproduces P14 corners exactly (NY flat $1.22M/80% vs most-cash $2.36M/53%; 8-point convex frontier; buying every point costs 6.99%/6.00% of cash). R1-R3 met, season dissent DISCHARGED. NEW BLOCKING: N5-was-N1 copy credits renewals (-140 term) while N4-spend carry (+1200) dominates; HOUSE_RULES[1] false",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l1-econ-r2--GATE_L1_ECON_R2.md",
+      "sha256": "a3ad5a696cc43876c2a7ac750fd6d3c9c67c25cd29241f1168f2cc9e9e9f3578",
+      "size": 28123,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "wave-2",
+          "recheck"
+        ]
+      },
+      "recordedAt": "2026-09-01T01:10:30.330Z",
+      "actor": "lead-integrator"
     }
   },
   "claims": {
@@ -1956,9 +1976,12 @@
         "gate-l1-econ-r1"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T00:08:00.051Z",
-      "actor": "economic-truth-critic"
+      "actor": "economic-truth-critic",
+      "resolution": "Independently re-verified by the econ critic's own exact season DP (lambda sweep, reproduces P14's corners to the dollar): a genuine convex two-book frontier exists at season scale (flat 80% renewals vs most-cash 53-54%; renewal points cost 6-7% of season cash), the spend channel is disclosed pre-commit, and the previously-false clauses are now true. Critic's explicit line: DISSENT econ-l1-season-books: DISCHARGED. GATE_L1_ECON_R2.md.",
+      "resolvedAt": "2026-09-01T01:10:30.565Z",
+      "resolvedBy": "lead-integrator"
     },
     "recheck-l1-econ-dissent": {
       "id": "recheck-l1-econ-dissent",
@@ -2014,6 +2037,20 @@
       "status": "open",
       "recordedAt": "2026-09-01T00:13:26.304Z",
       "actor": "lead-integrator"
+    },
+    "econ-l1-n5-attribution": {
+      "id": "econ-l1-n5-attribution",
+      "wave": 2,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "The round-2 retune made Night-4 spend carry the dominant Night-5 channel, but the NIGHT 5 WAS NIGHT 1 reveal still credits renewals: NY 14,142 -> 15,202 (+1,060) decomposes as renewals -140 vs carry +1,200, yet the copy attributes the change to the renewals book. HOUSE_RULES[1] ('nothing else moves it') is now false and contradicts rule 2. Narrow attribution/copy repair: decompose the N5 delta honestly on the reveal and fix the rule text. GATE_L1_ECON_R2.md.",
+      "evidenceIds": [
+        "gate-l1-econ-r2"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T01:10:30.798Z",
+      "actor": "economic-truth-critic"
     }
   },
   "meetings": {},
@@ -2044,11 +2081,11 @@
     "agentsActivated": 25,
     "gateFailures": 0,
     "claimsContradicted": 1,
-    "evidenceRecorded": 41,
+    "evidenceRecorded": 42,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 118,
-  "eventHead": "56d31070f935df7504cc4a8006c429b65c0819aa757f696bcc71b13c977a6a23",
+  "eventCount": 121,
+  "eventHead": "9350be8d6d64d6d40ece0b9aade59805eb2041af0aaca8eae0566ff95cf8b237",
   "warnings": []
 }
