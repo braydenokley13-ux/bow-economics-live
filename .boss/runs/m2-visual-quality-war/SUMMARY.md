@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `168:562d7855a5f01c1a63899878c2b8e5f1ce8be8b025c32fc58e7d53b4c0a6edba`  
-Updated: 2026-09-01T21:28:42.696Z
+Event head: `177:65670e9db70bafcd9b520eebff08fd1ff4fa4efb40daedb3434e86bb5bc8555a`  
+Updated: 2026-09-01T21:29:14.170Z
 
 ## Founder intent
 
@@ -36,6 +36,15 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - lead-integrator — boss-lead — active — claude-fable-5-1
 - sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
 - browser-qa — browser-qa-w2base — completed — claude-sonnet-5
+- browser-qa — browser-qa-w2 — active — claude-sonnet-5
+- visual-experience-director — visual-critic-3 — active — claude-opus-5
+- player-gameplay-critic — gameplay-critic-w2 — active — claude-opus-5
+- player-gameplay-critic — kid-a2-basketball — active — claude-opus-5
+- player-gameplay-critic — kid-b2-casual — active — claude-sonnet-5
+- player-gameplay-critic — kid-c2-nonsports — active — claude-opus-5
+- economic-truth-critic — econ-truth-w2 — active — claude-opus-5
+- regression-hunter — regression-w2 — active — claude-sonnet-5
+- product-analyst — analyst-w2 — active — claude-opus-5
 
 ## Required evidence
 
