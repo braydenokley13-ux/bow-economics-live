@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **5**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `422:3d6f75661c359ed8a8256e166f2661b55bd66df4478d1b70d95b87b032d53b91`  
-Updated: 2026-09-01T13:34:29.426Z
+Event head: `424:a25df03bfdacbfad0ea14e31db2ebedd31bfd3b6739b85e9746c43424ac22556`  
+Updated: 2026-09-01T13:51:35.099Z
 
 ## Founder intent
 
@@ -38,7 +38,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - economic-truth-critic — economic-truth-critic — completed — claude-opus-5
 - product-analyst — product-analyst — completed-with-concerns — claude-opus-5
 - builder — builder-w5-dereg — completed — claude-sonnet-5
-- teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
+- teacher-transfer-critic — teacher-transfer-critic — completed — claude-opus-5
 - teacher-transfer-critic — teacher-transfer-critic — active — claude-opus-5
 
 ## Required evidence
@@ -83,6 +83,7 @@ The six bounded close-out items (SR N1/N2 one-line facts; econ R1 render-vs-atom
 - analyst-program — analyst-report — Program analyst: REPAIR (narrow). Confirmed: 28/29 resolutions provenance-clean, ratings unqualified at head, no rung inflation, honest flake ledger, premium carried UNMET. Caught: L1/L2 TRANSFER READY predate later teacher-copy repairs (stale verdicts, no re-affirmation); D20 overclaims the audit's coverage vs the critic's own W5-3 wording; flake-note rate attribution uncorrected; pager ruling artifact unpinned; Box Office still selectable; README counts stale. Six cheap required items + the honest founder risk list
 - l1-projector-gate-doc — projector-report — Pin: GATE_L1_PROJECTOR.md at final head incl. the W4 ADJUDICATION carrying the owning critic's L1 PAGER INTENT: SATISFIED ruling (analyst row-3 artifact fix)
 - final-suite-postdereg — test — Suite after Box Office deregistration (458/458)
+- w5-teacher-l1 — teacher-transfer-report — L1 fresh re-affirmation at FINAL HEAD: TRANSFER READY. Changed surfaces exercised cold at 7 desks (CF pager labels match rows all groups both directions; staged synthesis with class-computed cards; all 7 SAY lines; guarded advance + restore; freeze/refresh/late-join clean; zero console errors). Seven non-blocking notes incl. the key-shown-once false copy and bad-board-code hang (runtime-wide, carried)
 
 ## Claim ledger
 
