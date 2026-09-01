@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `334:6e7851f47bf4e4e203ffc1dd55ee1f8ae0e94f8f8b23988e058009dbb5dc486b`  
-Updated: 2026-09-01T11:04:53.354Z
+Event head: `338:3aa55392a28c4cdad3eac8e62d97fd52631920ba3e1f43a8b0a0f78df731d1c5`  
+Updated: 2026-09-01T11:11:08.880Z
 
 ## Founder intent
 
@@ -85,6 +85,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l3-tuning — test — L3 harness 10/10: BC-1a differential response >=3 steps; BC-1b two markets move $6-8 while capacity-bound stay flat; BC-1c move vanishes without the untaxed stream; claim audit 438 atoms/109 surfaces, 5/5 mutants
 - l3-e2e — e2e — L3 e2e: 25 frames x 2 shapes, 342 occlusion probes, 51 first-contact at 1024x600, 71 real drives, 7 finale cards, zero console errors
 - gate-l3-sr — sports-reality-report — L3 SR gate: CLEAR WITH REPAIRS. Kings facts all verified (Jan-2013 sale, 22-8 May 15 2013, $534M record, Golden 1 2016); beat genuinely debatable. BLOCKING A1: finale teaches supermajority for relocation — real rule is simple majority 16/30 (expansion 23/30); A2: /teach promises term sheets 'on their screens' that no surface renders ($625M vs $534M verified). Also: Knicks gate contradiction (C-2 recurrence), missing $255M subsidy, undated 2016-17 figures, expansion copy a season behind (Mar-2026 BOG 30-0 explore vote)
+- gate-l3-econ — economic-truth-report — L3 econ gate: BC-1 SOUND by independent proof (ancillary deletion -> $0 moves everywhere; closed form matches shipped brute force; reinvest up to 5 steps; uniform-tax mutant froze every argmax). DISSENT l3-sharing-argmax DISCHARGED. VERDICT BLOCKED: claim audit magnitude-blind (doubled pot-total prints $15.3M vs true $7.6M, suite green; live instance ships at 6 desks); 71% of proposal profiles incl. 100% of sincere play land on status-quo 5% where the BC-1 payload is null yet the teacher script asks the flat-arrow question; L2/L3 reinvest bases differ 62.5%; 50% pot bonfire at zero compliance. Summit ruling: TRUE economics, keep — but a rehearsal surface still asserts the withdrawn claim
 
 ## Claim ledger
 
@@ -95,6 +96,8 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - proj-l2-mirror-claims — classroom-reliability/blocking/resolved — Two W4 successors, both the claim-vs-model class on surfaces UNREGISTERED in moduleClaims (the builder's disclosed audit limitation): W4-1 — the prescribed release path prints 'some desks had already locked' when none had; W4-2 — the /teach stage-5 mirror is byte-identical across all four release arms, promising 'this board refuses to choose' even in the arm where the board already ruled the bar out. Fix: compute both strings from state AND register them (and the teacher director/mirror surface generally) in moduleClaims so the audit family sees them. GATE_L2_PROJECTOR.md W4 section.
 - sr-l3-capstone-facts — sports-reality/blocking/open — L3 blocking pair: A1 — the finale teaches that owners' money votes take supermajorities and reads 22-8 against a 16-14 threshold, but NBA relocation needs a simple majority (16/30; expansion 23/30) — a false institutional rule at the exact moment the lesson formalizes institutions; A2 — /teach twice tells the teacher the two term sheets are on student screens with the numbers, but no surface renders any figure (real: $625M Seattle vs $534M Sacramento). Plus: gate-claim contradiction vs the Knicks' own printed $193M; the ~$255M Sacramento subsidy that decided the vote missing from the debate material; undated sharing figures; expansion copy a season behind. GATE_L3_SR.md.
 - gate-l3-sr-dissent — undefined/undefined/open — undefined
+- econ-l3-claim-audit-vacuous — economic-truth/blocking/open — The L3 claim audit cannot detect a wrong NUMBER: doubling pot-total prints $15,284,066 against a true $7,642,033 with the suite green 41/41 (inverted and frozen quantifiers also survive) — P9's mutant proof does not establish printed-economics-matches-model at magnitude, unlike L2's level-audited family. A live instance already ships: at 6 desks the synthesis card prints '$17,100,000 — more than the whole room took at the gate' against a $17,605,406 gate. Extend the audit to value-level (the L2 method) and fix the live instance. GATE_L3_ECON.md.
+- econ-l3-signature-reachability — economic-truth/blocking/open — 71.0% of 15,625 proposal profiles — including 100% of sincere play — land on the status-quo 5% share where the entire BC-1 payload is null, yet reveal stage 4 still scripts 'why didn't the big market move?' with no desk sold out. The signature moment must be reachable by the play the room actually produces (adoption dynamics/status-quo level retune, or the reveal must adapt to the outcome that occurred). Also: L2/L3 reinvest bases differ 62.5% (contaminating the before/after bar); a 50% pot bonfire at zero compliance; a rehearsal teacher surface still asserts the withdrawn interior-summit claim. GATE_L3_ECON.md.
 
 ## Latest gate
 

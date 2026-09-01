@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T11:04:53.354Z",
+  "updatedAt": "2026-09-01T11:11:08.880Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3272,13 +3272,16 @@
         "l3-tests",
         "l3-tuning",
         "l3-e2e",
-        "gate-l3-sr"
+        "gate-l3-sr",
+        "gate-l3-econ"
       ],
       "claimIds": [],
       "dissentIds": [
         "proj-l2-mirror-claims",
         "sr-l3-capstone-facts",
-        "gate-l3-sr-dissent"
+        "gate-l3-sr-dissent",
+        "econ-l3-claim-audit-vacuous",
+        "econ-l3-signature-reachability"
       ],
       "meetingIds": [],
       "gates": [],
@@ -5471,6 +5474,25 @@
       },
       "recordedAt": "2026-09-01T11:04:36.028Z",
       "actor": "sports-reality-director"
+    },
+    "gate-l3-econ": {
+      "id": "gate-l3-econ",
+      "wave": 4,
+      "kind": "economic-truth-report",
+      "label": "L3 econ gate: BC-1 SOUND by independent proof (ancillary deletion -> $0 moves everywhere; closed form matches shipped brute force; reinvest up to 5 steps; uniform-tax mutant froze every argmax). DISSENT l3-sharing-argmax DISCHARGED. VERDICT BLOCKED: claim audit magnitude-blind (doubled pot-total prints $15.3M vs true $7.6M, suite green; live instance ships at 6 desks); 71% of proposal profiles incl. 100% of sincere play land on status-quo 5% where the BC-1 payload is null yet the teacher script asks the flat-arrow question; L2/L3 reinvest bases differ 62.5%; 50% pot bonfire at zero compliance. Summit ruling: TRUE economics, keep — but a rehearsal surface still asserts the withdrawn claim",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l3-econ--GATE_L3_ECON.md",
+      "sha256": "85703f89325562852575889b11a6b3d65e37afbf3a38d42543631ddddd537261",
+      "size": 31838,
+      "metadata": {
+        "verdict": "BLOCKED",
+        "tags": [
+          "economic-truth",
+          "wave-4",
+          "l3"
+        ]
+      },
+      "recordedAt": "2026-09-01T11:11:07.998Z",
+      "actor": "economic-truth-critic"
     }
   },
   "claims": {
@@ -5590,9 +5612,12 @@
         "l3-arith-harness"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-08-31T21:35:46.314Z",
-      "actor": "builder-proto-l2-l3"
+      "actor": "builder-proto-l2-l3",
+      "resolution": "The run's oldest dissent, discharged by the owning critic's independent computation on the built L3: the differential reinvest instrument is the signature (up to 5 dial steps, never a uniform price drop), the flat-arrow moment is true (capacity-bound markets provably immobile), and the untaxed-stream requirement is proven by deletion (every price move drops to exactly $0 without ancillary; the closed form matches the shipped brute force; the uniform-tax mutant froze every argmax and was caught). Explicit line: DISSENT l3-sharing-argmax: DISCHARGED. BC-1 is arithmetically sound; the successor findings about reachability and audit depth are tracked separately.",
+      "resolvedAt": "2026-09-01T11:11:08.304Z",
+      "resolvedBy": "lead-integrator"
     },
     "proto-l2-l3-dissent": {
       "id": "proto-l2-l3-dissent",
@@ -6168,6 +6193,34 @@
       "status": "open",
       "recordedAt": "2026-09-01T11:04:53.354Z",
       "actor": "sports-reality-director"
+    },
+    "econ-l3-claim-audit-vacuous": {
+      "id": "econ-l3-claim-audit-vacuous",
+      "wave": 4,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "The L3 claim audit cannot detect a wrong NUMBER: doubling pot-total prints $15,284,066 against a true $7,642,033 with the suite green 41/41 (inverted and frozen quantifiers also survive) — P9's mutant proof does not establish printed-economics-matches-model at magnitude, unlike L2's level-audited family. A live instance already ships: at 6 desks the synthesis card prints '$17,100,000 — more than the whole room took at the gate' against a $17,605,406 gate. Extend the audit to value-level (the L2 method) and fix the live instance. GATE_L3_ECON.md.",
+      "evidenceIds": [
+        "gate-l3-econ"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T11:11:08.588Z",
+      "actor": "economic-truth-critic"
+    },
+    "econ-l3-signature-reachability": {
+      "id": "econ-l3-signature-reachability",
+      "wave": 4,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "71.0% of 15,625 proposal profiles — including 100% of sincere play — land on the status-quo 5% share where the entire BC-1 payload is null, yet reveal stage 4 still scripts 'why didn't the big market move?' with no desk sold out. The signature moment must be reachable by the play the room actually produces (adoption dynamics/status-quo level retune, or the reveal must adapt to the outcome that occurred). Also: L2/L3 reinvest bases differ 62.5% (contaminating the before/after bar); a 50% pot bonfire at zero compliance; a rehearsal teacher surface still asserts the withdrawn interior-summit claim. GATE_L3_ECON.md.",
+      "evidenceIds": [
+        "gate-l3-econ"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T11:11:08.880Z",
+      "actor": "economic-truth-critic"
     }
   },
   "meetings": {},
@@ -6219,11 +6272,11 @@
     "agentsActivated": 71,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 108,
+    "evidenceRecorded": 109,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 334,
-  "eventHead": "6e7851f47bf4e4e203ffc1dd55ee1f8ae0e94f8f8b23988e058009dbb5dc486b",
+  "eventCount": 338,
+  "eventHead": "3aa55392a28c4cdad3eac8e62d97fd52631920ba3e1f43a8b0a0f78df731d1c5",
   "warnings": []
 }
