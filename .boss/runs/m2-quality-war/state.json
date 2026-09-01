@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T06:51:57.932Z",
+  "updatedAt": "2026-09-01T06:52:28.577Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -1628,7 +1628,7 @@
     },
     "3": {
       "number": 3,
-      "status": "active",
+      "status": "closed",
       "contract": {
         "hypothesis": "The three carried L1 blocking dissents can be discharged by narrow fixes verified by their owning critics (class-scale counterfactual frame with an honest per-row e2e instrument; frontier-staged two-books card; visual and projector re-adjudication of the repaired surfaces), and L2 'You Don't Play Alone' (host the league: visitor draw fills your building; reinvest-in-Draw) can then be built to the standard L1 reached — STRONG or better on independent play, economically true under the same harness discipline, teacher-ready via the established director layer, privacy-clean — at materially lower gate cost by reusing L1's proven patterns.",
         "whyThisMatters": "L1 is one bounded bundle away from a clean anchor; L2 is the module's interdependence lesson (the deep unowned M2 concept per the economic contract) and the first test of whether the L1 patterns (director layer, tuning-harness discipline, board grammar, confirm-guards) genuinely transfer to a second lesson at lower cost.",
@@ -2262,12 +2262,23 @@
           "model": "claude-opus-5",
           "reason": "Fresh read-only reconciliation of Wave 3's claims (L1 close-out + L2 build/repair cycle) against recorded evidence before the wave verdict",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T06:44:43.761Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
-          "cost": null
+          "completedAt": "2026-09-01T06:52:27.974Z",
+          "sections": {
+            "evidence-review": "Reconciliation table in ANALYST_WAVE3.md: wave passCondition REFUTED on its own terms (L2 FUNCTIONAL, three blocking dissents open at head); L1 discharges confirmed for two carried dissents; pager-label successor closed WITHOUT owning critic (provenance failure); premium ground of analyst-no-pass-wave2 laundered (artifact author maintains dissent, now ledgered); final-head regression proofs were stale (since patched: l1-e2e-final-head green).",
+            "disproof-attempts": "Five of six wave-3 resolutions carry verified owning-critic lines; DO-NOT-SPEND list honored except the stale-proof recurrence; flake attribution honest on pre-existence, overclaimed on rate (n=6, Fisher p~0.55, and L2 ships in the same shared play client); one structurally blind instrument remains (geometry-only fold assertions cannot see z-index occlusion; the dial is set programmatically and never has to be reachable).",
+            "biggest-failure": "The room is still told things the model does not support, and the wave's repairs manufactured new instances faster than critics cleared old ones (externalPct 0%/>100%, ownGain sign reversal, stage-5 bar claim vs prescribed script, WHO-WAS-VISITING in 40/40 rooms) — Candidate A's killer defect class rebuilt on the synthesis surfaces; plus TRANSFER READY granted before the projector proved the prescribed script makes the board lie.",
+            "recommendation": "REPAIR; close Wave 3 without PASS rather than an unlogged fourth repair. Next highest-leverage: ONE claim-audit property family (recompute every rendered claim string against the reducer; fail on sign/quantifier/bound disagreement) covering econ B3/B7/B8 + stage-5 + SPILLOVER, bundled with elementFromPoint occlusion checks and real-click dial driving; then one owning-critic re-adjudication each (play, econ), the never-performed projector pager intent check, and the L1 board e2e at final head (done). DO-NOT-SPEND: fourth visual re-grade (founder decision), M1 flake fix, kill re-litigation, new L2 tuning properties, L3 build while three L2 blockers stand, readiness rung changes. Formal blocking dissent recorded."
+          },
+          "evidenceIds": [
+            "analyst-wave3",
+            "l1-e2e-final-head"
+          ],
+          "cost": {
+            "tokens": 74094,
+            "toolUses": 46
+          }
         }
       },
       "evidenceIds": [
@@ -2321,7 +2332,8 @@
         "proj-l2-bar-timing",
         "recheck-l2-projector-dissent",
         "visual-l1-premium-unmet",
-        "analyst-no-pass-wave3"
+        "analyst-no-pass-wave3",
+        "analyst-wave3-dissent"
       ],
       "meetingIds": [],
       "gates": [
@@ -2771,10 +2783,17 @@
           "actor": "lead-integrator"
         }
       ],
-      "verdict": null,
-      "repairs": 0,
+      "verdict": {
+        "wave": 3,
+        "verdict": "REPAIR",
+        "reason": "Analyst recommendation adopted, second consecutive wave: real gains kept (L1 fully discharged incl. STRONG at 12 desks and frontier ratio 1.0000; L2 mechanism independently verified real; SR + teacher + projector-truncation dissents discharged with owning-critic lines; TRANSFER READY provisional) but the wave's own passCondition is unmet — L2 FUNCTIONAL with play/econ dissents open, one new off-by-one, a provenance failure on the pager closure (owning-critic intent check still owed), the premium clause carried as UNMET for the founder, and a claim-vs-model defect class that needs one systemic instrument, not per-ticket fixes. Repair budget honestly exhausted at 3/3; the bundle opens Wave 4.",
+        "evidenceIds": [],
+        "at": "2026-09-01T06:52:28.297Z",
+        "actor": "lead-integrator"
+      },
+      "repairs": 1,
       "startedAt": "2026-09-01T02:16:32.812Z",
-      "closedAt": null
+      "closedAt": "2026-09-01T06:52:28.577Z"
     }
   },
   "evidence": {
@@ -5181,6 +5200,15 @@
       "status": "open",
       "recordedAt": "2026-09-01T06:51:36.486Z",
       "actor": "product-analyst"
+    },
+    "analyst-wave3-dissent": {
+      "id": "analyst-wave3-dissent",
+      "wave": 3,
+      "evidenceIds": [],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-01T06:52:28.008Z",
+      "actor": "product-analyst"
     }
   },
   "meetings": {},
@@ -5211,7 +5239,7 @@
   "shipCases": [],
   "metrics": {
     "waves": 3,
-    "repairs": 1,
+    "repairs": 2,
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
@@ -5222,7 +5250,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 272,
-  "eventHead": "fe38d0af309aacce5176ad0f80c420de2df98f9ea59d8b119615f897acff1739",
+  "eventCount": 276,
+  "eventHead": "bdc60b5d156900ca20fa4a39ae34d268d93450ecdc19eac8328434451052148e",
   "warnings": []
 }
