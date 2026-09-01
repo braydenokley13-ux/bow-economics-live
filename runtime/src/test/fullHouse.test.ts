@@ -13,14 +13,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   CARDS,
+  FULL_HOUSE_UI_COPY,
   MARKETS,
   NIGHT_COUNT,
+  OBJECTIVE_COPY,
   PRICE_GRID,
   PRICE_MAX,
   PRICE_MIN,
   PRICE_STEP,
   RENEWALS_START,
   REVEAL_STEPS,
+  SIMPLIFICATIONS,
   TWO_PEAKS_CARD_ID,
   CF_ROWS_PER_PAGE,
   bestFoundSeason,
@@ -893,4 +896,222 @@ test("teacher misclick: leaving PLAY settles the open night on the dials as they
   belled = ok(act(belled, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
   belled = ok(act(belled, { type: "teacher:closeNight" }, "PLAY", "teacher"));
   assert.equal(belled.desks["seat-1"]!.nights[0]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
+});
+
+/* ------------------------------------- m2-visual-quality-war wave 2, Lane C -- */
+
+/**
+ * R-9 (ECON_ADAPTATION_RULINGS §7 K1, contract §G, BLOCKING). `onPhaseExit`
+ * force-sets `twoPeaksReleased` when PLAY closes, so before this gate every
+ * desk's private payload carried its own market's peak prices, gap and revenue
+ * figures from REVEAL stage 0 — the answer to the lesson's centrepiece reveal,
+ * six teacher presses before the room is shown it. The student gate must match
+ * the board's exactly. A client-side gate would not be tested by anything.
+ */
+test("R-9: a desk never carries Two Peaks before the board has released it", () => {
+  let state = seated(4);
+  const prices = { "seat-1": 34, "seat-2": 24, "seat-3": 90, "seat-4": 60 };
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, prices, { "seat-1": 40_000 });
+  // The state the manual fallback actually produces: released by the phase exit,
+  // reveal stage still 0. That is precisely the leak this gate closes.
+  state = fullHouseModule.onPhaseExit!(state, "PLAY", "REVEAL");
+  assert.equal(state.twoPeaksReleased, true, "leaving PLAY must still force the release flag");
+  assert.equal(state.revealStage, 0, "the phase exit must not advance the staged reveal");
+
+  for (let stage = 0; stage < NIGHT_COUNT + 1; stage += 1) {
+    const at = { ...state, revealStage: stage, twoPeaksReleased: true };
+    for (const seatId of Object.keys(at.desks)) {
+      const view = fullHouseModule.studentView(at, seatId, "REVEAL") as {
+        twoPeaks: unknown[];
+        twoPeaksReleased: boolean;
+      };
+      assert.deepEqual(view.twoPeaks, [], `desk ${seatId} carried Two Peaks at reveal stage ${stage}`);
+      assert.equal(view.twoPeaksReleased, false, `desk ${seatId} was told Two Peaks was up at stage ${stage}`);
+      // and the peak figures themselves are nowhere in the payload
+      const board = fullHouseModule.boardView(at, "REVEAL") as { twoPeaks: unknown[] };
+      assert.deepEqual(board.twoPeaks, [], `the board itself leaked Two Peaks at stage ${stage}`);
+    }
+  }
+
+  for (let stage = NIGHT_COUNT + 1; stage <= REVEAL_STEPS; stage += 1) {
+    const at = { ...state, revealStage: stage, twoPeaksReleased: true };
+    for (const seatId of Object.keys(at.desks)) {
+      const view = fullHouseModule.studentView(at, seatId, "REVEAL") as {
+        twoPeaks: { marketId: string }[];
+        twoPeaksReleased: boolean;
+      };
+      assert.equal(view.twoPeaksReleased, true, `desk ${seatId} was denied Two Peaks at stage ${stage}`);
+      assert.equal(view.twoPeaks.length > 0, true, `desk ${seatId} got an empty Two Peaks at stage ${stage}`);
+      // still only its own market — the private surface stays private
+      const marketId = at.desks[seatId]!.marketId;
+      assert.equal(view.twoPeaks.every((t) => t.marketId === marketId), true);
+    }
+  }
+
+  // The release flag is still necessary as well as the stage: a teacher who has
+  // advanced the reveal without the flag set sees nothing.
+  const unreleased = { ...state, revealStage: REVEAL_STEPS, twoPeaksReleased: false };
+  const view = fullHouseModule.studentView(unreleased, "seat-1", "REVEAL") as { twoPeaks: unknown[] };
+  assert.deepEqual(view.twoPeaks, []);
+});
+
+/**
+ * R-1 / contract §G: every claim-bearing label the /play surface renders is a
+ * module string. If a key disappears the renderer silently falls back to a
+ * client literal, which is exactly the drift this wave exists to stop.
+ */
+test("uiCopy reaches the desk in every student phase, with every registered key", () => {
+  const REQUIRED = [
+    "nextNightLabel",
+    "doorsLine",
+    "fillQualifier",
+    "whoCameLabel",
+    "historyTitle",
+    "historyCaption",
+    "twoBooksLine",
+    "chainLabels",
+  ];
+  const CHAIN = ["tickets", "inArena", "bill", "event", "bowl", "cash", "renewals"];
+
+  let state = seated(2);
+  const check = (label: string, view: unknown) => {
+    const ui = (view as { uiCopy?: Record<string, unknown> }).uiCopy;
+    assert.ok(ui, `${label} carried no uiCopy`);
+    assert.deepEqual(Object.keys(ui!).sort(), [...REQUIRED].sort(), `${label} uiCopy keys drifted`);
+    for (const key of REQUIRED) {
+      if (key === "nextNightLabel") continue; // legitimately null on the last night
+      if (key === "chainLabels") {
+        assert.deepEqual(Object.keys(ui![key] as object).sort(), [...CHAIN].sort(), `${label} chainLabels drifted`);
+        for (const c of CHAIN) assert.equal(typeof (ui![key] as Record<string, string>)[c], "string");
+        continue;
+      }
+      assert.equal(typeof ui![key], "string", `${label} uiCopy.${key} is not a string`);
+      assert.ok((ui![key] as string).length > 0, `${label} uiCopy.${key} is empty`);
+    }
+  };
+
+  // an unseated join, then every phase with a real desk, at every night
+  check("unseated", fullHouseModule.studentView(empty(), "seat-9", "LOBBY"));
+  for (const phase of ALL_PHASES) check(`night 0 ${phase}`, fullHouseModule.studentView(state, "seat-1", phase));
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    state = playNight(state, { "seat-1": 34, "seat-2": 24 });
+    for (const phase of ALL_PHASES) check(`after night ${i + 1} ${phase}`, fullHouseModule.studentView(state, "seat-1", phase));
+  }
+
+  // The two-books sentence is OBJECTIVE_COPY's own clause, not a retyped copy.
+  const ui = (fullHouseModule.studentView(state, "seat-1", "COMPLETE") as { uiCopy: { twoBooksLine: string; fillQualifier: string } }).uiCopy;
+  assert.equal(OBJECTIVE_COPY.startsWith(ui.twoBooksLine), true, "twoBooksLine has drifted from OBJECTIVE_COPY");
+  assert.match(ui.twoBooksLine, /do not add up to one number/);
+  // R-2: the fill qualifier names the denominator that actually moves.
+  assert.equal(ui.fillQualifier, "of the seats you opened tonight");
+  assert.equal(/capacity/i.test(ui.fillQualifier), false);
+  // R-3: no chain label calls either book a profit or a revenue total.
+  for (const value of Object.values(FULL_HOUSE_UI_COPY.chainLabels)) {
+    assert.equal(/profit|revenue|total/i.test(value), false, `chain label "${value}" grades or totals the books`);
+  }
+  // D4 / no student-facing timer: the bell line is teacher-paced.
+  assert.match(FULL_HOUSE_UI_COPY.doorsLine, /your teacher rings the bell/);
+});
+
+test("nextNightLabel is the next night's printed facts, and null when there is no next night", () => {
+  let state = seated(1);
+  const labelAt = (s: FullHouseState) =>
+    (fullHouseModule.studentView(s, "seat-1", "PLAY") as { uiCopy: { nextNightLabel: string | null } }).uiCopy
+      .nextNightLabel;
+
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const card = CARDS[i]!;
+    const tv = card.tv === "national" ? "national TV" : card.tv === "local" ? "local TV" : "not on TV";
+    assert.equal(labelAt(state), `NEXT: NIGHT ${i + 1} → ${card.day} · Draw ${card.draw} · ${tv}`);
+    state = playNight(state, { "seat-1": 34 });
+  }
+  assert.equal(labelAt(state), null, "the books-closed desk was offered a sixth night");
+
+  // Printed facts only: the label never carries a settlement quantity or a
+  // demand constant, at any night (BC-4).
+  let s2 = seated(1);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const label = labelAt(s2) ?? "";
+    const market = MARKETS.find((m) => m.id === "new-york")!;
+    const curve = curveFor(market, CARDS[i]!, RENEWALS_START, 0);
+    const outcome = settleNight(market, curve, 34, 0, false, false);
+    for (const [name, q] of Object.entries({
+      turnout: outcome.turnout,
+      gate: outcome.gate,
+      total: outcome.total,
+      base: curve.base,
+    })) {
+      if (q === 0) continue;
+      assert.equal(label.includes(String(q)), false, `nextNightLabel leaked ${name} on night ${i + 1}`);
+      assert.equal(label.includes(q.toLocaleString()), false, `nextNightLabel leaked ${name} on night ${i + 1}`);
+    }
+    s2 = playNight(s2, { "seat-1": 34 });
+  }
+});
+
+/**
+ * The settled headline is composed in the module so the renderer prints a
+ * sentence instead of assembling one out of loose figures (R-1). Both forms
+ * must equal the facts the settlement actually produced.
+ */
+test("resultHeadline equals the settled facts, for a normal night and for a sellout", () => {
+  const market = MARKETS.find((m) => m.id === "new-york")!;
+
+  // normal night: night 1, $34, nothing sold out
+  let state = seated(1);
+  state = playNight(state, { "seat-1": 34 });
+  const curve = curveFor(market, CARDS[0]!, RENEWALS_START, 0);
+  const outcome = settleNight(market, curve, 34, 0, false, false);
+  const view = fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+    lastNight: { resultHeadline: string; soldOut: boolean; turnout: number };
+    history: { resultHeadline: string }[];
+  };
+  assert.equal(outcome.soldOut, false, "this test needs a night that does not sell out");
+  assert.equal(view.lastNight.resultHeadline, `NIGHT 1 · ${outcome.turnout.toLocaleString()} CAME AT $34`);
+  assert.equal(view.history[0]!.resultHeadline, view.lastNight.resultHeadline, "history and lastNight disagree");
+  // no grading word, no money, no fill percentage in the headline
+  assert.equal(/profit|great|strong|nice|best|worst|\$\d{4,}/i.test(view.lastNight.resultHeadline), false);
+
+  // sellout: the cheapest legal price on night one fills New York's building
+  const sold = playNight(seated(1), { "seat-1": PRICE_MIN });
+  const soldView = fullHouseModule.studentView(sold, "seat-1", "PLAY") as {
+    lastNight: { resultHeadline: string; soldOut: boolean; turnout: number; seatsOpen: number; turnedAway: number };
+  };
+  const n = soldView.lastNight;
+  assert.equal(n.soldOut, true, "this test needs a night that sells out");
+  assert.equal(
+    n.resultHeadline,
+    `FULL HOUSE · ${n.turnout.toLocaleString()} of ${n.seatsOpen.toLocaleString()} · ${n.turnedAway.toLocaleString()} turned away`,
+  );
+  assert.equal(/CAME AT/.test(n.resultHeadline), false, "a sellout still rendered the ordinary headline");
+});
+
+/**
+ * R-7 (the arena picture) and R-10 (the never-printed forgiveness line). The
+ * teacher surface carries the ledger; an entry without its misconception risk
+ * is not a record, it is a footnote.
+ */
+test("R-7 / R-10: the ledger records the three simplifications the rebuild adds", () => {
+  const find = (needle: RegExp) => SIMPLIFICATIONS.find((s) => needle.test(s.what));
+  const arena = find(/evenly-lit proportion/);
+  const bowl = find(/upper bowl is a Night-4-only third state|third state of the same picture/i);
+  const renewals = find(/forgiveness line/i);
+
+  for (const [label, entry] of Object.entries({ arena, bowl, renewals })) {
+    assert.ok(entry, `SIMPLIFICATIONS has no ${label} entry`);
+    assert.ok(entry!.why.length > 0, `${label} records no reason`);
+    assert.ok(entry!.risk.length > 0, `${label} records no misconception risk`);
+  }
+  // each risk names the specific wrong conclusion, not a generic caution
+  assert.match(arena!.risk, /cheap seats filled first/i);
+  assert.match(bowl!.risk, /denominator/i);
+  assert.match(renewals!.risk, /Night 4/);
+  assert.match(renewals!.what, /renewalReferencePrice/);
+  // and the ledger reaches the teacher, where it is read out loud
+  const state = seated(2);
+  const teach = fullHouseModule.teacherView(state, "PLAY") as {
+    simplifications: { what: string; why: string; risk: string }[];
+  };
+  assert.equal(teach.simplifications.length, SIMPLIFICATIONS.length);
+  assert.equal(teach.simplifications.every((s) => s.risk.length > 0), true);
 });
