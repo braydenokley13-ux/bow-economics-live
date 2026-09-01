@@ -596,3 +596,31 @@ conclusion — on the module's most reality-loaded beat. It is economic-truth an
 fix.
 
 DISSENT sr-l3-capstone-facts: NOT DISCHARGED
+
+---
+
+## W5 NARROW CONFIRM
+
+Boss run `m2-quality-war`, assignment `w5-sr-confirm`. Narrow owning-critic confirm of dissent
+`sr-l3-capstone-facts`'s two remaining items (`N1`, `N2`). Re-read 2026-09-01 against
+`runtime/src/modules/writeTheRule.ts` verbatim; no other lines re-litigated; client copy checked
+for divergent duplication only.
+
+| Line | Verdict |
+| --- | --- |
+| `N1` — Seattle term sheet: "A new arena in SoDo, about $490M — with up to $200M of city and county bond money in it too, repaid out of arena revenue and guaranteed by the buyers." (l.1693) | **CONFIRMED.** Matches this gate's verified 2012 MOU facts (up to $200M city/county bonds toward a ~$490M arena, repaid from arena revenue, guaranteed by the buying group) exactly. |
+| `N1` — `subsidy-coda` retaught as both-sides-used-public-money: "You voted on public money today... on BOTH term sheets... Neither side was private. What differed was how much, how fast, and who got asked — and that is a large part of what beat a bid worth $91M more." (l.2241) | **CONFIRMED.** States the honest scale/structure contrast this gate's repair required, not a public-vs-private distinction; also carries the `N5` "a large part of" causal hedge. |
+| `N1` — 2012 MOU ledgered in `SOURCE_NOTES` (l.1745): "the 2012 Hansen/Ballmer SoDo memorandum of understanding, approved 7-2 by the Seattle City Council and unanimously by the King County Council, carried up to $200M of city and county bonds toward a roughly $490M arena, repaid from arena revenue and guaranteed by the buying group, so neither 2013 bid was privately financed" | **CONFIRMED.** Verbatim match to this gate's own verified `N1` fact base (Wikipedia "Sonics Arena" and cited contemporaneous council coverage · verifiedAsOf 2026-09-01). |
+| `N2` — DMA line: "Sacramento is the 20th-largest US television market. Seattle, the 13th, does not get a club." (l.1705), and `SOURCE_NOTES` "Sacramento-Stockton-Modesto is the 20th-largest US television market and Seattle-Tacoma the 13th (2025-26 Nielsen DMA ranks; materially the same in 2013)." (l.1745) | **CONFIRMED.** Matches this gate's verified 2025-26 Nielsen DMA ranks (Sacramento #20, Seattle #13) verbatim; both figures now on the same scale as N2 required. |
+
+**No new factual claim swept.** `TERM_SHEETS`/`ARGUE_TERM_SHEET_NOTE`/`subsidy-coda` are single
+source-of-truth data rendered identically on `/play` (l.3533) and `/board` (l.1861) via
+`view["termSheets"]`; no client file (`play`, `board`, `teach` `main.ts`) hardcodes or duplicates
+the SoDo, DMA, or subsidy-coda copy, so no divergent-copy risk exists. Every number in the repaired
+lines traces to facts already verified in this gate's `N1`/`N2` findings or the pre-existing fact
+base (`A4`); no unverified figure was introduced.
+
+**Verdict:** both `N1` and `N2` are repaired verbatim and correctly, with no new factual claim
+introduced by the rewrite.
+
+DISSENT sr-l3-capstone-facts: DISCHARGED
