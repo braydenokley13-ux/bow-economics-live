@@ -315,32 +315,39 @@
   .wr-board-median { font-size: 1.6vw; color: var(--ink-primary); margin-top: .6vh; }
   .wr-board-median b { font-family: var(--font-number); color: var(--accent-gold); }
 
-  .wr-board-rows { display: flex; flex-direction: column; gap: .35vh; width: 90vw; margin-top: .8vh; }
-  .wr-board-row { display: grid; grid-template-columns: 15vw minmax(0,1fr) 9vw 9vw 9vw; gap: .8vw; align-items: center;
-    background: rgba(19,24,34,0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: .35vh .9vw; text-align: left; }
-  .wr-board-row.arrow { grid-template-columns: 15vw 9vw minmax(0,1fr) minmax(0,1fr); }
-  .wr-board-row.era { grid-template-columns: 15vw minmax(0,1fr) 9vw 9vw; }
-  .wr-board-handle { font-size: 1.5vw; color: var(--ink-primary); }
-  .wr-board-size { font-size: 1.5vw; color: var(--ink-muted); letter-spacing: .06em; }
-  .wr-board-bars { display: flex; flex-direction: column; gap: .2vh; min-width: 0; }
-  .wr-board-bar { height: 1.1vh; border-radius: 3px; display: block; }
+  /* The row count scales with the class, the projector does not: twelve rows of
+     the first draft measured 742px inside a 768px frame. Only the vertical
+     padding and the bar height give ground — the TYPE stays above the 2.6%
+     back-row floor, because the row count is what scales, not the row. */
+  .wr-board-rows { display: flex; flex-direction: column; gap: .22vh; width: 90vw; margin-top: .6vh; }
+  .wr-board-row { display: grid; grid-template-columns: 19vw minmax(0,1fr) 13vw 13vw 13vw; gap: .8vw; align-items: center;
+    background: rgba(19,24,34,0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: .12vh .9vw; text-align: left; }
+  .wr-board-row.arrow { grid-template-columns: 19vw 13vw minmax(0,1fr) minmax(0,1fr); }
+  .wr-board-row.era { grid-template-columns: 19vw minmax(0,1fr) 13vw 13vw; }
+  .wr-board-row.cf { grid-template-columns: 19vw 17vw 17vw 17vw; }
+  .wr-board-row.head { background: none; border-color: transparent; padding-bottom: 0; }
+  .wr-board-row.head span { font-family: var(--font-display); letter-spacing: .08em; color: var(--ink-muted); }
+  .wr-board-handle { font-size: 1.5vw; line-height: 1.15; color: var(--ink-primary); white-space: nowrap; }
+  .wr-board-size { font-size: 1.5vw; line-height: 1.15; color: var(--ink-muted); letter-spacing: .06em; white-space: nowrap; }
+  .wr-board-bars { display: flex; flex-direction: column; gap: .12vh; min-width: 0; }
+  .wr-board-bar { height: .7vh; border-radius: 3px; display: block; }
   .wr-board-bar.paid { background: var(--accent-violet); }
   .wr-board-bar.took { background: var(--accent-gold); }
   .wr-board-bar.l2 { background: var(--ink-muted); }
   .wr-board-bar.l3 { background: var(--accent-gold); }
-  .wr-board-num { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); text-align: right; }
+  .wr-board-num { font-family: var(--font-number); font-size: 1.5vw; line-height: 1.15; color: var(--ink-secondary); text-align: right; white-space: nowrap; }
   .wr-board-num.net { color: var(--ink-primary); font-weight: 800; }
   .wr-board-num.net.neg { color: var(--accent-violet); }
-  .wr-board-arrow { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); }
+  .wr-board-arrow { font-family: var(--font-number); font-size: 1.5vw; line-height: 1.15; color: var(--ink-secondary); white-space: nowrap; }
   .wr-board-arrow.moved { color: var(--accent-gold); }
   .wr-board-arrow.flat { color: var(--ink-muted); }
 
   .wr-board-pairs { display: flex; flex-wrap: wrap; gap: .6vw; width: 90vw; margin-top: 1vh; justify-content: center; }
   .wr-board-pair { display: flex; align-items: baseline; gap: .5vw; background: rgba(19,24,34,0.75);
     border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: .4vh .9vw; }
-  .wr-pair-host { font-size: 1.5vw; color: var(--ink-primary); }
+  .wr-pair-host { font-size: 1.5vw; color: var(--ink-primary); white-space: nowrap; }
   .wr-pair-v { font-size: 1.5vw; color: var(--ink-muted); }
-  .wr-pair-visitor { font-size: 1.5vw; color: var(--accent-gold); }
+  .wr-pair-visitor { font-size: 1.5vw; color: var(--accent-gold); white-space: nowrap; }
   .wr-pair-draw { font-family: var(--font-number); font-size: 1.5vw; color: var(--ink-secondary); }
 
   .wr-board-card { background: rgba(19,24,34,0.9); border: 1px solid rgba(244,185,66,0.4); border-radius: 16px;

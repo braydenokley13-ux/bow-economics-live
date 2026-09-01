@@ -1579,9 +1579,19 @@ function wrHistBoard(h: { round: number; bins: { share: number; count: number }[
 
 function wrPotBoard(rows: WRPotRow[]): string {
   if (rows.length === 0) return "";
+  // A header row instead of a word on every cell: "in $1,234,567" wrapped to two
+  // lines at twelve desks and put 853px of table into a 768px projector, which
+  // the e2e's fit guard caught. The column names are said once.
   const max = Math.max(1, ...rows.map((r) => Math.max(r.paidIn, r.tookOut)));
   return `
     <div class="wr-board-rows">
+      <div class="wr-board-row head">
+        <span class="wr-board-handle">DESK</span>
+        <span></span>
+        <span class="wr-board-num">PAID IN</span>
+        <span class="wr-board-num">TOOK OUT</span>
+        <span class="wr-board-num">NET</span>
+      </div>
       ${rows
         .map(
           (r) => `
@@ -1591,8 +1601,8 @@ function wrPotBoard(rows: WRPotRow[]): string {
             <span class="wr-board-bar paid" style="width:${Math.round((r.paidIn / max) * 100)}%"></span>
             <span class="wr-board-bar took" style="width:${Math.round((r.tookOut / max) * 100)}%"></span>
           </span>
-          <span class="wr-board-num">in ${escapeHtml(r.paidInText)}</span>
-          <span class="wr-board-num">out ${escapeHtml(r.tookOutText)}</span>
+          <span class="wr-board-num">${escapeHtml(r.paidInText)}</span>
+          <span class="wr-board-num">${escapeHtml(r.tookOutText)}</span>
           <span class="wr-board-num net ${r.net < 0 ? "neg" : ""}">${escapeHtml(r.netText)}</span>
         </div>`,
         )
@@ -1622,6 +1632,12 @@ function wrEraBoard(rows: WREraRow[]): string {
   if (rows.length === 0) return "";
   return `
     <div class="wr-board-rows">
+      <div class="wr-board-row era head">
+        <span class="wr-board-handle">DESK</span>
+        <span></span>
+        <span class="wr-board-num">LESSON 2</span>
+        <span class="wr-board-num">LESSON 3</span>
+      </div>
       ${rows
         .map(
           (r) => `
@@ -1631,8 +1647,8 @@ function wrEraBoard(rows: WREraRow[]): string {
             <span class="wr-board-bar l2" style="width:${Math.round(((r.l2 ?? 0) / 40) * 100)}%"></span>
             <span class="wr-board-bar l3" style="width:${Math.round((r.l3 / 40) * 100)}%"></span>
           </span>
-          <span class="wr-board-num">${r.l2 === null ? "no L2" : `L2 ${Math.round((r.l2 ?? 0) * 10) / 10}%`}</span>
-          <span class="wr-board-num">L3 ${Math.round(r.l3 * 10) / 10}%</span>
+          <span class="wr-board-num">${r.l2 === null ? "no L2" : `${Math.round((r.l2 ?? 0) * 10) / 10}%`}</span>
+          <span class="wr-board-num">${Math.round(r.l3 * 10) / 10}%</span>
         </div>`,
         )
         .join("")}
@@ -1722,9 +1738,12 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
         <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
         ${ruleStrip}
         <div class="wr-board-headline" id="wrBoardHeadline">${escapeHtml(String(view["headline"] ?? ""))}</div>
-        ${stageNo >= 3 ? wrPotBoard((view["potFlows"] as WRPotRow[]) ?? []) : ""}
-        ${stageNo >= 4 ? wrArrowBoard((view["arrows"] as WRArrowRow[]) ?? []) : ""}
-        ${stageNo >= 5 ? wrEraBoard((view["era"] as WREraRow[]) ?? []) : ""}
+        ${/* One chart at a time — the projector's own rule. Stacking the three
+              evidence tables put 36 rows and 967px of content into a 768px
+              projector, which the e2e's fit guard caught. */ ""}
+        ${stageNo === 3 ? wrPotBoard((view["potFlows"] as WRPotRow[]) ?? []) : ""}
+        ${stageNo === 4 ? wrArrowBoard((view["arrows"] as WRArrowRow[]) ?? []) : ""}
+        ${stageNo === 5 ? wrEraBoard((view["era"] as WREraRow[]) ?? []) : ""}
         <div class="synthesis-note">Stage ${stageNo} of ${Number(view["totalStages"] ?? 5)}. ${escapeHtml(privacy)}</div>`;
       return;
     }
@@ -1746,10 +1765,10 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
         <div class="wr-board-headline" id="wrBoardCf">${escapeHtml(String(view["line"] ?? ""))}</div>
         ${
           rows.length > 0
-            ? `<div class="wr-board-rows">${rows
+            ? `<div class="wr-board-rows"><div class="wr-board-row cf head"><span class="wr-board-handle">DESK</span><span class="wr-board-num">AS PLAYED</span><span class="wr-board-num">AT ${Number(view["share"] ?? 0)}%</span><span class="wr-board-num">DIFFERENCE</span></div>${rows
                 .map(
                   (r) =>
-                    `<div class="wr-board-row" data-wr-cf><span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span><span class="wr-board-num">as played ${escapeHtml(r.netAdoptedText)}</span><span class="wr-board-num">at ${Number(view["share"] ?? 0)}% ${escapeHtml(r.netRunnerUpText)}</span><span class="wr-board-num net ${r.delta < 0 ? "neg" : ""}">${escapeHtml(r.deltaText)}</span></div>`,
+                    `<div class="wr-board-row cf" data-wr-cf><span class="wr-board-handle">${escapeHtml(r.deskHandle)}</span><span class="wr-board-num">${escapeHtml(r.netAdoptedText)}</span><span class="wr-board-num">${escapeHtml(r.netRunnerUpText)}</span><span class="wr-board-num net ${r.delta < 0 ? "neg" : ""}">${escapeHtml(r.deltaText)}</span></div>`,
                 )
                 .join("")}</div>`
             : `<div class="wr-board-held">Waiting for your teacher to run the replay.</div>`

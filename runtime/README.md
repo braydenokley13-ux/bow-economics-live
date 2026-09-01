@@ -389,6 +389,117 @@ chain, in copy. If a later gate wants mechanical continuity, the cheapest
 honest limb is L1 renewals → this club's `base0` offset, printed on a
 how-you-got-here card and named inside the `fromBuilding` block.
 
+## Module 2, Lesson 3 — Writing the Rule (`m2l3-write-rule`)
+
+The module finale. The room writes a revenue-sharing rule on two dials, votes
+it in at two-thirds, and then plays a season **under the rule it wrote**.
+
+**The arc, in one PLAY phase and six more.** LOBBY (how you got here) → HOOK
+(Boston, June 2025, commit-then-reveal) → PLAY, which holds three timed offer
+rounds, the two-thirds test and three season weeks, because the canonical phase
+list is strictly increasing and a season cannot come after `REVEAL` → REVEAL
+(five staged beats) → CONSEQUENCE → COUNTERFACTUAL → ARGUE (the Kings 22-8
+Board-of-Governors capstone) → SYNTHESIS (the module finale cards) → COMPLETE.
+
+**BC-1, the charter's binding condition, and what it actually required.** The
+Stage-0 arithmetic harness (`l3-arith.mjs`, exit 1) had already refuted the
+naive claim every candidate design leaned on — that a sharing rule makes every
+seat's ticket price fall. With linear demand `q = B − k·p` and untaxed per-fan
+in-arena spend `a`, the own-take maximiser is `p*(s) = B/(2k) − a/(2(1−s))`, so
+the price move is `a·s/(2(1−s))`: driven entirely by the **untaxed** stream,
+exactly zero under a binding capacity clamp, and exactly zero again if the rule
+taxes every stream uniformly. This module ships that arithmetic as the lesson
+rather than fighting it:
+
+- **The signature instrument is the differential reinvest response**, not a
+  price drop. A club keeps `kappa(s) = 1 − s(N−1)/N` of every extra local
+  dollar; Draw is bought with square-root returns; so the cash-optimal reinvest
+  goes as `kappa²` — the `(1−s)²` form the charter names. Measured at the
+  shipped constants, brute-forced over the shipped dial through the shipped
+  settlement: **new-york 25%→5%, golden-state 30%→15%, oklahoma-city 35%→10%,
+  memphis 20%→5%** across share 0→60. Every one clears the charter's two-dial-
+  step floor; the smallest is three steps.
+- **A moving arrow beside a flat one.** The two small-market profiles are
+  unclamped at their optimum and their best price falls $6–$8 with the share;
+  the two big-market profiles are capacity-bound (99%+ full at their own
+  optimum) and their best price **does not move at all**. The board prints both,
+  and the teacher's ASK is "why didn't New York move?" — the answer is on the
+  room's own numbers: you cannot discount a seat you do not have.
+- **The taxed base coexists with an untaxed stream.** The pot is skimmed from
+  gate + local media; what fans spend inside the building is never taxed, and
+  the national check is never taxed. Harness P3 re-derives the argmax with the
+  in-arena term deleted and asserts the price movement **vanishes**.
+
+**The four named Stage-0 fixes (BC-6), all in.** The CONDITION is a real adopted
+decision with teeth (under it, a club reinvesting below 15% collects half its
+share and the forfeit is redistributed to the compliant clubs — it changes the
+cash-best reinvest at six measured (profile × share) points, against Stage-0's
+0 of 14); the voter's own club, market size, bill, Draw and cash are on the
+proposal screen before round 1; every settled week carries a **paid in / took
+out / net** column on the desk's own device, first in the document; and the
+proposal histogram is **withheld until round 1 has closed**, anonymous and
+unsorted thereafter.
+
+**L2 → L3 seeding: yes, opaquely, and the grounds are recorded.** D9 persists
+state where yesterday's choice creates today's problem, and here it literally
+does — the inequality the room argues about is the room's own L2 inequality, and
+the signature CONSEQUENCE panel is the room's mean reinvest in L2 beside its
+mean in L3 (the C7 evidence that a rule changed the same students' behaviour).
+Without the seed that panel has no left-hand bar. Each club's Draw, cash and
+mean reinvest cross; nothing else does. An absent, malformed, foreign or
+partially-corrupt seed is not an error: the league opens on a stock spread,
+every panel that would otherwise assert something about Lesson 2 says plainly
+that this room has no Lesson 2 numbers, and the lesson plays identically.
+`/teach` offers the link when the lesson is L3, listing completed
+`m2l2-host-league` sessions.
+
+**The module finale — "ECONOMICS YOU LEARNED".** Seven computed cards, each
+carrying five rails: REMEMBER WHEN (a moment out of this class's own data), OUR
+CLASS (a pattern computed from state and claim-atomed), IN SPORTS (the dated
+real example), ECONOMISTS CALL THIS (the formal term), OUTSIDE SPORTS (the
+generalization). It is paged one card at a time on the projector and rendered in
+full on every student device, so pairs can revisit it while the teacher talks.
+
+**Claim binding.** The L2 pattern is carried as a pattern, not an import: every
+rendered claim string on every surface — board, teacher director, projector
+mirror, per-desk transfer line, finale card — is built by a builder that takes
+the computed value and renders it, and emits the relations it asserts (sign,
+quantifier, bound, absent phrase) as machine-checkable atoms. `moduleClaims()`
+sweeps 438 atoms across 109 surfaces in four rooms.
+
+**Tuning harness.** `node docs/gauntlet/module-2/stage0/l3-tuning-harness.mjs`
+(from the repo root, after `npm run build --prefix runtime`). Ten properties,
+honest exit code, no warn tier: BC-1's three limbs; no-dominant-proposal
+(measured at league equilibrium, replaying the whole season at every share on
+the dial); adoption mechanics; the differential-response scale and the
+condition's bite; no unwinnable seat over 780 reachable cases; the pot identity
+on both branches of the condition; the claim audit with five mutation proofs
+(SIGN / QUANTIFIER / BOUND / NOUN / LEVEL, all five caught); and determinism.
+**All ten hold at the shipped constants**, run this session.
+
+**End-to-end proof.** `node scripts/e2e-m2l3.cjs` (after `npm run build`) drives
+one teacher, one projector and **twelve** Chromebook-shaped student pages
+through the whole arc including the capstone and every finale card. Measured
+this session: 25 board frames checked at both projector shapes, 25 frames
+scanned for silent truncation, 22 board-privacy scans, 51 first-contact
+assertions at 1024×600 (the rule-writing screen and all three season weeks, on
+every desk), 342 `elementFromPoint` occlusion probes, 71 dials driven by real
+mouse drag plus keyboard, seven finale cards paged, zero console errors.
+Screenshots land in `docs/gauntlet/module-2/screens-l3/`.
+
+Three product defects were found by these instruments and fixed rather than
+argued: the paid-in/took-out column sat at 503..653 in a 600px viewport behind
+the pinned commit bar (the settlement is now ordered pot-first, with the six
+revenue lines in a disclosure); the REVEAL frame stacked three twelve-row tables
+into 967px of a 768px projector (one chart at a time now, which is the
+projector's own rule); and the market-size cell printed straight through the
+price cell at twelve desks. That last one produced a **new instrument** — a
+silent-**overlap** guard, the sibling of the silent-truncation guard: a
+`white-space: nowrap` cell in a too-narrow column neither clips nor overflows,
+it simply draws on top of its neighbour, and every geometric guard in the file
+passed it. The guard range-measures each row cell's ink and fails on any
+overlap, at both projector shapes.
+
 ## Repair charter round 1 (post-verification)
 
 A fresh-context verification round produced three rulings — gameplay
@@ -463,6 +574,7 @@ scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof 
                 e2e-l3.cjs                   — rerunnable Playwright L3 proof (full L1->L2->L3 arc)
                 e2e-l3-early-advance.cjs     — focused probe: advancing out of PLAY early
                 e2e-m2l2.cjs                 — rerunnable 12-desk M2 L2 proof (every board frame fits, both shapes)
+                e2e-m2l3.cjs                 — rerunnable 12-desk M2 L3 proof (full arc incl. capstone + finale)
 ```
 
 **Teacher authentication (R1).** `POST /api/sessions` issues a per-session
@@ -590,8 +702,18 @@ subsequence of this order (`isOrderedSubsequence`, enforced at
 npm test
 ```
 
-**411 tests, 411 passing** (`node --test`, no test framework dependency), run
-this session (wave 4, `w4-repair2`). Four of those tests are newer still and
+**452 tests, 452 passing** (`node --test`, no test framework dependency), run
+this session (wave 4, `build-l3-rule`). Forty-one of those are M2 L3's
+(`writeTheRule.test.ts`): the runtime contract and the manual-fallback
+discipline on every phase exit, the untrusted L2 seed (absent, foreign,
+malformed and partially-corrupt all degrade to a playable stock league), the
+two-thirds test and its status-quo branch, the pot identity on both branches of
+the condition, BC-1's two teaching objects, projector privacy at every phase,
+and the claim sweep. Three of them failed on first run and found three real
+defects — an unlocked live desk was being credited with the league office's
+best-response reinvest instead of settling at nothing reinvested as every
+surface promised; the subsidy card shipped an atom its own sentence never
+rendered; and a half-step median's rounding was undocumented. Four of those tests are newer still and
 belong to the econ N17/N18 level repair: econ B11 (the level instrument
 reproduces the room's settled cash to the dollar), econ B11/FL-L (no surface
 tells a room to put MORE back in where a one-step increase lowers room cash, on
@@ -693,7 +815,8 @@ three static pages), not a general-purpose framework being reinvented.
 - No client-side module registry — `/play`, `/teach`, and `/board`'s
   renderers special-case each module's view shape by its `module` tag
   (`lobby-demo`, `m1l1-draft-day`, `m2-box-office`, `m1l2-trade-deadline`,
-  `m1l3-free-agency`, `m2l1-full-house`, `m2l2-host-league`, with a generic
+  `m1l3-free-agency`, `m2l1-full-house`, `m2l2-host-league`,
+  `m2l3-write-rule`, with a generic
   JSON-dump fallback for anything else).
   Adding another real lesson module means writing its render functions too;
   the *server* contract is fully generic today, the client shell is not yet.
@@ -721,6 +844,37 @@ three static pages), not a general-purpose framework being reinvented.
   optimum. (e) The Night-4 capacity option never beats simply pricing the
   shock night correctly — it is a hedge for a desk that priced low, and the
   debrief must say so rather than present it as a rival strategy.
+- **Module 2 Lesson 3 (`m2l3-write-rule`) known gaps.** (a) **The design's
+  intellectual summit does not hold at the shipped constants and is not
+  claimed anywhere in the product.** DESIGN_C hoped the room's own arithmetic
+  would show an interior best share above zero for *every* market including the
+  biggest — "sharing is not charity; it pays the payer, through the product."
+  Measured at league equilibrium (harness P4, replaying the whole season at
+  every share on the dial): the small markets' own best share is 55–60%, the
+  big markets' is 0%. The cause is structural rather than a tuning miss and it
+  collides with BC-1b: a capacity-bound building is barely exposed to a weak
+  visiting club, so what a big market loses when the league decays is a
+  sustainable price, not a full house — worth far less than what it pays in.
+  Forcing the summit would require a model in which a marquee visitor doubles
+  Madison Square Garden's crowd, which is false of a building that sells out.
+  BC-1b is binding and the summit is design prose, so BC-1b was kept. The
+  module never asserts the summit on any surface; the SIMPLIFICATIONS ledger
+  carries the whole finding, and the counter-argument on the board is the real
+  one (the payers accept it in a collectively bargained agreement, and in the
+  leaked year the Lakers still cleared about $115M after paying in). This needs
+  an economics ruling, not a builder's.
+  (b) The veil of ignorance is weaker for a big market than the design assumed:
+  the rookie lands on the club with the least money in the bank after week 1,
+  which in a stock league is never a big market. It is genuinely unknowable at
+  vote time (cash is never ranked on any surface) and exactly nameable
+  afterwards, and the module says out loud that this is **not** how the real
+  league does it — but a big market cannot realistically be insuring itself.
+  (c) The lesson has not been played by a human. Every rating in this file is a
+  builder's, and no play, teacher-transfer, projector, sports-reality or
+  economics gate has run on it.
+  (d) The board's ROUNDS frame shows lock progress and the histogram only; it
+  has no per-desk anything, which is correct for anti-herding but leaves the
+  projector thin for eight minutes.
 - **Module 2 Lesson 2 (`m2l2-host-league`) known gaps.** (a) Real content is
   *dated* in `SOURCE_NOTES` but has **not** been re-verified by an independent
   sports-reality pass this wave; arena capacities and the club→market-size

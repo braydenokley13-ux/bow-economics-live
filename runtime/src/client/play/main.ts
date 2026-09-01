@@ -3269,6 +3269,17 @@ function wrTransferHtml(w: WRWeek): string {
     </div>`;
 }
 
+/**
+ * The week's settlement, ordered for the lesson it belongs to.
+ *
+ * The e2e's occlusion instrument found the first version's transfer column at
+ * 503..653 in a 600px viewport, behind the pinned commit bar — the exact defect
+ * class the L2 gate caught once already. The fix is an ORDERING one, not a
+ * deletion: the pot column is the highest-value attribution surface in this
+ * lesson (BC-6 fix 3, "a reader of this alone can say whether a gain came from
+ * the transfer or from their own dial"), so it is first in the document and the
+ * six revenue lines move into a disclosure underneath. Nothing is removed.
+ */
 function wrWeekResult(w: WRWeek): string {
   return `
     <div class="fh-result" id="wrResult">
@@ -3278,18 +3289,21 @@ function wrWeekResult(w: WRWeek): string {
           ? `<div class="fh-sellout"><div class="fh-sellout-title">FULL HOUSE</div><div class="fh-sellout-sub">${w.turnout.toLocaleString()} of ${w.capacity.toLocaleString()} seats · every one sold</div>${w.turnedAway > 0 ? `<div class="fh-sellout-turned"><span class="numeric">${w.turnedAway.toLocaleString()}</span><span>could not get in</span></div>` : ""}</div>`
           : ""
       }
-      <div class="hl-split" id="wrSplit">
-        <div class="hl-split-rows">
-          <div class="hl-split-row"><span>Gate at $${w.price}</span><span class="numeric">${money(w.gate)}</span></div>
-          <div class="hl-split-row"><span>Spent inside the building</span><span class="numeric">${money(w.inArena)}</span></div>
-          <div class="hl-split-row"><span>Local television</span><span class="numeric">${money(w.localMedia)}</span></div>
-          <div class="hl-split-row"><span>National check (never taxed)</span><span class="numeric">${money(w.national)}</span></div>
-          <div class="hl-split-row"><span>Building bill</span><span class="numeric neg">${money(-w.bill)}</span></div>
-          <div class="hl-split-row"><span>Put back into the club (${w.reinvest}%)</span><span class="numeric neg">${money(-w.reinvestSpend)}</span></div>
-        </div>
-      </div>
       ${wrTransferHtml(w)}
       <div class="hl-give-row net"><span>Cash this week</span><span class="numeric ${w.cashDelta < 0 ? "neg" : ""}" data-wr-kept>${money(w.cashDelta)}</span></div>
+      <details class="fa-rules" id="wrSplitBlock" style="margin-top:8px;">
+        <summary>Where the money came from, line by line</summary>
+        <div class="hl-split" id="wrSplit">
+          <div class="hl-split-rows">
+            <div class="hl-split-row"><span>Gate at $${w.price} · ${w.turnout.toLocaleString()} in</span><span class="numeric">${money(w.gate)}</span></div>
+            <div class="hl-split-row"><span>Spent inside the building</span><span class="numeric">${money(w.inArena)}</span></div>
+            <div class="hl-split-row"><span>Local television</span><span class="numeric">${money(w.localMedia)}</span></div>
+            <div class="hl-split-row"><span>National check (never taxed)</span><span class="numeric">${money(w.national)}</span></div>
+            <div class="hl-split-row"><span>Building bill</span><span class="numeric neg">${money(-w.bill)}</span></div>
+            <div class="hl-split-row"><span>Put back into the club (${w.reinvest}%)</span><span class="numeric neg">${money(-w.reinvestSpend)}</span></div>
+          </div>
+        </div>
+      </details>
       <div class="hl-give-note" id="wrRoad">Your Draw put ${money(w.roadDollarsGiven)} on THEIR books, in the building you visited. Your Draw next week: ${w.drawAfter}.</div>
     </div>`;
 }
@@ -3714,6 +3728,11 @@ function renderWRSeason(view: Record<string, unknown>): void {
       <div class="hl-col-context">
         ${justSettled ? `<div class="hl-bell-head" id="wrBellHead">THE WEEK IS IN THE BOOKS</div>` : ""}
         ${last ? wrWeekResult(last) : ""}
+        ${
+          rookie
+            ? `<details class="fa-rules" id="wrRookieNote" style="margin-top:10px;"><summary>How the rookie was decided — and how the real league does it</summary><p style="margin:6px 0 0; font-size:12.5px; line-height:1.45; color:var(--ink-secondary);">${escapeHtml(rookie.copy)}</p></details>`
+            : ""
+        }
       </div>
       <div class="hl-col-decide" id="wrDecisionBand">
         <div class="hl-week-card" id="wrWeekCard">
@@ -3729,7 +3748,13 @@ function renderWRSeason(view: Record<string, unknown>): void {
               <span class="hl-matchup-draw"><span class="numeric">Draw ${visitor?.draw ?? 0}</span></span>
             </div>
           </div>
-          ${rookie ? `<div class="hl-shock ${rookie.mine ? "mine" : ""}" id="wrRookie">${escapeHtml(rookie.mine ? `The rookie landed HERE — ${rookie.club}. ${rookie.copy}` : `The rookie landed at ${rookie.club}. ${rookie.copy}`)}</div>` : ""}
+          ${
+            rookie
+              ? `<div class="hl-shock ${rookie.mine ? "mine" : ""}" id="wrRookie">${escapeHtml(
+                  rookie.mine ? `THE ROOKIE LANDED HERE — ${rookie.club}. Draw 100 for the rest of the season.` : `The rookie landed at ${rookie.club} — Draw 100 for the rest of the season.`,
+                )}</div>`
+              : ""
+          }
         </div>
         ${wrSlateHtml((view["slate"] as WRSlateRow[]) ?? [])}
         ${dialsHtml}
