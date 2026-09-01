@@ -620,3 +620,65 @@ C6 → E15. D3 → E27 (four reference cards mapped onto the module's six; Weath
 scale forbidden). E1/E2 → E16 **revenue and profit columns FORBIDDEN**, legal column set given.
 E3 → E17 **prompt FORBIDDEN**, registered prompts only. E4 → E18. F1 → E24/E25.
 F3 → E22/E23 **both FORBIDDEN**, replacements given. F5 → E21/E26.
+
+---
+
+## 7. TWO FINDINGS RELAYED FROM THE KID BASELINES, ADJUDICATED
+
+**K1 · Two Peaks is already on every desk at REVEAL stage 0, while the projector holds it for six
+more presses. CONFIRMED — pre-existing defect, and the rebuild will make it worse. BLOCKING for
+this wave's `/play` REVEAL surface.**
+OBSERVED in source: `onPhaseExit` leaving PLAY force-sets `twoPeaksReleased = true`
+(`fullHouse.ts:2029`, the manual-fallback guarantee). `boardView` REVEAL then gates the panel
+correctly — `twoPeaksReleased: state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1`,
+`twoPeaks: state.revealStage >= NIGHT_COUNT + 1 ? agg.twoPeaks : []` (`fullHouse.ts:2522-2523`,
+i.e. press 6 of 7). But `studentView` REVEAL has **no `revealStage` gate at all**:
+`twoPeaks: state.twoPeaksReleased ? computeAggregate(state).twoPeaks.filter(t => t.marketId === desk.marketId) : []`
+(`fullHouse.ts:2246-2249`). So the instant the teacher advances into REVEAL, every desk's private
+screen carries its own market's `ticketPeakPrice`, `totalPeakPrice`, `gapDollars`, `gapSteps` and
+the three revenue figures — the answer to the lesson's centrepiece reveal — six presses before the
+room is shown it. This is the same class of defect as gate-l1-projector repair 3 (the bell used to
+pre-spoil the staged reveal), surviving on the surface that repair did not touch.
+**RULING: the rebuilt `/play` REVEAL surface must not render Two Peaks before the board has
+released it.** Minimum fix inside this wave's scope: the client renders the panel only when the
+teacher's stage has reached it. Correct fix, and my recommendation: gate the payload —
+`state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1` in `studentView`, matching
+`boardView` exactly — because a client-side gate is precisely the kind of protection §0 shows
+nothing tests. Filed as **R-9**. This is a module change and returns through Economic Truth.
+NOT VERIFIED: whether today's `play/main.ts` actually paints the panel at stage 0 or silently drops
+the field — I read the payload, not the render. Either way the payload leak is real and the
+rebuild is about to re-author that renderer.
+
+**K2 · On Night 4 the renewals book REWARDS the season-high price, and the printed rule does not
+let a pair predict it. CONFIRMED as model behaviour; NOT a defect; a live false-lesson risk for the
+rebuilt renewals visual.**
+OBSERVED, `renewalDelta` swept over `PRICE_GRID` at `RENEWALS_START`, spend 0:
+
+| card | New York: reference price / renewals-best price / delta at $90 | Memphis: same three |
+|---|---|---|
+| N1 | $24.00 / **$24 (+6)** / **−20** | $16.00 / **$16 (+6)** / **−20** |
+| N2 | $27.07 / $26 (+9) / −20 | $19.00 / $18 (+9) / −20 |
+| N3 | $56.20 / $56 (+12) / −20 | $47.50 / $44 (+11) / −20 |
+| **N4** | **$111.40 / $108 (+12) / +9** | **$101.50 / $98 (+12) / +10** |
+| N5 | $24.00 / $24 (+6) / −20 | $16.00 / $16 (+6) / −20 |
+
+A pair that learned across N1–N3 that "a high price costs renewals" meets the exact opposite on
+Night 4: at $90 — near the night's cash-best — renewals *gain* +9 / +10, and renewals keep gaining
+all the way to $114 (NY) / $104 (MEM). The model is right and the printed rule is true
+(`renewalReferencePrice` rises to $111.40 on a draw-97 card with no TV, so $90 is *below* what a
+plan holder thinks the night is worth). But **the pair is never given the reference price** —
+`renewalRuleFor` states the shape qualitatively ("Charge above what tonight is worth to them and
+they quit") and `HOUSE_RULES[4]` says the forgiveness line moves with Draw and TV, without a
+number. That is a deliberate design choice, not an error.
+**RULING for the rebuild: any renewals visual that encodes a monotone "price up → renewals down"
+relationship is FORBIDDEN** — no down-arrow tied to the price dial, no red-above/green-below split
+on the slider track, no gauge whose needle is driven by price. It is false on Night 4 in both
+markets, on the single night the room remembers most, and it would also be a pre-lock preview
+(BC-4) by construction. **ALLOWED:** the registered text rules (`renewalRuleFor`, `HOUSE_RULES[4]`,
+`RENEWALS_RULE_BOARD`) rendered verbatim, and the **settled** `renewalsBefore → renewalsAfter`
+(`renewalMove`) after the lock. **R-10, required before the wave closes:** add a `SIMPLIFICATIONS`
+entry recording that the forgiveness line is a modelled construct (`renewalReferencePrice`) that
+moves per card and is never printed, with the misconception risk stated — *a pair generalising
+"high price loses renewals" from Nights 1–3 will be wrong on Night 4, and the teacher should let
+that happen and then name why.* `GATE_L1_ECON_R3.md` W3 already lists `renewalReferencePrice` as a
+modelled construct missing from the ledger; this is the same gap with a measured consequence.

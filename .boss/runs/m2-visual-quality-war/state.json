@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T20:32:04.919Z",
+  "updatedAt": "2026-09-01T20:32:23.257Z",
   "currentWave": 1,
   "waves": {
     "1": {
@@ -326,6 +326,20 @@
           "ephemeral": false,
           "status": "active",
           "activatedAt": "2026-09-01T20:14:04.704Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "analyst-w1": {
+          "assignmentId": "analyst-w1",
+          "role": "product-analyst",
+          "actor": "analyst-w1",
+          "model": "claude-opus-5",
+          "reason": "Level 3 required; independent reconciliation of the second visual review, kid baselines and econ rulings before the build wave",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-01T20:32:23.257Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -1551,14 +1565,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 8,
+    "agentsActivated": 9,
     "gateFailures": 0,
     "claimsContradicted": 0,
     "evidenceRecorded": 59,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 78,
-  "eventHead": "ab1c4ca964225acec034e19e251232538e0fe7091a09979b3682b645cca8246d",
+  "eventCount": 79,
+  "eventHead": "c59bd238f2e5969e3d0f41fc41ed18d4bdf3765ed6270989a177ba4941af8578",
   "warnings": []
 }
