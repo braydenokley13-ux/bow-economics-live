@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **4**  
 Base: `claude/module-2-money-motion-quality-77dedf@b3ea87698a96f4b8ba97ff2d6f6cfdda135dc900`  
-Event head: `330:15801600785a2f7dd6d6fcc3b26cc02bd6e9d29ca5481e0252d1be52fd8aeabf`  
-Updated: 2026-09-01T10:54:55.370Z
+Event head: `332:1d40d7ec85d198eb9f474f1a4f7c08b2cc7ec3d3ee1cda354f5be824e53da08d`  
+Updated: 2026-09-01T11:04:36.311Z
 
 ## Founder intent
 
@@ -84,6 +84,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 - l3-tests — test — Suite after L3 build (452/452)
 - l3-tuning — test — L3 harness 10/10: BC-1a differential response >=3 steps; BC-1b two markets move $6-8 while capacity-bound stay flat; BC-1c move vanishes without the untaxed stream; claim audit 438 atoms/109 surfaces, 5/5 mutants
 - l3-e2e — e2e — L3 e2e: 25 frames x 2 shapes, 342 occlusion probes, 51 first-contact at 1024x600, 71 real drives, 7 finale cards, zero console errors
+- gate-l3-sr — sports-reality-report — L3 SR gate: CLEAR WITH REPAIRS. Kings facts all verified (Jan-2013 sale, 22-8 May 15 2013, $534M record, Golden 1 2016); beat genuinely debatable. BLOCKING A1: finale teaches supermajority for relocation — real rule is simple majority 16/30 (expansion 23/30); A2: /teach promises term sheets 'on their screens' that no surface renders ($625M vs $534M verified). Also: Knicks gate contradiction (C-2 recurrence), missing $255M subsidy, undated 2016-17 figures, expansion copy a season behind (Mar-2026 BOG 30-0 explore vote)
 
 ## Claim ledger
 
@@ -92,6 +93,7 @@ One systemic instrument — a claim-audit property family that recomputes every 
 ## Dissent
 
 - proj-l2-mirror-claims — classroom-reliability/blocking/resolved — Two W4 successors, both the claim-vs-model class on surfaces UNREGISTERED in moduleClaims (the builder's disclosed audit limitation): W4-1 — the prescribed release path prints 'some desks had already locked' when none had; W4-2 — the /teach stage-5 mirror is byte-identical across all four release arms, promising 'this board refuses to choose' even in the arm where the board already ruled the bar out. Fix: compute both strings from state AND register them (and the teacher director/mirror surface generally) in moduleClaims so the audit family sees them. GATE_L2_PROJECTOR.md W4 section.
+- sr-l3-capstone-facts — sports-reality/blocking/open — L3 blocking pair: A1 — the finale teaches that owners' money votes take supermajorities and reads 22-8 against a 16-14 threshold, but NBA relocation needs a simple majority (16/30; expansion 23/30) — a false institutional rule at the exact moment the lesson formalizes institutions; A2 — /teach twice tells the teacher the two term sheets are on student screens with the numbers, but no surface renders any figure (real: $625M Seattle vs $534M Sacramento). Plus: gate-claim contradiction vs the Knicks' own printed $193M; the ~$255M Sacramento subsidy that decided the vote missing from the debate material; undated sharing figures; expansion copy a season behind. GATE_L3_SR.md.
 
 ## Latest gate
 

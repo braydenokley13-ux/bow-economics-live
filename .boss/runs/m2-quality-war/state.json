@@ -26,7 +26,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-08-31T20:37:32.416Z",
-  "updatedAt": "2026-09-01T10:54:55.370Z",
+  "updatedAt": "2026-09-01T11:04:36.311Z",
   "currentWave": 4,
   "waves": {
     "1": {
@@ -3260,11 +3260,13 @@
         "w4-econ-confirm",
         "l3-tests",
         "l3-tuning",
-        "l3-e2e"
+        "l3-e2e",
+        "gate-l3-sr"
       ],
       "claimIds": [],
       "dissentIds": [
-        "proj-l2-mirror-claims"
+        "proj-l2-mirror-claims",
+        "sr-l3-capstone-facts"
       ],
       "meetingIds": [],
       "gates": [],
@@ -5437,6 +5439,26 @@
       },
       "recordedAt": "2026-09-01T10:54:30.741Z",
       "actor": "lead-integrator"
+    },
+    "gate-l3-sr": {
+      "id": "gate-l3-sr",
+      "wave": 4,
+      "kind": "sports-reality-report",
+      "label": "L3 SR gate: CLEAR WITH REPAIRS. Kings facts all verified (Jan-2013 sale, 22-8 May 15 2013, $534M record, Golden 1 2016); beat genuinely debatable. BLOCKING A1: finale teaches supermajority for relocation — real rule is simple majority 16/30 (expansion 23/30); A2: /teach promises term sheets 'on their screens' that no surface renders ($625M vs $534M verified). Also: Knicks gate contradiction (C-2 recurrence), missing $255M subsidy, undated 2016-17 figures, expansion copy a season behind (Mar-2026 BOG 30-0 explore vote)",
+      "path": ".boss/runs/m2-quality-war/evidence/gate-l3-sr--GATE_L3_SR.md",
+      "sha256": "f37e59da2f14149ab67ffac8f435596caece296ae2a781c7a8f9921ae122431f",
+      "size": 32618,
+      "metadata": {
+        "verifiedAsOf": "2026-09-01",
+        "verdict": "CLEAR_WITH_REPAIRS",
+        "tags": [
+          "sports-reality",
+          "wave-4",
+          "l3"
+        ]
+      },
+      "recordedAt": "2026-09-01T11:04:36.028Z",
+      "actor": "sports-reality-director"
     }
   },
   "claims": {
@@ -6111,6 +6133,20 @@
       "resolution": "Owning critic drove two release arms live to stage 5: the false lock-count claim is gone at the prescribed timing and the /teach stage-5 mirror is arm-specific, matching its own board copy in each arm (remaining arms pinned by unit tests + the six-arm mutation sweep with M-E/M-F caught). Explicit line: DISSENT proj-l2-mirror-claims: DISCHARGED. GATE_L2_PROJECTOR.md W4 FINAL CONFIRM.",
       "resolvedAt": "2026-09-01T08:34:25.110Z",
       "resolvedBy": "lead-integrator"
+    },
+    "sr-l3-capstone-facts": {
+      "id": "sr-l3-capstone-facts",
+      "wave": 4,
+      "category": "sports-reality",
+      "severity": "blocking",
+      "finding": "L3 blocking pair: A1 — the finale teaches that owners' money votes take supermajorities and reads 22-8 against a 16-14 threshold, but NBA relocation needs a simple majority (16/30; expansion 23/30) — a false institutional rule at the exact moment the lesson formalizes institutions; A2 — /teach twice tells the teacher the two term sheets are on student screens with the numbers, but no surface renders any figure (real: $625M Seattle vs $534M Sacramento). Plus: gate-claim contradiction vs the Knicks' own printed $193M; the ~$255M Sacramento subsidy that decided the vote missing from the debate material; undated sharing figures; expansion copy a season behind. GATE_L3_SR.md.",
+      "evidenceIds": [
+        "gate-l3-sr"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-01T11:04:36.311Z",
+      "actor": "sports-reality-director"
     }
   },
   "meetings": {},
@@ -6162,11 +6198,11 @@
     "agentsActivated": 71,
     "gateFailures": 2,
     "claimsContradicted": 1,
-    "evidenceRecorded": 107,
+    "evidenceRecorded": 108,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 330,
-  "eventHead": "15801600785a2f7dd6d6fcc3b26cc02bd6e9d29ca5481e0252d1be52fd8aeabf",
+  "eventCount": 332,
+  "eventHead": "1d40d7ec85d198eb9f474f1a4f7c08b2cc7ec3d3ee1cda354f5be824e53da08d",
   "warnings": []
 }
