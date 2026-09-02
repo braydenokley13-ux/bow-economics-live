@@ -1868,14 +1868,14 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
   // m2-visual-quality-war R-7: the drawn arena is a picture of the model that the
   // model does not make. Two entries, one per thing the picture adds.
   {
-    what: "The drawn arena lights seats as one evenly-lit proportion of a single pool: no price tiers, no sections, no view quality.",
-    why: "The model has one undifferentiated seat pool, and a lit proportion is the only honest picture of it. Drawing tiers would draw a mechanism that is not in the arithmetic.",
-    risk: "A student reads the lit ring as \"the cheap seats filled first\" — a mechanism this model does not have, and one that would change every answer if it did. Say that tonight every seat in the building is the same seat at the same price.",
+    what: "The drawn arena lights every deck that is open tonight to one evenly-lit proportion of a single pool: the decks are architecture, not price tiers, and no deck fills before another.",
+    why: "The model has one undifferentiated seat pool and never decides which seats sell first, so the picture must not either. Each open deck is lit from its own front row back to an equal-area seam, which makes lit seat area over open seat area equal to turnout/seatsOpen in every deck at once.",
+    risk: "A student reads the lit ring as \"the cheap seats filled first\" — a mechanism this model does not have, and one that would change every answer if it did. The picture now denies it, because every open deck is lit to the same proportion; but filling each deck front-row-back is still a drawing convention, not a model rule. Say that tonight every seat in the building is the same seat at the same price.",
   },
   {
-    what: "The Night-4 upper bowl is a third state of the same picture: opening it changes the denominator the fill is drawn against.",
-    why: "`seatsOpen` grows when the bowl opens, so the same crowd draws a shorter bar — the picture is honest about the building, not about the decision.",
-    risk: "Opening the bowl LOWERS the fill picture while RAISING turnout and zeroing turnaways. A student reading the picture alone concludes opening was worse, when what changed was the denominator. Every fill figure is labelled \"of the seats you opened tonight\" for exactly this reason; read the turnout beside it, not the bar alone.",
+    what: "The Night-4 upper bowl is a third state of the same picture — shuttered when it is closed, open and lit to the same proportion as every other deck when it is open — and it is drawn as about a fifth of the seat area when the seats it stands for are about a tenth of the pool.",
+    why: "`seatsOpen` grows when the bowl opens, so the same crowd draws a shorter bar — the picture is honest about the building, not about the decision. The deck is drawn larger than its true share because 2,400 seats out of 22,200 is a four-pixel band at classroom size, and a state nobody can see is not a state.",
+    risk: "Opening the bowl LOWERS the fill picture while RAISING turnout and zeroing turnaways. A student reading the picture alone concludes opening was worse, when what changed was the denominator. Every fill figure is labelled \"of the seats you opened tonight\" for exactly this reason; read the turnout beside it, not the bar alone. Do not read the SIZE of the drawn upper deck as the size of the option either — it is about a fifth of the drawn seats and about a tenth of the real ones.",
   },
   // m2-visual-quality-war R-10 (econ K2): measured, not theoretical — on Night 4
   // renewals GAIN at the season-high price in both markets.

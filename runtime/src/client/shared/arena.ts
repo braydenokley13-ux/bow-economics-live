@@ -15,20 +15,49 @@
  *  2. `capacity` here means THE SEATS OPEN TONIGHT (`seatsOpen`), not the
  *     building's capacity. Fill is `turnout / seatsOpen` (R-2). On the night
  *     the upper bowl can open, opening it changes this denominator.
- *  3. `turnedAway` is drawn as people outside the gates. It is a count of
+ *  3. EVERY DECK THAT IS OPEN TONIGHT IS LIT TO THE SAME PROPORTION
+ *     (m2-visual-quality-war wave 2, Economic Truth R-7, BLOCKING). The model
+ *     has ONE undifferentiated seat pool: it does not decide which seats sell
+ *     first, so the picture must not either. The old drawing filled the lower
+ *     bowl, then the club, then the upper — a seat-allocation mechanism
+ *     `settleNight` does not have. Each deck now fills from its own front row
+ *     back to an EQUAL-AREA seam, so lit seat area / open seat area is exactly
+ *     `turnout / seatsOpen` in every deck at once. If you ever make one deck
+ *     fill before another, you are drawing arithmetic that is not in the
+ *     module, and R-7 goes red again.
+ *  4. The upper bowl is a real third state, not a legend swatch: `bowlSeats`
+ *     with `bowlOpen:false` draws it SHUTTERED (a closed dark deck with no
+ *     seats showing); `bowlOpen:true` draws it open, part of the pool, lit at
+ *     the same proportion as every other open deck, with its own rail light.
+ *     A caller that passes no `bowlSeats` gets a building whose three decks
+ *     are all open — which is what `capacity === seatsOpen` means.
+ *  5. `turnedAway` is drawn as people outside the gates. It is a count of
  *     people, never converted into money (E12 rule 3).
- *  4. The caller supplies `label`. This module composes no economic sentence
+ *  6. Nobody came = a dark building (visual-critic-3 direction 1). At
+ *     `turnout === 0` the house light is OFF: no floodlights, no lit floor, no
+ *     gate glow. The brightest object on a 0% night must not be the court.
+ *  7. The caller supplies `label`. This module composes no economic sentence
  *     and prints no number, so nothing here can invent a claim (R-1).
  *
  * SIMPLIFICATIONS the picture introduces (recorded in the module's
- * `SIMPLIFICATIONS` list by Lane C, R-7): the seat pool is drawn as one
- * undifferentiated evenly-lit proportion — the model has no price tiers,
- * sections or view quality; and the upper bowl is a third state that changes
- * the denominator, so the same crowd can draw a shorter bar.
+ * `SIMPLIFICATIONS` list, R-7): the decks are architecture, not price tiers —
+ * they all light to the same proportion because the model has one pool; each
+ * deck is drawn filling front-row-first, which is a drawing order, not a
+ * model rule; and the openable upper bowl is drawn as about a fifth of the
+ * seat area when the seats it stands for are about a tenth of the pool, so
+ * the deck can be seen at all at classroom size.
  *
- * Ported from the wave-2 prototype `assets/arena/arena.mjs` with types added
- * and the closed-building light path made real. No DOM access at import time
- * or at call time: this returns a string.
+ * GEOMETRY / FRAMING (visual-critic-3 gap 1, defect 3): the arena is rendered
+ * into PANEL-shaped boxes — measured 500x116 and 448x92 (the settled-night
+ * outcome panel) and 900x240 / 900x150 (the locked-waiting building). The old
+ * drawing composed a 620x380 / 900x420 square-ish frame and shipped
+ * `preserveAspectRatio="slice"` with intrinsic pixel dimensions, so the panel
+ * showed a cropped quadrant of a building. This file now derives a panoramic
+ * viewBox per view, fits the WHOLE silhouette inside it, and scales to the box
+ * with `meet` at `width/height = 100%`: nothing is ever cropped, at any
+ * container aspect. Edges fade to void so a letterboxed band is seamless.
+ *
+ * No DOM access at import time or at call time: this returns a string.
  */
 
 /* ------------------------------------------------------------------ */
@@ -53,23 +82,35 @@ export type ArenaLit = "idle" | "night" | "sellout";
 export interface ArenaOptions {
   /** Pixel width of the generated viewBox. */
   width?: number;
-  /** Pixel height of the generated viewBox. */
+  /**
+   * Pixel height of the generated viewBox. HONOURED ONLY IF IT IS ALREADY A
+   * PANEL SHAPE (width/height >= 3). The drawing is composed for the wide,
+   * short boxes `/play` actually renders it into; a squarer height would
+   * letterbox or crop the building, which is the defect this file fixes.
+   */
   height?: number;
   /**
-   * "hero"     header backdrop; the bowl bleeds off the right and the left
-   *            fades to canvas so copy stays legible.
-   * "outcome"  the whole bowl centred in a panel, with legend margins.
+   * "hero"     the building as a wide plate behind copy (locked-waiting, the
+   *            pre-lock backdrop): the whole silhouette, centred.
+   * "outcome"  the same building in the shorter settled-night panel.
    * "backdrop" a very low-contrast projector wash.
    */
   view?: ArenaView;
   /** The seats OPEN tonight — the fill denominator, not building capacity. */
   capacity?: number;
-  /** Settled turnout. 0 (with lit:"idle") is the dark, closed building. */
+  /** Settled turnout. 0 (or `lit:"idle"`) is the dark building. */
   turnout?: number;
   /** Settled sellout flag; adds the roof ring. */
   soldOut?: boolean;
   /** Settled count of people outside the gates. Drawn as people, never money. */
   turnedAway?: number;
+  /**
+   * Seats in the openable upper bowl. Pass it and the top deck becomes the
+   * third state; leave it out and the top deck is an ordinary open deck.
+   */
+  bowlSeats?: number;
+  /** Was that upper bowl OPEN tonight? Default false = drawn shuttered. */
+  bowlOpen?: boolean;
   /** Light state. Pre-lock is always "idle". */
   lit?: ArenaLit;
   /** Seeds the section layout so one desk's building is stable across renders. */
@@ -80,22 +121,14 @@ export interface ArenaOptions {
   label?: string;
 }
 
-interface Ring {
-  rx: number;
-  ry: number;
-  dy: number;
-}
-
-interface Section {
-  a0: number;
-  a1: number;
-  mid: number;
-  span: number;
-  jitter: number;
-}
-
 type Pt = [number, number];
-type Projector = (ring: Ring, a: number) => Pt;
+
+interface Deck {
+  key: "lower" | "club" | "bowl";
+  rIn: number;
+  rOut: number;
+  sections: number;
+}
 
 /* ------------------------------------------------------------------ */
 /* helpers                                                            */
@@ -122,119 +155,39 @@ const hsl = (h: number, s: number, l: number): string =>
 /* bowl geometry                                                      */
 /* ------------------------------------------------------------------ */
 
-/* Camera: high three-quarter, roughly 35 degrees above the roof plane.
-   Every ring is an ellipse squashed to SQUASH; the downward centre offset
-   `dy` grows as the ring gets closer to the floor, and that offset is the
-   whole illusion — the far bank of seats opens toward the camera while the
-   near bank foreshortens to a lip. PERSP widens the near half of every ring
-   so the thing has a front and a back instead of being a flat target. */
+/* Camera: a low three-quarter, because the panel is three to six times wider
+   than it is tall. Every ring is an ellipse squashed to SQUASH and then again
+   by the per-view vertical scale VS, which is what lets a whole building sit
+   inside a 500x116 panel. `rake` is the downward offset of a ring: the far
+   bank of seats opens toward the camera while the near bank foreshortens to a
+   lip. PERSP widens the near half of every ring so the thing has a front and
+   a back instead of being a flat target. */
 const SQUASH = 0.55;
 const PERSP = 0.09;
+const WALL = 0.235; /* facade height below the roof lip, in R */
 
-const R_ = (rx: number, dy: number): Ring => ({ rx, ry: rx * SQUASH, dy });
+const R_FLOOR = 0.3;
+const R_ROOF_IN = 0.952;
+const R_ROOF_OUT = 1.02;
 
-const RINGS = {
-  plaza: R_(1.5, 0.5),
-  roofOut: R_(1.02, 0.0),
-  roofIn: R_(0.905, 0.022),
-  upperOut: R_(0.888, 0.034),
-  upperIn: R_(0.688, 0.126),
-  clubOut: R_(0.66, 0.146),
-  clubIn: R_(0.548, 0.199),
-  lowerOut: R_(0.52, 0.219),
-  lowerIn: R_(0.316, 0.302),
-  floor: R_(0.3, 0.313),
-};
-
-type RingKey = keyof typeof RINGS;
-
-interface Tier {
-  key: string;
-  out: RingKey;
-  in: RingKey;
-  sections: number;
-  share: number;
-  lift: number;
-}
-
-const TIERS: Tier[] = [
-  { key: "lower", out: "lowerOut", in: "lowerIn", sections: 28, share: 0.34, lift: 8 },
-  { key: "club", out: "clubOut", in: "clubIn", sections: 34, share: 0.16, lift: 1 },
-  { key: "upper", out: "upperOut", in: "upperIn", sections: 42, share: 0.5, lift: -5 },
+/** The three decks. Radii are chosen so drawn AREA splits ~41 / 39 / 20. */
+const DECKS: Deck[] = [
+  { key: "lower", rIn: 0.315, rOut: 0.6, sections: 16 },
+  { key: "club", rIn: 0.625, rOut: 0.8, sections: 18 },
+  { key: "bowl", rIn: 0.825, rOut: 0.93, sections: 20 },
 ];
 
-const WALL = 0.24; /* facade height, in R */
+/* the silhouette, in units of R, at VS = 1 — used to fit the drawing to its box */
+const SIL_W = 2.1;
+const SIL_H = 1.41;
+/* the flattest camera we will accept before the drawing has to shrink instead */
+const VS_MIN = 0.58;
+const VS_MAX = 0.86;
 
-/* ------------------------------------------------------------------ */
-/* projection                                                         */
-/* ------------------------------------------------------------------ */
-
-function makeProjector(cx: number, cy: number, R: number): Projector {
-  return function (ring: Ring, a: number): Pt {
-    const s = 1 + PERSP * Math.sin(a);
-    return [cx + R * ring.rx * Math.cos(a) * s, cy + R * (ring.ry * Math.sin(a) * s + ring.dy)];
-  };
-}
-
-function ringPath(p: Projector, ring: Ring, steps?: number): string {
-  let d = "";
-  const k = steps || 72;
-  for (let i = 0; i <= k; i++) {
-    const q = p(ring, (i / k) * Math.PI * 2);
-    d += (i === 0 ? "M" : "L") + n(q[0]) + " " + n(q[1]);
-  }
-  return d + "Z";
-}
-
-function arcSeg(p: Projector, ring: Ring, a0: number, a1: number, samples: number, prefix: string): string {
-  let d = "";
-  for (let i = 0; i <= samples; i++) {
-    const q = p(ring, a0 + ((a1 - a0) * i) / samples);
-    d += (i === 0 ? prefix : "L") + n(q[0]) + " " + n(q[1]);
-  }
-  return d;
-}
-
-const lerpRing = (a: Ring, b: Ring, t: number): Ring => ({
-  rx: a.rx + (b.rx - a.rx) * t,
-  ry: a.ry + (b.ry - a.ry) * t,
-  dy: a.dy + (b.dy - a.dy) * t,
-});
-
-/* ------------------------------------------------------------------ */
-/* section layout — built, not generated                              */
-/* ------------------------------------------------------------------ */
-
-function buildSections(tier: Tier, rand: () => number): Section[] {
-  const count = tier.sections;
-  const weights: number[] = [];
-  for (let i = 0; i < count; i++) {
-    const a = (i / count) * Math.PI * 2;
-    const sideline = Math.abs(Math.sin(a)); /* 1 at the sidelines, 0 behind the baskets */
-    weights.push(0.84 + 0.3 * sideline + rand() * 0.16);
-  }
-  const total = weights.reduce((x, y) => x + y, 0);
-  const out: Section[] = [];
-  let cursor = -Math.PI / 2;
-  for (let i = 0; i < count; i++) {
-    const span = (weights[i]! / total) * Math.PI * 2;
-    const portal = i % 7 === 3; /* a wider vomitory every few sections */
-    const gap = span * (portal ? 0.26 : 0.09 + rand() * 0.04);
-    const a0 = cursor + gap / 2;
-    const a1 = cursor + span - gap / 2;
-    out.push({ a0, a1, mid: (a0 + a1) / 2, span: a1 - a0, jitter: rand() });
-    cursor += span;
-  }
-  return out;
-}
-
-/* the order a real building fills: prime sideline seats first, corners and
-   behind-the-basket last, with noise so it never reads as a clean wedge */
-function fillOrder(sections: Section[], rand: () => number): number[] {
-  return sections
-    .map((s, i) => ({ i, score: Math.abs(Math.sin(s.mid)) + 0.16 * Math.sin(s.mid) + rand() * 0.2 }))
-    .sort((a, b) => b.score - a.score)
-    .map((x) => x.i);
+/** How far a ring at radius r sits below the roof plane (the rake). */
+function rake(r: number): number {
+  const t = clamp((r - R_FLOOR) / 0.63, 0, 1);
+  return 0.313 - 0.19 * t - 0.103 * t * t;
 }
 
 /* ------------------------------------------------------------------ */
@@ -243,61 +196,83 @@ function fillOrder(sections: Section[], rand: () => number): number[] {
 
 export function arenaSvg(opts: ArenaOptions = {}): string {
   const view: ArenaView = opts.view || "outcome";
-  const width = opts.width || (view === "hero" ? 1200 : 1000);
-  const height = opts.height || (view === "hero" ? 750 : 640);
-  const capacity = opts.capacity || 17794;
+  const width = opts.width || (view === "hero" ? 900 : 620);
+  /* Panel aspect per view: the geometric middle of the boxes /play measured at
+     1366x768 and 1024x600, so `meet` wastes <7% of either box. */
+  const pano = view === "hero" ? 4.74 : view === "backdrop" ? 3.2 : 4.6;
+  const givenH = opts.height || 0;
+  const height = givenH > 0 && width / givenH >= 3 ? givenH : Math.round(width / pano);
+
+  const capacity = Math.max(1, opts.capacity || 17794);
   const turnout = clamp(opts.turnout === undefined ? 0 : opts.turnout, 0, capacity);
   const soldOut = !!opts.soldOut;
   const turnedAway = opts.turnedAway || 0;
+  const bowlSeats = Math.max(0, opts.bowlSeats || 0);
+  const bowlOpen = bowlSeats > 0 ? !!opts.bowlOpen : true;
   const litMode: ArenaLit = opts.lit || "night";
   const motion = !!opts.motion;
   const uid = "ar" + (++UID).toString(36);
   const rand = mulberry32(((opts.seed === undefined ? 7 : opts.seed) * 2654435761) ^ 0x5f3759df);
 
-  /* --- composition ------------------------------------------------- */
-  let cx: number;
-  let cy: number;
-  let R: number;
-  let dim: number;
-  let detail: "high" | "low";
-  if (view === "hero") {
-    /* the court lands at ~78% x / ~62% y of the frame; the bowl bleeds off
-       the right and bottom, the left 45% fades to canvas for copy */
-    R = height * 0.446;
-    cx = width * 0.78;
-    cy = height * 0.62 - R * RINGS.floor.dy;
-    dim = 0.92;
-    detail = "high";
-  } else if (view === "backdrop") {
-    R = Math.min(width * 0.34, height * 0.6);
-    cx = width * 0.5;
-    cy = height * 0.55;
-    dim = 0.195;
-    detail = "low";
-  } else {
-    R = Math.min(width * 0.385, height * 0.6);
-    cx = width * 0.5;
-    cy = height * 0.41;
-    dim = 1.0;
-    detail = "high";
+  /* --- the one number the picture encodes ---------------------------- */
+  /* Fill is turnout / seats opened tonight, and it is applied IDENTICALLY to
+     every deck that is open (law 3). No deck fills before another. */
+  const fill = soldOut ? 1 : clamp(turnout / capacity, 0, 1);
+  const isOpenDeck = (d: Deck): boolean => (d.key === "bowl" ? bowlOpen : true);
+
+  /* --- composition --------------------------------------------------- */
+  const dim = view === "backdrop" ? 0.195 : view === "hero" ? 0.94 : 1;
+  const detail: "high" | "low" = view === "backdrop" ? "low" : "high";
+
+  const boxW = width * 0.94;
+  const boxH = height * 0.9;
+  let R = boxW / SIL_W;
+  let VS = boxH / (SIL_H * R);
+  if (VS < VS_MIN) {
+    VS = VS_MIN;
+    R = boxH / (SIL_H * VS);
+  } else if (VS > VS_MAX) {
+    VS = VS_MAX;
+    R = Math.min(R, boxW / SIL_W);
   }
+  const cx = width * 0.5;
+  /* centre the silhouette's own extent, not the ring origin */
+  const cy = height * 0.5 - 0.1625 * VS * R;
 
-  const p = makeProjector(cx, cy, R);
+  /** project a point at polar (r, a), pushed down by `drop` (in R). */
+  const pt = (r: number, a: number, drop?: number): Pt => {
+    const s = 1 + PERSP * Math.sin(a);
+    return [
+      cx + R * r * Math.cos(a) * s,
+      cy + VS * R * (r * SQUASH * Math.sin(a) * s + rake(r) + (drop || 0)),
+    ];
+  };
 
-  /* THE CLOSED BUILDING. "idle" is not "dimmer" — it is the building before
-     doors, so every light in it is off: no house wash, no floodlights, no lit
-     floor, no gate glow, and (because turnout is 0 on a pre-lock hero) no lit
-     section anywhere. The prototype used 0.52 here, which read as a half-lit
-     arena and would have been a picture of a pending night. */
-  const lightBase = litMode === "idle" ? 0.06 : litMode === "sellout" ? 1.14 : 1.0;
-  const light = lightBase * (soldOut ? 1.06 : 1);
+  const arc = (r: number, a0: number, a1: number, steps: number, prefix: string, drop?: number): string => {
+    let d = "";
+    for (let i = 0; i <= steps; i++) {
+      const q = pt(r, a0 + ((a1 - a0) * i) / steps, drop);
+      d += (i === 0 ? prefix : "L") + n(q[0]) + " " + n(q[1]);
+    }
+    return d;
+  };
+  const ring = (r: number, steps?: number, drop?: number): string =>
+    arc(r, 0, Math.PI * 2, steps || (detail === "high" ? 64 : 40), "M", drop) + "Z";
+  /** a closed band between two radii over an angular span */
+  const band = (rA: number, rB: number, a0: number, a1: number, steps: number, drop?: number): string =>
+    arc(rA, a0, a1, steps, "M", drop) + arc(rB, a1, a0, steps, "L", drop) + "Z";
+
+  /* THE CLOSED BUILDING and THE NIGHT NOBODY CAME are the same picture: every
+     light in the building is off (law 6). "idle" is not "dimmer". */
+  const houseOn = litMode !== "idle" && (turnout > 0 || soldOut);
+  const light = !houseOn ? 0 : litMode === "sellout" || soldOut ? 1.12 : 1;
 
   const out: string[] = [];
   const defs: string[] = [];
   const id = (k: string): string => uid + "-" + k;
 
-  /* --- defs -------------------------------------------------------- */
-  const tile = clamp(R * 0.0105, 3.2, 7);
+  /* --- defs ---------------------------------------------------------- */
+  const tile = clamp(R * 0.019, 3, 6.4);
   defs.push(
     '<pattern id="' +
       id("crowd") +
@@ -307,27 +282,25 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
       n(tile) +
       '" patternUnits="userSpaceOnUse">' +
       '<circle cx="' + n(tile * 0.26) + '" cy="' + n(tile * 0.28) + '" r="' + n(tile * 0.17) + '" fill="#fff"/>' +
-      '<circle cx="' + n(tile * 0.72) + '" cy="' + n(tile * 0.62) + '" r="' + n(tile * 0.14) + '" fill="#fff"/>' +
-      '<circle cx="' + n(tile * 0.4) + '" cy="' + n(tile * 0.85) + '" r="' + n(tile * 0.1) + '" fill="#fff"/>' +
-      '<rect x="0" y="' + n(tile * 0.94) + '" width="' + n(tile) + '" height="' + n(tile * 0.06) +
-      '" fill="#fff" fill-opacity="0.55"/>' +
+      '<circle cx="' + n(tile * 0.72) + '" cy="' + n(tile * 0.62) + '" r="' + n(tile * 0.15) + '" fill="#fff"/>' +
+      '<circle cx="' + n(tile * 0.4) + '" cy="' + n(tile * 0.88) + '" r="' + n(tile * 0.11) + '" fill="#fff"/>' +
       "</pattern>"
   );
   defs.push(
     '<radialGradient id="' + id("plaza") + '" cx="50%" cy="50%" r="50%">' +
-      '<stop offset="0%" stop-color="#121124" stop-opacity="' + n(0.55 * dim) + '"/>' +
-      '<stop offset="52%" stop-color="#0a0a13" stop-opacity="' + n(0.4 * dim) + '"/>' +
+      '<stop offset="0%" stop-color="#121124" stop-opacity="' + n(0.5 * dim) + '"/>' +
+      '<stop offset="52%" stop-color="#0a0a13" stop-opacity="' + n(0.36 * dim) + '"/>' +
       '<stop offset="100%" stop-color="' + VOID + '" stop-opacity="0"/>' +
       "</radialGradient>"
   );
   defs.push(
     '<radialGradient id="' + id("flood") + '" cx="50%" cy="50%" r="50%">' +
-      '<stop offset="0%" stop-color="#fff4dc" stop-opacity="' + n(0.62 * light * dim) + '"/>' +
-      '<stop offset="18%" stop-color="' + GOLD + '" stop-opacity="' + n(0.16 * light * dim) + '"/>' +
+      '<stop offset="0%" stop-color="#fff4dc" stop-opacity="' + n(0.6 * light * dim) + '"/>' +
+      '<stop offset="20%" stop-color="' + GOLD + '" stop-opacity="' + n(0.15 * light * dim) + '"/>' +
       '<stop offset="100%" stop-color="' + GOLD + '" stop-opacity="0"/>' +
       "</radialGradient>"
   );
-  /* Gate light scales with `light`: a closed building's doors are dark. */
+  /* Gate light scales with `light`: a dark building's doors are dark. */
   defs.push(
     '<radialGradient id="' + id("gate") + '" cx="50%" cy="50%" r="50%">' +
       '<stop offset="0%" stop-color="#ffdca8" stop-opacity="' + n(0.3 * light * dim) + '"/>' +
@@ -335,16 +308,9 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
       "</radialGradient>"
   );
   defs.push(
-    '<radialGradient id="' + id("wash") + '" cx="50%" cy="42%" r="56%">' +
-      '<stop offset="0%" stop-color="#c3b0ff" stop-opacity="' + n(0.17 * light * dim) + '"/>' +
-      '<stop offset="58%" stop-color="' + VIOLET + '" stop-opacity="' + n(0.11 * light * dim) + '"/>' +
-      '<stop offset="100%" stop-color="' + VIOLET + '" stop-opacity="0"/>' +
-      "</radialGradient>"
-  );
-  defs.push(
     '<radialGradient id="' + id("floorglow") + '" cx="50%" cy="50%" r="50%">' +
-      '<stop offset="0%" stop-color="#fffaf0" stop-opacity="' + n(0.52 * light * dim) + '"/>' +
-      '<stop offset="40%" stop-color="#ffe3b4" stop-opacity="' + n(0.16 * light * dim) + '"/>' +
+      '<stop offset="0%" stop-color="#fffaf0" stop-opacity="' + n(0.5 * light * dim) + '"/>' +
+      '<stop offset="42%" stop-color="#ffe3b4" stop-opacity="' + n(0.15 * light * dim) + '"/>' +
       '<stop offset="100%" stop-color="#ffd49a" stop-opacity="0"/>' +
       "</radialGradient>"
   );
@@ -362,10 +328,9 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
       '<stop offset="100%" stop-color="#181826"/>' +
       "</linearGradient>"
   );
-  /* The floor is lit by the building, so the wood darkens all the way down
-     when the building is closed (the prototype floored this at 0.62 and left
-     a lit court glowing inside a dark arena). Identical at light = 1. */
-  const woodL = (0.18 + 0.82 * light) * (0.4 + 0.6 * dim);
+  /* The floor is lit by the building: the wood goes all the way down when the
+     house lights are off, so a dark building has no glowing court in it. */
+  const woodL = (0.09 + 0.91 * light) * (0.4 + 0.6 * dim);
   defs.push(
     '<linearGradient id="' + id("wood") + '" x1="0.1" y1="0" x2="0.5" y2="1">' +
       '<stop offset="0%" stop-color="' + hsl(34, 52, 52 * woodL) + '"/>' +
@@ -373,177 +338,148 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
       '<stop offset="100%" stop-color="' + hsl(28, 44, 33 * woodL) + '"/>' +
       "</linearGradient>"
   );
-  if (view === "hero") {
-    defs.push(
-      '<linearGradient id="' + id("maskgrad") + '" x1="0" y1="0" x2="1" y2="0">' +
-        '<stop offset="0%" stop-color="#000"/>' +
-        '<stop offset="30%" stop-color="#101010"/>' +
-        '<stop offset="45%" stop-color="#3c3c3c"/>' +
-        '<stop offset="68%" stop-color="#c4c4c4"/>' +
-        '<stop offset="86%" stop-color="#fff"/>' +
-        "</linearGradient>" +
-        '<mask id="' + id("mask") + '"><rect width="' + width + '" height="' + height +
-        '" fill="url(#' + id("maskgrad") + ')"/></mask>'
-    );
-  }
   defs.push(
     '<linearGradient id="' + id("wallfall") + '" x1="0" y1="0" x2="1" y2="0">' +
       '<stop offset="0%" stop-color="#05050b" stop-opacity="0.92"/>' +
-      '<stop offset="28%" stop-color="#05050b" stop-opacity="0.5"/>' +
-      '<stop offset="50%" stop-color="#05050b" stop-opacity="0.22"/>' +
-      '<stop offset="72%" stop-color="#05050b" stop-opacity="0.5"/>' +
+      '<stop offset="30%" stop-color="#05050b" stop-opacity="0.42"/>' +
+      '<stop offset="50%" stop-color="#05050b" stop-opacity="0.18"/>' +
+      '<stop offset="70%" stop-color="#05050b" stop-opacity="0.42"/>' +
       '<stop offset="100%" stop-color="#05050b" stop-opacity="0.92"/>' +
       "</linearGradient>"
   );
   /* The one blur in the file. Everything soft reuses it. */
   defs.push(
     '<filter id="' + id("soft") + '" x="-30%" y="-30%" width="160%" height="160%">' +
-      '<feGaussianBlur stdDeviation="' + n(R * 0.014) + '"/></filter>'
+      '<feGaussianBlur stdDeviation="' + n(R * 0.016) + '"/></filter>'
   );
 
-  /* --- 1. sky, city, ground ---------------------------------------- */
+  /* --- 1. sky, city, ground ------------------------------------------ */
   out.push('<rect width="' + width + '" height="' + height + '" fill="' + VOID + '"/>');
 
-  const horizon = cy - R * 0.5;
-  const skyN = detail === "high" ? 22 : 14;
+  const horizon = cy - VS * R * 0.42;
+  const skyN = detail === "high" ? 13 : 8;
   let sky = "";
   for (let i = 0; i < skyN; i++) {
-    const bw = R * (0.05 + rand() * 0.1);
+    const bw = R * (0.05 + rand() * 0.11);
     const bx = rand() * (width + R) - R * 0.5;
-    const bh = R * (0.06 + rand() * 0.26);
+    const bh = VS * R * (0.1 + rand() * 0.42);
     sky += '<rect x="' + n(bx) + '" y="' + n(horizon - bh) + '" width="' + n(bw) +
-      '" height="' + n(bh + R * 0.5) + '"/>';
+      '" height="' + n(bh + VS * R * 0.5) + '"/>';
   }
-  out.push('<g fill="#0b0b14" fill-opacity="' + n(0.9 * dim) + '">' + sky + "</g>");
+  out.push(
+    '<g fill="#0a0a12" fill-opacity="' + n(0.85 * dim) + '" filter="url(#' + id("soft") + ')">' + sky + "</g>"
+  );
 
-  const bokehN = detail === "high" ? 54 : 30;
+  const bokehN = detail === "high" ? 40 : 22;
   let bokeh = "";
   for (let i = 0; i < bokehN; i++) {
     const bx = rand() * width;
-    const by = horizon - R * 0.3 + rand() * R * 0.42;
-    const br = R * (0.0035 + rand() * 0.01);
+    const by = horizon - VS * R * 0.4 + rand() * VS * R * 0.6;
+    const br = R * (0.004 + rand() * 0.009);
     bokeh +=
       '<circle cx="' + n(bx) + '" cy="' + n(by) + '" r="' + n(br) + '" fill="' +
-      (rand() > 0.4 ? "#ffd9a0" : "#9fbdff") + '" fill-opacity="' + n((0.12 + rand() * 0.42) * dim) + '"/>';
+      (rand() > 0.4 ? "#ffd9a0" : "#9fbdff") + '" fill-opacity="' + n((0.12 + rand() * 0.4) * dim) + '"/>';
   }
   out.push('<g filter="url(#' + id("soft") + ')">' + bokeh + "</g>");
-  out.push(
-    '<rect x="0" y="' + n(horizon - R * 0.05) + '" width="' + width + '" height="' + n(R * 0.42) +
-      '" fill="#191a2e" opacity="' + n(0.35 * dim) + '" filter="url(#' + id("soft") + ')"/>'
-  );
 
   /* ground pool around the building */
   out.push(
-    '<ellipse cx="' + n(cx) + '" cy="' + n(cy + R * RINGS.plaza.dy) + '" rx="' + n(R * RINGS.plaza.rx) +
-      '" ry="' + n(R * RINGS.plaza.ry) + '" fill="url(#' + id("plaza") + ')"/>'
+    '<ellipse cx="' + n(cx) + '" cy="' + n(cy + VS * R * 0.44) + '" rx="' + n(R * 1.52) +
+      '" ry="' + n(VS * R * 0.62) + '" fill="url(#' + id("plaza") + ')"/>'
   );
 
-  defs.push(
-    '<radialGradient id="' + id("spill") + '" cx="50%" cy="50%" r="50%">' +
-      '<stop offset="0%" stop-color="#a78dff" stop-opacity="' + n(0.24 * light * dim) + '"/>' +
-      '<stop offset="42%" stop-color="' + VIOLET + '" stop-opacity="' + n(0.1 * light * dim) + '"/>' +
-      '<stop offset="100%" stop-color="' + VIOLET + '" stop-opacity="0"/>' +
-      "</radialGradient>"
-  );
-  out.push(
-    '<ellipse cx="' + n(cx) + '" cy="' + n(cy - R * 0.06) + '" rx="' + n(R * 1.62) + '" ry="' +
-      n(R * 1.05) + '" fill="url(#' + id("spill") + ')"/>'
-  );
+  if (light > 0) {
+    defs.push(
+      '<radialGradient id="' + id("spill") + '" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="0%" stop-color="#a78dff" stop-opacity="' + n(0.22 * light * dim) + '"/>' +
+        '<stop offset="42%" stop-color="' + VIOLET + '" stop-opacity="' + n(0.09 * light * dim) + '"/>' +
+        '<stop offset="100%" stop-color="' + VIOLET + '" stop-opacity="0"/>' +
+        "</radialGradient>"
+    );
+    out.push(
+      '<ellipse cx="' + n(cx) + '" cy="' + n(cy) + '" rx="' + n(R * 1.5) + '" ry="' +
+        n(VS * R * 1.5) + '" fill="url(#' + id("spill") + ')"/>'
+    );
+  }
 
-  const deckY = cy + R * (RINGS.roofOut.dy + WALL + 0.03);
-  out.push(
-    '<ellipse cx="' + n(cx) + '" cy="' + n(deckY) + '" rx="' + n(R * 1.34) + '" ry="' +
-      n(R * 1.34 * SQUASH * 0.72) + '" fill="#0c0c15" fill-opacity="' + n(0.55 * dim) + '"/>'
-  );
-
-  /* --- 2. building mass -------------------------------------------- */
-  const baseRing: Ring = { rx: RINGS.roofOut.rx, ry: RINGS.roofOut.ry, dy: RINGS.roofOut.dy + WALL };
+  /* --- 2. building mass ---------------------------------------------- */
   /* contact shadow so the building sits on the ground */
   out.push(
-    '<ellipse cx="' + n(cx) + '" cy="' + n(cy + R * (baseRing.dy + 0.02)) + '" rx="' +
-      n(R * baseRing.rx * 1.06) + '" ry="' + n(R * baseRing.ry * 0.95) + '" fill="#05050a" fill-opacity="' +
-      n(0.7 * dim) + '" filter="url(#' + id("soft") + ')"/>'
+    '<ellipse cx="' + n(cx) + '" cy="' + n(cy + VS * R * (rake(R_ROOF_OUT) + WALL + 0.02)) + '" rx="' +
+      n(R * R_ROOF_OUT * 1.05) + '" ry="' + n(VS * R * R_ROOF_OUT * SQUASH * 0.92) +
+      '" fill="#05050a" fill-opacity="' + n(0.7 * dim) + '" filter="url(#' + id("soft") + ')"/>'
   );
-  out.push(
-    '<path d="' + arcSeg(p, RINGS.roofOut, 0, Math.PI, 44, "M") +
-      arcSeg(p, baseRing, Math.PI, 0, 44, "L") + 'Z" fill="url(#' + id("facade") + ')"/>'
-  );
+  const facadePath =
+    arc(R_ROOF_OUT, 0, Math.PI, 44, "M") + arc(R_ROOF_OUT, Math.PI, 0, 44, "L", WALL) + "Z";
+  out.push('<path d="' + facadePath + '" fill="url(#' + id("facade") + ')"/>');
   /* cladding: vertical mullions + two horizontal reveals */
   let mull = "";
-  for (let i = 0; i <= 30; i++) {
-    const a = (i / 30) * Math.PI;
-    const t = p(RINGS.roofOut, a);
-    const b = p(baseRing, a);
+  for (let i = 0; i <= 26; i++) {
+    const a = (i / 26) * Math.PI;
+    const t = pt(R_ROOF_OUT, a);
+    const b = pt(R_ROOF_OUT, a, WALL);
     mull += "M" + n(t[0]) + " " + n(t[1]) + "L" + n(b[0]) + " " + n(b[1]);
   }
-  for (const f of [0.34, 0.66]) {
-    mull += arcSeg(p, { rx: baseRing.rx, ry: baseRing.ry, dy: RINGS.roofOut.dy + WALL * f }, 0, Math.PI, 40, "M");
-  }
+  for (const f of [0.36, 0.68]) mull += arc(R_ROOF_OUT, 0, Math.PI, 40, "M", WALL * f);
   out.push(
-    '<path d="' + mull + '" stroke="#7c7ca0" stroke-opacity="' + n(0.055 * dim) +
+    '<path d="' + mull + '" stroke="#7c7ca0" stroke-opacity="' + n(0.06 * dim) +
       '" stroke-width="1" fill="none"/>'
   );
-  out.push(
-    '<path d="' + arcSeg(p, RINGS.roofOut, 0, Math.PI, 44, "M") +
-      arcSeg(p, baseRing, Math.PI, 0, 44, "L") + 'Z" fill="url(#' + id("wallfall") + ')"/>'
-  );
+  out.push('<path d="' + facadePath + '" fill="url(#' + id("wallfall") + ')"/>');
   /* roof edge: a lit band along the near lip so the roof has thickness */
-  const lipOut: Ring = { rx: RINGS.roofOut.rx, ry: RINGS.roofOut.ry, dy: RINGS.roofOut.dy + 0.028 };
   out.push(
-    '<path d="' + arcSeg(p, RINGS.roofOut, 0, Math.PI, 44, "M") +
-      arcSeg(p, lipOut, Math.PI, 0, 44, "L") + 'Z" fill="#2f2f44"/>'
+    '<path d="' + arc(R_ROOF_OUT, 0, Math.PI, 44, "M") + arc(R_ROOF_OUT, Math.PI, 0, 44, "L", 0.026) +
+      'Z" fill="#2f2f44"/>'
   );
   out.push(
-    '<path d="' + arcSeg(p, RINGS.roofOut, 0.02, Math.PI - 0.02, 44, "M") +
-      '" fill="none" stroke="#9a9ac4" stroke-opacity="' + n(0.34 * dim) + '" stroke-width="1.4"/>'
-  );
-  out.push(
-    '<path d="' + arcSeg(p, lipOut, 0.06, Math.PI - 0.06, 44, "M") +
-      '" fill="none" stroke="#05050b" stroke-opacity="' + n(0.7 * dim) + '" stroke-width="1.2"/>'
+    '<path d="' + arc(R_ROOF_OUT, 0.02, Math.PI - 0.02, 44, "M") +
+      '" fill="none" stroke="#9a9ac4" stroke-opacity="' + n(0.3 * dim) + '" stroke-width="1.3"/>'
   );
   /* window slits: the concourse behind the cladding, faintly lit */
   let slits = "";
-  for (let i = 0; i < 46; i++) {
-    const a = 0.06 + (i / 45) * (Math.PI - 0.12);
-    for (let b2 = 0; b2 < 2; b2++) {
-      const yTop = RINGS.roofOut.dy + WALL * (0.22 + b2 * 0.34);
-      const t1 = p({ rx: baseRing.rx, ry: baseRing.ry, dy: yTop }, a);
-      const t2 = p({ rx: baseRing.rx, ry: baseRing.ry, dy: yTop + WALL * 0.13 }, a);
-      const sw = R * 0.008;
-      slits += "M" + n(t1[0] - sw) + " " + n(t1[1]) + "h" + n(sw * 2) + "L" + n(t2[0] + sw) +
-        " " + n(t2[1]) + "h" + n(-sw * 2) + "Z";
-    }
+  for (let i = 0; i < 38; i++) {
+    const a = 0.07 + (i / 37) * (Math.PI - 0.14);
+    const t1 = pt(R_ROOF_OUT, a, WALL * 0.3);
+    const t2 = pt(R_ROOF_OUT, a, WALL * 0.52);
+    const sw = R * 0.007;
+    slits += "M" + n(t1[0] - sw) + " " + n(t1[1]) + "h" + n(sw * 2) + "L" + n(t2[0] + sw) +
+      " " + n(t2[1]) + "h" + n(-sw * 2) + "Z";
   }
-  out.push('<path d="' + slits + '" fill="#cfd6ff" fill-opacity="' + n(0.09 * dim) + '"/>');
+  out.push('<path d="' + slits + '" fill="#cfd6ff" fill-opacity="' + n(0.085 * dim) + '"/>');
 
-  /* gates: discrete lit doorways along the near base, not a lit hoop */
-  const gateAngles = [0.42, 0.86, 1.3, 1.74, 2.18, 2.62];
+  /* gates: discrete doorways along the near base; lit only when the house is */
+  const gateAngles = [0.5, 0.96, 1.42, 1.88, 2.34];
   let doors = "";
   let doorGlow = "";
   for (let g = 0; g < gateAngles.length; g++) {
     const a = gateAngles[g]!;
-    const t = p({ rx: baseRing.rx, ry: baseRing.ry, dy: baseRing.dy - WALL * 0.16 }, a);
-    const b = p({ rx: baseRing.rx, ry: baseRing.ry, dy: baseRing.dy - WALL * 0.02 }, a);
-    const dw = R * 0.018 * (0.7 + 0.4 * Math.sin(a));
+    const t = pt(R_ROOF_OUT, a, WALL * 0.62);
+    const b = pt(R_ROOF_OUT, a, WALL * 0.98);
+    const dw = R * 0.02 * (0.7 + 0.4 * Math.sin(a));
     doors += '<path d="M' + n(t[0] - dw) + " " + n(t[1]) + "L" + n(t[0] + dw) + " " + n(t[1]) +
       "L" + n(b[0] + dw) + " " + n(b[1]) + "L" + n(b[0] - dw) + " " + n(b[1]) + 'Z"/>';
-    doorGlow += '<ellipse cx="' + n(b[0]) + '" cy="' + n(b[1] + R * 0.006) + '" rx="' + n(R * 0.055) +
-      '" ry="' + n(R * 0.022) + '" fill="url(#' + id("gate") + ')"/>';
+    if (light > 0) {
+      doorGlow += '<ellipse cx="' + n(b[0]) + '" cy="' + n(b[1] + VS * R * 0.01) + '" rx="' +
+        n(R * 0.07) + '" ry="' + n(VS * R * 0.06) + '" fill="url(#' + id("gate") + ')"/>';
+    }
   }
-  out.push('<g fill="#ffcf8a" fill-opacity="' + n(0.34 * light * dim) + '">' + doors + "</g>");
-  out.push("<g>" + doorGlow + "</g>");
-
-  /* --- 3. roof + ribs ---------------------------------------------- */
   out.push(
-    '<path fill-rule="evenodd" d="' + ringPath(p, RINGS.roofOut) + ringPath(p, RINGS.roofIn) +
+    '<g fill="' + (light > 0 ? "#ffcf8a" : "#14141d") + '" fill-opacity="' +
+      n((light > 0 ? 0.34 * light : 0.9) * dim) + '">' + doors + "</g>"
+  );
+  if (doorGlow) out.push("<g>" + doorGlow + "</g>");
+
+  /* --- 3. roof -------------------------------------------------------- */
+  out.push(
+    '<path fill-rule="evenodd" d="' + ring(R_ROOF_OUT) + ring(R_ROOF_IN) +
       '" fill="url(#' + id("roof") + ')"/>'
   );
   let ribs = "";
-  const ribN = detail === "high" ? 56 : 40;
+  const ribN = detail === "high" ? 40 : 24;
   for (let i = 0; i < ribN; i++) {
     const a = (i / ribN) * Math.PI * 2;
-    const o = p(RINGS.roofOut, a);
-    const q = p(RINGS.roofIn, a);
+    const o = pt(R_ROOF_OUT, a);
+    const q = pt(R_ROOF_IN, a);
     ribs += "M" + n(o[0]) + " " + n(o[1]) + "L" + n(q[0]) + " " + n(q[1]);
   }
   out.push(
@@ -551,178 +487,200 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
       '" stroke-width="1" fill="none"/>'
   );
   out.push(
-    '<path d="' + ringPath(p, RINGS.roofOut) + '" fill="none" stroke="#54547a" stroke-opacity="' +
-      n(0.3 * dim) + '" stroke-width="1.3"/>'
-  );
-  out.push(
-    '<path d="' + ringPath(p, RINGS.roofIn) + '" fill="none" stroke="#5b5b7d" stroke-opacity="' +
+    '<path d="' + ring(R_ROOF_IN) + '" fill="none" stroke="#5b5b7d" stroke-opacity="' +
       n(0.3 * dim) + '" stroke-width="1.2"/>'
   );
 
-  /* --- 4. the bowl -------------------------------------------------- */
-  const seatsPerTier = TIERS.map((t) => capacity * t.share);
-  let remaining = soldOut ? capacity : turnout;
-
-  const fills: string[] = [];
-  const rowPaths: string[] = [];
-  const lipPaths: string[] = [];
+  /* --- 4. THE BOWL — the fill encoding -------------------------------- */
+  /*
+   * One rule, three decks: every OPEN deck is lit from its own front row back
+   * to a seam whose radius is chosen so the LIT AREA of that deck is exactly
+   * `fill` of the deck (r_seam = sqrt(rIn^2 + fill*(rOut^2 - rIn^2))). Lit
+   * blocks below the seam, hard dark blocks above it, a bright rail on the
+   * seam itself. No deck fills before another (law 3); no brightness ramp
+   * carries the number (visual-critic-3 direction 1).
+   */
+  const seatSteps = detail === "high" ? 5 : 3;
+  const litPaths: string[][] = [[], [], []]; /* far / side / near tone groups */
+  const darkPaths: string[][] = [[], [], []];
   const litUnion: string[] = [];
   const emptyUnion: string[] = [];
+  let seamPath = "";
+  let seamShadow = "";
+  let rowPath = "";
+  let shutterPath = "";
+  let shutterRibs = "";
+  let railPath = "";
 
-  for (let ti = 0; ti < TIERS.length; ti++) {
-    const tier = TIERS[ti]!;
-    const tierSeats = seatsPerTier[ti]!;
-    const secs = buildSections(tier, rand);
-    const order = fillOrder(secs, rand);
-    const spanTotal = secs.reduce((x, s) => x + s.span, 0);
-    const seats = secs.map((s) => (s.span / spanTotal) * tierSeats);
-    const ratio: number[] = new Array<number>(secs.length).fill(0);
-    let left = clamp(remaining, 0, tierSeats);
-    for (let k = 0; k < order.length && left > 0; k++) {
-      const si = order[k]!;
-      const take = Math.min(left, seats[si]!);
-      ratio[si] = seats[si]! > 0 ? take / seats[si]! : 0;
-      left -= take;
+  for (let di = 0; di < DECKS.length; di++) {
+    const deck = DECKS[di]!;
+    const open = isOpenDeck(deck);
+    const rSeam = Math.sqrt(deck.rIn * deck.rIn + fill * (deck.rOut * deck.rOut - deck.rIn * deck.rIn));
+
+    if (!open) {
+      /* SHUTTERED: a closed deck. No seats, no rows, no crowd — a dark cover
+         with ribs, so "closed" cannot be misread as "open and empty". */
+      shutterPath += band(deck.rIn, deck.rOut, 0, Math.PI * 2, detail === "high" ? 64 : 40);
+      for (let i = 0; i < 30; i++) {
+        const a = (i / 30) * Math.PI * 2;
+        const q1 = pt(deck.rIn, a);
+        const q2 = pt(deck.rOut, a);
+        shutterRibs += "M" + n(q1[0]) + " " + n(q1[1]) + "L" + n(q2[0]) + " " + n(q2[1]);
+      }
+      continue;
     }
-    remaining -= clamp(remaining, 0, tierSeats);
 
-    const ringOut = RINGS[tier.out];
-    const ringIn = RINGS[tier.in];
-    const samp = detail === "high" ? 5 : 4;
+    for (let si = 0; si < deck.sections; si++) {
+      const a0 = (si / deck.sections) * Math.PI * 2;
+      const a1 = ((si + 1) / deck.sections) * Math.PI * 2;
+      const gap = (a1 - a0) * 0.05; /* the aisle, thin on purpose: a wide gap
+                                       reads as empty seats on a full house */
+      const b0 = a0 + gap / 2;
+      const b1 = a1 - gap / 2;
+      const mid = (b0 + b1) / 2;
+      const nearness = 0.5 + 0.5 * Math.sin(mid);
+      const tone = nearness < 0.34 ? 0 : nearness < 0.7 ? 1 : 2;
 
-    for (let si = 0; si < secs.length; si++) {
-      const s = secs[si]!;
-      const d =
-        arcSeg(p, ringIn, s.a0, s.a1, samp, "M") + arcSeg(p, ringOut, s.a1, s.a0, samp, "L") + "Z";
-      const f = ratio[si]!;
-      /* the near (bottom) half of the bowl catches more of the stage wash */
-      const near = 0.5 + 0.5 * Math.sin(s.mid);
-      const dark = hsl(
-        232 + s.jitter * 10,
-        12 + s.jitter * 5,
-        (11 + tier.lift * 0.2 + s.jitter * 2.4 + near * 2.8) * dim + 1.8
-      );
-      const vary = 0.9 + 0.2 * s.jitter; /* +/-10% per section, seeded */
-      const bright = hsl(
-        252 + s.jitter * 14 - near * 12,
-        30 + s.jitter * 14 + near * 8,
-        (29 + tier.lift + near * 6.5) * vary * (0.6 + 0.4 * light) * dim + 2
-      );
-
-      fills.push('<path d="' + d + '" fill="' + (f > 0.985 ? bright : dark) + '"/>');
-      if (f < 0.985) emptyUnion.push(d);
-      if (f > 0.985) {
+      darkPaths[tone]!.push(band(deck.rIn, deck.rOut, b0, b1, seatSteps));
+      emptyUnion.push(band(rSeam, deck.rOut, b0, b1, seatSteps));
+      if (fill > 0.004) {
+        const d = band(deck.rIn, rSeam, b0, b1, seatSteps);
+        litPaths[tone]!.push(d);
         litUnion.push(d);
-      } else if (f > 0.03) {
-        /* a part-sold section fills from the front rows back, the way a
-           section actually sells — not a uniform mid-tone */
-        const edge = lerpRing(ringIn, ringOut, clamp(f, 0.12, 0.94));
-        const dPart =
-          arcSeg(p, ringIn, s.a0, s.a1, samp, "M") + arcSeg(p, edge, s.a1, s.a0, samp, "L") + "Z";
-        fills.push('<path d="' + dPart + '" fill="' + bright + '"/>');
-        litUnion.push(dPart);
       }
-
       if (detail === "high") {
-        const rows = f > 0.03 ? 3 : 2;
-        for (let r = 1; r <= rows; r++) {
-          rowPaths.push(arcSeg(p, lerpRing(ringIn, ringOut, r / (rows + 1)), s.a0, s.a1, 3, "M"));
-        }
+        rowPath += arc(deck.rIn + (deck.rOut - deck.rIn) * 0.5, b0, b1, 3, "M");
       }
-      if (f > 0.2) lipPaths.push(arcSeg(p, lerpRing(ringIn, ringOut, 0.06), s.a0, s.a1, 3, "M"));
+    }
+    if (fill > 0.02 && fill < 0.995) {
+      seamPath += arc(rSeam - (deck.rOut - deck.rIn) * 0.04, 0, Math.PI * 2, detail === "high" ? 56 : 36, "M");
+      seamShadow += arc(rSeam, 0, Math.PI * 2, detail === "high" ? 56 : 36, "M");
+    }
+    /* the third state's own signature: an open upper bowl carries a rail
+       light on its lip that a shuttered one cannot have */
+    if (deck.key === "bowl" && bowlSeats > 0 && light > 0) {
+      railPath += arc(deck.rOut, 0, Math.PI * 2, detail === "high" ? 56 : 36, "M");
     }
   }
 
-  out.push("<g>" + fills.join("") + "</g>");
+  const DARK_L = [9, 10.6, 12.4];
+  const LIT_L = [34, 41, 49];
+  for (let t = 0; t < 3; t++) {
+    if (darkPaths[t]!.length) {
+      out.push(
+        '<path d="' + darkPaths[t]!.join("") + '" fill="' +
+          hsl(234, 11, DARK_L[t]! * (0.5 + 0.5 * light) * dim + 1.2) + '"/>'
+      );
+    }
+  }
   if (emptyUnion.length) {
-    /* empty seats: the moulded plastic still catches a little light */
+    /* empty seats: moulded plastic still catches a little light */
     out.push(
       '<path d="' + emptyUnion.join("") + '" fill="url(#' + id("crowd") + ')" fill-opacity="' +
         n(0.05 * dim) + '"/>'
     );
   }
+  for (let t = 0; t < 3; t++) {
+    if (litPaths[t]!.length) {
+      out.push(
+        '<path d="' + litPaths[t]!.join("") + '" fill="' +
+          hsl(256 - t * 6, 34 + t * 4, LIT_L[t]! * (0.62 + 0.38 * light) * dim + 1.5) + '"/>'
+      );
+    }
+  }
   if (litUnion.length) {
     /* crowd texture: thousands of heads, one element */
     out.push(
       '<path d="' + litUnion.join("") + '" fill="url(#' + id("crowd") + ')" fill-opacity="' +
-        n(0.2 * light * dim) + '"/>'
+        n(0.22 * light * dim) + '"/>'
     );
   }
-  if (rowPaths.length) {
+  if (shutterPath) {
+    out.push('<path d="' + shutterPath + '" fill="' + hsl(228, 10, 6.5 * dim + 1) + '"/>');
     out.push(
-      '<path d="' + rowPaths.join("") + '" fill="none" stroke="#04040a" stroke-opacity="' +
-        n(0.26 * dim) + '" stroke-width="0.85"/>'
+      '<path d="' + shutterRibs + '" fill="none" stroke="#3b3b55" stroke-opacity="' + n(0.7 * dim) +
+        '" stroke-width="' + n(Math.max(0.7, R * 0.005)) + '"/>'
+    );
+    out.push(
+      '<path d="' + ring(DECKS[2]!.rIn, detail === "high" ? 56 : 36) + '" fill="none" stroke="#1b1b2a" stroke-opacity="' +
+        n(0.9 * dim) + '" stroke-width="' + n(Math.max(1, R * 0.006)) + '"/>'
     );
   }
-  if (lipPaths.length) {
+  if (rowPath) {
     out.push(
-      '<path d="' + lipPaths.join("") + '" fill="none" stroke="#efe6ff" stroke-opacity="' +
-        n(0.16 * light * dim) + '" stroke-width="1.1"/>'
+      '<path d="' + rowPath + '" fill="none" stroke="#04040a" stroke-opacity="' + n(0.3 * dim) +
+        '" stroke-width="0.8"/>'
+    );
+  }
+  if (seamShadow) {
+    out.push(
+      '<path d="' + seamShadow + '" fill="none" stroke="#04040a" stroke-opacity="' + n(0.8 * dim) +
+        '" stroke-width="' + n(Math.max(1, R * 0.008)) + '"/>'
+    );
+  }
+  if (seamPath) {
+    out.push(
+      '<path d="' + seamPath + '" fill="none" stroke="#efe6ff" stroke-opacity="' +
+        n((0.2 + 0.5 * light) * dim) + '" stroke-width="' + n(Math.max(1.1, R * 0.009)) + '"/>'
+    );
+  }
+  if (railPath) {
+    out.push(
+      '<path d="' + railPath + '" fill="none" stroke="#c3b0ff" stroke-opacity="' + n(0.5 * light * dim) +
+        '" stroke-width="' + n(Math.max(1, R * 0.006)) + '"/>'
     );
   }
 
-  /* concourse shadow between tiers, and the shadow the roof throws on the
-     top rows of the upper bowl */
-  const shade = (ring: Ring, w: number, o: number): string =>
-    '<path d="' + ringPath(p, ring) + '" fill="none" stroke="#04040a" stroke-opacity="' +
+  /* concourse shadow between decks */
+  const shade = (r: number, w: number, o: number): string =>
+    '<path d="' + ring(r, detail === "high" ? 56 : 36) + '" fill="none" stroke="#04040a" stroke-opacity="' +
     n(o * dim) + '" stroke-width="' + n(w) + '"/>';
-  out.push(shade(RINGS.upperOut, R * 0.018, 0.55));
-  out.push(shade(RINGS.upperIn, R * 0.012, 0.6));
-  out.push(shade(RINGS.clubIn, R * 0.009, 0.5));
-  out.push(shade(RINGS.lowerIn, R * 0.008, 0.42));
+  out.push(shade(DECKS[0]!.rOut + 0.012, R * 0.014, 0.6));
+  out.push(shade(DECKS[1]!.rOut + 0.012, R * 0.014, 0.6));
+  out.push(shade(DECKS[0]!.rIn - 0.008, R * 0.008, 0.45));
 
-  /* near roof lip overhanging the near upper rows */
+  /* near roof lip overhanging the near top rows */
   out.push(
-    '<path d="' + arcSeg(p, RINGS.roofIn, 0.12, Math.PI - 0.12, 40, "M") +
-      arcSeg(p, lerpRing(RINGS.roofIn, RINGS.upperIn, 0.12), Math.PI - 0.12, 0.12, 40, "L") +
-      'Z" fill="#0c0c14" fill-opacity="' + n(0.8 * dim) + '"/>'
+    '<path d="' + arc(R_ROOF_IN, 0.1, Math.PI - 0.1, 40, "M") +
+      arc(R_ROOF_IN * 0.985, Math.PI - 0.1, 0.1, 40, "L") +
+      'Z" fill="#0c0c14" fill-opacity="' + n(0.75 * dim) + '"/>'
   );
 
-  /* --- 5. floor + court -------------------------------------------- */
+  /* --- 5. floor + court ------------------------------------------------ */
   const fcx = cx;
-  const fcy = cy + R * RINGS.floor.dy;
+  const fcy = cy + VS * R * rake(R_FLOOR);
   out.push(
-    '<ellipse cx="' + n(fcx) + '" cy="' + n(fcy) + '" rx="' + n(R * RINGS.floor.rx) +
-      '" ry="' + n(R * RINGS.floor.ry) + '" fill="' + hsl(248, 14, 11 * dim + 1.4) + '"/>'
+    '<ellipse cx="' + n(fcx) + '" cy="' + n(fcy) + '" rx="' + n(R * R_FLOOR) +
+      '" ry="' + n(VS * R * R_FLOOR * SQUASH) + '" fill="' + hsl(248, 14, 9 * dim + 1.2) + '"/>'
   );
-  /* floor seats / camera risers ringing the court */
   let apron = "";
-  for (let i = 1; i <= 3; i++) {
-    const rr = 1 - i * 0.08;
-    apron += ringPath(p, { rx: RINGS.floor.rx * rr, ry: RINGS.floor.ry * rr, dy: RINGS.floor.dy }, 40);
+  for (let i = 1; i <= 2; i++) {
+    apron += ring(R_FLOOR * (1 - i * 0.09), 36);
   }
   out.push(
-    '<path d="' + apron + '" fill="none" stroke="#2a2740" stroke-opacity="' + n(0.55 * dim) +
+    '<path d="' + apron + '" fill="none" stroke="#2a2740" stroke-opacity="' + n(0.5 * dim) +
       '" stroke-width="' + n(Math.max(0.7, R * 0.004)) + '"/>'
   );
 
-  const hx = R * 0.246;
-  const hy = R * 0.246 * (50 / 94) * SQUASH * 1.18;
+  const hx = R * 0.212;
+  const hy = VS * R * 0.212 * (50 / 94) * SQUASH * 1.2;
   const CP = (u: number, v: number): [number, number] => [n(fcx + u * hx * (1 + 0.05 * v)), n(fcy + v * hy)];
   const courtPoly =
     "M" + CP(-1, -1).join(" ") + "L" + CP(1, -1).join(" ") + "L" + CP(1, 1).join(" ") +
     "L" + CP(-1, 1).join(" ") + "Z";
 
-  out.push(
-    '<ellipse cx="' + n(fcx) + '" cy="' + n(fcy - hy * 0.4) + '" rx="' + n(hx * 2.2) +
-      '" ry="' + n(hy * 4.6) + '" fill="url(#' + id("floorglow") + ')"/>'
-  );
+  if (light > 0) {
+    out.push(
+      '<ellipse cx="' + n(fcx) + '" cy="' + n(fcy - hy * 0.4) + '" rx="' + n(hx * 2.1) +
+        '" ry="' + n(hy * 4.2) + '" fill="url(#' + id("floorglow") + ')"/>'
+    );
+  }
   out.push('<path d="' + courtPoly + '" fill="url(#' + id("wood") + ')"/>');
 
-  let planks = "";
-  for (let i = 1; i < 26; i++) {
-    const u = -1 + (i / 26) * 2;
-    planks += "M" + CP(u, -1).join(" ") + "L" + CP(u, 1).join(" ");
-  }
-  out.push(
-    '<path d="' + planks + '" stroke="#000" stroke-opacity="' + n(0.09 * dim) +
-      '" stroke-width="0.7" fill="none"/>'
-  );
-
-  /* Court markings are painted lines, not light sources: they fade with the
-     house lights so a closed building does not glow white at the middle. */
-  const ink = "rgba(246,244,238," + n(0.72 * dim * (0.12 + 0.88 * light)) + ")";
-  const lw = Math.max(0.8, R * 0.0035);
+  /* Court markings are paint, not light: they go out with the house lights,
+     so a dark building does not glow white at the middle (law 6). */
+  const ink = "rgba(246,244,238," + n(0.72 * dim * (0.06 + 0.94 * light)) + ")";
+  const lw = Math.max(0.7, R * 0.004);
   const kd = 19 / 47;
   const kw = 8 / 25;
   const marks =
@@ -733,136 +691,141 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
     "L" + CP(-1, kw).join(" ") +
     "M" + CP(1, -kw).join(" ") + "L" + CP(1 - kd, -kw).join(" ") + "L" + CP(1 - kd, kw).join(" ") +
     "L" + CP(1, kw).join(" ");
-  out.push('<path d="' + marks + '" fill="none" stroke="' + ink + '" stroke-width="' + n(lw) + '"/>');
-
-  /* painted keys */
   const paint = (sign: number): string =>
     '<path d="M' + CP(sign, -kw).join(" ") + "L" + CP(sign - sign * kd, -kw).join(" ") +
     "L" + CP(sign - sign * kd, kw).join(" ") + "L" + CP(sign, kw).join(" ") + 'Z" fill="' +
     hsl(24, 46, 30 * woodL) + '" fill-opacity="' + n(0.75 * dim) + '"/>';
-  out.splice(out.length - 1, 0, paint(-1), paint(1));
-
-  const ell = (u: number, v: number, rft: number, w?: number): string =>
+  out.push(paint(-1), paint(1));
+  out.push('<path d="' + marks + '" fill="none" stroke="' + ink + '" stroke-width="' + n(lw) + '"/>');
+  const ell = (u: number, v: number, rft: number): string =>
     '<ellipse cx="' + CP(u, v)[0] + '" cy="' + CP(u, v)[1] + '" rx="' + n((rft / 47) * hx) +
-    '" ry="' + n((rft / 25) * hy) + '" fill="none" stroke="' + ink + '" stroke-width="' + n(w || lw) + '"/>';
+    '" ry="' + n((rft / 25) * hy) + '" fill="none" stroke="' + ink + '" stroke-width="' + n(lw) + '"/>';
   out.push(ell(0, 0, 6));
-  out.push(ell(0, 0, 2, lw * 0.8));
   out.push(ell(-1 + kd, 0, 6));
   out.push(ell(1 - kd, 0, 6));
 
-  const tp = (sign: number): string => {
-    const rx3 = (23.75 / 47) * hx;
-    const ry3 = (23.75 / 25) * hy;
-    const cx3 = fcx + sign * (1 - 5.25 / 47) * hx;
-    const cornerV = 22 / 25;
-    const y0 = fcy - cornerV * hy;
-    const y1 = fcy + cornerV * hy;
-    const dx = Math.sqrt(Math.max(0, 1 - cornerV * cornerV)) * rx3;
-    const ex = cx3 + sign * dx;
-    return (
-      '<path d="M' + n(fcx + sign * hx * (1 - 0.05 * cornerV)) + " " + n(y0) + "L" + n(ex) + " " + n(y0) +
-      "A" + n(rx3) + " " + n(ry3) + " 0 0 " + (sign > 0 ? 0 : 1) + " " + n(ex) + " " + n(y1) +
-      "L" + n(fcx + sign * hx * (1 + 0.05 * cornerV)) + " " + n(y1) +
-      '" fill="none" stroke="' + ink + '" stroke-width="' + n(lw) + '"/>'
-    );
-  };
-  out.push(tp(-1), tp(1));
-
   /* the lit floor is the brightest thing in the building — when it is lit */
-  out.push('<path d="' + courtPoly + '" fill="#fff6de" fill-opacity="' + n(0.16 * light * dim) + '"/>');
-  /* courtside tables / camera risers reading as a dark frame */
-  out.push(
-    '<path d="' + courtPoly + '" fill="none" stroke="#0a0a12" stroke-opacity="' + n(0.5 * dim) +
-      '" stroke-width="' + n(R * 0.012) + '"/>'
-  );
-
-  /* --- 6. lighting -------------------------------------------------- */
-  out.push(
-    '<ellipse cx="' + n(cx) + '" cy="' + n(cy + R * 0.11) + '" rx="' + n(R * 0.8) + '" ry="' +
-      n(R * 0.55) + '" fill="url(#' + id("wash") + ')"/>'
-  );
-
-  /* a continuous warm wash under the roof rim — the rim light reads as one
-     band of light, with individual fixtures inside it, not a necklace */
-  const rigRing = lerpRing(RINGS.roofIn, RINGS.upperIn, 0.04);
-  out.push(
-    '<path d="' + ringPath(p, rigRing) + '" fill="none" stroke="' + GOLD + '" stroke-opacity="' +
-      n(0.075 * light * dim) + '" stroke-width="' + n(R * 0.028) + '" filter="url(#' + id("soft") + ')"/>'
-  );
-  const lightN = 16;
-  let heads = "";
-  let glows = "";
-  let spill = "";
-  for (let i = 0; i < lightN; i++) {
-    const a = (i / lightN) * Math.PI * 2 + 0.11;
-    const q = p(rigRing, a);
-    const w = Math.max(1.4, R * 0.0095);
-    heads += '<rect x="' + n(q[0] - w) + '" y="' + n(q[1] - w * 0.55) + '" width="' + n(w * 2) +
-      '" height="' + n(w * 1.1) + '" rx="' + n(w * 0.35) + '"/>';
-    glows += '<circle cx="' + n(q[0]) + '" cy="' + n(q[1]) + '" r="' + n(R * 0.032) +
-      '" fill="url(#' + id("flood") + ')"/>';
-    if (i % 4 === 1) {
-      const t1 = p(RINGS.lowerIn, a - 0.34);
-      const t2 = p(RINGS.lowerIn, a + 0.34);
-      spill += "M" + n(q[0]) + " " + n(q[1]) + "L" + n(t1[0]) + " " + n(t1[1]) + "L" + n(t2[0]) +
-        " " + n(t2[1]) + "Z";
-    }
+  if (light > 0) {
+    out.push('<path d="' + courtPoly + '" fill="#fff6de" fill-opacity="' + n(0.15 * light * dim) + '"/>');
   }
   out.push(
-    '<path d="' + spill + '" fill="#fff0cc" fill-opacity="' + n(0.03 * light * dim) +
-      '" filter="url(#' + id("soft") + ')"/>'
+    '<path d="' + courtPoly + '" fill="none" stroke="#0a0a12" stroke-opacity="' + n(0.5 * dim) +
+      '" stroke-width="' + n(R * 0.014) + '"/>'
   );
-  out.push('<g class="' + uid + '-flood">' + glows + "</g>");
-  out.push('<g fill="#3a3a52" fill-opacity="' + n(0.8 * dim) + '">' + heads + "</g>");
 
-  /* --- 7. sellout signature ---------------------------------------- */
+  /* --- 6. lighting ----------------------------------------------------- */
+  if (light > 0) {
+    defs.push(
+      '<radialGradient id="' + id("wash") + '" cx="50%" cy="42%" r="56%">' +
+        '<stop offset="0%" stop-color="#c3b0ff" stop-opacity="' + n(0.15 * light * dim) + '"/>' +
+        '<stop offset="58%" stop-color="' + VIOLET + '" stop-opacity="' + n(0.1 * light * dim) + '"/>' +
+        '<stop offset="100%" stop-color="' + VIOLET + '" stop-opacity="0"/>' +
+        "</radialGradient>"
+    );
+    out.push(
+      '<ellipse cx="' + n(cx) + '" cy="' + n(cy + VS * R * 0.1) + '" rx="' + n(R * 0.78) + '" ry="' +
+        n(VS * R * 0.6) + '" fill="url(#' + id("wash") + ')"/>'
+    );
+    const rRig = R_ROOF_IN * 0.985;
+    out.push(
+      '<path d="' + ring(rRig, 48) + '" fill="none" stroke="' + GOLD + '" stroke-opacity="' +
+        n(0.07 * light * dim) + '" stroke-width="' + n(R * 0.03) + '" filter="url(#' + id("soft") + ')"/>'
+    );
+    let heads = "";
+    let glows = "";
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2 + 0.11;
+      const q = pt(rRig, a);
+      const w = Math.max(1.3, R * 0.009);
+      heads += '<rect x="' + n(q[0] - w) + '" y="' + n(q[1] - w * 0.45) + '" width="' + n(w * 2) +
+        '" height="' + n(w * 0.9) + '" rx="' + n(w * 0.35) + '"/>';
+      glows += '<circle cx="' + n(q[0]) + '" cy="' + n(q[1]) + '" r="' + n(R * 0.03) +
+        '" fill="url(#' + id("flood") + ')"/>';
+    }
+    out.push('<g class="' + uid + '-flood">' + glows + "</g>");
+    out.push('<g fill="#3a3a52" fill-opacity="' + n(0.8 * dim) + '">' + heads + "</g>");
+  }
+
+  /* --- 7. sellout signature -------------------------------------------- */
   if (soldOut) {
     out.push(
-      '<path d="' + ringPath(p, RINGS.roofIn) + '" fill="none" stroke="' + GOLD +
-        '" stroke-opacity="' + n(0.26 * dim) + '" stroke-width="' + n(Math.max(2, R * 0.01)) +
+      '<path d="' + ring(R_ROOF_IN, 56) + '" fill="none" stroke="' + GOLD +
+        '" stroke-opacity="' + n(0.26 * dim) + '" stroke-width="' + n(Math.max(2, R * 0.012)) +
         '" filter="url(#' + id("soft") + ')"/>'
     );
     out.push(
-      '<path class="' + uid + '-ring" d="' + ringPath(p, RINGS.roofIn) +
+      '<path class="' + uid + '-ring" d="' + ring(R_ROOF_IN, 56) +
         '" fill="none" stroke="#ffe9b8" stroke-opacity="' + n(0.5 * dim) + '" stroke-width="' +
-        n(Math.max(1.2, R * 0.0035)) + '"/>'
+        n(Math.max(1.2, R * 0.004)) + '"/>'
     );
   }
 
-  /* --- 8. turned away at the gates --------------------------------- */
+  /* --- 8. turned away at the gates -------------------------------------- */
   if (turnedAway > 0) {
     const q = clamp(turnedAway / (capacity * 0.45), 0.1, 1);
-    const gates = [0.42, 1.02, 1.62, 2.2, 2.78];
     let dots = "";
     let glow = "";
-    for (let g = 0; g < gates.length; g++) {
-      const a = gates[g]!;
-      const b = p({ rx: baseRing.rx, ry: baseRing.ry, dy: baseRing.dy }, a);
-      glow += '<ellipse cx="' + n(b[0]) + '" cy="' + n(b[1] + R * 0.012) + '" rx="' + n(R * 0.12) +
-        '" ry="' + n(R * 0.05) + '" fill="url(#' + id("gate") + ')" opacity="' + n(0.45 + 0.55 * q) + '"/>';
-      const nDots = Math.round(10 + q * 44);
-      const spread = R * (0.05 + 0.09 * q);
+    for (let g = 0; g < gateAngles.length; g++) {
+      const a = gateAngles[g]!;
+      const b = pt(R_ROOF_OUT, a, WALL);
+      glow += '<ellipse cx="' + n(b[0]) + '" cy="' + n(b[1] + VS * R * 0.02) + '" rx="' + n(R * 0.13) +
+        '" ry="' + n(VS * R * 0.09) + '" fill="url(#' + id("gate") + ')" opacity="' + n(0.45 + 0.55 * q) + '"/>';
+      const nDots = Math.round(9 + q * 30);
+      const spread = R * (0.06 + 0.1 * q);
       for (let d2 = 0; d2 < nDots; d2++) {
         const along = (rand() + rand() - 1) * spread;
-        const back = Math.pow(rand(), 1.7) * R * 0.055 * (0.5 + 0.5 * q);
+        const back = Math.pow(rand(), 1.7) * VS * R * 0.12 * (0.5 + 0.5 * q);
         const px = b[0] + along;
-        const py = b[1] + R * 0.01 + back * 0.5 + (rand() - 0.5) * R * 0.006;
-        const s2 = Math.max(0.7, R * 0.0038);
-        dots += "M" + n(px) + " " + n(py) + "h" + n(s2) + "v" + n(s2 * 2.1) + "h" + n(-s2) + "Z";
+        const py = b[1] + VS * R * 0.02 + back;
+        const sw = Math.max(0.7, R * 0.005);
+        dots += "M" + n(px) + " " + n(py) + "h" + n(sw) + "v" + n(sw * 2.2) + "h" + n(-sw) + "Z";
       }
     }
     out.push(glow);
-    out.push('<path d="' + dots + '" fill="#ffdda8" fill-opacity="' + n((0.42 + 0.4 * q) * dim) + '"/>');
+    out.push('<path d="' + dots + '" fill="#ffdda8" fill-opacity="' + n((0.45 + 0.4 * q) * dim) + '"/>');
   }
 
-  /* --- 9. atmosphere ------------------------------------------------ */
-  out.push(
-    '<ellipse cx="' + n(cx) + '" cy="' + n(cy - R * 0.28) + '" rx="' + n(R * 0.85) + '" ry="' +
-      n(R * 0.4) + '" fill="#7b68dd" fill-opacity="' + n(0.05 * light * dim) +
-      '" filter="url(#' + id("soft") + ')"/>'
+  /* --- 9. atmosphere + edge fade ---------------------------------------- */
+  if (light > 0) {
+    out.push(
+      '<ellipse cx="' + n(cx) + '" cy="' + n(cy - VS * R * 0.24) + '" rx="' + n(R * 0.82) + '" ry="' +
+        n(VS * R * 0.42) + '" fill="#7b68dd" fill-opacity="' + n(0.05 * light * dim) +
+        '" filter="url(#' + id("soft") + ')"/>'
+    );
+  }
+  /* The drawing is scaled to its box with `meet`, so a box whose aspect is not
+     the viewBox's shows a letterbox band of the container's own background.
+     Fading the four edges to void makes that band seamless instead of a seam
+     (visual-critic-3 defect 3). */
+  defs.push(
+    '<linearGradient id="' + id("fx") + '" x1="0" y1="0" x2="1" y2="0">' +
+      '<stop offset="0%" stop-color="' + VOID + '" stop-opacity="1"/>' +
+      '<stop offset="9%" stop-color="' + VOID + '" stop-opacity="0"/>' +
+      '<stop offset="91%" stop-color="' + VOID + '" stop-opacity="0"/>' +
+      '<stop offset="100%" stop-color="' + VOID + '" stop-opacity="1"/>' +
+      "</linearGradient>" +
+      '<linearGradient id="' + id("fy") + '" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="' + VOID + '" stop-opacity="1"/>' +
+      '<stop offset="14%" stop-color="' + VOID + '" stop-opacity="0"/>' +
+      '<stop offset="86%" stop-color="' + VOID + '" stop-opacity="0"/>' +
+      '<stop offset="100%" stop-color="' + VOID + '" stop-opacity="1"/>' +
+      "</linearGradient>"
   );
+  out.push('<rect width="' + width + '" height="' + height + '" fill="url(#' + id("fx") + ')"/>');
+  out.push('<rect width="' + width + '" height="' + height + '" fill="url(#' + id("fy") + ')"/>');
 
-  /* --- style / motion ----------------------------------------------- */
+  if (view === "backdrop") {
+    /* the projector backdrop is atmosphere: the room reads the data, not this */
+    defs.push(
+      '<radialGradient id="' + id("bvig") + '" cx="50%" cy="50%" r="62%">' +
+        '<stop offset="55%" stop-color="#000" stop-opacity="0"/>' +
+        '<stop offset="100%" stop-color="#000" stop-opacity="0.6"/>' +
+        "</radialGradient>"
+    );
+    out.push('<rect width="' + width + '" height="' + height + '" fill="url(#' + id("bvig") + ')"/>');
+  }
+
+  /* --- style / motion --------------------------------------------------- */
   /* Both animations carry their own reduced-motion collapse inside the SVG,
      because the SVG is injected as markup and may outlive any stylesheet
      rule that targets it (A10 / DIRECTION non-negotiable 9). */
@@ -872,35 +835,13 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
       "<style>" +
       "@keyframes " + uid + "-breathe{0%,100%{opacity:.9}50%{opacity:1}}" +
       "." + uid + "-flood{animation:" + uid + "-breathe 5.4s ease-in-out infinite}" +
-      "@keyframes " + uid + "-flash{0%{stroke-opacity:1;stroke-width:" + n(Math.max(4, R * 0.014)) +
+      "@keyframes " + uid + "-flash{0%{stroke-opacity:1;stroke-width:" + n(Math.max(4, R * 0.016)) +
       "px}100%{stroke-opacity:.7}}" +
       "." + uid + "-ring{animation:" + uid + "-flash 260ms cubic-bezier(.22,1,.36,1) 1}" +
       "@media (prefers-reduced-motion: reduce){." + uid + "-flood,." + uid +
       "-ring{animation:none!important}}" +
       "</style>";
   }
-
-  if (view === "backdrop") {
-    /* the projector backdrop is atmosphere: the room reads the data, not this */
-    defs.push(
-      '<linearGradient id="' + id("bfade") + '" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0%" stop-color="' + VOID + '" stop-opacity="0.72"/>' +
-        '<stop offset="42%" stop-color="' + VOID + '" stop-opacity="0.28"/>' +
-        '<stop offset="100%" stop-color="' + VOID + '" stop-opacity="0.55"/>' +
-        "</linearGradient>" +
-        '<radialGradient id="' + id("bvig") + '" cx="50%" cy="50%" r="62%">' +
-        '<stop offset="55%" stop-color="#000" stop-opacity="0"/>' +
-        '<stop offset="100%" stop-color="#000" stop-opacity="0.6"/>' +
-        "</radialGradient>"
-    );
-    out.push(
-      '<rect width="' + width + '" height="' + height + '" fill="url(#' + id("bfade") + ')"/>' +
-        '<rect width="' + width + '" height="' + height + '" fill="url(#' + id("bvig") + ')"/>'
-    );
-  }
-
-  const body = out.join("");
-  const wrapped = view === "hero" ? '<g mask="url(#' + id("mask") + ')">' + body + "</g>" : body;
 
   /* No number and no economic sentence is composed here (R-1). The default
      names the picture; a caller that needs more passes registered copy. */
@@ -915,12 +856,10 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
 
   return (
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + width + " " + height +
-    '" width="' + width + '" height="' + height + '" role="img" aria-label="' +
+    '" width="100%" height="100%" role="img" aria-label="' +
     label.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;") +
-    '" preserveAspectRatio="xMidYMid slice">' +
-    style + "<defs>" + defs.join("") + "</defs>" +
-    (view === "hero" ? '<rect width="' + width + '" height="' + height + '" fill="' + VOID + '"/>' : "") +
-    wrapped + "</svg>"
+    '" preserveAspectRatio="xMidYMid meet" style="display:block">' +
+    style + "<defs>" + defs.join("") + "</defs>" + out.join("") + "</svg>"
   );
 }
 
