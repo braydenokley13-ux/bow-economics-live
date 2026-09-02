@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:36:12.434Z",
+  "updatedAt": "2026-09-02T16:36:48.032Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1783,6 +1783,20 @@
           "ephemeral": false,
           "status": "active",
           "activatedAt": "2026-09-02T16:27:06.225Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w2-repair-2-composition": {
+          "assignmentId": "w2-repair-2-composition",
+          "role": "builder",
+          "actor": "builder-r2",
+          "model": "claude-opus-5",
+          "reason": "Repair 2 of wave-2 budget: consolidated composition repairs from gameplay (blocking student-pull), visual (important), Kids A/B/C, Economic Truth (R-B/C/D/F/H) and the results-state regression pass (blocking 401/rejoin path) — pre-lock history and spend rule in the first viewport, causal line on every settled night, 1024x600 results fit, back-half mirrors, PIN out of the top band",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-02T16:36:48.032Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -6134,14 +6148,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 27,
+    "agentsActivated": 28,
     "gateFailures": 1,
     "claimsContradicted": 0,
     "evidenceRecorded": 215,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 296,
-  "eventHead": "b01c29b33843f5d1d7f14f61b23a16c8cbd1af9193404243d6b36d0fa8b8ec74",
+  "eventCount": 297,
+  "eventHead": "b5dddebb14b255078032c86f6bd01ea20661ce78bbf1f81f1bad68776a6d5883",
   "warnings": []
 }
