@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `445:3c81ec63f9212e5ddda4a711c71e974c7bf8cb6d4a5c01a030cd100f48ef8e51`  
-Updated: 2026-09-02T18:31:11.558Z
+Event head: `447:73f260aba4b22b382a41f26f5179f687d99a6389844584c393c02c699c5c9854`  
+Updated: 2026-09-02T18:32:21.054Z
 
 ## Founder intent
 
@@ -312,6 +312,8 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-repair-4-e2e — command-log — Scratch scripts/e2e-m2l1.cjs PASS exit 0 (port 4452)
 - w2-repair-4-misclick — command-log — Scratch scripts/e2e-m2l1-misclick.cjs PASS exit 0 (port 4453)
 - w2-npm-test-84d8983 — test — cd runtime && npm test at repair-4 head 84d8983 (build + full suite incl. clientClaims sentence scanner)
+- w2-e2e-84d8983 — e2e — node runtime/scripts/e2e-m2l1.cjs at repair-4 head 84d8983 (R-1 whole-figure limb active; 4-desk arc + 12-desk class scale)
+- w2-e2e-misclick-84d8983 — e2e — node runtime/scripts/e2e-m2l1-misclick.cjs at repair-4 head 84d8983 (teacher cancel-then-advance with the results state)
 
 ## Claim ledger
 

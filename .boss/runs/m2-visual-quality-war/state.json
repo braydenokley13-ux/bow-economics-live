@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T18:31:11.558Z",
+  "updatedAt": "2026-09-02T18:32:21.054Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2362,7 +2362,9 @@
         "w2-repair-4-npm-test",
         "w2-repair-4-e2e",
         "w2-repair-4-misclick",
-        "w2-npm-test-84d8983"
+        "w2-npm-test-84d8983",
+        "w2-e2e-84d8983",
+        "w2-e2e-misclick-84d8983"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -10477,6 +10479,48 @@
       },
       "recordedAt": "2026-09-02T18:30:53.726Z",
       "actor": "boss-lead"
+    },
+    "w2-e2e-84d8983": {
+      "id": "w2-e2e-84d8983",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "node runtime/scripts/e2e-m2l1.cjs at repair-4 head 84d8983 (R-1 whole-figure limb active; 4-desk arc + 12-desk class scale)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-e2e-84d8983--record.json",
+      "sha256": "ebba0bdcdea648c05c688a4a2e89039750543844b198ff448af0fc897771091e",
+      "size": 11412,
+      "metadata": {
+        "command": [
+          "env",
+          "E2E_PORT=4437",
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T18:32:14.565Z",
+      "actor": "boss-lead"
+    },
+    "w2-e2e-misclick-84d8983": {
+      "id": "w2-e2e-misclick-84d8983",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "node runtime/scripts/e2e-m2l1-misclick.cjs at repair-4 head 84d8983 (teacher cancel-then-advance with the results state)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-e2e-misclick-84d8983--record.json",
+      "sha256": "36c660ef2e0372d14f0b2c781da32764e8f6f2f4e94945031370cc5e16acc5d9",
+      "size": 877,
+      "metadata": {
+        "command": [
+          "env",
+          "E2E_PORT=4438",
+          "node",
+          "runtime/scripts/e2e-m2l1-misclick.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T18:32:21.054Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {
@@ -10929,11 +10973,11 @@
     "agentsActivated": 39,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 326,
+    "evidenceRecorded": 328,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 445,
-  "eventHead": "3c81ec63f9212e5ddda4a711c71e974c7bf8cb6d4a5c01a030cd100f48ef8e51",
+  "eventCount": 447,
+  "eventHead": "73f260aba4b22b382a41f26f5179f687d99a6389844584c393c02c699c5c9854",
   "warnings": []
 }
