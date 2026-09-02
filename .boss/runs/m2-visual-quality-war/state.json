@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:29:56.310Z",
+  "updatedAt": "2026-09-02T16:30:47.606Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1897,7 +1897,8 @@
         "w2-kid-b-sellout",
         "w2-kid-b-sellout-controlled",
         "w2-kid-b-1024x600-firstcontact",
-        "w2-kid-b-counterfactual"
+        "w2-kid-b-counterfactual",
+        "w2-frontier-probe"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5623,6 +5624,24 @@
       },
       "recordedAt": "2026-09-02T16:29:56.037Z",
       "actor": "kid-b2-casual"
+    },
+    "w2-frontier-probe": {
+      "id": "w2-frontier-probe",
+      "wave": 2,
+      "kind": "note",
+      "label": "Frontier probe (R-G, lead-run at 6c4c7cc dist): renewals-corner season costs 7.5% of best-found cash at New York and 6.0% at Memphis for +35 renewal points (best-cash plans end at 65% renewals) — the two-book frontier is near-flat at BOTH markets, so 'You have to choose' overstates the tradeoff; model constants are a wave non-goal, so W3 must draw the true shape and the copy/model question goes to the founder",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-frontier-probe--memphis-frontier-probe.log",
+      "sha256": "5e2213d80fac8c9325fe5c7e1f11be5d3092785a5b75398633e0611b73135ccd",
+      "size": 360,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "frontier",
+          "founder-decision-candidate"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:30:47.606Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {},
@@ -5961,11 +5980,11 @@
     "agentsActivated": 27,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 207,
+    "evidenceRecorded": 208,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 286,
-  "eventHead": "b5b6333d627360a13b6633c54f114476e06a1c6276247ab3114c935e032d0244",
+  "eventCount": 287,
+  "eventHead": "bf4568f41db5c89804ca6a61d453ea2ec850f748f4e7b523985e670715d59576",
   "warnings": []
 }

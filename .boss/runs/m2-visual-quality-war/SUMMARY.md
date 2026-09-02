@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `286:b5b6333d627360a13b6633c54f114476e06a1c6276247ab3114c935e032d0244`  
-Updated: 2026-09-02T16:29:56.310Z
+Event head: `287:bf4568f41db5c89804ca6a61d453ea2ec850f748f4e7b523985e670715d59576`  
+Updated: 2026-09-02T16:30:47.606Z
 
 ## Founder intent
 
@@ -181,6 +181,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-kid-b-sellout-controlled — screenshot — Controlled isolated run: held-price sellout, sub-element rects all bottom<=768 at scrollY=0
 - w2-kid-b-1024x600-firstcontact — screenshot — 1024x600 first contact, PLAY phase, PIN card open, LOCK IT IN reachable without scrolling
 - w2-kid-b-counterfactual — screenshot — COUNTERFACTUAL What-if screen, dense adult-register paragraph rows below the clean two-number comparison
+- w2-frontier-probe — note — Frontier probe (R-G, lead-run at 6c4c7cc dist): renewals-corner season costs 7.5% of best-found cash at New York and 6.0% at Memphis for +35 renewal points (best-cash plans end at 65% renewals) — the two-book frontier is near-flat at BOTH markets, so 'You have to choose' overstates the tradeoff; model constants are a wave non-goal, so W3 must draw the true shape and the copy/model question goes to the founder
 
 ## Claim ledger
 
