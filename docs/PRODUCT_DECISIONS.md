@@ -272,3 +272,92 @@ class.
 - **Evidence:** `.boss/runs/m2-quality-war/` (event-sourced run history, 100+ evidence records);
   docs/gauntlet/module-2/ (design war, gates, re-checks, analyst reports); final-head sweep
   evidence ids final-suite, final-e2e-m2l1/l2/l3, final-e2e-m1l2/l2ea/l3ea/l3-retry.
+
+## D21. Founder rulings on the three Module 2 wave-2 questions (FD-1, FD-2, FD-3)
+
+The Module 2 premium quality war surfaced three questions the Boss could not answer without the
+founder. All three are now ruled, and the rulings hold until superseded.
+
+**FD-1 — the shape of the two-book trade-off. ACCEPTED as the honest computed frontier.** Module 2
+teaches "most fans are cheap to keep, the last ones are ruinous" — rising opportunity cost — rather
+than "you cannot have both". The model does not support the stronger story and the product will not
+manufacture scarcity the model does not have. The frontier visual is drawn from `seasonFrontier` and
+`renewalMarginalCost`, both axes in the two books' own units, the gap printed in dollars and people
+and never as a percent to students. No frame may be captioned "you gave up almost nothing to keep the
+fans" — to a ten-year-old that reads "keep prices low, it's free," the false lesson an earlier repair
+removed. This closes the option of retuning the model's constants for the picture's sake.
+
+**FD-2 — reading burden on the pre-lock decision screen. RULED: short critical rules in view, full
+rules one tap away.** The earlier ≤60-word first-viewport budget was artificial; a modest increase is
+acceptable where it protects comprehension, but student pull is the thing being protected and the
+decision screen must still read as a decision rather than a page of paragraphs. Economic Truth's R-L
+concern — that moving the full rules behind a disclosure weakens the "printed before the commitment"
+requirement — is answered by this ruling: reachable-in-one-tap satisfies it, dumping every rule onto
+the surface does not.
+
+**FD-3 — arena fill encoding. RULED: do not stall a wave on an art rewrite.** Preserve the meaningful
+deck and seam structure and the truthful printed fill figure. Improve the visual encoding only where
+a bounded strong implementation exists. A seat-by-seat or heavy-WebGL bowl is not required to close a
+wave unless evidence shows the current encoding is unusable. The standing advisory dissent about
+mid-range fill legibility is dispositioned by this ruling, not by a rebuild.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-02
+- **Owner:** Founder (ruled directly; recorded by the Boss lead)
+- **Evidence:** `.boss/runs/m2-visual-quality-war/` wave-2 verdict and the wave-3 contract;
+  `docs/gauntlet/module-2/premium/DIRECTION_W2.md` Q2 (the frontier probe figures);
+  `docs/gauntlet/module-2/premium/REVIEW_VISUAL_W2.md` (the fill-ladder measurements).
+
+## D22. Program sequence after Module 2 wave 3 — runtime architecture, then dual-band M1, then M2 for 7–8
+
+Founder-set order of programs. None of this is built inside wave 3; wave 3 finishes the product
+surfaces first so the next program audits the real post-wave-3 product rather than an intermediate
+build.
+
+1. **Classroom Runtime Architecture War** — the smallest strong classroom runtime that can reliably
+   run real Ramaz classes, support M1 and M2 and both grade bands and non-founder instructors, and
+   leave deliberate seams for later reuse. Explicitly NOT a universal BOW platform, not a wholesale
+   copy of another product's architecture, and not a rewrite of working systems because a cleaner
+   one can be imagined. The repo is authoritative: the program inspects what exists before it
+   proposes anything. Its behavioural requirements — teacher-controlled progression with automatic
+   assistance never removing teacher control at important moments; a draft/locked distinction where
+   the lesson needs one; a TIME CUT that closes submissions, keeps valid ones, gives missing students
+   an honest lesson-defined fallback and lets the class move; realtime that feels instant but is
+   never the only source of truth, with canonical state winning every disagreement; boring refresh
+   and reconnect on all three surfaces; a projector treated as a distinct scoped client rather than
+   one inheriting every teacher power; meaningful event history rather than clickstream surveillance;
+   seeded reproducible uncertainty plus teacher-triggered predefined shocks; bounded teacher recovery
+   powers and no God Mode — are requirements on behaviour, not mandated tables, APIs, schemas,
+   libraries or infrastructure. It certifies itself against classroom chaos (student refresh,
+   disconnect, duplicate and stale submits, two tabs, sleep/wake; teacher refresh, double-trigger,
+   TIME CUT mid-submit; projector refresh and missed events; duplicate, delayed, missed and
+   out-of-order updates; twelve to sixteen simultaneous submissions), not against schema cleanliness.
+2. **Module 1 redesigned for both grade bands from birth** — one M1 architecture with a shared
+   economic world, shared persistent franchise logic and shared consequences, plus grade-specific
+   depth and scaffolding. Not M1 for 5–6 followed by a fork. This is where the BOW grade-band pattern
+   is established.
+3. **Module 2 adapted to grades 7–8** using that grade-profile system, preserving the proven core
+   economics and classroom experience.
+4. **A full Sports Business I gauntlet** across both bands, then real Ramaz human classroom evidence.
+
+**Grade bands (D6 superseded in scope only).** Ramaz wants Sports Business I for grades 5–6 AND
+grades 7–8, run as separate classes. The model is a shared simulation with a grade-band depth layer —
+one core sports-business world, economic engine, consequence model and class runtime, with a grade
+profile selecting copy, scaffolding, visible information, control complexity, reasoning demands,
+numerical burden, ambiguity, counterfactual questions, teacher prompts, synthesis depth and
+vocabulary timing. Two independent codebases are not the default. Grades 7–8 must not be the same
+worksheet with harder numbers: 5–6 identify and explain the relevant trade-off; 7–8 defend a decision
+with evidence, reason under uncertainty, compare alternatives, and judge decision quality separately
+from outcome. The economic world stays authentic for both, and each band is prosecuted on its own
+evidence — one band's simulated-student verdict never proves the other's. The runtime should
+eventually carry separate simultaneous class instances, each with its own lesson, phase, teacher,
+roster, decisions, projector state, progress and grade-band profile.
+
+**Teacher Transfer stays a hard product requirement and is now also a business-model requirement:**
+the founder must not be a hidden runtime dependency for either band.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-02
+- **Owner:** Founder (program sequence and scope ruled directly; recorded by the Boss lead)
+- **Evidence:** founder instruction of 2026-09-02; wave-3 ship case section
+  "TECHNICAL REALITY HANDOFF FOR CLASSROOM RUNTIME WAR" carries the repo-grounded inputs.
