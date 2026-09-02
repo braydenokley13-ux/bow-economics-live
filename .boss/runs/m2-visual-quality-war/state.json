@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:28:00.743Z",
+  "updatedAt": "2026-09-02T16:29:56.310Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1607,11 +1607,26 @@
           "model": "claude-sonnet-5",
           "reason": "Fresh simulated KID B (casual sports)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T21:29:13.177Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:29:56.310Z",
+          "sections": {
+            "what-the-student-plays": "Each night the student sets a ticket price dial ($10-$120) and a small event-spend dial, optionally opens an upper bowl, then presses LOCK IT IN with no preview of the outcome. After the teacher's bell the student lands on a single result screen: a headline, a huge WHO CAME turnout figure, a CASH decomposition chain that multiplies the student's own price by turnout, and a RENEWALS percentage that moves. Five nights, then REVEAL/ADAPT/COUNTERFACTUAL/SYNTHESIS mostly live on board/teacher with the student side repeating a nights-so-far ledger and dot chart.",
+            "pull-rating": "STRONG. The result screen genuinely pays off the dial choice (own price x turnout printed in the CASH chain) and the sellout produces a real distinct gold-bordered moment (FULL HOUSE / turned-away count). Falls short of MAGNETIC because the pre-lock screen makes the kid read 256 words in the first viewport before the decision feels like 'one clear thing,' and the COUNTERFACTUAL what-if rows are dense adult-register paragraphs that are the clearest boredom risk in the arc.",
+            "biggest-failure": "256 words measured in the first 1366x768 viewport of the Night 1 pre-lock screen before any action is possible (DOM text-node word count over all nodes intersecting y in [0,768]) -- the CTA (huge price readout + LOCK IT IN) is reachable and pressable within 10 seconds regardless, so it does not block action, but it does not read as one clear decision for a short-text-only grade 5-6 reader. This is the STANDING half of the wave-1 blocking student-pull finding.",
+            "moment-by-moment-notes": "Full ordered notes with OBSERVED/INFERRED/NOT VERIFIED tags and screenshot filenames are in docs/gauntlet/module-2/premium/KID_B_W2.md section 'moment-by-moment-notes'. Key measurements: below-the-fold consequence is DISCHARGED (getBoundingClientRect at scrollY=0, 1366x768: result headline/WHO CAME/CASH chain/RENEWALS/NEXT button all bottom<=768 on both a normal night and a sellout night, measured via isolated controlled runs). Pre-lock word count (STANDING) is 256; result-screen word count is 138; HOOK screen ~40. 1024x600 PLAY-phase first contact: #fhLock reachable at top:311 bottom:367 within 600px viewport, caption also within (376-471) -- DISCHARGED. Zero-turnout night NOT VERIFIED (this playthrough never produced one).",
+            "required-repairs": "1) Reduce simultaneous reading load on the pre-lock PLAY screen (season-plan strategy paragraph + card facts + spend-rule copy + blind-commitment caption all visible at once = 256 words) -- consider making the strategy paragraph an optional disclosure. 2) No on-screen cue that the price dial still holds a value set several nights ago -- a kid who pokes the dial once and forgets can walk into an unintended outcome with no reminder. 3) COUNTERFACTUAL what-if row bodies (~50+ words each, adult economics register) are the clearest unsupported-reading boredom risk in the arc. 4) Sellout screen gives 'FULL HOUSE' and the falling RENEWALS number equal visual weight with no cue distinguishing win from cost, risking a casual kid reading a bad night as a clean win."
+          },
+          "evidenceIds": [
+            "w2-kid-b-report",
+            "w2-kid-b-manifest",
+            "w2-kid-b-n1-prelock",
+            "w2-kid-b-n1-result",
+            "w2-kid-b-sellout",
+            "w2-kid-b-sellout-controlled",
+            "w2-kid-b-1024x600-firstcontact",
+            "w2-kid-b-counterfactual"
+          ],
           "cost": null
         },
         "w2-kid-c": {
@@ -1653,11 +1668,30 @@
           "model": "claude-opus-5",
           "reason": "Owning critic confirms R-1..R-10 discharge and audits every new rendered string; rules on the repeated renewals-rule box",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T21:29:13.666Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:29:53.811Z",
+          "sections": {
+            "mechanism-verdicts": "CONFIRMED unless stated. OBSERVED / AGENT-PLAYTESTED at head 6c4c7cc: 4 desks x 5 nights + a sellout + two zero-turnout nights + 7 REVEAL stages, 1366x768, port 4447; plus two independent R-1 mutation runs against scratch copies of dist. I changed no product source and did not rebuild dist.\nR-1 CONFIRMED (limb bites) WITH A NAMED CEILING. My own mutation C injected a client-side settlement into a scratch dist and printed it in the two forms the whole-figure change was accused of letting through - \"16,862/19,800\" and \"$... total\" - with no forbidden word, so only the numeric limb could fire. The limb went RED at the first pre-lock state audited. Offline matcher check: \"$14,142 total\", \"14,142/19,800\" and even \"Attendance14,142\" all tokenise to the whole figure and are caught; only 114,142 / 1,014,142 / 14.1k escape and none of those is readable as a claim. RULING: the substring-to-whole-figure change at 6c4c7cc did NOT weaken the limb; it removed false positives.\nR-2 CONFIRMED. Every fill figure at all 20 settled desk-nights carries \"of the seats you opened tonight\" - hero line and arena legend line. Night 4 bowl-open denominator renders 22,200 (19,800+2,400). The string \"of capacity\" appears 0 times in every captured state.\nR-3 CONFIRMED. TICKETS / +IN-ARENA / -BUILDING BILL / (-EVENT MONEY) / (-UPPER BOWL) / =CASH; RENEWALS a separate card, renewalsBefore -> renewalsAfter, never green, never money-coloured; no rendered figure is a function of both books; no label says profit, revenue or after costs.\nR-4 CONFIRMED. Vocabulary scan of every captured state returns only \"preview\", and only inside HOUSE_RULES[0] and the module message. A second scan for great/strong/nice/congrat/trophy/badge/rank/score/optimi/maximi/should have/too high/too low/best/worst/winner/streak returns nothing in the Full House region (the three hits in play/main.ts are M2 L2 and L3 code).\nR-7 REFUTED - see false-lesson-risks and the dissent. R-10 CONFIRMED: honest, complete, risk stated, and reproduced in my run (New York desk 1 went 17% -> 26%, UP 9 points, at $90 on Night 4 after 50% -> 30% at $34 on Night 1). All three entries reach /teach (fullHouse.ts:2552 -> teach/main.ts:753).\nR-9 CONFIRMED in the browser: no Two Peaks panel on a student desk at REVEAL stages 0-5, first appears at stage 6 (= NIGHT_COUNT+1), matching boardView. Gated on the payload, not in the renderer, and asserted by a module test over every stage and both seats.\nresultHeadline CONFIRMED: two forms only, never names renewals, Draw, TV or event money, so it cannot mis-attribute; zero turnout renders \"NIGHT 5 - 0 CAME AT $120\", a fact not a verdict.\nSellout beat CONFIRMED factual on the words (resaleNote verbatim, no adjective); see false-lesson-risks on its chrome and its fold position.\nNo trend line anywhere (dotChart emits one axis path, no polyline/area/fit), no mark for the pending night, no building at all on the pre-lock desk, dark closed building on locked-waiting under \"Doors open when your teacher rings the bell.\" The desk rail carries pips and the two books - no per-night history, no line, so it implies no trend.\nFrame measurements taken because a claim below the fold is a claim nobody reads: at all 20 settled desk-nights headline top 179-189, hero bottom <=356, CASH chain bottom <=688, renewals bottom <=660, #fhLock absent from the results state; exactly one figure >=34px on an ordinary night (turnout, 72px), two on the sellout (72px turnout, 40px turned away). The largest figure is never money.\nNOT VERIFIED: /board and /teach (wave 3), the six synthesis card visuals (W3).",
+            "false-lesson-risks": "BLOCKING 1 - both new arena SIMPLIFICATIONS entries describe an artifact that was not built. (a) The drawn bowl is NOT \"one evenly-lit proportion of a single pool\": arena.ts:163 defines three tiers (lower .34 / club .16 / upper .50) and arena.ts:564-586 fills them IN ORDER, so a half-full house draws the rings nearest the floor fully lit and the outer ring black (OBSERVED, arena-fill-ladder.png at 25/50/75/100% of 19,800). The picture asserts a seat-allocation mechanism settleNight does not have, and the ledger entry that licenses the simplification states the opposite while its risk field warns the teacher against exactly the misconception the renderer produces. (b) The Night-4 upper bowl is NOT \"a third state of the same picture\": play/main.ts:2218 computes bowlOffered = n.bowlCost > 0 || n.openBowl, and bowlCost is non-zero only when openBowl is true, so the \"Upper bowl closed\" legend branch is unreachable dead code. OBSERVED at three bowl-closed desks on Night 4: a desk that kept the bowl shut draws a fully lit three-tier building at 98.2% and is told nothing about the 2,400 seats it chose not to open, on the one night the module turns on a capacity decision.\nIMPORTANT 2 - on the sellout frame the resaleNote, the one sentence that stops \"6,631 TURNED AWAY\" at 40px reading as lost money, is below the fold at 1366x768 AND below the NEXT control that invites the pair to leave.\nIMPORTANT 3 - the sellout frame is the most decorated frame in the lesson (gold-edged banner plus first-sellout flash) and a sellout is usually the cheap answer: in my own run the FULL HOUSE desk took $218,232 CASH while a plain-framed desk took $997,100 on the same night. The words are clean; the chrome grades. E13 allows loud, forbids triumph.\nIMPORTANT 4 - two different numbers labelled CASH in one frame with no qualifier: rail season-to-date $1,885,992 beside the night chain $1,045,500.\nROUTED FINDING (a) renewals floor at 0% by Night 3 for three of four desks - PARTIALLY VERIFIED, model-consistent, NOT a dead book, but a dead-LOOKING one. Source: RENEWALS_START = 50 and RENEWAL_DELTA_FLOOR = -20, so two consecutive worst-case nights reach 10 and the third reaches 0; the clamp is not absorbing - my own desk 3 went 0% -> 7% on Night 4 and 7% -> 0% on Night 5, so the book recovers when the price is right. The economic-truth risk is presentational: a floored desk sees \"0% -> 0% / no change\" with nothing saying the model computed a penalty and clamped it, which teaches \"this book does nothing\" instead of \"you have run this book into the floor\". The module already owns the sentence for this - flooredLine (fullHouse.ts:3319) - and the /play renewals card does not render it. In my run only 1 of 4 desks floored by Night 3; the gameplay critic 3-of-4 rate is NOT VERIFIED by me and is price-dependent.\nROUTED FINDING (b) Memphis \"best renewals\" replay beating the desk on both books at 94% of max cash - NOT VERIFIED numerically by me (no probe run this session), but I can rule on the shape from source and it matters. replaysFor (fullHouse.ts:1617-1650) already branches on renewalGap and prints an honest alternate line when the renewals corner is not behind on cash (\"it is ahead on both books, so on these five nights the money did not cost the plan holders anything\"). So the product does not lie if it happens. The lesson risk is the one the branch cannot fix: if at Memphis the maximum-renewals season costs only ~6% of best-found cash, the Memphis frontier is nearly FLAT, the TWO BOOKS NO EXCHANGE RATE card overstates the choice at that market (\"You have to choose\" when the choice is nearly free), and \"play the renewals corner\" is close to dominant there. Falsify or confirm cheaply: sweep bestFoundSeason(memphis) against renewalsCornerSeason(memphis) and report cashGap / strongest.cash and renewalGap; if cashGap/strongest.cash < ~0.10 at Memphis the frontier visual (R-5/E27) must be drawn to its true near-flat shape and the two-books card must not be read as a steep tradeoff at that market.\nADVISORY - the closed dark building appears only on locked-waiting under \"Doors open when your teacher rings the bell\", so it does not read as zero demand; the arena is never a pie chart of demand (it is drawn against seatsOpen and turned-away fans are a count outside the gates, never money).",
+            "dominant-strategies": "None found that the new /play surface makes obvious, and I hunted the two named. \"Always price high\" is refuted on the surface by the pair own numbers: at $120 the model returns turnout 0 and CASH -$520,000 on the quiet cards, rendered as WHO CAME 0 / 0% / -$520,000 (OBSERVED). \"Always the plan price\" is refuted too: Memphis holding $16 through Night 4 sold out for $218,232 CASH against $997,100 for a New York desk at $60 the same night. The headline states a fact and grades nothing, the history is dots with no line or fit, and nothing on the surface ranks the pair against anything.\nThree soft pulls, none of them a dominant strategy in the model: (i) CASH is the only figure on the surface in positive-money green and is the largest number in the chain while RENEWALS is deliberately neutral - correct under A3/R-3, but it thumbs the scale toward the cash corner of a frontier the module refuses to collapse; (ii) the sellout chrome rewards the cheap answer typographically; (iii) the renewals floor makes the second book LOOK inert for a floored desk, which removes it from the strategy space by presentation rather than by economics.\nOne candidate genuine dominant strategy is OPEN and is the routed Memphis finding (b): if the maximum-renewals season really takes ~94% of best-found cash at Memphis, then at that market playing the renewals corner is near-costless and dominates on the composite, which would collapse the two-books lesson at one of the two markets. NOT VERIFIED - probe named in false-lesson-risks.\nOn the R-1 limb rather than the product, a builder-side dominant strategy does exist: rounding a projection to the nearest 100, abbreviating it (14.1k), or drawing it as geometry defeats the numeric limb entirely. Mutation D proved it - a projection rounded to the nearest 100 plus a dial-driven fill bar passed EVERY Night-1 pre-lock state and tripped at Night 2 only when the true fillPct coincidentally equalled the printed integer.",
+            "synthesis-map-verdict": "INTACT AND UNWEAKENED ON /play; INCOMPLETE BY DESIGN (W3 owns the naming stage). The experienced-moment -> named-concept map survives the rebuild in four module-owned places: the CASH chain names the decomposition E10 prescribed (TICKETS / IN-ARENA / BUILDING BILL / EVENT MONEY / UPPER BOWL / CASH) with no collapsed word; RENEWALS is named and moved separately with twoBooksLine sliced verbatim out of OBJECTIVE_COPY and printed wherever both books appear together; the N1 -> N5 attribution renders repeatRowFor().channelLine verbatim rather than a delta arrow; and Two Peaks is now released to the desk at the same stage as the board (R-9), so the centrepiece formalization is no longer spoiled six teacher presses early. No module sentence was renamed, paraphrased or re-branched in the client.\nTwo carried gaps. The Two Peaks note \"The cheaper ticket made more money\" is a client literal (play/main.ts:2686, pre-existing at 31fb8c8) - model-true on that card, since a per-head in-arena term always shifts the total peak below the ticket peak - but authored in the renderer and invisible to both limbs. Contract A9 promised a test that client templates carry no UNREGISTERED economic sentence; it does not exist (clientClaims.test.ts greps thirteen words, not claims). Two small new unregistered sentences: \"...that is the only number you have\" (mildly false - the bill, capacity, Draw and TV are on the same screen) and the Night-5 event-money line (true but unregistered). The renderer header claims every economic sentence comes from the payload; that is not yet true.\nNOT VERIFIED: the six synthesis cards, their computed visuals, the frontier drawing, and the outside-sports generalization on /board - all W3.",
+            "required-repairs": "R-A BLOCKING, economic-truth, discharges R-7: make the two arena SIMPLIFICATIONS entries true of the artifact. Either (preferred, and what E12 rule 2 asked for) distribute the lit proportion across all three tiers so the bowl really is one evenly-lit pool, and draw the Night-4 upper bowl as a labelled third state (unavailable when openBowl is false); or rewrite both entries to record the inside-out tier fill and the absent third state with the misconception risk stated. Fix the dead guard at play/main.ts:2218 either way - as written \"Upper bowl closed\" can never render.\nR-B IMPORTANT: move resaleNote into the first viewport of the sellout frame, above the NEXT control, beside the turned-away count it corrects.\nR-C IMPORTANT: reduce the sellout chrome to the ruled minimum - edge flash and a fully lit bowl, no persistent gold frame. The headline may be large; it may not be decorated.\nR-D IMPORTANT: qualify the rail books (a registered SEASON TO DATE, or a distinct label) so two different numbers are never both bare CASH in one frame.\nR-E IMPORTANT (evidence, not product) - strengthen R-1 before it is cited as discharging contract G6: (i) compare recomputed quantities within a tolerance band and against rounded and abbreviated renderings, not exact toLocaleString only; (ii) assert that no element geometry on a pre-lock state changes when only the dial moves - the picture limb R-1 does not have; (iii) run the vocabulary half of the limb on the RESULTS state, which today is audited by nothing (assertNoRenderedClaim returns early when view.locked and is only called after NEXT).\nR-F IMPORTANT (routed finding a): render the module own flooredLine (fullHouse.ts:3319) on the /play renewals card whenever the night delta was clamped at RENEWAL_DELTA_FLOOR, so a floored desk reads \"you have run this book into the floor\" instead of \"no change\". No mechanic changes.\nR-G IMPORTANT (routed finding b): run the Memphis frontier probe named above before W3 draws the tradeoffs visual. If cashGap/strongest.cash at Memphis is under ~10%, the frontier is near-flat there and both the frontier drawing and the TWO BOOKS NO EXCHANGE RATE reading must reflect that at that market.\nR-H ADVISORY: register the three new client sentences in the module and land contract A9 unregistered-sentence test so the carried Two Peaks literal at play/main.ts:2686 is either registered or caught.\nR-I RULING requested by contract H item 7 - the renewals box: the registered renewals RULE renders every night and the settled renewals MOVEMENT renders every settled night. Neither may be suppressed, collapsed behind a disclosure, or shown only when it changed. Reasons: R-10 - the rule is the pair only access to renewalReferencePrice, and the night it matters (Night 4, where renewals GAIN at the season-high price) is the fourth showing, so a box that collapses after Night 1 is gone exactly when the misprediction lands; and a movement shown only when non-zero teaches that nothing happened on the silent nights when the model in fact computed a delta and clamped it. Compactness is already achieved and costs no viewport (measured). What may be dropped instead is the duplicate second copy of CASH/RENEWALS on the pre-lock desk."
+          },
+          "evidenceIds": [
+            "w2-econ-confirm-report",
+            "w2-econ-confirm-manifest",
+            "w2-econ-confirm-arena-ladder",
+            "w2-econ-confirm-n4-bowl-closed",
+            "w2-econ-confirm-n4-bowl-open",
+            "w2-econ-confirm-sellout",
+            "w2-econ-confirm-zero-night",
+            "w2-econ-confirm-prelock",
+            "w2-econ-confirm-reveal-stage0",
+            "w2-econ-confirm-mutation-c",
+            "w2-econ-confirm-mutation-d",
+            "w2-econ-confirm-dump"
+          ],
           "cost": null
         },
         "w2-regression": {
@@ -1843,13 +1877,34 @@
         "w2-kid-a-1024",
         "w2-kid-a-n5-result",
         "w2-kid-a-n5-prelock",
-        "w2-kid-a-lobby"
+        "w2-kid-a-lobby",
+        "w2-econ-confirm-manifest",
+        "w2-econ-confirm-arena-ladder",
+        "w2-econ-confirm-n4-bowl-closed",
+        "w2-econ-confirm-n4-bowl-open",
+        "w2-econ-confirm-sellout",
+        "w2-econ-confirm-zero-night",
+        "w2-econ-confirm-prelock",
+        "w2-econ-confirm-reveal-stage0",
+        "w2-econ-confirm-mutation-c",
+        "w2-econ-confirm-mutation-d",
+        "w2-econ-confirm-dump",
+        "w2-econ-confirm-report",
+        "w2-kid-b-report",
+        "w2-kid-b-manifest",
+        "w2-kid-b-n1-prelock",
+        "w2-kid-b-n1-result",
+        "w2-kid-b-sellout",
+        "w2-kid-b-sellout-controlled",
+        "w2-kid-b-1024x600-firstcontact",
+        "w2-kid-b-counterfactual"
       ],
       "claimIds": [],
       "dissentIds": [
         "bowl-rights-review-dissent",
         "w2-gameplay-dissent",
-        "w2-visual-review-dissent"
+        "w2-visual-review-dissent",
+        "w2-econ-confirm-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -5212,6 +5267,362 @@
       },
       "recordedAt": "2026-09-02T16:28:00.476Z",
       "actor": "kid-a2-basketball"
+    },
+    "w2-econ-confirm-manifest": {
+      "id": "w2-econ-confirm-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Screenshot manifest + driver notes for the 4-desk agent playtest of /play Full House at 6c4c7cc",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-manifest--manifest.md",
+      "sha256": "a1d1856d31328c53f3e0602dedeba2daf55aceca3b2de1d7279ea36b76675191",
+      "size": 1506,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "AGENT-PLAYTESTED"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:50.658Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-arena-ladder": {
+      "id": "w2-econ-confirm-arena-ladder",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "arenaSvg at 25/50/75/100% fill: the drawn bowl fills inside-out through three tiers, refuting SIMPLIFICATIONS 'one evenly-lit proportion, no price tiers, no sections'",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-arena-ladder--arena-fill-ladder.png",
+      "sha256": "34e236ade86f1e97762bd592519f1373327960f8b9b2d2c2856f4ce02b22be83",
+      "size": 826090,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-7",
+          "blocking"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:50.943Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-n4-bowl-closed": {
+      "id": "w2-econ-confirm-n4-bowl-closed",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 settled with the upper bowl CLOSED: 19,450 of 19,800 = 98.2%, arena legend carries only Came / Open seats — no third upper-bowl state",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-n4-bowl-closed--res-n4-d3.png",
+      "sha256": "96265f416fd7ac8c70757399f7028e6cc8c085989da80996e0b4054aa06f69e1",
+      "size": 225775,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-7",
+          "E12",
+          "blocking"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:51.206Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-n4-bowl-open": {
+      "id": "w2-econ-confirm-n4-bowl-open",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 settled with the upper bowl OPEN: 15,375 of 22,200 = 69.3%, UPPER BOWL -$95,000 in the CASH chain",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-n4-bowl-open--res-n4-d1.png",
+      "sha256": "0a385e067fe2a586a77059be35f40dc6e8ba7dff1a229f3770893582b7d2e8c8",
+      "size": 224540,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-2",
+          "R-3"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:51.484Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-sellout": {
+      "id": "w2-econ-confirm-sellout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "The sellout beat: FULL HOUSE · 17,794 OF 17,794 · 6,631 TURNED AWAY, gold-edged banner, resale note below the fold at 1366x768",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-sellout--res-n4-d2.png",
+      "sha256": "792bf0a8f0813317d5e3219edc41cc2a9a69191eb8b37d295e9493ae2d9887b9",
+      "size": 234444,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "E13",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:51.743Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-zero-night": {
+      "id": "w2-econ-confirm-zero-night",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 5 at $120: zero turnout, CASH -$520,000, 0% of the seats you opened tonight — headline states the fact and grades nothing",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-zero-night--res-n5-d3.png",
+      "sha256": "1d18391a3331cdb73063cb145c23721f5d7cc30c90d6028732f15feaf557fc0f",
+      "size": 197697,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-4"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:51.998Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-prelock": {
+      "id": "w2-econ-confirm-prelock",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 pre-lock desk: no lit building, no projection, no target band, no dial-driven figure; blind note verbatim from HOUSE_RULES[0]",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-prelock--02-prelock-n4-desk2-bowl-offer.png",
+      "sha256": "130b51b5a040a0a40e92ca0d54c89b385ac3398c07d370c719dab9c8beae7a14",
+      "size": 174364,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "BC-4",
+          "R-1"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:52.244Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-reveal-stage0": {
+      "id": "w2-econ-confirm-reveal-stage0",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "R-9 confirmed in the browser: no Two Peaks panel on a student desk at REVEAL stage 0",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-reveal-stage0--reveal-stage0-desk1.png",
+      "sha256": "7c84ec4b3590c16f26fbf9ec545e49b7ae3d660a7a6fea1010136ad195d9e75d",
+      "size": 81894,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-9"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:52.505Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-mutation-c": {
+      "id": "w2-econ-confirm-mutation-c",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Independent R-1 mutation C: a client-side projection printed as '16,862/19,800' and '$... total' — the whole-figure limb went RED at the first pre-lock state",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-mutation-c--e2e-mutation-C.log",
+      "sha256": "1cc9242e20c4c75e3cad720aef3bc2038c52512249bf9e8b48e1b495fa82487f",
+      "size": 1342,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-1",
+          "mutation-proof"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:52.772Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-mutation-d": {
+      "id": "w2-econ-confirm-mutation-d",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Independent R-1 mutation D: a projection ROUNDED to the nearest 100 plus a dial-driven fill bar passed every Night-1 pre-lock state; the limb tripped only on a coincidental fillPct of 100 at Night 2",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-mutation-d--e2e-mutation-D.log",
+      "sha256": "abe9bf99cbc1ea681bf78faada828b4f492b3faba783de255f015d01b0dddbe5",
+      "size": 1603,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-1",
+          "limb-ceiling"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:53.044Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-dump": {
+      "id": "w2-econ-confirm-dump",
+      "wave": 2,
+      "kind": "economic-truth-report",
+      "label": "Rendered innerText of every /play state driven (20 settled desk-nights, 2 pre-lock states, 7 REVEAL stages) plus per-state DOM measurements (figure sizes, frame fit, arena legend)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-dump--dump.json",
+      "sha256": "d79b9495df0554c74922088d70acca99c7dde6e8bd770c63c70936c0d9a16d2d",
+      "size": 48692,
+      "metadata": {
+        "tags": [
+          "economic-truth",
+          "R-2",
+          "R-3",
+          "R-4"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:53.294Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-econ-confirm-report": {
+      "id": "w2-econ-confirm-report",
+      "wave": 2,
+      "kind": "economic-truth-report",
+      "label": "Economic Truth wave-2 confirmation report (full text; also delivered as the actor's final message)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-econ-confirm-report--ECON_TRUTH_W2.md",
+      "sha256": "195c38e26c85fe52e21a8995c1f4e967a870d4b2812eab5bcd60d670131225a9",
+      "size": 17668,
+      "metadata": {
+        "tags": [
+          "economic-truth"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:53.547Z",
+      "actor": "econ-truth-w2"
+    },
+    "w2-kid-b-report": {
+      "id": "w2-kid-b-report",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "Kid B (casual, grade 5-6, pairs on Chromebook) full-arc playtest report",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-report--KID_B_W2.md",
+      "sha256": "0eec8a303126997c73be41981162ff6a28306aece6d286326d2f2cd3112bb708",
+      "size": 13365,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "student-pull",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:54.168Z",
+      "actor": "kid-b2-casual"
+    },
+    "w2-kid-b-manifest": {
+      "id": "w2-kid-b-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of all Kid B screenshots with descriptions",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-manifest--manifest.md",
+      "sha256": "d1df0bd59b359a7e10019a47f8f7e6e5ad85dcfb5b8c8800c8a34307fc91254c",
+      "size": 2058,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:54.430Z",
+      "actor": "kid-b2-casual"
+    },
+    "w2-kid-b-n1-prelock": {
+      "id": "w2-kid-b-n1-prelock",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 1 pre-lock, plan price untouched, 256 words in first viewport before action",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-n1-prelock--02-night1-prelock-1366x768.png",
+      "sha256": "44f1ff532c67237d10d100e6d99d95bb6b4c7b676c5fc9953bf133acbe8b1a42",
+      "size": 157585,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "pre-lock",
+          "word-count"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:54.703Z",
+      "actor": "kid-b2-casual"
+    },
+    "w2-kid-b-n1-result": {
+      "id": "w2-kid-b-n1-result",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 1 result at scrollY=0, headline/WHO CAME/CASH/RENEWALS/NEXT all fit in 768px",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-n1-result--03-night1-result-1366x768.png",
+      "sha256": "e6251d8be3393a1c714d625068160a783edd82934a9cb467f8fa711c704a3381",
+      "size": 229992,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "result",
+          "below-the-fold"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:54.969Z",
+      "actor": "kid-b2-casual"
+    },
+    "w2-kid-b-sellout": {
+      "id": "w2-kid-b-sellout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 sellout: FULL HOUSE, 8,200 turned away, renewals fell 20 points on same screen",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-sellout--09-night4-SELLOUT-result-1366x768.png",
+      "sha256": "f3fd5712b361b7f83f43e25c3170f40d3134782f4c13331ea1973d480fa9e9e2",
+      "size": 222244,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "sellout",
+          "result"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:55.230Z",
+      "actor": "kid-b2-casual"
+    },
+    "w2-kid-b-sellout-controlled": {
+      "id": "w2-kid-b-sellout-controlled",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Controlled isolated run: held-price sellout, sub-element rects all bottom<=768 at scrollY=0",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-sellout-controlled--measure2-night2-result.png",
+      "sha256": "c542411bd4212185f5974f2abdd3c59546fa6a13a240608d6878a76cb593dd60",
+      "size": 214968,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "sellout",
+          "measurement"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:55.496Z",
+      "actor": "kid-b2-casual"
+    },
+    "w2-kid-b-1024x600-firstcontact": {
+      "id": "w2-kid-b-1024x600-firstcontact",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "1024x600 first contact, PLAY phase, PIN card open, LOCK IT IN reachable without scrolling",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-1024x600-firstcontact--17-firstcontact-1024x600-PLAY-pincard-open.png",
+      "sha256": "a6167fc685ae5809c242a9e8212d908b638e377e06a355c945bbafa88b3cc84b",
+      "size": 116608,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "first-contact"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:55.771Z",
+      "actor": "kid-b2-casual"
+    },
+    "w2-kid-b-counterfactual": {
+      "id": "w2-kid-b-counterfactual",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "COUNTERFACTUAL What-if screen, dense adult-register paragraph rows below the clean two-number comparison",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-b-counterfactual--14-counterfactual-1366x768.png",
+      "sha256": "b2906ade5f7962ca23cfe8efee9d3722a84c86dd7e90ad4e0d8ada96f2b61bcb",
+      "size": 120518,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "counterfactual",
+          "boredom"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:29:56.037Z",
+      "actor": "kid-b2-casual"
     }
   },
   "claims": {},
@@ -5355,6 +5766,23 @@
       "status": "open",
       "recordedAt": "2026-09-02T16:27:05.951Z",
       "actor": "visual-critic-3"
+    },
+    "w2-econ-confirm-dissent": {
+      "id": "w2-econ-confirm-dissent",
+      "wave": 2,
+      "category": "economic-truth",
+      "severity": "blocking",
+      "finding": "R-7 is not discharged: both arena entries added to SIMPLIFICATIONS at 6c4c7cc state the opposite of what shipped. (1) The entry says the bowl is lit as one evenly-lit proportion of a single pool with no price tiers, no sections, no view quality; arena.ts:163 defines three tiers (lower .34 / club .16 / upper .50) and arena.ts:564-586 fills them sequentially, so at 25% only the rings nearest the floor are lit and at 50% the upper ring is still black (OBSERVED, arena-fill-ladder.png). The picture asserts a seat-allocation mechanism the model does not contain - the exact class of misconception the entry tells the teacher cannot arise. (2) The entry says the Night-4 upper bowl is a third state of the same picture; the picture has no third state and the legend branch that would name it is unreachable (play/main.ts:2218: bowlOffered = n.bowlCost > 0 || n.openBowl, and bowlCost is non-zero only when openBowl is true). OBSERVED at three bowl-closed desks: a desk that kept the bowl shut draws a fully lit three-tier building at 98.2% with no indication that 2,400 seats were never opened, on the one night the module turns on a capacity decision. The honesty ledger is what makes a simplification acceptable under CLAUDE.md section 3; two of its three new entries are false about the artifact, so the teacher note that should defuse the misconception instead denies it exists. Discharged by either repair in R-A.",
+      "evidenceIds": [
+        "w2-econ-confirm-arena-ladder",
+        "w2-econ-confirm-n4-bowl-closed",
+        "w2-econ-confirm-n4-bowl-open",
+        "w2-econ-confirm-dump"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-02T16:29:53.841Z",
+      "actor": "econ-truth-w2"
     }
   },
   "meetings": {},
@@ -5533,11 +5961,11 @@
     "agentsActivated": 27,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 187,
+    "evidenceRecorded": 207,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 263,
-  "eventHead": "9388da0f7da8f02c4cc50419237b3a5b774f8dd349b0859cc2d12d9718a8c3e7",
+  "eventCount": 286,
+  "eventHead": "b5b6333d627360a13b6633c54f114476e06a1c6276247ab3114c935e032d0244",
   "warnings": []
 }

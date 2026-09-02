@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `263:9388da0f7da8f02c4cc50419237b3a5b774f8dd349b0859cc2d12d9718a8c3e7`  
-Updated: 2026-09-02T16:28:00.743Z
+Event head: `286:b5b6333d627360a13b6633c54f114476e06a1c6276247ab3114c935e032d0244`  
+Updated: 2026-09-02T16:29:56.310Z
 
 ## Founder intent
 
@@ -40,9 +40,9 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - visual-experience-director — visual-critic-3 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — gameplay-critic-w2 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-a2-basketball — completed-with-concerns — claude-opus-5
-- player-gameplay-critic — kid-b2-casual — active — claude-sonnet-5
+- player-gameplay-critic — kid-b2-casual — completed-with-concerns — claude-sonnet-5
 - player-gameplay-critic — kid-c2-nonsports — completed-with-concerns — claude-opus-5
-- economic-truth-critic — econ-truth-w2 — active — claude-opus-5
+- economic-truth-critic — econ-truth-w2 — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-w2 — completed-with-concerns — claude-sonnet-5
 - product-analyst — analyst-w2 — active — claude-opus-5
 - regression-hunter — regression-w2b — active — claude-sonnet-5
@@ -161,6 +161,26 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-kid-a-n5-result — screenshot — Night 5 settled at $24 on Night 1's identical card: 16,187 came vs 10,878 at $46 — no Night 1 callback anywhere on the student's own result; red 'all five nights are done' rendered in the error slot
 - w2-kid-a-n5-prelock — screenshot — Night 5 pre-lock: 'Same card as Night 1' and 'The only thing that has changed since Night 1 is you' told in ~11px bullets beside a 68px price readout
 - w2-kid-a-lobby — screenshot — LOBBY at 1366x768: Madison Square Garden desk assignment, plus a >400px contiguous dead black region and an empty placeholder box in the left rail
+- w2-econ-confirm-manifest — browser-trace — Screenshot manifest + driver notes for the 4-desk agent playtest of /play Full House at 6c4c7cc
+- w2-econ-confirm-arena-ladder — screenshot — arenaSvg at 25/50/75/100% fill: the drawn bowl fills inside-out through three tiers, refuting SIMPLIFICATIONS 'one evenly-lit proportion, no price tiers, no sections'
+- w2-econ-confirm-n4-bowl-closed — screenshot — Night 4 settled with the upper bowl CLOSED: 19,450 of 19,800 = 98.2%, arena legend carries only Came / Open seats — no third upper-bowl state
+- w2-econ-confirm-n4-bowl-open — screenshot — Night 4 settled with the upper bowl OPEN: 15,375 of 22,200 = 69.3%, UPPER BOWL -$95,000 in the CASH chain
+- w2-econ-confirm-sellout — screenshot — The sellout beat: FULL HOUSE · 17,794 OF 17,794 · 6,631 TURNED AWAY, gold-edged banner, resale note below the fold at 1366x768
+- w2-econ-confirm-zero-night — screenshot — Night 5 at $120: zero turnout, CASH -$520,000, 0% of the seats you opened tonight — headline states the fact and grades nothing
+- w2-econ-confirm-prelock — screenshot — Night 4 pre-lock desk: no lit building, no projection, no target band, no dial-driven figure; blind note verbatim from HOUSE_RULES[0]
+- w2-econ-confirm-reveal-stage0 — screenshot — R-9 confirmed in the browser: no Two Peaks panel on a student desk at REVEAL stage 0
+- w2-econ-confirm-mutation-c — browser-trace — Independent R-1 mutation C: a client-side projection printed as '16,862/19,800' and '$... total' — the whole-figure limb went RED at the first pre-lock state
+- w2-econ-confirm-mutation-d — browser-trace — Independent R-1 mutation D: a projection ROUNDED to the nearest 100 plus a dial-driven fill bar passed every Night-1 pre-lock state; the limb tripped only on a coincidental fillPct of 100 at Night 2
+- w2-econ-confirm-dump — economic-truth-report — Rendered innerText of every /play state driven (20 settled desk-nights, 2 pre-lock states, 7 REVEAL stages) plus per-state DOM measurements (figure sizes, frame fit, arena legend)
+- w2-econ-confirm-report — economic-truth-report — Economic Truth wave-2 confirmation report (full text; also delivered as the actor's final message)
+- w2-kid-b-report — gameplay-report — Kid B (casual, grade 5-6, pairs on Chromebook) full-arc playtest report
+- w2-kid-b-manifest — browser-trace — Manifest of all Kid B screenshots with descriptions
+- w2-kid-b-n1-prelock — screenshot — Night 1 pre-lock, plan price untouched, 256 words in first viewport before action
+- w2-kid-b-n1-result — screenshot — Night 1 result at scrollY=0, headline/WHO CAME/CASH/RENEWALS/NEXT all fit in 768px
+- w2-kid-b-sellout — screenshot — Night 4 sellout: FULL HOUSE, 8,200 turned away, renewals fell 20 points on same screen
+- w2-kid-b-sellout-controlled — screenshot — Controlled isolated run: held-price sellout, sub-element rects all bottom<=768 at scrollY=0
+- w2-kid-b-1024x600-firstcontact — screenshot — 1024x600 first contact, PLAY phase, PIN card open, LOCK IT IN reachable without scrolling
+- w2-kid-b-counterfactual — screenshot — COUNTERFACTUAL What-if screen, dense adult-register paragraph rows below the clean two-number comparison
 
 ## Claim ledger
 
@@ -171,6 +191,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - bowl-rights-review-dissent — rights-source/advisory/open — mock-board-1920.png (the wave-3 board mock) shows four real NBA clubs (Denver Nuggets, Sacramento Kings, Orlando Magic, Milwaukee Bucks) that do not exist in fullHouse.ts's MARKETS array and have never been Sports Reality verified (no capacity, building, or market-framing data exists for them, unlike New York/Memphis in GATE_L1_SR.md). These should not ship into a real class-results frame without either restricting desks to the two verified markets (repeating them per the existing odd/even marketForDesk assignment) or a fresh verification pass per additional club before wave 3 builds the frame.
 - w2-gameplay-dissent — student-pull/blocking/open — Pull for the generic pair is FUNCTIONAL, below the bar for a Track 101 flagship, on three measured causes. (1) At every pre-lock decision at 1366x768, scrollY=0, the pair's own settled-night ledger and dot chart - the only information the blind-commit mechanic gives them - has top=769 (N1-N3) / 788 (N4) against a 768px viewport, i.e. zero pixels on screen, while the page's own subtitle reads 'read your own nights'. (2) The event-money dial's registered rule renders at approx y833-1064 pre-lock and its receipt renders below #fhNextNight (top 701 at 1366x768, 705 at 1024x600) post-lock, so at scrollY=0 one of the three instruments has no visible cause and no visible consequence at any point in the lesson - information -> choice -> Continue. (3) The student device is inert across the back half: #gameBody innerText is byte-identical across teacher reveal stages 0-5 and again at 6-7 (seven clicks, one device change) and byte-identical across all six SYNTHESIS card pages, with ~471px of contiguous dead black at SYNTHESIS and ~415px at COMPLETE against the 200px cap. Contract rows B8 and D2 are undischarged and row C1 fails at 1024x600 (RENEWALS bottom 604/639, NEXT top 705). The wave-1 dissents on the sellout beat and on #fhLock at 1024x600 are discharged; 'consequence below the fold' is discharged only at 1366x768.
 - w2-visual-review-dissent — visual-quality/important/open — The Module-2 design system violates its own two published laws inside the module's designed peak moment, and the wave's flagship asset does not carry the read it exists to carry. MEASURED: (A4) Bebas Neue is the computed font-family of the sellout headline FULL HOUSE (40px/800), the per-night result headline (26px), the rail desk identity (12px, every state) and the rail night label, while design/VISUAL_IDENTITY.md states 'Bebas Neue does not appear under M2' - no deviation reason recorded. (A2) gold #f4b942 is rendered in HTML, not in the arena SVG, as the sellout panel border rgba(244,185,66,0.4) and the headline background linear-gradient(rgba(244,185,66,.16), rgba(244,185,66,.04)); amber rgb(240,169,74) is the legend swatch on every settled night; blue #4da2e8 is the rule-box background and left border on every pre-lock frame - four UI accent hues where the contract allows one, and VISUAL_IDENTITY.md asserts gold is retired. (A7/C4) the drawn arena does not encode fill legibly: 71.4% and 100% differ only by an outer-ring dim, 0% still renders a warmly lit court so the night nobody came reads as an open building, and the legend's 'Came' swatch is amber while every lit seat is violet - on a bowl-open night 'Came' and 'Upper bowl open' are the same amber. Additionally C8 renders broken (the locked-waiting building panel is a mostly-empty black rectangle with one clipped quadrant of the bowl, on a state each pair sees five times). Advisory under my authority; recorded so no later PREMIUM claim can be made on this surface without disposing of it. I directed the repairs in the 'direction' section and must not be the sole certifier of the result.
+- w2-econ-confirm-dissent — economic-truth/blocking/open — R-7 is not discharged: both arena entries added to SIMPLIFICATIONS at 6c4c7cc state the opposite of what shipped. (1) The entry says the bowl is lit as one evenly-lit proportion of a single pool with no price tiers, no sections, no view quality; arena.ts:163 defines three tiers (lower .34 / club .16 / upper .50) and arena.ts:564-586 fills them sequentially, so at 25% only the rings nearest the floor are lit and at 50% the upper ring is still black (OBSERVED, arena-fill-ladder.png). The picture asserts a seat-allocation mechanism the model does not contain - the exact class of misconception the entry tells the teacher cannot arise. (2) The entry says the Night-4 upper bowl is a third state of the same picture; the picture has no third state and the legend branch that would name it is unreachable (play/main.ts:2218: bowlOffered = n.bowlCost > 0 || n.openBowl, and bowlCost is non-zero only when openBowl is true). OBSERVED at three bowl-closed desks: a desk that kept the bowl shut draws a fully lit three-tier building at 98.2% with no indication that 2,400 seats were never opened, on the one night the module turns on a capacity decision. The honesty ledger is what makes a simplification acceptable under CLAUDE.md section 3; two of its three new entries are false about the artifact, so the teacher note that should defuse the misconception instead denies it exists. Discharged by either repair in R-A.
 
 ## Latest gate
 

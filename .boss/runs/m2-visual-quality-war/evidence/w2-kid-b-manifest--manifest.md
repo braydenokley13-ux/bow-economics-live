@@ -1,0 +1,22 @@
+# Screenshot manifest — w2-kid-b
+
+- 00-firstcontact-1024x600-pincard.png — Kid B join at 1024x600, LOBBY, PIN banner open
+- 01-hook-1366x768.png — HOOK phase, desk/team intro
+- 02-night1-prelock-1366x768.png — Night 1 pre-lock, plan price $24 untouched (256 words in first viewport)
+- 03-night1-result-1366x768.png — Night 1 result at scrollY=0 (headline/WHO CAME/CASH/RENEWALS/NEXT all fit)
+- 04-night2-prelock-1366x768.png — Night 2 pre-lock, plan price still untouched
+- 05-night2-result-1366x768.png — Night 2 result
+- 06-night3-poked-dial-1366x768.png — Night 3 pre-lock after Kid B pokes dial down 15 clicks ($24->$10)
+- 07-night3-result-1366x768.png — Night 3 result at poked price
+- 08-night4-prelock-1366x768.png — Night 4 pre-lock, dial still at poked $10 (never reset)
+- 09-night4-SELLOUT-result-1366x768.png — Night 4 result: FULL HOUSE, 8,200 turned away, renewals -20pts
+- 10-night5-prelock-1366x768.png — Night 5 pre-lock
+- 11-night5-result-1366x768.png — Night 5 result
+- 12-reveal-final-1366x768.png — student REVEAL/all-nights-closed summary (from measure4 clean run)
+- 13-adapt-1366x768.png — ADAPT phase, Two Peaks card + nights ledger
+- 14-counterfactual-1366x768.png — COUNTERFACTUAL "What if?" screen, dense paragraph rows
+- 15-synthesis-1366x768.png — SYNTHESIS phase (student side) — NOTE: this and 16 may be stale duplicates of 14 from a phase-advance race in the measure4 driver; treat content claims from 15/16 as NOT VERIFIED, use 14 as the reliable COUNTERFACTUAL evidence
+- 16-complete-1366x768.png — COMPLETE phase (student side) — same caveat as 15
+- 17-firstcontact-1024x600-PLAY-pincard-open.png — 1024x600, PLAY phase, PIN card open, LOCK IT IN reachable without scrolling
+- measure2-night1-result.png — controlled isolated run, Night 1 result, used for getBoundingClientRect sub-element measurements
+- measure2-night2-result.png — controlled isolated run, Night 2 result = SELLOUT (held plan price both nights), used for scrollY=0 sub-element measurements on a sellout frame
