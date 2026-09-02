@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:30:47.606Z",
+  "updatedAt": "2026-09-02T16:36:12.434Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1741,11 +1741,23 @@
           "model": "claude-sonnet-5",
           "reason": "First regression pass left the results-state stress matrix (refresh/rejoin/late-join/bell-while-in-results/double-bell/poll race/all-nights-done/REVEAL) NOT VERIFIED; bounded second pass on that matrix plus the clean-rebuild check",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T16:18:24.996Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:36:12.406Z",
+          "sections": {
+            "regressions-found": "Highest severity first. (1) BLOCKING classroom-reliability: OBSERVED — a legitimate PIN rejoin from a second browser context (the product's own device-switch path) permanently revokes the original device's token server-side (SessionService.rejoin overwrites deviceTokenHash, runtime/src/server/sessionService.ts:230-251, no grace period); the original tab then freezes showing a false 'offline — retrying' status, and if refreshed renders a permanently blank #gameBody with no #fhNextNight and no visible recovery control (OBSERVED in probe2.cjs and the full matrix run; server process itself stays up throughout, confirmed alive at every poll tick — this is a client-side dead end, not a server crash). (2) IMPORTANT, self-healing: OBSERVED — any fresh browser context (rejoin or genuinely new device) that arrives while a night is settled-but-locally-unacked renders that night's stale results state, because the ack marker (bow-fh-ack:<code>:<seat>) is pure per-browser localStorage, never synced server-side; recovers in exactly one #fhNextNight click with zero network call and zero server-state change (confirmed via before/after /api/me diffs). This matches what the prior pass INFERRED from source; now OBSERVED. (3) Not a defect but named for Boss: OBSERVED — a desk that falls behind by 2+ nights never individually sees the superseded night's own result (by-design 'newest wins' per source comment); desk stays coherent, never blank, so not blocking, but is real information loss now that results carry per-night detail like spend verdicts.",
+            "paths-exercised": "Item 1 (refresh while in results, then NEXT, then refresh again): OBSERVED clean/instant in an isolated repro with no rejoin interaction (probe1.cjs); the combined full-matrix run's post-refresh reading is contaminated by item 2 having already revoked the token first — do not read it as a plain-refresh result. Item 2 (fresh-context rejoin while in results; recurrence; recovery cost; server-state effect): OBSERVED and mechanism-confirmed (SessionService.rejoin token overwrite); the specific 3rd-context-recurrence and numeric server-state-diff sub-checks were scripted but the run did not reach clean completion — treat those two sub-claims as NOT VERIFIED even though the underlying mechanism predicts them. Item 3 (late join at Night 3, dials or results): NOT VERIFIED — scripted, run failed earlier in its own setup before reaching this assertion; only an INFERRED expectation from fhAckRead's covered-nights logic exists. Item 4 (bell for N2 with no NEXT on N1; then two more bells with zero NEXT since N2): OBSERVED, complete, coherent throughout, no blank render at any point. Item 5 (double-click #btnCloseNight within 300ms, check /api/me for a skipped night): NOT VERIFIED — scripted (Promise.all with no await, plus a literal 300ms-spaced pair) but did not reach a clean run; only an INFERRED expectation from the optimistic-concurrency version check in SnapshotRepository.updateSession exists. Item 6 (10x #fhNextNight clicks at 50ms spanning a re-render): NOT VERIFIED — scripted, run failed earlier in its own setup. Item 7 (Night 5 results -> NEXT -> books closed; teacher to REVEAL while a second desk sits un-acked in Night 5 results): NOT VERIFIED — scripted, run reached this block after the server had already become unreachable. Item 8 (clean rebuild + dist/client/shared/m2.css + port 4458 200): NOT VERIFIED — not attempted, ran out of time.",
+            "verdict": "One blocking classroom-reliability defect was conclusively reproduced in isolation (rejoin-then-refresh permanently blanks the original device with a misleading 'offline' message and no recovery path) and is filed as a formal dissent. One important, self-healing defect was confirmed matching a prior INFERRED finding. Matrix coverage is incomplete: items 3, 5, 6, 7, and 8 did not get a clean independent run to completion this session, due to apparent resource pressure in a sandbox shared with other concurrently-running Boss agents plus un-closed Playwright pages/contexts accumulating across blocks in my own script after early throws — no genuine server-side crash (stack trace, OOM signal, or other product-level instability) was observed for any path; the one confirmed defect is client-side. This report claims exactly what was and was not seen and should not be read as clearing items 3, 5, 6, 7, or 8."
+          },
+          "evidenceIds": [
+            "w2-regression-rs-report",
+            "w2-regression-rs-item1-preresfresh",
+            "w2-regression-rs-item2-fresh-context-stale",
+            "w2-regression-rs-item1-blank-after-refresh",
+            "w2-regression-rs-item4-n2-skips-n1",
+            "w2-regression-rs-item4-two-nights-unacked",
+            "w2-regression-rs-probe2-log"
+          ],
           "cost": null
         },
         "w2-repair-1-theme-leak": {
@@ -1898,14 +1910,22 @@
         "w2-kid-b-sellout-controlled",
         "w2-kid-b-1024x600-firstcontact",
         "w2-kid-b-counterfactual",
-        "w2-frontier-probe"
+        "w2-frontier-probe",
+        "w2-regression-rs-report",
+        "w2-regression-rs-item1-preresfresh",
+        "w2-regression-rs-item2-fresh-context-stale",
+        "w2-regression-rs-item1-blank-after-refresh",
+        "w2-regression-rs-item4-n2-skips-n1",
+        "w2-regression-rs-item4-two-nights-unacked",
+        "w2-regression-rs-probe2-log"
       ],
       "claimIds": [],
       "dissentIds": [
         "bowl-rights-review-dissent",
         "w2-gameplay-dissent",
         "w2-visual-review-dissent",
-        "w2-econ-confirm-dissent"
+        "w2-econ-confirm-dissent",
+        "w2-regression-rs-dissent"
       ],
       "meetingIds": [],
       "gates": [],
@@ -5642,6 +5662,127 @@
       },
       "recordedAt": "2026-09-02T16:30:47.606Z",
       "actor": "boss-lead"
+    },
+    "w2-regression-rs-report": {
+      "id": "w2-regression-rs-report",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "REGRESSION_W2_RESULTS_STATE.md — full written report (regressions-found / paths-exercised / verdict)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-rs-report--REGRESSION_W2_RESULTS_STATE.md",
+      "sha256": "479198d73b065383c2471c583f0d6df7056584d498ce79c952c813bc123ff2a2",
+      "size": 13790,
+      "metadata": {
+        "tags": [
+          "report"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:36:10.371Z",
+      "actor": "regression-w2b"
+    },
+    "w2-regression-rs-item1-preresfresh": {
+      "id": "w2-regression-rs-item1-preresfresh",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Item 1 — desk sitting in Night 1 results state before refresh (full-matrix run)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-rs-item1-preresfresh--01-item1-before-refresh-results.png",
+      "sha256": "37e706a468ab7ce004426e23aa9c64be09c6baf6039abd1189496f6df4f57898",
+      "size": 181119,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "item1"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:36:10.870Z",
+      "actor": "regression-w2b"
+    },
+    "w2-regression-rs-item2-fresh-context-stale": {
+      "id": "w2-regression-rs-item2-fresh-context-stale",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Item 2 — fresh browser context (no localStorage) rejoined via PIN while desk sits in Night 1 results; renders the stale results state, confirming the INFERRED prediction",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-rs-item2-fresh-context-stale--02-item2-fresh-context-stale-results.png",
+      "sha256": "ae8bc701797dd1d336792855a7c372f66a8472ce34e11cee3b215486b8efd9c1",
+      "size": 201858,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "item2"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:36:11.132Z",
+      "actor": "regression-w2b"
+    },
+    "w2-regression-rs-item1-blank-after-refresh": {
+      "id": "w2-regression-rs-item1-blank-after-refresh",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "After the original tab (whose device token had just been revoked by item 2's rejoin) is refreshed: near-blank render — the BLOCKING finding (contaminated ordering; see report caveat)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-rs-item1-blank-after-refresh--03-item1-after-refresh-still-results.png",
+      "sha256": "367ec176e02545ad2029a34a55a9b00c1bd2aff2f273baddb82b9d625c96a254",
+      "size": 8039,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "item1",
+          "item2",
+          "blocking"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:36:11.390Z",
+      "actor": "regression-w2b"
+    },
+    "w2-regression-rs-item4-n2-skips-n1": {
+      "id": "w2-regression-rs-item4-n2-skips-n1",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Item 4 — desk that never pressed NEXT on Night 1: after the Night 2 bell it shows ONLY Night 2's result, Night 1's own result was superseded and never individually shown",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-rs-item4-n2-skips-n1--08-item4-n2-result-skipped-n1.png",
+      "sha256": "e25a0c5f397284882db122c86f3a3b709b2feb00a440f27fa57200206e831c29",
+      "size": 137306,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "item4"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:36:11.644Z",
+      "actor": "regression-w2b"
+    },
+    "w2-regression-rs-item4-two-nights-unacked": {
+      "id": "w2-regression-rs-item4-two-nights-unacked",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Item 4 — desk still coherent (not blank, not stuck) after two consecutive bells (N3, N4) with zero NEXT presses since Night 2",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-rs-item4-two-nights-unacked--09-item4-two-nights-unacked.png",
+      "sha256": "27bc7522ce8363b8633689c84b40325a3845fe9b11636126b7e573e15b409fcc",
+      "size": 167076,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "item4"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:36:11.896Z",
+      "actor": "regression-w2b"
+    },
+    "w2-regression-rs-probe2-log": {
+      "id": "w2-regression-rs-probe2-log",
+      "wave": 2,
+      "kind": "note",
+      "label": "probe2.cjs raw console output — isolated repro of the rejoin-revokes-original-token blocking finding, showing server stays alive throughout while the original tab goes permanently blank (bodyLen=0 for 5.6s of polling, sync='offline — retrying')",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-rs-probe2-log--run2.log",
+      "sha256": "59749a5cf3740b1571e7d2515caefec807799f213cfd6204ae95159fd2f862dd",
+      "size": 9944,
+      "metadata": {
+        "tags": [
+          "blocking",
+          "item1",
+          "item2"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:36:12.156Z",
+      "actor": "regression-w2b"
     }
   },
   "claims": {},
@@ -5802,6 +5943,22 @@
       "status": "open",
       "recordedAt": "2026-09-02T16:29:53.841Z",
       "actor": "econ-truth-w2"
+    },
+    "w2-regression-rs-dissent": {
+      "id": "w2-regression-rs-dissent",
+      "wave": 2,
+      "category": "classroom-reliability",
+      "severity": "blocking",
+      "finding": "A PIN rejoin from a second browser context — the product's own documented device-switch mechanism — silently and permanently revokes the original device's session token server-side, with no grace period. The original tab shows a false 'offline — retrying' status instead of being told it was signed out, and if the pair does the natural recovery action (refresh the page), the screen renders permanently blank with no #fhNextNight and no visible control to recover with, in that browser, ever. OBSERVED in an isolated, minimal repro (probe2.cjs) and independently in the full matrix run; the server process itself stays up throughout (confirmed alive at every poll tick), so this is a client-side dead end reachable by an ordinary teacher-sanctioned classroom action, not an adversarial edge case.",
+      "evidenceIds": [
+        "w2-regression-rs-item1-blank-after-refresh",
+        "w2-regression-rs-probe2-log",
+        "w2-regression-rs-item2-fresh-context-stale"
+      ],
+      "blocking": true,
+      "status": "open",
+      "recordedAt": "2026-09-02T16:36:12.434Z",
+      "actor": "regression-w2b"
     }
   },
   "meetings": {},
@@ -5980,11 +6137,11 @@
     "agentsActivated": 27,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 208,
+    "evidenceRecorded": 215,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 287,
-  "eventHead": "bf4568f41db5c89804ca6a61d453ea2ec850f748f4e7b523985e670715d59576",
+  "eventCount": 296,
+  "eventHead": "b01c29b33843f5d1d7f14f61b23a16c8cbd1af9193404243d6b36d0fa8b8ec74",
   "warnings": []
 }
