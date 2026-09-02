@@ -34,7 +34,14 @@ import {
   curveFor,
   fullHouseModule,
   renewalDelta,
+  renewalDeltaRaw,
+  renewalFloorBinds,
   renewalReferencePrice,
+  renewalRuleFor,
+  renewalRuleLinesFor,
+  renewalShortRuleFor,
+  spendFactLineFor,
+  twoPeaksNoteFor,
   replayPlan,
   settleNight,
   ticketPeakPrice,
@@ -982,6 +989,16 @@ test("uiCopy reaches the desk in every student phase, with every registered key"
     "tonightQualifier",
     "noNightsYetLine",
     "moreLabel",
+    // W2 repair-4 R4-5: the sentences the renderer used to author.
+    "twoPeaksTitle",
+    "twoPeaksTicketLabel",
+    "twoPeaksTotalLabel",
+    "noTomorrowLine",
+    "stockNightLine",
+    "autoNightLine",
+    "inArenaNote",
+    "bowlPaidNote",
+    "renewalsCaption",
   ];
   const CHAIN = ["tickets", "inArena", "bill", "event", "bowl", "cash", "renewals"];
 
@@ -1126,4 +1143,83 @@ test("R-7 / R-10: the ledger records the three simplifications the rebuild adds"
   };
   assert.equal(teach.simplifications.length, SIMPLIFICATIONS.length);
   assert.equal(teach.simplifications.every((s) => s.risk.length > 0), true);
+});
+
+/* ------------------------------------------------------------------ W2 repair 4 */
+
+test("R4-4a: the settled night's cause is the FULL renewals rule, carrying the apex clause the short form lacks", () => {
+  for (const market of MARKETS) {
+    const lines = renewalRuleLinesFor(market);
+    assert.equal(lines.join(" "), renewalRuleFor(market), "the lines are the registered rule, character for character");
+    assert.equal(lines.length, 4, "a lead sentence and the three arms of the tent");
+    assert.match(lines[1]!, /UNDER/);
+    assert.match(lines[2]!, /ABOVE/);
+    assert.match(lines[3]!, /^In between, the plan looks like a bargain and more come back\.$/);
+    // the compression the results frame used to print as the cause has no apex
+    assert.doesNotMatch(renewalShortRuleFor(market), /In between|more come back/);
+  }
+  // and the student payload carries both forms, on every night, so the frame
+  // that shows a settled movement can print the whole tent
+  let state = seated(2);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const view = fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+      renewalRule: string;
+      renewalRuleLines: string[];
+      market: { planPrice: number };
+    };
+    const market = MARKETS.find((m) => m.planPrice === view.market.planPrice)!;
+    assert.equal(view.renewalRule, renewalRuleFor(market), `night ${i + 1} renewalRule`);
+    assert.deepEqual(view.renewalRuleLines, renewalRuleLinesFor(market), `night ${i + 1} renewalRuleLines`);
+    state = playNight(state, { "seat-1": 34, "seat-2": 24 });
+  }
+});
+
+test("R4-4b: the floor line fires only when the 20-point clamp bound — never on the book's 0 floor, never at exactly the clamp", () => {
+  assert.equal(renewalFloorBinds(-29, -20), true);
+  assert.equal(renewalFloorBinds(-20, -20), false, "the rule asked for exactly the clamp, not more");
+  assert.equal(renewalFloorBinds(-29, -10), false, "the book's own floor took the rest");
+  assert.equal(renewalFloorBinds(-29, 0), false);
+  assert.equal(renewalFloorBinds(-5, -5), false);
+  const ny = MARKETS.find((m) => m.id === "new-york")!;
+  assert.ok(renewalDeltaRaw(ny, CARDS[0]!, PRICE_MIN, 0) < -20, "the $10 New York night asks for more than the clamp");
+  assert.equal(renewalDelta(ny, CARDS[0]!, PRICE_MIN, 0), -20);
+  // three $10 nights in New York: 50 -> 30 (clamped), 30 -> 10 (clamped), 10 -> 0 (the book's floor)
+  let state = seated(2);
+  for (let i = 0; i < 3; i += 1) state = playNight(state, { "seat-1": PRICE_MIN, "seat-2": 24 });
+  const history = (
+    fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+      history: { renewalsBefore: number; renewalsAfter: number; renewalMove: number; renewalAtFloor: boolean }[];
+    }
+  ).history;
+  assert.deepEqual(
+    history.map((h) => [h.renewalsBefore, h.renewalsAfter, h.renewalMove, h.renewalAtFloor]),
+    [
+      [50, 30, -20, true],
+      [30, 10, -20, true],
+      [10, 0, -10, false],
+    ],
+  );
+});
+
+test("R4-4c / R4-5: the ledger says a quarter, and the renderer's former sentences are module strings", () => {
+  const bowl = SIMPLIFICATIONS.find((s) => /third state of the same picture/i.test(s.what))!;
+  assert.match(bowl.what, /about a quarter/);
+  assert.doesNotMatch(bowl.what + bowl.risk, /about a fifth/);
+  assert.match(bowl.what, /shuttered on every night it is not open/);
+  assert.equal(twoPeaksNoteFor(12, 6), "$12 lower — 6 clicks of the dial. The cheaper ticket made more money.");
+  assert.equal(spendFactLineFor(0, false), null);
+  assert.equal(spendFactLineFor(5000, false), "You also put $5,000 into the night.");
+  assert.equal(spendFactLineFor(0, true), "You also put $0 into the night with the more seats open.");
+  assert.equal(FULL_HOUSE_UI_COPY.noTomorrowLine.startsWith("Nothing. Tonight is the last night of the five"), true);
+
+  // the settled night carries its spend line; the reveal's Two Peaks entries carry the gap sentence
+  let state = seated(2);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, { "seat-1": 34, "seat-2": 24 }, i === 0 ? { "seat-1": 40_000 } : {});
+  const history = (fullHouseModule.studentView(state, "seat-1", "PLAY") as { history: { spendLine: string | null }[] }).history;
+  assert.equal(history[0]!.spendLine, "You also put $40,000 into the night.");
+  assert.equal(history[1]!.spendLine, null);
+  const at = { ...fullHouseModule.onPhaseExit!(state, "PLAY", "REVEAL"), revealStage: REVEAL_STEPS, twoPeaksReleased: true };
+  const peaks = (fullHouseModule.studentView(at, "seat-1", "REVEAL") as { twoPeaks: { gapDollars: number; gapSteps: number; note: string }[] }).twoPeaks;
+  assert.ok(peaks.length > 0);
+  for (const p of peaks) assert.equal(p.note, twoPeaksNoteFor(p.gapDollars, p.gapSteps));
 });

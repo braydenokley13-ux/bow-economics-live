@@ -357,6 +357,18 @@ export function renewalRuleFor(m: Market): string {
   return `Season plan: $${m.planPrice} a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.`;
 }
 
+/**
+ * W2 repair-4 R4-4a (Economic Truth re-check finding 1): the settled night's
+ * cause line is the FULL rule — the short form drops the apex, the only clause
+ * that can explain a renewals GAIN, and it was printed under gains. This is
+ * `renewalRuleFor` split at its sentence ends, one line per clause (the lead
+ * and the three arms of the tent), for a frame with room for lines; joined
+ * with spaces it is the registered rule, character for character.
+ */
+export function renewalRuleLinesFor(m: Market): string[] {
+  return renewalRuleFor(m).split(/(?<=\.) (?=[A-Z])/);
+}
+
 /* --------------------------------------------------------------- cards -- */
 
 export type NightCard = {
@@ -594,6 +606,11 @@ export function renewalReferencePrice(market: Market, card: NightCard): number {
  * about greed is available from the numbers.
  */
 export function renewalDelta(market: Market, card: NightCard, price: number, spend: number): number {
+  return clamp(renewalDeltaRaw(market, card, price, spend), RENEWAL_DELTA_FLOOR, RENEWAL_DELTA_CEIL);
+}
+
+/** The rule's answer BEFORE the one-night clamp (W2 repair-4 R4-4b). */
+export function renewalDeltaRaw(market: Market, card: NightCard, price: number, spend: number): number {
   const reference = renewalReferencePrice(market, card);
   const span = reference - market.planPrice;
   const ramp = span > 0 ? clamp((price - market.planPrice) / span, 0, 1) : 0;
@@ -603,7 +620,19 @@ export function renewalDelta(market: Market, card: NightCard, price: number, spe
     RENEWAL_UNDERCUT_SLOPE * Math.max(0, market.planPrice - price) -
     market.planSlope * Math.max(0, price - reference) +
     spend / market.eventRenewalDollars;
-  return clamp(Math.round(value), RENEWAL_DELTA_FLOOR, RENEWAL_DELTA_CEIL);
+  return Math.round(value);
+}
+
+/**
+ * W2 repair-4 R4-4b (Economic Truth re-check finding 4): `renewalFloorLineFor`
+ * explains the RULE's clamp — "at most 20 points off in one night" — so it may
+ * only be printed when that clamp is what the pair is looking at: the printed
+ * move IS the clamp, and the rule asked for strictly more. It never fires on
+ * the book's own floor (a desk at 7% that loses 7 points was not clamped by
+ * the rule) and never when the rule asked for exactly the clamp.
+ */
+export function renewalFloorBinds(rawDelta: number, move: number): boolean {
+  return move === RENEWAL_DELTA_FLOOR && rawDelta < RENEWAL_DELTA_FLOOR;
 }
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
@@ -1824,6 +1853,20 @@ export const FULL_HOUSE_UI_COPY = {
   noNightsYetLine: "No nights yet. Your first dot lands here after the first bell.",
   /** The disclosure that holds the full registered rules, verbatim, one press away. */
   moreLabel: "More about tonight",
+  /**
+   * W2 repair-4 R4-5 (Economic Truth R-H / E4): sentences the renderer used
+   * to author. Every one is a fact about the model or a printed rule, so
+   * every one is registered here and read off the payload.
+   */
+  twoPeaksTitle: "The two peaks — Night 3, your market",
+  twoPeaksTicketLabel: "Tickets alone made the most at",
+  twoPeaksTotalLabel: "Tickets + what they spent inside peaked at",
+  noTomorrowLine: "Nothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.",
+  stockNightLine: "This night was covered for you before you sat down.",
+  autoNightLine: "Nobody locked this night — the bell settled it at the season-plan price.",
+  inArenaNote: "what those same people spent inside",
+  bowlPaidNote: "paid whether they fill or not",
+  renewalsCaption: "season-ticket holders coming back",
   /** The CASH decomposition chain's labels. No label here says "profit" or "revenue" (R-3). */
   chainLabels: {
     tickets: "TICKETS",
@@ -1875,6 +1918,23 @@ export function dialCarriedLineFor(price: number, nightLabel: string): string {
  * `RENEWAL_DELTA_FLOOR`. When it did, the number the pair sees is the clamp,
  * not the rule's answer, and nothing on the surface said so.
  */
+/**
+ * W2 repair-4 R4-5: the Two Peaks gap sentence, registered. It restates the
+ * two argmaxes the reveal already carries; it adds no claim about why.
+ */
+export function twoPeaksNoteFor(gapDollars: number, gapSteps: number): string {
+  return `$${gapDollars} lower — ${gapSteps} clicks of the dial. The cheaper ticket made more money.`;
+}
+
+/**
+ * W2 repair-4 R4-5: the settled night's second fact line — what the pair put
+ * into the night and whether the extra seats were open. Null when neither.
+ */
+export function spendFactLineFor(spend: number, openBowl: boolean): string | null {
+  if (spend <= 0 && !openBowl) return null;
+  return `You also put $${spend.toLocaleString("en-US")} into the night${openBowl ? ` with the ${FULL_HOUSE_UI_COPY.extraSeatsLabel.toLowerCase()} open` : ""}.`;
+}
+
 export function renewalFloorLineFor(): string {
   return `The renewals rule takes at most ${Math.abs(RENEWAL_DELTA_FLOOR)} points off in one night. Tonight's price asked for more than that.`;
 }
@@ -2148,11 +2208,15 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
     // W2 repair-2 B1: the price-and-card line, registered rather than composed
     // in the renderer, so the settled outcome is attributable to the choice.
     factLine: nightFactLineFor(night.price, nightCard?.day ?? "", nightCard?.draw ?? 0),
+    // W2 repair-4 R4-5: the spend-and-seats line, registered rather than composed.
+    spendLine: spendFactLineFor(night.spend, night.openBowl),
     // W2 repair-2 E2: TRUE when the renewals rule's answer for this night's
     // price and spend was below the floor and the printed move is the clamp.
     // Recomputed from this night's own inputs through the exported model
     // function; no constant and no new mechanic.
-    renewalAtFloor: nightCard ? renewalDelta(market, nightCard, night.price, night.spend) === RENEWAL_DELTA_FLOOR : false,
+    // W2 repair-4 R4-4b: only when the 20-point clamp itself bound (see
+    // `renewalFloorBinds`), never on the book's 0 floor.
+    renewalAtFloor: nightCard ? renewalFloorBinds(renewalDeltaRaw(market, nightCard, night.price, night.spend), night.renewalMove) : false,
     renewalFloorLine: renewalFloorLineFor(),
     // R6/P2: was last night's event money confirmed or refuted by this night?
     spendVerdict: spendVerdictFor(market, night, carryFansIn),
@@ -2406,6 +2470,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               // The settled-night state renders from this payload too, so the
               // rules its RENEWALS card prints have to survive the last bell.
               renewalRule: renewalRuleFor(market),
+            renewalRuleLines: renewalRuleLinesFor(market),
               priceMin: PRICE_MIN,
               priceMax: PRICE_MAX,
               uiCopy: uiCopyFor(null, state.nightIndex),
@@ -2439,6 +2504,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // the dial that drives it, before the commit. Arithmetic on printed
             // facts only — it names no crowd, no dollar and no "right" price.
             renewalRule: renewalRuleFor(market),
+            renewalRuleLines: renewalRuleLinesFor(market),
             // W2 repair-2 E5 (Kid B #2): the dial opens each night at the season
             // plan price. When the number standing in it is one this desk has
             // already charged, say which night it came from — a fact about the
@@ -2495,7 +2561,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             twoPeaksReleased: state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1,
             twoPeaks:
               state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1
-                ? computeAggregate(state).twoPeaks.filter((t) => t.marketId === desk.marketId)
+                ? computeAggregate(state)
+                    .twoPeaks.filter((t) => t.marketId === desk.marketId)
+                    // W2 repair-4 R4-5: the gap sentence travels with the numbers.
+                    .map((t) => ({ ...t, note: twoPeaksNoteFor(t.gapDollars, t.gapSteps) }))
                 : [],
             uiCopy: uiCopyFor(null, state.nightIndex),
             message: "Your five nights, in the books. Look up at the board for the room's.",

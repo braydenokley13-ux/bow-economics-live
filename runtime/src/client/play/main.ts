@@ -1909,6 +1909,8 @@ type FHNight = {
   renewalMove: number;
   cashAfter: number;
   resaleNote: string | null;
+  /** W2 repair-4 R4-5: the spend-and-seats fact line, registered in the module. */
+  spendLine?: string | null;
   /** R-1: the night's headline sentence, composed server-side from settled facts. */
   resultHeadline?: string;
   /** R6/P2: last night's event money, confirmed or refuted by this night's seats. */
@@ -1922,7 +1924,7 @@ type FHNight = {
   renewalFloorLine?: string;
 };
 type FHBooks = { cash: number; renewals: number; inDebt: boolean };
-type FHTwoPeaks = { ticketPeakPrice: number; totalPeakPrice: number; gapDollars: number; gapSteps: number };
+type FHTwoPeaks = { ticketPeakPrice: number; totalPeakPrice: number; gapDollars: number; gapSteps: number; note?: string };
 type FHReplay = { label: string; cash: number; renewals: number; note: string };
 
 const TV_LABEL: Record<string, string> = {
@@ -1985,6 +1987,15 @@ type FHUiCopy = {
   tonightQualifier: string;
   noNightsYetLine: string;
   moreLabel: string;
+  twoPeaksTitle: string;
+  twoPeaksTicketLabel: string;
+  twoPeaksTotalLabel: string;
+  noTomorrowLine: string;
+  stockNightLine: string;
+  autoNightLine: string;
+  inArenaNote: string;
+  bowlPaidNote: string;
+  renewalsCaption: string;
   chainLabels: FHChainLabels;
   nextNightLabel: string | null;
 };
@@ -2005,6 +2016,17 @@ const FH_UI_FALLBACK: FHUiCopy = {
   tonightQualifier: "tonight",
   noNightsYetLine: "No nights yet. Your first dot lands here after the first bell.",
   moreLabel: "More about tonight",
+  // Fallbacks only (the module is the source): empty, so a missing key renders
+  // nothing rather than a sentence this file authored.
+  twoPeaksTitle: "",
+  twoPeaksTicketLabel: "",
+  twoPeaksTotalLabel: "",
+  noTomorrowLine: "",
+  stockNightLine: "",
+  autoNightLine: "",
+  inArenaNote: "",
+  bowlPaidNote: "",
+  renewalsCaption: "",
   chainLabels: { tickets: "TICKETS", inArena: "IN-ARENA", bill: "BUILDING BILL", event: "EVENT MONEY", bowl: "MORE SEATS", cash: "CASH", renewals: "RENEWALS" },
   nextNightLabel: null,
 };
@@ -2027,6 +2049,15 @@ function fhUi(view: Record<string, unknown>): FHUiCopy {
     tonightQualifier: raw.tonightQualifier ?? FH_UI_FALLBACK.tonightQualifier,
     noNightsYetLine: raw.noNightsYetLine ?? FH_UI_FALLBACK.noNightsYetLine,
     moreLabel: raw.moreLabel ?? FH_UI_FALLBACK.moreLabel,
+    twoPeaksTitle: raw.twoPeaksTitle ?? FH_UI_FALLBACK.twoPeaksTitle,
+    twoPeaksTicketLabel: raw.twoPeaksTicketLabel ?? FH_UI_FALLBACK.twoPeaksTicketLabel,
+    twoPeaksTotalLabel: raw.twoPeaksTotalLabel ?? FH_UI_FALLBACK.twoPeaksTotalLabel,
+    noTomorrowLine: raw.noTomorrowLine ?? FH_UI_FALLBACK.noTomorrowLine,
+    stockNightLine: raw.stockNightLine ?? FH_UI_FALLBACK.stockNightLine,
+    autoNightLine: raw.autoNightLine ?? FH_UI_FALLBACK.autoNightLine,
+    inArenaNote: raw.inArenaNote ?? FH_UI_FALLBACK.inArenaNote,
+    bowlPaidNote: raw.bowlPaidNote ?? FH_UI_FALLBACK.bowlPaidNote,
+    renewalsCaption: raw.renewalsCaption ?? FH_UI_FALLBACK.renewalsCaption,
     chainLabels: { ...FH_UI_FALLBACK.chainLabels, ...(raw.chainLabels ?? {}) },
     nextNightLabel: raw.nextNightLabel ?? null,
   };
@@ -2339,10 +2370,10 @@ function fhBuildingCard(view: Record<string, unknown>): string {
 }
 
 /** Tomorrow's printed card — the spend dial lands there, so it is printed here. */
-function fhNextCardHtml(next: FHCard | null): string {
+function fhNextCardHtml(next: FHCard | null, ui: FHUiCopy): string {
   const body = next
     ? `${escapeHtml(next.label)} · ${escapeHtml(next.day)} · ${escapeHtml(next.visitor)} · draw ${next.draw}/100 · ${next.tv === "national" ? "national TV" : next.tv === "local" ? "local TV" : "not on TV"}`
-    : "Nothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.";
+    : escapeHtml(ui.noTomorrowLine);
   return `<div class="fh-next" style="display:flex; align-items:baseline; gap:10px; padding:8px 12px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
       <span style="${FH_LABEL} font-size:10px; white-space:nowrap;">${next ? "Tomorrow" : "After tonight"}</span>
       <span style="font-size:12px; line-height:16px; color:${FH_INK_BODY};">${body}</span>
@@ -2558,6 +2589,7 @@ function fhSpendCard(view: Record<string, unknown>, spend: number): string {
 /** The upper bowl as a two-state plate, its cost printed (B8). */
 function fhBowlPlate(view: Record<string, unknown>): string {
   const market = view["market"] as FHMarket;
+  const ui = fhUi(view);
   const on = Boolean(view["openBowl"]);
   return `<button type="button" class="fh-bowl-plate${on ? " on" : ""}" id="fhBowl" aria-pressed="${on ? "true" : "false"}"
       style="display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:4px 12px; width:100%; text-align:left; padding:11px 14px; border-radius:12px; cursor:pointer;
@@ -2565,7 +2597,7 @@ function fhBowlPlate(view: Record<string, unknown>): string {
       <span class="fh-bowl-state" style="grid-row:span 2; padding:5px 9px; border-radius:8px; font-size:11px; font-weight:700; letter-spacing:0.08em; background:${on ? FH_VIOLET : FH_PANEL_2}; color:${on ? "#fff" : FH_INK_LABEL};">${on ? "OPEN" : "CLOSED"}</span>
       <span class="fh-bowl-main" style="font-size:14px; font-weight:600; color:${FH_INK};">Open ${market.bowlSeats.toLocaleString()} more seats tonight</span>
       <span class="fh-bowl-cost" style="grid-row:span 2; font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:19px; font-weight:600; color:${FH_INK};">${money(market.bowlCost)}</span>
-      <span class="fh-bowl-note" style="font-size:11px; color:${FH_INK_CAPTION};">paid whether they fill or not</span>
+      <span class="fh-bowl-note" style="font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(ui.bowlPaidNote)}</span>
     </button>`;
 }
 
@@ -2628,7 +2660,7 @@ function fhChainHtml(n: FHNight, ui: FHUiCopy): string {
   return `<div class="m2-card m2-chain fh-chain" style="${FH_CARD} padding:${tight ? 11 : 14}px;">
       <div style="display:flex; align-items:center; gap:9px; margin-bottom:4px;">${fhBadge("cash", "money", 26)}<span style="${FH_LABEL}">${ui.chainLabels.cash}</span></div>
       ${row("", ui.chainLabels.tickets, money(n.gate), `$${n.price} × ${n.turnout.toLocaleString()}`)}
-      ${row("+", ui.chainLabels.inArena, money(n.inArena), "what those same people spent inside")}
+      ${row("+", ui.chainLabels.inArena, money(n.inArena), escapeHtml(ui.inArenaNote))}
       ${row("−", ui.chainLabels.bill, `-${money(n.bill).replace("-", "")}`)}
       ${n.spendPaid > 0 ? row("−", ui.chainLabels.event, `-${money(n.spendPaid).replace("-", "")}`) : ""}
       ${n.bowlCost > 0 ? row("−", ui.chainLabels.bowl, `-${money(n.bowlCost).replace("-", "")}`) : ""}
@@ -2644,7 +2676,7 @@ function fhChainHtml(n: FHNight, ui: FHUiCopy): string {
  * it is restated here so the movement is attributable without recall, and the
  * price-and-card line sits beside it. No new causal claim.
  */
-function fhRenewalsHtml(n: FHNight, ui: FHUiCopy, cause = ""): string {
+function fhRenewalsHtml(n: FHNight, ui: FHUiCopy, cause = "", causeLines: string[] = []): string {
   const tight = fhTight();
   const size = tight ? 26 : 31;
   const move = n.renewalMove === 0 ? "no change" : `${n.renewalMove > 0 ? "up" : "down"} ${Math.abs(n.renewalMove)} ${Math.abs(n.renewalMove) === 1 ? "point" : "points"}`;
@@ -2657,8 +2689,12 @@ function fhRenewalsHtml(n: FHNight, ui: FHUiCopy, cause = ""): string {
         ${fig(`${n.renewalsAfter}%`, false)}
         <span style="margin-left:auto; font-size:11.5px; color:${FH_INK_LABEL};">${move}</span>
       </div>
-      <span style="display:block; margin-top:5px; font-size:11px; color:${FH_INK_CAPTION};">season-ticket holders coming back</span>
-      ${cause ? `<p class="fh-renewal-cause" style="margin:${tight ? 5 : 7}px 0 0; padding-top:${tight ? 5 : 7}px; border-top:1px solid ${FH_HAIR}; font-size:${tight ? 11.5 : 12}px; line-height:${tight ? 15 : 16}px; color:${FH_INK_BODY};">${escapeHtml(cause)}</p>` : ""}
+      <span style="display:block; margin-top:5px; font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(ui.renewalsCaption)}</span>
+      ${cause ? `<p class="fh-renewal-cause" style="margin:${tight ? 5 : 7}px 0 0; padding-top:${tight ? 5 : 7}px; border-top:1px solid ${FH_HAIR}; font-size:${tight ? 11.5 : 12}px; line-height:${tight ? 15 : 16}px; color:${FH_INK_BODY};">${
+              // R4-4a: one line per clause when the frame has room (1366), the
+              // registered paragraph when it does not (1024). Same words either way.
+              !tight && causeLines.length > 1 ? causeLines.map((l) => `<span style="display:block;">${escapeHtml(l)}</span>`).join("") : escapeHtml(cause)
+            }</p>` : ""}
       ${n.renewalAtFloor && n.renewalFloorLine ? `<p class="fh-renewal-floor" style="margin:5px 0 0; font-size:11.5px; line-height:15px; color:${FH_INK_CAPTION};">${escapeHtml(n.renewalFloorLine)}</p>` : ""}
     </div>`;
 }
@@ -2669,11 +2705,10 @@ function fhWhatHappened(n: FHNight, ui: FHUiCopy): string {
   const facts = [
     // B1: the price-and-card line is now a registered module string.
     `${escapeHtml(n.factLine ?? "")} · ${escapeHtml(n.visitor)}`,
-    n.spend > 0 || n.openBowl
-      ? `You also put ${n.spend > 0 ? money(n.spend) : "$0"} into the night${n.openBowl ? ` with the ${escapeHtml(ui.extraSeatsLabel.toLowerCase())} open` : ""}.`
-      : "",
-    n.stock ? "This night was covered for you before you sat down." : "",
-    n.auto ? "Nobody locked this night — the bell settled it at the season-plan price." : "",
+    // R4-5: the spend-and-seats line and the covered/auto lines are module strings.
+    n.spendLine ? escapeHtml(n.spendLine) : "",
+    n.stock ? escapeHtml(ui.stockNightLine) : "",
+    n.auto ? escapeHtml(ui.autoNightLine) : "",
   ].filter(Boolean);
   // R4-1: at 1024x600 the block's vertical rhythm is the compressed one — the
   // same sentences, 12/15 instead of 12.5/17, tighter gaps — so the sellout's
@@ -2763,7 +2798,12 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
   // in the WHO CAME card under the turnout (still the second-largest figure,
   // still smaller than the hero), and the chain / WHAT HAPPENED / RENEWALS
   // blocks use the compressed rhythm. 1366x768 is unchanged.
-  const cause = (view["market"] as FHMarket | undefined)?.renewalShortRule ?? String(view["renewalRule"] ?? "");
+  // W2 repair-4 R4-4a (Economic Truth re-check finding 1): the cause under a
+  // settled movement is the FULL registered rule — the short form has no apex
+  // clause and cannot account for a renewals gain, which is what it was printed
+  // under on 11 of 20 desk-nights. The short form stays at the dial, pre-lock.
+  const cause = String(view["renewalRule"] ?? "");
+  const causeLines = (view["renewalRuleLines"] as string[] | undefined) ?? [];
   const main = `
     <div style="display:flex; flex-direction:column; gap:${tight ? 7 : 9}px;">
       ${tight ? "" : `<div class="m2-breadcrumb" style="display:flex; align-items:center; gap:7px; margin:0; font-size:11px; font-weight:600; letter-spacing:0.055em; color:${FH_VIOLET_BRIGHT};">Module 2<span style="color:rgba(157,134,255,0.42);">·</span>Money in Motion<span style="color:rgba(157,134,255,0.42);">·</span>Lesson 1</div>`}
@@ -2784,7 +2824,7 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
           })}
         </div>
         <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
-          ${fhRenewalsHtml(n, ui, cause)}
+          ${fhRenewalsHtml(n, ui, cause, causeLines)}
           ${fhWhatHappened(n, ui)}
           ${tight ? "" : next}
         </div>
@@ -3004,10 +3044,10 @@ function renderFHReveal(view: Record<string, unknown>): void {
       ${
         peaks.length > 0
           ? `<div class="fh-peaks m2-card" style="${FH_CARD} padding:13px;">
-               <span style="${FH_LABEL} margin-bottom:6px;">The two peaks — Night 3, your market</span>
-               <div class="fh-peaks-row" style="display:flex; justify-content:space-between; font-size:12.5px; color:${FH_INK_BODY}; padding:3px 0;"><span>Tickets alone made the most at</span><b style="font-family:var(--m2-font-num, inherit); color:${FH_INK};">$${peaks[0]!.ticketPeakPrice}</b></div>
-               <div class="fh-peaks-row" style="display:flex; justify-content:space-between; font-size:12.5px; color:${FH_INK_BODY}; padding:3px 0;"><span>Tickets + what they spent inside peaked at</span><b style="font-family:var(--m2-font-num, inherit); color:${FH_VIOLET_BRIGHT};">$${peaks[0]!.totalPeakPrice}</b></div>
-               <p class="fh-peaks-note" style="margin:6px 0 0; font-size:11.5px; color:${FH_INK_CAPTION};">$${peaks[0]!.gapDollars} lower — ${peaks[0]!.gapSteps} clicks of the dial. The cheaper ticket made more money.</p>
+               <span style="${FH_LABEL} margin-bottom:6px;">${escapeHtml(ui.twoPeaksTitle)}</span>
+               <div class="fh-peaks-row" style="display:flex; justify-content:space-between; font-size:12.5px; color:${FH_INK_BODY}; padding:3px 0;"><span>${escapeHtml(ui.twoPeaksTicketLabel)}</span><b style="font-family:var(--m2-font-num, inherit); color:${FH_INK};">$${peaks[0]!.ticketPeakPrice}</b></div>
+               <div class="fh-peaks-row" style="display:flex; justify-content:space-between; font-size:12.5px; color:${FH_INK_BODY}; padding:3px 0;"><span>${escapeHtml(ui.twoPeaksTotalLabel)}</span><b style="font-family:var(--m2-font-num, inherit); color:${FH_VIOLET_BRIGHT};">$${peaks[0]!.totalPeakPrice}</b></div>
+               <p class="fh-peaks-note" style="margin:6px 0 0; font-size:11.5px; color:${FH_INK_CAPTION};">${escapeHtml(peaks[0]!.note ?? "")}</p>
              </div>`
           : ""
       }
@@ -3337,7 +3377,7 @@ function renderFHPlay(view: Record<string, unknown>): void {
     <div class="fh-evidence-row" style="display:grid; grid-template-columns:${tight ? "minmax(0,1.15fr) minmax(0,1fr) minmax(0,0.95fr)" : "minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.95fr)"}; gap:${tight ? 9 : 12}px; align-items:stretch;">
       ${fhDotsHtml(history, view, ui, { height: tight ? 96 : 116 })}
       ${fhBuildingCard(view)}
-      <div style="display:flex; flex-direction:column; gap:8px; min-width:0;">${card.bowlOffer && tight ? fhBowlPlate(view) : ""}${fhNextCardHtml((view["nextCard"] as FHCard | null) ?? null)}${fhRuleSlot(view)}</div>
+      <div style="display:flex; flex-direction:column; gap:8px; min-width:0;">${card.bowlOffer && tight ? fhBowlPlate(view) : ""}${fhNextCardHtml((view["nextCard"] as FHCard | null) ?? null, ui)}${fhRuleSlot(view)}</div>
     </div>`;
   const main = `<div style="display:flex; flex-direction:column; gap:${tight ? 8 : 11}px;">
       ${tight ? "" : fhHeader(view)}

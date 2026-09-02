@@ -244,3 +244,66 @@ test("R-1 source limb: the allowlist has no dead entries and no blanket waivers"
   }
   assert.ok(allowed.length > 0, "the scanner found nothing at all — it has stopped reading the client");
 });
+
+/* ------------------------------------------------------------------------- */
+/* W2 repair-4 R4-5 — contract A9 / Economic Truth R-H / E4: the sentence limb */
+/* ------------------------------------------------------------------------- */
+
+/** The Full House renderer's region of play/main.ts: from its header comment to the next module's. */
+const FH_START = "FULL HOUSE\n * m2-visual-quality-war wave 2, Lane B";
+const FH_END = "M2 L2 host the league";
+const MODULE_FILE = path.join(RUNTIME, "src", "modules", "fullHouse.ts");
+/** A run of five or more words — a sentence or the spine of one. */
+const SENTENCE = /(?:[A-Za-z$][\w$'’,%.—–-]*[ \u00a0]+){4,}[A-Za-z$][\w$'’,%.—–!?-]*/g;
+const norm = (s: string): string => s.replace(/\s+/g, " ").trim();
+
+/**
+ * Structural sentences the renderer may own: frame furniture that carries no
+ * economic claim. Anything about money, seats, crowds, prices, renewals or
+ * rules does NOT belong here — it belongs in the module.
+ */
+const STRUCTURAL: { text: string; reason: string }[] = [
+  { text: "Waiting for your teacher to start.", reason: "lobby status line; names no fact of the model" },
+  { text: "Where that change came from", reason: "label over the module's own channelLine; the sentence under it is the payload's" },
+  { text: "finding your desk", reason: "seat-request status while the server assigns a desk" },
+  { text: "What the event money does", reason: "heading over the registered spendRule inside the disclosure; the rule under it is the payload's" },
+];
+
+test("R-H / E4: every sentence the Full House renderer prints is a module string", () => {
+  const src = fs.readFileSync(path.join(SRC, "play", "main.ts"), "utf8");
+  const head = src.indexOf(FH_START);
+  const start = head > 0 ? src.indexOf("*/", head) + 2 : -1;
+  const end = src.indexOf(FH_END);
+  assert.ok(start > 1 && end > start, "the Full House region markers moved — re-anchor this limb rather than letting it read nothing");
+  const region = src.slice(start, end);
+  const offset = src.slice(0, start).split("\n").length - 1;
+  const lines = src.split("\n");
+  const mod = norm(fs.readFileSync(MODULE_FILE, "utf8"));
+  const offenders: string[] = [];
+  let runs = 0;
+  for (const lit of literals(region)) {
+    const line = lit.line + offset;
+    if (/\/\/\s*claim-ok:\s*\S/.test(lines[line - 1] ?? "")) continue;
+    // drop markup and attribute values; what is left is what a student reads
+    const text = lit.text.replace(/<[^>]*>?/g, " ").replace(/[a-z-]+="[^"]*"?/g, " ");
+    for (const m of text.matchAll(SENTENCE)) {
+      const run = norm(m[0]);
+      if (run.split(" ").length < 5) continue;
+      runs += 1;
+      if (mod.includes(run)) continue;
+      if (STRUCTURAL.some((s) => run.includes(norm(s.text)) || norm(s.text).includes(run))) continue;
+      offenders.push(`  src/client/play/main.ts:${line}  "${run.slice(0, 110)}"`);
+    }
+  }
+  assert.ok(runs >= 5, `the sentence limb read only ${runs} multi-word literal(s) — it has stopped reading the renderer`);
+  assert.deepEqual(
+    offenders,
+    [],
+    `the Full House renderer authors ${offenders.length} sentence(s) that are not in the module.\n` +
+      `Register each in fullHouse.ts (FULL_HOUSE_UI_COPY or a *For helper carried in the payload) and read it off the view;\n` +
+      `or, only for frame furniture with no economic content, add it to STRUCTURAL with a reason.\n${offenders.join("\n")}`,
+  );
+  // the allowlist cannot rot: every structural entry must still match something
+  const dead = STRUCTURAL.filter((s) => !norm(region).includes(norm(s.text)));
+  assert.deepEqual(dead.map((s) => s.text), [], "structural entries that match nothing in the renderer — delete them");
+});
