@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `572:224a8a4f5040441a70c5b106447e04a4f3d141bc60d77cc9ecdc6885f48c5c7b`  
-Updated: 2026-09-02T22:12:32.084Z
+Event head: `573:177991502c2e57ab3e0ba15260eabbc9fa9bc50da3b3e088810e7b82d8ee305d`  
+Updated: 2026-09-02T22:24:43.520Z
 
 ## Founder intent
 
@@ -33,6 +33,7 @@ The Module-2 design layer proven on /play in wave 2 can be propagated to the two
 - builder — builder-w3-teach — active — claude-opus-5
 - builder — builder-w3-board — active — claude-opus-5
 - builder — builder-w3-synth — active — claude-opus-5
+- repo-scout — repo-scout-w3 — active — claude-opus-5
 
 ## Required evidence
 
