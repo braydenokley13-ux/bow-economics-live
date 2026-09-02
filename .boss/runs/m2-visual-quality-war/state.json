@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:46:54.239Z",
+  "updatedAt": "2026-09-02T17:48:03.532Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2019,6 +2019,20 @@
           "evidenceIds": [
             "w2-direction-report"
           ],
+          "cost": null
+        },
+        "w2-repair-4": {
+          "assignmentId": "w2-repair-4",
+          "role": "builder",
+          "actor": "builder-r4",
+          "model": "claude-fable-5-1",
+          "reason": "Repair 4 of 8: bounded fixes named by the five owning-critic re-checks at 54402b0 (1024x600 results fold, dialCarried cue, nights chart labels, R-J/R-M/R-K strings, E4 registration, HOOK composition, rail chip clip, synthesis page 1); founder rulings FD-2/FD-3 excluded",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-02T17:48:03.532Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
           "cost": null
         }
       },
@@ -10388,14 +10402,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 34,
+    "agentsActivated": 35,
     "gateFailures": 3,
     "claimsContradicted": 0,
     "evidenceRecorded": 304,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 415,
-  "eventHead": "8ce765355b40f39998755159d7c6fc8e9597d0009a90258306e1572548c5a92b",
+  "eventCount": 416,
+  "eventHead": "017ca7eca671dde92be57888d53edc5614157589a315592ce30ad55103c8922f",
   "warnings": []
 }
