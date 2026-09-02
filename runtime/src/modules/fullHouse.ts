@@ -1247,7 +1247,19 @@ export function repeatRowFor(
   } else if (clamped && seatedDelta !== wantedDelta) {
     channelLine = `wanted in ${say(wantedDelta)} (${parts.join(", ")}) · seats only allowed ${say(seatedDelta)}`;
   } else {
-    channelLine = `${say(wantedDelta)} people, and that is ${parts.join(" and ")}`;
+    // W2 repair-5 R5-4 (Kid C final re-read): this line used to read
+    // "-1,100 people, and that is renewals -1,100" — two signed numbers with no
+    // verb between them, on the card that is meant to explain the season. Same
+    // terms, same arithmetic, said as a sentence.
+    const size = Math.abs(wantedDelta).toLocaleString();
+    const named = parts.map((p) => {
+      const cut = p.lastIndexOf(" ");
+      return `${p.slice(0, cut)} (${p.slice(cut + 1)})`;
+    });
+    channelLine =
+      wantedDelta === 0
+        ? `The same crowd came both times, and underneath it ${named.join(" and ")}.`
+        : `${size} ${wantedDelta > 0 ? "more" : "fewer"} people came, and the change came from ${named.join(" and ")}.`;
   }
   return {
     deskHandle: deskHandle(desk),
