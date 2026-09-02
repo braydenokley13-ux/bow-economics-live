@@ -208,3 +208,12 @@ computed visuals — is W3 and is **NOT VERIFIED** by me; nothing on `/play` pre
 R-9 holds. The outside-sports generalisation (`BEYOND_SPORTS_LINE`) renders at COMPLETE and was not
 touched.
 
+
+## Re-check after repairs (head 54402b0)
+
+Filed as its own document: `ECON_TRUTH_W2_RECHECK.md` (same directory). Summary: finding 1 (R-7,
+BLOCKING) is **DISCHARGED** by measurement and `w2-econ-confirm-dissent` is **RESOLVED**; findings
+3, 4 and 5 (resale note below the fold, sellout chrome, two bare `CASH` numbers) are **DISCHARGED**;
+finding 6's carried Two Peaks client literal is **STANDING**; finding 2's statement of what the R-1
+limb is evidence for is unchanged and was **NOT RE-VERIFIED** at this head. Three new IMPORTANT
+findings are in the re-check document.
