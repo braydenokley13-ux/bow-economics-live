@@ -272,6 +272,19 @@ export type MarketFacts = {
   capacityNote: string;
   /** P2/B4: the night-spend dial's payback rule, in dollars a pair can act on. */
   spendRule: string;
+  /**
+   * W2 repair-2 A2/A3: the one-line version of `spendRule`, printed AT the
+   * stepper inside the first viewport. The full rule stays one disclosure away,
+   * verbatim. This says strictly less than `spendRule`; it adds nothing.
+   */
+  spendShortRule: string;
+  /**
+   * W2 repair-2 A3/B1: the one-line version of `renewalRuleFor`, printed under
+   * the dial and again on the settled night's RENEWALS card so the movement is
+   * attributable without recall. Same claims, fewer words; the full rule stays
+   * one disclosure away, verbatim.
+   */
+  renewalShortRule: string;
 };
 export const marketFacts = (m: Market): MarketFacts => ({
   id: m.id,
@@ -286,6 +299,8 @@ export const marketFacts = (m: Market): MarketFacts => ({
   bowlCost: m.bowlCost,
   capacityNote: m.capacityNote,
   spendRule: spendRuleFor(m),
+  spendShortRule: spendShortRuleFor(m),
+  renewalShortRule: renewalShortRuleFor(m),
 });
 
 /**
@@ -303,6 +318,27 @@ export function spendRuleFor(m: Market): string {
   // driven `renewalDelta` to its +12 ceiling or -20 floor, which is where a
   // cash-playing desk usually is. Stated as a ceiling with the zero case named.
   return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $${m.eventMax.toLocaleString()} dial is worth AT MOST +${renewalPoints} renewal ${renewalPoints === 1 ? "point" : "points"} — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.`;
+}
+
+/**
+ * The same rule as `spendRuleFor`, in one sentence, for the slot beside the
+ * stepper (W2 repair-2 A2, Kid A #1). It carries only the first and least
+ * conditional clause of the full rule — the dollars-per-person conversion and
+ * the one-night lag. It claims nothing the full rule does not claim.
+ */
+export function spendShortRuleFor(m: Market): string {
+  const dollarsPerFan = Math.round(1 / m.eventFans);
+  return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night, and nobody extra tonight.`;
+}
+
+/**
+ * The same rule as `renewalRuleFor`, in one sentence (W2 repair-2 A3/B1). Both
+ * arms of the tent are kept — under the plan price and above what tonight is
+ * worth — because dropping either one would leave a false monotone rule
+ * (FL-V11). The Draw/TV clause lives in the full rule, one disclosure away.
+ */
+export function renewalShortRuleFor(m: Market): string {
+  return `Renewals follow your $${m.planPrice} season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.`;
 }
 
 /**
@@ -1752,17 +1788,96 @@ export const FULL_HOUSE_UI_COPY = {
   historyCaption: "One dot per night. Two nights are only comparable when the card is the same.",
   /** Verbatim first clause of OBJECTIVE_COPY — printed wherever CASH and RENEWALS appear together (R-3). */
   twoBooksLine: `${OBJECTIVE_COPY.split(". ")[0]}.`,
+  /**
+   * W2 repair-2 B5 / Kid C #3: ONE name for the Night-4 option everywhere the
+   * pair meets it. The pre-lock plate says "Open 2,400 more seats tonight", so
+   * "MORE SEATS" is the name the receipt, the chain and the picture use too.
+   * "UPPER BOWL" appeared nowhere before the lock and is retired from the
+   * student surface (it survives on the teacher surface and in the model).
+   */
+  extraSeatsLabel: "MORE SEATS",
+  /**
+   * W2 repair-2 B5: the drawn building is labelled directly, not by a swatch
+   * key. The two labels name the two sides of the hard fill seam repair 3's
+   * redraw puts in the picture, so the number and the drawing say the same
+   * thing. "MORE SEATS" rather than "upper bowl" everywhere the student meets
+   * it: the pre-lock plate says "Open 2,400 more seats tonight", and one name
+   * is what Kid C asked for.
+   */
+  cameLabel: "came — the lit seats",
+  openSeatsLabel: "empty — the dark seats above the line",
+  moreSeatsOpenLabel: "More seats open",
+  moreSeatsClosedLabel: "More seats closed",
+  /**
+   * W2 repair-2 E1 (Economic Truth finding 5): the rail dock carries the season
+   * book and the night chain carries tonight's. Neither is ever a bare `CASH`
+   * again.
+   */
+  seasonQualifier: "season so far",
+  tonightQualifier: "tonight",
+  /**
+   * W2 repair-2 A3 / Economic Truth finding 6: the old empty state said the
+   * season plan "is the only number you have", which was false — the bill, the
+   * capacity, the Draw and the TV listing are all printed on the same screen.
+   * It says what the card is for instead.
+   */
+  noNightsYetLine: "No nights yet. Your first dot lands here after the first bell.",
+  /** The disclosure that holds the full registered rules, verbatim, one press away. */
+  moreLabel: "More about tonight",
   /** The CASH decomposition chain's labels. No label here says "profit" or "revenue" (R-3). */
   chainLabels: {
     tickets: "TICKETS",
     inArena: "IN-ARENA",
     bill: "BUILDING BILL",
     event: "EVENT MONEY",
-    bowl: "UPPER BOWL",
+    bowl: "MORE SEATS",
     cash: "CASH",
     renewals: "RENEWALS",
   },
 } as const;
+
+/**
+ * The settled night's price-and-card line (W2 repair-2 B1, Kid C #1). It was
+ * composed in the renderer; it is registered here because it is the sentence
+ * that makes the night's outcome attributable to the pair's own choice.
+ */
+export function nightFactLineFor(price: number, day: string, draw: number): string {
+  return `You charged $${price} · ${day} · draw ${draw}/100`;
+}
+
+/**
+ * Night 5's callback on the pair's OWN screen (W2 repair-2 B6, Kid A #3 /
+ * Kid C #5). Two figures and the two prices, no interpretation: the ADAPT and
+ * COUNTERFACTUAL frames keep the explanation.
+ */
+export function repeatCallbackLineFor(
+  refLabel: string,
+  refPrice: number,
+  refTurnout: number,
+  price: number,
+  turnout: number,
+): string {
+  return `${refLabel}'s card again · $${refPrice} → ${refTurnout.toLocaleString()} then · $${price} → ${turnout.toLocaleString()} tonight`;
+}
+
+/**
+ * W2 repair-2 E5 (Kid B #2): the dial keeps the last price this desk charged.
+ * A pair that pokes it once and forgets can walk into a night it did not mean
+ * to choose. The line states where the dial is and where that number came
+ * from; it says nothing about whether the number is a good one.
+ */
+export function dialCarriedLineFor(price: number, nightLabel: string): string {
+  return `Your dial is at $${price} — the price you charged on ${nightLabel}.`;
+}
+
+/**
+ * W2 repair-2 E2 (Economic Truth R-F): the renewals delta clamps at
+ * `RENEWAL_DELTA_FLOOR`. When it did, the number the pair sees is the clamp,
+ * not the rule's answer, and nothing on the surface said so.
+ */
+export function renewalFloorLineFor(): string {
+  return `The renewals rule takes at most ${Math.abs(RENEWAL_DELTA_FLOOR)} points off in one night. Tonight's price asked for more than that.`;
+}
 
 /**
  * The next-night control's label, composed server-side from the printed facts of
@@ -1994,6 +2109,7 @@ function resultHeadlineFor(night: SettledNight): string {
 
 /** The ONLY function that turns a settled night into something a view may carry. `hidden` never crosses it. */
 function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
+  const nightCard = CARD_BY_ID.get(night.cardId) ?? null;
   return {
     cardId: night.cardId,
     label: CARD_BY_ID.get(night.cardId)?.label ?? night.cardId,
@@ -2029,6 +2145,15 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
     // R-1: the headline is composed server-side from settled facts, so the
     // renderer prints a sentence instead of building one.
     resultHeadline: resultHeadlineFor(night),
+    // W2 repair-2 B1: the price-and-card line, registered rather than composed
+    // in the renderer, so the settled outcome is attributable to the choice.
+    factLine: nightFactLineFor(night.price, nightCard?.day ?? "", nightCard?.draw ?? 0),
+    // W2 repair-2 E2: TRUE when the renewals rule's answer for this night's
+    // price and spend was below the floor and the printed move is the clamp.
+    // Recomputed from this night's own inputs through the exported model
+    // function; no constant and no new mechanic.
+    renewalAtFloor: nightCard ? renewalDelta(market, nightCard, night.price, night.spend) === RENEWAL_DELTA_FLOOR : false,
+    renewalFloorLine: renewalFloorLineFor(),
     // R6/P2: was last night's event money confirmed or refuted by this night?
     spendVerdict: spendVerdictFor(market, night, carryFansIn),
     marketId: market.id,
@@ -2218,9 +2343,27 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       const identity = deskIdentity(desk);
       // Each night's carried fans come from the night before it — the same
       // `carryFansFor` conversion the pair was shown before it spent (R6/P2).
-      const history = desk.nights.map((n, i) =>
-        viewNight(n, market, i > 0 ? Math.round(market.eventFans * desk.nights[i - 1]!.spend) : 0),
-      );
+      const history = desk.nights.map((n, i) => {
+        const v = viewNight(n, market, i > 0 ? Math.round(market.eventFans * desk.nights[i - 1]!.spend) : 0);
+        // W2 repair-2 B6: a night that repeats an earlier card carries the two
+        // figures for both nights on the pair's OWN screen, at the moment the
+        // result lands, instead of only two phases later on the board.
+        const refId = CARD_BY_ID.get(n.cardId)?.repeatOf ?? null;
+        const ref = refId ? desk.nights.find((x) => x.cardId === refId) : undefined;
+        return {
+          ...v,
+          repeatCallback:
+            refId && ref
+              ? repeatCallbackLineFor(
+                  CARD_BY_ID.get(refId)?.label ?? refId,
+                  ref.price,
+                  ref.settlement.turnout,
+                  n.price,
+                  n.settlement.turnout,
+                )
+              : null,
+        };
+      });
       switch (phase) {
         case "LOBBY":
           return {
@@ -2260,6 +2403,11 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               books: booksFor(desk),
               history,
               lastNight,
+              // The settled-night state renders from this payload too, so the
+              // rules its RENEWALS card prints have to survive the last bell.
+              renewalRule: renewalRuleFor(market),
+              priceMin: PRICE_MIN,
+              priceMax: PRICE_MAX,
               uiCopy: uiCopyFor(null, state.nightIndex),
               message: "All five nights are in the books. Look up at the board.",
             };
@@ -2291,6 +2439,16 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // the dial that drives it, before the commit. Arithmetic on printed
             // facts only — it names no crowd, no dollar and no "right" price.
             renewalRule: renewalRuleFor(market),
+            // W2 repair-2 E5 (Kid B #2): the dial opens each night at the season
+            // plan price. When the number standing in it is one this desk has
+            // already charged, say which night it came from — a fact about the
+            // desk's own history, not a judgement about the number.
+            dialCarriedLine: ((): string | null => {
+              if (desk.locked) return null;
+              const prior = [...desk.nights].reverse().find((n) => n.price === desk.price);
+              if (!prior) return null;
+              return dialCarriedLineFor(desk.price, CARD_BY_ID.get(prior.cardId)?.label ?? prior.cardId);
+            })(),
             // gate-l1-play "no receipt" (P2's second clause): last night's event
             // money, converted at the rate the pair was shown before they spent
             // it, so the dial can be confirmed or refuted instead of taken on
@@ -2403,16 +2561,33 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
           };
         }
 
-        case "SYNTHESIS":
+        case "SYNTHESIS": {
+          // W2 repair-2 C2 / contract D2: the student device mirrors the card
+          // the teacher is on — the card's registered title and the SAME
+          // computed body the projector is showing, page for page, so the
+          // device is not a still picture through six teacher presses. Card
+          // set, order, staging and bodies are unchanged (E27): this reads
+          // `synthesisCards` and adds nothing to it. Nothing seat-private
+          // crosses here — this is the public board card.
+          const cards = synthesisCards(state, computeAggregate(state));
+          const pages = synthPageCount(cards.length);
+          const page = Math.min(Math.max(0, state.synthPage ?? 0), pages - 1);
+          const card = cards[page] ?? null;
           return {
             phase,
             seated: true,
             ...identity,
             books: booksFor(desk),
+            history,
             message: "Look up at the board.",
             exitPrompt: EXIT_PROMPT,
+            synthPage: page + 1,
+            synthPageCount: pages,
+            synthCardTitle: card?.title ?? "",
+            synthCardBody: card?.body ?? "",
             uiCopy: uiCopyFor(null, state.nightIndex),
           };
+        }
 
         case "COMPLETE":
           return {
@@ -2420,8 +2595,13 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             seated: true,
             ...identity,
             books: booksFor(desk),
+            history,
             message: COMPLETE_COPY,
             exitPrompt: EXIT_PROMPT,
+            // W2 repair-2 C4 / contract D4: COMPLETE closes on EXIT_PROMPT and
+            // BEYOND_SPORTS_LINE verbatim. The renderer already reads this key;
+            // the payload never carried it.
+            beyondSports: BEYOND_SPORTS_LINE,
             uiCopy: uiCopyFor(null, state.nightIndex),
           };
 

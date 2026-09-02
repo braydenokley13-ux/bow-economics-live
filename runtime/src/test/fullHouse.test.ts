@@ -970,6 +970,18 @@ test("uiCopy reaches the desk in every student phase, with every registered key"
     "historyCaption",
     "twoBooksLine",
     "chainLabels",
+    // W2 repair-2: the labels the rebuilt /play surface prints. Every one of
+    // them is a word the pair reads, so every one of them is registered here
+    // rather than typed into the renderer (contract G, R-1).
+    "extraSeatsLabel",
+    "cameLabel",
+    "openSeatsLabel",
+    "moreSeatsOpenLabel",
+    "moreSeatsClosedLabel",
+    "seasonQualifier",
+    "tonightQualifier",
+    "noNightsYetLine",
+    "moreLabel",
   ];
   const CHAIN = ["tickets", "inArena", "bill", "event", "bowl", "cash", "renewals"];
 

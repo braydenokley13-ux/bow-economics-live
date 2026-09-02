@@ -2075,3 +2075,107 @@ html[data-module="m2"] #gameHeader {
 html[data-module="m2"] #gameHeader .franchise-badge {
   vertical-align: middle;
 }
+
+
+/* =========================================================================
+   16. W2 repair-2 — composition (A2/A3/A4/A5/A6/B4/B5/C8)
+   ========================================================================= */
+
+/* A6 / visual direction 7: the rejoin-PIN banner is the last piece of school
+   chrome above the lesson's own identity. It cost 48px on every frame and 29%
+   of a 1024x600 first contact together with the other bands, and its collapsed
+   state was an empty labelled strip with a zero-height `#pinDisplay` in it. The
+   PIN is not deleted — `#pinDisplay` still exists and still carries the digits,
+   and the desk rail carries the same four digits as a permanent chip, smaller
+   than the price readout (A5). Scoped to M2: Module 1's banner is untouched. */
+html[data-module="m2"] #pinCard,
+html[data-module="m2"] #btnShowPin {
+  display: none !important;
+}
+
+/* C8 / visual direction 8: the drawn building is emitted with
+   `preserveAspectRatio="…slice"`, so any frame whose shape differs from the
+   SVG's crops it. The frame now carries the SVG's own aspect ratio and the
+   drawing fills it exactly. */
+html[data-module="m2"] .fh-arena-frame > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+html[data-module="m2"] .fh-dark-building {
+  border-radius: 0;
+}
+
+/* A2/A3: the disclosure that holds the full registered rules. One press, always
+   in the same place, nothing deleted. */
+html[data-module="m2"] .fh-rules.m2-disclosure {
+  border: 1px solid var(--m2-hairline);
+  border-radius: var(--m2-r-card);
+  background: var(--m2-panel);
+  padding: 9px 12px;
+}
+html[data-module="m2"] .fh-rules-summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--m2-font);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m2-ink-label);
+}
+html[data-module="m2"] .fh-rules-summary::-webkit-details-marker {
+  display: none;
+}
+html[data-module="m2"] .fh-rules-summary::after {
+  content: " +";
+  color: var(--m2-violet-bright);
+}
+html[data-module="m2"] .fh-rules[open] .fh-rules-summary::after {
+  content: " –";
+}
+html[data-module="m2"] .fh-rules-body {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--m2-hairline);
+  max-height: 320px;
+  overflow: auto;
+}
+
+/* A5 / Kid A #6: locked reads locked. The figures stay legible; the controls
+   stop looking like controls. */
+html[data-module="m2"] #fhPlayRoot.is-locked .fh-price-card,
+html[data-module="m2"] #fhPlayRoot.is-locked .fh-spend-card,
+html[data-module="m2"] #fhPlayRoot.is-locked .fh-bowl-plate {
+  opacity: 0.55;
+  filter: saturate(0.6);
+  pointer-events: none;
+}
+html[data-module="m2"] #fhPlayRoot.is-locked .m2-range,
+html[data-module="m2"] #fhPlayRoot.is-locked .m2-round-btn {
+  cursor: default;
+}
+
+/* Row 1 cards share a height so the cockpit reads as one instrument panel
+   rather than three cards of three different lengths (visual direction 9). */
+html[data-module="m2"] .fh-cockpit > div,
+html[data-module="m2"] .fh-cockpit > div > .m2-card {
+  height: 100%;
+}
+html[data-module="m2"] .fh-evidence-row > .m2-card,
+html[data-module="m2"] .fh-evidence-row > div {
+  height: 100%;
+}
+
+/* B4: FULL HOUSE at display scale on the panel ground — no banner, no frame.
+   The lit bowl beside it is the only warmth on the frame (E13/Q5). */
+html[data-module="m2"] .fh-sellout-title.m2-fullhouse {
+  font-size: 60px;
+  line-height: 62px;
+}
+@media (max-height: 719px), (max-width: 1179px) {
+  html[data-module="m2"] .fh-sellout-title.m2-fullhouse {
+    font-size: 38px;
+    line-height: 40px;
+  }
+}
