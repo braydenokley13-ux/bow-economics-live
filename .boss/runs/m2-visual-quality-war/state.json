@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T19:59:48.096Z",
+  "updatedAt": "2026-09-02T20:00:21.818Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -7096,10 +7096,2175 @@
           ],
           "at": "2026-09-02T19:52:48.279Z",
           "actor": "boss-lead"
+        },
+        {
+          "gate": "wave",
+          "wave": 2,
+          "evaluatedCommit": "81f3fe42a29c492a259e20b3444c7c6fd4692e9c",
+          "evaluatedBranch": "claude/economics-boss-module-2-8s591f",
+          "eligible": false,
+          "recommendation": "REPAIR",
+          "checks": [
+            {
+              "id": "role:browser-qa",
+              "passed": true,
+              "message": "browser-qa completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:builder",
+              "passed": true,
+              "message": "builder completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:economic-truth-critic",
+              "passed": true,
+              "message": "economic-truth-critic completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:experience-director",
+              "passed": true,
+              "message": "experience-director completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:lead-integrator",
+              "passed": true,
+              "message": "lead-integrator completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:player-gameplay-critic",
+              "passed": true,
+              "message": "player-gameplay-critic completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:product-analyst",
+              "passed": true,
+              "message": "product-analyst completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:regression-hunter",
+              "passed": true,
+              "message": "regression-hunter completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role:visual-experience-director",
+              "passed": true,
+              "message": "visual-experience-director completed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-role:economic-truth-critic",
+              "passed": true,
+              "message": "economic-truth-critic blocking review is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "role-independence",
+              "passed": true,
+              "message": "Builders and independent reviewers are different actors.",
+              "severity": "blocking"
+            },
+            {
+              "id": "analyst-contract",
+              "passed": true,
+              "message": "Analyst output contract is complete.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:analyst-report",
+              "passed": true,
+              "message": "analyst-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:browser-trace",
+              "passed": true,
+              "message": "browser-trace evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:economic-truth-report",
+              "passed": true,
+              "message": "economic-truth-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:gameplay-report",
+              "passed": true,
+              "message": "gameplay-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:git-diff",
+              "passed": true,
+              "message": "git-diff evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:test",
+              "passed": true,
+              "message": "test evidence is an authentic passing command record.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence:visual-report",
+              "passed": true,
+              "message": "visual-report evidence is present.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-report",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-manifest",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-arena-outcome-100",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-arena-outcome-100 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-arena-outcome-72",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-arena-outcome-72 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-arena-hero",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-arena-hero hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-mock-student",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-mock-student hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-mock-board",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-mock-board hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-arena-source",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-arena-source hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:bowl-rights-review-fullhouse-markets",
+              "passed": true,
+              "message": "Evidence bowl-rights-review-fullhouse-markets hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:m1-baseline-extended-manifest",
+              "passed": true,
+              "message": "Evidence m1-baseline-extended-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:m1-baseline-extended-compare",
+              "passed": true,
+              "message": "Evidence m1-baseline-extended-compare hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:m1-baseline-extended-l1-locked-race",
+              "passed": true,
+              "message": "Evidence m1-baseline-extended-l1-locked-race hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:m1-baseline-extended-l1-locked-settled",
+              "passed": true,
+              "message": "Evidence m1-baseline-extended-l1-locked-settled hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:m1-baseline-extended-l2-decision",
+              "passed": true,
+              "message": "Evidence m1-baseline-extended-l2-decision hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:m1-baseline-extended-l2-reveal-board",
+              "passed": true,
+              "message": "Evidence m1-baseline-extended-l2-reveal-board hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:m1-baseline-extended-l3-day1-market",
+              "passed": true,
+              "message": "Evidence m1-baseline-extended-l3-day1-market hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-a-tile-1366",
+              "passed": true,
+              "message": "Evidence lane-a-tile-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-a-tile-1024",
+              "passed": true,
+              "message": "Evidence lane-a-tile-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-a-contrast-proof",
+              "passed": true,
+              "message": "Evidence lane-a-contrast-proof hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-a-identity-layer",
+              "passed": true,
+              "message": "Evidence lane-a-identity-layer hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-c-mutation-a",
+              "passed": true,
+              "message": "Evidence lane-c-mutation-a hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-c-mutation-b",
+              "passed": true,
+              "message": "Evidence lane-c-mutation-b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-c-e2e-clean",
+              "passed": true,
+              "message": "Evidence lane-c-e2e-clean hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-c-source-limb-mutation",
+              "passed": true,
+              "message": "Evidence lane-c-source-limb-mutation hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-c-source-limb-clean",
+              "passed": true,
+              "message": "Evidence lane-c-source-limb-clean hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-c-npm-test",
+              "passed": true,
+              "message": "Evidence lane-c-npm-test hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-npm-test-6c4c7cc",
+              "passed": true,
+              "message": "Evidence w2-npm-test-6c4c7cc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-6c4c7cc",
+              "passed": true,
+              "message": "Evidence w2-e2e-6c4c7cc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-misclick-6c4c7cc",
+              "passed": true,
+              "message": "Evidence w2-e2e-misclick-6c4c7cc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-b-diff",
+              "passed": true,
+              "message": "Evidence lane-b-diff hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-b-measurements",
+              "passed": true,
+              "message": "Evidence lane-b-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-b-shots-manifest",
+              "passed": true,
+              "message": "Evidence lane-b-shots-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-b-shot-prelock-1366",
+              "passed": true,
+              "message": "Evidence lane-b-shot-prelock-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-b-shot-prelock-1024",
+              "passed": true,
+              "message": "Evidence lane-b-shot-prelock-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-b-shot-result-1366",
+              "passed": true,
+              "message": "Evidence lane-b-shot-result-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lane-b-shot-sellout-1366",
+              "passed": true,
+              "message": "Evidence lane-b-shot-sellout-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:lead-e2e-repair-6c4c7cc",
+              "passed": true,
+              "message": "Evidence lead-e2e-repair-6c4c7cc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-mutation-a-6c4c7cc",
+              "passed": true,
+              "message": "Evidence w2-mutation-a-6c4c7cc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-mutation-b-6c4c7cc",
+              "passed": true,
+              "message": "Evidence w2-mutation-b-6c4c7cc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-git-diff-6c4c7cc",
+              "passed": true,
+              "message": "Evidence w2-git-diff-6c4c7cc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-report",
+              "passed": true,
+              "message": "Evidence w2-regression-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-manifest",
+              "passed": true,
+              "message": "Evidence w2-regression-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-m1-compare-baseline-vs-head",
+              "passed": true,
+              "message": "Evidence w2-regression-m1-compare-baseline-vs-head hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-m1-compare-head-vs-head",
+              "passed": true,
+              "message": "Evidence w2-regression-m1-compare-head-vs-head hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-l2-05-crop",
+              "passed": true,
+              "message": "Evidence w2-regression-l2-05-crop hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-l2-10-crop",
+              "passed": true,
+              "message": "Evidence w2-regression-l2-10-crop hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-misclick-log",
+              "passed": true,
+              "message": "Evidence w2-regression-misclick-log hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-browser-truth-report",
+              "passed": true,
+              "message": "Evidence w2-browser-truth-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-browser-truth-sellout-gold-leak",
+              "passed": true,
+              "message": "Evidence w2-browser-truth-sellout-gold-leak hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-browser-truth-prelock-fulldial",
+              "passed": true,
+              "message": "Evidence w2-browser-truth-prelock-fulldial hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-browser-truth-1024-pin-uncollapsed",
+              "passed": true,
+              "message": "Evidence w2-browser-truth-1024-pin-uncollapsed hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-browser-truth-locked-waiting",
+              "passed": true,
+              "message": "Evidence w2-browser-truth-locked-waiting hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-browser-truth-zero-turnout",
+              "passed": true,
+              "message": "Evidence w2-browser-truth-zero-turnout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-browser-truth-measurements-raw",
+              "passed": true,
+              "message": "Evidence w2-browser-truth-measurements-raw hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-report",
+              "passed": true,
+              "message": "Evidence w2-gameplay-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-manifest",
+              "passed": true,
+              "message": "Evidence w2-gameplay-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-measurements",
+              "passed": true,
+              "message": "Evidence w2-gameplay-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-prelock-fold",
+              "passed": true,
+              "message": "Evidence w2-gameplay-prelock-fold hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-prelock-viewport",
+              "passed": true,
+              "message": "Evidence w2-gameplay-prelock-viewport hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-result-n1",
+              "passed": true,
+              "message": "Evidence w2-gameplay-result-n1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-sellout",
+              "passed": true,
+              "message": "Evidence w2-gameplay-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-sellout-lowball",
+              "passed": true,
+              "message": "Evidence w2-gameplay-sellout-lowball hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-reveal-inert",
+              "passed": true,
+              "message": "Evidence w2-gameplay-reveal-inert hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-synth-inert",
+              "passed": true,
+              "message": "Evidence w2-gameplay-synth-inert hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-counterfactual",
+              "passed": true,
+              "message": "Evidence w2-gameplay-counterfactual hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-gameplay-1024-result",
+              "passed": true,
+              "message": "Evidence w2-gameplay-1024-result hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-report",
+              "passed": true,
+              "message": "Evidence w2-kid-c-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-manifest",
+              "passed": true,
+              "message": "Evidence w2-kid-c-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-n2-zero-fold",
+              "passed": true,
+              "message": "Evidence w2-kid-c-n2-zero-fold hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-n2-zero-full",
+              "passed": true,
+              "message": "Evidence w2-kid-c-n2-zero-full hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-n1-sellout",
+              "passed": true,
+              "message": "Evidence w2-kid-c-n1-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-n4-prelock",
+              "passed": true,
+              "message": "Evidence w2-kid-c-n4-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-1024x600",
+              "passed": true,
+              "message": "Evidence w2-kid-c-1024x600 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-lobby-dead",
+              "passed": true,
+              "message": "Evidence w2-kid-c-lobby-dead hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-cf",
+              "passed": true,
+              "message": "Evidence w2-kid-c-cf hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-midfill",
+              "passed": true,
+              "message": "Evidence w2-kid-c-midfill hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-c-transcript",
+              "passed": true,
+              "message": "Evidence w2-kid-c-transcript hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-report",
+              "passed": true,
+              "message": "Evidence w2-visual-review-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-manifest",
+              "passed": true,
+              "message": "Evidence w2-visual-review-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-measurements",
+              "passed": true,
+              "message": "Evidence w2-visual-review-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-audit",
+              "passed": true,
+              "message": "Evidence w2-visual-review-audit hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-chart-geometry",
+              "passed": true,
+              "message": "Evidence w2-visual-review-chart-geometry hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-prelock",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-result",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-result hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-sellout",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-locked",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-locked hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-zero",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-zero hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-arena-crops",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-arena-crops hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-1024",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-synthesis",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-synthesis hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-visual-review-shot-chart",
+              "passed": true,
+              "message": "Evidence w2-visual-review-shot-chart hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-report",
+              "passed": true,
+              "message": "Evidence w2-kid-a-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-manifest",
+              "passed": true,
+              "message": "Evidence w2-kid-a-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-n1-result",
+              "passed": true,
+              "message": "Evidence w2-kid-a-n1-result hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-sellout",
+              "passed": true,
+              "message": "Evidence w2-kid-a-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-eventmoney-fold",
+              "passed": true,
+              "message": "Evidence w2-kid-a-eventmoney-fold hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-1024",
+              "passed": true,
+              "message": "Evidence w2-kid-a-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-n5-result",
+              "passed": true,
+              "message": "Evidence w2-kid-a-n5-result hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-n5-prelock",
+              "passed": true,
+              "message": "Evidence w2-kid-a-n5-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-a-lobby",
+              "passed": true,
+              "message": "Evidence w2-kid-a-lobby hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-manifest",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-arena-ladder",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-arena-ladder hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-n4-bowl-closed",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-n4-bowl-closed hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-n4-bowl-open",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-n4-bowl-open hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-sellout",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-zero-night",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-zero-night hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-prelock",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-reveal-stage0",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-reveal-stage0 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-mutation-c",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-mutation-c hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-mutation-d",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-mutation-d hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-dump",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-dump hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-econ-confirm-report",
+              "passed": true,
+              "message": "Evidence w2-econ-confirm-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-report",
+              "passed": true,
+              "message": "Evidence w2-kid-b-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-manifest",
+              "passed": true,
+              "message": "Evidence w2-kid-b-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-n1-prelock",
+              "passed": true,
+              "message": "Evidence w2-kid-b-n1-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-n1-result",
+              "passed": true,
+              "message": "Evidence w2-kid-b-n1-result hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-sellout",
+              "passed": true,
+              "message": "Evidence w2-kid-b-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-sellout-controlled",
+              "passed": true,
+              "message": "Evidence w2-kid-b-sellout-controlled hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-1024x600-firstcontact",
+              "passed": true,
+              "message": "Evidence w2-kid-b-1024x600-firstcontact hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-kid-b-counterfactual",
+              "passed": true,
+              "message": "Evidence w2-kid-b-counterfactual hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-frontier-probe",
+              "passed": true,
+              "message": "Evidence w2-frontier-probe hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-rs-report",
+              "passed": true,
+              "message": "Evidence w2-regression-rs-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-rs-item1-preresfresh",
+              "passed": true,
+              "message": "Evidence w2-regression-rs-item1-preresfresh hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-rs-item2-fresh-context-stale",
+              "passed": true,
+              "message": "Evidence w2-regression-rs-item2-fresh-context-stale hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-rs-item1-blank-after-refresh",
+              "passed": true,
+              "message": "Evidence w2-regression-rs-item1-blank-after-refresh hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-rs-item4-n2-skips-n1",
+              "passed": true,
+              "message": "Evidence w2-regression-rs-item4-n2-skips-n1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-rs-item4-two-nights-unacked",
+              "passed": true,
+              "message": "Evidence w2-regression-rs-item4-two-nights-unacked hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-regression-rs-probe2-log",
+              "passed": true,
+              "message": "Evidence w2-regression-rs-probe2-log hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-report",
+              "passed": true,
+              "message": "Evidence w2-repair-1-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-audit",
+              "passed": true,
+              "message": "Evidence w2-repair-1-audit hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-proof-log",
+              "passed": true,
+              "message": "Evidence w2-repair-1-proof-log hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-proof-script",
+              "passed": true,
+              "message": "Evidence w2-repair-1-proof-script hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-wholedoc",
+              "passed": true,
+              "message": "Evidence w2-repair-1-wholedoc hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-npm-test",
+              "passed": true,
+              "message": "Evidence w2-repair-1-npm-test hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-shot-sellout-before",
+              "passed": true,
+              "message": "Evidence w2-repair-1-shot-sellout-before hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-shot-sellout-after",
+              "passed": true,
+              "message": "Evidence w2-repair-1-shot-sellout-after hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-shot-night-before",
+              "passed": true,
+              "message": "Evidence w2-repair-1-shot-night-before hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-shot-night-after",
+              "passed": true,
+              "message": "Evidence w2-repair-1-shot-night-after hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-shot-prelock-before",
+              "passed": true,
+              "message": "Evidence w2-repair-1-shot-prelock-before hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-1-shot-prelock-after",
+              "passed": true,
+              "message": "Evidence w2-repair-1-shot-prelock-after hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-report",
+              "passed": true,
+              "message": "Evidence w2-repair-3-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-manifest",
+              "passed": true,
+              "message": "Evidence w2-repair-3-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-before-0",
+              "passed": true,
+              "message": "Evidence w2-repair-3-before-0 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-before-71",
+              "passed": true,
+              "message": "Evidence w2-repair-3-before-71 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-before-100",
+              "passed": true,
+              "message": "Evidence w2-repair-3-before-100 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-before-locked",
+              "passed": true,
+              "message": "Evidence w2-repair-3-before-locked hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-after-0",
+              "passed": true,
+              "message": "Evidence w2-repair-3-after-0 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-after-71",
+              "passed": true,
+              "message": "Evidence w2-repair-3-after-71 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-after-100",
+              "passed": true,
+              "message": "Evidence w2-repair-3-after-100 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-after-bowlopen",
+              "passed": true,
+              "message": "Evidence w2-repair-3-after-bowlopen hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-after-locked",
+              "passed": true,
+              "message": "Evidence w2-repair-3-after-locked hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-in-product",
+              "passed": true,
+              "message": "Evidence w2-repair-3-in-product hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-3-measurements",
+              "passed": true,
+              "message": "Evidence w2-repair-3-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-report",
+              "passed": true,
+              "message": "Evidence w2-repair-2-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-manifest",
+              "passed": true,
+              "message": "Evidence w2-repair-2-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-prelock-1366",
+              "passed": true,
+              "message": "Evidence w2-repair-2-prelock-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-prelock-1024",
+              "passed": true,
+              "message": "Evidence w2-repair-2-prelock-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-sellout-1366",
+              "passed": true,
+              "message": "Evidence w2-repair-2-sellout-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-result-1024",
+              "passed": true,
+              "message": "Evidence w2-repair-2-result-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-synth3",
+              "passed": true,
+              "message": "Evidence w2-repair-2-synth3 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-complete",
+              "passed": true,
+              "message": "Evidence w2-repair-2-complete hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-f1",
+              "passed": true,
+              "message": "Evidence w2-repair-2-f1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-2-e2e",
+              "passed": true,
+              "message": "Evidence w2-repair-2-e2e hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-npm-test-f65e865",
+              "passed": true,
+              "message": "Evidence w2r-npm-test-f65e865 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-e2e-f65e865",
+              "passed": true,
+              "message": "Evidence w2r-e2e-f65e865 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-e2e-misclick-f65e865",
+              "passed": true,
+              "message": "Evidence w2r-e2e-misclick-f65e865 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-direction-report",
+              "passed": true,
+              "message": "Evidence w2-direction-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-bt-browser-truth-w2-recheck",
+              "passed": true,
+              "message": "Evidence w2-recheck-bt-browser-truth-w2-recheck hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-bt-measurements-1366x768",
+              "passed": true,
+              "message": "Evidence w2-recheck-bt-measurements-1366x768 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-bt-measurements-1024x600",
+              "passed": true,
+              "message": "Evidence w2-recheck-bt-measurements-1024x600 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-report",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-manifest",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-measurements",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-probe-fold",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-probe-fold hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-probe-carried",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-probe-carried hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-prelock-discharge",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-prelock-discharge hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-1024-n4-standing",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-1024-n4-standing hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-reveal-mirror",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-reveal-mirror hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-synth-mirror",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-synth-mirror hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-sellout",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-sellout-lowball",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-sellout-lowball hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-dotlabels",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-dotlabels hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-gameplay-counterfactual",
+              "passed": true,
+              "message": "Evidence w2r-gameplay-counterfactual hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:recheck-report",
+              "passed": true,
+              "message": "Evidence recheck-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:run1-log",
+              "passed": true,
+              "message": "Evidence run1-log hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:run2-log",
+              "passed": true,
+              "message": "Evidence run2-log hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:debug-b-log",
+              "passed": true,
+              "message": "Evidence debug-b-log hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:recheck-script",
+              "passed": true,
+              "message": "Evidence recheck-script hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:screenshot-a1",
+              "passed": true,
+              "message": "Evidence screenshot-a1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:screenshot-a2",
+              "passed": true,
+              "message": "Evidence screenshot-a2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:screenshot-a3",
+              "passed": true,
+              "message": "Evidence screenshot-a3 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:screenshot-f1",
+              "passed": true,
+              "message": "Evidence screenshot-f1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:screenshot-g1",
+              "passed": true,
+              "message": "Evidence screenshot-g1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-m1-compare-f65e865",
+              "passed": true,
+              "message": "Evidence w2r-m1-compare-f65e865 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-report",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-manifest",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-measurements",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-arena-ladder",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-arena-ladder hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-arena-2x",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-arena-2x hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-bowl-states",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-bowl-states hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-sellout",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-zero",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-zero hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-locked",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-locked hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-prelock",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-prelock hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-1024-sellout",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-1024-sellout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-visual-chart",
+              "passed": true,
+              "message": "Evidence w2-recheck-visual-chart hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-m1-compare-f65e865-full",
+              "passed": true,
+              "message": "Evidence w2r-m1-compare-f65e865-full hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-econ-report",
+              "passed": true,
+              "message": "Evidence w2-recheck-econ-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-econ-arena-measure",
+              "passed": true,
+              "message": "Evidence w2-recheck-econ-arena-measure hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-econ-drive-dump",
+              "passed": true,
+              "message": "Evidence w2-recheck-econ-drive-dump hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-econ-n4-bowl-closed",
+              "passed": true,
+              "message": "Evidence w2-recheck-econ-n4-bowl-closed hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-econ-n1-partial-fill",
+              "passed": true,
+              "message": "Evidence w2-recheck-econ-n1-partial-fill hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-recheck-econ-driver",
+              "passed": true,
+              "message": "Evidence w2-recheck-econ-driver hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-m1-l3-05-crop-a",
+              "passed": true,
+              "message": "Evidence w2r-m1-l3-05-crop-a hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-m1-l3-05-crop-b",
+              "passed": true,
+              "message": "Evidence w2r-m1-l3-05-crop-b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-m1-l3-09-crop-a",
+              "passed": true,
+              "message": "Evidence w2r-m1-l3-09-crop-a hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-m1-l3-09-crop-b",
+              "passed": true,
+              "message": "Evidence w2r-m1-l3-09-crop-b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-analyst-report",
+              "passed": true,
+              "message": "Evidence w2-analyst-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-mutation-a-f65e865",
+              "passed": true,
+              "message": "Evidence w2r-mutation-a-f65e865 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2r-mutation-b-f65e865",
+              "passed": true,
+              "message": "Evidence w2r-mutation-b-f65e865 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-report",
+              "passed": true,
+              "message": "Evidence w2-repair-4-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-manifest",
+              "passed": true,
+              "message": "Evidence w2-repair-4-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-measure-before",
+              "passed": true,
+              "message": "Evidence w2-repair-4-measure-before hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-measure-after",
+              "passed": true,
+              "message": "Evidence w2-repair-4-measure-after hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-before-sellout-1024",
+              "passed": true,
+              "message": "Evidence w2-repair-4-before-sellout-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-sellout-1024",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-sellout-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-carried-1366",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-carried-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-chart-ladder",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-chart-ladder hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-chart-flat",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-chart-flat hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-cause-1366",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-cause-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-hook-1366",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-hook-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-hook-1024",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-hook-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-after-reveal",
+              "passed": true,
+              "message": "Evidence w2-repair-4-after-reveal hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-arena-not-offered",
+              "passed": true,
+              "message": "Evidence w2-repair-4-arena-not-offered hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-arena-open",
+              "passed": true,
+              "message": "Evidence w2-repair-4-arena-open hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-npm-test",
+              "passed": true,
+              "message": "Evidence w2-repair-4-npm-test hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-e2e",
+              "passed": true,
+              "message": "Evidence w2-repair-4-e2e hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-4-misclick",
+              "passed": true,
+              "message": "Evidence w2-repair-4-misclick hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-npm-test-84d8983",
+              "passed": true,
+              "message": "Evidence w2-npm-test-84d8983 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-84d8983",
+              "passed": true,
+              "message": "Evidence w2-e2e-84d8983 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-misclick-84d8983",
+              "passed": true,
+              "message": "Evidence w2-e2e-misclick-84d8983 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-report",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-measurements-1024",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-measurements-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-measurements-1366",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-measurements-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-manifest",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-driver",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-driver hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-1366-overflow",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-1366-overflow hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-1024-discharged",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-1024-discharged hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-1024-sellout-closed",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-1024-sellout-closed hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-zero-turnout",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-zero-turnout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-bqa-prelock-n4",
+              "passed": true,
+              "message": "Evidence w2-final-bqa-prelock-n4 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-report",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-log",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-log hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-manifest",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-script",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-script hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-hook",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-hook hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-n2-settled",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-n2-settled hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-n4-pre",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-n4-pre hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-n5-pre",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-n5-pre hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-reveal3",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-reveal3 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-cf",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-cf hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-n5-1024",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-n5-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-kidc-1024-pre",
+              "passed": true,
+              "message": "Evidence w2-final-kidc-1024-pre hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-report",
+              "passed": true,
+              "message": "Evidence w2-final-reg-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-m1-compare",
+              "passed": true,
+              "message": "Evidence w2-final-reg-m1-compare hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-m1-crop-l3-05",
+              "passed": true,
+              "message": "Evidence w2-final-reg-m1-crop-l3-05 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-m1-crop-l2-10-b",
+              "passed": true,
+              "message": "Evidence w2-final-reg-m1-crop-l2-10-b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-facts",
+              "passed": true,
+              "message": "Evidence w2-final-reg-facts hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-facts2",
+              "passed": true,
+              "message": "Evidence w2-final-reg-facts2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-manifest",
+              "passed": true,
+              "message": "Evidence w2-final-reg-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-refresh-after",
+              "passed": true,
+              "message": "Evidence w2-final-reg-refresh-after hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-latejoin",
+              "passed": true,
+              "message": "Evidence w2-final-reg-latejoin hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-d3-bell2",
+              "passed": true,
+              "message": "Evidence w2-final-reg-d3-bell2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-d3-recovered",
+              "passed": true,
+              "message": "Evidence w2-final-reg-d3-recovered hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-dupname",
+              "passed": true,
+              "message": "Evidence w2-final-reg-dupname hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-rejoin-2nd",
+              "passed": true,
+              "message": "Evidence w2-final-reg-rejoin-2nd hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-signedout",
+              "passed": true,
+              "message": "Evidence w2-final-reg-signedout hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-reg-chart1",
+              "passed": true,
+              "message": "Evidence w2-final-reg-chart1 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-report",
+              "passed": true,
+              "message": "Evidence w2-final-visual-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-manifest",
+              "passed": true,
+              "message": "Evidence w2-final-visual-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-measurements",
+              "passed": true,
+              "message": "Evidence w2-final-visual-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-probe2",
+              "passed": true,
+              "message": "Evidence w2-final-visual-probe2 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-probe3",
+              "passed": true,
+              "message": "Evidence w2-final-visual-probe3 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-bowl-three-states",
+              "passed": true,
+              "message": "Evidence w2-final-visual-bowl-three-states hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-fill-ladder",
+              "passed": true,
+              "message": "Evidence w2-final-visual-fill-ladder hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-fill-ladder-33",
+              "passed": true,
+              "message": "Evidence w2-final-visual-fill-ladder-33 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-chart",
+              "passed": true,
+              "message": "Evidence w2-final-visual-chart hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-hook-1366",
+              "passed": true,
+              "message": "Evidence w2-final-visual-hook-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-hook-1024",
+              "passed": true,
+              "message": "Evidence w2-final-visual-hook-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-regression",
+              "passed": true,
+              "message": "Evidence w2-final-visual-regression hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-final-visual-prelock-1366",
+              "passed": true,
+              "message": "Evidence w2-final-visual-prelock-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-report",
+              "passed": true,
+              "message": "Evidence w2-repair-5-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-frames-manifest",
+              "passed": true,
+              "message": "Evidence w2-repair-5-frames-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-measure-before",
+              "passed": true,
+              "message": "Evidence w2-repair-5-measure-before hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-measure-after",
+              "passed": true,
+              "message": "Evidence w2-repair-5-measure-after hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-before-overflow",
+              "passed": true,
+              "message": "Evidence w2-repair-5-before-overflow hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-after-overflow",
+              "passed": true,
+              "message": "Evidence w2-repair-5-after-overflow hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-after-dense",
+              "passed": true,
+              "message": "Evidence w2-repair-5-after-dense hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-after-zero-night",
+              "passed": true,
+              "message": "Evidence w2-repair-5-after-zero-night hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-before-chart-pair",
+              "passed": true,
+              "message": "Evidence w2-repair-5-before-chart-pair hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-after-chart-pair",
+              "passed": true,
+              "message": "Evidence w2-repair-5-after-chart-pair hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-after-chart-flat",
+              "passed": true,
+              "message": "Evidence w2-repair-5-after-chart-flat hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-before-false-cue",
+              "passed": true,
+              "message": "Evidence w2-repair-5-before-false-cue hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-repair-5-after-false-cue",
+              "passed": true,
+              "message": "Evidence w2-repair-5-after-false-cue hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-npm-test-47a992b",
+              "passed": true,
+              "message": "Evidence w2-npm-test-47a992b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-47a992b",
+              "passed": true,
+              "message": "Evidence w2-e2e-47a992b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-misclick-47a992b",
+              "passed": true,
+              "message": "Evidence w2-e2e-misclick-47a992b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-mutation-a-47a992b",
+              "passed": true,
+              "message": "Evidence w2-mutation-a-47a992b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-mutation-b-47a992b",
+              "passed": true,
+              "message": "Evidence w2-mutation-b-47a992b hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-npm-test-afa018d",
+              "passed": true,
+              "message": "Evidence w2-npm-test-afa018d hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-afa018d",
+              "passed": true,
+              "message": "Evidence w2-e2e-afa018d hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-e2e-misclick-afa018d",
+              "passed": true,
+              "message": "Evidence w2-e2e-misclick-afa018d hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-mutation-a-afa018d",
+              "passed": true,
+              "message": "Evidence w2-mutation-a-afa018d hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-mutation-b-afa018d",
+              "passed": true,
+              "message": "Evidence w2-mutation-b-afa018d hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-claim-filing-note",
+              "passed": true,
+              "message": "Evidence w2-claim-filing-note hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-founder-decisions",
+              "passed": true,
+              "message": "Evidence w2-founder-decisions hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-report",
+              "passed": true,
+              "message": "Evidence w2-fold-report hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-manifest",
+              "passed": true,
+              "message": "Evidence w2-fold-manifest hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-measurements",
+              "passed": true,
+              "message": "Evidence w2-fold-measurements hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-dissent-1366",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-dissent-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-dissent-1024",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-dissent-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-bowlclosed-1366",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-bowlclosed-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-bowlclosed-1024",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-bowlclosed-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-zero-1366",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-zero-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-zero-1024",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-zero-1024 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-ordinary-1366",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-ordinary-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "evidence-integrity:w2-fold-shot-densest-n5-1366",
+              "passed": true,
+              "message": "Evidence w2-fold-shot-densest-n5-1366 hash is intact.",
+              "severity": "blocking"
+            },
+            {
+              "id": "claim-ledger-present",
+              "passed": true,
+              "message": "Wave contains progress claims.",
+              "severity": "blocking"
+            },
+            {
+              "id": "claims-reconciled",
+              "passed": false,
+              "message": "Unconfirmed or contradicted claims: w2-e2e-pass:contradicted, w2-e2e-misclick-pass:contradicted.",
+              "severity": "blocking"
+            },
+            {
+              "id": "blocking-dissent",
+              "passed": true,
+              "message": "No unresolved blocking dissent.",
+              "severity": "blocking"
+            },
+            {
+              "id": "meetings-closed",
+              "passed": true,
+              "message": "All meetings are closed.",
+              "severity": "blocking"
+            },
+            {
+              "id": "meeting-budget",
+              "passed": true,
+              "message": "Meeting count 0/2.",
+              "severity": "blocking"
+            },
+            {
+              "id": "agent-budget",
+              "passed": true,
+              "message": "Agent soft budget exceeded with a recorded reason.",
+              "severity": "blocking"
+            },
+            {
+              "id": "failure-budget",
+              "passed": true,
+              "message": "Repairs 0/8; waves 2/6.",
+              "severity": "blocking"
+            },
+            {
+              "id": "ownership-conflicts",
+              "passed": true,
+              "message": "No active ownership conflicts.",
+              "severity": "blocking"
+            },
+            {
+              "id": "config-integrity",
+              "passed": true,
+              "message": "Harness constitution is unchanged since run creation.",
+              "severity": "blocking"
+            },
+            {
+              "id": "protected-branch",
+              "passed": true,
+              "message": "Branch claude/economics-boss-module-2-8s591f is not protected.",
+              "severity": "blocking"
+            }
+          ],
+          "blockingFailures": [
+            "claims-reconciled"
+          ],
+          "at": "2026-09-02T19:59:53.119Z",
+          "actor": "boss-lead"
         }
       ],
-      "verdict": null,
-      "repairs": 0,
+      "verdict": {
+        "wave": 2,
+        "verdict": "REPAIR",
+        "reason": "REPAIR REQUIRING A FOUNDER DECISION. Wave 2 rebuilt Full House's student surface to the frozen contract, prosecuted it with eight fresh critics, repaired it five times and returned every blocking finding to its owning critic, all of whom discharged it on their own measurement: gameplay pull STRONG (was FUNCTIONAL), Kid A/B/C STRONG, Economic Truth R-7 discharged and the R-1 limb biting under two fresh mutations at the final head, Module 1 unchanged, refresh/late-join/double-bell/rejoin all passing, and the 1024x600 and 1366x768 fold defects discharged by the browser critic itself. Authentic records at afa018d: npm test 477 pass 0 fail, e2e exit 0, misclick exit 0, mutation A exit 1, mutation B exit 1. The wave does not meet its pass condition on one clause, and the miss is not repairable by the critics or the lead: the owning visual critic grades /play STRONG and names ONE remaining gap STRUCTURAL — the arena cannot show how full it is between roughly 54 and 77 percent — and rules it evidence for founder decision FD-3 (keep the economically true per-deck seams, or move to a single whole-bowl seam that reads at a glance), not a call it may take. Two further founder decisions are queued with a Boss recommendation each: FD-1 the frontier's shape in synthesis, FD-2 the pre-lock reading budget against printed-before-commitment. Secondary and procedural: claims w2-e2e-pass and w2-e2e-misclick-pass stand contradicted because the lead filed their command records with kind test rather than kind e2e; the runs did pass and the claims are superseded by the correctly filed final-head claims, and the error is recorded in w2-claim-filing-note rather than worked around.",
+        "evidenceIds": [
+          "w2-founder-decisions",
+          "w2-final-visual-report",
+          "w2-claim-filing-note",
+          "w2-npm-test-afa018d",
+          "w2-e2e-afa018d",
+          "w2-mutation-a-afa018d"
+        ],
+        "at": "2026-09-02T20:00:21.818Z",
+        "actor": "boss-lead"
+      },
+      "repairs": 1,
       "startedAt": "2026-09-01T20:45:32.297Z",
       "closedAt": null,
       "budgetAdjustment": {
@@ -14936,18 +17101,18 @@
   "shipCases": [],
   "metrics": {
     "waves": 2,
-    "repairs": 1,
+    "repairs": 2,
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
     "agentsActivated": 41,
-    "gateFailures": 4,
+    "gateFailures": 5,
     "claimsContradicted": 2,
     "evidenceRecorded": 414,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 562,
-  "eventHead": "073f732a9c179c5c10485c074317e3d0a0f225540e8e9b16096984a0ed86f1c1",
+  "eventCount": 564,
+  "eventHead": "aad3718ecc675c31cd2133ae1b88998a1549af7bad368e1c09b89f4e3ef21cdb",
   "warnings": []
 }
