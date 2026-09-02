@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:19:27.115Z",
+  "updatedAt": "2026-09-02T16:19:41.099Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1636,6 +1636,20 @@
           "ephemeral": false,
           "status": "active",
           "activatedAt": "2026-09-02T16:18:24.996Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w2-repair-1-theme-leak": {
+          "assignmentId": "w2-repair-1-theme-leak",
+          "role": "builder",
+          "actor": "builder-r1",
+          "model": "claude-opus-5",
+          "reason": "Repair 1 of wave-2 budget: Browser QA BLOCKING defect — legacy unscoped theme.css .fh-* rules leak the gold accent and Bebas Neue onto the rebuilt /play result states (contract A2/A4); plus the two 401 console errors on a desk",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-02T16:19:41.099Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -4514,14 +4528,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 25,
+    "agentsActivated": 26,
     "gateFailures": 1,
     "claimsContradicted": 0,
     "evidenceRecorded": 141,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 209,
-  "eventHead": "93b2d2de07643334c848c3847bed453ee86b4a9c1429635875d33b179a3e559b",
+  "eventCount": 210,
+  "eventHead": "345724325d040783244e794320d71f5a0010f3efd91479fe47cc40d9391b25cc",
   "warnings": []
 }
