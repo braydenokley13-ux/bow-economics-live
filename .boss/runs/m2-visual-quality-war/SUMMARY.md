@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `224:8fdd894dead48a9ebd4044ca71821dff4ab9a9735b656729754edc2a78901a9e`  
-Updated: 2026-09-02T16:20:33.105Z
+Event head: `236:a4f7b8e1980fd992636c540c10de131113b1132b60fcd9a497242eff9a6d69cb`  
+Updated: 2026-09-02T16:21:32.282Z
 
 ## Founder intent
 
@@ -41,7 +41,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - player-gameplay-critic — gameplay-critic-w2 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-a2-basketball — active — claude-opus-5
 - player-gameplay-critic — kid-b2-casual — active — claude-sonnet-5
-- player-gameplay-critic — kid-c2-nonsports — active — claude-opus-5
+- player-gameplay-critic — kid-c2-nonsports — completed-with-concerns — claude-opus-5
 - economic-truth-critic — econ-truth-w2 — active — claude-opus-5
 - regression-hunter — regression-w2 — completed-with-concerns — claude-sonnet-5
 - product-analyst — analyst-w2 — active — claude-opus-5
@@ -126,6 +126,17 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-gameplay-synth-inert — screenshot — Student device at SYNTHESIS — identical across all six card pages, ~471px of contiguous dead black, empty rail placeholder box
 - w2-gameplay-counterfactual — screenshot — COUNTERFACTUAL on the desk that held $16: 14,740 -> 15,500 same price with the WHERE THAT CHANGE CAME FROM decomposition; replay bodies in adult prose
 - w2-gameplay-1024-result — screenshot — Result state at 1024x600 with PIN card un-collapsed: RENEWALS bottom 604 and NEXT top 705 both below the 600 fold
+- w2-kid-c-report — gameplay-report — KID C (non-sports grade 5-6, pairs on one Chromebook) wave-2 playtest of Full House /play, full arc, Desk 3 New York; pull rating STRONG; below-the-fold finding PARTLY discharged with measurements
+- w2-kid-c-manifest — browser-trace — Manifest of all 88 captures from the Kid C playthrough (lobby, hook, 5x prelock/dials/locked/result, board mirrors, 7 reveal stages on both surfaces, adapt, counterfactual, synthesis, complete, plus a separate mid-fill night)
+- w2-kid-c-n2-zero-fold — screenshot — Night 2, 0 people came at $120, at scrollY=0 1366x768: outcome fully above the fold, no causal sentence anywhere on the frame, ~193px empty right column beside it
+- w2-kid-c-n2-zero-full — screenshot — Same Night 2 fullPage: the WHAT HAPPENED card is below the fold (docHeight 915 vs 768) and says only 'You charged $120.' - a restatement, not a reason
+- w2-kid-c-n1-sellout — screenshot — Night 1 sellout at $12: FULL HOUSE headline top 189, WHO CAME 19,800 at 72px, 326 TURNED AWAY at 40px bottom 517, CASH chain and renewals move all above the fold; arena picture still shows grey wedges at 100% and an amber 'Came' key against violet seats
+- w2-kid-c-n4-prelock — screenshot — Night 4 pre-lock at 1366x768: no outcome preview of any kind, extra-seats control reads 'Open 2,400 more seats tonight / $95,000 / paid whether they fill or not' - the phrase 'upper bowl' appears nowhere pre-lock
+- w2-kid-c-1024x600 — screenshot — Night 1 first contact at 1024x600 with the PIN card un-collapsed: LOCK IT IN bottom 367 and its caption bottom 471, both reachable without scrolling; price readout 64px, pinDisplay 16px
+- w2-kid-c-lobby-dead — screenshot — LOBBY, the first screen a pair sees after joining: last main-column content bottom 367 at innerHeight 768 = 401px contiguous dead region, plus an empty rail box
+- w2-kid-c-cf — screenshot — COUNTERFACTUAL on /play: the Night1-vs-Night5 same-card comparison (the only place the repeat is named on the student device) plus the unreadable 'wanted in -1,100 ... seats only allowed -774' line and the empty REJOIN PIN pill
+- w2-kid-c-midfill — screenshot — Separate one-night session: a 38.5% turnout night proving the arena picture does respond to fill (9.7% lit pixels vs 0.6% at zero and 23.1% at sellout)
+- w2-kid-c-transcript — note — Full innerText transcript of every /play and /board state visited during the Kid C run, with the getBoundingClientRect measurements logged inline after each bell
 
 ## Claim ledger
 

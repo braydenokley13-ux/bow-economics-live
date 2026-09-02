@@ -1,0 +1,2060 @@
+SESSION CODE BOWDVR
+I AM: Desk 3 · New York Knicks
+LOBBY TEXT:
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Full House
+YOUR DESK
+
+You have Desk 3. Tonight you run the New York Knicks' building — Madison Square Garden.
+
+The biggest market in American sports. A lot of people, and a lot of them can pay.
+
+Waiting for your teacher to start.
+PHASE -> HOOK
+HOOK TEXT:
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+NIGHT 1 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Full House
+CASH
+$0
+RENEWALS
+50%
+You are keeping two books, and they do not add up to one number.
+
+You and your partner do not run the roster today. You run the building. There is a game tonight, the doors open in an hour, and nobody has told you what a seat is worth. Five nights. Two dials. No forecast — just tonight's card and whatever you learned the last time you guessed.
+
+NIGHT 1
+Tuesday
+a club that has lost four straight
+draw 22/100 · not on TV
+NIGHT 2
+Saturday
+a solid playoff club
+draw 51/100 · local TV
+NIGHT 3
+Wednesday
+last season's beaten finalists
+draw 88/100 · national TV
+NIGHT 4
+Saturday
+the rookie everybody is talking about
+draw 97/100 · not on TV
+NIGHT 5
+Tuesday
+a club that has lost four straight
+draw 22/100 · not on TV
+THE TWO BOOKS
+
+You are keeping two books, and they do not add up to one number. CASH is the money the building made after the bill. RENEWALS is the share of season-ticket holders who come back next year. A price that is great for one is usually worse for the other — that is the job.
+
+YOUR BUILDING
+NEW YORK KNICKS
+Madison Square Garden
+SEATS
+19,800
+BILL, EVERY NIGHT
+$520,000
+SEASON PLAN, PER SEAT
+$24
+
+listed basketball capacity 19,812 · 2025-26
+
+HOUSE RULE 1
+
+Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.
+
+HOUSE RULE 2
+
+Everything NEW about tonight is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Two things you already did come with you as well — your RENEWALS, and the event money you spent LAST night. Nothing else moves tonight's crowd; there is no luck in this game.
+
+HOUSE RULE 3
+
+Money you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it. It can also nudge RENEWALS up on the night you spend it: the whole dial is worth AT MOST two points, and often nothing at all — if your price has already pushed renewals to the top or the bottom of what they can move in one night, the money buys none.
+
+HOUSE RULE 4
+
+Your building's bill is due every night whether 200 people come or 19,000 do.
+
+HOUSE RULE 5
+
+RENEWALS follow your season-ticket plan price and what tonight is worth to the people who hold that plan. Charge well UNDER the plan price and the plan looks like a waste, so they stop buying it. Charge above what tonight is worth to them and they quit. The bigger the visiting club's Draw, the higher the price they will forgive — and a national-TV listing pulls that line back down, because they can watch it at home for nothing.
+
+Five nights here stand in for a whole 41-date home season. A real NBA season is 41 home games. The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.
+
+You are keeping two books, and they do not add up to one number.
+PHASE -> PLAY
+1024x600 NIGHT1 measure: {"lock":{"top":311,"bottom":367,"h":56,"fontSize":"18px","text":"LOCK IT IN"},"pin":{"top":58,"bottom":78,"h":20,"fontSize":"16px","text":"3704"},"readout":{"top":259,"bottom":325,"h":66,"fontSize":"64px","text":"$24"},"doc":1039,"vh":600}
+
+===== NIGHT 1 PRE-LOCK (Desk 3) =====
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+Tonight
+Your nights
+Your books
+NIGHT 1 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Full House
+
+No preview. Read the card, read your own nights, and commit.
+
+CASH
+$0
+RENEWALS
+50%
+You are keeping two books, and they do not add up to one number.
+SET YOUR TICKET PRICE
+−
+$24
+a seat, tonight
++
+PLAN $24
+$10
+$120
+
+Season plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.
+
+NIGHT 1 OF 5
+Tuesday · a club that has lost four straight
+Not on TV
+VISITING CLUB'S DRAW
+22/100
+
+The biggest market in American sports. A lot of people, and a lot of them can pay.
+
+A quiet Tuesday. Nothing about tonight is special — and it is still a real night with a real bill.
+MAKING IT AN EVENT
+up to $120,000
+−
+$0
++
+LOCK IT IN
+
+Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.
+
+YOUR BUILDING
+19,800
+seats · listed basketball capacity 19,812 · 2025-26
+Tonight's bill $520,000 · Season plan $24
+CASH
+$0
+on the books
+RENEWALS
+50%
+season-ticket holders coming back
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+
+The biggest market in American sports. A lot of people, and a lot of them can pay. The season plan works out to $24 a seat, and that is the only number you have.
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+TOMORROW
+Night 2 · Saturday · a solid playoff club · draw 51/100 · local TV
+WHAT THE EVENT MONEY DOES
+
+Every $100 here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $120,000 dial is worth AT MOST +2 renewal points — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.
+
+THE HOUSE RULES
+
+The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.
+PRE-LOCK MEASURE: readout={"top":288,"bottom":358,"h":70,"fontSize":"68px","text":"$24"} lock={"top":336,"bottom":392,"h":56,"fontSize":"18px","text":"LOCK IT IN"} pin={"top":58,"bottom":78,"h":20,"fontSize":"16px","text":"7633"} blindNote={"top":401,"bottom":496,"h":95,"fontSize":"14.5px","text":"Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. T"} doc=1109
+
+===== NIGHT 1 RESULT (Desk 3, scrollY=0) =====
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+NIGHT 2 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+CASH
+$74,000
+after the bill
+RENEWALS
+30%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+FULL HOUSE
+19,800 OF 19,800 · 326 TURNED AWAY
+WHO CAME
+19,800
+of 19,800 · 100% of the seats you opened tonight
+CASH
+TICKETS
+$12 × 19,800
+$237,600
++
+IN-ARENA
+what those same people spent inside
+$356,400
+−
+BUILDING BILL
+-$520,000
+=
+CASH
+$74,000
+ARENA OUTCOME
+Came
+Open seats
+100% of the seats you opened tonight
+326
+TURNED AWAY
+RENEWALS
+50%
+→
+30%
+down 20 points
+season-ticket holders coming back
+NEXT: NIGHT 2 → Saturday · Draw 51 · local TV
+You are keeping two books, and they do not add up to one number.
+WHAT HAPPENED
+
+Tuesday · a club that has lost four straight · draw 22/100
+
+You charged $12.
+
+326 people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it.
+RESULT MEASURE: {
+ "scrollY": 0,
+ "innerHeight": 768,
+ "docHeight": 983,
+ "#fhResult": {
+  "top": 124,
+  "bottom": 983,
+  "h": 859,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 2 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $74,000 | after the bill | RENEWALS | 30% | coming back | You"
+ },
+ "#fhNextNight": {
+  "top": 708,
+  "bottom": 756,
+  "h": 48,
+  "fontSize": "15px",
+  "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+ },
+ "#fhLock": null,
+ "#fhPriceReadout": null,
+ "#pinDisplay": {
+  "top": 58,
+  "bottom": 78,
+  "h": 20,
+  "fontSize": "16px",
+  "text": "7633"
+ },
+ ".fh-result-head": null,
+ ".fh-sellout": {
+  "top": 189,
+  "bottom": 259,
+  "h": 70,
+  "fontSize": "110px",
+  "text": "FULL HOUSE | 19,800 OF 19,800 · 326 TURNED AWAY"
+ },
+ ".fh-boxscore": null,
+ ".fh-kept": null,
+ ".fh-spend-verdict": null,
+ ".fh-desk-building": {
+  "top": 867,
+  "bottom": 890,
+  "h": 23,
+  "fontSize": "10.5px",
+  "text": "MADISON SQUARE GARDEN"
+ },
+ ".fh-topstrip": null,
+ ".fh-blind-note": null,
+ "#fhPlayRoot": {
+  "top": 124,
+  "bottom": 983,
+  "h": 859,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 2 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $74,000 | after the bill | RENEWALS | 30% | coming back | You"
+ },
+ "#fhBowl": null,
+ ".fh-fill-track": null,
+ "bigFigures": [
+  {
+   "t": "FULL HOUSE",
+   "px": 40,
+   "bottom": 246
+  },
+  {
+   "t": "19,800",
+   "px": 72,
+   "bottom": 366
+  },
+  {
+   "t": "326",
+   "px": 40,
+   "bottom": 517
+  }
+ ]
+}
+
+===== NIGHT 2 PRE-LOCK (Desk 3) =====
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+Tonight
+Your nights
+Your books
+NIGHT 2 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Full House
+
+No preview. Read the card, read your own nights, and commit.
+
+CASH
+$74,000
+RENEWALS
+30%
+You are keeping two books, and they do not add up to one number.
+SET YOUR TICKET PRICE
+−
+$12
+a seat, tonight
++
+PLAN $24
+$10
+$120
+
+Season plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.
+
+NIGHT 2 OF 5
+Saturday · a solid playoff club
+Local TV
+VISITING CLUB'S DRAW
+51/100
+
+The biggest market in American sports. A lot of people, and a lot of them can pay.
+
+Saturday. People can come out and stay out.
+On local TV: some of your fans can watch at home instead.
+MAKING IT AN EVENT
+up to $120,000
+−
+$0
++
+LOCK IT IN
+
+Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.
+
+YOUR BUILDING
+19,800
+seats · listed basketball capacity 19,812 · 2025-26
+Tonight's bill $520,000 · Season plan $24
+CASH
+$74,000
+on the books
+RENEWALS
+30%
+season-ticket holders coming back
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+TOMORROW
+Night 3 · Wednesday · last season's beaten finalists · draw 88/100 · national TV
+WHAT THE EVENT MONEY DOES
+
+Every $100 here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $120,000 dial is worth AT MOST +2 renewal points — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.
+
+THE HOUSE RULES
+
+The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.
+PRE-LOCK MEASURE: readout={"top":288,"bottom":358,"h":70,"fontSize":"68px","text":"$12"} lock={"top":336,"bottom":392,"h":56,"fontSize":"18px","text":"LOCK IT IN"} pin={"top":58,"bottom":78,"h":20,"fontSize":"16px","text":"7633"} blindNote={"top":401,"bottom":496,"h":95,"fontSize":"14.5px","text":"Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. T"} doc=1109
+
+===== NIGHT 2 RESULT (Desk 3, scrollY=0) =====
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+NIGHT 3 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+CASH
+-$446,000
+in the red
+RENEWALS
+10%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+NIGHT 2 · 0 CAME AT $120
+WHO CAME
+0
+of 19,800 · 0% of the seats you opened tonight
+CASH
+TICKETS
+$120 × 0
+$0
++
+IN-ARENA
+what those same people spent inside
+$0
+−
+BUILDING BILL
+-$520,000
+=
+CASH
+-$520,000
+ARENA OUTCOME
+Came
+Open seats
+0% of the seats you opened tonight
+RENEWALS
+30%
+→
+10%
+down 20 points
+season-ticket holders coming back
+NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV
+You are keeping two books, and they do not add up to one number.
+WHAT HAPPENED
+
+Saturday · a solid playoff club · draw 51/100
+
+You charged $120.
+RESULT MEASURE: {
+ "scrollY": 0,
+ "innerHeight": 768,
+ "docHeight": 915,
+ "#fhResult": {
+  "top": 124,
+  "bottom": 915,
+  "h": 791,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 3 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$446,000 | in the red | RENEWALS | 10% | coming back | You a"
+ },
+ "#fhNextNight": {
+  "top": 668,
+  "bottom": 716,
+  "h": 48,
+  "fontSize": "15px",
+  "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV"
+ },
+ "#fhLock": null,
+ "#fhPriceReadout": null,
+ "#pinDisplay": {
+  "top": 58,
+  "bottom": 78,
+  "h": 20,
+  "fontSize": "16px",
+  "text": "7633"
+ },
+ ".fh-result-head": {
+  "top": 189,
+  "bottom": 219,
+  "h": 30,
+  "fontSize": "26px",
+  "text": "NIGHT 2 · 0 CAME AT $120"
+ },
+ ".fh-sellout": null,
+ ".fh-boxscore": null,
+ ".fh-kept": null,
+ ".fh-spend-verdict": null,
+ ".fh-desk-building": {
+  "top": 799,
+  "bottom": 822,
+  "h": 23,
+  "fontSize": "10.5px",
+  "text": "MADISON SQUARE GARDEN"
+ },
+ ".fh-topstrip": null,
+ ".fh-blind-note": null,
+ "#fhPlayRoot": {
+  "top": 124,
+  "bottom": 915,
+  "h": 791,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 3 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$446,000 | in the red | RENEWALS | 10% | coming back | You a"
+ },
+ "#fhBowl": null,
+ ".fh-fill-track": null,
+ "bigFigures": [
+  {
+   "t": "0",
+   "px": 72,
+   "bottom": 326
+  }
+ ]
+}
+
+===== NIGHT 3 PRE-LOCK (Desk 3) =====
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+Tonight
+Your nights
+Your books
+NIGHT 3 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Full House
+
+No preview. Read the card, read your own nights, and commit.
+
+CASH
+-$446,000
+RENEWALS
+10%
+You are keeping two books, and they do not add up to one number.
+SET YOUR TICKET PRICE
+−
+$120
+a seat, tonight
++
+PLAN $24
+$10
+$120
+
+Season plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.
+
+NIGHT 3 OF 5
+Wednesday · last season's beaten finalists
+NATIONAL TV
+VISITING CLUB'S DRAW
+88/100
+
+The biggest market in American sports. A lot of people, and a lot of them can pay.
+
+The club that lost last season's Finals is in the building. That pulls hard.
+It is also on national TV — the whole country can watch it free at home. Two things pulling opposite ways.
+MAKING IT AN EVENT
+In the red — locked at $0
+−
+$0
++
+LOCK IT IN
+
+Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.
+
+YOUR BUILDING
+19,800
+seats · listed basketball capacity 19,812 · 2025-26
+Tonight's bill $520,000 · Season plan $24
+CASH
+-$446,000
+In the red — no night spend until you're back above zero.
+RENEWALS
+10%
+season-ticket holders coming back
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+TOMORROW
+Night 4 · Saturday · the rookie everybody is talking about · draw 97/100 · not on TV
+WHAT THE EVENT MONEY DOES
+
+Every $100 here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $120,000 dial is worth AT MOST +2 renewal points — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.
+
+THE HOUSE RULES
+
+The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.
+PRE-LOCK MEASURE: readout={"top":288,"bottom":358,"h":70,"fontSize":"68px","text":"$120"} lock={"top":356,"bottom":412,"h":56,"fontSize":"18px","text":"LOCK IT IN"} pin={"top":58,"bottom":78,"h":20,"fontSize":"16px","text":"7633"} blindNote={"top":421,"bottom":516,"h":95,"fontSize":"14.5px","text":"Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. T"} doc=1135
+bumped spend x4
+
+===== NIGHT 3 RESULT (Desk 3, scrollY=0) =====
+BOW ECONOMICS
+synced
+
+YOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:
+
+7633
+Got it
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+NIGHT 4 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+CASH
+-$422,520
+in the red
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+NIGHT 3 · 19,410 CAME AT $10
+WHO CAME
+19,410
+of 19,800 · 98% of the seats you opened tonight
+CASH
+TICKETS
+$10 × 19,410
+$194,100
++
+IN-ARENA
+what those same people spent inside
+$349,380
+−
+BUILDING BILL
+-$520,000
+=
+CASH
+$23,480
+ARENA OUTCOME
+Came
+Open seats
+98% of the seats you opened tonight
+RENEWALS
+10%
+→
+0%
+down 10 points
+season-ticket holders coming back
+NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV
+You are keeping two books, and they do not add up to one number.
+WHAT HAPPENED
+
+Wednesday · last season's beaten finalists · draw 88/100
+
+You charged $10.
+RESULT MEASURE: {
+ "scrollY": 0,
+ "innerHeight": 768,
+ "docHeight": 915,
+ "#fhResult": {
+  "top": 124,
+  "bottom": 915,
+  "h": 791,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 4 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$422,520 | in the red | RENEWALS | 0% | coming back | You ar"
+ },
+ "#fhNextNight": {
+  "top": 668,
+  "bottom": 716,
+  "h": 48,
+  "fontSize": "15px",
+  "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV"
+ },
+ "#fhLock": null,
+ "#fhPriceReadout": null,
+ "#pinDisplay": {
+  "top": 58,
+  "bottom": 78,
+  "h": 20,
+  "fontSize": "16px",
+  "text": "7633"
+ },
+ ".fh-result-head": {
+  "top": 189,
+  "bottom": 219,
+  "h": 30,
+  "fontSize": "26px",
+  "text": "NIGHT 3 · 19,410 CAME AT $10"
+ },
+ ".fh-sellout": null,
+ ".fh-boxscore": null,
+ ".fh-kept": null,
+ ".fh-spend-verdict": null,
+ ".fh-desk-building": {
+  "top": 799,
+  "bottom": 822,
+  "h": 23,
+  "fontSize": "10.5px",
+  "text": "MADISON SQUARE GARDEN"
+ },
+ ".fh-topstrip": null,
+ ".fh-blind-note": null,
+ "#fhPlayRoot": {
+  "top": 124,
+  "bottom": 915,
+  "h": 791,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 4 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$422,520 | in the red | RENEWALS | 0% | coming back | You ar"
+ },
+ "#fhBowl": null,
+ ".fh-fill-track": null,
+ "bigFigures": [
+  {
+   "t": "19,410",
+   "px": 72,
+   "bottom": 326
+  }
+ ]
+}
+
+===== NIGHT 4 PRE-LOCK (Desk 3) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+Tonight
+Your nights
+Your books
+NIGHT 4 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Full House
+
+No preview. Read the card, read your own nights, and commit.
+
+CASH
+-$422,520
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+SET YOUR TICKET PRICE
+−
+$10
+a seat, tonight
++
+PLAN $24
+$10
+$120
+
+Season plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.
+
+NIGHT 4 OF 5
+Saturday · the rookie everybody is talking about
+Not on TV
+VISITING CLUB'S DRAW
+97/100
+
+The biggest market in American sports. A lot of people, and a lot of them can pay.
+
+The biggest night of the five. Demand is going to run past what this building holds.
+One night only: you can open more of the building. It costs money before you know who shows up.
+MAKING IT AN EVENT
+In the red — locked at $0
+−
+$0
++
+CLOSED
+Open 2,400 more seats tonight
+$95,000
+paid whether they fill or not
+LOCK IT IN
+
+Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.
+
+YOUR BUILDING
+19,800
+seats · listed basketball capacity 19,812 · 2025-26
+Tonight's bill $520,000 · Season plan $24
+CASH
+-$422,520
+In the red — no night spend until you're back above zero.
+RENEWALS
+0%
+season-ticket holders coming back
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+TOMORROW
+Night 5 · Tuesday · a club that has lost four straight · draw 22/100 · not on TV
+WHAT THE EVENT MONEY DOES
+
+Every $100 here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $120,000 dial is worth AT MOST +2 renewal points — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.
+
+THE HOUSE RULES
+
+The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.
+PRE-LOCK MEASURE: readout={"top":278,"bottom":348,"h":70,"fontSize":"68px","text":"$10"} lock={"top":466,"bottom":522,"h":56,"fontSize":"18px","text":"LOCK IT IN"} pin={"top":0,"bottom":0,"h":0,"fontSize":"16px","text":"7633"} blindNote={"top":531,"bottom":626,"h":95,"fontSize":"14.5px","text":"Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. T"} doc=1138
+pressed #fhBowl
+
+===== NIGHT 4 RESULT (Desk 3, scrollY=0) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+NIGHT 5 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+CASH
+$28,080
+after the bill
+RENEWALS
+6%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+FULL HOUSE
+22,200 OF 22,200 · 1,750 TURNED AWAY
+WHO CAME
+22,200
+of 22,200 · 100% of the seats you opened tonight
+CASH
+TICKETS
+$30 × 22,200
+$666,000
++
+IN-ARENA
+what those same people spent inside
+$399,600
+−
+BUILDING BILL
+-$520,000
+−
+UPPER BOWL
+-$95,000
+=
+CASH
+$450,600
+ARENA OUTCOME
+Came
+Open seats
+Upper bowl open
+100% of the seats you opened tonight
+1,750
+TURNED AWAY
+RENEWALS
+0%
+→
+6%
+up 6 points
+season-ticket holders coming back
+NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV
+You are keeping two books, and they do not add up to one number.
+WHAT HAPPENED
+
+Saturday · the rookie everybody is talking about · draw 97/100
+
+You charged $30 with the upper bowl open.
+
+1,750 people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it.
+RESULT MEASURE: {
+ "scrollY": 0,
+ "innerHeight": 768,
+ "docHeight": 1006,
+ "#fhResult": {
+  "top": 114,
+  "bottom": 1006,
+  "h": 892,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 5 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $28,080 | after the bill | RENEWALS | 6% | coming back | You "
+ },
+ "#fhNextNight": {
+  "top": 731,
+  "bottom": 779,
+  "h": 48,
+  "fontSize": "15px",
+  "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV"
+ },
+ "#fhLock": null,
+ "#fhPriceReadout": null,
+ "#pinDisplay": {
+  "top": 0,
+  "bottom": 0,
+  "h": 0,
+  "fontSize": "16px",
+  "text": "7633"
+ },
+ ".fh-result-head": null,
+ ".fh-sellout": {
+  "top": 179,
+  "bottom": 249,
+  "h": 70,
+  "fontSize": "110px",
+  "text": "FULL HOUSE | 22,200 OF 22,200 · 1,750 TURNED AWAY"
+ },
+ ".fh-boxscore": null,
+ ".fh-kept": null,
+ ".fh-spend-verdict": null,
+ ".fh-desk-building": {
+  "top": 890,
+  "bottom": 913,
+  "h": 23,
+  "fontSize": "10.5px",
+  "text": "MADISON SQUARE GARDEN"
+ },
+ ".fh-topstrip": null,
+ ".fh-blind-note": null,
+ "#fhPlayRoot": {
+  "top": 114,
+  "bottom": 1006,
+  "h": 892,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 5 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $28,080 | after the bill | RENEWALS | 6% | coming back | You "
+ },
+ "#fhBowl": null,
+ ".fh-fill-track": null,
+ "bigFigures": [
+  {
+   "t": "FULL HOUSE",
+   "px": 40,
+   "bottom": 236
+  },
+  {
+   "t": "22,200",
+   "px": 72,
+   "bottom": 356
+  },
+  {
+   "t": "1,750",
+   "px": 40,
+   "bottom": 507
+  }
+ ]
+}
+
+===== NIGHT 5 PRE-LOCK (Desk 3) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+Tonight
+Your nights
+Your books
+NIGHT 5 OF 5
+TUE
+SAT
+WED
+SAT
+TUE
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Full House
+
+No preview. Read the card, read your own nights, and commit.
+
+CASH
+$28,080
+RENEWALS
+6%
+You are keeping two books, and they do not add up to one number.
+SET YOUR TICKET PRICE
+−
+$30
+a seat, tonight
++
+PLAN $24
+$10
+$120
+
+Season plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.
+
+NIGHT 5 OF 5
+Tuesday · a club that has lost four straight
+Not on TV
+VISITING CLUB'S DRAW
+22/100
+
+The biggest market in American sports. A lot of people, and a lot of them can pay.
+
+Same card as Night 1. Same day, same visiting club, same TV.
+The only thing that has changed since Night 1 is you.
+MAKING IT AN EVENT
+up to $120,000
+−
+$0
++
+LOCK IT IN
+
+Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.
+
+YOUR BUILDING
+19,800
+seats · listed basketball capacity 19,812 · 2025-26
+Tonight's bill $520,000 · Season plan $24
+CASH
+$28,080
+on the books
+RENEWALS
+6%
+season-ticket holders coming back
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+AFTER TONIGHT
+Nothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.
+WHAT THE EVENT MONEY DOES
+
+Every $100 here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $120,000 dial is worth AT MOST +2 renewal points — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.
+
+THE HOUSE RULES
+
+The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.
+PRE-LOCK MEASURE: readout={"top":278,"bottom":348,"h":70,"fontSize":"68px","text":"$30"} lock={"top":326,"bottom":382,"h":56,"fontSize":"18px","text":"LOCK IT IN"} pin={"top":0,"bottom":0,"h":0,"fontSize":"16px","text":"7633"} blindNote={"top":391,"bottom":486,"h":95,"fontSize":"14.5px","text":"Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. T"} doc=1141
+
+===== NIGHT 5 RESULT (Desk 3, scrollY=0) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+NIGHT 5 · 19,026 CAME AT $12
+WHO CAME
+19,026
+of 19,800 · 96.1% of the seats you opened tonight
+CASH
+TICKETS
+$12 × 19,026
+$228,312
++
+IN-ARENA
+what those same people spent inside
+$342,468
+−
+BUILDING BILL
+-$520,000
+=
+CASH
+$50,780
+ARENA OUTCOME
+Came
+Open seats
+96.1% of the seats you opened tonight
+RENEWALS
+6%
+→
+0%
+down 6 points
+season-ticket holders coming back
+THE BOOKS ARE CLOSED
+You are keeping two books, and they do not add up to one number.
+WHAT HAPPENED
+
+Tuesday · a club that has lost four straight · draw 22/100
+
+You charged $12.
+RESULT MEASURE: {
+ "scrollY": 0,
+ "innerHeight": 768,
+ "docHeight": 905,
+ "#fhResult": {
+  "top": 114,
+  "bottom": 905,
+  "h": 791,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $78,860 | after the bill | RENEWALS | 0% | coming back | You are keeping two books, and they d"
+ },
+ "#fhNextNight": {
+  "top": 658,
+  "bottom": 706,
+  "h": 48,
+  "fontSize": "15px",
+  "text": "THE BOOKS ARE CLOSED"
+ },
+ "#fhLock": null,
+ "#fhPriceReadout": null,
+ "#pinDisplay": {
+  "top": 0,
+  "bottom": 0,
+  "h": 0,
+  "fontSize": "16px",
+  "text": "7633"
+ },
+ ".fh-result-head": {
+  "top": 179,
+  "bottom": 209,
+  "h": 30,
+  "fontSize": "26px",
+  "text": "NIGHT 5 · 19,026 CAME AT $12"
+ },
+ ".fh-sellout": null,
+ ".fh-boxscore": null,
+ ".fh-kept": null,
+ ".fh-spend-verdict": null,
+ ".fh-desk-building": {
+  "top": 789,
+  "bottom": 812,
+  "h": 23,
+  "fontSize": "10.5px",
+  "text": "MADISON SQUARE GARDEN"
+ },
+ ".fh-topstrip": null,
+ ".fh-blind-note": null,
+ "#fhPlayRoot": {
+  "top": 114,
+  "bottom": 905,
+  "h": 791,
+  "fontSize": "15px",
+  "text": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $78,860 | after the bill | RENEWALS | 0% | coming back | You are keeping two books, and they d"
+ },
+ "#fhBowl": null,
+ ".fh-fill-track": null,
+ "bigFigures": [
+  {
+   "t": "19,026",
+   "px": 72,
+   "bottom": 316
+  }
+ ]
+}
+PHASE -> REVEAL
+
+===== REVEAL STAGE 1 (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Your five nights
+
+Your five nights, in the books. Look up at the board for the room's.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+N5
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+===== REVEAL STAGE 2 (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Your five nights
+
+Your five nights, in the books. Look up at the board for the room's.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+N5
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+===== REVEAL STAGE 3 (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Your five nights
+
+Your five nights, in the books. Look up at the board for the room's.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+N5
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+===== REVEAL STAGE 4 (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Your five nights
+
+Your five nights, in the books. Look up at the board for the room's.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+N5
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+===== REVEAL STAGE 5 (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Your five nights
+
+Your five nights, in the books. Look up at the board for the room's.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+N5
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+===== REVEAL STAGE 6 (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Your five nights
+
+Your five nights, in the books. Look up at the board for the room's.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+THE TWO PEAKS — NIGHT 3, YOUR MARKET
+Tickets alone made the most at
+$46
+Tickets + what they spent inside peaked at
+$38
+
+$8 lower — 4 clicks of the dial. The cheaper ticket made more money.
+
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+N5
+
+One dot per night. Two nights are only comparable when the card is the same.
+
+===== REVEAL STAGE 7 (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Your five nights
+
+Your five nights, in the books. Look up at the board for the room's.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+THE TWO PEAKS — NIGHT 3, YOUR MARKET
+Tickets alone made the most at
+$46
+Tickets + what they spent inside peaked at
+$38
+
+$8 lower — 4 clicks of the dial. The cheaper ticket made more money.
+
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+
+YOUR NIGHTS SO FAR
+PEOPLE × PRICE
+PRICE
+PEOPLE
+N1
+N2
+N3
+N4
+N5
+
+One dot per night. Two nights are only comparable when the card is the same.
+PHASE -> ADAPT
+
+===== ADAPT (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Talk it through
+
+Talk to your partner before you answer out loud.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+Whose best price on Saturday was different from their best price on Tuesday? What on the card made it different?
+Did anybody charge LESS and make MORE? How is that possible?
+Night 5 was Night 1's card again. Why did a different number of people show up?
+YOUR NIGHTS SO FAR
+Night 1 Tue
+$12
+19,800 100%
+$74,000
+Night 2 Sat
+$120
+0 0%
+-$520,000
+Night 3 Wed
+$10
+19,410 98%
+$23,480
+Night 4 Sat
+$30
+22,200 100%
+$450,600
+Night 5 Tue
+$12
+19,026 96.1%
+$50,780
+
+of the seats you opened tonight. You are keeping two books, and they do not add up to one number.
+PHASE -> COUNTERFACTUAL
+
+===== COUNTERFACTUAL (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+What if?
+
+Night 1 and Night 5 were the same card.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+NIGHT 1 AND NIGHT 5 WERE THE SAME CARD
+NIGHT 1
+$12
+19,800
+renewals 50%
+NIGHT 5
+$12
+19,026
+renewals 6%
+WHERE THAT CHANGE CAME FROM
+
+wanted in -1,100 (renewals -1,100) · seats only allowed -774
+
+WHAT IF?
+What you actually did
+$78,860 · 0%
+
+Your five nights, your two dials.
+
+Same price every night ($24)
+$1,238,212 · 80%
+
+Never moved the dial. Safe, and beatable on BOTH books at once: the renewals line below ends $996,336 ahead of it in cash and 20 renewal points ahead of it. Doing nothing is not what protecting your plan holders costs.
+
+The best renewals book we could find
+$2,234,548 · 100%
+
+The other corner: no line in this model ends with more season-ticket holders than 100%, and this is the most cash we could find that still gets there. The 35 points between this line and the one below it are NOT all the same price — the cheapest cost about $715 each and the last one costs $51,478. Protecting the base starts cheap and ends expensive.
+
+The most cash we could find
+$2,416,884 · 65%
+
+Not a proven maximum — the best line we could search out: a different price on every night, and event money on N3. Against the renewals line above it, it made $182,336 more and paid 35 renewal points for it. There is no exchange rate between those two numbers. You have to choose.
+
+We can show you what the money would have done. We cannot show you what you would have done — that is why you played it.
+
+BE READY TO ARGUE
+
+Find one night on the board — one colour, one shape — where two desks in the same building charged different prices. Somebody in this room made more money by charging less. Explain how, using those dots, not a guess.
+PHASE -> SYNTHESIS
+
+===== SYNTHESIS (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+Look up at the board
+
+Look up at the board.
+
+CASH
+$78,860
+RENEWALS
+0%
+You are keeping two books, and they do not add up to one number.
+TALK WITH YOUR PARTNER
+
+Which night did you get wrong, and what on the card should have told you?
+
+----- SYNTH BOARD PAGE 1 -----
+WHAT ECONOMICS DID WE JUST USE?
+CARD 1 OF 6
+REVENUE = PRICE × PEOPLE
+
+Night 2, New York Knicks — the same night in the same building. One desk charged $30 and 18,420 came. Another charged $120 and 0 came. Higher price, smaller crowd: that is a demand curve, and it is only readable one night at a time. Neither number alone is the money — the money is the two of them multiplied, which is why the biggest crowd and the biggest night are almost never the same night.
+
+Flights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it.
+v106 · SYNTHESIS
+
+----- SYNTH BOARD PAGE 2 -----
+WHAT ECONOMICS DID WE JUST USE?
+CARD 2 OF 6
+THE CARD MOVED THE CROWD
+
+New York Knicks: somebody charged $30 on the quiet Tuesday and drew 15,230. Somebody charged the same $30 on Saturday against a better visiting club and drew 18,420. Same price, different crowd. The day, the visiting club's Draw and the TV listing were all printed on the card before anyone locked.
+
+Flights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it.
+v107 · SYNTHESIS
+
+----- SYNTH BOARD PAGE 3 -----
+WHAT ECONOMICS DID WE JUST USE?
+CARD 3 OF 6
+THE TICKET IS NOT THE PRODUCT
+
+On Night 3 in New York Knicks, tickets alone made the most money at $46. Add what those same people spent inside the building and the best price drops to $38 — $8 lower, 4 clicks of the dial. The cheaper ticket made more money, because a cheaper ticket brings more people and every one of them buys something. Stores call that a loss leader.
+
+Flights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it.
+v108 · SYNTHESIS
+
+----- SYNTH BOARD PAGE 4 -----
+WHAT ECONOMICS DID WE JUST USE?
+CARD 4 OF 6
+NIGHT 5 WAS NIGHT 1
+
+3 desks charged the same price on both nights. Same day, same visiting club, same price — and a different crowd walked in. Desk 3 · New York Knicks: 19,800 then 19,026 — wanted in -1,100 (renewals -1,100) · seats only allowed -774 · Desk 1 · New York Knicks: 14,142 then 13,317 — -825 people, and that is renewals -825 · Desk 5 · New York Knicks: 15,230 then 15,155 — -75 people, and that is renewals -75. For every desk on this card the biggest thing that changed was its own renewals: four nights of their own pricing decided who walked in on the fifth. THE RENEWALS RULE, out loud: season-ticket holders paid $24 a seat at the New York Knicks and $16 a seat at the Memphis Grizzlies. Price a night well UNDER your own plan price and their plan looks like a waste — renewals fall even when the building is full. Price it above what they think that night is worth and they quit. The bigger the visiting club's Draw, the higher the price they forgive; a national-TV listing pulls that line back down.
+
+Flights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it.
+v109 · SYNTHESIS
+
+----- SYNTH BOARD PAGE 5 -----
+WHAT ECONOMICS DID WE JUST USE?
+CARD 5 OF 6
+TWO BOOKS, NO EXCHANGE RATE
+
+Best full house each market managed: New York Knicks 100% · Memphis Grizzlies 100%. Median renewals: New York Knicks 0% · Memphis Grizzlies 5%. You cannot add a dollar to a renewal, and no price is best on both. Over the whole five nights at the New York Knicks: the most cash we could find was $2,416,884, ending at 65% renewals. The most season-ticket holders we could find was 100%, and the best that line could make was $2,234,548. So 35 renewal points cost $182,336 — about $5,210 a point on average. But they do not cost the same: the cheapest points go for about $715 each and the last one costs $51,478. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.
+
+Flights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it.
+v110 · SYNTHESIS
+
+----- SYNTH BOARD PAGE 6 -----
+WHAT ECONOMICS DID WE JUST USE?
+CARD 6 OF 6
+YOUR JOB IS REAL
+
+The thing you just did five times with one dial, real clubs built software to do every hour. The San Francisco Giants started it in 2009 and ran a full season of it in 2010; variable and dynamic pricing are standard across the NBA now. Your job exists.
+
+Flights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it.
+Which night did you get wrong, and what on the card should have told you?
+New York Knicks · Madison Square Garden and Memphis Grizzlies · FedExForum are real clubs and real buildings; the Grizzlies' local media deal ran under $10M a year against the Lakers' about $149M in one leaked league year, 2016-17 (reported by ESPN, September 2017; verified as of 2026-08-31).
+Night 4 is modeled on a real demand shock: Indiana Fever home attendance went from 4,066 per game in 2023 to 17,036 per game in 2024, the best in the WNBA, and six opposing clubs moved Fever games into bigger buildings (2024 season; verified as of 2026-08-31).
+The San Francisco Giants pioneered dynamic ticket pricing in 2009 and ran it across a full season in 2010; variable and dynamic pricing are standard across the NBA today (verified as of 2026-08-31).
+The New York Knicks won the 2026 NBA championship on 13 June 2026, beating the San Antonio Spurs — their first title since 1973 (2025-26 season; NBA.com and ESPN, verified as of 2026-08-31). Every visiting club on these five cards is a ROLE, never a named club, so no desk in this room ever hosts itself.
+Building capacities are modeled at real arena scale: about 19,800 seats at Madison Square Garden (listed basketball capacity 19,812, 2025-26 season) and 17,794 at FedExForum as this lesson's modeled seat count — published FedExForum figures range from 16,667 to 18,119 and the building is in a phased renovation through 2028, so there is no single listed figure to quote (verified as of 2026-08-31). Every dollar figure in this lesson is a modeled magnitude, not an audited club financial.
+v111 · SYNTHESIS
+PHASE -> COMPLETE
+
+===== COMPLETE (my screen) =====
+BOW ECONOMICS
+synced
+REJOIN PIN
+KID C W2 · SEATED AS NIA & THEO
+FULL HOUSE
+MODULE 2 · LESSON 1
+CASH
+$78,860
+after the bill
+RENEWALS
+0%
+coming back
+You are keeping two books, and they do not add up to one number.
+DESK 3 · NEW YORK KNICKS
+MADISON SQUARE GARDEN
+REJOIN PIN
+7633
+Module 2
+·
+Money in Motion
+·
+Lesson 1
+That is Full House
+
+That is Full House. You priced five nights with no forecast, you found out that the crowd moves for reasons printed on a card, and you found out that the ticket is not the only thing you sell. Next lesson: most of the people in your building came to see somebody else's team.
+
+BEFORE YOU GO
+
+Which night did you get wrong, and what on the card should have told you?

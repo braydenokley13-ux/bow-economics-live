@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:20:33.105Z",
+  "updatedAt": "2026-09-02T16:21:32.282Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1585,11 +1585,29 @@
           "model": "claude-opus-5",
           "reason": "Fresh simulated KID C (non-sports)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T21:29:13.429Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:21:32.282Z",
+          "sections": {
+            "what-the-student-plays": "SIMULATED KID C (no sports knowledge, pairs on one 1366x768 Chromebook, Desk 3 New York) / AGENT-PLAYTESTED, head 6c4c7cc. I run one building for five nights: read tonight's card (day, visiting club, draw/100, TV), move one big slider to price a seat, optionally spend on 'making it an event', on Night 4 optionally pay $95,000 to open 2,400 more seats, then LOCK IT IN blind and wait for the teacher's bell. After the bell the whole screen becomes the settled night (#fhResult) and I press NEXT into the next card. It is a real mechanic with real consequences, not information->choice->Continue: $120 sold ZERO tickets and lost -$520,000; $12 sold out with 326 turned away; I fell to -$446,000 cash and 0% renewals and climbed back with $30 + extra seats for +$450,600 (13-n2/n1/n4-result.png). Bad play stayed recoverable and the game told me why the event dial was locked ('In the red - locked at $0').",
+            "pull-rating": "STRONG for this persona (not MAGNETIC). Single biggest cause it is not MAGNETIC: the game states the outcome and never states the cause, so my excitement was real but my adaptation was guesswork. After my most dramatic moment - zero people, minus half a million - the only sentence about causes anywhere is 'You charged $120.', and it sits below the fold (13-n2-result-full.png). I would ask to play again; I wanted to fix Night 2. Not below STRONG, so no student-pull dissent is raised.",
+            "biggest-failure": "OBSERVED: the settled-night screen never explains WHY the number happened, and the nearest thing to an explanation is below the fold. At 1366x768 scrollY=0 on the zero-turnout night, #fhResult runs top 124 -> bottom 915 against innerHeight 768; the 147px cut off is the entire WHAT HAPPENED card, whose content is 'Saturday · a solid playoff club · draw 51/100' + 'You charged $120.' - a restatement, not a reason. At the same moment there is a ~193px contiguous empty region in the right column (y 575-768) beside it. For a kid who cannot supply the missing sports reasoning himself, this is the whole lesson: I can see THAT my choice caused it, never WHY, and I cannot say the sentence in the debrief.",
+            "moment-by-moment-notes": "First screen: near-blank LOBBY - last main-column content bottom 367 at innerHeight 768 = 401px of empty black plus an empty rail box (01-lobby.png); I thought the page had not finished loading. Did I know what to do: yes, fast - giant $24, slider, one card, purple LOCK IT IN, and 'No preview. Read the card... and commit.' (10-n1-prelock.png). After the bell without scrolling: WHAT yes, WHY no - headline top 189, WHO CAME 72px bottom 326, full CASH chain, renewals 30%->10% bottom 575, NEXT bottom 716 all above the fold; no causal sentence on any of five nights. Building picture: partly useful, partly misleading - measured lit-seat pixels 0.6% at 0 people, 9.7% at 38.5% (70-midfill-result.png), 21.6/22.2/23.1% at 96.1/98/100%, so 'half the building glowed' reads; but at 100% FULL HOUSE big grey wedges remain that at 38.5% ARE the empty part, and the 'Came' key is amber RGB(240,169,74) while every filled seat is violet - nothing in the picture is amber. Two books: CASH I understood completely (TICKETS + IN-ARENA - BUILDING BILL = CASH is arithmetic I can do); RENEWALS I read only as 'a percent that drops when I am greedy or too cheap' - 'season-ticket holders' assumes I know what a season ticket is and nothing shows one; the line 'two books... do not add up to one number' appears three times on one viewport and still never told me why the second book matters. Pre-lock preview (forbidden): NONE observed across all five nights - dials show dollars only, no mark for tonight on the history dots, building unlit, TOMORROW shows printed card facts only. Reward chrome (forbidden): NONE - grep for XP/level/badge/trophy/leaderboard/score/streak/rank returns 0; caution, the counterfactual ends by ranking 'What you actually did $78,860 · 0%' under 'The most cash we could find $2,416,884 · 65%', which feels like being graded. Words I did not understand: upper bowl (never appears pre-lock; the button says 'Open 2,400 more seats' and the receipt says UPPER BOWL), draw as a noun (never defined), season-ticket holders/plan/plan price/renewals, in-arena, beaten finalists, playoff club, rookie, local vs national TV, market, demand, the base, exchange rate, capacity, 'changed hands', in the red, the bill. 'the shock' on /play: NOT VERIFIED. Night 5 = Night 1: OBSERVED, meant nothing at the moment - the Night 5 result never says it is the same card and never shows Night 1's 19,800 beside Night 5's 19,026; it lands two phases later in ADAPT and COUNTERFACTUAL (40-cf.png), where the side-by-side is the best thing in the lesson and arrives ten minutes late. Cheap/school-software: mostly no, but the blank lobby, an empty full-width pill labelled REJOIN PIN with #pinDisplay height 0 (40-cf.png), an empty rail box, and the seat strip clipped at x=0. During REVEAL my device is dead: /play body text is md5-identical across stages 1-5 and again 6-7 (21-reveal-*-play.txt). 1024x600 first contact with the PIN card open: LOCK IT IN reachable without scrolling - #fhLock top 311 bottom 367, caption bottom 471, readout 64px, pinDisplay 16px (03-small-night1-first-contact.png).",
+            "required-repairs": "1) Put the cause in the first viewport on every settled night, one plain sentence naming the price and the card ('Nobody came: $120 was far more than a draw-51 Saturday is worth to them') - the ~193px empty right column is the space. 2) Give the student device its own content during REVEAL so /play text is not byte-identical across five consecutive teacher clicks. 3) One name for the extra seats: whatever the pre-lock button says must be what the receipt and the picture key say ('upper bowl' appears only post-lock); same repair class for 'draw' - one clause, once, on the card. 4) Make the arena picture legible: the 'Came' key must be the colour the filled seats actually are, and a 100% night must not render large grey wedges that read as empty seats. 5) Say 'Night 5 is Night 1's card again' on the Night 5 result with both turnouts, not two phases later. 6) Fill or remove empty furniture: the 401px dead LOBBY main column, the empty REJOIN PIN pill, the empty rail box. 7) Rewrite 'wanted in -1,100 (renewals -1,100) · seats only allowed -774' as a grade-5 sentence. WAVE-1 BELOW-THE-FOLD FINDING: PARTLY DISCHARGED - discharged for the numbers (headline top 189/179, WHO CAME, full CASH chain, renewals movement and NEXT all bottom <= 768 on all five nights incl. sellout and zero; sellout headline top 189 < 200; turned-away 326 at 40px bottom 517 is the second-largest figure; largest figure is always turnout, never money; no next-night #fhLock in the first viewport), STANDING for the explanation (#fhResult overruns the viewport by 137-215px every night and what is out there is the only price-and-card line, plus the turned-away/resale sentence on sellout nights). Note against the '<= 2 figures >= 34px' acceptance: the two sellout nights render three (FULL HOUSE 40px, turnout 72px, turned-away 40px). NOT VERIFIED: /teach and /board quality, reduced-motion timings, contrast/CVD, picture discrimination between 40% and 96% fill, 'the shock' on /play, and anything about a real child - I am a simulated kid."
+          },
+          "evidenceIds": [
+            "w2-kid-c-report",
+            "w2-kid-c-manifest",
+            "w2-kid-c-n2-zero-fold",
+            "w2-kid-c-n2-zero-full",
+            "w2-kid-c-n1-sellout",
+            "w2-kid-c-n4-prelock",
+            "w2-kid-c-1024x600",
+            "w2-kid-c-lobby-dead",
+            "w2-kid-c-cf",
+            "w2-kid-c-midfill",
+            "w2-kid-c-transcript"
+          ],
           "cost": null
         },
         "w2-econ-confirm": {
@@ -1741,7 +1759,18 @@
         "w2-gameplay-reveal-inert",
         "w2-gameplay-synth-inert",
         "w2-gameplay-counterfactual",
-        "w2-gameplay-1024-result"
+        "w2-gameplay-1024-result",
+        "w2-kid-c-report",
+        "w2-kid-c-manifest",
+        "w2-kid-c-n2-zero-fold",
+        "w2-kid-c-n2-zero-full",
+        "w2-kid-c-n1-sellout",
+        "w2-kid-c-n4-prelock",
+        "w2-kid-c-1024x600",
+        "w2-kid-c-lobby-dead",
+        "w2-kid-c-cf",
+        "w2-kid-c-midfill",
+        "w2-kid-c-transcript"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -4493,6 +4522,207 @@
       },
       "recordedAt": "2026-09-02T16:20:32.811Z",
       "actor": "gameplay-critic-w2"
+    },
+    "w2-kid-c-report": {
+      "id": "w2-kid-c-report",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "KID C (non-sports grade 5-6, pairs on one Chromebook) wave-2 playtest of Full House /play, full arc, Desk 3 New York; pull rating STRONG; below-the-fold finding PARTLY discharged with measurements",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-report--KID_C_W2.md",
+      "sha256": "be3aa59538bfb22acae87640cb19bff832bcb174577063c9924313c3ef616957",
+      "size": 19730,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "kid-c",
+          "non-sports",
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:29.341Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-manifest": {
+      "id": "w2-kid-c-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of all 88 captures from the Kid C playthrough (lobby, hook, 5x prelock/dials/locked/result, board mirrors, 7 reveal stages on both surfaces, adapt, counterfactual, synthesis, complete, plus a separate mid-fill night)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-manifest--MANIFEST.md",
+      "sha256": "88abadd6c8aa74936adf8563cbf2ea955b8edc8c19e2cf374625a604f3f95696",
+      "size": 1539,
+      "metadata": {
+        "tags": [
+          "manifest",
+          "browser-trace",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:29.623Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-n2-zero-fold": {
+      "id": "w2-kid-c-n2-zero-fold",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 2, 0 people came at $120, at scrollY=0 1366x768: outcome fully above the fold, no causal sentence anywhere on the frame, ~193px empty right column beside it",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-n2-zero-fold--13-n2-result.png",
+      "sha256": "e8f2e37f71f3c43fe077638acaf0928cd0b148cdb5bbadb3661e1f6c487f562d",
+      "size": 211188,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "results-state",
+          "below-the-fold"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:29.903Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-n2-zero-full": {
+      "id": "w2-kid-c-n2-zero-full",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Same Night 2 fullPage: the WHAT HAPPENED card is below the fold (docHeight 915 vs 768) and says only 'You charged $120.' - a restatement, not a reason",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-n2-zero-full--13-n2-result-full.png",
+      "sha256": "3e81484acfa42c93c7287c61897656f176f8da2333c98aea3d5d0eacdd73a0cd",
+      "size": 229038,
+      "metadata": {
+        "tags": [
+          "fullpage",
+          "below-the-fold",
+          "evidence-for-repair-1"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:30.168Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-n1-sellout": {
+      "id": "w2-kid-c-n1-sellout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 1 sellout at $12: FULL HOUSE headline top 189, WHO CAME 19,800 at 72px, 326 TURNED AWAY at 40px bottom 517, CASH chain and renewals move all above the fold; arena picture still shows grey wedges at 100% and an amber 'Came' key against violet seats",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-n1-sellout--13-n1-result.png",
+      "sha256": "2ad4ac883dd3cf7df3bf68ec337237343326572090bada8d7f5e95edbac2a833",
+      "size": 240797,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "sellout",
+          "arena-picture"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:30.419Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-n4-prelock": {
+      "id": "w2-kid-c-n4-prelock",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 pre-lock at 1366x768: no outcome preview of any kind, extra-seats control reads 'Open 2,400 more seats tonight / $95,000 / paid whether they fill or not' - the phrase 'upper bowl' appears nowhere pre-lock",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-n4-prelock--10-n4-prelock.png",
+      "sha256": "82483a1e44e0cbabee4c75eec6de2dc4ac059b168a98bfcfabfaeb71f3cadbf4",
+      "size": 174574,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "pre-lock",
+          "blind-commitment",
+          "vocabulary"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:30.680Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-1024x600": {
+      "id": "w2-kid-c-1024x600",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 1 first contact at 1024x600 with the PIN card un-collapsed: LOCK IT IN bottom 367 and its caption bottom 471, both reachable without scrolling; price readout 64px, pinDisplay 16px",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-1024x600--03-small-night1-first-contact.png",
+      "sha256": "9792115b89f70e72e076a03820e9c8bbbe1df31b457ccc8a81ef2f611951f018",
+      "size": 116985,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "first-contact",
+          "acceptance-measurement"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:30.986Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-lobby-dead": {
+      "id": "w2-kid-c-lobby-dead",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "LOBBY, the first screen a pair sees after joining: last main-column content bottom 367 at innerHeight 768 = 401px contiguous dead region, plus an empty rail box",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-lobby-dead--01-lobby.png",
+      "sha256": "726beebee8ad40db35ab065f9037f0f0406e7522cfb8b1c3809700f8f2feea60",
+      "size": 51582,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "dead-region",
+          "first-impression"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:31.237Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-cf": {
+      "id": "w2-kid-c-cf",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "COUNTERFACTUAL on /play: the Night1-vs-Night5 same-card comparison (the only place the repeat is named on the student device) plus the unreadable 'wanted in -1,100 ... seats only allowed -774' line and the empty REJOIN PIN pill",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-cf--40-cf.png",
+      "sha256": "102293783a94b28e0a01fccf0d584f4cd912fcca14ee9f79ccb18145f03b8ed3",
+      "size": 119823,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "counterfactual",
+          "path-dependence"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:31.486Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-midfill": {
+      "id": "w2-kid-c-midfill",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Separate one-night session: a 38.5% turnout night proving the arena picture does respond to fill (9.7% lit pixels vs 0.6% at zero and 23.1% at sellout)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-midfill--70-midfill-result.png",
+      "sha256": "efe13e5d720ec1d16ec4663d8c1fbb53a632181ea6182ccd4e1a0136882bbbc4",
+      "size": 223140,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "arena-picture",
+          "measurement"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:31.736Z",
+      "actor": "kid-c2-nonsports"
+    },
+    "w2-kid-c-transcript": {
+      "id": "w2-kid-c-transcript",
+      "wave": 2,
+      "kind": "note",
+      "label": "Full innerText transcript of every /play and /board state visited during the Kid C run, with the getBoundingClientRect measurements logged inline after each bell",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-c-transcript--transcript.txt",
+      "sha256": "a3773be872956d6b0fc50302652ff1cf8d5e40c8537410792cceff3546b1a656",
+      "size": 50998,
+      "metadata": {
+        "tags": [
+          "dom-text",
+          "measurements"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:21:31.992Z",
+      "actor": "kid-c2-nonsports"
     }
   },
   "claims": {},
@@ -4795,11 +5025,11 @@
     "agentsActivated": 26,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 153,
+    "evidenceRecorded": 164,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 224,
-  "eventHead": "8fdd894dead48a9ebd4044ca71821dff4ab9a9735b656729754edc2a78901a9e",
+  "eventCount": 236,
+  "eventHead": "a4f7b8e1980fd992636c540c10de131113b1132b60fcd9a497242eff9a6d69cb",
   "warnings": []
 }
