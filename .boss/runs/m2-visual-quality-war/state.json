@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T20:00:21.818Z",
+  "updatedAt": "2026-09-02T20:00:45.433Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1229,7 +1229,7 @@
     },
     "2": {
       "number": 2,
-      "status": "active",
+      "status": "closed",
       "contract": {
         "hypothesis": "Full House's student surface (/play, every state from lobby to complete) can be rebuilt to the frozen reference-to-product contract (VISUAL_REFERENCE_CONTRACT.md §A–§D, §G) — a Module-2-scoped design system (violet accent, vendored Inter, card grid, desk rail), a drawn arena that renders settled turnout only, a results state that owns the viewport before the next decision, a factual sellout beat, and a rendered-claim limb on the client — such that a fresh independent visual critic grades /play PREMIUM (or at minimum moves it out of SERVICEABLE-NOT-PREMIUM with the remaining gaps named and non-structural), fresh gameplay and three fresh simulated kid critics rate pull STRONG or better for every persona with the two blocking student-pull dissents discharged, Economic Truth confirms no rendered claim is stronger than the model (R-1 limb bites under mutation, R-2/R-3/R-4/R-9 discharged), Module 1's rendered output is unchanged, and the full suite plus the M2 L1 e2e stay green.",
         "whyThisMatters": "Wave 1 established with fresh evidence that premium is VERIFIED-UNMET on every surface and that the current /play buries the consequence — the loop's most important beat — below the fold for all three student personas. Full House is the flagship: if the design system, the arena and the results state cannot earn the bar here, propagation to /teach, the projector and the synthesis is not justified. Building under the frozen contract is what keeps the visual program from reintroducing false economics through prettier copy.",
@@ -9266,7 +9266,7 @@
       },
       "repairs": 1,
       "startedAt": "2026-09-01T20:45:32.297Z",
-      "closedAt": null,
+      "closedAt": "2026-09-02T20:00:45.433Z",
       "budgetAdjustment": {
         "wave": 2,
         "agentReason": "Level 3 quality war with three fresh kid personas, three repair builders and five owning-critic re-checks: the contract's prosecution plan (contract-w2.json requiredEvidence) needs more than 14 agents by design; raised once for wave 2 close, not for wave 3",
@@ -17056,6 +17056,13 @@
       "reason": "known-good audit head after wave 1; the wave-2 build starts here",
       "at": "2026-09-01T20:45:31.964Z",
       "actor": "boss-lead"
+    },
+    {
+      "commit": "f320c8069e39784050f9eb9751e252962527fa94",
+      "branch": "claude/economics-boss-module-2-8s591f",
+      "reason": "Wave-2 final head: /play rebuilt, five repairs, every blocking dissent discharged by its owning critic, all evidence authentic; the rollback point before wave-3 propagation",
+      "at": "2026-09-02T20:00:33.633Z",
+      "actor": "boss-lead"
     }
   ],
   "overrides": [],
@@ -17112,7 +17119,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 564,
-  "eventHead": "aad3718ecc675c31cd2133ae1b88998a1549af7bad368e1c09b89f4e3ef21cdb",
+  "eventCount": 566,
+  "eventHead": "02155693ef0b47cd56f74382d142fafd70a222515192aa8929b198323d4c0e4e",
   "warnings": []
 }
