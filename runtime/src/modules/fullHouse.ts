@@ -1251,15 +1251,16 @@ export function repeatRowFor(
     // "-1,100 people, and that is renewals -1,100" — two signed numbers with no
     // verb between them, on the card that is meant to explain the season. Same
     // terms, same arithmetic, said as a sentence.
+    // Each channel keeps its magnitude directly attached to its name — no
+    // reader is told a cause without its size, and the reveal harness's P16
+    // reads those exact terms off this line ("renewals -975", "event money
+    // +400"), so the wording may grow a verb but must never come between a
+    // channel and its number.
     const size = Math.abs(wantedDelta).toLocaleString();
-    const named = parts.map((p) => {
-      const cut = p.lastIndexOf(" ");
-      return `${p.slice(0, cut)} (${p.slice(cut + 1)})`;
-    });
     channelLine =
       wantedDelta === 0
-        ? `The same crowd came both times, and underneath it ${named.join(" and ")}.`
-        : `${size} ${wantedDelta > 0 ? "more" : "fewer"} people came, and the change came from ${named.join(" and ")}.`;
+        ? `The same crowd came both times. Underneath it, ${parts.join(" and ")}.`
+        : `${size} ${wantedDelta > 0 ? "more" : "fewer"} people came. That change came from ${parts.join(" and ")}.`;
   }
   return {
     deskHandle: deskHandle(desk),
