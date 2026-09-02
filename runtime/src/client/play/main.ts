@@ -2773,11 +2773,18 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
           : ""
       }
     </div>`;
-  // B2/B3/B4: the forward control lives in the same column as WHAT HAPPENED,
-  // directly under it. That is what puts the spend verdict, the resale sentence
-  // and the CTA in one first viewport on a sellout at 1366x768 and on every
-  // night at 1024x600 — a full-width control under the whole grid could only
-  // ever sit below the tallest column, which is the drawn building.
+  // W2 repair-5 R5-1: the forward control lives under the CASH chain — the
+  // SHORTEST column — at BOTH shapes. It used to sit under WHAT HAPPENED at
+  // 1366x768, i.e. under the column that grows with the night: bowl receipt,
+  // spend verdict, resale sentence and the Night-5 callback all land there, and
+  // on the densest settled state (bowl open + event money + sold out, then the
+  // same card again on Night 5) that pushed #fhNextNight to bottom=790 against
+  // a 768px viewport — the advance control clipped at rest. Bounding the
+  // control by the short column makes its position independent of how much the
+  // night has to say, and fills the ~250px of empty CASH column at the same
+  // time. WHAT HAPPENED still renders above the fold at both shapes (measured),
+  // so the spend verdict and the resale sentence are still read before the pair
+  // can leave.
   const next = `
     <div class="fh-next-row" style="display:flex; flex-direction:column; align-items:stretch; gap:7px;">
       <button type="button" class="m2-cta fh-next-btn" id="fhNextNight"
@@ -2811,7 +2818,7 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
       <div class="fh-result-cols" style="display:grid; grid-template-columns:${tight ? "minmax(0,1.12fr) minmax(0,1fr) minmax(0,1.06fr)" : "minmax(0,1.16fr) minmax(0,1fr) minmax(0,1.06fr)"}; gap:${tight ? 8 : 10}px; align-items:start;">
         <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
           ${fhChainHtml(n, ui)}
-          ${tight ? next : ""}
+          ${next}
         </div>
         <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
           ${heroCard}
@@ -2826,7 +2833,6 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
         <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
           ${fhRenewalsHtml(n, ui, cause, causeLines)}
           ${fhWhatHappened(n, ui)}
-          ${tight ? "" : next}
         </div>
       </div>
     </div>`;
