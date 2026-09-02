@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `522:52a2e365cccf8141f66a75ffd634a226599812105341cf23ef389f09dfb90bf2`  
-Updated: 2026-09-02T19:43:43.624Z
+Event head: `527:112b9e5d12eed26146df5468aa419114be2e6a126acbfd13b8be773fb428b6e2`  
+Updated: 2026-09-02T19:46:18.606Z
 
 ## Founder intent
 
@@ -378,6 +378,11 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-repair-5-after-chart-flat — screenshot — AFTER: flat $16 x5 season at REVEAL — 5 labels for 5 nights (was 3), zero intersections
 - w2-repair-5-before-false-cue — screenshot — BEFORE: desk whose Nights 1-3 the bell auto-committed, told 'the price you charged on Night 3'
 - w2-repair-5-after-false-cue — screenshot — AFTER: same desk, no carried cue on any of five nights; a desk that chose its price still gets one
+- w2-npm-test-47a992b — test — cd runtime && npm test at the wave-2 final head 47a992b (build + full suite, 477 tests incl. dotChart and the turnout-cause tests)
+- w2-e2e-47a992b — e2e — node runtime/scripts/e2e-m2l1.cjs at the wave-2 final head 47a992b (R-1 whole-figure limb active)
+- w2-e2e-misclick-47a992b — e2e — node runtime/scripts/e2e-m2l1-misclick.cjs at the wave-2 final head 47a992b
+- w2-mutation-a-47a992b — e2e — R-1 mutation A at the wave-2 final head 47a992b: the true Night-1 turnout figure injected into the pre-lock render; the claim limb must FAIL the run (non-zero exit = bite)
+- w2-mutation-b-47a992b — e2e — R-1 mutation B at the wave-2 final head 47a992b: a 'Target' price band injected into the pre-lock render; the claim limb must FAIL the run
 
 ## Claim ledger
 
