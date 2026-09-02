@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `475:bba71ab5dc3e020a4d3e4df72fae9b5eb16389684e01252117fac884024aff2c`  
-Updated: 2026-09-02T18:45:25.617Z
+Event head: `491:a2aff03201ceef0a6c7ba5fdf5f0ed62810468fda324d46a6e5f0808e7db1e9a`  
+Updated: 2026-09-02T18:47:12.459Z
 
 ## Founder intent
 
@@ -58,7 +58,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - builder — builder-r4 — completed-with-concerns — claude-fable-5-1
 - visual-experience-director — visual-critic-3 — active — claude-opus-5
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-opus-5
-- regression-hunter — regression-w2b — active — claude-opus-5
+- regression-hunter — regression-w2b — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-c3-nonsports — completed-with-concerns — claude-opus-5
 
 ## Required evidence
@@ -336,6 +336,21 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-final-kidc-cf — screenshot — COUNTERFACTUAL on /play: 'WHERE THAT CHANGE CAME FROM: -1,100 people, and that is renewals -1,100' still not a sentence
 - w2-final-kidc-n5-1024 — screenshot — Night 5 settled at 1024x600: 'Night 1's card again $46 -> 10,878 then $46 -> 9,778 tonight' in the first screen
 - w2-final-kidc-1024-pre — screenshot — First-contact pricing at 1024x600: dial 262-296 and LOCK IT IN 268-324 both inside the 600px viewport
+- w2-final-reg-report — gameplay-report — REGRESSION_W2_FINAL — independent unhappy-path re-check at head 84d8983
+- w2-final-reg-m1-compare — browser-trace — Module 1 extended pixel compare at head: 35/38 byte-identical vs screens-m1-baseline-ext
+- w2-final-reg-m1-crop-l3-05 — screenshot — l3-05 diff crop at head: 7 differing pixels on the /teach End session button top border
+- w2-final-reg-m1-crop-l2-10-b — screenshot — l2-10 diff crop at head: extra reveal card present at capture (known-race frame)
+- w2-final-reg-facts — browser-trace — Raw DOM payloads for the five-night unhappy-path probe (refresh, late join, double bell, bowl-never-opened)
+- w2-final-reg-facts2 — browser-trace — Raw DOM payloads for the rejoin-PIN and one-night-chart probe
+- w2-final-reg-manifest — browser-trace — Screenshot manifest, 19 frames under screens-w2-regression-final
+- w2-final-reg-refresh-after — screenshot — Desk 1 after a plain refresh mid-results: same results state, innerText md5 identical
+- w2-final-reg-latejoin — screenshot — Late join at Night 3: Desk 4 stock franchise with labelled own history and live dials
+- w2-final-reg-d3-bell2 — screenshot — Desk 3 after two consecutive bells with zero NEXT presses: coherent, Night 3 card
+- w2-final-reg-d3-recovered — screenshot — Desk 3 back on Night 4 dials: 3-night chart with auto label, and the carried-dial cue naming an auto-committed night as 'the price you charged'
+- w2-final-reg-dupname — screenshot — Duplicate-name join on a second device: readable error plus rejoin-PIN link, never a blank body
+- w2-final-reg-rejoin-2nd — screenshot — PIN rejoin: second device seated on the same desk with identical books
+- w2-final-reg-signedout — screenshot — Original device after a PIN rejoin elsewhere: join card, 'signed out' label, explanation, not blank
+- w2-final-reg-chart1 — screenshot — Nights chart with exactly one night: single labelled dot, fitted axis
 
 ## Claim ledger
 

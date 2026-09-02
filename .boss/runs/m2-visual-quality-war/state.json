@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T18:45:25.617Z",
+  "updatedAt": "2026-09-02T18:47:12.459Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2117,11 +2117,31 @@
           "model": "claude-opus-5",
           "reason": "Analyst prerequisite: the hunter, not the lead, takes the Module 1 baseline and the refresh / late-join / bell paths at head 84d8983 on an uncontended host",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T18:31:11.258Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T18:47:12.459Z",
+          "sections": {
+            "regressions-found": "None blocking. IMPORTANT (not a regression from repair 4 but live in the path I was assigned): the carried-dial cue misattributes a teacher auto-commit to the pair — Desk 3 chose $70 on Night 1, never pressed NEXT, was bell-auto-committed at the plan $24 on Nights 2-3, and the Night 4 dial view read 'Your dial is at $24 - the price you charged on Night 3.' while its own chart labelled that night 'auto' (OBSERVED w2-final-reg-d3-recovered; cause INFERRED at runtime/src/modules/fullHouse.ts:2513, the match is on price value with no auto/manual predicate and can also name a night older than last night). ADVISORY: the dial does not carry - it resets to the plan price each night (OBSERVED on Desk 1: $34 then opens at $24, $48 then opens at $24; deliberate per applyNight fullHouse.ts:918) while the exported helper dialCarriedLineFor is documented 'the dial keeps the last price this desk charged' (fullHouse.ts:1905) - stale comment, transfer hazard, and a pair whose dial silently snaps back to the plan gets no cue at all. ADVISORY: an unacknowledged result card is superseded rather than queued across bells (N1->N2->N3), so no night is lost from books or chart but a pair that never presses NEXT can only read a card while it is up. ADVISORY: a PIN-rejoined device resumes on the previous night's already-acknowledged result card, costing one extra NEXT press.",
+            "paths-exercised": "(1) M1 extended pixel baseline at head 84d8983, taken by me: 38/38 frames captured, 0 console errors; compare vs screens-m1-baseline-ext = 35/38 byte-identical (w2-final-reg-m1-compare). l3-05 and l3-09 differ by exactly 7 pixels in bbox (897,288)-(1013,290), which my crop shows is the top border edge of the /teach 'End session' button - antialiasing; this CONTRADICTS the lead's 'build-label/join-counter text region' diagnosis while agreeing with its conclusion. l2-10-play-reveal differs by 43,360 pixels because the head frame carries one extra reveal card (PRIYA OKOYE ... UNSOLD) present at capture - a frame already flagged non-stable at fixed code in the baseline commit d1a0c24. Module 1's rendered output is unchanged by the Module 2 work: OBSERVED for 35 frames, INFERRED for 3; caveat that M2 did touch shared theme.css, play/main.ts and poll.ts, so the guarantee rests on pixels not file isolation. (2) Plain refresh mid-results: OBSERVED-PASS, #fhResult present before and after, gameBody innerText md5 identical ee0f6ae0d1 and string-equal, not blank, no skip to next night's dials. (3) Late join at Night 3: OBSERVED-PASS, Desk 4 Memphis with own PIN, live Night 3 dials, books $350,952 / 62%, own history chart labelled 'N1 $16 - 14,740 covered' / 'N2 $16 - 17,794 covered'; backfill computed locally in seatDesk, not a cross-seat leak. (4) Two consecutive bells, zero NEXT presses, zero locks: OBSERVED-PASS on continuity - desk coherent at every sample, distinct cards for Nights 1/2/3, cash chain -$137,200 -> $168,688 -> $354,792, renewals 30 -> 36 -> 42, Night 4 chart carries all three nights with the auto night labelled 'auto'. (5) Second device: OBSERVED-PASS both variants - duplicate-name join returns 409 with a readable line and the rejoin-PIN link (never blank); PIN rejoin seats the second device with identical books while the first device shows the join card, the 'signed out' sync label and 'This desk was opened on another device. Rejoin with your PIN.', which survives a further refresh. (6) Nights chart with 1 night OBSERVED-PASS (single labelled dot, fitted axis), 2 nights OBSERVED-PASS (both labels drawn), 3 nights OBSERVED-PASS (middle label de-collided away, auto night labelled); 4 and 5 nights NOT VERIFIED - the chart exists only in the pre-lock dial view so the deepest reachable is Night 5's 4-night chart, which I did not capture. HOOK OBSERVED-PASS at both 1366x768 and 1024x600. Desk that never opens the bowl OBSERVED-PASS through all five nights. Console across both runs: two entries total, a 409 on the duplicate-name join and a 401 on the signed-out device's next poll; no pageerror. Two servers, sequential, ports 4448 and 4450, both killed and confirmed free.",
+            "verdict": "NO REGRESSION FOUND - I do not block on classroom-reliability. All five carried-state and teacher-misclick paths named as gate prerequisites held on the current build, taken by me: refresh mid-results OBSERVED-PASS, late join at Night 3 OBSERVED-PASS, double bell with zero NEXT presses OBSERVED-PASS, second-device rejoin OBSERVED-PASS, Module 1 pixel baseline OBSERVED-PASS at 35/38 byte-identical with the three diffs traced to content timing and button antialiasing rather than layout. Item 6 is a split ruling: chart at 1/2/3 nights and HOOK at both viewports and the never-opened-bowl desk are OBSERVED-PASS; the 4/5-night chart is NOT VERIFIED. Carrying one important non-blocking finding (auto-commit attributed to the pair by the carried-dial cue) and three advisories. AGENT-PLAYTESTED only; never HUMAN-TESTED, never CLASSROOM-PROVEN."
+          },
+          "evidenceIds": [
+            "w2-final-reg-report",
+            "w2-final-reg-m1-compare",
+            "w2-final-reg-m1-crop-l3-05",
+            "w2-final-reg-m1-crop-l2-10-b",
+            "w2-final-reg-facts",
+            "w2-final-reg-facts2",
+            "w2-final-reg-manifest",
+            "w2-final-reg-refresh-after",
+            "w2-final-reg-latejoin",
+            "w2-final-reg-d3-bell2",
+            "w2-final-reg-d3-recovered",
+            "w2-final-reg-dupname",
+            "w2-final-reg-rejoin-2nd",
+            "w2-final-reg-signedout",
+            "w2-final-reg-chart1"
+          ],
           "cost": null
         },
         "w2-final-kid-c": {
@@ -2421,7 +2441,22 @@
         "w2-final-kidc-reveal3",
         "w2-final-kidc-cf",
         "w2-final-kidc-n5-1024",
-        "w2-final-kidc-1024-pre"
+        "w2-final-kidc-1024-pre",
+        "w2-final-reg-report",
+        "w2-final-reg-m1-compare",
+        "w2-final-reg-m1-crop-l3-05",
+        "w2-final-reg-m1-crop-l2-10-b",
+        "w2-final-reg-facts",
+        "w2-final-reg-facts2",
+        "w2-final-reg-manifest",
+        "w2-final-reg-refresh-after",
+        "w2-final-reg-latejoin",
+        "w2-final-reg-d3-bell2",
+        "w2-final-reg-d3-recovered",
+        "w2-final-reg-dupname",
+        "w2-final-reg-rejoin-2nd",
+        "w2-final-reg-signedout",
+        "w2-final-reg-chart1"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -10943,6 +10978,260 @@
       },
       "recordedAt": "2026-09-02T18:45:25.333Z",
       "actor": "kid-c3-nonsports"
+    },
+    "w2-final-reg-report": {
+      "id": "w2-final-reg-report",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "REGRESSION_W2_FINAL — independent unhappy-path re-check at head 84d8983",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-report--REGRESSION_W2_FINAL.md",
+      "sha256": "03af0337e794104ea60d1b15c1b661f4d74506d32a59a484eafa300fd02c5fbc",
+      "size": 10616,
+      "metadata": {
+        "tags": [
+          "regression",
+          "classroom-reliability"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:07.974Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-m1-compare": {
+      "id": "w2-final-reg-m1-compare",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Module 1 extended pixel compare at head: 35/38 byte-identical vs screens-m1-baseline-ext",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-m1-compare--compare.json",
+      "sha256": "26951ee90cdb596a09ef2e4efcc806504bcec8fbe5acfd712c570c467a5f8f71",
+      "size": 7692,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "pixel-baseline"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:08.276Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-m1-crop-l3-05": {
+      "id": "w2-final-reg-m1-crop-l3-05",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "l3-05 diff crop at head: 7 differing pixels on the /teach End session button top border",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-m1-crop-l3-05--wide-B-l3-05.png",
+      "sha256": "2e461e91c1cd24b35ca9bb253bff6aa6d24d853f3059fe73e2cf59cf5729cc2e",
+      "size": 4102,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:08.573Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-m1-crop-l2-10-b": {
+      "id": "w2-final-reg-m1-crop-l2-10-b",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "l2-10 diff crop at head: extra reveal card present at capture (known-race frame)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-m1-crop-l2-10-b--crop-B-l2-10-play-reveal_1366x768.png",
+      "sha256": "089c5f953ff5a7926d5faa8b82b011587c706031039309f6f2fc95d917448cc2",
+      "size": 7068,
+      "metadata": {
+        "tags": [
+          "module-1",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:08.850Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-facts": {
+      "id": "w2-final-reg-facts",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Raw DOM payloads for the five-night unhappy-path probe (refresh, late join, double bell, bowl-never-opened)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-facts--facts.json",
+      "sha256": "c495f017d909dc095d79a2753afc0619d1e5ce64144ace9c8d3cb5096bfcc701",
+      "size": 32152,
+      "metadata": {
+        "tags": [
+          "dom",
+          "unhappy-path"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:09.176Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-facts2": {
+      "id": "w2-final-reg-facts2",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Raw DOM payloads for the rejoin-PIN and one-night-chart probe",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-facts2--facts2.json",
+      "sha256": "858cfc51e5f6df97420f45070fb96039e23eed86372e761de4e7b26dcdf2cab7",
+      "size": 11704,
+      "metadata": {
+        "tags": [
+          "dom",
+          "rejoin"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:09.456Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-manifest": {
+      "id": "w2-final-reg-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Screenshot manifest, 19 frames under screens-w2-regression-final",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-manifest--manifest.md",
+      "sha256": "edb4fe6515902c6c74c526a27be82c31505ca302b5923cd529cd61f71c982155",
+      "size": 1741,
+      "metadata": {
+        "tags": [
+          "manifest"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:09.797Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-refresh-after": {
+      "id": "w2-final-reg-refresh-after",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Desk 1 after a plain refresh mid-results: same results state, innerText md5 identical",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-refresh-after--04-night1-settled-after-refresh.png",
+      "sha256": "b588dfaebd5c9b56b2875da7ae56bc8aa58cdd4cbceff759b117054df3695503",
+      "size": 194158,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "refresh"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:10.153Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-latejoin": {
+      "id": "w2-final-reg-latejoin",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Late join at Night 3: Desk 4 stock franchise with labelled own history and live dials",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-latejoin--07-late-join-night3.png",
+      "sha256": "417df1143e551f7eff4e6267321802dd5bc043d1badb514880c4fb219f838fe1",
+      "size": 214243,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "late-join"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:10.438Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-d3-bell2": {
+      "id": "w2-final-reg-d3-bell2",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Desk 3 after two consecutive bells with zero NEXT presses: coherent, Night 3 card",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-d3-bell2--08-d3-after-bell2-unacked.png",
+      "sha256": "980a95bb4dd7431e630888f33589babc2eff35f1c30f6bcf24e6d25322650bd8",
+      "size": 197744,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "teacher-bell"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:10.723Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-d3-recovered": {
+      "id": "w2-final-reg-d3-recovered",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Desk 3 back on Night 4 dials: 3-night chart with auto label, and the carried-dial cue naming an auto-committed night as 'the price you charged'",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-d3-recovered--09-d3-recovered.png",
+      "sha256": "0f18e685773a2f3b79813bab812be54bfa021a6b3c70744612f5c0f3d22ed28d",
+      "size": 218314,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "carried-state"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:11.008Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-dupname": {
+      "id": "w2-final-reg-dupname",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Duplicate-name join on a second device: readable error plus rejoin-PIN link, never a blank body",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-dupname--10-second-device-join.png",
+      "sha256": "ab11dde78125730ee1017e146330f6aa7e0a7323ccd276572a0b4cf579255546",
+      "size": 29025,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "misclick"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:11.303Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-rejoin-2nd": {
+      "id": "w2-final-reg-rejoin-2nd",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "PIN rejoin: second device seated on the same desk with identical books",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-rejoin-2nd--16-rejoin-second-device.png",
+      "sha256": "95053422ec4cac40a195970fa2499e4a8944c1ae80459515da60ddbfa5bed4e5",
+      "size": 191769,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "rejoin"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:11.587Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-signedout": {
+      "id": "w2-final-reg-signedout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Original device after a PIN rejoin elsewhere: join card, 'signed out' label, explanation, not blank",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-signedout--17-first-device-signed-out.png",
+      "sha256": "7b7c1fe1a6e37b9dcd805fb2a18a8f3503007471135128d826c55d2bd7118cdb",
+      "size": 30329,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "rejoin"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:11.901Z",
+      "actor": "regression-w2b"
+    },
+    "w2-final-reg-chart1": {
+      "id": "w2-final-reg-chart1",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Nights chart with exactly one night: single labelled dot, fitted axis",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-reg-chart1--15-chart-1-night.png",
+      "sha256": "857baa92fd615111bfb52d71675049d6b4d56d103685a88cb7501fe4d861a2ca",
+      "size": 204740,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "chart"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:47:12.178Z",
+      "actor": "regression-w2b"
     }
   },
   "claims": {
@@ -11456,11 +11745,11 @@
     "agentsActivated": 39,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 350,
+    "evidenceRecorded": 365,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 475,
-  "eventHead": "bba71ab5dc3e020a4d3e4df72fae9b5eb16389684e01252117fac884024aff2c",
+  "eventCount": 491,
+  "eventHead": "a2aff03201ceef0a6c7ba5fdf5f0ed62810468fda324d46a6e5f0808e7db1e9a",
   "warnings": []
 }
