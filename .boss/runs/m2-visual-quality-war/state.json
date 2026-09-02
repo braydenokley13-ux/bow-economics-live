@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:45:17.650Z",
+  "updatedAt": "2026-09-02T17:46:54.239Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2235,7 +2235,11 @@
         "w2-recheck-econ-drive-dump",
         "w2-recheck-econ-n4-bowl-closed",
         "w2-recheck-econ-n1-partial-fill",
-        "w2-recheck-econ-driver"
+        "w2-recheck-econ-driver",
+        "w2r-m1-l3-05-crop-a",
+        "w2r-m1-l3-05-crop-b",
+        "w2r-m1-l3-09-crop-a",
+        "w2r-m1-l3-09-crop-b"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -9901,6 +9905,54 @@
       "metadata": {},
       "recordedAt": "2026-09-02T17:45:17.026Z",
       "actor": "econ-truth-w2"
+    },
+    "w2r-m1-l3-05-crop-a": {
+      "id": "w2r-m1-l3-05-crop-a",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "M1 l3-05-teach-day1 at 1366x768: pixel-diff crop side A (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-m1-l3-05-crop-a--l3-05-teach-day1-crop-A.png",
+      "sha256": "b20d9212205aea17527c3a1e6ea739d740b07e53e9fa7eebf9e8e89f1eca1fe8",
+      "size": 431,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:46:09.660Z",
+      "actor": "boss-lead"
+    },
+    "w2r-m1-l3-05-crop-b": {
+      "id": "w2r-m1-l3-05-crop-b",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "M1 l3-05-teach-day1 at 1366x768: pixel-diff crop side B (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-m1-l3-05-crop-b--l3-05-teach-day1-crop-B.png",
+      "sha256": "2513fc53a02520fe4c93181c57ab706098d925659c7c2a87d8dd6538c423f9f9",
+      "size": 434,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:46:09.959Z",
+      "actor": "boss-lead"
+    },
+    "w2r-m1-l3-09-crop-a": {
+      "id": "w2r-m1-l3-09-crop-a",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "M1 l3-09-teach-reveal at 1366x768: pixel-diff crop side A (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-m1-l3-09-crop-a--l3-09-teach-reveal-crop-A.png",
+      "sha256": "b20d9212205aea17527c3a1e6ea739d740b07e53e9fa7eebf9e8e89f1eca1fe8",
+      "size": 431,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:46:10.253Z",
+      "actor": "boss-lead"
+    },
+    "w2r-m1-l3-09-crop-b": {
+      "id": "w2r-m1-l3-09-crop-b",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "M1 l3-09-teach-reveal at 1366x768: pixel-diff crop side B (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-m1-l3-09-crop-b--l3-09-teach-reveal-crop-B.png",
+      "sha256": "2513fc53a02520fe4c93181c57ab706098d925659c7c2a87d8dd6538c423f9f9",
+      "size": 434,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:46:10.557Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {
@@ -9964,9 +10016,12 @@
         "kid-b-shot-night2-result-full"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T20:24:38.408Z",
-      "actor": "kid-b-casual"
+      "actor": "kid-b-casual",
+      "resolution": "Resolved on wave-2 evidence. The consequence now has a separate, larger screen state than the decision: after each bell #fhResult replaces the dials and the next night's #fhLock is not in the first viewport until NEXT is pressed (GAMEPLAY_W2.md re-check, BROWSER_TRUTH_W2_RECHECK.md); a fast low-reading pair cannot dial-lock-dial-lock past their own result without seeing it. Fresh Kid B at 6c4c7cc rated STRONG (KID_B_W2.md) with the standing note that pre-lock reading burden (269-281 words in the first viewport vs the 60-word row) remains — carried as a wave-2 known gap needing a copy ruling, not a blocking student-pull cause. Kids not re-run after repairs — wave-3 fresh-kid requirement.",
+      "resolvedAt": "2026-09-02T17:46:53.649Z",
+      "resolvedBy": "boss-lead"
     },
     "baseline-browser-qa-dissent": {
       "id": "baseline-browser-qa-dissent",
@@ -9997,9 +10052,12 @@
         "kid-a-basketball-baseline-report"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T20:31:40.535Z",
-      "actor": "kid-a-basketball"
+      "actor": "kid-a-basketball",
+      "resolution": "Resolved on wave-2 evidence. The rebuilt /play gives the settled night its own state (#fhResult) that owns the viewport before the next dials: at 1366x768 scrollY=0 the headline, turnout hero, cash chain and renewals movement sit inside the fold on every night incl. the sellout (BROWSER_TRUTH_W2_RECHECK.md; GAMEPLAY_W2.md re-check: RENEWALS bottom 365-414, NEXT <=707); #fhLock 268-324 at 1024x600. The reveal mirror is no longer byte-identical: 8 distinct stages, per-stage row only, header points at the board; THE TWO PEAKS is behind the R-9 student gate and no longer reaches the desk before the room. Renewals movement carries the registered cause line every settled night and the floor line when the 20-point clamp binds. The fresh Kid A read at 6c4c7cc rated STRONG (KID_A_W2.md); kids were not re-run after the repairs — carried as a wave-3 fresh-kid requirement. Residual 1024x600 sellout fold overflow re-filed IMPORTANT.",
+      "resolvedAt": "2026-09-02T17:46:53.357Z",
+      "resolvedBy": "boss-lead"
     },
     "econ-adaptation-rulings-dissent": {
       "id": "econ-adaptation-rulings-dissent",
@@ -10014,9 +10072,12 @@
         "econ-adaptation-rulings-npmtest"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-01T20:36:21.112Z",
-      "actor": "econ-truth-w1"
+      "actor": "econ-truth-w1",
+      "resolution": "Resolved. None of the four forbidden reference elements shipped: no pre-lock projection or demand curve (blind pricing intact, e2e pre-lock limb green at f65e865), no 'Target' band, no trophy or 'Strong Round' copy (forbidden-vocabulary count 0 on every /play state, BROWSER_TRUTH_W2_RECHECK.md), no single-profit figure (CASH and RENEWALS never summed, R-3 re-confirmed). The structural gap (rendered-claim limb) is closed: the whole-figure client limb in e2e-m2l1.cjs bites under mutations A/B and C/D. R-2/R-3/R-4/R-7/R-9/R-10 confirmed at the repaired head (ECON_TRUTH_W2.md, ECON_TRUTH_W2_RECHECK.md). Open econ items carried as IMPORTANT, not blocking: R-J short renewals rule rendered as cause, R-K 'about a fifth' vs ~26%, R-L rules behind disclosure pre-commit (lead ruling due), R-M floor line over-fires, R-H/E4 Two Peaks literal; R-5 synthesis visuals and the FD-1 frontier candidate are wave 3.",
+      "resolvedAt": "2026-09-02T17:46:53.940Z",
+      "resolvedBy": "boss-lead"
     },
     "analyst-w1-dissent": {
       "id": "analyst-w1-dissent",
@@ -10090,9 +10151,12 @@
         "w2-visual-review-shot-arena-crops"
       ],
       "blocking": false,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-02T16:27:05.951Z",
-      "actor": "visual-critic-3"
+      "actor": "visual-critic-3",
+      "resolution": "Superseded by the owner's own re-check at head 54402b0 (REVIEW_VISUAL_W2.md 'Re-check after repairs'): the published-law limb (A2 gold/amber, A4 Bebas) is discharged by measurement across 47 states; C8 locked-waiting building whole; A7 0% dark. The flagship-asset limb is restated and narrowed as the advisory dissent w2-recheck-visual-dissent (arena mid-range fill legibility, outer-deck three meanings), which stays open and is carried into wave 3 so no PREMIUM claim can be made without disposing of it.",
+      "resolvedAt": "2026-09-02T17:46:54.239Z",
+      "resolvedBy": "boss-lead"
     },
     "w2-econ-confirm-dissent": {
       "id": "w2-econ-confirm-dissent",
@@ -10327,11 +10391,11 @@
     "agentsActivated": 34,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 300,
+    "evidenceRecorded": 304,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 407,
-  "eventHead": "8fa24100bb8a3c03abb1d3ab5060fe467df9f1f47a49301973b1539a1dcb21fa",
+  "eventCount": 415,
+  "eventHead": "8ce765355b40f39998755159d7c6fc8e9597d0009a90258306e1572548c5a92b",
   "warnings": []
 }
