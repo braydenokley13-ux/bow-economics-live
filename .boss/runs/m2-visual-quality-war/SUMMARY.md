@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `508:5b86342d8333ce93813f6a346e462d068e49a662c29c48e48b23def42f47f746`  
-Updated: 2026-09-02T18:50:14.685Z
+Event head: `522:52a2e365cccf8141f66a75ffd634a226599812105341cf23ef389f09dfb90bf2`  
+Updated: 2026-09-02T19:43:43.624Z
 
 ## Founder intent
 
@@ -60,7 +60,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-w2b — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-c3-nonsports — completed-with-concerns — claude-opus-5
-- builder — builder-r5 — active — claude-opus-5
+- builder — builder-r5 — completed-with-concerns — claude-opus-5
 
 ## Required evidence
 
@@ -365,6 +365,19 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-final-visual-hook-1024 — screenshot — HOOK at 1024x600: all five slate cards inside the fold, building letterboxed to 152px
 - w2-final-visual-regression — screenshot — Regression frames: sellout 1366, locked-waiting 1366, sellout 1024x600 CTA, settled night 1024x600 CTA
 - w2-final-visual-prelock-1366 — screenshot — Pre-lock Night 1 at 1366x768, scrollY=0 (293 words fully inside the viewport)
+- w2-repair-5-report — visual-report — W2 repair 5 report: acceptance tables for R5-1..R5-5, commands and exit codes, known gaps
+- w2-repair-5-frames-manifest — browser-trace — Manifest of the 19 before/after frames plus the two full measurement dumps (every rect, figure size, chart label set, cue string) from the 12-desk x 5-night driven class
+- w2-repair-5-measure-before — browser-trace — Head 10755ed measurements: #fhNextNight bottom 790 on the Night-5 sellout repeat, chart 3-4 labels for 5 dots, false carried cue on the auto-committed desk
+- w2-repair-5-measure-after — browser-trace — Repaired measurements: worst NEXT bottom 573 (1366) / 526 (1024), turned-away 742 max, 0 intersecting chart labels over 72 frames, turnout cause per night
+- w2-repair-5-before-overflow — screenshot — BEFORE 1366x768: Night-5 sellout repeating Night 1's card — #fhNextNight bottom 790, clipped at rest
+- w2-repair-5-after-overflow — screenshot — AFTER 1366x768: same night, #fhNextNight bottom 497 under the CASH chain, WHAT HAPPENED still above the fold
+- w2-repair-5-after-dense — screenshot — AFTER 1366x768: the densest settled state (bowl open + $120,000 event money + sold out) with the turnout cause under the hero; NEXT 573, turned-away 742
+- w2-repair-5-after-zero-night — screenshot — AFTER 1366x768: zero-turnout night at $120 — the zero limb of the turnout cause, materially different text from the sellout limb
+- w2-repair-5-before-chart-pair — screenshot — BEFORE: books-closed chart, ladder $46/$60/$80/$100/$46 — 4 labels for 5 nights, the same-price callback night unlabelled
+- w2-repair-5-after-chart-pair — screenshot — AFTER: same chart, 5 labels for 5 nights, zero intersecting boxes
+- w2-repair-5-after-chart-flat — screenshot — AFTER: flat $16 x5 season at REVEAL — 5 labels for 5 nights (was 3), zero intersections
+- w2-repair-5-before-false-cue — screenshot — BEFORE: desk whose Nights 1-3 the bell auto-committed, told 'the price you charged on Night 3'
+- w2-repair-5-after-false-cue — screenshot — AFTER: same desk, no carried cue on any of five nights; a desk that chose its price still gets one
 
 ## Claim ledger
 
