@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:17:26.449Z",
+  "updatedAt": "2026-09-02T16:18:24.996Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1609,6 +1609,20 @@
           "ephemeral": false,
           "status": "active",
           "activatedAt": "2026-09-01T21:29:14.170Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
+          "cost": null
+        },
+        "w2-regression-results-state": {
+          "assignmentId": "w2-regression-results-state",
+          "role": "regression-hunter",
+          "actor": "regression-w2b",
+          "model": "claude-sonnet-5",
+          "reason": "First regression pass left the results-state stress matrix (refresh/rejoin/late-join/bell-while-in-results/double-bell/poll race/all-nights-done/REVEAL) NOT VERIFIED; bounded second pass on that matrix plus the clean-rebuild check",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-02T16:18:24.996Z",
           "completedAt": null,
           "sections": null,
           "evidenceIds": [],
@@ -4352,14 +4366,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 24,
+    "agentsActivated": 25,
     "gateFailures": 1,
     "claimsContradicted": 0,
     "evidenceRecorded": 134,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 200,
-  "eventHead": "38e34329f4fe0144064de89299f64a293d265520fdd2b5f67b2920c5cc493e8c",
+  "eventCount": 201,
+  "eventHead": "4ba225f4062d3dc33dde00d835bd48b3f95c5f5ea655d26fe81804d22356004c",
   "warnings": []
 }
