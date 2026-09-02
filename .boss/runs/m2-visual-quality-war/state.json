@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T18:50:01.022Z",
+  "updatedAt": "2026-09-02T18:50:14.685Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2194,6 +2194,20 @@
             "w2-final-kidc-n5-1024",
             "w2-final-kidc-1024-pre"
           ],
+          "cost": null
+        },
+        "w2-repair-5": {
+          "assignmentId": "w2-repair-5",
+          "role": "builder",
+          "actor": "builder-r5",
+          "model": "claude-opus-5",
+          "reason": "Repair 5 of 8: four bounded defects named by the final owning-critic re-checks — 1366 bowl-open+spend+sellout NEXT overflow (browser-qa), turnout has no cause line and the chart drops the same-price pair's labels (Kid C), the carried-dial cue can name an auto-committed night (regression); excludes FD-2 and FD-3, which are founder decisions",
+          "ephemeral": false,
+          "status": "active",
+          "activatedAt": "2026-09-02T18:50:14.685Z",
+          "completedAt": null,
+          "sections": null,
+          "evidenceIds": [],
           "cost": null
         }
       },
@@ -12009,14 +12023,14 @@
     "rollbacks": 0,
     "kills": 0,
     "meetings": 0,
-    "agentsActivated": 39,
+    "agentsActivated": 40,
     "gateFailures": 3,
     "claimsContradicted": 0,
     "evidenceRecorded": 378,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 507,
-  "eventHead": "4066a827a3f4fb805b9e8cde545a91afa8ef2301c0447d0790e9addca23c158d",
+  "eventCount": 508,
+  "eventHead": "5b86342d8333ce93813f6a346e462d068e49a662c29c48e48b23def42f47f746",
   "warnings": []
 }
