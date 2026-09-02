@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `192:e8b8e02c7e01d2c9fe187a0950458f1d0d577b3ad7365a9da57a09f7f3507487`  
-Updated: 2026-09-02T16:07:35.083Z
+Event head: `200:38e34329f4fe0144064de89299f64a293d265520fdd2b5f67b2920c5cc493e8c`  
+Updated: 2026-09-02T16:17:26.449Z
 
 ## Founder intent
 
@@ -43,7 +43,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - player-gameplay-critic — kid-b2-casual — active — claude-sonnet-5
 - player-gameplay-critic — kid-c2-nonsports — active — claude-opus-5
 - economic-truth-critic — econ-truth-w2 — active — claude-opus-5
-- regression-hunter — regression-w2 — active — claude-sonnet-5
+- regression-hunter — regression-w2 — completed-with-concerns — claude-sonnet-5
 - product-analyst — analyst-w2 — active — claude-opus-5
 
 ## Required evidence
@@ -98,6 +98,13 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-mutation-a-6c4c7cc — note — R-1 mutation A at head 6c4c7cc (whole-figure limb): injected the true Night-1 turnout (14,142 fans) into the pre-lock render of a scratch dist — limb FAILED the run at Night 1 desk1 (exit 1)
 - w2-mutation-b-6c4c7cc — note — R-1 mutation B at head 6c4c7cc: injected 'Target: $110–$120' into the pre-lock render of a scratch dist — limb FAILED the run on the forbidden word at Night 1 desk1 (exit 1)
 - w2-git-diff-6c4c7cc — git-diff — Wave-2 diff from the wave-1 checkpoint 31fb8c8 to the prosecution head 6c4c7cc (runtime + design + contract); diffstat alongside
+- w2-regression-report — note — Full regression report (regressions-found / paths-exercised / verdict)
+- w2-regression-manifest — browser-trace — Manifest of M1-baseline compare JSON, diff crops, and misclick log
+- w2-regression-m1-compare-baseline-vs-head — visual-report — sha256 byte-compare: wave-2 base-head M1 baseline (pre-play-rebuild) vs head 6c4c7cc, 38 frames, 34/38 identical
+- w2-regression-m1-compare-head-vs-head — visual-report — sha256 byte-compare: head 6c4c7cc captured twice, isolates harness-timing races from real diffs, 36/38 identical
+- w2-regression-l2-05-crop — screenshot — l2-05-teach-hook crop: baseline vs head, diff is join-order counter + build-version label text only, no layout shift
+- w2-regression-l2-10-crop — screenshot — l2-10-play-reveal crop: baseline vs head, diff is reveal-stage animation timing (already a known-race frame)
+- w2-regression-misclick-log — browser-trace — e2e-m2l1-misclick.cjs full stdout, exit 0, PASS
 
 ## Claim ledger
 

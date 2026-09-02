@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:07:35.083Z",
+  "updatedAt": "2026-09-02T16:17:26.449Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1581,11 +1581,23 @@
           "model": "claude-sonnet-5",
           "reason": "Level 3 required: Module 1 pixel comparison, results-state refresh/rejoin/late-join/bell paths, misclick e2e",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T21:29:13.912Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:17:26.449Z",
+          "sections": {
+            "regressions-found": "No blocking regression OBSERVED. Highest item is INFERRED (not browser-verified): the #fhResult results-state ack marker (localStorage key bow-fh-ack:<sessionCode>:<seatId> in runtime/src/client/play/main.ts fhAckKey/fhAckRead/fhAckWrite) is client-only and not synced to server truth (desk.nights.length in fullHouse.ts); a desk that switches browser/device context after acknowledging a settled night can be shown a stale results screen again on rejoin. Self-healing via one more #fhNextNight click, no data loss, server state untouched -- reasoned from source, not driven in browser. M1 pixel baseline (38-frame extended capture at head 6c4c7cc vs wave-2 base-head baseline) is OBSERVED clean: 34-36/38 byte-identical, all remaining diffs traced via pixel-crop to content/timing state, not CSS/layout, confirmed against html[data-module=\"m2\"] scoping and Inter-M2 font namespacing in source. Shared render helpers ($, escapeHtml, setText, money) and all M1 renderX functions OBSERVED untouched in the diff. Misclick e2e (item 3 of brief) OBSERVED PASS, exit 0, confirm-dialog cancel/accept both correct, set price ($56) survives. Static-asset dist contents (theme.css + m2.css + fonts, 200 on /shared/m2.css) OBSERVED present; the clean rm -rf dist rebuild variant NOT VERIFIED (cut for time). /board and /teach OBSERVED to never set dataset.module, so the new m2.css link in their index.html is currently inert everywhere on those two surfaces -- safe for M1, a wave-3 fact not a wave-2 regression.",
+            "paths-exercised": "M1 extended pixel baseline re-captured live at head on port 4448 (shots-m1-extended.cjs, 38 frames, /play /teach /board, L1/L2/L3), run twice and cross-compared against itself and against the pre-rebuild wave-2 base-head baseline to separate harness-timing races from real diffs. git diff 31fb8c8..6c4c7cc hunk-boundary read for runtime/src/client/play/main.ts. copy-static.mjs diff read; dist/client/shared/ contents and live /shared/*.css HTTP responses checked on port 4448. E2E_PORT=4458 node runtime/scripts/e2e-m2l1-misclick.cjs run to completion. Source read (not browser-driven) of the fhAckKey/fhAckRead/fhAckWrite results-state ack mechanism and the server-side closeNight/seatDesk mechanics. Per the coordinator's bounded-plan course correction, the full results-state stress matrix (refresh during results, rejoin-from-fresh-context, late join at Night 3, bell-while-desk-in-prior-results, double-bell, never-press-NEXT-for-two-nights, 50ms poll-tick race, all-nights-done, phase-advance-to-REVEAL-while-in-results) was NOT driven live in a browser this run -- only late-join-at-Night-3 was reasoned through from source with high confidence and matches its own code comment.",
+            "verdict": "No blocking regression confirmed this run; the results-state ack finding is reported as INFERRED and explicitly marked not-yet-browser-verified per CLAUDE.md's release-truth rule (do not say verified when you only reasoned). M1 pixel baseline is clean and the misclick guard holds. This report does not clear brief item 2 (results-state stress) -- most of it is NOT VERIFIED and should be picked up by a subsequent regression pass before classroom-reliability sign-off. No formal dissent filed: the outstanding item is an unverified scope gap, not a confirmed defect meeting this role's blocking bar."
+          },
+          "evidenceIds": [
+            "w2-regression-report",
+            "w2-regression-manifest",
+            "w2-regression-m1-compare-baseline-vs-head",
+            "w2-regression-m1-compare-head-vs-head",
+            "w2-regression-l2-05-crop",
+            "w2-regression-l2-10-crop",
+            "w2-regression-misclick-log"
+          ],
           "cost": null
         },
         "w2-analyst": {
@@ -1643,7 +1655,14 @@
         "lead-e2e-repair-6c4c7cc",
         "w2-mutation-a-6c4c7cc",
         "w2-mutation-b-6c4c7cc",
-        "w2-git-diff-6c4c7cc"
+        "w2-git-diff-6c4c7cc",
+        "w2-regression-report",
+        "w2-regression-manifest",
+        "w2-regression-m1-compare-baseline-vs-head",
+        "w2-regression-m1-compare-head-vs-head",
+        "w2-regression-l2-05-crop",
+        "w2-regression-l2-10-crop",
+        "w2-regression-misclick-log"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3936,6 +3955,123 @@
       },
       "recordedAt": "2026-09-02T16:07:35.083Z",
       "actor": "boss-lead"
+    },
+    "w2-regression-report": {
+      "id": "w2-regression-report",
+      "wave": 2,
+      "kind": "note",
+      "label": "Full regression report (regressions-found / paths-exercised / verdict)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-report--REGRESSION_W2.md",
+      "sha256": "77c0039e8c06c7ba5d163151a088b932cbdaf81f3b77268002a32c75100b890a",
+      "size": 12205,
+      "metadata": {
+        "tags": [
+          "report"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:17:24.195Z",
+      "actor": "regression-w2"
+    },
+    "w2-regression-manifest": {
+      "id": "w2-regression-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of M1-baseline compare JSON, diff crops, and misclick log",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-manifest--manifest.md",
+      "sha256": "11ad30762439284b49d6eca0d85871acbbc7baaaf87e519295e7702dbb54368c",
+      "size": 1757,
+      "metadata": {
+        "tags": [
+          "manifest"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:17:24.495Z",
+      "actor": "regression-w2"
+    },
+    "w2-regression-m1-compare-baseline-vs-head": {
+      "id": "w2-regression-m1-compare-baseline-vs-head",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "sha256 byte-compare: wave-2 base-head M1 baseline (pre-play-rebuild) vs head 6c4c7cc, 38 frames, 34/38 identical",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-m1-compare-baseline-vs-head--compare-baseline-vs-head.json",
+      "sha256": "99f4f63717f68a6063f411ec56441c3bd9182e60b2ffbe57465d3adbc5137bf6",
+      "size": 7684,
+      "metadata": {
+        "tags": [
+          "m1-baseline",
+          "1366x768",
+          "1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:17:24.863Z",
+      "actor": "regression-w2"
+    },
+    "w2-regression-m1-compare-head-vs-head": {
+      "id": "w2-regression-m1-compare-head-vs-head",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "sha256 byte-compare: head 6c4c7cc captured twice, isolates harness-timing races from real diffs, 36/38 identical",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-m1-compare-head-vs-head--compare-head-vs-head-repeat.json",
+      "sha256": "63b712355ddadef91ab6db10fe1d542557f779f660eb030a240e0a8556dac3cf",
+      "size": 7729,
+      "metadata": {
+        "tags": [
+          "m1-baseline"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:17:25.194Z",
+      "actor": "regression-w2"
+    },
+    "w2-regression-l2-05-crop": {
+      "id": "w2-regression-l2-05-crop",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "l2-05-teach-hook crop: baseline vs head, diff is join-order counter + build-version label text only, no layout shift",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-l2-05-crop--l2-05-teach-hook-crop-head.png",
+      "sha256": "f49d71e6c7b7f9388813aa148cd92bec13cd196f0f9ef27e5b10b746e69210d1",
+      "size": 35392,
+      "metadata": {
+        "tags": [
+          "m1-baseline",
+          "1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:17:25.564Z",
+      "actor": "regression-w2"
+    },
+    "w2-regression-l2-10-crop": {
+      "id": "w2-regression-l2-10-crop",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "l2-10-play-reveal crop: baseline vs head, diff is reveal-stage animation timing (already a known-race frame)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-l2-10-crop--l2-10-play-reveal-crop-head.png",
+      "sha256": "9133ecd7b2e0da0e6059d61c6a4d6308d1a0759249baec9faa0c50aad7421fca",
+      "size": 7428,
+      "metadata": {
+        "tags": [
+          "m1-baseline",
+          "1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:17:25.862Z",
+      "actor": "regression-w2"
+    },
+    "w2-regression-misclick-log": {
+      "id": "w2-regression-misclick-log",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "e2e-m2l1-misclick.cjs full stdout, exit 0, PASS",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-regression-misclick-log--misclick-run.log",
+      "sha256": "ff13df5d2ffba55e6d396e83d7993dda51a9d4ed5505700e6782b7e8001e14b0",
+      "size": 635,
+      "metadata": {
+        "tags": [
+          "e2e",
+          "misclick"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:17:26.162Z",
+      "actor": "regression-w2"
     }
   },
   "claims": {},
@@ -4219,11 +4355,11 @@
     "agentsActivated": 24,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 127,
+    "evidenceRecorded": 134,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 192,
-  "eventHead": "e8b8e02c7e01d2c9fe187a0950458f1d0d577b3ad7365a9da57a09f7f3507487",
+  "eventCount": 200,
+  "eventHead": "38e34329f4fe0144064de89299f64a293d265520fdd2b5f67b2920c5cc493e8c",
   "warnings": []
 }
