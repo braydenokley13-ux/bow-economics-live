@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `210:345724325d040783244e794320d71f5a0010f3efd91479fe47cc40d9391b25cc`  
-Updated: 2026-09-02T16:19:41.099Z
+Event head: `224:8fdd894dead48a9ebd4044ca71821dff4ab9a9735b656729754edc2a78901a9e`  
+Updated: 2026-09-02T16:20:33.105Z
 
 ## Founder intent
 
@@ -38,7 +38,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - browser-qa — browser-qa-w2base — completed — claude-sonnet-5
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-sonnet-5
 - visual-experience-director — visual-critic-3 — active — claude-opus-5
-- player-gameplay-critic — gameplay-critic-w2 — active — claude-opus-5
+- player-gameplay-critic — gameplay-critic-w2 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-a2-basketball — active — claude-opus-5
 - player-gameplay-critic — kid-b2-casual — active — claude-sonnet-5
 - player-gameplay-critic — kid-c2-nonsports — active — claude-opus-5
@@ -114,6 +114,18 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-browser-truth-locked-waiting — screenshot — H1 locked-waiting state — dark building, 'Doors in a minute', no timer/spinner
 - w2-browser-truth-zero-turnout — screenshot — Desk 3, Night 1, priced at $120 on the lowest-draw card — a true zero-turnout night (0 of 19,800, 0%, cash -$520,000)
 - w2-browser-truth-measurements-raw — note — Raw console-logged + file-written DOM measurements from all 5 driving passes (measurements.json, measurements2.json, measurements3.json)
+- w2-gameplay-report — gameplay-report — Player/Gameplay Critic wave-2 report on M2L1 Full House /play — pull FUNCTIONAL, blocking student-pull dissent
+- w2-gameplay-manifest — browser-trace — 62-frame screenshot manifest of the full arc (lobby to complete) across 4 desks, 1 board, 1 teacher
+- w2-gameplay-measurements — browser-trace — getBoundingClientRect/getComputedStyle dumps at scrollY=0 for every pre-lock, result, reveal, adapt, CF, synthesis and complete state driven
+- w2-gameplay-prelock-fold — screenshot — Pre-lock N1 1366x768 fullPage: YOUR NIGHTS SO FAR at top 769 and the 200-word event-money rule at y833-1064, both below the 768 fold
+- w2-gameplay-prelock-viewport — screenshot — Pre-lock N1 1366x768 first viewport: 68px price hero, PLAN $24 tick clear of the knob, LOCK IT IN at top 336, event dial with no rule in frame
+- w2-gameplay-result-n1 — screenshot — Result state N1 1366x768 scrollY=0: headline, 72px WHO CAME, full CASH chain, lit arena, RENEWALS 50%->30%, NEXT all above the fold (wave-1 dissent 1 discharged at the design target)
+- w2-gameplay-sellout — screenshot — Memphis N4 sellout at 1366x768: FULL HOUSE top 189, 7,256 TURNED AWAY at 40px bottom 517, no grading word; resale note below the fold
+- w2-gameplay-sellout-lowball — screenshot — New York $10 desk N4: FULL HOUSE gold band on a night that cleared $34,400 against a $520,000 bill with renewals at 0% — sellout is not made to look like success by words, but by weight
+- w2-gameplay-reveal-inert — screenshot — Student device at reveal stage 0 — byte-identical innerText through stage 5; the seven-click reveal moves the device once
+- w2-gameplay-synth-inert — screenshot — Student device at SYNTHESIS — identical across all six card pages, ~471px of contiguous dead black, empty rail placeholder box
+- w2-gameplay-counterfactual — screenshot — COUNTERFACTUAL on the desk that held $16: 14,740 -> 15,500 same price with the WHERE THAT CHANGE CAME FROM decomposition; replay bodies in adult prose
+- w2-gameplay-1024-result — screenshot — Result state at 1024x600 with PIN card un-collapsed: RENEWALS bottom 604 and NEXT top 705 both below the 600 fold
 
 ## Claim ledger
 
@@ -122,6 +134,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 ## Dissent
 
 - bowl-rights-review-dissent — rights-source/advisory/open — mock-board-1920.png (the wave-3 board mock) shows four real NBA clubs (Denver Nuggets, Sacramento Kings, Orlando Magic, Milwaukee Bucks) that do not exist in fullHouse.ts's MARKETS array and have never been Sports Reality verified (no capacity, building, or market-framing data exists for them, unlike New York/Memphis in GATE_L1_SR.md). These should not ship into a real class-results frame without either restricting desks to the two verified markets (repeating them per the existing odd/even marketForDesk assignment) or a fresh verification pass per additional club before wave 3 builds the frame.
+- w2-gameplay-dissent — student-pull/blocking/open — Pull for the generic pair is FUNCTIONAL, below the bar for a Track 101 flagship, on three measured causes. (1) At every pre-lock decision at 1366x768, scrollY=0, the pair's own settled-night ledger and dot chart - the only information the blind-commit mechanic gives them - has top=769 (N1-N3) / 788 (N4) against a 768px viewport, i.e. zero pixels on screen, while the page's own subtitle reads 'read your own nights'. (2) The event-money dial's registered rule renders at approx y833-1064 pre-lock and its receipt renders below #fhNextNight (top 701 at 1366x768, 705 at 1024x600) post-lock, so at scrollY=0 one of the three instruments has no visible cause and no visible consequence at any point in the lesson - information -> choice -> Continue. (3) The student device is inert across the back half: #gameBody innerText is byte-identical across teacher reveal stages 0-5 and again at 6-7 (seven clicks, one device change) and byte-identical across all six SYNTHESIS card pages, with ~471px of contiguous dead black at SYNTHESIS and ~415px at COMPLETE against the 200px cap. Contract rows B8 and D2 are undischarged and row C1 fails at 1024x600 (RENEWALS bottom 604/639, NEXT top 705). The wave-1 dissents on the sellout beat and on #fhLock at 1024x600 are discharged; 'consequence below the fold' is discharged only at 1366x768.
 
 ## Latest gate
 
