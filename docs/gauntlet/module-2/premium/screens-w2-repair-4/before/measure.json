@@ -1,0 +1,2466 @@
+{
+  "desks": {
+    "d0-1366": {
+      "vp": {
+        "width": 1366,
+        "height": 768
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 768,
+          "headline": "NIGHT 1 · 12,510 CAME AT $40",
+          "nextBottom": 566,
+          "next": {
+            "top": 504,
+            "bottom": 566,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 392,
+            "bottom": 494,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n50%\n→\n30%\ndown 20 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 71266
+        },
+        {
+          "night": 2,
+          "vh": 768,
+          "headline": "NIGHT 2 · 11,600 CAME AT $60",
+          "nextBottom": 566,
+          "next": {
+            "top": 504,
+            "bottom": 566,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 392,
+            "bottom": 494,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n30%\n→\n10%\ndown 20 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 71201
+        },
+        {
+          "night": 3,
+          "vh": 768,
+          "headline": "NIGHT 3 · 3,170 CAME AT $80",
+          "nextBottom": 566,
+          "next": {
+            "top": 504,
+            "bottom": 566,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 847.6,
+            "h": 76,
+            "w": 194.4
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 392,
+            "bottom": 494,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n10%\n→\n0%\ndown 10 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 71112
+        },
+        {
+          "night": 4,
+          "vh": 768,
+          "headline": "NIGHT 4 · 13,450 CAME AT $100",
+          "nextBottom": 531,
+          "next": {
+            "top": 469,
+            "bottom": 531,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 357,
+            "bottom": 459,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n0%\n→\n11%\nup 11 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59592
+        },
+        {
+          "night": 5,
+          "vh": 768,
+          "headline": "NIGHT 5 · 11,535 CAME AT $40",
+          "nextBottom": 596,
+          "next": {
+            "top": 548,
+            "bottom": 596,
+            "left": 981.5,
+            "right": 1339,
+            "h": 48,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 392,
+            "bottom": 538,
+            "left": 981.5,
+            "right": 1339,
+            "h": 146,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n11%\n→\n0%\ndown 11 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 71203
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 416,
+          "lockedRecap": "LOCKED AT\n$40"
+        },
+        {
+          "night": 2,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$40",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 406,
+          "lockedRecap": "LOCKED AT\n$60"
+        },
+        {
+          "night": 3,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$60",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 428,
+          "lockedRecap": "LOCKED AT\n$80"
+        },
+        {
+          "night": 4,
+          "nightsTop": 566,
+          "nightsRect": {
+            "top": 566,
+            "bottom": 852,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 395,
+            "bottom": 451,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 821,
+            "bottom": 856,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$80",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 318,
+          "lockedRecap": "LOCKED AT\n$100"
+        },
+        {
+          "night": 5,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$100",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 434,
+          "lockedRecap": "LOCKED AT\n$40"
+        }
+      ],
+      "lobbyPin": {
+        "top": 746,
+        "bottom": 781,
+        "left": 15,
+        "right": 192,
+        "h": 35,
+        "w": 177
+      },
+      "closedChart": {
+        "labels": [],
+        "labelCount": 0,
+        "dots": 0,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [
+          "(no class)",
+          "(no class)",
+          "(no class)"
+        ],
+        "lines": 0,
+        "vb": "0 0 24 24"
+      },
+      "revealChart": {
+        "labels": [],
+        "labelCount": 0,
+        "dots": 0,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [
+          "(no class)",
+          "(no class)",
+          "(no class)"
+        ],
+        "lines": 0,
+        "vb": "0 0 24 24"
+      }
+    },
+    "d1-1024": {
+      "vp": {
+        "width": 1024,
+        "height": 600
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 600,
+          "headline": "NIGHT 1 · 6,700 CAME AT $40",
+          "nextBottom": 574,
+          "next": {
+            "top": 512,
+            "bottom": 574,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 249,
+            "bottom": 317,
+            "left": 383,
+            "right": 552.8,
+            "h": 68,
+            "w": 169.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 408,
+            "bottom": 504,
+            "left": 682.3,
+            "right": 1007,
+            "h": 96,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 183,
+            "bottom": 450,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n50%\n→\n30%\ndown 20 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 889.6,
+            "right": 1011,
+            "h": 58,
+            "w": 121.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71220
+        },
+        {
+          "night": 2,
+          "vh": 600,
+          "headline": "NIGHT 2 · 5,810 CAME AT $60",
+          "nextBottom": 574,
+          "next": {
+            "top": 512,
+            "bottom": 574,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 249,
+            "bottom": 317,
+            "left": 383,
+            "right": 552.8,
+            "h": 68,
+            "w": 169.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 408,
+            "bottom": 504,
+            "left": 682.3,
+            "right": 1007,
+            "h": 96,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 183,
+            "bottom": 450,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n30%\n→\n10%\ndown 20 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891,
+            "right": 1011,
+            "h": 58,
+            "w": 120
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71149
+        },
+        {
+          "night": 3,
+          "vh": 600,
+          "headline": "NIGHT 3 · 0 CAME AT $80",
+          "nextBottom": 574,
+          "next": {
+            "top": 512,
+            "bottom": 574,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 197,
+            "bottom": 265,
+            "left": 521.2,
+            "right": 560,
+            "h": 68,
+            "w": 38.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 408,
+            "bottom": 504,
+            "left": 682.3,
+            "right": 1007,
+            "h": 96,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 183,
+            "bottom": 450,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n10%\n→\n0%\ndown 10 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 889.9,
+            "right": 1011,
+            "h": 58,
+            "w": 121.1
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 45434
+        },
+        {
+          "night": 4,
+          "vh": 600,
+          "headline": "NIGHT 4 · 10,750 CAME AT $100",
+          "nextBottom": 578,
+          "next": {
+            "top": 516,
+            "bottom": 578,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 249,
+            "bottom": 317,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 373,
+            "bottom": 508,
+            "left": 682.3,
+            "right": 1007,
+            "h": 135,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 183,
+            "bottom": 481,
+            "left": 17,
+            "right": 360,
+            "h": 298,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n0%\n→\n12%\nup 12 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891,
+            "right": 1011,
+            "h": 58,
+            "w": 120
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71965
+        },
+        {
+          "night": 5,
+          "vh": 600,
+          "headline": "NIGHT 5 · 5,750 CAME AT $40",
+          "nextBottom": 581,
+          "next": {
+            "top": 533,
+            "bottom": 581,
+            "left": 682.3,
+            "right": 1007,
+            "h": 48,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 552.8,
+            "h": 68,
+            "w": 169.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 385,
+            "bottom": 525,
+            "left": 682.3,
+            "right": 1007,
+            "h": 140,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 427,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n12%\n→\n0%\ndown 12 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71162
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 238,
+          "lockedRecap": "LOCKED AT\n$40"
+        },
+        {
+          "night": 2,
+          "nightsTop": 459,
+          "nightsRect": {
+            "top": 459,
+            "bottom": 755,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 291,
+            "bottom": 347,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 889.6,
+            "right": 1011,
+            "h": 58,
+            "w": 121.4
+          },
+          "dialReadout": "$40",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 215,
+          "lockedRecap": "LOCKED AT\n$60"
+        },
+        {
+          "night": 3,
+          "nightsTop": 459,
+          "nightsRect": {
+            "top": 459,
+            "bottom": 755,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 291,
+            "bottom": 347,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891,
+            "right": 1011,
+            "h": 58,
+            "w": 120
+          },
+          "dialReadout": "$60",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 237,
+          "lockedRecap": "LOCKED AT\n$80"
+        },
+        {
+          "night": 4,
+          "nightsTop": 586,
+          "nightsRect": {
+            "top": 586,
+            "bottom": 882,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 418,
+            "bottom": 474,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 889.9,
+            "right": 1011,
+            "h": 58,
+            "w": 121.1
+          },
+          "dialReadout": "$80",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 220,
+          "lockedRecap": "LOCKED AT\n$100\n· upper bowl open"
+        },
+        {
+          "night": 5,
+          "nightsTop": 459,
+          "nightsRect": {
+            "top": 459,
+            "bottom": 755,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 291,
+            "bottom": 347,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891,
+            "right": 1011,
+            "h": 58,
+            "w": 120
+          },
+          "dialReadout": "$100",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 241,
+          "lockedRecap": "LOCKED AT\n$40"
+        }
+      ],
+      "lobbyPin": {
+        "top": 73,
+        "bottom": 108,
+        "left": 887.6,
+        "right": 1011,
+        "h": 35,
+        "w": 123.4
+      },
+      "closedChart": {
+        "labels": [],
+        "labelCount": 0,
+        "dots": 0,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [
+          "(no class)",
+          "(no class)",
+          "(no class)"
+        ],
+        "lines": 0,
+        "vb": "0 0 24 24"
+      },
+      "revealChart": {
+        "labels": [],
+        "labelCount": 0,
+        "dots": 0,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [
+          "(no class)",
+          "(no class)",
+          "(no class)"
+        ],
+        "lines": 0,
+        "vb": "0 0 24 24"
+      }
+    },
+    "d2-1366": {
+      "vp": {
+        "width": 1366,
+        "height": 768
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 768,
+          "headline": "NIGHT 1 · 19,038 CAME AT $16",
+          "nextBottom": 531,
+          "next": {
+            "top": 469,
+            "bottom": 531,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 357,
+            "bottom": 459,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n50%\n→\n36%\ndown 14 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 71234
+        },
+        {
+          "night": 2,
+          "vh": 768,
+          "headline": "FULL HOUSE\n19,800 OF 19,800 · 1,806 TURNED AWAY",
+          "nextBottom": 633,
+          "next": {
+            "top": 571,
+            "bottom": 633,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": {
+            "top": 686,
+            "bottom": 730,
+            "left": 649.2,
+            "right": 758.2,
+            "h": 44,
+            "w": 109
+          },
+          "turnedText": "1,806\nTURNED AWAY",
+          "hero": {
+            "top": 261,
+            "bottom": 337,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 389,
+            "bottom": 561,
+            "left": 981.5,
+            "right": 1339,
+            "h": 172,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 188,
+            "bottom": 463,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n36%\n→\n22%\ndown 14 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": true,
+          "scrollW": 1366,
+          "arenaSvgOuter": 68769
+        },
+        {
+          "night": 3,
+          "vh": 768,
+          "headline": "NIGHT 3 · 18,318 CAME AT $16",
+          "nextBottom": 531,
+          "next": {
+            "top": 469,
+            "bottom": 531,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 357,
+            "bottom": 459,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n22%\n→\n8%\ndown 14 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 71236
+        },
+        {
+          "night": 4,
+          "vh": 768,
+          "headline": "FULL HOUSE\n19,800 OF 19,800 · 6,450 TURNED AWAY",
+          "nextBottom": 633,
+          "next": {
+            "top": 571,
+            "bottom": 633,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": {
+            "top": 711,
+            "bottom": 755,
+            "left": 649.2,
+            "right": 758.2,
+            "h": 44,
+            "w": 109
+          },
+          "turnedText": "6,450\nTURNED AWAY",
+          "hero": {
+            "top": 261,
+            "bottom": 337,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 389,
+            "bottom": 561,
+            "left": 981.5,
+            "right": 1339,
+            "h": 172,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 188,
+            "bottom": 463,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n8%\n→\n0%\ndown 8 points\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": true,
+          "scrollW": 1366,
+          "arenaSvgOuter": 58609
+        },
+        {
+          "night": 5,
+          "vh": 768,
+          "headline": "NIGHT 5 · 17,788 CAME AT $16",
+          "nextBottom": 561,
+          "next": {
+            "top": 513,
+            "bottom": 561,
+            "left": 981.5,
+            "right": 1339,
+            "h": 48,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 357,
+            "bottom": 503,
+            "left": 981.5,
+            "right": 1339,
+            "h": 146,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 431,
+            "left": 233,
+            "right": 624.2,
+            "h": 275,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n0%\n→\n0%\nno change\nseason-ticket holders coming back\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 71268
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 416,
+          "lockedRecap": "LOCKED AT\n$16"
+        },
+        {
+          "night": 2,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 406,
+          "lockedRecap": "LOCKED AT\n$16"
+        },
+        {
+          "night": 3,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 428,
+          "lockedRecap": "LOCKED AT\n$16"
+        },
+        {
+          "night": 4,
+          "nightsTop": 566,
+          "nightsRect": {
+            "top": 566,
+            "bottom": 852,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 395,
+            "bottom": 451,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 821,
+            "bottom": 856,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 318,
+          "lockedRecap": "LOCKED AT\n$16"
+        },
+        {
+          "night": 5,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 746,
+            "bottom": 781,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 434,
+          "lockedRecap": "LOCKED AT\n$16"
+        }
+      ],
+      "lobbyPin": {
+        "top": 746,
+        "bottom": 781,
+        "left": 15,
+        "right": 192,
+        "h": 35,
+        "w": 177
+      },
+      "closedChart": {
+        "labels": [],
+        "labelCount": 0,
+        "dots": 0,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [
+          "(no class)",
+          "(no class)",
+          "(no class)"
+        ],
+        "lines": 0,
+        "vb": "0 0 24 24"
+      },
+      "revealChart": {
+        "labels": [],
+        "labelCount": 0,
+        "dots": 0,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [
+          "(no class)",
+          "(no class)",
+          "(no class)"
+        ],
+        "lines": 0,
+        "vb": "0 0 24 24"
+      }
+    },
+    "d3-1024": {
+      "vp": {
+        "width": 1024,
+        "height": 600
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 600,
+          "headline": "NIGHT 1 · 16,750 CAME AT $10",
+          "nextBottom": 539,
+          "next": {
+            "top": 477,
+            "bottom": 539,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 249,
+            "bottom": 317,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 373,
+            "bottom": 469,
+            "left": 682.3,
+            "right": 1007,
+            "h": 96,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 183,
+            "bottom": 450,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n50%\n→\n41%\ndown 9 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 890.5,
+            "right": 1011,
+            "h": 58,
+            "w": 120.5
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71209
+        },
+        {
+          "night": 2,
+          "vh": 600,
+          "headline": "FULL HOUSE\n17,794 OF 17,794 · 1,441 TURNED AWAY",
+          "nextBottom": 623,
+          "next": {
+            "top": 561,
+            "bottom": 623,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": {
+            "top": 641,
+            "bottom": 685,
+            "left": 383,
+            "right": 492,
+            "h": 44,
+            "w": 109
+          },
+          "turnedText": "1,441\nTURNED AWAY",
+          "hero": {
+            "top": 263,
+            "bottom": 331,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 387,
+            "bottom": 553,
+            "left": 682.3,
+            "right": 1007,
+            "h": 166,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 197,
+            "bottom": 464,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n41%\n→\n32%\ndown 9 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891.9,
+            "right": 1011,
+            "h": 58,
+            "w": 119.1
+          },
+          "soldOut": true,
+          "scrollW": 1024,
+          "arenaSvgOuter": 68737
+        },
+        {
+          "night": 3,
+          "vh": 600,
+          "headline": "NIGHT 3 · 15,300 CAME AT $10",
+          "nextBottom": 539,
+          "next": {
+            "top": 477,
+            "bottom": 539,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 249,
+            "bottom": 317,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 373,
+            "bottom": 469,
+            "left": 682.3,
+            "right": 1007,
+            "h": 96,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 183,
+            "bottom": 450,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n32%\n→\n23%\ndown 9 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891.9,
+            "right": 1011,
+            "h": 58,
+            "w": 119.1
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71214
+        },
+        {
+          "night": 4,
+          "vh": 600,
+          "headline": "FULL HOUSE\n19,594 OF 19,594 · 5,231 TURNED AWAY",
+          "nextBottom": 662,
+          "next": {
+            "top": 600,
+            "bottom": 662,
+            "left": 682.3,
+            "right": 1007,
+            "h": 62,
+            "w": 324.7
+          },
+          "turned": {
+            "top": 666,
+            "bottom": 710,
+            "left": 383,
+            "right": 492,
+            "h": 44,
+            "w": 109
+          },
+          "turnedText": "5,231\nTURNED AWAY",
+          "hero": {
+            "top": 263,
+            "bottom": 331,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 387,
+            "bottom": 592,
+            "left": 682.3,
+            "right": 1007,
+            "h": 205,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 197,
+            "bottom": 495,
+            "left": 17,
+            "right": 360,
+            "h": 298,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n23%\n→\n14%\ndown 9 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891.9,
+            "right": 1011,
+            "h": 58,
+            "w": 119.1
+          },
+          "soldOut": true,
+          "scrollW": 1024,
+          "arenaSvgOuter": 69578
+        },
+        {
+          "night": 5,
+          "vh": 600,
+          "headline": "NIGHT 5 · 15,850 CAME AT $10",
+          "nextBottom": 546,
+          "next": {
+            "top": 498,
+            "bottom": 546,
+            "left": 682.3,
+            "right": 1007,
+            "h": 48,
+            "w": 324.7
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 350,
+            "bottom": 490,
+            "left": 682.3,
+            "right": 1007,
+            "h": 140,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 427,
+            "left": 17,
+            "right": 360,
+            "h": 267,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n14%\n→\n5%\ndown 9 points\nseason-ticket holders coming back\n\nRenewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "cause": "Renewals follow your $16 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71199
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 238,
+          "lockedRecap": "LOCKED AT\n$10"
+        },
+        {
+          "night": 2,
+          "nightsTop": 459,
+          "nightsRect": {
+            "top": 459,
+            "bottom": 755,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 291,
+            "bottom": 347,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 890.5,
+            "right": 1011,
+            "h": 58,
+            "w": 120.5
+          },
+          "dialReadout": "$10",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 215,
+          "lockedRecap": "LOCKED AT\n$10"
+        },
+        {
+          "night": 3,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 50,
+            "bottom": 108,
+            "left": 891.9,
+            "right": 1011,
+            "h": 58,
+            "w": 119.1
+          },
+          "dialReadout": "$10",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 250,
+          "lockedRecap": "LOCKED AT\n$10"
+        },
+        {
+          "night": 4,
+          "nightsTop": 566,
+          "nightsRect": {
+            "top": 566,
+            "bottom": 862,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 398,
+            "bottom": 454,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 131,
+            "left": 891.9,
+            "right": 1011,
+            "h": 58,
+            "w": 119.1
+          },
+          "dialReadout": "$10",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 224,
+          "lockedRecap": "LOCKED AT\n$10\n· upper bowl open"
+        },
+        {
+          "night": 5,
+          "nightsTop": 319,
+          "nightsRect": {
+            "top": 319,
+            "bottom": 615,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 151,
+            "bottom": 207,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": -67,
+            "bottom": -9,
+            "left": 891.9,
+            "right": 1011,
+            "h": 58,
+            "w": 119.1
+          },
+          "dialReadout": "$10",
+          "carried": null,
+          "chart": {
+            "labels": [],
+            "labelCount": 0,
+            "dots": 0,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [
+              "(no class)",
+              "(no class)",
+              "(no class)"
+            ],
+            "lines": 0,
+            "vb": "0 0 24 24"
+          },
+          "words": 390,
+          "lockedRecap": "LOCKED AT\n$10"
+        }
+      ],
+      "lobbyPin": {
+        "top": 73,
+        "bottom": 108,
+        "left": 888.6,
+        "right": 1011,
+        "h": 35,
+        "w": 122.4
+      },
+      "closedChart": {
+        "labels": [],
+        "labelCount": 0,
+        "dots": 0,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [
+          "(no class)",
+          "(no class)",
+          "(no class)"
+        ],
+        "lines": 0,
+        "vb": "0 0 24 24"
+      }
+    }
+  },
+  "hook": {
+    "d0-1366": {
+      "words": 361,
+      "slate": {
+        "top": 241,
+        "bottom": 382,
+        "left": 233,
+        "right": 1339,
+        "h": 141,
+        "w": 1106
+      },
+      "cards": [
+        {
+          "top": 241,
+          "bottom": 382,
+          "visible": true
+        },
+        {
+          "top": 241,
+          "bottom": 382,
+          "visible": true
+        },
+        {
+          "top": 241,
+          "bottom": 382,
+          "visible": true
+        },
+        {
+          "top": 241,
+          "bottom": 382,
+          "visible": true
+        },
+        {
+          "top": 241,
+          "bottom": 382,
+          "visible": true
+        }
+      ],
+      "pin": {
+        "top": 1143,
+        "bottom": 1178,
+        "left": 15,
+        "right": 192,
+        "h": 35,
+        "w": 177
+      },
+      "longestP": 6
+    },
+    "d1-1024": {
+      "words": 243,
+      "slate": {
+        "top": 261,
+        "bottom": 402,
+        "left": 17,
+        "right": 1007,
+        "h": 141,
+        "w": 990
+      },
+      "cards": [
+        {
+          "top": 261,
+          "bottom": 402,
+          "visible": true
+        },
+        {
+          "top": 261,
+          "bottom": 402,
+          "visible": true
+        },
+        {
+          "top": 261,
+          "bottom": 402,
+          "visible": true
+        },
+        {
+          "top": 261,
+          "bottom": 402,
+          "visible": true
+        },
+        {
+          "top": 261,
+          "bottom": 402,
+          "visible": true
+        }
+      ],
+      "pin": {
+        "top": 73,
+        "bottom": 108,
+        "left": 887.6,
+        "right": 1011,
+        "h": 35,
+        "w": 123.4
+      },
+      "longestP": 3
+    }
+  },
+  "pin": {},
+  "synth": {
+    "cfMd5": "e6873f91b4",
+    "page1Md5": "7eb5b9bdfa",
+    "page1HasMirror": true,
+    "page1MirrorRect": {
+      "top": 179,
+      "bottom": 302,
+      "left": 233,
+      "right": 1339,
+      "h": 123,
+      "w": 1106
+    },
+    "page1Chart": {
+      "labels": [],
+      "labelCount": 0,
+      "dots": 0,
+      "intersections": 0,
+      "pairs": [],
+      "outside": [],
+      "paths": [
+        "(no class)",
+        "(no class)",
+        "(no class)"
+      ],
+      "lines": 0,
+      "vb": "0 0 24 24"
+    },
+    "page2Md5": "ddcf3debf1",
+    "page2HasMirror": true,
+    "distinctFromCf": true
+  },
+  "errors": [
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}
