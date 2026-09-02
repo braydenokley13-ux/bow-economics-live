@@ -274,6 +274,10 @@ export interface DotPoint {
   /** The mark's own label — say which card the night was, so two dots are
       only compared when they are comparable (E3 constraint 1). */
   label: string;
+  /** W2 repair-5 R5-3: a night the lesson argues from by name. Priority marks
+      are labelled before every other mark and get a longer list of positions to
+      try, so de-collision can never drop one of them. */
+  priority?: boolean;
 }
 
 export interface DotAxes {
@@ -355,36 +359,63 @@ export function dotChart(points: DotPoint[], axes: DotAxes): string {
   let marksSvg = "";
   for (const m of marks) marksSvg += '<circle class="pt" cx="' + f(m.cx) + '" cy="' + f(m.cy) + '" r="5"/>';
 
-  /* Labels: the latest night is always labelled; an earlier night is labelled
-     only if its box intersects no label already placed. A box is clamped
-     inside the plot, below its mark when there is room and above it otherwise.
-     No leader lines: a label that cannot sit by its mark is not drawn, and the
-     ledger beside the chart carries every night in full. */
+  /* Labels. A box is clamped inside the plot and tried in turn under, over and
+     beside its mark; it is drawn at the first position that intersects no label
+     already placed and no other mark. No leader lines.
+
+     W2 repair-5 R5-3: de-collision used to be pure suppression from a single
+     pair of candidate rows, so two nights at the same price — exactly the pair
+     the Night-5 callback is built on — could not both be labelled, and the
+     earlier one silently vanished under the later one. Points may now declare
+     themselves `priority`: they are placed FIRST, from a longer candidate list
+     that steps the label away from the mark vertically and then sideways. The
+     rule that no two boxes may intersect is unchanged. */
   type Box = { l: number; r: number; t: number; b: number };
-  const CH = 6.3; /* Inter 600 at 10.5 units: mean advance, measured generously */
-  const LH = 12;
+  /* W2 repair-5 R5-3: 6.3 units per character under-measured the rendered
+     label — boxes that cleared each other in this model still intersected in
+     the DOM — so the estimate is now the widest glyph advance the label set
+     actually uses, and the row is a full line box. */
+  const CH = 7.8;
+  const LH = 14;
   const hit = (a: Box, b: Box): boolean => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
   const placed: Box[] = [];
   const markBoxes: Box[] = marks.map((m) => ({ l: m.cx - 6, r: m.cx + 6, t: m.cy - 6, b: m.cy + 6 }));
   let labelsSvg = "";
-  const order = marks.map((m) => m.i).sort((a, b) => b - a); /* latest first */
+  const order = marks
+    .map((m) => m.i)
+    .sort((a, b) => {
+      const pa = points[a]!.priority === true ? 1 : 0;
+      const pb = points[b]!.priority === true ? 1 : 0;
+      if (pa !== pb) return pb - pa; /* the nights the lesson names, first */
+      return b - a; /* then latest first */
+    });
   for (const i of order) {
     const m = marks[i]!;
     const text = points[i]!.label;
     const tw = text.length * CH;
-    let cx = m.cx;
-    cx = Math.max(padL + tw / 2, Math.min(padL + plotW - tw / 2, cx));
-    const candidates: number[] = [m.cy + 17, m.cy - 9];
+    /* Every row the plot has, nearest to this mark first (a hair below the mark
+       is the preferred reading), each tried centred and then to either side.
+       Five nights at one price — a flat season — is the case that used to lose
+       two labels to a two-row candidate list. */
+    const wanted = m.cy + 17;
+    const rows: number[] = [];
+    for (let by = padT + LH; by <= padT + plotH - 1; by += LH) rows.push(by);
+    if (rows.length === 0) rows.push(padT + LH);
+    rows.sort((a, b) => Math.abs(a - wanted) - Math.abs(b - wanted));
+    const shifts = [0, tw / 2 + 10, -(tw / 2 + 10)];
     let chosen: Box | null = null;
-    for (const baseline of candidates) {
-      const by = Math.max(padT + LH, Math.min(padT + plotH - 1, baseline));
-      const box: Box = { l: cx - tw / 2, r: cx + tw / 2, t: by - LH + 2, b: by + 2 };
-      const overMark = markBoxes.some((mb, j) => j !== i && hit(box, mb));
-      if (placed.some((p) => hit(p, box)) || overMark) continue;
-      chosen = box;
-      labelsSvg +=
-        '<text class="pt-label" x="' + f(cx) + '" y="' + f(by) + '" text-anchor="middle">' + esc(text) + "</text>";
-      break;
+    for (const by of rows) {
+      for (const dx of shifts) {
+        const cx = Math.max(padL + tw / 2, Math.min(padL + plotW - tw / 2, m.cx + dx));
+        const box: Box = { l: cx - tw / 2, r: cx + tw / 2, t: by - LH + 2, b: by + 2 };
+        const overMark = markBoxes.some((mb, j) => j !== i && hit(box, mb));
+        if (placed.some((p) => hit(p, box)) || overMark) continue;
+        chosen = box;
+        labelsSvg +=
+          '<text class="pt-label" x="' + f(cx) + '" y="' + f(by) + '" text-anchor="middle">' + esc(text) + "</text>";
+        break;
+      }
+      if (chosen) break;
     }
     if (chosen) placed.push(chosen);
   }

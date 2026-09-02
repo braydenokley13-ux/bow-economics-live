@@ -2484,6 +2484,20 @@ function fhDotsHtml(history: FHNight[], view: Record<string, unknown>, ui: FHUiC
   // its bottom eighth. x stays on the dial range so nights remain comparable.
   // The axis no longer starts at zero, and says so: the chart prints both ends
   // of the y axis, and every mark carries its own count.
+  const slate = (view["slate"] as FHSlateNight[] | undefined) ?? [];
+  const lastIdx = history.length - 1;
+  const priorityIdx = new Set<number>();
+  if (lastIdx >= 0) {
+    priorityIdx.add(lastIdx);
+    const lastCard = history[lastIdx]!.cardId;
+    const refId = slate.find((s) => s.id === lastCard)?.repeatOf ?? null;
+    const repeatedBy = slate.find((s) => s.repeatOf === lastCard)?.id ?? null;
+    for (const id of [refId, repeatedBy]) {
+      if (!id) continue;
+      const j = history.findIndex((n) => n.cardId === id);
+      if (j >= 0) priorityIdx.add(j);
+    }
+  }
   const crowds = history.map((n) => n.turnout);
   const lo = crowds.length ? Math.min(...crowds) : 0;
   const hi = crowds.length ? Math.max(...crowds) : 1;
@@ -2494,9 +2508,14 @@ function fhDotsHtml(history: FHNight[], view: Record<string, unknown>, ui: FHUiC
     history.length === 0
       ? `<p style="margin:0; font-size:12.5px; line-height:17px; color:${FH_INK_BODY};">${escapeHtml(ui.noNightsYetLine)}</p>`
       : dotChart(
-          history.map((n) => ({
+          history.map((n, i) => ({
             x: n.price,
             y: n.turnout,
+            // R5-3: the two nights the Night-5 callback names — the latest night
+            // and the night whose card it repeats — are labelled before anything
+            // else, so the pair the callback argues from is never the pair the
+            // chart drops.
+            priority: priorityIdx.has(i),
             // Every mark is labelled with the two numbers it stands for, so a
             // pair reads a night off the chart without counting pixels.
             label: `${n.label.replace("Night ", "N")} $${n.price} · ${n.turnout.toLocaleString()}${n.stock ? " covered" : ""}${n.auto ? " auto" : ""}`,
