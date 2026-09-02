@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `340:6c47b6e09645316fab2e2584f05513f64a848b2ede757f2418bca3c54bd924bb`  
-Updated: 2026-09-02T17:24:19.779Z
+Event head: `343:1dc632b6e2910f54a9bef1618a718c50d2befa0b4bb3466978b8741d2c70760c`  
+Updated: 2026-09-02T17:26:14.973Z
 
 ## Founder intent
 
@@ -230,6 +230,9 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-repair-2-complete — screenshot — COMPLETE: the pair's five nights, dot chart, exit prompt, beyond-sports line
 - w2-repair-2-f1 — screenshot — F1: the original tab after another device rejoined — join card and the registered line, never 'offline'
 - w2-repair-2-e2e — browser-trace — Scratch e2e-m2l1 log, exit 0, zero console errors
+- w2r-npm-test-f65e865 — test — cd runtime && npm test at repaired head f65e865 (build + full suite)
+- w2r-e2e-f65e865 — test — node runtime/scripts/e2e-m2l1.cjs at repaired head f65e865 (R-1 limb active; 4-desk arc + 12-desk class scale)
+- w2r-e2e-misclick-f65e865 — test — node runtime/scripts/e2e-m2l1-misclick.cjs at repaired head f65e865
 
 ## Claim ledger
 

@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:24:19.779Z",
+  "updatedAt": "2026-09-02T17:26:14.973Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2089,7 +2089,10 @@
         "w2-repair-2-synth3",
         "w2-repair-2-complete",
         "w2-repair-2-f1",
-        "w2-repair-2-e2e"
+        "w2-repair-2-e2e",
+        "w2r-npm-test-f65e865",
+        "w2r-e2e-f65e865",
+        "w2r-e2e-misclick-f65e865"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -6558,6 +6561,65 @@
       },
       "recordedAt": "2026-09-02T17:23:46.318Z",
       "actor": "builder-r2"
+    },
+    "w2r-npm-test-f65e865": {
+      "id": "w2r-npm-test-f65e865",
+      "wave": 2,
+      "kind": "test",
+      "label": "cd runtime && npm test at repaired head f65e865 (build + full suite)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-npm-test-f65e865--record.json",
+      "sha256": "07ed77dd3e1094b2dcc727efe2b37c353a69e183da787ce8d7e41df44d28981f",
+      "size": 115887,
+      "metadata": {
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T17:24:45.597Z",
+      "actor": "boss-lead"
+    },
+    "w2r-e2e-f65e865": {
+      "id": "w2r-e2e-f65e865",
+      "wave": 2,
+      "kind": "test",
+      "label": "node runtime/scripts/e2e-m2l1.cjs at repaired head f65e865 (R-1 limb active; 4-desk arc + 12-desk class scale)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-e2e-f65e865--record.json",
+      "sha256": "940bd85bccdcbdec964696324a5794a59feb8a1c6dffb10c8450c4267d1cec92",
+      "size": 11380,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T17:26:08.375Z",
+      "actor": "boss-lead"
+    },
+    "w2r-e2e-misclick-f65e865": {
+      "id": "w2r-e2e-misclick-f65e865",
+      "wave": 2,
+      "kind": "test",
+      "label": "node runtime/scripts/e2e-m2l1-misclick.cjs at repaired head f65e865",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-e2e-misclick-f65e865--record.json",
+      "sha256": "ca23adcebd7723417008759910f1fedff531505051a6e18748f6189caf9719e5",
+      "size": 845,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1-misclick.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T17:26:14.973Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {},
@@ -6912,11 +6974,11 @@
     "agentsActivated": 33,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 250,
+    "evidenceRecorded": 253,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 340,
-  "eventHead": "6c47b6e09645316fab2e2584f05513f64a848b2ede757f2418bca3c54bd924bb",
+  "eventCount": 343,
+  "eventHead": "1dc632b6e2910f54a9bef1618a718c50d2befa0b4bb3466978b8741d2c70760c",
   "warnings": []
 }
