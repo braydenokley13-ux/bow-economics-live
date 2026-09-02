@@ -1,0 +1,1071 @@
+{
+  "viewport": "1366x768",
+  "results": {
+    "prelock": {
+      "priceReadout": {
+        "top": 208,
+        "bottom": 278,
+        "fontSize": "68px"
+      },
+      "fhLock": {
+        "top": 304,
+        "bottom": 360,
+        "fontSize": "18px"
+      },
+      "blindNote": {
+        "top": 369,
+        "bottom": 464,
+        "fontSize": "14.5px"
+      },
+      "topFigures": [
+        {
+          "text": "$24",
+          "fontSize": 68
+        },
+        {
+          "text": "Full House",
+          "fontSize": 28
+        },
+        {
+          "text": "$0",
+          "fontSize": 26
+        },
+        {
+          "text": "−",
+          "fontSize": 23
+        },
+        {
+          "text": "+",
+          "fontSize": 23
+        }
+      ],
+      "pinChipFontSize": "10.5px",
+      "pinCardHidden": false,
+      "btnShowPinHidden": true,
+      "bodyText": "BOW ECONOMICS\nsynced\nW2 RECHECK 1366X768 · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 1 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n3457\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$0\nseason so far\nRENEWALS\n50%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 1 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\nA quiet Tuesday. Nothing about tonight is special — and it is still a real night with a real bill.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\n\nNo nights yet. Your first dot lands here after the first bell.\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 2 · Saturday · a solid playoff club · draw 51/100 · local TV\nMORE ABOUT TONIGHT"
+    },
+    "tick-knob": {
+      "tickTop": 341,
+      "tickBottom": 364,
+      "knobTop": 304,
+      "knobBottom": 338,
+      "overlap": false
+    },
+    "reduced-motion-prelock": {
+      "maxDur": 120,
+      "offenders": []
+    },
+    "result-desk1-Night1": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 1 · 12,510 CAME AT $40"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 504,
+        "bottom": 566,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$40 × 12,510\n      $500,400\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 382,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        50%\n        →\n        30%\n        down 20 points\n"
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "12,510",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk2-Night1": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 1 · 14,740 CAME AT $16"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 469,
+        "bottom": 531,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$16 × 14,740\n      $235,840\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        50%\n        →\n        56%\n        up 6 points\n   "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "14,740",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk3-Night1": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 1 · 0 CAME AT $120"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 504,
+        "bottom": 566,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$120 × 0\n      $0\n    \n      \n    \n "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 382,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        50%\n        →\n        30%\n        down 20 points\n"
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "0",
+          "fontSize": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ]
+    },
+    "result-desk1-Night2": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 2 · 14,288 CAME AT $48"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 504,
+        "bottom": 566,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$48 × 14,288\n      $685,824\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 382,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        30%\n        →\n        10%\n        down 20 points\n"
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "14,288",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk2-Night2": {
+      "headline": {
+        "top": 117,
+        "bottom": 179,
+        "fontSize": "110px",
+        "text": "\n        FULL HOUSE\n        17,794 of 17,794 · 238 turned away\n      "
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 571,
+        "bottom": 633,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 188,
+        "bottom": 463,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$16 × 17,794\n      $284,704\n    \n   "
+      },
+      "renewals": {
+        "top": 188,
+        "bottom": 379,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        56%\n        →\n        62%\n        up 6 points\n   "
+      },
+      "soldOut": true,
+      "bigFigures": [
+        {
+          "text": "FULL HOUSE",
+          "fontSize": 60,
+          "top": 117,
+          "bottom": 179
+        },
+        {
+          "text": "17,794",
+          "fontSize": 72,
+          "top": 261,
+          "bottom": 337
+        },
+        {
+          "text": "238",
+          "fontSize": 40,
+          "top": 686,
+          "bottom": 730
+        }
+      ]
+    },
+    "result-desk3-Night2": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 2 · 9,360 CAME AT $70"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 504,
+        "bottom": 566,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$70 × 9,360\n      $655,200\n    \n    "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 382,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        30%\n        →\n        10%\n        down 20 points\n"
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "9,360",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk1-Night3": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 3 · 12,450 CAME AT $40"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 491,
+        "bottom": 553,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 462,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$40 × 12,450\n      $498,000\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        10%\n        →\n        18%\n        up 8 points\n   "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "12,450",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk2-Night3": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 3 · 14,526 CAME AT $16"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 469,
+        "bottom": 531,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$16 × 14,526\n      $232,416\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        62%\n        →\n        68%\n        up 6 points\n   "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "14,526",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk3-Night3": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 3 · 5,490 CAME AT $70"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 504,
+        "bottom": 566,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$70 × 5,490\n      $384,300\n    \n    "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 382,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        10%\n        →\n        0%\n        down 10 points\n "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "5,490",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk4-Night3": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 3 · 10,970 CAME AT $30"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 469,
+        "bottom": 531,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$30 × 10,970\n      $329,100\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        62%\n        →\n        69%\n        up 7 points\n   "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "10,970",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk1-Night4": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 4 · 15,800 CAME AT $90"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 561,
+        "bottom": 623,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 462,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$90 × 15,800\n      $1,422,000\n    \n "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        18%\n        →\n        27%\n        up 9 points\n   "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "15,800",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk2-Night4": {
+      "headline": {
+        "top": 117,
+        "bottom": 179,
+        "fontSize": "110px",
+        "text": "\n        FULL HOUSE\n        17,794 of 17,794 · 7,256 turned away\n      "
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 571,
+        "bottom": 633,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 188,
+        "bottom": 463,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$16 × 17,794\n      $284,704\n    \n   "
+      },
+      "renewals": {
+        "top": 188,
+        "bottom": 379,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        68%\n        →\n        74%\n        up 6 points\n   "
+      },
+      "soldOut": true,
+      "bigFigures": [
+        {
+          "text": "FULL HOUSE",
+          "fontSize": 60,
+          "top": 117,
+          "bottom": 179
+        },
+        {
+          "text": "17,794",
+          "fontSize": 72,
+          "top": 261,
+          "bottom": 337
+        },
+        {
+          "text": "7,256",
+          "fontSize": 40,
+          "top": 711,
+          "bottom": 755
+        }
+      ]
+    },
+    "result-desk3-Night4": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 4 · 17,950 CAME AT $70"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 469,
+        "bottom": 531,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$70 × 17,950\n      $1,256,500\n    \n "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        0%\n        →\n        8%\n        up 8 points\n     "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "17,950",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk4-Night4": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 4 · 14,875 CAME AT $84"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 469,
+        "bottom": 531,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$84 × 14,875\n      $1,249,500\n    \n "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        69%\n        →\n        79%\n        up 10 points\n  "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "14,875",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "night4-sellout-desk2": {
+      "headlineRect": {
+        "top": 88.90625,
+        "bottom": 103.203125,
+        "fontSize": 13
+      },
+      "turnedAwayRect": {
+        "top": 711,
+        "bottom": 755,
+        "fontSize": 40,
+        "viewportH": 768,
+        "marginBelow": 13
+      },
+      "figures": [
+        {
+          "text": "17,794",
+          "fontSize": 72,
+          "top": 261,
+          "bottom": 337
+        },
+        {
+          "text": "FULL HOUSE",
+          "fontSize": 60,
+          "top": 117,
+          "bottom": 179
+        },
+        {
+          "text": "7,256",
+          "fontSize": 40,
+          "top": 711,
+          "bottom": 755
+        },
+        {
+          "text": "$218,232",
+          "fontSize": 31,
+          "top": 382,
+          "bottom": 415
+        },
+        {
+          "text": "68%",
+          "fontSize": 31,
+          "top": 237,
+          "bottom": 270
+        },
+        {
+          "text": "74%",
+          "fontSize": 31,
+          "top": 237,
+          "bottom": 270
+        }
+      ],
+      "arenaLabelsText": "17,794\ncame — the lit seats\n0\nempty — the dark seats above the line\nMore seats closed\n100% of the seats you opened tonight",
+      "legendPresent": false,
+      "hasOfSeatsOpened": true,
+      "hasOfCapacity": false
+    },
+    "result-desk1-Night5": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 5 · 13,567 CAME AT $34"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 548,
+        "bottom": 596,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$34 × 13,567\n      $461,278\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 382,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        27%\n        →\n        7%\n        down 20 points\n "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "13,567",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk2-Night5": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 5 · 15,340 CAME AT $16"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 513,
+        "bottom": 561,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$16 × 15,340\n      $245,440\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        74%\n        →\n        80%\n        up 6 points\n   "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "15,340",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk3-Night5": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 5 · 15,812 CAME AT $24"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 552,
+        "bottom": 600,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$24 × 15,812\n      $379,488\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 347,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        8%\n        →\n        14%\n        up 6 points\n    "
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "15,812",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "result-desk4-Night5": {
+      "headline": {
+        "top": 117,
+        "bottom": 147,
+        "fontSize": "26px",
+        "text": "NIGHT 5 · 12,785 CAME AT $24"
+      },
+      "fhResult": {
+        "top": 66,
+        "bottom": 800,
+        "fontSize": "15px",
+        "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+      },
+      "fhNextNight": {
+        "top": 548,
+        "bottom": 596,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED "
+      },
+      "fhLock": null,
+      "chain": {
+        "top": 156,
+        "bottom": 431,
+        "fontSize": "15px",
+        "text": "\n      CASH\n      \n    \n      \n      TICKETS$24 × 12,785\n      $306,840\n    \n   "
+      },
+      "renewals": {
+        "top": 156,
+        "bottom": 382,
+        "fontSize": "15px",
+        "text": "\n      RENEWALS\n      \n        79%\n        →\n        59%\n        down 20 points\n"
+      },
+      "soldOut": false,
+      "bigFigures": [
+        {
+          "text": "12,785",
+          "fontSize": 72,
+          "top": 229,
+          "bottom": 305
+        }
+      ]
+    },
+    "desk3-night5-auto-commit": {
+      "includesAuto": true
+    },
+    "board-1920x1080-complete-fit": {
+      "scrollHeight": 1080,
+      "clientHeight": 1080,
+      "fits": true
+    },
+    "teach-1366x768-doc": {
+      "scrollHeight": 1764,
+      "clientHeight": 768
+    },
+    "console-errors": []
+  },
+  "reveal": [
+    [
+      0,
+      "7420dbc60511"
+    ],
+    [
+      1,
+      "ac2bdee184f2"
+    ],
+    [
+      2,
+      "ddeccc6c2054"
+    ],
+    [
+      3,
+      "217d5587fd8f"
+    ],
+    [
+      4,
+      "1662cc7a8e81"
+    ],
+    [
+      5,
+      "c4724e9ba36d"
+    ],
+    [
+      6,
+      "ec94cecb6425"
+    ],
+    [
+      7,
+      "669501910b17"
+    ]
+  ],
+  "synth": [
+    [
+      1,
+      "34dac706cc6f"
+    ],
+    [
+      2,
+      "f0a55c7aac7b"
+    ],
+    [
+      3,
+      "675b282fcd74"
+    ],
+    [
+      4,
+      "ae19c21246ab"
+    ],
+    [
+      5,
+      "e4bca87af36f"
+    ],
+    [
+      6,
+      "99be305fee41"
+    ]
+  ],
+  "dead": {
+    "LOBBY": {
+      "md5": "69af9219c7fb",
+      "dead": 182
+    },
+    "HOOK": {
+      "md5": "9720cf4da438",
+      "dead": 22
+    },
+    "REVEAL": {
+      "dead": 22
+    },
+    "SYNTHESIS": {
+      "dead": 100
+    },
+    "COMPLETE": {
+      "md5": "99be305fee41",
+      "dead": 100
+    }
+  },
+  "forbidden": {
+    "LOBBY": {},
+    "HOOK": {
+      "forecast": 1,
+      "preview": 1
+    },
+    "prelock": {
+      "preview": 1
+    },
+    "result-desk1-Night1": {},
+    "result-desk2-Night1": {},
+    "result-desk3-Night1": {},
+    "result-desk1-Night2": {},
+    "result-desk2-Night2": {},
+    "result-desk3-Night2": {},
+    "result-desk1-Night3": {},
+    "result-desk2-Night3": {},
+    "result-desk3-Night3": {},
+    "result-desk4-Night3": {},
+    "result-desk1-Night4": {},
+    "result-desk2-Night4": {},
+    "result-desk3-Night4": {},
+    "result-desk4-Night4": {},
+    "result-desk1-Night5": {},
+    "result-desk2-Night5": {},
+    "result-desk3-Night5": {},
+    "result-desk4-Night5": {},
+    "reveal-0": {},
+    "reveal-7": {},
+    "synth-1": {},
+    "synth-6": {},
+    "COMPLETE": {}
+  },
+  "theme": {
+    "prelock": {
+      "checked": 348,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    },
+    "result-desk1-Night1": {
+      "checked": 352,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    },
+    "result-desk1-Night2": {
+      "checked": 352,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    },
+    "result-desk1-Night3": {
+      "checked": 357,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    },
+    "result-desk1-Night4": {
+      "checked": 360,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    },
+    "result-desk2-Night4": {
+      "checked": 362,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    },
+    "selloutDesk2N4": {
+      "checked": 362,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    },
+    "result-desk1-Night5": {
+      "checked": 339,
+      "violations": [],
+      "violationCount": 0,
+      "headerFontFamily": "\"Inter M2\", \"Space Grotesk\", \"Segoe UI\", system-ui, -apple-system, sans-serif"
+    }
+  }
+}

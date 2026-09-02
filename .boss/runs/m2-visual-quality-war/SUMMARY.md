@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `352:9f82e02cef1d61906ee8f9e7198ae41077b46c393025523aff14e28e1556ced5`  
-Updated: 2026-09-02T17:34:48.235Z
+Event head: `356:3b9f23c0921b2177bccec502bab80fbb4a70ea3da87bb0c3684fbe3534805a9c`  
+Updated: 2026-09-02T17:38:04.921Z
 
 ## Founder intent
 
@@ -49,7 +49,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - builder — builder-r1 — completed-with-concerns — claude-opus-5
 - builder — builder-r3 — completed-with-concerns — claude-opus-5
 - builder — builder-r2 — completed-with-concerns — claude-opus-5
-- browser-qa — browser-qa-w2 — active — claude-sonnet-5
+- browser-qa — browser-qa-w2 — completed-with-concerns — claude-sonnet-5
 - visual-experience-director — visual-critic-3 — active — claude-opus-5
 - player-gameplay-critic — gameplay-critic-w2 — active — claude-opus-5
 - economic-truth-critic — econ-truth-w2 — active — claude-opus-5
@@ -235,6 +235,9 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2r-e2e-f65e865 — test — node runtime/scripts/e2e-m2l1.cjs at repaired head f65e865 (R-1 limb active; 4-desk arc + 12-desk class scale)
 - w2r-e2e-misclick-f65e865 — test — node runtime/scripts/e2e-m2l1-misclick.cjs at repaired head f65e865
 - w2-direction-report — note — Experience Director wave-2 re-read: per-state target-feeling carry, B/H moment ledger, frontier direction (lead-transcribed; advisor had no write tool)
+- w2-recheck-bt-browser-truth-w2-recheck — browser-trace — W2 recheck: BLOCKING theme-leak (defect 1) DISCHARGED (0 gold/Bebas violations, 16 states, ~5600 elements, both viewports); sellout 2nd-largest-figure tie (defect 2) DISCHARGED; CASH/RENEWALS shared type (defect 3) STANDING; reduced-motion 
+- w2-recheck-bt-measurements-1366x768 — browser-trace — Full raw measurement dump, 1366x768 pass (corrected script, post-race-fix).
+- w2-recheck-bt-measurements-1024x600 — browser-trace — Full raw measurement dump, 1024x600 pass.
 
 ## Claim ledger
 
