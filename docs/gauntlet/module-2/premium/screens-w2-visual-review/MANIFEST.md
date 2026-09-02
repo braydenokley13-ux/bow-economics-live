@@ -1,0 +1,53 @@
+# screens-w2-visual-review manifest
+
+- `00-play-prejoin-1024.png` — /play join screen at 1024x600 before joining
+- `01-play-lobby-1366.png` — LOBBY seated, desk 1, 1366x768
+- `01b-play-lobby-1024.png` — LOBBY seated, desk 1, 1024x600 (PIN card un-collapsed, first 20s)
+- `02-play-hook-1366.png` — HOOK, 1366x768, scrollY=0
+- `02b-play-hook-1366-full.png` — HOOK full page
+- `02c-play-hook-1024.png` — HOOK, 1024x600
+- `03-play-prelock-n1-1366.png` — Pre-lock Night 1, dials at rest, 1366x768
+- `03b-play-prelock-n1-full.png` — Pre-lock Night 1 full page
+- `03c-play-prelock-n1-1024.png` — Pre-lock Night 1, 1024x600, PIN card un-collapsed, scrollY=0
+- `03d-play-prelock-n1-1024-full.png` — Pre-lock Night 1, 1024x600 full page
+- `04-play-prelock-n1-dialmoved-1366.png` — Pre-lock Night 1 after moving price dial to $34, 1366x768
+- `04b-play-prelock-n1-spendmoved-1366.png` — Pre-lock Night 1 with event spend raised
+- `04c-play-prelock-n1-dialmoved-1024.png` — Pre-lock Night 1, dial at $34, 1024x600
+- `05-play-locked-waiting-1366.png` — Post-lock waiting state Night 1, 1366x768
+- `05b-play-locked-waiting-full.png` — Post-lock waiting full page
+- `05c-play-locked-waiting-1024.png` — Post-lock waiting, 1024x600
+- `10-result-n1-d1-1366.png` — Night 1 results state, d1, 1366x768, scrollY=0
+- `10b-result-n1-d1-full.png` — Night 1 results state, d1, full page
+- `10d-result-n1-d1-1024.png` — Night 1 results state at 1024x600
+- `10-result-n1-d3-1366.png` — Night 1 results state, d3, 1366x768, scrollY=0
+- `10b-result-n1-d3-full.png` — Night 1 results state, d3, full page
+- `10-result-n2-d1-1366.png` — Night 2 results state, d1, 1366x768, scrollY=0
+- `10b-result-n2-d1-full.png` — Night 2 results state, d1, full page
+- `07-play-late-join-1366.png` — Late-joining desk 4 arriving at Night 3, 1366x768
+- `07b-play-late-join-full.png` — Late-joining desk 4 full page
+- `10-result-n3-d1-1366.png` — Night 3 results state, d1, 1366x768, scrollY=0
+- `10b-result-n3-d1-full.png` — Night 3 results state, d1, full page
+- `09-play-prelock-n4-bowl-1366.png` — Pre-lock Night 4 with upper bowl opened, 1366x768
+- `10-result-n4-d1-1366.png` — Night 4 results state, d1, 1366x768, scrollY=0
+- `10b-result-n4-d1-full.png` — Night 4 results state, d1, full page
+- `10-result-n4-d2-1366.png` — Night 4 results state, d2, 1366x768, scrollY=0
+- `10b-result-n4-d2-full.png` — Night 4 results state, d2, full page
+- `10c-result-n4-d2-sellout-1024.png` — Night 4 SELLOUT results state at 1024x600
+- `10-result-n4-d3-1366.png` — Night 4 results state, d3, 1366x768, scrollY=0
+- `10b-result-n4-d3-full.png` — Night 4 results state, d3, full page
+- `10-result-n5-d1-1366.png` — Night 5 results state, d1, 1366x768, scrollY=0
+- `10b-result-n5-d1-full.png` — Night 5 results state, d1, full page
+- `11-play-allnightsdone-1366.png` — All nights done, waiting for reveal, 1366x768
+- `11b-play-allnightsdone-full.png` — All nights done full page
+- `12-play-reveal-stage0-1366.png` — REVEAL stage 0 student mirror, 1366x768
+- `12b-play-reveal-final-1366.png` — REVEAL final stage student mirror, 1366x768
+- `12c-play-reveal-final-full.png` — REVEAL final stage full page
+- `13-play-adapt-1366.png` — ADAPT, 1366x768
+- `13b-play-adapt-full.png` — ADAPT full page
+- `14-play-counterfactual-1366.png` — COUNTERFACTUAL, 1366x768
+- `14b-play-counterfactual-full.png` — COUNTERFACTUAL full page
+- `15-play-synthesis-1366.png` — SYNTHESIS, 1366x768
+- `15b-play-synthesis-last-1366.png` — SYNTHESIS last page, 1366x768
+- `16-play-complete-1366.png` — COMPLETE, 1366x768
+- `17-teach-1366.png` — /teach at COMPLETE, 1366x768 (wave 3 scope, noted only)
+- `18-board-1920.png` — /board at COMPLETE, 1920x1080 (wave 3 scope, noted only)

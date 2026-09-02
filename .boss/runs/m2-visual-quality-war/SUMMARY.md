@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `236:a4f7b8e1980fd992636c540c10de131113b1132b60fcd9a497242eff9a6d69cb`  
-Updated: 2026-09-02T16:21:32.282Z
+Event head: `253:46a2320a7e2f4bf8007eef503ccb5b56f7cf7fb77a5e6d8e6a76188fae213b62`  
+Updated: 2026-09-02T16:27:06.225Z
 
 ## Founder intent
 
@@ -37,7 +37,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
 - browser-qa — browser-qa-w2base — completed — claude-sonnet-5
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-sonnet-5
-- visual-experience-director — visual-critic-3 — active — claude-opus-5
+- visual-experience-director — visual-critic-3 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — gameplay-critic-w2 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-a2-basketball — active — claude-opus-5
 - player-gameplay-critic — kid-b2-casual — active — claude-sonnet-5
@@ -47,6 +47,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - product-analyst — analyst-w2 — active — claude-opus-5
 - regression-hunter — regression-w2b — active — claude-sonnet-5
 - builder — builder-r1 — active — claude-opus-5
+- builder — builder-r3 — active — claude-opus-5
 
 ## Required evidence
 
@@ -137,6 +138,20 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-kid-c-cf — screenshot — COUNTERFACTUAL on /play: the Night1-vs-Night5 same-card comparison (the only place the repeat is named on the student device) plus the unreadable 'wanted in -1,100 ... seats only allowed -774' line and the empty REJOIN PIN pill
 - w2-kid-c-midfill — screenshot — Separate one-night session: a 38.5% turnout night proving the arena picture does respond to fill (9.7% lit pixels vs 0.6% at zero and 23.1% at sellout)
 - w2-kid-c-transcript — note — Full innerText transcript of every /play and /board state visited during the Kid C run, with the getBoundingClientRect measurements logged inline after each bell
+- w2-visual-review-report — visual-report — Visual Experience Director review of the rebuilt Module 2 /play surface at 6c4c7cc — per-row A-D grades, overall top-of-SERVICEABLE, hierarchy/production findings, direction, visual-quality dissent
+- w2-visual-review-manifest — browser-trace — Screenshot manifest for the full /play state sweep (4 desks incl. late joiner, sellout desk and zero-turnout desk; lobby, hook, pre-lock N1/N4, dials moved, locked-waiting, results N1-N5, all-nights-done, reveal, adapt, counterfactual, synthesis, complete) at 1366x768 and 1024x600, plus arena crops
+- w2-visual-review-measurements — note — Live getBoundingClientRect / getComputedStyle / document.fonts harvest across every /play state: figure sizes, hero identity, dead space, colour census, font census, animation census
+- w2-visual-review-audit — note — DOM audit: per-state font-family census (Bebas Neue under M2), gold/blue UI colour usage, forbidden-vocabulary counts, first-viewport word counts, reduced-motion run
+- w2-visual-review-chart-geometry — note — SVG geometry of #fhNights: axis-only path, 5 marks in 13% of plot height, N1/N5 superimposed at cx 119.9
+- w2-visual-review-shot-prelock — screenshot — Pre-lock Night 1 at 1366x768, scrollY=0 — 68px hero price, three stat cards, blue rule box, no arena
+- w2-visual-review-shot-result — screenshot — Night 1 settled result at 1366x768, scrollY=0 — 72px turnout hero, CASH chain, arena outcome, Bebas headline
+- w2-visual-review-shot-sellout — screenshot — Night 4 sellout at 1366x768 — FULL HOUSE top 192 in Bebas Neue on a gold-gradient banner, 7,256 turned away second-largest
+- w2-visual-review-shot-locked — screenshot — Locked-waiting state at 1366x768 — the dark-building panel renders as a mostly-empty black rectangle with one clipped quadrant of the bowl (C8 UNMET)
+- w2-visual-review-shot-zero — screenshot — Zero-turnout night at 1366x768 under prefers-reduced-motion — 72px '0' hero, red -$520,000, and an arena that still reads as a lit building
+- w2-visual-review-shot-arena-crops — screenshot — Arena outcome crops at 0%, 71.4% and 100% fill side by side — fill states are not separable and the amber Came swatch does not match the violet seats
+- w2-visual-review-shot-1024 — screenshot — Pre-lock Night 1 at 1024x600 with the PIN card un-collapsed — rail re-composes to a top strip, #fhLock bottom 367 and caption bottom 471, but ~175px of chrome precedes any content
+- w2-visual-review-shot-synthesis — screenshot — SYNTHESIS on /play at 1366x768 — H1 and subtitle are the same sentence, ~471px of empty main column, identical on every synthesis page (D2 UNMET)
+- w2-visual-review-shot-chart — screenshot — All-nights-done at 1366x768 — YOUR NIGHTS SO FAR rendered twice, and the dot chart shows 5 labels against 4 visible marks clustered in 13% of the plot
 
 ## Claim ledger
 
@@ -146,6 +161,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 
 - bowl-rights-review-dissent — rights-source/advisory/open — mock-board-1920.png (the wave-3 board mock) shows four real NBA clubs (Denver Nuggets, Sacramento Kings, Orlando Magic, Milwaukee Bucks) that do not exist in fullHouse.ts's MARKETS array and have never been Sports Reality verified (no capacity, building, or market-framing data exists for them, unlike New York/Memphis in GATE_L1_SR.md). These should not ship into a real class-results frame without either restricting desks to the two verified markets (repeating them per the existing odd/even marketForDesk assignment) or a fresh verification pass per additional club before wave 3 builds the frame.
 - w2-gameplay-dissent — student-pull/blocking/open — Pull for the generic pair is FUNCTIONAL, below the bar for a Track 101 flagship, on three measured causes. (1) At every pre-lock decision at 1366x768, scrollY=0, the pair's own settled-night ledger and dot chart - the only information the blind-commit mechanic gives them - has top=769 (N1-N3) / 788 (N4) against a 768px viewport, i.e. zero pixels on screen, while the page's own subtitle reads 'read your own nights'. (2) The event-money dial's registered rule renders at approx y833-1064 pre-lock and its receipt renders below #fhNextNight (top 701 at 1366x768, 705 at 1024x600) post-lock, so at scrollY=0 one of the three instruments has no visible cause and no visible consequence at any point in the lesson - information -> choice -> Continue. (3) The student device is inert across the back half: #gameBody innerText is byte-identical across teacher reveal stages 0-5 and again at 6-7 (seven clicks, one device change) and byte-identical across all six SYNTHESIS card pages, with ~471px of contiguous dead black at SYNTHESIS and ~415px at COMPLETE against the 200px cap. Contract rows B8 and D2 are undischarged and row C1 fails at 1024x600 (RENEWALS bottom 604/639, NEXT top 705). The wave-1 dissents on the sellout beat and on #fhLock at 1024x600 are discharged; 'consequence below the fold' is discharged only at 1366x768.
+- w2-visual-review-dissent — visual-quality/important/open — The Module-2 design system violates its own two published laws inside the module's designed peak moment, and the wave's flagship asset does not carry the read it exists to carry. MEASURED: (A4) Bebas Neue is the computed font-family of the sellout headline FULL HOUSE (40px/800), the per-night result headline (26px), the rail desk identity (12px, every state) and the rail night label, while design/VISUAL_IDENTITY.md states 'Bebas Neue does not appear under M2' - no deviation reason recorded. (A2) gold #f4b942 is rendered in HTML, not in the arena SVG, as the sellout panel border rgba(244,185,66,0.4) and the headline background linear-gradient(rgba(244,185,66,.16), rgba(244,185,66,.04)); amber rgb(240,169,74) is the legend swatch on every settled night; blue #4da2e8 is the rule-box background and left border on every pre-lock frame - four UI accent hues where the contract allows one, and VISUAL_IDENTITY.md asserts gold is retired. (A7/C4) the drawn arena does not encode fill legibly: 71.4% and 100% differ only by an outer-ring dim, 0% still renders a warmly lit court so the night nobody came reads as an open building, and the legend's 'Came' swatch is amber while every lit seat is violet - on a bowl-open night 'Came' and 'Upper bowl open' are the same amber. Additionally C8 renders broken (the locked-waiting building panel is a mostly-empty black rectangle with one clipped quadrant of the bowl, on a state each pair sees five times). Advisory under my authority; recorded so no later PREMIUM claim can be made on this surface without disposing of it. I directed the repairs in the 'direction' section and must not be the sole certifier of the result.
 
 ## Latest gate
 

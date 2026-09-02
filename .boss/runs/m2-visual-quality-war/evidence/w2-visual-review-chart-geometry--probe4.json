@@ -1,0 +1,287 @@
+{
+ "hook": {
+  "mainBottom": 194,
+  "who": "m2-h1|Full House",
+  "vh": 768,
+  "deadInColumn": 574,
+  "h1": "Full House"
+ },
+ "prelockN1": {
+  "mainBottom": 217,
+  "who": "m2-subtitle|No preview. Read the car",
+  "vh": 768,
+  "deadInColumn": 551,
+  "h1": "Full House"
+ },
+ "locked": {
+  "mainBottom": 236,
+  "who": "m2-subtitle|Locked. Nothing to do bu",
+  "vh": 768,
+  "deadInColumn": 532,
+  "h1": "Doors in a minute"
+ },
+ "result1": {
+  "mainBottom": 859,
+  "who": "|You charged $34.",
+  "vh": 768,
+  "deadInColumn": 0,
+  "h1": "NIGHT 1 · 14,142 CAME AT $34"
+ },
+ "sellout": {
+  "mainBottom": 932,
+  "who": "fh-resale|7,256 people wanted in a",
+  "vh": 768,
+  "deadInColumn": 0,
+  "h1": "FULL HOUSE\n        17,794 of 17,794 · 7,"
+ },
+ "chartN5": {
+  "n": 2,
+  "viewBox": "420x132",
+  "rect": {
+   "w": 519,
+   "h": 163
+  },
+  "circles": [
+   {
+    "cx": 119.9,
+    "cy": 43.2,
+    "r": 5
+   },
+   {
+    "cx": 166.4,
+    "cy": 42.7,
+    "r": 5
+   },
+   {
+    "cx": 139.8,
+    "cy": 49.8,
+    "r": 5
+   },
+   {
+    "cx": 306.2,
+    "cy": 38.4,
+    "r": 5
+   }
+  ],
+  "texts": [
+   {
+    "t": "PRICE",
+    "x": 40,
+    "y": 124,
+    "L": 296,
+    "T": 801,
+    "Rr": 336,
+    "B": 817
+   },
+   {
+    "t": "PEOPLE",
+    "x": 4,
+    "y": 10,
+    "L": 252,
+    "T": 660,
+    "Rr": 304,
+    "B": 676
+   },
+   {
+    "t": "N1",
+    "x": 119.9,
+    "y": 61.2,
+    "L": 388,
+    "T": 724,
+    "Rr": 403,
+    "B": 740
+   },
+   {
+    "t": "N2",
+    "x": 166.4,
+    "y": 60.7,
+    "L": 443,
+    "T": 723,
+    "Rr": 461,
+    "B": 739
+   },
+   {
+    "t": "N3",
+    "x": 139.8,
+    "y": 80.8,
+    "L": 411,
+    "T": 748,
+    "Rr": 429,
+    "B": 764
+   },
+   {
+    "t": "N4",
+    "x": 306.2,
+    "y": 56.4,
+    "L": 616,
+    "T": 718,
+    "Rr": 635,
+    "B": 734
+   }
+  ],
+  "paths": [
+   "M40 12V98H406"
+  ],
+  "lines": []
+ },
+ "prelockN5": {
+  "mainBottom": 78,
+  "who": "m2-subtitle|No preview. Read the car",
+  "vh": 768,
+  "deadInColumn": 690,
+  "h1": "Full House"
+ },
+ "allDone": {
+  "mainBottom": 135,
+  "who": "m2-subtitle|All five nights are in t",
+  "vh": 768,
+  "deadInColumn": 633,
+  "h1": "The books are closed"
+ },
+ "chartAllDone": {
+  "n": 2,
+  "viewBox": "420x150",
+  "rect": {
+   "w": 519,
+   "h": 185
+  },
+  "circles": [
+   {
+    "cx": 119.9,
+    "cy": 49.7,
+    "r": 5
+   },
+   {
+    "cx": 166.4,
+    "cy": 49.1,
+    "r": 5
+   },
+   {
+    "cx": 139.8,
+    "cy": 57.7,
+    "r": 5
+   },
+   {
+    "cx": 306.2,
+    "cy": 44,
+    "r": 5
+   },
+   {
+    "cx": 119.9,
+    "cy": 52.6,
+    "r": 5
+   }
+  ],
+  "texts": [
+   {
+    "t": "PRICE",
+    "x": 40,
+    "y": 142,
+    "L": 855,
+    "T": 356,
+    "Rr": 895,
+    "B": 372
+   },
+   {
+    "t": "PEOPLE",
+    "x": 4,
+    "y": 10,
+    "L": 811,
+    "T": 193,
+    "Rr": 863,
+    "B": 209
+   },
+   {
+    "t": "N1",
+    "x": 119.9,
+    "y": 67.7,
+    "L": 947,
+    "T": 265,
+    "Rr": 962,
+    "B": 281
+   },
+   {
+    "t": "N2",
+    "x": 166.4,
+    "y": 67.1,
+    "L": 1003,
+    "T": 264,
+    "Rr": 1021,
+    "B": 280
+   },
+   {
+    "t": "N3",
+    "x": 139.8,
+    "y": 88.7,
+    "L": 970,
+    "T": 291,
+    "Rr": 988,
+    "B": 307
+   },
+   {
+    "t": "N4",
+    "x": 306.2,
+    "y": 62,
+    "L": 1175,
+    "T": 258,
+    "Rr": 1194,
+    "B": 274
+   },
+   {
+    "t": "N5",
+    "x": 119.9,
+    "y": 109.6,
+    "L": 945,
+    "T": 316,
+    "Rr": 963,
+    "B": 332
+   }
+  ],
+  "paths": [
+   "M40 12V116H406"
+  ],
+  "lines": []
+ },
+ "reveal0": {
+  "mainBottom": 135,
+  "who": "m2-subtitle|All five nights are in t",
+  "vh": 768,
+  "deadInColumn": 633,
+  "h1": "The books are closed"
+ },
+ "revealFinal": {
+  "mainBottom": 135,
+  "who": "m2-subtitle|Your five nights, in the",
+  "vh": 768,
+  "deadInColumn": 633,
+  "h1": "Your five nights"
+ },
+ "adapt": {
+  "mainBottom": 135,
+  "who": "m2-subtitle|Your five nights, in the",
+  "vh": 768,
+  "deadInColumn": 633,
+  "h1": "Your five nights"
+ },
+ "cf": {
+  "mainBottom": 78,
+  "who": "m2-subtitle|Night 1 and Night 5 were",
+  "vh": 768,
+  "deadInColumn": 690,
+  "h1": "What if?"
+ },
+ "synth": {
+  "mainBottom": 78,
+  "who": "m2-subtitle|Night 1 and Night 5 were",
+  "vh": 768,
+  "deadInColumn": 690,
+  "h1": "What if?"
+ },
+ "complete": {
+  "mainBottom": 78,
+  "who": "m2-subtitle|Night 1 and Night 5 were",
+  "vh": 768,
+  "deadInColumn": 690,
+  "h1": "What if?"
+ }
+}
