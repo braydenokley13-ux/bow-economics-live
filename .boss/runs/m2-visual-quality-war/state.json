@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:27:06.225Z",
+  "updatedAt": "2026-09-02T16:28:00.743Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1577,11 +1577,27 @@
           "model": "claude-opus-5",
           "reason": "Fresh simulated KID A (basketball obsessive)",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T21:29:12.922Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:28:00.743Z",
+          "sections": {
+            "what-the-student-plays": "SIMULATED KID / AGENT-PLAYTESTED. Desk 1 New York (Madison Square Garden), pair on one 1366x768 Chromebook, 4 desks, all five nights played, prices I chose as a Knicks-obsessed grade-5/6 kid: N1 $46, N2 $60, N3 $26 + $40,000 event money, N4 $34 + upper bowl open, N5 $24. Each night: a card I did not choose (day, visiting club, draw x/100, TV status), a price dial $10-$120, an event-money dial, on one night a $95,000 upper-bowl option, then LOCK IT IN, the teacher's bell, and a results state that owns the whole viewport (turnout, cash chain tickets + in-arena - bill = cash, renewals movement) before NEXT brings the dials back. This is a real consequential mechanic, not information->choice->Continue: I changed my price four times BECAUSE of what the last bell told me, and each change produced a different attributable answer. The lesson I actually played is the fight between two scoreboards that will not add up: $60 on Saturday made me $384,800 and dropped renewals 30%->10%; dropping to $26 brought 5,000 more people and 7 renewal points back and cut the cash to a third.",
+            "pull-rating": "STRONG for this persona (AGENT-PLAYTESTED, not human-tested). Not MAGNETIC on four OBSERVED causes: the second dial's meaning sits below the fold and I priced three nights without understanding it; the arena picture looks identical at 54.9%, 79.3% and 81.8%; the 'Night 5 was Night 1' beat is told in an ~11px bullet and gets no callback on my own result screen; five results states are the same four boxes in the same positions. Not below STRONG because the loop is genuinely consequential and attributable. WAVE-1 BLOCKING FINDING 'the consequence lands below the fold and the sellout is cut in half': DISCHARGED, with one residual. Measured at scrollY=0, 1366x768, getBoundingClientRect, my own five results states: WHO CAME figure 72px bottom 316/316/316/356/356; cash chain ends ~613/613/646/710/678; renewals movement ends ~500/500/500/640/565; #fhNextNight 658-706 / 658-706 / 691-739 / 731-779 / 691-739; #fhLock ABSENT from every results state. Sellout (N4, $34 + bowl): FULL HOUSE headline top 192 (<200), 22,200 @72px bottom 356, 1,975 TURNED AWAY 40px bottom 507 and the second-largest figure. Exactly 1 figure >=34px on ordinary nights, 2 on the sellout, largest always the turnout not money. RESIDUAL DEFECT: on the sellout night #fhNextNight measures bottom 779 in a 768px viewport - the forward control is clipped by 11px on the single most exciting screen. 1024x600 first contact, PIN card un-collapsed: #fhLock 311-367 and its caption bottom 471, both <=600 at scrollY=0 - I could find and press LOCK IT IN without scrolling. PASS.",
+            "biggest-failure": "OBSERVED (09-night3-open-full.png vs 11-night4-open-1366.png): I played three nights of MAKING IT AN EVENT without ever being told what it does, because the explanation is below the fold. The WHAT THE EVENT MONEY DOES panel ('Every $100 here brings about 1 extra person NEXT night... nothing at all if tomorrow sells out without them... worth AT MOST +2 renewal points') begins at y~849 in a 768px viewport, in ~11px grey type in the bottom-right corner. At the moment of choosing I have a $0 readout, a + and a -, the words 'up to $120,000', and a blind note that tells me THAT I set event money and never WHAT IT BUYS. I pushed + eight times on Night 3 to see what would happen. $40,000 then came out of my cash chain as a line item I could not evaluate. The price dial is blind about outcomes, which is the point; the event dial is blind about what the control IS, which is not. One of the two dials the whole lesson turns on was a slot machine for this kid.",
+            "moment-by-moment-notes": "First thing I saw (01-lobby-1366.png): 'You have Desk 1. Tonight you run the New York Knicks' building - Madison Square Garden.' I sat up. Then >400px of dead black under one paragraph, an empty placeholder box in the left rail, and a truncated 'MADISON SQUARE ...' desk card - it looked like something failed to load. What I thought I was supposed to do (03-night1-1366.png): set a price - SET YOUR TICKET PRICE, 68px readout, slider with PLAN $24 marked, full-width violet LOCK IT IN; unmistakable. Did I know what happened after the bell without scrolling: YES, all five nights (see pull-rating measurements) - the bell replaced my dials with 'NIGHT 1 - 10,878 CAME AT $46', a 72px turnout, a four-line cash chain and '50% -> 30% down 20 points'. Did our choice cause it, can I say what: yes, out loud twice - '$60 on a Saturday made the most money of any night and put our renewals at TEN PERCENT, because we charged sixty' (08); 'we came down to $26 and 5,000 more people came and renewals came back 7 points and we made way less' (10). The '$46 x 10,878' line under TICKETS does real work. Did the sellout feel like anything: yes, the best moment (13-night4-result-1366.png) - gold banner FULL HOUSE, 22,200 OF 22,200, 1,975 TURNED AWAY; I opened 2,400 extra seats and still turned away nearly 2,000 people; my partner and I said 'we should have charged more' then immediately 'no, we'd have had empty seats'. Basketball as prerequisite: NO - draw x/100 with a bar, TV chip, day, 19,800 seats, $520,000 bill, $24 plan are all printed. Basketball as edge: YES and allowed - 'last season's beaten finalists' and 'the rookie everybody is talking about' meant something specific to me and I opened the bowl without hesitating; 'listed basketball capacity 19,812 - 2025-26' made me believe it was the real Garden. Reward chrome: NONE observed - no XP, badges, stars, streaks, ranks or levels; night pips are a calendar; CASH and RENEWALS never summed. Pre-lock outcome leak: NONE - nothing moved when I dragged the dial except the readout; TOMORROW shows printed card facts only; history plots one dot per settled night with no joining line and no pending-night mark; only forbidden-vocabulary hits were 2x 'preview', both in sentences denying a preview exists (referred to the vocabulary auditor). Night 5 = Night 1: half a moment (14-night5-open-1366.png) - I noticed because a bullet TOLD me, not because I recognised it, and then it went nowhere: the Night 5 result says '16,187 CAME AT $24' and never puts it beside Night 1's 10,878 at $46 on the identical card (15-night5-result-1366.png). What I did during the reveal on my own screen: NOT VERIFIED - my server process was killed mid-run by the environment; the snapshot restored the session cleanly at version 71 with my locked prices intact (OBSERVED, good), and I settled and read Night 5, but the browser was lost before REVEAL / ADAPT / COUNTERFACTUAL / SYNTHESIS. I did not see them and will not guess. Cheap-feeling: the lobby dead region; a red 'all five nights are done' rendered through the ERROR channel on my finishing screen (15); and the locked state - after LOCK the button greys to 'Locked at $24' but the giant readout, slider and +/- stay looking fully live and my partner tried to drag it. Would I play again: yes, and specifically to run the same five cards differently - 'can we do Night 2 again, I want to see what forty does.'",
+            "required-repairs": "1. Put what the event dial buys in front of the student at the moment of choosing - one grade-appropriate sentence beside the +/- readable at 1366x768 without scrolling; Night 1 has no receipt to lean on, so first contact is the case that must work (09, 11). 2. Make the ARENA OUTCOME picture actually read the turnout at 54.9% / 79.3% / 81.8%, or stop calling it an outcome; it is nine inline SVGs, so this is a rendering choice not a platform limit (06, 10, 15). 3. Give the Night 5 results state its Night 1 callback on the student's own screen: '$46 -> 10,878' beside '$24 -> 16,187', same card (15). 4. Fix #fhNextNight clipping on the sellout night - bottom 779 in a 768px viewport at scrollY=0; the one frame that grows a fifth panel is the one frame whose forward control falls off (13). 5. Stop rendering 'all five nights are done' through the error channel (15). 6. Make the locked state look locked - dim or collapse the dial, slider and steppers when 'Locked at $X' appears. 7. Remove the >400px dead region and the empty rail placeholder in LOBBY and fix the truncated desk card (01). 8. Referred, outside my lane: (a) /play's poll writes 'offline - retrying' on any non-OK response and a subsequent 304 takes the 'nothing to do' branch without clearing the label, so the warning never self-heals - I sat on a false 'offline - retrying' for ~95s while /api/me returned 200 (runtime/src/client/shared/poll.ts:30-38, runtime/src/client/play/main.ts:155-162; INFERRED from source, symptom OBSERVED); (b) 2 rendered instances of 'preview', both negating, for the vocabulary auditor. NOT VERIFIED and needing a kid who reaches the end: REVEAL, ADAPT, COUNTERFACTUAL, SYNTHESIS and COMPLETE on /play - three of my four MAGNETIC-blockers are supposed to be answered there, so the STRONG-vs-MAGNETIC question is genuinely undecided."
+          },
+          "evidenceIds": [
+            "w2-kid-a-report",
+            "w2-kid-a-manifest",
+            "w2-kid-a-n1-result",
+            "w2-kid-a-sellout",
+            "w2-kid-a-eventmoney-fold",
+            "w2-kid-a-1024",
+            "w2-kid-a-n5-result",
+            "w2-kid-a-n5-prelock",
+            "w2-kid-a-lobby"
+          ],
           "cost": null
         },
         "w2-kid-b": {
@@ -1818,7 +1834,16 @@
         "w2-visual-review-shot-arena-crops",
         "w2-visual-review-shot-1024",
         "w2-visual-review-shot-synthesis",
-        "w2-visual-review-shot-chart"
+        "w2-visual-review-shot-chart",
+        "w2-kid-a-report",
+        "w2-kid-a-manifest",
+        "w2-kid-a-n1-result",
+        "w2-kid-a-sellout",
+        "w2-kid-a-eventmoney-fold",
+        "w2-kid-a-1024",
+        "w2-kid-a-n5-result",
+        "w2-kid-a-n5-prelock",
+        "w2-kid-a-lobby"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5023,6 +5048,170 @@
       },
       "recordedAt": "2026-09-02T16:27:05.659Z",
       "actor": "visual-critic-3"
+    },
+    "w2-kid-a-report": {
+      "id": "w2-kid-a-report",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "KID A wave-2 gameplay report — Full House, simulated grade 5-6 basketball obsessive, Desk 1 New York, pairs on one 1366x768 Chromebook",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-report--KID_A_W2.md",
+      "sha256": "72b2e98aff9718ae65321ebde6e1ec0be4081bcc82f82c1a44c09a7b333e417c",
+      "size": 20803,
+      "metadata": {
+        "tags": [
+          "gameplay",
+          "student-pull",
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "agent-playtested",
+          "simulated-kid"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:27:58.286Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-manifest": {
+      "id": "w2-kid-a-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Screenshot manifest for w2-kid-a: 20 /play frames across lobby, hook, five nights pre-lock and settled, sellout, 1024x600 first contact",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-manifest--MANIFEST.md",
+      "sha256": "cb0ed39e2c051d202ca75a6266ef6154449d2443c977d0d434d539cc6eadc1da",
+      "size": 2328,
+      "metadata": {
+        "tags": [
+          "manifest",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:27:58.570Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-n1-result": {
+      "id": "w2-kid-a-n1-result",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 1 settled at $46, scrollY=0: 10,878 @72px bottom 316, full cash chain, 50%->30%, #fhNextNight 658-706, no #fhLock in the frame",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-n1-result--06-night1-result-1366.png",
+      "sha256": "5b97cf62851fefcbf2881dac2f81a89e618e4f5f73bbba6c68f89d2c88aeb82d",
+      "size": 224907,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "results-state",
+          "below-the-fold-measurement"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:27:58.850Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-sellout": {
+      "id": "w2-kid-a-sellout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "SELLOUT night 4 at $34 with upper bowl open, scrollY=0: FULL HOUSE headline top 192, 22,200 @72px, 1,975 TURNED AWAY 40px bottom 507; #fhNextNight bottom 779 CLIPPED in a 768px viewport",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-sellout--13-night4-result-1366.png",
+      "sha256": "f3e35f835e89451e20fd03323a51f7eaff046df475e8a49d7727654e1f6faac1",
+      "size": 228896,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "sellout",
+          "results-state",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:27:59.120Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-eventmoney-fold": {
+      "id": "w2-kid-a-eventmoney-fold",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 3 pre-lock fullPage: the WHAT THE EVENT MONEY DOES explanation begins at y~849, below the 768px fold — the second dial's meaning is unreachable at the moment of choosing",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-eventmoney-fold--09-night3-open-full.png",
+      "sha256": "1e715d98bbdec93e5bb4939f8f927857b7c9ea3ed896c37140f3dcfaac5383af",
+      "size": 230874,
+      "metadata": {
+        "tags": [
+          "fullpage",
+          "defect",
+          "biggest-failure"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:27:59.379Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-1024": {
+      "id": "w2-kid-a-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 1 first contact at 1024x600 with the PIN card un-collapsed: #fhLock 311-367 and caption bottom 471, both <=600 at scrollY=0 — LOCK IT IN findable and pressable without scrolling",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-1024--04-night1-1024x600-pin-open.png",
+      "sha256": "022d8a11134f9841bca00f323711476452483a79927c6c9a0d1f7d77fff18a6b",
+      "size": 117485,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "first-contact",
+          "pass"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:27:59.647Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-n5-result": {
+      "id": "w2-kid-a-n5-result",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 5 settled at $24 on Night 1's identical card: 16,187 came vs 10,878 at $46 — no Night 1 callback anywhere on the student's own result; red 'all five nights are done' rendered in the error slot",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-n5-result--15-night5-result-1366.png",
+      "sha256": "efdc8c25fe6ae4af34f3db08de5c54a579bf0bf54d0fb6ddf7872edde0c00a8e",
+      "size": 218759,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "path-dependence",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:27:59.925Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-n5-prelock": {
+      "id": "w2-kid-a-n5-prelock",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 5 pre-lock: 'Same card as Night 1' and 'The only thing that has changed since Night 1 is you' told in ~11px bullets beside a 68px price readout",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-n5-prelock--14-night5-open-1366.png",
+      "sha256": "e9a616f9442e3695326e8c3f5eb181d72a75556766272f5ed16b703e3fc398ea",
+      "size": 164452,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "path-dependence"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:28:00.202Z",
+      "actor": "kid-a2-basketball"
+    },
+    "w2-kid-a-lobby": {
+      "id": "w2-kid-a-lobby",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "LOBBY at 1366x768: Madison Square Garden desk assignment, plus a >400px contiguous dead black region and an empty placeholder box in the left rail",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-kid-a-lobby--01-lobby-1366.png",
+      "sha256": "a89de1c55527da5731d47e7e5d15af13cc47801ec39b3fafd014d52b73db6cfd",
+      "size": 47479,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "dead-region",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:28:00.476Z",
+      "actor": "kid-a2-basketball"
     }
   },
   "claims": {},
@@ -5344,11 +5533,11 @@
     "agentsActivated": 27,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 178,
+    "evidenceRecorded": 187,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 253,
-  "eventHead": "46a2320a7e2f4bf8007eef503ccb5b56f7cf7fb77a5e6d8e6a76188fae213b62",
+  "eventCount": 263,
+  "eventHead": "9388da0f7da8f02c4cc50419237b3a5b774f8dd349b0859cc2d12d9718a8c3e7",
   "warnings": []
 }

@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `253:46a2320a7e2f4bf8007eef503ccb5b56f7cf7fb77a5e6d8e6a76188fae213b62`  
-Updated: 2026-09-02T16:27:06.225Z
+Event head: `263:9388da0f7da8f02c4cc50419237b3a5b774f8dd349b0859cc2d12d9718a8c3e7`  
+Updated: 2026-09-02T16:28:00.743Z
 
 ## Founder intent
 
@@ -39,7 +39,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-sonnet-5
 - visual-experience-director — visual-critic-3 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — gameplay-critic-w2 — completed-with-concerns — claude-opus-5
-- player-gameplay-critic — kid-a2-basketball — active — claude-opus-5
+- player-gameplay-critic — kid-a2-basketball — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-b2-casual — active — claude-sonnet-5
 - player-gameplay-critic — kid-c2-nonsports — completed-with-concerns — claude-opus-5
 - economic-truth-critic — econ-truth-w2 — active — claude-opus-5
@@ -152,6 +152,15 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-visual-review-shot-1024 — screenshot — Pre-lock Night 1 at 1024x600 with the PIN card un-collapsed — rail re-composes to a top strip, #fhLock bottom 367 and caption bottom 471, but ~175px of chrome precedes any content
 - w2-visual-review-shot-synthesis — screenshot — SYNTHESIS on /play at 1366x768 — H1 and subtitle are the same sentence, ~471px of empty main column, identical on every synthesis page (D2 UNMET)
 - w2-visual-review-shot-chart — screenshot — All-nights-done at 1366x768 — YOUR NIGHTS SO FAR rendered twice, and the dot chart shows 5 labels against 4 visible marks clustered in 13% of the plot
+- w2-kid-a-report — gameplay-report — KID A wave-2 gameplay report — Full House, simulated grade 5-6 basketball obsessive, Desk 1 New York, pairs on one 1366x768 Chromebook
+- w2-kid-a-manifest — browser-trace — Screenshot manifest for w2-kid-a: 20 /play frames across lobby, hook, five nights pre-lock and settled, sellout, 1024x600 first contact
+- w2-kid-a-n1-result — screenshot — Night 1 settled at $46, scrollY=0: 10,878 @72px bottom 316, full cash chain, 50%->30%, #fhNextNight 658-706, no #fhLock in the frame
+- w2-kid-a-sellout — screenshot — SELLOUT night 4 at $34 with upper bowl open, scrollY=0: FULL HOUSE headline top 192, 22,200 @72px, 1,975 TURNED AWAY 40px bottom 507; #fhNextNight bottom 779 CLIPPED in a 768px viewport
+- w2-kid-a-eventmoney-fold — screenshot — Night 3 pre-lock fullPage: the WHAT THE EVENT MONEY DOES explanation begins at y~849, below the 768px fold — the second dial's meaning is unreachable at the moment of choosing
+- w2-kid-a-1024 — screenshot — Night 1 first contact at 1024x600 with the PIN card un-collapsed: #fhLock 311-367 and caption bottom 471, both <=600 at scrollY=0 — LOCK IT IN findable and pressable without scrolling
+- w2-kid-a-n5-result — screenshot — Night 5 settled at $24 on Night 1's identical card: 16,187 came vs 10,878 at $46 — no Night 1 callback anywhere on the student's own result; red 'all five nights are done' rendered in the error slot
+- w2-kid-a-n5-prelock — screenshot — Night 5 pre-lock: 'Same card as Night 1' and 'The only thing that has changed since Night 1 is you' told in ~11px bullets beside a 68px price readout
+- w2-kid-a-lobby — screenshot — LOBBY at 1366x768: Madison Square Garden desk assignment, plus a >400px contiguous dead black region and an empty placeholder box in the left rail
 
 ## Claim ledger
 
