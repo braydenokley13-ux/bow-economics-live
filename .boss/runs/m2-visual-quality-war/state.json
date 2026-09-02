@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:58:38.946Z",
+  "updatedAt": "2026-09-02T17:23:46.666Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1832,11 +1832,27 @@
           "model": "claude-opus-5",
           "reason": "Repair 2 of wave-2 budget: consolidated composition repairs from gameplay (blocking student-pull), visual (important), Kids A/B/C, Economic Truth (R-B/C/D/F/H) and the results-state regression pass (blocking 401/rejoin path) — pre-lock history and spend rule in the first viewport, causal line on every settled night, 1024x600 results fit, back-half mirrors, PIN out of the top band",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T16:36:48.032Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T17:23:46.666Z",
+          "sections": {
+            "what-changed": "Three commits on claude/economics-boss-module-2-8s591f. 7a34460 (F1+D1): shared /play transport — a PIN rejoin from a second device no longer strands the original tab behind a false 'offline — retrying' with a permanently blank body; the 401 branch now matches the server's error CODE (the dead `instanceof ApiError` branch never fired because poll.ts passes the parsed body), signs the device out in place, shows the join card with a registered line that survives a refresh; poll.ts gains an additive optional onUnchanged so a transient offline label self-heals. 92dbd1f: pre-lock desk recomposed (A1 evidence row inside the first viewport, A2 one-line spend rule at the stepper with the full rules behind one disclosure, A4/B4 dark closed building in the freed stat-card slot, A5 locked reads locked, A6 PIN band off M2, A7 empty rail card and result-frame night label, A8 chart fitted and labelled) and the settled night restacked into three columns (B1 causal line, B2 WHAT HAPPENED above NEXT, B3 1024x600 fit, B4 sellout at display scale with no banner, B5 legend deleted and the picture labelled directly with ONE name for the extra seats, B6 Night 5 callback, B7 zero-turnout composition, B8 no error-slot rendering of a state description), plus E1 CASH qualifiers, E2 renewals-floor line, E5 dial-carried cue, and integration of repair 3's bowlSeats/bowlOpen third state. 2bdfca4: REVEAL and SYNTHESIS mirror the teacher's stage/card, COMPLETE and LOBBY are composed.",
+            "evidence": "All OBSERVED in a scratch copy of runtime/ (the real runtime/dist was never rebuilt). w2-repair-2-report holds the acceptance table. Key numbers: #fhNights top 475 (1366) / 436 (1024), was 769/788; #fhLock 304..360 / 268..324; causal line inside the first viewport on all five nights at both shapes; .fh-resale bottom 603 (was 939-965); #fhNextNight bottom max 707 at 1366 including the sellout (was 779-789) and 574-581 at 1024 (was top 705); RENEWALS bottom 400 at 1024 (was 604/639); exactly 2 figures >=34px on the sellout; 8 distinct #gameBody md5s across reveal stages 0-7 and 6 across synthesis pages 1-6 (were 2 and 1); dead regions LOBBY 182 / REVEAL 22 / SYNTHESIS 100 / COMPLETE 110, all under 200. Commands: npm test 468/468 in the scratch copy, e2e-m2l1 exit 0 with zero console errors, e2e-m2l1-misclick exit 0. F1 proved with a two-context Playwright script.",
+            "claims": "TECHNICALLY VERIFIED for every number in the acceptance table and the three command results, in a scratch build. AGENT-PLAYTESTED only in the sense that a script drove the real build; no human ran it. NOT claimed: that any of this is accepted, PREMIUM, or classroom-ready. I do not certify my own work.",
+            "known-gaps": "A3 word count FAILS: 281 words in the first viewport at 1366 and 223 at 1024 against the brief's 'under 120' (baseline 231; my own evidence row moved words up from below the fold). C3 (HOOK composition) NOT DONE - HOOK is unchanged at 361 words and a 182px dead region. E4 (registering the carried 'The cheaper ticket made more money.' literal and extending clientClaims.allow.json) NOT DONE. E6 (grade-5 rewrite of the COUNTERFACTUAL bodies) NOT DONE, per the brief's skip rule. E8 (strengthening e2e-m2l1.cjs with a results-state vocabulary pass and a rounded-figure check plus a new mutation proof) NOT DONE - the e2e is unchanged. A8's leader line for co-priced marks NOT DONE (dotChart lives in shared/m2ui.ts, outside my ownership); y-fit and full mark labels are done. B5's extra-seats name is 'MORE SEATS', not the coordinator's 'Upper bowl open/closed', because the brief's B5 and Kid C #3 require the pre-lock wording. The 1024x600 acceptance was measured with NO PIN band because A6 removes it on M2 - critics' scripts that click #btnShowPin will fail; the control is display:none under html[data-module='m2']. E5's cue fires when the dial holds a price the desk has charged before; the module resets the dial to the plan price after every night, so Kid B's literal 'still at Night 3's price' state is unreachable. Reading my own screenshots: the left rail still has ~300px of dead black below the books on the results frame; the sellout's turned-away figure sits at the very bottom edge of the fold (arena card bottom 768); HOUSE_RULES[0] under the CTA is centred and is the loudest text block on the pre-lock frame; the desk handle still truncates in the rail ('Desk 1 · New York ...') although the building name now wraps; Kid B #4 stands - FULL HOUSE at 60px beside RENEWALS 17%->0% still reads as celebration."
+          },
+          "evidenceIds": [
+            "w2-repair-2-report",
+            "w2-repair-2-manifest",
+            "w2-repair-2-prelock-1366",
+            "w2-repair-2-prelock-1024",
+            "w2-repair-2-sellout-1366",
+            "w2-repair-2-result-1024",
+            "w2-repair-2-synth3",
+            "w2-repair-2-complete",
+            "w2-repair-2-f1",
+            "w2-repair-2-e2e"
+          ],
           "cost": null
         }
       },
@@ -1993,7 +2009,17 @@
         "w2-repair-3-after-bowlopen",
         "w2-repair-3-after-locked",
         "w2-repair-3-in-product",
-        "w2-repair-3-measurements"
+        "w2-repair-3-measurements",
+        "w2-repair-2-report",
+        "w2-repair-2-manifest",
+        "w2-repair-2-prelock-1366",
+        "w2-repair-2-prelock-1024",
+        "w2-repair-2-sellout-1366",
+        "w2-repair-2-result-1024",
+        "w2-repair-2-synth3",
+        "w2-repair-2-complete",
+        "w2-repair-2-f1",
+        "w2-repair-2-e2e"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -6285,6 +6311,183 @@
       },
       "recordedAt": "2026-09-02T16:58:38.686Z",
       "actor": "builder-r3"
+    },
+    "w2-repair-2-report": {
+      "id": "w2-repair-2-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "Repair 2 written report: acceptance table, commands, every new registered string",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-report--REPAIR_W2_COMPOSITION.md",
+      "sha256": "c593032b53fe49d83c9e94615927694f98fb9f5ab358a0add701eae85c6a0d1b",
+      "size": 4122,
+      "metadata": {
+        "tags": [
+          "composition",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:43.836Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-manifest": {
+      "id": "w2-repair-2-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Screenshot manifest + measurement JSON (measure.json per-state table, mirrors.json innerText md5s, measure.txt printed table, e2e logs)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-manifest--MANIFEST.md",
+      "sha256": "85ec1d22cbab8848342a7160c26924d1ad0d3e6a1e1a56f47939ce26e5b7c706",
+      "size": 1443,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "browser"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:44.100Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-prelock-1366": {
+      "id": "w2-repair-2-prelock-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Pre-lock desk N1 at 1366x768: YOUR NIGHTS SO FAR top 475, dark closed building, no PIN band",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-prelock-1366--prelock-n1-1366.png",
+      "sha256": "1e8ebaa3653c86f436e448c4d7264d90bc466a4bea75bba53bd35e8872ab535c",
+      "size": 200573,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "A1",
+          "A4",
+          "A6"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:44.367Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-prelock-1024": {
+      "id": "w2-repair-2-prelock-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Pre-lock desk N1 at 1024x600: LOCK IT IN 268..324, nights card top 436",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-prelock-1024--prelock-n1-1024.png",
+      "sha256": "54262d3e8811d07c94eec2cebee581949a34829c4499420721cda962f64b4bb0",
+      "size": 157538,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "A1"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:44.646Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-sellout-1366": {
+      "id": "w2-repair-2-sellout-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 sellout at 1366x768: FULL HOUSE 60px on the panel ground, resale bottom 603, NEXT 645..707, 2 figures >=34px",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-sellout-1366--result-n4-1366.png",
+      "sha256": "562eefb88476d5097eb280169a8e22f19086bfc1479ff10e4a4c97bce3a263d2",
+      "size": 209216,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "B2",
+          "B4",
+          "B5"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:44.936Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-result-1024": {
+      "id": "w2-repair-2-result-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Settled night at 1024x600: RENEWALS bottom 400, NEXT bottom 574",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-result-1024--result-n1-1024.png",
+      "sha256": "c0b732a40a929c7dd9df48a6ddcbc3404819cf675e597eba84204e1182231ed6",
+      "size": 133557,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "B3"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:45.215Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-synth3": {
+      "id": "w2-repair-2-synth3",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "SYNTHESIS mirror, card 3 of 6, with the pair's own nights",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-synth3--synthesis-page3-1366.png",
+      "sha256": "0e8513731b10d09be19c8228253b86a2b0c167657ba5a0e515565850ce10135b",
+      "size": 129091,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "C2",
+          "D2"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:45.479Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-complete": {
+      "id": "w2-repair-2-complete",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "COMPLETE: the pair's five nights, dot chart, exit prompt, beyond-sports line",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-complete--complete-1366.png",
+      "sha256": "4e79c999fc3d1b04c8d7cf765bb2f86a0025138001bcfd3604b207ad73f3b3b1",
+      "size": 128098,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "C4",
+          "C5"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:45.757Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-f1": {
+      "id": "w2-repair-2-f1",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "F1: the original tab after another device rejoined — join card and the registered line, never 'offline'",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-f1--f1-a-after-rejoin-1366.png",
+      "sha256": "66c2f26aacab2a9f951241abe15a7d8a6e94ee0974058eb870cd9fe7824106a6",
+      "size": 29633,
+      "metadata": {
+        "tags": [
+          "classroom-reliability",
+          "F1"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:46.030Z",
+      "actor": "builder-r2"
+    },
+    "w2-repair-2-e2e": {
+      "id": "w2-repair-2-e2e",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Scratch e2e-m2l1 log, exit 0, zero console errors",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-2-e2e--e2e2.log",
+      "sha256": "a80c90e0cb6cac587829c7578f2f96c2d4a5b751e4cbf26794488cf8ca45b54e",
+      "size": 11047,
+      "metadata": {
+        "tags": [
+          "command",
+          "e2e"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:23:46.318Z",
+      "actor": "builder-r2"
     }
   },
   "claims": {},
@@ -6639,11 +6842,11 @@
     "agentsActivated": 28,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 240,
+    "evidenceRecorded": 250,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 324,
-  "eventHead": "6e17b20ab1d7ac71f913f40c08fb2b0f04c1e1c1aa359d66e8a518089c0c097e",
+  "eventCount": 335,
+  "eventHead": "83eff8f3bb238b2805d40ebe16b66787efa91c3a37e9f620711505aeffc8df33",
   "warnings": []
 }

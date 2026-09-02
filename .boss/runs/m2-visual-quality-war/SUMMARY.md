@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `324:6e17b20ab1d7ac71f913f40c08fb2b0f04c1e1c1aa359d66e8a518089c0c097e`  
-Updated: 2026-09-02T16:58:38.946Z
+Event head: `335:83eff8f3bb238b2805d40ebe16b66787efa91c3a37e9f620711505aeffc8df33`  
+Updated: 2026-09-02T17:23:46.666Z
 
 ## Founder intent
 
@@ -48,7 +48,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - regression-hunter — regression-w2b — completed-with-concerns — claude-sonnet-5
 - builder — builder-r1 — completed-with-concerns — claude-opus-5
 - builder — builder-r3 — completed-with-concerns — claude-opus-5
-- builder — builder-r2 — active — claude-opus-5
+- builder — builder-r2 — completed-with-concerns — claude-opus-5
 
 ## Required evidence
 
@@ -215,6 +215,16 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-repair-3-after-locked — screenshot — AFTER: locked-waiting hero at 900x240 - complete dark building, centred, nothing cropped
 - w2-repair-3-in-product — screenshot — AFTER in the real product: e2e-m2l1 sellout frame from the repaired build (scratch dist)
 - w2-repair-3-measurements — note — Machine-readable per-state measurements: panel lit/warm share, per-deck lit share, element and byte counts, 4 boxes x 13 states
+- w2-repair-2-report — visual-report — Repair 2 written report: acceptance table, commands, every new registered string
+- w2-repair-2-manifest — browser-trace — Screenshot manifest + measurement JSON (measure.json per-state table, mirrors.json innerText md5s, measure.txt printed table, e2e logs)
+- w2-repair-2-prelock-1366 — screenshot — Pre-lock desk N1 at 1366x768: YOUR NIGHTS SO FAR top 475, dark closed building, no PIN band
+- w2-repair-2-prelock-1024 — screenshot — Pre-lock desk N1 at 1024x600: LOCK IT IN 268..324, nights card top 436
+- w2-repair-2-sellout-1366 — screenshot — Night 4 sellout at 1366x768: FULL HOUSE 60px on the panel ground, resale bottom 603, NEXT 645..707, 2 figures >=34px
+- w2-repair-2-result-1024 — screenshot — Settled night at 1024x600: RENEWALS bottom 400, NEXT bottom 574
+- w2-repair-2-synth3 — screenshot — SYNTHESIS mirror, card 3 of 6, with the pair's own nights
+- w2-repair-2-complete — screenshot — COMPLETE: the pair's five nights, dot chart, exit prompt, beyond-sports line
+- w2-repair-2-f1 — screenshot — F1: the original tab after another device rejoined — join card and the registered line, never 'offline'
+- w2-repair-2-e2e — browser-trace — Scratch e2e-m2l1 log, exit 0, zero console errors
 
 ## Claim ledger
 
