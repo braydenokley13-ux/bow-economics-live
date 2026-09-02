@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T19:53:02.088Z",
+  "updatedAt": "2026-09-02T19:59:48.096Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2249,11 +2249,28 @@
           "model": "claude-opus-5",
           "reason": "The owning critic verifies its own blocking dissent w2-final-browser-dissent at the wave-2 final head afa018d after repair 5 R5-1; the lead does not close another role's dissent on the builder's measurement",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed",
           "activatedAt": "2026-09-02T19:53:02.088Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T19:59:47.773Z",
+          "sections": {
+            "paths-exercised": "One real session of m2l1-full-house on the built head (runtime/dist at afa018d), server on port 4441, four desks x five nights, teacher-paced via #btnCloseNight, every settled night measured at scrollY=0 and screenshotted at 1366x768 then 1024x600 before NEXT. 40 desk-night x viewport frames. Desk 1: $10 + max event money every night + upper bowl opened on Night 4 (the only night that offers it) = the dissent state, plus the densest Night-5 frame (spend line + spend verdict + resale sentence + repeat callback). Desk 2: $10, no spend, bowl never opened = bowl-closed sellouts (N1/N2/N4). Desk 3: $120 = zero-turnout nights (N1/N2/N3/N5). Desk 4: $65 = ordinary nights. 0 console errors, 0 page errors. NOT exercised: /board, /teach frames, REVEAL onward, any other viewport.",
+            "artifacts": "Report docs/gauntlet/module-2/premium/BROWSER_TRUTH_W2_FOLD_VERIFY.md (w2-fold-report). 40 viewport screenshots in docs/gauntlet/module-2/premium/screens-w2-fold-verify/ indexed by MANIFEST.md (w2-fold-manifest) with per-frame boxes. Raw DOM measurements in measurements.json (w2-fold-measurements). Eight individually recorded screenshots covering the dissent state at both viewports (w2-fold-shot-dissent-1366, w2-fold-shot-dissent-1024), bowl-closed sellout (w2-fold-shot-bowlclosed-1366/-1024), zero turnout (w2-fold-shot-zero-1366/-1024), ordinary night (w2-fold-shot-ordinary-1366) and the densest Night-5 frame (w2-fold-shot-densest-n5-1366).",
+            "defects": "ADVISORY, pre-existing, NOT introduced by repair 5 (observed): at 1024x600 the tail of WHAT HAPPENED falls below the fold on the two densest desk-nights - d1-n4's resale sentence ends at bottom 620 in a 600px viewport (docScroll 709), cut mid-sentence at rest (w2-fold-shot-dissent-1024); d1-n5's repeat callback ends at 613. The R5-1 source comment's claim that WHAT HAPPENED renders above the fold at both shapes is true of the card's top, not its last sentence at 1024x600. Reachable by scroll, control sits above it, so not blocking. ADVISORY (observed): at 1024x600 the drawn sold-out arena starts around y=478 and is almost entirely below the fold. COSMETIC (observed): at 1366x768 the sellout frame's documentElement.scrollHeight is 778 against 768, a 10px scroll containing no ink. OBSERVATION, not a defect: on a sellout the FULL HOUSE wordmark renders at 60px (1366), louder than the 40px turned-away number, though the numeric hierarchy (72 > 40 > 31) is intact. No new fold or hierarchy defect attributable to repair 5 in any of the four state families.",
+            "not-verified": "/board and /teach frames (driven but not measured). REVEAL / ADAPT / COUNTERFACTUAL / SYNTHESIS phases (run stopped after Night 5 settled). Any viewport other than 1366x768 and 1024x600. Real hardware, real Chromebook rendering, real students - nothing here is HUMAN-TESTED or CLASSROOM-PROVEN; this is AGENT-PLAYTESTED. Whether a state outside these four desk lines could push the control lower: the bowl is offered on Night 4 only, so bowl-open + Night-5 callback cannot co-occur in this slate (INFERRED from the measured slate, not from source). Module 1 untouched and unobserved."
+          },
+          "evidenceIds": [
+            "w2-fold-report",
+            "w2-fold-manifest",
+            "w2-fold-measurements",
+            "w2-fold-shot-dissent-1366",
+            "w2-fold-shot-dissent-1024",
+            "w2-fold-shot-bowlclosed-1366",
+            "w2-fold-shot-bowlclosed-1024",
+            "w2-fold-shot-zero-1366",
+            "w2-fold-shot-zero-1024",
+            "w2-fold-shot-ordinary-1366",
+            "w2-fold-shot-densest-n5-1366"
+          ],
           "cost": null
         }
       },
@@ -2573,7 +2590,18 @@
         "w2-mutation-a-afa018d",
         "w2-mutation-b-afa018d",
         "w2-claim-filing-note",
-        "w2-founder-decisions"
+        "w2-founder-decisions",
+        "w2-fold-report",
+        "w2-fold-manifest",
+        "w2-fold-measurements",
+        "w2-fold-shot-dissent-1366",
+        "w2-fold-shot-dissent-1024",
+        "w2-fold-shot-bowlclosed-1366",
+        "w2-fold-shot-bowlclosed-1024",
+        "w2-fold-shot-zero-1366",
+        "w2-fold-shot-zero-1024",
+        "w2-fold-shot-ordinary-1366",
+        "w2-fold-shot-densest-n5-1366"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -14106,6 +14134,194 @@
       "metadata": {},
       "recordedAt": "2026-09-02T19:52:11.850Z",
       "actor": "boss-lead"
+    },
+    "w2-fold-report": {
+      "id": "w2-fold-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "Browser truth: independent fold/hierarchy verification of repair 5 at the built head; dissent w2-final-browser-dissent ruled DISCHARGED",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-report--BROWSER_TRUTH_W2_FOLD_VERIFY.md",
+      "sha256": "51eb42b7b8c1960e3941f73880b0558e0f28d6d59204b3c30845b03051e096f3",
+      "size": 7055,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:44.181Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-manifest": {
+      "id": "w2-fold-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of all 40 viewport screenshots (4 desks x 5 nights x 2 viewports) with per-frame #fhNextNight box, turned-away box, turnout size and dead region",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-manifest--MANIFEST.md",
+      "sha256": "1d8182c60d30366d2e5826348e7512fb3f732702f8f6be0b1586a2977ef1a9cc",
+      "size": 5223,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:44.497Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-measurements": {
+      "id": "w2-fold-measurements",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Raw per-frame DOM measurements (40 rows) captured at scrollY=0, plus console-error log (0 errors)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-measurements--measurements.json",
+      "sha256": "aa0d46708b4b6e79f1fb2db39bd681f327fa6a79ad031ae5cbbdc14d6aaeca88",
+      "size": 49541,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:44.811Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-dissent-1366": {
+      "id": "w2-fold-shot-dissent-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "THE DISSENT STATE at 1366x768: bowl OPEN + $40,000 event money + FULL HOUSE sellout, 5,150 turned away; #fhNextNight 511..573 of 768, fully at rest",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-dissent-1366--d1-n4-1366x768.png",
+      "sha256": "f41ee934fb1829a33eb2a995fce0a5d06d5770df6c91c08e6e9def148ed90c68",
+      "size": 221591,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:45.116Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-dissent-1024": {
+      "id": "w2-fold-shot-dissent-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Same dissent state at 1024x600: #fhNextNight 464..526 of 600; WHAT HAPPENED resale sentence cut at the fold (bottom 620)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-dissent-1024--d1-n4-1024x600.png",
+      "sha256": "1e62f79947570b5befa8825dc9bff6ee59433c96a5c62689e999c342e1d90aa6",
+      "size": 171812,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:45.444Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-bowlclosed-1366": {
+      "id": "w2-fold-shot-bowlclosed-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Bowl-closed sellout at 1366x768 (7,031 turned away @40px, bottom 742); control 449..511",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-bowlclosed-1366--d2-n4-1366x768.png",
+      "sha256": "a777f42f9606e08e02ea6cb4eed7043be4539a342eb805effcbc351119ad8765",
+      "size": 204902,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:45.761Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-bowlclosed-1024": {
+      "id": "w2-fold-shot-bowlclosed-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Bowl-closed sellout at 1024x600 (7,031 @34px in the WHO CAME card, bottom 458); control 406..468",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-bowlclosed-1024--d2-n4-1024x600.png",
+      "sha256": "585bf93212c2db1f113c729ac2f37f7995fc3a7c89ec8715db2236bf9a75a98e",
+      "size": 160109,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:46.108Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-zero-1366": {
+      "id": "w2-fold-shot-zero-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Zero-turnout night at 1366x768: turnout 0 @72px is the only figure at or above 34px; control 417..479; 29px dead region",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-zero-1366--d3-n3-1366x768.png",
+      "sha256": "7ee7b34e9b8fe84d3153bfd35ca479cb87f29849b5061e758ffe3f82e661da77",
+      "size": 168219,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:46.454Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-zero-1024": {
+      "id": "w2-fold-shot-zero-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Zero-turnout night at 1024x600: control 392..454; 55px contiguous dead region below the last block",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-zero-1024--d3-n3-1024x600.png",
+      "sha256": "138dd241e49b79e2b28e2d7f8162f9ffdf36e3b37b29ffc142d285fa53683a52",
+      "size": 131858,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:46.764Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-ordinary-1366": {
+      "id": "w2-fold-shot-ordinary-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Ordinary night at 1366x768 (turnout 526, no sellout): control 417..479, single figure at or above 34px",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-ordinary-1366--d4-n3-1366x768.png",
+      "sha256": "061df339a04dcef88dea0df898d570d2b354d0673307c7f5783e87a7803d6ed1",
+      "size": 186076,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:47.100Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-fold-shot-densest-n5-1366": {
+      "id": "w2-fold-shot-densest-n5-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Densest WHAT HAPPENED column at 1366x768: Night-5 sellout with spend line, spend verdict, resale sentence and repeat callback; control 449..497",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-fold-shot-densest-n5-1366--d1-n5-1366x768.png",
+      "sha256": "1b367043002ced7e5f1553b7ac5befb821ffc6c76ee54effa75c7d74089bc65a",
+      "size": 206831,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "play"
+        ]
+      },
+      "recordedAt": "2026-09-02T19:59:47.463Z",
+      "actor": "browser-qa-w2"
     }
   },
   "claims": {
@@ -14526,9 +14742,12 @@
         "w2-final-bqa-report"
       ],
       "blocking": false,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-02T18:44:18.458Z",
-      "actor": "browser-qa-w2"
+      "actor": "browser-qa-w2",
+      "resolution": "Discharged by the owning critic's own verification at the wave-2 final head afa018d (BROWSER_TRUTH_W2_FOLD_VERIFY.md), after repair 5 R5-1 moved the advance control under the CASH chain. In the exact offending state (upper bowl open, event money spent that night, sellout with 5,150 turned away, plus the previous night's spend verdict and the resale sentence), #fhNextNight measures 511..573 in a 768px viewport and 464..526 in a 600px viewport at scrollY=0; worst bottom across 40 desk-night by viewport frames is 573 at 1366x768 and 526 at 1024x600, none below the fold. Hierarchy holds in all 40: turnout largest, turned-away second-largest and never clipped, at most two figures at or above 34px. New advisory carried, pre-existing and non-blocking: at 1024x600 the WHAT HAPPENED card's last sentence ends at bottom 620 and 613 on two nights, cut mid-sentence at rest, with the advance control above it.",
+      "resolvedAt": "2026-09-02T19:59:48.096Z",
+      "resolvedBy": "boss-lead"
     },
     "w2-final-visual-dissent": {
       "id": "w2-final-visual-dissent",
@@ -14724,11 +14943,11 @@
     "agentsActivated": 41,
     "gateFailures": 4,
     "claimsContradicted": 2,
-    "evidenceRecorded": 403,
+    "evidenceRecorded": 414,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 549,
-  "eventHead": "0c66934d388981c8c05b9370ff81be9753c3d742406809338abb392aa8f529d8",
+  "eventCount": 562,
+  "eventHead": "073f732a9c179c5c10485c074317e3d0a0f225540e8e9b16096984a0ed86f1c1",
   "warnings": []
 }

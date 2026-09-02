@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `549:0c66934d388981c8c05b9370ff81be9753c3d742406809338abb392aa8f529d8`  
-Updated: 2026-09-02T19:53:02.088Z
+Event head: `562:073f732a9c179c5c10485c074317e3d0a0f225540e8e9b16096984a0ed86f1c1`  
+Updated: 2026-09-02T19:59:48.096Z
 
 ## Founder intent
 
@@ -61,7 +61,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - regression-hunter — regression-w2b — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-c3-nonsports — completed-with-concerns — claude-opus-5
 - builder — builder-r5 — completed-with-concerns — claude-opus-5
-- browser-qa — browser-qa-w2 — active — claude-opus-5
+- browser-qa — browser-qa-w2 — completed — claude-opus-5
 
 ## Required evidence
 
@@ -391,6 +391,17 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-mutation-b-afa018d — e2e — R-1 mutation B at the wave-2 final head afa018d: a 'Target' price band injected into the pre-lock render; the claim limb must FAIL the run
 - w2-claim-filing-note — note — Lead filing error: w2-e2e-pass and w2-e2e-misclick-pass cite command records filed with --kind test, so they cannot reconcile as e2e proof; the runs did pass and the claims are superseded by the correctly-filed final-head claims
 - w2-founder-decisions — note — Wave-2 founder-decision candidates FD-1 (frontier shape in synthesis), FD-2 (pre-lock reading budget vs printed-before-commitment), FD-3 (arena fill encoding) with the Boss recommendation on each
+- w2-fold-report — visual-report — Browser truth: independent fold/hierarchy verification of repair 5 at the built head; dissent w2-final-browser-dissent ruled DISCHARGED
+- w2-fold-manifest — browser-trace — Manifest of all 40 viewport screenshots (4 desks x 5 nights x 2 viewports) with per-frame #fhNextNight box, turned-away box, turnout size and dead region
+- w2-fold-measurements — browser-trace — Raw per-frame DOM measurements (40 rows) captured at scrollY=0, plus console-error log (0 errors)
+- w2-fold-shot-dissent-1366 — screenshot — THE DISSENT STATE at 1366x768: bowl OPEN + $40,000 event money + FULL HOUSE sellout, 5,150 turned away; #fhNextNight 511..573 of 768, fully at rest
+- w2-fold-shot-dissent-1024 — screenshot — Same dissent state at 1024x600: #fhNextNight 464..526 of 600; WHAT HAPPENED resale sentence cut at the fold (bottom 620)
+- w2-fold-shot-bowlclosed-1366 — screenshot — Bowl-closed sellout at 1366x768 (7,031 turned away @40px, bottom 742); control 449..511
+- w2-fold-shot-bowlclosed-1024 — screenshot — Bowl-closed sellout at 1024x600 (7,031 @34px in the WHO CAME card, bottom 458); control 406..468
+- w2-fold-shot-zero-1366 — screenshot — Zero-turnout night at 1366x768: turnout 0 @72px is the only figure at or above 34px; control 417..479; 29px dead region
+- w2-fold-shot-zero-1024 — screenshot — Zero-turnout night at 1024x600: control 392..454; 55px contiguous dead region below the last block
+- w2-fold-shot-ordinary-1366 — screenshot — Ordinary night at 1366x768 (turnout 526, no sellout): control 417..479, single figure at or above 34px
+- w2-fold-shot-densest-n5-1366 — screenshot — Densest WHAT HAPPENED column at 1366x768: Night-5 sellout with spend line, spend verdict, resale sentence and repeat callback; control 449..497
 
 ## Claim ledger
 
@@ -413,7 +424,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-regression-rs-dissent — classroom-reliability/blocking/resolved — A PIN rejoin from a second browser context — the product's own documented device-switch mechanism — silently and permanently revokes the original device's session token server-side, with no grace period. The original tab shows a false 'offline — retrying' status instead of being told it was signed out, and if the pair does the natural recovery action (refresh the page), the screen renders permanently blank with no #fhNextNight and no visible control to recover with, in that browser, ever. OBSERVED in an isolated, minimal repro (probe2.cjs) and independently in the full matrix run; the server process itself stays up throughout (confirmed alive at every poll tick), so this is a client-side dead end reachable by an ordinary teacher-sanctioned classroom action, not an adversarial edge case.
 - w2-recheck-visual-dissent — visual-quality/advisory/resolved — Restated and narrowed after repairs. The published-law limb is DISCHARGED: A2 and A4 are now kept inside the module's peak moment (0 gold/amber declarations inside #gameBody/.m2-rail/#gameHeader across 47 measured states; Bebas Neue computes on only 2 elements document-wide, both inside the hidden join card; the gold sellout ribbon is replaced by 60px Inter 800 on the panel ground). The flagship-asset limb STANDS in narrowed form: the drawn arena now reads empty (0% is genuinely dark) and full (continuous violet to the rim), but carries no legible 'how full' between roughly 50% and 75% - 52.8, 62.9, 68.1 and 71.4 percent render as the same three-band bullseye at native size and are indistinguishable at 33% scale - and its outer deck is drawn three different ways across nights (unoffered = ordinary lit deck, offered-and-declined = shuttered, open = unsold dark deck) with no cue a 10-year-old can read. Recorded so a later PREMIUM claim cannot be made without disposing of it.
 - w2-analyst-dissent — visual-quality/important/open — The wave-2 pass claim states the fresh visual critic named the remaining gaps non-structural; REVIEW_VISUAL_W2.md 'Re-check after repairs' lines 187-189 class gaps 1-3 (arena mid-fill and unstable outer deck; nights chart unfitted and colliding on six frames; HOOK unrecomposed) as STRUCTURAL, and rows A6/A9 stand unmet without a recorded deviation reason. The pass condition's visual limb is therefore not met at f65e865, independent of the STRONG overall grade. Recorded so that a PASS gate on this wave cannot cite the visual report as satisfying that clause.
-- w2-final-browser-dissent — classroom-reliability/important/open — Repair 4 cleared 1024x600 but not the design-target 1366x768: on the bowl-open + $40,000-spend + sellout settled night, #fhNextNight bottom is 811 against a 768 viewport (OBSERVED, w2-final-bqa-1366-overflow) and the advance bar is clipped at rest, reachable only by scrolling. That is the loudest frame in the lesson. The composition row must not be recorded as met at 1366x768 on the builder-reported 595-697 band, which was measured without this state.
+- w2-final-browser-dissent — classroom-reliability/important/resolved — Repair 4 cleared 1024x600 but not the design-target 1366x768: on the bowl-open + $40,000-spend + sellout settled night, #fhNextNight bottom is 811 against a 768 viewport (OBSERVED, w2-final-bqa-1366-overflow) and the advance bar is clipped at rest, reachable only by scrolling. That is the loudest frame in the lesson. The composition row must not be recorded as met at 1366x768 on the builder-reported 595-697 band, which was measured without this state.
 - w2-final-visual-dissent — visual-quality/advisory/open — Narrowed restatement of the standing advisory dissent w2-recheck-visual-dissent, which is NOT dischargeable. Its outer-deck limb IS discharged: the ring now has one meaning, measured across bowl-not-offered (63.2 percent), offered-and-declined (67.9 percent) and open (65.3 percent) on the same building. The remaining limb stands: the drawn arena, the flagship asset of this module, separates empty / partly / full but carries no legible HOW FULL between roughly 50 and 80 percent, which is where most settled nights land - 54.4 / 58.3 / 63.2 / 67.9 / 76.7 percent are not orderable without their captions at native size or at 33 percent. Recorded so a later PREMIUM claim cannot be made without disposing of it or of FD-3.
 
 ## Latest gate

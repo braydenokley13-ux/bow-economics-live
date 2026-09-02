@@ -1,0 +1,2357 @@
+{
+  "rows": [
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 542,
+      "nextTop": 480,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": 717,
+      "turnedSize": 40,
+      "turnedText": "870",
+      "heroSize": 72,
+      "heroText": "19,800",
+      "heroBottom": 325,
+      "big": [
+        {
+          "text": "19,800",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "870",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,800",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "870",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        },
+        {
+          "text": "50%",
+          "size": 31,
+          "top": 237,
+          "bottom": 270
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:3140",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "19,800",
+      "desk": 1,
+      "night": 1,
+      "vp": "1366x768",
+      "tag": "d1-n1-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 684,
+      "nextBottom": 497,
+      "nextTop": 435,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": 458,
+      "turnedSize": 34,
+      "turnedText": "870",
+      "heroSize": 64,
+      "heroText": "19,800",
+      "heroBottom": 291,
+      "big": [
+        {
+          "text": "19,800",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "870",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,800",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "870",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        },
+        {
+          "text": "50%",
+          "size": 26,
+          "top": 220,
+          "bottom": 248
+        }
+      ],
+      "lastBottom": 597,
+      "dead": 3,
+      "lastEl": "[object SVGAnimatedString]:@keyframes ar5-breathe{0",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "19,800",
+      "desk": 1,
+      "night": 1,
+      "vp": "1024x600",
+      "tag": "d1-n1-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "16,750",
+      "heroBottom": 293,
+      "big": [
+        {
+          "text": "16,750",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        }
+      ],
+      "top3": [
+        {
+          "text": "16,750",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        },
+        {
+          "text": "$88,500",
+          "size": 31,
+          "top": 334,
+          "bottom": 367
+        },
+        {
+          "text": "50%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:1123",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "16,750",
+      "desk": 2,
+      "night": 1,
+      "vp": "1366x768",
+      "tag": "d2-n1-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 610,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "16,750",
+      "heroBottom": 277,
+      "big": [
+        {
+          "text": "16,750",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        }
+      ],
+      "top3": [
+        {
+          "text": "16,750",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        },
+        {
+          "text": "$88,500",
+          "size": 26,
+          "top": 322,
+          "bottom": 352
+        },
+        {
+          "text": "50%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 580,
+      "dead": 20,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "16,750",
+      "desk": 2,
+      "night": 1,
+      "vp": "1024x600",
+      "tag": "d2-n1-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "0",
+      "heroBottom": 253,
+      "big": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        },
+        {
+          "text": "50%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "30%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:6689",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 3,
+      "night": 1,
+      "vp": "1366x768",
+      "tag": "d3-n1-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 600,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "0",
+      "heroBottom": 242,
+      "big": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        },
+        {
+          "text": "50%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "30%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 545,
+      "dead": 55,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 3,
+      "night": 1,
+      "vp": "1024x600",
+      "tag": "d3-n1-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "0",
+      "heroBottom": 253,
+      "big": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        },
+        {
+          "text": "50%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "30%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:7989",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 4,
+      "night": 1,
+      "vp": "1366x768",
+      "tag": "d4-n1-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 600,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 2 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "0",
+      "heroBottom": 242,
+      "big": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        },
+        {
+          "text": "50%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "30%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 545,
+      "dead": 55,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 4,
+      "night": 1,
+      "vp": "1024x600",
+      "tag": "d4-n1-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 511,
+      "nextTop": 449,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": 717,
+      "turnedSize": 40,
+      "turnedText": "3,400",
+      "heroSize": 72,
+      "heroText": "19,800",
+      "heroBottom": 325,
+      "big": [
+        {
+          "text": "19,800",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "3,400",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,800",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "3,400",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        },
+        {
+          "text": "$34,400",
+          "size": 31,
+          "top": 366,
+          "bottom": 399
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:3140",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": true,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "19,800",
+      "desk": 1,
+      "night": 2,
+      "vp": "1366x768",
+      "tag": "d1-n2-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 684,
+      "nextBottom": 468,
+      "nextTop": 406,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": 458,
+      "turnedSize": 34,
+      "turnedText": "3,400",
+      "heroSize": 64,
+      "heroText": "19,800",
+      "heroBottom": 291,
+      "big": [
+        {
+          "text": "19,800",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "3,400",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,800",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "3,400",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        },
+        {
+          "text": "$34,400",
+          "size": 26,
+          "top": 336,
+          "bottom": 366
+        }
+      ],
+      "lastBottom": 622,
+      "dead": 0,
+      "lastEl": "fh-resale:3,400 people wanted in a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": true,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "19,800",
+      "desk": 1,
+      "night": 2,
+      "vp": "1024x600",
+      "tag": "d1-n2-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 511,
+      "nextTop": 449,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": 717,
+      "turnedSize": 40,
+      "turnedText": "1,441",
+      "heroSize": 72,
+      "heroText": "17,794",
+      "heroBottom": 325,
+      "big": [
+        {
+          "text": "17,794",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "1,441",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        }
+      ],
+      "top3": [
+        {
+          "text": "17,794",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "1,441",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        },
+        {
+          "text": "$111,468",
+          "size": 31,
+          "top": 366,
+          "bottom": 399
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:1123",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "17,794",
+      "desk": 2,
+      "night": 2,
+      "vp": "1366x768",
+      "tag": "d2-n2-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 684,
+      "nextBottom": 468,
+      "nextTop": 406,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": 458,
+      "turnedSize": 34,
+      "turnedText": "1,441",
+      "heroSize": 64,
+      "heroText": "17,794",
+      "heroBottom": 291,
+      "big": [
+        {
+          "text": "17,794",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "1,441",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        }
+      ],
+      "top3": [
+        {
+          "text": "17,794",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "1,441",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        },
+        {
+          "text": "$111,468",
+          "size": 26,
+          "top": 336,
+          "bottom": 366
+        }
+      ],
+      "lastBottom": 597,
+      "dead": 3,
+      "lastEl": "[object SVGAnimatedString]:@keyframes ara-breathe{0",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "17,794",
+      "desk": 2,
+      "night": 2,
+      "vp": "1024x600",
+      "tag": "d2-n2-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "0",
+      "heroBottom": 253,
+      "big": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        },
+        {
+          "text": "30%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "10%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:6689",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 3,
+      "night": 2,
+      "vp": "1366x768",
+      "tag": "d3-n2-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 600,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "0",
+      "heroBottom": 242,
+      "big": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        },
+        {
+          "text": "30%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "10%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 545,
+      "dead": 55,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 3,
+      "night": 2,
+      "vp": "1024x600",
+      "tag": "d3-n2-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "4,232",
+      "heroBottom": 293,
+      "big": [
+        {
+          "text": "4,232",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        }
+      ],
+      "top3": [
+        {
+          "text": "4,232",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        },
+        {
+          "text": "$50,096",
+          "size": 31,
+          "top": 334,
+          "bottom": 367
+        },
+        {
+          "text": "30%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:7989",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "4,232",
+      "desk": 4,
+      "night": 2,
+      "vp": "1366x768",
+      "tag": "d4-n2-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 610,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 3 → Wednesday · Dr",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "4,232",
+      "heroBottom": 277,
+      "big": [
+        {
+          "text": "4,232",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        }
+      ],
+      "top3": [
+        {
+          "text": "4,232",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        },
+        {
+          "text": "$50,096",
+          "size": 26,
+          "top": 322,
+          "bottom": 352
+        },
+        {
+          "text": "30%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 580,
+      "dead": 20,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "4,232",
+      "desk": 4,
+      "night": 2,
+      "vp": "1024x600",
+      "tag": "d4-n2-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 510,
+      "nextTop": 448,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "19,410",
+      "heroBottom": 293,
+      "big": [
+        {
+          "text": "19,410",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,410",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        },
+        {
+          "text": "10%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:3140",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "19,410",
+      "desk": 1,
+      "night": 3,
+      "vp": "1366x768",
+      "tag": "d1-n3-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 610,
+      "nextBottom": 483,
+      "nextTop": 421,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "19,410",
+      "heroBottom": 277,
+      "big": [
+        {
+          "text": "19,410",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,410",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        },
+        {
+          "text": "10%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 580,
+      "dead": 20,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "19,410",
+      "desk": 1,
+      "night": 3,
+      "vp": "1024x600",
+      "tag": "d1-n3-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "15,300",
+      "heroBottom": 293,
+      "big": [
+        {
+          "text": "15,300",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        }
+      ],
+      "top3": [
+        {
+          "text": "15,300",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        },
+        {
+          "text": "$56,600",
+          "size": 31,
+          "top": 334,
+          "bottom": 367
+        },
+        {
+          "text": "32%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:1123",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "15,300",
+      "desk": 2,
+      "night": 3,
+      "vp": "1366x768",
+      "tag": "d2-n3-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 610,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "15,300",
+      "heroBottom": 277,
+      "big": [
+        {
+          "text": "15,300",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        }
+      ],
+      "top3": [
+        {
+          "text": "15,300",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        },
+        {
+          "text": "$56,600",
+          "size": 26,
+          "top": 322,
+          "bottom": 352
+        },
+        {
+          "text": "32%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 580,
+      "dead": 20,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "15,300",
+      "desk": 2,
+      "night": 3,
+      "vp": "1024x600",
+      "tag": "d2-n3-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "0",
+      "heroBottom": 253,
+      "big": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        },
+        {
+          "text": "10%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:6689",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 3,
+      "night": 3,
+      "vp": "1366x768",
+      "tag": "d3-n3-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 600,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "0",
+      "heroBottom": 242,
+      "big": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        },
+        {
+          "text": "10%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 545,
+      "dead": 55,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "0",
+      "desk": 3,
+      "night": 3,
+      "vp": "1024x600",
+      "tag": "d3-n3-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "526",
+      "heroBottom": 253,
+      "big": [
+        {
+          "text": "526",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ],
+      "top3": [
+        {
+          "text": "526",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        },
+        {
+          "text": "10%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:7989",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "526",
+      "desk": 4,
+      "night": 3,
+      "vp": "1366x768",
+      "tag": "d4-n3-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 600,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 4 → Saturday · Dra",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "526",
+      "heroBottom": 242,
+      "big": [
+        {
+          "text": "526",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        }
+      ],
+      "top3": [
+        {
+          "text": "526",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        },
+        {
+          "text": "10%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 545,
+      "dead": 55,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "526",
+      "desk": 4,
+      "night": 3,
+      "vp": "1024x600",
+      "tag": "d4-n3-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 778,
+      "nextBottom": 573,
+      "nextTop": 511,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": 742,
+      "turnedSize": 40,
+      "turnedText": "5,150",
+      "heroSize": 72,
+      "heroText": "22,200",
+      "heroBottom": 325,
+      "big": [
+        {
+          "text": "22,200",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "5,150",
+          "size": 40,
+          "top": 698,
+          "bottom": 742
+        }
+      ],
+      "top3": [
+        {
+          "text": "22,200",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "5,150",
+          "size": 40,
+          "top": 698,
+          "bottom": 742
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 237,
+          "bottom": 270
+        }
+      ],
+      "lastBottom": 742,
+      "dead": 26,
+      "lastEl": "m2-turnedaway:5,150",
+      "soldOut": true,
+      "bowlOpen": true,
+      "spendLine": false,
+      "hasVerdict": true,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "22,200",
+      "desk": 1,
+      "night": 4,
+      "vp": "1366x768",
+      "tag": "d1-n4-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 709,
+      "nextBottom": 526,
+      "nextTop": 464,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": 458,
+      "turnedSize": 34,
+      "turnedText": "5,150",
+      "heroSize": 64,
+      "heroText": "22,200",
+      "heroBottom": 291,
+      "big": [
+        {
+          "text": "22,200",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "5,150",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        }
+      ],
+      "top3": [
+        {
+          "text": "22,200",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "5,150",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 220,
+          "bottom": 248
+        }
+      ],
+      "lastBottom": 620,
+      "dead": 0,
+      "lastEl": "fh-resale:5,150 people wanted in a",
+      "soldOut": true,
+      "bowlOpen": true,
+      "spendLine": false,
+      "hasVerdict": true,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "22,200",
+      "desk": 1,
+      "night": 4,
+      "vp": "1024x600",
+      "tag": "d1-n4-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 778,
+      "nextBottom": 511,
+      "nextTop": 449,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": 742,
+      "turnedSize": 40,
+      "turnedText": "7,031",
+      "heroSize": 72,
+      "heroText": "17,794",
+      "heroBottom": 325,
+      "big": [
+        {
+          "text": "17,794",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "7,031",
+          "size": 40,
+          "top": 698,
+          "bottom": 742
+        }
+      ],
+      "top3": [
+        {
+          "text": "17,794",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "7,031",
+          "size": 40,
+          "top": 698,
+          "bottom": 742
+        },
+        {
+          "text": "$111,468",
+          "size": 31,
+          "top": 366,
+          "bottom": 399
+        }
+      ],
+      "lastBottom": 742,
+      "dead": 26,
+      "lastEl": "m2-turnedaway:7,031",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "17,794",
+      "desk": 2,
+      "night": 4,
+      "vp": "1366x768",
+      "tag": "d2-n4-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 709,
+      "nextBottom": 468,
+      "nextTop": 406,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": 458,
+      "turnedSize": 34,
+      "turnedText": "7,031",
+      "heroSize": 64,
+      "heroText": "17,794",
+      "heroBottom": 291,
+      "big": [
+        {
+          "text": "17,794",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "7,031",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        }
+      ],
+      "top3": [
+        {
+          "text": "17,794",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "7,031",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        },
+        {
+          "text": "$111,468",
+          "size": 26,
+          "top": 336,
+          "bottom": 366
+        }
+      ],
+      "lastBottom": 597,
+      "dead": 3,
+      "lastEl": "[object SVGAnimatedString]:@keyframes ark-breathe{0",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": true,
+      "hasCallback": false,
+      "turnout": "17,794",
+      "desk": 2,
+      "night": 4,
+      "vp": "1024x600",
+      "tag": "d2-n4-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "10,450",
+      "heroBottom": 293,
+      "big": [
+        {
+          "text": "10,450",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        }
+      ],
+      "top3": [
+        {
+          "text": "10,450",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        },
+        {
+          "text": "$922,100",
+          "size": 31,
+          "top": 334,
+          "bottom": 367
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:6689",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "10,450",
+      "desk": 3,
+      "night": 4,
+      "vp": "1366x768",
+      "tag": "d3-n4-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 635,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "10,450",
+      "heroBottom": 277,
+      "big": [
+        {
+          "text": "10,450",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        }
+      ],
+      "top3": [
+        {
+          "text": "10,450",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        },
+        {
+          "text": "$922,100",
+          "size": 26,
+          "top": 322,
+          "bottom": 352
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 605,
+      "dead": 0,
+      "lastEl": "SPAN:More seats closed",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "10,450",
+      "desk": 3,
+      "night": 4,
+      "vp": "1024x600",
+      "tag": "d3-n4-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 479,
+      "nextTop": 417,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "15,850",
+      "heroBottom": 293,
+      "big": [
+        {
+          "text": "15,850",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        }
+      ],
+      "top3": [
+        {
+          "text": "15,850",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        },
+        {
+          "text": "$956,300",
+          "size": 31,
+          "top": 334,
+          "bottom": 367
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:7989",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "15,850",
+      "desk": 4,
+      "night": 4,
+      "vp": "1366x768",
+      "tag": "d4-n4-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 635,
+      "nextBottom": 454,
+      "nextTop": 392,
+      "nextLabel": "NEXT: NIGHT 5 → Tuesday · Draw",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "15,850",
+      "heroBottom": 277,
+      "big": [
+        {
+          "text": "15,850",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        }
+      ],
+      "top3": [
+        {
+          "text": "15,850",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        },
+        {
+          "text": "$956,300",
+          "size": 26,
+          "top": 322,
+          "bottom": 352
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 605,
+      "dead": 0,
+      "lastEl": "SPAN:More seats closed",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": false,
+      "turnout": "15,850",
+      "desk": 4,
+      "night": 4,
+      "vp": "1024x600",
+      "tag": "d4-n4-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 497,
+      "nextTop": 449,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": 717,
+      "turnedSize": 40,
+      "turnedText": "20",
+      "heroSize": 72,
+      "heroText": "19,800",
+      "heroBottom": 325,
+      "big": [
+        {
+          "text": "19,800",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "20",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,800",
+          "size": 72,
+          "top": 249,
+          "bottom": 325
+        },
+        {
+          "text": "20",
+          "size": 40,
+          "top": 673,
+          "bottom": 717
+        },
+        {
+          "text": "$34,400",
+          "size": 31,
+          "top": 366,
+          "bottom": 399
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:3140",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": true,
+      "hasResale": true,
+      "hasCallback": true,
+      "turnout": "19,800",
+      "desk": 1,
+      "night": 5,
+      "vp": "1366x768",
+      "tag": "d1-n5-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 684,
+      "nextBottom": 454,
+      "nextTop": 406,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": 458,
+      "turnedSize": 34,
+      "turnedText": "20",
+      "heroSize": 64,
+      "heroText": "19,800",
+      "heroBottom": 291,
+      "big": [
+        {
+          "text": "19,800",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "20",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        }
+      ],
+      "top3": [
+        {
+          "text": "19,800",
+          "size": 64,
+          "top": 223,
+          "bottom": 291
+        },
+        {
+          "text": "20",
+          "size": 34,
+          "top": 422,
+          "bottom": 458
+        },
+        {
+          "text": "$34,400",
+          "size": 26,
+          "top": 336,
+          "bottom": 366
+        }
+      ],
+      "lastBottom": 613,
+      "dead": 0,
+      "lastEl": "fh-repeat-callback:Night 1's card again · $",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": true,
+      "hasResale": true,
+      "hasCallback": true,
+      "turnout": "19,800",
+      "desk": 1,
+      "night": 5,
+      "vp": "1024x600",
+      "tag": "d1-n5-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 465,
+      "nextTop": 417,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "15,850",
+      "heroBottom": 293,
+      "big": [
+        {
+          "text": "15,850",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        }
+      ],
+      "top3": [
+        {
+          "text": "15,850",
+          "size": 72,
+          "top": 217,
+          "bottom": 293
+        },
+        {
+          "text": "$68,700",
+          "size": 31,
+          "top": 334,
+          "bottom": 367
+        },
+        {
+          "text": "14%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:1123",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": true,
+      "turnout": "15,850",
+      "desk": 2,
+      "night": 5,
+      "vp": "1366x768",
+      "tag": "d2-n5-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 610,
+      "nextBottom": 440,
+      "nextTop": 392,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "15,850",
+      "heroBottom": 277,
+      "big": [
+        {
+          "text": "15,850",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        }
+      ],
+      "top3": [
+        {
+          "text": "15,850",
+          "size": 64,
+          "top": 209,
+          "bottom": 277
+        },
+        {
+          "text": "$68,700",
+          "size": 26,
+          "top": 322,
+          "bottom": 352
+        },
+        {
+          "text": "14%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 580,
+      "dead": 20,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": true,
+      "turnout": "15,850",
+      "desk": 2,
+      "night": 5,
+      "vp": "1024x600",
+      "tag": "d2-n5-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 465,
+      "nextTop": 417,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "0",
+      "heroBottom": 253,
+      "big": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:6689",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": true,
+      "turnout": "0",
+      "desk": 3,
+      "night": 5,
+      "vp": "1366x768",
+      "tag": "d3-n5-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 600,
+      "nextBottom": 440,
+      "nextTop": 392,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "0",
+      "heroBottom": 242,
+      "big": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 545,
+      "dead": 55,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": true,
+      "turnout": "0",
+      "desk": 3,
+      "night": 5,
+      "vp": "1024x600",
+      "tag": "d3-n5-1024x600"
+    },
+    {
+      "ok": true,
+      "vh": 768,
+      "vw": 1366,
+      "docScroll": 768,
+      "nextBottom": 465,
+      "nextTop": 417,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 72,
+      "heroText": "0",
+      "heroBottom": 253,
+      "big": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 72,
+          "top": 177,
+          "bottom": 253
+        },
+        {
+          "text": "8%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        },
+        {
+          "text": "0%",
+          "size": 31,
+          "top": 205,
+          "bottom": 238
+        }
+      ],
+      "lastBottom": 739,
+      "dead": 29,
+      "lastEl": "B:7989",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": true,
+      "turnout": "0",
+      "desk": 4,
+      "night": 5,
+      "vp": "1366x768",
+      "tag": "d4-n5-1366x768"
+    },
+    {
+      "ok": true,
+      "vh": 600,
+      "vw": 1024,
+      "docScroll": 600,
+      "nextBottom": 440,
+      "nextTop": 392,
+      "nextLabel": "THE BOOKS ARE CLOSED",
+      "turnedBottom": null,
+      "turnedSize": null,
+      "turnedText": null,
+      "heroSize": 64,
+      "heroText": "0",
+      "heroBottom": 242,
+      "big": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        }
+      ],
+      "top3": [
+        {
+          "text": "0",
+          "size": 64,
+          "top": 174,
+          "bottom": 242
+        },
+        {
+          "text": "8%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        },
+        {
+          "text": "0%",
+          "size": 26,
+          "top": 206,
+          "bottom": 234
+        }
+      ],
+      "lastBottom": 545,
+      "dead": 55,
+      "lastEl": "SPAN:empty — the dark seats a",
+      "soldOut": true,
+      "bowlOpen": false,
+      "spendLine": false,
+      "hasVerdict": false,
+      "hasResale": false,
+      "hasCallback": true,
+      "turnout": "0",
+      "desk": 4,
+      "night": 5,
+      "vp": "1024x600",
+      "tag": "d4-n5-1024x600"
+    }
+  ],
+  "errs": []
+}
