@@ -1,0 +1,178 @@
+{
+  "$comment": [
+    "Waivers for the R-1 client claim limb (src/test/clientClaims.test.ts).",
+    "One entry per line-pattern. `literal` is a case-insensitive regular expression",
+    "matched against the string literal the scanner found, NOT against the whole line,",
+    "so it survives the line moving. Every entry needs a reason a critic can check.",
+    "Nothing here waives a rendered economic claim: every entry below is a Module 1",
+    "domain noun, a DOM id, a CSS class name, a payload key name, the name of a",
+    "surface (the projector), or the product stating that a preview does not exist.",
+    "The Module 2 Lesson 1 renderer (renderFullHouse and its helpers) has NO entry",
+    "here, and must not acquire one: its economic sentences come from the module."
+  ],
+  "entries": [
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "^payrollTarget$",
+      "reason": "Module 1 Draft Day payload key name read off the view object; never rendered as a word to a student."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "^targets?$",
+      "reason": "Module 1 Trade Deadline payload key names (targets, target) read off the view object; not rendered text."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "^targetId$",
+      "reason": "Module 1 Trade Deadline dataset attribute name on a trade-target card element; not rendered text."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "^tdTargetList$|id=\"tdTargetList\"",
+      "reason": "Module 1 Trade Deadline DOM id for the list of trade targets; an element handle, not a claim."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "class=\"(reveal-)?target-(card|band|head)|reveal-target-card|class=\"target-card",
+      "reason": "Module 1 Trade Deadline and Free Agency CSS class names for the trade-target cards; styling hooks, not rendered text."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "sealed bid on a deadline target",
+      "reason": "Module 1 Trade Deadline copy. A trade target is the domain noun for the player being pursued, not a performance goal a student is told to hit."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "No target fits this slot",
+      "reason": "Module 1 Trade Deadline empty-state copy about which player fits a roster slot; the domain noun again, not a number to reach."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "Sealed bid . target",
+      "reason": "Module 1 Trade Deadline label naming which player the sealed bid is for; the domain noun, not a target value."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "preview",
+      "literal": "^preview$|^marketPreview$",
+      "reason": "Module 1 Box Office and Free Agency payload key names read off the view object; not rendered text."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "preview",
+      "literal": "faMarketPreview",
+      "reason": "Module 1 Free Agency DOM id for the grid of available players; an element handle, not a claim."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "preview",
+      "literal": "The market preview",
+      "reason": "Module 1 Free Agency heading over the list of players who are available. It previews the market's roster, and carries no outcome, price or projection."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "preview",
+      "literal": "No preview\\. Nothing on this screen",
+      "reason": "The blind-commit notes in the Module 2 renderers. The product stating that no preview exists is the opposite of a preview. FLAGGED, not blessed: the Lesson 1 one (\"...what tonight will make\") is a client literal saying an economic thing, and belongs in the module payload beside HOUSE_RULES[0]; recorded as a known gap for the /play rebuild."
+    },
+    {
+      "file": "src/client/board/main.ts",
+      "word": "project",
+      "literal": "Put this room on the projector",
+      "reason": "The projector is the name of the /board surface (CLAUDE.md section 11); this is the join button on it, not a projection."
+    },
+    {
+      "file": "src/client/board/main.ts",
+      "word": "target",
+      "literal": "^nextTargetName$",
+      "reason": "Module 1 Free Agency payload key name read off the view object; not rendered text."
+    },
+    {
+      "file": "src/client/teach/main.ts",
+      "word": "project",
+      "literal": "projector",
+      "reason": "The projector is the name of the /board surface, and the teacher director tells the teacher what is on it. Matches only the literal word projector; Projected, projection and projecting still fail."
+    },
+    {
+      "file": "src/client/teach/main.ts",
+      "word": "target",
+      "literal": "^totalTargets$",
+      "reason": "Module 1 Trade Deadline payload key name read off the view object; not rendered text."
+    },
+    {
+      "file": "src/client/teach/main.ts",
+      "word": "target",
+      "literal": "Targets revealed",
+      "reason": "Module 1 Trade Deadline teacher counter: how many trade targets the staged reveal has shown. The domain noun, on the teacher surface, with no number to hit."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "^target-card$",
+      "reason": "Module 1 Trade Deadline CSS class name assigned to a trade-target card element; a styling hook, not rendered text."
+    },
+    {
+      "file": "src/client/board/main.ts",
+      "word": "project",
+      "literal": "This projector is not pointed at a room yet",
+      "reason": "The projector is the name of the /board surface; this is its no-session prompt asking for a class code, and carries no projection."
+    },
+    {
+      "file": "src/client/teach/main.ts",
+      "word": "target",
+      "literal": "^target$",
+      "reason": "A template chunk of the Module 1 Trade Deadline misclick confirm, which counts how many trade targets are still unrevealed. The domain noun, on the teacher surface."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "Your target hasn't been revealed yet",
+      "reason": "Module 1 Trade Deadline waiting copy about which player this desk bid on; the domain noun for the player being pursued, not a number to reach."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "^your target$",
+      "reason": "A template chunk of the Module 1 Trade Deadline sealed-bid copy naming the player this desk bid on; the domain noun again."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "target",
+      "literal": "touch target for two students sharing one Chromebook",
+      "transient": true,
+      "reason": "An HTML comment carried inside the Module 2 Lesson 1 markup, recording the 44px measurement from gate-l1-qa D2. Touch target is the accessibility term for a tap area; it is a comment node, never visible text."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "expected",
+      "literal": "Not what you expected . that is the thing to ask about",
+      "reason": "Module 2 Lesson 3 copy inviting a pair to say they were surprised. Plain English about surprise, carrying no expected value, no forecast and no number."
+    },
+    {
+      "file": "src/client/play/main.ts",
+      "word": "preview",
+      "literal": "^noPreview$",
+      "reason": "Module 2 Lesson 3 payload key name read off the view object; not rendered text."
+    },
+    {
+      "file": "src/client/board/main.ts",
+      "word": "target",
+      "literal": "Waiting for the teacher to reveal the first target",
+      "reason": "Module 1 Trade Deadline projector waiting copy about the next player to be revealed; the domain noun, not a number to reach."
+    },
+    {
+      "file": "src/client/board/main.ts",
+      "word": "target",
+      "literal": "Every target has been revealed",
+      "reason": "Module 1 Trade Deadline projector end-of-reveal copy about the players; the domain noun, not a number to reach."
+    }
+  ]
+}

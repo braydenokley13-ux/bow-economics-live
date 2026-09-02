@@ -1,0 +1,909 @@
+{
+  "pin-vs-price-t0": {
+    "label": "t0",
+    "pinFs": 16,
+    "pinVisible": true,
+    "priceFs": 68,
+    "elapsedMs": 3042
+  },
+  "1024x600-uncollapsed": {
+    "fhLock": {
+      "top": 311.07586669921875,
+      "bottom": 367.07586669921875,
+      "fontSize": "18px"
+    },
+    "pinCardVisible": true,
+    "pinDisplay": {
+      "top": 58,
+      "bottom": 78,
+      "fontSize": "16px"
+    },
+    "caption": {
+      "bottom": 471.07586669921875,
+      "fontSize": "14.5px",
+      "text": "Every night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else."
+    },
+    "priceReadout": {
+      "top": 259,
+      "bottom": 325,
+      "fontSize": "64px"
+    }
+  },
+  "1366x768-prelock-night1": {
+    "priceReadout": {
+      "top": 288,
+      "bottom": 358,
+      "fontSize": "68px"
+    },
+    "pinDisplay": {
+      "top": 58,
+      "bottom": 78,
+      "fontSize": "16px"
+    },
+    "topFigures": [
+      {
+        "text": "$24",
+        "fontSize": 68
+      },
+      {
+        "text": "Full House",
+        "fontSize": 28
+      },
+      {
+        "text": "$0",
+        "fontSize": 26
+      },
+      {
+        "text": "19,800",
+        "fontSize": 24
+      },
+      {
+        "text": "$0",
+        "fontSize": 24
+      },
+      {
+        "text": "50%",
+        "fontSize": 24
+      }
+    ],
+    "arenaAriaLabel": "BOW Economics",
+    "tickKnob": {
+      "tickRect": {
+        "left": 280.921875,
+        "right": 334.734375,
+        "top": 422,
+        "bottom": 445
+      },
+      "knobRect": {
+        "left": 252,
+        "right": 602.796875,
+        "top": 385,
+        "bottom": 419
+      }
+    },
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n8352\nGot it\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 1 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n8352\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\n\nNo preview. Read the card, read your own nights, and commit.\n\nCASH\n$0\nRENEWALS\n50%\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nSeason plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.\n\nNIGHT 1 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\n\nThe biggest market in American sports. A lot of people, and a lot of them can pay.\n\nA quiet Tuesday. Nothing about tonight is special — and it is still a real night with a real bill.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR BUILDING\n19,800\nseats · listed basketball capacity 19,812 · 2025-26\nTonight's bill $520,000 · Season plan $24\nCASH\n$0\non the books\nRENEWALS\n50%\nseason-ticket holders coming back\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\n\nThe biggest market in American sports. A lot of people, and a lot of them can pay. The season plan works out to $24 a seat, and that is the only number you have.\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nTOMORROW\nNight 2 · Saturday · a solid playoff club · draw 51/100 · local TV\nWHAT THE EVENT MONEY DOES\n\nEvery $100 here brings about 1 extra person NEXT night — nobody extra tonight. That person pays tomorrow's ticket price and spends inside the building, so the money comes back only on a night you can charge for. It comes back as nothing at all if tomorrow sells out without them. It can do one more thing, tonight: people who had a good night out are readier to renew, so the full $120,000 dial is worth AT MOST +2 renewal points — and nothing at all on a night when your price has already moved renewals as far as they can go. Small either way, next to what your price does.\n\nTHE HOUSE RULES\n\nThe dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid."
+  },
+  "reduced-motion-night1-prelock": {
+    "maxDur": 120,
+    "offenders": []
+  },
+  "result-desk1-Night1": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 1 · 12,510 CAME AT $40"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "12,510",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n8352\nGot it\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 2 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$205,580\nafter the bill\nRENEWALS\n30%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n8352\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 1 · 12,510 CAME AT $40\nWHO CAME\n12,510\nof 19,800 · 63.2% of the seats you opened tonight\nCASH\nTICKETS\n$40 × 12,510\n$500,400\n+\nIN-ARENA\nwhat those same people spent inside\n$225,180\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$205,580\nARENA OUTCOME\nCame\nOpen seats\n63.2% of the seats you opened tonight\nRENEWALS\n50%\n→\n30%\ndown 20 points\nseason-ticket holders coming back\nNEXT: NIGHT 2 → Saturday · Draw 51 · local TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nTuesday · a club that has lost four straight · draw 22/100\n\nYou charged $40."
+  },
+  "result-desk2-Night1": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 1 · 14,740 CAME AT $16"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "14,740",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0600\nGot it\nW2 BROWSER QA CLASS · SEATED AS NOUR & IVY\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 2 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$132,720\nafter the bill\nRENEWALS\n56%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 2 · MEMPHIS GRIZZLIES\nFEDEXFORUM\nREJOIN PIN\n0600\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 1 · 14,740 CAME AT $16\nWHO CAME\n14,740\nof 17,794 · 82.8% of the seats you opened tonight\nCASH\nTICKETS\n$16 × 14,740\n$235,840\n+\nIN-ARENA\nwhat those same people spent inside\n$176,880\n−\nBUILDING BILL\n-$280,000\n=\nCASH\n$132,720\nARENA OUTCOME\nCame\nOpen seats\n82.8% of the seats you opened tonight\nRENEWALS\n50%\n→\n56%\nup 6 points\nseason-ticket holders coming back\nNEXT: NIGHT 2 → Saturday · Draw 51 · local TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nTuesday · a club that has lost four straight · draw 22/100\n\nYou charged $16."
+  },
+  "result-desk3-Night1": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 1 · 0 CAME AT $120"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "0",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0611\nGot it\nW2 BROWSER QA CLASS · SEATED AS ARI & TAL\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 2 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n-$520,000\nin the red\nRENEWALS\n30%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 3 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n0611\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 1 · 0 CAME AT $120\nWHO CAME\n0\nof 19,800 · 0% of the seats you opened tonight\nCASH\nTICKETS\n$120 × 0\n$0\n+\nIN-ARENA\nwhat those same people spent inside\n$0\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n-$520,000\nARENA OUTCOME\nCame\nOpen seats\n0% of the seats you opened tonight\nRENEWALS\n50%\n→\n30%\ndown 20 points\nseason-ticket holders coming back\nNEXT: NIGHT 2 → Saturday · Draw 51 · local TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nTuesday · a club that has lost four straight · draw 22/100\n\nYou charged $120."
+  },
+  "result-desk1-Night2": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 2 · 14,288 CAME AT $48"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "14,288",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n8352\nGot it\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 3 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$628,588\nafter the bill\nRENEWALS\n10%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n8352\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 2 · 14,288 CAME AT $48\nWHO CAME\n14,288\nof 19,800 · 72.2% of the seats you opened tonight\nCASH\nTICKETS\n$48 × 14,288\n$685,824\n+\nIN-ARENA\nwhat those same people spent inside\n$257,184\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$423,008\nARENA OUTCOME\nCame\nOpen seats\n72.2% of the seats you opened tonight\nRENEWALS\n30%\n→\n10%\ndown 20 points\nseason-ticket holders coming back\nNEXT: NIGHT 3 → Wednesday · Draw 88 · national TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nSaturday · a solid playoff club · draw 51/100\n\nYou charged $48."
+  },
+  "result-desk2-Night2": {
+    "headline": {
+      "top": 189,
+      "bottom": 259,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "110px",
+      "text": "\n        FULL HOUSE\n        17,794 of 17,794 · 238 turned away\n      "
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 983,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 708,
+      "bottom": 756,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "FULL HOUSE",
+        "fontSize": 40,
+        "top": 202,
+        "bottom": 246
+      },
+      {
+        "text": "17,794",
+        "fontSize": 72,
+        "top": 290,
+        "bottom": 366
+      },
+      {
+        "text": "238",
+        "fontSize": 40,
+        "top": 475,
+        "bottom": 517
+      }
+    ],
+    "lastContentBottom": 945,
+    "viewportH": 768,
+    "gameBodyBottom": 983,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0600\nGot it\nW2 BROWSER QA CLASS · SEATED AS NOUR & IVY\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 3 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$350,952\nafter the bill\nRENEWALS\n62%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 2 · MEMPHIS GRIZZLIES\nFEDEXFORUM\nREJOIN PIN\n0600\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFULL HOUSE\n17,794 OF 17,794 · 238 TURNED AWAY\nWHO CAME\n17,794\nof 17,794 · 100% of the seats you opened tonight\nCASH\nTICKETS\n$16 × 17,794\n$284,704\n+\nIN-ARENA\nwhat those same people spent inside\n$213,528\n−\nBUILDING BILL\n-$280,000\n=\nCASH\n$218,232\nARENA OUTCOME\nCame\nOpen seats\n100% of the seats you opened tonight\n238\nTURNED AWAY\nRENEWALS\n56%\n→\n62%\nup 6 points\nseason-ticket holders coming back\nNEXT: NIGHT 3 → Wednesday · Draw 88 · national TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nSaturday · a solid playoff club · draw 51/100\n\nYou charged $16.\n\n238 people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it."
+  },
+  "result-desk3-Night2": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 2 · 9,360 CAME AT $70"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "9,360",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0611\nGot it\nW2 BROWSER QA CLASS · SEATED AS ARI & TAL\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 3 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n-$216,320\nin the red\nRENEWALS\n10%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 3 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n0611\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 2 · 9,360 CAME AT $70\nWHO CAME\n9,360\nof 19,800 · 47.3% of the seats you opened tonight\nCASH\nTICKETS\n$70 × 9,360\n$655,200\n+\nIN-ARENA\nwhat those same people spent inside\n$168,480\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$303,680\nARENA OUTCOME\nCame\nOpen seats\n47.3% of the seats you opened tonight\nRENEWALS\n30%\n→\n10%\ndown 20 points\nseason-ticket holders coming back\nNEXT: NIGHT 3 → Wednesday · Draw 88 · national TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nSaturday · a solid playoff club · draw 51/100\n\nYou charged $70."
+  },
+  "result-desk1-Night3": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 3 · 12,450 CAME AT $40"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 948,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 701,
+      "bottom": 749,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "12,450",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 910,
+    "viewportH": 768,
+    "gameBodyBottom": 948,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n8352\nGot it\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$790,688\nafter the bill\nRENEWALS\n18%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n8352\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 3 · 12,450 CAME AT $40\nWHO CAME\n12,450\nof 19,800 · 62.9% of the seats you opened tonight\nCASH\nTICKETS\n$40 × 12,450\n$498,000\n+\nIN-ARENA\nwhat those same people spent inside\n$224,100\n−\nBUILDING BILL\n-$520,000\n−\nEVENT MONEY\n-$40,000\n=\nCASH\n$162,100\nARENA OUTCOME\nCame\nOpen seats\n62.9% of the seats you opened tonight\nRENEWALS\n10%\n→\n18%\nup 8 points\nseason-ticket holders coming back\nNEXT: NIGHT 4 → Saturday · Draw 97 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nWednesday · last season's beaten finalists · draw 88/100\n\nYou charged $40 and put $40,000 into the night."
+  },
+  "result-desk2-Night3": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 3 · 14,526 CAME AT $16"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "14,526",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0600\nGot it\nW2 BROWSER QA CLASS · SEATED AS NOUR & IVY\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$477,680\nafter the bill\nRENEWALS\n68%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 2 · MEMPHIS GRIZZLIES\nFEDEXFORUM\nREJOIN PIN\n0600\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 3 · 14,526 CAME AT $16\nWHO CAME\n14,526\nof 17,794 · 81.6% of the seats you opened tonight\nCASH\nTICKETS\n$16 × 14,526\n$232,416\n+\nIN-ARENA\nwhat those same people spent inside\n$174,312\n−\nBUILDING BILL\n-$280,000\n=\nCASH\n$126,728\nARENA OUTCOME\nCame\nOpen seats\n81.6% of the seats you opened tonight\nRENEWALS\n62%\n→\n68%\nup 6 points\nseason-ticket holders coming back\nNEXT: NIGHT 4 → Saturday · Draw 97 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nWednesday · last season's beaten finalists · draw 88/100\n\nYou charged $16."
+  },
+  "result-desk3-Night3": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 3 · 5,490 CAME AT $70"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "5,490",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0611\nGot it\nW2 BROWSER QA CLASS · SEATED AS ARI & TAL\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n-$253,200\nin the red\nRENEWALS\n0%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 3 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n0611\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 3 · 5,490 CAME AT $70\nWHO CAME\n5,490\nof 19,800 · 27.7% of the seats you opened tonight\nCASH\nTICKETS\n$70 × 5,490\n$384,300\n+\nIN-ARENA\nwhat those same people spent inside\n$98,820\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n-$36,880\nARENA OUTCOME\nCame\nOpen seats\n27.7% of the seats you opened tonight\nRENEWALS\n10%\n→\n0%\ndown 10 points\nseason-ticket holders coming back\nNEXT: NIGHT 4 → Saturday · Draw 97 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nWednesday · last season's beaten finalists · draw 88/100\n\nYou charged $70."
+  },
+  "result-desk4-Night3": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 3 · 16,070 CAME AT $30"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "16,070",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n3508\nGot it\nW2 BROWSER QA CLASS · SEATED AS SAM & JO\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$751,164\nafter the bill\nRENEWALS\n68%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 5 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n3508\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 3 · 16,070 CAME AT $30\nWHO CAME\n16,070\nof 19,800 · 81.2% of the seats you opened tonight\nCASH\nTICKETS\n$30 × 16,070\n$482,100\n+\nIN-ARENA\nwhat those same people spent inside\n$289,260\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$251,360\nARENA OUTCOME\nCame\nOpen seats\n81.2% of the seats you opened tonight\nRENEWALS\n62%\n→\n68%\nup 6 points\nseason-ticket holders coming back\nNEXT: NIGHT 4 → Saturday · Draw 97 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nWednesday · last season's beaten finalists · draw 88/100\n\nYou charged $30."
+  },
+  "result-desk1-Night4": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 4 · 15,800 CAME AT $90"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 985,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 701,
+      "bottom": 749,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "15,800",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 947,
+    "viewportH": 768,
+    "gameBodyBottom": 985,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n8352\nGot it\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$1,882,088\nafter the bill\nRENEWALS\n27%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n8352\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 4 · 15,800 CAME AT $90\nWHO CAME\n15,800\nof 22,200 · 71.2% of the seats you opened tonight\nCASH\nTICKETS\n$90 × 15,800\n$1,422,000\n+\nIN-ARENA\nwhat those same people spent inside\n$284,400\n−\nBUILDING BILL\n-$520,000\n−\nUPPER BOWL\n-$95,000\n=\nCASH\n$1,091,400\nARENA OUTCOME\nCame\nOpen seats\nUpper bowl open\n71.2% of the seats you opened tonight\nRENEWALS\n18%\n→\n27%\nup 9 points\nseason-ticket holders coming back\nNEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nSaturday · the rookie everybody is talking about · draw 97/100\n\nYou charged $90 with the upper bowl open.\n\nLast night's $40,000 bought about 400 extra people, and every one of them got in and paid tonight's price."
+  },
+  "result-desk2-Night4": {
+    "headline": {
+      "top": 189,
+      "bottom": 259,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "110px",
+      "text": "\n        FULL HOUSE\n        17,794 of 17,794 · 7,256 turned away\n      "
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 983,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 708,
+      "bottom": 756,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "FULL HOUSE",
+        "fontSize": 40,
+        "top": 202,
+        "bottom": 246
+      },
+      {
+        "text": "17,794",
+        "fontSize": 72,
+        "top": 290,
+        "bottom": 366
+      },
+      {
+        "text": "7,256",
+        "fontSize": 40,
+        "top": 475,
+        "bottom": 517
+      }
+    ],
+    "lastContentBottom": 945,
+    "viewportH": 768,
+    "gameBodyBottom": 983,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0600\nGot it\nW2 BROWSER QA CLASS · SEATED AS NOUR & IVY\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$695,912\nafter the bill\nRENEWALS\n74%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 2 · MEMPHIS GRIZZLIES\nFEDEXFORUM\nREJOIN PIN\n0600\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFULL HOUSE\n17,794 OF 17,794 · 7,256 TURNED AWAY\nWHO CAME\n17,794\nof 17,794 · 100% of the seats you opened tonight\nCASH\nTICKETS\n$16 × 17,794\n$284,704\n+\nIN-ARENA\nwhat those same people spent inside\n$213,528\n−\nBUILDING BILL\n-$280,000\n=\nCASH\n$218,232\nARENA OUTCOME\nCame\nOpen seats\n100% of the seats you opened tonight\n7,256\nTURNED AWAY\nRENEWALS\n68%\n→\n74%\nup 6 points\nseason-ticket holders coming back\nNEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nSaturday · the rookie everybody is talking about · draw 97/100\n\nYou charged $16.\n\n7,256 people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it."
+  },
+  "result-desk3-Night4": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 4 · 17,950 CAME AT $70"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "17,950",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0611\nGot it\nW2 BROWSER QA CLASS · SEATED AS ARI & TAL\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$806,400\nafter the bill\nRENEWALS\n8%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 3 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n0611\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 4 · 17,950 CAME AT $70\nWHO CAME\n17,950\nof 19,800 · 90.7% of the seats you opened tonight\nCASH\nTICKETS\n$70 × 17,950\n$1,256,500\n+\nIN-ARENA\nwhat those same people spent inside\n$323,100\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$1,059,600\nARENA OUTCOME\nCame\nOpen seats\n90.7% of the seats you opened tonight\nRENEWALS\n0%\n→\n8%\nup 8 points\nseason-ticket holders coming back\nNEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nSaturday · the rookie everybody is talking about · draw 97/100\n\nYou charged $70."
+  },
+  "result-desk4-Night4": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 4 · 17,550 CAME AT $84"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "17,550",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n3508\nGot it\nW2 BROWSER QA CLASS · SEATED AS SAM & JO\nFULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$2,021,264\nafter the bill\nRENEWALS\n77%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 5 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n3508\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 4 · 17,550 CAME AT $84\nWHO CAME\n17,550\nof 19,800 · 88.6% of the seats you opened tonight\nCASH\nTICKETS\n$84 × 17,550\n$1,474,200\n+\nIN-ARENA\nwhat those same people spent inside\n$315,900\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$1,270,100\nARENA OUTCOME\nCame\nOpen seats\n88.6% of the seats you opened tonight\nRENEWALS\n68%\n→\n77%\nup 9 points\nseason-ticket holders coming back\nNEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nSaturday · the rookie everybody is talking about · draw 97/100\n\nYou charged $84."
+  },
+  "night4-desk2-sellout-text-check": {
+    "includesFullHouse": true,
+    "includesTurnedAway": true
+  },
+  "night4-sellout-measure-desk2": {
+    "headlineRect": {
+      "top": 159.90625,
+      "bottom": 174.203125,
+      "fontSize": 13
+    },
+    "figures": [
+      {
+        "text": "17,794",
+        "fontSize": 72,
+        "top": 290,
+        "bottom": 366
+      },
+      {
+        "text": "FULL HOUSE",
+        "fontSize": 40,
+        "top": 202,
+        "bottom": 246
+      },
+      {
+        "text": "7,256",
+        "fontSize": 40,
+        "top": 475,
+        "bottom": 517
+      },
+      {
+        "text": "$218,232",
+        "fontSize": 31,
+        "top": 639,
+        "bottom": 672
+      },
+      {
+        "text": "68%",
+        "fontSize": 31,
+        "top": 590,
+        "bottom": 623
+      },
+      {
+        "text": "74%",
+        "fontSize": 31,
+        "top": 590,
+        "bottom": 623
+      }
+    ],
+    "arenaAriaLabel": "BOW Economics"
+  },
+  "night4-desk1-spend-verdict": "Last night's $40,000 bought about 400 extra people, and every one of them got in and paid tonight's price.",
+  "night4-fill-label-desk1": {
+    "hasOfSeatsOpened": true,
+    "hasOfCapacity": false
+  },
+  "night4-fill-label-desk2": {
+    "hasOfSeatsOpened": true,
+    "hasOfCapacity": false
+  },
+  "result-desk1-Night5": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 5 · 13,567 CAME AT $34"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "THE BOOKS ARE CLOSED "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "13,567",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n8352\nGot it\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$2,067,572\nafter the bill\nRENEWALS\n7%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n8352\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 5 · 13,567 CAME AT $34\nWHO CAME\n13,567\nof 19,800 · 68.5% of the seats you opened tonight\nCASH\nTICKETS\n$34 × 13,567\n$461,278\n+\nIN-ARENA\nwhat those same people spent inside\n$244,206\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$185,484\nARENA OUTCOME\nCame\nOpen seats\n68.5% of the seats you opened tonight\nRENEWALS\n27%\n→\n7%\ndown 20 points\nseason-ticket holders coming back\nTHE BOOKS ARE CLOSED\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nTuesday · a club that has lost four straight · draw 22/100\n\nYou charged $34."
+  },
+  "result-desk2-Night5": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 5 · 15,340 CAME AT $16"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "THE BOOKS ARE CLOSED "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "15,340",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0600\nGot it\nW2 BROWSER QA CLASS · SEATED AS NOUR & IVY\nFULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$845,432\nafter the bill\nRENEWALS\n80%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 2 · MEMPHIS GRIZZLIES\nFEDEXFORUM\nREJOIN PIN\n0600\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 5 · 15,340 CAME AT $16\nWHO CAME\n15,340\nof 17,794 · 86.2% of the seats you opened tonight\nCASH\nTICKETS\n$16 × 15,340\n$245,440\n+\nIN-ARENA\nwhat those same people spent inside\n$184,080\n−\nBUILDING BILL\n-$280,000\n=\nCASH\n$149,520\nARENA OUTCOME\nCame\nOpen seats\n86.2% of the seats you opened tonight\nRENEWALS\n74%\n→\n80%\nup 6 points\nseason-ticket holders coming back\nTHE BOOKS ARE CLOSED\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nTuesday · a club that has lost four straight · draw 22/100\n\nYou charged $16."
+  },
+  "result-desk3-Night5": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 5 · 15,812 CAME AT $24"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 937,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "THE BOOKS ARE CLOSED "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "15,812",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 899,
+    "viewportH": 768,
+    "gameBodyBottom": 937,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n0611\nGot it\nW2 BROWSER QA CLASS · SEATED AS ARI & TAL\nFULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$950,504\nafter the bill\nRENEWALS\n14%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 3 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n0611\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 5 · 15,812 CAME AT $24\nWHO CAME\n15,812\nof 19,800 · 79.9% of the seats you opened tonight\nCASH\nTICKETS\n$24 × 15,812\n$379,488\n+\nIN-ARENA\nwhat those same people spent inside\n$284,616\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$144,104\nARENA OUTCOME\nCame\nOpen seats\n79.9% of the seats you opened tonight\nRENEWALS\n8%\n→\n14%\nup 6 points\nseason-ticket holders coming back\nTHE BOOKS ARE CLOSED\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nTuesday · a club that has lost four straight · draw 22/100\n\nYou charged $24.\n\nNobody locked this night — the bell settled it at the season-plan price."
+  },
+  "result-desk4-Night5": {
+    "headline": {
+      "top": 189,
+      "bottom": 219,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "26px",
+      "text": "NIGHT 5 · 17,537 CAME AT $24"
+    },
+    "fhResult": {
+      "top": 124,
+      "bottom": 915,
+      "left": 0,
+      "right": 1366,
+      "fontSize": "15px",
+      "text": "\n      \n      \n      \n      \n        FULL HOUSE\n        MODULE 2 · LESSON 1\n    "
+    },
+    "fhNextNight": {
+      "top": 668,
+      "bottom": 716,
+      "left": 246,
+      "right": 1326,
+      "fontSize": "15px",
+      "text": "THE BOOKS ARE CLOSED "
+    },
+    "fhLock": null,
+    "bigFigures": [
+      {
+        "text": "17,537",
+        "fontSize": 72,
+        "top": 250,
+        "bottom": 326
+      }
+    ],
+    "lastContentBottom": 877,
+    "viewportH": 768,
+    "gameBodyBottom": 915,
+    "bodyText": "BOW ECONOMICS\nsynced\n\nYOUR REJOIN PIN — WRITE IT DOWN IN CASE YOU SWITCH DEVICES:\n\n3508\nGot it\nW2 BROWSER QA CLASS · SEATED AS SAM & JO\nFULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$2,237,818\nafter the bill\nRENEWALS\n83%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 5 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n3508\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 5 · 17,537 CAME AT $24\nWHO CAME\n17,537\nof 19,800 · 88.6% of the seats you opened tonight\nCASH\nTICKETS\n$24 × 17,537\n$420,888\n+\nIN-ARENA\nwhat those same people spent inside\n$315,666\n−\nBUILDING BILL\n-$520,000\n=\nCASH\n$216,554\nARENA OUTCOME\nCame\nOpen seats\n88.6% of the seats you opened tonight\nRENEWALS\n77%\n→\n83%\nup 6 points\nseason-ticket holders coming back\nTHE BOOKS ARE CLOSED\nYou are keeping two books, and they do not add up to one number.\nWHAT HAPPENED\n\nTuesday · a club that has lost four straight · draw 22/100\n\nYou charged $24."
+  },
+  "desk3-night5-auto-commit-check": {
+    "includesAuto": true
+  },
+  "forbidden-vocab-scan": {
+    "1366x768-prelock-night1": {
+      "preview": 2
+    }
+  },
+  "refresh-desk1-after-play-done": {
+    "phase": "BOW ECONOMICS\nsynced\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n8352\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nThe b",
+    "hasResult": false
+  },
+  "rejoin-fresh-page": {
+    "pinAvailable": true,
+    "landedText": "BOW ECONOMICS\nsynced\nW2 BROWSER QA CLASS · SEATED AS RAE & BEN\nFULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$2,067,572\nafter the bill\nRENEWALS\n7%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nN"
+  },
+  "board-1920x1080-fit": {
+    "scrollHeight": 1080,
+    "clientHeight": 1080,
+    "fits": true
+  },
+  "board-1366x768-fit": {
+    "scrollHeight": 768,
+    "clientHeight": 768,
+    "fits": true
+  },
+  "teach-1366x768-doc": {
+    "scrollHeight": 2008,
+    "clientHeight": 768
+  },
+  "console-errors": [
+    "[desk1] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[desk1] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ]
+}

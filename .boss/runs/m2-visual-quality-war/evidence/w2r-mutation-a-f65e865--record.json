@@ -1,0 +1,15 @@
+{
+  "recordedAt": "2026-09-02T17:51:26.973Z",
+  "command": [
+    "env",
+    "E2E_DIST=/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/mutant-A",
+    "E2E_PORT=4439",
+    "node",
+    "runtime/scripts/e2e-m2l1.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 1,
+  "signal": null,
+  "stdout": "[e2e-m2l1] starting server...\n[e2e-m2l1] server up on http://localhost:4439\n[e2e-m2l1] session created, code BOWFAW\n[e2e-m2l1] three pairs joined (the fourth joins late, at Night 3)\n[e2e-m2l1] LOBBY: desks assigned, markets alternate, no student name on the board\n[e2e-m2l1] HOOK rendered on /play and /board\n[e2e-m2l1] blind commitment confirmed on the student screen — no outcome before the lock\n[e2e-m2l1] --- Night 1 ---\n",
+  "stderr": "[e2e-m2l1] FAILED: AssertionError [ERR_ASSERTION]: Night 1 · desk1 · dials set at $34: the pre-lock desk RENDERED turnout (14,142) for a night nobody has locked — that is a preview of the pending action (BC-4 / R-1). Dials: $34, spend $0, bowl false.\n\ntrue !== false\n\n    at assertNoRenderedClaim (/home/user/bow-economics-live/runtime/scripts/e2e-m2l1.cjs:346:12)\n    at async main (/home/user/bow-economics-live/runtime/scripts/e2e-m2l1.cjs:830:7) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: true,\n  expected: false,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n[e2e-m2l1] server log tail:\nBOW Economics runtime listening on http://localhost:4439\n  teacher console  http://localhost:4439/teach\n  student join     http://localhost:4439/play\n  projector        http://localhost:4439/board\n  snapshot file    /home/user/bow-economics-live/runtime/.e2e-scratch/snapshot-m2l1-1788371481129.json\n\n"
+}

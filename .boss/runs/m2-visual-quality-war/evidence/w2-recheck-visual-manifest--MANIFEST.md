@@ -1,0 +1,71 @@
+# screens-w2-visual-review-recheck manifest
+
+- `00-play-prejoin-1024.png` — /play join screen at 1024x600 before joining
+- `01-play-lobby-1366.png` — LOBBY seated desk 1, 1366x768
+- `01b-play-lobby-1024.png` — LOBBY seated desk 1, 1024x600
+- `02-play-hook-1366.png` — HOOK 1366x768 scrollY=0
+- `02b-play-hook-full.png` — HOOK full page
+- `02c-play-hook-1024.png` — HOOK 1024x600
+- `03-play-prelock-n1-1366.png` — Pre-lock Night 1, 1366x768, scrollY=0
+- `03b-play-prelock-n1-full.png` — Pre-lock Night 1 full page
+- `03c-play-prelock-n1-1024.png` — Pre-lock Night 1, 1024x600, scrollY=0
+- `03d-play-prelock-n1-1024-full.png` — Pre-lock Night 1, 1024x600 full page
+- `04-play-prelock-n1-dialmoved-1366.png` — Pre-lock N1 dial moved to $34
+- `04b-play-prelock-n1-spendmoved-1366.png` — Pre-lock N1 event spend raised
+- `05-play-locked-waiting-1366.png` — Post-lock waiting Night 1, 1366x768
+- `crop-locked-building.png` — Locked-waiting hero building crop
+- `05c-play-locked-waiting-1024.png` — Post-lock waiting, 1024x600
+- `10-result-n1-d1-1366.png` — Night 1 results, d1, 1366x768, scrollY=0
+- `10b-result-n1-d1-full.png` — Night 1 results, d1, full page
+- `crop-arena-n1-d1.png` — Night 1 arena crop, d1
+- `10c-result-n1-d1-1024.png` — Night 1 results, d1, 1024x600, scrollY=0
+- `10d-result-n1-d1-1024-full.png` — Night 1 results, d1, 1024x600 full page
+- `10-result-n1-d3-1366.png` — Night 1 results, d3, 1366x768, scrollY=0
+- `10b-result-n1-d3-full.png` — Night 1 results, d3, full page
+- `crop-arena-n1-d3.png` — Night 1 arena crop, d3
+- `10c-result-n1-d3-1024.png` — Night 1 results, d3, 1024x600, scrollY=0
+- `10d-result-n1-d3-1024-full.png` — Night 1 results, d3, 1024x600 full page
+- `10-result-n2-d1-1366.png` — Night 2 results, d1, 1366x768, scrollY=0
+- `10b-result-n2-d1-full.png` — Night 2 results, d1, full page
+- `crop-arena-n2-d1.png` — Night 2 arena crop, d1
+- `07-play-late-join-1366.png` — Late-joining desk 4 arriving at Night 3, 1366x768
+- `06-play-prelock-n3-1366.png` — Pre-lock Night 3 (history present), 1366x768
+- `06b-play-prelock-n3-full.png` — Pre-lock Night 3 full page
+- `06c-play-prelock-n3-1024.png` — Pre-lock Night 3, 1024x600
+- `10-result-n3-d1-1366.png` — Night 3 results, d1, 1366x768, scrollY=0
+- `10b-result-n3-d1-full.png` — Night 3 results, d1, full page
+- `crop-arena-n3-d1.png` — Night 3 arena crop, d1
+- `09-play-prelock-n4-bowl-1366.png` — Pre-lock Night 4, upper bowl opened, 1366x768
+- `10-result-n4-d1-1366.png` — Night 4 results, d1, 1366x768, scrollY=0
+- `10b-result-n4-d1-full.png` — Night 4 results, d1, full page
+- `crop-arena-n4-d1.png` — Night 4 arena crop, d1
+- `10c-result-n4-d1-1024.png` — Night 4 results, d1, 1024x600, scrollY=0
+- `10d-result-n4-d1-1024-full.png` — Night 4 results, d1, 1024x600 full page
+- `10-result-n4-d2-1366.png` — Night 4 results, d2, 1366x768, scrollY=0
+- `10b-result-n4-d2-full.png` — Night 4 results, d2, full page
+- `crop-arena-n4-d2.png` — Night 4 arena crop, d2
+- `10c-result-n4-d2-1024.png` — Night 4 results, d2, 1024x600, scrollY=0
+- `10d-result-n4-d2-1024-full.png` — Night 4 results, d2, 1024x600 full page
+- `10-result-n4-d3-1366.png` — Night 4 results, d3, 1366x768, scrollY=0
+- `10b-result-n4-d3-full.png` — Night 4 results, d3, full page
+- `crop-arena-n4-d3.png` — Night 4 arena crop, d3
+- `10-result-n4-d4-1366.png` — Night 4 results, d4, 1366x768, scrollY=0
+- `10b-result-n4-d4-full.png` — Night 4 results, d4, full page
+- `crop-arena-n4-d4.png` — Night 4 arena crop, d4
+- `10-result-n5-d1-1366.png` — Night 5 results, d1, 1366x768, scrollY=0
+- `10b-result-n5-d1-full.png` — Night 5 results, d1, full page
+- `crop-arena-n5-d1.png` — Night 5 arena crop, d1
+- `11-play-allnightsdone-1366.png` — All nights done, waiting for reveal, 1366x768
+- `11b-play-allnightsdone-full.png` — All nights done full page
+- `12-play-reveal-stage0-1366.png` — REVEAL stage 0 mirror, 1366x768
+- `12a-play-reveal-stage3-1366.png` — REVEAL stage 3 mirror, 1366x768
+- `12b-play-reveal-final-1366.png` — REVEAL final stage mirror, 1366x768
+- `12c-play-reveal-final-full.png` — REVEAL final full page
+- `13-play-adapt-1366.png` — ADAPT 1366x768
+- `14-play-counterfactual-1366.png` — COUNTERFACTUAL 1366x768
+- `15-play-synthesis-1366.png` — SYNTHESIS page 1, 1366x768
+- `15a-play-synthesis-p2-1366.png` — SYNTHESIS page 2, 1366x768
+- `15b-play-synthesis-last-1366.png` — SYNTHESIS last page, 1366x768
+- `15c-play-synthesis-last-1024.png` — SYNTHESIS last page, 1024x600
+- `16-play-complete-1366.png` — COMPLETE 1366x768
+- `16b-play-complete-full.png` — COMPLETE full page

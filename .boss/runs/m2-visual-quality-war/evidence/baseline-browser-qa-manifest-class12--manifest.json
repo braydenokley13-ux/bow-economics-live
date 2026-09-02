@@ -1,0 +1,122 @@
+{
+  "baseline12-01-teach-night-3-open@1366x768.png": {
+    "surface": "teach",
+    "state": "night-3-open",
+    "viewport": "1366x768",
+    "note": "PLAY Night 3 open — pre-lock dial UI visible"
+  },
+  "baseline12-01-teach-night-3-open@1920x1080.png": {
+    "surface": "teach",
+    "state": "night-3-open",
+    "viewport": "1920x1080",
+    "note": "PLAY Night 3 open — pre-lock dial UI visible"
+  },
+  "baseline12-01-board-night-3-open@1920x1080.png": {
+    "surface": "board",
+    "state": "night-3-open",
+    "viewport": "1920x1080",
+    "note": "PLAY Night 3 open — pre-lock dial UI visible"
+  },
+  "baseline12-01-board-night-3-open@1366x768.png": {
+    "surface": "board",
+    "state": "night-3-open",
+    "viewport": "1366x768",
+    "note": "PLAY Night 3 open — pre-lock dial UI visible"
+  },
+  "baseline12-02-teach-books-closed@1366x768.png": {
+    "surface": "teach",
+    "state": "books-closed",
+    "viewport": "1366x768",
+    "note": "All five nights in the books — allNightsDone summary, still PLAY phase"
+  },
+  "baseline12-02-teach-books-closed@1920x1080.png": {
+    "surface": "teach",
+    "state": "books-closed",
+    "viewport": "1920x1080",
+    "note": "All five nights in the books — allNightsDone summary, still PLAY phase"
+  },
+  "baseline12-02-board-books-closed@1920x1080.png": {
+    "surface": "board",
+    "state": "books-closed",
+    "viewport": "1920x1080",
+    "note": "All five nights in the books — allNightsDone summary, still PLAY phase"
+  },
+  "baseline12-02-board-books-closed@1366x768.png": {
+    "surface": "board",
+    "state": "books-closed",
+    "viewport": "1366x768",
+    "note": "All five nights in the books — allNightsDone summary, still PLAY phase"
+  },
+  "baseline12-03-teach-reveal-7@1366x768.png": {
+    "surface": "teach",
+    "state": "reveal-7",
+    "viewport": "1366x768",
+    "note": "REVEAL stage 7 of 7"
+  },
+  "baseline12-03-teach-reveal-7@1920x1080.png": {
+    "surface": "teach",
+    "state": "reveal-7",
+    "viewport": "1920x1080",
+    "note": "REVEAL stage 7 of 7"
+  },
+  "baseline12-03-board-reveal-7@1920x1080.png": {
+    "surface": "board",
+    "state": "reveal-7",
+    "viewport": "1920x1080",
+    "note": "REVEAL stage 7 of 7"
+  },
+  "baseline12-03-board-reveal-7@1366x768.png": {
+    "surface": "board",
+    "state": "reveal-7",
+    "viewport": "1366x768",
+    "note": "REVEAL stage 7 of 7"
+  },
+  "baseline12-04-teach-cf-1@1366x768.png": {
+    "surface": "teach",
+    "state": "cf-1",
+    "viewport": "1366x768",
+    "note": "COUNTERFACTUAL page 1 of 4"
+  },
+  "baseline12-04-teach-cf-1@1920x1080.png": {
+    "surface": "teach",
+    "state": "cf-1",
+    "viewport": "1920x1080",
+    "note": "COUNTERFACTUAL page 1 of 4"
+  },
+  "baseline12-04-board-cf-1@1920x1080.png": {
+    "surface": "board",
+    "state": "cf-1",
+    "viewport": "1920x1080",
+    "note": "COUNTERFACTUAL page 1 of 4"
+  },
+  "baseline12-04-board-cf-1@1366x768.png": {
+    "surface": "board",
+    "state": "cf-1",
+    "viewport": "1366x768",
+    "note": "COUNTERFACTUAL page 1 of 4"
+  },
+  "baseline12-05-teach-synth-1@1366x768.png": {
+    "surface": "teach",
+    "state": "synth-1",
+    "viewport": "1366x768",
+    "note": "SYNTHESIS card 1 of 6"
+  },
+  "baseline12-05-teach-synth-1@1920x1080.png": {
+    "surface": "teach",
+    "state": "synth-1",
+    "viewport": "1920x1080",
+    "note": "SYNTHESIS card 1 of 6"
+  },
+  "baseline12-05-board-synth-1@1920x1080.png": {
+    "surface": "board",
+    "state": "synth-1",
+    "viewport": "1920x1080",
+    "note": "SYNTHESIS card 1 of 6"
+  },
+  "baseline12-05-board-synth-1@1366x768.png": {
+    "surface": "board",
+    "state": "synth-1",
+    "viewport": "1366x768",
+    "note": "SYNTHESIS card 1 of 6"
+  }
+}

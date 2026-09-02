@@ -1,0 +1,1770 @@
+[
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0000-bowlclosed",
+    "fill": 0,
+    "seatsOpen": 19800,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 100,
+    "bytes": 40664,
+    "panelLit": 0.08,
+    "panelWarm": 0,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 0,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0200-bowlclosed",
+    "fill": 0.2,
+    "seatsOpen": 19800,
+    "turnout": 3960,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58319,
+    "panelLit": 2.24,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 2.43,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 17
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 18.4
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0385-bowlclosed",
+    "fill": 0.385,
+    "seatsOpen": 19800,
+    "turnout": 7623,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58348,
+    "panelLit": 4.5,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 4.87,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 36.2
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 35.3
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0500-bowlclosed",
+    "fill": 0.5,
+    "seatsOpen": 19800,
+    "turnout": 9900,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58291,
+    "panelLit": 5.87,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 6.33,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 47.3
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 45.8
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0714-bowlclosed",
+    "fill": 0.714,
+    "seatsOpen": 19800,
+    "turnout": 14137,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58377,
+    "panelLit": 8.49,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 9.17,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 69
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 66.1
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0900-bowlclosed",
+    "fill": 0.9,
+    "seatsOpen": 19800,
+    "turnout": 17820,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58405,
+    "panelLit": 10.66,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 11.54,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 86.7
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 83.5
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0961-bowlclosed",
+    "fill": 0.961,
+    "seatsOpen": 19800,
+    "turnout": 19028,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58301,
+    "panelLit": 11.39,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 12.29,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 92.6
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 88.7
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill1000-bowlclosed",
+    "fill": 1,
+    "seatsOpen": 19800,
+    "turnout": 19800,
+    "soldOut": true,
+    "elements": 154,
+    "bytes": 62559,
+    "panelLit": 12.09,
+    "panelWarm": 1.71,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 13.03,
+    "warmShareOfImage": 1.8,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 97.8
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 93.3
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0000-bowlopen",
+    "fill": 0,
+    "seatsOpen": 22200,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 44584,
+    "panelLit": 0.08,
+    "panelWarm": 0,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 0,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0500-bowlopen",
+    "fill": 0.5,
+    "seatsOpen": 22200,
+    "turnout": 11100,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 70690,
+    "panelLit": 8.11,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 8.65,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 47.3
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 45.8
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 44.6
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill0900-bowlopen",
+    "fill": 0.9,
+    "seatsOpen": 22200,
+    "turnout": 19980,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 70798,
+    "panelLit": 14.4,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 15.45,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 86.7
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 83.5
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 77.2
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "fill1000-bowlopen",
+    "fill": 1,
+    "seatsOpen": 22200,
+    "turnout": 22200,
+    "soldOut": true,
+    "elements": 146,
+    "bytes": 67980,
+    "panelLit": 16.25,
+    "panelWarm": 1.49,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 17.47,
+    "warmShareOfImage": 1.57,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 97.8
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 93.4
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 90
+      }
+    ]
+  },
+  {
+    "box": "outcome1366",
+    "boxPx": "500x116",
+    "case": "idle-closed",
+    "fill": 0,
+    "seatsOpen": 1,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 44583,
+    "panelLit": 0.08,
+    "panelWarm": 0,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 0,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0000-bowlclosed",
+    "fill": 0,
+    "seatsOpen": 19800,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 100,
+    "bytes": 40664,
+    "panelLit": 0.06,
+    "panelWarm": 0,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 0,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0200-bowlclosed",
+    "fill": 0.2,
+    "seatsOpen": 19800,
+    "turnout": 3960,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58319,
+    "panelLit": 2.23,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 2.43,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 17
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 18.4
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0385-bowlclosed",
+    "fill": 0.385,
+    "seatsOpen": 19800,
+    "turnout": 7623,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58348,
+    "panelLit": 4.48,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 4.87,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 36.2
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 35.3
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0500-bowlclosed",
+    "fill": 0.5,
+    "seatsOpen": 19800,
+    "turnout": 9900,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58291,
+    "panelLit": 5.9,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 6.33,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 47.3
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 45.8
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0714-bowlclosed",
+    "fill": 0.714,
+    "seatsOpen": 19800,
+    "turnout": 14137,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58377,
+    "panelLit": 8.52,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 9.17,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 69
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 66.1
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0900-bowlclosed",
+    "fill": 0.9,
+    "seatsOpen": 19800,
+    "turnout": 17820,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58405,
+    "panelLit": 10.76,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 11.54,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 86.7
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 83.5
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0961-bowlclosed",
+    "fill": 0.961,
+    "seatsOpen": 19800,
+    "turnout": 19028,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 58301,
+    "panelLit": 11.45,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 12.29,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 92.6
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 88.7
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill1000-bowlclosed",
+    "fill": 1,
+    "seatsOpen": 19800,
+    "turnout": 19800,
+    "soldOut": true,
+    "elements": 154,
+    "bytes": 62559,
+    "panelLit": 12.2,
+    "panelWarm": 1.69,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 13.03,
+    "warmShareOfImage": 1.8,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 97.8
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 93.3
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0000-bowlopen",
+    "fill": 0,
+    "seatsOpen": 22200,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 44584,
+    "panelLit": 0.06,
+    "panelWarm": 0,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 0,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0500-bowlopen",
+    "fill": 0.5,
+    "seatsOpen": 22200,
+    "turnout": 11100,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 70690,
+    "panelLit": 8.15,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 8.65,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 47.3
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 45.8
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 44.6
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill0900-bowlopen",
+    "fill": 0.9,
+    "seatsOpen": 22200,
+    "turnout": 19980,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 70798,
+    "panelLit": 14.55,
+    "panelWarm": 0.84,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 15.45,
+    "warmShareOfImage": 0.91,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 86.7
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 83.5
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 77.2
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "fill1000-bowlopen",
+    "fill": 1,
+    "seatsOpen": 22200,
+    "turnout": 22200,
+    "soldOut": true,
+    "elements": 146,
+    "bytes": 67980,
+    "panelLit": 16.42,
+    "panelWarm": 1.47,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 17.47,
+    "warmShareOfImage": 1.57,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 97.8
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 93.4
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 90
+      }
+    ]
+  },
+  {
+    "box": "outcome1024",
+    "boxPx": "448x92",
+    "case": "idle-closed",
+    "fill": 0,
+    "seatsOpen": 1,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 44583,
+    "panelLit": 0.06,
+    "panelWarm": 0,
+    "w": 620,
+    "h": 135,
+    "litShareOfImage": 0,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 5778,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 5523,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 4085,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0000-bowlclosed",
+    "fill": 0,
+    "seatsOpen": 19800,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 100,
+    "bytes": 41795,
+    "panelLit": 0.08,
+    "panelWarm": 0,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 0.01,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0200-bowlclosed",
+    "fill": 0.2,
+    "seatsOpen": 19800,
+    "turnout": 3960,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60058,
+    "panelLit": 1.81,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 2.26,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 17.1
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 17.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0385-bowlclosed",
+    "fill": 0.385,
+    "seatsOpen": 19800,
+    "turnout": 7623,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60044,
+    "panelLit": 3.62,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 4.57,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 35.3
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 34.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0500-bowlclosed",
+    "fill": 0.5,
+    "seatsOpen": 19800,
+    "turnout": 9900,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 59992,
+    "panelLit": 4.74,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 6.01,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 46.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 44.8
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0714-bowlclosed",
+    "fill": 0.714,
+    "seatsOpen": 19800,
+    "turnout": 14137,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 59934,
+    "panelLit": 6.85,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 8.7,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 67.5
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 64.9
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0900-bowlclosed",
+    "fill": 0.9,
+    "seatsOpen": 19800,
+    "turnout": 17820,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60028,
+    "panelLit": 8.64,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 10.96,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 84.9
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 82.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0961-bowlclosed",
+    "fill": 0.961,
+    "seatsOpen": 19800,
+    "turnout": 19028,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60028,
+    "panelLit": 9.21,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 11.69,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 90.7
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 87.4
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill1000-bowlclosed",
+    "fill": 1,
+    "seatsOpen": 19800,
+    "turnout": 19800,
+    "soldOut": true,
+    "elements": 154,
+    "bytes": 63943,
+    "panelLit": 9.82,
+    "panelWarm": 1.16,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 12.48,
+    "warmShareOfImage": 1.41,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 96.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 92.8
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0.1
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0000-bowlopen",
+    "fill": 0,
+    "seatsOpen": 22200,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 45799,
+    "panelLit": 0.08,
+    "panelWarm": 0,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 0.01,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0500-bowlopen",
+    "fill": 0.5,
+    "seatsOpen": 22200,
+    "turnout": 11100,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 72687,
+    "panelLit": 6.53,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 8.22,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 46.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 44.8
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 44.3
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill0900-bowlopen",
+    "fill": 0.9,
+    "seatsOpen": 22200,
+    "turnout": 19980,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 72756,
+    "panelLit": 11.66,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 14.72,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 84.9
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 82.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 77
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "fill1000-bowlopen",
+    "fill": 1,
+    "seatsOpen": 22200,
+    "turnout": 22200,
+    "soldOut": true,
+    "elements": 146,
+    "bytes": 69801,
+    "panelLit": 13.26,
+    "panelWarm": 1,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 16.88,
+    "warmShareOfImage": 1.24,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 96.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 92.9
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 91.4
+      }
+    ]
+  },
+  {
+    "box": "hero1366",
+    "boxPx": "900x240",
+    "case": "idle-closed",
+    "fill": 0,
+    "seatsOpen": 1,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 45821,
+    "panelLit": 0.08,
+    "panelWarm": 0,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 0.01,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0000-bowlclosed",
+    "fill": 0,
+    "seatsOpen": 19800,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 100,
+    "bytes": 41818,
+    "panelLit": 0.05,
+    "panelWarm": 0,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 0.01,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0200-bowlclosed",
+    "fill": 0.2,
+    "seatsOpen": 19800,
+    "turnout": 3960,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60109,
+    "panelLit": 1.78,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 2.26,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 17.1
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 17.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0385-bowlclosed",
+    "fill": 0.385,
+    "seatsOpen": 19800,
+    "turnout": 7623,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60095,
+    "panelLit": 3.59,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 4.57,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 35.3
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 34.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0500-bowlclosed",
+    "fill": 0.5,
+    "seatsOpen": 19800,
+    "turnout": 9900,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60043,
+    "panelLit": 4.7,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 6.01,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 46.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 44.8
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0714-bowlclosed",
+    "fill": 0.714,
+    "seatsOpen": 19800,
+    "turnout": 14137,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 59985,
+    "panelLit": 6.81,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 8.7,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 67.5
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 64.9
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0900-bowlclosed",
+    "fill": 0.9,
+    "seatsOpen": 19800,
+    "turnout": 17820,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60079,
+    "panelLit": 8.6,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 10.96,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 84.9
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 82.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0961-bowlclosed",
+    "fill": 0.961,
+    "seatsOpen": 19800,
+    "turnout": 19028,
+    "soldOut": false,
+    "elements": 148,
+    "bytes": 60079,
+    "panelLit": 9.18,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 11.69,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 90.7
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 87.4
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill1000-bowlclosed",
+    "fill": 1,
+    "seatsOpen": 19800,
+    "turnout": 19800,
+    "soldOut": true,
+    "elements": 154,
+    "bytes": 64001,
+    "panelLit": 9.8,
+    "panelWarm": 1.13,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 12.48,
+    "warmShareOfImage": 1.41,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 96.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 92.8
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0.1
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0000-bowlopen",
+    "fill": 0,
+    "seatsOpen": 22200,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 45822,
+    "panelLit": 0.05,
+    "panelWarm": 0,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 0.01,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0500-bowlopen",
+    "fill": 0.5,
+    "seatsOpen": 22200,
+    "turnout": 11100,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 72687,
+    "panelLit": 6.47,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 8.22,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 46.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 44.8
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 44.3
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill0900-bowlopen",
+    "fill": 0.9,
+    "seatsOpen": 22200,
+    "turnout": 19980,
+    "soldOut": false,
+    "elements": 146,
+    "bytes": 72756,
+    "panelLit": 11.59,
+    "panelWarm": 0.68,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 14.72,
+    "warmShareOfImage": 0.87,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 84.9
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 82.2
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 77
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "fill1000-bowlopen",
+    "fill": 1,
+    "seatsOpen": 22200,
+    "turnout": 22200,
+    "soldOut": true,
+    "elements": 146,
+    "bytes": 69801,
+    "panelLit": 13.24,
+    "panelWarm": 0.98,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 16.88,
+    "warmShareOfImage": 1.24,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 96.6
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 92.9
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 91.4
+      }
+    ]
+  },
+  {
+    "box": "hero1024",
+    "boxPx": "900x150",
+    "case": "idle-closed",
+    "fill": 0,
+    "seatsOpen": 1,
+    "turnout": 0,
+    "soldOut": false,
+    "elements": 97,
+    "bytes": 45821,
+    "panelLit": 0.05,
+    "panelWarm": 0,
+    "w": 900,
+    "h": 190,
+    "litShareOfImage": 0.01,
+    "warmShareOfImage": 0,
+    "decks": [
+      {
+        "key": "lower",
+        "area": 11466,
+        "litShare": 0
+      },
+      {
+        "key": "club",
+        "area": 10941,
+        "litShare": 0
+      },
+      {
+        "key": "bowl",
+        "area": 8061,
+        "litShare": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,2398 @@
+{
+  "desks": {
+    "d0-1366": {
+      "vp": {
+        "width": 1366,
+        "height": 768
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 768,
+          "headline": "NIGHT 1 · 12,510 CAME AT $40",
+          "nextBottom": 630,
+          "next": {
+            "top": 568,
+            "bottom": 630,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 456,
+            "bottom": 558,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n50%\n→\n30%\ndown 20 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59686
+        },
+        {
+          "night": 2,
+          "vh": 768,
+          "headline": "NIGHT 2 · 11,600 CAME AT $60",
+          "nextBottom": 630,
+          "next": {
+            "top": 568,
+            "bottom": 630,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 456,
+            "bottom": 558,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n30%\n→\n10%\ndown 20 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59605
+        },
+        {
+          "night": 3,
+          "vh": 768,
+          "headline": "NIGHT 3 · 3,170 CAME AT $80",
+          "nextBottom": 595,
+          "next": {
+            "top": 533,
+            "bottom": 595,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 847.6,
+            "h": 76,
+            "w": 194.4
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 421,
+            "bottom": 523,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n10%\n→\n0%\ndown 10 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59539
+        },
+        {
+          "night": 4,
+          "vh": 768,
+          "headline": "NIGHT 4 · 13,450 CAME AT $100",
+          "nextBottom": 595,
+          "next": {
+            "top": 533,
+            "bottom": 595,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 421,
+            "bottom": 523,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n0%\n→\n11%\nup 11 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59592
+        },
+        {
+          "night": 5,
+          "vh": 768,
+          "headline": "NIGHT 5 · 11,535 CAME AT $40",
+          "nextBottom": 625,
+          "next": {
+            "top": 577,
+            "bottom": 625,
+            "left": 981.5,
+            "right": 1339,
+            "h": 48,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 421,
+            "bottom": 567,
+            "left": 981.5,
+            "right": 1339,
+            "h": 146,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n11%\n→\n0%\ndown 11 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59609
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": null,
+          "words": 416,
+          "lockedRecap": "LOCKED AT\n$40"
+        },
+        {
+          "night": 2,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N1 $40 · 12,510"
+            ],
+            "labelCount": 1,
+            "dots": 1,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 408,
+          "lockedRecap": "LOCKED AT\n$60"
+        },
+        {
+          "night": 3,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N2 $60 · 11,600",
+              "N1 $40 · 12,510"
+            ],
+            "labelCount": 2,
+            "dots": 2,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 430,
+          "lockedRecap": "LOCKED AT\n$80"
+        },
+        {
+          "night": 4,
+          "nightsTop": 566,
+          "nightsRect": {
+            "top": 566,
+            "bottom": 852,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 395,
+            "bottom": 451,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N3 $80 · 3,170",
+              "N2 $60 · 11,600",
+              "N1 $40 · 12,510"
+            ],
+            "labelCount": 3,
+            "dots": 3,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 326,
+          "lockedRecap": "LOCKED AT\n$100"
+        },
+        {
+          "night": 5,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N4 $100 · 13,450",
+              "N3 $80 · 3,170",
+              "N2 $60 · 11,600",
+              "N1 $40 · 12,510"
+            ],
+            "labelCount": 4,
+            "dots": 4,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 436,
+          "lockedRecap": "LOCKED AT\n$40"
+        }
+      ],
+      "lobbyPin": {
+        "top": 710,
+        "bottom": 745,
+        "left": 15,
+        "right": 192,
+        "h": 35,
+        "w": 177
+      },
+      "closedChart": {
+        "labels": [
+          "N5 $40 · 11,535",
+          "N4 $100 · 13,450",
+          "N3 $80 · 3,170",
+          "N2 $60 · 11,600"
+        ],
+        "labelCount": 4,
+        "dots": 5,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [],
+        "lines": 2,
+        "vb": "0 0 420 150"
+      },
+      "revealChart": {
+        "labels": [
+          "N5 $40 · 11,535",
+          "N4 $100 · 13,450",
+          "N3 $80 · 3,170",
+          "N2 $60 · 11,600"
+        ],
+        "labelCount": 4,
+        "dots": 5,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [],
+        "lines": 2,
+        "vb": "0 0 420 150"
+      }
+    },
+    "d1-1024": {
+      "vp": {
+        "width": 1024,
+        "height": 600
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 600,
+          "headline": "NIGHT 1 · 6,700 CAME AT $40",
+          "nextBottom": 454,
+          "next": {
+            "top": 392,
+            "bottom": 454,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 552.8,
+            "h": 68,
+            "w": 169.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 406,
+            "bottom": 492,
+            "left": 682.3,
+            "right": 1007,
+            "h": 86,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 384,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n50%\n→\n30%\ndown 20 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 59648
+        },
+        {
+          "night": 2,
+          "vh": 600,
+          "headline": "NIGHT 2 · 5,810 CAME AT $60",
+          "nextBottom": 454,
+          "next": {
+            "top": 392,
+            "bottom": 454,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 552.8,
+            "h": 68,
+            "w": 169.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 406,
+            "bottom": 492,
+            "left": 682.3,
+            "right": 1007,
+            "h": 86,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 384,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n30%\n→\n10%\ndown 20 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.",
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 59557
+        },
+        {
+          "night": 3,
+          "vh": 600,
+          "headline": "NIGHT 3 · 0 CAME AT $80",
+          "nextBottom": 454,
+          "next": {
+            "top": 392,
+            "bottom": 454,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 174,
+            "bottom": 242,
+            "left": 521.2,
+            "right": 560,
+            "h": 68,
+            "w": 38.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 371,
+            "bottom": 457,
+            "left": 682.3,
+            "right": 1007,
+            "h": 86,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 384,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n10%\n→\n0%\ndown 10 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 41532
+        },
+        {
+          "night": 4,
+          "vh": 600,
+          "headline": "NIGHT 4 · 10,750 CAME AT $100",
+          "nextBottom": 483,
+          "next": {
+            "top": 421,
+            "bottom": 483,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 371,
+            "bottom": 490,
+            "left": 682.3,
+            "right": 1007,
+            "h": 119,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 413,
+            "left": 17,
+            "right": 360,
+            "h": 253,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n0%\n→\n12%\nup 12 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 71965
+        },
+        {
+          "night": 5,
+          "vh": 600,
+          "headline": "NIGHT 5 · 5,750 CAME AT $40",
+          "nextBottom": 440,
+          "next": {
+            "top": 392,
+            "bottom": 440,
+            "left": 17,
+            "right": 360,
+            "h": 48,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 552.8,
+            "h": 68,
+            "w": 169.8
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 371,
+            "bottom": 495,
+            "left": 682.3,
+            "right": 1007,
+            "h": 124,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 384,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n12%\n→\n0%\ndown 12 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 59564
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": null,
+          "words": 238,
+          "lockedRecap": "LOCKED AT\n$40"
+        },
+        {
+          "night": 2,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N1 $40 · 6,700"
+            ],
+            "labelCount": 1,
+            "dots": 1,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 230,
+          "lockedRecap": "LOCKED AT\n$60"
+        },
+        {
+          "night": 3,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N2 $60 · 5,810",
+              "N1 $40 · 6,700"
+            ],
+            "labelCount": 2,
+            "dots": 2,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 252,
+          "lockedRecap": "LOCKED AT\n$80"
+        },
+        {
+          "night": 4,
+          "nightsTop": 456,
+          "nightsRect": {
+            "top": 456,
+            "bottom": 752,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 288,
+            "bottom": 344,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N3 $80 · 0",
+              "N2 $60 · 5,810",
+              "N1 $40 · 6,700"
+            ],
+            "labelCount": 3,
+            "dots": 3,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 259,
+          "lockedRecap": "LOCKED AT\n$100\n· upper bowl open"
+        },
+        {
+          "night": 5,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 888.6,
+            "right": 1011,
+            "h": 35,
+            "w": 122.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N4 $100 · 10,750",
+              "N3 $80 · 0",
+              "N2 $60 · 5,810",
+              "N1 $40 · 6,700"
+            ],
+            "labelCount": 4,
+            "dots": 4,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 245,
+          "lockedRecap": "LOCKED AT\n$40"
+        }
+      ],
+      "lobbyPin": {
+        "top": 73,
+        "bottom": 108,
+        "left": 888.6,
+        "right": 1011,
+        "h": 35,
+        "w": 122.4
+      },
+      "closedChart": {
+        "labels": [
+          "N5 $40 · 5,750",
+          "N4 $100 · 10,750",
+          "N3 $80 · 0",
+          "N2 $60 · 5,810"
+        ],
+        "labelCount": 4,
+        "dots": 5,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [],
+        "lines": 2,
+        "vb": "0 0 420 150"
+      },
+      "revealChart": {
+        "labels": [
+          "N5 $40 · 5,750",
+          "N4 $100 · 10,750",
+          "N3 $80 · 0",
+          "N2 $60 · 5,810"
+        ],
+        "labelCount": 4,
+        "dots": 5,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [],
+        "lines": 2,
+        "vb": "0 0 420 150"
+      }
+    },
+    "d2-1366": {
+      "vp": {
+        "width": 1366,
+        "height": 768
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 768,
+          "headline": "NIGHT 1 · 19,038 CAME AT $16",
+          "nextBottom": 595,
+          "next": {
+            "top": 533,
+            "bottom": 595,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 421,
+            "bottom": 523,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n50%\n→\n36%\ndown 14 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59647
+        },
+        {
+          "night": 2,
+          "vh": 768,
+          "headline": "FULL HOUSE\n19,800 OF 19,800 · 14 TURNED AWAY",
+          "nextBottom": 697,
+          "next": {
+            "top": 635,
+            "bottom": 697,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": {
+            "top": 686,
+            "bottom": 730,
+            "left": 649.2,
+            "right": 698.8,
+            "h": 44,
+            "w": 49.6
+          },
+          "turnedText": "14\nTURNED AWAY",
+          "hero": {
+            "top": 261,
+            "bottom": 337,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 453,
+            "bottom": 625,
+            "left": 981.5,
+            "right": 1339,
+            "h": 172,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 188,
+            "bottom": 439,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n36%\n→\n42%\nup 6 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": true,
+          "scrollW": 1366,
+          "arenaSvgOuter": 58609
+        },
+        {
+          "night": 3,
+          "vh": 768,
+          "headline": "NIGHT 3 · 18,818 CAME AT $16",
+          "nextBottom": 595,
+          "next": {
+            "top": 533,
+            "bottom": 595,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 421,
+            "bottom": 523,
+            "left": 981.5,
+            "right": 1339,
+            "h": 102,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n42%\n→\n28%\ndown 14 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59608
+        },
+        {
+          "night": 4,
+          "vh": 768,
+          "headline": "FULL HOUSE\n19,800 OF 19,800 · 6,950 TURNED AWAY",
+          "nextBottom": 697,
+          "next": {
+            "top": 635,
+            "bottom": 697,
+            "left": 981.5,
+            "right": 1339,
+            "h": 62,
+            "w": 357.5
+          },
+          "turned": {
+            "top": 711,
+            "bottom": 755,
+            "left": 649.2,
+            "right": 758.2,
+            "h": 44,
+            "w": 109
+          },
+          "turnedText": "6,950\nTURNED AWAY",
+          "hero": {
+            "top": 261,
+            "bottom": 337,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 453,
+            "bottom": 625,
+            "left": 981.5,
+            "right": 1339,
+            "h": 172,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 188,
+            "bottom": 439,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n28%\n→\n14%\ndown 14 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": true,
+          "scrollW": 1366,
+          "arenaSvgOuter": 58609
+        },
+        {
+          "night": 5,
+          "vh": 768,
+          "headline": "NIGHT 5 · 18,138 CAME AT $16",
+          "nextBottom": 625,
+          "next": {
+            "top": 577,
+            "bottom": 625,
+            "left": 981.5,
+            "right": 1339,
+            "h": 48,
+            "w": 357.5
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 229,
+            "bottom": 305,
+            "left": 653.2,
+            "right": 892.1,
+            "h": 76,
+            "w": 238.9
+          },
+          "heroSize": "72px",
+          "what": {
+            "top": 421,
+            "bottom": 567,
+            "left": 981.5,
+            "right": 1339,
+            "h": 146,
+            "w": 357.5
+          },
+          "chain": {
+            "top": 156,
+            "bottom": 407,
+            "left": 233,
+            "right": 624.2,
+            "h": 251,
+            "w": 391.2
+          },
+          "renewals": "RENEWALS\n14%\n→\n0%\ndown 14 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "soldOut": false,
+          "scrollW": 1366,
+          "arenaSvgOuter": 59634
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": null,
+          "words": 416,
+          "lockedRecap": "LOCKED AT\n$16"
+        },
+        {
+          "night": 2,
+          "nightsTop": 475,
+          "nightsRect": {
+            "top": 475,
+            "bottom": 761,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 304,
+            "bottom": 360,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N1 $16 · 19,038"
+            ],
+            "labelCount": 1,
+            "dots": 1,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 408,
+          "lockedRecap": "LOCKED AT\n$24"
+        },
+        {
+          "night": 3,
+          "nightsTop": 497,
+          "nightsRect": {
+            "top": 497,
+            "bottom": 783,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 326,
+            "bottom": 382,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": "Your dial is at $24 — the price you charged on Night 2.",
+          "chart": {
+            "labels": [
+              "N2 $24 · 19,800",
+              "N1 $16 · 19,038"
+            ],
+            "labelCount": 2,
+            "dots": 2,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 443,
+          "lockedRecap": "LOCKED AT\n$16"
+        },
+        {
+          "night": 4,
+          "nightsTop": 566,
+          "nightsRect": {
+            "top": 566,
+            "bottom": 852,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 395,
+            "bottom": 451,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": "Your dial is at $24 — the price you charged on Night 2.",
+          "chart": {
+            "labels": [
+              "N3 $16 · 18,818",
+              "N2 $24 · 19,800"
+            ],
+            "labelCount": 2,
+            "dots": 3,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 335,
+          "lockedRecap": "LOCKED AT\n$16"
+        },
+        {
+          "night": 5,
+          "nightsTop": 497,
+          "nightsRect": {
+            "top": 497,
+            "bottom": 783,
+            "left": 233,
+            "right": 645.2,
+            "h": 286,
+            "w": 412.2
+          },
+          "lock": {
+            "top": 326,
+            "bottom": 382,
+            "left": 1007.8,
+            "right": 1339,
+            "h": 56,
+            "w": 331.2
+          },
+          "pin": {
+            "top": 710,
+            "bottom": 745,
+            "left": 15,
+            "right": 192,
+            "h": 35,
+            "w": 177
+          },
+          "dialReadout": "$24",
+          "carried": "Your dial is at $24 — the price you charged on Night 2.",
+          "chart": {
+            "labels": [
+              "N4 $16 · 19,800",
+              "N3 $16 · 18,818"
+            ],
+            "labelCount": 2,
+            "dots": 4,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 116"
+          },
+          "words": 441,
+          "lockedRecap": "LOCKED AT\n$16"
+        }
+      ],
+      "lobbyPin": {
+        "top": 710,
+        "bottom": 745,
+        "left": 15,
+        "right": 192,
+        "h": 35,
+        "w": 177
+      },
+      "closedChart": {
+        "labels": [
+          "N5 $16 · 18,138",
+          "N4 $16 · 19,800",
+          "N2 $24 · 19,800"
+        ],
+        "labelCount": 3,
+        "dots": 5,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [],
+        "lines": 2,
+        "vb": "0 0 420 150"
+      },
+      "revealChart": {
+        "labels": [
+          "N5 $16 · 18,138",
+          "N4 $16 · 19,800",
+          "N2 $24 · 19,800"
+        ],
+        "labelCount": 3,
+        "dots": 5,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [],
+        "lines": 2,
+        "vb": "0 0 420 150"
+      }
+    },
+    "d3-1024": {
+      "vp": {
+        "width": 1024,
+        "height": 600
+      },
+      "nights": [
+        {
+          "night": 1,
+          "vh": 600,
+          "headline": "NIGHT 1 · 16,750 CAME AT $10",
+          "nextBottom": 454,
+          "next": {
+            "top": 392,
+            "bottom": 454,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 371,
+            "bottom": 457,
+            "left": 682.3,
+            "right": 1007,
+            "h": 86,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 384,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n50%\n→\n41%\ndown 9 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 59608
+        },
+        {
+          "night": 2,
+          "vh": 600,
+          "headline": "FULL HOUSE\n17,794 OF 17,794 · 1,441 TURNED AWAY",
+          "nextBottom": 468,
+          "next": {
+            "top": 406,
+            "bottom": 468,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": {
+            "top": 412,
+            "bottom": 448,
+            "left": 383,
+            "right": 474.9,
+            "h": 36,
+            "w": 91.9
+          },
+          "turnedText": "1,441\nTURNED AWAY",
+          "hero": {
+            "top": 240,
+            "bottom": 308,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 385,
+            "bottom": 533,
+            "left": 682.3,
+            "right": 1007,
+            "h": 148,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 174,
+            "bottom": 398,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n41%\n→\n32%\ndown 9 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "soldOut": true,
+          "scrollW": 1024,
+          "arenaSvgOuter": 58577
+        },
+        {
+          "night": 3,
+          "vh": 600,
+          "headline": "NIGHT 3 · 15,300 CAME AT $10",
+          "nextBottom": 454,
+          "next": {
+            "top": 392,
+            "bottom": 454,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 371,
+            "bottom": 457,
+            "left": 682.3,
+            "right": 1007,
+            "h": 86,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 384,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n32%\n→\n23%\ndown 9 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 59594
+        },
+        {
+          "night": 4,
+          "vh": 600,
+          "headline": "FULL HOUSE\n19,594 OF 19,594 · 5,231 TURNED AWAY",
+          "nextBottom": 497,
+          "next": {
+            "top": 435,
+            "bottom": 497,
+            "left": 17,
+            "right": 360,
+            "h": 62,
+            "w": 343
+          },
+          "turned": {
+            "top": 412,
+            "bottom": 448,
+            "left": 383,
+            "right": 474.9,
+            "h": 36,
+            "w": 91.9
+          },
+          "turnedText": "5,231\nTURNED AWAY",
+          "hero": {
+            "top": 240,
+            "bottom": 308,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 385,
+            "bottom": 566,
+            "left": 682.3,
+            "right": 1007,
+            "h": 181,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 174,
+            "bottom": 427,
+            "left": 17,
+            "right": 360,
+            "h": 253,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n23%\n→\n14%\ndown 9 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "soldOut": true,
+          "scrollW": 1024,
+          "arenaSvgOuter": 69578
+        },
+        {
+          "night": 5,
+          "vh": 600,
+          "headline": "NIGHT 5 · 15,850 CAME AT $10",
+          "nextBottom": 440,
+          "next": {
+            "top": 392,
+            "bottom": 440,
+            "left": 17,
+            "right": 360,
+            "h": 48,
+            "w": 343
+          },
+          "turned": null,
+          "turnedText": null,
+          "hero": {
+            "top": 226,
+            "bottom": 294,
+            "left": 383,
+            "right": 591.6,
+            "h": 68,
+            "w": 208.6
+          },
+          "heroSize": "64px",
+          "what": {
+            "top": 371,
+            "bottom": 495,
+            "left": 682.3,
+            "right": 1007,
+            "h": 124,
+            "w": 324.7
+          },
+          "chain": {
+            "top": 160,
+            "bottom": 384,
+            "left": 17,
+            "right": 360,
+            "h": 224,
+            "w": 343
+          },
+          "renewals": "RENEWALS\n14%\n→\n5%\ndown 9 points\nseason-ticket holders coming back\n\nSeason plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "cause": "Season plan: $16 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.",
+          "floor": null,
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "soldOut": false,
+          "scrollW": 1024,
+          "arenaSvgOuter": 59578
+        }
+      ],
+      "prelock": [
+        {
+          "night": 1,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": null,
+          "words": 238,
+          "lockedRecap": "LOCKED AT\n$10"
+        },
+        {
+          "night": 2,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N1 $10 · 16,750"
+            ],
+            "labelCount": 1,
+            "dots": 1,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 230,
+          "lockedRecap": "LOCKED AT\n$10"
+        },
+        {
+          "night": 3,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N2 $10 · 17,794",
+              "N1 $10 · 16,750"
+            ],
+            "labelCount": 2,
+            "dots": 2,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 252,
+          "lockedRecap": "LOCKED AT\n$10"
+        },
+        {
+          "night": 4,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N3 $10 · 15,300",
+              "N2 $10 · 17,794"
+            ],
+            "labelCount": 2,
+            "dots": 3,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 251,
+          "lockedRecap": "LOCKED AT\n$10\n· upper bowl open"
+        },
+        {
+          "night": 5,
+          "nightsTop": 436,
+          "nightsRect": {
+            "top": 436,
+            "bottom": 732,
+            "left": 17,
+            "right": 377.6,
+            "h": 296,
+            "w": 360.6
+          },
+          "lock": {
+            "top": 268,
+            "bottom": 324,
+            "left": 702.4,
+            "right": 1007,
+            "h": 56,
+            "w": 304.5
+          },
+          "pin": {
+            "top": 73,
+            "bottom": 108,
+            "left": 887.6,
+            "right": 1011,
+            "h": 35,
+            "w": 123.4
+          },
+          "dialReadout": "$16",
+          "carried": null,
+          "chart": {
+            "labels": [
+              "N4 $10 · 19,594",
+              "N3 $10 · 15,300"
+            ],
+            "labelCount": 2,
+            "dots": 4,
+            "intersections": 0,
+            "pairs": [],
+            "outside": [],
+            "paths": [],
+            "lines": 2,
+            "vb": "0 0 420 96"
+          },
+          "words": 237,
+          "lockedRecap": "LOCKED AT\n$10"
+        }
+      ],
+      "lobbyPin": {
+        "top": 73,
+        "bottom": 108,
+        "left": 887.6,
+        "right": 1011,
+        "h": 35,
+        "w": 123.4
+      },
+      "closedChart": {
+        "labels": [
+          "N4 $10 · 19,594",
+          "N3 $10 · 15,300"
+        ],
+        "labelCount": 2,
+        "dots": 5,
+        "intersections": 0,
+        "pairs": [],
+        "outside": [],
+        "paths": [],
+        "lines": 2,
+        "vb": "0 0 420 150"
+      }
+    }
+  },
+  "hook": {
+    "d0-1366": {
+      "words": 110,
+      "slate": {
+        "top": 557,
+        "bottom": 747,
+        "left": 233,
+        "right": 1339,
+        "h": 190,
+        "w": 1106
+      },
+      "cards": [
+        {
+          "top": 557,
+          "bottom": 747,
+          "visible": true
+        },
+        {
+          "top": 557,
+          "bottom": 747,
+          "visible": true
+        },
+        {
+          "top": 557,
+          "bottom": 747,
+          "visible": true
+        },
+        {
+          "top": 557,
+          "bottom": 747,
+          "visible": true
+        },
+        {
+          "top": 557,
+          "bottom": 747,
+          "visible": true
+        }
+      ],
+      "pin": {
+        "top": 710,
+        "bottom": 745,
+        "left": 15,
+        "right": 192,
+        "h": 35,
+        "w": 177
+      },
+      "longestP": 6
+    },
+    "d1-1024": {
+      "words": 140,
+      "slate": {
+        "top": 331,
+        "bottom": 487,
+        "left": 17,
+        "right": 1007,
+        "h": 156,
+        "w": 990
+      },
+      "cards": [
+        {
+          "top": 331,
+          "bottom": 487,
+          "visible": true
+        },
+        {
+          "top": 331,
+          "bottom": 487,
+          "visible": true
+        },
+        {
+          "top": 331,
+          "bottom": 487,
+          "visible": true
+        },
+        {
+          "top": 331,
+          "bottom": 487,
+          "visible": true
+        },
+        {
+          "top": 331,
+          "bottom": 487,
+          "visible": true
+        }
+      ],
+      "pin": {
+        "top": 73,
+        "bottom": 108,
+        "left": 888.6,
+        "right": 1011,
+        "h": 35,
+        "w": 122.4
+      },
+      "longestP": 3
+    }
+  },
+  "pin": {},
+  "synth": {
+    "cfMd5": "854cea0b60",
+    "page1Md5": "957d55a2c9",
+    "page1HasMirror": true,
+    "page1MirrorRect": {
+      "top": 179,
+      "bottom": 302,
+      "left": 233,
+      "right": 1339,
+      "h": 123,
+      "w": 1106
+    },
+    "page1Chart": {
+      "labels": [
+        "N5 $40 · 11,535",
+        "N4 $100 · 13,450",
+        "N3 $80 · 3,170",
+        "N2 $60 · 11,600"
+      ],
+      "labelCount": 4,
+      "dots": 5,
+      "intersections": 0,
+      "pairs": [],
+      "outside": [],
+      "paths": [],
+      "lines": 2,
+      "vb": "0 0 420 132"
+    },
+    "page2Md5": "514e75d163",
+    "page2HasMirror": true,
+    "distinctFromCf": true
+  },
+  "errors": [
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d2-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d3-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d0-1366: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg",
+    "d1-1024: console Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4453/assets/team-crests-set.svg"
+  ]
+}

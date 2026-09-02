@@ -1,0 +1,93 @@
+00-join-1024x600.png
+01-lobby-1024x600.png
+02-lobby-1366-full.png
+02-lobby-1366.png
+03-hook-full.png
+03-hook.png
+03b-board-hook.png
+04-n1-pre-full.png
+04-n1-pre.png
+04-n2-pre-full.png
+04-n2-pre.png
+04-n3-pre-full.png
+04-n3-pre.png
+04-n4-pre-full.png
+04-n4-pre.png
+04-n5-pre-full.png
+04-n5-pre.png
+04b-n1-pre-1024x600-full.png
+04b-n1-pre-1024x600.png
+05-n1-set.png
+05-n2-set.png
+05-n3-set.png
+05-n4-set.png
+05-n5-set.png
+06-n1-settled-full.png
+06-n1-settled.png
+06-n2-settled-full.png
+06-n2-settled.png
+06-n3-settled-full.png
+06-n3-settled.png
+06-n4-settled-full.png
+06-n4-settled.png
+06-n5-settled-1024.png
+06-n5-settled-full.png
+06-n5-settled.png
+06b-n1-afternext.png
+06b-n2-afternext.png
+06b-n3-afternext.png
+06b-n4-afternext.png
+07-reveal-0.png
+07-reveal-1.png
+07-reveal-2.png
+07-reveal-3.png
+07-reveal-4.png
+07-reveal-5.png
+07-reveal-6.png
+07-reveal-7.png
+07b-board-reveal-0.png
+07b-board-reveal-1.png
+07b-board-reveal-2.png
+07b-board-reveal-3.png
+07b-board-reveal-4.png
+07b-board-reveal-5.png
+07b-board-reveal-6.png
+07b-board-reveal-7.png
+08-adapt-full.png
+08-adapt.png
+09-cf-0-full.png
+09-cf-0.png
+09-cf-1.png
+09b-board-cf.png
+10-synth-0.png
+10-synth-1.png
+10-synth-2.png
+10-synth-3.png
+10-synth-4.png
+10-synth-5.png
+10b-board-synth-0.png
+10b-board-synth-1.png
+10b-board-synth-2.png
+10b-board-synth-3.png
+10b-board-synth-4.png
+10b-board-synth-5.png
+11-complete-full.png
+11-complete.png
+
+MANIFEST — AGENT-PLAYTESTED / SIMULATED KID C, 2026-09-02, build head 84d8983, port 4444
+00-join-1024x600      join card at student first-contact 1024x600
+01/02-lobby           LOBBY at 1024x600 and 1366x768
+03-hook (+full)       HOOK first screen (building + hero line + 5 night cards); -full shows the 5 house rules below the fold
+04-nN-pre (+full)     tonight's dial/card/spend/lock before locking, night N
+04b-n1-pre-1024x600   night 1 pricing screen at 1024x600 (lock control reachable, no scroll)
+05-nN-set             after price/spend/bowl set, before lock
+06-nN-settled (+full) settled night after the teacher's bell
+06-n5-settled-1024    settled night 5 at 1024x600 (carries the Night-1-again line)
+06b-nN-afternext      state after pressing NEXT: NIGHT N+1
+07-reveal-S           /play during teacher reveal stage S (0..7)
+07b-board-reveal-S    /board same stage (context only, not my remit)
+08-adapt              /play in ADAPT
+09-cf-0/1             /play during COUNTERFACTUAL paging (play lags one poll behind teacher)
+10-synth-S            /play during SYNTHESIS page S
+10b-board-synth-S     /board synthesis card S
+11-complete           /play COMPLETE

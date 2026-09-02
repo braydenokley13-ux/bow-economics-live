@@ -1,0 +1,95 @@
+{
+  "reveal": [
+    [
+      0,
+      "753ba7453b"
+    ],
+    [
+      1,
+      "8897b2d50f"
+    ],
+    [
+      2,
+      "9f2b78aa4b"
+    ],
+    [
+      3,
+      "d1f32b1ea7"
+    ],
+    [
+      4,
+      "e82bb53687"
+    ],
+    [
+      5,
+      "cce0c959ca"
+    ],
+    [
+      6,
+      "0df4ab7902"
+    ],
+    [
+      7,
+      "186d5a60ea"
+    ]
+  ],
+  "synth": [
+    [
+      1,
+      "4b8a8ad54b",
+      "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $1,509,300 | season so far"
+    ],
+    [
+      2,
+      "b131874100",
+      "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $1,509,300 | season so far"
+    ],
+    [
+      3,
+      "0b7ee00a3e",
+      "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $1,509,300 | season so far"
+    ],
+    [
+      4,
+      "2db8f92611",
+      "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $1,509,300 | season so far"
+    ],
+    [
+      5,
+      "66269efcc7",
+      "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $1,509,300 | season so far"
+    ],
+    [
+      6,
+      "6b7cbcb37f",
+      "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $1,509,300 | season so far"
+    ]
+  ],
+  "dead": [
+    [
+      "LOBBY",
+      "2bae70b370",
+      182
+    ],
+    [
+      "HOOK",
+      "2bae70b370",
+      182
+    ],
+    [
+      "REVEAL",
+      "186d5a60ea",
+      22
+    ],
+    [
+      "SYNTHESIS",
+      "6b7cbcb37f",
+      100
+    ],
+    [
+      "COMPLETE",
+      "f6345bee08",
+      110
+    ]
+  ]
+}

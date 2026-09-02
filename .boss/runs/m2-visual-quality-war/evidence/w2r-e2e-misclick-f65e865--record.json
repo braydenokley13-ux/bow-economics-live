@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-02T17:26:14.948Z",
+  "command": [
+    "node",
+    "runtime/scripts/e2e-m2l1-misclick.cjs"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "[misclick] LOCK IT IN measures 331x56px at 1366x768\n[misclick] confirm() text: Night 1 of 5 is still open (0/1 desks locked in). This is not the night bell — advancing now settles tonight for every desk AND ends the five-night window early, so 4 nights will never be played. 1 desk has not locked; it settles at whatever price is on its dial right now. Continue?\n[misclick] cancelled: session is still in PLAY, nothing settled\n[misclick] accepted: five nights settled, and Night 1 kept the pair's own $56\n[misclick] zero console errors\n[misclick] PASS — the misclick is guarded, cancellable, and no longer throws away a set price.\n",
+  "stderr": ""
+}

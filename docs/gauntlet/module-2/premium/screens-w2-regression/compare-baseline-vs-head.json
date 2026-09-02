@@ -1,0 +1,312 @@
+{
+  "a": "/home/user/bow-economics-live/docs/gauntlet/module-2/premium/screens-m1-baseline-ext",
+  "b": "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/w2-regression/m1-head",
+  "results": [
+    {
+      "file": "l1-01-play-join@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 25993,
+      "sizeB": 25993,
+      "shaA": "8e562201904f",
+      "shaB": "8e562201904f"
+    },
+    {
+      "file": "l1-02-play-lobby@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 19555,
+      "sizeB": 19555,
+      "shaA": "1e2b92684d4b",
+      "shaB": "1e2b92684d4b"
+    },
+    {
+      "file": "l1-03-teach-lobby@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 52194,
+      "sizeB": 52194,
+      "shaA": "347f6c9754c4",
+      "shaB": "347f6c9754c4"
+    },
+    {
+      "file": "l1-04-board-lobby@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 759596,
+      "sizeB": 759596,
+      "shaA": "3b77dd066ced",
+      "shaB": "3b77dd066ced"
+    },
+    {
+      "file": "l1-05-play-hook@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 39494,
+      "sizeB": 39494,
+      "shaA": "a5da53f11dab",
+      "shaB": "a5da53f11dab"
+    },
+    {
+      "file": "l1-06-teach-hook@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 52544,
+      "sizeB": 52544,
+      "shaA": "baacf37d1c27",
+      "shaB": "baacf37d1c27"
+    },
+    {
+      "file": "l1-07-board-hook@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 824862,
+      "sizeB": 824862,
+      "shaA": "064a078f625f",
+      "shaB": "064a078f625f"
+    },
+    {
+      "file": "l1-08-play-play@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 80894,
+      "sizeB": 80894,
+      "shaA": "52f974ad2291",
+      "shaB": "52f974ad2291"
+    },
+    {
+      "file": "l1-09-teach-play@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 53012,
+      "sizeB": 53012,
+      "shaA": "064a7f39089c",
+      "shaB": "064a7f39089c"
+    },
+    {
+      "file": "l1-10-board-play@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 751662,
+      "sizeB": 751662,
+      "shaA": "685791e7be0a",
+      "shaB": "685791e7be0a"
+    },
+    {
+      "file": "l1-11-play-locked-roster@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 80894,
+      "sizeB": 80894,
+      "shaA": "52f974ad2291",
+      "shaB": "52f974ad2291"
+    },
+    {
+      "file": "l1-12-teach-locked-roster@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 55172,
+      "sizeB": 55172,
+      "shaA": "eb0477282e50",
+      "shaB": "eb0477282e50"
+    },
+    {
+      "file": "l1-13-play-reveal@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 78288,
+      "sizeB": 78288,
+      "shaA": "afaef2f78cc4",
+      "shaB": "afaef2f78cc4"
+    },
+    {
+      "file": "l1-14-teach-reveal@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 55700,
+      "sizeB": 55700,
+      "shaA": "bb3ed036fc05",
+      "shaB": "bb3ed036fc05"
+    },
+    {
+      "file": "l1-15-board-reveal@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 1192782,
+      "sizeB": 1192782,
+      "shaA": "45f0d8e99a4c",
+      "shaB": "45f0d8e99a4c"
+    },
+    {
+      "file": "l1-16-play-synthesis@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 26880,
+      "sizeB": 26880,
+      "shaA": "1c9b5ce92481",
+      "shaB": "1c9b5ce92481"
+    },
+    {
+      "file": "l1-17-teach-synthesis@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 55552,
+      "sizeB": 55552,
+      "shaA": "b0f4d8c26896",
+      "shaB": "b0f4d8c26896"
+    },
+    {
+      "file": "l1-18-board-synthesis@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 1161564,
+      "sizeB": 1161564,
+      "shaA": "e1bcbb870415",
+      "shaB": "e1bcbb870415"
+    },
+    {
+      "file": "l2-01-play-lobby@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 19780,
+      "sizeB": 19780,
+      "shaA": "02f009835313",
+      "shaB": "02f009835313"
+    },
+    {
+      "file": "l2-02-teach-lobby@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 48367,
+      "sizeB": 48367,
+      "shaA": "3bf55573a68b",
+      "shaB": "3bf55573a68b"
+    },
+    {
+      "file": "l2-03-board-lobby@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 761467,
+      "sizeB": 761467,
+      "shaA": "df287b49402a",
+      "shaB": "df287b49402a"
+    },
+    {
+      "file": "l2-04-play-midseason-report@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 90220,
+      "sizeB": 90220,
+      "shaA": "b991341a732b",
+      "shaB": "b991341a732b"
+    },
+    {
+      "file": "l2-05-teach-hook@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 55389,
+      "sizeB": 52457,
+      "shaA": "d6b24665323c",
+      "shaB": "47925b2988bb"
+    },
+    {
+      "file": "l2-06-play-deadline-decision@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 80140,
+      "sizeB": 80140,
+      "shaA": "d350f4bde9c1",
+      "shaB": "d350f4bde9c1"
+    },
+    {
+      "file": "l2-07-teach-play@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 57662,
+      "sizeB": 57662,
+      "shaA": "c0344b0037dc",
+      "shaB": "c0344b0037dc"
+    },
+    {
+      "file": "l2-08-board-play@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 754862,
+      "sizeB": 754862,
+      "shaA": "5f813a521e72",
+      "shaB": "5f813a521e72"
+    },
+    {
+      "file": "l2-09-board-reveal@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 754862,
+      "sizeB": 754862,
+      "shaA": "5f813a521e72",
+      "shaB": "5f813a521e72"
+    },
+    {
+      "file": "l2-10-play-reveal@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 45931,
+      "sizeB": 52197,
+      "shaA": "cdd88d65fabd",
+      "shaB": "77abbdc5439b"
+    },
+    {
+      "file": "l2-11-teach-reveal@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 58777,
+      "sizeB": 58777,
+      "shaA": "16f1f17109b2",
+      "shaB": "16f1f17109b2"
+    },
+    {
+      "file": "l3-01-play-lobby@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 19574,
+      "sizeB": 19574,
+      "shaA": "7176494f52e3",
+      "shaB": "7176494f52e3"
+    },
+    {
+      "file": "l3-02-teach-lobby@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 58621,
+      "sizeB": 58621,
+      "shaA": "efccb2c67489",
+      "shaB": "efccb2c67489"
+    },
+    {
+      "file": "l3-03-board-lobby@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 761966,
+      "sizeB": 761966,
+      "shaA": "7568c801b862",
+      "shaB": "7568c801b862"
+    },
+    {
+      "file": "l3-04-play-day1-market@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 85415,
+      "sizeB": 85415,
+      "shaA": "4108cfe281cb",
+      "shaB": "4108cfe281cb"
+    },
+    {
+      "file": "l3-05-teach-day1@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 60712,
+      "sizeB": 60744,
+      "shaA": "b2c4a28b1c42",
+      "shaB": "6ff5794f47a1"
+    },
+    {
+      "file": "l3-06-board-day1@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 773284,
+      "sizeB": 773284,
+      "shaA": "50a79c329154",
+      "shaB": "50a79c329154"
+    },
+    {
+      "file": "l3-07-board-reveal@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 775385,
+      "sizeB": 775385,
+      "shaA": "423864d85454",
+      "shaB": "423864d85454"
+    },
+    {
+      "file": "l3-08-play-reveal@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 39652,
+      "sizeB": 39652,
+      "shaA": "528391434d94",
+      "shaB": "528391434d94"
+    },
+    {
+      "file": "l3-09-teach-reveal@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 61732,
+      "sizeB": 61764,
+      "shaA": "38ad819a3581",
+      "shaB": "61d98f07657f"
+    }
+  ],
+  "stableCount": 34,
+  "total": 38
+}

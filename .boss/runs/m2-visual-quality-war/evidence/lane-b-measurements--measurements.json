@@ -1,0 +1,566 @@
+{
+  "wide": {
+    "hookWords": 348,
+    "n1PreLock": {
+      "priceReadout": {
+        "top": 288,
+        "bottom": 358,
+        "left": 364,
+        "right": 490,
+        "w": 126,
+        "h": 70,
+        "fontSize": 68,
+        "color": "rgb(244, 244, 248)",
+        "text": "$24"
+      },
+      "pinDisplay": {
+        "top": 58,
+        "bottom": 78,
+        "left": 470,
+        "right": 521,
+        "w": 52,
+        "h": 20,
+        "fontSize": 16,
+        "color": "rgb(244, 244, 248)",
+        "text": "9053"
+      },
+      "lock": {
+        "top": 336,
+        "bottom": 392,
+        "left": 1008,
+        "right": 1339,
+        "w": 331,
+        "h": 56,
+        "fontSize": 18,
+        "color": "rgb(255, 255, 255)",
+        "text": "LOCK IT IN"
+      },
+      "blindNote": {
+        "top": 401,
+        "bottom": 496,
+        "left": 1008,
+        "right": 1339,
+        "w": 331,
+        "h": 95,
+        "fontSize": 14.5,
+        "color": "rgb(201, 201, 214)",
+        "text": "Every night you set a PRICE ($10-$120) and how much of tonight's money you put i"
+      },
+      "knob": {
+        "left": 293,
+        "right": 323,
+        "top": 387,
+        "bottom": 417
+      },
+      "planLabel": {
+        "top": 422,
+        "bottom": 445,
+        "left": 281,
+        "right": 335,
+        "w": 54,
+        "h": 23,
+        "fontSize": 10,
+        "color": "rgb(130, 130, 154)",
+        "text": "PLAN $24"
+      },
+      "figuresOver34": [
+        {
+          "text": "$24",
+          "fontSize": 68,
+          "cls": "m2-hero-figure fh-price-readout"
+        }
+      ],
+      "dead": {
+        "lastContentBottom": 1109,
+        "docHeight": 1109,
+        "dead": 0
+      },
+      "horizontalScroll": false
+    },
+    "resultFold": {
+      "n1": {
+        "desk": "d1",
+        "headline": {
+          "top": 189,
+          "bottom": 219,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 30,
+          "fontSize": 26,
+          "color": "rgb(244, 244, 248)",
+          "text": "NIGHT 1 · 14,142 CAME AT $34"
+        },
+        "whoCame": {
+          "top": 250,
+          "bottom": 326,
+          "left": 403,
+          "right": 642,
+          "w": 239,
+          "h": 76,
+          "fontSize": 72,
+          "color": "rgb(244, 244, 248)",
+          "text": "14,142"
+        },
+        "chainCash": {
+          "top": 590,
+          "bottom": 643,
+          "left": 261,
+          "right": 771,
+          "w": 510,
+          "h": 53,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "=\n      CASH\n      $215,384"
+        },
+        "renewals": {
+          "top": 443,
+          "bottom": 572,
+          "left": 796,
+          "right": 1326,
+          "w": 530,
+          "h": 129,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "RENEWALS\n      \n        50%\n        →\n        30%\n        down 20 points\n      \n"
+        },
+        "turnedAway": null,
+        "next": {
+          "top": 668,
+          "bottom": 716,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 48,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)",
+          "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+        },
+        "lockPresent": false,
+        "figuresOver34": [
+          {
+            "text": "14,142",
+            "fontSize": 72,
+            "cls": "m2-hero-figure fh-who-came"
+          }
+        ],
+        "dead": {
+          "lastContentBottom": 915,
+          "docHeight": 915,
+          "dead": 0
+        }
+      },
+      "n2": {
+        "desk": "d1",
+        "headline": {
+          "top": 189,
+          "bottom": 219,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 30,
+          "fontSize": 26,
+          "color": "rgb(244, 244, 248)",
+          "text": "NIGHT 2 · 14,288 CAME AT $48"
+        },
+        "whoCame": {
+          "top": 250,
+          "bottom": 326,
+          "left": 403,
+          "right": 642,
+          "w": 239,
+          "h": 76,
+          "fontSize": 72,
+          "color": "rgb(244, 244, 248)",
+          "text": "14,288"
+        },
+        "chainCash": {
+          "top": 590,
+          "bottom": 643,
+          "left": 261,
+          "right": 771,
+          "w": 510,
+          "h": 53,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "=\n      CASH\n      $423,008"
+        },
+        "renewals": {
+          "top": 443,
+          "bottom": 572,
+          "left": 796,
+          "right": 1326,
+          "w": 530,
+          "h": 129,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "RENEWALS\n      \n        30%\n        →\n        10%\n        down 20 points\n      \n"
+        },
+        "turnedAway": null,
+        "next": {
+          "top": 668,
+          "bottom": 716,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 48,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)",
+          "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV"
+        },
+        "lockPresent": false,
+        "figuresOver34": [
+          {
+            "text": "14,288",
+            "fontSize": 72,
+            "cls": "m2-hero-figure fh-who-came"
+          }
+        ],
+        "dead": {
+          "lastContentBottom": 915,
+          "docHeight": 915,
+          "dead": 0
+        }
+      },
+      "n3": {
+        "desk": "d1",
+        "headline": {
+          "top": 179,
+          "bottom": 209,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 30,
+          "fontSize": 26,
+          "color": "rgb(244, 244, 248)",
+          "text": "NIGHT 3 · 12,450 CAME AT $40"
+        },
+        "whoCame": {
+          "top": 240,
+          "bottom": 316,
+          "left": 403,
+          "right": 642,
+          "w": 239,
+          "h": 76,
+          "fontSize": 72,
+          "color": "rgb(244, 244, 248)",
+          "text": "12,450"
+        },
+        "chainCash": {
+          "top": 613,
+          "bottom": 666,
+          "left": 261,
+          "right": 771,
+          "w": 510,
+          "h": 53,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "=\n      CASH\n      $162,100"
+        },
+        "renewals": {
+          "top": 433,
+          "bottom": 562,
+          "left": 796,
+          "right": 1326,
+          "w": 530,
+          "h": 129,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "RENEWALS\n      \n        10%\n        →\n        18%\n        up 8 points\n      \n   "
+        },
+        "turnedAway": null,
+        "next": {
+          "top": 691,
+          "bottom": 739,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 48,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)",
+          "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV"
+        },
+        "lockPresent": false,
+        "figuresOver34": [
+          {
+            "text": "12,450",
+            "fontSize": 72,
+            "cls": "m2-hero-figure fh-who-came"
+          }
+        ],
+        "dead": {
+          "lastContentBottom": 938,
+          "docHeight": 938,
+          "dead": 0
+        }
+      },
+      "n4": {
+        "desk": "d2 (sellout)",
+        "headline": {
+          "top": 192,
+          "bottom": 236,
+          "left": 259,
+          "right": 398,
+          "w": 139,
+          "h": 44,
+          "fontSize": 40,
+          "color": "rgb(244, 244, 248)",
+          "text": "FULL HOUSE"
+        },
+        "whoCame": {
+          "top": 280,
+          "bottom": 356,
+          "left": 403,
+          "right": 642,
+          "w": 239,
+          "h": 76,
+          "fontSize": 72,
+          "color": "rgb(244, 244, 248)",
+          "text": "17,794"
+        },
+        "chainCash": {
+          "top": 620,
+          "bottom": 673,
+          "left": 261,
+          "right": 771,
+          "w": 510,
+          "h": 53,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "=\n      CASH\n      $218,232"
+        },
+        "renewals": {
+          "top": 531,
+          "bottom": 660,
+          "left": 796,
+          "right": 1326,
+          "w": 530,
+          "h": 129,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "RENEWALS\n      \n        68%\n        →\n        74%\n        up 6 points\n      \n   "
+        },
+        "turnedAway": {
+          "top": 465,
+          "bottom": 507,
+          "left": 811,
+          "right": 920,
+          "w": 109,
+          "h": 42,
+          "fontSize": 40,
+          "color": "rgb(244, 244, 248)",
+          "text": "7,256"
+        },
+        "next": {
+          "top": 698,
+          "bottom": 746,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 48,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)",
+          "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV"
+        },
+        "lockPresent": false,
+        "figuresOver34": [
+          {
+            "text": "17,794",
+            "fontSize": 72,
+            "cls": "m2-hero-figure fh-who-came"
+          },
+          {
+            "text": "7,256",
+            "fontSize": 40,
+            "cls": "B"
+          }
+        ],
+        "dead": {
+          "lastContentBottom": 973,
+          "docHeight": 973,
+          "dead": 0
+        }
+      },
+      "n5": {
+        "desk": "d1",
+        "headline": {
+          "top": 179,
+          "bottom": 209,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 30,
+          "fontSize": 26,
+          "color": "rgb(244, 244, 248)",
+          "text": "NIGHT 5 · 13,567 CAME AT $34"
+        },
+        "whoCame": {
+          "top": 240,
+          "bottom": 316,
+          "left": 403,
+          "right": 642,
+          "w": 239,
+          "h": 76,
+          "fontSize": 72,
+          "color": "rgb(244, 244, 248)",
+          "text": "13,567"
+        },
+        "chainCash": {
+          "top": 580,
+          "bottom": 633,
+          "left": 261,
+          "right": 771,
+          "w": 510,
+          "h": 53,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "=\n      CASH\n      $185,484"
+        },
+        "renewals": {
+          "top": 433,
+          "bottom": 562,
+          "left": 796,
+          "right": 1326,
+          "w": 530,
+          "h": 129,
+          "fontSize": 15,
+          "color": "rgb(201, 201, 214)",
+          "text": "RENEWALS\n      \n        27%\n        →\n        7%\n        down 20 points\n      \n "
+        },
+        "turnedAway": null,
+        "next": {
+          "top": 658,
+          "bottom": 706,
+          "left": 246,
+          "right": 1326,
+          "w": 1080,
+          "h": 48,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)",
+          "text": "THE BOOKS ARE CLOSED"
+        },
+        "lockPresent": false,
+        "figuresOver34": [
+          {
+            "text": "13,567",
+            "fontSize": 72,
+            "cls": "m2-hero-figure fh-who-came"
+          }
+        ],
+        "dead": {
+          "lastContentBottom": 905,
+          "docHeight": 905,
+          "dead": 0
+        }
+      }
+    },
+    "counterfactual": {
+      "dead": {
+        "lastContentBottom": 942,
+        "docHeight": 942,
+        "dead": 0
+      }
+    },
+    "complete": {
+      "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$2,077,376\nafter the bill\nRENEWALS\n7%\ncoming back\nYou are keeping two books, and they do not add up to one number.\nDESK 1 · NEW YORK KNICKS\nMADISON SQUARE GARDEN\nREJOIN PIN\n9053\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nThat is Full House\n\nThat is Full House. You priced five nights with no forecast, you found out that the crowd moves for reasons printed on a card, a"
+    }
+  },
+  "tight": {
+    "n1PreLock": {
+      "pinCardVisible": true,
+      "lock": {
+        "top": 311,
+        "bottom": 367,
+        "left": 702,
+        "right": 1007,
+        "w": 305,
+        "h": 56,
+        "fontSize": 18,
+        "color": "rgb(255, 255, 255)",
+        "text": "LOCK IT IN"
+      },
+      "blindNote": {
+        "top": 376,
+        "bottom": 471,
+        "left": 702,
+        "right": 1007,
+        "w": 305,
+        "h": 95,
+        "fontSize": 14.5,
+        "color": "rgb(201, 201, 214)",
+        "text": "Every night you set a PRICE ($10-$120) and how much of tonight's money you put i"
+      },
+      "priceReadout": {
+        "top": 259,
+        "bottom": 325,
+        "left": 130,
+        "right": 247,
+        "w": 117,
+        "h": 66,
+        "fontSize": 64,
+        "color": "rgb(244, 244, 248)",
+        "text": "$24"
+      },
+      "planLabel": {
+        "top": 389,
+        "bottom": 412,
+        "left": 56,
+        "right": 110,
+        "w": 54,
+        "h": 23,
+        "fontSize": 10,
+        "color": "rgb(130, 130, 154)",
+        "text": "PLAN $24"
+      },
+      "horizontalScroll": false,
+      "knob": {
+        "left": 68,
+        "right": 98,
+        "top": 354,
+        "bottom": 384
+      }
+    },
+    "n1Result": {
+      "headline": {
+        "top": 311,
+        "bottom": 337,
+        "left": 30,
+        "right": 994,
+        "w": 964,
+        "h": 26,
+        "fontSize": 22,
+        "color": "rgb(244, 244, 248)",
+        "text": "NIGHT 1 · 14,142 CAME AT $34"
+      },
+      "whoCame": {
+        "top": 359,
+        "bottom": 427,
+        "left": 183,
+        "right": 392,
+        "w": 209,
+        "h": 68,
+        "fontSize": 64,
+        "color": "rgb(244, 244, 248)",
+        "text": "14,142"
+      },
+      "next": {
+        "top": 754,
+        "bottom": 802,
+        "left": 30,
+        "right": 994,
+        "w": 964,
+        "h": 48,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+      },
+      "horizontalScroll": false
+    }
+  },
+  "vocabulary": {
+    "n1PreLock": {
+      "hits": []
+    }
+  },
+  "notes": []
+}

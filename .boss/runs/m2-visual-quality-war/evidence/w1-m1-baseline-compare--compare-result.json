@@ -1,0 +1,88 @@
+{
+  "a": "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/m1-baseline",
+  "b": "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/m1-baseline-repeat",
+  "results": [
+    {
+      "file": "m1-01-play-join@1366x768.png",
+      "status": "IDENTICAL",
+      "sizeA": 25993,
+      "sizeB": 25993,
+      "shaA": "8e562201904f",
+      "shaB": "8e562201904f"
+    },
+    {
+      "file": "m1-02-play-lobby@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 21513,
+      "sizeB": 21880,
+      "shaA": "efff335dbc8a",
+      "shaB": "f88909fc3001"
+    },
+    {
+      "file": "m1-03-teach-lobby@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 60247,
+      "sizeB": 60571,
+      "shaA": "fa613a00ff95",
+      "shaB": "52c97a0c4a44"
+    },
+    {
+      "file": "m1-04-board-lobby@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 759596,
+      "sizeB": 759596,
+      "shaA": "3b77dd066ced",
+      "shaB": "3b77dd066ced"
+    },
+    {
+      "file": "m1-05-play-hook@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 41247,
+      "sizeB": 41580,
+      "shaA": "4a450c7157a4",
+      "shaB": "87bbef6c4c28"
+    },
+    {
+      "file": "m1-06-teach-hook@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 60591,
+      "sizeB": 60909,
+      "shaA": "14101b3e7bf3",
+      "shaB": "b4e1ca844b13"
+    },
+    {
+      "file": "m1-07-board-hook@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 824862,
+      "sizeB": 824862,
+      "shaA": "064a078f625f",
+      "shaB": "064a078f625f"
+    },
+    {
+      "file": "m1-08-play-play@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 82672,
+      "sizeB": 82994,
+      "shaA": "0d750bb4c1fa",
+      "shaB": "625023fdb896"
+    },
+    {
+      "file": "m1-09-teach-play@1366x768.png",
+      "status": "DIFFERS",
+      "sizeA": 61026,
+      "sizeB": 61364,
+      "shaA": "22bc538dfbc6",
+      "shaB": "970c40dc0afa"
+    },
+    {
+      "file": "m1-10-board-play@1920x1080.png",
+      "status": "IDENTICAL",
+      "sizeA": 751662,
+      "sizeB": 751662,
+      "shaA": "685791e7be0a",
+      "shaB": "685791e7be0a"
+    }
+  ],
+  "stableCount": 4,
+  "total": 10
+}

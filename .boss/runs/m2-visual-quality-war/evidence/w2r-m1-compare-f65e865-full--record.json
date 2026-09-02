@@ -1,0 +1,18 @@
+{
+  "recordedAt": "2026-09-02T17:44:40.119Z",
+  "command": [
+    "node",
+    "docs/gauntlet/module-2/premium/tools/compare-m1-ext.cjs",
+    "--a",
+    "docs/gauntlet/module-2/premium/screens-m1-baseline-ext",
+    "--b",
+    "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/m1-head-f65e865-run2",
+    "--out",
+    "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/m1-compare-f65e865-full.json"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "Compared 38 PNGs (byte-equality / sha256, pngjs unavailable):\n  IDENTICAL   l1-01-play-join@1366x768.png  (25993 bytes)\n  IDENTICAL   l1-02-play-lobby@1366x768.png  (19555 bytes)\n  IDENTICAL   l1-03-teach-lobby@1366x768.png  (52194 bytes)\n  IDENTICAL   l1-04-board-lobby@1920x1080.png  (759596 bytes)\n  IDENTICAL   l1-05-play-hook@1366x768.png  (39494 bytes)\n  IDENTICAL   l1-06-teach-hook@1366x768.png  (52544 bytes)\n  IDENTICAL   l1-07-board-hook@1920x1080.png  (824862 bytes)\n  IDENTICAL   l1-08-play-play@1366x768.png  (80894 bytes)\n  IDENTICAL   l1-09-teach-play@1366x768.png  (53012 bytes)\n  IDENTICAL   l1-10-board-play@1920x1080.png  (751662 bytes)\n  IDENTICAL   l1-11-play-locked-roster@1366x768.png  (80894 bytes)\n  IDENTICAL   l1-12-teach-locked-roster@1366x768.png  (55172 bytes)\n  IDENTICAL   l1-13-play-reveal@1366x768.png  (78288 bytes)\n  IDENTICAL   l1-14-teach-reveal@1366x768.png  (55700 bytes)\n  IDENTICAL   l1-15-board-reveal@1920x1080.png  (1192782 bytes)\n  IDENTICAL   l1-16-play-synthesis@1366x768.png  (26880 bytes)\n  IDENTICAL   l1-17-teach-synthesis@1366x768.png  (55552 bytes)\n  IDENTICAL   l1-18-board-synthesis@1920x1080.png  (1161564 bytes)\n  IDENTICAL   l2-01-play-lobby@1366x768.png  (19780 bytes)\n  IDENTICAL   l2-02-teach-lobby@1366x768.png  (48367 bytes)\n  IDENTICAL   l2-03-board-lobby@1920x1080.png  (761467 bytes)\n  IDENTICAL   l2-04-play-midseason-report@1366x768.png  (90220 bytes)\n  IDENTICAL   l2-05-teach-hook@1366x768.png  (55389 bytes)\n  IDENTICAL   l2-06-play-deadline-decision@1366x768.png  (80140 bytes)\n  IDENTICAL   l2-07-teach-play@1366x768.png  (57662 bytes)\n  IDENTICAL   l2-08-board-play@1920x1080.png  (754862 bytes)\n  IDENTICAL   l2-09-board-reveal@1920x1080.png  (754862 bytes)\n  IDENTICAL   l2-10-play-reveal@1366x768.png  (45931 bytes)\n  IDENTICAL   l2-11-teach-reveal@1366x768.png  (58777 bytes)\n  IDENTICAL   l3-01-play-lobby@1366x768.png  (19574 bytes)\n  IDENTICAL   l3-02-teach-lobby@1366x768.png  (58621 bytes)\n  IDENTICAL   l3-03-board-lobby@1920x1080.png  (761966 bytes)\n  IDENTICAL   l3-04-play-day1-market@1366x768.png  (85415 bytes)\n  DIFFERS     l3-05-teach-day1@1366x768.png  A=60712B/b2c4a28b1c42 B=60744B/6ff5794f47a1\n  IDENTICAL   l3-06-board-day1@1920x1080.png  (773284 bytes)\n  IDENTICAL   l3-07-board-reveal@1920x1080.png  (775385 bytes)\n  IDENTICAL   l3-08-play-reveal@1366x768.png  (39652 bytes)\n  DIFFERS     l3-09-teach-reveal@1366x768.png  A=61732B/38ad819a3581 B=61764B/61d98f07657f\n\n36/38 byte-identical across the two runs.\nNon-stable: l3-05-teach-day1@1366x768.png, l3-09-teach-reveal@1366x768.png\nwrote /tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/m1-compare-f65e865-full.json\n",
+  "stderr": ""
+}

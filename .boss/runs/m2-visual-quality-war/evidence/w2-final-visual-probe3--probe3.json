@@ -1,0 +1,675 @@
+{
+ "hook-1366": {
+  "vp": {
+   "w": 1366,
+   "h": 768
+  },
+  "wordsAnyOverlap": 108,
+  "wordsHalfVisible": 108,
+  "wordsFullyInside": 108,
+  "shown": [
+   "FULL HOUSE",
+   "MODULE 2 · LESSON 1",
+   "NIGHT 1 OF 5",
+   "TUE",
+   "SAT",
+   "WED",
+   "SAT",
+   "TUE",
+   "Desk 1 · New York Knicks",
+   "Madison Square Garden",
+   "8041",
+   "Full House",
+   "You are keeping two books, and they do not add up ",
+   "Night 1",
+   "Tuesday",
+   "a club that has lost four straight",
+   "draw 22/100",
+   "not on TV",
+   "Night 2",
+   "Saturday",
+   "a solid playoff club",
+   "draw 51/100",
+   "local TV",
+   "Night 3",
+   "Wednesday",
+   "last season's beaten finalists",
+   "draw 88/100",
+   "national TV",
+   "Night 4",
+   "Saturday",
+   "the rookie everybody is talking about",
+   "draw 97/100",
+   "not on TV",
+   "Night 5",
+   "Tuesday",
+   "a club that has lost four straight",
+   "draw 22/100",
+   "not on TV"
+  ],
+  "boxes": {
+   ".fh-pin-chip": {
+    "top": 710,
+    "bottom": 745,
+    "left": 15,
+    "right": 192,
+    "h": 35,
+    "text": "REJOIN PIN 8041"
+   },
+   "#fhLock": null,
+   ".fh-hero": null,
+   "#gameBody": {
+    "top": 66,
+    "bottom": 1714,
+    "left": 0,
+    "right": 1366,
+    "h": 1648,
+    "text": "FULL HOUSE\n        MODULE 2 · LESSON 1\n      \n    \n      \n  "
+   }
+  },
+  "slate": [
+   {
+    "top": 131,
+    "bottom": 537,
+    "left": 233,
+    "w": 1106,
+    "label": "You are keeping two books, and they do not a"
+   },
+   {
+    "top": 557,
+    "bottom": 747,
+    "left": 233,
+    "w": 213,
+    "label": "Night 1 Tuesday a club that has lost four st"
+   },
+   {
+    "top": 557,
+    "bottom": 747,
+    "left": 456,
+    "w": 213,
+    "label": "Night 2 Saturday a solid playoff club draw 5"
+   },
+   {
+    "top": 557,
+    "bottom": 747,
+    "left": 679,
+    "w": 213,
+    "label": "Night 3 Wednesday last season's beaten final"
+   },
+   {
+    "top": 557,
+    "bottom": 747,
+    "left": 903,
+    "w": 213,
+    "label": "Night 4 Saturday the rookie everybody is tal"
+   },
+   {
+    "top": 557,
+    "bottom": 747,
+    "left": 1126,
+    "w": 213,
+    "label": "Night 5 Tuesday a club that has lost four st"
+   },
+   {
+    "top": 761,
+    "bottom": 929,
+    "left": 233,
+    "w": 1106,
+    "label": "You and your partner do not run the roster t"
+   },
+   {
+    "top": 943,
+    "bottom": 1040,
+    "left": 233,
+    "w": 1106,
+    "label": "The two books You are keeping two books, and"
+   },
+   {
+    "top": 1054,
+    "bottom": 1194,
+    "left": 233,
+    "w": 1106,
+    "label": "Your building New York KnicksMadison Square "
+   },
+   {
+    "top": 1208,
+    "bottom": 1330,
+    "left": 233,
+    "w": 548,
+    "label": "House rule 1 Every night you set a PRICE ($1"
+   },
+   {
+    "top": 1208,
+    "bottom": 1330,
+    "left": 791,
+    "w": 548,
+    "label": "House rule 2 Everything NEW about tonight is"
+   },
+   {
+    "top": 1340,
+    "bottom": 1479,
+    "left": 233,
+    "w": 548,
+    "label": "House rule 3 Money you spend on the night ne"
+   },
+   {
+    "top": 1340,
+    "bottom": 1479,
+    "left": 791,
+    "w": 548,
+    "label": "House rule 4 Your building's bill is due eve"
+   },
+   {
+    "top": 1489,
+    "bottom": 1645,
+    "left": 233,
+    "w": 548,
+    "label": "House rule 5 RENEWALS follow your season-tic"
+   }
+  ],
+  "hero": [
+   {
+    "t": "Full House",
+    "fs": "28px",
+    "top": 85
+   },
+   {
+    "t": "You are keeping two books, and they do not add up to one num",
+    "fs": "22px",
+    "top": 462
+   }
+  ],
+  "svgCount": 2,
+  "docHeight": 1714
+ },
+ "hook-1024": {
+  "vp": {
+   "w": 1024,
+   "h": 600
+  },
+  "wordsAnyOverlap": 139,
+  "wordsHalfVisible": 137,
+  "wordsFullyInside": 137,
+  "shown": [
+   "FULL HOUSE",
+   "MODULE 2 · LESSON 1",
+   "NIGHT 1 OF 5",
+   "Desk 1 · New York Knicks",
+   "8041",
+   "Full House",
+   "You are keeping two books, and they do not add up ",
+   "Night 1",
+   "Tuesday",
+   "a club that has lost four straight",
+   "draw 22/100",
+   "not on TV",
+   "Night 2",
+   "Saturday",
+   "a solid playoff club",
+   "draw 51/100",
+   "local TV",
+   "Night 3",
+   "Wednesday",
+   "last season's beaten finalists",
+   "draw 88/100",
+   "national TV",
+   "Night 4",
+   "Saturday",
+   "the rookie everybody is talking about",
+   "draw 97/100",
+   "not on TV",
+   "Night 5",
+   "Tuesday",
+   "a club that has lost four straight",
+   "draw 22/100",
+   "not on TV",
+   "You and your partner do not run the roster today.",
+   "You run the building.",
+   "There is a game tonight, the doors open in an hour",
+   "Five nights."
+  ],
+  "boxes": {
+   ".fh-pin-chip": {
+    "top": 73,
+    "bottom": 108,
+    "left": 889,
+    "right": 1011,
+    "h": 35,
+    "text": "REJOIN PIN 8041"
+   },
+   "#fhLock": null,
+   ".fh-hero": null,
+   "#gameBody": {
+    "top": 66,
+    "bottom": 1545,
+    "left": 0,
+    "right": 1024,
+    "h": 1479,
+    "text": "FULL HOUSE\n        MODULE 2 · LESSON 1\n      \n    \n        \n"
+   }
+  },
+  "slate": [
+   {
+    "top": 163,
+    "bottom": 315,
+    "left": 17,
+    "w": 990,
+    "label": "You are keeping two books, and they do not a"
+   },
+   {
+    "top": 331,
+    "bottom": 487,
+    "left": 17,
+    "w": 192,
+    "label": "Night 1 Tuesday a club that has lost four st"
+   },
+   {
+    "top": 331,
+    "bottom": 487,
+    "left": 216,
+    "w": 192,
+    "label": "Night 2 Saturday a solid playoff club draw 5"
+   },
+   {
+    "top": 331,
+    "bottom": 487,
+    "left": 416,
+    "w": 192,
+    "label": "Night 3 Wednesday last season's beaten final"
+   },
+   {
+    "top": 331,
+    "bottom": 487,
+    "left": 615,
+    "w": 192,
+    "label": "Night 4 Saturday the rookie everybody is tal"
+   },
+   {
+    "top": 331,
+    "bottom": 487,
+    "left": 815,
+    "w": 192,
+    "label": "Night 5 Tuesday a club that has lost four st"
+   },
+   {
+    "top": 497,
+    "bottom": 647,
+    "left": 17,
+    "w": 990,
+    "label": "You and your partner do not run the roster t"
+   },
+   {
+    "top": 657,
+    "bottom": 754,
+    "left": 17,
+    "w": 990,
+    "label": "The two books You are keeping two books, and"
+   },
+   {
+    "top": 764,
+    "bottom": 962,
+    "left": 17,
+    "w": 990,
+    "label": "Your building New York KnicksMadison Square "
+   },
+   {
+    "top": 972,
+    "bottom": 1060,
+    "left": 17,
+    "w": 990,
+    "label": "House rule 1 Every night you set a PRICE ($1"
+   },
+   {
+    "top": 1070,
+    "bottom": 1175,
+    "left": 17,
+    "w": 990,
+    "label": "House rule 2 Everything NEW about tonight is"
+   },
+   {
+    "top": 1185,
+    "bottom": 1290,
+    "left": 17,
+    "w": 990,
+    "label": "House rule 3 Money you spend on the night ne"
+   },
+   {
+    "top": 1300,
+    "bottom": 1371,
+    "left": 17,
+    "w": 990,
+    "label": "House rule 4 Your building's bill is due eve"
+   },
+   {
+    "top": 1381,
+    "bottom": 1486,
+    "left": 17,
+    "w": 990,
+    "label": "House rule 5 RENEWALS follow your season-tic"
+   }
+  ],
+  "hero": [
+   {
+    "t": "Full House",
+    "fs": "22px",
+    "top": 127
+   }
+  ],
+  "svgCount": 2,
+  "docHeight": 1545
+ },
+ "prelock-1366": {
+  "vp": {
+   "w": 1366,
+   "h": 768
+  },
+  "wordsAnyOverlap": 404,
+  "wordsHalfVisible": 293,
+  "wordsFullyInside": 293,
+  "shown": [
+   "FULL HOUSE",
+   "MODULE 2 · LESSON 1",
+   "Tonight",
+   "Your nights",
+   "Your books",
+   "NIGHT 1 OF 5",
+   "TUE",
+   "SAT",
+   "WED",
+   "SAT",
+   "TUE",
+   "Desk 1 · New York Knicks",
+   "Madison Square Garden",
+   "8041",
+   "·",
+   "·",
+   "Full House",
+   "CASH",
+   "$0",
+   "season so far",
+   "RENEWALS",
+   "50%",
+   "season so far",
+   "You are keeping two books, and they do not add up ",
+   "Set your ticket price",
+   "−",
+   "$24",
+   "a seat, tonight",
+   "+",
+   "PLAN $24",
+   "$10",
+   "$120",
+   "Renewals follow your $24 season plan: price well U",
+   "Night 1 of 5",
+   "Tuesday · a club that has lost four straight",
+   "Not on TV",
+   "Visiting club's draw",
+   "22/100",
+   "A quiet Tuesday. Nothing about tonight is special ",
+   "Making it an event",
+   "up to $120,000",
+   "−",
+   "$0",
+   "+",
+   "Every $100 here brings about 1 extra person NEXT n",
+   "Every night you set a PRICE ($10-$120) and how muc",
+   "YOUR NIGHTS SO FAR",
+   "PEOPLE × PRICE",
+   "No nights yet. Your first dot lands here after the",
+   "One dot per night. Two nights are only comparable ",
+   "Your building",
+   "Seats",
+   "19,800",
+   "Bill tonight",
+   "$520,000",
+   "Season plan",
+   "$24",
+   "listed basketball capacity 19,812 · 2025-26",
+   "Tomorrow",
+   "Night 2 · Saturday · a solid playoff club · draw 5",
+   "More about tonight",
+   "Your market",
+   "The biggest market in American sports. A lot of pe",
+   "What the event money does"
+  ],
+  "boxes": {
+   ".fh-pin-chip": {
+    "top": 710,
+    "bottom": 745,
+    "left": 15,
+    "right": 192,
+    "h": 35,
+    "text": "REJOIN PIN 8041"
+   },
+   "#fhLock": {
+    "top": 304,
+    "bottom": 360,
+    "left": 1008,
+    "right": 1339,
+    "h": 56,
+    "text": "LOCK IT IN"
+   },
+   ".fh-hero": null,
+   "#gameBody": {
+    "top": 66,
+    "bottom": 784,
+    "left": 0,
+    "right": 1366,
+    "h": 718,
+    "text": "FULL HOUSE\n        MODULE 2 · LESSON 1\n      \n    \n      \n  "
+   }
+  },
+  "slate": [
+   {
+    "top": 85,
+    "bottom": 139,
+    "left": 717,
+    "w": 622,
+    "label": "CASH $0 season so far RENEWALS 50% season so"
+   },
+   {
+    "top": 155,
+    "bottom": 464,
+    "left": 233,
+    "w": 389,
+    "label": "Set your ticket price − $24 a seat, tonight "
+   },
+   {
+    "top": 155,
+    "bottom": 464,
+    "left": 635,
+    "w": 360,
+    "label": "Night 1 of 5 Tuesday · a club that has lost "
+   },
+   {
+    "top": 155,
+    "bottom": 295,
+    "left": 1008,
+    "w": 331,
+    "label": "Making it an event up to $120,000 − $0 + Eve"
+   },
+   {
+    "top": 475,
+    "bottom": 761,
+    "left": 233,
+    "w": 412,
+    "label": "YOUR NIGHTS SO FAR PEOPLE × PRICE No nights "
+   },
+   {
+    "top": 475,
+    "bottom": 761,
+    "left": 657,
+    "w": 343,
+    "label": "Your building Seats 19,800 Bill tonight $520"
+   }
+  ],
+  "hero": [
+   {
+    "t": "Full House",
+    "fs": "28px",
+    "top": 112
+   },
+   {
+    "t": "−",
+    "fs": "23px",
+    "top": 233
+   },
+   {
+    "t": "$24",
+    "fs": "68px",
+    "top": 208
+   },
+   {
+    "t": "+",
+    "fs": "23px",
+    "top": 233
+   },
+   {
+    "t": "$0",
+    "fs": "26px",
+    "top": 207
+   }
+  ],
+  "svgCount": 12,
+  "docHeight": 784
+ },
+ "prelock-1024": {
+  "vp": {
+   "w": 1024,
+   "h": 600
+  },
+  "wordsAnyOverlap": 238,
+  "wordsHalfVisible": 238,
+  "wordsFullyInside": 221,
+  "shown": [
+   "FULL HOUSE",
+   "MODULE 2 · LESSON 1",
+   "NIGHT 1 OF 5",
+   "CASH",
+   "$0",
+   "RENEWALS",
+   "50%",
+   "season so far",
+   "Desk 1 · New York Knicks",
+   "8041",
+   "Set your ticket price",
+   "−",
+   "$24",
+   "a seat, tonight",
+   "+",
+   "PLAN $24",
+   "$10",
+   "$120",
+   "Renewals follow your $24 season plan: price well U",
+   "Night 1 of 5",
+   "Tuesday · a club that has lost four straight",
+   "Not on TV",
+   "Visiting club's draw",
+   "22/100",
+   "A quiet Tuesday. Nothing about tonight is special ",
+   "Making it an event",
+   "up to $120,000",
+   "−",
+   "$0",
+   "+",
+   "Every $100 here brings about 1 extra person NEXT n",
+   "Every night you set a PRICE ($10-$120) and how muc",
+   "YOUR NIGHTS SO FAR",
+   "PEOPLE × PRICE",
+   "No nights yet. Your first dot lands here after the",
+   "One dot per night. Two nights are only comparable ",
+   "Tomorrow",
+   "Night 2 · Saturday · a solid playoff club · draw 5",
+   "More about tonight",
+   "Your market"
+  ],
+  "boxes": {
+   ".fh-pin-chip": {
+    "top": 73,
+    "bottom": 108,
+    "left": 889,
+    "right": 1011,
+    "h": 35,
+    "text": "REJOIN PIN 8041"
+   },
+   "#fhLock": {
+    "top": 268,
+    "bottom": 324,
+    "left": 702,
+    "right": 1007,
+    "h": 56,
+    "text": "LOCK IT IN"
+   },
+   ".fh-hero": null,
+   "#gameBody": {
+    "top": 66,
+    "bottom": 735,
+    "left": 0,
+    "right": 1024,
+    "h": 669,
+    "text": "FULL HOUSE\n        MODULE 2 · LESSON 1\n      \n    \n        \n"
+   }
+  },
+  "slate": [
+   {
+    "top": 127,
+    "bottom": 428,
+    "left": 17,
+    "w": 343,
+    "label": "Set your ticket price − $24 a seat, tonight "
+   },
+   {
+    "top": 127,
+    "bottom": 428,
+    "left": 369,
+    "w": 324,
+    "label": "Night 1 of 5 Tuesday · a club that has lost "
+   },
+   {
+    "top": 127,
+    "bottom": 261,
+    "left": 702,
+    "w": 305,
+    "label": "Making it an event up to $120,000 − $0 + Eve"
+   },
+   {
+    "top": 436,
+    "bottom": 718,
+    "left": 17,
+    "w": 361,
+    "label": "YOUR NIGHTS SO FAR PEOPLE × PRICE No nights "
+   },
+   {
+    "top": 436,
+    "bottom": 718,
+    "left": 387,
+    "w": 314,
+    "label": "Your building Seats 19,800 Bill tonight $520"
+   }
+  ],
+  "hero": [
+   {
+    "t": "−",
+    "fs": "23px",
+    "top": 193
+   },
+   {
+    "t": "$24",
+    "fs": "64px",
+    "top": 170
+   },
+   {
+    "t": "+",
+    "fs": "23px",
+    "top": 193
+   },
+   {
+    "t": "$0",
+    "fs": "26px",
+    "top": 177
+   }
+  ],
+  "svgCount": 9,
+  "docHeight": 735
+ }
+}

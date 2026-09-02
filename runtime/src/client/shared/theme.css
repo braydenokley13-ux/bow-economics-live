@@ -22,6 +22,20 @@
  * done here; the files are the unmodified Google Fonts latin subsets). The
  * license text is not vendored; if this ships beyond the classroom pilot,
  * include OFL.txt alongside the .woff2 files.
+ *
+ * MODULE 2 SCOPING (run m2-visual-quality-war, wave 2 repair 1). The Module 2
+ * `/play` renderer reuses the legacy `.fh-*` / `.price-dial-input` class names
+ * from the pre-M2 Full House build while shipping its own design system in
+ * shared/m2.css under `html[data-module="m2"]`. Every rule in THIS file that
+ * can match a class the M2 renderer emits is therefore prefixed
+ * `html:not([data-module="m2"])`, so the legacy look (gold accent, Bebas Neue
+ * display face, legacy card chrome) cannot leak onto an M2 surface. Only
+ * `/play` ever sets `data-module` (play/main.ts), so `/board` and `/teach` are
+ * unaffected: they use a disjoint set of `.fh-board-*` / `.fh-slate-*` class
+ * names styled in board/index.html, not the rules scoped here.
+ *
+ * INVARIANT: if you add a rule here that targets a class the M2 `/play`
+ * renderer emits, scope it the same way, or the leak comes back.
  */
 
 @font-face {
@@ -567,7 +581,7 @@ body {
    price is not "over the line". It is a drawn inset well now: no hue ramp, the
    gold thumb is the only indicator, and the season plan is marked where it
    actually is (`.fh-dial-notch`). */
-.price-dial-input {
+html:not([data-module="m2"]) .price-dial-input {
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
@@ -582,13 +596,13 @@ body {
 
 /* The season-plan notch: one printed mark, at the plan's own price on the track,
    travelling with the thumb geometry (15px of thumb radius at each end). */
-.fh-dial {
+html:not([data-module="m2"]) .fh-dial {
   position: relative;
   padding-bottom: 24px;
 }
 /* Chromium's UA sheet puts `margin: 2px` on `input[type=range]`, which offsets
    the track from this wrapper and would put the notch 2px off its own price. */
-.fh-dial .price-dial-input {
+html:not([data-module="m2"]) .fh-dial .price-dial-input {
   margin: 0;
   display: block;
 }
@@ -609,7 +623,7 @@ body {
   background: var(--accent-gold);
   opacity: 0.8;
 }
-.fh-dial-tick-label {
+html:not([data-module="m2"]) .fh-dial-tick-label {
   margin-top: 3px;
   font-size: 11px;
   font-weight: 700;
@@ -618,7 +632,7 @@ body {
   color: var(--accent-gold);
   opacity: 0.85;
 }
-.price-dial-input::-webkit-slider-thumb {
+html:not([data-module="m2"]) .price-dial-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 30px;
@@ -630,11 +644,11 @@ body {
   cursor: grab;
   transition: transform 120ms var(--ease-decel);
 }
-.price-dial-input:active::-webkit-slider-thumb {
+html:not([data-module="m2"]) .price-dial-input:active::-webkit-slider-thumb {
   cursor: grabbing;
   transform: scale(1.1);
 }
-.price-dial-input::-moz-range-thumb {
+html:not([data-module="m2"]) .price-dial-input::-moz-range-thumb {
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -1460,14 +1474,14 @@ body {
   border-radius: 12px;
   margin-bottom: 10px;
 }
-.fh-desk-name {
+html:not([data-module="m2"]) .fh-desk-name {
   font-family: var(--font-display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 14px;
   color: var(--ink-primary);
 }
-.fh-desk-building {
+html:not([data-module="m2"]) .fh-desk-building {
   margin-left: auto;
   font-size: 11px;
   color: var(--ink-muted);
@@ -1512,17 +1526,17 @@ body {
   line-height: 1.35;
 }
 
-.fh-card {
+html:not([data-module="m2"]) .fh-card {
   background: linear-gradient(180deg, var(--surface-card), var(--surface-panel));
   border: 1px solid rgba(244, 185, 66, 0.28);
   border-radius: 14px;
   padding: 14px;
   margin-top: 12px;
 }
-.fh-card.shock {
+html:not([data-module="m2"]) .fh-card.shock {
   border-color: rgba(216, 57, 74, 0.55);
 }
-.fh-card.repeat {
+html:not([data-module="m2"]) .fh-card.repeat {
   border-color: rgba(139, 124, 240, 0.55);
 }
 .fh-card-top {
@@ -1530,7 +1544,7 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-.fh-card-night {
+html:not([data-module="m2"]) .fh-card-night {
   font-family: var(--font-display);
   font-size: 17px;
   letter-spacing: 0.08em;
@@ -1578,7 +1592,7 @@ body {
   background: rgba(255, 255, 255, 0.14);
   display: inline-block;
 }
-.fh-dot.on {
+html:not([data-module="m2"]) .fh-dot.on {
   background: var(--accent-gold);
 }
 .fh-card-draw-num {
@@ -1619,7 +1633,7 @@ body {
   letter-spacing: 0.02em;
 }
 /* Tomorrow's card — the information the night-spend decision needs (B4/P2). */
-.fh-next {
+html:not([data-module="m2"]) .fh-next {
   display: flex;
   gap: 8px;
   align-items: baseline;
@@ -1654,7 +1668,7 @@ body {
   border-radius: 6px;
 }
 
-.fh-price-readout {
+html:not([data-module="m2"]) .fh-price-readout {
   font-size: 38px;
   text-align: center;
   color: var(--accent-gold);
@@ -1679,13 +1693,13 @@ body {
   color: var(--ink-secondary);
   line-height: 1.4;
 }
-.fh-blind-note {
+html:not([data-module="m2"]) .fh-blind-note {
   margin-top: 8px;
   font-size: 11px;
   color: var(--ink-muted);
   text-align: center;
 }
-.fh-locked-recap {
+html:not([data-module="m2"]) .fh-locked-recap {
   display: flex;
   gap: 8px;
   align-items: baseline;
@@ -1694,7 +1708,7 @@ body {
   font-size: 13px;
   color: var(--ink-secondary);
 }
-.fh-locked-recap .numeric {
+html:not([data-module="m2"]) .fh-locked-recap .numeric {
   font-size: 20px;
   color: var(--accent-gold);
 }
@@ -1752,14 +1766,14 @@ body {
   padding: 12px;
 }
 
-.fh-result {
+html:not([data-module="m2"]) .fh-result {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 12px;
   padding: 12px;
   margin-top: 12px;
 }
-.fh-result-head {
+html:not([data-module="m2"]) .fh-result-head {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-display);
@@ -1872,7 +1886,7 @@ body {
 .fh-result-row .pos {
   color: var(--cap-safe);
 }
-.fh-resale {
+html:not([data-module="m2"]) .fh-resale {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px dotted rgba(255, 255, 255, 0.12);
@@ -1883,7 +1897,7 @@ body {
 /* gate-l1-play R6: the after-the-fact ruling on last night's event money. It is
    a settlement line, not a footnote — a desk that burned $120,000 on a sold-out
    night has to be able to see that it burned it. */
-.fh-spend-verdict {
+html:not([data-module="m2"]) .fh-spend-verdict {
   margin-top: 8px;
   padding: 8px 10px;
   border-radius: 8px;
@@ -1893,16 +1907,16 @@ body {
   color: var(--ink-secondary);
   background: rgba(255, 255, 255, 0.03);
 }
-.fh-spend-verdict.waste {
+html:not([data-module="m2"]) .fh-spend-verdict.waste {
   border-color: rgba(255, 154, 164, 0.45);
   color: #ffb3ba;
   background: rgba(255, 154, 164, 0.07);
 }
-.fh-spend-verdict.part {
+html:not([data-module="m2"]) .fh-spend-verdict.part {
   border-color: rgba(244, 185, 66, 0.4);
   color: var(--ink-primary);
 }
-.fh-spend-verdict.paid {
+html:not([data-module="m2"]) .fh-spend-verdict.paid {
   border-color: rgba(18, 148, 106, 0.45);
   color: var(--ink-primary);
 }
@@ -1919,35 +1933,35 @@ body {
   color: var(--ink-secondary);
 }
 
-.fh-peaks {
+html:not([data-module="m2"]) .fh-peaks {
   background: var(--surface-card);
   border: 1px solid rgba(244, 185, 66, 0.35);
   border-radius: 12px;
   padding: 12px;
   margin-top: 12px;
 }
-.fh-peaks-row {
+html:not([data-module="m2"]) .fh-peaks-row {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
   color: var(--ink-secondary);
   padding: 3px 0;
 }
-.fh-peaks-row .numeric {
+html:not([data-module="m2"]) .fh-peaks-row .numeric {
   font-size: 18px;
   color: var(--ink-primary);
 }
-.fh-peaks-row .numeric.hot {
+html:not([data-module="m2"]) .fh-peaks-row .numeric.hot {
   color: var(--accent-gold);
 }
-.fh-peaks-note {
+html:not([data-module="m2"]) .fh-peaks-note {
   margin-top: 8px;
   font-size: 13px;
   line-height: 1.45;
   color: var(--ink-primary);
 }
 
-.fh-repeat {
+html:not([data-module="m2"]) .fh-repeat {
   background: var(--surface-card);
   border: 1px solid rgba(139, 124, 240, 0.4);
   border-radius: 12px;
@@ -1984,7 +1998,7 @@ body {
 /* `econ-l1-n5-attribution` residual on /play: the desk's own channel split,
    given the same weight the board gives it. Not a footnote — it is the sentence
    that stops a pair crediting renewals for event money. */
-.fh-repeat-split {
+html:not([data-module="m2"]) .fh-repeat-split {
   margin-top: 10px;
   padding: 9px 11px;
   border-radius: 10px;
@@ -2007,7 +2021,7 @@ body {
   color: var(--ink-primary);
 }
 
-.fh-replay {
+html:not([data-module="m2"]) .fh-replay {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 12px;
@@ -2106,7 +2120,7 @@ body {
 }
 
 /* gate-l1-play P10 (BLOCKING): the renewals rule, beside the dial it governs. */
-.fh-renewal-rule {
+html:not([data-module="m2"]) .fh-renewal-rule {
   margin-top: 8px;
   padding: 8px 10px;
   border-left: 3px solid var(--accent-blue);
@@ -2118,7 +2132,7 @@ body {
 }
 
 /* The night-spend receipt (gate-l1-play P2, second clause). */
-.fh-receipt {
+html:not([data-module="m2"]) .fh-receipt {
   margin: 6px 0 0;
   font-size: 12.5px;
   line-height: 1.4;
@@ -2151,7 +2165,7 @@ body {
 /* gate-l1-visual P2: the one irreversible bet in the lesson was a default OS
    checkbox in a thin red row. It is a plate now — a physical, costly,
    one-night switch, in the Cap Room register, with no hue ramp. */
-.fh-bowl-plate {
+html:not([data-module="m2"]) .fh-bowl-plate {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-areas:
@@ -2170,15 +2184,15 @@ body {
   color: var(--ink-secondary);
   transition: border-color 140ms var(--ease-decel), background 140ms var(--ease-decel);
 }
-.fh-bowl-plate:hover {
+html:not([data-module="m2"]) .fh-bowl-plate:hover {
   border-color: rgba(255, 255, 255, 0.28);
 }
-.fh-bowl-plate.on {
+html:not([data-module="m2"]) .fh-bowl-plate.on {
   border-color: var(--accent-gold);
   background: rgba(244, 185, 66, 0.09);
   color: var(--ink-primary);
 }
-.fh-bowl-state {
+html:not([data-module="m2"]) .fh-bowl-state {
   grid-area: state;
   font-family: var(--font-display);
   letter-spacing: 0.1em;
@@ -2188,27 +2202,27 @@ body {
   border: 1px solid currentColor;
   color: var(--ink-muted);
 }
-.fh-bowl-plate.on .fh-bowl-state {
+html:not([data-module="m2"]) .fh-bowl-plate.on .fh-bowl-state {
   color: var(--accent-gold);
 }
-.fh-bowl-main {
+html:not([data-module="m2"]) .fh-bowl-main {
   grid-area: main;
   font-size: 13.5px;
   color: var(--ink-primary);
 }
-.fh-bowl-cost {
+html:not([data-module="m2"]) .fh-bowl-cost {
   grid-area: cost;
   font-size: 17px;
   color: var(--accent-gold);
 }
-.fh-bowl-note {
+html:not([data-module="m2"]) .fh-bowl-note {
   grid-area: note;
   font-size: 11.5px;
   color: var(--ink-muted);
 }
 
 /* gate-l1-visual H2 / D1: FULL HOUSE as a moment, not a table cell. */
-.fh-sellout {
+html:not([data-module="m2"]) .fh-sellout {
   margin: 10px 0;
   padding: 12px;
   border-radius: 10px;
@@ -2216,14 +2230,14 @@ body {
   background: linear-gradient(180deg, rgba(244, 185, 66, 0.16), rgba(244, 185, 66, 0.04));
   text-align: center;
 }
-.fh-sellout-title {
+html:not([data-module="m2"]) .fh-sellout-title {
   font-family: var(--font-display);
   font-size: 40px;
   line-height: 1;
   letter-spacing: 0.06em;
   color: var(--accent-gold);
 }
-.fh-sellout-sub {
+html:not([data-module="m2"]) .fh-sellout-sub {
   margin-top: 4px;
   font-size: 12.5px;
   color: var(--ink-secondary);
@@ -2245,7 +2259,7 @@ body {
   font-size: 12.5px;
   color: var(--ink-secondary);
 }
-.fh-result.soldout {
+html:not([data-module="m2"]) .fh-result.soldout {
   border-color: rgba(244, 185, 66, 0.4);
 }
 
@@ -2472,7 +2486,7 @@ body.fh-compact-play .pin-reopen {
   margin: 0;
   z-index: 5;
 }
-body.fh-compact-play .fh-card {
+html:not([data-module="m2"]) body.fh-compact-play .fh-card {
   padding: 9px 12px;
 }
 body.fh-compact-play .fh-card-notes {
@@ -2497,31 +2511,31 @@ body.fh-compact-play .fh-dials {
 body.fh-compact-play .fh-card-notes li {
   font-size: 12.5px;
 }
-body.fh-compact-play .fh-next {
+html:not([data-module="m2"]) body.fh-compact-play .fh-next {
   padding: 5px 8px;
   font-size: 12px;
 }
 body.fh-compact-play .price-dial-ends {
   margin-top: 2px;
 }
-body.fh-compact-play .fh-price-readout {
+html:not([data-module="m2"]) body.fh-compact-play .fh-price-readout {
   font-size: 28px;
   margin: 0;
   line-height: 1.1;
 }
-body.fh-compact-play .fh-renewal-rule {
+html:not([data-module="m2"]) body.fh-compact-play .fh-renewal-rule {
   margin-top: 6px;
   padding: 6px 9px;
   font-size: 12px;
   line-height: 1.35;
 }
-body.fh-compact-play .fh-next {
+html:not([data-module="m2"]) body.fh-compact-play .fh-next {
   margin-top: 4px;
 }
 body.fh-compact-play .bid-stepper {
   margin-top: 6px;
 }
-body.fh-compact-play .fh-blind-note {
+html:not([data-module="m2"]) body.fh-compact-play .fh-blind-note {
   margin-top: 6px;
 }
 /* M2 L2 (gate-l2-play R2): first contact at 1024x600 must reach LOCK IT IN and
@@ -2535,8 +2549,8 @@ body.fh-compact-play .hl-slate-block > summary { font-size: 12px; }
 body.fh-compact-play .fh-slate-row { padding: 3px 0; font-size: 12px; }
 body.fh-compact-play .hl-split { margin-top: 6px; padding: 7px 8px; }
 body.fh-compact-play .hl-bell-head { margin: 0 0 3px; }
-body.fh-compact-play .fh-result { padding: 8px 10px; margin-top: 0; }
-body.fh-compact-play .fh-result-head { font-size: 12.5px; }
+html:not([data-module="m2"]) body.fh-compact-play .fh-result { padding: 8px 10px; margin-top: 0; }
+html:not([data-module="m2"]) body.fh-compact-play .fh-result-head { font-size: 12.5px; }
 body.fh-compact-play .fh-fill-track { margin-top: 5px; }
 body.fh-compact-play .hl-split-rows { gap: 2px; }
 body.fh-compact-play .hl-road { margin-top: 7px; padding: 8px 10px; font-size: 13px; line-height: 1.35; }
@@ -2546,26 +2560,26 @@ body.fh-compact-play .fh-kept { margin-top: 7px; }
    the externality sentence stays on the first screen after the bell.
    Scoped to `hl-has-lockbar`, which only M2 L2 sets: `fh-compact-play` is
    shared with M2 L1's Full House screen, and this bundle does not touch L1. */
-body.hl-has-lockbar .fh-sellout {
+html:not([data-module="m2"]) body.hl-has-lockbar .fh-sellout {
   display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
   padding: 5px 9px; margin-top: 6px;
 }
-body.hl-has-lockbar .fh-sellout-title { font-size: 13px; margin: 0; }
-body.hl-has-lockbar .fh-sellout-sub { font-size: 11.5px; margin: 0; }
+html:not([data-module="m2"]) body.hl-has-lockbar .fh-sellout-title { font-size: 13px; margin: 0; }
+html:not([data-module="m2"]) body.hl-has-lockbar .fh-sellout-sub { font-size: 11.5px; margin: 0; }
 body.hl-has-lockbar .fh-sellout-turned { margin: 0; gap: 5px; }
 body.hl-has-lockbar .fh-sellout-turned .numeric { font-size: 13px; }
 body.fh-compact-play .hl-pricecf { margin-top: 7px; padding: 7px 9px; }
 body.fh-compact-play .hl-pricecf-row { font-size: 12px; padding: 1px 4px; }
 body.fh-compact-play .hl-pricecf-verdict { font-size: 12px; margin-top: 5px; }
 body.fh-compact-play .hl-ledger-block { margin-top: 7px; padding-top: 6px; }
-body.fh-compact-play .fh-bowl-plate {
+html:not([data-module="m2"]) body.fh-compact-play .fh-bowl-plate {
   margin-top: 8px;
   padding: 7px 10px;
 }
-body.fh-compact-play .fh-bowl-note {
+html:not([data-module="m2"]) body.fh-compact-play .fh-bowl-note {
   font-size: 11px;
 }
-body.fh-compact-play .fh-receipt {
+html:not([data-module="m2"]) body.fh-compact-play .fh-receipt {
   font-size: 12px;
   line-height: 1.35;
 }
@@ -2735,8 +2749,8 @@ body.hl-has-lockbar main {
    one: the desk HOSTING the departed star gets a three-line shock card, which
    is 15px taller than every other desk's, and that desk is exactly the one with
    the most to decide. Everything here is sized against that frame. */
-.hl-decide > .hl-col-decide .fh-price-readout { font-size: 22px; margin: 1px 0; }
-.hl-decide > .hl-col-decide .fh-dial { margin-top: 2px; }
+html:not([data-module="m2"]) .hl-decide > .hl-col-decide .fh-price-readout { font-size: 22px; margin: 1px 0; }
+html:not([data-module="m2"]) .hl-decide > .hl-col-decide .fh-dial { margin-top: 2px; }
 .hl-decide > .hl-col-decide .price-dial-ends { margin-top: 1px; }
 .hl-decide > .hl-col-decide .hl-week-card { padding: 7px 10px; }
 .hl-decide > .hl-col-decide .hl-matchup-side { padding: 2px 8px; }
@@ -2744,7 +2758,7 @@ body.hl-has-lockbar main {
 .hl-decide > .hl-col-decide .fh-slate-row { padding: 1px 5px; }
 .hl-decide > .hl-col-decide .hl-shock { padding: 4px 8px; margin-top: 5px; line-height: 1.25; }
 .hl-decide > .hl-col-decide .hl-reinvest-rule { font-size: 11.5px; line-height: 1.3; margin-top: 5px; }
-.hl-decide > .hl-col-decide .fh-blind-note { margin-top: 6px; font-size: 11px; }
+html:not([data-module="m2"]) .hl-decide > .hl-col-decide .fh-blind-note { margin-top: 6px; font-size: 11px; }
 .hl-decide > .hl-col-decide .hl-shock { font-size: 11.5px; line-height: 1.3; padding: 5px 8px; margin-top: 6px; }
 .hl-slate-terse { padding: 0; background: none; border: none; }
 
@@ -2755,8 +2769,8 @@ body.hl-has-lockbar main {
    column is compacted so the whole card, including its verdict and its
    best-price row, clears the band at first contact on a normal week AND on a
    sold-out one, where the FULL HOUSE banner pushes everything down. */
-.hl-decide > .hl-col-context .fh-result { padding: 7px 9px; }
-.hl-decide > .hl-col-context .fh-result-head { font-size: 12px; }
+html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-result { padding: 7px 9px; }
+html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-result-head { font-size: 12px; }
 .hl-decide > .hl-col-context .hl-split { margin-top: 5px; padding: 6px 8px; }
 .hl-decide > .hl-col-context .hl-split-title { margin-bottom: 4px; }
 .hl-decide > .hl-col-context .hl-split-row { font-size: 12px; }
@@ -2768,7 +2782,7 @@ body.hl-has-lockbar main {
 .hl-decide > .hl-col-context .hl-pricecf-row { font-size: 11.5px; padding: 1px 4px; }
 .hl-decide > .hl-col-context .hl-pricecf-verdict { margin-top: 4px; font-size: 12px; line-height: 1.3; }
 .hl-decide > .hl-col-context .hl-give-note { margin-top: 4px; }
-.hl-decide > .hl-col-context .fh-sellout { padding: 5px 9px; margin-top: 5px; }
+html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding: 5px 9px; margin-top: 5px; }
 .hl-decide > .hl-col-context .fh-fill-track { margin-top: 4px; }
 .hl-slate-terse .fh-slate { display: flex; flex-direction: column; }
 .hl-decide > .hl-col-decide .hl-week-top { font-size: 11px; }

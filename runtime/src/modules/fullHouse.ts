@@ -272,6 +272,19 @@ export type MarketFacts = {
   capacityNote: string;
   /** P2/B4: the night-spend dial's payback rule, in dollars a pair can act on. */
   spendRule: string;
+  /**
+   * W2 repair-2 A2/A3: the one-line version of `spendRule`, printed AT the
+   * stepper inside the first viewport. The full rule stays one disclosure away,
+   * verbatim. This says strictly less than `spendRule`; it adds nothing.
+   */
+  spendShortRule: string;
+  /**
+   * W2 repair-2 A3/B1: the one-line version of `renewalRuleFor`, printed under
+   * the dial and again on the settled night's RENEWALS card so the movement is
+   * attributable without recall. Same claims, fewer words; the full rule stays
+   * one disclosure away, verbatim.
+   */
+  renewalShortRule: string;
 };
 export const marketFacts = (m: Market): MarketFacts => ({
   id: m.id,
@@ -286,6 +299,8 @@ export const marketFacts = (m: Market): MarketFacts => ({
   bowlCost: m.bowlCost,
   capacityNote: m.capacityNote,
   spendRule: spendRuleFor(m),
+  spendShortRule: spendShortRuleFor(m),
+  renewalShortRule: renewalShortRuleFor(m),
 });
 
 /**
@@ -306,6 +321,27 @@ export function spendRuleFor(m: Market): string {
 }
 
 /**
+ * The same rule as `spendRuleFor`, in one sentence, for the slot beside the
+ * stepper (W2 repair-2 A2, Kid A #1). It carries only the first and least
+ * conditional clause of the full rule — the dollars-per-person conversion and
+ * the one-night lag. It claims nothing the full rule does not claim.
+ */
+export function spendShortRuleFor(m: Market): string {
+  const dollarsPerFan = Math.round(1 / m.eventFans);
+  return `Every $${dollarsPerFan.toLocaleString()} here brings about 1 extra person NEXT night, and nobody extra tonight.`;
+}
+
+/**
+ * The same rule as `renewalRuleFor`, in one sentence (W2 repair-2 A3/B1). Both
+ * arms of the tent are kept — under the plan price and above what tonight is
+ * worth — because dropping either one would leave a false monotone rule
+ * (FL-V11). The Draw/TV clause lives in the full rule, one disclosure away.
+ */
+export function renewalShortRuleFor(m: Market): string {
+  return `Renewals follow your $${m.planPrice} season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.`;
+}
+
+/**
  * `gate-l1-play` P10 (BLOCKING dissent `play-l1-renewals-unexplained`): the
  * renewals book drives half the outcome and half the argument, and no student
  * surface stated the rule that governs it. This is that rule, per market, in
@@ -319,6 +355,18 @@ export function spendRuleFor(m: Market): string {
  */
 export function renewalRuleFor(m: Market): string {
   return `Season plan: $${m.planPrice} a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.`;
+}
+
+/**
+ * W2 repair-4 R4-4a (Economic Truth re-check finding 1): the settled night's
+ * cause line is the FULL rule — the short form drops the apex, the only clause
+ * that can explain a renewals GAIN, and it was printed under gains. This is
+ * `renewalRuleFor` split at its sentence ends, one line per clause (the lead
+ * and the three arms of the tent), for a frame with room for lines; joined
+ * with spaces it is the registered rule, character for character.
+ */
+export function renewalRuleLinesFor(m: Market): string[] {
+  return renewalRuleFor(m).split(/(?<=\.) (?=[A-Z])/);
 }
 
 /* --------------------------------------------------------------- cards -- */
@@ -558,6 +606,11 @@ export function renewalReferencePrice(market: Market, card: NightCard): number {
  * about greed is available from the numbers.
  */
 export function renewalDelta(market: Market, card: NightCard, price: number, spend: number): number {
+  return clamp(renewalDeltaRaw(market, card, price, spend), RENEWAL_DELTA_FLOOR, RENEWAL_DELTA_CEIL);
+}
+
+/** The rule's answer BEFORE the one-night clamp (W2 repair-4 R4-4b). */
+export function renewalDeltaRaw(market: Market, card: NightCard, price: number, spend: number): number {
   const reference = renewalReferencePrice(market, card);
   const span = reference - market.planPrice;
   const ramp = span > 0 ? clamp((price - market.planPrice) / span, 0, 1) : 0;
@@ -567,7 +620,19 @@ export function renewalDelta(market: Market, card: NightCard, price: number, spe
     RENEWAL_UNDERCUT_SLOPE * Math.max(0, market.planPrice - price) -
     market.planSlope * Math.max(0, price - reference) +
     spend / market.eventRenewalDollars;
-  return clamp(Math.round(value), RENEWAL_DELTA_FLOOR, RENEWAL_DELTA_CEIL);
+  return Math.round(value);
+}
+
+/**
+ * W2 repair-4 R4-4b (Economic Truth re-check finding 4): `renewalFloorLineFor`
+ * explains the RULE's clamp — "at most 20 points off in one night" — so it may
+ * only be printed when that clamp is what the pair is looking at: the printed
+ * move IS the clamp, and the rule asked for strictly more. It never fires on
+ * the book's own floor (a desk at 7% that loses 7 points was not clamped by
+ * the rule) and never when the rule asked for exactly the clamp.
+ */
+export function renewalFloorBinds(rawDelta: number, move: number): boolean {
+  return move === RENEWAL_DELTA_FLOOR && rawDelta < RENEWAL_DELTA_FLOOR;
 }
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
@@ -990,6 +1055,31 @@ export type CurvePoint = {
   turnout: number;
   fillPct: number;
   soldOut: boolean;
+  /* ---- W3 lane B, VISUAL_REFERENCE_CONTRACT E2, ECON R-4 / E16 -----------
+   * The projector's per-night class-results frame renders four columns and
+   * only four: DESK (handle + market crest) - TICKET PRICE - WHO CAME - FILL.
+   * Three fields are added here, each because that frame cannot be drawn
+   * without it. None is money and none is seat-private: the handle, the price
+   * and the turnout of every desk already reach the projector through the
+   * class scatter, and the crest already reaches it in the LOBBY assignments.
+   *
+   *   crestIndex - E2's DESK column is "handle + market crest".
+   *   seatsOpen  - E2 words FILL "of the seats that desk opened" (R-2). The
+   *                denominator is per desk, not per class: it differs between
+   *                the two buildings and again on the bowl night, so the frame
+   *                prints it. E18 forbids one class-wide capacity number, so
+   *                the frame may not divide by a single capacity.
+   *   openBowl   - says WHY a desk's denominator is larger on the bowl night.
+   *                Without it the larger denominator reads as an error.
+   *
+   * Authorised by contract E2 ("`seatsOpen`/`openBowl` on `CurvePoint` only
+   * via Economic Truth"). NO revenue, gate, net, cash, renewals or any other
+   * money field is added here, and none reaches the class-results payload
+   * built by `classResultsFor` below. Per-desk money stays off the projector.
+   */
+  crestIndex: number;
+  seatsOpen: number;
+  openBowl: boolean;
 };
 
 export type TwoPeaks = {
@@ -1182,7 +1272,20 @@ export function repeatRowFor(
   } else if (clamped && seatedDelta !== wantedDelta) {
     channelLine = `wanted in ${say(wantedDelta)} (${parts.join(", ")}) · seats only allowed ${say(seatedDelta)}`;
   } else {
-    channelLine = `${say(wantedDelta)} people, and that is ${parts.join(" and ")}`;
+    // W2 repair-5 R5-4 (Kid C final re-read): this line used to read
+    // "-1,100 people, and that is renewals -1,100" — two signed numbers with no
+    // verb between them, on the card that is meant to explain the season. Same
+    // terms, same arithmetic, said as a sentence.
+    // Each channel keeps its magnitude directly attached to its name — no
+    // reader is told a cause without its size, and the reveal harness's P16
+    // reads those exact terms off this line ("renewals -975", "event money
+    // +400"), so the wording may grow a verb but must never come between a
+    // channel and its number.
+    const size = Math.abs(wantedDelta).toLocaleString();
+    channelLine =
+      wantedDelta === 0
+        ? `The same crowd came both times. Underneath it, ${parts.join(" and ")}.`
+        : `${size} ${wantedDelta > 0 ? "more" : "fewer"} people came. That change came from ${parts.join(" and ")}.`;
   }
   return {
     deskHandle: deskHandle(desk),
@@ -1259,7 +1362,18 @@ export function orderRepeatRows(rows: readonly RepeatRow[]): RepeatRow[] {
 export function computeAggregate(state: FullHouseState): FullHouseAggregate {
   const desks = Object.values(state.desks);
   const curves: CurvePoint[] = [];
-  for (const desk of desks) {
+  // W3 lane B / contract E2 acceptance 4 ("stable desk order across frames"):
+  // the marks used to be built from `Object.values(state.desks)`, whose order is
+  // an object-key order that survives a snapshot round-trip only by convention.
+  // The projector now prints one ROW per desk, so the order is read by the room
+  // across five night frames and has to be the seat order the module already
+  // keeps. `deskOrder` is that order; anything not in it is appended rather than
+  // dropped, so a desk can never fall off the board because of a bookkeeping gap.
+  const ordered = [
+    ...state.deskOrder.map((seatId) => state.desks[seatId]).filter((d): d is Desk => d !== undefined),
+    ...desks.filter((d) => !state.deskOrder.some((seatId) => state.desks[seatId] === d)),
+  ];
+  for (const desk of ordered) {
     for (const night of desk.nights) {
       curves.push({
         marketId: desk.marketId,
@@ -1269,6 +1383,9 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
         turnout: night.settlement.turnout,
         fillPct: night.settlement.fillPct,
         soldOut: night.settlement.soldOut,
+        crestIndex: desk.crestIndex,
+        seatsOpen: night.settlement.seatsOpen,
+        openBowl: night.openBowl,
       });
     }
   }
@@ -1728,6 +1845,214 @@ export const HOUSE_RULES: readonly string[] = [
   "RENEWALS follow your season-ticket plan price and what tonight is worth to the people who hold that plan. Charge well UNDER the plan price and the plan looks like a waste, so they stop buying it. Charge above what tonight is worth to them and they quit. The bigger the visiting club's Draw, the higher the price they will forgive — and a national-TV listing pulls that line back down, because they can watch it at home for nothing.",
 ];
 
+/**
+ * The Module-2 Lesson-1 interface copy the /play surface renders.
+ *
+ * Every economic sentence and every claim-bearing label on the student screen
+ * comes from here, not from a client literal (ECON_ADAPTATION_RULINGS R-1/R-2/R-3,
+ * VISUAL_REFERENCE_CONTRACT G). The renderer's job is layout; the words are the
+ * module's. `twoBooksLine` is SLICED out of `OBJECTIVE_COPY` rather than retyped
+ * so the two can never drift apart.
+ */
+export const FULL_HOUSE_UI_COPY = {
+  /** The bell line on the locked-waiting state. Teacher-paced, never a timer. */
+  doorsLine: "Doors open when your teacher rings the bell.",
+  /**
+   * R-2: `fillPct` is turnout / seatsOpen, and `seatsOpen` changes on Night 4.
+   * Every fill figure on this surface carries this qualifier. "of capacity" is
+   * forbidden, because on the bowl night it is false.
+   */
+  fillQualifier: "of the seats you opened tonight",
+  /** The settled night's hero label — the crowd, not the money (E10/C2). */
+  whoCameLabel: "WHO CAME",
+  historyTitle: "YOUR NIGHTS SO FAR",
+  historyCaption: "One dot per night. Two nights are only comparable when the card is the same.",
+  /** Verbatim first clause of OBJECTIVE_COPY — printed wherever CASH and RENEWALS appear together (R-3). */
+  twoBooksLine: `${OBJECTIVE_COPY.split(". ")[0]}.`,
+  /**
+   * W2 repair-2 B5 / Kid C #3: ONE name for the Night-4 option everywhere the
+   * pair meets it. The pre-lock plate says "Open 2,400 more seats tonight", so
+   * "MORE SEATS" is the name the receipt, the chain and the picture use too.
+   * "UPPER BOWL" appeared nowhere before the lock and is retired from the
+   * student surface (it survives on the teacher surface and in the model).
+   */
+  extraSeatsLabel: "MORE SEATS",
+  /**
+   * W2 repair-2 B5: the drawn building is labelled directly, not by a swatch
+   * key. The two labels name the two sides of the hard fill seam repair 3's
+   * redraw puts in the picture, so the number and the drawing say the same
+   * thing. "MORE SEATS" rather than "upper bowl" everywhere the student meets
+   * it: the pre-lock plate says "Open 2,400 more seats tonight", and one name
+   * is what Kid C asked for.
+   */
+  cameLabel: "came — the lit seats",
+  openSeatsLabel: "empty — the dark seats above the line",
+  moreSeatsOpenLabel: "More seats open",
+  moreSeatsClosedLabel: "More seats closed",
+  /**
+   * W2 repair-2 E1 (Economic Truth finding 5): the rail dock carries the season
+   * book and the night chain carries tonight's. Neither is ever a bare `CASH`
+   * again.
+   */
+  seasonQualifier: "season so far",
+  tonightQualifier: "tonight",
+  /**
+   * W2 repair-2 A3 / Economic Truth finding 6: the old empty state said the
+   * season plan "is the only number you have", which was false — the bill, the
+   * capacity, the Draw and the TV listing are all printed on the same screen.
+   * It says what the card is for instead.
+   */
+  noNightsYetLine: "No nights yet. Your first dot lands here after the first bell.",
+  /** The disclosure that holds the full registered rules, verbatim, one press away. */
+  moreLabel: "More about tonight",
+  /**
+   * W2 repair-4 R4-5 (Economic Truth R-H / E4): sentences the renderer used
+   * to author. Every one is a fact about the model or a printed rule, so
+   * every one is registered here and read off the payload.
+   */
+  twoPeaksTitle: "The two peaks — Night 3, your market",
+  twoPeaksTicketLabel: "Tickets alone made the most at",
+  twoPeaksTotalLabel: "Tickets + what they spent inside peaked at",
+  noTomorrowLine: "Nothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.",
+  stockNightLine: "This night was covered for you before you sat down.",
+  autoNightLine: "Nobody locked this night — the bell settled it at the season-plan price.",
+  inArenaNote: "what those same people spent inside",
+  bowlPaidNote: "paid whether they fill or not",
+  renewalsCaption: "season-ticket holders coming back",
+  /** The CASH decomposition chain's labels. No label here says "profit" or "revenue" (R-3). */
+  chainLabels: {
+    tickets: "TICKETS",
+    inArena: "IN-ARENA",
+    bill: "BUILDING BILL",
+    event: "EVENT MONEY",
+    bowl: "MORE SEATS",
+    cash: "CASH",
+    renewals: "RENEWALS",
+  },
+} as const;
+
+/**
+ * The settled night's price-and-card line (W2 repair-2 B1, Kid C #1). It was
+ * composed in the renderer; it is registered here because it is the sentence
+ * that makes the night's outcome attributable to the pair's own choice.
+ */
+export function nightFactLineFor(price: number, day: string, draw: number): string {
+  return `You charged $${price} · ${day} · draw ${draw}/100`;
+}
+
+/**
+ * W2 repair-5 R5-2 (Kid C final re-read): the turnout hero — the largest figure
+ * on the settled night — had no cause line. The four-clause renewals rule sat
+ * beside it, byte-identical at byte-identical coordinates after a zero night
+ * and after a sellout, and WHAT HAPPENED only re-printed the pair's own inputs,
+ * so nothing on the frame said anything about the number the night turns on.
+ *
+ * This sentence names which side of the night bound the crowd: what people
+ * would pay at this price on this card, or the seats the desk opened. Both
+ * quantities are already printed on the same frame (the turnout in the hero,
+ * the turned-away count on a sellout), so it discloses nothing new about the
+ * demand curve — no slope, no base, no other price. It grades nothing and it
+ * previews nothing, and it speaks only to the crowd: the renewals book keeps
+ * its own rule, in its own card.
+ */
+export function turnoutCauseFor(
+  price: number,
+  cardLabel: string,
+  turnout: number,
+  seatsOpen: number,
+  turnedAway: number,
+): string {
+  const seats = seatsOpen.toLocaleString();
+  const head = `${cardLabel} \u00b7 at $${price}, `;
+  if (turnedAway > 0) {
+    return `${head}more people wanted in than the ${seats} seats you opened. The limit was the seats, not the price.`;
+  }
+  if (turnout >= seatsOpen) {
+    return `${head}exactly the ${seats} seats you opened filled. The price and the seats met at the same number.`;
+  }
+  if (turnout === 0) {
+    return `${head}nobody wanted in, so all ${seats} seats you opened stayed empty. The limit was the price, not the seats.`;
+  }
+  return `${head}${turnout.toLocaleString()} people wanted in and you opened ${seats} seats. The limit was the price, not the seats.`;
+}
+
+/**
+ * Night 5's callback on the pair's OWN screen (W2 repair-2 B6, Kid A #3 /
+ * Kid C #5). Two figures and the two prices, no interpretation: the ADAPT and
+ * COUNTERFACTUAL frames keep the explanation.
+ */
+export function repeatCallbackLineFor(
+  refLabel: string,
+  refPrice: number,
+  refTurnout: number,
+  price: number,
+  turnout: number,
+): string {
+  return `${refLabel}'s card again · $${refPrice} → ${refTurnout.toLocaleString()} then · $${price} → ${turnout.toLocaleString()} tonight`;
+}
+
+/**
+ * W2 repair-2 E5 (Kid B #2): the dial opens every night at the season-plan
+ * price — `applyNight` resets `price` to `market.planPrice` when a night
+ * settles — so the number standing in it is often one this desk has already
+ * charged. The line states where the dial is and where that number came from;
+ * it says nothing about whether the number is a good one.
+ *
+ * W2 repair-5 R5-5: the doc comment used to say the dial KEEPS the last price
+ * charged, which the reducer has never done. The shipped behaviour is the
+ * reset; the comment is now the reducer.
+ *
+ * The caller must only pass a night the PAIR chose. Matching on price alone
+ * told a desk whose Night 3 the bell auto-committed at the plan price "the
+ * price you charged on Night 3" — a price that desk never picked.
+ */
+export function dialCarriedLineFor(price: number, nightLabel: string): string {
+  return `Your dial is at $${price} — the price you charged on ${nightLabel}.`;
+}
+
+/**
+ * W2 repair-2 E2 (Economic Truth R-F): the renewals delta clamps at
+ * `RENEWAL_DELTA_FLOOR`. When it did, the number the pair sees is the clamp,
+ * not the rule's answer, and nothing on the surface said so.
+ */
+/**
+ * W2 repair-4 R4-5: the Two Peaks gap sentence, registered. It restates the
+ * two argmaxes the reveal already carries; it adds no claim about why.
+ */
+export function twoPeaksNoteFor(gapDollars: number, gapSteps: number): string {
+  return `$${gapDollars} lower — ${gapSteps} clicks of the dial. The cheaper ticket made more money.`;
+}
+
+/**
+ * W2 repair-4 R4-5: the settled night's second fact line — what the pair put
+ * into the night and whether the extra seats were open. Null when neither.
+ */
+export function spendFactLineFor(spend: number, openBowl: boolean): string | null {
+  if (spend <= 0 && !openBowl) return null;
+  return `You also put $${spend.toLocaleString("en-US")} into the night${openBowl ? ` with the ${FULL_HOUSE_UI_COPY.extraSeatsLabel.toLowerCase()} open` : ""}.`;
+}
+
+export function renewalFloorLineFor(): string {
+  return `The renewals rule takes at most ${Math.abs(RENEWAL_DELTA_FLOOR)} points off in one night. Tonight's price asked for more than that.`;
+}
+
+/**
+ * The next-night control's label, composed server-side from the printed facts of
+ * the night the desk is about to play — day, Draw and TV, the same three the
+ * slate has published since HOOK. It carries nothing derived from a pending
+ * action (BC-4). Null when there is no next night.
+ */
+function nextNightLabelFor(card: NightCard | null, index: number): string | null {
+  if (!card) return null;
+  const tv = card.tv === "national" ? "national TV" : card.tv === "local" ? "local TV" : "not on TV";
+  return `NEXT: NIGHT ${index + 1} → ${card.day} · Draw ${card.draw} · ${tv}`;
+}
+
+/** `FULL_HOUSE_UI_COPY` plus the one label that depends on which night is open. */
+function uiCopyFor(card: NightCard | null, index: number) {
+  return { ...FULL_HOUSE_UI_COPY, nextNightLabel: nextNightLabelFor(card, index) };
+}
+
 export const BOARD_HONESTY_LINE =
   "These demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours.";
 
@@ -1811,6 +2136,25 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     what: "No randomness at all: no weather, no injuries, no winning streak.",
     why: "Every outcome must be attributable to the pair's own decision, or the debrief is a shrug.",
     risk: "Real pricing desks are guessing under genuine uncertainty; this room is not.",
+  },
+  // m2-visual-quality-war R-7: the drawn arena is a picture of the model that the
+  // model does not make. Two entries, one per thing the picture adds.
+  {
+    what: "The drawn arena lights every deck that is open tonight to one evenly-lit proportion of a single pool: the decks are architecture, not price tiers, and no deck fills before another.",
+    why: "The model has one undifferentiated seat pool and never decides which seats sell first, so the picture must not either. Each open deck is lit from its own front row back to an equal-area seam, which makes lit seat area over open seat area equal to turnout/seatsOpen in every deck at once.",
+    risk: "A student reads the lit ring as \"the cheap seats filled first\" — a mechanism this model does not have, and one that would change every answer if it did. The picture now denies it, because every open deck is lit to the same proportion; but filling each deck front-row-back is still a drawing convention, not a model rule. Say that tonight every seat in the building is the same seat at the same price.",
+  },
+  {
+    what: "The Night-4 upper bowl is a third state of the same picture — shuttered on every night it is not open (whether or not the option was on the card), open and lit to the same proportion as every other deck on the one night the pair opens it — and it is drawn as about a quarter of the seat area (measured 25.9%) when the seats it stands for are about a tenth of the pool. The ordinary building is the lower two decks.",
+    why: "`seatsOpen` grows when the bowl opens, so the same crowd draws a shorter bar — the picture is honest about the building, not about the decision. The deck is drawn larger than its true share because 2,400 seats out of 22,200 is a four-pixel band at classroom size, and a state nobody can see is not a state.",
+    risk: "Opening the bowl LOWERS the fill picture while RAISING turnout and zeroing turnaways. A student reading the picture alone concludes opening was worse, when what changed was the denominator. Every fill figure is labelled \"of the seats you opened tonight\" for exactly this reason; read the turnout beside it, not the bar alone. Do not read the SIZE of the drawn upper deck as the size of the option either — it is about a quarter of the drawn seats and about a tenth of the real ones.",
+  },
+  // m2-visual-quality-war R-10 (econ K2): measured, not theoretical — on Night 4
+  // renewals GAIN at the season-high price in both markets.
+  {
+    what: "The renewals forgiveness line is a modelled construct (`renewalReferencePrice`) that moves with the card and is never printed.",
+    why: "The rules state its shape in words — charge well under the plan price and the plan looks like a waste; charge above what tonight is worth to them and they quit; a bigger Draw raises the line and a national-TV listing pulls it back down — but printing the number would hand the pair the answer to the night before they set the dial.",
+    risk: "A pair that generalises \"a high price loses renewals\" from Nights 1-3 will be wrong on Night 4, where the line sits above $100 and renewals GAIN at the season-high price in both markets. Let that happen, then name why: what moved was not their price, it was what the night was worth to the people holding the plan.",
   },
 ];
 
@@ -1903,8 +2247,26 @@ export function spendVerdictFor(
   return { carryFans: carryFansIn, seated, wasted, label };
 }
 
+/**
+ * The settled night's headline, composed here rather than in the renderer so the
+ * client never assembles an economic claim out of loose numbers (R-1). Both
+ * forms are settled facts only. The sellout form leads with the crowd and the
+ * two denominators, never with a grading word (D4 / R-4). Numbers are formatted
+ * exactly as the surfaces format them (`Number.toLocaleString()`); the price is
+ * a whole-dollar dial position and carries no separator.
+ */
+function resultHeadlineFor(night: SettledNight): string {
+  const nightNumber = CARDS.findIndex((c) => c.id === night.cardId) + 1;
+  const s = night.settlement;
+  if (s.soldOut) {
+    return `FULL HOUSE · ${s.turnout.toLocaleString()} of ${s.seatsOpen.toLocaleString()} · ${s.turnedAway.toLocaleString()} turned away`;
+  }
+  return `NIGHT ${nightNumber} · ${s.turnout.toLocaleString()} CAME AT $${night.price}`;
+}
+
 /** The ONLY function that turns a settled night into something a view may carry. `hidden` never crosses it. */
 function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
+  const nightCard = CARD_BY_ID.get(night.cardId) ?? null;
   return {
     cardId: night.cardId,
     label: CARD_BY_ID.get(night.cardId)?.label ?? night.cardId,
@@ -1937,6 +2299,32 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
       night.settlement.turnedAway > 0
         ? `${night.settlement.turnedAway.toLocaleString()} people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it.`
         : null,
+    // R-1: the headline is composed server-side from settled facts, so the
+    // renderer prints a sentence instead of building one.
+    resultHeadline: resultHeadlineFor(night),
+    // W2 repair-5 R5-2: the cause line for the TURNOUT, computed from this
+    // night's own settled facts, so a zero night and a sellout never render the
+    // same sentence.
+    turnoutCause: turnoutCauseFor(
+      night.price,
+      nightCard?.label ?? night.cardId,
+      night.settlement.turnout,
+      night.settlement.seatsOpen,
+      night.settlement.turnedAway,
+    ),
+    // W2 repair-2 B1: the price-and-card line, registered rather than composed
+    // in the renderer, so the settled outcome is attributable to the choice.
+    factLine: nightFactLineFor(night.price, nightCard?.day ?? "", nightCard?.draw ?? 0),
+    // W2 repair-4 R4-5: the spend-and-seats line, registered rather than composed.
+    spendLine: spendFactLineFor(night.spend, night.openBowl),
+    // W2 repair-2 E2: TRUE when the renewals rule's answer for this night's
+    // price and spend was below the floor and the printed move is the clamp.
+    // Recomputed from this night's own inputs through the exported model
+    // function; no constant and no new mechanic.
+    // W2 repair-4 R4-4b: only when the 20-point clamp itself bound (see
+    // `renewalFloorBinds`), never on the book's 0 floor.
+    renewalAtFloor: nightCard ? renewalFloorBinds(renewalDeltaRaw(market, nightCard, night.price, night.spend), night.renewalMove) : false,
+    renewalFloorLine: renewalFloorLineFor(),
     // R6/P2: was last night's event money confirmed or refuted by this night?
     spendVerdict: spendVerdictFor(market, night, carryFansIn),
     marketId: market.id,
@@ -1997,6 +2385,191 @@ function deskIdentity(desk: Desk) {
 
 function booksFor(desk: Desk) {
   return { cash: desk.cash, renewals: desk.renewals, inDebt: desk.cash < 0 };
+}
+
+/* ------------------------------------------------- W3: the projector -- */
+/**
+ * WAVE 3, LANE B. Everything the projector's new per-night CLASS RESULTS frame
+ * is allowed to know, in one place, so that the column law is readable as law
+ * rather than as a render detail.
+ *
+ * VISUAL_REFERENCE_CONTRACT E1/E2/E4; ECON_ADAPTATION_RULINGS R-2, R-4, E16,
+ * E18, E19; D-law "`/board` never shows a seat's private data".
+ *
+ * THE COLUMN LAW. The frame carries DESK, TICKET PRICE, WHO CAME and FILL, and
+ * nothing else. Revenue and profit columns are FORBIDDEN (E16). Per-desk money
+ * never reaches the projector at all: money appears once, at the season-books
+ * stage of REVEAL, as per-market medians. `ClassResultRow` below is the whole
+ * per-desk payload and it has no money field to render.
+ *
+ * THE FILL LAW. Fill is turnout over the seats THAT DESK opened (R-2), never
+ * "of capacity" — false on the bowl night, where a desk's own denominator
+ * grows by its building's bowl seats. Each row therefore prints its own
+ * denominator, and each building prints its own capacity note. There is no
+ * class-wide capacity number anywhere on the frame (E18).
+ *
+ * THE HELD-STATE LAW. This payload is built only from nights that have already
+ * settled. Nothing about the open night is on it (R13), and the last bell still
+ * closes on a held state, so the staged REVEAL remains the first time the room
+ * sees all five nights at once.
+ */
+export const BOARD_CLASS_RESULTS_COPY = {
+  frameTitle: "CLASS RESULTS",
+  deskColumn: "DESK",
+  priceColumn: "TICKET PRICE",
+  turnoutColumn: "WHO CAME",
+  fillColumn: "FILL",
+  /** R-2 on a public surface: the desk's own open seats, in the third person. */
+  fillQualifier: "of the seats that desk opened",
+  soldOutTag: "FULL HOUSE",
+  /** One name for the Night-4 option on every surface (W2 repair-2 B5). */
+  moreSeatsTag: FULL_HOUSE_UI_COPY.moreSeatsOpenLabel,
+  /** E16, said out loud on the frame that could have carried a money column. */
+  noMoneyNote:
+    "No desk's money is on this board. Cash and renewals stay on each desk's own screen until the season is read out.",
+  /** E2: one night, one building. The frame refuses the cross-building read. */
+  oneBuildingNote:
+    "One night, one building. Two desks are comparable only when they ran the same building on the same night.",
+  autoTag: "auto",
+} as const;
+
+/** Q4: past this many desks in one building, the frame pages instead of shrinking. */
+export const BOARD_RESULTS_ROWS_PER_PAGE = 8;
+
+export type ClassResultRow = {
+  deskHandle: string;
+  crestIndex: number;
+  price: number;
+  turnout: number;
+  /** The desk's OWN denominator (R-2). Never a class-wide capacity (E18). */
+  seatsOpen: number;
+  fillPct: number;
+  soldOut: boolean;
+  openBowl: boolean;
+};
+
+export type ClassResultsGroup = {
+  marketId: MarketId;
+  club: string;
+  building: string;
+  capacity: number;
+  capacityNote: string;
+  /** 1-based group index within this building, and how many groups it has. */
+  group: number;
+  groupCount: number;
+  rows: ClassResultRow[];
+  /**
+   * The WHO CAME bar's full length, in people: the largest number of seats any
+   * desk in this building opened tonight. The bar is a HEADCOUNT against the
+   * building, which is why the FILL column is not redundant with it, and why a
+   * bar only reaches the end of its track when that desk actually sold out.
+   */
+  barBasis: number;
+};
+
+export type ClassResults = {
+  cardId: string;
+  cardLabel: string;
+  nightNumber: number;
+  nightCount: number;
+  day: string;
+  visitor: string;
+  draw: number;
+  deskCount: number;
+  /** One entry per building, then per group of at most 8 desks inside it. */
+  groups: ClassResultsGroup[];
+  copy: typeof BOARD_CLASS_RESULTS_COPY;
+};
+
+/**
+ * Build the class-results payload for ONE settled night.
+ *
+ * Returns null before the first bell, which is what holds the frame back while
+ * a night is open. `agg.curves` is already in `deskOrder` order (see
+ * `computeAggregate`), so filtering preserves the stable desk order the room
+ * reads across all five night frames.
+ */
+export function classResultsFor(state: FullHouseState, agg: FullHouseAggregate, cardId: string | null): ClassResults | null {
+  if (!cardId) return null;
+  const card = CARD_BY_ID.get(cardId);
+  if (!card) return null;
+  const nightPoints = agg.curves.filter((p) => p.cardId === cardId);
+  if (nightPoints.length === 0) return null;
+  const groups: ClassResultsGroup[] = [];
+  for (const market of MARKETS) {
+    const inMarket = nightPoints.filter((p) => p.marketId === market.id);
+    if (inMarket.length === 0) continue;
+    const barBasis = Math.max(1, ...inMarket.map((p) => p.seatsOpen));
+    const groupCount = Math.max(1, Math.ceil(inMarket.length / BOARD_RESULTS_ROWS_PER_PAGE));
+    for (let g = 0; g < groupCount; g += 1) {
+      groups.push({
+        marketId: market.id,
+        club: market.club,
+        building: market.building,
+        capacity: market.capacity,
+        capacityNote: market.capacityNote,
+        group: g + 1,
+        groupCount,
+        barBasis,
+        rows: inMarket.slice(g * BOARD_RESULTS_ROWS_PER_PAGE, (g + 1) * BOARD_RESULTS_ROWS_PER_PAGE).map((p) => ({
+          deskHandle: p.deskHandle,
+          crestIndex: p.crestIndex,
+          price: p.price,
+          turnout: p.turnout,
+          seatsOpen: p.seatsOpen,
+          fillPct: p.fillPct,
+          soldOut: p.soldOut,
+          openBowl: p.openBowl,
+        })),
+      });
+    }
+  }
+  return {
+    cardId: card.id,
+    cardLabel: card.label,
+    nightNumber: CARDS.findIndex((c) => c.id === card.id) + 1,
+    nightCount: NIGHT_COUNT,
+    day: card.day,
+    visitor: card.visitor,
+    draw: card.draw,
+    deskCount: agg.deskCount,
+    groups,
+    copy: BOARD_CLASS_RESULTS_COPY,
+  };
+}
+
+/**
+ * E4, the projector's left rail, on every frame: which night the room is on,
+ * and the capacity of each building WITH its own capacity note. E18 forbids a
+ * single class-wide capacity number, so this is per market and never summed.
+ */
+export type BoardRail = {
+  nightNumber: number;
+  nightCount: number;
+  pips: { id: string; label: string; state: "settled" | "open" | "ahead" }[];
+  markets: { id: MarketId; club: string; building: string; capacity: number; capacityNote: string }[];
+  deskCount: number;
+};
+
+export function boardRailFor(state: FullHouseState, agg: FullHouseAggregate): BoardRail {
+  const settled = Math.min(state.nightIndex, NIGHT_COUNT);
+  return {
+    nightNumber: Math.min(state.nightIndex + 1, NIGHT_COUNT),
+    nightCount: NIGHT_COUNT,
+    pips: CARDS.map((c, i) => ({
+      id: c.id,
+      label: c.label,
+      state: i < settled ? "settled" : i === settled ? "open" : "ahead",
+    })),
+    markets: MARKETS.map((m) => ({
+      id: m.id,
+      club: m.club,
+      building: m.building,
+      capacity: m.capacity,
+      capacityNote: m.capacityNote,
+    })),
+    deskCount: agg.deskCount,
+  };
 }
 
 /* --------------------------------------------------------------- module -- */
@@ -2120,15 +2693,33 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
     const desk = state.desks[seatId];
     const view = ((): Record<string, unknown> => {
       if (!desk) {
-        return { phase, seated: false, message: "You're in! Taking a desk…" };
+        return { phase, seated: false, uiCopy: uiCopyFor(null, 0), message: "You're in! Taking a desk…" };
       }
       const market = marketOf(desk);
       const identity = deskIdentity(desk);
       // Each night's carried fans come from the night before it — the same
       // `carryFansFor` conversion the pair was shown before it spent (R6/P2).
-      const history = desk.nights.map((n, i) =>
-        viewNight(n, market, i > 0 ? Math.round(market.eventFans * desk.nights[i - 1]!.spend) : 0),
-      );
+      const history = desk.nights.map((n, i) => {
+        const v = viewNight(n, market, i > 0 ? Math.round(market.eventFans * desk.nights[i - 1]!.spend) : 0);
+        // W2 repair-2 B6: a night that repeats an earlier card carries the two
+        // figures for both nights on the pair's OWN screen, at the moment the
+        // result lands, instead of only two phases later on the board.
+        const refId = CARD_BY_ID.get(n.cardId)?.repeatOf ?? null;
+        const ref = refId ? desk.nights.find((x) => x.cardId === refId) : undefined;
+        return {
+          ...v,
+          repeatCallback:
+            refId && ref
+              ? repeatCallbackLineFor(
+                  CARD_BY_ID.get(refId)?.label ?? refId,
+                  ref.price,
+                  ref.settlement.turnout,
+                  n.price,
+                  n.settlement.turnout,
+                )
+              : null,
+        };
+      });
       switch (phase) {
         case "LOBBY":
           return {
@@ -2137,6 +2728,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             ...identity,
             message: `You have Desk ${desk.deskNumber}. Tonight you run the ${market.club}' building — ${market.building}.`,
             plainLine: market.plainLine,
+            uiCopy: uiCopyFor(null, 0),
           };
 
         case "HOOK":
@@ -2152,6 +2744,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             horizonLine: HORIZON_LINE,
             modeledDollarsLine: MODELED_DOLLARS_LINE,
             slate: slateView(),
+            uiCopy: uiCopyFor(null, 0),
           };
 
         case "PLAY": {
@@ -2165,6 +2758,14 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               allNightsDone: true,
               books: booksFor(desk),
               history,
+              lastNight,
+              // The settled-night state renders from this payload too, so the
+              // rules its RENEWALS card prints have to survive the last bell.
+              renewalRule: renewalRuleFor(market),
+            renewalRuleLines: renewalRuleLinesFor(market),
+              priceMin: PRICE_MIN,
+              priceMax: PRICE_MAX,
+              uiCopy: uiCopyFor(null, state.nightIndex),
               message: "All five nights are in the books. Look up at the board.",
             };
           }
@@ -2195,6 +2796,24 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // the dial that drives it, before the commit. Arithmetic on printed
             // facts only — it names no crowd, no dollar and no "right" price.
             renewalRule: renewalRuleFor(market),
+            renewalRuleLines: renewalRuleLinesFor(market),
+            // W2 repair-2 E5 (Kid B #2): the dial opens each night at the season
+            // plan price. When the number standing in it is one this desk has
+            // already charged, say which night it came from — a fact about the
+            // desk's own history, not a judgement about the number.
+            //
+            // W2 repair-5 R5-5: only a night this PAIR priced can be named. A
+            // night the bell auto-committed, and a night the desk manager
+            // covered before the seat joined, were both run at the plan price by
+            // someone other than the pair, so "the price you charged on Night 3"
+            // was false of exactly the desks most likely to see it — the dial
+            // reopens at that same plan price every night.
+            dialCarriedLine: ((): string | null => {
+              if (desk.locked) return null;
+              const prior = [...desk.nights].reverse().find((n) => n.price === desk.price && !n.auto && !n.stock);
+              if (!prior) return null;
+              return dialCarriedLineFor(desk.price, CARD_BY_ID.get(prior.cardId)?.label ?? prior.cardId);
+            })(),
             // gate-l1-play "no receipt" (P2's second clause): last night's event
             // money, converted at the rate the pair was shown before they spent
             // it, so the dial can be confirmed or refuted instead of taken on
@@ -2212,6 +2831,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
                 : null,
             history,
             lastNight,
+            // R-1 / contract G: every claim-bearing label and sentence this desk
+            // renders comes from the module. `nextNightLabel` names the night the
+            // desk is about to play (the open card), from its printed facts only.
+            uiCopy: uiCopyFor(card, state.nightIndex),
             message: desk.locked
               ? "Locked. Nothing to do but find out — the doors open when your teacher rings the bell."
               : "No preview. Read the card, read your own nights, and commit.",
@@ -2227,10 +2850,22 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             history,
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
-            twoPeaksReleased: state.twoPeaksReleased,
-            twoPeaks: state.twoPeaksReleased
-              ? computeAggregate(state).twoPeaks.filter((t) => t.marketId === desk.marketId)
-              : [],
+            // R-9 (econ K2 / contract G, BLOCKING): `onPhaseExit` force-sets
+            // `twoPeaksReleased` when PLAY closes, so this desk used to carry its
+            // own market's peak prices, gap and revenue figures from REVEAL stage
+            // 0 — six teacher presses before the room is shown them. The gate now
+            // mirrors `boardView` exactly (`revealStage >= NIGHT_COUNT + 1`), on
+            // the payload rather than in the renderer, because a client-side gate
+            // is the class of protection nothing in this repo tests.
+            twoPeaksReleased: state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1,
+            twoPeaks:
+              state.twoPeaksReleased && state.revealStage >= NIGHT_COUNT + 1
+                ? computeAggregate(state)
+                    .twoPeaks.filter((t) => t.marketId === desk.marketId)
+                    // W2 repair-4 R4-5: the gap sentence travels with the numbers.
+                    .map((t) => ({ ...t, note: twoPeaksNoteFor(t.gapDollars, t.gapSteps) }))
+                : [],
+            uiCopy: uiCopyFor(null, state.nightIndex),
             message: "Your five nights, in the books. Look up at the board for the room's.",
           };
 
@@ -2242,6 +2877,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             books: booksFor(desk),
             history,
             questions: ADAPT_QUESTIONS,
+            uiCopy: uiCopyFor(null, state.nightIndex),
             message: "Talk to your partner before you answer out loud.",
           };
 
@@ -2289,17 +2925,56 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             honestLimit:
               "We can show you what the money would have done. We cannot show you what you would have done — that is why you played it.",
             prompt: ARGUE_PROMPT,
+            uiCopy: uiCopyFor(null, state.nightIndex),
           };
         }
 
-        case "SYNTHESIS":
-          return { phase, seated: true, ...identity, books: booksFor(desk), message: "Look up at the board.", exitPrompt: EXIT_PROMPT };
+        case "SYNTHESIS": {
+          // W2 repair-2 C2 / contract D2: the student device mirrors the card
+          // the teacher is on — the card's registered title and the SAME
+          // computed body the projector is showing, page for page, so the
+          // device is not a still picture through six teacher presses. Card
+          // set, order, staging and bodies are unchanged (E27): this reads
+          // `synthesisCards` and adds nothing to it. Nothing seat-private
+          // crosses here — this is the public board card.
+          const cards = synthesisCards(state, computeAggregate(state));
+          const pages = synthPageCount(cards.length);
+          const page = Math.min(Math.max(0, state.synthPage ?? 0), pages - 1);
+          const card = cards[page] ?? null;
+          return {
+            phase,
+            seated: true,
+            ...identity,
+            books: booksFor(desk),
+            history,
+            message: "Look up at the board.",
+            exitPrompt: EXIT_PROMPT,
+            synthPage: page + 1,
+            synthPageCount: pages,
+            synthCardTitle: card?.title ?? "",
+            synthCardBody: card?.body ?? "",
+            uiCopy: uiCopyFor(null, state.nightIndex),
+          };
+        }
 
         case "COMPLETE":
-          return { phase, seated: true, ...identity, books: booksFor(desk), message: COMPLETE_COPY, exitPrompt: EXIT_PROMPT };
+          return {
+            phase,
+            seated: true,
+            ...identity,
+            books: booksFor(desk),
+            history,
+            message: COMPLETE_COPY,
+            exitPrompt: EXIT_PROMPT,
+            // W2 repair-2 C4 / contract D4: COMPLETE closes on EXIT_PROMPT and
+            // BEYOND_SPORTS_LINE verbatim. The renderer already reads this key;
+            // the payload never carried it.
+            beyondSports: BEYOND_SPORTS_LINE,
+            uiCopy: uiCopyFor(null, state.nightIndex),
+          };
 
         default:
-          return { phase, seated: true, ...identity };
+          return { phase, seated: true, ...identity, uiCopy: uiCopyFor(null, state.nightIndex) };
       }
     })();
     return tag(view);
@@ -2494,6 +3169,13 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // night is on the projector while it is still open (R13).
             curves: agg.curves.filter((p) => settledCards.includes(p.cardId)),
             lastSettledCardId: settledCards[settledCards.length - 1] ?? null,
+            // W3 lane B / contract E2: the per-night CLASS RESULTS frame. Built
+            // from SETTLED nights only, so nothing about the open night is on
+            // the projector while it is open (R13), and null before the first
+            // bell. The last bell is handled by the `allNightsDone` branch
+            // above, which stays held so the staged REVEAL is still the first
+            // time the room sees all five nights at once (E19).
+            classResults: classResultsFor(state, agg, settledCards[settledCards.length - 1] ?? null),
             twoPeaksReleased: state.twoPeaksReleased,
             twoPeaks: state.twoPeaksReleased ? agg.twoPeaks : [],
             // gate-l1-play P3 (pre-commit leak): this block used to render while
@@ -2618,7 +3300,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
           return { mode: "idle", phase };
       }
     })();
-    return tag(view);
+    // E4: the projector's left rail is frame furniture, not frame content — it
+    // is on every board frame, so it is attached once, here, rather than being
+    // spread into nine payloads that could drift apart.
+    return tag({ ...view, rail: boardRailFor(state, agg) });
   },
 
   aggregate(state) {
@@ -3204,7 +3889,360 @@ export function repeatSummary(rows: readonly RepeatRow[]): string {
 
 /* ------------------------------------------------------------ synthesis -- */
 
-export type SynthesisCard = { id: string; title: string; body: string };
+/* -- W3 Lane S · ruling R-5 · contract §D2/§E6: computed synthesis visuals --
+ *
+ * R-5 requires the module's two most important pictures to be COMPUTED, not
+ * asserted in prose: the demand visual is the class's realized dots for one
+ * market on one card (never a fitted curve), and the tradeoffs visual is a
+ * two-axis frontier read off `seasonFrontier` / `renewalMarginalCost` in the two
+ * books' own units (never a balance scale, never a percent as a hero figure).
+ *
+ * `visual` is ADDITIVE and OPTIONAL. The six cards, their order, their staging
+ * and their bodies are unchanged (E27). The payload carries DATA and the
+ * captions the data supports — never a rendered string a client invented, never
+ * a picture. Every figure a caption prints is also a field on the payload, so a
+ * DOM audit can prove no surface printed a number this module did not compute.
+ */
+export type SynthesisDot = { readonly price: number; readonly turnout: number; readonly soldOut: boolean };
+
+/** One market's frontier panel, in the two books' own units: dollars and renewal points. */
+export type FrontierPanel = {
+  readonly marketId: MarketId;
+  readonly club: string;
+  /** The model's own undominated seasons, renewals ASCENDING. Not a fit, not a smoothing. */
+  readonly line: readonly { readonly renewals: number; readonly cash: number }[];
+  /**
+   * Where the room's desks finished. ANONYMOUS on purpose: E16 keeps per-desk
+   * money off the projector, so a dot carries no handle, no crest and no title.
+   * Only desks that played every night are plotted — a desk that joined late has
+   * fewer nights of cash and would read as a bad decision instead of a short season.
+   */
+  readonly deskDots: readonly { readonly renewals: number; readonly cash: number }[];
+  readonly deskDotCount: number;
+  readonly partialDeskCount: number;
+  readonly desksOnLine: number;
+  readonly cashBestRenewals: number;
+  readonly cashBestCash: number;
+  readonly cornerRenewals: number;
+  readonly cornerCash: number;
+  readonly gapDollars: number;
+  readonly gapPoints: number;
+  readonly gapFans: number;
+  readonly fansPerPoint: number;
+  /** The bend, computed: the renewals level where half the line's money has been given up. */
+  readonly kneeRenewals: number;
+  readonly cheapPoints: number;
+  readonly cheapCost: number;
+  readonly cheapPerPoint: number;
+  readonly dearPoints: number;
+  readonly dearCost: number;
+  readonly dearPerPoint: number;
+  /** Axis bounds for the room view (dots inside the line) and for the close-up of the line alone. */
+  readonly cashAxisMin: number;
+  readonly cashAxisMax: number;
+  readonly lineAxisMin: number;
+  readonly lineAxisMax: number;
+  readonly renewalsAxisMin: number;
+  readonly renewalsAxisMax: number;
+  readonly gapCaption: string;
+  readonly bendCaption: string;
+  readonly roomCaption: string;
+  /** Present only on a student device, for that pair's own desk (never on /board). */
+  readonly ownDot?: {
+    readonly renewals: number;
+    readonly cash: number;
+    readonly ceilingCash: number;
+    readonly gapToLine: number;
+    readonly nightsPlayed: number;
+    readonly nightCount: number;
+  };
+  readonly ownCaption?: string;
+};
+
+export type SynthesisVisual =
+  | {
+      readonly kind: "dots";
+      readonly marketId: MarketId;
+      readonly club: string;
+      readonly cardId: string;
+      readonly cardLabel: string;
+      readonly day: string;
+      readonly draw: number;
+      readonly tv: string;
+      /** Realized nights only. A night nobody played has no mark. */
+      readonly dots: readonly SynthesisDot[];
+      readonly deskCount: number;
+      readonly comparable: boolean;
+      readonly lowPrice: number;
+      readonly lowTurnout: number;
+      readonly highPrice: number;
+      readonly highTurnout: number;
+      readonly priceAxisMin: number;
+      readonly priceAxisMax: number;
+      readonly turnoutAxisMax: number;
+      readonly caption: string;
+    }
+  | {
+      readonly kind: "frontier";
+      readonly fansPerPoint: number;
+      readonly markets: readonly FrontierPanel[];
+      readonly axisCaption: string;
+    }
+  | {
+      readonly kind: "shifters";
+      readonly marketId: MarketId;
+      readonly club: string;
+      /** People one renewal point is worth on the base of every night's crowd, so the carried chip's figure is traceable. */
+      readonly fansPerPoint: number;
+      readonly tonightLabel: string;
+      readonly carriedLabel: string;
+      readonly nights: readonly {
+        readonly cardId: string;
+        readonly cardLabel: string;
+        readonly day: string;
+        readonly draw: number;
+        readonly tv: string;
+        readonly price: number;
+        readonly turnout: number;
+      }[];
+      readonly tonight: readonly { readonly key: string; readonly a: string; readonly b: string }[];
+      readonly carried: readonly { readonly key: string; readonly note: string }[];
+      readonly samePrice: boolean;
+      readonly caption: string;
+    };
+
+export type SynthesisCard = { id: string; title: string; body: string; visual?: SynthesisVisual };
+
+/** How a TV listing is printed on every M2 surface. One spelling, one place. */
+function tvLabelFor(card: NightCard): string {
+  return card.tv === "national" ? "national TV" : card.tv === "local" ? "local TV" : "not on TV";
+}
+
+/* ------------------------------- W3 Lane S: the three computed visuals -- */
+
+/**
+ * The demand visual (R-5): the class's realized dots for ONE market on ONE
+ * card. Never a fitted curve, never a mark for a night nobody played, never two
+ * different nights in one picture — five nights are five demand worlds and a
+ * line through them is a false picture (E3 / gate-l1-play P1).
+ */
+function dotsVisualFor(agg: FullHouseAggregate): SynthesisVisual | undefined {
+  const { best, widest } = revenueGroups(agg);
+  const group = best ?? widest;
+  if (!group || group.points.length === 0) return undefined;
+  const card = CARD_BY_ID.get(group.cardId);
+  const market = MARKET_BY_ID.get(group.marketId);
+  if (!card || !market) return undefined;
+  const comparable = best !== null && group === best;
+  const dots = group.points
+    .map((p) => ({ price: p.price, turnout: p.turnout, soldOut: p.soldOut }))
+    .sort((a, b) => a.price - b.price);
+  const turnoutAxisMax = Math.max(1000, ...dots.map((d) => d.turnout));
+  const caption = comparable
+    ? `${card.label} · ${market.club}. ${dots.length} desk${dots.length === 1 ? "" : "s"} played this night in this building. $${group.low.price} drew ${group.low.turnout.toLocaleString()}. $${group.high.price} drew ${group.high.turnout.toLocaleString()}. One dot per desk-night. Nothing joins them: the dots are what the room did, not a line anybody drew.`
+    : `${card.label} · ${market.club}. ${dots.length} desk${dots.length === 1 ? "" : "s"} played this night in this building. No two of them priced far enough apart to read a demand curve off, so these are the room's dots and nothing more. One dot per desk-night, nothing joining them.`;
+  return {
+    kind: "dots",
+    marketId: group.marketId,
+    club: market.club,
+    cardId: group.cardId,
+    cardLabel: card.label,
+    day: card.day,
+    draw: card.draw,
+    tv: tvLabelFor(card),
+    dots,
+    deskCount: dots.length,
+    comparable,
+    lowPrice: group.low.price,
+    lowTurnout: group.low.turnout,
+    highPrice: group.high.price,
+    highTurnout: group.high.turnout,
+    priceAxisMin: PRICE_MIN,
+    priceAxisMax: PRICE_MAX,
+    turnoutAxisMax,
+    caption,
+  };
+}
+
+/**
+ * The demand-shifter chips (R-5): DAY / DRAW / TV are what tonight's card
+ * printed; RENEWALS and LAST NIGHT'S EVENT MONEY are CARRIED and live in their
+ * own labelled group, because they are not facts about tonight — they are the
+ * pair's own earlier choices arriving late. "Weather" is not one of the four
+ * reference chips and does not exist in this model, so it is not drawn and not
+ * named.
+ */
+function shiftersVisualFor(agg: FullHouseAggregate): SynthesisVisual | undefined {
+  const picked = shifterPick(agg);
+  if (!picked) return undefined;
+  const cardA = CARD_BY_ID.get(picked.a.cardId);
+  const cardB = CARD_BY_ID.get(picked.b.cardId);
+  if (!cardA || !cardB) return undefined;
+  const m = picked.market;
+  const caption = picked.samePrice
+    ? `${m.club}: the same $${picked.a.price}, two different crowds — ${picked.a.turnout.toLocaleString()} and ${picked.b.turnout.toLocaleString()}. The three chips on the left were printed on the card before anybody locked. The two on the right are the desk's own earlier nights arriving late. Nothing else moves the crowd — there is no luck in this model.`
+    : `${m.club}: ${picked.a.turnout.toLocaleString()} came at $${picked.a.price}, ${picked.b.turnout.toLocaleString()} at $${picked.b.price}. Two different prices, so part of that gap is the price and this pair does not prove the card on its own. The three chips on the left were printed on the card before anybody locked; the two on the right are the desk's own earlier nights arriving late.`;
+  return {
+    kind: "shifters",
+    marketId: m.id,
+    club: m.club,
+    fansPerPoint: m.renewalFans,
+    tonightLabel: "PRINTED ON TONIGHT'S CARD",
+    carriedLabel: "CARRIED IN FROM YOUR OWN EARLIER NIGHTS",
+    nights: [
+      { cardId: cardA.id, cardLabel: cardA.label, day: cardA.day, draw: cardA.draw, tv: tvLabelFor(cardA), price: picked.a.price, turnout: picked.a.turnout },
+      { cardId: cardB.id, cardLabel: cardB.label, day: cardB.day, draw: cardB.draw, tv: tvLabelFor(cardB), price: picked.b.price, turnout: picked.b.turnout },
+    ],
+    tonight: [
+      { key: "DAY", a: cardA.day, b: cardB.day },
+      { key: "DRAW", a: `${cardA.draw} / 100`, b: `${cardB.draw} / 100` },
+      { key: "TV", a: tvLabelFor(cardA), b: tvLabelFor(cardB) },
+    ],
+    carried: [
+      { key: "RENEWALS", note: `Your own, from earlier nights. One point is ${m.renewalFans} people on the base of every night's crowd.` },
+      { key: "LAST NIGHT'S EVENT MONEY", note: "Money spent on a night never changes that night's crowd. It lands on the next one." },
+    ],
+    samePrice: picked.samePrice,
+    caption,
+  };
+}
+
+/**
+ * The tradeoffs visual (R-5): a two-axis frontier, both axes in the two books'
+ * own units — dollars up, renewal points across — drawn from `seasonFrontier`'s
+ * own undominated seasons. Never a balance scale, never a percent as a hero
+ * figure, never a caption asserting how big the trade-off is.
+ *
+ * The bend is computed rather than asserted: walking the line UP from its cash
+ * corner, `kneeRenewals` is the renewals level at which HALF the money the whole
+ * line costs has been given up. Below it the points are cheap, above it they are
+ * ruinous — rising opportunity cost, which is the only reading this model
+ * supports. (A "first step above the average price per point" rule was written
+ * and thrown away: the line is not monotone in per-point cost — Memphis has a
+ * $4,380 step at 79 renewals — and that rule put the bend 14 points apart in two
+ * markets whose shape is the same.)
+ *
+ * `deskDots` are anonymous: E16 keeps per-desk money off the projector, so a dot
+ * carries no handle and no title, and only desks that played all five nights are
+ * plotted (a late joiner's short season is not a bad decision).
+ */
+function frontierPanelFor(market: Market, desks: readonly Desk[]): FrontierPanel {
+  const asc = [...seasonFrontier(market)].reverse(); // renewals ascending, cash falling
+  const cashBest = asc[0]!;
+  const corner = asc[asc.length - 1]!;
+  const gapDollars = cashBest.cash - corner.cash;
+  const gapPoints = corner.renewals - cashBest.renewals;
+  const half = gapDollars / 2;
+  let given = 0;
+  let kneeIndex = asc.length - 1;
+  for (let i = 0; i + 1 < asc.length; i += 1) {
+    given += asc[i]!.cash - asc[i + 1]!.cash;
+    if (given >= half) {
+      kneeIndex = i + 1;
+      break;
+    }
+  }
+  const knee = asc[kneeIndex]!;
+  const cheapPoints = knee.renewals - cashBest.renewals;
+  const cheapCost = cashBest.cash - knee.cash;
+  const dearPoints = corner.renewals - knee.renewals;
+  const dearCost = knee.cash - corner.cash;
+  const ceilingAt = (r: number): number => asc.find((p) => p.renewals >= r)?.cash ?? cashBest.cash;
+
+  const own = desks.filter((d) => d.marketId === market.id);
+  const full = own.filter((d) => d.nights.length >= NIGHT_COUNT);
+  const deskDots = full.map((d) => ({ renewals: d.renewals, cash: d.cash }));
+  const desksOnLine = deskDots.filter((d) => d.cash >= ceilingAt(d.renewals)).length;
+  const fansPerPoint = market.renewalFans;
+  const gapFans = gapPoints * fansPerPoint;
+
+  const cashAxisMin = Math.min(corner.cash, ...deskDots.map((d) => d.cash), 0);
+  const cashAxisMax = Math.max(cashBest.cash, ...deskDots.map((d) => d.cash));
+  const renewalsAxisMin = Math.max(0, Math.min(cashBest.renewals, ...deskDots.map((d) => d.renewals)) - 5);
+  const renewalsAxisMax = 100;
+
+  const gapCaption = `${market.club}: the whole line is ${gapPoints} renewal points wide and $${gapDollars.toLocaleString()} deep — from $${cashBest.cash.toLocaleString()} at ${cashBest.renewals} renewals to $${corner.cash.toLocaleString()} at ${corner.renewals}. ${gapPoints} renewal points is ${gapFans.toLocaleString()} people on the base of every night's crowd, at ${fansPerPoint} people a point.`;
+  const bendCaption = `The points are not all the same price. The first ${cheapPoints} cost $${cheapCost.toLocaleString()} — about $${cheapPerPointOf(cheapCost, cheapPoints).toLocaleString()} each. The last ${dearPoints} cost $${dearCost.toLocaleString()} — about $${cheapPerPointOf(dearCost, dearPoints).toLocaleString()} each.`;
+  const roomCaption =
+    deskDots.length === 0
+      ? `No desk in ${market.club} has a full five nights in the books yet, so nothing of the room's own is on this picture.`
+      : desksOnLine === 0
+        ? `${deskDots.length} desk${deskDots.length === 1 ? "" : "s"} played all five nights in ${market.club}. None of them finished on the line. The line is the ceiling of this room, not a wall down the middle of it.`
+        : `${deskDots.length} desk${deskDots.length === 1 ? "" : "s"} played all five nights in ${market.club}. ${desksOnLine} finished on the line — nothing in this model beats that season on both books at once.`;
+
+  return {
+    marketId: market.id,
+    club: market.club,
+    line: asc.map((p) => ({ renewals: p.renewals, cash: p.cash })),
+    deskDots,
+    deskDotCount: deskDots.length,
+    partialDeskCount: own.length - full.length,
+    desksOnLine,
+    cashBestRenewals: cashBest.renewals,
+    cashBestCash: cashBest.cash,
+    cornerRenewals: corner.renewals,
+    cornerCash: corner.cash,
+    gapDollars,
+    gapPoints,
+    gapFans,
+    fansPerPoint,
+    kneeRenewals: knee.renewals,
+    cheapPoints,
+    cheapCost,
+    cheapPerPoint: cheapPerPointOf(cheapCost, cheapPoints),
+    dearPoints,
+    dearCost,
+    dearPerPoint: cheapPerPointOf(dearCost, dearPoints),
+    cashAxisMin,
+    cashAxisMax,
+    lineAxisMin: corner.cash,
+    lineAxisMax: cashBest.cash,
+    renewalsAxisMin,
+    renewalsAxisMax,
+    gapCaption,
+    bendCaption,
+    roomCaption,
+  };
+}
+
+function cheapPerPointOf(cost: number, points: number): number {
+  return points > 0 ? Math.round(cost / points) : 0;
+}
+
+function frontierVisualFor(state: FullHouseState): SynthesisVisual {
+  const desks = Object.values(state.desks);
+  return {
+    kind: "frontier",
+    fansPerPoint: MARKETS[0]!.renewalFans,
+    markets: MARKETS.map((m) => frontierPanelFor(m, desks)),
+    axisCaption: "Across: renewal points the season ends on. Up: cash the season ends on. Two units, two axes — there is no exchange rate between them, which is why they are not added.",
+  };
+}
+
+/**
+ * The /play mirror of the frontier (R-5, contract §D2/§D3): the pair's OWN dot
+ * and their own market only. Nothing about another desk crosses to a student
+ * device, and the board's anonymous room dots are dropped rather than mirrored.
+ */
+export function frontierVisualForDesk(visual: SynthesisVisual | undefined, desk: Desk): SynthesisVisual | undefined {
+  if (!visual || visual.kind !== "frontier") return visual;
+  const panel = visual.markets.find((p) => p.marketId === desk.marketId);
+  if (!panel) return undefined;
+  const asc = panel.line;
+  const ceilingCash = asc.find((p) => p.renewals >= desk.renewals)?.cash ?? panel.cashBestCash;
+  const gapToLine = ceilingCash - desk.cash;
+  const own = { renewals: desk.renewals, cash: desk.cash, ceilingCash, gapToLine, nightsPlayed: desk.nights.length, nightCount: NIGHT_COUNT };
+  const ownCaption =
+    desk.nights.length < NIGHT_COUNT
+      ? `Your desk has ${desk.nights.length} of ${NIGHT_COUNT} nights in the books, so your dot is a short season — it is not on the same footing as the line.`
+      : gapToLine <= 0
+        ? `Your desk finished at $${desk.cash.toLocaleString()} and ${desk.renewals} renewals — on the line. Nothing in this model beats that season on both books at once.`
+        : `Your desk finished at $${desk.cash.toLocaleString()} and ${desk.renewals} renewals. The best season this model can find that keeps ${desk.renewals} renewals makes $${ceilingCash.toLocaleString()} — $${gapToLine.toLocaleString()} above your dot.`;
+  return {
+    ...visual,
+    markets: [{ ...panel, deskDots: [], deskDotCount: 0, ownDot: own, ownCaption }],
+  };
+}
 
 /**
  * Every card is computed from THIS class's locked-at-time numbers (D15) —
@@ -3222,12 +4260,13 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
     ];
   }
 
-  cards.push({ id: "revenue", title: "REVENUE = PRICE × PEOPLE", body: revenueCardBody(agg) });
+  // W3 Lane S / R-5: `visual` is additive. Title, order and body are untouched (E27).
+  cards.push({ id: "revenue", title: "REVENUE = PRICE × PEOPLE", body: revenueCardBody(agg), visual: dotsVisualFor(agg) });
 
   // Demand shifters: the same market, two cards, two different best prices —
   // read off the room's own curve, not asserted.
   const shifterBody = shifterCardBody(agg);
-  cards.push({ id: "shifters", title: "THE CARD MOVED THE CROWD", body: shifterBody });
+  cards.push({ id: "shifters", title: "THE CARD MOVED THE CROWD", body: shifterBody, visual: shiftersVisualFor(agg) });
 
   const peak = agg.twoPeaks[0] ?? null;
   cards.push({
@@ -3277,6 +4316,7 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
   cards.push({
     id: "two-books",
     title: "TWO BOOKS, NO EXCHANGE RATE",
+    visual: frontierVisualFor(state),
     body: `Best full house each market managed: ${bestFill}. Median renewals: ${agg.books
       .map((b) => `${b.club} ${b.medianRenewals}%`)
       .join(" · ")}. You cannot add a dollar to a renewal, and no price is best on both. ${seasonTradeoff}`,
@@ -3300,7 +4340,25 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
  * comes from one market on one night, and the group is chosen so the two
  * turnouts move against the two prices.
  */
-function revenueCardBody(agg: FullHouseAggregate): string {
+type RevenueGroup = {
+  marketId: MarketId;
+  cardId: string;
+  points: CurvePoint[];
+  low: CurvePoint;
+  high: CurvePoint;
+  spread: number;
+};
+
+/**
+ * W3 Lane S (R-5): the group this card quotes is now picked ONCE and shared with
+ * the card's computed dot visual, so the picture and the sentence can never be
+ * about two different nights. `best` is exactly the selection this card has
+ * always made (one market, one card, the two turnouts moving against the two
+ * prices — B5); `widest` is the largest realized group whatever its shape, which
+ * the dots may draw when there is no comparable pair, because a dot is honest
+ * even when a sentence about it would not be.
+ */
+function revenueGroups(agg: FullHouseAggregate): { best: RevenueGroup | null; widest: RevenueGroup | null } {
   type Group = { marketId: MarketId; cardId: string; points: CurvePoint[] };
   const groups: Group[] = [];
   for (const point of agg.curves) {
@@ -3308,16 +4366,21 @@ function revenueCardBody(agg: FullHouseAggregate): string {
     if (found) found.points.push(point);
     else groups.push({ marketId: point.marketId, cardId: point.cardId, points: [point] });
   }
-  const usable = groups
-    .map((g) => {
-      const low = g.points.reduce((a, b) => (b.price < a.price ? b : a));
-      const high = g.points.reduce((a, b) => (b.price > a.price ? b : a));
-      return { ...g, low, high, spread: high.price - low.price };
-    })
+  const scored: RevenueGroup[] = groups.map((g) => {
+    const low = g.points.reduce((a, b) => (b.price < a.price ? b : a));
+    const high = g.points.reduce((a, b) => (b.price > a.price ? b : a));
+    return { ...g, low, high, spread: high.price - low.price };
+  });
+  const usable = scored
     .filter((g) => g.spread > 0 && g.high.turnout < g.low.turnout)
     .sort((a, b) => b.spread - a.spread);
+  const widest = [...scored].sort((a, b) => b.points.length - a.points.length || b.spread - a.spread)[0] ?? null;
+  return { best: usable[0] ?? null, widest };
+}
+
+function revenueCardBody(agg: FullHouseAggregate): string {
   const club = (id: MarketId): string => MARKET_BY_ID.get(id)?.club ?? id;
-  const best = usable[0];
+  const best = revenueGroups(agg).best;
   if (!best) {
     return `Every desk-night in this room is a price multiplied by a crowd — that product is the money, and neither number is the money on its own. Tonight the room did not give us two desks in the same building charging different prices on the same night, so there is no honest pair to quote: compare dots of the same colour and the same shape on the board, never two different nights.`;
   }
@@ -3382,14 +4445,37 @@ export function pathDependenceCardBody(repeat: readonly RepeatRow[], same: reado
   return `${opener} ${lines}. ${verdict} ${RENEWALS_RULE_BOARD}`;
 }
 
-function shifterCardBody(agg: FullHouseAggregate): string {
-  // Highest-turnout point on each of two cards in the same market — the room's own evidence
-  // that the same price does not mean the same crowd.
+/**
+ * W3 Lane S (R-5): the two nights this card quotes are picked ONCE and shared
+ * with the card's DAY / DRAW / TV chip visual, so the chips and the sentence are
+ * always about the same two nights of the same building. Selection is unchanged:
+ * the first market that played both N1 and N2, a same-price pair if the room
+ * produced one, otherwise each card's best crowd (which the body then refuses to
+ * read as proof, because part of that gap is the price).
+ */
+type ShifterPick = { market: Market; a: CurvePoint; b: CurvePoint; samePrice: boolean };
+
+function shifterPick(agg: FullHouseAggregate): ShifterPick | null {
   for (const market of MARKETS) {
     const n1 = agg.curves.filter((p) => p.marketId === market.id && p.cardId === "N1");
     const n2 = agg.curves.filter((p) => p.marketId === market.id && p.cardId === "N2");
     if (n1.length === 0 || n2.length === 0) continue;
     const pair = n1.flatMap((a) => n2.filter((b) => b.price === a.price).map((b) => ({ a, b })))[0];
+    if (pair) return { market, a: pair.a, b: pair.b, samePrice: true };
+    const bestN1 = n1.reduce((a, b) => (b.turnout > a.turnout ? b : a));
+    const bestN2 = n2.reduce((a, b) => (b.turnout > a.turnout ? b : a));
+    return { market, a: bestN1, b: bestN2, samePrice: false };
+  }
+  return null;
+}
+
+function shifterCardBody(agg: FullHouseAggregate): string {
+  // Highest-turnout point on each of two cards in the same market — the room's own evidence
+  // that the same price does not mean the same crowd.
+  const picked = shifterPick(agg);
+  if (picked) {
+    const market = picked.market;
+    const pair = picked.samePrice ? { a: picked.a, b: picked.b } : null;
     if (pair) {
       return `${market.club}: somebody charged $${pair.a.price} on the quiet Tuesday and drew ${pair.a.turnout.toLocaleString()}. Somebody charged the same $${pair.a.price} on Saturday against a better visiting club and drew ${pair.b.turnout.toLocaleString()}. Same price, different crowd. The day, the visiting club's Draw and the TV listing were all printed on the card before anyone locked.`;
     }
@@ -3398,8 +4484,8 @@ function shifterCardBody(agg: FullHouseAggregate): string {
     // reads as evidence that the card alone moved it when the price moved too.
     // No desk in this room charged the same price on both cards, so the honest
     // move is to say the comparison is not clean and name the second cause.
-    const bestN1 = n1.reduce((a, b) => (b.turnout > a.turnout ? b : a));
-    const bestN2 = n2.reduce((a, b) => (b.turnout > a.turnout ? b : a));
+    const bestN1 = picked.a;
+    const bestN2 = picked.b;
     return `${market.club}: the best Tuesday crowd in this room was ${bestN1.turnout.toLocaleString()} at $${bestN1.price}; the best Saturday crowd was ${bestN2.turnout.toLocaleString()} at $${bestN2.price}. Those are two different prices, so this pair does not prove it on its own — part of that gap is the price. What the card can tell you is on the board: find two desks in the SAME building charging the SAME price on the two nights, and whatever is left over is the day, the Draw and the TV listing.`;
   }
   return "The day, the visiting club's Draw and the TV listing were printed on every card before anyone locked. Nothing else moved the crowd — there is no luck in this model.";

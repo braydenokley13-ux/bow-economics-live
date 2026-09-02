@@ -19,12 +19,17 @@ for (const surface of surfaces) {
 }
 console.log(`copied ${surfaces.length} static index.html file(s) into dist/client/`);
 
-const sharedCssFrom = path.join(root, "src", "client", "shared", "theme.css");
-if (existsSync(sharedCssFrom)) {
+// EVERY stylesheet under src/client/shared/, not theme.css by name: the
+// Module-2 layer (shared/m2.css) was added in the visual rebuild, the three
+// index.html files link it, and a build that copies one stylesheet by name
+// serves a 404 for the other on every clean checkout.
+const sharedDir = path.join(root, "src", "client", "shared");
+if (existsSync(sharedDir)) {
   const toDir = path.join(root, "dist", "client", "shared");
   mkdirSync(toDir, { recursive: true });
-  cpSync(sharedCssFrom, path.join(toDir, "theme.css"));
-  console.log("copied shared/theme.css into dist/client/shared/");
+  const sheets = readdirSync(sharedDir).filter((f) => f.endsWith(".css"));
+  for (const file of sheets) cpSync(path.join(sharedDir, file), path.join(toDir, file));
+  console.log(`copied ${sheets.length} shared stylesheet(s) into dist/client/shared/: ${sheets.join(", ")}`);
 }
 
 // Self-hosted webfonts (gate-l1-visual P1/D3). They ship in the repo and are

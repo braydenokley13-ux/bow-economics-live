@@ -1,0 +1,415 @@
+{
+  "port": "4432",
+  "out": "/home/user/bow-economics-live/docs/gauntlet/module-2/premium/screens-m1-baseline-ext-repeat",
+  "capturedAt": "2026-09-01T21:00:23.909Z",
+  "shots": [
+    {
+      "file": "l1-01-play-join@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "play",
+      "state": "join",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-02-play-lobby@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "play",
+      "state": "lobby",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": [
+        "#pinDisplay:\"7510\""
+      ]
+    },
+    {
+      "file": "l1-03-teach-lobby@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "teach",
+      "state": "lobby",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:59:49 PM",
+        "8:59:49 PM"
+      ],
+      "scrubbedSessionStrings": [
+        "#code:\"BOWT9A\"",
+        "#boardUrl:\"http://localhost:4432/board?code=BOWT9A\"",
+        "#joinUrl:\"http://localhost:4432/play\""
+      ]
+    },
+    {
+      "file": "l1-04-board-lobby@1920x1080.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "board",
+      "state": "lobby",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-05-play-hook@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "play",
+      "state": "hook",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-06-teach-hook@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "teach",
+      "state": "hook",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:59:49 PM",
+        "8:59:49 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-07-board-hook@1920x1080.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "board",
+      "state": "hook",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-08-play-play@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "play",
+      "state": "first-play",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-09-teach-play@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "teach",
+      "state": "first-play",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:59:49 PM",
+        "8:59:49 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-10-board-play@1920x1080.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "board",
+      "state": "first-play",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-11-play-locked-roster@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "play",
+      "state": "locked-roster",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-12-teach-locked-roster@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "teach",
+      "state": "locked-roster",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:59:49 PM",
+        "8:59:49 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-13-play-reveal@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "play",
+      "state": "reveal",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-14-teach-reveal@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "teach",
+      "state": "reveal",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:59:49 PM",
+        "8:59:49 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-15-board-reveal@1920x1080.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "board",
+      "state": "reveal",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-16-play-synthesis@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "play",
+      "state": "synthesis",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-17-teach-synthesis@1366x768.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "teach",
+      "state": "synthesis",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "8:59:49 PM",
+        "8:59:49 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l1-18-board-synthesis@1920x1080.png",
+      "lesson": "m1l1-draft-day",
+      "surface": "board",
+      "state": "synthesis",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-01-play-lobby@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "play",
+      "state": "lobby",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": [
+        "#pinDisplay:\"5614\""
+      ]
+    },
+    {
+      "file": "l2-02-teach-lobby@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "teach",
+      "state": "lobby",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "9:00:01 PM",
+        "9:00:01 PM",
+        "9:00:01 PM"
+      ],
+      "scrubbedSessionStrings": [
+        "#code:\"BOWYYE\"",
+        "#boardUrl:\"http://localhost:4432/board?code=BOWYYE\"",
+        "#joinUrl:\"http://localhost:4432/play\""
+      ]
+    },
+    {
+      "file": "l2-03-board-lobby@1920x1080.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "board",
+      "state": "lobby",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-04-play-midseason-report@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "play",
+      "state": "midseason-report",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-05-teach-hook@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "teach",
+      "state": "hook",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "9:00:01 PM",
+        "9:00:01 PM",
+        "9:00:01 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-06-play-deadline-decision@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "play",
+      "state": "deadline-decision-screen",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-07-teach-play@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "teach",
+      "state": "deadline-decision-screen",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "9:00:01 PM",
+        "9:00:01 PM",
+        "9:00:01 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-08-board-play@1920x1080.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "board",
+      "state": "deadline-decision-screen",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-09-board-reveal@1920x1080.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "board",
+      "state": "reveal",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-10-play-reveal@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "play",
+      "state": "reveal",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l2-11-teach-reveal@1366x768.png",
+      "lesson": "m1l2-trade-deadline",
+      "surface": "teach",
+      "state": "reveal",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "9:00:01 PM",
+        "9:00:01 PM",
+        "9:00:01 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l3-01-play-lobby@1366x768.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "play",
+      "state": "lobby",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": [
+        "#pinDisplay:\"5154\""
+      ]
+    },
+    {
+      "file": "l3-02-teach-lobby@1366x768.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "teach",
+      "state": "lobby",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "9:00:11 PM",
+        "9:00:11 PM",
+        "9:00:11 PM"
+      ],
+      "scrubbedSessionStrings": [
+        "#code:\"BOW7NG\"",
+        "#boardUrl:\"http://localhost:4432/board?code=BOW7NG\"",
+        "#joinUrl:\"http://localhost:4432/play\""
+      ]
+    },
+    {
+      "file": "l3-03-board-lobby@1920x1080.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "board",
+      "state": "lobby",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l3-04-play-day1-market@1366x768.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "play",
+      "state": "day-1-market",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l3-05-teach-day1@1366x768.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "teach",
+      "state": "day-1-market",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "9:00:11 PM",
+        "9:00:11 PM",
+        "9:00:11 PM"
+      ],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l3-06-board-day1@1920x1080.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "board",
+      "state": "day-1-market",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l3-07-board-reveal@1920x1080.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "board",
+      "state": "reveal",
+      "viewport": "1920x1080",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l3-08-play-reveal@1366x768.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "play",
+      "state": "reveal",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [],
+      "scrubbedSessionStrings": []
+    },
+    {
+      "file": "l3-09-teach-reveal@1366x768.png",
+      "lesson": "m1l3-free-agency",
+      "surface": "teach",
+      "state": "reveal",
+      "viewport": "1366x768",
+      "scrubbedClockStrings": [
+        "9:00:11 PM",
+        "9:00:11 PM",
+        "9:00:11 PM"
+      ],
+      "scrubbedSessionStrings": []
+    }
+  ],
+  "notes": [],
+  "consoleErrors": []
+}

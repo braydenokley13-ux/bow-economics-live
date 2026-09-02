@@ -1,0 +1,2198 @@
+/**
+ * m2.css — the Module 2 layer ("Money in Motion" / the ticket office).
+ *
+ * SCOPE RULE, and it is the whole safety argument: every selector in this file
+ * begins with `html[data-module="m2"]`. Nothing here touches `:root`, a bare
+ * element selector, or an existing Module-1 class. The client sets
+ * `document.documentElement.dataset.module = "m2"` when the live view is an M2
+ * lesson and deletes it otherwise, so Module 1's rendered output is unchanged
+ * (VISUAL_REFERENCE_CONTRACT A1; DIRECTION non-negotiable 10).
+ *
+ * theme.css stays the base layer and is still linked first on all three
+ * surfaces. This file overrides only inside an M2 subtree.
+ *
+ * Ported from the wave-2 style tile (m2-tokens.css + m2-components.css) with
+ * the accessibility repairs recorded in design/assets/m2-contrast-proof.md.
+ *
+ * ACCENT: violet is the only UI accent on M2 (Boss lead ruling Q1(a)).
+ * Gold survives only as floodlight warmth inside the drawn building
+ * (shared/arena.ts) — never as a UI accent here.
+ *
+ * TWO-BOOK COLOUR LAW (ECON R-3 / E10): green (--m2-money) marks positive CASH
+ * only. RENEWALS is never green-coded, never red-coded, and never shares a
+ * font-family + size + colour slot with CASH in the same row.
+ *
+ * FONTS — offline only, no CDN, no network at runtime (D12).
+ *   Inter is vendored here as `shared/fonts/inter-latin.woff2` (latin subset,
+ *   variable wght 400-800, 48KB). LICENSING: Inter is released under the SIL
+ *   Open Font License 1.1, the same licence as the Bebas Neue and Space Grotesk
+ *   files already vendored beside it (see theme.css's note). The file is the
+ *   unmodified Google Fonts latin subset; it is not sold on its own and the
+ *   reserved font name is not reused on a modified font. The OFL text is not
+ *   vendored; if this ships beyond the classroom pilot, include OFL.txt
+ *   alongside the .woff2 files.
+ *
+ *   The family is declared as "Inter M2", NOT "Inter". theme.css already lists
+ *   bare `Inter` in `--font-ui`, which Module 1 currently resolves to a system
+ *   fallback; declaring an @font-face for "Inter" would change Module 1's
+ *   rendered output. "Space Grotesk" and "Bebas Neue" are NOT redeclared here —
+ *   theme.css already loads them from the same directory.
+ */
+
+@font-face {
+  font-family: "Inter M2";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("./fonts/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* =========================================================================
+   0. Tokens
+   ========================================================================= */
+
+html[data-module="m2"] {
+  /* ---------- Ground ---------- */
+  /* Near-black with a faint blue-violet cast, not neutral grey-black. */
+  --m2-canvas: #08080f;
+  --m2-canvas-deep: #050509; /* projector ground, one step darker */
+  --m2-panel: #101019; /* card face, barely lighter than ground */
+  --m2-panel-2: #16161f; /* inner chip / recessed well */
+  --m2-panel-hover: #1a1a26;
+
+  --m2-hairline: rgba(255, 255, 255, 0.07);
+  --m2-hairline-strong: rgba(255, 255, 255, 0.12);
+  --m2-hairline-faint: rgba(255, 255, 255, 0.045);
+
+  /* ---------- Accent: exactly one hue ---------- */
+  /* --m2-violet is a FILL/STROKE token. It is 4.33:1 on the panel, which
+     clears the 3:1 non-text floor but not the 4.5:1 text floor: text uses
+     --m2-violet-bright. See design/assets/m2-contrast-proof.md. */
+  --m2-violet: #7a5cff;
+  --m2-violet-deep: #5b3df0;
+  --m2-violet-cta: #7358ff; /* gradient light end; white on it = 4.6:1 */
+  --m2-violet-bright: #9d86ff; /* the violet TEXT token */
+  --m2-violet-badge: #231a4a; /* icon-badge fill */
+  --m2-violet-tint: rgba(122, 92, 255, 0.14);
+  --m2-violet-line: rgba(122, 92, 255, 0.42);
+  --m2-violet-grad: linear-gradient(135deg, #5b3df0 0%, #7358ff 100%);
+  --m2-violet-glow: 0 10px 30px rgba(91, 61, 240, 0.42), 0 0 0 1px rgba(157, 134, 255, 0.28) inset;
+  --m2-violet-glow-soft: 0 0 34px rgba(122, 92, 255, 0.3);
+
+  /* ---------- Semantic ---------- */
+  --m2-money: #22c55e; /* positive CASH only — never renewals (R-3) */
+  --m2-money-tint: rgba(34, 197, 94, 0.13);
+  --m2-money-line: rgba(34, 197, 94, 0.4);
+  --m2-amber: #f2b134; /* teacher attention: ADJUSTING */
+  --m2-amber-tint: rgba(242, 177, 52, 0.13);
+  --m2-amber-line: rgba(242, 177, 52, 0.4);
+  --m2-red: #f25c5c; /* teacher attention: NOT STARTED / STALLED */
+  --m2-red-tint: rgba(242, 92, 92, 0.13);
+  --m2-red-line: rgba(242, 92, 92, 0.4);
+
+  /* ---------- Ink ---------- */
+  --m2-ink: #f4f4f8; /* headlines, hero figures */
+  --m2-ink-body: #c9c9d6; /* body copy */
+  --m2-ink-label: #8a8a9c; /* eyebrows / caps labels */
+  --m2-ink-caption: #82829a; /* captions, qualifiers — 4.6:1 at its worst bg */
+
+  /* ---------- Radii ---------- */
+  --m2-r-card: 16px;
+  --m2-r-inner: 12px;
+  --m2-r-chip: 10px;
+  --m2-r-pill: 999px;
+
+  /* ---------- Spacing (4-based) ---------- */
+  --m2-s1: 4px;
+  --m2-s2: 8px;
+  --m2-s3: 12px;
+  --m2-s4: 16px;
+  --m2-s5: 20px;
+  --m2-s6: 24px;
+  --m2-s7: 28px;
+  --m2-s8: 32px;
+  --m2-s10: 40px;
+  --m2-s12: 48px;
+  --m2-gutter: 18px;
+  --m2-pad: 22px;
+  --m2-margin: 34px;
+
+  /* ---------- Type ---------- */
+  --m2-font: "Inter M2", "Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --m2-font-num: "Inter M2", "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --m2-font-alt-num: "Space Grotesk", "Inter M2", system-ui, sans-serif;
+
+  --m2-h1-size: 44px;
+  --m2-h1-line: 48px;
+  --m2-h1-weight: 600;
+  --m2-h1-track: -0.022em;
+
+  --m2-hero-size: 84px; /* A5: the one hero figure per state, >= 64px */
+  --m2-hero-line: 84px;
+  --m2-hero-weight: 700;
+  --m2-hero-track: -0.035em;
+
+  --m2-figure-size: 38px;
+  --m2-figure-line: 40px;
+  --m2-figure-weight: 600;
+  --m2-figure-track: -0.025em;
+
+  --m2-label-size: 12px;
+  --m2-label-track: 0.085em;
+  --m2-label-weight: 600;
+
+  --m2-body-size: 15px;
+  --m2-body-line: 23px;
+  --m2-body-sm: 14px;
+
+  --m2-caption-size: 13px;
+  --m2-caption-sm: 12px;
+
+  --m2-display-size: 110px;
+  --m2-display-weight: 800;
+
+  /* Icons are authored on a 24-unit grid; stroke-width 2.33 renders as
+     1.75px on screen at the 18px display size (2.33 * 18/24 = 1.75). */
+  --m2-icon-size: 18px;
+  --m2-icon-stroke: 2.33;
+
+  --m2-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Motion budget (DIRECTION non-negotiable 9; A10). */
+  --m2-commit-ms: 200ms;
+  --m2-flash-ms: 260ms;
+  --m2-doors-ms: 420ms;
+
+  /* Ground applied to the document element itself. */
+  background: var(--m2-canvas);
+  color: var(--m2-ink-body);
+  font-family: var(--m2-font);
+}
+
+/* =========================================================================
+   1. Ground + the surface shells this layer has to sit inside
+   ========================================================================= */
+
+html[data-module="m2"] body {
+  background: var(--m2-canvas);
+  color: var(--m2-ink-body);
+  font-family: var(--m2-font);
+  font-size: var(--m2-body-size);
+  line-height: var(--m2-body-line);
+  -webkit-font-smoothing: antialiased;
+}
+
+html[data-module="m2"] *,
+html[data-module="m2"] *::before,
+html[data-module="m2"] *::after {
+  box-sizing: border-box;
+}
+
+/* /play, /board and /teach each ship a small inline <style> shell (a centred
+   640px column on /play). The Module-2 states are full-frame, so the shell's
+   column and padding are released here rather than in the surface markup. */
+html[data-module="m2"] main {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+/* The legacy top bar keeps #syncStatus reachable but stops eating the first
+   viewport; the desk rail carries the brand under M2. */
+html[data-module="m2"] > body > header {
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--m2-hairline);
+  background: var(--m2-canvas);
+}
+html[data-module="m2"] > body > header h1 {
+  font-family: var(--m2-font);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] > body > header #syncStatus {
+  font-size: 10px;
+  color: var(--m2-ink-caption);
+}
+
+/* =========================================================================
+   2. Type primitives
+   ========================================================================= */
+
+html[data-module="m2"] .m2-h1 {
+  margin: 0;
+  font-size: var(--m2-h1-size);
+  line-height: var(--m2-h1-line);
+  font-weight: var(--m2-h1-weight);
+  letter-spacing: var(--m2-h1-track);
+  color: var(--m2-ink);
+}
+
+html[data-module="m2"] .m2-subtitle {
+  margin: 6px 0 0;
+  font-size: var(--m2-body-size);
+  line-height: 22px;
+  color: var(--m2-ink-body);
+  max-width: 62ch;
+}
+
+html[data-module="m2"] .m2-label {
+  display: block;
+  font-size: var(--m2-label-size);
+  font-weight: var(--m2-label-weight);
+  letter-spacing: var(--m2-label-track);
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--m2-ink-label);
+}
+
+html[data-module="m2"] .m2-caption {
+  font-size: var(--m2-caption-size);
+  line-height: 18px;
+  color: var(--m2-ink-caption);
+}
+
+html[data-module="m2"] .m2-body {
+  font-size: var(--m2-body-size);
+  line-height: var(--m2-body-line);
+  color: var(--m2-ink-body);
+  margin: 0;
+}
+
+html[data-module="m2"] .m2-breadcrumb {
+  font-size: var(--m2-caption-size);
+  font-weight: 600;
+  letter-spacing: 0.055em;
+  color: var(--m2-violet-bright);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+html[data-module="m2"] .m2-breadcrumb .sep {
+  color: rgba(157, 134, 255, 0.55);
+}
+
+/* Figures. Tabular for any column of digits; the standalone hero stays
+   tabular too so it does not reflow as the number settles. */
+html[data-module="m2"] .m2-figure,
+html[data-module="m2"] .m2-hero-figure {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  color: var(--m2-ink);
+  display: block;
+}
+html[data-module="m2"] .m2-figure {
+  font-size: var(--m2-figure-size);
+  line-height: var(--m2-figure-line);
+  font-weight: var(--m2-figure-weight);
+  letter-spacing: var(--m2-figure-track);
+}
+html[data-module="m2"] .m2-figure.is-sm {
+  font-size: 26px;
+  line-height: 28px;
+}
+html[data-module="m2"] .m2-hero-figure {
+  font-size: var(--m2-hero-size);
+  line-height: var(--m2-hero-line);
+  font-weight: var(--m2-hero-weight);
+  letter-spacing: var(--m2-hero-track);
+}
+html[data-module="m2"] .m2-figure.is-money,
+html[data-module="m2"] .m2-hero-figure.is-money {
+  color: var(--m2-money);
+}
+html[data-module="m2"] .m2-figure.is-violet,
+html[data-module="m2"] .m2-hero-figure.is-violet {
+  color: var(--m2-violet-bright);
+}
+html[data-module="m2"] .m2-qualifier {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--m2-caption-size);
+  line-height: 17px;
+  color: var(--m2-ink-caption);
+}
+
+/* =========================================================================
+   3. Icons + badges
+   ========================================================================= */
+
+html[data-module="m2"] .m2-icon {
+  width: var(--m2-icon-size);
+  height: var(--m2-icon-size);
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--m2-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+html[data-module="m2"] .m2-icon.is-16 {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.63;
+}
+html[data-module="m2"] .m2-icon.is-14 {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.8;
+}
+
+html[data-module="m2"] .m2-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--m2-r-pill);
+  background: var(--m2-violet-badge);
+  border: 1px solid rgba(122, 92, 255, 0.22);
+  color: var(--m2-violet-bright);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+html[data-module="m2"] .m2-badge.is-lg {
+  width: 44px;
+  height: 44px;
+}
+html[data-module="m2"] .m2-badge.is-sm {
+  width: 30px;
+  height: 30px;
+}
+html[data-module="m2"] .m2-badge.is-money {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: var(--m2-money-line);
+  color: var(--m2-money);
+}
+
+/* The sprite host is never painted. */
+html[data-module="m2"] .m2-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* =========================================================================
+   4. Cards
+   ========================================================================= */
+
+html[data-module="m2"] .m2-card {
+  background: var(--m2-panel);
+  border: 1px solid var(--m2-hairline);
+  border-radius: var(--m2-r-card);
+  padding: var(--m2-pad);
+  box-shadow: none; /* no drop shadows on cards */
+  position: relative;
+}
+html[data-module="m2"] .m2-card.is-flush {
+  padding: 0;
+  overflow: hidden;
+}
+html[data-module="m2"] .m2-card.is-tight {
+  padding: 14px 16px;
+}
+html[data-module="m2"] .m2-chip {
+  background: var(--m2-panel-2);
+  border: 1px solid var(--m2-hairline-faint);
+  border-radius: var(--m2-r-chip);
+  padding: 10px 12px;
+}
+
+html[data-module="m2"] .m2-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Stat card — icon badge + caps label + figure + qualifier (A5). */
+html[data-module="m2"] .m2-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 132px;
+}
+html[data-module="m2"] .m2-stat .m2-card-head {
+  margin-bottom: 12px;
+}
+html[data-module="m2"] .m2-stat .m2-figure {
+  margin-top: auto;
+}
+html[data-module="m2"] .m2-stat.is-compact {
+  min-height: 0;
+  padding: 14px 16px;
+}
+html[data-module="m2"] .m2-stat.is-compact .m2-figure {
+  font-size: 26px;
+  line-height: 28px;
+}
+
+/* Two-book accountability card. CASH and RENEWALS at equal figure weight and
+   deliberately different units; they are never summed (E4 / R-3). */
+html[data-module="m2"] .m2-goal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  min-width: 300px;
+}
+html[data-module="m2"] .m2-goal .m2-goal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+html[data-module="m2"] .m2-goal-books {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.015em;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-goal-books .k {
+  font-family: var(--m2-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.085em;
+  color: var(--m2-ink-label);
+  margin-right: 5px;
+}
+html[data-module="m2"] .m2-goal-books .dot {
+  color: var(--m2-ink-caption);
+  font-weight: 400;
+}
+
+/* =========================================================================
+   5. The desk rail (A8) — .m2-rail
+   ========================================================================= */
+
+html[data-module="m2"] .m2-rail {
+  width: 200px;
+  flex: none;
+  /* W2 repair-4 R4-7: the rail is bound to the viewport, not to the frame. A
+     stretched rail on a frame taller than the screen pushed its last item —
+     the rejoin PIN chip — to 746..781 (and 737..772 on a sellout) in a 768px
+     viewport. The rail now ends where the first viewport ends; the frame
+     canvas continues beneath it on taller frames. */
+  align-self: flex-start;
+  height: calc(100vh - 72px);
+  box-sizing: border-box;
+  padding: 18px 14px;
+  border-right: 1px solid var(--m2-hairline);
+  background: linear-gradient(180deg, #0b0b14 0%, var(--m2-canvas) 55%);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+}
+
+html[data-module="m2"] .m2-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+html[data-module="m2"] .m2-brand-mark {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  filter: drop-shadow(0 0 9px rgba(122, 92, 255, 0.55));
+}
+html[data-module="m2"] .m2-brand-word {
+  line-height: 1.06;
+}
+html[data-module="m2"] .m2-brand-word b {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-brand-word span {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--m2-ink-caption);
+}
+
+/* Rail links are in-page anchors only. There are no fictional destinations
+   and no route-like labels in this product (E6 / DIRECTION nn 12). */
+html[data-module="m2"] .m2-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+html[data-module="m2"] .m2-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 12px 8px 13px;
+  border-radius: var(--m2-r-chip);
+  color: var(--m2-ink-label);
+  font-size: 13.5px;
+  font-weight: 500;
+  border-left: 2px solid transparent;
+  text-decoration: none;
+}
+html[data-module="m2"] .m2-nav-item.is-active {
+  background: var(--m2-violet-tint);
+  border-left-color: var(--m2-violet);
+  color: var(--m2-ink);
+  font-weight: 600;
+}
+html[data-module="m2"] .m2-nav-item.is-active .m2-icon {
+  color: var(--m2-violet-bright);
+}
+
+/* NIGHT n OF 5. The label carries the state; the pips are not colour-only. */
+html[data-module="m2"] .m2-progress-card {
+  padding: 12px;
+  border-radius: var(--m2-r-inner);
+  background: var(--m2-panel);
+  border: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] .m2-progress-card .m2-label {
+  margin-bottom: 10px;
+}
+html[data-module="m2"] .m2-pips {
+  display: flex;
+  gap: 5px;
+}
+html[data-module="m2"] .m2-pip {
+  height: 7px;
+  flex: 1;
+  border-radius: var(--m2-r-pill);
+  background: rgba(255, 255, 255, 0.12);
+}
+html[data-module="m2"] .m2-pip.is-done {
+  background: rgba(122, 92, 255, 0.55);
+}
+html[data-module="m2"] .m2-pip.is-now {
+  background: var(--m2-violet);
+  box-shadow: 0 0 10px rgba(122, 92, 255, 0.75);
+}
+html[data-module="m2"] .m2-pip-days {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+}
+html[data-module="m2"] .m2-pip-days span {
+  flex: 1;
+  text-align: center;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m2-ink-caption);
+}
+
+/* Desk identity: real club wordmark + the building. Typographic only —
+   no invented logo-alike (DIRECTION nn 11). */
+html[data-module="m2"] .m2-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--m2-r-inner);
+  background: var(--m2-panel);
+  border: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] .m2-identity .m2-crest {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+}
+html[data-module="m2"] .m2-identity-body {
+  min-width: 0;
+  flex: 1;
+}
+html[data-module="m2"] .m2-identity-body b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--m2-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html[data-module="m2"] .m2-identity-body span {
+  display: block;
+  font-size: 11px;
+  color: var(--m2-ink-caption);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-module="m2"] .m2-crest {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--m2-r-pill);
+  background: var(--m2-violet-badge);
+  border: 1px solid rgba(122, 92, 255, 0.3);
+  color: var(--m2-violet-bright);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--m2-font-num);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+
+/* The rejoin PIN leaves the hero slot and lives here as a small chip
+   (A5 / DIRECTION nn 7). It must never be the largest figure on screen. */
+html[data-module="m2"] .m2-pinchip {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--m2-r-chip);
+  background: var(--m2-panel-2);
+  border: 1px solid var(--m2-hairline-faint);
+}
+html[data-module="m2"] .m2-pinchip span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-pinchip b {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--m2-ink-body);
+}
+
+/* The two books docked at the foot of the rail. Different units, different
+   type slots, never one figure (R-3). */
+html[data-module="m2"] .m2-books-dock {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+html[data-module="m2"] .m2-book {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: var(--m2-r-inner);
+  background: var(--m2-panel);
+  border: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] .m2-book .m2-label {
+  font-size: 10px;
+}
+html[data-module="m2"] .m2-book b {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--m2-ink);
+}
+/* CASH may go green when positive. RENEWALS never does. */
+html[data-module="m2"] .m2-book.is-cash b {
+  color: var(--m2-money);
+}
+html[data-module="m2"] .m2-book.is-cash.is-debt b {
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-book.is-renewals b {
+  color: var(--m2-ink);
+  font-family: var(--m2-font-alt-num);
+  font-weight: 500;
+}
+
+/* =========================================================================
+   6. Instruments — price dial, spend, upper-bowl plate
+   ========================================================================= */
+
+html[data-module="m2"] .m2-dial-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  margin: 4px 0;
+}
+html[data-module="m2"] .m2-round-btn {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: var(--m2-r-pill);
+  background: var(--m2-panel-2);
+  border: 1px solid var(--m2-hairline-strong);
+  color: var(--m2-ink);
+  font-family: var(--m2-font-num);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 160ms var(--m2-ease), background 160ms var(--m2-ease);
+}
+html[data-module="m2"] .m2-round-btn:hover {
+  border-color: var(--m2-violet-line);
+  background: var(--m2-panel-hover);
+}
+html[data-module="m2"] .m2-round-btn.is-sm {
+  width: 38px;
+  height: 38px;
+  font-size: 20px;
+}
+html[data-module="m2"] .m2-round-btn:focus-visible {
+  outline: 2px solid var(--m2-violet-bright);
+  outline-offset: 3px;
+}
+
+html[data-module="m2"] .m2-hero-unit {
+  text-align: center;
+}
+html[data-module="m2"] .m2-hero-unit .m2-qualifier {
+  margin-top: 2px;
+  font-size: 14px;
+  color: var(--m2-ink-label);
+}
+
+/* Real <input type=range>; --pct (0-100) drives the violet fill. */
+html[data-module="m2"] .m2-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 34px;
+  background: transparent;
+  margin: 0;
+  cursor: pointer;
+  display: block;
+}
+html[data-module="m2"] .m2-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: var(--m2-r-pill);
+  background: linear-gradient(
+    90deg,
+    var(--m2-violet-deep) 0%,
+    var(--m2-violet) calc(var(--pct, 40) * 1%),
+    rgba(255, 255, 255, 0.1) calc(var(--pct, 40) * 1%),
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border: 1px solid var(--m2-hairline-faint);
+}
+html[data-module="m2"] .m2-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -12px;
+  border-radius: var(--m2-r-pill);
+  background: linear-gradient(180deg, #b7a6ff 0%, var(--m2-violet) 62%);
+  border: 2px solid #d8cfff;
+  box-shadow: 0 0 0 6px rgba(122, 92, 255, 0.16), 0 6px 16px rgba(0, 0, 0, 0.55);
+}
+html[data-module="m2"] .m2-range::-moz-range-track {
+  height: 8px;
+  border-radius: var(--m2-r-pill);
+  background: rgba(255, 255, 255, 0.1);
+}
+html[data-module="m2"] .m2-range::-moz-range-progress {
+  height: 8px;
+  border-radius: var(--m2-r-pill);
+  background: var(--m2-violet);
+}
+html[data-module="m2"] .m2-range::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--m2-r-pill);
+  background: var(--m2-violet);
+  border: 2px solid #d8cfff;
+}
+html[data-module="m2"] .m2-range:focus-visible {
+  outline: 2px solid var(--m2-violet-bright);
+  outline-offset: 4px;
+  border-radius: var(--m2-r-pill);
+}
+
+/* Track furniture. The PLAN tick sits BELOW the track so the knob can never
+   strike through its label (P1). */
+html[data-module="m2"] .m2-range-scale {
+  position: relative;
+  height: 20px;
+  margin-top: 2px;
+}
+html[data-module="m2"] .m2-range-tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+html[data-module="m2"] .m2-range-tick i {
+  display: block;
+  width: 1px;
+  height: 5px;
+  background: var(--m2-hairline-strong);
+}
+html[data-module="m2"] .m2-range-tick span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-range-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--m2-caption-sm);
+  color: var(--m2-ink-caption);
+}
+
+/* Registered-rule slot. Verbatim module text only — never adaptive advice. */
+html[data-module="m2"] .m2-helper {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 19px;
+  color: var(--m2-ink-body);
+}
+
+html[data-module="m2"] .m2-subdial {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+html[data-module="m2"] .m2-subdial .m2-figure {
+  font-size: 30px;
+  line-height: 32px;
+  min-width: 84px;
+  text-align: center;
+}
+
+/* Upper-bowl plate: a physical switch, not a checkbox. */
+html[data-module="m2"] .m2-plate {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: var(--m2-r-inner);
+  background: var(--m2-panel-2);
+  border: 1px solid var(--m2-hairline-strong);
+  color: var(--m2-ink-body);
+  font-family: var(--m2-font);
+  font-size: 14px;
+  cursor: pointer;
+}
+html[data-module="m2"] .m2-plate.is-on {
+  border-color: var(--m2-violet-line);
+  background: var(--m2-violet-tint);
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-plate .m2-plate-state {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-plate.is-on .m2-plate-state {
+  color: var(--m2-violet-bright);
+}
+html[data-module="m2"] .m2-plate:focus-visible {
+  outline: 2px solid var(--m2-violet-bright);
+  outline-offset: 3px;
+}
+
+/* =========================================================================
+   7. Charts, gauge, bars
+   ========================================================================= */
+
+/* Chart law (A6 / E3): dots only. There is no `.line` and no `.area` class in
+   this layer — a joined or fitted series through settled nights would draw a
+   relationship the model does not contain. Do not add one. */
+html[data-module="m2"] .m2-chart {
+  display: block;
+  width: 100%;
+}
+html[data-module="m2"] .m2-chart .axis {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+  fill: none;
+}
+html[data-module="m2"] .m2-chart .pt {
+  fill: var(--m2-violet-bright);
+  stroke: var(--m2-panel);
+  stroke-width: 2; /* the separating ring (P6) */
+}
+html[data-module="m2"] .m2-chart .axis-label {
+  font-family: var(--m2-font);
+  font-size: 11px;
+  fill: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-chart .axis-tick {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 9.5px;
+  fill: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-chart .pt-label {
+  font-family: var(--m2-font);
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-chart .chip-bg {
+  fill: #14141f;
+  stroke: var(--m2-hairline-strong);
+  stroke-width: 1;
+}
+html[data-module="m2"] .m2-chart .chip-text {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--m2-ink);
+}
+
+/* Radial gauge — secondary fill figure only, never the results hero (E11).
+   No target ring, no colour that changes near 100%. */
+html[data-module="m2"] .m2-gauge {
+  display: block;
+}
+html[data-module="m2"] .m2-gauge .track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+html[data-module="m2"] .m2-gauge .value {
+  fill: none;
+  stroke: var(--m2-violet);
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+html[data-module="m2"] .m2-gauge .g-num {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  fill: var(--m2-ink);
+  text-anchor: middle;
+}
+html[data-module="m2"] .m2-gauge .g-sub {
+  font-family: var(--m2-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.085em;
+  fill: var(--m2-ink-label);
+  text-anchor: middle;
+}
+
+html[data-module="m2"] .m2-bar {
+  height: 7px;
+  border-radius: var(--m2-r-pill);
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  width: 100%;
+}
+html[data-module="m2"] .m2-bar > i {
+  display: block;
+  height: 100%;
+  border-radius: var(--m2-r-pill);
+  background: var(--m2-violet);
+}
+html[data-module="m2"] .m2-bar.is-money > i {
+  background: var(--m2-money);
+}
+
+/* =========================================================================
+   8. Pills
+   ========================================================================= */
+
+/* Every pill carries a glyph AND a label — semantic state is never
+   colour-only (DIRECTION nn 6). */
+html[data-module="m2"] .m2-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: var(--m2-r-pill);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  white-space: nowrap;
+  border: 1px solid var(--m2-hairline);
+  background: var(--m2-panel-2);
+  color: var(--m2-ink-body);
+}
+html[data-module="m2"] .m2-pill .m2-icon {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.9;
+}
+html[data-module="m2"] .m2-pill.is-locked {
+  background: var(--m2-money-tint);
+  color: var(--m2-money);
+  border-color: var(--m2-money-line);
+}
+html[data-module="m2"] .m2-pill.is-adjusting {
+  background: var(--m2-amber-tint);
+  color: var(--m2-amber);
+  border-color: var(--m2-amber-line);
+}
+html[data-module="m2"] .m2-pill.is-attention {
+  background: var(--m2-red-tint);
+  color: var(--m2-red);
+  border-color: var(--m2-red-line);
+}
+html[data-module="m2"] .m2-pill.is-violet {
+  background: var(--m2-violet-tint);
+  color: var(--m2-violet-bright);
+  border-color: var(--m2-violet-line);
+}
+
+/* =========================================================================
+   9. Buttons
+   ========================================================================= */
+
+html[data-module="m2"] .m2-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 18px 26px;
+  border: 0;
+  border-radius: var(--m2-r-inner);
+  background: var(--m2-violet-grad);
+  box-shadow: var(--m2-violet-glow);
+  color: #fff;
+  font-family: var(--m2-font);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: box-shadow 160ms var(--m2-ease);
+}
+html[data-module="m2"] .m2-cta .m2-icon {
+  width: 21px;
+  height: 21px;
+  stroke-width: 2.2;
+}
+html[data-module="m2"] .m2-cta:hover {
+  box-shadow: 0 14px 40px rgba(91, 61, 240, 0.55), 0 0 0 1px rgba(157, 134, 255, 0.4) inset;
+}
+html[data-module="m2"] .m2-cta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+html[data-module="m2"] .m2-cta[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* The honesty line under LOCK IT IN. >= 14px, body ink — never a caption
+   whisper (H6, B7). */
+html[data-module="m2"] .m2-cta-caption {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 19px;
+  color: var(--m2-ink-body);
+}
+
+html[data-module="m2"] .m2-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 18px;
+  border-radius: var(--m2-r-chip);
+  background: transparent;
+  border: 1px solid var(--m2-violet-line);
+  color: var(--m2-violet-bright);
+  font-family: var(--m2-font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+html[data-module="m2"] .m2-btn-outline:hover {
+  background: var(--m2-violet-tint);
+}
+html[data-module="m2"] .m2-btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: var(--m2-r-chip);
+  background: var(--m2-panel-2);
+  border: 1px solid var(--m2-hairline);
+  color: var(--m2-ink-body);
+  font-family: var(--m2-font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+html[data-module="m2"] .m2-btn-outline:focus-visible,
+html[data-module="m2"] .m2-btn-quiet:focus-visible {
+  outline: 2px solid var(--m2-violet-bright);
+  outline-offset: 3px;
+}
+
+/* =========================================================================
+   10. Layout shells
+   ========================================================================= */
+
+html[data-module="m2"] .m2-frame {
+  display: flex;
+  align-items: stretch;
+  background: var(--m2-canvas);
+  /* W2 repair-4 R4-7: the frame sits under ~66px of page chrome (the BOW bar
+     and the session line). 100vh - 34px overshot a 768px viewport by ~32px,
+     which put the rail's last item — the rejoin PIN chip — at 746..781. */
+  min-height: calc(100vh - 72px);
+  position: relative;
+}
+html[data-module="m2"] .m2-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 20px var(--m2-margin) 26px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--m2-gutter);
+  position: relative;
+}
+html[data-module="m2"] .m2-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+html[data-module="m2"] .m2-grid {
+  display: grid;
+  gap: var(--m2-gutter);
+}
+html[data-module="m2"] .m2-grid.is-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+html[data-module="m2"] .m2-grid.is-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* =========================================================================
+   11. The arena frames (A7 / C4 / E12)
+   ========================================================================= */
+
+/* Pre-lock hero: the building is DARK and CLOSED and it is a backdrop, never
+   a readout. arena.ts is called with lit:"idle", turnout:0 (E12 rule 1). */
+html[data-module="m2"] .m2-arena {
+  position: relative;
+  border-radius: var(--m2-r-card);
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 42%, #14121f 0%, #0b0a13 58%, #08080f 100%);
+  border: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] .m2-arena svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+html[data-module="m2"] .m2-arena .fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      90deg,
+      var(--m2-canvas) 0%,
+      rgba(8, 8, 15, 0.78) 18%,
+      rgba(8, 8, 15, 0.3) 44%,
+      rgba(8, 8, 15, 0) 72%
+    ),
+    linear-gradient(0deg, rgba(8, 8, 15, 0.45) 0%, rgba(8, 8, 15, 0) 38%);
+  pointer-events: none;
+}
+html[data-module="m2"] .m2-arena .stamp {
+  position: absolute;
+  left: 14px;
+  bottom: 9px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--m2-ink-caption);
+}
+
+/* Settled-night outcome panel. Lives in the same frame as the money chain,
+   never above it (E12 rule 4). */
+html[data-module="m2"] .m2-arena-out {
+  position: relative;
+  border-radius: var(--m2-r-inner);
+  overflow: hidden;
+  background: #07070d;
+  border: 1px solid var(--m2-hairline-faint);
+}
+html[data-module="m2"] .m2-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: var(--m2-caption-size);
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+html[data-module="m2"] .m2-legend-item i {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+  background: var(--m2-violet);
+  border: 1px solid rgba(157, 134, 255, 0.6);
+}
+html[data-module="m2"] .m2-legend-item.is-open i {
+  background: #1c1c28;
+  border-color: var(--m2-hairline-strong);
+}
+html[data-module="m2"] .m2-legend-item.is-closed i {
+  background: repeating-linear-gradient(45deg, #1c1c28 0 3px, #0d0d14 3px 6px);
+  border-color: var(--m2-hairline-strong);
+}
+
+/* =========================================================================
+   12. Locked-waiting — the doors (C8 / half-beat H1)
+   ========================================================================= */
+
+html[data-module="m2"] .m2-doors {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 340px;
+  padding: 28px;
+  border-radius: var(--m2-r-card);
+  border: 1px solid var(--m2-hairline);
+  background: radial-gradient(120% 100% at 50% 88%, #131120 0%, #0a0a12 52%, #07070d 100%);
+  overflow: hidden;
+  text-align: center;
+}
+html[data-module="m2"] .m2-doors > .m2-doors-art {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: m2-doors-rise var(--m2-doors-ms) var(--m2-ease) 120ms forwards;
+}
+html[data-module="m2"] .m2-doors > .m2-doors-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+html[data-module="m2"] .m2-doors-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+html[data-module="m2"] .m2-doors-line {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--m2-ink);
+  max-width: 26ch;
+}
+html[data-module="m2"] .m2-doors-recap {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* =========================================================================
+   13. The settled night (C1-C7)
+   ========================================================================= */
+
+/* The results state owns the viewport: no dial in the first screenful. */
+html[data-module="m2"] .m2-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--m2-gutter);
+}
+html[data-module="m2"] .m2-result-hero {
+  display: flex;
+  align-items: flex-end;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+html[data-module="m2"] .m2-result-hero .m2-hero-figure {
+  font-size: 76px;
+  line-height: 76px;
+}
+html[data-module="m2"] .m2-result-headline {
+  margin: 0;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-result-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--m2-gutter);
+  align-items: start;
+}
+
+/* The CASH chain. One decomposition, read top to bottom; the operator column
+   makes the arithmetic visible instead of asserting a single "profit". */
+html[data-module="m2"] .m2-chain {
+  display: flex;
+  flex-direction: column;
+}
+html[data-module="m2"] .m2-chain-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid var(--m2-hairline-faint);
+}
+html[data-module="m2"] .m2-chain-row:first-child {
+  border-top: 0;
+}
+html[data-module="m2"] .m2-chain-op {
+  font-family: var(--m2-font-num);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--m2-ink-caption);
+  text-align: center;
+}
+html[data-module="m2"] .m2-chain-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.085em;
+  text-transform: uppercase;
+  color: var(--m2-ink-label);
+}
+html[data-module="m2"] .m2-chain-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-chain-value {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--m2-ink);
+  white-space: nowrap;
+}
+html[data-module="m2"] .m2-chain-row.is-total {
+  border-top: 1px solid var(--m2-hairline-strong);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+html[data-module="m2"] .m2-chain-row.is-total .m2-chain-value {
+  font-size: 30px;
+  color: var(--m2-money);
+}
+html[data-module="m2"] .m2-chain-row.is-total.is-debt .m2-chain-value {
+  color: var(--m2-ink);
+}
+
+/* RENEWALS before -> after, at equal figure weight to CASH and in a visibly
+   different unit shape. Never green, never red, never an arrow tied to the
+   price dial (R-3, FL-V11). */
+html[data-module="m2"] .m2-renewals {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--m2-font-alt-num);
+  font-variant-numeric: tabular-nums;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-renewals b {
+  font-size: 30px;
+  font-weight: 500;
+}
+html[data-module="m2"] .m2-renewals .to {
+  font-family: var(--m2-font);
+  font-size: 15px;
+  color: var(--m2-ink-caption);
+}
+
+/* The one registered sentence saying the two books do not add up. */
+html[data-module="m2"] .m2-books-line {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--m2-r-chip);
+  background: var(--m2-panel-2);
+  border-left: 2px solid var(--m2-violet);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--m2-ink-body);
+}
+
+html[data-module="m2"] .m2-what p {
+  margin: 0 0 9px;
+  font-size: var(--m2-body-size);
+  line-height: 22px;
+  color: var(--m2-ink-body);
+}
+html[data-module="m2"] .m2-what p:last-of-type {
+  margin-bottom: 0;
+}
+
+/* =========================================================================
+   14. The sellout (C7 / beat B1)
+   ========================================================================= */
+
+/* A fact delivered at scale. No grading word, no trophy, no streak (E13/E14). */
+html[data-module="m2"] .m2-fullhouse {
+  margin: 0;
+  font-family: var(--m2-font);
+  font-size: 68px;
+  line-height: 0.96;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  text-transform: uppercase;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-fullhouse-sub {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--m2-ink-body);
+}
+/* The turned-away count is the second-largest figure on the frame. */
+html[data-module="m2"] .m2-turnedaway {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 44px;
+  line-height: 46px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--m2-ink);
+  display: block;
+}
+
+/* Edge flash: 260ms, once, on a desk's FIRST sellout only (Q5). Applied by
+   adding .is-flash; the class is not re-added on later sellouts. */
+html[data-module="m2"] .m2-result.is-sellout {
+  border-radius: var(--m2-r-card);
+}
+html[data-module="m2"] .m2-result.is-sellout.is-flash {
+  animation: m2-edge-flash var(--m2-flash-ms) var(--m2-ease) 1;
+}
+
+/* =========================================================================
+   15. Motion vocabulary (A10 / DIRECTION nn 9)
+   ========================================================================= */
+
+/* 200ms commitment settle on lock. Firm, no bounce, no overshoot; never
+   applied to a money figure. */
+@keyframes m2-commit-settle {
+  from {
+    opacity: 0.72;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+html[data-module="m2"] .m2-commit {
+  animation: m2-commit-settle var(--m2-commit-ms) var(--m2-ease) 1;
+}
+
+/* 260ms edge flash. */
+@keyframes m2-edge-flash {
+  0% {
+    box-shadow: 0 0 0 2px rgba(255, 233, 184, 0.75), 0 0 46px rgba(255, 220, 160, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 233, 184, 0);
+  }
+}
+
+/* The building comes up dark behind the locked-waiting frame. */
+@keyframes m2-doors-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Every motion in this layer collapses to a <=120ms cross-fade under
+   reduce; nothing translates, nothing scales. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-module="m2"] .m2-commit,
+  html[data-module="m2"] .m2-result.is-sellout.is-flash,
+  html[data-module="m2"] .m2-doors > .m2-doors-art {
+    animation-duration: 120ms !important;
+    animation-delay: 0ms !important;
+  }
+  @keyframes m2-commit-settle {
+    from {
+      opacity: 0.72;
+      transform: none;
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes m2-doors-rise {
+    from {
+      opacity: 0;
+      transform: none;
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  html[data-module="m2"] * {
+    transition-duration: 120ms !important;
+  }
+}
+
+/* =========================================================================
+   16. Projector + teacher classes (wave 3 consumes these)
+   ========================================================================= */
+
+html[data-module="m2"] .m2-display {
+  margin: 0;
+  font-family: var(--m2-font);
+  font-size: var(--m2-display-size);
+  line-height: 0.94;
+  font-weight: var(--m2-display-weight);
+  letter-spacing: -0.018em;
+  text-transform: uppercase;
+  color: var(--m2-ink);
+}
+
+html[data-module="m2"] .m2-row {
+  display: grid;
+  align-items: center;
+  height: 64px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--m2-hairline-faint);
+  column-gap: var(--m2-col-gap, 22px);
+}
+html[data-module="m2"] .m2-row:last-child {
+  border-bottom: 0;
+}
+html[data-module="m2"] .m2-row .desk {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+html[data-module="m2"] .m2-row .desk b {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--m2-ink);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+html[data-module="m2"] .m2-row .desk span {
+  font-size: 14px;
+  color: var(--m2-ink-caption);
+  display: block;
+}
+html[data-module="m2"] .m2-row .cell {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+html[data-module="m2"] .m2-row .num {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-row .num small {
+  font-family: var(--m2-font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--m2-ink-caption);
+  letter-spacing: 0;
+  margin-left: 6px;
+}
+html[data-module="m2"] .m2-colhead {
+  display: grid;
+  align-items: center;
+  padding: 0 20px 14px;
+  column-gap: var(--m2-col-gap, 22px);
+  border-bottom: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] .m2-colhead .ch {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+html[data-module="m2"] .m2-colhead .ch small {
+  display: block;
+  font-family: var(--m2-font);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--m2-ink-caption);
+  margin-top: 3px;
+}
+
+/* The projector's own narrow rail. Named apart from the student desk rail
+   (.m2-rail) so the two never collide. */
+html[data-module="m2"] .m2-board-rail {
+  width: 168px;
+  flex: none;
+  padding: 26px 16px;
+  border-right: 1px solid var(--m2-hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* A caveat is never set heavier or brighter than the claim it qualifies. */
+html[data-module="m2"] .m2-footnote {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--m2-ink-caption);
+}
+
+html[data-module="m2"] .m2-desk {
+  padding: 9px 12px 10px;
+  border-radius: var(--m2-r-inner);
+  background: var(--m2-panel);
+  border: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] .m2-desk.is-attention {
+  border-color: rgba(242, 92, 92, 0.34);
+}
+html[data-module="m2"] .m2-desk-head {
+  margin-bottom: 7px;
+  min-width: 0;
+}
+html[data-module="m2"] .m2-desk-head b {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--m2-ink);
+  line-height: 1.25;
+}
+html[data-module="m2"] .m2-desk-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 3px;
+}
+html[data-module="m2"] .m2-desk-sub .dn {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.085em;
+  text-transform: uppercase;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-desk-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 4px 0;
+  line-height: 20px;
+  font-size: 12px;
+  color: var(--m2-ink-label);
+  border-top: 1px solid var(--m2-hairline-faint);
+}
+html[data-module="m2"] .m2-desk-row:first-of-type {
+  border-top: 0;
+}
+html[data-module="m2"] .m2-desk-row b {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-desk-row b.is-violet {
+  color: var(--m2-violet-bright);
+}
+html[data-module="m2"] .m2-desk-row b.is-money {
+  color: var(--m2-money);
+}
+html[data-module="m2"] .m2-desk-row em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--m2-ink-caption);
+  margin-left: 6px;
+}
+html[data-module="m2"] .m2-desk-flag {
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 15px;
+  color: var(--m2-amber);
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+html[data-module="m2"] .m2-director {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+html[data-module="m2"] .m2-director section {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--m2-hairline-faint);
+}
+html[data-module="m2"] .m2-director section:last-child {
+  border-bottom: 0;
+}
+html[data-module="m2"] .m2-director h4 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--m2-ink-label);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+html[data-module="m2"] .m2-director h4 .m2-icon {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.8;
+  color: var(--m2-violet-bright);
+}
+html[data-module="m2"] .m2-director ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+html[data-module="m2"] .m2-director li {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--m2-ink-body);
+  padding-left: 13px;
+  position: relative;
+}
+html[data-module="m2"] .m2-director li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--m2-ink-caption);
+}
+html[data-module="m2"] .m2-director .say {
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--m2-ink);
+  background: var(--m2-panel-2);
+  border: 1px solid var(--m2-hairline-faint);
+  border-left: 2px solid var(--m2-violet);
+  border-radius: 0 var(--m2-r-chip) var(--m2-r-chip) 0;
+  padding: 9px 11px;
+  margin-bottom: 7px;
+}
+html[data-module="m2"] .m2-director section.is-dont h4,
+html[data-module="m2"] .m2-director section.is-dont h4 .m2-icon {
+  color: var(--m2-amber);
+}
+
+html[data-module="m2"] .m2-footbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-top: 1px solid var(--m2-hairline);
+  background: #0b0b13;
+}
+html[data-module="m2"] .m2-footbar .spacer {
+  flex: 1;
+}
+html[data-module="m2"] .m2-footbar .m2-cta {
+  width: auto;
+  padding: 12px 22px;
+  font-size: 15px;
+  border-radius: var(--m2-r-chip);
+  box-shadow: 0 8px 24px rgba(91, 61, 240, 0.42);
+}
+
+html[data-module="m2"] .m2-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+html[data-module="m2"] .m2-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: var(--m2-r-pill);
+  border: 1px solid var(--m2-hairline);
+  background: var(--m2-panel);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--m2-ink-label);
+  cursor: pointer;
+}
+html[data-module="m2"] .m2-filter.is-active {
+  border-color: var(--m2-violet-line);
+  background: var(--m2-violet-tint);
+  color: var(--m2-ink);
+}
+html[data-module="m2"] .m2-filter b {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--m2-ink);
+}
+
+/* =========================================================================
+   17. Viewports — 1366x768 is the design target, 1024x600 is first contact
+   ========================================================================= */
+
+/* The rail collapses to a top strip so LOCK IT IN stays in the first
+   viewport at 1024x600 (A8 / DIRECTION nn 7). */
+@media (max-width: 1100px), (max-height: 640px) {
+  html[data-module="m2"] .m2-frame {
+    flex-direction: column;
+    min-height: 0;
+  }
+  html[data-module="m2"] .m2-rail {
+    width: 100%;
+    align-self: auto;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--m2-hairline);
+    background: #0b0b14;
+    overflow-x: auto;
+  }
+  html[data-module="m2"] .m2-rail .m2-brand-mark {
+    width: 24px;
+    height: 24px;
+  }
+  html[data-module="m2"] .m2-rail .m2-brand-word span,
+  html[data-module="m2"] .m2-rail .m2-nav,
+  html[data-module="m2"] .m2-rail .m2-pip-days {
+    display: none;
+  }
+  html[data-module="m2"] .m2-rail .m2-progress-card,
+  html[data-module="m2"] .m2-rail .m2-identity,
+  html[data-module="m2"] .m2-rail .m2-book {
+    padding: 6px 10px;
+    border-radius: var(--m2-r-chip);
+  }
+  html[data-module="m2"] .m2-rail .m2-progress-card {
+    min-width: 130px;
+  }
+  html[data-module="m2"] .m2-rail .m2-progress-card .m2-label {
+    margin-bottom: 6px;
+  }
+  html[data-module="m2"] .m2-rail .m2-books-dock {
+    margin-top: 0;
+    margin-left: auto;
+    flex-direction: row;
+    gap: 8px;
+  }
+  html[data-module="m2"] .m2-main {
+    padding: 12px 18px 18px;
+    gap: 12px;
+  }
+  html[data-module="m2"] {
+    --m2-hero-size: 64px;
+    --m2-hero-line: 64px;
+    --m2-figure-size: 30px;
+    --m2-figure-line: 32px;
+    --m2-h1-size: 30px;
+    --m2-h1-line: 34px;
+    --m2-pad: 15px;
+    --m2-gutter: 12px;
+  }
+  html[data-module="m2"] .m2-result-hero .m2-hero-figure {
+    font-size: 64px;
+    line-height: 64px;
+  }
+  html[data-module="m2"] .m2-fullhouse {
+    font-size: 46px;
+  }
+  html[data-module="m2"] .m2-turnedaway {
+    font-size: 32px;
+    line-height: 34px;
+  }
+  html[data-module="m2"] .m2-cta {
+    padding: 13px 20px;
+    font-size: 17px;
+  }
+  html[data-module="m2"] .m2-round-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 22px;
+  }
+  html[data-module="m2"] .m2-stat {
+    min-height: 0;
+  }
+  html[data-module="m2"] .m2-doors {
+    min-height: 240px;
+  }
+  html[data-module="m2"] .m2-result-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* =========================================================================
+   14. The shared /play chrome, demoted (Lane B, contract A5/B9)
+   -------------------------------------------------------------------------
+   `#pinCard` and `#gameHeader` belong to the join flow, not to Module 2, and
+   at 1366x768 they were spending ~180px of the desk's first viewport with the
+   32px gold PIN outranking the price — the hero-slot defect A5 names. These
+   rules do not hide anything a pair can still be asked to read: the PIN stays
+   on screen, legible, as a one-line strip until the pair dismisses it (or the
+   20s auto-collapse fires), and the rail keeps its permanent PIN chip.
+   Module 1 is untouched: every selector is scoped to the M2 document flag.
+   ========================================================================= */
+
+html[data-module="m2"] main {
+  padding-top: 12px;
+  gap: 10px;
+}
+
+/* An empty error slot should not hold 16px + a gutter open all lesson. */
+html[data-module="m2"] #err:empty {
+  display: none;
+}
+
+html[data-module="m2"] #pinCard {
+  padding: 7px 12px;
+  border-radius: var(--m2-r-chip);
+  background: var(--m2-panel);
+  border: 1px solid var(--m2-hairline);
+}
+html[data-module="m2"] #pinCard .pinrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 0;
+}
+html[data-module="m2"] #pinCard .pinrow > div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+html[data-module="m2"] #pinCard .eyebrow {
+  margin: 0 !important;
+  font-family: var(--m2-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.055em;
+  line-height: 16px;
+  text-transform: uppercase;
+  color: var(--m2-ink-label);
+  white-space: nowrap;
+}
+/* Never gold on an M2 surface (A2), and never larger than the price (A5). */
+html[data-module="m2"] #pinCard .pinbox {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: left;
+  color: var(--m2-ink);
+}
+html[data-module="m2"] #pinCard #btnHidePin {
+  margin-left: auto;
+  flex: none;
+  padding: 4px 12px;
+  min-height: 0;
+  font-size: 12px;
+  border-radius: var(--m2-r-chip);
+}
+/* The collapsed state is unchanged in behaviour; only its type is M2's. */
+html[data-module="m2"] .pin-reopen {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
+/* "Session · seated as Rae & Ben" rides as a caption line, not its own row. */
+html[data-module="m2"] #gameHeader {
+  /* `#gameHeader` carries the shared `.eyebrow` class, which theme.css sets in
+     the Bebas Neue display face. A4 forbids that face in M2 student chrome, and
+     this element sits OUTSIDE `#gameBody`, so the theme.css scoping does not
+     reach it — the family is restated here. */
+  font-family: var(--m2-font);
+  margin: 0 0 4px !important;
+  font-size: 10.5px !important;
+  line-height: 14px;
+  letter-spacing: 0.07em;
+  color: var(--m2-ink-caption);
+}
+html[data-module="m2"] #gameHeader .franchise-badge {
+  vertical-align: middle;
+}
+
+
+/* =========================================================================
+   16. W2 repair-2 — composition (A2/A3/A4/A5/A6/B4/B5/C8)
+   ========================================================================= */
+
+/* A6 / visual direction 7: the rejoin-PIN banner is the last piece of school
+   chrome above the lesson's own identity. It cost 48px on every frame and 29%
+   of a 1024x600 first contact together with the other bands, and its collapsed
+   state was an empty labelled strip with a zero-height `#pinDisplay` in it. The
+   PIN is not deleted — `#pinDisplay` still exists and still carries the digits,
+   and the desk rail carries the same four digits as a permanent chip, smaller
+   than the price readout (A5). Scoped to M2: Module 1's banner is untouched. */
+html[data-module="m2"] #pinCard,
+html[data-module="m2"] #btnShowPin {
+  display: none !important;
+}
+
+/* C8 / visual direction 8: the drawn building is emitted with
+   `preserveAspectRatio="…slice"`, so any frame whose shape differs from the
+   SVG's crops it. The frame now carries the SVG's own aspect ratio and the
+   drawing fills it exactly. */
+html[data-module="m2"] .fh-arena-frame > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+html[data-module="m2"] .fh-dark-building {
+  border-radius: 0;
+}
+
+/* A2/A3: the disclosure that holds the full registered rules. One press, always
+   in the same place, nothing deleted. */
+html[data-module="m2"] .fh-rules.m2-disclosure {
+  border: 1px solid var(--m2-hairline);
+  border-radius: var(--m2-r-card);
+  background: var(--m2-panel);
+  padding: 9px 12px;
+}
+html[data-module="m2"] .fh-rules-summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--m2-font);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m2-ink-label);
+}
+html[data-module="m2"] .fh-rules-summary::-webkit-details-marker {
+  display: none;
+}
+html[data-module="m2"] .fh-rules-summary::after {
+  content: " +";
+  color: var(--m2-violet-bright);
+}
+html[data-module="m2"] .fh-rules[open] .fh-rules-summary::after {
+  content: " –";
+}
+html[data-module="m2"] .fh-rules-body {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--m2-hairline);
+  max-height: 320px;
+  overflow: auto;
+}
+
+/* A5 / Kid A #6: locked reads locked. The figures stay legible; the controls
+   stop looking like controls. */
+html[data-module="m2"] #fhPlayRoot.is-locked .fh-price-card,
+html[data-module="m2"] #fhPlayRoot.is-locked .fh-spend-card,
+html[data-module="m2"] #fhPlayRoot.is-locked .fh-bowl-plate {
+  opacity: 0.55;
+  filter: saturate(0.6);
+  pointer-events: none;
+}
+html[data-module="m2"] #fhPlayRoot.is-locked .m2-range,
+html[data-module="m2"] #fhPlayRoot.is-locked .m2-round-btn {
+  cursor: default;
+}
+
+/* Row 1 cards share a height so the cockpit reads as one instrument panel
+   rather than three cards of three different lengths (visual direction 9). */
+html[data-module="m2"] .fh-cockpit > div,
+html[data-module="m2"] .fh-cockpit > div > .m2-card {
+  height: 100%;
+}
+html[data-module="m2"] .fh-evidence-row > .m2-card,
+html[data-module="m2"] .fh-evidence-row > div {
+  height: 100%;
+}
+
+/* B4: FULL HOUSE at display scale on the panel ground — no banner, no frame.
+   The lit bowl beside it is the only warmth on the frame (E13/Q5). */
+html[data-module="m2"] .fh-sellout-title.m2-fullhouse {
+  font-size: 60px;
+  line-height: 62px;
+}
+@media (max-height: 719px), (max-width: 1179px) {
+  html[data-module="m2"] .fh-sellout-title.m2-fullhouse {
+    font-size: 38px;
+    line-height: 40px;
+  }
+}

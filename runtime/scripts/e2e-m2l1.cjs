@@ -31,7 +31,16 @@ const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
 const ROOT = path.join(__dirname, "..");
-const PORT = 4307;
+/**
+ * The build under test. Defaults to this checkout's own `dist`. The mutation
+ * limb below (R-1) runs the whole script against a SCRATCH COPY of `dist` with
+ * a defect injected into `client/play/main.js`, which is why the path is a
+ * parameter: `E2E_DIST=/path/to/scratch/dist node scripts/e2e-m2l1.cjs`.
+ * The server serves its client assets from its own directory, so a copied dist
+ * serves the copied (mutated) client.
+ */
+const DIST = process.env.E2E_DIST ? path.resolve(process.env.E2E_DIST) : path.join(ROOT, "dist");
+const PORT = Number(process.env.E2E_PORT || 4307);
 const BASE = `http://localhost:${PORT}`;
 const SNAPSHOT_FILE = path.join(ROOT, ".e2e-scratch", `snapshot-m2l1-${Date.now()}.json`);
 const SCREEN_DIR = path.join(ROOT, "..", "docs", "gauntlet", "module-2", "screens-l1");
@@ -207,6 +216,190 @@ async function waitForNight(page, label) {
   );
 }
 
+/* ------------------------------------------------ R-1: the rendered-claim limb -- */
+
+/**
+ * ECON_ADAPTATION_RULINGS R-1 (BLOCKING) and VISUAL_REFERENCE_CONTRACT G.
+ *
+ * Every economic-truth protection this lesson has stops at the module boundary:
+ * `fullHouse.test.ts`'s BLIND COMMIT walks the PAYLOAD, and nothing in this
+ * repository used to read the rendered DOM. A builder could compute a projected
+ * attendance in `play/main.ts` from `history` + `card` + `market.capacity`,
+ * print "Target: $110-$120" as a literal, or draw a fitted demand curve, and
+ * every command in the repo stayed green.
+ *
+ * This limb closes that. At every pre-lock PLAY state the script drives it:
+ *   1. reads the desk's OWN payload from the server (`GET /api/me` with the
+ *      device token the page is holding) — the exact inputs, no DOM parsing;
+ *   2. recomputes the settlement the module WOULD produce for the dials as they
+ *      stand, with the module's own `curveFor` + `settleNight` out of the build
+ *      under test;
+ *   3. asserts none of `turnout`, `gate`, `inArena`, `total`, `net`, `fillPct`,
+ *      `turnedAway`, `curve.base`, `curve.sens` is in `#gameBody`'s text;
+ *   4. asserts the text carries none of the forbidden claim vocabulary, with
+ *      `HOUSE_RULES[0]` (the registered sentence that says there is NO preview)
+ *      removed from the text first, since it is the product saying the opposite.
+ *
+ * ABSTENTION, stated so it cannot be mistaken for coverage: if a recomputed
+ * quantity happens to equal a number the payload legitimately carries (a price,
+ * the bill, a past night's turnout in `history`), the limb cannot tell a leak
+ * from a coincidence, so it SKIPS that quantity and logs the skip. The pre-lock
+ * payload provably carries no settlement quantity for the OPEN night
+ * (`fullHouse.test.ts` BLIND COMMIT), so every number in it is legitimately
+ * printable and this abstention never hides a leak of a number that is not
+ * already on the screen for an honest reason.
+ */
+const CLAIM_WORDS = [
+  "project",
+  "forecast",
+  "estimate",
+  "expected",
+  "preview",
+  "target",
+  "profit",
+  "readiness",
+  "momentum",
+  "time remaining",
+  "strong round",
+  "of capacity",
+  "weather",
+];
+
+let fullHouse = null;
+async function loadModuleUnderTest() {
+  if (!fullHouse) {
+    const url = require("node:url").pathToFileURL(path.join(DIST, "modules", "fullHouse.js")).href;
+    fullHouse = await import(url);
+  }
+  return fullHouse;
+}
+
+/** The device token the page itself is holding — the same one its own fetches use. */
+async function deviceTokenOf(page) {
+  return page.evaluate(() => {
+    try {
+      const raw = localStorage.getItem("bow-play-credentials");
+      return raw ? JSON.parse(raw).deviceToken : null;
+    } catch {
+      return null;
+    }
+  });
+}
+
+/** Every number anywhere in a payload — what this desk may legitimately print. */
+function allNumbersIn(value, out = new Set()) {
+  if (typeof value === "number") out.add(value);
+  else if (Array.isArray(value)) value.forEach((v) => allNumbersIn(v, out));
+  else if (value && typeof value === "object") for (const v of Object.values(value)) allNumbersIn(v, out);
+  return out;
+}
+
+const claimLimb = { checked: 0, skipped: [] };
+
+async function assertNoRenderedClaim(page, label) {
+  const mod = await loadModuleUnderTest();
+  const token = await deviceTokenOf(page);
+  assert.ok(token, `${label}: the desk page holds no device token — the claim limb cannot read its payload`);
+  const res = await fetch(`${BASE}/api/me`, { headers: { Authorization: `Bearer ${token}` } });
+  assert.ok(res.ok, `${label}: /api/me returned ${res.status}`);
+  const view = (await res.json()).view;
+
+  if (view.phase !== "PLAY" || view.locked || !view.card) return; // not a pre-lock desk right now
+  const market = mod.MARKETS.find((m) => m.id === view.market.id);
+  const card = mod.CARDS[view.card.index - 1];
+  assert.ok(market && card, `${label}: could not resolve the desk's market/card from its own payload`);
+
+  const carryFans = view.spendReceipt ? view.spendReceipt.fans : 0;
+  const curve = mod.curveFor(market, card, view.books.renewals, carryFans);
+  const outcome = mod.settleNight(market, curve, view.price, view.spend, view.openBowl, card.bowlOffer);
+
+  const body = await page.evaluate(() => document.getElementById("gameBody")?.innerText ?? "");
+  assert.ok(body.length > 0, `${label}: #gameBody is empty — the limb would pass on a blank screen`);
+  // Whole figures only: "1,232" on a settled night's cash chain must not read
+  // as a leak of a hidden 232. Every printed token is normalised to a number
+  // and compared exactly, so an injected turnout still trips the limb.
+  const printedFigures = new Set(
+    (body.match(/[0-9][0-9,]*(?:\.[0-9]+)?/g) ?? []).map((t) => Number(t.replace(/,/g, ""))).filter((n) => Number.isFinite(n)),
+  );
+
+  const legitimate = allNumbersIn(view);
+  const quantities = {
+    turnout: outcome.turnout,
+    gate: outcome.gate,
+    inArena: outcome.inArena,
+    total: outcome.total,
+    net: outcome.net,
+    fillPct: outcome.fillPct,
+    turnedAway: outcome.turnedAway,
+    "curve.base": curve.base,
+    "curve.sens": curve.sens,
+  };
+  for (const [name, raw] of Object.entries(quantities)) {
+    const q = Math.abs(raw);
+    if (q === 0) continue; // an honest zero is everywhere on this screen
+    if (legitimate.has(raw) || legitimate.has(q)) {
+      claimLimb.skipped.push(`${label}: ${name}=${raw} coincides with a number this desk may print`);
+      continue;
+    }
+    const needle = q.toLocaleString("en-US");
+    const found = name === "fillPct" ? body.includes(`${needle}%`) : printedFigures.has(q);
+    assert.equal(
+      found,
+      false,
+      `${label}: the pre-lock desk RENDERED ${name} (${needle}) for a night nobody has locked — ` +
+        `that is a preview of the pending action (BC-4 / R-1). Dials: $${view.price}, spend $${view.spend}, bowl ${view.openBowl}.`,
+    );
+  }
+
+  // R-1's own exception: the registered sentence that says there is NO preview
+  // is not a preview. The second line is the /play renderer's blind note, which
+  // says the same thing in the renderer's own words — FLAGGED, not blessed: it
+  // is a client literal making an economic statement, and it belongs in the
+  // module payload beside HOUSE_RULES[0]. Recorded as a known gap for the
+  // /play rebuild; excepted here so the limb reports leaks, not this.
+  const NON_CLAIM_SENTENCES = [
+    mod.HOUSE_RULES[0],
+    "No preview. Nothing on this screen tells you what tonight will make.",
+  ];
+  let withoutRules = body;
+  for (const sentence of NON_CLAIM_SENTENCES) withoutRules = withoutRules.split(sentence).join(" ");
+  const lower = withoutRules.toLowerCase();
+  for (const word of CLAIM_WORDS) {
+    assert.equal(
+      lower.includes(word),
+      false,
+      `${label}: the pre-lock desk rendered the forbidden word "${word}" — ` +
+        `${withoutRules.slice(Math.max(0, lower.indexOf(word) - 60), lower.indexOf(word) + 60).replace(/\s+/g, " ")}`,
+    );
+  }
+  claimLimb.checked += 1;
+}
+
+/**
+ * The results state owns the desk after the bell (contract C). A pair leaves it
+ * by pressing NEXT; a desk that never presses it is auto-committed by the next
+ * bell exactly as a stalled desk is today. Tolerant on purpose: a desk with no
+ * settled night yet (the late joiner) and a build where the control does not
+ * exist yet both fall through without failing.
+ */
+async function acknowledgeResult(page, label) {
+  // Wait for the results state itself: right after the bell a desk may still be
+  // showing the open night until its own poll lands (the night card is on both
+  // screens, so it is no signal).
+  const settled = await page
+    .waitForSelector("#fhResult", { timeout: 20000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!settled) return false;
+  if (!(await page.$("#fhNextNight"))) return false;
+  // The desk re-renders on its own poll cadence; a handle taken a moment ago
+  // can detach before the click lands, so resolve the selector at click time.
+  await page.click("#fhNextNight", { timeout: 20000 });
+  await page.waitForFunction(() => !document.querySelector("#fhResult"), null, { timeout: 20000 }).catch(() => {});
+  console.log(`[e2e-m2l1] ${label} pressed NEXT out of its result state`);
+  return true;
+}
+
 /* ------------------------------------------- the class-scale instrument -- */
 
 /**
@@ -284,10 +477,13 @@ async function classScaleCounterfactual(browser) {
       for (let i = 0; i < DESKS; i += 1) {
         await waitForNight(desks[i], `Night ${night}`);
         await setPrice(desks[i], PRICES[i]);
+        // R-1 at class scale: twelve different pre-lock desks, twelve different dials.
+        await assertNoRenderedClaim(desks[i], `${label} Night ${night} · desk ${i + 1} at $${PRICES[i]}`);
         await lockNight(desks[i]);
       }
     }
     await teach.click("#btnCloseNight");
+    for (let i = 0; i < DESKS; i += 1) await acknowledgeResult(desks[i], `${label} Night ${night} · desk ${i + 1}`);
     if (night < 5) {
       await desks[0].waitForFunction((l) => document.querySelector(".fh-card-night")?.textContent?.includes(l), `Night ${night + 1}`, { timeout: 30000 });
     }
@@ -487,7 +683,7 @@ async function main() {
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
 
   console.log("[e2e-m2l1] starting server...");
-  const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
+  const server = spawn(process.execPath, [path.join(DIST, "server", "index.js")], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
     stdio: ["ignore", "pipe", "pipe"],
@@ -595,6 +791,10 @@ async function main() {
       const night = NIGHTS[i];
       console.log(`[e2e-m2l1] --- ${night.label} ---`);
       for (const p of [d1, d2, d3]) await waitForNight(p, night.label);
+      // R-1, state 1: the desk as the night opens, dials untouched.
+      for (const [name, p] of [["desk1", d1], ["desk2", d2], ["desk3", d3]]) {
+        await assertNoRenderedClaim(p, `${night.label} · ${name} · dials at rest`);
+      }
 
       // `gate-l1-play` recheck2 R6 / P2 second clause (BLOCKING, carried): the
       // event-spend receipt was a forward-looking conditional ("if there is room
@@ -602,17 +802,9 @@ async function main() {
       // $40,000 into Night 3, which lands on Night 4 — and Desk 1 sells Night 4
       // out. On Night 5's screen, Night 4's settlement must say what that money
       // actually bought, in seats, not in intentions.
-      if (i === 4) {
-        await d1.waitForSelector("#fhSpendVerdict", { timeout: 20000 });
-        const verdict = (await d1.textContent("#fhSpendVerdict")).trim();
-        assert.match(
-          verdict,
-          /bought nothing|could not get in|every one of them got in/,
-          `the next-night receipt does not rule on last night's event money: "${verdict}"`,
-        );
-        assert.match(verdict, /\$40,000/, "the verdict does not name the money it is ruling on");
-        console.log(`[e2e-m2l1] spend receipt settled after the fact: "${verdict}"`);
-      }
+      // (Since the /play rebuild the settlement owns the desk as a results state
+      // before Night 5's dials — the verdict is read there, before NEXT; see the
+      // i === 3 block below.)
 
       // Desk 4 joins late, mid-window, at Night 3.
       if (i === 2) {
@@ -634,13 +826,17 @@ async function main() {
         await d1.click("#fhBowl");
         await d1.waitForFunction(() => document.getElementById("fhBowl")?.getAttribute("aria-pressed") === "true", null, { timeout: 10000 });
       }
+      // R-1, state 2: the desk with the dials as the pair set them, still unlocked.
+      await assertNoRenderedClaim(d1, `${night.label} · desk1 · dials set at $${night.d1}`);
       await lockNight(d1);
 
       await setPrice(d2, night.d2);
+      await assertNoRenderedClaim(d2, `${night.label} · desk2 · dials set at $${night.d2}`);
       await lockNight(d2);
 
       if (night.d3 !== null) {
         await setPrice(d3, night.d3);
+        await assertNoRenderedClaim(d3, `${night.label} · desk3 · dials set at $${night.d3}`);
         await lockNight(d3);
       } else {
         console.log("[e2e-m2l1] Desk 3 never locks Night 5 — the bell must auto-commit it at the plan price");
@@ -648,6 +844,7 @@ async function main() {
 
       if (night.d4 !== null && i >= 2) {
         await setPrice(d4, night.d4);
+        await assertNoRenderedClaim(d4, `${night.label} · desk4 · dials set at $${night.d4}`);
         await lockNight(d4);
       }
 
@@ -663,6 +860,30 @@ async function main() {
 
       // The teacher rings the bell. Every desk settles at once.
       await teach.click("#btnCloseNight");
+      // The settled night owns the desk until the pair presses NEXT (contract C).
+      if (i === 3) {
+        // Desk 1's Night-4 results state must rule on the $40,000 it put into Night 3.
+        await d1.waitForSelector("#fhSpendVerdict", { timeout: 20000 });
+        const verdict = (await d1.textContent("#fhSpendVerdict")).trim();
+        assert.match(
+          verdict,
+          /bought nothing|could not get in|every one of them got in/,
+          `the next-night receipt does not rule on last night's event money: "${verdict}"`,
+        );
+        assert.match(verdict, /\$40,000/, "the verdict does not name the money it is ruling on");
+        console.log(`[e2e-m2l1] spend receipt settled after the fact: "${verdict}"`);
+        // The sellout beat lives on the results state — read it before NEXT.
+        await d2.waitForFunction(() => !!document.querySelector("#fhResult"), null, { timeout: 20000 });
+        const shockPlay = await d2.evaluate(() => document.getElementById("gameBody")?.innerText ?? "");
+        assert.match(shockPlay, /FULL HOUSE/, "Memphis holding the plan price through the shock should sell out");
+        assert.match(shockPlay, /could not get a seat/, "a sold-out night must report the people it turned away");
+        console.log("[e2e-m2l1] the shock night sold a building out and reported the fans turned away");
+        await d2.screenshot({ path: path.join(SCREEN_DIR, "08-play-shock-soldout.png"), fullPage: true });
+      }
+      for (const [name, p] of [["desk1", d1], ["desk2", d2], ["desk3", d3], ["desk4", d4]]) {
+        if (p === d4 && i < 2) continue; // Desk 4 has not joined yet
+        await acknowledgeResult(p, `${night.label} · ${name}`);
+      }
       if (i < NIGHTS.length - 1) {
         for (const p of [d1, d2, d3]) await waitForNight(p, NIGHTS[i + 1].label);
       } else {
@@ -700,13 +921,6 @@ async function main() {
         await assertBoardFrameFits(board, "PLAY · Two Peaks released");
       }
 
-      if (i === 3) {
-        const shockPlay = await d2.evaluate(() => document.body.innerText);
-        assert.match(shockPlay, /FULL HOUSE/, "Memphis holding the plan price through the shock should sell out");
-        assert.match(shockPlay, /could not get a seat/, "a sold-out night must report the people it turned away");
-        console.log("[e2e-m2l1] the shock night sold a building out and reported the fans turned away");
-        await d2.screenshot({ path: path.join(SCREEN_DIR, "08-play-shock-soldout.png"), fullPage: true });
-      }
     }
 
     // Desk 3's unlocked Night 5 must have been auto-committed, and labelled.
@@ -947,6 +1161,17 @@ async function main() {
 
     /* ---- the class-scale COUNTERFACTUAL, at 12 desks ---- */
     await classScaleCounterfactual(browser);
+
+    /* ---- R-1: the limb is only evidence if it actually ran ---- */
+    assert.ok(
+      claimLimb.checked >= 20,
+      `the rendered-claim limb ran on only ${claimLimb.checked} pre-lock desks — a limb that barely ran is not evidence`,
+    );
+    console.log(
+      `[e2e-m2l1] R-1 rendered-claim limb: ${claimLimb.checked} pre-lock desk states audited against a recomputed settlement; ` +
+        `${claimLimb.skipped.length} quantity checks abstained on a numeric coincidence`,
+    );
+    for (const skip of claimLimb.skipped.slice(0, 12)) console.log(`[e2e-m2l1]   abstained — ${skip}`);
 
     if (consoleErrors.length > 0) {
       console.error("[e2e-m2l1] CONSOLE ERRORS DETECTED:\n" + consoleErrors.join("\n"));

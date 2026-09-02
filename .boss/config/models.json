@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lastVerified": "2026-08-31",
+  "lastVerified": "2026-09-01",
   "sources": [
     "https://platform.claude.com/docs/en/models/overview",
     "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model",
@@ -9,7 +9,7 @@
   "notice": "Capability metadata is a routing prior, not BOW performance evidence. Role authority never derives from this file.",
   "models": [
     {
-      "id": "claude-fable-5",
+      "id": "claude-fable-5-1",
       "provider": "anthropic",
       "status": "active",
       "contextTokens": 1000000,
@@ -22,6 +22,23 @@
         "visualJudgment": 5,
         "fastBoundedWork": 2
       }
+    },
+    {
+      "id": "claude-fable-5",
+      "provider": "anthropic",
+      "status": "superseded",
+      "contextTokens": 1000000,
+      "relativeCost": 5,
+      "relativeLatency": 5,
+      "capabilities": {
+        "deepReasoning": 5,
+        "agenticCoding": 5,
+        "longHorizon": 5,
+        "visualJudgment": 5,
+        "fastBoundedWork": 2
+      },
+      "supersededBy": "claude-fable-5-1",
+      "note": "Id was never invokable in the Boss host; kept for run-history provenance (m2-quality-war assignments reference it). Never route to it."
     },
     {
       "id": "claude-opus-5",

@@ -1,7 +1,9 @@
 import { ApiError, apiFetch } from "../shared/api.js";
+import { arenaSvg } from "../shared/arena.js";
 import { crestStyle } from "../shared/crest.js";
+import { brandMark, dotChart } from "../shared/m2ui.js";
 import { ActionOutbox } from "../shared/outbox.js";
-import { startPolling } from "../shared/poll.js";
+import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
 
 type Franchise = { name: string; crestIndex: number };
@@ -25,6 +27,70 @@ const syncStatus = $("syncStatus");
 
 let creds: PlayCredentials | null = loadPlayCredentials();
 let outbox: ActionOutbox | null = null;
+let poll: PollHandle | null = null;
+
+/**
+ * W2 repair-2 F1 (BLOCKING classroom-reliability, REGRESSION_W2_RESULTS_STATE
+ * finding 1). A PIN rejoin from a second device rotates the seat's device token
+ * on purpose (`SessionService.rejoin`) — that is the documented "my Chromebook
+ * died" path and it stays. What was broken is what the ORIGINAL tab did next:
+ * `poll.ts` hands `onError` the parsed error BODY, never an `ApiError`, so the
+ * `error instanceof ApiError && error.status === 401` branch below was dead
+ * code. The tab wrote "offline — retrying" (a wrong diagnosis — the device is
+ * signed out, not offline) and a refresh left `#gameBody` permanently empty
+ * with no control to recover with.
+ *
+ * These are the codes the server returns with 401 for a device token
+ * (`runtime/src/server/http.ts`, `runtime/src/server/sessionService.ts`).
+ * Lesson-agnostic: every module's /play shares this transport.
+ */
+const SIGNED_OUT_CODES = new Set(["retired", "no_token", "bad_token"]);
+
+/** The line a pair reads when their seat was reopened somewhere else. Never "offline". */
+const SIGNED_OUT_LINE = "This desk was opened on another device. Rejoin with your PIN.";
+
+/**
+ * Rejection reasons that are a description of the state, not a mistake. The
+ * strings are the module's own (`fullHouse.ts` `reduce`); matching them here
+ * keeps the error slot for things a pair can act on.
+ */
+const NIGHT_CLOSED_REJECTIONS = new Set([
+  "all five nights are done",
+  "all five nights are already in the books",
+]);
+
+function errorCode(error: unknown): string | null {
+  if (error instanceof ApiError) return error.code;
+  if (error && typeof error === "object") {
+    const body = (error as { error?: { code?: unknown } }).error;
+    if (body && typeof body === "object" && typeof body.code === "string") return body.code;
+  }
+  return null;
+}
+
+/** Survives the refresh a pair reaches for, so the line is still there afterwards. */
+const SIGNED_OUT_FLAG = "bow-signed-out";
+
+/** Sign this device out in place: no reload, no blank body, a control to come back with. */
+function signedOut(): void {
+  try {
+    window.sessionStorage.setItem(SIGNED_OUT_FLAG, "1");
+  } catch {
+    /* storage disabled — the line still shows until this tab is reloaded */
+  }
+  poll?.stop();
+  poll = null;
+  outbox = null;
+  clearPlayCredentials();
+  creds = null;
+  gameCard.hidden = true;
+  pinCard.hidden = true;
+  rejoinCard.hidden = true;
+  joinCard.hidden = false;
+  $("btnShowPin").hidden = true;
+  setSyncLabel("signed out");
+  showError(SIGNED_OUT_LINE);
+}
 
 function showError(message: string): void {
   errEl.textContent = message;
@@ -88,6 +154,11 @@ $("btnRejoin").addEventListener("click", () => {
 
 function onSeated(payload: StudentPayload, code: string): void {
   if (!payload.deviceToken) return showError("Server did not issue a device token.");
+  try {
+    window.sessionStorage.removeItem(SIGNED_OUT_FLAG);
+  } catch {
+    /* storage disabled */
+  }
   creds = { deviceToken: payload.deviceToken, sessionCode: code, seatId: payload.seat.id, displayName: payload.seat.displayName, rejoinPin: payload.rejoinPin };
   savePlayCredentials(creds);
   joinCard.hidden = true;
@@ -121,11 +192,18 @@ function startGame(): void {
     () => creds?.deviceToken ?? null,
     {
       onRetired: () => {
-        clearPlayCredentials();
-        creds = null;
-        location.reload();
+        // F1: same destination as the poll's signed-out branch — the join card
+        // with a line that says what happened, not a reload into a blank body.
+        signedOut();
       },
-      onRejected: (_action, error) => showError(error.message),
+      onRejected: (_action, error) => {
+        // B8 / Kid A #5: "all five nights are done" is not an error a pair made
+        // — it is the state the screen is already in, and it rendered as red
+        // chrome over the closing frame. The module's own registered
+        // all-nights-done line is already in the normal slot.
+        if (NIGHT_CLOSED_REJECTIONS.has(error.message)) return;
+        showError(error.message);
+      },
       onSent: (_action, response) => {
         // The action is a discrete, immediately-resolved command — render its
         // own response right away instead of waiting for the next poll tick,
@@ -138,7 +216,7 @@ function startGame(): void {
     creds.seatId,
   );
 
-  startPolling<StudentPayload>(
+  poll = startPolling<StudentPayload>(
     "/api/me",
     1200,
     (payload) => {
@@ -149,11 +227,17 @@ function startGame(): void {
     },
     {
       headers: (): Record<string, string> => (creds ? { Authorization: `Bearer ${creds.deviceToken}` } : {}),
+      // D1: a 304 is proof the server answered. Clearing the label here is what
+      // makes "offline — retrying" self-heal instead of sticking for the lesson.
+      onUnchanged: () => {
+        if (!creds) return;
+        setSyncLabel(outbox && outbox.pendingCount > 0 ? `syncing… (${outbox.pendingCount} pending)` : "synced");
+      },
       onError: (error) => {
-        if (error instanceof ApiError && error.status === 401) {
-          clearPlayCredentials();
-          creds = null;
-          location.reload();
+        // F1: `poll.ts` passes the parsed body, so match on the code, not the class.
+        const code = errorCode(error);
+        if (code !== null && SIGNED_OUT_CODES.has(code)) {
+          signedOut();
           return;
         }
         setSyncLabel("offline — retrying");
@@ -199,6 +283,11 @@ function renderGame(payload: StudentPayload): void {
   }
 
   const view = payload.view;
+  // The Module-2 token/component layer is scoped to this attribute; Module 1
+  // renders unchanged because nothing under it is ever set for an m1 view.
+  const moduleId = String(view["module"] ?? "");
+  if (moduleId.startsWith("m2l")) document.documentElement.dataset.module = "m2";
+  else delete document.documentElement.dataset.module;
   if (view["module"] === "m1l1-draft-day") {
     renderDraftDay(s, view);
     return;
@@ -1774,6 +1863,9 @@ type FHMarket = {
   bowlCost: number;
   capacityNote: string;
   spendRule: string;
+  /** A2/A3: the one-line versions the two instruments print at the dial. */
+  spendShortRule: string;
+  renewalShortRule: string;
 };
 type FHSlateNight = { id: string; label: string; index: number; day: string; visitor: string; draw: number; tv: "none" | "local" | "national"; repeatOf: string | null; bowlOffer: boolean };
 type FHCard = {
@@ -1817,11 +1909,24 @@ type FHNight = {
   renewalMove: number;
   cashAfter: number;
   resaleNote: string | null;
+  /** W2 repair-4 R4-5: the spend-and-seats fact line, registered in the module. */
+  spendLine?: string | null;
+  /** R-1: the night's headline sentence, composed server-side from settled facts. */
+  resultHeadline?: string;
+  /** R5-2: the registered cause line for the turnout, computed server-side. */
+  turnoutCause?: string;
   /** R6/P2: last night's event money, confirmed or refuted by this night's seats. */
   spendVerdict: { carryFans: number; seated: number; wasted: number; label: string } | null;
+  /** B1: the registered price-and-card line for this night. */
+  factLine?: string;
+  /** B6: Night 5's two-figure callback to the card it repeats. */
+  repeatCallback?: string | null;
+  /** E2: the renewals move printed here is the model's floor, not the rule's answer. */
+  renewalAtFloor?: boolean;
+  renewalFloorLine?: string;
 };
 type FHBooks = { cash: number; renewals: number; inDebt: boolean };
-type FHTwoPeaks = { ticketPeakPrice: number; totalPeakPrice: number; gapDollars: number; gapSteps: number };
+type FHTwoPeaks = { ticketPeakPrice: number; totalPeakPrice: number; gapDollars: number; gapSteps: number; note?: string };
 type FHReplay = { label: string; cash: number; renewals: number; note: string };
 
 const TV_LABEL: Record<string, string> = {
@@ -1834,26 +1939,1608 @@ let fhSeatRequested = false;
 let fhMountKey: string | null = null;
 /** Local dial state while dragging — the server only hears about it on release. */
 let fhLocalPrice: number | null = null;
+/**
+ * W2 repair-4 R4-2: the card the local dial state belongs to. The local price
+ * used to be set once per page load and never reset, so on every night after
+ * the first the dial showed the client's remembered number while the module
+ * computed `dialCarriedLine` for the server's `desk.price` — the cue never
+ * rendered. A new night now opens on the server's price (the last price this
+ * desk charged), so the number in the dial and the number the cue names are
+ * the same number at mount.
+ */
+let fhLocalPriceCard: string | null = null;
 
 function money(n: number): string {
   const sign = n < 0 ? "-" : "";
   return `${sign}$${Math.abs(Math.round(n)).toLocaleString()}`;
 }
 
+/* ================================================================== FULL HOUSE
+ * m2-visual-quality-war wave 2, Lane B. The desk is a ticket office an hour
+ * before doors, not a form. Layout lives here (inline grid + measured type),
+ * the look lives in shared/m2.css under html[data-module="m2"]; every colour is
+ * written as var(--m2-*, <literal>) so the surface still reads correctly if the
+ * module layer has not loaded.
+ *
+ * Law this file is written against: nothing derived from the pending dials is
+ * rendered (BC-4); the drawn building is dark until a night has settled (E12);
+ * CASH and RENEWALS never sum and never share a figure slot (R-3); every
+ * sentence carrying an economic claim comes from the payload — `uiCopy`,
+ * `rules`, `renewalRule`, `market.spendRule`, `resultHeadline`, `resaleNote`,
+ * `spendVerdict.label` — and never from a literal in this file.
+ * ========================================================================== */
+
+/** The registered UI copy the module sends. Fallbacks exist only so a build
+ *  never blocks on the payload; the module is the source of these words. */
+type FHChainLabels = { tickets: string; inArena: string; bill: string; event: string; bowl: string; cash: string; renewals: string };
+type FHUiCopy = {
+  doorsLine: string;
+  fillQualifier: string;
+  whoCameLabel: string;
+  historyTitle: string;
+  historyCaption: string;
+  twoBooksLine: string;
+  extraSeatsLabel: string;
+  cameLabel: string;
+  openSeatsLabel: string;
+  moreSeatsOpenLabel: string;
+  moreSeatsClosedLabel: string;
+  seasonQualifier: string;
+  tonightQualifier: string;
+  noNightsYetLine: string;
+  moreLabel: string;
+  twoPeaksTitle: string;
+  twoPeaksTicketLabel: string;
+  twoPeaksTotalLabel: string;
+  noTomorrowLine: string;
+  stockNightLine: string;
+  autoNightLine: string;
+  inArenaNote: string;
+  bowlPaidNote: string;
+  renewalsCaption: string;
+  chainLabels: FHChainLabels;
+  nextNightLabel: string | null;
+};
+
+const FH_UI_FALLBACK: FHUiCopy = {
+  doorsLine: "Doors open when your teacher rings the bell.",
+  fillQualifier: "of the seats you opened tonight",
+  whoCameLabel: "WHO CAME",
+  historyTitle: "YOUR NIGHTS SO FAR",
+  historyCaption: "One dot per night. Two nights are only comparable when the card is the same.",
+  twoBooksLine: "You are keeping two books, and they do not add up to one number.",
+  extraSeatsLabel: "MORE SEATS",
+  cameLabel: "came",
+  openSeatsLabel: "open",
+  moreSeatsOpenLabel: "more seats open",
+  moreSeatsClosedLabel: "more seats closed",
+  seasonQualifier: "season so far",
+  tonightQualifier: "tonight",
+  noNightsYetLine: "No nights yet. Your first dot lands here after the first bell.",
+  moreLabel: "More about tonight",
+  // Fallbacks only (the module is the source): empty, so a missing key renders
+  // nothing rather than a sentence this file authored.
+  twoPeaksTitle: "",
+  twoPeaksTicketLabel: "",
+  twoPeaksTotalLabel: "",
+  noTomorrowLine: "",
+  stockNightLine: "",
+  autoNightLine: "",
+  inArenaNote: "",
+  bowlPaidNote: "",
+  renewalsCaption: "",
+  chainLabels: { tickets: "TICKETS", inArena: "IN-ARENA", bill: "BUILDING BILL", event: "EVENT MONEY", bowl: "MORE SEATS", cash: "CASH", renewals: "RENEWALS" },
+  nextNightLabel: null,
+};
+
+function fhUi(view: Record<string, unknown>): FHUiCopy {
+  const raw = (view["uiCopy"] ?? {}) as Partial<FHUiCopy>;
+  return {
+    doorsLine: raw.doorsLine ?? FH_UI_FALLBACK.doorsLine,
+    fillQualifier: raw.fillQualifier ?? FH_UI_FALLBACK.fillQualifier,
+    whoCameLabel: raw.whoCameLabel ?? FH_UI_FALLBACK.whoCameLabel,
+    historyTitle: raw.historyTitle ?? FH_UI_FALLBACK.historyTitle,
+    historyCaption: raw.historyCaption ?? FH_UI_FALLBACK.historyCaption,
+    twoBooksLine: raw.twoBooksLine ?? FH_UI_FALLBACK.twoBooksLine,
+    extraSeatsLabel: raw.extraSeatsLabel ?? FH_UI_FALLBACK.extraSeatsLabel,
+    cameLabel: raw.cameLabel ?? FH_UI_FALLBACK.cameLabel,
+    openSeatsLabel: raw.openSeatsLabel ?? FH_UI_FALLBACK.openSeatsLabel,
+    moreSeatsOpenLabel: raw.moreSeatsOpenLabel ?? FH_UI_FALLBACK.moreSeatsOpenLabel,
+    moreSeatsClosedLabel: raw.moreSeatsClosedLabel ?? FH_UI_FALLBACK.moreSeatsClosedLabel,
+    seasonQualifier: raw.seasonQualifier ?? FH_UI_FALLBACK.seasonQualifier,
+    tonightQualifier: raw.tonightQualifier ?? FH_UI_FALLBACK.tonightQualifier,
+    noNightsYetLine: raw.noNightsYetLine ?? FH_UI_FALLBACK.noNightsYetLine,
+    moreLabel: raw.moreLabel ?? FH_UI_FALLBACK.moreLabel,
+    twoPeaksTitle: raw.twoPeaksTitle ?? FH_UI_FALLBACK.twoPeaksTitle,
+    twoPeaksTicketLabel: raw.twoPeaksTicketLabel ?? FH_UI_FALLBACK.twoPeaksTicketLabel,
+    twoPeaksTotalLabel: raw.twoPeaksTotalLabel ?? FH_UI_FALLBACK.twoPeaksTotalLabel,
+    noTomorrowLine: raw.noTomorrowLine ?? FH_UI_FALLBACK.noTomorrowLine,
+    stockNightLine: raw.stockNightLine ?? FH_UI_FALLBACK.stockNightLine,
+    autoNightLine: raw.autoNightLine ?? FH_UI_FALLBACK.autoNightLine,
+    inArenaNote: raw.inArenaNote ?? FH_UI_FALLBACK.inArenaNote,
+    bowlPaidNote: raw.bowlPaidNote ?? FH_UI_FALLBACK.bowlPaidNote,
+    renewalsCaption: raw.renewalsCaption ?? FH_UI_FALLBACK.renewalsCaption,
+    chainLabels: { ...FH_UI_FALLBACK.chainLabels, ...(raw.chainLabels ?? {}) },
+    nextNightLabel: raw.nextNightLabel ?? null,
+  };
+}
+
+/* ------------------------------------------------------------- tokens -- */
+
+const FH_INK = "var(--m2-ink, #f4f4f8)";
+const FH_INK_BODY = "var(--m2-ink-body, #c9c9d6)";
+const FH_INK_LABEL = "var(--m2-ink-label, #8a8a9c)";
+const FH_INK_CAPTION = "var(--m2-ink-caption, #62627a)";
+const FH_PANEL = "var(--m2-panel, #101019)";
+const FH_PANEL_2 = "var(--m2-panel-2, #16161f)";
+const FH_HAIR = "var(--m2-hairline, rgba(255,255,255,0.07))";
+const FH_VIOLET = "var(--m2-violet, #7a5cff)";
+const FH_VIOLET_BRIGHT = "var(--m2-violet-bright, #9d86ff)";
+const FH_MONEY = "var(--m2-money, #22c55e)";
+const FH_RED = "var(--m2-red, #ef4444)";
+const FH_CARD = `background:${FH_PANEL}; border:1px solid ${FH_HAIR}; border-radius:var(--m2-r-card, 16px);`;
+/** §H "at most two figures >=34px on a settled night": the books sit under it. */
+const FH_FIG = `font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:31px; line-height:33px; font-weight:600; letter-spacing:-0.025em; color:${FH_INK}; display:block;`;
+const FH_LABEL = `display:block; font-size:12px; font-weight:600; letter-spacing:0.085em; text-transform:uppercase; color:${FH_INK_LABEL};`;
+
+/** Layout mode. The rail becomes a top strip and the desk becomes two short
+ *  columns on a 1024x600 Chromebook so LOCK IT IN stays in the first viewport
+ *  with the rejoin-PIN card still open. */
+function fhTight(): boolean {
+  return window.innerHeight < 720 || window.innerWidth < 1180;
+}
+
+let fhResizeBound = false;
+let fhLastSession: SessionInfo | null = null;
+let fhLastView: Record<string, unknown> | null = null;
+let fhResizeTimer: number | null = null;
+function fhBindResize(): void {
+  if (fhResizeBound) return;
+  fhResizeBound = true;
+  // The poller answers 304 when nothing changed, so a viewport change has to
+  // re-render itself: the desk lays out differently on a Chromebook.
+  window.addEventListener("resize", () => {
+    if (fhResizeTimer !== null) window.clearTimeout(fhResizeTimer);
+    fhResizeTimer = window.setTimeout(() => {
+      fhMountKey = null;
+      if (fhLastSession && fhLastView) renderFullHouse(fhLastSession, fhLastView);
+    }, 150);
+  });
+}
+
+/* -------------------------------------------------------------- glyphs -- */
+
+function fhIcon(name: string, size = 18): string {
+  const d: Record<string, string> = {
+    lock: '<path d="M6 11V8a6 6 0 0 1 12 0v3"/><rect x="4" y="11" width="16" height="10" rx="2.5"/>',
+    ticket: '<path d="M3 8.5V6.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 6.5v2a2.5 2.5 0 0 0 0 7v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-2a2.5 2.5 0 0 0 0-7Z"/><path d="M14 5v14"/>',
+    building: '<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-5h6v5"/>',
+    people: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M17 11a3 3 0 1 0-2-5.2"/><path d="M17.5 20a5.6 5.6 0 0 0-2-4"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    cash: '<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/>',
+    renew: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/>',
+    spark: '<path d="M12 3v4M12 17v4M4.6 4.6l2.8 2.8M16.6 16.6l2.8 2.8M3 12h4M17 12h4M4.6 19.4l2.8-2.8M16.6 7.4l2.8-2.8"/>',
+    arrow: '<path d="M5 12h13"/><path d="M13 6l6 6-6 6"/>',
+    door: '<path d="M4 21V4.6a1 1 0 0 1 .8-1L14 2v20l-9.2-1.4"/><path d="M17 6h3v15h-3"/><circle cx="11.5" cy="12" r="0.9" fill="currentColor" stroke="none"/>',
+    star: '<path d="M12 2.5 14.1 9l6.9.1-5.5 4.1 2 6.6-5.5-4-5.5 4 2-6.6L3 9.1 9.9 9Z"/>',
+    dot: '<circle cx="12" cy="12" r="6"/>',
+  };
+  return `<svg class="m2-icon" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d[name] ?? d["dot"]}</svg>`;
+}
+
+
+function fhBadge(icon: string, tone: "violet" | "money" = "violet", size = 34): string {
+  const bg = tone === "money" ? "rgba(34,197,94,0.12)" : "var(--m2-violet-badge, #231a4a)";
+  const fg = tone === "money" ? FH_MONEY : FH_VIOLET_BRIGHT;
+  return `<span class="m2-badge${tone === "money" ? " is-money" : ""}" style="width:${size}px;height:${size}px;border-radius:999px;background:${bg};border:1px solid ${tone === "money" ? "rgba(34,197,94,0.3)" : "rgba(122,92,255,0.22)"};color:${fg};display:inline-flex;align-items:center;justify-content:center;flex:none;">${fhIcon(icon, Math.round(size * 0.53))}</span>`;
+}
+
+
+/* ---------------------------------------------------------------- shell -- */
+
+/** Night pips + day labels — the five-night schedule as a physical strip. */
+function fhPips(slate: FHSlateNight[], nightIndex: number, settled: number, tight: boolean): string {
+  const nights = slate.length > 0 ? slate : [];
+  // A7: the back-half payloads carry no slate, and this used to render as an
+  // empty labelled card in the rail on every post-PLAY phase.
+  if (nights.length === 0) return "";
+  const pips = nights
+    .map((n, i) => {
+      const state = i < settled ? "is-done" : i === nightIndex ? "is-now" : "";
+      const bg = i < settled ? "rgba(122,92,255,0.5)" : i === nightIndex ? FH_VIOLET : "rgba(255,255,255,0.09)";
+      const glow = i === nightIndex ? `box-shadow:0 0 10px rgba(122,92,255,0.75);` : "";
+      return `<span class="m2-pip ${state}" title="${escapeHtml(n.label)} · ${escapeHtml(n.day)}" style="flex:1; height:7px; border-radius:999px; background:${bg}; ${glow}"></span>`;
+    })
+    .join("");
+  const days = nights.map((n) => `<span style="flex:1; text-align:center; font-size:9.5px; letter-spacing:0.06em; color:${FH_INK_CAPTION};">${escapeHtml(n.day.slice(0, 3).toUpperCase())}</span>`).join("");
+  const label = nights.length > 0 ? `NIGHT ${Math.min(nightIndex + 1, nights.length)} OF ${nights.length}` : "";
+  if (tight) {
+    return `<div style="display:flex; align-items:center; gap:10px; min-width:190px;">
+        <span style="${FH_LABEL} white-space:nowrap;">${label}</span>
+        <span style="display:flex; gap:4px; flex:1;">${pips}</span>
+      </div>`;
+  }
+  return `<div class="m2-progress-card" style="padding:12px; border-radius:12px; background:${FH_PANEL}; border:1px solid ${FH_HAIR};">
+      <span class="m2-label" style="${FH_LABEL} margin-bottom:9px;">${label}</span>
+      <div class="m2-pips" style="display:flex; gap:4px;">${pips}</div>
+      <div style="display:flex; gap:4px; margin-top:5px;">${days}</div>
+    </div>`;
+}
+
+/** The two books docked as two visibly different instruments (R-3). */
+function fhBooksDock(books: FHBooks | undefined, ui: FHUiCopy, tight: boolean): string {
+  if (!books) return "";
+  const row = (label: string, value: string, note: string, tone: string, icon: string) => `
+    <div style="display:flex; align-items:center; gap:9px; padding:8px 9px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
+      ${fhBadge(icon, tone === FH_MONEY ? "money" : "violet", 26)}
+      <span style="min-width:0;">
+        <span style="${FH_LABEL} font-size:10px;">${label}</span>
+        <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:17px; font-weight:600; color:${tone};">${value}</span>
+      </span>
+      <span style="margin-left:auto; font-size:10px; color:${FH_INK_CAPTION}; text-align:right; max-width:64px; line-height:12px;">${note}</span>
+    </div>`;
+  // E1 (Economic Truth finding 5): the dock is the SEASON book and the night
+  // chain twelve inches away is tonight's. Neither is a bare `CASH` any more.
+  // "after the bill" is gone: CASH also nets the event money and the extra seats.
+  const cash = row(ui.chainLabels.cash, money(books.cash), books.inDebt ? "in the red" : ui.seasonQualifier, books.inDebt ? FH_RED : FH_MONEY, "cash");
+  const ren = row(ui.chainLabels.renewals, `${books.renewals}%`, ui.seasonQualifier, FH_INK, "renew");
+  return `<div style="display:${tight ? "flex" : "grid"}; gap:6px; ${tight ? "flex:1; min-width:0;" : ""}">${cash}${ren}
+      <span style="font-size:10.5px; line-height:14px; color:${FH_INK_CAPTION};">${escapeHtml(ui.twoBooksLine)}</span>
+    </div>`;
+}
+
+/** Desk rail (A8). No fictional destinations — the nav items are in-page anchors. */
+function fhRail(view: Record<string, unknown>, opts: { anchors: boolean; books: boolean; nightIndex: number; settled: number }): string {
+  const market = view["market"] as FHMarket | undefined;
+  const ui = fhUi(view);
+  const tight = fhTight();
+  const slate = (view["slate"] as FHSlateNight[]) ?? [];
+  const pin = creds?.rejoinPin ? `<span class="fh-pin-chip" style="display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; border:1px solid ${FH_HAIR}; background:${FH_PANEL_2}; font-size:10.5px; letter-spacing:0.06em; white-space:nowrap; flex:none; color:${FH_INK_CAPTION};">REJOIN PIN <b style="font-family:var(--m2-font-num, inherit); color:${FH_INK_LABEL}; letter-spacing:0.12em;">${escapeHtml(creds.rejoinPin)}</b></span>` : "";
+  const identity = `
+    <div class="m2-identity" style="display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:12px; background:${FH_PANEL}; border:1px solid ${FH_HAIR}; ${tight ? "" : "margin-top:auto;"}">
+      <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 26)}"></span>
+      <span style="min-width:0; flex:1;">
+        <b class="fh-desk-name" style="display:block; font-size:12px; font-weight:600; color:${FH_INK}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(String(view["handle"] ?? ""))}</b>
+        <span class="fh-desk-building" style="display:block; font-size:10.5px; line-height:13px; color:${FH_INK_CAPTION};">${escapeHtml(market?.building ?? "")}</span>
+      </span>
+    </div>`;
+  const anchors = opts.anchors && !tight
+    ? `<nav class="m2-nav" style="display:flex; flex-direction:column; gap:2px;">
+         ${[["#fhTonight", "Tonight", "ticket"], ["#fhNights", "Your nights", "calendar"], ["#fhBooks", "Your books", "cash"]]
+           .map(
+             ([href, label, icon], i) =>
+               `<a class="m2-nav-item${i === 0 ? " is-active" : ""}" href="${href}" style="display:flex; align-items:center; gap:10px; padding:8px 11px; border-radius:10px; text-decoration:none; font-size:13px; color:${i === 0 ? FH_INK : FH_INK_LABEL}; ${i === 0 ? `background:var(--m2-violet-tint, rgba(122,92,255,0.14)); border-left:2px solid ${FH_VIOLET};` : "border-left:2px solid transparent;"}">${fhIcon(String(icon), 16)}<span>${label}</span></a>`,
+           )
+           .join("")}
+       </nav>`
+    : "";
+  const brand = `<div class="m2-brand" style="display:flex; align-items:center; gap:10px;">
+      ${brandMark(tight ? 24 : 30)}
+      <span class="m2-brand-word" style="line-height:1.1;">
+        <b style="display:block; font-size:${tight ? 11 : 13}px; font-weight:700; letter-spacing:0.12em; color:${FH_INK};">FULL HOUSE</b>
+        <span style="display:block; font-size:9px; font-weight:600; letter-spacing:0.18em; color:${FH_INK_CAPTION};">MODULE 2 · LESSON 1</span>
+      </span>
+    </div>`;
+
+  if (tight) {
+    // 1024x600: the rail becomes a top strip so the decision keeps the height.
+    const books = view["books"] as FHBooks | undefined;
+    const dock = opts.books && books
+      ? `<span style="display:inline-flex; align-items:baseline; gap:12px; padding:5px 10px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045)); white-space:nowrap; flex:none;">
+           <span style="display:inline-flex; align-items:baseline; gap:6px;"><span style="${FH_LABEL} font-size:9.5px;">${ui.chainLabels.cash}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:15px; font-weight:600; color:${books.inDebt ? FH_RED : FH_MONEY};">${money(books.cash)}</b></span>
+           <span style="display:inline-flex; align-items:baseline; gap:6px;"><span style="${FH_LABEL} font-size:9.5px;">${ui.chainLabels.renewals}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; font-weight:500; color:${FH_INK};">${books.renewals}%</b></span>
+           <span style="font-size:9.5px; color:${FH_INK_CAPTION};">${escapeHtml(ui.seasonQualifier)}</span>
+         </span>`
+      : "";
+    // B3: at 1024x600 this strip wrapped to two and sometimes three rows and
+    // spent ~76px of a 600px screen on chrome. One row, nothing wraps, the
+    // desk identity rides as text instead of a card.
+    return `<div class="m2-rail fh-rail is-strip" style="display:flex; align-items:center; gap:10px; flex-wrap:nowrap; overflow:hidden; padding:5px 12px; border-bottom:1px solid ${FH_HAIR}; background:${FH_PANEL};">
+        ${brand}
+        ${fhPips(slate, opts.nightIndex, opts.settled, true)}
+        ${dock}
+        <span class="m2-identity" style="display:flex; align-items:center; gap:7px; min-width:0; margin-left:auto;">
+          <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 20)}"></span>
+          <b class="fh-desk-name" style="min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; font-weight:600; color:${FH_INK};">${escapeHtml(String(view["handle"] ?? ""))}</b>
+        </span>
+        ${pin}
+      </div>`;
+  }
+  return `<aside class="m2-sidebar m2-rail fh-rail" style="width:206px; flex:none; padding:18px 14px; border-right:1px solid ${FH_HAIR}; background:linear-gradient(180deg,#0b0b14 0%, var(--m2-canvas, #08080f) 55%); display:flex; flex-direction:column; gap:16px;">
+      ${brand}
+      ${anchors}
+      ${fhPips(slate, opts.nightIndex, opts.settled, false)}
+      ${opts.books ? fhBooksDock(view["books"] as FHBooks, ui, false) : ""}
+      ${identity}
+      ${pin}
+    </aside>`;
+}
+
+/** The frame: rail + main. */
+function fhShell(view: Record<string, unknown>, main: string, opts: { anchors?: boolean; books?: boolean; nightIndex?: number; settled?: number } = {}): string {
+  const tight = fhTight();
+  const rail = fhRail(view, {
+    anchors: opts.anchors ?? false,
+    books: opts.books ?? false,
+    nightIndex: opts.nightIndex ?? 0,
+    settled: opts.settled ?? 0,
+  });
+  const pad = tight ? "12px 16px 16px" : "18px 26px 22px";
+  return `<div class="m2-frame fh-frame" style="display:flex; flex-direction:${tight ? "column" : "row"}; align-items:stretch; background:var(--m2-canvas, #08080f); border-radius:14px; overflow:hidden; border:1px solid ${FH_HAIR};">
+      ${rail}
+      <div class="m2-main fh-main" style="flex:1; min-width:0; padding:${pad}; display:flex; flex-direction:column; gap:${tight ? 10 : 14}px;">${main}</div>
+    </div>`;
+}
+
+/* --------------------------------------------------------------- header -- */
+
+/** Two-book accountability card (B1/E4). Never one objective, never a sum. */
+function fhGoalCard(view: Record<string, unknown>, ui: FHUiCopy): string {
+  const books = view["books"] as FHBooks | undefined;
+  if (!books) return "";
+  return `<div class="m2-card m2-goal fh-goal" id="fhBooks" style="${FH_CARD} padding:12px 16px; display:flex; align-items:center; gap:16px; flex:none;">
+      <span style="display:flex; align-items:baseline; gap:8px;">
+        <span style="${FH_LABEL} font-size:10.5px;">${ui.chainLabels.cash}</span>
+        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:19px; font-weight:600; color:${books.inDebt ? FH_RED : FH_MONEY};">${money(books.cash)}</b>
+        <span style="font-size:10px; color:${FH_INK_CAPTION};">${escapeHtml(ui.seasonQualifier)}</span>
+      </span>
+      <span style="width:1px; height:26px; background:${FH_HAIR};"></span>
+      <span style="display:flex; align-items:baseline; gap:8px;">
+        <span style="${FH_LABEL} font-size:10.5px;">${ui.chainLabels.renewals}</span>
+        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:19px; font-weight:600; color:${FH_INK};">${books.renewals}%</b>
+        <span style="font-size:10px; color:${FH_INK_CAPTION};">${escapeHtml(ui.seasonQualifier)}</span>
+      </span>
+      <span style="font-size:11px; line-height:14px; color:${FH_INK_CAPTION}; max-width:210px;">${escapeHtml(ui.twoBooksLine)}</span>
+    </div>`;
+}
+
+function fhHeader(view: Record<string, unknown>, opts: { subtitle?: string; goal?: boolean; h1?: string } = {}): string {
+  const ui = fhUi(view);
+  const tight = fhTight();
+  const h1 = opts.h1 ?? "Full House";
+  const sub = opts.subtitle ? `<p class="m2-subtitle" style="margin:4px 0 0; font-size:${tight ? 13 : 14}px; line-height:19px; color:${FH_INK_BODY}; max-width:56ch;">${escapeHtml(opts.subtitle)}</p>` : "";
+  return `<div class="m2-header fh-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:18px;">
+      <div style="min-width:0;">
+        <div class="m2-breadcrumb" style="display:flex; align-items:center; gap:7px; margin:0 0 4px; font-size:11px; font-weight:600; letter-spacing:0.055em; color:${FH_VIOLET_BRIGHT};">Module 2<span style="color:rgba(157,134,255,0.42);">·</span>Money in Motion<span style="color:rgba(157,134,255,0.42);">·</span>Lesson 1</div>
+        <h1 class="m2-h1" style="margin:0; font-size:${tight ? 22 : 28}px; line-height:${tight ? 26 : 32}px; font-weight:600; letter-spacing:-0.022em; color:${FH_INK};">${escapeHtml(h1)}</h1>
+        ${sub}
+      </div>
+      ${opts.goal === false ? "" : fhGoalCard(view, ui)}
+    </div>`;
+}
+
+/* ------------------------------------------------------ printed facts -- */
+
+function fhTvPill(tv: string): string {
+  const label = TV_LABEL[tv] ?? "";
+  const hot = tv === "national";
+  return `<span class="m2-pill is-tag" style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:0.04em; background:${hot ? "var(--m2-violet-tint, rgba(122,92,255,0.14))" : FH_PANEL_2}; color:${hot ? FH_VIOLET_BRIGHT : FH_INK_LABEL}; border:1px solid ${hot ? "var(--m2-violet-line, rgba(122,92,255,0.42))" : FH_HAIR};">${label}</span>`;
+}
+
+/** TONIGHT'S CARD — printed operating facts only (B5/E1). */
+function fhCardHtml(card: FHCard, _market: FHMarket): string {
+  const tight = fhTight();
+  const drawPct = Math.max(0, Math.min(100, card.draw));
+  return `<div class="m2-card fh-card" id="fhTonight" style="${FH_CARD} padding:${tight ? 12 : 16}px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:${tight ? 8 : 10}px;">
+        ${fhBadge("calendar", "violet", tight ? 28 : 32)}
+        <span style="min-width:0;">
+          <span class="m2-label fh-card-night" style="${FH_LABEL}">${escapeHtml(card.label)} of ${card.of}</span>
+          <span style="display:block; font-size:${tight ? 15 : 17}px; font-weight:600; color:${FH_INK}; margin-top:2px;">${escapeHtml(card.day)} · ${escapeHtml(card.visitor)}</span>
+        </span>
+        <span style="margin-left:auto;">${fhTvPill(card.tv)}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span style="${FH_LABEL} font-size:10.5px; white-space:nowrap;">Visiting club's draw</span>
+        <span class="m2-bar" style="flex:1; height:7px; border-radius:999px; background:rgba(255,255,255,0.07); overflow:hidden;"><i style="display:block; height:100%; width:${drawPct}%; border-radius:999px; background:${FH_VIOLET};"></i></span>
+        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:15px; font-weight:600; color:${FH_INK};">${card.draw}/100</b>
+      </div>
+      <ul style="margin:0; padding-left:15px; font-size:12px; line-height:16px; color:${FH_INK_CAPTION};">${card.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>
+    </div>`;
+}
+
+/**
+ * YOUR BUILDING, with the building actually in it.
+ *
+ * A4 / visual direction 9: the CASH and RENEWALS stat cards repeated the two
+ * figures the header goal card already carries, in a bigger type size, and cost
+ * the frame the slot B4 asked for. They are gone; the freed slot holds the
+ * drawn building, DARK and CLOSED, which is the only state it may be in before
+ * a night settles (E12 / DIRECTION non-negotiable 2). No fill, no lit sections,
+ * no number derived from the pending dials.
+ */
+function fhBuildingCard(view: Record<string, unknown>): string {
+  const market = view["market"] as FHMarket;
+  const tight = fhTight();
+  const fact = (label: string, value: string) => `
+    <span style="display:block; min-width:0;">
+      <span style="${FH_LABEL} font-size:9.5px;">${escapeHtml(label)}</span>
+      <b style="display:block; margin-top:1px; font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${tight ? 14 : 15}px; font-weight:600; color:${FH_INK};">${value}</b>
+    </span>`;
+  return `<div class="m2-card fh-building-card" style="${FH_CARD} padding:0; overflow:hidden; display:flex; flex-direction:column;">
+      ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: 330, motion: false, label: "", cls: "fh-dark-building" })}
+      <div style="padding:${tight ? "9px 11px" : "11px 14px"}; display:flex; flex-direction:column; gap:6px;">
+        <span style="display:flex; align-items:center; gap:8px;">${fhBadge("building", "violet", 24)}<span style="${FH_LABEL} font-size:10.5px;">Your building</span></span>
+        <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px;">
+          ${fact("Seats", market.capacity.toLocaleString())}
+          ${fact("Bill tonight", money(market.bill))}
+          ${fact("Season plan", `$${market.planPrice}`)}
+        </div>
+        <span style="font-size:10.5px; line-height:14px; color:${FH_INK_CAPTION};">${escapeHtml(market.capacityNote ?? "")}</span>
+      </div>
+    </div>`;
+}
+
+/** Tomorrow's printed card — the spend dial lands there, so it is printed here. */
+function fhNextCardHtml(next: FHCard | null, ui: FHUiCopy): string {
+  const body = next
+    ? `${escapeHtml(next.label)} · ${escapeHtml(next.day)} · ${escapeHtml(next.visitor)} · draw ${next.draw}/100 · ${next.tv === "national" ? "national TV" : next.tv === "local" ? "local TV" : "not on TV"}`
+    : escapeHtml(ui.noTomorrowLine);
+  return `<div class="fh-next" style="display:flex; align-items:baseline; gap:10px; padding:8px 12px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
+      <span style="${FH_LABEL} font-size:10px; white-space:nowrap;">${next ? "Tomorrow" : "After tonight"}</span>
+      <span style="font-size:12px; line-height:16px; color:${FH_INK_BODY};">${body}</span>
+    </div>`;
+}
+
+
+/* ---------------------------------------------------------- the building -- */
+
+/** The drawn bowl comes from `shared/arena.ts` (Lane A). It renders a SETTLED
+ *  turnout only; the pre-lock desk gets the "idle" (dark, closed) building. */
+/**
+ * The frame is locked to the SAME aspect the SVG is asked for. `arenaSvg`
+ * returns `preserveAspectRatio="…slice"`, so a frame of any other shape crops
+ * the building — which is exactly the locked-waiting defect (C8/visual #8): a
+ * 900x420 drawing inside a 240px box showed a slab of roof. Nothing here
+ * assumes the drawing's internals; if Lane A changes the viewBox, the frame
+ * follows because both come from these two numbers.
+ */
+function fhArenaFrame(o: {
+  view: "hero" | "outcome";
+  turnout: number;
+  seatsOpen: number;
+  soldOut: boolean;
+  w: number;
+  h: number;
+  motion: boolean;
+  label: string;
+  maxHeight?: number;
+  cls?: string;
+  /** Lane A's third state: the top deck as a shuttered deck, or in the pool. */
+  bowlSeats?: number;
+  bowlOpen?: boolean;
+}): string {
+  const svg = arenaSvg({
+    view: o.view,
+    width: o.w,
+    height: o.h,
+    capacity: Math.max(1, o.seatsOpen),
+    turnout: o.turnout,
+    soldOut: o.soldOut,
+    turnedAway: 0,
+    lit: o.view === "hero" ? "idle" : o.soldOut ? "sellout" : "night",
+    seed: Math.max(1, o.seatsOpen % 97),
+    motion: o.motion,
+    label: o.label,
+    bowlSeats: o.bowlSeats,
+    bowlOpen: o.bowlOpen,
+  });
+  // Lane A's redraw fits the silhouette inside a panoramic viewBox and emits
+  // `preserveAspectRatio="xMidYMid meet"`, so the frame can be any shape and
+  // the whole building still lands inside it. A fixed pixel height keeps the
+  // frame's contribution to the column predictable, which is what the 600px
+  // Chromebook budget needs (B3).
+  return `<div class="fh-arena-frame${o.cls ? ` ${o.cls}` : ""}" style="position:relative; width:100%; height:${o.maxHeight ?? Math.round(o.h / 2)}px; overflow:hidden; border-radius:12px; background:radial-gradient(120% 90% at 50% 42%, #1d1640 0%, #0c0b1b 58%, #08080f 100%);">${svg}</div>`;
+}
+
+/** ARENA OUTCOME panel — legend, the third upper-bowl state, turned-away outside. */
+function fhArenaPanel(n: FHNight, ui: FHUiCopy, opts: { height: number; loud: boolean; bowlSeats?: number; bowlOffered?: boolean; compact?: boolean }): string {
+  // The old guard (`bowlCost > 0 || openBowl`) could only ever be true when the
+  // pair had ALREADY opened the deck, so the "closed" branch was unreachable.
+  // Whether the night OFFERED the option is a printed fact on the slate.
+  const bowlOffered = opts.bowlOffered ?? (n.bowlCost > 0 || n.openBowl);
+  const open = Math.max(0, n.seatsOpen - n.turnout);
+  const marker = (value: string, label: string, dim: boolean) => `
+    <span style="display:flex; align-items:baseline; gap:5px; min-width:0; white-space:nowrap; overflow:hidden;">
+      <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; font-weight:600; flex:none; color:${dim ? FH_INK_LABEL : FH_INK};">${value}</b>
+      <span style="font-size:10.5px; color:${FH_INK_CAPTION}; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(label)}</span>
+    </span>`;
+  // B5 / visual direction 2: the swatch key is gone — three swatches, two of
+  // them the same amber and none of them matching the drawing, was worse than
+  // no key. The picture is labelled directly, in the module's own words.
+  return `<div class="m2-card m2-arena fh-arena" style="${FH_CARD} padding:12px 14px; display:flex; flex-direction:column; gap:7px;">
+      ${fhArenaFrame({ view: "outcome", turnout: n.turnout, seatsOpen: n.seatsOpen, soldOut: n.soldOut, w: 620, h: 300, motion: opts.loud, label: String(n.turnout), maxHeight: opts.height, bowlSeats: bowlOffered ? opts.bowlSeats : 0, bowlOpen: n.openBowl })}
+      <div class="fh-arena-labels" style="display:flex; flex-direction:column; gap:2px;">
+        ${marker(n.turnout.toLocaleString(), ui.cameLabel, false)}
+        ${marker(open.toLocaleString(), ui.openSeatsLabel, true)}
+        ${bowlOffered ? `<span style="font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(n.openBowl ? ui.moreSeatsOpenLabel : ui.moreSeatsClosedLabel)}</span>` : ""}
+        ${/* R5-2: the fill line lives in the WHO CAME card, once. It used to be
+             printed again here, word for word, under the drawing. */ ""}
+      </div>
+      ${
+        n.turnedAway > 0 && !opts.compact
+          ? `<div class="fh-turned" style="display:flex; align-items:baseline; gap:9px; padding-top:6px; border-top:1px solid ${FH_HAIR};">
+               <b class="${opts.loud ? "m2-turnedaway" : ""}" style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${opts.loud ? 40 : 26}px; line-height:${opts.loud ? 44 : 28}px; font-weight:${opts.loud ? 700 : 600}; letter-spacing:-0.03em; color:${FH_INK};">${n.turnedAway.toLocaleString()}</b>
+               <span style="${FH_LABEL} font-size:11px;">turned away</span>
+             </div>`
+          : ""
+      }
+    </div>`;
+}
+
+/* ------------------------------------------------- your nights so far -- */
+
+/**
+ * Settled nights as dots (E3): own desk only, one dot per night, NO joining or
+ * fitted line, and no mark for the night that is still open.
+ */
+function fhDotsHtml(history: FHNight[], view: Record<string, unknown>, ui: FHUiCopy, opts: { height?: number } = {}): string {
+  const market = view["market"] as FHMarket;
+  const tight = fhTight();
+  const h = opts.height ?? (tight ? 104 : 132);
+  // A6/A8, then W2 repair-4 R4-3: y is fitted to the observed crowds — from a
+  // little under the smallest night to a little over the largest, on 500-person
+  // stops — so five nights inside a 4,000-person band use the plot instead of
+  // its bottom eighth. x stays on the dial range so nights remain comparable.
+  // The axis no longer starts at zero, and says so: the chart prints both ends
+  // of the y axis, and every mark carries its own count.
+  const slate = (view["slate"] as FHSlateNight[] | undefined) ?? [];
+  const lastIdx = history.length - 1;
+  const priorityIdx = new Set<number>();
+  if (lastIdx >= 0) {
+    priorityIdx.add(lastIdx);
+    const lastCard = history[lastIdx]!.cardId;
+    const refId = slate.find((s) => s.id === lastCard)?.repeatOf ?? null;
+    const repeatedBy = slate.find((s) => s.repeatOf === lastCard)?.id ?? null;
+    for (const id of [refId, repeatedBy]) {
+      if (!id) continue;
+      const j = history.findIndex((n) => n.cardId === id);
+      if (j >= 0) priorityIdx.add(j);
+    }
+  }
+  const crowds = history.map((n) => n.turnout);
+  const lo = crowds.length ? Math.min(...crowds) : 0;
+  const hi = crowds.length ? Math.max(...crowds) : 1;
+  const pad = Math.max(400, Math.round((hi - lo) * 0.18));
+  const yMin = Math.max(0, Math.floor((lo - pad) / 500) * 500);
+  const yMax = Math.max(yMin + 500, Math.ceil((hi + pad) / 500) * 500);
+  const body =
+    history.length === 0
+      ? `<p style="margin:0; font-size:12.5px; line-height:17px; color:${FH_INK_BODY};">${escapeHtml(ui.noNightsYetLine)}</p>`
+      : dotChart(
+          history.map((n, i) => ({
+            x: n.price,
+            y: n.turnout,
+            // R5-3: the two nights the Night-5 callback names — the latest night
+            // and the night whose card it repeats — are labelled before anything
+            // else, so the pair the callback argues from is never the pair the
+            // chart drops.
+            priority: priorityIdx.has(i),
+            // Every mark is labelled with the two numbers it stands for, so a
+            // pair reads a night off the chart without counting pixels.
+            label: `${n.label.replace("Night ", "N")} $${n.price} · ${n.turnout.toLocaleString()}${n.stock ? " covered" : ""}${n.auto ? " auto" : ""}`,
+          })),
+          {
+            xLabel: "PRICE",
+            yLabel: "PEOPLE",
+            xMin: Number(view["priceMin"] ?? 10),
+            xMax: Number(view["priceMax"] ?? 120),
+            yMin,
+            yMax,
+            width: 420,
+            height: h,
+          },
+        );
+  return `<div class="m2-card fh-nights" id="fhNights" style="${FH_CARD} padding:${tight ? 10 : 13}px;">
+      <div style="display:flex; align-items:center; gap:9px; margin-bottom:7px;">
+        ${fhBadge("people", "violet", 26)}
+        <span style="${FH_LABEL}">${escapeHtml(ui.historyTitle)}</span>
+        <span style="margin-left:auto; font-size:10px; color:${FH_INK_CAPTION};">PEOPLE × PRICE</span>
+      </div>
+      ${body}
+      <p style="margin:6px 0 0; font-size:11px; line-height:15px; color:${FH_INK_CAPTION};">${escapeHtml(ui.historyCaption)}</p>
+    </div>`;
+}
+
+
+/* ------------------------------------------------------- the instruments -- */
+
+/**
+ * The price dial. The plan tick is a mark on the track with its label on a row
+ * BELOW the track, so the knob can never strike through it (P1) at any dial
+ * position or viewport.
+ */
+function fhPriceCard(view: Record<string, unknown>, price: number): string {
+  const market = view["market"] as FHMarket;
+  const tight = fhTight();
+  const pMin = Number(view["priceMin"] ?? 10);
+  const pMax = Number(view["priceMax"] ?? 120);
+  const planFrac = (market.planPrice - pMin) / Math.max(1, pMax - pMin);
+  const pct = (((price - pMin) / Math.max(1, pMax - pMin)) * 100).toFixed(1);
+  const hero = tight ? 64 : 68;
+  const carried = String(view["dialCarriedLine"] ?? "");
+  return `<div class="m2-card fh-price-card" style="${FH_CARD} padding:${tight ? "12px 14px" : "16px 18px"};">
+      <div style="display:flex; align-items:center; gap:10px;">
+        ${fhBadge("ticket", "violet", tight ? 28 : 32)}
+        <span style="${FH_LABEL}">Set your ticket price</span>
+      </div>
+      <div class="m2-dial-row" style="display:flex; align-items:center; justify-content:center; gap:${tight ? 18 : 26}px; margin:${tight ? "2px 0 0" : "4px 0 2px"};">
+        <button type="button" class="m2-round-btn is-sm" id="fhPriceDown" aria-label="Lower the price" style="width:44px; height:44px; flex:none; border-radius:999px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-strong, rgba(255,255,255,0.12)); color:${FH_INK}; font-size:23px; line-height:1; cursor:pointer;">&minus;</button>
+        <span class="m2-hero-unit" style="text-align:center;">
+          <span class="m2-hero-figure fh-price-readout" id="fhPriceReadout" style="display:block; font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${hero}px; line-height:${hero + 2}px; font-weight:700; letter-spacing:-0.035em; color:${FH_INK};">$${price}</span>
+          <span style="display:block; margin-top:1px; font-size:13px; color:${FH_INK_LABEL};">a seat, tonight</span>
+        </span>
+        <button type="button" class="m2-round-btn is-sm" id="fhPriceUp" aria-label="Raise the price" style="width:44px; height:44px; flex:none; border-radius:999px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-strong, rgba(255,255,255,0.12)); color:${FH_INK}; font-size:23px; line-height:1; cursor:pointer;">+</button>
+      </div>
+      <div class="fh-dial" style="position:relative; padding-bottom:26px; margin-top:2px; --pct:${pct};">
+        <input class="m2-range price-dial-input" type="range" id="fhPriceDial" min="${pMin}" max="${pMax}" step="${view["priceStep"]}" value="${price}"
+               aria-label="Ticket price" style="position:relative; z-index:2; width:100%; display:block;" />
+        <span class="fh-dial-plan" aria-hidden="true" style="position:absolute; z-index:1; bottom:0; left:calc(15px + ${planFrac.toFixed(4)} * (100% - 30px)); transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; pointer-events:none;">
+          <span style="display:block; width:1px; height:7px; background:rgba(255,255,255,0.28);"></span>
+          <span class="fh-dial-tick-label" style="display:block; margin-top:2px; font-size:10px; letter-spacing:0.06em; white-space:nowrap; color:${FH_INK_CAPTION};">PLAN $${market.planPrice}</span>
+        </span>
+      </div>
+      <div class="m2-range-ends" style="display:flex; justify-content:space-between; font-size:11px; color:${FH_INK_CAPTION};"><span>$${pMin}</span><span>$${pMax}</span></div>
+      <p class="m2-helper fh-renewal-rule" style="margin:${tight ? 7 : 9}px 0 0; font-size:12.5px; line-height:17px; color:${FH_INK_BODY};">${escapeHtml(market.renewalShortRule ?? String(view["renewalRule"] ?? ""))}</p>
+      ${carried ? `<p class="fh-dial-carried" style="margin:6px 0 0; font-size:12px; line-height:16px; color:${FH_VIOLET_BRIGHT};">${escapeHtml(carried)}</p>` : ""}
+    </div>`;
+}
+
+/** The second, smaller instrument. Its rule is printed, never behind a disclosure. */
+function fhSpendCard(view: Record<string, unknown>, spend: number): string {
+  const market = view["market"] as FHMarket;
+  const spendCap = Number(view["spendCap"] ?? 0);
+  const tight = fhTight();
+  const receipt = view["spendReceipt"] as { spend: number; fans: number; label: string } | null;
+  return `<div class="m2-card fh-spend-card" style="${FH_CARD} padding:${tight ? "10px 12px" : "12px 16px"};">
+      <div style="display:flex; align-items:center; gap:9px; margin-bottom:8px;">
+        ${fhBadge("spark", "violet", 26)}
+        <span style="${FH_LABEL}">Making it an event</span>
+        <span style="margin-left:auto; font-size:11px; color:${FH_INK_CAPTION};">${spendCap === 0 ? "In the red — locked at $0" : `up to ${money(spendCap)}`}</span>
+      </div>
+      <div class="m2-subdial" style="display:flex; align-items:center; gap:12px;">
+        <button type="button" class="m2-round-btn is-sm" id="fhSpendDown" aria-label="Less event money" style="width:38px; height:38px; flex:none; border-radius:999px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-strong, rgba(255,255,255,0.12)); color:${FH_INK}; font-size:19px; line-height:1; cursor:pointer;">&minus;</button>
+        <span class="m2-figure" id="fhSpendReadout" style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; line-height:28px; font-weight:600; letter-spacing:-0.02em; color:${FH_INK}; min-width:96px; text-align:center;">${money(spend)}</span>
+        <button type="button" class="m2-round-btn is-sm" id="fhSpendUp" aria-label="More event money" style="width:38px; height:38px; flex:none; border-radius:999px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-strong, rgba(255,255,255,0.12)); color:${FH_INK}; font-size:19px; line-height:1; cursor:pointer;">+</button>
+      </div>
+      <p class="fh-spend-rule" style="margin:8px 0 0; font-size:12px; line-height:16px; color:${FH_INK_BODY};">${escapeHtml(market.spendShortRule ?? "")}</p>
+      ${receipt ? `<p class="fh-receipt" style="margin:7px 0 0; font-size:11.5px; line-height:15px; color:${FH_INK_CAPTION}; border-left:2px solid ${FH_VIOLET}; padding-left:9px;">${escapeHtml(receipt.label)}</p>` : ""}
+    </div>`;
+}
+
+/** The upper bowl as a two-state plate, its cost printed (B8). */
+function fhBowlPlate(view: Record<string, unknown>): string {
+  const market = view["market"] as FHMarket;
+  const ui = fhUi(view);
+  const on = Boolean(view["openBowl"]);
+  return `<button type="button" class="fh-bowl-plate${on ? " on" : ""}" id="fhBowl" aria-pressed="${on ? "true" : "false"}"
+      style="display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:4px 12px; width:100%; text-align:left; padding:11px 14px; border-radius:12px; cursor:pointer;
+             background:${on ? "var(--m2-violet-tint, rgba(122,92,255,0.14))" : FH_PANEL}; border:1px solid ${on ? "var(--m2-violet-line, rgba(122,92,255,0.42))" : FH_HAIR}; color:${FH_INK};">
+      <span class="fh-bowl-state" style="grid-row:span 2; padding:5px 9px; border-radius:8px; font-size:11px; font-weight:700; letter-spacing:0.08em; background:${on ? FH_VIOLET : FH_PANEL_2}; color:${on ? "#fff" : FH_INK_LABEL};">${on ? "OPEN" : "CLOSED"}</span>
+      <span class="fh-bowl-main" style="font-size:14px; font-weight:600; color:${FH_INK};">Open ${market.bowlSeats.toLocaleString()} more seats tonight</span>
+      <span class="fh-bowl-cost" style="grid-row:span 2; font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:19px; font-weight:600; color:${FH_INK};">${money(market.bowlCost)}</span>
+      <span class="fh-bowl-note" style="font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(ui.bowlPaidNote)}</span>
+    </button>`;
+}
+
+/** The commitment. `HOUSE_RULES[0]` verbatim underneath at >=14px (B7/H6). */
+function fhCommit(view: Record<string, unknown>): string {
+  const rules = (view["rules"] as string[]) ?? [];
+  return `<div class="m2-commit fh-commit">
+      <button type="button" class="m2-cta" id="fhLock"
+        style="display:flex; align-items:center; justify-content:center; gap:11px; width:100%; min-height:56px; padding:15px 22px; border:0; border-radius:12px;
+               background:var(--m2-violet-grad, linear-gradient(135deg,#5b3df0 0%,#7a5cff 100%)); box-shadow:var(--m2-violet-glow, 0 10px 30px rgba(91,61,240,0.42)); color:#fff;
+               font-family:inherit; font-size:18px; font-weight:600; letter-spacing:0.01em; cursor:pointer;">${fhIcon("lock", 20)}LOCK IT IN ${fhIcon("arrow", 18)}</button>
+      <p class="m2-cta-caption fh-blind-note" style="margin:9px 0 0; font-size:14.5px; line-height:19px; color:${FH_INK_BODY};">${escapeHtml(rules[0] ?? "")}</p>
+    </div>`;
+}
+
+/**
+ * The fixed rule slot (B6/E5), now behind ONE disclosure.
+ *
+ * A3 / Kid B #1 / visual A9: 231 words in the pre-lock first viewport against a
+ * reference that reads one sentence per card. Nothing registered is deleted —
+ * every rule below renders verbatim, one press away, in a slot that is always
+ * in the same place. The one-line versions of the two rules that govern the two
+ * dials are printed AT those dials, unconditionally (A2).
+ */
+function fhRuleSlot(view: Record<string, unknown>): string {
+  const market = view["market"] as FHMarket;
+  const ui = fhUi(view);
+  const rules = (view["rules"] as string[]) ?? [];
+  const block = (label: string, body: string) =>
+    body
+      ? `<div style="min-width:0;">
+           <span style="${FH_LABEL} font-size:10px; margin-bottom:4px;">${escapeHtml(label)}</span>
+           <p style="margin:0; font-size:12px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(body)}</p>
+         </div>`
+      : "";
+  return `<details class="fh-rules m2-disclosure">
+      <summary class="fh-rules-summary">${escapeHtml(ui.moreLabel)}</summary>
+      <div class="fh-rules-body" style="display:grid; gap:10px 18px;">
+        ${block("Your market", market.plainLine ?? "")}
+        ${block("What the event money does", market.spendRule ?? "")}
+        ${block("How renewals move", String(view["renewalRule"] ?? ""))}
+        ${block("The house rules", String(view["modeledDollarsLine"] ?? ""))}
+        ${rules.slice(1).map((r, i) => block(`House rule ${i + 2}`, r)).join("")}
+      </div>
+    </details>`;
+}
+
+
+/* ------------------------------------------------------- the settled night -- */
+
+/** The CASH decomposition, as a chain (E10). Never one money hero, never one collapsed word for the two books. */
+function fhChainHtml(n: FHNight, ui: FHUiCopy): string {
+  const tight = fhTight();
+  const row = (op: string, label: string, value: string, sub = "", strong = false) => `
+    <div class="m2-chain-row" style="display:grid; grid-template-columns:12px minmax(0,1fr) auto; align-items:baseline; gap:8px; padding:${strong ? (tight ? 5 : 7) : tight ? 2 : 3}px 0; ${strong ? `border-top:1px solid ${FH_HAIR}; margin-top:2px;` : ""}">
+      <span style="font-family:var(--m2-font-num, inherit); font-size:13px; color:${FH_INK_CAPTION};">${op}</span>
+      <span style="min-width:0;"><span style="${FH_LABEL} font-size:${strong ? 11 : 10.5}px;">${label}</span>${sub ? `<span style="display:block; font-size:10.5px; line-height:${tight ? 13 : 15}px; color:${FH_INK_CAPTION};">${sub}</span>` : ""}</span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${strong ? (tight ? 26 : 31) : tight ? 15 : 16}px; line-height:${strong ? (tight ? 30 : 33) : tight ? 18 : 20}px; font-weight:600; letter-spacing:-0.02em; color:${strong ? (n.net < 0 ? FH_RED : FH_MONEY) : FH_INK};">${value}</span>
+    </div>`;
+  return `<div class="m2-card m2-chain fh-chain" style="${FH_CARD} padding:${tight ? 11 : 14}px;">
+      <div style="display:flex; align-items:center; gap:9px; margin-bottom:4px;">${fhBadge("cash", "money", 26)}<span style="${FH_LABEL}">${ui.chainLabels.cash}</span></div>
+      ${row("", ui.chainLabels.tickets, money(n.gate), `$${n.price} × ${n.turnout.toLocaleString()}`)}
+      ${row("+", ui.chainLabels.inArena, money(n.inArena), escapeHtml(ui.inArenaNote))}
+      ${row("−", ui.chainLabels.bill, `-${money(n.bill).replace("-", "")}`)}
+      ${n.spendPaid > 0 ? row("−", ui.chainLabels.event, `-${money(n.spendPaid).replace("-", "")}`) : ""}
+      ${n.bowlCost > 0 ? row("−", ui.chainLabels.bowl, `-${money(n.bowlCost).replace("-", "")}`) : ""}
+      ${row("=", ui.chainLabels.cash, money(n.net), ui.tonightQualifier, true)}
+    </div>`;
+}
+
+/** RENEWALS, at equal figure weight beside CASH and never money-coloured (R-3). */
+/**
+ * B1 / gameplay #6 / Kid C #1: the movement used to read `50% -> 30% down 20
+ * points` with nothing on the frame saying why. The rule that governs it is
+ * registered, and is the same one printed under the dial before the commit —
+ * it is restated here so the movement is attributable without recall, and the
+ * price-and-card line sits beside it. No new causal claim.
+ */
+function fhRenewalsHtml(n: FHNight, ui: FHUiCopy, cause = "", causeLines: string[] = []): string {
+  const tight = fhTight();
+  const size = tight ? 26 : 31;
+  const move = n.renewalMove === 0 ? "no change" : `${n.renewalMove > 0 ? "up" : "down"} ${Math.abs(n.renewalMove)} ${Math.abs(n.renewalMove) === 1 ? "point" : "points"}`;
+  const fig = (v: string, dim: boolean) => `<span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${size}px; line-height:${size + 2}px; font-weight:600; letter-spacing:-0.025em; color:${dim ? FH_INK_LABEL : FH_INK};">${v}</span>`;
+  return `<div class="m2-card fh-renewals" style="${FH_CARD} padding:${tight ? 11 : 14}px;">
+      <div style="display:flex; align-items:center; gap:9px; margin-bottom:8px;">${fhBadge("renew", "violet", 26)}<span style="${FH_LABEL}">${ui.chainLabels.renewals}</span></div>
+      <div style="display:flex; align-items:baseline; gap:10px;">
+        ${fig(`${n.renewalsBefore}%`, true)}
+        <span style="font-size:15px; color:${FH_INK_CAPTION};">&rarr;</span>
+        ${fig(`${n.renewalsAfter}%`, false)}
+        <span style="margin-left:auto; font-size:11.5px; color:${FH_INK_LABEL};">${move}</span>
+      </div>
+      <span style="display:block; margin-top:5px; font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(ui.renewalsCaption)}</span>
+      ${cause ? `<p class="fh-renewal-cause" style="margin:${tight ? 5 : 7}px 0 0; padding-top:${tight ? 5 : 7}px; border-top:1px solid ${FH_HAIR}; font-size:${tight ? 11.5 : 12}px; line-height:${tight ? 15 : 16}px; color:${FH_INK_BODY};">${
+              // R4-4a: one line per clause when the frame has room (1366), the
+              // registered paragraph when it does not (1024). Same words either way.
+              !tight && causeLines.length > 1 ? causeLines.map((l) => `<span style="display:block;">${escapeHtml(l)}</span>`).join("") : escapeHtml(cause)
+            }</p>` : ""}
+      ${n.renewalAtFloor && n.renewalFloorLine ? `<p class="fh-renewal-floor" style="margin:5px 0 0; font-size:11.5px; line-height:15px; color:${FH_INK_CAPTION};">${escapeHtml(n.renewalFloorLine)}</p>` : ""}
+    </div>`;
+}
+
+/** WHAT HAPPENED — settled facts undelta'd, plus the module's own two verdicts. */
+function fhWhatHappened(n: FHNight, ui: FHUiCopy): string {
+  const tight = fhTight();
+  const facts = [
+    // B1: the price-and-card line is now a registered module string.
+    `${escapeHtml(n.factLine ?? "")} · ${escapeHtml(n.visitor)}`,
+    // R4-5: the spend-and-seats line and the covered/auto lines are module strings.
+    n.spendLine ? escapeHtml(n.spendLine) : "",
+    n.stock ? escapeHtml(ui.stockNightLine) : "",
+    n.auto ? escapeHtml(ui.autoNightLine) : "",
+  ].filter(Boolean);
+  // R4-1: at 1024x600 the block's vertical rhythm is the compressed one — the
+  // same sentences, 12/15 instead of 12.5/17, tighter gaps — so the sellout's
+  // resale sentence and the control under it stay inside a 600px viewport.
+  const fs = tight ? 12 : 12.5;
+  const lh = tight ? 15 : 17;
+  const gap = tight ? 5 : 7;
+  return `<div class="m2-card m2-what fh-what" style="${FH_CARD} padding:${tight ? 10 : 14}px;">
+      <div style="display:flex; align-items:center; gap:9px; margin-bottom:${tight ? 5 : 7}px;">${fhBadge("door", "violet", 26)}<span style="${FH_LABEL}">What happened</span></div>
+      ${facts.map((f) => `<p style="margin:0 0 ${tight ? 3 : 5}px; font-size:${fs}px; line-height:${lh}px; color:${FH_INK_BODY};">${f}</p>`).join("")}
+      ${n.spendVerdict ? `<p class="fh-spend-verdict" id="fhSpendVerdict" style="margin:${gap}px 0 0; font-size:${fs}px; line-height:${lh}px; color:${FH_INK}; border-left:2px solid ${FH_VIOLET}; padding-left:9px;">${escapeHtml(n.spendVerdict.label)}</p>` : ""}
+      ${n.resaleNote ? `<p class="fh-resale" style="margin:${gap}px 0 0; font-size:${fs}px; line-height:${lh}px; color:${FH_INK_BODY};">${escapeHtml(n.resaleNote)}</p>` : ""}
+      ${n.repeatCallback ? `<p class="fh-repeat-callback" style="margin:${gap}px 0 0; padding-top:${gap}px; border-top:1px solid ${FH_HAIR}; font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${fs}px; line-height:${lh}px; color:${FH_INK};">${escapeHtml(n.repeatCallback)}</p>` : ""}
+    </div>`;
+}
+
+/** The headline. Verbatim from `resultHeadline`; on a sellout the registered
+ *  string's own first segment is set at display scale and the rest beside it. */
+function fhResultHeadline(n: FHNight): string {
+  const tight = fhTight();
+  const raw = (n as unknown as { resultHeadline?: string }).resultHeadline ?? "";
+  if (!raw) {
+    return `<h1 class="m2-h1 fh-result-head" style="margin:0; font-size:${tight ? 22 : 26}px; line-height:${tight ? 26 : 30}px; font-weight:600; letter-spacing:-0.02em; color:${FH_INK};">${escapeHtml(n.label)} · ${escapeHtml(n.day)} · ${escapeHtml(n.visitor)}</h1>`;
+  }
+  if (n.soldOut) {
+    const parts = raw.split(" · ");
+    const lead = parts[0] ?? raw;
+    const rest = parts.slice(1).join(" · ");
+    // B4 / visual direction 3: display scale, on the panel ground, no banner.
+    // The lit bowl beside it is the only warmth on the frame.
+    return `<h1 class="fh-sellout m2-display" style="margin:0; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;">
+        <span class="fh-sellout-title m2-fullhouse" style="font-size:${tight ? 38 : 60}px; line-height:${tight ? 40 : 62}px; font-weight:800; letter-spacing:-0.015em; text-transform:uppercase; color:${FH_INK};">${escapeHtml(lead)}</span>
+        <span class="fh-sellout-sub" style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:17px; font-weight:500; color:${FH_INK_BODY};">${escapeHtml(rest)}</span>
+      </h1>`;
+  }
+  return `<h1 class="m2-h1 fh-result-head" style="margin:0; font-size:${tight ? 22 : 26}px; line-height:${tight ? 26 : 30}px; font-weight:600; letter-spacing:-0.02em; color:${FH_INK};">${escapeHtml(raw)}</h1>`;
+}
+
+/**
+ * The settled night owns the viewport (C1). The next night's dials do not exist
+ * on this state; they arrive when the pair presses NEXT.
+ */
+function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closing: boolean; nightIndex: number }): string {
+  const ui = fhUi(view);
+  const tight = fhTight();
+  const hero = tight ? 64 : 72;
+  const nextLabel = ui.nextNightLabel;
+  // B7 / visual #7: a one-glyph `0` hard left in a 300px card read as a layout
+  // fault. The zero night centres the figure over its own sentence instead.
+  const empty = n.turnout === 0;
+  const heroCard = `
+    <div class="m2-card m2-result-hero fh-hero${empty ? " is-empty" : ""}" style="${FH_CARD} padding:${tight ? "11px 14px" : "14px 18px"}; gap:${tight ? 9 : 14}px; ${empty ? "text-align:center;" : ""}">
+      <div style="display:flex; align-items:center; gap:9px; ${empty ? "justify-content:center;" : ""}">${fhBadge("people", "violet", 26)}<span style="${FH_LABEL}">${escapeHtml(ui.whoCameLabel)}</span></div>
+      <span class="m2-hero-figure fh-who-came" style="display:block; margin-top:${tight ? 2 : 6}px; font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${hero}px; line-height:${hero + 4}px; font-weight:700; letter-spacing:-0.035em; color:${FH_INK};">${n.turnout.toLocaleString()}</span>
+      <span style="display:block; margin-top:3px; font-size:13px; line-height:18px; color:${FH_INK_LABEL};">of ${n.seatsOpen.toLocaleString()} · ${n.fillPct}% ${escapeHtml(ui.fillQualifier)}</span>
+      ${
+        // R5-2: the cause of the figure directly above it, verbatim from the
+        // module. Never composed here.
+        n.turnoutCause
+          ? `<p class="fh-turnout-cause" style="margin:0; width:100%; padding-top:${tight ? 6 : 8}px; border-top:1px solid ${FH_HAIR}; font-size:11.5px; line-height:15px; color:${FH_INK_BODY}; ${empty ? "text-align:left;" : ""}">${escapeHtml(n.turnoutCause)}</p>`
+          : ""
+      }
+      ${
+        tight && n.turnedAway > 0
+          ? `<div class="fh-turned" style="display:flex; align-items:baseline; gap:9px; margin-top:6px; padding-top:6px; border-top:1px solid ${FH_HAIR};">
+               <b class="${n.soldOut ? "m2-turnedaway" : ""}" style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:34px; line-height:36px; font-weight:700; letter-spacing:-0.03em; color:${FH_INK};">${n.turnedAway.toLocaleString()}</b>
+               <span style="${FH_LABEL} font-size:11px;">turned away</span>
+             </div>`
+          : ""
+      }
+    </div>`;
+  // W2 repair-5 R5-1: the forward control lives under the CASH chain — the
+  // SHORTEST column — at BOTH shapes. It used to sit under WHAT HAPPENED at
+  // 1366x768, i.e. under the column that grows with the night: bowl receipt,
+  // spend verdict, resale sentence and the Night-5 callback all land there, and
+  // on the densest settled state (bowl open + event money + sold out, then the
+  // same card again on Night 5) that pushed #fhNextNight to bottom=790 against
+  // a 768px viewport — the advance control clipped at rest. Bounding the
+  // control by the short column makes its position independent of how much the
+  // night has to say, and fills the ~250px of empty CASH column at the same
+  // time. WHAT HAPPENED still renders above the fold at both shapes (measured),
+  // so the spend verdict and the resale sentence are still read before the pair
+  // can leave.
+  const next = `
+    <div class="fh-next-row" style="display:flex; flex-direction:column; align-items:stretch; gap:7px;">
+      <button type="button" class="m2-cta fh-next-btn" id="fhNextNight"
+        style="display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:48px; padding:12px 22px; border:0; border-radius:12px;
+               background:var(--m2-violet-grad, linear-gradient(135deg,#5b3df0 0%,#7a5cff 100%)); box-shadow:var(--m2-violet-glow, 0 10px 30px rgba(91,61,240,0.42)); color:#fff;
+               font-family:inherit; font-size:15px; font-weight:600; cursor:pointer;">${escapeHtml(opts.closing || !nextLabel ? "THE BOOKS ARE CLOSED" : nextLabel)} ${fhIcon("arrow", 17)}</button>
+      <span style="font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(ui.twoBooksLine)}</span>
+    </div>`;
+  // B2/B3: three short columns instead of two tall ones. WHAT HAPPENED — the
+  // card that carries the spend verdict and, on a sellout, the resale sentence —
+  // now sits ABOVE the forward control, in the first viewport at both shapes,
+  // instead of below a CTA that invites the pair to leave without reading it.
+  //
+  // W2 repair-4 R4-1 (1024x600): the right column could not hold RENEWALS, WHAT
+  // HAPPENED and the control inside 600px on a sellout (NEXT bottom 623-662,
+  // the turned-away figure at 685-710). At that breakpoint the control moves
+  // under the CASH chain — the shortest column — the turned-away figure rides
+  // in the WHO CAME card under the turnout (still the second-largest figure,
+  // still smaller than the hero), and the chain / WHAT HAPPENED / RENEWALS
+  // blocks use the compressed rhythm. 1366x768 is unchanged.
+  // W2 repair-4 R4-4a (Economic Truth re-check finding 1): the cause under a
+  // settled movement is the FULL registered rule — the short form has no apex
+  // clause and cannot account for a renewals gain, which is what it was printed
+  // under on 11 of 20 desk-nights. The short form stays at the dial, pre-lock.
+  const cause = String(view["renewalRule"] ?? "");
+  const causeLines = (view["renewalRuleLines"] as string[] | undefined) ?? [];
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:${tight ? 7 : 9}px;">
+      ${tight ? "" : `<div class="m2-breadcrumb" style="display:flex; align-items:center; gap:7px; margin:0; font-size:11px; font-weight:600; letter-spacing:0.055em; color:${FH_VIOLET_BRIGHT};">Module 2<span style="color:rgba(157,134,255,0.42);">·</span>Money in Motion<span style="color:rgba(157,134,255,0.42);">·</span>Lesson 1</div>`}
+      ${fhResultHeadline(n)}
+      <div class="fh-result-cols" style="display:grid; grid-template-columns:${tight ? "minmax(0,1.12fr) minmax(0,1fr) minmax(0,1.06fr)" : "minmax(0,1.16fr) minmax(0,1fr) minmax(0,1.06fr)"}; gap:${tight ? 8 : 10}px; align-items:start;">
+        <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
+          ${fhChainHtml(n, ui)}
+          ${next}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
+          ${heroCard}
+          ${fhArenaPanel(n, ui, {
+            // R5-2: the turnout cause line joins the hero card above this panel;
+            // the drawn building gives back the height so the panel, its
+            // labels and the turned-away figure all stay inside the fold.
+            height: tight ? 104 : 118,
+            loud: n.soldOut,
+            compact: tight,
+            bowlSeats: (view["market"] as FHMarket | undefined)?.bowlSeats ?? 0,
+            bowlOffered: ((view["slate"] as FHSlateNight[]) ?? []).find((sl) => sl.id === n.cardId)?.bowlOffer ?? (n.bowlCost > 0 || n.openBowl),
+          })}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
+          ${fhRenewalsHtml(n, ui, cause, causeLines)}
+          ${fhWhatHappened(n, ui)}
+        </div>
+      </div>
+    </div>`;
+  return `<div id="fhResult" class="m2-result fh-result${n.soldOut ? " is-sellout soldout" : ""}">${fhShell(view, main, { books: true, nightIndex: opts.nightIndex, settled: ((view["history"] as FHNight[]) ?? []).length })}</div>`;
+}
+
+/* ------------------------------------------------------- locked-waiting -- */
+
+/** H1: the desk recedes, the building comes up dark, no timer and no spinner. */
+function fhLockedWaiting(view: Record<string, unknown>): string {
+  const ui = fhUi(view);
+  const tight = fhTight();
+  const price = Number(view["price"] ?? 0);
+  const spend = Number(view["spend"] ?? 0);
+  const card = view["card"] as FHCard;
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:${tight ? 10 : 14}px;">
+      ${fhHeader(view, { subtitle: String(view["message"] ?? ""), goal: false, h1: "Doors in a minute" })}
+      <div class="m2-card m2-doors fh-doors" style="${FH_CARD} padding:0; overflow:hidden; position:relative;">
+        ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: tight ? 300 : 340, motion: false, label: "", cls: "fh-dark-building", maxHeight: tight ? 190 : 300 })}
+        <div style="position:absolute; inset:auto 0 0 0; padding:14px 18px; background:linear-gradient(0deg, rgba(8,8,15,0.92) 40%, rgba(8,8,15,0));">
+          <span style="${FH_LABEL} font-size:11px;">${escapeHtml(card?.label ?? "")} · locked</span>
+          <p style="margin:4px 0 0; font-size:${tight ? 15 : 18}px; line-height:24px; color:${FH_INK};">${escapeHtml(ui.doorsLine)}</p>
+        </div>
+      </div>
+      <div class="fh-locked-recap" style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:11px 14px; border-radius:12px; background:${FH_PANEL_2}; border:1px solid ${FH_HAIR};">
+        <span style="${FH_LABEL} font-size:10.5px;">Locked at</span>
+        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">$${price}</b>
+        ${spend > 0 ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· ${money(spend)} on the night</span>` : ""}
+        ${view["openBowl"] ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· upper bowl open</span>` : ""}
+      </div>
+    </div>`;
+  return fhShell(view, main, { books: true, nightIndex: Math.max(0, (card?.index ?? 1) - 1), settled: ((view["history"] as FHNight[]) ?? []).length });
+}
+
+/* --------------------------------------------------------- books closed -- */
+
+function fhNightsList(history: FHNight[], ui: FHUiCopy): string {
+  const tight = fhTight();
+  return `<div class="m2-card fh-nights-list" style="${FH_CARD} padding:${tight ? 11 : 14}px;">
+      <span style="${FH_LABEL} margin-bottom:8px;">${escapeHtml(ui.historyTitle)}</span>
+      ${history
+        .map(
+          (n) => `<div class="fh-night-row" style="display:grid; grid-template-columns:minmax(0,1.4fr) auto auto auto; align-items:baseline; gap:12px; padding:7px 0; border-top:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
+            <span style="font-size:12.5px; color:${FH_INK_BODY};">${escapeHtml(n.label)} <span style="color:${FH_INK_CAPTION};">${escapeHtml(n.day.slice(0, 3))} · draw ${n.draw}</span>${n.stock ? ` <span style="font-size:10px; color:${FH_INK_CAPTION};">covered</span>` : ""}${n.auto ? ` <span style="font-size:10px; color:${FH_INK_CAPTION};">auto</span>` : ""}</span>
+            <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${FH_INK};">$${n.price}</span>
+            <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${FH_INK};">${n.turnout.toLocaleString()}</span>
+            <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${n.net < 0 ? FH_RED : FH_MONEY};">${money(n.net)}</span>
+          </div>`,
+        )
+        .join("")}
+      <p style="margin:8px 0 0; font-size:11px; line-height:15px; color:${FH_INK_CAPTION};">${escapeHtml(ui.historyCaption)}</p>
+    </div>`;
+}
+
+function fhBooksClosed(view: Record<string, unknown>): string {
+  const ui = fhUi(view);
+  const history = (view["history"] as FHNight[]) ?? [];
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${fhHeader(view, { subtitle: String(view["message"] ?? ""), h1: "The books are closed" })}
+      <div style="display:grid; grid-template-columns:${fhTight() ? "1fr" : "minmax(0,1fr) minmax(0,1fr)"}; gap:12px; align-items:start;">
+        ${fhNightsList(history, ui)}
+        ${fhDotsHtml(history, view, ui, { height: 150 })}
+      </div>
+    </div>`;
+  return fhShell(view, main, { books: false, nightIndex: 4, settled: history.length });
+}
+
+
+/* ------------------------------------------------------------- lobby/hook -- */
+
+function renderFHLobby(view: Record<string, unknown>): void {
+  const market = view["market"] as FHMarket;
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      ${fhHeader(view, { goal: false })}
+      <div class="m2-card" style="${FH_CARD} padding:18px 20px;">
+        <span style="${FH_LABEL} margin-bottom:8px;">Your desk</span>
+        <p style="margin:0 0 10px; font-size:17px; line-height:24px; color:${FH_INK};">${escapeHtml(String(view["message"] ?? ""))}</p>
+        <p style="margin:0; font-size:13.5px; line-height:19px; color:${FH_INK_BODY};">${escapeHtml(market?.plainLine ?? "")}</p>
+      </div>
+      ${fhBuildingCard(view)}
+      <p style="margin:0; font-size:13px; color:${FH_INK_CAPTION};">Waiting for your teacher to start.</p>
+    </div>`;
+  $("gameBody").innerHTML = fhShell(view, main, { books: false, nightIndex: 0, settled: 0 });
+}
+
+function renderFHHook(view: Record<string, unknown>): void {
+  const market = view["market"] as FHMarket;
+  const ui = fhUi(view);
+  const rules = (view["rules"] as string[]) ?? [];
+  const slate = (view["slate"] as FHSlateNight[]) ?? [];
+  const tight = fhTight();
+  // W2 repair-4 R4-6 (visual C3 / contract A9): the HOOK opens on the dark,
+  // closed building with ONE registered line over it, then the season slate
+  // as five cards — day, visiting club, Draw and TV on each — and nothing
+  // else in the first viewport (<= 90 words). Every registered paragraph
+  // still renders verbatim, below the slate; the message is set one sentence
+  // per line so no paragraph runs past two lines.
+  const hero = `
+    <div class="m2-card fh-hook-hero" style="${FH_CARD} padding:0; overflow:hidden; position:relative;">
+      ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: tight ? 300 : 340, motion: false, label: "", cls: "fh-dark-building", maxHeight: tight ? 150 : 404 })}
+      <div style="position:absolute; inset:auto 0 0 0; padding:${tight ? "12px 16px" : "16px 22px"}; background:linear-gradient(0deg, rgba(8,8,15,0.94) 45%, rgba(8,8,15,0));">
+        <p class="fh-hook-line" style="margin:0; font-size:${tight ? 17 : 22}px; line-height:${tight ? 23 : 29}px; font-weight:600; letter-spacing:-0.01em; color:${FH_INK}; max-width:34ch;">${escapeHtml(ui.twoBooksLine)}</p>
+      </div>
+    </div>`;
+  const tvLabel = (tv: string) => (tv === "national" ? "national TV" : tv === "local" ? "local TV" : "not on TV");
+  const slateRow = `
+    <div class="fh-slate" id="fhSlate" style="display:grid; grid-template-columns:repeat(${slate.length || 5}, minmax(0,1fr)); gap:${tight ? 7 : 10}px;">
+      ${slate
+        .map(
+          (n) => `<div class="m2-card fh-slate-card" style="${FH_CARD} padding:${tight ? "10px 11px" : "13px 14px"}; display:flex; flex-direction:column; gap:${tight ? 4 : 7}px; min-height:${tight ? 0 : 190}px;">
+            <span style="${FH_LABEL} font-size:10px;">${escapeHtml(n.label)}</span>
+            <span style="display:block; font-size:${tight ? 15 : 18}px; line-height:${tight ? 19 : 22}px; font-weight:600; color:${FH_INK};">${escapeHtml(n.day)}</span>
+            <span style="display:block; font-size:${tight ? 11.5 : 12.5}px; line-height:${tight ? 15 : 17}px; color:${FH_INK_BODY}; min-height:${tight ? 30 : 34}px;">${escapeHtml(n.visitor)}</span>
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span class="m2-bar" style="flex:1; height:6px; border-radius:999px; background:rgba(255,255,255,0.07); overflow:hidden;"><i style="display:block; height:100%; width:${Math.max(0, Math.min(100, n.draw))}%; border-radius:999px; background:${FH_VIOLET};"></i></span>
+              <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${tight ? 12 : 13}px; font-weight:600; color:${FH_INK}; white-space:nowrap;">draw ${n.draw}/100</b>
+            </span>
+            <span style="display:block; font-size:11px; letter-spacing:0.04em; color:${n.tv === "national" ? FH_VIOLET_BRIGHT : FH_INK_LABEL};">${tvLabel(n.tv)}</span>
+          </div>`,
+        )
+        .join("")}
+    </div>`;
+  const sentences = String(view["message"] ?? "").split(/(?<=[.!?]) (?=[A-Z])/);
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:${tight ? 10 : 14}px;">
+      <div class="m2-header fh-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:18px;">
+        <h1 class="m2-h1" style="margin:0; font-size:${tight ? 22 : 28}px; line-height:${tight ? 26 : 32}px; font-weight:600; letter-spacing:-0.022em; color:${FH_INK};">Full House</h1>
+      </div>
+      ${hero}
+      ${slateRow}
+      <div class="m2-card fh-hook-message" style="${FH_CARD} padding:14px 16px;">
+        ${sentences.map((t) => `<p style="margin:0; font-size:${tight ? 14 : 15.5}px; line-height:${tight ? 20 : 23}px; color:${FH_INK_BODY}; max-width:78ch;">${escapeHtml(t)}</p>`).join("")}
+      </div>
+      <div class="m2-card" id="fhBooks" style="${FH_CARD} padding:14px 16px;">
+        <span style="${FH_LABEL} margin-bottom:6px;">The two books</span>
+        <p style="margin:0; font-size:13.5px; line-height:19px; color:${FH_INK_BODY};">${escapeHtml(String(view["objective"] ?? ""))}</p>
+      </div>
+      <div class="m2-card" style="${FH_CARD} padding:14px 16px;">
+        <span style="${FH_LABEL} margin-bottom:8px;">Your building</span>
+        <div style="display:grid; grid-template-columns:repeat(${tight ? 2 : 4}, minmax(0,1fr)); gap:10px;">
+          ${[
+            [market.club, market.building],
+            ["Seats", market.capacity.toLocaleString()],
+            ["Bill, every night", money(market.bill)],
+            ["Season plan, per seat", `$${market.planPrice}`],
+          ]
+            .map(
+              ([a, b]) => `<span><span style="${FH_LABEL} font-size:10px;">${escapeHtml(String(a))}</span><span style="display:block; margin-top:2px; font-size:14px; font-weight:600; color:${FH_INK};">${escapeHtml(String(b))}</span></span>`,
+            )
+            .join("")}
+        </div>
+        <p style="margin:8px 0 0; font-size:11.5px; color:${FH_INK_CAPTION};">${escapeHtml(market.capacityNote ?? "")}</p>
+      </div>
+      <div style="display:grid; grid-template-columns:${tight ? "minmax(0,1fr)" : "repeat(2, minmax(0,1fr))"}; gap:10px;">
+        ${rules
+          .map(
+            (r, i) => `<div class="m2-card" style="${FH_CARD} padding:12px 14px;">
+              <span style="${FH_LABEL} font-size:10px; margin-bottom:5px;">House rule ${i + 1}</span>
+              <p style="margin:0; font-size:12.5px; line-height:17px; color:${FH_INK_BODY};">${escapeHtml(r)}</p>
+            </div>`,
+          )
+          .join("")}
+      </div>
+      <p style="margin:0; font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(String(view["horizonLine"] ?? ""))} ${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</p>
+    </div>`;
+  $("gameBody").innerHTML = fhShell(view, main, { books: false, nightIndex: 0, settled: 0 });
+}
+
+/* ----------------------------------------------------------- the mirrors -- */
+
+/** A compact settled-night row for the mirror states (Q3: subordinate, still). */
+function fhMirrorNight(n: FHNight): string {
+  return `<div class="fh-result fh-mirror-night" style="display:grid; grid-template-columns:minmax(0,1.3fr) auto auto auto; align-items:baseline; gap:10px; padding:8px 0; border-top:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
+      <span style="font-size:12.5px; color:${FH_INK_BODY};">${escapeHtml(n.label)} <span style="color:${FH_INK_CAPTION};">${escapeHtml(n.day.slice(0, 3))}${n.stock ? " · covered" : ""}${n.auto ? " · auto" : ""}</span></span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${FH_INK};">$${n.price}</span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${FH_INK};">${n.turnout.toLocaleString()}<span style="font-size:10.5px; color:${FH_INK_CAPTION};"> ${n.fillPct}%</span></span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${n.net < 0 ? FH_RED : FH_MONEY};">${money(n.net)}</span>
+    </div>`;
+}
+
+function fhMirrorNights(history: FHNight[], ui: FHUiCopy, title: string): string {
+  return `<div class="m2-card" style="${FH_CARD} padding:13px;">
+      <span style="${FH_LABEL} margin-bottom:4px;">${escapeHtml(title)}</span>
+      ${history.map((n) => fhMirrorNight(n)).join("")}
+      <p style="margin:7px 0 0; font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(ui.fillQualifier)}. ${escapeHtml(ui.twoBooksLine)}</p>
+    </div>`;
+}
+
+/**
+ * C1 / contract D3 / gameplay #3 (BLOCKING): the device was md5-identical across
+ * five consecutive teacher presses. It now shows the pair's OWN night for the
+ * stage the board is on — their headline, their crowd, and the two books either
+ * side of that night — so a pair can find themselves in the frame the room is
+ * looking at. Nothing here is class data: every figure comes from this desk's
+ * own settled history, already in the payload. Two Peaks stays gated on
+ * `revealStage >= NIGHT_COUNT + 1` in the module (R-9), not here.
+ */
+function fhOwnNightMirror(n: FHNight, ui: FHUiCopy): string {
+  const fig = (v: string, dim: boolean, size: number) =>
+    `<span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${size}px; line-height:${size + 3}px; font-weight:600; letter-spacing:-0.025em; color:${dim ? FH_INK_LABEL : FH_INK};">${v}</span>`;
+  return `<div class="m2-card fh-mirror-own" style="${FH_CARD} padding:14px 16px;">
+      <span style="${FH_LABEL} margin-bottom:6px;">Your night</span>
+      <p style="margin:0 0 8px; font-size:17px; line-height:23px; font-weight:600; color:${FH_INK};">${escapeHtml(n.resultHeadline ?? n.label)}</p>
+      <div style="display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;">
+        <span><span style="${FH_LABEL} font-size:10px;">${escapeHtml(ui.whoCameLabel)}</span>${fig(n.turnout.toLocaleString(), false, 34)}</span>
+        <span><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.cash} ${escapeHtml(ui.tonightQualifier)}</span>${fig(money(n.net), false, 22)}</span>
+        <span><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.renewals}</span>${fig(`${n.renewalsBefore}% → ${n.renewalsAfter}%`, false, 22)}</span>
+      </div>
+      <p style="margin:8px 0 0; font-size:12px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(n.factLine ?? "")} · ${n.fillPct}% ${escapeHtml(ui.fillQualifier)}</p>
+    </div>`;
+}
+
+function renderFHReveal(view: Record<string, unknown>): void {
+  const ui = fhUi(view);
+  const history = (view["history"] as FHNight[]) ?? [];
+  const peaks = (view["twoPeaks"] as FHTwoPeaks[]) ?? [];
+  const stage = Number(view["revealStage"] ?? 0);
+  const own = stage >= 1 && stage <= history.length ? history[stage - 1]! : null;
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${fhHeader(view, { subtitle: String(view["message"] ?? ""), h1: "Your five nights" })}
+      ${own ? fhOwnNightMirror(own, ui) : ""}
+      ${
+        stage >= Number(view["totalRevealSteps"] ?? 7)
+          ? `<div class="m2-card fh-season-books" style="${FH_CARD} padding:14px 16px;">
+               <span style="${FH_LABEL} margin-bottom:7px;">Your season, ${escapeHtml(ui.seasonQualifier)}</span>
+               <div style="display:flex; align-items:baseline; gap:22px; flex-wrap:wrap;">
+                 <span style="display:flex; align-items:baseline; gap:8px;"><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.cash}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${(view["books"] as FHBooks | undefined)?.inDebt ? FH_RED : FH_MONEY};">${money((view["books"] as FHBooks | undefined)?.cash ?? 0)}</b></span>
+                 <span style="display:flex; align-items:baseline; gap:8px;"><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.renewals}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">${(view["books"] as FHBooks | undefined)?.renewals ?? 0}%</b></span>
+               </div>
+               <p style="margin:7px 0 0; font-size:12px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(ui.twoBooksLine)}</p>
+             </div>`
+          : ""
+      }
+      ${
+        peaks.length > 0
+          ? `<div class="fh-peaks m2-card" style="${FH_CARD} padding:13px;">
+               <span style="${FH_LABEL} margin-bottom:6px;">${escapeHtml(ui.twoPeaksTitle)}</span>
+               <div class="fh-peaks-row" style="display:flex; justify-content:space-between; font-size:12.5px; color:${FH_INK_BODY}; padding:3px 0;"><span>${escapeHtml(ui.twoPeaksTicketLabel)}</span><b style="font-family:var(--m2-font-num, inherit); color:${FH_INK};">$${peaks[0]!.ticketPeakPrice}</b></div>
+               <div class="fh-peaks-row" style="display:flex; justify-content:space-between; font-size:12.5px; color:${FH_INK_BODY}; padding:3px 0;"><span>${escapeHtml(ui.twoPeaksTotalLabel)}</span><b style="font-family:var(--m2-font-num, inherit); color:${FH_VIOLET_BRIGHT};">$${peaks[0]!.totalPeakPrice}</b></div>
+               <p class="fh-peaks-note" style="margin:6px 0 0; font-size:11.5px; color:${FH_INK_CAPTION};">${escapeHtml(peaks[0]!.note ?? "")}</p>
+             </div>`
+          : ""
+      }
+      <div style="display:grid; grid-template-columns:${fhTight() ? "1fr" : "minmax(0,1fr) minmax(0,1fr)"}; gap:12px; align-items:start;">
+        ${fhMirrorNights(history, ui, ui.historyTitle)}
+        ${fhDotsHtml(history, view, ui, { height: 150 })}
+      </div>
+    </div>`;
+  $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: history.length });
+}
+
+function renderFHAdapt(view: Record<string, unknown>): void {
+  const ui = fhUi(view);
+  const questions = (view["questions"] as string[]) ?? [];
+  const history = (view["history"] as FHNight[]) ?? [];
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${fhHeader(view, { subtitle: String(view["message"] ?? ""), h1: "Talk it through" })}
+      <div class="m2-card" style="${FH_CARD} padding:14px 16px;">
+        <ol style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:9px;">
+          ${questions.map((q) => `<li style="font-size:14px; line-height:20px; color:${FH_INK};">${escapeHtml(q)}</li>`).join("")}
+        </ol>
+      </div>
+      ${fhMirrorNights(history, ui, ui.historyTitle)}
+    </div>`;
+  $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: history.length });
+}
+
+function renderFHCounterfactual(view: Record<string, unknown>): void {
+  const ui = fhUi(view);
+  const tight = fhTight();
+  const repeat = view["repeat"] as {
+    n1Price: number;
+    n1Turnout: number;
+    n5Price: number;
+    n5Turnout: number;
+    renewalsAtN1: number;
+    renewalsAtN5: number;
+    samePrice: boolean;
+    renewalsFans: number;
+    carryFans: number;
+    n4Spend: number;
+    priceFans: number;
+    seatedDelta: number;
+    wantedDelta: number;
+    clamped: boolean;
+    floored: boolean;
+    biggestChannel: "renewals" | "spend" | "price" | "none";
+    channelLine: string;
+  } | null;
+  const replays = (view["replays"] as FHReplay[]) ?? [];
+  const side = (label: string, price: number, turnout: number, renewals: number) => `
+    <div class="fh-repeat-row" style="display:flex; align-items:baseline; gap:12px; padding:9px 12px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
+      <span style="${FH_LABEL} font-size:10.5px; min-width:54px;">${label}</span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:15px; color:${FH_INK};">$${price}</span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${tight ? 24 : 28}px; font-weight:600; color:${FH_INK};">${turnout.toLocaleString()}</span>
+      <span style="margin-left:auto; font-size:11.5px; color:${FH_INK_LABEL};">renewals ${renewals}%</span>
+    </div>`;
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${fhHeader(view, { h1: "What if?", subtitle: repeat ? "Night 1 and Night 5 were the same card." : "" })}
+      ${
+        repeat
+          ? `<div class="m2-card fh-repeat" style="${FH_CARD} padding:13px;">
+               <span style="${FH_LABEL} margin-bottom:8px;">Night 1 and Night 5 were the same card</span>
+               <div style="display:grid; grid-template-columns:${tight ? "1fr" : "1fr 1fr"}; gap:9px;">
+                 ${side("Night 1", repeat.n1Price, repeat.n1Turnout, repeat.renewalsAtN1)}
+                 ${side("Night 5", repeat.n5Price, repeat.n5Turnout, repeat.renewalsAtN5)}
+               </div>
+               <div class="fh-repeat-split" id="fhRepeatSplit" style="margin-top:9px; padding:9px 12px; border-radius:10px; border-left:2px solid ${FH_VIOLET}; background:${FH_PANEL_2};">
+                 <span style="${FH_LABEL} font-size:10px;">Where that change came from</span>
+                 <p style="margin:4px 0 0; font-size:12.5px; line-height:17px; color:${FH_INK};">${escapeHtml(repeat.channelLine)}</p>
+               </div>
+             </div>`
+          : ""
+      }
+      <div class="m2-card" style="${FH_CARD} padding:13px;">
+        <span style="${FH_LABEL} margin-bottom:6px;">What if?</span>
+        ${replays
+          .map(
+            (r) => `<div class="fh-replay" style="padding:8px 0; border-top:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
+              <div style="display:flex; justify-content:space-between; gap:12px; align-items:baseline;">
+                <span style="font-size:13px; color:${FH_INK};">${escapeHtml(r.label)}</span>
+                <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${FH_INK_BODY}; white-space:nowrap;">${money(r.cash)} · ${r.renewals}%</span>
+              </div>
+              <p style="margin:3px 0 0; font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(r.note)}</p>
+            </div>`,
+          )
+          .join("")}
+        <p style="margin:8px 0 0; font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(String(view["honestLimit"] ?? ""))}</p>
+      </div>
+      <div class="m2-card" style="${FH_CARD} padding:14px 16px; border-left:2px solid ${FH_VIOLET};">
+        <span style="${FH_LABEL} margin-bottom:6px;">Be ready to argue</span>
+        <p style="margin:0; font-size:14px; line-height:20px; color:${FH_INK};">${escapeHtml(String(view["prompt"] ?? ""))}</p>
+      </div>
+    </div>`;
+  $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: 5 });
+}
+
+/**
+ * C2 / contract D2: the device mirrors the card the teacher is on — the card's
+ * registered title and the SAME computed body the projector is showing, page
+ * for page, with the pair's own five nights beside it (D1/C5). The bodies are
+ * `synthesisCards`' own output, computed from the class's locked numbers; the
+ * card set, order and staging are not this wave's to change (E27).
+ */
+function renderFHSynthesis(view: Record<string, unknown>): void {
+  const ui = fhUi(view);
+  const history = (view["history"] as FHNight[]) ?? [];
+  const title = String(view["synthCardTitle"] ?? "");
+  const body = String(view["synthCardBody"] ?? "");
+  const page = Number(view["synthPage"] ?? 0);
+  const pages = Number(view["synthPageCount"] ?? 0);
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${fhHeader(view, { h1: "Look up at the board", subtitle: String(view["message"] ?? "") })}
+      ${
+        title
+          ? `<div class="m2-card fh-synth-mirror" style="${FH_CARD} padding:15px 18px; border-left:2px solid ${FH_VIOLET};">
+               <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:7px;">
+                 <span style="${FH_LABEL}">${escapeHtml(title)}</span>
+                 ${pages > 1 ? `<span style="margin-left:auto; font-size:11px; color:${FH_INK_CAPTION};">${page} / ${pages}</span>` : ""}
+               </div>
+               <p style="margin:0; font-size:14px; line-height:20px; color:${FH_INK_BODY};">${escapeHtml(body)}</p>
+             </div>`
+          : ""
+      }
+      <div style="display:grid; grid-template-columns:${fhTight() ? "1fr" : "minmax(0,1fr) minmax(0,1fr)"}; gap:12px; align-items:start;">
+        ${fhMirrorNights(history, ui, ui.historyTitle)}
+        ${fhDotsHtml(history, view, ui, { height: 132 })}
+      </div>
+      <div class="m2-card" style="${FH_CARD} padding:14px 16px;">
+        <span style="${FH_LABEL} margin-bottom:6px;">Talk with your partner</span>
+        <p style="margin:0; font-size:15px; line-height:21px; color:${FH_INK};">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
+      </div>
+    </div>`;
+  $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: history.length });
+}
+
+function renderFHComplete(view: Record<string, unknown>): void {
+  const beyond = String(view["beyondSports"] ?? "");
+  const ui = fhUi(view);
+  const history = (view["history"] as FHNight[]) ?? [];
+  const main = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${fhHeader(view, { h1: "That is Full House" })}
+      <p style="margin:0; font-size:15px; line-height:22px; color:${FH_INK_BODY}; max-width:78ch;">${escapeHtml(String(view["message"] ?? ""))}</p>
+      <div style="display:grid; grid-template-columns:${fhTight() ? "1fr" : "minmax(0,1fr) minmax(0,1fr)"}; gap:12px; align-items:start;">
+        ${fhMirrorNights(history, ui, ui.historyTitle)}
+        ${fhDotsHtml(history, view, ui, { height: 132 })}
+      </div>
+      <div class="m2-card" style="${FH_CARD} padding:14px 16px;">
+        <span style="${FH_LABEL} margin-bottom:6px;">Before you go</span>
+        <p style="margin:0; font-size:15px; line-height:21px; color:${FH_INK};">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
+      </div>
+      ${beyond ? `<p style="margin:0; font-size:13px; line-height:19px; color:${FH_INK_BODY};">${escapeHtml(beyond)}</p>` : ""}
+    </div>`;
+  $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: 5 });
+}
+
+
+/* ------------------------------------------------- state memory + motion -- */
+
+/**
+ * Which settled night this pair has already read. The bell may close a night
+ * while the desk is still looking at the last one; the newest settled night
+ * always wins, and a refresh comes back to the same state. A desk that never
+ * presses NEXT is auto-committed by the bell exactly as a stalled desk is
+ * today — this key changes no mechanic, only what the screen shows.
+ */
+function fhAckKey(): string | null {
+  if (!creds) return null;
+  return `bow-fh-ack:${creds.sessionCode}:${creds.seatId}`;
+}
+function fhAckRead(history: FHNight[]): number {
+  // A desk that joins mid-window arrives with nights the room covered for it.
+  // Those are not this pair's decisions, so they are acknowledged on arrival
+  // and the pair lands on the dials; the covered nights stay printed in YOUR
+  // NIGHTS SO FAR and in the night list, flagged as covered.
+  const covered = history.filter((n) => n.stock).length;
+  try {
+    const key = fhAckKey();
+    if (!key) return covered;
+    const raw = window.localStorage.getItem(key);
+    if (raw === null) {
+      fhAckWrite(covered);
+      return covered;
+    }
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  } catch {
+    return covered;
+  }
+}
+function fhAckWrite(n: number): void {
+  try {
+    const key = fhAckKey();
+    if (key) window.localStorage.setItem(key, String(n));
+  } catch {
+    /* storage disabled — the state simply does not survive a refresh */
+  }
+}
+/** Q5: the full sequence on a desk's FIRST sellout, abbreviated after that. */
+function fhFirstSellout(cardId: string): boolean {
+  try {
+    if (!creds) return false;
+    const key = `bow-fh-firstsellout:${creds.sessionCode}:${creds.seatId}`;
+    const seen = window.localStorage.getItem(key);
+    if (seen === null) {
+      window.localStorage.setItem(key, cardId);
+      return true;
+    }
+    return seen === cardId;
+  } catch {
+    return false;
+  }
+}
+
+function fhReduced(): boolean {
+  return typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** Every motion here answers "what did the world just do" and collapses to
+ *  <=120ms under `prefers-reduced-motion` (A10/P9). */
+function fhAnimate(el: Element | null, frames: Keyframe[], ms: number): void {
+  if (!el || typeof (el as HTMLElement).animate !== "function") return;
+  // m2.css owns `.m2-commit`, `.m2-result.is-flash` and `.m2-doors`; if its
+  // keyframes are live on this element, do not animate it a second time.
+  if (getComputedStyle(el as HTMLElement).animationName !== "none") return;
+  const duration = fhReduced() ? Math.min(120, ms) : ms;
+  (el as HTMLElement).animate(frames, { duration, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "none" });
+}
+
+/* ------------------------------------------------------------ PLAY state -- */
+
+function renderFHPlay(view: Record<string, unknown>): void {
+  const body = $("gameBody");
+  fhBindResize();
+  const history = (view["history"] as FHNight[]) ?? [];
+  const settled = history.length;
+  const ack = fhAckRead(history);
+  const allDone = Boolean(view["allNightsDone"]);
+  const card = view["card"] as FHCard | undefined;
+  const locked = Boolean(view["locked"]);
+  const tight = fhTight();
+  const nightIndex = card ? card.index - 1 : Math.max(0, settled - 1);
+  const unread = settled > ack ? history[settled - 1]! : null;
+  const kind = unread ? "result" : allDone ? "closed" : locked ? "waiting" : "desk";
+
+  const key = `${kind}|${card?.id ?? "-"}|${settled}|${ack}|${Number(view["spendCap"] ?? 0)}|${tight ? "t" : "w"}`;
+  if (fhMountKey === key && document.getElementById("fhPlayRoot")) return;
+  fhMountKey = key;
+
+  if (unread) {
+    // A7 / visual hierarchy #8: the pips read "NIGHT 2 OF 5" over a Night 1
+    // result, because the open card's index was passed to a frame showing the
+    // night that just settled. The result frame names its own night.
+    body.innerHTML = `<div id="fhPlayRoot">${fhResultState(view, unread, { closing: allDone, nightIndex: Math.max(0, settled - 1) })}</div>`;
+    const next = document.getElementById("fhNextNight");
+    fhAnimate(document.getElementById("fhResult"), [{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], 220);
+    if (unread.soldOut && fhFirstSellout(unread.cardId)) {
+      document.getElementById("fhResult")?.classList.add("is-flash");
+      fhAnimate(document.getElementById("fhResult"), [
+        { boxShadow: "0 0 0 0 rgba(255,208,138,0)" },
+        { boxShadow: "0 0 0 3px rgba(255,208,138,0.55)" },
+        { boxShadow: "0 0 0 0 rgba(255,208,138,0)" },
+      ], 260);
+    }
+    next?.addEventListener("click", () => {
+      fhAckWrite(settled);
+      fhMountKey = null;
+      renderFHPlay(view);
+    });
+    return;
+  }
+
+  if (allDone) {
+    body.innerHTML = `<div id="fhPlayRoot">${fhBooksClosed(view)}</div>`;
+    return;
+  }
+
+  if (locked) {
+    body.innerHTML = `<div id="fhPlayRoot">${fhLockedWaiting(view)}</div>`;
+    fhAnimate(document.querySelector(".fh-doors"), [{ opacity: 0 }, { opacity: 1 }], 220);
+    return;
+  }
+
+  if (!card) {
+    body.innerHTML = `<div id="fhPlayRoot"><p style="font-size:13px; color:${FH_INK_CAPTION};">${escapeHtml(String(view["message"] ?? ""))}</p></div>`;
+    return;
+  }
+
+  if (fhLocalPrice === null || fhLocalPriceCard !== card.id) {
+    fhLocalPrice = Number(view["price"] ?? (view["market"] as FHMarket).planPrice);
+    fhLocalPriceCard = card.id;
+  }
+  const price = fhLocalPrice;
+  const spend = Number(view["spend"] ?? 0);
+  const ui = fhUi(view);
+
+  // The cockpit: the dial, tonight's printed card and the commitment, all in
+  // the first viewport at 1366x768 AND at 1024x600 with the rejoin-PIN card
+  // still open (DIRECTION non-negotiable 7). Everything that is not part of
+  // tonight's decision sits under it.
+  const cockpit = `
+    <div class="fh-cockpit" style="display:grid; grid-template-columns:${tight ? "minmax(0,1.06fr) minmax(0,1fr) minmax(0,0.94fr)" : "minmax(0,1.08fr) minmax(0,1fr) minmax(0,0.92fr)"}; gap:${tight ? 9 : 13}px; align-items:stretch;">
+      <div style="min-width:0;">${fhPriceCard(view, price)}</div>
+      <div style="min-width:0;">${fhCardHtml(card, view["market"] as FHMarket)}</div>
+      <div style="display:flex; flex-direction:column; gap:${tight ? 7 : 9}px; min-width:0;">
+        ${fhSpendCard(view, spend)}
+        ${card.bowlOffer && !tight ? fhBowlPlate(view) : ""}
+        ${fhCommit(view)}
+      </div>
+    </div>`;
+  // A1 (BLOCKING, gameplay #1): YOUR NIGHTS SO FAR is the evidence the pair
+  // prices tonight from, and it sat at y=769 in a 768px viewport — one pixel
+  // outside the decision. Row 2 is now the evidence row and is inside the first
+  // viewport at both shapes: the pair's own dots, the dark closed building, and
+  // tomorrow's printed card with the full rules one press behind it.
+  //
+  // W2 repair-4 R4-1: on the bowl night at 1024x600 the plate made the cockpit's
+  // third column ~100px taller and pushed this row to 566-618 in a 600px
+  // viewport. At that breakpoint only, the plate sits in the evidence row's third
+  // column, beside the nights card and above tomorrow's line — never above the
+  // nights card, and still inside the first viewport.
+  const below = `
+    <div class="fh-evidence-row" style="display:grid; grid-template-columns:${tight ? "minmax(0,1.15fr) minmax(0,1fr) minmax(0,0.95fr)" : "minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.95fr)"}; gap:${tight ? 9 : 12}px; align-items:stretch;">
+      ${fhDotsHtml(history, view, ui, { height: tight ? 96 : 116 })}
+      ${fhBuildingCard(view)}
+      <div style="display:flex; flex-direction:column; gap:8px; min-width:0;">${card.bowlOffer && tight ? fhBowlPlate(view) : ""}${fhNextCardHtml((view["nextCard"] as FHCard | null) ?? null, ui)}${fhRuleSlot(view)}</div>
+    </div>`;
+  const main = `<div style="display:flex; flex-direction:column; gap:${tight ? 8 : 11}px;">
+      ${tight ? "" : fhHeader(view)}
+      ${cockpit}
+      ${below}
+    </div>`;
+
+  body.innerHTML = `<div id="fhPlayRoot">${fhShell(view, main, { anchors: true, books: tight, nightIndex, settled })}</div>`;
+
+  /* ---- the instruments ---- */
+  const dial = $<HTMLInputElement>("fhPriceDial");
+  const readout = $("fhPriceReadout");
+  const step = Number(view["priceStep"] ?? 2);
+  const pMin = Number(view["priceMin"] ?? 10);
+  const pMax = Number(view["priceMax"] ?? 120);
+  // The carried-dial cue names the price the night OPENED on. The frame is not
+  // remounted while the pair drags, so the cue is hidden the moment the dial
+  // leaves that price and shown again if it returns — it never names a number
+  // the dial no longer shows.
+  const openedAt = Number(view["price"] ?? NaN);
+  const carriedEl = document.querySelector<HTMLElement>(".fh-dial-carried");
+  const paint = () => {
+    fhLocalPrice = Number(dial.value);
+    readout.textContent = `$${dial.value}`;
+    const parent = dial.parentElement;
+    if (parent) parent.style.setProperty("--pct", String(((Number(dial.value) - pMin) / Math.max(1, pMax - pMin)) * 100));
+    if (carriedEl) carriedEl.hidden = Number(dial.value) !== openedAt;
+  };
+  dial.addEventListener("input", paint);
+  const commitPrice = () => outbox?.submit({ type: "setPrice", price: Number(dial.value) });
+  dial.addEventListener("change", commitPrice);
+  const nudge = (dir: number) => {
+    dial.value = String(Math.max(pMin, Math.min(pMax, Number(dial.value) + dir * step)));
+    paint();
+    commitPrice();
+  };
+  $("fhPriceUp").addEventListener("click", () => nudge(1));
+  $("fhPriceDown").addEventListener("click", () => nudge(-1));
+
+  let localSpend = spend;
+  const spendCap = Number(view["spendCap"] ?? 0);
+  const spendReadout = $("fhSpendReadout");
+  const stepSpend = (dir: number) => {
+    const s = Number(view["spendStep"] ?? 5000);
+    localSpend = Math.max(0, Math.min(spendCap, localSpend + dir * s));
+    spendReadout.textContent = money(localSpend);
+    outbox?.submit({ type: "setSpend", spend: localSpend });
+  };
+  $("fhSpendUp").addEventListener("click", () => stepSpend(1));
+  $("fhSpendDown").addEventListener("click", () => stepSpend(-1));
+
+  if (card.bowlOffer) {
+    const plate = $<HTMLButtonElement>("fhBowl");
+    plate.addEventListener("click", () => {
+      const on = plate.getAttribute("aria-pressed") !== "true";
+      plate.setAttribute("aria-pressed", on ? "true" : "false");
+      plate.classList.toggle("on", on);
+      const state = plate.querySelector(".fh-bowl-state");
+      if (state) state.textContent = on ? "OPEN" : "CLOSED";
+      plate.style.background = on ? "var(--m2-violet-tint, rgba(122,92,255,0.14))" : FH_PANEL;
+      plate.style.borderColor = on ? "var(--m2-violet-line, rgba(122,92,255,0.42))" : "rgba(255,255,255,0.07)";
+      outbox?.submit({ type: "setBowl", open: on });
+    });
+  }
+
+  // The commitment settle (H1): a 200ms firm settle in the page, replacing the
+  // native confirm() dialog — school chrome on the one control that matters.
+  const lock = $<HTMLButtonElement>("fhLock");
+  lock.addEventListener("click", () => {
+    lock.disabled = true;
+    lock.textContent = `Locked at $${dial.value}`;
+    // A5 / Kid A #6: a pair kept grabbing a slider that no longer did anything.
+    // Every instrument on the frame goes inert and reads inert the moment the
+    // commitment lands; the numbers stay legible, they just stop being controls.
+    document.getElementById("fhPlayRoot")?.classList.add("is-locked");
+    for (const id of ["fhPriceDial", "fhPriceUp", "fhPriceDown", "fhSpendUp", "fhSpendDown", "fhBowl"]) {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLButtonElement | null;
+      if (el) el.disabled = true;
+    }
+    fhAnimate(lock.closest(".fh-commit"), [{ transform: "scale(1)" }, { transform: "scale(0.985)" }, { transform: "scale(1)" }], 200);
+    outbox?.submit({ type: "setPrice", price: Number(dial.value) });
+    outbox?.submit({ type: "lock" });
+  });
+}
+
+/* --------------------------------------------------------------- dispatch -- */
+
 function renderFullHouse(s: SessionInfo, view: Record<string, unknown>): void {
   const body = $("gameBody");
+  fhLastSession = s;
+  fhLastView = view;
+  fhBindResize();
+  document.body.classList.remove("fh-compact-play");
   if (view["seated"] === false) {
     if (!fhSeatRequested) {
       fhSeatRequested = true;
       outbox?.submit({ type: "takeSeat" });
     }
-    body.innerHTML = `<div class="banner">You're in — finding your desk…</div>`;
+    body.innerHTML = `<p style="font-size:14px; color:${FH_INK_BODY};">You're in — finding your desk…</p>`;
     return;
   }
-  if (s.phase !== "PLAY") {
-    fhMountKey = null;
-    document.body.classList.remove("fh-compact-play");
-  }
+  if (s.phase !== "PLAY") fhMountKey = null;
 
   switch (s.phase) {
     case "LOBBY":
@@ -1875,501 +3562,14 @@ function renderFullHouse(s: SessionInfo, view: Record<string, unknown>): void {
       renderFHCounterfactual(view);
       return;
     case "SYNTHESIS":
-      body.innerHTML = `
-        ${fhDeskHeader(view)}
-        <div class="banner">${escapeHtml(String(view["message"] ?? "Look up at the board."))}</div>
-        <div class="panel" style="padding:16px; margin-top:12px;">
-          <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
-          <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
-        </div>`;
+      renderFHSynthesis(view);
       return;
     case "COMPLETE":
-      body.innerHTML = `${fhDeskHeader(view)}<div class="banner">${escapeHtml(String(view["message"] ?? ""))}</div>`;
+      renderFHComplete(view);
       return;
     default:
       body.innerHTML = `<pre class="banner" style="text-align:left; white-space:pre-wrap;">${escapeHtml(JSON.stringify(view, null, 2))}</pre>`;
   }
-}
-
-function fhDeskHeader(view: Record<string, unknown>): string {
-  const market = view["market"] as FHMarket | undefined;
-  if (!market) return "";
-  return `
-    <div class="fh-desk-head">
-      <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 24)}"></span>
-      <span class="fh-desk-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
-      <span class="fh-desk-building">${escapeHtml(market.building)}</span>
-    </div>`;
-}
-
-/**
- * gate-l1-projector repair 6: the desk header and the two-book scoreboard used
- * ~110px of a 600px viewport before the pair saw a card. On the PLAY surface
- * they are one strip; every other phase keeps the full-height version.
- */
-function fhTopStrip(view: Record<string, unknown>): string {
-  const market = view["market"] as FHMarket | undefined;
-  const books = view["books"] as FHBooks | undefined;
-  if (!market || !books) return `${fhDeskHeader(view)}${fhBooksHtml(books)}`;
-  return `
-    <div class="fh-topstrip">
-      <span style="${crestStyle(Number(view["crestIndex"] ?? 0), 20)}"></span>
-      <span class="fh-topstrip-name fh-desk-name">${escapeHtml(String(view["handle"] ?? ""))}</span>
-      <span class="fh-topstrip-book ${books.inDebt ? "debt" : ""}"><span>Cash</span><span class="numeric">${money(books.cash)}</span></span>
-      <span class="fh-topstrip-book"><span>Renewals</span><span class="numeric">${books.renewals}%</span></span>
-    </div>
-    ${books.inDebt ? `<div class="fh-lag" style="display:block; margin:6px 0 0;">In the red — no night spend until you're back above zero.</div>` : ""}`;
-}
-
-function fhBooksHtml(books: FHBooks | undefined): string {
-  if (!books) return "";
-  return `
-    <div class="fh-books">
-      <div class="fh-book ${books.inDebt ? "debt" : ""}">
-        <div class="fh-book-label">Cash</div>
-        <div class="fh-book-value numeric">${money(books.cash)}</div>
-        ${books.inDebt ? `<div class="fh-book-note">In the red — no night spend until you're back above zero.</div>` : ""}
-      </div>
-      <div class="fh-book">
-        <div class="fh-book-label">Renewals</div>
-        <div class="fh-book-value numeric">${books.renewals}%</div>
-        <div class="fh-book-note">Season-ticket holders coming back</div>
-      </div>
-    </div>`;
-}
-
-function fhCardHtml(card: FHCard, market: FHMarket): string {
-  const dots = Array.from({ length: 5 }, (_, i) => `<span class="fh-dot ${i < Math.round(card.draw / 20) ? "on" : ""}"></span>`).join("");
-  return `
-    <div class="fh-card ${card.repeatOf ? "repeat" : ""} ${card.bowlOffer ? "shock" : ""}">
-      <div class="fh-card-top">
-        <span class="fh-card-night">${escapeHtml(card.label)} of ${card.of}</span>
-        <span class="fh-card-tv ${card.tv}">${TV_LABEL[card.tv] ?? ""}</span>
-      </div>
-      <div class="fh-card-line">${escapeHtml(card.day)} · ${escapeHtml(card.visitor)}</div>
-      <div class="fh-card-draw"><span class="fh-card-draw-label">Visiting club's draw</span><span class="fh-dots">${dots}</span><span class="numeric fh-card-draw-num">${card.draw}/100</span></div>
-      <ul class="fh-card-notes">${card.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>
-      <div class="fh-card-facts">
-        <span>${market.capacity.toLocaleString()} seats<span class="fh-stamp"> · ${escapeHtml(market.capacityNote ?? "")}</span></span>
-        <span>Tonight's bill ${money(market.bill)}</span>
-        <span>Season plan $${market.planPrice} a seat</span>
-      </div>
-    </div>`;
-}
-
-/**
- * Tomorrow's card, printed before tonight's commitment (gate-l1-econ B4,
- * gate-l1-play P2). Four printed facts, one night ahead — no outcome, no
- * money, nothing about tonight. The night-spend dial pays on the NEXT night,
- * so this is the information that decision needs to be reasonable about.
- */
-function fhNextCardHtml(next: FHCard | null): string {
-  if (!next) {
-    return `<div class="fh-next"><span class="fh-next-label">After tonight</span><span>Nothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.</span></div>`;
-  }
-  const tv = next.tv === "national" ? "national TV" : next.tv === "local" ? "local TV" : "not on TV";
-  return `<div class="fh-next"><span class="fh-next-label">Tomorrow</span><span>${escapeHtml(next.label)} · ${escapeHtml(next.day)} · ${escapeHtml(next.visitor)} · draw ${next.draw}/100 · ${tv}</span></div>`;
-}
-
-function fhSlateHtml(slate: FHSlateNight[]): string {
-  if (slate.length === 0) return "";
-  return `
-    <details class="fa-rules" style="margin-top:12px;">
-      <summary>All five nights on the schedule</summary>
-      <div class="fh-slate">
-        ${slate
-          .map(
-            (n) =>
-              `<div class="fh-slate-row"><span>${escapeHtml(n.label)}</span><span>${escapeHtml(n.day)}</span><span>${escapeHtml(n.visitor)}</span><span class="numeric">draw ${n.draw}</span><span>${n.tv === "national" ? "national TV" : n.tv === "local" ? "local TV" : "not on TV"}</span></div>`,
-          )
-          .join("")}
-      </div>
-      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">The schedule is public in a real building months ahead. What it does not tell you is what a seat is worth on any of these nights.</p>
-    </details>`;
-}
-
-function fhHistoryHtml(history: FHNight[], market: FHMarket): string {
-  if (history.length === 0) {
-    return `<div class="fh-history-empty">Nothing behind you yet. Your first price is a judgement call — the season plan works out to $${market.planPrice} a seat, and that is the only number you have.</div>`;
-  }
-  return `
-    <div class="fh-history">
-      <div class="fh-history-row head"><span>Night</span><span>Price</span><span>Came</span><span>Full</span><span>Net</span></div>
-      ${history
-        .map(
-          (h) => `
-        <div class="fh-history-row ${h.stock ? "stock" : ""}">
-          <span>${escapeHtml(h.label.replace("Night ", "N"))} <span class="fh-history-sub">${escapeHtml(h.day.slice(0, 3))} · draw ${h.draw}</span>${h.stock ? ' <span class="fh-flag">covered</span>' : ""}${h.auto ? ' <span class="fh-flag">auto</span>' : ""}</span>
-          <span class="numeric">$${h.price}</span>
-          <span class="numeric">${h.turnout.toLocaleString()}</span>
-          <span class="numeric">${h.fillPct}%</span>
-          <span class="numeric ${h.net < 0 ? "neg" : ""}">${money(h.net)}</span>
-        </div>`,
-        )
-        .join("")}
-    </div>`;
-}
-
-function fhNightResultHtml(n: FHNight, title: string): string {
-  // gate-l1-visual H2 / D1: FULL HOUSE is the name of the lesson and it used to
-  // be eight monospace characters inside a ledger row, below the fold, under the
-  // next night's controls. It is now the loudest thing in the settlement, with
-  // the turned-away count as its own number rather than a grey sentence.
-  const sellout = n.soldOut
-    ? `<div class="fh-sellout">
-         <div class="fh-sellout-title">FULL HOUSE</div>
-         <div class="fh-sellout-sub">${n.turnout.toLocaleString()} of ${n.seatsOpen.toLocaleString()} seats · every one sold</div>
-         ${
-           n.turnedAway > 0
-             ? `<div class="fh-sellout-turned"><span class="numeric">${n.turnedAway.toLocaleString()}</span><span>could not get in</span></div>`
-             : ""
-         }
-       </div>`
-    : "";
-  return `
-    <div class="fh-result ${n.soldOut ? "soldout" : ""}">
-      <div class="fh-result-head">
-        <span>${escapeHtml(title)}</span>
-        <span class="numeric">$${n.price}${n.openBowl ? " · extra seats open" : ""}</span>
-      </div>
-      ${sellout}
-      <div class="fh-fill-track"><div class="fh-fill-bar ${n.soldOut ? "soldout" : ""}" style="width:${Math.min(100, n.fillPct)}%"></div></div>
-      <!-- gate-l1-visual P2 (SCHOOL-UI, /play nightly P&L): this was an unstyled
-           two-column ledger in which "Kept $215,384" — the number the whole night
-           was about — carried exactly the same size and weight as the word
-           "Tickets". The settlement is a box score now: the lesson's own identity
-           (people x price = ticket money) reads across the top in the scoreboard
-           face, the costs are supporting rows underneath, and KEPT is the one
-           dominant number on the card. Composition only: no new art, no glyphs,
-           same palette and tokens. -->
-      <div class="fh-boxscore">
-        <div class="fh-boxscore-cell">
-          <span class="fh-boxscore-label">Came</span>
-          <span class="fh-boxscore-num numeric">${n.turnout.toLocaleString()}</span>
-          <span class="fh-boxscore-sub">of ${n.seatsOpen.toLocaleString()} · ${n.fillPct}%</span>
-        </div>
-        <div class="fh-boxscore-op">×</div>
-        <div class="fh-boxscore-cell">
-          <span class="fh-boxscore-label">Price</span>
-          <span class="fh-boxscore-num numeric">$${n.price}</span>
-          <span class="fh-boxscore-sub">a seat</span>
-        </div>
-        <div class="fh-boxscore-op">=</div>
-        <div class="fh-boxscore-cell">
-          <span class="fh-boxscore-label">Ticket money</span>
-          <span class="fh-boxscore-num numeric">${money(n.gate)}</span>
-          <span class="fh-boxscore-sub">gate only</span>
-        </div>
-      </div>
-      <div class="fh-result-row"><span>Spent inside the building</span><span class="numeric">${money(n.inArena)}</span></div>
-      <div class="fh-result-row total"><span>Money in</span><span class="numeric">${money(n.total)}</span></div>
-      <div class="fh-result-row"><span>Building bill</span><span class="numeric neg">-${money(n.bill).replace("$", "$")}</span></div>
-      ${n.spendPaid > 0 ? `<div class="fh-result-row"><span>Making it an event</span><span class="numeric neg">-${money(n.spendPaid)}</span></div>` : ""}
-      ${n.bowlCost > 0 ? `<div class="fh-result-row"><span>Opening more of the building</span><span class="numeric neg">-${money(n.bowlCost)}</span></div>` : ""}
-      <div class="fh-kept ${n.net < 0 ? "neg" : ""}">
-        <span class="fh-kept-label">Kept</span>
-        <span class="fh-kept-num numeric">${money(n.net)}</span>
-      </div>
-      <div class="fh-result-row"><span>Renewals</span><span class="numeric">${n.renewalsBefore}% → ${n.renewalsAfter}% (${n.renewalMove >= 0 ? "+" : ""}${n.renewalMove})</span></div>
-      ${n.resaleNote ? `<div class="fh-resale">${escapeHtml(n.resaleNote)}</div>` : ""}
-      <!-- gate-l1-play R6 / P2 second clause: the forward-looking receipt on the
-           dial promised "if there is room for them". This is the night that
-           answers it, either way, in the desk's own numbers. -->
-      ${n.spendVerdict ? `<div class="fh-spend-verdict ${n.spendVerdict.seated <= 0 ? "waste" : n.spendVerdict.wasted > 0 ? "part" : "paid"}" id="fhSpendVerdict">${escapeHtml(n.spendVerdict.label)}</div>` : ""}
-    </div>`;
-}
-
-function renderFHLobby(view: Record<string, unknown>): void {
-  const market = view["market"] as FHMarket;
-  $("gameBody").innerHTML = `
-    ${fhDeskHeader(view)}
-    <div class="panel" style="padding:18px;">
-      <p style="margin:0 0 10px; font-size:16px; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
-      <p style="margin:0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(market?.plainLine ?? "")}</p>
-    </div>
-    <div class="banner" style="margin-top:12px;">Waiting for your teacher to start.</div>`;
-}
-
-function renderFHHook(view: Record<string, unknown>): void {
-  const market = view["market"] as FHMarket;
-  const rules = (view["rules"] as string[]) ?? [];
-  $("gameBody").innerHTML = `
-    ${fhDeskHeader(view)}
-    <div class="panel" style="padding:18px;">
-      <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">Full House</div>
-      <p style="margin:0 0 12px; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
-      <p style="margin:0; font-size:14px; line-height:1.5; color:var(--ink-secondary);">${escapeHtml(String(view["objective"] ?? ""))}</p>
-    </div>
-    ${fhBooksHtml(view["books"] as FHBooks)}
-    <div class="panel" style="padding:16px; margin-top:12px;">
-      <div class="eyebrow" style="font-size:12px; margin-bottom:6px;">Your building</div>
-      <div class="fh-market-facts">
-        <div><span>${escapeHtml(market.club)}</span><span>${escapeHtml(market.building)}</span></div>
-        <div><span>Seats</span><span class="numeric">${market.capacity.toLocaleString()}</span></div>
-        <div><span>Bill, every night</span><span class="numeric">${money(market.bill)}</span></div>
-        <div><span>Season plan, per seat</span><span class="numeric">$${market.planPrice}</span></div>
-      </div>
-      <div class="fh-stamp" style="margin-top:6px;">${escapeHtml(market.capacityNote ?? "")}</div>
-      <p style="margin:10px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(market.plainLine)}</p>
-    </div>
-    <details class="fa-rules" style="margin-top:12px;">
-      <summary>How the five nights work</summary>
-      <ul>${rules.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
-    </details>
-    ${fhSlateHtml((view["slate"] as FHSlateNight[]) ?? [])}
-    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>
-    <div class="banner" style="margin-top:8px;">${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</div>`;
-}
-
-function renderFHPlay(view: Record<string, unknown>): void {
-  const body = $("gameBody");
-  // gate-l1-projector repair 6 (the Chromebook fold): the decision — dial and
-  // LOCK IT IN — has to clear a 1024x600 viewport without scrolling, every
-  // night. Scoped to this one screen so no other lesson's surface tightens.
-  document.body.classList.toggle("fh-compact-play", !view["allNightsDone"]);
-  if (view["allNightsDone"]) {
-    fhMountKey = null;
-    body.innerHTML = `
-      ${fhDeskHeader(view)}
-      ${fhBooksHtml(view["books"] as FHBooks)}
-      <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-      ${fhHistoryHtml((view["history"] as FHNight[]) ?? [], view["market"] as FHMarket)}`;
-    return;
-  }
-
-  const card = view["card"] as FHCard;
-  const market = view["market"] as FHMarket;
-  const locked = Boolean(view["locked"]);
-  const history = (view["history"] as FHNight[]) ?? [];
-  const lastNight = view["lastNight"] as FHNight | null;
-  const spendCap = Number(view["spendCap"] ?? 0);
-
-  // Rebuild only when the night, the lock state or the number of settled nights
-  // actually changes — a poll tick must never yank the dial out from under a
-  // pair mid-drag.
-  const key = `${card.id}|${locked}|${history.length}|${spendCap}`;
-  if (fhMountKey === key && document.getElementById("fhPlayRoot")) return;
-  fhMountKey = key;
-  if (fhLocalPrice === null || !locked) fhLocalPrice = Number(view["price"] ?? market.planPrice);
-  const price = locked ? Number(view["price"]) : fhLocalPrice;
-  const spend = Number(view["spend"] ?? 0);
-
-  const renewalRule = String(view["renewalRule"] ?? "");
-  const receipt = view["spendReceipt"] as { spend: number; fans: number; label: string } | null;
-
-  body.innerHTML = `
-    <div id="fhPlayRoot">
-      ${fhTopStrip(view)}
-      ${fhCardHtml(card, market)}
-      ${
-        locked
-          ? `<div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-             <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span>${spend > 0 ? `<span>· ${money(spend)} on the night</span>` : ""}${view["openBowl"] ? "<span>· extra seats open</span>" : ""}</div>`
-          : `
-        <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
-          <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
-          <div class="fh-price-readout numeric" id="fhPriceReadout">$${price}</div>
-          <!-- gate-l1-visual P2 + N2: the track carried the reserved three-zone
-               CAP ramp (a semantic token spent on a non-cap meaning) and the
-               season-plan price was printed CENTRED under a $10-$120 track while
-               the plan sits ~13% along it — a mislabelled axis on the control the
-               whole lesson turns on. Drawn well, and the plan is a notch AT its
-               own price. -->
-          <div class="fh-dial" style="--plan-frac:${((market.planPrice - Number(view["priceMin"])) / Math.max(1, Number(view["priceMax"]) - Number(view["priceMin"]))).toFixed(4)};">
-            <input class="price-dial-input" type="range" id="fhPriceDial" min="${view["priceMin"]}" max="${view["priceMax"]}" step="${view["priceStep"]}" value="${price}" />
-            <div class="fh-dial-notch" aria-hidden="true"><span class="fh-dial-tick"></span><span class="fh-dial-tick-label">PLAN $${market.planPrice}</span></div>
-          </div>
-          <div class="price-dial-ends"><span>$${view["priceMin"]}</span><span>$${view["priceMax"]}</span></div>
-          <!-- gate-l1-play P10 (BLOCKING dissent play-l1-renewals-unexplained):
-               the rule that drives half the scoreboard, beside the dial that
-               drives it, before the commit. -->
-          <div class="fh-renewal-rule">${escapeHtml(renewalRule)}</div>
-
-          <div class="eyebrow" style="font-size:12px; margin-top:12px;">Making it an event <span class="fh-lag">pays off next night</span></div>
-          ${fhNextCardHtml(view["nextCard"] as FHCard | null)}
-          ${receipt ? `<div class="fh-receipt">${escapeHtml(receipt.label)}</div>` : ""}
-          <div class="fh-spend-row">
-
-            <div class="bid-stepper">
-              <button type="button" class="btn" id="fhSpendDown">−</button>
-              <span class="bid-stepper-readout" id="fhSpendReadout">${money(spend)}</span>
-              <button type="button" class="btn" id="fhSpendUp">+</button>
-            </div>
-            <span class="fh-lag">${spendCap === 0 ? "In the red — locked at $0" : `up to ${money(spendCap)}`}</span>
-          </div>
-          <details class="fh-rule-details">
-            <summary>What does this money actually do?</summary>
-            <p>${escapeHtml(market.spendRule ?? "")}</p>
-            ${spendCap === 0 ? `<p>Your books are in the red — the night-spend dial is locked at $0 until you're back above zero. One good night clears it.</p>` : ""}
-          </details>
-
-          ${
-            card.bowlOffer
-              ? `<button type="button" class="fh-bowl-plate ${view["openBowl"] ? "on" : ""}" id="fhBowl" aria-pressed="${view["openBowl"] ? "true" : "false"}">
-                   <span class="fh-bowl-state">${view["openBowl"] ? "OPEN" : "CLOSED"}</span>
-                   <span class="fh-bowl-main">Open ${market.bowlSeats.toLocaleString()} more seats tonight</span>
-                   <span class="fh-bowl-cost numeric">${money(market.bowlCost)}</span>
-                   <span class="fh-bowl-note">paid whether they fill or not</span>
-                 </button>`
-              : ""
-          }
-          <!-- gate-l1-qa D2: 38px measured at 1366x768, under the comfortable
-               touch target for two students sharing one Chromebook. -->
-          <button class="btn btn-primary full" id="fhLock" style="margin-top:12px; min-height:44px;">LOCK IT IN</button>
-          <div class="fh-blind-note">No preview. Nothing on this screen tells you what tonight will make.</div>
-        </div>`
-      }
-      ${lastNight ? fhNightResultHtml(lastNight, `${lastNight.label} — how it went`) : ""}
-      ${fhSlateHtml((view["slate"] as FHSlateNight[]) ?? [])}
-      <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your nights so far</div>
-      ${fhHistoryHtml(history, market)}
-    </div>`;
-
-  if (locked) return;
-
-  const dial = $<HTMLInputElement>("fhPriceDial");
-  const readout = $("fhPriceReadout");
-  dial.addEventListener("input", () => {
-    fhLocalPrice = Number(dial.value);
-    readout.textContent = `$${dial.value}`;
-  });
-  // Commit on release, not on every drag tick: nothing comes back from the
-  // server that the pair could read anyway, and a Chromebook on a school LAN
-  // should not fire fifty actions per drag.
-  const commitPrice = () => outbox?.submit({ type: "setPrice", price: Number(dial.value) });
-  dial.addEventListener("change", commitPrice);
-
-  let localSpend = spend;
-  const spendReadout = $("fhSpendReadout");
-  const stepSpend = (dir: number) => {
-    const step = Number(view["spendStep"] ?? 5000);
-    localSpend = Math.max(0, Math.min(spendCap, localSpend + dir * step));
-    spendReadout.textContent = money(localSpend);
-    outbox?.submit({ type: "setSpend", spend: localSpend });
-  };
-  $("fhSpendUp").addEventListener("click", () => stepSpend(1));
-  $("fhSpendDown").addEventListener("click", () => stepSpend(-1));
-  if (card.bowlOffer) {
-    const plate = $<HTMLButtonElement>("fhBowl");
-    plate.addEventListener("click", () => {
-      const next = plate.getAttribute("aria-pressed") !== "true";
-      plate.setAttribute("aria-pressed", next ? "true" : "false");
-      plate.classList.toggle("on", next);
-      const state = plate.querySelector(".fh-bowl-state");
-      if (state) state.textContent = next ? "OPEN" : "CLOSED";
-      outbox?.submit({ type: "setBowl", open: next });
-    });
-  }
-  $("fhLock").addEventListener("click", () => {
-    if (confirm(`Lock ${escapeHtml(card.label)} at $${dial.value}? You cannot change it after this.`)) {
-      outbox?.submit({ type: "setPrice", price: Number(dial.value) });
-      outbox?.submit({ type: "lock" });
-    }
-  });
-}
-
-function renderFHReveal(view: Record<string, unknown>): void {
-  const history = (view["history"] as FHNight[]) ?? [];
-  const peaks = (view["twoPeaks"] as FHTwoPeaks[]) ?? [];
-  $("gameBody").innerHTML = `
-    ${fhDeskHeader(view)}
-    ${fhBooksHtml(view["books"] as FHBooks)}
-    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-    ${
-      peaks.length > 0
-        ? `<div class="fh-peaks">
-             <div class="eyebrow" style="font-size:12px;">The two peaks — Night 3, your market</div>
-             <div class="fh-peaks-row"><span>Tickets alone made the most at</span><span class="numeric">$${peaks[0]!.ticketPeakPrice}</span></div>
-             <div class="fh-peaks-row"><span>Tickets + what they spent inside peaked at</span><span class="numeric hot">$${peaks[0]!.totalPeakPrice}</span></div>
-             <div class="fh-peaks-note">$${peaks[0]!.gapDollars} lower — ${peaks[0]!.gapSteps} clicks of the dial. The cheaper ticket made more money.</div>
-           </div>`
-        : ""
-    }
-    <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your five nights</div>
-    ${history.map((n) => fhNightResultHtml(n, n.label)).join("")}`;
-}
-
-function renderFHAdapt(view: Record<string, unknown>): void {
-  const questions = (view["questions"] as string[]) ?? [];
-  $("gameBody").innerHTML = `
-    ${fhDeskHeader(view)}
-    ${fhBooksHtml(view["books"] as FHBooks)}
-    <div class="panel" style="padding:16px; margin-top:12px;">
-      <div class="eyebrow" style="font-size:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-      <ol class="fh-questions">${questions.map((q) => `<li>${escapeHtml(q)}</li>`).join("")}</ol>
-    </div>
-    ${fhHistoryHtml((view["history"] as FHNight[]) ?? [], view["market"] as FHMarket)}`;
-}
-
-function renderFHCounterfactual(view: Record<string, unknown>): void {
-  const repeat = view["repeat"] as {
-    n1Price: number;
-    n1Turnout: number;
-    n5Price: number;
-    n5Turnout: number;
-    renewalsAtN1: number;
-    renewalsAtN5: number;
-    samePrice: boolean;
-    // `econ-l1-n5-attribution` residual on the PRIVATE surface (wave-2 analyst
-    // catch; `gate-l1-play` recheck3 "Also observed"). The board decomposed this
-    // desk's crowd change into its channels while the desk's own card showed
-    // only two crowds and two renewals figures beside "the only thing that
-    // changed was you" — so a pair reading their own device attributed all of
-    // Desk 4's +1,760 to renewals when it was renewals +800 and event money
-    // +960. Same computed split, same function (`repeatRowFor`), both surfaces.
-    renewalsFans: number;
-    carryFans: number;
-    n4Spend: number;
-    priceFans: number;
-    seatedDelta: number;
-    wantedDelta: number;
-    clamped: boolean;
-    floored: boolean;
-    biggestChannel: "renewals" | "spend" | "price" | "none";
-    channelLine: string;
-  } | null;
-  const replays = (view["replays"] as FHReplay[]) ?? [];
-  $("gameBody").innerHTML = `
-    ${fhDeskHeader(view)}
-    ${
-      repeat
-        ? `<div class="fh-repeat">
-             <div class="eyebrow" style="font-size:12px;">Night 1 and Night 5 were the same card</div>
-             <div class="fh-repeat-grid">
-               <div><span class="fh-repeat-label">Night 1</span><span class="numeric">$${repeat.n1Price}</span><span class="numeric big">${repeat.n1Turnout.toLocaleString()}</span><span class="fh-repeat-sub">renewals ${repeat.renewalsAtN1}%</span></div>
-               <div><span class="fh-repeat-label">Night 5</span><span class="numeric">$${repeat.n5Price}</span><span class="numeric big">${repeat.n5Turnout.toLocaleString()}</span><span class="fh-repeat-sub">renewals ${repeat.renewalsAtN5}%</span></div>
-             </div>
-             <div class="fh-repeat-split" id="fhRepeatSplit">
-               <span class="fh-repeat-split-label">Where that change came from</span>
-               <span class="fh-repeat-split-line">${escapeHtml(repeat.channelLine)}</span>
-             </div>
-             <div class="fh-peaks-note">${
-               repeat.samePrice
-                 ? repeat.biggestChannel === "renewals"
-                   ? "Same price both nights. The biggest thing that changed was your own renewals."
-                   : repeat.biggestChannel === "spend"
-                     ? "Same price both nights — and the biggest thing that changed was NOT your renewals. It was the event money you spent the night before."
-                     : "Same price both nights. Read the split above before you decide what changed it."
-                 : "You changed the price — so part of the gap is the price. The split above says how much."
-             }</div>
-           </div>`
-        : ""
-    }
-    <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">What if?</div>
-    ${replays
-      .map(
-        (r) => `
-      <div class="fh-replay">
-        <div class="fh-replay-head"><span>${escapeHtml(r.label)}</span><span class="numeric">${money(r.cash)} · ${r.renewals}%</span></div>
-        <div class="fh-replay-note">${escapeHtml(r.note)}</div>
-      </div>`,
-      )
-      .join("")}
-    <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["honestLimit"] ?? ""))}</div>
-    <div class="panel" style="padding:16px; margin-top:12px;">
-      <div class="eyebrow" style="font-size:12px;">Be ready to argue</div>
-      <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["prompt"] ?? ""))}</p>
-    </div>`;
 }
 
 
@@ -4020,4 +5220,11 @@ if (creds) {
   joinCard.hidden = true;
   gameCard.hidden = false;
   startGame();
+} else {
+  // F1: a pair that was signed out and then refreshed still gets told why.
+  try {
+    if (window.sessionStorage.getItem(SIGNED_OUT_FLAG) === "1") showError(SIGNED_OUT_LINE);
+  } catch {
+    /* storage disabled */
+  }
 }

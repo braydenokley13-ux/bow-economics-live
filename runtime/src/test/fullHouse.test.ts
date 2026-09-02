@@ -13,14 +13,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   CARDS,
+  FULL_HOUSE_UI_COPY,
   MARKETS,
   NIGHT_COUNT,
+  OBJECTIVE_COPY,
   PRICE_GRID,
   PRICE_MAX,
   PRICE_MIN,
   PRICE_STEP,
   RENEWALS_START,
   REVEAL_STEPS,
+  SIMPLIFICATIONS,
   TWO_PEAKS_CARD_ID,
   CF_ROWS_PER_PAGE,
   bestFoundSeason,
@@ -31,7 +34,16 @@ import {
   curveFor,
   fullHouseModule,
   renewalDelta,
+  renewalDeltaRaw,
+  renewalFloorBinds,
   renewalReferencePrice,
+  renewalRuleFor,
+  renewalRuleLinesFor,
+  renewalShortRuleFor,
+  dialCarriedLineFor,
+  spendFactLineFor,
+  turnoutCauseFor,
+  twoPeaksNoteFor,
   replayPlan,
   settleNight,
   ticketPeakPrice,
@@ -893,4 +905,405 @@ test("teacher misclick: leaving PLAY settles the open night on the dials as they
   belled = ok(act(belled, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
   belled = ok(act(belled, { type: "teacher:closeNight" }, "PLAY", "teacher"));
   assert.equal(belled.desks["seat-1"]!.nights[0]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
+});
+
+/* ------------------------------------- m2-visual-quality-war wave 2, Lane C -- */
+
+/**
+ * R-9 (ECON_ADAPTATION_RULINGS §7 K1, contract §G, BLOCKING). `onPhaseExit`
+ * force-sets `twoPeaksReleased` when PLAY closes, so before this gate every
+ * desk's private payload carried its own market's peak prices, gap and revenue
+ * figures from REVEAL stage 0 — the answer to the lesson's centrepiece reveal,
+ * six teacher presses before the room is shown it. The student gate must match
+ * the board's exactly. A client-side gate would not be tested by anything.
+ */
+test("R-9: a desk never carries Two Peaks before the board has released it", () => {
+  let state = seated(4);
+  const prices = { "seat-1": 34, "seat-2": 24, "seat-3": 90, "seat-4": 60 };
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, prices, { "seat-1": 40_000 });
+  // The state the manual fallback actually produces: released by the phase exit,
+  // reveal stage still 0. That is precisely the leak this gate closes.
+  state = fullHouseModule.onPhaseExit!(state, "PLAY", "REVEAL");
+  assert.equal(state.twoPeaksReleased, true, "leaving PLAY must still force the release flag");
+  assert.equal(state.revealStage, 0, "the phase exit must not advance the staged reveal");
+
+  for (let stage = 0; stage < NIGHT_COUNT + 1; stage += 1) {
+    const at = { ...state, revealStage: stage, twoPeaksReleased: true };
+    for (const seatId of Object.keys(at.desks)) {
+      const view = fullHouseModule.studentView(at, seatId, "REVEAL") as {
+        twoPeaks: unknown[];
+        twoPeaksReleased: boolean;
+      };
+      assert.deepEqual(view.twoPeaks, [], `desk ${seatId} carried Two Peaks at reveal stage ${stage}`);
+      assert.equal(view.twoPeaksReleased, false, `desk ${seatId} was told Two Peaks was up at stage ${stage}`);
+      // and the peak figures themselves are nowhere in the payload
+      const board = fullHouseModule.boardView(at, "REVEAL") as { twoPeaks: unknown[] };
+      assert.deepEqual(board.twoPeaks, [], `the board itself leaked Two Peaks at stage ${stage}`);
+    }
+  }
+
+  for (let stage = NIGHT_COUNT + 1; stage <= REVEAL_STEPS; stage += 1) {
+    const at = { ...state, revealStage: stage, twoPeaksReleased: true };
+    for (const seatId of Object.keys(at.desks)) {
+      const view = fullHouseModule.studentView(at, seatId, "REVEAL") as {
+        twoPeaks: { marketId: string }[];
+        twoPeaksReleased: boolean;
+      };
+      assert.equal(view.twoPeaksReleased, true, `desk ${seatId} was denied Two Peaks at stage ${stage}`);
+      assert.equal(view.twoPeaks.length > 0, true, `desk ${seatId} got an empty Two Peaks at stage ${stage}`);
+      // still only its own market — the private surface stays private
+      const marketId = at.desks[seatId]!.marketId;
+      assert.equal(view.twoPeaks.every((t) => t.marketId === marketId), true);
+    }
+  }
+
+  // The release flag is still necessary as well as the stage: a teacher who has
+  // advanced the reveal without the flag set sees nothing.
+  const unreleased = { ...state, revealStage: REVEAL_STEPS, twoPeaksReleased: false };
+  const view = fullHouseModule.studentView(unreleased, "seat-1", "REVEAL") as { twoPeaks: unknown[] };
+  assert.deepEqual(view.twoPeaks, []);
+});
+
+/**
+ * R-1 / contract §G: every claim-bearing label the /play surface renders is a
+ * module string. If a key disappears the renderer silently falls back to a
+ * client literal, which is exactly the drift this wave exists to stop.
+ */
+test("uiCopy reaches the desk in every student phase, with every registered key", () => {
+  const REQUIRED = [
+    "nextNightLabel",
+    "doorsLine",
+    "fillQualifier",
+    "whoCameLabel",
+    "historyTitle",
+    "historyCaption",
+    "twoBooksLine",
+    "chainLabels",
+    // W2 repair-2: the labels the rebuilt /play surface prints. Every one of
+    // them is a word the pair reads, so every one of them is registered here
+    // rather than typed into the renderer (contract G, R-1).
+    "extraSeatsLabel",
+    "cameLabel",
+    "openSeatsLabel",
+    "moreSeatsOpenLabel",
+    "moreSeatsClosedLabel",
+    "seasonQualifier",
+    "tonightQualifier",
+    "noNightsYetLine",
+    "moreLabel",
+    // W2 repair-4 R4-5: the sentences the renderer used to author.
+    "twoPeaksTitle",
+    "twoPeaksTicketLabel",
+    "twoPeaksTotalLabel",
+    "noTomorrowLine",
+    "stockNightLine",
+    "autoNightLine",
+    "inArenaNote",
+    "bowlPaidNote",
+    "renewalsCaption",
+  ];
+  const CHAIN = ["tickets", "inArena", "bill", "event", "bowl", "cash", "renewals"];
+
+  let state = seated(2);
+  const check = (label: string, view: unknown) => {
+    const ui = (view as { uiCopy?: Record<string, unknown> }).uiCopy;
+    assert.ok(ui, `${label} carried no uiCopy`);
+    assert.deepEqual(Object.keys(ui!).sort(), [...REQUIRED].sort(), `${label} uiCopy keys drifted`);
+    for (const key of REQUIRED) {
+      if (key === "nextNightLabel") continue; // legitimately null on the last night
+      if (key === "chainLabels") {
+        assert.deepEqual(Object.keys(ui![key] as object).sort(), [...CHAIN].sort(), `${label} chainLabels drifted`);
+        for (const c of CHAIN) assert.equal(typeof (ui![key] as Record<string, string>)[c], "string");
+        continue;
+      }
+      assert.equal(typeof ui![key], "string", `${label} uiCopy.${key} is not a string`);
+      assert.ok((ui![key] as string).length > 0, `${label} uiCopy.${key} is empty`);
+    }
+  };
+
+  // an unseated join, then every phase with a real desk, at every night
+  check("unseated", fullHouseModule.studentView(empty(), "seat-9", "LOBBY"));
+  for (const phase of ALL_PHASES) check(`night 0 ${phase}`, fullHouseModule.studentView(state, "seat-1", phase));
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    state = playNight(state, { "seat-1": 34, "seat-2": 24 });
+    for (const phase of ALL_PHASES) check(`after night ${i + 1} ${phase}`, fullHouseModule.studentView(state, "seat-1", phase));
+  }
+
+  // The two-books sentence is OBJECTIVE_COPY's own clause, not a retyped copy.
+  const ui = (fullHouseModule.studentView(state, "seat-1", "COMPLETE") as { uiCopy: { twoBooksLine: string; fillQualifier: string } }).uiCopy;
+  assert.equal(OBJECTIVE_COPY.startsWith(ui.twoBooksLine), true, "twoBooksLine has drifted from OBJECTIVE_COPY");
+  assert.match(ui.twoBooksLine, /do not add up to one number/);
+  // R-2: the fill qualifier names the denominator that actually moves.
+  assert.equal(ui.fillQualifier, "of the seats you opened tonight");
+  assert.equal(/capacity/i.test(ui.fillQualifier), false);
+  // R-3: no chain label calls either book a profit or a revenue total.
+  for (const value of Object.values(FULL_HOUSE_UI_COPY.chainLabels)) {
+    assert.equal(/profit|revenue|total/i.test(value), false, `chain label "${value}" grades or totals the books`);
+  }
+  // D4 / no student-facing timer: the bell line is teacher-paced.
+  assert.match(FULL_HOUSE_UI_COPY.doorsLine, /your teacher rings the bell/);
+});
+
+test("nextNightLabel is the next night's printed facts, and null when there is no next night", () => {
+  let state = seated(1);
+  const labelAt = (s: FullHouseState) =>
+    (fullHouseModule.studentView(s, "seat-1", "PLAY") as { uiCopy: { nextNightLabel: string | null } }).uiCopy
+      .nextNightLabel;
+
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const card = CARDS[i]!;
+    const tv = card.tv === "national" ? "national TV" : card.tv === "local" ? "local TV" : "not on TV";
+    assert.equal(labelAt(state), `NEXT: NIGHT ${i + 1} → ${card.day} · Draw ${card.draw} · ${tv}`);
+    state = playNight(state, { "seat-1": 34 });
+  }
+  assert.equal(labelAt(state), null, "the books-closed desk was offered a sixth night");
+
+  // Printed facts only: the label never carries a settlement quantity or a
+  // demand constant, at any night (BC-4).
+  let s2 = seated(1);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const label = labelAt(s2) ?? "";
+    const market = MARKETS.find((m) => m.id === "new-york")!;
+    const curve = curveFor(market, CARDS[i]!, RENEWALS_START, 0);
+    const outcome = settleNight(market, curve, 34, 0, false, false);
+    for (const [name, q] of Object.entries({
+      turnout: outcome.turnout,
+      gate: outcome.gate,
+      total: outcome.total,
+      base: curve.base,
+    })) {
+      if (q === 0) continue;
+      assert.equal(label.includes(String(q)), false, `nextNightLabel leaked ${name} on night ${i + 1}`);
+      assert.equal(label.includes(q.toLocaleString()), false, `nextNightLabel leaked ${name} on night ${i + 1}`);
+    }
+    s2 = playNight(s2, { "seat-1": 34 });
+  }
+});
+
+/**
+ * The settled headline is composed in the module so the renderer prints a
+ * sentence instead of assembling one out of loose figures (R-1). Both forms
+ * must equal the facts the settlement actually produced.
+ */
+test("resultHeadline equals the settled facts, for a normal night and for a sellout", () => {
+  const market = MARKETS.find((m) => m.id === "new-york")!;
+
+  // normal night: night 1, $34, nothing sold out
+  let state = seated(1);
+  state = playNight(state, { "seat-1": 34 });
+  const curve = curveFor(market, CARDS[0]!, RENEWALS_START, 0);
+  const outcome = settleNight(market, curve, 34, 0, false, false);
+  const view = fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+    lastNight: { resultHeadline: string; soldOut: boolean; turnout: number };
+    history: { resultHeadline: string }[];
+  };
+  assert.equal(outcome.soldOut, false, "this test needs a night that does not sell out");
+  assert.equal(view.lastNight.resultHeadline, `NIGHT 1 · ${outcome.turnout.toLocaleString()} CAME AT $34`);
+  assert.equal(view.history[0]!.resultHeadline, view.lastNight.resultHeadline, "history and lastNight disagree");
+  // no grading word, no money, no fill percentage in the headline
+  assert.equal(/profit|great|strong|nice|best|worst|\$\d{4,}/i.test(view.lastNight.resultHeadline), false);
+
+  // sellout: the cheapest legal price on night one fills New York's building
+  const sold = playNight(seated(1), { "seat-1": PRICE_MIN });
+  const soldView = fullHouseModule.studentView(sold, "seat-1", "PLAY") as {
+    lastNight: { resultHeadline: string; soldOut: boolean; turnout: number; seatsOpen: number; turnedAway: number };
+  };
+  const n = soldView.lastNight;
+  assert.equal(n.soldOut, true, "this test needs a night that sells out");
+  assert.equal(
+    n.resultHeadline,
+    `FULL HOUSE · ${n.turnout.toLocaleString()} of ${n.seatsOpen.toLocaleString()} · ${n.turnedAway.toLocaleString()} turned away`,
+  );
+  assert.equal(/CAME AT/.test(n.resultHeadline), false, "a sellout still rendered the ordinary headline");
+});
+
+/**
+ * R-7 (the arena picture) and R-10 (the never-printed forgiveness line). The
+ * teacher surface carries the ledger; an entry without its misconception risk
+ * is not a record, it is a footnote.
+ */
+test("R-7 / R-10: the ledger records the three simplifications the rebuild adds", () => {
+  const find = (needle: RegExp) => SIMPLIFICATIONS.find((s) => needle.test(s.what));
+  const arena = find(/evenly-lit proportion/);
+  const bowl = find(/upper bowl is a Night-4-only third state|third state of the same picture/i);
+  const renewals = find(/forgiveness line/i);
+
+  for (const [label, entry] of Object.entries({ arena, bowl, renewals })) {
+    assert.ok(entry, `SIMPLIFICATIONS has no ${label} entry`);
+    assert.ok(entry!.why.length > 0, `${label} records no reason`);
+    assert.ok(entry!.risk.length > 0, `${label} records no misconception risk`);
+  }
+  // each risk names the specific wrong conclusion, not a generic caution
+  assert.match(arena!.risk, /cheap seats filled first/i);
+  assert.match(bowl!.risk, /denominator/i);
+  assert.match(renewals!.risk, /Night 4/);
+  assert.match(renewals!.what, /renewalReferencePrice/);
+  // and the ledger reaches the teacher, where it is read out loud
+  const state = seated(2);
+  const teach = fullHouseModule.teacherView(state, "PLAY") as {
+    simplifications: { what: string; why: string; risk: string }[];
+  };
+  assert.equal(teach.simplifications.length, SIMPLIFICATIONS.length);
+  assert.equal(teach.simplifications.every((s) => s.risk.length > 0), true);
+});
+
+/* ------------------------------------------------------------------ W2 repair 4 */
+
+test("R4-4a: the settled night's cause is the FULL renewals rule, carrying the apex clause the short form lacks", () => {
+  for (const market of MARKETS) {
+    const lines = renewalRuleLinesFor(market);
+    assert.equal(lines.join(" "), renewalRuleFor(market), "the lines are the registered rule, character for character");
+    assert.equal(lines.length, 4, "a lead sentence and the three arms of the tent");
+    assert.match(lines[1]!, /UNDER/);
+    assert.match(lines[2]!, /ABOVE/);
+    assert.match(lines[3]!, /^In between, the plan looks like a bargain and more come back\.$/);
+    // the compression the results frame used to print as the cause has no apex
+    assert.doesNotMatch(renewalShortRuleFor(market), /In between|more come back/);
+  }
+  // and the student payload carries both forms, on every night, so the frame
+  // that shows a settled movement can print the whole tent
+  let state = seated(2);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const view = fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+      renewalRule: string;
+      renewalRuleLines: string[];
+      market: { planPrice: number };
+    };
+    const market = MARKETS.find((m) => m.planPrice === view.market.planPrice)!;
+    assert.equal(view.renewalRule, renewalRuleFor(market), `night ${i + 1} renewalRule`);
+    assert.deepEqual(view.renewalRuleLines, renewalRuleLinesFor(market), `night ${i + 1} renewalRuleLines`);
+    state = playNight(state, { "seat-1": 34, "seat-2": 24 });
+  }
+});
+
+test("R4-4b: the floor line fires only when the 20-point clamp bound — never on the book's 0 floor, never at exactly the clamp", () => {
+  assert.equal(renewalFloorBinds(-29, -20), true);
+  assert.equal(renewalFloorBinds(-20, -20), false, "the rule asked for exactly the clamp, not more");
+  assert.equal(renewalFloorBinds(-29, -10), false, "the book's own floor took the rest");
+  assert.equal(renewalFloorBinds(-29, 0), false);
+  assert.equal(renewalFloorBinds(-5, -5), false);
+  const ny = MARKETS.find((m) => m.id === "new-york")!;
+  assert.ok(renewalDeltaRaw(ny, CARDS[0]!, PRICE_MIN, 0) < -20, "the $10 New York night asks for more than the clamp");
+  assert.equal(renewalDelta(ny, CARDS[0]!, PRICE_MIN, 0), -20);
+  // three $10 nights in New York: 50 -> 30 (clamped), 30 -> 10 (clamped), 10 -> 0 (the book's floor)
+  let state = seated(2);
+  for (let i = 0; i < 3; i += 1) state = playNight(state, { "seat-1": PRICE_MIN, "seat-2": 24 });
+  const history = (
+    fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+      history: { renewalsBefore: number; renewalsAfter: number; renewalMove: number; renewalAtFloor: boolean }[];
+    }
+  ).history;
+  assert.deepEqual(
+    history.map((h) => [h.renewalsBefore, h.renewalsAfter, h.renewalMove, h.renewalAtFloor]),
+    [
+      [50, 30, -20, true],
+      [30, 10, -20, true],
+      [10, 0, -10, false],
+    ],
+  );
+});
+
+test("R5-5: the carried-dial cue never names a night the pair did not price, and the dial resets to the plan price", () => {
+  const market = MARKETS[0]!;
+  const carried = (state: FullHouseState, seat: SeatId = "seat-1") =>
+    (fullHouseModule.studentView(state, seat, "PLAY") as { dialCarriedLine: string | null; price: number });
+
+  // a desk that chose a price, then let the next night settle at that dial
+  let state = seated(2);
+  state = playNight(state, { "seat-1": market.planPrice, "seat-2": market.planPrice });
+  // the dial reopens at the plan price — the reducer resets it, it does not keep
+  // the last price charged
+  assert.equal(carried(state).price, market.planPrice);
+  // seat-1 actually charged the plan price on Night 1, so the cue may name it
+  assert.equal(carried(state).dialCarriedLine, dialCarriedLineFor(market.planPrice, CARDS[0]!.label));
+
+  // a desk the BELL auto-committed: nobody at that desk chose the plan price
+  let auto = seated(2);
+  auto = ok(act(auto, { type: "setPrice", price: market.planPrice }, "PLAY", "seat-2"));
+  auto = ok(act(auto, { type: "lock" }, "PLAY", "seat-2"));
+  auto = ok(act(auto, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+  const autoNights = (fullHouseModule.studentView(auto, "seat-1", "PLAY") as { history: { auto: boolean; price: number }[] }).history;
+  assert.equal(autoNights[0]!.auto, true);
+  assert.equal(autoNights[0]!.price, market.planPrice);
+  assert.equal(carried(auto).price, market.planPrice);
+  assert.equal(carried(auto).dialCarriedLine, null);
+
+  // a seat that joins late: the desk manager covered the missed nights at the
+  // plan price, so those nights are not the pair's either
+  const withLate = ok(act(auto, { type: "takeSeat" }, "PLAY", "seat-late"));
+  const lateView = fullHouseModule.studentView(withLate, "seat-late", "PLAY") as { history: { stock: boolean }[]; dialCarriedLine: string | null };
+  assert.ok(lateView.history.length > 0, "a seat that joins after Night 1 is handed covered nights");
+  assert.equal(lateView.history[0]!.stock, true);
+  assert.equal(lateView.dialCarriedLine, null);
+});
+
+test("R5-2: every settled night carries a turnout cause that is true of that night and varies with it", () => {
+  // the four limbs of the registered sentence, against the settlement they describe
+  assert.equal(
+    turnoutCauseFor(10, "Night 4", 22_200, 22_200, 4_750),
+    "Night 4 \u00b7 at $10, more people wanted in than the 22,200 seats you opened. The limit was the seats, not the price.",
+  );
+  assert.equal(
+    turnoutCauseFor(10, "Night 2", 19_800, 19_800, 0),
+    "Night 2 \u00b7 at $10, exactly the 19,800 seats you opened filled. The price and the seats met at the same number.",
+  );
+  assert.equal(
+    turnoutCauseFor(120, "Night 1", 0, 19_800, 0),
+    "Night 1 \u00b7 at $120, nobody wanted in, so all 19,800 seats you opened stayed empty. The limit was the price, not the seats.",
+  );
+  assert.equal(
+    turnoutCauseFor(46, "Night 3", 4_690, 19_800, 0),
+    "Night 3 \u00b7 at $46, 4,690 people wanted in and you opened 19,800 seats. The limit was the price, not the seats.",
+  );
+
+  // driven through the module: a desk that sells out and a desk that draws nobody
+  // are told different things about their own crowd, on every night.
+  let state = seated(2);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, { "seat-1": PRICE_MIN, "seat-2": PRICE_MAX });
+  const sellouts = (fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+    history: { turnoutCause: string; turnout: number; seatsOpen: number; turnedAway: number; price: number; label: string }[];
+  }).history;
+  const empties = (fullHouseModule.studentView(state, "seat-2", "PLAY") as {
+    history: { turnoutCause: string; turnout: number; seatsOpen: number; turnedAway: number; price: number; label: string }[];
+  }).history;
+  assert.equal(sellouts.length, NIGHT_COUNT);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const a = sellouts[i]!;
+    const b = empties[i]!;
+    // computed from the model, not hand-written per night
+    assert.equal(a.turnoutCause, turnoutCauseFor(a.price, a.label, a.turnout, a.seatsOpen, a.turnedAway));
+    assert.equal(b.turnoutCause, turnoutCauseFor(b.price, b.label, b.turnout, b.seatsOpen, b.turnedAway));
+    // R5-2: two materially different nights never render the same sentence
+    assert.notEqual(a.turnoutCause, b.turnoutCause);
+    // every night names its own card, so two identical settlements still differ
+    assert.match(a.turnoutCause, new RegExp(`^${a.label} `));
+  }
+  // no night in either season previews another night, grades the choice, or
+  // reaches across into the renewals book
+  for (const n of [...sellouts, ...empties]) {
+    assert.doesNotMatch(n.turnoutCause, /renewal|season|profit|should|better|worse|best|good|bad|next night|tomorrow|try/i);
+  }
+});
+
+test("R4-4c / R4-5: the ledger says a quarter, and the renderer's former sentences are module strings", () => {
+  const bowl = SIMPLIFICATIONS.find((s) => /third state of the same picture/i.test(s.what))!;
+  assert.match(bowl.what, /about a quarter/);
+  assert.doesNotMatch(bowl.what + bowl.risk, /about a fifth/);
+  assert.match(bowl.what, /shuttered on every night it is not open/);
+  assert.equal(twoPeaksNoteFor(12, 6), "$12 lower — 6 clicks of the dial. The cheaper ticket made more money.");
+  assert.equal(spendFactLineFor(0, false), null);
+  assert.equal(spendFactLineFor(5000, false), "You also put $5,000 into the night.");
+  assert.equal(spendFactLineFor(0, true), "You also put $0 into the night with the more seats open.");
+  assert.equal(FULL_HOUSE_UI_COPY.noTomorrowLine.startsWith("Nothing. Tonight is the last night of the five"), true);
+
+  // the settled night carries its spend line; the reveal's Two Peaks entries carry the gap sentence
+  let state = seated(2);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, { "seat-1": 34, "seat-2": 24 }, i === 0 ? { "seat-1": 40_000 } : {});
+  const history = (fullHouseModule.studentView(state, "seat-1", "PLAY") as { history: { spendLine: string | null }[] }).history;
+  assert.equal(history[0]!.spendLine, "You also put $40,000 into the night.");
+  assert.equal(history[1]!.spendLine, null);
+  const at = { ...fullHouseModule.onPhaseExit!(state, "PLAY", "REVEAL"), revealStage: REVEAL_STEPS, twoPeaksReleased: true };
+  const peaks = (fullHouseModule.studentView(at, "seat-1", "REVEAL") as { twoPeaks: { gapDollars: number; gapSteps: number; note: string }[] }).twoPeaks;
+  assert.ok(peaks.length > 0);
+  for (const p of peaks) assert.equal(p.note, twoPeaksNoteFor(p.gapDollars, p.gapSteps));
 });
