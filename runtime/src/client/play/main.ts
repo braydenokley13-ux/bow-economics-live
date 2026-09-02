@@ -2830,6 +2830,7 @@ function renderFHLobby(view: Record<string, unknown>): void {
         <p style="margin:0 0 10px; font-size:17px; line-height:24px; color:${FH_INK};">${escapeHtml(String(view["message"] ?? ""))}</p>
         <p style="margin:0; font-size:13.5px; line-height:19px; color:${FH_INK_BODY};">${escapeHtml(market?.plainLine ?? "")}</p>
       </div>
+      ${fhBuildingCard(view)}
       <p style="margin:0; font-size:13px; color:${FH_INK_CAPTION};">Waiting for your teacher to start.</p>
     </div>`;
   $("gameBody").innerHTML = fhShell(view, main, { books: false, nightIndex: 0, settled: 0 });
@@ -2915,13 +2916,52 @@ function fhMirrorNights(history: FHNight[], ui: FHUiCopy, title: string): string
     </div>`;
 }
 
+/**
+ * C1 / contract D3 / gameplay #3 (BLOCKING): the device was md5-identical across
+ * five consecutive teacher presses. It now shows the pair's OWN night for the
+ * stage the board is on — their headline, their crowd, and the two books either
+ * side of that night — so a pair can find themselves in the frame the room is
+ * looking at. Nothing here is class data: every figure comes from this desk's
+ * own settled history, already in the payload. Two Peaks stays gated on
+ * `revealStage >= NIGHT_COUNT + 1` in the module (R-9), not here.
+ */
+function fhOwnNightMirror(n: FHNight, ui: FHUiCopy): string {
+  const fig = (v: string, dim: boolean, size: number) =>
+    `<span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${size}px; line-height:${size + 3}px; font-weight:600; letter-spacing:-0.025em; color:${dim ? FH_INK_LABEL : FH_INK};">${v}</span>`;
+  return `<div class="m2-card fh-mirror-own" style="${FH_CARD} padding:14px 16px;">
+      <span style="${FH_LABEL} margin-bottom:6px;">Your night</span>
+      <p style="margin:0 0 8px; font-size:17px; line-height:23px; font-weight:600; color:${FH_INK};">${escapeHtml(n.resultHeadline ?? n.label)}</p>
+      <div style="display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;">
+        <span><span style="${FH_LABEL} font-size:10px;">${escapeHtml(ui.whoCameLabel)}</span>${fig(n.turnout.toLocaleString(), false, 34)}</span>
+        <span><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.cash} ${escapeHtml(ui.tonightQualifier)}</span>${fig(money(n.net), false, 22)}</span>
+        <span><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.renewals}</span>${fig(`${n.renewalsBefore}% → ${n.renewalsAfter}%`, false, 22)}</span>
+      </div>
+      <p style="margin:8px 0 0; font-size:12px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(n.factLine ?? "")} · ${n.fillPct}% ${escapeHtml(ui.fillQualifier)}</p>
+    </div>`;
+}
+
 function renderFHReveal(view: Record<string, unknown>): void {
   const ui = fhUi(view);
   const history = (view["history"] as FHNight[]) ?? [];
   const peaks = (view["twoPeaks"] as FHTwoPeaks[]) ?? [];
+  const stage = Number(view["revealStage"] ?? 0);
+  const own = stage >= 1 && stage <= history.length ? history[stage - 1]! : null;
   const main = `
     <div style="display:flex; flex-direction:column; gap:12px;">
       ${fhHeader(view, { subtitle: String(view["message"] ?? ""), h1: "Your five nights" })}
+      ${own ? fhOwnNightMirror(own, ui) : ""}
+      ${
+        stage >= Number(view["totalRevealSteps"] ?? 7)
+          ? `<div class="m2-card fh-season-books" style="${FH_CARD} padding:14px 16px;">
+               <span style="${FH_LABEL} margin-bottom:7px;">Your season, ${escapeHtml(ui.seasonQualifier)}</span>
+               <div style="display:flex; align-items:baseline; gap:22px; flex-wrap:wrap;">
+                 <span style="display:flex; align-items:baseline; gap:8px;"><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.cash}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${(view["books"] as FHBooks | undefined)?.inDebt ? FH_RED : FH_MONEY};">${money((view["books"] as FHBooks | undefined)?.cash ?? 0)}</b></span>
+                 <span style="display:flex; align-items:baseline; gap:8px;"><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.renewals}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">${(view["books"] as FHBooks | undefined)?.renewals ?? 0}%</b></span>
+               </div>
+               <p style="margin:7px 0 0; font-size:12px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(ui.twoBooksLine)}</p>
+             </div>`
+          : ""
+      }
       ${
         peaks.length > 0
           ? `<div class="fh-peaks m2-card" style="${FH_CARD} padding:13px;">
@@ -3028,24 +3068,58 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
   $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: 5 });
 }
 
+/**
+ * C2 / contract D2: the device mirrors the card the teacher is on — the card's
+ * registered title and the SAME computed body the projector is showing, page
+ * for page, with the pair's own five nights beside it (D1/C5). The bodies are
+ * `synthesisCards`' own output, computed from the class's locked numbers; the
+ * card set, order and staging are not this wave's to change (E27).
+ */
 function renderFHSynthesis(view: Record<string, unknown>): void {
+  const ui = fhUi(view);
+  const history = (view["history"] as FHNight[]) ?? [];
+  const title = String(view["synthCardTitle"] ?? "");
+  const body = String(view["synthCardBody"] ?? "");
+  const page = Number(view["synthPage"] ?? 0);
+  const pages = Number(view["synthPageCount"] ?? 0);
   const main = `
     <div style="display:flex; flex-direction:column; gap:12px;">
       ${fhHeader(view, { h1: "Look up at the board", subtitle: String(view["message"] ?? "") })}
+      ${
+        title
+          ? `<div class="m2-card fh-synth-mirror" style="${FH_CARD} padding:15px 18px; border-left:2px solid ${FH_VIOLET};">
+               <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:7px;">
+                 <span style="${FH_LABEL}">${escapeHtml(title)}</span>
+                 ${pages > 1 ? `<span style="margin-left:auto; font-size:11px; color:${FH_INK_CAPTION};">${page} / ${pages}</span>` : ""}
+               </div>
+               <p style="margin:0; font-size:14px; line-height:20px; color:${FH_INK_BODY};">${escapeHtml(body)}</p>
+             </div>`
+          : ""
+      }
+      <div style="display:grid; grid-template-columns:${fhTight() ? "1fr" : "minmax(0,1fr) minmax(0,1fr)"}; gap:12px; align-items:start;">
+        ${fhMirrorNights(history, ui, ui.historyTitle)}
+        ${fhDotsHtml(history, view, ui, { height: 132 })}
+      </div>
       <div class="m2-card" style="${FH_CARD} padding:14px 16px;">
         <span style="${FH_LABEL} margin-bottom:6px;">Talk with your partner</span>
         <p style="margin:0; font-size:15px; line-height:21px; color:${FH_INK};">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
       </div>
     </div>`;
-  $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: 5 });
+  $("gameBody").innerHTML = fhShell(view, main, { books: true, nightIndex: 4, settled: history.length });
 }
 
 function renderFHComplete(view: Record<string, unknown>): void {
   const beyond = String(view["beyondSports"] ?? "");
+  const ui = fhUi(view);
+  const history = (view["history"] as FHNight[]) ?? [];
   const main = `
     <div style="display:flex; flex-direction:column; gap:12px;">
-      ${fhHeader(view, { h1: "That is Full House", goal: false })}
+      ${fhHeader(view, { h1: "That is Full House" })}
       <p style="margin:0; font-size:15px; line-height:22px; color:${FH_INK_BODY}; max-width:78ch;">${escapeHtml(String(view["message"] ?? ""))}</p>
+      <div style="display:grid; grid-template-columns:${fhTight() ? "1fr" : "minmax(0,1fr) minmax(0,1fr)"}; gap:12px; align-items:start;">
+        ${fhMirrorNights(history, ui, ui.historyTitle)}
+        ${fhDotsHtml(history, view, ui, { height: 132 })}
+      </div>
       <div class="m2-card" style="${FH_CARD} padding:14px 16px;">
         <span style="${FH_LABEL} margin-bottom:6px;">Before you go</span>
         <p style="margin:0; font-size:15px; line-height:21px; color:${FH_INK};">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
