@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `350:a0a181fe227a34d1e3afcba1a66d50d07e3ed9a7ff20a9b8be850c0bc68e13b0`  
-Updated: 2026-09-02T17:29:23.096Z
+Event head: `352:9f82e02cef1d61906ee8f9e7198ae41077b46c393025523aff14e28e1556ced5`  
+Updated: 2026-09-02T17:34:48.235Z
 
 ## Founder intent
 
@@ -54,7 +54,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - player-gameplay-critic — gameplay-critic-w2 — active — claude-opus-5
 - economic-truth-critic — econ-truth-w2 — active — claude-opus-5
 - regression-hunter — regression-w2b — active — claude-sonnet-5
-- experience-director — experience-director-w2 — active — claude-fable-5-1
+- experience-director — experience-director-w2 — completed-with-concerns — claude-fable-5-1
 
 ## Required evidence
 
@@ -234,6 +234,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2r-npm-test-f65e865 — test — cd runtime && npm test at repaired head f65e865 (build + full suite)
 - w2r-e2e-f65e865 — test — node runtime/scripts/e2e-m2l1.cjs at repaired head f65e865 (R-1 limb active; 4-desk arc + 12-desk class scale)
 - w2r-e2e-misclick-f65e865 — test — node runtime/scripts/e2e-m2l1-misclick.cjs at repaired head f65e865
+- w2-direction-report — note — Experience Director wave-2 re-read: per-state target-feeling carry, B/H moment ledger, frontier direction (lead-transcribed; advisor had no write tool)
 
 ## Claim ledger
 

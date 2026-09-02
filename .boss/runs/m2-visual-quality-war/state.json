@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:29:23.096Z",
+  "updatedAt": "2026-09-02T17:34:48.235Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1932,11 +1932,18 @@
           "model": "claude-fable-5-1",
           "reason": "Level 3 required per wave; fresh direction read on the rebuilt flagship after three repairs: does the built /play carry the wave-1 target feelings, and a direction ruling on the near-flat two-book frontier (w2-frontier-probe) before wave 3 synthesis visuals",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T17:29:23.096Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T17:34:48.235Z",
+          "sections": {
+            "direction": "The /play loop is now composed to the wave-1 spec (turnout hero, box score, dark-before-doors building, one name per object); what it is missing is the two *moments* the 75/25 budget promised on /play — B1's fill and H1's settle — plus a decision screen that reads as a decision (281 words). Wave 3 draws the frontier as a bend, not a flat, with the room's dots inside it as the hero: \"nobody reached the line; most fans were cheap to keep, the last ones were ruinous\" → rising opportunity cost. Option (a′) over (c) over (b).",
+            "experience-risks": "1. Pre-lock first-viewport words rose to 281 (target <120) — the ticket-office feeling dies where the decision is made (Kid B STANDING). 2. A flat-captioned frontier teaches FL3; the lead's (a) second clause (\"chasing the sellout\") is unsupported by the model. 3. B1 on /play may be a frame, not a fill — NOT VERIFIED. 4. The settled \"why\" is still a restatement; feeling carried, understanding not (Kid C's top finding). 5. Reveal mirror now changes 8 times — risk 9 (kids look down, not up) is live and unmeasured. 6. Hook unrecomposed, lobby 182px dead — the game-or-homework verdict is made on the two weakest screens. 7. Zero-turnout, look-alike nights, third-deck wiring, Night-5 red error slot: all NOT VERIFIED post-repair.",
+            "non-negotiables": "All wave-1 items stand. Added for wave 3: the frontier is drawn from `seasonFrontier`/`renewalMarginalCost` only, both axes in the two books' own units, no percent as hero; caption text read off computed figures, never prose asserting a trade-off size; desk dots inside the line, never joined, never on a monotone price→renewals encoding (FL-V11); /play synthesis mirror shows the pair's own dot only; no \"gave up almost nothing\"; B1 fill runs once with manual fallback and reduced-motion collapse; every new sentence registered in `fullHouse.ts`.",
+            "open-questions": "**Founder-decision candidate FD-1:** accept that Module 2's trade-off lesson is \"cheap fans first, ruinous fans last\" (near-flat over most of the range, steep at the end) rather than \"you cannot have both\"? Yes → wave 3 draws it honestly, (b) closed. No → model retune with a fresh Economic Truth pass, outside this run. Also: Q-A is B1 a sequence or a frame on /play (Q5 ruling applied where)? Q-B who registers the \"why\" sentence (Economic Truth) — it gates settled/zero from PARTLY to CARRIED. Q-C Hook C3: wave 2 residue or wave 3? Q-D dollars vs people as the frontier-gap unit on the projector."
+          },
+          "evidenceIds": [
+            "w2-direction-report"
+          ],
           "cost": null
         }
       },
@@ -2106,7 +2113,8 @@
         "w2-repair-2-e2e",
         "w2r-npm-test-f65e865",
         "w2r-e2e-f65e865",
-        "w2r-e2e-misclick-f65e865"
+        "w2r-e2e-misclick-f65e865",
+        "w2-direction-report"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -9031,6 +9039,18 @@
       },
       "recordedAt": "2026-09-02T17:26:14.973Z",
       "actor": "boss-lead"
+    },
+    "w2-direction-report": {
+      "id": "w2-direction-report",
+      "wave": 2,
+      "kind": "note",
+      "label": "Experience Director wave-2 re-read: per-state target-feeling carry, B/H moment ledger, frontier direction (lead-transcribed; advisor had no write tool)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-direction-report--DIRECTION_W2.md",
+      "sha256": "08afe36a7f2e4be47c7e6ce071939d4a0b016073cb493e871b34836b7e5c72a7",
+      "size": 9784,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:34:47.920Z",
+      "actor": "experience-director-w2"
     }
   },
   "claims": {
@@ -9431,11 +9451,11 @@
     "agentsActivated": 34,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 253,
+    "evidenceRecorded": 254,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 350,
-  "eventHead": "a0a181fe227a34d1e3afcba1a66d50d07e3ed9a7ff20a9b8be850c0bc68e13b0",
+  "eventCount": 352,
+  "eventHead": "9f82e02cef1d61906ee8f9e7198ae41077b46c393025523aff14e28e1556ced5",
   "warnings": []
 }
