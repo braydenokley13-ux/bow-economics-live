@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:41:10.543Z",
+  "updatedAt": "2026-09-02T17:41:30.073Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1947,11 +1947,26 @@
           "model": "claude-sonnet-5",
           "reason": "Results-state matrix items 3/5/6/7/8, F1 rejoin fix, M1 baseline at the repaired head",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T17:24:19.779Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T17:41:30.073Z",
+          "sections": {
+            "regressions-found": "No new regression observed at head 54402b0. The one prior blocking finding (rejoin-then-refresh stranding the original device behind a false 'offline' label) is DISCHARGED: measured twice, join card + 'This desk was opened on another device. Rejoin with your PIN.' line shown within one poll tick and surviving reload, syncStatus never read 'offline — retrying', #gameBody was never empty while #gameCard was visible, and the rejoined device (Desk B) kept playing normally through Night 2. The onUnchanged sync-label self-heal (D1) and Module 1 /play's continued polling/rendering (shared poll.ts) are both DISCHARGED by direct measurement.",
+            "paths-exercised": "Block A: PIN rejoin from a fresh context while the original desk sits in Night-1 results, checked within one poll tick and after reload, plus the rejoined device's continued play (OBSERVED, two full runs). Block F: two consecutive injected 500 responses on /api/me followed by normal responses, checking sync-label recovery to 'synced' (OBSERVED). Block G: m1l1-draft-day session join + teacher HOOK advance, checking the shared poll.ts continues to deliver and render for Module 1 (OBSERVED). Blocks B (late join at Night 3), C (double-click #btnCloseNight within 300ms + /api/me for a skipped night), D (10x #fhNextNight @ 50ms across a re-render), E (Night 5 results -> NEXT -> books closed; REVEAL while a second desk sits un-acked) were scripted and attempted twice (default and then extended 75s/45s timeouts) but did not complete in either run — NOT VERIFIED. An isolated single-purpose debug script reproduced block B's exact steps (own server, no concurrent load) successfully, pointing at shared-sandbox CPU contention (a concurrent Boss agent's script observed at ~90% CPU throughout both failing runs) rather than a product defect, plus a test-harness bug of my own (the price dial visibly snaps to even values, so my exact-string wait can stall on an odd target). M1 pixel baseline (shots-m1-extended.cjs / compare-m1-ext.cjs) and the clean-rebuild-in-scratch-copy check were not attempted this session — NOT VERIFIED.",
+            "verdict": "DISCHARGED: the classroom-reliability blocking finding (rejoin-then-refresh blanking the original device behind a false offline label) is resolved at head 54402b0 — the F1 fix holds under direct re-measurement, same method as before. DISCHARGED: onUnchanged sync-label self-heal and Module 1 /play's continued operation under the shared poll.ts change. NOT VERIFIED (neither cleared nor newly regressed): late-join at Night 3, teacher double-close race, 50ms poll-race on #fhNextNight, Night-5-results-to-books-closed plus REVEAL-while-another-desk-unacked, and the Module 1 pixel baseline at this head. No new regression found. Formal dissent: NONE outstanding — the prior classroom-reliability dissent on the rejoin/refresh finding is resolved by this recheck. The coverage gap on items 2-4 (late-join, teacher-bell/auto-commit paths, M1 pixel baseline) is restated as an open item, not a new dissent, since it was neither observed to fail nor observed to pass this session."
+          },
+          "evidenceIds": [
+            "recheck-report",
+            "run1-log",
+            "run2-log",
+            "debug-b-log",
+            "recheck-script",
+            "screenshot-a1",
+            "screenshot-a2",
+            "screenshot-a3",
+            "screenshot-f1",
+            "screenshot-g1"
+          ],
           "cost": null
         },
         "premium-direction-w2": {
@@ -9908,7 +9923,7 @@
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 382,
-  "eventHead": "da7f042f46849faa0139bdb693f3aab9c853f6ea5237b49b78b4aa40c4b80326",
+  "eventCount": 383,
+  "eventHead": "53f5e8442514fed4b5081d36b51c3af7f1c1de4eb521a73ae7f2dfd4c622841f",
   "warnings": []
 }
