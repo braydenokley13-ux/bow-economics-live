@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `450:568c03f12333be39d3d1f170f26262394936771d1bd16e329ae77efdfcee1daf`  
-Updated: 2026-09-02T18:32:55.038Z
+Event head: `462:c42c5b9b5b31bc7293aacb6773e7042d4aaf4db115bd7e00d1e78b68b607f854`  
+Updated: 2026-09-02T18:44:18.458Z
 
 ## Founder intent
 
@@ -57,7 +57,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - experience-director — experience-director-w2 — completed-with-concerns — claude-fable-5-1
 - builder — builder-r4 — completed-with-concerns — claude-fable-5-1
 - visual-experience-director — visual-critic-3 — active — claude-opus-5
-- browser-qa — browser-qa-w2 — active — claude-opus-5
+- browser-qa — browser-qa-w2 — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-w2b — active — claude-opus-5
 - player-gameplay-critic — kid-c3-nonsports — active — claude-opus-5
 
@@ -314,6 +314,16 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-npm-test-84d8983 — test — cd runtime && npm test at repair-4 head 84d8983 (build + full suite incl. clientClaims sentence scanner)
 - w2-e2e-84d8983 — e2e — node runtime/scripts/e2e-m2l1.cjs at repair-4 head 84d8983 (R-1 whole-figure limb active; 4-desk arc + 12-desk class scale)
 - w2-e2e-misclick-84d8983 — e2e — node runtime/scripts/e2e-m2l1-misclick.cjs at repair-4 head 84d8983 (teacher cancel-then-advance with the results state)
+- w2-final-bqa-report — visual-report — Browser truth W2 final re-check at head 84d8983 — 1024x600 fold finding discharged, new 1366x768 overflow
+- w2-final-bqa-measurements-1024 — browser-trace — All getBoundingClientRect measurements, 4 desks x 5 nights + all phases, 1024x600
+- w2-final-bqa-measurements-1366 — browser-trace — All getBoundingClientRect measurements, 4 desks x 5 nights + all phases, 1366x768
+- w2-final-bqa-manifest — browser-trace — Manifest of the 64 screenshots captured in this run
+- w2-final-bqa-driver — browser-trace — Playwright driver used for both runs (unmodified product)
+- w2-final-bqa-1366-overflow — screenshot — OBSERVED-FAIL: 1366x768 desk4 Night 4 (bowl open + $40k event money + sellout) — NEXT bar clipped, #fhNextNight bottom 811 vs vh 768
+- w2-final-bqa-1024-discharged — screenshot — OBSERVED-PASS: 1024x600 same state — NEXT fully in fold (bottom 526) and turned-away figure at 448
+- w2-final-bqa-1024-sellout-closed — screenshot — 1024x600 bowl-CLOSED sellout (desk2 Night 4, 7,256 turned away) — NEXT bottom 468, turned-away bottom 448
+- w2-final-bqa-zero-turnout — screenshot — Zero-turnout night at 1024x600 (desk3 Night 1, $120, 0 came) — headline, money line and NEXT all in fold
+- w2-final-bqa-prelock-n4 — screenshot — Pre-lock Night 4 rail at 1366x768 — #fhNights top 566 < 768
 
 ## Claim ledger
 
@@ -333,6 +343,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-regression-rs-dissent — classroom-reliability/blocking/resolved — A PIN rejoin from a second browser context — the product's own documented device-switch mechanism — silently and permanently revokes the original device's session token server-side, with no grace period. The original tab shows a false 'offline — retrying' status instead of being told it was signed out, and if the pair does the natural recovery action (refresh the page), the screen renders permanently blank with no #fhNextNight and no visible control to recover with, in that browser, ever. OBSERVED in an isolated, minimal repro (probe2.cjs) and independently in the full matrix run; the server process itself stays up throughout (confirmed alive at every poll tick), so this is a client-side dead end reachable by an ordinary teacher-sanctioned classroom action, not an adversarial edge case.
 - w2-recheck-visual-dissent — visual-quality/advisory/open — Restated and narrowed after repairs. The published-law limb is DISCHARGED: A2 and A4 are now kept inside the module's peak moment (0 gold/amber declarations inside #gameBody/.m2-rail/#gameHeader across 47 measured states; Bebas Neue computes on only 2 elements document-wide, both inside the hidden join card; the gold sellout ribbon is replaced by 60px Inter 800 on the panel ground). The flagship-asset limb STANDS in narrowed form: the drawn arena now reads empty (0% is genuinely dark) and full (continuous violet to the rim), but carries no legible 'how full' between roughly 50% and 75% - 52.8, 62.9, 68.1 and 71.4 percent render as the same three-band bullseye at native size and are indistinguishable at 33% scale - and its outer deck is drawn three different ways across nights (unoffered = ordinary lit deck, offered-and-declined = shuttered, open = unsold dark deck) with no cue a 10-year-old can read. Recorded so a later PREMIUM claim cannot be made without disposing of it.
 - w2-analyst-dissent — visual-quality/important/open — The wave-2 pass claim states the fresh visual critic named the remaining gaps non-structural; REVIEW_VISUAL_W2.md 'Re-check after repairs' lines 187-189 class gaps 1-3 (arena mid-fill and unstable outer deck; nights chart unfitted and colliding on six frames; HOOK unrecomposed) as STRUCTURAL, and rows A6/A9 stand unmet without a recorded deviation reason. The pass condition's visual limb is therefore not met at f65e865, independent of the STRONG overall grade. Recorded so that a PASS gate on this wave cannot cite the visual report as satisfying that clause.
+- w2-final-browser-dissent — classroom-reliability/important/open — Repair 4 cleared 1024x600 but not the design-target 1366x768: on the bowl-open + $40,000-spend + sellout settled night, #fhNextNight bottom is 811 against a 768 viewport (OBSERVED, w2-final-bqa-1366-overflow) and the advance bar is clipped at rest, reachable only by scrolling. That is the loudest frame in the lesson. The composition row must not be recorded as met at 1366x768 on the builder-reported 595-697 band, which was measured without this state.
 
 ## Latest gate
 

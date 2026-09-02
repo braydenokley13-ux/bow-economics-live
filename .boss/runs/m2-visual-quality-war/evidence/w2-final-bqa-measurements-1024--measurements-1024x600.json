@@ -1,0 +1,2192 @@
+{
+  "viewport": "1024x600",
+  "vh": 600,
+  "nights": {
+    "prelock-desk1-Night1": {
+      "vh": 600,
+      "fhNights": {
+        "top": 436,
+        "bottom": 718,
+        "h": 282
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 428,
+        "h": 301
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 268,
+        "bottom": 324,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 735
+    },
+    "prelock-desk4-Night1": {
+      "vh": 600,
+      "fhNights": {
+        "top": 436,
+        "bottom": 732,
+        "h": 296
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 428,
+        "h": 301
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 268,
+        "bottom": 324,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 749
+    },
+    "desk1-Night1": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 1 · 12,510 CAME AT $40"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$40 × 12,510 $500,400 + IN-ARENAwhat those same people spent inside $225,180 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 50% → 30% down 20 points season-ticket holders coming back Season plan: $24 a sea"
+      },
+      "figures": [
+        {
+          "text": "12,510",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$205,580",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "50%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "30%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS RAE & BEN FULL HOUSE MODULE 2 · LESSON 1 NIGHT 1 OF 5 CASH $205,580 RENEWALS 30% season so far Desk 1 · New York Knicks REJOIN PIN 6183 NIGHT 1 · 12,510 CAME AT $40 CASH TICKETS $40 × 12,510 $500,400 + IN-ARENA what those same people spent inside $2"
+    },
+    "desk2-Night1": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 1 · 14,740 CAME AT $16"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$16 × 14,740 $235,840 + IN-ARENAwhat those same people spent inside $176,880 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 50% → 56% up 6 points season-ticket holders coming back Season plan: $16 a seat. "
+      },
+      "figures": [
+        {
+          "text": "14,740",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$132,720",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "50%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "56%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS NOUR & IVY FULL HOUSE MODULE 2 · LESSON 1 NIGHT 1 OF 5 CASH $132,720 RENEWALS 56% season so far Desk 2 · Memphis Grizzlies REJOIN PIN 9207 NIGHT 1 · 14,740 CAME AT $16 CASH TICKETS $16 × 14,740 $235,840 + IN-ARENA what those same people spent inside"
+    },
+    "desk3-Night1": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 1 · 0 CAME AT $120"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$120 × 0 $0 + IN-ARENAwhat those same people spent inside $0 − BUILDING BILL -"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 50% → 30% down 20 points season-ticket holders coming back Season plan: $24 a sea"
+      },
+      "figures": [
+        {
+          "text": "0",
+          "fontSize": 64,
+          "top": 174,
+          "bottom": 242,
+          "inTurned": false
+        },
+        {
+          "text": "-$520,000",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "50%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "30%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS ARI & TAL FULL HOUSE MODULE 2 · LESSON 1 NIGHT 1 OF 5 CASH -$520,000 RENEWALS 30% season so far Desk 3 · New York Knicks REJOIN PIN 1445 NIGHT 1 · 0 CAME AT $120 CASH TICKETS $120 × 0 $0 + IN-ARENA what those same people spent inside $0 − BUILDING B"
+    },
+    "desk4-Night1": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 1 · 5,360 CAME AT $44"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$44 × 5,360 $235,840 + IN-ARENAwhat those same people spent inside $64,320 − B"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 50% → 30% down 20 points season-ticket holders coming back Season plan: $16 a sea"
+      },
+      "figures": [
+        {
+          "text": "5,360",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$20,160",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "50%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "30%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS SAM & JO FULL HOUSE MODULE 2 · LESSON 1 NIGHT 1 OF 5 CASH $20,160 RENEWALS 30% season so far Desk 4 · Memphis Grizzlies REJOIN PIN 1487 NIGHT 1 · 5,360 CAME AT $44 CASH TICKETS $44 × 5,360 $235,840 + IN-ARENA what those same people spent inside $64,"
+    },
+    "prelock-desk1-Night2": {
+      "vh": 600,
+      "fhNights": {
+        "top": 436,
+        "bottom": 718,
+        "h": 282
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 428,
+        "h": 301
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 268,
+        "bottom": 324,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 735
+    },
+    "prelock-desk4-Night2": {
+      "vh": 600,
+      "fhNights": {
+        "top": 436,
+        "bottom": 732,
+        "h": 296
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 428,
+        "h": 301
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 268,
+        "bottom": 324,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 749
+    },
+    "desk1-Night2": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 2 · 14,288 CAME AT $48"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$48 × 14,288 $685,824 + IN-ARENAwhat those same people spent inside $257,184 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 30% → 10% down 20 points season-ticket holders coming back Season plan: $24 a sea"
+      },
+      "figures": [
+        {
+          "text": "14,288",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$423,008",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "30%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "10%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS RAE & BEN FULL HOUSE MODULE 2 · LESSON 1 NIGHT 2 OF 5 CASH $628,588 RENEWALS 10% season so far Desk 1 · New York Knicks REJOIN PIN 6183 NIGHT 2 · 14,288 CAME AT $48 CASH TICKETS $48 × 14,288 $685,824 + IN-ARENA what those same people spent inside $2"
+    },
+    "desk2-Night2": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 167,
+        "h": 40,
+        "fontSize": "110px",
+        "text": "FULL HOUSE 17,794 of 17,794 · 238 turned away"
+      },
+      "sellout": true,
+      "fhNextNight": {
+        "top": 406,
+        "bottom": 468,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 174,
+        "bottom": 398,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$16 × 17,794 $284,704 + IN-ARENAwhat those same people spent inside $213,528 −"
+      },
+      "renewals": {
+        "top": 174,
+        "bottom": 377,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 56% → 62% up 6 points season-ticket holders coming back Season plan: $16 a seat. "
+      },
+      "figures": [
+        {
+          "text": "17,794",
+          "fontSize": 64,
+          "top": 240,
+          "bottom": 308,
+          "inTurned": false
+        },
+        {
+          "text": "FULL HOUSE",
+          "fontSize": 38,
+          "top": 127,
+          "bottom": 167,
+          "inTurned": false
+        },
+        {
+          "text": "238",
+          "fontSize": 34,
+          "top": 412,
+          "bottom": 448,
+          "inTurned": true
+        },
+        {
+          "text": "$218,232",
+          "fontSize": 26,
+          "top": 336,
+          "bottom": 366,
+          "inTurned": false
+        },
+        {
+          "text": "56%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        },
+        {
+          "text": "62%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        }
+      ],
+      "turned": {
+        "text": "238",
+        "fontSize": 34,
+        "top": 412,
+        "bottom": 448,
+        "rankAmongFigures": 2
+      },
+      "scrollY": 0,
+      "docScroll": 674,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS NOUR & IVY FULL HOUSE MODULE 2 · LESSON 1 NIGHT 2 OF 5 CASH $350,952 RENEWALS 62% season so far Desk 2 · Memphis Grizzlies REJOIN PIN 9207 FULL HOUSE 17,794 OF 17,794 · 238 TURNED AWAY CASH TICKETS $16 × 17,794 $284,704 + IN-ARENA what those same pe"
+    },
+    "desk3-Night2": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 2 · 0 CAME AT $120"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$120 × 0 $0 + IN-ARENAwhat those same people spent inside $0 − BUILDING BILL -"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 30% → 10% down 20 points season-ticket holders coming back Season plan: $24 a sea"
+      },
+      "figures": [
+        {
+          "text": "0",
+          "fontSize": 64,
+          "top": 174,
+          "bottom": 242,
+          "inTurned": false
+        },
+        {
+          "text": "-$520,000",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "30%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "10%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS ARI & TAL FULL HOUSE MODULE 2 · LESSON 1 NIGHT 2 OF 5 CASH -$1,040,000 RENEWALS 10% season so far Desk 3 · New York Knicks REJOIN PIN 1445 NIGHT 2 · 0 CAME AT $120 CASH TICKETS $120 × 0 $0 + IN-ARENA what those same people spent inside $0 − BUILDING"
+    },
+    "desk4-Night2": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 2 · 10,018 CAME AT $44"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 421,
+        "bottom": 483,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 413,
+        "h": 253,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$44 × 10,018 $440,792 + IN-ARENAwhat those same people spent inside $120,216 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 30% → 10% down 20 points season-ticket holders coming back Season plan: $16 a sea"
+      },
+      "figures": [
+        {
+          "text": "10,018",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$241,008",
+          "fontSize": 26,
+          "top": 351,
+          "bottom": 381,
+          "inTurned": false
+        },
+        {
+          "text": "30%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "10%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS SAM & JO FULL HOUSE MODULE 2 · LESSON 1 NIGHT 2 OF 5 CASH $261,168 RENEWALS 10% season so far Desk 4 · Memphis Grizzlies REJOIN PIN 1487 NIGHT 2 · 10,018 CAME AT $44 CASH TICKETS $44 × 10,018 $440,792 + IN-ARENA what those same people spent inside $"
+    },
+    "prelock-desk1-Night3": {
+      "vh": 600,
+      "fhNights": {
+        "top": 436,
+        "bottom": 718,
+        "h": 282
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 428,
+        "h": 301
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 268,
+        "bottom": 324,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 735
+    },
+    "prelock-desk4-Night3": {
+      "vh": 600,
+      "fhNights": {
+        "top": 488,
+        "bottom": 784,
+        "h": 296
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 480,
+        "h": 353
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 320,
+        "bottom": 376,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 801
+    },
+    "desk1-Night3": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 3 · 12,450 CAME AT $40"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$40 × 12,450 $498,000 + IN-ARENAwhat those same people spent inside $224,100 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 10% → 17% up 7 points season-ticket holders coming back Season plan: $24 a seat. "
+      },
+      "figures": [
+        {
+          "text": "12,450",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$202,100",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "10%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "17%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS RAE & BEN FULL HOUSE MODULE 2 · LESSON 1 NIGHT 3 OF 5 CASH $830,688 RENEWALS 17% season so far Desk 1 · New York Knicks REJOIN PIN 6183 NIGHT 3 · 12,450 CAME AT $40 CASH TICKETS $40 × 12,450 $498,000 + IN-ARENA what those same people spent inside $2"
+    },
+    "desk2-Night3": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 3 · 14,526 CAME AT $16"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$16 × 14,526 $232,416 + IN-ARENAwhat those same people spent inside $174,312 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 62% → 68% up 6 points season-ticket holders coming back Season plan: $16 a seat. "
+      },
+      "figures": [
+        {
+          "text": "14,526",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$126,728",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "62%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "68%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS NOUR & IVY FULL HOUSE MODULE 2 · LESSON 1 NIGHT 3 OF 5 CASH $477,680 RENEWALS 68% season so far Desk 2 · Memphis Grizzlies REJOIN PIN 9207 NIGHT 3 · 14,526 CAME AT $16 CASH TICKETS $16 × 14,526 $232,416 + IN-ARENA what those same people spent inside"
+    },
+    "desk3-Night3": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 3 · 0 CAME AT $120"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$120 × 0 $0 + IN-ARENAwhat those same people spent inside $0 − BUILDING BILL -"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 10% → 0% down 10 points season-ticket holders coming back Season plan: $24 a seat"
+      },
+      "figures": [
+        {
+          "text": "0",
+          "fontSize": 64,
+          "top": 174,
+          "bottom": 242,
+          "inTurned": false
+        },
+        {
+          "text": "-$520,000",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "10%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "0%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS ARI & TAL FULL HOUSE MODULE 2 · LESSON 1 NIGHT 3 OF 5 CASH -$1,560,000 RENEWALS 0% season so far Desk 3 · New York Knicks REJOIN PIN 1445 NIGHT 3 · 0 CAME AT $120 CASH TICKETS $120 × 0 $0 + IN-ARENA what those same people spent inside $0 − BUILDING "
+    },
+    "desk4-Night3": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 3 · 8,278 CAME AT $38"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 421,
+        "bottom": 483,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 413,
+        "h": 253,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$38 × 8,278 $314,564 + IN-ARENAwhat those same people spent inside $99,336 − B"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 10% → 20% up 10 points season-ticket holders coming back Season plan: $16 a seat."
+      },
+      "figures": [
+        {
+          "text": "8,278",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$93,900",
+          "fontSize": 26,
+          "top": 351,
+          "bottom": 381,
+          "inTurned": false
+        },
+        {
+          "text": "10%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "20%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS SAM & JO FULL HOUSE MODULE 2 · LESSON 1 NIGHT 3 OF 5 CASH $355,068 RENEWALS 20% season so far Desk 4 · Memphis Grizzlies REJOIN PIN 1487 NIGHT 3 · 8,278 CAME AT $38 CASH TICKETS $38 × 8,278 $314,564 + IN-ARENA what those same people spent inside $99"
+    },
+    "prelock-desk1-Night4": {
+      "vh": 600,
+      "fhNights": {
+        "top": 436,
+        "bottom": 718,
+        "h": 282
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 428,
+        "h": 301
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 268,
+        "bottom": 324,
+        "h": 56
+      },
+      "fhBowl": {
+        "top": 436,
+        "bottom": 536,
+        "h": 100
+      },
+      "doc": 735
+    },
+    "prelock-desk4-Night4": {
+      "vh": 600,
+      "fhNights": {
+        "top": 488,
+        "bottom": 784,
+        "h": 296
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 480,
+        "h": 353
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 320,
+        "bottom": 376,
+        "h": 56
+      },
+      "fhBowl": {
+        "top": 488,
+        "bottom": 588,
+        "h": 100
+      },
+      "doc": 801
+    },
+    "desk1-Night4": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 167,
+        "h": 40,
+        "fontSize": "110px",
+        "text": "FULL HOUSE 19,800 of 19,800 · 1,275 turned away"
+      },
+      "sellout": true,
+      "fhNextNight": {
+        "top": 406,
+        "bottom": 468,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 174,
+        "bottom": 398,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$52 × 19,800 $1,029,600 + IN-ARENAwhat those same people spent inside $356,400"
+      },
+      "renewals": {
+        "top": 174,
+        "bottom": 377,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 17% → 24% up 7 points season-ticket holders coming back Season plan: $24 a seat. "
+      },
+      "figures": [
+        {
+          "text": "19,800",
+          "fontSize": 64,
+          "top": 240,
+          "bottom": 308,
+          "inTurned": false
+        },
+        {
+          "text": "FULL HOUSE",
+          "fontSize": 38,
+          "top": 127,
+          "bottom": 167,
+          "inTurned": false
+        },
+        {
+          "text": "1,275",
+          "fontSize": 34,
+          "top": 412,
+          "bottom": 448,
+          "inTurned": true
+        },
+        {
+          "text": "$866,000",
+          "fontSize": 26,
+          "top": 336,
+          "bottom": 366,
+          "inTurned": false
+        },
+        {
+          "text": "17%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        },
+        {
+          "text": "24%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        }
+      ],
+      "turned": {
+        "text": "1,275",
+        "fontSize": 34,
+        "top": 412,
+        "bottom": 448,
+        "rankAmongFigures": 2
+      },
+      "scrollY": 0,
+      "docScroll": 699,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS RAE & BEN FULL HOUSE MODULE 2 · LESSON 1 NIGHT 4 OF 5 CASH $1,696,688 RENEWALS 24% season so far Desk 1 · New York Knicks REJOIN PIN 6183 FULL HOUSE 19,800 OF 19,800 · 1,275 TURNED AWAY CASH TICKETS $52 × 19,800 $1,029,600 + IN-ARENA what those same"
+    },
+    "desk2-Night4": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 167,
+        "h": 40,
+        "fontSize": "110px",
+        "text": "FULL HOUSE 17,794 of 17,794 · 7,256 turned away"
+      },
+      "sellout": true,
+      "fhNextNight": {
+        "top": 406,
+        "bottom": 468,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 174,
+        "bottom": 398,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$16 × 17,794 $284,704 + IN-ARENAwhat those same people spent inside $213,528 −"
+      },
+      "renewals": {
+        "top": 174,
+        "bottom": 377,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 68% → 74% up 6 points season-ticket holders coming back Season plan: $16 a seat. "
+      },
+      "figures": [
+        {
+          "text": "17,794",
+          "fontSize": 64,
+          "top": 240,
+          "bottom": 308,
+          "inTurned": false
+        },
+        {
+          "text": "FULL HOUSE",
+          "fontSize": 38,
+          "top": 127,
+          "bottom": 167,
+          "inTurned": false
+        },
+        {
+          "text": "7,256",
+          "fontSize": 34,
+          "top": 412,
+          "bottom": 448,
+          "inTurned": true
+        },
+        {
+          "text": "$218,232",
+          "fontSize": 26,
+          "top": 336,
+          "bottom": 366,
+          "inTurned": false
+        },
+        {
+          "text": "68%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        },
+        {
+          "text": "74%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        }
+      ],
+      "turned": {
+        "text": "7,256",
+        "fontSize": 34,
+        "top": 412,
+        "bottom": 448,
+        "rankAmongFigures": 2
+      },
+      "scrollY": 0,
+      "docScroll": 699,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS NOUR & IVY FULL HOUSE MODULE 2 · LESSON 1 NIGHT 4 OF 5 CASH $695,912 RENEWALS 74% season so far Desk 2 · Memphis Grizzlies REJOIN PIN 9207 FULL HOUSE 17,794 OF 17,794 · 7,256 TURNED AWAY CASH TICKETS $16 × 17,794 $284,704 + IN-ARENA what those same "
+    },
+    "desk3-Night4": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 4 · 10,450 CAME AT $120"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 454,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$120 × 10,450 $1,254,000 + IN-ARENAwhat those same people spent inside $188,10"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 0% → 0% no change season-ticket holders coming back Season plan: $24 a seat. Pric"
+      },
+      "figures": [
+        {
+          "text": "10,450",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$922,100",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "0%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "0%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 608,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS ARI & TAL FULL HOUSE MODULE 2 · LESSON 1 NIGHT 4 OF 5 CASH -$637,900 RENEWALS 0% season so far Desk 3 · New York Knicks REJOIN PIN 1445 NIGHT 4 · 10,450 CAME AT $120 CASH TICKETS $120 × 10,450 $1,254,000 + IN-ARENA what those same people spent insid"
+    },
+    "desk4-Night4": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 167,
+        "h": 40,
+        "fontSize": "110px",
+        "text": "FULL HOUSE 19,594 of 19,594 · 1,896 turned away"
+      },
+      "sellout": true,
+      "fhNextNight": {
+        "top": 464,
+        "bottom": 526,
+        "h": 62,
+        "fontSize": "15px",
+        "text": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 174,
+        "bottom": 456,
+        "h": 282,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$36 × 19,594 $705,384 + IN-ARENAwhat those same people spent inside $235,128 −"
+      },
+      "renewals": {
+        "top": 174,
+        "bottom": 377,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 20% → 28% up 8 points season-ticket holders coming back Season plan: $16 a seat. "
+      },
+      "figures": [
+        {
+          "text": "19,594",
+          "fontSize": 64,
+          "top": 240,
+          "bottom": 308,
+          "inTurned": false
+        },
+        {
+          "text": "FULL HOUSE",
+          "fontSize": 38,
+          "top": 127,
+          "bottom": 167,
+          "inTurned": false
+        },
+        {
+          "text": "1,896",
+          "fontSize": 34,
+          "top": 412,
+          "bottom": 448,
+          "inTurned": true
+        },
+        {
+          "text": "$578,512",
+          "fontSize": 26,
+          "top": 394,
+          "bottom": 424,
+          "inTurned": false
+        },
+        {
+          "text": "20%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        },
+        {
+          "text": "28%",
+          "fontSize": 26,
+          "top": 220,
+          "bottom": 248,
+          "inTurned": false
+        }
+      ],
+      "turned": {
+        "text": "1,896",
+        "fontSize": 34,
+        "top": 412,
+        "bottom": 448,
+        "rankAmongFigures": 2
+      },
+      "scrollY": 0,
+      "docScroll": 699,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS SAM & JO FULL HOUSE MODULE 2 · LESSON 1 NIGHT 4 OF 5 CASH $933,580 RENEWALS 28% season so far Desk 4 · Memphis Grizzlies REJOIN PIN 1487 FULL HOUSE 19,594 OF 19,594 · 1,896 TURNED AWAY CASH TICKETS $36 × 19,594 $705,384 + IN-ARENA what those same pe"
+    },
+    "prelock-desk1-Night5": {
+      "vh": 600,
+      "fhNights": {
+        "top": 436,
+        "bottom": 718,
+        "h": 282
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 428,
+        "h": 301
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 268,
+        "bottom": 324,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 735
+    },
+    "prelock-desk4-Night5": {
+      "vh": 600,
+      "fhNights": {
+        "top": 488,
+        "bottom": 784,
+        "h": 296
+      },
+      "fhTonight": {
+        "top": 127,
+        "bottom": 480,
+        "h": 353
+      },
+      "fhBooks": null,
+      "fhLock": {
+        "top": 320,
+        "bottom": 376,
+        "h": 56
+      },
+      "fhBowl": null,
+      "doc": 801
+    },
+    "desk1-Night5": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 5 · 13,492 CAME AT $34"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 440,
+        "h": 48,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$34 × 13,492 $458,728 + IN-ARENAwhat those same people spent inside $242,856 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 24% → 4% down 20 points season-ticket holders coming back Season plan: $24 a seat"
+      },
+      "figures": [
+        {
+          "text": "13,492",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$181,584",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "24%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "4%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS RAE & BEN FULL HOUSE MODULE 2 · LESSON 1 CASH $1,878,272 RENEWALS 4% season so far Desk 1 · New York Knicks REJOIN PIN 6183 NIGHT 5 · 13,492 CAME AT $34 CASH TICKETS $34 × 13,492 $458,728 + IN-ARENA what those same people spent inside $242,856 − BUI"
+    },
+    "desk2-Night5": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 5 · 15,340 CAME AT $16"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 440,
+        "h": 48,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$16 × 15,340 $245,440 + IN-ARENAwhat those same people spent inside $184,080 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 74% → 80% up 6 points season-ticket holders coming back Season plan: $16 a seat. "
+      },
+      "figures": [
+        {
+          "text": "15,340",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$149,520",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "74%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "80%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS NOUR & IVY FULL HOUSE MODULE 2 · LESSON 1 CASH $845,432 RENEWALS 80% season so far Desk 2 · Memphis Grizzlies REJOIN PIN 9207 NIGHT 5 · 15,340 CAME AT $16 CASH TICKETS $16 × 15,340 $245,440 + IN-ARENA what those same people spent inside $184,080 − B"
+    },
+    "desk3-Night5": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 5 · 0 CAME AT $120"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 392,
+        "bottom": 440,
+        "h": 48,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 384,
+        "h": 224,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$120 × 0 $0 + IN-ARENAwhat those same people spent inside $0 − BUILDING BILL -"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 363,
+        "h": 203,
+        "fontSize": "15px",
+        "text": "RENEWALS 0% → 0% no change season-ticket holders coming back Season plan: $24 a seat. Pric"
+      },
+      "figures": [
+        {
+          "text": "0",
+          "fontSize": 64,
+          "top": 174,
+          "bottom": 242,
+          "inTurned": false
+        },
+        {
+          "text": "-$520,000",
+          "fontSize": 26,
+          "top": 322,
+          "bottom": 352,
+          "inTurned": false
+        },
+        {
+          "text": "0%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "0%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 600,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS ARI & TAL FULL HOUSE MODULE 2 · LESSON 1 CASH -$1,157,900 RENEWALS 0% season so far Desk 3 · New York Knicks REJOIN PIN 1445 NIGHT 5 · 0 CAME AT $120 CASH TICKETS $120 × 0 $0 + IN-ARENA what those same people spent inside $0 − BUILDING BILL -$520,00"
+    },
+    "desk4-Night5": {
+      "vh": 600,
+      "headline": {
+        "top": 127,
+        "bottom": 153,
+        "h": 26,
+        "fontSize": "22px",
+        "text": "NIGHT 5 · 10,140 CAME AT $30"
+      },
+      "sellout": false,
+      "fhNextNight": {
+        "top": 421,
+        "bottom": 469,
+        "h": 48,
+        "fontSize": "15px",
+        "text": "THE BOOKS ARE CLOSED"
+      },
+      "fhNights": null,
+      "fhBooks": null,
+      "fhTonight": null,
+      "cash": {
+        "top": 160,
+        "bottom": 413,
+        "h": 253,
+        "fontSize": "15px",
+        "text": "CASH TICKETS$30 × 10,140 $304,200 + IN-ARENAwhat those same people spent inside $121,680 −"
+      },
+      "renewals": {
+        "top": 160,
+        "bottom": 398,
+        "h": 238,
+        "fontSize": "15px",
+        "text": "RENEWALS 28% → 8% down 20 points season-ticket holders coming back Season plan: $16 a seat"
+      },
+      "figures": [
+        {
+          "text": "10,140",
+          "fontSize": 64,
+          "top": 226,
+          "bottom": 294,
+          "inTurned": false
+        },
+        {
+          "text": "$105,880",
+          "fontSize": 26,
+          "top": 351,
+          "bottom": 381,
+          "inTurned": false
+        },
+        {
+          "text": "28%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        },
+        {
+          "text": "8%",
+          "fontSize": 26,
+          "top": 206,
+          "bottom": 234,
+          "inTurned": false
+        }
+      ],
+      "turned": null,
+      "scrollY": 0,
+      "docScroll": 615,
+      "bodySnippet": "BOW ECONOMICS synced W2 FINAL 1024X600 · SEATED AS SAM & JO FULL HOUSE MODULE 2 · LESSON 1 CASH $1,039,460 RENEWALS 8% season so far Desk 4 · Memphis Grizzlies REJOIN PIN 1487 NIGHT 5 · 10,140 CAME AT $30 CASH TICKETS $30 × 10,140 $304,200 + IN-ARENA what those same people spent inside $121,680 − BU"
+    }
+  },
+  "pin": {
+    "prelock": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk1-Night1": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk4-Night1": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk1-Night1": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk2-Night1": {
+      "top": 73,
+      "bottom": 108,
+      "left": 887.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk3-Night1": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk4-Night1": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk1-Night2": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk4-Night2": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk1-Night2": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk2-Night2": {
+      "top": 73,
+      "bottom": 108,
+      "left": 887.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk3-Night2": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk4-Night2": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk1-Night3": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk4-Night3": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk1-Night3": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk2-Night3": {
+      "top": 73,
+      "bottom": 108,
+      "left": 887.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk3-Night3": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk4-Night3": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk1-Night4": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk4-Night4": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk1-Night4": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk2-Night4": {
+      "top": 73,
+      "bottom": 108,
+      "left": 887.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk3-Night4": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk4-Night4": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk1-Night5": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "prelock-desk4-Night5": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk1-Night5": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk2-Night5": {
+      "top": 73,
+      "bottom": 108,
+      "left": 887.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk3-Night5": {
+      "top": 73,
+      "bottom": 108,
+      "left": 888.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    },
+    "result-desk4-Night5": {
+      "top": 73,
+      "bottom": 108,
+      "left": 889.6,
+      "right": 1011,
+      "vw": 1024,
+      "vh": 600,
+      "inside": true
+    }
+  },
+  "reveal": [
+    [
+      0,
+      "21dedcfa7e7a"
+    ],
+    [
+      1,
+      "64159f0b4222"
+    ],
+    [
+      2,
+      "15592230edb7"
+    ],
+    [
+      3,
+      "9b8c56a11a8e"
+    ],
+    [
+      4,
+      "9d5566a5cc77"
+    ],
+    [
+      5,
+      "5e51e5015e78"
+    ],
+    [
+      6,
+      "876bb1da55de"
+    ],
+    [
+      7,
+      "3f272053497b"
+    ]
+  ],
+  "synth": [
+    [
+      1,
+      "0aa970e47d0f"
+    ],
+    [
+      2,
+      "25aa8b2b0e43"
+    ],
+    [
+      3,
+      "1ba9b3e954cc"
+    ],
+    [
+      4,
+      "d7e804e291cf"
+    ],
+    [
+      5,
+      "557fefabcdef"
+    ],
+    [
+      6,
+      "7a2f4fa9b0e0"
+    ]
+  ],
+  "dead": {
+    "LOBBY": {
+      "md5": "aca20d564428",
+      "dead": 16
+    },
+    "HOOK": {
+      "md5": "0df00be4ee23",
+      "dead": 16
+    },
+    "PLAY_PRELOCK": {
+      "dead": 16
+    },
+    "REVEAL": {
+      "dead": 16
+    },
+    "ADAPT": {
+      "dead": 16
+    },
+    "COUNTERFACTUAL": {
+      "dead": 16
+    },
+    "SYNTHESIS": {
+      "dead": 16
+    },
+    "COMPLETE": {
+      "md5": "5da3858a7bf8",
+      "dead": 16
+    }
+  },
+  "forbidden": {
+    "LOBBY": {},
+    "HOOK": {
+      "forecast": 1,
+      "preview": 1
+    },
+    "prelock": {
+      "preview": 1
+    },
+    "result-desk1-Night1": {},
+    "result-desk2-Night1": {},
+    "result-desk3-Night1": {},
+    "result-desk4-Night1": {},
+    "result-desk1-Night2": {},
+    "result-desk2-Night2": {},
+    "result-desk3-Night2": {},
+    "result-desk4-Night2": {},
+    "result-desk1-Night3": {},
+    "result-desk2-Night3": {},
+    "result-desk3-Night3": {},
+    "result-desk4-Night3": {},
+    "result-desk1-Night4": {},
+    "result-desk2-Night4": {},
+    "result-desk3-Night4": {},
+    "result-desk4-Night4": {},
+    "result-desk1-Night5": {},
+    "result-desk2-Night5": {},
+    "result-desk3-Night5": {},
+    "result-desk4-Night5": {},
+    "reveal-0": {},
+    "reveal-1": {},
+    "reveal-2": {},
+    "reveal-3": {},
+    "reveal-4": {},
+    "reveal-5": {},
+    "reveal-6": {},
+    "reveal-7": {},
+    "ADAPT": {},
+    "COUNTERFACTUAL": {},
+    "synth-1": {},
+    "synth-2": {},
+    "synth-3": {},
+    "synth-4": {},
+    "synth-5": {},
+    "synth-6": {},
+    "COMPLETE": {
+      "forecast": 1
+    }
+  },
+  "theme": {
+    "prelock": {
+      "checked": 317,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk1-Night1": {
+      "checked": 330,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk2-Night1": {
+      "checked": 329,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk4-Night1": {
+      "checked": 330,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk1-Night2": {
+      "checked": 330,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk2-Night2": {
+      "checked": 336,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk4-Night2": {
+      "checked": 336,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk1-Night3": {
+      "checked": 329,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk2-Night3": {
+      "checked": 329,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk4-Night3": {
+      "checked": 336,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk1-Night4": {
+      "checked": 337,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk2-Night4": {
+      "checked": 337,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk4-Night4": {
+      "checked": 347,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk1-Night5": {
+      "checked": 323,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk2-Night5": {
+      "checked": 322,
+      "violationCount": 0,
+      "violations": []
+    },
+    "result-desk4-Night5": {
+      "checked": 330,
+      "violationCount": 0,
+      "violations": []
+    },
+    "synth6": {
+      "checked": 120,
+      "violationCount": 0,
+      "violations": []
+    }
+  },
+  "notes": [],
+  "consoleErrors": []
+}

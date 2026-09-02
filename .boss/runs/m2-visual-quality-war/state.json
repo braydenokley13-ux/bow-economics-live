@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T18:32:55.038Z",
+  "updatedAt": "2026-09-02T18:44:18.458Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2087,11 +2087,27 @@
           "model": "claude-opus-5",
           "reason": "Owning critic re-takes the 1024x600 fold measurement it filed as IMPORTANT, plus the contract section-H rows touched by repair 4, at head 84d8983",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T18:31:10.950Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T18:44:18.416Z",
+          "sections": {
+            "paths-exercised": "Full 4-desk 5-night m2l1-full-house class driven twice against runtime/dist at head 84d8983, once per viewport (student desks 1024x600 and 1366x768; /teach 1366x768; /board 1920x1080), port 4441, private snapshot file, no source change, no rebuild, no Boss CLI. Phases: LOBBY -> HOOK -> PLAY (pre-lock measured every night) -> 5 lock/close-night settle cycles -> REVEAL stages 0-7 -> ADAPT -> COUNTERFACTUAL -> SYNTHESIS pages 1-6 -> COMPLETE. Desk roles cover every composition the brief names: desk1 varied price, bowl closed (sells out N4); desk2 holds the $16 plan price, bowl CLOSED (bowl-closed sellouts N2 and N4); desk3 $120 every night (zero-turnout N1/N2/N3/N5); desk4 bowl OPEN every night plus $40,000 event money from N2 (bowl-open sellout with money spent on N4). 40 settled desk-night frames measured with getBoundingClientRect at scrollY=0, 20 pre-lock rail measurements, 34 gold/Bebas audits, 42 PIN-chip rects, 8 reveal hashes and 6 synthesis hashes per viewport, 0 console and 0 page errors. AGENT-PLAYTESTED only.",
+            "artifacts": "Report: /home/user/bow-economics-live/docs/gauntlet/module-2/premium/BROWSER_TRUTH_W2_FINAL.md (per-night tables, every number listed, no summaries). 64 screenshots: /home/user/bow-economics-live/docs/gauntlet/module-2/premium/screens-w2-browser-final/ indexed by /tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/w2-final-browser/screens-manifest.md. Raw payloads: measurements-1024x600.json, measurements-1366x768.json, run-1024b.log, run-1366.log and the driver final.cjs, all in /tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/w2-final-browser. Evidence ids: w2-final-bqa-report, w2-final-bqa-measurements-1024, w2-final-bqa-measurements-1366, w2-final-bqa-manifest, w2-final-bqa-driver, w2-final-bqa-1366-overflow, w2-final-bqa-1024-discharged, w2-final-bqa-1024-sellout-closed, w2-final-bqa-zero-turnout, w2-final-bqa-prelock-n4.",
+            "defects": "1) OBSERVED-FAIL, classroom-reliability, IMPORTANT: at 1366x768 (the Chromebook design target) the bowl-open + $40,000-event-money + SELLOUT settled frame puts #fhNextNight bottom at 811 against vh 768 - the night-advance bar is clipped by the bottom edge at rest (doc scrollHeight 873, so it is reachable by scrolling, not a dead end). Evidence w2-final-bqa-1366-overflow, w2-final-bqa-measurements-1366 (key desk4-Night4). Brief item 5 UNMET: observed 1366 settled NEXT band is 595-811, not the builder-reported 595-697; the one state outside the band is the one the builder did not drive. Regression provenance is INFERRED, not observed - my prior 1366 pass never drove bowl-open+spend+sellout together (its max was 633) and repair 4 raised the comparable bowl-closed sellout 633 -> 697 (+64px), which would put a pre-repair desk4-N4 near 747, inside 768; proving that needs a rebuild of the prior head, which I did not do. 2) ADVISORY, observed: the turned-away number is the second-largest NUMERIC figure but the third-largest text run, because the FULL HOUSE wordmark (60px at 1366, 38px at 1024) sits between turnout (72/64px) and turned-away (40/34px). Raised only because the brief asked for second-largest. 3) ADVISORY, observed: the forbidden-vocabulary substring count is not literally 0 and is unchanged from my previous pass (no regression). Three negated hits, all denying a forecast/preview exists: HOOK hero 'No forecast - just tonight's card'; HOUSE_RULES[0] 'There is no preview' (the brief's carve-out, counted at HOOK and pre-lock); and the 1024x600 COMPLETE wrap 'no forecast'. Zero occurrences of project, estimate, expected, target, profit, readiness, momentum, time remaining, strong round, of capacity, weather on any /play state at either viewport. 4) ADVISORY, observed: at 1024x600 the /play COMPLETE body is byte-identical to SYNTHESIS page 6 (hash 7b2ec9fc9bcc); at 1366x768 the two differ. Cause NOT VERIFIED. 5) ADVISORY, observed: on the 1366 desk4-N4 sellout frame the left CASH column ends at y=501 while the right column runs to 755 - about 250px of empty column beside live content. Column-internal, so it does not trip the >200px below-last-block rule, which is MET everywhere (22-146px at 1366x768, 16px at 1024x600).",
+            "not-verified": "Whether the 1366x768 desk4-Night4 overflow is a repair-4 regression or pre-existing - INFERRED only; I did not rebuild the prior head. The 1920x1080 projector and /teach were loaded and driven but not measured this pass beyond error capture. 12-desk class scale not exercised. Rejoin / refresh / mid-class restart not exercised this pass. Cause of the 1024x600 SYNTHESIS-page-6 == COMPLETE identity. Nothing here is HUMAN-TESTED or CLASSROOM-PROVEN."
+          },
+          "evidenceIds": [
+            "w2-final-bqa-report",
+            "w2-final-bqa-measurements-1024",
+            "w2-final-bqa-measurements-1366",
+            "w2-final-bqa-manifest",
+            "w2-final-bqa-driver",
+            "w2-final-bqa-1366-overflow",
+            "w2-final-bqa-1024-discharged",
+            "w2-final-bqa-1024-sellout-closed",
+            "w2-final-bqa-zero-turnout",
+            "w2-final-bqa-prelock-n4"
+          ],
           "cost": null
         },
         "w2-final-regression": {
@@ -2364,7 +2380,17 @@
         "w2-repair-4-misclick",
         "w2-npm-test-84d8983",
         "w2-e2e-84d8983",
-        "w2-e2e-misclick-84d8983"
+        "w2-e2e-misclick-84d8983",
+        "w2-final-bqa-report",
+        "w2-final-bqa-measurements-1024",
+        "w2-final-bqa-measurements-1366",
+        "w2-final-bqa-manifest",
+        "w2-final-bqa-driver",
+        "w2-final-bqa-1366-overflow",
+        "w2-final-bqa-1024-discharged",
+        "w2-final-bqa-1024-sellout-closed",
+        "w2-final-bqa-zero-turnout",
+        "w2-final-bqa-prelock-n4"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -2381,7 +2407,8 @@
         "w2-econ-confirm-dissent",
         "w2-regression-rs-dissent",
         "w2-recheck-visual-dissent",
-        "w2-analyst-dissent"
+        "w2-analyst-dissent",
+        "w2-final-browser-dissent"
       ],
       "meetingIds": [],
       "gates": [
@@ -10524,6 +10551,169 @@
       },
       "recordedAt": "2026-09-02T18:32:21.054Z",
       "actor": "boss-lead"
+    },
+    "w2-final-bqa-report": {
+      "id": "w2-final-bqa-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "Browser truth W2 final re-check at head 84d8983 — 1024x600 fold finding discharged, new 1366x768 overflow",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-report--BROWSER_TRUTH_W2_FINAL.md",
+      "sha256": "c1d27461aa7d4477f3308ae2a06e27c9f05040283ec437ab90477cc0e80504ab",
+      "size": 13767,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:15.517Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-measurements-1024": {
+      "id": "w2-final-bqa-measurements-1024",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "All getBoundingClientRect measurements, 4 desks x 5 nights + all phases, 1024x600",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-measurements-1024--measurements-1024x600.json",
+      "sha256": "6a99802326e89f71b3ec25871098e7a115e89b54188307709adbc079237192e8",
+      "size": 54425,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:15.806Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-measurements-1366": {
+      "id": "w2-final-bqa-measurements-1366",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "All getBoundingClientRect measurements, 4 desks x 5 nights + all phases, 1366x768",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-measurements-1366--measurements-1366x768.json",
+      "sha256": "7b8ee412c79193da948191c082fae2ecec6d4d61aa643d7a9c555c018980836d",
+      "size": 57639,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:16.101Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-manifest": {
+      "id": "w2-final-bqa-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of the 64 screenshots captured in this run",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-manifest--screens-manifest.md",
+      "sha256": "02b75f33b6e9647f86ee6f29f5dc022b16b0cc923669591d930ccda2345afe16",
+      "size": 6078,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:16.391Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-driver": {
+      "id": "w2-final-bqa-driver",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Playwright driver used for both runs (unmodified product)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-driver--final.cjs",
+      "sha256": "12e903faf45b1539d4e6a7080a58f9fa236a2d090066f5e9cfe95f91817f42dd",
+      "size": 15474,
+      "metadata": {
+        "tags": [
+          "method"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:16.696Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-1366-overflow": {
+      "id": "w2-final-bqa-1366-overflow",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "OBSERVED-FAIL: 1366x768 desk4 Night 4 (bowl open + $40k event money + sellout) — NEXT bar clipped, #fhNextNight bottom 811 vs vh 768",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-1366-overflow--10-desk4-Night4-1366x768.png",
+      "sha256": "b3af65506516928a00f57185629d90e47675a626bbf3f61dca9be327b371bad0",
+      "size": 210434,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:16.980Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-1024-discharged": {
+      "id": "w2-final-bqa-1024-discharged",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "OBSERVED-PASS: 1024x600 same state — NEXT fully in fold (bottom 526) and turned-away figure at 448",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-1024-discharged--10-desk4-Night4-1024x600.png",
+      "sha256": "039beecceaed0105b3d14f8f508f8c298ca1d24f266c5474aab04c9b731275ce",
+      "size": 172928,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:17.259Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-1024-sellout-closed": {
+      "id": "w2-final-bqa-1024-sellout-closed",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "1024x600 bowl-CLOSED sellout (desk2 Night 4, 7,256 turned away) — NEXT bottom 468, turned-away bottom 448",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-1024-sellout-closed--10-desk2-Night4-1024x600.png",
+      "sha256": "43d8995471154a79fe2ccca03530517e418fedbaccbe30ac3d2e1443a296e10a",
+      "size": 156339,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:17.560Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-zero-turnout": {
+      "id": "w2-final-bqa-zero-turnout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Zero-turnout night at 1024x600 (desk3 Night 1, $120, 0 came) — headline, money line and NEXT all in fold",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-zero-turnout--10-desk3-Night1-1024x600.png",
+      "sha256": "5f05441291dcb7df7d76d8d632a7c760d0ede43dba7c47e78d0b5e7c3f7f0eb6",
+      "size": 134248,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:17.849Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-final-bqa-prelock-n4": {
+      "id": "w2-final-bqa-prelock-n4",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Pre-lock Night 4 rail at 1366x768 — #fhNights top 566 < 768",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-bqa-prelock-n4--05-prelock-Night4-1366x768.png",
+      "sha256": "303c0d3bc8df30754828b5d72911148b48ee378da930a6a7c2fa3805c1d588da",
+      "size": 213905,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:44:18.131Z",
+      "actor": "browser-qa-w2"
     }
   },
   "claims": {
@@ -10843,6 +11033,22 @@
       "status": "open",
       "recordedAt": "2026-09-02T17:50:13.580Z",
       "actor": "analyst-w2"
+    },
+    "w2-final-browser-dissent": {
+      "id": "w2-final-browser-dissent",
+      "wave": 2,
+      "category": "classroom-reliability",
+      "severity": "important",
+      "finding": "Repair 4 cleared 1024x600 but not the design-target 1366x768: on the bowl-open + $40,000-spend + sellout settled night, #fhNextNight bottom is 811 against a 768 viewport (OBSERVED, w2-final-bqa-1366-overflow) and the advance bar is clipped at rest, reachable only by scrolling. That is the loudest frame in the lesson. The composition row must not be recorded as met at 1366x768 on the builder-reported 595-697 band, which was measured without this state.",
+      "evidenceIds": [
+        "w2-final-bqa-1366-overflow",
+        "w2-final-bqa-measurements-1366",
+        "w2-final-bqa-report"
+      ],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-02T18:44:18.458Z",
+      "actor": "browser-qa-w2"
     }
   },
   "meetings": {},
@@ -11021,11 +11227,11 @@
     "agentsActivated": 39,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 328,
+    "evidenceRecorded": 338,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 450,
-  "eventHead": "568c03f12333be39d3d1f170f26262394936771d1bd16e329ae77efdfcee1daf",
+  "eventCount": 462,
+  "eventHead": "c42c5b9b5b31bc7293aacb6773e7042d4aaf4db115bd7e00d1e78b68b607f854",
   "warnings": []
 }
