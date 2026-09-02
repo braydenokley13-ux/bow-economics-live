@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `310:e5fe391197cb632a313dc7d230594e6fa7c219880d039b16ad86f564a64219f7`  
-Updated: 2026-09-02T16:37:25.020Z
+Event head: `324:6e17b20ab1d7ac71f913f40c08fb2b0f04c1e1c1aa359d66e8a518089c0c097e`  
+Updated: 2026-09-02T16:58:38.946Z
 
 ## Founder intent
 
@@ -47,7 +47,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - product-analyst — analyst-w2 — active — claude-opus-5
 - regression-hunter — regression-w2b — completed-with-concerns — claude-sonnet-5
 - builder — builder-r1 — completed-with-concerns — claude-opus-5
-- builder — builder-r3 — active — claude-opus-5
+- builder — builder-r3 — completed-with-concerns — claude-opus-5
 - builder — builder-r2 — active — claude-opus-5
 
 ## Required evidence
@@ -202,6 +202,19 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-repair-1-shot-night-after — screenshot — AFTER — ordinary settled night, headline in Inter
 - w2-repair-1-shot-prelock-before — screenshot — BEFORE — pre-lock state, Bebas night eyebrow and legacy dial chrome
 - w2-repair-1-shot-prelock-after — screenshot — AFTER — pre-lock state, Inter throughout, violet dial only
+- w2-repair-3-report — visual-report — Arena fill/framing/third-state repair report: instrument, before-after ladder, per-deck shares, carried gaps
+- w2-repair-3-manifest — browser-trace — Manifest of the 12 before/after frames plus the full measurement tables (4 boxes x 13 states, before and after)
+- w2-repair-3-before-0 — screenshot — BEFORE: settled night, nobody came - warmly lit court and floods (4.35% warm pixels)
+- w2-repair-3-before-71 — screenshot — BEFORE: 71.4% fill - cropped silhouette, letterboxed panel
+- w2-repair-3-before-100 — screenshot — BEFORE: 100% sellout - differs from 71% mainly by an outer-ring dim; grey wedges remain
+- w2-repair-3-before-locked — screenshot — BEFORE: locked-waiting card - one clipped quadrant of a bowl in a black rectangle
+- w2-repair-3-after-0 — screenshot — AFTER: nobody came - the building is dark, 0.00% warm pixels
+- w2-repair-3-after-71 — screenshot — AFTER: 71.4% - lit blocks to the seam, dark seats above it, whole building in frame (8.49% panel lit)
+- w2-repair-3-after-100 — screenshot — AFTER: full house - lit to the deck edge, gold rim, crowd turned away at the gates (12.09% panel lit)
+- w2-repair-3-after-bowlopen — screenshot — AFTER: upper bowl OPEN at 90% - third deck in the pool, lit at the same proportion, rail light
+- w2-repair-3-after-locked — screenshot — AFTER: locked-waiting hero at 900x240 - complete dark building, centred, nothing cropped
+- w2-repair-3-in-product — screenshot — AFTER in the real product: e2e-m2l1 sellout frame from the repaired build (scratch dist)
+- w2-repair-3-measurements — note — Machine-readable per-state measurements: panel lit/warm share, per-deck lit share, element and byte counts, 4 boxes x 13 states
 
 ## Claim ledger
 

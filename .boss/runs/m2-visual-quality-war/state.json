@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:37:25.020Z",
+  "updatedAt": "2026-09-02T16:58:38.946Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1799,11 +1799,30 @@
           "model": "claude-opus-5",
           "reason": "Repair 3 of wave-2 budget: visual critic STRUCTURAL gap 1 — the arena does not encode fill legibly (71% vs 100% indistinguishable; 0% still lit court); Kid C read grey wedges as empty seats on a sellout",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T16:27:06.225Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:58:38.946Z",
+          "sections": {
+            "what-changed": "runtime/src/client/shared/arena.ts rewritten (commit b1f6863): (1) fill is now a HARD boundary - every OPEN deck is lit from its own front row back to an equal-area seam r=sqrt(rIn^2+fill*(rOut^2-rIn^2)), bright rail on the seam, dark seats above it, so lit seat area / open seat area = turnout/seatsOpen in EVERY deck at once (ECON_TRUTH_W2 R-7: the old drawing filled lower->club->upper, a seat-allocation mechanism settleNight does not have); (2) turnout 0 and lit:'idle' switch the house off entirely - no floods, gate glow, lit floor or court paint; (3) new bowlSeats/bowlOpen options draw the upper bowl as a real third state (shuttered ribbed cover vs open-in-the-pool with a rail light); (4) panoramic per-view viewBox (width/4.6 outcome, width/4.74 hero) with the whole silhouette fitted inside it, preserveAspectRatio=meet at width/height=100%, edges faded to void - nothing is cropped at any container aspect, which also fixes the locked-waiting clipped quadrant and the corner wedges; (5) 146-159 drawn elements per SVG, down from 279-291 (-47%), 57-69 kB down from 88-109 kB; both animations keep their inline prefers-reduced-motion collapse. Also rewrote the two arena entries in fullHouse.ts SIMPLIFICATIONS to match what the picture now claims (equal proportion in every open deck; the drawn upper deck is ~1/5 of the seat area for seats that are ~1/10 of the pool). play/main.ts, m2.css and theme.css untouched.",
+            "evidence": "OBSERVED, scratch build only (the real checkout was NOT rebuilt). Instrument: prove.cjs renders the ladder 0/.2/.385/.5/.714/.9/.961/1.0 (bowl-closed and bowl-open) into the four boxes measured live from the product by measure.cjs (500x116, 448x92, 900x240, 900x150) and classifies pixels; per-deck shares are measured through Path2D masks rebuilt from the module's geometry. Outcome panel 500x116 AFTER panel-lit share: 0.08 / 2.24 / 4.50 / 5.87 / 8.49 / 10.66 / 11.39 / 12.09 - strictly monotonic; 71.4% vs 100% = 8.49 vs 12.09 (+3.60 points, +42% relative). Warm (house-light) pixels at 0 turnout: 0.00% AFTER vs 4.35% BEFORE. Per-deck lit share AFTER at fill 0.2: lower 17.0 / club 18.4 (BEFORE: 42.6 / 4.2 / 0.3 - the R-7 defect, measured); at 0.9 bowl-open: 86.7 / 83.5 / 77.2, and bowl-open vs bowl-closed panel share 14.40 vs 10.66 (BEFORE the two were byte-identical). Same ladder holds in all four boxes. Scratch npm test 468/468 pass, exit 0. Scratch scripts/e2e-m2l1.cjs PASS, exit 0 (its PNG changes discarded with git checkout). Evidence ids: w2-repair-3-report, w2-repair-3-manifest, w2-repair-3-before-0/71/100/locked, w2-repair-3-after-0/71/100/bowlopen/locked, w2-repair-3-in-product, w2-repair-3-measurements.",
+            "claims": "CLAIMED, not certified - I do not certify my own work. (1) The picture now encodes fill as a hard lit/dark boundary whose lit AREA is exactly turnout/seatsOpen, monotonic across the ladder, with 71.4% and 100% separated by 42% relative lit area (OBSERVED). (2) A night nobody came renders as a dark building: 0.00% warm pixels above the stated threshold (OBSERVED). (3) No deck fills before another: per-deck lit shares are equal to within 3-8% relative, and the residual is overlay strokes on thinner decks, not allocation (OBSERVED + INFERRED from the seam formula). (4) The whole building sits inside its viewBox at every container aspect /play uses (OBSERVED at 4 boxes). (5) Chromebook cost fell 47% in element count (OBSERVED). (6) The upper-bowl third state renders correctly WHEN THE CALLER PASSES bowlSeats/bowlOpen - it does not yet, so in the shipped product the top deck still renders as an ordinary open deck (NOT VERIFIED in product; the third state is verified only in the harness). (7) The arena's own SIMPLIFICATIONS entries now state the drawn-vs-true size distortion of the upper deck.",
+            "known-gaps": "1. BLOCKING-ADJACENT COORDINATION: play/main.ts does not pass bowlSeats/bowlOpen, so ECON_TRUTH R-7's third-state limb stays unmet in the product until repair 2 lands the one-line caller change (specified verbatim in my report). 2. The ARENA OUTCOME legend is still wrong (amber swatches that appear nowhere in the drawing) and its 'Upper bowl closed' branch is DEAD CODE - bowlOffered = n.bowlCost>0||n.openBowl is only true when the bowl was opened, and FHNight carries no bowlOffer field, so the closed label can never render; the fix needs the slate lookup by cardId. Repair 2 owns it. 3. At the current 116px frame height the whole building can only be ~100px tall (BEFORE was bigger but cropped); raising the frame to ~150px would scale it linearly - I cannot edit play/main.ts. 4. 71% vs 100% is clearly separable side by side and by measurement, but the empty band above the seam at high fill is geometrically thin (29% of deck AREA sits in a narrow outer rim); I chose area-honest over legibility-flattering and I have not proved a 10-year-old reads it across a room. 5. The real checkout was NOT rebuilt (critics own runtime/dist), so no browser truth exists for the repaired arena in THIS checkout - only in the scratch copy. 6. Nothing here is HUMAN-TESTED or CLASSROOM-PROVEN."
+          },
+          "evidenceIds": [
+            "w2-repair-3-report",
+            "w2-repair-3-manifest",
+            "w2-repair-3-before-0",
+            "w2-repair-3-before-71",
+            "w2-repair-3-before-100",
+            "w2-repair-3-before-locked",
+            "w2-repair-3-after-0",
+            "w2-repair-3-after-71",
+            "w2-repair-3-after-100",
+            "w2-repair-3-after-bowlopen",
+            "w2-repair-3-after-locked",
+            "w2-repair-3-in-product",
+            "w2-repair-3-measurements"
+          ],
           "cost": null
         },
         "w2-repair-2-composition": {
@@ -1961,7 +1980,20 @@
         "w2-repair-1-shot-night-before",
         "w2-repair-1-shot-night-after",
         "w2-repair-1-shot-prelock-before",
-        "w2-repair-1-shot-prelock-after"
+        "w2-repair-1-shot-prelock-after",
+        "w2-repair-3-report",
+        "w2-repair-3-manifest",
+        "w2-repair-3-before-0",
+        "w2-repair-3-before-71",
+        "w2-repair-3-before-100",
+        "w2-repair-3-before-locked",
+        "w2-repair-3-after-0",
+        "w2-repair-3-after-71",
+        "w2-repair-3-after-100",
+        "w2-repair-3-after-bowlopen",
+        "w2-repair-3-after-locked",
+        "w2-repair-3-in-product",
+        "w2-repair-3-measurements"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -6028,6 +6060,231 @@
       },
       "recordedAt": "2026-09-02T16:37:24.758Z",
       "actor": "builder-r1"
+    },
+    "w2-repair-3-report": {
+      "id": "w2-repair-3-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "Arena fill/framing/third-state repair report: instrument, before-after ladder, per-deck shares, carried gaps",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-report--REPAIR_ARENA_W2.md",
+      "sha256": "3589f16400e6e6c974bafdc65e3db380af21d89cfc5564707f5787100c70549d",
+      "size": 4899,
+      "metadata": {
+        "tags": [
+          "arena",
+          "fill-encoding",
+          "R-7",
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:35.522Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-manifest": {
+      "id": "w2-repair-3-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of the 12 before/after frames plus the full measurement tables (4 boxes x 13 states, before and after)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-manifest--MANIFEST.md",
+      "sha256": "163d9bec40e4fce6680fc5e103e9850dbfaf61518b466c42b873a6ffa8ea2f86",
+      "size": 1810,
+      "metadata": {
+        "tags": [
+          "manifest",
+          "measurements"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:35.790Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-before-0": {
+      "id": "w2-repair-3-before-0",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE: settled night, nobody came - warmly lit court and floods (4.35% warm pixels)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-before-0--01-BEFORE-outcome-0pct.png",
+      "sha256": "3bd463875153ec55763fb54c5dedf246887b414ac5d1027130c663461fe2f4fa",
+      "size": 79771,
+      "metadata": {
+        "tags": [
+          "before",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:36.055Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-before-71": {
+      "id": "w2-repair-3-before-71",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE: 71.4% fill - cropped silhouette, letterboxed panel",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-before-71--02-BEFORE-outcome-71pct.png",
+      "sha256": "21e4c58270218233d6af408c74180ae75cebceb94062eeda18e6b7bd2efa9d98",
+      "size": 90807,
+      "metadata": {
+        "tags": [
+          "before",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:36.317Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-before-100": {
+      "id": "w2-repair-3-before-100",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE: 100% sellout - differs from 71% mainly by an outer-ring dim; grey wedges remain",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-before-100--03-BEFORE-outcome-100pct.png",
+      "sha256": "8f963a570734c717d6d6140a84dc3c74fa43563dbbf5d9b3a1bea6678b25a633",
+      "size": 103303,
+      "metadata": {
+        "tags": [
+          "before",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:36.575Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-before-locked": {
+      "id": "w2-repair-3-before-locked",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE: locked-waiting card - one clipped quadrant of a bowl in a black rectangle",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-before-locked--04-BEFORE-locked-waiting.png",
+      "sha256": "38e9dc21d4f7aa81b4547a9b1520178e95360fe52b38f8ca810d7d0914556073",
+      "size": 106870,
+      "metadata": {
+        "tags": [
+          "before",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:36.838Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-after-0": {
+      "id": "w2-repair-3-after-0",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER: nobody came - the building is dark, 0.00% warm pixels",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-after-0--05-AFTER-outcome-0pct.png",
+      "sha256": "97e11679d66bfdd6e0612d54b453b3f25e9d72b453af64460459cd69e141a011",
+      "size": 87518,
+      "metadata": {
+        "tags": [
+          "after",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:37.098Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-after-71": {
+      "id": "w2-repair-3-after-71",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER: 71.4% - lit blocks to the seam, dark seats above it, whole building in frame (8.49% panel lit)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-after-71--06-AFTER-outcome-71pct.png",
+      "sha256": "e441d268a3bde2490bc5def5a3afade633d0d0ea7b1ed7109c7d4d1cd7eabb74",
+      "size": 174688,
+      "metadata": {
+        "tags": [
+          "after",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:37.365Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-after-100": {
+      "id": "w2-repair-3-after-100",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER: full house - lit to the deck edge, gold rim, crowd turned away at the gates (12.09% panel lit)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-after-100--07-AFTER-outcome-100pct-sellout.png",
+      "sha256": "939bb6f37e2a7589f9b62fff2ad72b9436a9d7105581e81fbfdcc8a967c9e801",
+      "size": 190783,
+      "metadata": {
+        "tags": [
+          "after",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:37.635Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-after-bowlopen": {
+      "id": "w2-repair-3-after-bowlopen",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER: upper bowl OPEN at 90% - third deck in the pool, lit at the same proportion, rail light",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-after-bowlopen--09-AFTER-outcome-90pct-bowlopen.png",
+      "sha256": "a207a01920745d00351a95f0cec1f3ada78dbf8040c22717870607238a0a2213",
+      "size": 191679,
+      "metadata": {
+        "tags": [
+          "after",
+          "third-state",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:37.895Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-after-locked": {
+      "id": "w2-repair-3-after-locked",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER: locked-waiting hero at 900x240 - complete dark building, centred, nothing cropped",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-after-locked--10-AFTER-locked-waiting-dark.png",
+      "sha256": "a2d96d6d8fa0130a9de71045afe6bcdf00b722aa8660973c1d5e5539c8d53a43",
+      "size": 246674,
+      "metadata": {
+        "tags": [
+          "after",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:38.166Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-in-product": {
+      "id": "w2-repair-3-in-product",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER in the real product: e2e-m2l1 sellout frame from the repaired build (scratch dist)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-in-product--12-AFTER-in-product-e2e-sellout.png",
+      "sha256": "d2edf669d129b3e8598b02f79198cec78432da9e8b5feaad3f383dea5575fe65",
+      "size": 190432,
+      "metadata": {
+        "tags": [
+          "after",
+          "agent-playtested",
+          "e2e"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:38.423Z",
+      "actor": "builder-r3"
+    },
+    "w2-repair-3-measurements": {
+      "id": "w2-repair-3-measurements",
+      "wave": 2,
+      "kind": "note",
+      "label": "Machine-readable per-state measurements: panel lit/warm share, per-deck lit share, element and byte counts, 4 boxes x 13 states",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-3-measurements--measurements-after.json",
+      "sha256": "e2c850daa29f06efafeb500b4b21d81323a2c4e1c788098f94693f4bfc6441fb",
+      "size": 32485,
+      "metadata": {
+        "tags": [
+          "measurements"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:58:38.686Z",
+      "actor": "builder-r3"
     }
   },
   "claims": {},
@@ -6382,11 +6639,11 @@
     "agentsActivated": 28,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 227,
+    "evidenceRecorded": 240,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 310,
-  "eventHead": "e5fe391197cb632a313dc7d230594e6fa7c219880d039b16ad86f564a64219f7",
+  "eventCount": 324,
+  "eventHead": "6e17b20ab1d7ac71f913f40c08fb2b0f04c1e1c1aa359d66e8a518089c0c097e",
   "warnings": []
 }
