@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:40:11.408Z",
+  "updatedAt": "2026-09-02T17:41:10.543Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2159,7 +2159,17 @@
         "w2r-gameplay-sellout",
         "w2r-gameplay-sellout-lowball",
         "w2r-gameplay-dotlabels",
-        "w2r-gameplay-counterfactual"
+        "w2r-gameplay-counterfactual",
+        "recheck-report",
+        "run1-log",
+        "run2-log",
+        "debug-b-log",
+        "recheck-script",
+        "screenshot-a1",
+        "screenshot-a2",
+        "screenshot-a3",
+        "screenshot-f1",
+        "screenshot-g1"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -9368,6 +9378,126 @@
       },
       "recordedAt": "2026-09-02T17:40:10.819Z",
       "actor": "gameplay-critic-w2"
+    },
+    "recheck-report": {
+      "id": "recheck-report",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Regression re-check report (head 54402b0)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/recheck-report--REGRESSION_W2_RECHECK.md",
+      "sha256": "dbbef368538e397471d11d28c43a2379647dfc207856421e7bd103af6236f2c8",
+      "size": 8124,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:07.398Z",
+      "actor": "regression-w2b"
+    },
+    "run1-log": {
+      "id": "run1-log",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "First full recheck run log (blocks A-G, default timeouts)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/run1-log--run.log",
+      "sha256": "4ae708d71ec6b7d8cb8f4cd3ccd9ad8be14757f3c7f05d0598e0a74c0c5e856f",
+      "size": 8932,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:07.685Z",
+      "actor": "regression-w2b"
+    },
+    "run2-log": {
+      "id": "run2-log",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Second full recheck run log (blocks A-G, extended timeouts)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/run2-log--run2.log",
+      "sha256": "c679ae3b5cf385df372cd88d6580baed13df6b5cc2ab4ed39c38bfe4ef27df35",
+      "size": 8390,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:07.974Z",
+      "actor": "regression-w2b"
+    },
+    "debug-b-log": {
+      "id": "debug-b-log",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Isolated single-purpose debug of block B's setPrice step (own server, port 4459)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/debug-b-log--debug-b.cjs",
+      "sha256": "959113dade0e229e2ddd76626038c01fcab8520f95e986f320dd921c9b1c1aac",
+      "size": 4078,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:08.262Z",
+      "actor": "regression-w2b"
+    },
+    "recheck-script": {
+      "id": "recheck-script",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Playwright driver script for this recheck (blocks A-G)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/recheck-script--recheck.cjs",
+      "sha256": "3ef4b0f0cb0008f00dec77da48735a44ad3be889cebe6697d66f1bbb7902375e",
+      "size": 27509,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:08.555Z",
+      "actor": "regression-w2b"
+    },
+    "screenshot-a1": {
+      "id": "screenshot-a1",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Desk A within one poll tick after Desk B's PIN rejoin: join card + signed-out line, not offline-retrying",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/screenshot-a1--A1-desk-a-within-one-poll.png",
+      "sha256": "ecb34f36b0d5aa66359da84f3d9982ad174886216299240347bf2268b955df45",
+      "size": 30154,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:08.839Z",
+      "actor": "regression-w2b"
+    },
+    "screenshot-a2": {
+      "id": "screenshot-a2",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Desk A after reload: signed-out state survives, no blank #gameBody with #gameCard visible",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/screenshot-a2--A2-desk-a-after-reload.png",
+      "sha256": "862642cb276f84e0552998790b53cc47d2fe5c19fb51118d5e1835ae991c5164",
+      "size": 30672,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:09.116Z",
+      "actor": "regression-w2b"
+    },
+    "screenshot-a3": {
+      "id": "screenshot-a3",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Desk B (the rejoined device) still playing, advanced to Night 2 of 5",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/screenshot-a3--A3-desk-b-still-playing.png",
+      "sha256": "e5fa1a2c36aa873b76fb9f26e85b767c9f91e66d283af8094018486b64a15610",
+      "size": 201212,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:09.428Z",
+      "actor": "regression-w2b"
+    },
+    "screenshot-f1": {
+      "id": "screenshot-f1",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Sync label recovered to synced after two injected transient 500 responses",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/screenshot-f1--F1-sync-recovered.png",
+      "sha256": "9946120c4f6842709c7deabda43882a0d5ecbbe55744433563ea961f30818364",
+      "size": 156442,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:09.717Z",
+      "actor": "regression-w2b"
+    },
+    "screenshot-g1": {
+      "id": "screenshot-g1",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Module 1 (m1l1-draft-day) /play desk rendering HOOK after teacher advance, via shared poll.ts",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/screenshot-g1--G1-m1-play-after-hook.png",
+      "sha256": "daf3b30e433755180d8ee2cd9344f2a62d3e2d44b0071a1544bc361252c48d51",
+      "size": 38525,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:41:09.994Z",
+      "actor": "regression-w2b"
     }
   },
   "claims": {
@@ -9590,9 +9720,12 @@
         "w2-regression-rs-item2-fresh-context-stale"
       ],
       "blocking": true,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-02T16:36:12.434Z",
-      "actor": "regression-w2b"
+      "actor": "regression-w2b",
+      "resolution": "Resolved by the owning critic's re-check at head 54402b0 (REGRESSION_W2_RECHECK.md): after repair 2 stage 1 (commit 7a34460) a PIN rejoin from a second context sends the original device to the join card with 'This desk was opened on another device. Rejoin with your PIN.' within one poll and after reload; sync label reads 'signed out', never 'offline — retrying'; #gameBody never blank while the join card is visible; the rejoining device keeps playing. Measured twice. Not re-verified this pass under shared-sandbox CPU contention and restated as open coverage, not regressions: refresh-only-in-results, Night-3 late join, bell auto-commit with unacknowledged nights (covered at f65e865 by the e2e stall desk and the misclick e2e, w2r-e2e-f65e865 / w2r-e2e-misclick-f65e865), and the Module 1 pixel baseline at the repaired head (lead runs it as a command record next).",
+      "resolvedAt": "2026-09-02T17:41:10.543Z",
+      "resolvedBy": "boss-lead"
     }
   },
   "meetings": {},
@@ -9771,11 +9904,11 @@
     "agentsActivated": 34,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 270,
+    "evidenceRecorded": 280,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 371,
-  "eventHead": "a103a161df4b994068ffda41df3d90447a7415f339d08ebfa1379e0111aa32af",
+  "eventCount": 382,
+  "eventHead": "da7f042f46849faa0139bdb693f3aab9c853f6ea5237b49b78b4aa40c4b80326",
   "warnings": []
 }
