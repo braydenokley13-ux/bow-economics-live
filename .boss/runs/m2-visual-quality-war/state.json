@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:51:33.466Z",
+  "updatedAt": "2026-09-02T18:30:03.076Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2035,11 +2035,35 @@
           "model": "claude-fable-5-1",
           "reason": "Repair 4 of 8: bounded fixes named by the five owning-critic re-checks at 54402b0 (1024x600 results fold, dialCarried cue, nights chart labels, R-J/R-M/R-K strings, E4 registration, HOOK composition, rail chip clip, synthesis page 1); founder rulings FD-2/FD-3 excluded",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T17:48:03.532Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T18:30:03.076Z",
+          "sections": {
+            "what-changed": "play/main.ts: 1024x600 settled-night layout (NEXT under the cash chain, turned-away inside WHO CAME at 34px, tighter chain/WHAT HAPPENED rhythm, arena panel compact, bowl plate beside the nights card); fhLocalPrice reset per card so .fh-dial-carried renders against the server opening price; fhDotsHtml passes a data-fitted 500-step y range; the settled cause is view.renewalRule / renewalRuleLines (full tent), floor line only when the clamp bound; Two Peaks, no-tomorrow, stock/auto night, in-arena, bowl-paid and renewals-caption copy read from view.uiCopy; renderFHHook rewritten as building + one hero line + #fhSlate five-card row + one <p> per sentence. shared/m2ui.ts dotChart: axis ticks, label placement latest-first with intersection rejection, no <path>. shared/arena.ts: bowl shutter keyed on bowlOpen only. shared/m2.css: rail align-self:flex-start + 100vh-72px height (auto at the tight breakpoint), frame min-height, axis-tick rule. modules/fullHouse.ts: renewalDeltaRaw/renewalFloorBinds/renewalRuleLinesFor/twoPeaksNoteFor/spendFactLineFor, 9 FULL_HOUSE_UI_COPY keys, renewalRuleLines/spendLine/twoPeaks note in payloads, SIMPLIFICATIONS bowl entry (about a quarter, 25.9%; shuttered whenever not open; base pool = lower two decks). Tests: fullHouse.test.ts R4-4a/R4-4b/R4-4c+R4-5 and REQUIRED keys; clientClaims.test.ts sentence scanner over the Full House renderer region. Docs: REPAIR_W2_4.md, screens-w2-repair-4/.",
+            "evidence": "OBSERVED in the scratch build (real runtime/dist never rebuilt): w2-repair-4-measure-after — 1024x600 #fhNextNight.bottom 440-497 on all 10 nights incl. sellouts 468/497 and bowl+spend 483 (before 539-662); turned-away 448 (before 685/710); Night-4 #fhNights.top 456/436 (before 586/566); .fh-dial-carried text on d2 N3-N5 (before never); charts 0 intersections / 0 outside / 0 <path> on 27 frames (ladder 4/5 labels, $16x5 3/5, $10x5 2/5); cause = four-clause rule; floor line on 50->30 and 30->10 only (before also on 0->0); PIN 710..745 at 1366 and 73..108 at 1024 on lobby, HOOK, 10 pre-lock frames (before 746..781 / 1143..1178); HOOK slate 557..747 at 1366 and 331..487 at 1024, 5/5 cards visible, words 110/140 (before 361/243); synth page1 md5 != cf md5 in both runs; arena not-offered == offered-declined md5 de2841134d33, open a00fbd4d5c3c. w2-repair-4-npm-test 469 pass; w2-repair-4-e2e PASS exit 0; w2-repair-4-misclick PASS exit 0. INFERRED: the R4-2 root cause was the never-reset fhLocalPrice, confirmed by the cue appearing after the reset. NOT VERIFIED: before-run chart metrics (driver selector hit the badge icon), HOOK paragraph line-count in isolation, the synthesis page-1 defect itself.",
+            "claims": "Claim 1 (observed): every R4-1 fold criterion holds at 1024x600 at scrollY=0 across 10 settled nights and the turnout hero stays the largest figure. Claim 2 (observed): the carried-dial cue renders and an untouched lock charges the opening price. Claim 3 (observed): the nights chart fits its data with zero label intersections and no path on every frame measured. Claim 4 (observed + unit-tested): the settled cause is the full renewals rule; the floor line fires only when the -20 clamp bound; SIMPLIFICATIONS says about a quarter (25.9%). Claim 5 (observed + test): the two literals are module strings and the renderer region has no unregistered >=5-word sentence outside a 4-entry structural list. Claim 6 (observed): HOOK is building + hero line + five-card slate, slate bottom 747 at 1366, all five cards visible at 1024. Claim 7 (observed): PIN chip inside the viewport at both sizes. Claim 8 (observed): the outer deck is shuttered whenever not open and identical whether or not the option was on the card. Acceptance is not certified by this builder.",
+            "known-gaps": "1. R4-6 word ceiling: 110 words in the 1366 fold (84 main column + 26 rail), 140 at 1024. 2. R4-6 paragraph<=2 lines NOT VERIFIED in isolation. 3. R4-7 synthesis page1==counterfactual never reproduced. 4. 1366 NEXT bottoms rose 30-65px (595-697, inside 768) from the taller rule. 5. Rail ends at 100vh-72px on frames taller than the viewport. 6. Module opens each night at the plan price, so the carried cue fires only when the plan price was charged before (module decision, out of scope). 7. Scratch m2Harnesses.test needs docs/ reachable from the scratch root."
+          },
+          "evidenceIds": [
+            "w2-repair-4-report",
+            "w2-repair-4-manifest",
+            "w2-repair-4-measure-before",
+            "w2-repair-4-measure-after",
+            "w2-repair-4-before-sellout-1024",
+            "w2-repair-4-after-sellout-1024",
+            "w2-repair-4-after-carried-1366",
+            "w2-repair-4-after-chart-ladder",
+            "w2-repair-4-after-chart-flat",
+            "w2-repair-4-after-cause-1366",
+            "w2-repair-4-after-hook-1366",
+            "w2-repair-4-after-hook-1024",
+            "w2-repair-4-after-reveal",
+            "w2-repair-4-arena-not-offered",
+            "w2-repair-4-arena-open",
+            "w2-repair-4-npm-test",
+            "w2-repair-4-e2e",
+            "w2-repair-4-misclick"
+          ],
           "cost": null
         }
       },
@@ -2263,7 +2287,25 @@
         "w2r-m1-l3-09-crop-b",
         "w2-analyst-report",
         "w2r-mutation-a-f65e865",
-        "w2r-mutation-b-f65e865"
+        "w2r-mutation-b-f65e865",
+        "w2-repair-4-report",
+        "w2-repair-4-manifest",
+        "w2-repair-4-measure-before",
+        "w2-repair-4-measure-after",
+        "w2-repair-4-before-sellout-1024",
+        "w2-repair-4-after-sellout-1024",
+        "w2-repair-4-after-carried-1366",
+        "w2-repair-4-after-chart-ladder",
+        "w2-repair-4-after-chart-flat",
+        "w2-repair-4-after-cause-1366",
+        "w2-repair-4-after-hook-1366",
+        "w2-repair-4-after-hook-1024",
+        "w2-repair-4-after-reveal",
+        "w2-repair-4-arena-not-offered",
+        "w2-repair-4-arena-open",
+        "w2-repair-4-npm-test",
+        "w2-repair-4-e2e",
+        "w2-repair-4-misclick"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -10034,6 +10076,329 @@
       },
       "recordedAt": "2026-09-02T17:51:33.466Z",
       "actor": "boss-lead"
+    },
+    "w2-repair-4-report": {
+      "id": "w2-repair-4-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "Repair 4 report: acceptance table before/after at 1366x768 and 1024x600, commands run, registered strings, known gaps",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-report--REPAIR_W2_4.md",
+      "sha256": "6b5a8917be49f898f0887b0769a5004217437aac83d3bb98a3061078739dc85c",
+      "size": 9451,
+      "metadata": {
+        "tags": [
+          "R4-1",
+          "R4-2",
+          "R4-3",
+          "R4-4",
+          "R4-5",
+          "R4-6",
+          "R4-7",
+          "R4-8",
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:57.855Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-manifest": {
+      "id": "w2-repair-4-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of the 17 before/after frame pairs, the three arena frames and both measure.json files (driver, desks, prices)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-manifest--MANIFEST.md",
+      "sha256": "effe0c8d8fb061216da82f025eb6c535a1f801e14b622d498bc32adcd52b8ad7",
+      "size": 1806,
+      "metadata": {
+        "tags": [
+          "manifest",
+          "measurements"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:58.158Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-measure-before": {
+      "id": "w2-repair-4-measure-before",
+      "wave": 2,
+      "kind": "measurement",
+      "label": "Driver measurements at head a34b292 (4 desks x 5 nights, hook, pin, synth)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-measure-before--measure.json",
+      "sha256": "55a320c803ffb1a878327106b38f2788468729a4efc968e119cca870b204fb63",
+      "size": 72878,
+      "metadata": {
+        "tags": [
+          "before",
+          "measurements"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:58.447Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-measure-after": {
+      "id": "w2-repair-4-measure-after",
+      "wave": 2,
+      "kind": "measurement",
+      "label": "Driver measurements at d9c5b1b",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-measure-after--measure.json",
+      "sha256": "e439a52e820e8a36f5ed90862e93f5d48aefdd2151fdc189e0c681920c719323",
+      "size": 78827,
+      "metadata": {
+        "tags": [
+          "after",
+          "measurements"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:58.724Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-before-sellout-1024": {
+      "id": "w2-repair-4-before-sellout-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE 1024x600 sellout with bowl open: NEXT bottom 662, turned-away 710 (off the fold)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-before-sellout-1024--result-n4-d3-1024.png",
+      "sha256": "561743f8b190f437f7b697ecf363f4aebfe3af39fd100bc14d0d808a324f5542",
+      "size": 139999,
+      "metadata": {
+        "tags": [
+          "before",
+          "R4-1",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:59.013Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-sellout-1024": {
+      "id": "w2-repair-4-after-sellout-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER 1024x600 sellout with bowl open: NEXT bottom 497, turned-away 448 inside WHO CAME",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-sellout-1024--result-n4-d3-1024.png",
+      "sha256": "396d67ed7bb5285fff9705d41fe8e51532e4d3064cf7ea4ffe1e0f69fd871528",
+      "size": 161507,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-1",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:59.312Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-carried-1366": {
+      "id": "w2-repair-4-after-carried-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER Night 3 pre-lock on d2: .fh-dial-carried renders ('Your dial is at $24 — the price you charged on Night 2.')",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-carried-1366--prelock-n3-d2-1366.png",
+      "sha256": "42455e6924b193a5f85ee472402c8cd338051df2f648bd95108edce516fc4891",
+      "size": 213088,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-2",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:59.610Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-chart-ladder": {
+      "id": "w2-repair-4-after-chart-ladder",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER closed five-night chart, $40/$60/$80/$100/$40: fitted axis, 4 labels, 0 intersections, 0 <path>",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-chart-ladder--closed-d0-1366.png",
+      "sha256": "e33e024974e3879248bc5d22b339e802af69d4097af838d3845407d96d7e0495",
+      "size": 88853,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-3",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:29:59.909Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-chart-flat": {
+      "id": "w2-repair-4-after-chart-flat",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER closed chart at $16 x5 (same-price nights): 3 labels, 0 intersections",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-chart-flat--closed-d2-1366.png",
+      "sha256": "d3c9a3613ee03ad672e3ab6c3e82606a1f4862d082b2b4764f95171b6ba152e5",
+      "size": 89029,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-3",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:00.191Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-cause-1366": {
+      "id": "w2-repair-4-after-cause-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER 1366 sellout settled night: full four-clause renewals rule as the cause line; PIN chip 710..745",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-cause-1366--result-n2-d2-1366.png",
+      "sha256": "523e3658b837834d3a7b66f4d0ecb775533bb87bfa688534aa740d52a31c566b",
+      "size": 205063,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-4",
+          "R4-7",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:00.469Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-hook-1366": {
+      "id": "w2-repair-4-after-hook-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER HOOK 1366: building, hero line, five-card slate bottom 747, 110 words in fold (84 main column)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-hook-1366--hook-d0-1366.png",
+      "sha256": "ff201754cd336e6e06d313e86b0ee8185dd7420339f74599d0f55634a9ed26af",
+      "size": 237805,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-6",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:00.765Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-hook-1024": {
+      "id": "w2-repair-4-after-hook-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER HOOK 1024x600: all five slate cards 331..487 visible, 140 words in fold",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-hook-1024--hook-d1-1024.png",
+      "sha256": "577fb893e56a94a355775312591947ee4d4b32ff675f3ec336ed9e2a5acab9f8",
+      "size": 125691,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-6",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:01.057Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-after-reveal": {
+      "id": "w2-repair-4-after-reveal",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER REVEAL final stage with the registered Two Peaks title/labels/note",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-after-reveal--reveal-final-d0-1366.png",
+      "sha256": "e0d44f2e5a6f50b0f381525fa884409c447989513e35a9e84fae520d3d9664b6",
+      "size": 128724,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-5",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:01.333Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-arena-not-offered": {
+      "id": "w2-repair-4-arena-not-offered",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "R4-8 arena ~60% fill, bowl not offered (md5 de2841134d33, identical to offered-declined)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-arena-not-offered--arena-60pct-not-offered.png",
+      "sha256": "a2bab15e13602aa75b9f88799517a0cf2c672ccec48f0470c47d7020b3ead6cb",
+      "size": 39797,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-8",
+          "arena"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:01.613Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-arena-open": {
+      "id": "w2-repair-4-arena-open",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "R4-8 arena ~60% fill, bowl open (md5 a00fbd4d5c3c)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-arena-open--arena-60pct-open.png",
+      "sha256": "600a91bb9bfb9316d32e6273721e832b5681fce4980d01be0c3ab5cd43f64d19",
+      "size": 43715,
+      "metadata": {
+        "tags": [
+          "after",
+          "R4-8",
+          "arena"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:01.892Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-npm-test": {
+      "id": "w2-repair-4-npm-test",
+      "wave": 2,
+      "kind": "command-log",
+      "label": "Scratch npm test: 469 pass (3 harness tests pass once docs/ is reachable from the scratch root)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-npm-test--npm-test-final.log",
+      "sha256": "03f28d8d478bd9602310c3012cfc5216637faf607637bc386b1aa372d12acc94",
+      "size": 117124,
+      "metadata": {
+        "tags": [
+          "tests"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:02.186Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-e2e": {
+      "id": "w2-repair-4-e2e",
+      "wave": 2,
+      "kind": "command-log",
+      "label": "Scratch scripts/e2e-m2l1.cjs PASS exit 0 (port 4452)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-e2e--e2e-m2l1.log",
+      "sha256": "aa8b08569faa08cb4ec0244f75d9828216931f2e4069eaf528e4e5cf64621d44",
+      "size": 11047,
+      "metadata": {
+        "tags": [
+          "e2e"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:02.504Z",
+      "actor": "builder-r4"
+    },
+    "w2-repair-4-misclick": {
+      "id": "w2-repair-4-misclick",
+      "wave": 2,
+      "kind": "command-log",
+      "label": "Scratch scripts/e2e-m2l1-misclick.cjs PASS exit 0 (port 4453)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-4-misclick--e2e-misclick.log",
+      "sha256": "ff13df5d2ffba55e6d396e83d7993dda51a9d4ed5505700e6782b7e8001e14b0",
+      "size": 635,
+      "metadata": {
+        "tags": [
+          "e2e"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:30:02.782Z",
+      "actor": "builder-r4"
     }
   },
   "claims": {
@@ -10486,11 +10851,11 @@
     "agentsActivated": 35,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 307,
+    "evidenceRecorded": 325,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 421,
-  "eventHead": "bffc92128ec3480acdf99241c9a694fcf73ad065ba5353ad3384d43d5f021f41",
+  "eventCount": 440,
+  "eventHead": "c52ba70fa0dea23fc421e2e3ffcc9a5d6bac794c2667b1247da6077e4cab7b4e",
   "warnings": []
 }

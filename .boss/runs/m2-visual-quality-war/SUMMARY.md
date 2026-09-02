@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `421:bffc92128ec3480acdf99241c9a694fcf73ad065ba5353ad3384d43d5f021f41`  
-Updated: 2026-09-02T17:51:33.466Z
+Event head: `440:c52ba70fa0dea23fc421e2e3ffcc9a5d6bac794c2667b1247da6077e4cab7b4e`  
+Updated: 2026-09-02T18:30:03.076Z
 
 ## Founder intent
 
@@ -55,7 +55,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - economic-truth-critic — econ-truth-w2 — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-w2b — completed-with-concerns — claude-sonnet-5
 - experience-director — experience-director-w2 — completed-with-concerns — claude-fable-5-1
-- builder — builder-r4 — active — claude-fable-5-1
+- builder — builder-r4 — completed-with-concerns — claude-fable-5-1
 
 ## Required evidence
 
@@ -289,6 +289,24 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-analyst-report — analyst-report — Independent analyst disproof attempt on the wave-2 pass claim at f65e865
 - w2r-mutation-a-f65e865 — e2e — R-1 mutation A re-run against the repaired head f65e865 dist: true Night-1 turnout figure 14,142 injected into the pre-lock render; the whole-figure claim limb must FAIL the run (non-zero exit = bite)
 - w2r-mutation-b-f65e865 — e2e — R-1 mutation B re-run against the repaired head f65e865 dist: 'Target: $110–$120' injected into the pre-lock render; the whole-figure claim limb must FAIL the run (non-zero exit = bite)
+- w2-repair-4-report — visual-report — Repair 4 report: acceptance table before/after at 1366x768 and 1024x600, commands run, registered strings, known gaps
+- w2-repair-4-manifest — browser-trace — Manifest of the 17 before/after frame pairs, the three arena frames and both measure.json files (driver, desks, prices)
+- w2-repair-4-measure-before — measurement — Driver measurements at head a34b292 (4 desks x 5 nights, hook, pin, synth)
+- w2-repair-4-measure-after — measurement — Driver measurements at d9c5b1b
+- w2-repair-4-before-sellout-1024 — screenshot — BEFORE 1024x600 sellout with bowl open: NEXT bottom 662, turned-away 710 (off the fold)
+- w2-repair-4-after-sellout-1024 — screenshot — AFTER 1024x600 sellout with bowl open: NEXT bottom 497, turned-away 448 inside WHO CAME
+- w2-repair-4-after-carried-1366 — screenshot — AFTER Night 3 pre-lock on d2: .fh-dial-carried renders ('Your dial is at $24 — the price you charged on Night 2.')
+- w2-repair-4-after-chart-ladder — screenshot — AFTER closed five-night chart, $40/$60/$80/$100/$40: fitted axis, 4 labels, 0 intersections, 0 <path>
+- w2-repair-4-after-chart-flat — screenshot — AFTER closed chart at $16 x5 (same-price nights): 3 labels, 0 intersections
+- w2-repair-4-after-cause-1366 — screenshot — AFTER 1366 sellout settled night: full four-clause renewals rule as the cause line; PIN chip 710..745
+- w2-repair-4-after-hook-1366 — screenshot — AFTER HOOK 1366: building, hero line, five-card slate bottom 747, 110 words in fold (84 main column)
+- w2-repair-4-after-hook-1024 — screenshot — AFTER HOOK 1024x600: all five slate cards 331..487 visible, 140 words in fold
+- w2-repair-4-after-reveal — screenshot — AFTER REVEAL final stage with the registered Two Peaks title/labels/note
+- w2-repair-4-arena-not-offered — screenshot — R4-8 arena ~60% fill, bowl not offered (md5 de2841134d33, identical to offered-declined)
+- w2-repair-4-arena-open — screenshot — R4-8 arena ~60% fill, bowl open (md5 a00fbd4d5c3c)
+- w2-repair-4-npm-test — command-log — Scratch npm test: 469 pass (3 harness tests pass once docs/ is reachable from the scratch root)
+- w2-repair-4-e2e — command-log — Scratch scripts/e2e-m2l1.cjs PASS exit 0 (port 4452)
+- w2-repair-4-misclick — command-log — Scratch scripts/e2e-m2l1-misclick.cjs PASS exit 0 (port 4453)
 
 ## Claim ledger
 
