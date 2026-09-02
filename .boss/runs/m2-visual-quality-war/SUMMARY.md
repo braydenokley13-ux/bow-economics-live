@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `383:53f5e8442514fed4b5081d36b51c3af7f1c1de4eb521a73ae7f2dfd4c622841f`  
-Updated: 2026-09-02T17:41:30.073Z
+Event head: `398:e39c89cb8eadc739e60d9298118060942abdd3b0062ed696c6882d6b43910b05`  
+Updated: 2026-09-02T17:43:32.533Z
 
 ## Founder intent
 
@@ -50,7 +50,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - builder — builder-r3 — completed-with-concerns — claude-opus-5
 - builder — builder-r2 — completed-with-concerns — claude-opus-5
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-sonnet-5
-- visual-experience-director — visual-critic-3 — active — claude-opus-5
+- visual-experience-director — visual-critic-3 — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — gameplay-critic-w2 — completed-with-concerns — claude-opus-5
 - economic-truth-critic — econ-truth-w2 — active — claude-opus-5
 - regression-hunter — regression-w2b — completed-with-concerns — claude-sonnet-5
@@ -261,6 +261,19 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - screenshot-a3 — screenshot — Desk B (the rejoined device) still playing, advanced to Night 2 of 5
 - screenshot-f1 — screenshot — Sync label recovered to synced after two injected transient 500 responses
 - screenshot-g1 — screenshot — Module 1 (m1l1-draft-day) /play desk rendering HOOK after teacher advance, via shared poll.ts
+- w2r-m1-compare-f65e865 — browser-trace — Module 1 extended pixel baseline (38 frames L1/L2/L3 across play/teach/board) captured at repaired head f65e865 and byte-compared (sha256) against the wave-2 base-head baseline screens-m1-baseline-ext; prior known non-stable frames: l2-05, l2-10, l3-05, l3-09 (join counter / build label text only)
+- w2-recheck-visual-report — visual-report — REVIEW_VISUAL_W2 with the appended '## Re-check after repairs (head 54402b0)' section: re-grade of A1-A10/B1-B9/C1-C8/D1-D4, re-issued PREMIUM gap table, answers to the four arena questions, restated dissent
+- w2-recheck-visual-manifest — browser-trace — Manifest of 60 re-check screenshots: 4-desk 5-night class at 1366x768 and 1024x600 (sellout, zero-turnout, bowl-open, late join), results captured at scrollY=0 before NEXT, plus arena comparison sheets
+- w2-recheck-visual-measurements — browser-trace — Live measurements for 47 states: figures >=30px with family/size/colour, box rects, gold/amber census, Bebas census, first-viewport word counts, card rows, rail cards, chart marks/labels, animations
+- w2-recheck-visual-arena-ladder — screenshot — Arena fill ladder 0 / 52.8 / 62.9 / 68.1 / 71.4 / 100 / 100-bowl-open at native 337px and at 33% (glance proxy) - mid-fills are mutually indistinguishable
+- w2-recheck-visual-arena-2x — screenshot — 2x upscale of the drawn arena band at 0 / 52.8 / 71.4 / 100 shuttered / 100 bowl-open - shows the equal-area-per-deck banding that carries the fill
+- w2-recheck-visual-bowl-states — screenshot — Same New York building at 3.4x: upper bowl OPEN (65.2%), OFFERED-AND-DECLINED shuttered (52.8%), NOT OFFERED drawn as an ordinary lit deck (62.9%) - one ring, three meanings
+- w2-recheck-visual-sellout — screenshot — Night 4 sellout at 1366x768: FULL HOUSE at 60px Inter 800 on the panel ground, no gold anywhere, no legend, direct arena labels
+- w2-recheck-visual-zero — screenshot — Zero-turnout settled night at 1366x768: dark building, re-composed one-glyph hero card, red -$520,000
+- w2-recheck-visual-locked — screenshot — Locked-waiting state: a whole dark arena replacing the clipped quadrant - C8 discharged
+- w2-recheck-visual-prelock — screenshot — Pre-lock Night 1 at 1366x768: even 309/309 row, no PIN banner, no blue rule box, dark building present, centred rule block under the CTA
+- w2-recheck-visual-1024-sellout — screenshot — Sellout results at 1024x600, scrollY=0: NEXT CTA clipped by the fold (bottom 623 in a 600px viewport)
+- w2-recheck-visual-chart — screenshot — COMPLETE frame: composed close, and the nights chart with superimposed marks and colliding labels
 
 ## Claim ledger
 
@@ -275,6 +288,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-visual-review-dissent — visual-quality/important/open — The Module-2 design system violates its own two published laws inside the module's designed peak moment, and the wave's flagship asset does not carry the read it exists to carry. MEASURED: (A4) Bebas Neue is the computed font-family of the sellout headline FULL HOUSE (40px/800), the per-night result headline (26px), the rail desk identity (12px, every state) and the rail night label, while design/VISUAL_IDENTITY.md states 'Bebas Neue does not appear under M2' - no deviation reason recorded. (A2) gold #f4b942 is rendered in HTML, not in the arena SVG, as the sellout panel border rgba(244,185,66,0.4) and the headline background linear-gradient(rgba(244,185,66,.16), rgba(244,185,66,.04)); amber rgb(240,169,74) is the legend swatch on every settled night; blue #4da2e8 is the rule-box background and left border on every pre-lock frame - four UI accent hues where the contract allows one, and VISUAL_IDENTITY.md asserts gold is retired. (A7/C4) the drawn arena does not encode fill legibly: 71.4% and 100% differ only by an outer-ring dim, 0% still renders a warmly lit court so the night nobody came reads as an open building, and the legend's 'Came' swatch is amber while every lit seat is violet - on a bowl-open night 'Came' and 'Upper bowl open' are the same amber. Additionally C8 renders broken (the locked-waiting building panel is a mostly-empty black rectangle with one clipped quadrant of the bowl, on a state each pair sees five times). Advisory under my authority; recorded so no later PREMIUM claim can be made on this surface without disposing of it. I directed the repairs in the 'direction' section and must not be the sole certifier of the result.
 - w2-econ-confirm-dissent — economic-truth/blocking/open — R-7 is not discharged: both arena entries added to SIMPLIFICATIONS at 6c4c7cc state the opposite of what shipped. (1) The entry says the bowl is lit as one evenly-lit proportion of a single pool with no price tiers, no sections, no view quality; arena.ts:163 defines three tiers (lower .34 / club .16 / upper .50) and arena.ts:564-586 fills them sequentially, so at 25% only the rings nearest the floor are lit and at 50% the upper ring is still black (OBSERVED, arena-fill-ladder.png). The picture asserts a seat-allocation mechanism the model does not contain - the exact class of misconception the entry tells the teacher cannot arise. (2) The entry says the Night-4 upper bowl is a third state of the same picture; the picture has no third state and the legend branch that would name it is unreachable (play/main.ts:2218: bowlOffered = n.bowlCost > 0 || n.openBowl, and bowlCost is non-zero only when openBowl is true). OBSERVED at three bowl-closed desks: a desk that kept the bowl shut draws a fully lit three-tier building at 98.2% with no indication that 2,400 seats were never opened, on the one night the module turns on a capacity decision. The honesty ledger is what makes a simplification acceptable under CLAUDE.md section 3; two of its three new entries are false about the artifact, so the teacher note that should defuse the misconception instead denies it exists. Discharged by either repair in R-A.
 - w2-regression-rs-dissent — classroom-reliability/blocking/resolved — A PIN rejoin from a second browser context — the product's own documented device-switch mechanism — silently and permanently revokes the original device's session token server-side, with no grace period. The original tab shows a false 'offline — retrying' status instead of being told it was signed out, and if the pair does the natural recovery action (refresh the page), the screen renders permanently blank with no #fhNextNight and no visible control to recover with, in that browser, ever. OBSERVED in an isolated, minimal repro (probe2.cjs) and independently in the full matrix run; the server process itself stays up throughout (confirmed alive at every poll tick), so this is a client-side dead end reachable by an ordinary teacher-sanctioned classroom action, not an adversarial edge case.
+- w2-recheck-visual-dissent — visual-quality/advisory/open — Restated and narrowed after repairs. The published-law limb is DISCHARGED: A2 and A4 are now kept inside the module's peak moment (0 gold/amber declarations inside #gameBody/.m2-rail/#gameHeader across 47 measured states; Bebas Neue computes on only 2 elements document-wide, both inside the hidden join card; the gold sellout ribbon is replaced by 60px Inter 800 on the panel ground). The flagship-asset limb STANDS in narrowed form: the drawn arena now reads empty (0% is genuinely dark) and full (continuous violet to the rim), but carries no legible 'how full' between roughly 50% and 75% - 52.8, 62.9, 68.1 and 71.4 percent render as the same three-band bullseye at native size and are indistinguishable at 33% scale - and its outer deck is drawn three different ways across nights (unoffered = ordinary lit deck, offered-and-declined = shuttered, open = unsold dark deck) with no cue a 10-year-old can read. Recorded so a later PREMIUM claim cannot be made without disposing of it.
 
 ## Latest gate
 

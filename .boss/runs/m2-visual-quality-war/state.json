@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:41:30.073Z",
+  "updatedAt": "2026-09-02T17:43:32.533Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1885,11 +1885,29 @@
           "model": "claude-opus-5",
           "reason": "Re-grade of REVIEW_VISUAL_W2 rows and PREMIUM gap at the repaired head",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T17:24:18.962Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T17:43:32.492Z",
+          "sections": {
+            "visual-verdict": "STRONG. Past SERVICEABLE, not PREMIUM. Re-checked at head 54402b0, AGENT-PLAYTESTED: one 4-desk 5-night class in one script (sellout, zero turnout, bowl-open desk, late join) plus a probe for the two states the class run could not produce; 47 states measured at 1366x768 and 1024x600, results at scrollY=0 before NEXT. DISCHARGED: A2 (0 gold/amber declarations inside #gameBody/rail/header on all 47 states; blue rule box gone), A4 (Bebas computes on exactly 2 elements document-wide, both inside the hidden join card), C5 sellout ribbon (FULL HOUSE now 60px Inter 800 white on the panel ground, top 117), C8 locked-waiting (whole dark building, no clipping), B9/A6-PIN banner (#pinCard 0x0; chip only), B4 (dark building present pre-lock), A1 (row 1 = 309/309, row 2 = 286/286), C4 legend (ARENA OUTCOME absent everywhere; direct labels), D1 (books + five-night ledger + chart at all-nights-done, REVEAL, SYNTHESIS, COMPLETE), and the 0% arena, which now reads unambiguously as a dark building. STANDING: A6 chart (y not fitted - four ordinary nights in 6.8 of 104 plot units; N1/N5 superimposed at cx 119.9, 2.6 apart, r=5; labels collide and N5's renders below the axis) and it now appears on 6 frames instead of 2; A9 word count (269 first-viewport words at 1366, 219 at 1024, ceiling 60); HOOK untouched (354 words, 1197px document); A8 rail dead space and desk-identity truncation; D3 'subordinate' reveal mirror. PARTLY: A7 - the arena separates empty/partly/full but not how full (52.8/62.9/68.1/71.4% render as the same three-band bullseye), and its outer deck means three different things across nights. NEW: the rejoin PIN chip renders 746..781 in a 768 viewport (clipped on every state); at 1024x600 the sellout NEXT CTA falls below the fold (bottom 623 closed bowl, 737 bowl open); /play at SYNTHESIS page 1 is byte-identical to the COUNTERFACTUAL frame (innerText md5 04632cfc37 on both).",
+            "hierarchy-findings": "Highest severity first, all OBSERVED unless marked. 1) The arena's mid-range is unreadable: the equal-area-per-deck seam draws the same violet/dark/violet/dark bullseye at 52.8, 62.9, 68.1 and 71.4 percent, so the picture answers empty/partly/full but not how full (cmp-arena-fill-ladder.png, cmp-arena-2x.png). 100% vs 71.4% is now separable on inspection - continuous violet to the gold rim vs a dark outer annulus - and dies at 33% scale. 2) The outer deck carries three meanings with no visible cue: not offered that night = drawn as an ordinary lit deck; offered and declined = shuttered ribbed cover; open = dark-violet unsold deck (cmp-bowl-open-vs-shuttered.png, three New York frames at 52.8/65.2/62.9%). The text carries the state, the drawing does not. Caller behaviour INFERRED from dist/client/shared/arena.js lines 134-135 (bowlSeats 0 forces bowlOpen true). 3) The nights chart is the least legible object in the module and now renders on six frames including the pre-lock frame where the pair prices tonight: labels overlap horizontally ('14,1$48 . 14,288'), N5's label renders at y=119 below the y=116 axis, N1 and N5 superimpose. 4) Settled-night hierarchy is the strongest thing in the module and is unchanged: 72px turnout hero, 40px turned-away second, money never above 31px, at most 2 figures >=34px on the sellout. 5) The sellout headline now reads as a headline, not a prize; at 60px it is the largest object while the 72px turnout stays the largest figure - correct order, no headroom left. 6) Zero turnout re-composes: the 0 sits in a 159px card instead of a 275px one, and the dark building no longer contradicts it. 7) Pre-lock hierarchy: $24 at 68px is the largest figure, the violet CTA is the brightest object, and the duplicated CASH/RENEWALS pair is gone from the stat row. 8) Dead ground has moved rather than gone: 300-340px of black under the left column on every results frame, ~265px of empty rail on results, ~460px on every post-PLAY frame. 9) The only centred text block in a left-aligned system is 40 words of HOUSE_RULES[0] set under the loudest element on every pre-lock frame. 10) HOOK still inverts the problem: 354 words, no hero figure, no building.",
+            "production-quality-gaps": "1) Arena encoding, STRUCTURAL: one seam per deck instead of one seam per building; mid-fills mute; outer deck unstable in meaning. 2) Chart: y maps ~0-26,000 people across the plot (linear fit through the measured marks), so ordinary nights compress into 6.5% of the plot; same-price nights superimpose; labels are placed 18 units under their mark with no collision handling or clamp, so they overlap each other and escape the axis. 3) Copy density: 269/219 first-viewport words pre-lock against a 60-word ceiling; HOUSE_RULES[0] verbatim on N1, N3, N4; HOOK 354 words untouched (declared known gap). 4) Fold defects: fh-pin-chip at 746..781 in a 768 viewport on every state; 1024x600 sellout puts #fhNextNight at 623 and the 40px turned-away figure at 666. 5) SYNTHESIS page 1 does not change the device (md5 identical to COUNTERFACTUAL) and its staged card is below the fold. 6) Rail: ~265px dead on results, ~460px dead post-PLAY, desk identity still truncates to 'Desk 1 . New York ...'. 7) Arena labels sit under the drawing rather than on the lit and dark regions. 8) REVEAL final is four panels plus a ledger plus a chart at the moment the room should be on the board; its broken subtitle ('...Look up at the board for the room's.') is unchanged. 9) Clean: tokens, gutters, radii, hairlines, the even pre-lock grid, the CASH chain, the two-book typography, and motion (commit 0.2s, breathe 5.4s, flash 0.26s on the sellout only, nothing on money). Reduced-motion was NOT re-verified in a browser this pass - the inline prefers-reduced-motion blocks are still present in dist arena.js and m2.css (INFERRED). 10) NOT VERIFIED this pass: the unpressed bowl plate, /teach and /board (wave 3 scope, not re-driven).",
+            "direction": "1) Make the fill one seam across the whole bowl - everything below it lit, everything above it dark - and demote the decks to architecture, so 52% and 71% differ by the position of a line rather than the width of three annuli. 2) Give the extra deck one stable meaning: draw it only when the night's card offers it, shuttered when declined, in the pool when open; never render an unoffered deck as ordinary lit seating. 3) Fit the chart's y to the observed people range, jitter same-price nights with a leader to one chip, clamp labels inside the plot - or drop labels to last-night-only. Two of five marks unreadable on the pricing frame is worse than no chart there. 4) Cut the centred rule block to one left-set line and move the rest behind MORE ABOUT TONIGHT; that is ~40 of the 269 pre-lock words and the only centred block in the system. 5) Compose HOOK on the dark building with the five-card slate and one rule. 6) Fix the two fold defects (PIN chip clipped at 768; 1024x600 sellout CTA at 623/737). 7) Make SYNTHESIS page 1 change the device. 8) Attach the arena labels to the picture and thin the caption to the percentage. 9) Fill or shorten the results left column and the post-PLAY rail. I directed repairs 2 and 3 and do not certify them; this re-check is advisory and is not the sole certification of the surface."
+          },
+          "evidenceIds": [
+            "w2-recheck-visual-report",
+            "w2-recheck-visual-manifest",
+            "w2-recheck-visual-measurements",
+            "w2-recheck-visual-arena-ladder",
+            "w2-recheck-visual-arena-2x",
+            "w2-recheck-visual-bowl-states",
+            "w2-recheck-visual-sellout",
+            "w2-recheck-visual-zero",
+            "w2-recheck-visual-locked",
+            "w2-recheck-visual-prelock",
+            "w2-recheck-visual-1024-sellout",
+            "w2-recheck-visual-chart"
+          ],
           "cost": null
         },
         "w2-recheck-gameplay": {
@@ -2184,7 +2202,20 @@
         "screenshot-a2",
         "screenshot-a3",
         "screenshot-f1",
-        "screenshot-g1"
+        "screenshot-g1",
+        "w2r-m1-compare-f65e865",
+        "w2-recheck-visual-report",
+        "w2-recheck-visual-manifest",
+        "w2-recheck-visual-measurements",
+        "w2-recheck-visual-arena-ladder",
+        "w2-recheck-visual-arena-2x",
+        "w2-recheck-visual-bowl-states",
+        "w2-recheck-visual-sellout",
+        "w2-recheck-visual-zero",
+        "w2-recheck-visual-locked",
+        "w2-recheck-visual-prelock",
+        "w2-recheck-visual-1024-sellout",
+        "w2-recheck-visual-chart"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -2196,7 +2227,8 @@
         "w2-gameplay-dissent",
         "w2-visual-review-dissent",
         "w2-econ-confirm-dissent",
-        "w2-regression-rs-dissent"
+        "w2-regression-rs-dissent",
+        "w2-recheck-visual-dissent"
       ],
       "meetingIds": [],
       "gates": [
@@ -9513,6 +9545,245 @@
       "metadata": {},
       "recordedAt": "2026-09-02T17:41:09.994Z",
       "actor": "regression-w2b"
+    },
+    "w2r-m1-compare-f65e865": {
+      "id": "w2r-m1-compare-f65e865",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Module 1 extended pixel baseline (38 frames L1/L2/L3 across play/teach/board) captured at repaired head f65e865 and byte-compared (sha256) against the wave-2 base-head baseline screens-m1-baseline-ext; prior known non-stable frames: l2-05, l2-10, l3-05, l3-09 (join counter / build label text only)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-m1-compare-f65e865--record.json",
+      "sha256": "2ddaec88a1376ca0ddc41c9fef751891ae1cd6afca15c74789752ba22103b094",
+      "size": 3691,
+      "metadata": {
+        "command": [
+          "node",
+          "docs/gauntlet/module-2/premium/tools/compare-m1-ext.cjs",
+          "--a",
+          "docs/gauntlet/module-2/premium/screens-m1-baseline-ext",
+          "--b",
+          "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/m1-head-f65e865",
+          "--out",
+          "/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/m1-compare-f65e865.json"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T17:42:47.570Z",
+      "actor": "boss-lead"
+    },
+    "w2-recheck-visual-report": {
+      "id": "w2-recheck-visual-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "REVIEW_VISUAL_W2 with the appended '## Re-check after repairs (head 54402b0)' section: re-grade of A1-A10/B1-B9/C1-C8/D1-D4, re-issued PREMIUM gap table, answers to the four arena questions, restated dissent",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-report--REVIEW_VISUAL_W2.md",
+      "sha256": "cac9474079dae63919ddbf4e1b88f94c2840f0bc90a5aea25ada9d0d5c333dcf",
+      "size": 49114,
+      "metadata": {
+        "tags": [
+          "visual",
+          "re-check",
+          "head-54402b0"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:29.131Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-manifest": {
+      "id": "w2-recheck-visual-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Manifest of 60 re-check screenshots: 4-desk 5-night class at 1366x768 and 1024x600 (sellout, zero-turnout, bowl-open, late join), results captured at scrollY=0 before NEXT, plus arena comparison sheets",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-manifest--MANIFEST.md",
+      "sha256": "998cb0242931abf393c301ad6a6e170382130b16042e87e9d05f38013e468aa9",
+      "size": 4683,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:29.408Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-measurements": {
+      "id": "w2-recheck-visual-measurements",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Live measurements for 47 states: figures >=30px with family/size/colour, box rects, gold/amber census, Bebas census, first-viewport word counts, card rows, rail cards, chart marks/labels, animations",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-measurements--measurements.json",
+      "sha256": "61dab8156be464516fe412e58324894ef0685622e8cb1a82399a9426a268d226",
+      "size": 417939,
+      "metadata": {
+        "tags": [
+          "measurement"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:29.690Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-arena-ladder": {
+      "id": "w2-recheck-visual-arena-ladder",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Arena fill ladder 0 / 52.8 / 62.9 / 68.1 / 71.4 / 100 / 100-bowl-open at native 337px and at 33% (glance proxy) - mid-fills are mutually indistinguishable",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-arena-ladder--cmp-arena-fill-ladder.png",
+      "sha256": "941c31e37f69db315ae14dea77f952570cf8df75ec20cb54dc52751ae576bb85",
+      "size": 163256,
+      "metadata": {
+        "tags": [
+          "arena",
+          "A7"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:29.970Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-arena-2x": {
+      "id": "w2-recheck-visual-arena-2x",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "2x upscale of the drawn arena band at 0 / 52.8 / 71.4 / 100 shuttered / 100 bowl-open - shows the equal-area-per-deck banding that carries the fill",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-arena-2x--cmp-arena-2x.png",
+      "sha256": "c988f637f12e4c49a25b4016ad71c9e1ab38bf7bc4c440cafbc369f6d9fee32a",
+      "size": 345979,
+      "metadata": {
+        "tags": [
+          "arena",
+          "A7"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:30.245Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-bowl-states": {
+      "id": "w2-recheck-visual-bowl-states",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Same New York building at 3.4x: upper bowl OPEN (65.2%), OFFERED-AND-DECLINED shuttered (52.8%), NOT OFFERED drawn as an ordinary lit deck (62.9%) - one ring, three meanings",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-bowl-states--cmp-bowl-open-vs-shuttered.png",
+      "sha256": "9b434ac757774b5281aceba931848443aea54e42054a4477887b9b890dfa4aaf",
+      "size": 450747,
+      "metadata": {
+        "tags": [
+          "arena",
+          "A7",
+          "C4"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:30.516Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-sellout": {
+      "id": "w2-recheck-visual-sellout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 sellout at 1366x768: FULL HOUSE at 60px Inter 800 on the panel ground, no gold anywhere, no legend, direct arena labels",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-sellout--10-result-n4-d2-1366.png",
+      "sha256": "1d105ffeb0392104defc8855e95416ed67a750083cdd95cf72cdb277bfd24c53",
+      "size": 203358,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "A2",
+          "A4",
+          "C5",
+          "C7"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:30.800Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-zero": {
+      "id": "w2-recheck-visual-zero",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Zero-turnout settled night at 1366x768: dark building, re-composed one-glyph hero card, red -$520,000",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-zero--10-result-n1-d3-1366.png",
+      "sha256": "dc72ace52ab978428cf82f5dcda7d593ac71109d030552bb079457ee841b3352",
+      "size": 169799,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "A7",
+          "A3"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:31.073Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-locked": {
+      "id": "w2-recheck-visual-locked",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Locked-waiting state: a whole dark arena replacing the clipped quadrant - C8 discharged",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-locked--05-play-locked-waiting-1366.png",
+      "sha256": "c01ab69a093fe44d4a666f775f506afb8d81539c00a60c39c9f3066f8a25079a",
+      "size": 212965,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "C8"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:31.354Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-prelock": {
+      "id": "w2-recheck-visual-prelock",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Pre-lock Night 1 at 1366x768: even 309/309 row, no PIN banner, no blue rule box, dark building present, centred rule block under the CTA",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-prelock--03-play-prelock-n1-1366.png",
+      "sha256": "9686729059297435e4168bf8b72fdc4f67336405470ea706ed6970de39cdded0",
+      "size": 201904,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "A1",
+          "A9",
+          "B4",
+          "B9"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:31.642Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-1024-sellout": {
+      "id": "w2-recheck-visual-1024-sellout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Sellout results at 1024x600, scrollY=0: NEXT CTA clipped by the fold (bottom 623 in a 600px viewport)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-1024-sellout--10c-result-n4-d2-1024.png",
+      "sha256": "c618ea8b231aa90deadb7cf76f3b96fdb44e74e7b394c791aec2ec300c1bf7f1",
+      "size": 145174,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600",
+          "C1"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:31.908Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-recheck-visual-chart": {
+      "id": "w2-recheck-visual-chart",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "COMPLETE frame: composed close, and the nights chart with superimposed marks and colliding labels",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-recheck-visual-chart--16-play-complete-1366.png",
+      "sha256": "b5bee99535effcbf76ae42a7338f351933cf54ba4caa63a5e5576bc57e982fba",
+      "size": 127180,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "A6",
+          "D1"
+        ]
+      },
+      "recordedAt": "2026-09-02T17:43:32.201Z",
+      "actor": "visual-critic-3"
     }
   },
   "claims": {
@@ -9741,6 +10012,23 @@
       "resolution": "Resolved by the owning critic's re-check at head 54402b0 (REGRESSION_W2_RECHECK.md): after repair 2 stage 1 (commit 7a34460) a PIN rejoin from a second context sends the original device to the join card with 'This desk was opened on another device. Rejoin with your PIN.' within one poll and after reload; sync label reads 'signed out', never 'offline — retrying'; #gameBody never blank while the join card is visible; the rejoining device keeps playing. Measured twice. Not re-verified this pass under shared-sandbox CPU contention and restated as open coverage, not regressions: refresh-only-in-results, Night-3 late join, bell auto-commit with unacknowledged nights (covered at f65e865 by the e2e stall desk and the misclick e2e, w2r-e2e-f65e865 / w2r-e2e-misclick-f65e865), and the Module 1 pixel baseline at the repaired head (lead runs it as a command record next).",
       "resolvedAt": "2026-09-02T17:41:10.543Z",
       "resolvedBy": "boss-lead"
+    },
+    "w2-recheck-visual-dissent": {
+      "id": "w2-recheck-visual-dissent",
+      "wave": 2,
+      "category": "visual-quality",
+      "severity": "advisory",
+      "finding": "Restated and narrowed after repairs. The published-law limb is DISCHARGED: A2 and A4 are now kept inside the module's peak moment (0 gold/amber declarations inside #gameBody/.m2-rail/#gameHeader across 47 measured states; Bebas Neue computes on only 2 elements document-wide, both inside the hidden join card; the gold sellout ribbon is replaced by 60px Inter 800 on the panel ground). The flagship-asset limb STANDS in narrowed form: the drawn arena now reads empty (0% is genuinely dark) and full (continuous violet to the rim), but carries no legible 'how full' between roughly 50% and 75% - 52.8, 62.9, 68.1 and 71.4 percent render as the same three-band bullseye at native size and are indistinguishable at 33% scale - and its outer deck is drawn three different ways across nights (unoffered = ordinary lit deck, offered-and-declined = shuttered, open = unsold dark deck) with no cue a 10-year-old can read. Recorded so a later PREMIUM claim cannot be made without disposing of it.",
+      "evidenceIds": [
+        "w2-recheck-visual-arena-ladder",
+        "w2-recheck-visual-arena-2x",
+        "w2-recheck-visual-bowl-states",
+        "w2-recheck-visual-report"
+      ],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-02T17:43:32.533Z",
+      "actor": "visual-critic-3"
     }
   },
   "meetings": {},
@@ -9919,11 +10207,11 @@
     "agentsActivated": 34,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 280,
+    "evidenceRecorded": 293,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 383,
-  "eventHead": "53f5e8442514fed4b5081d36b51c3af7f1c1de4eb521a73ae7f2dfd4c622841f",
+  "eventCount": 398,
+  "eventHead": "e39c89cb8eadc739e60d9298118060942abdd3b0062ed696c6882d6b43910b05",
   "warnings": []
 }
