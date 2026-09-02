@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T20:08:33.700Z",
+  "updatedAt": "2026-09-02T22:12:32.084Z",
   "currentWave": 3,
   "waves": {
     "1": {
@@ -9424,7 +9424,9 @@
           "cost": null
         }
       },
-      "evidenceIds": [],
+      "evidenceIds": [
+        "w3-founder-rulings"
+      ],
       "claimIds": [],
       "dissentIds": [],
       "meetingIds": [],
@@ -16645,6 +16647,18 @@
       },
       "recordedAt": "2026-09-02T19:59:47.463Z",
       "actor": "browser-qa-w2"
+    },
+    "w3-founder-rulings": {
+      "id": "w3-founder-rulings",
+      "wave": 3,
+      "kind": "note",
+      "label": "Founder rulings D21 (FD-1 honest frontier, FD-2 short rules in view, FD-3 no art rewrite) and D22 (program sequence after wave 3, grade bands)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w3-founder-rulings--PRODUCT_DECISIONS.md",
+      "sha256": "7b02fe19378410f4661a440094bb0f84aa9b0c1b652412a31f1265c6efa29d83",
+      "size": 35596,
+      "metadata": {},
+      "recordedAt": "2026-09-02T22:12:31.796Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {
@@ -17085,9 +17099,12 @@
         "w2-final-visual-report"
       ],
       "blocking": false,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-02T18:50:00.732Z",
-      "actor": "visual-critic-3"
+      "actor": "visual-critic-3",
+      "resolution": "Dispositioned by founder ruling FD-3 (D21), not by a rebuild: preserve the meaningful deck and seam structure and the truthful printed fill figure; improve the encoding only where a bounded strong implementation exists; a seat-by-seat or heavy-WebGL bowl is not required to close a wave unless evidence shows the current encoding is unusable. The critic's measurements stand on the record — 54.4/58.3/63.2/67.9/76.7 percent are not orderable without their captions — and the printed WHO CAME figure beside the picture is the founder-accepted answer to that. A later PREMIUM claim must still cite this ruling rather than assert the gap away.",
+      "resolvedAt": "2026-09-02T22:12:32.084Z",
+      "resolvedBy": "boss-lead"
     }
   },
   "meetings": {},
@@ -17273,11 +17290,11 @@
     "agentsActivated": 44,
     "gateFailures": 5,
     "claimsContradicted": 2,
-    "evidenceRecorded": 414,
+    "evidenceRecorded": 415,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 570,
-  "eventHead": "0ce8b1de425539ece2c736d23d60df893ae6d96dd8d8f5b21cf7281d34b5c9e4",
+  "eventCount": 572,
+  "eventHead": "224a8a4f5040441a70c5b106447e04a4f3d141bc60d77cc9ecdc6885f48c5c7b",
   "warnings": []
 }
