@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `416:017ca7eca671dde92be57888d53edc5614157589a315592ce30ad55103c8922f`  
-Updated: 2026-09-02T17:48:03.532Z
+Event head: `419:98dd02f6e0fa95256bfca10649c82d05aa14dbdcdc82e2ee33131311005086b2`  
+Updated: 2026-09-02T17:50:13.580Z
 
 ## Founder intent
 
@@ -44,7 +44,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - player-gameplay-critic — kid-c2-nonsports — completed-with-concerns — claude-opus-5
 - economic-truth-critic — econ-truth-w2 — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-w2 — completed-with-concerns — claude-sonnet-5
-- product-analyst — analyst-w2 — active — claude-opus-5
+- product-analyst — analyst-w2 — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-w2b — completed-with-concerns — claude-sonnet-5
 - builder — builder-r1 — completed-with-concerns — claude-opus-5
 - builder — builder-r3 — completed-with-concerns — claude-opus-5
@@ -286,6 +286,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2r-m1-l3-05-crop-b — screenshot — M1 l3-05-teach-day1 at 1366x768: pixel-diff crop side B (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc
 - w2r-m1-l3-09-crop-a — screenshot — M1 l3-09-teach-reveal at 1366x768: pixel-diff crop side A (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc
 - w2r-m1-l3-09-crop-b — screenshot — M1 l3-09-teach-reveal at 1366x768: pixel-diff crop side B (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc
+- w2-analyst-report — analyst-report — Independent analyst disproof attempt on the wave-2 pass claim at f65e865
 
 ## Claim ledger
 
@@ -301,6 +302,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-econ-confirm-dissent — economic-truth/blocking/resolved — R-7 is not discharged: both arena entries added to SIMPLIFICATIONS at 6c4c7cc state the opposite of what shipped. (1) The entry says the bowl is lit as one evenly-lit proportion of a single pool with no price tiers, no sections, no view quality; arena.ts:163 defines three tiers (lower .34 / club .16 / upper .50) and arena.ts:564-586 fills them sequentially, so at 25% only the rings nearest the floor are lit and at 50% the upper ring is still black (OBSERVED, arena-fill-ladder.png). The picture asserts a seat-allocation mechanism the model does not contain - the exact class of misconception the entry tells the teacher cannot arise. (2) The entry says the Night-4 upper bowl is a third state of the same picture; the picture has no third state and the legend branch that would name it is unreachable (play/main.ts:2218: bowlOffered = n.bowlCost > 0 || n.openBowl, and bowlCost is non-zero only when openBowl is true). OBSERVED at three bowl-closed desks: a desk that kept the bowl shut draws a fully lit three-tier building at 98.2% with no indication that 2,400 seats were never opened, on the one night the module turns on a capacity decision. The honesty ledger is what makes a simplification acceptable under CLAUDE.md section 3; two of its three new entries are false about the artifact, so the teacher note that should defuse the misconception instead denies it exists. Discharged by either repair in R-A.
 - w2-regression-rs-dissent — classroom-reliability/blocking/resolved — A PIN rejoin from a second browser context — the product's own documented device-switch mechanism — silently and permanently revokes the original device's session token server-side, with no grace period. The original tab shows a false 'offline — retrying' status instead of being told it was signed out, and if the pair does the natural recovery action (refresh the page), the screen renders permanently blank with no #fhNextNight and no visible control to recover with, in that browser, ever. OBSERVED in an isolated, minimal repro (probe2.cjs) and independently in the full matrix run; the server process itself stays up throughout (confirmed alive at every poll tick), so this is a client-side dead end reachable by an ordinary teacher-sanctioned classroom action, not an adversarial edge case.
 - w2-recheck-visual-dissent — visual-quality/advisory/open — Restated and narrowed after repairs. The published-law limb is DISCHARGED: A2 and A4 are now kept inside the module's peak moment (0 gold/amber declarations inside #gameBody/.m2-rail/#gameHeader across 47 measured states; Bebas Neue computes on only 2 elements document-wide, both inside the hidden join card; the gold sellout ribbon is replaced by 60px Inter 800 on the panel ground). The flagship-asset limb STANDS in narrowed form: the drawn arena now reads empty (0% is genuinely dark) and full (continuous violet to the rim), but carries no legible 'how full' between roughly 50% and 75% - 52.8, 62.9, 68.1 and 71.4 percent render as the same three-band bullseye at native size and are indistinguishable at 33% scale - and its outer deck is drawn three different ways across nights (unoffered = ordinary lit deck, offered-and-declined = shuttered, open = unsold dark deck) with no cue a 10-year-old can read. Recorded so a later PREMIUM claim cannot be made without disposing of it.
+- w2-analyst-dissent — visual-quality/important/open — The wave-2 pass claim states the fresh visual critic named the remaining gaps non-structural; REVIEW_VISUAL_W2.md 'Re-check after repairs' lines 187-189 class gaps 1-3 (arena mid-fill and unstable outer deck; nights chart unfitted and colliding on six frames; HOOK unrecomposed) as STRUCTURAL, and rows A6/A9 stand unmet without a recorded deviation reason. The pass condition's visual limb is therefore not met at f65e865, independent of the STRONG overall grade. Recorded so that a PASS gate on this wave cannot cite the visual report as satisfying that clause.
 
 ## Latest gate
 

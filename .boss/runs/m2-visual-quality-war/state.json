@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:48:03.532Z",
+  "updatedAt": "2026-09-02T17:50:13.580Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1727,11 +1727,18 @@
           "model": "claude-opus-5",
           "reason": "Level 3 required: disproof of the wave-2 pass claim after all critics report",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T21:29:14.170Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T17:50:13.538Z",
+          "sections": {
+            "evidence-review": "OBSERVED: w2r-npm-test-f65e865 exit 0 468/468; w2r-e2e-f65e865 exit 0 (4+12 desks, late join N3, auto-commit, 56 limb states); w2r-e2e-misclick-f65e865 exit 0; w2r-m1-compare-f65e865-full 36/38 identical, l3-05/l3-09 differ by 32 bytes in a label region (crops show no visible difference; bounding box is the lead's figure, NOT VERIFIED). OBSERVED w2-recheck-visual-report: STRONG, not PREMIUM, gaps 1-3 STRUCTURAL, A6 STANDING+new regression, A9 269 words vs 60. OBSERVED w2r-gameplay-report STRONG, blocking dissent resolved, 4 IMPORTANT re-filed. Kid A/B/C STRONG only at 6c4c7cc. OBSERVED w2-recheck-econ-report: R-7 discharged, R-2/3/4/9/10 re-confirmed, R-1 bite NOT RE-VERIFIED at this head, 3 new IMPORTANT. OBSERVED REGRESSION_W2_RECHECK: rejoin discharged; refresh/late-join/bell/M1 NOT VERIFIED by hunter. OBSERVED BROWSER_TRUTH_W2_RECHECK: new IMPORTANT 1024x600 sellout/bowl-open NEXT below fold. INFERRED from reflog: post-f65e865 commits are ledger commits; git log on runtime/ NOT VERIFIED.",
+            "disproof-attempts": "(1) 'remaining gap non-structural' DISPROVED: critic names three STRUCTURAL gaps. (2) 'every row met or deviated with recorded reason' DISPROVED: A6, A9 unmet, no recorded reason; A6 is a repair-introduced regression. (3) Gameplay STRONG held at 54402b0; kid personas NOT VERIFIED at final head. (4) R-1 bite at f65e865 NOT VERIFIED (proofs at 6c4c7cc; mutation D shows a rounding ceiling); 'no new false claim' contested (renewals-cause compression printed on 11/20 rising nights; R-7 'fifth' measured 25.9%). (5) 'regression hunter finds M1 unchanged and results state safe under refresh/rejoin/late-join/bell' DISPROVED as worded: hunter verified rejoin only; M1 by lead; late-join/bell by e2e; refresh/unacked-bell only at 6c4c7cc. (6) Command records held. (7) ROLLBACK not triggered. (8) KILL not triggered.",
+            "biggest-failure": "The visual limb of the pass condition fails on the critic's own table: the drawn arena does not encode how-full between ~50% and 75% and the outer ring carries three meanings across nights; the nights chart is unreadable at the pricing moment and now renders on six frames (regression from repair 2). Secondary: regression clause carried by lead/e2e rather than the hunter; kid personas not re-read on the repaired surface.",
+            "recommendation": "REPAIR, deciding clause: passCondition visual limb ('names PREMIUM as met or names the remaining gap as non-structural' plus 'every contract row A-D met or deviated with a recorded reason') -> repairCondition 'a named contract row unmet'. Bounded repair: (a) arena single fill seam + stable upper-deck meaning + chart y-fit/de-collide, returned to visual-critic-3; (b) 1024x600 sellout/bowl-open NEXT and turned-away fold, returned to browser-qa-w2. Fits budget as briefed (3/8 repairs, 2/6 waves; ledger count NOT VERIFIED). Prerequisites for a later PASS: R-1 mutation bite re-run at the repaired head; regression hunter (not lead) takes M1 compare and refresh/bell paths on an uncontended host; at least one kid persona re-read."
+          },
+          "evidenceIds": [
+            "w2-analyst-report"
+          ],
           "cost": null
         },
         "w2-regression-results-state": {
@@ -2253,7 +2260,8 @@
         "w2r-m1-l3-05-crop-a",
         "w2r-m1-l3-05-crop-b",
         "w2r-m1-l3-09-crop-a",
-        "w2r-m1-l3-09-crop-b"
+        "w2r-m1-l3-09-crop-b",
+        "w2-analyst-report"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -2266,7 +2274,8 @@
         "w2-visual-review-dissent",
         "w2-econ-confirm-dissent",
         "w2-regression-rs-dissent",
-        "w2-recheck-visual-dissent"
+        "w2-recheck-visual-dissent",
+        "w2-analyst-dissent"
       ],
       "meetingIds": [],
       "gates": [
@@ -9967,6 +9976,18 @@
       "metadata": {},
       "recordedAt": "2026-09-02T17:46:10.557Z",
       "actor": "boss-lead"
+    },
+    "w2-analyst-report": {
+      "id": "w2-analyst-report",
+      "wave": 2,
+      "kind": "analyst-report",
+      "label": "Independent analyst disproof attempt on the wave-2 pass claim at f65e865",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-analyst-report--ANALYST_W2.md",
+      "sha256": "a56fddd6e09a84d5d4bf5cb9e65a92fd00c019a295f126e4fd66c5bb4c988d53",
+      "size": 9747,
+      "metadata": {},
+      "recordedAt": "2026-09-02T17:50:13.205Z",
+      "actor": "analyst-w2"
     }
   },
   "claims": {
@@ -10227,6 +10248,20 @@
       "status": "open",
       "recordedAt": "2026-09-02T17:43:32.533Z",
       "actor": "visual-critic-3"
+    },
+    "w2-analyst-dissent": {
+      "id": "w2-analyst-dissent",
+      "wave": 2,
+      "category": "visual-quality",
+      "severity": "important",
+      "finding": "The wave-2 pass claim states the fresh visual critic named the remaining gaps non-structural; REVIEW_VISUAL_W2.md 'Re-check after repairs' lines 187-189 class gaps 1-3 (arena mid-fill and unstable outer deck; nights chart unfitted and colliding on six frames; HOOK unrecomposed) as STRUCTURAL, and rows A6/A9 stand unmet without a recorded deviation reason. The pass condition's visual limb is therefore not met at f65e865, independent of the STRONG overall grade. Recorded so that a PASS gate on this wave cannot cite the visual report as satisfying that clause.",
+      "evidenceIds": [
+        "w2-analyst-report"
+      ],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-02T17:50:13.580Z",
+      "actor": "analyst-w2"
     }
   },
   "meetings": {},
@@ -10405,11 +10440,11 @@
     "agentsActivated": 35,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 304,
+    "evidenceRecorded": 305,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 416,
-  "eventHead": "017ca7eca671dde92be57888d53edc5614157589a315592ce30ad55103c8922f",
+  "eventCount": 419,
+  "eventHead": "98dd02f6e0fa95256bfca10649c82d05aa14dbdcdc82e2ee33131311005086b2",
   "warnings": []
 }
