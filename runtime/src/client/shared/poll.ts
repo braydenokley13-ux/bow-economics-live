@@ -15,7 +15,18 @@ export function startPolling<T>(
   url: string,
   intervalMs: number,
   onData: (data: T) => void,
-  options: { headers?: () => Record<string, string>; onError?: (error: unknown) => void } = {},
+  options: {
+    headers?: () => Record<string, string>;
+    onError?: (error: unknown) => void;
+    /**
+     * W2 repair-2 D1 (Kid A #8a): a 304 took the "nothing to do" branch without
+     * telling the caller anything, so a sync label written by `onError` could
+     * never clear itself — a desk sat on a false "offline — retrying" for 95
+     * seconds while `/api/me` was answering. Additive and optional: a caller
+     * that does not pass it sees no behaviour change at all.
+     */
+    onUnchanged?: () => void;
+  } = {},
 ): PollHandle {
   let etag: string | null = null;
   let stopped = false;
@@ -28,7 +39,8 @@ export function startPolling<T>(
       if (etag) headers["If-None-Match"] = etag;
       const res = await fetch(url, { headers });
       if (res.status === 304) {
-        // unchanged — nothing to do
+        // unchanged — no new data, but the transport is demonstrably alive.
+        options.onUnchanged?.();
       } else if (res.ok) {
         etag = res.headers.get("ETag");
         onData((await res.json()) as T);

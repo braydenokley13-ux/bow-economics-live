@@ -3,7 +3,7 @@ import { arenaSvg } from "../shared/arena.js";
 import { crestStyle } from "../shared/crest.js";
 import { brandMark, dotChart } from "../shared/m2ui.js";
 import { ActionOutbox } from "../shared/outbox.js";
-import { startPolling } from "../shared/poll.js";
+import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
 
 type Franchise = { name: string; crestIndex: number };
@@ -27,6 +27,60 @@ const syncStatus = $("syncStatus");
 
 let creds: PlayCredentials | null = loadPlayCredentials();
 let outbox: ActionOutbox | null = null;
+let poll: PollHandle | null = null;
+
+/**
+ * W2 repair-2 F1 (BLOCKING classroom-reliability, REGRESSION_W2_RESULTS_STATE
+ * finding 1). A PIN rejoin from a second device rotates the seat's device token
+ * on purpose (`SessionService.rejoin`) — that is the documented "my Chromebook
+ * died" path and it stays. What was broken is what the ORIGINAL tab did next:
+ * `poll.ts` hands `onError` the parsed error BODY, never an `ApiError`, so the
+ * `error instanceof ApiError && error.status === 401` branch below was dead
+ * code. The tab wrote "offline — retrying" (a wrong diagnosis — the device is
+ * signed out, not offline) and a refresh left `#gameBody` permanently empty
+ * with no control to recover with.
+ *
+ * These are the codes the server returns with 401 for a device token
+ * (`runtime/src/server/http.ts`, `runtime/src/server/sessionService.ts`).
+ * Lesson-agnostic: every module's /play shares this transport.
+ */
+const SIGNED_OUT_CODES = new Set(["retired", "no_token", "bad_token"]);
+
+/** The line a pair reads when their seat was reopened somewhere else. Never "offline". */
+const SIGNED_OUT_LINE = "This desk was opened on another device. Rejoin with your PIN.";
+
+function errorCode(error: unknown): string | null {
+  if (error instanceof ApiError) return error.code;
+  if (error && typeof error === "object") {
+    const body = (error as { error?: { code?: unknown } }).error;
+    if (body && typeof body === "object" && typeof body.code === "string") return body.code;
+  }
+  return null;
+}
+
+/** Survives the refresh a pair reaches for, so the line is still there afterwards. */
+const SIGNED_OUT_FLAG = "bow-signed-out";
+
+/** Sign this device out in place: no reload, no blank body, a control to come back with. */
+function signedOut(): void {
+  try {
+    window.sessionStorage.setItem(SIGNED_OUT_FLAG, "1");
+  } catch {
+    /* storage disabled — the line still shows until this tab is reloaded */
+  }
+  poll?.stop();
+  poll = null;
+  outbox = null;
+  clearPlayCredentials();
+  creds = null;
+  gameCard.hidden = true;
+  pinCard.hidden = true;
+  rejoinCard.hidden = true;
+  joinCard.hidden = false;
+  $("btnShowPin").hidden = true;
+  setSyncLabel("signed out");
+  showError(SIGNED_OUT_LINE);
+}
 
 function showError(message: string): void {
   errEl.textContent = message;
@@ -90,6 +144,11 @@ $("btnRejoin").addEventListener("click", () => {
 
 function onSeated(payload: StudentPayload, code: string): void {
   if (!payload.deviceToken) return showError("Server did not issue a device token.");
+  try {
+    window.sessionStorage.removeItem(SIGNED_OUT_FLAG);
+  } catch {
+    /* storage disabled */
+  }
   creds = { deviceToken: payload.deviceToken, sessionCode: code, seatId: payload.seat.id, displayName: payload.seat.displayName, rejoinPin: payload.rejoinPin };
   savePlayCredentials(creds);
   joinCard.hidden = true;
@@ -123,9 +182,9 @@ function startGame(): void {
     () => creds?.deviceToken ?? null,
     {
       onRetired: () => {
-        clearPlayCredentials();
-        creds = null;
-        location.reload();
+        // F1: same destination as the poll's signed-out branch — the join card
+        // with a line that says what happened, not a reload into a blank body.
+        signedOut();
       },
       onRejected: (_action, error) => showError(error.message),
       onSent: (_action, response) => {
@@ -140,7 +199,7 @@ function startGame(): void {
     creds.seatId,
   );
 
-  startPolling<StudentPayload>(
+  poll = startPolling<StudentPayload>(
     "/api/me",
     1200,
     (payload) => {
@@ -151,11 +210,17 @@ function startGame(): void {
     },
     {
       headers: (): Record<string, string> => (creds ? { Authorization: `Bearer ${creds.deviceToken}` } : {}),
+      // D1: a 304 is proof the server answered. Clearing the label here is what
+      // makes "offline — retrying" self-heal instead of sticking for the lesson.
+      onUnchanged: () => {
+        if (!creds) return;
+        setSyncLabel(outbox && outbox.pendingCount > 0 ? `syncing… (${outbox.pendingCount} pending)` : "synced");
+      },
       onError: (error) => {
-        if (error instanceof ApiError && error.status === 401) {
-          clearPlayCredentials();
-          creds = null;
-          location.reload();
+        // F1: `poll.ts` passes the parsed body, so match on the code, not the class.
+        const code = errorCode(error);
+        if (code !== null && SIGNED_OUT_CODES.has(code)) {
+          signedOut();
           return;
         }
         setSyncLabel("offline — retrying");
@@ -4729,4 +4794,11 @@ if (creds) {
   joinCard.hidden = true;
   gameCard.hidden = false;
   startGame();
+} else {
+  // F1: a pair that was signed out and then refreshed still gets told why.
+  try {
+    if (window.sessionStorage.getItem(SIGNED_OUT_FLAG) === "1") showError(SIGNED_OUT_LINE);
+  } catch {
+    /* storage disabled */
+  }
 }
