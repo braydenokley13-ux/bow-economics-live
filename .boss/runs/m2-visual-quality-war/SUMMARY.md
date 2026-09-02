@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **3**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `573:177991502c2e57ab3e0ba15260eabbc9fa9bc50da3b3e088810e7b82d8ee305d`  
-Updated: 2026-09-02T22:24:43.520Z
+Event head: `576:ee3fde3dbba3da16387b5c28253fa21d7a6215e386a8338d60ba2cf6d2f8f5c6`  
+Updated: 2026-09-02T22:34:44.831Z
 
 ## Founder intent
 
@@ -33,7 +33,7 @@ The Module-2 design layer proven on /play in wave 2 can be propagated to the two
 - builder — builder-w3-teach — active — claude-opus-5
 - builder — builder-w3-board — active — claude-opus-5
 - builder — builder-w3-synth — active — claude-opus-5
-- repo-scout — repo-scout-w3 — active — claude-opus-5
+- repo-scout — repo-scout-w3 — completed-with-concerns — claude-opus-5
 
 ## Required evidence
 
@@ -48,6 +48,7 @@ The Module-2 design layer proven on /play in wave 2 can be propagated to the two
 ## Evidence recorded
 
 - w3-founder-rulings — note — Founder rulings D21 (FD-1 honest frontier, FD-2 short rules in view, FD-3 no art rewrite) and D22 (program sequence after wave 3, grade bands)
+- w3-handoff-observed-stable — note — HANDOFF — OBSERVED IN REPO, the stable half: student runtime, class/session runtime, realtime, persistence, economic resolution, events, M1 vs M2, testing, with file:line citations (scout report transcribed verbatim by the lead; the scout role has no write tool)
 
 ## Claim ledger
 
@@ -55,7 +56,7 @@ The Module-2 design layer proven on /play in wave 2 can be propagated to the two
 
 ## Dissent
 
-- No dissent recorded
+- w3-concurrent-submit-dissent — classroom-reliability/important/open — A concurrent-submit version conflict loses a student action at class scale. SessionService.submitAction reads the session (sessionService.ts:271), awaits listSeatsForSession inside the reduce call (:278), then writes with expectedVersion = session.version (:283); because there is an await between read and write, two desks acting in the same tick interleave and the loser gets 409 version_conflict (:284). The client outbox then treats every non-401 4xx as definitive, shifts the action off the queue and never retries (outbox.ts:107-111) — including 409, which is a transient race rather than a refusal, and which the outbox's own header comment (:18-20) does not describe. A desk's lock that collides with another desk's lock is dropped, not retried; /play shows 'session changed underneath this action — refresh and retry' (play/main.ts:199-206), so it is visible rather than silent, but the action is lost and the night settles on inputs the pair did not choose. Nothing in the repo tests this: no test submits two actions concurrently, expectedVersion is exercised only sequentially at the repository level (snapshotRepository.test.ts:88), and client/shared has no test file at all. OBSERVED from source; not reproduced at runtime.
 
 ## Latest gate
 
