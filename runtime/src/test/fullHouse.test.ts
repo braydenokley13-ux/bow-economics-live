@@ -40,6 +40,7 @@ import {
   renewalRuleFor,
   renewalRuleLinesFor,
   renewalShortRuleFor,
+  dialCarriedLineFor,
   spendFactLineFor,
   turnoutCauseFor,
   twoPeaksNoteFor,
@@ -1200,6 +1201,40 @@ test("R4-4b: the floor line fires only when the 20-point clamp bound — never o
       [10, 0, -10, false],
     ],
   );
+});
+
+test("R5-5: the carried-dial cue never names a night the pair did not price, and the dial resets to the plan price", () => {
+  const market = MARKETS[0]!;
+  const carried = (state: FullHouseState, seat: SeatId = "seat-1") =>
+    (fullHouseModule.studentView(state, seat, "PLAY") as { dialCarriedLine: string | null; price: number });
+
+  // a desk that chose a price, then let the next night settle at that dial
+  let state = seated(2);
+  state = playNight(state, { "seat-1": market.planPrice, "seat-2": market.planPrice });
+  // the dial reopens at the plan price — the reducer resets it, it does not keep
+  // the last price charged
+  assert.equal(carried(state).price, market.planPrice);
+  // seat-1 actually charged the plan price on Night 1, so the cue may name it
+  assert.equal(carried(state).dialCarriedLine, dialCarriedLineFor(market.planPrice, CARDS[0]!.label));
+
+  // a desk the BELL auto-committed: nobody at that desk chose the plan price
+  let auto = seated(2);
+  auto = ok(act(auto, { type: "setPrice", price: market.planPrice }, "PLAY", "seat-2"));
+  auto = ok(act(auto, { type: "lock" }, "PLAY", "seat-2"));
+  auto = ok(act(auto, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+  const autoNights = (fullHouseModule.studentView(auto, "seat-1", "PLAY") as { history: { auto: boolean; price: number }[] }).history;
+  assert.equal(autoNights[0]!.auto, true);
+  assert.equal(autoNights[0]!.price, market.planPrice);
+  assert.equal(carried(auto).price, market.planPrice);
+  assert.equal(carried(auto).dialCarriedLine, null);
+
+  // a seat that joins late: the desk manager covered the missed nights at the
+  // plan price, so those nights are not the pair's either
+  const withLate = ok(act(auto, { type: "takeSeat" }, "PLAY", "seat-late"));
+  const lateView = fullHouseModule.studentView(withLate, "seat-late", "PLAY") as { history: { stock: boolean }[]; dialCarriedLine: string | null };
+  assert.ok(lateView.history.length > 0, "a seat that joins after Night 1 is handed covered nights");
+  assert.equal(lateView.history[0]!.stock, true);
+  assert.equal(lateView.dialCarriedLine, null);
 });
 
 test("R5-2: every settled night carries a turnout cause that is true of that night and varies with it", () => {

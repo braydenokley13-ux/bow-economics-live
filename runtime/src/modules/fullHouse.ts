@@ -1940,10 +1940,19 @@ export function repeatCallbackLineFor(
 }
 
 /**
- * W2 repair-2 E5 (Kid B #2): the dial keeps the last price this desk charged.
- * A pair that pokes it once and forgets can walk into a night it did not mean
- * to choose. The line states where the dial is and where that number came
- * from; it says nothing about whether the number is a good one.
+ * W2 repair-2 E5 (Kid B #2): the dial opens every night at the season-plan
+ * price — `applyNight` resets `price` to `market.planPrice` when a night
+ * settles — so the number standing in it is often one this desk has already
+ * charged. The line states where the dial is and where that number came from;
+ * it says nothing about whether the number is a good one.
+ *
+ * W2 repair-5 R5-5: the doc comment used to say the dial KEEPS the last price
+ * charged, which the reducer has never done. The shipped behaviour is the
+ * reset; the comment is now the reducer.
+ *
+ * The caller must only pass a night the PAIR chose. Matching on price alone
+ * told a desk whose Night 3 the bell auto-committed at the plan price "the
+ * price you charged on Night 3" — a price that desk never picked.
  */
 export function dialCarriedLineFor(price: number, nightLabel: string): string {
   return `Your dial is at $${price} — the price you charged on ${nightLabel}.`;
@@ -2555,9 +2564,16 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // plan price. When the number standing in it is one this desk has
             // already charged, say which night it came from — a fact about the
             // desk's own history, not a judgement about the number.
+            //
+            // W2 repair-5 R5-5: only a night this PAIR priced can be named. A
+            // night the bell auto-committed, and a night the desk manager
+            // covered before the seat joined, were both run at the plan price by
+            // someone other than the pair, so "the price you charged on Night 3"
+            // was false of exactly the desks most likely to see it — the dial
+            // reopens at that same plan price every night.
             dialCarriedLine: ((): string | null => {
               if (desk.locked) return null;
-              const prior = [...desk.nights].reverse().find((n) => n.price === desk.price);
+              const prior = [...desk.nights].reverse().find((n) => n.price === desk.price && !n.auto && !n.stock);
               if (!prior) return null;
               return dialCarriedLineFor(desk.price, CARD_BY_ID.get(prior.cardId)?.label ?? prior.cardId);
             })(),
