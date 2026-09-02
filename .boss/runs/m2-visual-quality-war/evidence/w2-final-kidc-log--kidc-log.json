@@ -1,0 +1,6020 @@
+{
+ "01-lobby-1024x600": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nDesk 1 · New York Knicks\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nYOUR DESK\n\nYou have Desk 1. Tonight you run the New York Knicks' building — Madison Square Garden.\n\nThe biggest market in American sports. A lot of people, and a lot of them can pay.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\n\nWaiting for your teacher to start.",
+  "vh": 600,
+  "vw": 1024,
+  "docH": 666,
+  "rects": {
+   ".fh-arena-frame": [
+    {
+     "t": 331,
+     "b": 496,
+     "l": 18,
+     "r": 1006,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 73,
+     "b": 108,
+     "l": 888,
+     "r": 1011,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 666,
+     "l": 0,
+     "r": 1024,
+     "h": 600,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Desk 1 · New York Knicks | REJOIN PIN | 0479 | Module 2 | · | Money i"
+    }
+   ],
+   "svg": [
+    {
+     "t": 79,
+     "b": 103,
+     "l": 13,
+     "r": 37,
+     "h": 24,
+     "txt": ""
+    },
+    {
+     "t": 331,
+     "b": 496,
+     "l": 18,
+     "r": 1006,
+     "h": 165,
+     "txt": ""
+    },
+    {
+     "t": 508,
+     "b": 526,
+     "l": 32,
+     "r": 50,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "02-lobby-1366": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nYOUR DESK\n\nYou have Desk 1. Tonight you run the New York Knicks' building — Madison Square Garden.\n\nThe biggest market in American sports. A lot of people, and a lot of them can pay.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\n\nWaiting for your teacher to start.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   ".fh-arena-frame": [
+    {
+     "t": 295,
+     "b": 460,
+     "l": 234,
+     "r": 1338,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Desk 1 · New York Knicks | Madison Square Garden | REJOIN PIN | 0"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 295,
+     "b": 460,
+     "l": 234,
+     "r": 1338,
+     "h": 165,
+     "txt": ""
+    },
+    {
+     "t": 474,
+     "b": 492,
+     "l": 251,
+     "r": 269,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "03-hook": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 1 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nFull House\n\nYou are keeping two books, and they do not add up to one number.\n\nNIGHT 1\nTuesday\na club that has lost four straight\ndraw 22/100\nnot on TV\nNIGHT 2\nSaturday\na solid playoff club\ndraw 51/100\nlocal TV\nNIGHT 3\nWednesday\nlast season's beaten finalists\ndraw 88/100\nnational TV\nNIGHT 4\nSaturday\nthe rookie everybody is talking about\ndraw 97/100\nnot on TV\nNIGHT 5\nTuesday\na club that has lost four straight\ndraw 22/100\nnot on TV\n\nYou and your partner do not run the roster today.\n\nYou run the building.\n\nThere is a game tonight, the doors open in an hour, and nobody has told you what a seat is worth.\n\nFive nights.\n\nTwo dials.\n\nNo forecast — just tonight's card and whatever you learned the last time you guessed.\n\nTHE TWO BOOKS\n\nYou are keeping two books, and they do not add up to one number. CASH is the money the building made after the bill. RENEWALS is the share of season-ticket holders who come back next year. A price that is great for one is usually worse for the other — that is the job.\n\nYOUR BUILDING\nNEW YORK KNICKS\nMadison Square Garden\nSEATS\n19,800\nBILL, EVERY NIGHT\n$520,000\nSEASON PLAN, PER SEAT\n$24\n\nlisted basketball capacity 19,812 · 2025-26\n\nHOUSE RULE 1\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nHOUSE RULE 2\n\nEverything NEW about tonight is printed on tonight's card before you touch a dial: the day, the visiting club's Draw out of 100, and whether it is on TV. Two things you already did come with you as well — your RENEWALS, and the event money you spent LAST night. Nothing else moves tonight's crowd; there is no luck in this game.\n\nHOUSE RULE 3\n\nMoney you spend on the night never changes tonight's crowd. It lands on the NEXT night — and tonight's books are visibly worse for it. It can also nudge RENEWALS up on the night you spend it: the whole dial is worth AT MOST two points, and often nothing at all — if your price has already pushed renewals to the top or the bottom of what they can move in one night, the money buys none.\n\nHOUSE RULE 4\n\nYour building's bill is due every night whether 200 people come or 19,000 do.\n\nHOUSE RULE 5\n\nRENEWALS follow your season-ticket plan price and what tonight is worth to the people who hold that plan. Charge well UNDER the plan price and the plan looks like a waste, so they stop buying it. Charge above what tonight is worth to them and they quit. The bigger the visiting club's Draw, the higher the price they will forgive — and a national-TV listing pulls that line back down, because they can watch it at home for nothing.\n\nFive nights here stand in for a whole 41-date home season. A real NBA season is 41 home games. The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 1714,
+  "rects": {
+   ".fh-arena-frame": [
+    {
+     "t": 132,
+     "b": 536,
+     "l": 234,
+     "r": 1338,
+     "h": 404,
+     "txt": ""
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-hook-line": [
+    {
+     "t": 462,
+     "b": 520,
+     "l": 256,
+     "r": 766,
+     "h": 58,
+     "txt": "You are keeping two books, and they do not add up to one number."
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 1714,
+     "l": 0,
+     "r": 1366,
+     "h": 1648,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 1 OF 5 | TUE | SAT | WED | SAT | TUE | Desk 1 · New York Knicks | M"
+    }
+   ],
+   ".fh-slate": [
+    {
+     "t": 557,
+     "b": 747,
+     "l": 233,
+     "r": 1339,
+     "h": 190,
+     "txt": "NIGHT 1 | Tuesday | a club that has lost four straight | draw 22/100 | not on TV | NIGHT 2 | Saturday | "
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 132,
+     "b": 536,
+     "l": 234,
+     "r": 1338,
+     "h": 404,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ],
+   ".fh-slate-card": [
+    {
+     "t": 557,
+     "b": 747,
+     "l": 233,
+     "r": 446,
+     "h": 190,
+     "txt": "NIGHT 1 | Tuesday | a club that has lost four straight | draw 22/100 | not on TV"
+    },
+    {
+     "t": 557,
+     "b": 747,
+     "l": 456,
+     "r": 669,
+     "h": 190,
+     "txt": "NIGHT 2 | Saturday | a solid playoff club | draw 51/100 | local TV"
+    },
+    {
+     "t": 557,
+     "b": 747,
+     "l": 679,
+     "r": 893,
+     "h": 190,
+     "txt": "NIGHT 3 | Wednesday | last season's beaten finalists | draw 88/100 | national TV"
+    },
+    {
+     "t": 557,
+     "b": 747,
+     "l": 903,
+     "r": 1116,
+     "h": 190,
+     "txt": "NIGHT 4 | Saturday | the rookie everybody is talking about | draw 97/100 | not on TV"
+    },
+    {
+     "t": 557,
+     "b": 747,
+     "l": 1126,
+     "r": 1339,
+     "h": 190,
+     "txt": "NIGHT 5 | Tuesday | a club that has lost four straight | draw 22/100 | not on TV"
+    }
+   ]
+  }
+ },
+ "04-n1-pre": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 1 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$0\nseason so far\nRENEWALS\n50%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 1 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\nA quiet Tuesday. Nothing about tonight is special — and it is still a real night with a real bill.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\n\nNo nights yet. Your first dot lands here after the first bell.\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 2 · Saturday · a solid playoff club · draw 51/100 · local TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 784,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 475,
+     "b": 761,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE |  | No nights yet. Your first dot lands here after the firs"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 476,
+     "b": 641,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 1 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 475,
+     "b": 528,
+     "l": 1013,
+     "r": 1339,
+     "h": 53,
+     "txt": "TOMORROW | Night 2 · Saturday · a solid playoff club · draw 51/100 · local TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 233,
+     "r": 1339,
+     "h": 309,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 546,
+     "b": 569,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 784,
+     "l": 0,
+     "r": 1366,
+     "h": 718,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 1 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 1 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 304,
+     "b": 360,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "04b-n1-pre-1024x600": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 1 OF 5\nCASH\n$0\nRENEWALS\n50%\nseason so far\nDesk 1 · New York Knicks\nREJOIN PIN\n0479\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 1 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\nA quiet Tuesday. Nothing about tonight is special — and it is still a real night with a real bill.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\n\nNo nights yet. Your first dot lands here after the first bell.\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 2 · Saturday · a solid playoff club · draw 51/100 · local TV\nMORE ABOUT TONIGHT",
+  "vh": 600,
+  "vw": 1024,
+  "docH": 735,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 436,
+     "b": 718,
+     "l": 17,
+     "r": 378,
+     "h": 282,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE |  | No nights yet. Your first dot lands here after the firs"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 437,
+     "b": 602,
+     "l": 388,
+     "r": 699,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 127,
+     "b": 428,
+     "l": 369,
+     "r": 693,
+     "h": 301,
+     "txt": "NIGHT 1 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 436,
+     "b": 489,
+     "l": 709,
+     "r": 1007,
+     "h": 53,
+     "txt": "TOMORROW | Night 2 · Saturday · a solid playoff club · draw 51/100 · local TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 290,
+     "b": 322,
+     "l": 57,
+     "r": 109,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 73,
+     "b": 108,
+     "l": 888,
+     "r": 1011,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 127,
+     "b": 428,
+     "l": 17,
+     "r": 1007,
+     "h": 301,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 507,
+     "b": 530,
+     "l": 722,
+     "r": 994,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 735,
+     "l": 0,
+     "r": 1024,
+     "h": 669,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 1 OF 5 | CASH | $0 | RENEWALS | 50% | season so far | Desk 1 · Ne"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 127,
+     "b": 428,
+     "l": 369,
+     "r": 693,
+     "h": 301,
+     "txt": "NIGHT 1 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 268,
+     "b": 324,
+     "l": 702,
+     "r": 1007,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 262,
+     "b": 296,
+     "l": 32,
+     "r": 345,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 79,
+     "b": 103,
+     "l": 13,
+     "r": 37,
+     "h": 24,
+     "txt": ""
+    },
+    {
+     "t": 145,
+     "b": 163,
+     "l": 37,
+     "r": 55,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 162,
+     "b": 180,
+     "l": 387,
+     "r": 405,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 142,
+     "b": 160,
+     "l": 719,
+     "r": 737,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 286,
+     "b": 307,
+     "l": 774,
+     "r": 795,
+     "h": 21,
+     "txt": ""
+    },
+    {
+     "t": 286,
+     "b": 307,
+     "l": 914,
+     "r": 935,
+     "h": 21,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "05-n1-set": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 1 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$0\nseason so far\nRENEWALS\n50%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$46\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 1 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\nA quiet Tuesday. Nothing about tonight is special — and it is still a real night with a real bill.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\n\nNo nights yet. Your first dot lands here after the first bell.\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 2 · Saturday · a solid playoff club · draw 51/100 · local TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 784,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 475,
+     "b": 761,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE |  | No nights yet. Your first dot lands here after the firs"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 476,
+     "b": 641,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 1 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 475,
+     "b": 528,
+     "l": 1013,
+     "r": 1339,
+     "h": 53,
+     "txt": "TOMORROW | Night 2 · Saturday · a solid playoff club · draw 51/100 · local TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 233,
+     "r": 1339,
+     "h": 309,
+     "txt": "SET YOUR TICKET PRICE | − | $46 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 546,
+     "b": 569,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 784,
+     "l": 0,
+     "r": 1366,
+     "h": 718,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 1 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 1 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 304,
+     "b": 360,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "06-n1-settled": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 1 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$176,192\nseason so far\nRENEWALS\n30%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 1 · 10,878 CAME AT $46\nCASH\nTICKETS\n$46 × 10,878\n$500,388\n+\nIN-ARENA\nwhat those same people spent inside\n$195,804\n−\nBUILDING BILL\n-$520,000\n=\nCASH\ntonight\n$176,192\nWHO CAME\n10,878\nof 19,800 · 54.9% of the seats you opened tonight\n10,878\ncame — the lit seats\n8,922\nempty — the dark seats above the line\n54.9% of the seats you opened tonight\nRENEWALS\n50%\n→\n30%\ndown 20 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.\n\nWHAT HAPPENED\n\nYou charged $46 · Tuesday · draw 22/100 · a club that has lost four straight\n\nNEXT: NIGHT 2 → Saturday · Draw 51 · local TV\nYou are keeping two books, and they do not add up to one number.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   ".fh-renewal-cause": [
+    {
+     "t": 276,
+     "b": 396,
+     "l": 996,
+     "r": 1324,
+     "h": 120,
+     "txt": "Season plan: $24 a seat. | Price well UNDER that and the plan looks like a waste — renewals "
+    }
+   ],
+   ".fh-renewal-floor": [
+    {
+     "t": 401,
+     "b": 431,
+     "l": 996,
+     "r": 1324,
+     "h": 30,
+     "txt": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 408,
+     "b": 558,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": ""
+    }
+   ],
+   ".fh-arena-labels": [
+    {
+     "t": 565,
+     "b": 640,
+     "l": 649,
+     "r": 956,
+     "h": 75,
+     "txt": "10,878 | came — the lit seats | 8,922 | empty — the dark seats above the line | 54.9% of the seats"
+    }
+   ],
+   ".fh-result-head": [
+    {
+     "t": 117,
+     "b": 147,
+     "l": 233,
+     "r": 1339,
+     "h": 30,
+     "txt": "NIGHT 1 · 10,878 CAME AT $46"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#fhNextNight": [
+    {
+     "t": 568,
+     "b": 630,
+     "l": 981,
+     "r": 1339,
+     "h": 62,
+     "txt": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 1 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $176,192 | season so fa"
+    }
+   ],
+   "#fhResult": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 1 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $176,192 | season so fa"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 256,
+     "b": 274,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 326,
+     "b": 344,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 175,
+     "b": 193,
+     "l": 252,
+     "r": 270,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 175,
+     "b": 193,
+     "l": 657,
+     "r": 675,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 408,
+     "b": 558,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "nextbtn-n1": "NEXT: NIGHT 2 → Saturday · Draw 51 · local TV",
+ "06b-n1-afternext": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 2 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$176,192\nseason so far\nRENEWALS\n30%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 2 OF 5\nSaturday · a solid playoff club\nLocal TV\nVISITING CLUB'S DRAW\n51/100\nSaturday. People can come out and stay out.\nOn local TV: some of your fans can watch at home instead.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n11,500\n10,000\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 3 · Wednesday · last season's beaten finalists · draw 88/100 · national TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 784,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 475,
+     "b": 761,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 11,500 | 10,000 | N1 $46 · 10,878 |  | One dot per "
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 476,
+     "b": 641,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 2 OF 5 | Saturday · a solid playoff club | Local TV | VISITING CLUB'S DRAW | 51/100 | Saturday"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 475,
+     "b": 544,
+     "l": 1013,
+     "r": 1339,
+     "h": 69,
+     "txt": "TOMORROW | Night 3 · Wednesday · last season's beaten finalists · draw 88/100 · national TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 233,
+     "r": 1339,
+     "h": 309,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 562,
+     "b": 585,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 784,
+     "l": 0,
+     "r": 1366,
+     "h": 718,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 2 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 2 OF 5 | Saturday · a solid playoff club | Local TV | VISITING CLUB'S DRAW | 51/100 | Saturday"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 304,
+     "b": 360,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "04-n2-pre": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 2 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$176,192\nseason so far\nRENEWALS\n30%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 2 OF 5\nSaturday · a solid playoff club\nLocal TV\nVISITING CLUB'S DRAW\n51/100\nSaturday. People can come out and stay out.\nOn local TV: some of your fans can watch at home instead.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n11,500\n10,000\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 3 · Wednesday · last season's beaten finalists · draw 88/100 · national TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 784,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 475,
+     "b": 761,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 11,500 | 10,000 | N1 $46 · 10,878 |  | One dot per "
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 476,
+     "b": 641,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 2 OF 5 | Saturday · a solid playoff club | Local TV | VISITING CLUB'S DRAW | 51/100 | Saturday"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 475,
+     "b": 544,
+     "l": 1013,
+     "r": 1339,
+     "h": 69,
+     "txt": "TOMORROW | Night 3 · Wednesday · last season's beaten finalists · draw 88/100 · national TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 233,
+     "r": 1339,
+     "h": 309,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 562,
+     "b": 585,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 784,
+     "l": 0,
+     "r": 1366,
+     "h": 718,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 2 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 2 OF 5 | Saturday · a solid playoff club | Local TV | VISITING CLUB'S DRAW | 51/100 | Saturday"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 304,
+     "b": 360,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "05-n2-set": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 2 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$176,192\nseason so far\nRENEWALS\n30%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$120\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 2 OF 5\nSaturday · a solid playoff club\nLocal TV\nVISITING CLUB'S DRAW\n51/100\nSaturday. People can come out and stay out.\nOn local TV: some of your fans can watch at home instead.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n11,500\n10,000\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 3 · Wednesday · last season's beaten finalists · draw 88/100 · national TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 784,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 475,
+     "b": 761,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 11,500 | 10,000 | N1 $46 · 10,878 |  | One dot per "
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 476,
+     "b": 641,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 2 OF 5 | Saturday · a solid playoff club | Local TV | VISITING CLUB'S DRAW | 51/100 | Saturday"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 475,
+     "b": 544,
+     "l": 1013,
+     "r": 1339,
+     "h": 69,
+     "txt": "TOMORROW | Night 3 · Wednesday · last season's beaten finalists · draw 88/100 · national TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 233,
+     "r": 1339,
+     "h": 309,
+     "txt": "SET YOUR TICKET PRICE | − | $120 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24"
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 562,
+     "b": 585,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 784,
+     "l": 0,
+     "r": 1366,
+     "h": 718,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 2 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 2 OF 5 | Saturday · a solid playoff club | Local TV | VISITING CLUB'S DRAW | 51/100 | Saturday"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 304,
+     "b": 360,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "06-n2-settled": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 2 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n-$343,808\nin the red\nRENEWALS\n10%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 2 · 0 CAME AT $120\nCASH\nTICKETS\n$120 × 0\n$0\n+\nIN-ARENA\nwhat those same people spent inside\n$0\n−\nBUILDING BILL\n-$520,000\n=\nCASH\ntonight\n-$520,000\nWHO CAME\n0\nof 19,800 · 0% of the seats you opened tonight\n0\ncame — the lit seats\n19,800\nempty — the dark seats above the line\n0% of the seats you opened tonight\nRENEWALS\n30%\n→\n10%\ndown 20 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.\n\nThe renewals rule takes at most 20 points off in one night. Tonight's price asked for more than that.\n\nWHAT HAPPENED\n\nYou charged $120 · Saturday · draw 51/100 · a solid playoff club\n\nNEXT: NIGHT 3 → Wednesday · Draw 88 · national TV\nYou are keeping two books, and they do not add up to one number.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   ".fh-renewal-cause": [
+    {
+     "t": 276,
+     "b": 396,
+     "l": 996,
+     "r": 1324,
+     "h": 120,
+     "txt": "Season plan: $24 a seat. | Price well UNDER that and the plan looks like a waste — renewals "
+    }
+   ],
+   ".fh-renewal-floor": [
+    {
+     "t": 401,
+     "b": 431,
+     "l": 996,
+     "r": 1324,
+     "h": 30,
+     "txt": "The renewals rule takes at most 20 points off in one night. Tonight's price asked for more"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 338,
+     "b": 488,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": ""
+    }
+   ],
+   ".fh-arena-labels": [
+    {
+     "t": 495,
+     "b": 570,
+     "l": 649,
+     "r": 956,
+     "h": 75,
+     "txt": "0 | came — the lit seats | 19,800 | empty — the dark seats above the line | 0% of the seats you op"
+    }
+   ],
+   ".fh-result-head": [
+    {
+     "t": 117,
+     "b": 147,
+     "l": 233,
+     "r": 1339,
+     "h": 30,
+     "txt": "NIGHT 2 · 0 CAME AT $120"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#fhNextNight": [
+    {
+     "t": 568,
+     "b": 630,
+     "l": 981,
+     "r": 1339,
+     "h": 62,
+     "txt": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 2 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$343,808 | in the red | "
+    }
+   ],
+   "#fhResult": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 2 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$343,808 | in the red | "
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 256,
+     "b": 274,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 326,
+     "b": 344,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 175,
+     "b": 193,
+     "l": 252,
+     "r": 270,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 231,
+     "b": 249,
+     "l": 657,
+     "r": 675,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 338,
+     "b": 488,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "nextbtn-n2": "NEXT: NIGHT 3 → Wednesday · Draw 88 · national TV",
+ "06b-n2-afternext": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 3 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n-$343,808\nseason so far\nRENEWALS\n10%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 3 OF 5\nWednesday · last season's beaten finalists\nNATIONAL TV\nVISITING CLUB'S DRAW\n88/100\nThe club that lost last season's Finals is in the building. That pulls hard.\nIt is also on national TV — the whole country can watch it free at home. Two things pulling opposite ways.\nMAKING IT AN EVENT\nIn the red — locked at $0\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n13,000\n0\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 4 · Saturday · the rookie everybody is talking about · draw 97/100 · not on TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 802,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 493,
+     "b": 779,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 13,000 | 0 | N2 $120 · 0 | N1 $46 · 10,878 |  | One d"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 494,
+     "b": 659,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 635,
+     "r": 995,
+     "h": 327,
+     "txt": "NIGHT 3 OF 5 | Wednesday · last season's beaten finalists | NATIONAL TV | VISITING CLUB'S DRAW | 8"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 493,
+     "b": 562,
+     "l": 1013,
+     "r": 1339,
+     "h": 69,
+     "txt": "TOMORROW | Night 4 · Saturday · the rookie everybody is talking about · draw 97/100 · not on"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 233,
+     "r": 1339,
+     "h": 327,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 580,
+     "b": 603,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 802,
+     "l": 0,
+     "r": 1366,
+     "h": 736,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 3 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 635,
+     "r": 995,
+     "h": 327,
+     "txt": "NIGHT 3 OF 5 | Wednesday · last season's beaten finalists | NATIONAL TV | VISITING CLUB'S DRAW | 8"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 322,
+     "b": 378,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 206,
+     "b": 224,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "04-n3-pre": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 3 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n-$343,808\nseason so far\nRENEWALS\n10%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 3 OF 5\nWednesday · last season's beaten finalists\nNATIONAL TV\nVISITING CLUB'S DRAW\n88/100\nThe club that lost last season's Finals is in the building. That pulls hard.\nIt is also on national TV — the whole country can watch it free at home. Two things pulling opposite ways.\nMAKING IT AN EVENT\nIn the red — locked at $0\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n13,000\n0\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 4 · Saturday · the rookie everybody is talking about · draw 97/100 · not on TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 802,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 493,
+     "b": 779,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 13,000 | 0 | N2 $120 · 0 | N1 $46 · 10,878 |  | One d"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 494,
+     "b": 659,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 635,
+     "r": 995,
+     "h": 327,
+     "txt": "NIGHT 3 OF 5 | Wednesday · last season's beaten finalists | NATIONAL TV | VISITING CLUB'S DRAW | 8"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 493,
+     "b": 562,
+     "l": 1013,
+     "r": 1339,
+     "h": 69,
+     "txt": "TOMORROW | Night 4 · Saturday · the rookie everybody is talking about · draw 97/100 · not on"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 233,
+     "r": 1339,
+     "h": 327,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 580,
+     "b": 603,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 802,
+     "l": 0,
+     "r": 1366,
+     "h": 736,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 3 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 635,
+     "r": 995,
+     "h": 327,
+     "txt": "NIGHT 3 OF 5 | Wednesday · last season's beaten finalists | NATIONAL TV | VISITING CLUB'S DRAW | 8"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 322,
+     "b": 378,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 206,
+     "b": 224,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "05-n3-set": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 3 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n-$343,808\nseason so far\nRENEWALS\n10%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$12\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 3 OF 5\nWednesday · last season's beaten finalists\nNATIONAL TV\nVISITING CLUB'S DRAW\n88/100\nThe club that lost last season's Finals is in the building. That pulls hard.\nIt is also on national TV — the whole country can watch it free at home. Two things pulling opposite ways.\nMAKING IT AN EVENT\nIn the red — locked at $0\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n13,000\n0\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 4 · Saturday · the rookie everybody is talking about · draw 97/100 · not on TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 802,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 493,
+     "b": 779,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 13,000 | 0 | N2 $120 · 0 | N1 $46 · 10,878 |  | One d"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 494,
+     "b": 659,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 635,
+     "r": 995,
+     "h": 327,
+     "txt": "NIGHT 3 OF 5 | Wednesday · last season's beaten finalists | NATIONAL TV | VISITING CLUB'S DRAW | 8"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 493,
+     "b": 562,
+     "l": 1013,
+     "r": 1339,
+     "h": 69,
+     "txt": "TOMORROW | Night 4 · Saturday · the rookie everybody is talking about · draw 97/100 · not on"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 233,
+     "r": 1339,
+     "h": 327,
+     "txt": "SET YOUR TICKET PRICE | − | $12 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 580,
+     "b": 603,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 802,
+     "l": 0,
+     "r": 1366,
+     "h": 736,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 3 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 482,
+     "l": 635,
+     "r": 995,
+     "h": 327,
+     "txt": "NIGHT 3 OF 5 | Wednesday · last season's beaten finalists | NATIONAL TV | VISITING CLUB'S DRAW | 8"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 322,
+     "b": 378,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 206,
+     "b": 224,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "06-n3-settled": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 3 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n-$295,428\nin the red\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nNIGHT 3 · 18,946 CAME AT $12\nCASH\nTICKETS\n$12 × 18,946\n$227,352\n+\nIN-ARENA\nwhat those same people spent inside\n$341,028\n−\nBUILDING BILL\n-$520,000\n=\nCASH\ntonight\n$48,380\nWHO CAME\n18,946\nof 19,800 · 95.7% of the seats you opened tonight\n18,946\ncame — the lit seats\n854\nempty — the dark seats above the line\n95.7% of the seats you opened tonight\nRENEWALS\n10%\n→\n0%\ndown 10 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.\n\nWHAT HAPPENED\n\nYou charged $12 · Wednesday · draw 88/100 · last season's beaten finalists\n\nNEXT: NIGHT 4 → Saturday · Draw 97 · not on TV\nYou are keeping two books, and they do not add up to one number.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   ".fh-renewal-cause": [
+    {
+     "t": 276,
+     "b": 396,
+     "l": 996,
+     "r": 1324,
+     "h": 120,
+     "txt": "Season plan: $24 a seat. | Price well UNDER that and the plan looks like a waste — renewals "
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 408,
+     "b": 558,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": ""
+    }
+   ],
+   ".fh-arena-labels": [
+    {
+     "t": 565,
+     "b": 640,
+     "l": 649,
+     "r": 956,
+     "h": 75,
+     "txt": "18,946 | came — the lit seats | 854 | empty — the dark seats above the line | 95.7% of the seats y"
+    }
+   ],
+   ".fh-result-head": [
+    {
+     "t": 117,
+     "b": 147,
+     "l": 233,
+     "r": 1339,
+     "h": 30,
+     "txt": "NIGHT 3 · 18,946 CAME AT $12"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#fhNextNight": [
+    {
+     "t": 533,
+     "b": 595,
+     "l": 981,
+     "r": 1339,
+     "h": 62,
+     "txt": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 3 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$295,428 | in the red | "
+    }
+   ],
+   "#fhResult": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 3 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | -$295,428 | in the red | "
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 256,
+     "b": 274,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 326,
+     "b": 344,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 175,
+     "b": 193,
+     "l": 252,
+     "r": 270,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 175,
+     "b": 193,
+     "l": 657,
+     "r": 675,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 408,
+     "b": 558,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "nextbtn-n3": "NEXT: NIGHT 4 → Saturday · Draw 97 · not on TV",
+ "06b-n3-afternext": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n-$295,428\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 4 OF 5\nSaturday · the rookie everybody is talking about\nNot on TV\nVISITING CLUB'S DRAW\n97/100\nThe biggest night of the five. Demand is going to run past what this building holds.\nOne night only: you can open more of the building. It costs money before you know who shows up.\nMAKING IT AN EVENT\nIn the red — locked at $0\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nCLOSED\nOpen 2,400 more seats tonight\n$95,000\npaid whether they fill or not\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n22,500\n0\nN3 $12 · 18,946\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 5 · Tuesday · a club that has lost four straight · draw 22/100 · not on TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 895,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 586,
+     "b": 872,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 22,500 | 0 | N3 $12 · 18,946 | N2 $120 · 0 | N1 $46"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 587,
+     "b": 752,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 575,
+     "l": 635,
+     "r": 995,
+     "h": 420,
+     "txt": "NIGHT 4 OF 5 | Saturday · the rookie everybody is talking about | Not on TV | VISITING CLUB'S DR"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 586,
+     "b": 639,
+     "l": 1013,
+     "r": 1339,
+     "h": 53,
+     "txt": "TOMORROW | Night 5 · Tuesday · a club that has lost four straight · draw 22/100 · not on TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 575,
+     "l": 233,
+     "r": 1339,
+     "h": 420,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 657,
+     "b": 680,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 895,
+     "l": 0,
+     "r": 1366,
+     "h": 829,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 4 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 575,
+     "l": 635,
+     "r": 995,
+     "h": 420,
+     "txt": "NIGHT 4 OF 5 | Saturday · the rookie everybody is talking about | Not on TV | VISITING CLUB'S DR"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 415,
+     "b": 471,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 206,
+     "b": 224,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "04-n4-pre": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n-$295,428\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 4 OF 5\nSaturday · the rookie everybody is talking about\nNot on TV\nVISITING CLUB'S DRAW\n97/100\nThe biggest night of the five. Demand is going to run past what this building holds.\nOne night only: you can open more of the building. It costs money before you know who shows up.\nMAKING IT AN EVENT\nIn the red — locked at $0\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nCLOSED\nOpen 2,400 more seats tonight\n$95,000\npaid whether they fill or not\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n22,500\n0\nN3 $12 · 18,946\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 5 · Tuesday · a club that has lost four straight · draw 22/100 · not on TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 895,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 586,
+     "b": 872,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 22,500 | 0 | N3 $12 · 18,946 | N2 $120 · 0 | N1 $46"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 587,
+     "b": 752,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 575,
+     "l": 635,
+     "r": 995,
+     "h": 420,
+     "txt": "NIGHT 4 OF 5 | Saturday · the rookie everybody is talking about | Not on TV | VISITING CLUB'S DR"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 586,
+     "b": 639,
+     "l": 1013,
+     "r": 1339,
+     "h": 53,
+     "txt": "TOMORROW | Night 5 · Tuesday · a club that has lost four straight · draw 22/100 · not on TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 575,
+     "l": 233,
+     "r": 1339,
+     "h": 420,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 657,
+     "b": 680,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 895,
+     "l": 0,
+     "r": 1366,
+     "h": 829,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 4 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 575,
+     "l": 635,
+     "r": 995,
+     "h": 420,
+     "txt": "NIGHT 4 OF 5 | Saturday · the rookie everybody is talking about | Not on TV | VISITING CLUB'S DR"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 415,
+     "b": 471,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 206,
+     "b": 224,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "bowlbtn-n4": "CLOSED\nOpen 2,400 more seats tonight\n$95,000\npaid whether they fill or not",
+ "05-n4-set": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n-$295,428\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$40\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 4 OF 5\nSaturday · the rookie everybody is talking about\nNot on TV\nVISITING CLUB'S DRAW\n97/100\nThe biggest night of the five. Demand is going to run past what this building holds.\nOne night only: you can open more of the building. It costs money before you know who shows up.\nMAKING IT AN EVENT\nIn the red — locked at $0\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nOPEN\nOpen 2,400 more seats tonight\n$95,000\npaid whether they fill or not\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n22,500\n0\nN3 $12 · 18,946\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nTOMORROW\nNight 5 · Tuesday · a club that has lost four straight · draw 22/100 · not on TV\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 883,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 574,
+     "b": 860,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 22,500 | 0 | N3 $12 · 18,946 | N2 $120 · 0 | N1 $46"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 575,
+     "b": 740,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 563,
+     "l": 635,
+     "r": 995,
+     "h": 408,
+     "txt": "NIGHT 4 OF 5 | Saturday · the rookie everybody is talking about | Not on TV | VISITING CLUB'S DR"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 574,
+     "b": 627,
+     "l": 1013,
+     "r": 1339,
+     "h": 53,
+     "txt": "TOMORROW | Night 5 · Tuesday · a club that has lost four straight · draw 22/100 · not on TV"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 563,
+     "l": 233,
+     "r": 1339,
+     "h": 408,
+     "txt": "SET YOUR TICKET PRICE | − | $40 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 645,
+     "b": 668,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 883,
+     "l": 0,
+     "r": 1366,
+     "h": 817,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 4 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 563,
+     "l": 635,
+     "r": 995,
+     "h": 408,
+     "txt": "NIGHT 4 OF 5 | Saturday · the rookie everybody is talking about | Not on TV | VISITING CLUB'S DR"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 403,
+     "b": 459,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 206,
+     "b": 224,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "06-n4-settled": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 4 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$377,172\nseason so far\nRENEWALS\n6%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFULL HOUSE\n22,200 OF 22,200 · 250 TURNED AWAY\nCASH\nTICKETS\n$40 × 22,200\n$888,000\n+\nIN-ARENA\nwhat those same people spent inside\n$399,600\n−\nBUILDING BILL\n-$520,000\n−\nMORE SEATS\n-$95,000\n=\nCASH\ntonight\n$672,600\nWHO CAME\n22,200\nof 22,200 · 100% of the seats you opened tonight\n22,200\ncame — the lit seats\n0\nempty — the dark seats above the line\nMore seats open\n100% of the seats you opened tonight\n250\nTURNED AWAY\nRENEWALS\n0%\n→\n6%\nup 6 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat.\nPrice well UNDER that and the plan looks like a waste — renewals fall even with a full building.\nPrice ABOVE what they think tonight is worth and they quit.\nIn between, the plan looks like a bargain and more come back.\n\nWHAT HAPPENED\n\nYou charged $40 · Saturday · draw 97/100 · the rookie everybody is talking about\n\nYou also put $0 into the night with the more seats open.\n\n250 people wanted in and could not get a seat. Those seats changed hands again outside the building. That money is not missing from your books — you never asked for it.\n\nNEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV\nYou are keeping two books, and they do not add up to one number.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 798,
+  "rects": {
+   ".fh-renewal-cause": [
+    {
+     "t": 308,
+     "b": 428,
+     "l": 996,
+     "r": 1324,
+     "h": 120,
+     "txt": "Season plan: $24 a seat. | Price well UNDER that and the plan looks like a waste — renewals "
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 440,
+     "b": 590,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": "@keyframes arm-breathe{0%,100%{opacity:.9}50%{opacity:1}}.arm-flood{animation:arm-breathe "
+    }
+   ],
+   ".fh-arena-labels": [
+    {
+     "t": 597,
+     "b": 697,
+     "l": 649,
+     "r": 956,
+     "h": 100,
+     "txt": "22,200 | came — the lit seats | 0 | empty — the dark seats above the line | More seats open | 100% o"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#fhNextNight": [
+    {
+     "t": 674,
+     "b": 736,
+     "l": 981,
+     "r": 1339,
+     "h": 62,
+     "txt": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 798,
+     "l": 0,
+     "r": 1366,
+     "h": 732,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 4 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $377,172 | season so fa"
+    }
+   ],
+   "#fhResult": [
+    {
+     "t": 66,
+     "b": 798,
+     "l": 0,
+     "r": 1366,
+     "h": 732,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 4 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $377,172 | season so fa"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 256,
+     "b": 274,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 326,
+     "b": 344,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 207,
+     "b": 225,
+     "l": 252,
+     "r": 270,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 207,
+     "b": 225,
+     "l": 657,
+     "r": 675,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 440,
+     "b": 590,
+     "l": 649,
+     "r": 956,
+     "h": 150,
+     "txt": "@keyframes arm-breathe{0%,100%{opacity:.9}50%{opacity:1}}.arm-flood{animation:arm-breathe "
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "nextbtn-n4": "NEXT: NIGHT 5 → Tuesday · Draw 22 · not on TV",
+ "06b-n4-afternext": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$377,172\nseason so far\nRENEWALS\n6%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 5 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\nSame card as Night 1. Same day, same visiting club, same TV.\nThe only thing that has changed since Night 1 is you.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN4 $40 · 22,200\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nAFTER TONIGHT\nNothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 784,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 475,
+     "b": 761,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N4 $40 · 22,200 | N2 $120 · 0 | N1 $46"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 476,
+     "b": 641,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 5 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 475,
+     "b": 560,
+     "l": 1013,
+     "r": 1339,
+     "h": 85,
+     "txt": "AFTER TONIGHT | Nothing. Tonight is the last night of the five — money spent on the event to"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 233,
+     "r": 1339,
+     "h": 309,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 578,
+     "b": 601,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 784,
+     "l": 0,
+     "r": 1366,
+     "h": 718,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 5 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 5 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 304,
+     "b": 360,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "04-n5-pre": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$377,172\nseason so far\nRENEWALS\n6%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$24\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nNIGHT 5 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\nSame card as Night 1. Same day, same visiting club, same TV.\nThe only thing that has changed since Night 1 is you.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN4 $40 · 22,200\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nAFTER TONIGHT\nNothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 784,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 475,
+     "b": 761,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N4 $40 · 22,200 | N2 $120 · 0 | N1 $46"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 476,
+     "b": 641,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 5 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 475,
+     "b": 560,
+     "l": 1013,
+     "r": 1339,
+     "h": 85,
+     "txt": "AFTER TONIGHT | Nothing. Tonight is the last night of the five — money spent on the event to"
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 233,
+     "r": 1339,
+     "h": 309,
+     "txt": "SET YOUR TICKET PRICE | − | $24 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 578,
+     "b": 601,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 784,
+     "l": 0,
+     "r": 1366,
+     "h": 718,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 5 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 464,
+     "l": 635,
+     "r": 995,
+     "h": 309,
+     "txt": "NIGHT 5 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 304,
+     "b": 360,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "05-n5-set": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nTonight\nYour nights\nYour books\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nFull House\nCASH\n$377,172\nseason so far\nRENEWALS\n6%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nSET YOUR TICKET PRICE\n−\n$46\na seat, tonight\n+\nPLAN $24\n$10\n$120\n\nRenewals follow your $24 season plan: price well UNDER it and the plan looks like a waste, price ABOVE what tonight is worth to them and they quit.\n\nYour dial is at $46 — the price you charged on Night 1.\n\nNIGHT 5 OF 5\nTuesday · a club that has lost four straight\nNot on TV\nVISITING CLUB'S DRAW\n22/100\nSame card as Night 1. Same day, same visiting club, same TV.\nThe only thing that has changed since Night 1 is you.\nMAKING IT AN EVENT\nup to $120,000\n−\n$0\n+\n\nEvery $100 here brings about 1 extra person NEXT night, and nobody extra tonight.\n\nLOCK IT IN\n\nEvery night you set a PRICE ($10-$120) and how much of tonight's money you put into MAKING IT AN EVENT. Then you lock. There is no preview — the dials show dollars and nothing else.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN4 $40 · 22,200\nN2 $120 · 0\nN1 $46 · 10,878\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR BUILDING\nSEATS\n19,800\nBILL TONIGHT\n$520,000\nSEASON PLAN\n$24\nlisted basketball capacity 19,812 · 2025-26\nAFTER TONIGHT\nNothing. Tonight is the last night of the five — money spent on the event tonight has no night left to land on.\nMORE ABOUT TONIGHT",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 806,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 497,
+     "b": 783,
+     "l": 233,
+     "r": 645,
+     "h": 286,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N4 $40 · 22,200 | N2 $120 · 0 | N1 $46"
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 498,
+     "b": 663,
+     "l": 658,
+     "r": 1000,
+     "h": 165,
+     "txt": ""
+    }
+   ],
+   "#fhTonight": [
+    {
+     "t": 155,
+     "b": 486,
+     "l": 635,
+     "r": 995,
+     "h": 331,
+     "txt": "NIGHT 5 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   ".fh-next": [
+    {
+     "t": 497,
+     "b": 582,
+     "l": 1013,
+     "r": 1339,
+     "h": 85,
+     "txt": "AFTER TONIGHT | Nothing. Tonight is the last night of the five — money spent on the event to"
+    }
+   ],
+   ".fh-dial-carried": [
+    {
+     "t": 453,
+     "b": 469,
+     "l": 252,
+     "r": 603,
+     "h": 16,
+     "txt": "Your dial is at $46 — the price you charged on Night 1."
+    }
+   ],
+   ".fh-dial-plan": [
+    {
+     "t": 332,
+     "b": 364,
+     "l": 281,
+     "r": 334,
+     "h": 32,
+     "txt": "PLAN $24"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   ".fh-cockpit": [
+    {
+     "t": 155,
+     "b": 486,
+     "l": 233,
+     "r": 1339,
+     "h": 331,
+     "txt": "SET YOUR TICKET PRICE | − | $46 | a seat, tonight | + | PLAN $24 | $10 | $120 |  | Renewals follow your $24 "
+    }
+   ],
+   ".fh-rules-summary": [
+    {
+     "t": 600,
+     "b": 623,
+     "l": 1026,
+     "r": 1326,
+     "h": 23,
+     "txt": "MORE ABOUT TONIGHT"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 806,
+     "l": 0,
+     "r": 1366,
+     "h": 740,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Tonight | Your nights | Your books | NIGHT 5 OF 5 | TUE | SAT | WED | SAT"
+    }
+   ],
+   ".fh-card": [
+    {
+     "t": 155,
+     "b": 486,
+     "l": 635,
+     "r": 995,
+     "h": 331,
+     "txt": "NIGHT 5 OF 5 | Tuesday · a club that has lost four straight | Not on TV | VISITING CLUB'S DRAW | 2"
+    }
+   ],
+   "#fhLock": [
+    {
+     "t": 326,
+     "b": 382,
+     "l": 1008,
+     "r": 1339,
+     "h": 56,
+     "txt": "LOCK IT IN"
+    }
+   ],
+   "#fhPriceDial": [
+    {
+     "t": 304,
+     "b": 338,
+     "l": 252,
+     "r": 603,
+     "h": 34,
+     "txt": ""
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 144,
+     "b": 162,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 185,
+     "b": 203,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 28,
+     "r": 46,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 179,
+     "b": 197,
+     "l": 259,
+     "r": 277,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 194,
+     "b": 212,
+     "l": 659,
+     "r": 677,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "06-n5-settled": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nNIGHT 5 OF 5\nTUE\nSAT\nWED\nSAT\nTUE\nCASH\n$377,172\nseason so far\nRENEWALS\n6%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nDoors in a minute\n\nLocked. Nothing to do but find out — the doors open when your teacher rings the bell.\n\nNIGHT 5 · LOCKED\n\nDoors open when your teacher rings the bell.\n\nLOCKED AT\n$46",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   ".fh-arena-frame": [
+    {
+     "t": 220,
+     "b": 520,
+     "l": 234,
+     "r": 1338,
+     "h": 300,
+     "txt": ""
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | NIGHT 5 OF 5 | TUE | SAT | WED | SAT | TUE | CASH | $377,172 | season so fa"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 256,
+     "b": 274,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 326,
+     "b": 344,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 220,
+     "b": 520,
+     "l": 234,
+     "r": 1338,
+     "h": 300,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "06-n5-settled-1024": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nRENEWALS\n0%\nseason so far\nDesk 1 · New York Knicks\nREJOIN PIN\n0479\nNIGHT 5 · 9,778 CAME AT $46\nCASH\nTICKETS\n$46 × 9,778\n$449,788\n+\nIN-ARENA\nwhat those same people spent inside\n$176,004\n−\nBUILDING BILL\n-$520,000\n=\nCASH\ntonight\n$105,792\nTHE BOOKS ARE CLOSED\nYou are keeping two books, and they do not add up to one number.\nWHO CAME\n9,778\nof 19,800 · 49.4% of the seats you opened tonight\n9,778\ncame — the lit seats\n10,022\nempty — the dark seats above the line\nRENEWALS\n6%\n→\n0%\ndown 6 points\nseason-ticket holders coming back\n\nSeason plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals fall even with a full building. Price ABOVE what they think tonight is worth and they quit. In between, the plan looks like a bargain and more come back.\n\nWHAT HAPPENED\n\nYou charged $46 · Tuesday · draw 22/100 · a club that has lost four straight\n\nNight 1's card again · $46 → 10,878 then · $46 → 9,778 tonight",
+  "vh": 600,
+  "vw": 1024,
+  "docH": 600,
+  "rects": {
+   ".fh-renewal-cause": [
+    {
+     "t": 270,
+     "b": 351,
+     "l": 694,
+     "r": 995,
+     "h": 81,
+     "txt": "Season plan: $24 a seat. Price well UNDER that and the plan looks like a waste — renewals "
+    }
+   ],
+   ".fh-arena-frame": [
+    {
+     "t": 392,
+     "b": 496,
+     "l": 383,
+     "r": 659,
+     "h": 104,
+     "txt": ""
+    }
+   ],
+   ".fh-arena-labels": [
+    {
+     "t": 503,
+     "b": 553,
+     "l": 383,
+     "r": 659,
+     "h": 50,
+     "txt": "9,778 | came — the lit seats | 10,022 | empty — the dark seats above the line"
+    }
+   ],
+   ".fh-result-head": [
+    {
+     "t": 127,
+     "b": 153,
+     "l": 17,
+     "r": 1007,
+     "h": 26,
+     "txt": "NIGHT 5 · 9,778 CAME AT $46"
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 73,
+     "b": 108,
+     "l": 888,
+     "r": 1011,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#fhNextNight": [
+    {
+     "t": 392,
+     "b": 440,
+     "l": 17,
+     "r": 360,
+     "h": 48,
+     "txt": "THE BOOKS ARE CLOSED"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 583,
+     "l": 0,
+     "r": 1024,
+     "h": 517,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | RENEWALS | 0% | season so far | Desk 1 · New York K"
+    }
+   ],
+   "#fhResult": [
+    {
+     "t": 66,
+     "b": 583,
+     "l": 0,
+     "r": 1024,
+     "h": 517,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | RENEWALS | 0% | season so far | Desk 1 · New York K"
+    }
+   ],
+   "svg": [
+    {
+     "t": 79,
+     "b": 103,
+     "l": 13,
+     "r": 37,
+     "h": 24,
+     "txt": ""
+    },
+    {
+     "t": 176,
+     "b": 194,
+     "l": 33,
+     "r": 51,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 406,
+     "b": 427,
+     "l": 279,
+     "r": 300,
+     "h": 21,
+     "txt": ""
+    },
+    {
+     "t": 176,
+     "b": 194,
+     "l": 387,
+     "r": 405,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 392,
+     "b": 496,
+     "l": 383,
+     "r": 659,
+     "h": 104,
+     "txt": ""
+    },
+    {
+     "t": 176,
+     "b": 194,
+     "l": 698,
+     "r": 716,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "nextbtn-n5": "THE BOOKS ARE CLOSED",
+ "07-reveal-0": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nThe books are closed\n\nAll five nights are in the books. Look up at the board.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR NIGHTS SO FAR\nNight 1 Tue · draw 22\n$46\n10,878\n$176,192\nNight 2 Sat · draw 51\n$120\n0\n-$520,000\nNight 3 Wed · draw 88\n$12\n18,946\n$48,380\nNight 4 Sat · draw 97\n$40\n22,200\n$672,600\nNight 5 Tue · draw 22\n$46\n9,778\n$105,792\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 179,
+     "b": 446,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | Desk 1 · New York Knicks | Madison Square Garden | REJOIN PIN | 0"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 197,
+     "b": 215,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 411,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-0": {
+  "text": "THE ROOM'S OWN NIGHTS · WAITING\nWaiting for your teacher to put up the first night.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "07-reveal-1": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 198,
+     "b": 465,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 216,
+     "b": 234,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 245,
+     "b": 430,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-1": {
+  "text": "NIGHT 1 · THE QUIET TUESDAY\nNights up: N1\n$10\n$30\n$50\n$70\n$90\n$120\n0k\n3k\n6k\n10k\n13k\nTICKET PRICE\nPEOPLE WHO CAME\nNew York\nMemphis\nN1 Tue\nEvery dot is one desk on one night — this picture is NOT a demand curve. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "07-reveal-2": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR NIGHT\n\nNIGHT 1 · 10,878 CAME AT $46\n\nWHO CAME\n10,878\nCASH TONIGHT\n$176,192\nRENEWALS\n50% → 30%\n\nYou charged $46 · Tuesday · draw 22/100 · 54.9% of the seats you opened tonight\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 384,
+     "b": 651,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 402,
+     "b": 420,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 431,
+     "b": 616,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-2": {
+  "text": "NIGHT 2 · SATURDAY\nNights up: N1 · N2\n$10\n$30\n$50\n$70\n$90\n$120\n0k\n5k\n11k\n16k\n22k\nTICKET PRICE\nPEOPLE WHO CAME\nNew York\nMemphis\nN1 Tue\nN2 Sat\nEvery dot is one desk on one night — this picture is NOT a demand curve. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "07-reveal-3": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR NIGHT\n\nNIGHT 3 · 18,946 CAME AT $12\n\nWHO CAME\n18,946\nCASH TONIGHT\n$48,380\nRENEWALS\n10% → 0%\n\nYou charged $12 · Wednesday · draw 88/100 · 95.7% of the seats you opened tonight\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 384,
+     "b": 651,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 402,
+     "b": 420,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 431,
+     "b": 616,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-3": {
+  "text": "NIGHT 3 · BIG VISITOR, NATIONAL TV\nNights up: N1 · N2 · N3\n$10\n$30\n$50\n$70\n$90\n$120\n0k\n5k\n11k\n16k\n22k\nTICKET PRICE\nPEOPLE WHO CAME\nNew York\nMemphis\nN1 Tue\nN2 Sat\nN3 Wed\nEvery dot is one desk on one night — this picture is NOT a demand curve. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "07-reveal-4": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR NIGHT\n\nFULL HOUSE · 22,200 of 22,200 · 250 turned away\n\nWHO CAME\n22,200\nCASH TONIGHT\n$672,600\nRENEWALS\n0% → 6%\n\nYou charged $40 · Saturday · draw 97/100 · 100% of the seats you opened tonight\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 384,
+     "b": 651,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 402,
+     "b": 420,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 431,
+     "b": 616,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-4": {
+  "text": "NIGHT 4 · THE SHOCK\nNights up: N1 · N2 · N3 · N4\n$10\n$45\n$80\n$120\n0k\n8k\n17k\n25k\nTICKET PRICE\nPEOPLE WHO CAME\nNew York\nMemphis\nN1 Tue\nN2 Sat\nN3 Wed\nN4 Sat\nEvery dot is one desk on one night — this picture is NOT a demand curve. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.\nThat night was modeled on a real one. Indiana Fever home attendance went from 4,066 a game in 2023 to 17,036 a game in 2024 — best in the WNBA — and six opposing clubs moved Fever games out of their own buildings and into bigger ones. They could not raise the price: those tickets were already sold. You could. That is the difference: buying seats is what a club does when it cannot change the price. Opening more of this building never beat pricing it right — it only ever handed part of the money back to a desk that had already priced too low.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "07-reveal-5": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR NIGHT\n\nNIGHT 5 · 9,778 CAME AT $46\n\nWHO CAME\n9,778\nCASH TONIGHT\n$105,792\nRENEWALS\n6% → 0%\n\nYou charged $46 · Tuesday · draw 22/100 · 49.4% of the seats you opened tonight\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 384,
+     "b": 651,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 402,
+     "b": 420,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 431,
+     "b": 616,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-5": {
+  "text": "NIGHT 5 · NIGHT 1'S CARD AGAIN\nNights up: N1 · N2 · N3 · N4 · N5\nTHE RENEWALS RULE, out loud: season-ticket holders paid $24 a seat at the New York Knicks and $16 a seat at the Memphis Grizzlies. Price a night well UNDER your own plan price and their plan looks like a waste — renewals fall even when the building is full. Price it above what they think that night is worth and they quit. The bigger the visiting club's Draw, the higher the price they forgive; a national-TV listing pulls that line back down.\n$10\n$45\n$80\n$120\n0k\n8k\n17k\n25k\nTICKET PRICE\nPEOPLE WHO CAME\nNew York\nMemphis\nN1 Tue\nN2 Sat\nN3 Wed\nN4 Sat\nN5 Tue\nEvery dot is one desk on one night — this picture is NOT a demand curve. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.\n4,875 people in this room's five nights wanted a seat and could not get one.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "07-reveal-6": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR NIGHT\n\nNIGHT 5 · 9,778 CAME AT $46\n\nWHO CAME\n9,778\nCASH TONIGHT\n$105,792\nRENEWALS\n6% → 0%\n\nYou charged $46 · Tuesday · draw 22/100 · 49.4% of the seats you opened tonight\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 384,
+     "b": 651,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 402,
+     "b": 420,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 431,
+     "b": 616,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-6": {
+  "text": "THE TWO PEAKS\nNights up: N1 · N2 · N3 · N4 · N5\n4,875 people in this room's five nights wanted a seat and could not get one.\nTHE TWO PEAKS\nNEW YORK\nTickets alone peak at\n$46\nTickets + what they spend inside peak at\n$38\n$8 lower · 4 clicks of the dial\n$46\n$38\nTICKET PRICE\nMONEY IN\nTickets alone\nTickets + what they spend inside\nMEMPHIS\nTickets alone peak at\n$34\nTickets + what they spend inside peak at\n$28\n$6 lower · 3 clicks of the dial\n$34\n$28\nTICKET PRICE\nMONEY IN\nTickets alone\nTickets + what they spend inside\nThe cheaper ticket made more money.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "07-reveal-7": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nTHE TWO PEAKS — NIGHT 3, YOUR MARKET\nTickets alone made the most at\n$46\nTickets + what they spent inside peaked at\n$38\n\n$8 lower — 4 clicks of the dial. The cheaper ticket made more money.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 354,
+     "b": 621,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 372,
+     "b": 390,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 401,
+     "b": 586,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-reveal-7": {
+  "text": "THE SEASON, MARKET BY MARKET\nNights up: N1 · N2 · N3 · N4 · N5\n4,875 people in this room's five nights wanted a seat and could not get one.\nNEW YORK KNICKS\nDesks\n2\nFullest house\n100%\nSold-out nights\n2\nMedian renewals\n3%\nMEMPHIS GRIZZLIES\nDesks\n2\nFullest house\n99.9%\nSold-out nights\n0\nMedian renewals\n5%\nMiss the best price by a couple of dollars and it costs about the same whether you went over or under — on every card, in both buildings, the two mistakes are close to even. Miss it by a lot and the building starts to matter. Once every seat is sold, a cheaper ticket brings nobody new; it just charges less to the same full house. On Night 4, being $30 under the best price cost about half again as much as being $30 over it.\nThese demand curves are modeled on real market differences. They are not the Knicks' or the Grizzlies' actual measured demand. The market sizes are real; the curves are ours."
+ },
+ "08-adapt": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR SEASON, SEASON SO FAR\nCASH\n$482,964\nRENEWALS\n0%\n\nYou are keeping two books, and they do not add up to one number.\n\nTHE TWO PEAKS — NIGHT 3, YOUR MARKET\nTickets alone made the most at\n$46\nTickets + what they spent inside peaked at\n$38\n\n$8 lower — 4 clicks of the dial. The cheaper ticket made more money.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 814,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 478,
+     "b": 745,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 814,
+     "l": 0,
+     "r": 1366,
+     "h": 748,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 496,
+     "b": 514,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 525,
+     "b": 710,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "09-cf-0": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nYour five nights\n\nYour five nights, in the books. Look up at the board for the room's.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR SEASON, SEASON SO FAR\nCASH\n$482,964\nRENEWALS\n0%\n\nYou are keeping two books, and they do not add up to one number.\n\nTHE TWO PEAKS — NIGHT 3, YOUR MARKET\nTickets alone made the most at\n$46\nTickets + what they spent inside peaked at\n$38\n\n$8 lower — 4 clicks of the dial. The cheaper ticket made more money.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN3 $12 · 18,946\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 814,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 478,
+     "b": 745,
+     "l": 792,
+     "r": 1339,
+     "h": 267,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N3 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 814,
+     "l": 0,
+     "r": 1366,
+     "h": 748,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 496,
+     "b": 514,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 525,
+     "b": 710,
+     "l": 806,
+     "r": 1325,
+     "h": 185,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N3 $12 · 18,946N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-cf": {
+  "text": "NIGHT 1 VS NIGHT 5 — THE SAME CARD\nFind one night on the board — one colour, one shape — where two desks in the same building charged different prices. Somebody in this room made more money by charging less. Explain how, using those dots, not a guess.\nGROUP 1 OF 2 — DESK 1, DESK 2, DESK 3\nDesk 1 · New York Knicks same price $46\n10,878\n9,778\nrenewals 50% → 6% · -1,100 people, and that is renewals -1,100\nDesk 2 · Memphis Grizzlies same price $30\n10,050\n9,425\nrenewals 50% → 25% · -625 people, and that is renewals -625\nDesk 3 · New York Knicks same price $56\n8,158\n7,533\nrenewals 50% → 25% · -625 people, and that is renewals -625\n$10\n$45\n$80\n$120\n0k\n8k\n17k\n25k\nTICKET PRICE\nPEOPLE\nNew York\nMemphis\nN1 Tue\nN2 Sat\nN3 Wed\nN4 Sat\nN5 Tue\nEvery dot is one desk on one night — this picture is NOT a demand curve. Compare dots of the SAME colour and the SAME shape — that is one building on one night, and only that is a demand curve. Different nights are different crowds, so they are never joined up.\n4 desks charged the SAME price on Night 1 and Night 5. 0 drew a bigger crowd the second time, 4 drew a smaller one. Same day, same visitor, same price — everything that changed, they did on an earlier night. For every one of the 4 that drew a crowd, the biggest carried-over thing was their own renewals.\nWe can show you what the money would have done. We cannot show you what you would have done. That is why we played it instead of arguing about it."
+ },
+ "09-cf-1": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nWhat if?\n\nNight 1 and Night 5 were the same card.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nNIGHT 1 AND NIGHT 5 WERE THE SAME CARD\nNIGHT 1\n$46\n10,878\nrenewals 50%\nNIGHT 5\n$46\n9,778\nrenewals 6%\nWHERE THAT CHANGE CAME FROM\n\n-1,100 people, and that is renewals -1,100\n\nWHAT IF?\nWhat you actually did\n$482,964 · 0%\n\nYour five nights, your two dials.\n\nSame price every night ($24)\n$1,238,212 · 80%\n\nNever moved the dial. Safe, and beatable on BOTH books at once: the renewals line below ends $996,336 ahead of it in cash and 20 renewal points ahead of it. Doing nothing is not what protecting your plan holders costs.\n\nThe best renewals book we could find\n$2,234,548 · 100%\n\nThe other corner: no line in this model ends with more season-ticket holders than 100%, and this is the most cash we could find that still gets there. The 35 points between this line and the one below it are NOT all the same price — the cheapest cost about $715 each and the last one costs $51,478. Protecting the base starts cheap and ends expensive.\n\nThe most cash we could find\n$2,416,884 · 65%\n\nNot a proven maximum — the best line we could search out: a different price on every night, and event money on N3. Against the renewals line above it, it made $182,336 more and paid 35 renewal points for it. There is no exchange rate between those two numbers. You have to choose.\n\nWe can show you what the money would have done. We cannot show you what you would have done — that is why you played it.\n\nBE READY TO ARGUE\n\nFind one night on the board — one colour, one shape — where two desks in the same building charged different prices. Somebody in this room made more money by charging less. Explain how, using those dots, not a guess.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 869,
+  "rects": {
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 869,
+     "l": 0,
+     "r": 1366,
+     "h": 803,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "10-synth-0": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nWhat if?\n\nNight 1 and Night 5 were the same card.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nNIGHT 1 AND NIGHT 5 WERE THE SAME CARD\nNIGHT 1\n$46\n10,878\nrenewals 50%\nNIGHT 5\n$46\n9,778\nrenewals 6%\nWHERE THAT CHANGE CAME FROM\n\n-1,100 people, and that is renewals -1,100\n\nWHAT IF?\nWhat you actually did\n$482,964 · 0%\n\nYour five nights, your two dials.\n\nSame price every night ($24)\n$1,238,212 · 80%\n\nNever moved the dial. Safe, and beatable on BOTH books at once: the renewals line below ends $996,336 ahead of it in cash and 20 renewal points ahead of it. Doing nothing is not what protecting your plan holders costs.\n\nThe best renewals book we could find\n$2,234,548 · 100%\n\nThe other corner: no line in this model ends with more season-ticket holders than 100%, and this is the most cash we could find that still gets there. The 35 points between this line and the one below it are NOT all the same price — the cheapest cost about $715 each and the last one costs $51,478. Protecting the base starts cheap and ends expensive.\n\nThe most cash we could find\n$2,416,884 · 65%\n\nNot a proven maximum — the best line we could search out: a different price on every night, and event money on N3. Against the renewals line above it, it made $182,336 more and paid 35 renewal points for it. There is no exchange rate between those two numbers. You have to choose.\n\nWe can show you what the money would have done. We cannot show you what you would have done — that is why you played it.\n\nBE READY TO ARGUE\n\nFind one night on the board — one colour, one shape — where two desks in the same building charged different prices. Somebody in this room made more money by charging less. Explain how, using those dots, not a guess.",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 869,
+  "rects": {
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 869,
+     "l": 0,
+     "r": 1366,
+     "h": 803,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-synth-0": {
+  "text": "WHAT ECONOMICS DID WE JUST USE?\nCARD 1 OF 6\nREVENUE = PRICE × PEOPLE\n\nNight 2, New York Knicks — the same night in the same building. One desk charged $26 and 19,216 came. Another charged $120 and 0 came. Higher price, smaller crowd: that is a demand curve, and it is only readable one night at a time. Neither number alone is the money — the money is the two of them multiplied, which is why the biggest crowd and the biggest night are almost never the same night.\n\nFlights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it."
+ },
+ "10-synth-1": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nLook up at the board\n\nLook up at the board.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nREVENUE = PRICE × PEOPLE\n1 / 6\n\nNight 2, New York Knicks — the same night in the same building. One desk charged $26 and 19,216 came. Another charged $120 and 0 came. Higher price, smaller crowd: that is a demand curve, and it is only readable one night at a time. Neither number alone is the money — the money is the two of them multiplied, which is why the biggest crowd and the biggest night are almost never the same night.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nTALK WITH YOUR PARTNER\n\nWhich night did you get wrong, and what on the card should have told you?",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 314,
+     "b": 559,
+     "l": 792,
+     "r": 1339,
+     "h": 245,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N2 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 332,
+     "b": 350,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 361,
+     "b": 524,
+     "l": 806,
+     "r": 1325,
+     "h": 163,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-synth-1": {
+  "text": "WHAT ECONOMICS DID WE JUST USE?\nCARD 2 OF 6\nTHE CARD MOVED THE CROWD\n\nNew York Knicks: the best Tuesday crowd in this room was 10,878 at $46; the best Saturday crowd was 19,216 at $26. Those are two different prices, so this pair does not prove it on its own — part of that gap is the price. What the card can tell you is on the board: find two desks in the SAME building charging the SAME price on the two nights, and whatever is left over is the day, the Draw and the TV listing.\n\nFlights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it."
+ },
+ "10-synth-2": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nLook up at the board\n\nLook up at the board.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nTHE TICKET IS NOT THE PRODUCT\n3 / 6\n\nOn Night 3 in New York Knicks, tickets alone made the most money at $46. Add what those same people spent inside the building and the best price drops to $38 — $8 lower, 4 clicks of the dial. The cheaper ticket made more money, because a cheaper ticket brings more people and every one of them buys something. Stores call that a loss leader.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nTALK WITH YOUR PARTNER\n\nWhich night did you get wrong, and what on the card should have told you?",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 314,
+     "b": 559,
+     "l": 792,
+     "r": 1339,
+     "h": 245,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N2 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 332,
+     "b": 350,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 361,
+     "b": 524,
+     "l": 806,
+     "r": 1325,
+     "h": 163,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-synth-2": {
+  "text": "WHAT ECONOMICS DID WE JUST USE?\nCARD 3 OF 6\nTHE TICKET IS NOT THE PRODUCT\n\nOn Night 3 in New York Knicks, tickets alone made the most money at $46. Add what those same people spent inside the building and the best price drops to $38 — $8 lower, 4 clicks of the dial. The cheaper ticket made more money, because a cheaper ticket brings more people and every one of them buys something. Stores call that a loss leader.\n\nFlights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it."
+ },
+ "10-synth-3": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nLook up at the board\n\nLook up at the board.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nNIGHT 5 WAS NIGHT 1\n4 / 6\n\n4 desks charged the same price on both nights. Same day, same visiting club, same price — and a different crowd walked in. Desk 1 · New York Knicks: 10,878 then 9,778 — -1,100 people, and that is renewals -1,100 · Desk 2 · Memphis Grizzlies: 10,050 then 9,425 — -625 people, and that is renewals -625 · Desk 3 · New York Knicks: 8,158 then 7,533 — -625 people, and that is renewals -625. For every desk on this card the biggest thing that changed was its own renewals: four nights of their own pricing decided who walked in on the fifth. THE RENEWALS RULE, out loud: season-ticket holders paid $24 a seat at the New York Knicks and $16 a seat at the Memphis Grizzlies. Price a night well UNDER your own plan price and their plan looks like a waste — renewals fall even when the building is full. Price it above what they think that night is worth and they quit. The bigger the visiting club's Draw, the higher the price they forgive; a national-TV listing pulls that line back down.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nTALK WITH YOUR PARTNER\n\nWhich night did you get wrong, and what on the card should have told you?",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 822,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 394,
+     "b": 639,
+     "l": 792,
+     "r": 1339,
+     "h": 245,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N2 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 822,
+     "l": 0,
+     "r": 1366,
+     "h": 756,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 412,
+     "b": 430,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 441,
+     "b": 604,
+     "l": 806,
+     "r": 1325,
+     "h": 163,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-synth-3": {
+  "text": "WHAT ECONOMICS DID WE JUST USE?\nCARD 4 OF 6\nNIGHT 5 WAS NIGHT 1\n\n4 desks charged the same price on both nights. Same day, same visiting club, same price — and a different crowd walked in. Desk 1 · New York Knicks: 10,878 then 9,778 — -1,100 people, and that is renewals -1,100 · Desk 2 · Memphis Grizzlies: 10,050 then 9,425 — -625 people, and that is renewals -625 · Desk 3 · New York Knicks: 8,158 then 7,533 — -625 people, and that is renewals -625. For every desk on this card the biggest thing that changed was its own renewals: four nights of their own pricing decided who walked in on the fifth. THE RENEWALS RULE, out loud: season-ticket holders paid $24 a seat at the New York Knicks and $16 a seat at the Memphis Grizzlies. Price a night well UNDER your own plan price and their plan looks like a waste — renewals fall even when the building is full. Price it above what they think that night is worth and they quit. The bigger the visiting club's Draw, the higher the price they forgive; a national-TV listing pulls that line back down.\n\nFlights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it."
+ },
+ "10-synth-4": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nLook up at the board\n\nLook up at the board.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nTWO BOOKS, NO EXCHANGE RATE\n5 / 6\n\nBest full house each market managed: New York Knicks 100% · Memphis Grizzlies 99.9%. Median renewals: New York Knicks 3% · Memphis Grizzlies 5%. You cannot add a dollar to a renewal, and no price is best on both. Over the whole five nights at the New York Knicks: the most cash we could find was $2,416,884, ending at 65% renewals. The most season-ticket holders we could find was 100%, and the best that line could make was $2,234,548. So 35 renewal points cost $182,336 — about $5,210 a point on average. But they do not cost the same: the cheapest points go for about $715 each and the last one costs $51,478. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nTALK WITH YOUR PARTNER\n\nWhich night did you get wrong, and what on the card should have told you?",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 782,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 354,
+     "b": 599,
+     "l": 792,
+     "r": 1339,
+     "h": 245,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N2 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 782,
+     "l": 0,
+     "r": 1366,
+     "h": 716,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 372,
+     "b": 390,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 401,
+     "b": 564,
+     "l": 806,
+     "r": 1325,
+     "h": 163,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-synth-4": {
+  "text": "WHAT ECONOMICS DID WE JUST USE?\nCARD 5 OF 6\nTWO BOOKS, NO EXCHANGE RATE\n\nBest full house each market managed: New York Knicks 100% · Memphis Grizzlies 99.9%. Median renewals: New York Knicks 3% · Memphis Grizzlies 5%. You cannot add a dollar to a renewal, and no price is best on both. Over the whole five nights at the New York Knicks: the most cash we could find was $2,416,884, ending at 65% renewals. The most season-ticket holders we could find was 100%, and the best that line could make was $2,234,548. So 35 renewal points cost $182,336 — about $5,210 a point on average. But they do not cost the same: the cheapest points go for about $715 each and the last one costs $51,478. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.\n\nFlights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it."
+ },
+ "10-synth-5": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nLook up at the board\n\nLook up at the board.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nTWO BOOKS, NO EXCHANGE RATE\n5 / 6\n\nBest full house each market managed: New York Knicks 100% · Memphis Grizzlies 99.9%. Median renewals: New York Knicks 3% · Memphis Grizzlies 5%. You cannot add a dollar to a renewal, and no price is best on both. Over the whole five nights at the New York Knicks: the most cash we could find was $2,416,884, ending at 65% renewals. The most season-ticket holders we could find was 100%, and the best that line could make was $2,234,548. So 35 renewal points cost $182,336 — about $5,210 a point on average. But they do not cost the same: the cheapest points go for about $715 each and the last one costs $51,478. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nTALK WITH YOUR PARTNER\n\nWhich night did you get wrong, and what on the card should have told you?",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 782,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 354,
+     "b": 599,
+     "l": 792,
+     "r": 1339,
+     "h": 245,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N2 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 782,
+     "l": 0,
+     "r": 1366,
+     "h": 716,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 372,
+     "b": 390,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 401,
+     "b": 564,
+     "l": 806,
+     "r": 1325,
+     "h": 163,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "board-synth-5": {
+  "text": "WHAT ECONOMICS DID WE JUST USE?\nCARD 6 OF 6\nYOUR JOB IS REAL\n\nThe thing you just did five times with one dial, real clubs built software to do every hour. The San Francisco Giants started it in 2009 and ran a full season of it in 2010; variable and dynamic pricing are standard across the NBA now. Your job exists.\n\nFlights and hotels that cost more on a Friday. Movie tickets cheap on Tuesday and popcorn that is not. A bake sale in the rain. The shop that sells milk at a loss at the back of the store so you walk past everything else to reach it.\nWhich night did you get wrong, and what on the card should have told you?\nNew York Knicks · Madison Square Garden and Memphis Grizzlies · FedExForum are real clubs and real buildings; the Grizzlies' local media deal ran under $10M a year against the Lakers' about $149M in one leaked league year, 2016-17 (reported by ESPN, September 2017; verified as of 2026-08-31).\nNight 4 is modeled on a real demand shock: Indiana Fever home attendance went from 4,066 per game in 2023 to 17,036 per game in 2024, the best in the WNBA, and six opposing clubs moved Fever games into bigger buildings (2024 season; verified as of 2026-08-31).\nThe San Francisco Giants pioneered dynamic ticket pricing in 2009 and ran it across a full season in 2010; variable and dynamic pricing are standard across the NBA today (verified as of 2026-08-31).\nThe New York Knicks won the 2026 NBA championship on 13 June 2026, beating the San Antonio Spurs — their first title since 1973 (2025-26 season; NBA.com and ESPN, verified as of 2026-08-31). Every visiting club on these five cards is a ROLE, never a named club, so no desk in this room ever hosts itself.\nBuilding capacities are modeled at real arena scale: about 19,800 seats at Madison Square Garden (listed basketball capacity 19,812, 2025-26 season) and 17,794 at FedExForum as this lesson's modeled seat count — published FedExForum figures range from 16,667 to 18,119 and the building is in a phased renovation through 2028, so there is no single listed figure to quote (verified as of 2026-08-31). Every dollar figure in this lesson is a modeled magnitude, not an audited club financial."
+ },
+ "11-complete": {
+  "text": "FULL HOUSE\nMODULE 2 · LESSON 1\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nDesk 1 · New York Knicks\nMadison Square Garden\nREJOIN PIN\n0479\nModule 2\n·\nMoney in Motion\n·\nLesson 1\nLook up at the board\n\nLook up at the board.\n\nCASH\n$482,964\nseason so far\nRENEWALS\n0%\nseason so far\nYou are keeping two books, and they do not add up to one number.\nYOUR JOB IS REAL\n6 / 6\n\nThe thing you just did five times with one dial, real clubs built software to do every hour. The San Francisco Giants started it in 2009 and ran a full season of it in 2010; variable and dynamic pricing are standard across the NBA now. Your job exists.\n\nYOUR NIGHTS SO FAR\nNight 1 Tue\n$46\n10,878 54.9%\n$176,192\nNight 2 Sat\n$120\n0 0%\n-$520,000\nNight 3 Wed\n$12\n18,946 95.7%\n$48,380\nNight 4 Sat\n$40\n22,200 100%\n$672,600\nNight 5 Tue\n$46\n9,778 49.4%\n$105,792\n\nof the seats you opened tonight. You are keeping two books, and they do not add up to one number.\n\nYOUR NIGHTS SO FAR\nPEOPLE × PRICE\nPRICE\nPEOPLE\n26,500\n0\nN5 $46 · 9,778\nN4 $40 · 22,200\nN2 $120 · 0\n\nOne dot per night. Two nights are only comparable when the card is the same.\n\nTALK WITH YOUR PARTNER\n\nWhich night did you get wrong, and what on the card should have told you?",
+  "vh": 768,
+  "vw": 1366,
+  "docH": 768,
+  "rects": {
+   "#fhNights": [
+    {
+     "t": 294,
+     "b": 539,
+     "l": 792,
+     "r": 1339,
+     "h": 245,
+     "txt": "YOUR NIGHTS SO FAR | PEOPLE × PRICE | PRICE | PEOPLE | 26,500 | 0 | N5 $46 · 9,778 | N4 $40 · 22,200 | N2 "
+    }
+   ],
+   ".fh-pin-chip": [
+    {
+     "t": 710,
+     "b": 745,
+     "l": 15,
+     "r": 192,
+     "h": 35,
+     "txt": "REJOIN PIN | 0479"
+    }
+   ],
+   "#gameBody": [
+    {
+     "t": 66,
+     "b": 764,
+     "l": 0,
+     "r": 1366,
+     "h": 698,
+     "txt": "FULL HOUSE | MODULE 2 · LESSON 1 | CASH | $482,964 | season so far | RENEWALS | 0% | season so far | You a"
+    }
+   ],
+   "svg": [
+    {
+     "t": 85,
+     "b": 117,
+     "l": 15,
+     "r": 47,
+     "h": 32,
+     "txt": ""
+    },
+    {
+     "t": 156,
+     "b": 174,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 226,
+     "b": 244,
+     "l": 29,
+     "r": 47,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 312,
+     "b": 330,
+     "l": 810,
+     "r": 828,
+     "h": 18,
+     "txt": ""
+    },
+    {
+     "t": 341,
+     "b": 504,
+     "l": 806,
+     "r": 1325,
+     "h": 163,
+     "txt": "PRICEPEOPLE26,5000N5 $46 · 9,778N4 $40 · 22,200N2 $120 · 0"
+    }
+   ],
+   "#pinCard": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": " |      |        |         Your rejoin PIN — write it down in case you switch devices: |         0"
+    }
+   ],
+   "#pinDisplay": [
+    {
+     "t": 0,
+     "b": 0,
+     "l": 0,
+     "r": 0,
+     "h": 0,
+     "txt": "0479"
+    }
+   ]
+  }
+ },
+ "_notes": [
+  {
+   "night": 1,
+   "priceMeta": {
+    "meta": {
+     "min": 10,
+     "max": 120,
+     "step": 2
+    },
+    "val": 46
+   }
+  },
+  {
+   "night": 2,
+   "priceMeta": {
+    "meta": {
+     "min": 10,
+     "max": 120,
+     "step": 2
+    },
+    "val": 120
+   }
+  },
+  {
+   "night": 3,
+   "priceMeta": {
+    "meta": {
+     "min": 10,
+     "max": 120,
+     "step": 2
+    },
+    "val": 12
+   }
+  },
+  {
+   "night": 4,
+   "priceMeta": {
+    "meta": {
+     "min": 10,
+     "max": 120,
+     "step": 2
+    },
+    "val": 40
+   }
+  },
+  {
+   "night": 5,
+   "priceMeta": {
+    "meta": {
+     "min": 10,
+     "max": 120,
+     "step": 2
+    },
+    "val": 46
+   }
+  }
+ ]
+}

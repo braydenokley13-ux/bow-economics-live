@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `462:c42c5b9b5b31bc7293aacb6773e7042d4aaf4db115bd7e00d1e78b68b607f854`  
-Updated: 2026-09-02T18:44:18.458Z
+Event head: `475:bba71ab5dc3e020a4d3e4df72fae9b5eb16389684e01252117fac884024aff2c`  
+Updated: 2026-09-02T18:45:25.617Z
 
 ## Founder intent
 
@@ -59,7 +59,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - visual-experience-director — visual-critic-3 — active — claude-opus-5
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-opus-5
 - regression-hunter — regression-w2b — active — claude-opus-5
-- player-gameplay-critic — kid-c3-nonsports — active — claude-opus-5
+- player-gameplay-critic — kid-c3-nonsports — completed-with-concerns — claude-opus-5
 
 ## Required evidence
 
@@ -324,6 +324,18 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-final-bqa-1024-sellout-closed — screenshot — 1024x600 bowl-CLOSED sellout (desk2 Night 4, 7,256 turned away) — NEXT bottom 468, turned-away bottom 448
 - w2-final-bqa-zero-turnout — screenshot — Zero-turnout night at 1024x600 (desk3 Night 1, $120, 0 came) — headline, money line and NEXT all in fold
 - w2-final-bqa-prelock-n4 — screenshot — Pre-lock Night 4 rail at 1366x768 — #fhNights top 566 < 768
+- w2-final-kidc-report — gameplay-report — Kid C final re-check report (AGENT-PLAYTESTED / SIMULATED KID), full arc at 1366x768 + 1024x600
+- w2-final-kidc-log — browser-trace — innerText + getBoundingClientRect dump for all 30 played states (chart rects, cause-line rects, reveal md5s)
+- w2-final-kidc-manifest — browser-trace — screenshot manifest for screens-w2-kid-c-final (78 files, what each shows)
+- w2-final-kidc-script — browser-trace — Playwright script that played the whole arc as Kid C on port 4444
+- w2-final-kidc-hook — screenshot — HOOK first screen: building + hero line + five night cards (slate top 557 bottom 747); docH 1714
+- w2-final-kidc-n2-settled — screenshot — Bad night settled: 0 CAME AT $120, -$520,000; four-clause renewals rule is the only causal prose, WHAT HAPPENED only restates inputs
+- w2-final-kidc-n4-pre — screenshot — Night 4 pricing: extra-seats control reads 'Open 2,400 more seats tonight'; chart at top 586, caption cut
+- w2-final-kidc-n5-pre — screenshot — Night 5 pricing: chart fully in view but the N3 dot is unlabelled (3 labels for 4 nights)
+- w2-final-kidc-reveal3 — screenshot — REVEAL stage 3 on /play: own night surfaced (NIGHT 3 18,946 AT $12); chart labels N4/N3/N5/N2 with Night 1 unlabelled under N5
+- w2-final-kidc-cf — screenshot — COUNTERFACTUAL on /play: 'WHERE THAT CHANGE CAME FROM: -1,100 people, and that is renewals -1,100' still not a sentence
+- w2-final-kidc-n5-1024 — screenshot — Night 5 settled at 1024x600: 'Night 1's card again $46 -> 10,878 then $46 -> 9,778 tonight' in the first screen
+- w2-final-kidc-1024-pre — screenshot — First-contact pricing at 1024x600: dial 262-296 and LOCK IT IN 268-324 both inside the 600px viewport
 
 ## Claim ledger
 

@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T18:44:18.458Z",
+  "updatedAt": "2026-09-02T18:45:25.617Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2131,11 +2131,30 @@
           "model": "claude-opus-5",
           "reason": "Analyst prerequisite: at least one kid persona re-read on the repaired surface; Kid C (non-sports, lowest prior knowledge) is the hardest bar",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T18:31:11.558Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T18:45:25.617Z",
+          "sections": {
+            "what-the-student-plays": "One dial, one lock, five bells, blind. I read tonight's card (day, club, draw x/100, TV), set a price $10-$120, optionally push money into the event or open 2,400 extra seats, and press LOCK IT IN with no preview; the teacher's bell settles the night into a crowd, a cash chain and a renewals move. Real mechanic, not information->choice->Continue: my choice alone produces the number and the number surprises me. My five nights: $46/10,878; $120/0 came and -$520,000 (my deliberate bad night); $12/18,946; $40 + extra seats/22,200 of 22,200 with 250 turned away; $46/9,778. Season $482,964 cash, 0% renewals. AGENT-PLAYTESTED / SIMULATED KID, never human-tested.",
+            "pull-rating": "STRONG for this persona (does not follow basketball, does not like reading, pairs on one Chromebook). Not MAGNETIC. STRONG because the blind lock creates real dread and a real payoff (OBSERVED: the FULL HOUSE / 22,200 OF 22,200 / 250 TURNED AWAY screen on N4), because the disaster is recoverable and visibly so (-$343,808 after N2 to +$482,964 by the end; renewals moved back UP 0%->6% on N4), because the card gives non-fans something to reason with, and because the mechanic is one control wide so my partner and I argued about the number, not the UI. Not MAGNETIC because my own screen never says why that many people came, so my adaptation was feel not reasoning; because the chart drops the label of one of my five nights including Night 1 in the N1-vs-N5 pair; because the counterfactual's key line is not a sentence; and because 'season-ticket holder' - the noun the entire second book rests on - is never explained. No dissent filed: STRONG is at/above the bar.",
+            "biggest-failure": "The settled night explains the wrong number. The crowd figure is the biggest thing on the screen (72px) and has no cause line; the only causal prose is the four-clause renewals rule, and it is byte-identical at byte-identical coordinates (top 276 bottom 396 on N1/N2/N3, top 308 on N4) after a zero night and after a sell-out (OBSERVED, 06-n1..n4-settled.png + rects in kidc-log.json). WHAT HAPPENED reads 'You charged $120 - Saturday - draw 51/100 - a solid playoff club', a re-print of my own inputs, not a cause. Answering the brief directly: repair 4's four-clause rule does not bury this kid - it is readable - but it is aimed at the other book and it never changes, so by Night 3 I stopped reading it; worse, being the only why-shaped text beside a giant 0 it invites the false reading 'nobody came because of the renewals rule'. My state after every bell: I know what happened, I do not know why.",
+            "moment-by-moment-notes": "1024x600 first contact met: docH 735 in a 600px viewport but #fhPriceDial 262-296 and #fhLock 268-324 are both in the first screen (OBSERVED). HOOK: first 768px is arena + one hero line + five night cards (.fh-slate-row top 557 bottom 747) and it made me want to play; below it docH runs to 1714 with ~350 words of HOUSE RULE 1-5 that I did not read and never used. Settled nights no longer need scrolling: docH == 768 on N1/N2/N3/N5, only N4 overflows by 30px (docH 798), pushing the turned-away/resale sentence under the fold on the loudest night. Chart (Q2): y fitted (0 to 26,500 against max 22,200) and no collisions, readable at the pricing moment on N1/N3/N5 and readable-but-caption-cut at N4 (top 586) - but labels are DROPPED: N5 pricing shows 3 labels for 4 nights (N3 unlabelled), REVEAL/ADAPT show N4/N3/N5/N2 with Night 1 an unlabelled dot underneath N5, i.e. the same-price pair the lesson turns on is the pair the chart will not name; the PRICE axis carries no numbers. Extra seats: 'Open 2,400 more seats tonight / $95,000 / paid whether they fill or not' pre-lock, 'MORE SEATS -$95,000' and 'More seats open' post-lock; the strings 'upper bowl' and 'deck' appear in none of my 30 captured states - prior naming split discharged; residual broken copy 'You also put $0 into the night with the more seats open.' Night 5 now carries \"Night 1's card again - $46 -> 10,878 then - $46 -> 9,778 tonight\" on the night itself, in the first screen (prior finding discharged) - the best line on the student surface. REVEAL: /play is no longer inert, stage 3 shows YOUR NIGHT / NIGHT 3 - 18,946 CAME AT $12 and the text md5 changes across stages (only stages 5-6 identical) - prior finding discharged; still 13 no-action teacher clicks for this kid. COUNTERFACTUAL: N1/N5 pair is excellent, but 'WHERE THAT CHANGE CAME FROM: -1,100 people, and that is renewals -1,100' repeats one number twice and never says who left - prior finding reworded, not discharged; the WHAT IF rows are adult finance copy ('the cheapest cost about $715 each and the last one costs $51,478'). Q4: no basketball skill needed (draw is a bar out of 100, clubs described in plain words, national TV explained), but 'season ticket' is a prerequisite and is defined only circularly ('RENEWALS is the share of season-ticket holders who come back next year'); I finished at 0% renewals never knowing who those people are or why $24 up front matters, and 'draw' is defined once below the HOOK fold and never on the card where I use it. Q5: the bad night is fully recoverable and nothing grades me (no XP/badges, NEXT is right there), but nothing tells me what to do differently - I inferred 'go cheap' by feel and overshot to $12.",
+            "required-repairs": "1) Give the crowd number its own cause line, in kid words, in the first screen on every settled night, naming my price against tonight's card, and differing between a zero and a sell-out; keep the renewals rule but visibly attach it to the RENEWALS panel so one paragraph does not appear to explain both books. 2) Never drop a label from the student's own chart - five nights, five labels, offset or leader-line the collisions (specifically verify the N1/N5 same-price pair, which currently loses N1); put numbers on the PRICE axis. 3) Rewrite 'WHERE THAT CHANGE CAME FROM' as one grade-5 sentence that names who stopped coming and why - no bare number repeated, one finite verb. 4) Define 'season ticket' once in plain words where it matters (HOOK first screen + MORE ABOUT TONIGHT): who they are, that they pay $24 a seat up front for the season, why a bad-value night makes them quit; put the one-clause definition of 'draw' on the tonight card. 5) Cut HOUSE RULE 1-5 to what is needed before Night 1 and move the rest behind MORE ABOUT TONIGHT; surface the event-money rule at the moment that dial matters. 6) Fix Night 4's 30px overflow (docH 798) so the turned-away/resale sentence sits in the first screen, and fix 'You also put $0 into the night with the more seats open.' NOT VERIFIED by me: /teach and /board as products, whether teacher talk carries the 13 no-action clicks, contrast/CVD, reduced motion, pixel-level arena fill discrimination, and whether a real child reads any of this as I did."
+          },
+          "evidenceIds": [
+            "w2-final-kidc-report",
+            "w2-final-kidc-log",
+            "w2-final-kidc-manifest",
+            "w2-final-kidc-script",
+            "w2-final-kidc-hook",
+            "w2-final-kidc-n2-settled",
+            "w2-final-kidc-n4-pre",
+            "w2-final-kidc-n5-pre",
+            "w2-final-kidc-reveal3",
+            "w2-final-kidc-cf",
+            "w2-final-kidc-n5-1024",
+            "w2-final-kidc-1024-pre"
+          ],
           "cost": null
         }
       },
@@ -2390,7 +2409,19 @@
         "w2-final-bqa-1024-discharged",
         "w2-final-bqa-1024-sellout-closed",
         "w2-final-bqa-zero-turnout",
-        "w2-final-bqa-prelock-n4"
+        "w2-final-bqa-prelock-n4",
+        "w2-final-kidc-report",
+        "w2-final-kidc-log",
+        "w2-final-kidc-manifest",
+        "w2-final-kidc-script",
+        "w2-final-kidc-hook",
+        "w2-final-kidc-n2-settled",
+        "w2-final-kidc-n4-pre",
+        "w2-final-kidc-n5-pre",
+        "w2-final-kidc-reveal3",
+        "w2-final-kidc-cf",
+        "w2-final-kidc-n5-1024",
+        "w2-final-kidc-1024-pre"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -10714,6 +10745,204 @@
       },
       "recordedAt": "2026-09-02T18:44:18.131Z",
       "actor": "browser-qa-w2"
+    },
+    "w2-final-kidc-report": {
+      "id": "w2-final-kidc-report",
+      "wave": 2,
+      "kind": "gameplay-report",
+      "label": "Kid C final re-check report (AGENT-PLAYTESTED / SIMULATED KID), full arc at 1366x768 + 1024x600",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-report--KID_C_W2_FINAL.md",
+      "sha256": "80cb65290acfe03f7454398e7ca469346ff79c277fbbba43b39c05e3a448adea",
+      "size": 15521,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:22.168Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-log": {
+      "id": "w2-final-kidc-log",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "innerText + getBoundingClientRect dump for all 30 played states (chart rects, cause-line rects, reveal md5s)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-log--kidc-log.json",
+      "sha256": "46f46800a2af0c588dfc169aee46a1de6fa03ec8f6bb94a2ea33dfe92782e0d3",
+      "size": 174277,
+      "metadata": {
+        "tags": [
+          "measurement"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:22.457Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-manifest": {
+      "id": "w2-final-kidc-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "screenshot manifest for screens-w2-kid-c-final (78 files, what each shows)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-manifest--manifest.txt",
+      "sha256": "21a073ef82c5de6c7bc926b10a145d67eef655b60aa647fe60e62477e7728e8c",
+      "size": 2562,
+      "metadata": {
+        "tags": [
+          "manifest"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:22.749Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-script": {
+      "id": "w2-final-kidc-script",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Playwright script that played the whole arc as Kid C on port 4444",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-script--play.cjs",
+      "sha256": "881c26626df9aafff3df70c2e9a490a34d201352d533eee230a0bc591b62bccd",
+      "size": 8379,
+      "metadata": {
+        "tags": [
+          "repro"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:23.044Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-hook": {
+      "id": "w2-final-kidc-hook",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "HOOK first screen: building + hero line + five night cards (slate top 557 bottom 747); docH 1714",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-hook--03-hook.png",
+      "sha256": "7c10e473559c1248f6165ca95e6b2db7929d32f36b1f0159da2b225f85612daf",
+      "size": 238494,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:23.326Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-n2-settled": {
+      "id": "w2-final-kidc-n2-settled",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Bad night settled: 0 CAME AT $120, -$520,000; four-clause renewals rule is the only causal prose, WHAT HAPPENED only restates inputs",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-n2-settled--06-n2-settled.png",
+      "sha256": "3b1450232b0f9e266dfdf4ad7417c9d0bd402af6abc4dca762d70c3ff01782c1",
+      "size": 177878,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "biggest-failure"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:23.623Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-n4-pre": {
+      "id": "w2-final-kidc-n4-pre",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 4 pricing: extra-seats control reads 'Open 2,400 more seats tonight'; chart at top 586, caption cut",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-n4-pre--04-n4-pre.png",
+      "sha256": "9c093ceb984ec44fce626f6faa62e84d4fdd495da90387faccb138a135a278c2",
+      "size": 213067,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:23.908Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-n5-pre": {
+      "id": "w2-final-kidc-n5-pre",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 5 pricing: chart fully in view but the N3 dot is unlabelled (3 labels for 4 nights)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-n5-pre--04-n5-pre.png",
+      "sha256": "08248a11b004ce37916fb6685d165ff3b49ec66bf07782ba4f68662010156746",
+      "size": 208123,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "chart"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:24.198Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-reveal3": {
+      "id": "w2-final-kidc-reveal3",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "REVEAL stage 3 on /play: own night surfaced (NIGHT 3 18,946 AT $12); chart labels N4/N3/N5/N2 with Night 1 unlabelled under N5",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-reveal3--07-reveal-3.png",
+      "sha256": "487562171d008e95c76b5ac2a37218a4c9cebacda3d81e90483d97d8f526b8da",
+      "size": 127792,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "chart"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:24.480Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-cf": {
+      "id": "w2-final-kidc-cf",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "COUNTERFACTUAL on /play: 'WHERE THAT CHANGE CAME FROM: -1,100 people, and that is renewals -1,100' still not a sentence",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-cf--10-synth-0.png",
+      "sha256": "097dd957c35515ff91b359a9cb7b749de33dd4eb3f1846059e87b679b269e3a3",
+      "size": 126558,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "copy"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:24.756Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-n5-1024": {
+      "id": "w2-final-kidc-n5-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night 5 settled at 1024x600: 'Night 1's card again $46 -> 10,878 then $46 -> 9,778 tonight' in the first screen",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-n5-1024--06-n5-settled-1024.png",
+      "sha256": "e8340f82358f0f2c5567f20d0724b98ef7c2aee00bb3912fdc6ab256ff295f47",
+      "size": 141867,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:25.039Z",
+      "actor": "kid-c3-nonsports"
+    },
+    "w2-final-kidc-1024-pre": {
+      "id": "w2-final-kidc-1024-pre",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "First-contact pricing at 1024x600: dial 262-296 and LOCK IT IN 268-324 both inside the 600px viewport",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-kidc-1024-pre--04b-n1-pre-1024x600.png",
+      "sha256": "8133e8da20787d0f26c4f8033e047bf9ced913811b114459fd347081ec020c8c",
+      "size": 154438,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:45:25.333Z",
+      "actor": "kid-c3-nonsports"
     }
   },
   "claims": {
@@ -11227,11 +11456,11 @@
     "agentsActivated": 39,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 338,
+    "evidenceRecorded": 350,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 462,
-  "eventHead": "c42c5b9b5b31bc7293aacb6773e7042d4aaf4db115bd7e00d1e78b68b607f854",
+  "eventCount": 475,
+  "eventHead": "bba71ab5dc3e020a4d3e4df72fae9b5eb16389684e01252117fac884024aff2c",
   "warnings": []
 }
