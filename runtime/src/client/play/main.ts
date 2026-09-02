@@ -2444,13 +2444,18 @@ function fhDotsHtml(history: FHNight[], view: Record<string, unknown>, ui: FHUiC
   const market = view["market"] as FHMarket;
   const tight = fhTight();
   const h = opts.height ?? (tight ? 104 : 132);
-  // A6/A8: y was pinned to the whole building, so five nights inside a 4,000
-  // -person band sat on top of each other in the bottom eighth of the plot.
-  // y now fits the observed crowds with headroom; x stays on the dial range so
-  // nights remain comparable. Zero stays on the axis — a truncated people axis
-  // would make a small difference look like a large one.
-  const topCrowd = Math.max(1, ...history.map((n) => n.turnout));
-  const yMax = Math.max(1, Math.ceil((topCrowd * 1.16) / 500) * 500);
+  // A6/A8, then W2 repair-4 R4-3: y is fitted to the observed crowds — from a
+  // little under the smallest night to a little over the largest, on 500-person
+  // stops — so five nights inside a 4,000-person band use the plot instead of
+  // its bottom eighth. x stays on the dial range so nights remain comparable.
+  // The axis no longer starts at zero, and says so: the chart prints both ends
+  // of the y axis, and every mark carries its own count.
+  const crowds = history.map((n) => n.turnout);
+  const lo = crowds.length ? Math.min(...crowds) : 0;
+  const hi = crowds.length ? Math.max(...crowds) : 1;
+  const pad = Math.max(400, Math.round((hi - lo) * 0.18));
+  const yMin = Math.max(0, Math.floor((lo - pad) / 500) * 500);
+  const yMax = Math.max(yMin + 500, Math.ceil((hi + pad) / 500) * 500);
   const body =
     history.length === 0
       ? `<p style="margin:0; font-size:12.5px; line-height:17px; color:${FH_INK_BODY};">${escapeHtml(ui.noNightsYetLine)}</p>`
@@ -2467,7 +2472,7 @@ function fhDotsHtml(history: FHNight[], view: Record<string, unknown>, ui: FHUiC
             yLabel: "PEOPLE",
             xMin: Number(view["priceMin"] ?? 10),
             xMax: Number(view["priceMax"] ?? 120),
-            yMin: 0,
+            yMin,
             yMax,
             width: 420,
             height: h,

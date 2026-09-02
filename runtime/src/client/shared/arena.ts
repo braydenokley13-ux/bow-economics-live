@@ -25,12 +25,14 @@
  *     `turnout / seatsOpen` in every deck at once. If you ever make one deck
  *     fill before another, you are drawing arithmetic that is not in the
  *     module, and R-7 goes red again.
- *  4. The upper bowl is a real third state, not a legend swatch: `bowlSeats`
- *     with `bowlOpen:false` draws it SHUTTERED (a closed dark deck with no
- *     seats showing); `bowlOpen:true` draws it open, part of the pool, lit at
+ *  4. The upper bowl is a real third state, not a legend swatch: `bowlOpen:
+ *     false` (or absent) draws it SHUTTERED (a closed dark deck with no seats
+ *     showing) on EVERY night it is not open, whether or not the option was on
+ *     the card (W2 repair-4 R4-8: one ring, one meaning); `bowlOpen:true`
+ *     draws it open, part of the pool, lit at
  *     the same proportion as every other open deck, with its own rail light.
- *     A caller that passes no `bowlSeats` gets a building whose three decks
- *     are all open — which is what `capacity === seatsOpen` means.
+ *     `bowlSeats` is accepted for compatibility and changes nothing in the
+ *     drawing: only `bowlOpen` decides the outer deck's state.
  *  5. `turnedAway` is drawn as people outside the gates. It is a count of
  *     people, never converted into money (E12 rule 3).
  *  6. Nobody came = a dark building (visual-critic-3 direction 1). At
@@ -207,8 +209,12 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
   const turnout = clamp(opts.turnout === undefined ? 0 : opts.turnout, 0, capacity);
   const soldOut = !!opts.soldOut;
   const turnedAway = opts.turnedAway || 0;
-  const bowlSeats = Math.max(0, opts.bowlSeats || 0);
-  const bowlOpen = bowlSeats > 0 ? !!opts.bowlOpen : true;
+  /* W2 repair-4 R4-8: the outer deck has ONE meaning. It is drawn open only
+     on a night the pair actually opened it (bowlOpen) and shuttered on every
+     other night — offered-and-declined and not-offered render identically.
+     The base pool the ordinary nights light is the lower two decks; whether
+     the option was on the card changes nothing in the drawing. */
+  const bowlOpen = !!opts.bowlOpen;
   const litMode: ArenaLit = opts.lit || "night";
   const motion = !!opts.motion;
   const uid = "ar" + (++UID).toString(36);
@@ -558,7 +564,7 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
     }
     /* the third state's own signature: an open upper bowl carries a rail
        light on its lip that a shuttered one cannot have */
-    if (deck.key === "bowl" && bowlSeats > 0 && light > 0) {
+    if (deck.key === "bowl" && open && light > 0) {
       railPath += arc(deck.rOut, 0, Math.PI * 2, detail === "high" ? 56 : 36, "M");
     }
   }

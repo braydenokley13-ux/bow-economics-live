@@ -302,26 +302,36 @@ export interface DotAxes {
 export function dotChart(points: DotPoint[], axes: DotAxes): string {
   const w = axes.width || 420;
   const h = axes.height || 168;
-  const padL = 40;
+  const padL = 44;
   const padR = 14;
-  const padT = 12;
-  const padB = 34;
+  const padT = 14;
+  const padB = 30;
   const plotW = w - padL - padR;
   const plotH = h - padT - padB;
   const spanX = axes.xMax - axes.xMin || 1;
   const spanY = axes.yMax - axes.yMin || 1;
   const px = (x: number): number => padL + ((x - axes.xMin) / spanX) * plotW;
   const py = (y: number): number => padT + plotH - ((y - axes.yMin) / spanY) * plotH;
+  const f = (v: number): string => v.toFixed(1);
 
-  /* Two hairlines, no frame box, no grid (A6). */
+  /* Two hairlines, no frame box, no grid (A6). They are <line> elements: this
+     SVG contains no <path> at all, so "no path joins the dots" is checkable by
+     a selector, not a reading (W2 repair-4 R4-3). */
   let svg =
     '<svg class="m2-chart" viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="' +
     esc(axes.yLabel + " against " + axes.xLabel) + '">' +
-    '<path class="axis" d="M' + padL + " " + padT + "V" + (padT + plotH) + "H" + (padL + plotW) + '"/>';
+    '<line class="axis" x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (padT + plotH) + '"/>' +
+    '<line class="axis" x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (padL + plotW) + '" y2="' + (padT + plotH) + '"/>';
 
+  /* The y axis is fitted to the data, so its ends are printed: the reader can
+     see the axis does not start at zero instead of inferring a scale. */
   svg +=
-    '<text class="axis-label" x="' + padL + '" y="' + (h - 8) + '">' + esc(axes.xLabel) + "</text>" +
-    '<text class="axis-label" x="4" y="' + (padT - 2) + '">' + esc(axes.yLabel) + "</text>";
+    '<text class="axis-label" x="' + padL + '" y="' + (h - 6) + '">' + esc(axes.xLabel) + "</text>" +
+    '<text class="axis-label" x="4" y="' + (padT - 3) + '">' + esc(axes.yLabel) + "</text>" +
+    (points.length > 0
+      ? '<text class="axis-tick" x="' + (padL - 4) + '" y="' + (padT + 11) + '" text-anchor="end">' + esc(fmt(axes.yMax)) + "</text>" +
+        '<text class="axis-tick" x="' + (padL - 4) + '" y="' + (padT + plotH) + '" text-anchor="end">' + esc(fmt(axes.yMin)) + "</text>"
+      : "");
 
   if (points.length === 0) {
     if (axes.emptyLine) {
@@ -332,31 +342,57 @@ export function dotChart(points: DotPoint[], axes: DotAxes): string {
     return svg + "</svg>";
   }
 
-  /* Marks first, then labels, so no label can be drawn under a mark. Labels
-     stagger away from a neighbour instead of overprinting it (P2/P6). */
-  const placed: Array<{ x: number; y: number }> = [];
-  let marks = "";
-  let labels = "";
-  for (const pt of points) {
-    const cx = px(pt.x);
+  /* Marks. Two nights at the same price and the same crowd would print one
+     dot; the later one is nudged 6 units sideways so both marks exist. The
+     label carries the exact price, so the nudge misstates nothing. */
+  const marks: Array<{ cx: number; cy: number; i: number }> = [];
+  points.forEach((pt, i) => {
+    let cx = px(pt.x);
     const cy = py(pt.y);
-    marks += '<circle class="pt" cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="5"/>';
-    let ly = cy + 18;
-    let guard = 0;
-    while (
-      guard < 6 &&
-      placed.some((q) => Math.abs(q.x - cx) < 46 && Math.abs(q.y - ly) < 13)
-    ) {
-      ly += 13;
-      guard++;
+    while (marks.some((m) => Math.abs(m.cx - cx) < 4 && Math.abs(m.cy - cy) < 4)) cx += 6;
+    marks.push({ cx, cy, i });
+  });
+  let marksSvg = "";
+  for (const m of marks) marksSvg += '<circle class="pt" cx="' + f(m.cx) + '" cy="' + f(m.cy) + '" r="5"/>';
+
+  /* Labels: the latest night is always labelled; an earlier night is labelled
+     only if its box intersects no label already placed. A box is clamped
+     inside the plot, below its mark when there is room and above it otherwise.
+     No leader lines: a label that cannot sit by its mark is not drawn, and the
+     ledger beside the chart carries every night in full. */
+  type Box = { l: number; r: number; t: number; b: number };
+  const CH = 6.3; /* Inter 600 at 10.5 units: mean advance, measured generously */
+  const LH = 12;
+  const hit = (a: Box, b: Box): boolean => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+  const placed: Box[] = [];
+  const markBoxes: Box[] = marks.map((m) => ({ l: m.cx - 6, r: m.cx + 6, t: m.cy - 6, b: m.cy + 6 }));
+  let labelsSvg = "";
+  const order = marks.map((m) => m.i).sort((a, b) => b - a); /* latest first */
+  for (const i of order) {
+    const m = marks[i]!;
+    const text = points[i]!.label;
+    const tw = text.length * CH;
+    let cx = m.cx;
+    cx = Math.max(padL + tw / 2, Math.min(padL + plotW - tw / 2, cx));
+    const candidates: number[] = [m.cy + 17, m.cy - 9];
+    let chosen: Box | null = null;
+    for (const baseline of candidates) {
+      const by = Math.max(padT + LH, Math.min(padT + plotH - 1, baseline));
+      const box: Box = { l: cx - tw / 2, r: cx + tw / 2, t: by - LH + 2, b: by + 2 };
+      const overMark = markBoxes.some((mb, j) => j !== i && hit(box, mb));
+      if (placed.some((p) => hit(p, box)) || overMark) continue;
+      chosen = box;
+      labelsSvg +=
+        '<text class="pt-label" x="' + f(cx) + '" y="' + f(by) + '" text-anchor="middle">' + esc(text) + "</text>";
+      break;
     }
-    if (ly > padT + plotH + 12) ly = cy - 12;
-    placed.push({ x: cx, y: ly });
-    labels +=
-      '<text class="pt-label" x="' + cx.toFixed(1) + '" y="' + ly.toFixed(1) +
-      '" text-anchor="middle">' + esc(pt.label) + "</text>";
+    if (chosen) placed.push(chosen);
   }
-  return svg + marks + labels + "</svg>";
+  return svg + marksSvg + labelsSvg + "</svg>";
+}
+
+function fmt(v: number): string {
+  return Math.round(v).toLocaleString("en-US");
 }
 
 /* ------------------------------------------------------------------ */

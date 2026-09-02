@@ -940,6 +940,12 @@ html[data-module="m2"] .m2-chart .axis-label {
   font-size: 11px;
   fill: var(--m2-ink-caption);
 }
+html[data-module="m2"] .m2-chart .axis-tick {
+  font-family: var(--m2-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 9.5px;
+  fill: var(--m2-ink-caption);
+}
 html[data-module="m2"] .m2-chart .pt-label {
   font-family: var(--m2-font);
   font-size: 10.5px;
