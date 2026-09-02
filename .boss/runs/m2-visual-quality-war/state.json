@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T18:47:12.459Z",
+  "updatedAt": "2026-09-02T18:50:01.022Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2073,11 +2073,30 @@
           "model": "claude-opus-5",
           "reason": "Owning critic re-grades the rows its own re-check left unmet or structural (A6 chart, A9 words, HOOK C3, arena outer deck) at the repair-4 head 84d8983; the analyst named this limb as the gate-deciding one",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T18:31:10.665Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T18:50:00.687Z",
+          "sections": {
+            "visual-verdict": "STRONG - past SERVICEABLE, still short of PREMIUM. Judged on runtime/dist as built at 84d8983 (repo head 573d334; the src/dist diff from b079af8 is empty). AGENT-PLAYTESTED: two 3-desk five-night classes plus a HOOK/pre-lock probe, 34+25+4 measured states at scrollY=0, both viewports. MET (measured): A6 nights chart - y fitted to the data (dA marks span 71 percent of the plot against 6.5 percent before), zero <path>, zero intersecting label boxes checked pairwise on getBBox across four configurations, no label leaves the plot beyond a 1.4-unit ink overhang on the axis rule, and exactly 2 marks at pre-lock N3 with N3 pending [w2-final-visual-chart, w2-final-visual-probe2]. Arena outer deck - bowl-not-offered 63.2 percent and offered-and-DECLINED 67.9 percent render the identical shuttered construction (40 paths, shutter cover hsl(228,10%,7.5%)), OPEN 65.3 percent renders 38 paths with no cover and the ring lit [w2-final-visual-bowl-three-states]. R-7 equal proportion survives: no deck runs ahead of another on the open-bowl night (rendered OBSERVED; the seam formula INFERRED from arena.ts). HOOK composed - building hero, 22px hero line, five-card slate bottom 747 inside 768, all five cards inside the fold at 1024x600, 108 words at 1366 and 137 at 1024 (was 354) [w2-final-visual-hook-1366, w2-final-visual-hook-1024]. PIN chip 710..745 at 1366 and 73..108 at 1024, fully inside on every state. SYNTHESIS page 1 now distinct from COUNTERFACTUAL (md5 0d434474e1 vs 7e79a21bcd). The 1024x600 sellout CTA and the 7,256 turned-away figure are now inside the fold [w2-final-visual-regression]. No regression: 0 gold/amber declarations across 34 states, Bebas on 2 hidden join-card eyebrows only, FULL HOUSE 60px Inter 800 white with the 72px turnout still the largest figure, locked-waiting a whole dark bowl. UNMET: the pre-lock word count and the arena mid-fill read. NOT VERIFIED: SYNTHESIS page 2 against page 1 (my driver did not move the page; the previous pass saw distinct pages, so I do not charge it to the build) and reduced-motion.",
+            "hierarchy-findings": "Highest severity first. (1) The arena still does not encode HOW FULL: five real settled nights at 54.4 / 58.3 / 63.2 / 67.9 / 76.7 percent render as the same three-band bullseye and cannot be ordered without their captions, at native size or at 33 percent [w2-final-visual-fill-ladder, w2-final-visual-fill-ladder-33]. The flagship drawn asset answers empty / partly / full and defers HOW FULL to the caption beneath it, so the picture sits below the text it should be leading. (2) The pre-lock frame leads with volume: 293 words fully inside the viewport at 1366 (404 counting blocks that touch the fold) and 221 at 1024, over six cards plus the rule block, against a 60-word ceiling and a 120-word repair target [w2-final-visual-probe3, w2-final-visual-prelock-1366]. The 68px price readout is still correctly the largest figure, so this is density around the hierarchy, not a broken hierarchy. (3) At 1024x600 HOOK inverts its own order: the building letterboxes to a 152px band and the hero line drops under 20px, so the largest type is the page title rather than the idea, while the same frame at 1366 is properly led by the building [w2-final-visual-hook-1024]. (4) On the settled night the four-clause renewals rule prints in full inside the RENEWALS card, making a ~45-word paragraph the densest block on a frame whose job is the turnout figure and the two books - correct economics, third telling. (5) Chart labels de-collide by deletion (dA prints 4 of 5, dB 3 of 5) and at a repeated price the two dots overlap with only the later one named, so the picture cannot say which dot is Night 1 on exactly the same-price comparison the lesson asks for.",
+            "production-quality-gaps": "STRUCTURAL, one: the arena mid-fill encoding. It cannot be fixed by copy or layout - it is the seam rule in runtime/src/client/shared/arena.ts, and the choice between one whole-bowl seam and per-deck seams is the pending founder ruling FD-3. My measurement is evidence FOR that ruling, not a pre-emption of it: the per-deck equal-area seam is exactly what makes 54 and 68 percent look alike, because three annuli each move a few pixels instead of one line moving. NON-STRUCTURAL, the rest. The pre-lock reading burden: the surface argues that 60 words is a copy ruling no arrangement of these six cards can satisfy while the frame still carries the rules needed to price tonight, so the FD-2 shape (120 with the full rules behind an open-on-night-1 disclosure) is what this surface argues for - but it is not purely a copy ruling, because reaching even 120 requires moving the renewals rule, the event-money rule and the More about tonight body behind that control, which is composition work. That is the founder call, not mine. Also non-structural: dropped chart labels and coincident same-price dots; the 1024 HOOK art letterbox; desk identity still truncating (Desk 1 - New York ..., Desk 2 - Memphis Griz...); the third telling of the renewals rule on the settled frame; the arena labels still a caption block under the drawing rather than attached to the lit and dark regions. None of those needs an instrument rebuilt.",
+            "direction": "1. Resolve FD-3, then draw it. If the founder takes the single whole-bowl seam, 54 and 68 percent differ by the position of one line and the flagship instrument starts answering its own question; R-7 is preserved by construction, because one seam across the whole open pool IS turnout/seatsOpen. 2. Resolve FD-2, then compose to whatever number is set: one line of rule on the frame, the renewals rule, the event-money rule and the More about tonight body behind a control that is open on Night 1 and closed after. 3. Move a dropped chart label instead of deleting it - offset the mark and lean the label, or name both dots at a repeated price. 4. Give 1024x600 its own HOOK art crop instead of letterboxing the 1366 one, and keep the hero line above 20px there. 5. Attach the arena labels to the picture and stop printing the renewals rule a third time on the settled frame. Independence note: I directed items 1-5 of the previous pass and am reviewing the result, so I am not the sole certifier of repair 4."
+          },
+          "evidenceIds": [
+            "w2-final-visual-report",
+            "w2-final-visual-manifest",
+            "w2-final-visual-measurements",
+            "w2-final-visual-probe2",
+            "w2-final-visual-probe3",
+            "w2-final-visual-bowl-three-states",
+            "w2-final-visual-fill-ladder",
+            "w2-final-visual-fill-ladder-33",
+            "w2-final-visual-chart",
+            "w2-final-visual-hook-1366",
+            "w2-final-visual-hook-1024",
+            "w2-final-visual-regression",
+            "w2-final-visual-prelock-1366"
+          ],
           "cost": null
         },
         "w2-final-browser": {
@@ -2456,7 +2475,20 @@
         "w2-final-reg-dupname",
         "w2-final-reg-rejoin-2nd",
         "w2-final-reg-signedout",
-        "w2-final-reg-chart1"
+        "w2-final-reg-chart1",
+        "w2-final-visual-report",
+        "w2-final-visual-manifest",
+        "w2-final-visual-measurements",
+        "w2-final-visual-probe2",
+        "w2-final-visual-probe3",
+        "w2-final-visual-bowl-three-states",
+        "w2-final-visual-fill-ladder",
+        "w2-final-visual-fill-ladder-33",
+        "w2-final-visual-chart",
+        "w2-final-visual-hook-1366",
+        "w2-final-visual-hook-1024",
+        "w2-final-visual-regression",
+        "w2-final-visual-prelock-1366"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -2474,7 +2506,8 @@
         "w2-regression-rs-dissent",
         "w2-recheck-visual-dissent",
         "w2-analyst-dissent",
-        "w2-final-browser-dissent"
+        "w2-final-browser-dissent",
+        "w2-final-visual-dissent"
       ],
       "meetingIds": [],
       "gates": [
@@ -11232,6 +11265,220 @@
       },
       "recordedAt": "2026-09-02T18:47:12.178Z",
       "actor": "regression-w2b"
+    },
+    "w2-final-visual-report": {
+      "id": "w2-final-visual-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "Final visual re-check after repair 4 (appended section of REVIEW_VISUAL_W2.md)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-report--REVIEW_VISUAL_W2.md",
+      "sha256": "9a838f3d6ab3384f54649d78c00909d5b08e22f9ddaa896a0be045ae0da30365",
+      "size": 60271,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:56.795Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-manifest": {
+      "id": "w2-final-visual-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Screen manifest for screens-w2-visual-final (70+ frames, two 3-desk classes and a HOOK/pre-lock probe)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-manifest--MANIFEST.md",
+      "sha256": "08fd4ecc09b2899c20b54a44641184c93fa40752305a61ec2d18804f046be583",
+      "size": 3409,
+      "metadata": {
+        "tags": [
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:57.101Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-measurements": {
+      "id": "w2-final-visual-measurements",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Run 1 live measurements, 34 states (gold/Bebas census, figures, boxes, hashes)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-measurements--measurements.json",
+      "sha256": "f8de21999dcda00c6f2d2d8699db66567f6e246739efb73ee010b6636622731a",
+      "size": 247256,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:57.399Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-probe2": {
+      "id": "w2-final-visual-probe2",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Run 2 live measurements, 25 states (chart getBBox geometry, arena path signatures, PIN chip)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-probe2--probe2.json",
+      "sha256": "468eb688678c0420ce0090f57d17a9a71ffa0039b752ce50595f833736894956",
+      "size": 204246,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:57.700Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-probe3": {
+      "id": "w2-final-visual-probe3",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Word-count probe: three counting methods on composed HOOK and pre-lock N1, both viewports",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-probe3--probe3.json",
+      "sha256": "0db19e13141b08aaa5c17e8bbc115e3f497202a99445615d8a2498bcb65c554b",
+      "size": 12923,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:58.044Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-bowl-three-states": {
+      "id": "w2-final-visual-bowl-three-states",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Outer deck: bowl NOT offered 63.2% vs offered-and-DECLINED 67.9% vs OPEN 65.3%, same building, 2x",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-bowl-three-states--cmp-bowl-three-states.png",
+      "sha256": "0cd06cbf47e6179a214123bfbd827aa5cb3baa5e3a5cc0f343da5254f7a79cbe",
+      "size": 274942,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:58.368Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-fill-ladder": {
+      "id": "w2-final-visual-fill-ladder",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Mid-fill ladder 54.4/58.3/63.2/67.9/76.7 percent at native size",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-fill-ladder--cmp-fill-ladder.png",
+      "sha256": "513a96eed17ec35096f8954c4272e7ad2e32af9131a9c42d5a1656417314af05",
+      "size": 137679,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:58.661Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-fill-ladder-33": {
+      "id": "w2-final-visual-fill-ladder-33",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Same five fills at 33 percent (projector-distance proxy)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-fill-ladder-33--cmp-fill-ladder-33.png",
+      "sha256": "992d9f2d33798bd0bc81935406edabae2aba767010067e4d21915c6c53af2c55",
+      "size": 40465,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:58.956Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-chart": {
+      "id": "w2-final-visual-chart",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Nights chart: $40/60/80/100/40, $16 x5, and pre-lock N3 with the pending night unmarked",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-chart--cmp-chart-two-desks.png",
+      "sha256": "95780b8611c4df4f19ff9d5743b6645c374a4711bfb98f6c6b2c45d1df186a82",
+      "size": 56909,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:59.243Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-hook-1366": {
+      "id": "w2-final-visual-hook-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "HOOK composed at 1366x768: building hero, hero line, five-card slate bottom 747",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-hook-1366--20-hook-composed-1366.png",
+      "sha256": "53d7bae860afe11587e0624011b01d47cffe2c3cf914a8ea04eea4572d50e3f5",
+      "size": 238950,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:59.528Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-hook-1024": {
+      "id": "w2-final-visual-hook-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "HOOK at 1024x600: all five slate cards inside the fold, building letterboxed to 152px",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-hook-1024--20c-hook-composed-1024.png",
+      "sha256": "d55d8a0e28179b692855bae6a2ca965a96ebbd0bfdeff151301e930ce72c8ad0",
+      "size": 126411,
+      "metadata": {
+        "tags": [
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:49:59.816Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-regression": {
+      "id": "w2-final-visual-regression",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Regression frames: sellout 1366, locked-waiting 1366, sellout 1024x600 CTA, settled night 1024x600 CTA",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-regression--cmp-regression-frames.png",
+      "sha256": "acb0cb1871a05943b311818bdd8ac87172c3c9b5eb09408613b6134bf5a9b4ae",
+      "size": 567212,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:50:00.118Z",
+      "actor": "visual-critic-3"
+    },
+    "w2-final-visual-prelock-1366": {
+      "id": "w2-final-visual-prelock-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Pre-lock Night 1 at 1366x768, scrollY=0 (293 words fully inside the viewport)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-final-visual-prelock-1366--21-prelock-n1-1366.png",
+      "sha256": "5fd584392763b798519b738f97ce8eda2cb782cf74980de59c1a99ebaca56f94",
+      "size": 202209,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T18:50:00.400Z",
+      "actor": "visual-critic-3"
     }
   },
   "claims": {
@@ -11534,9 +11781,12 @@
         "w2-recheck-visual-report"
       ],
       "blocking": false,
-      "status": "open",
+      "status": "resolved",
       "recordedAt": "2026-09-02T17:43:32.533Z",
-      "actor": "visual-critic-3"
+      "actor": "visual-critic-3",
+      "resolution": "Partially discharged and superseded at head 84d8983 by the owner's final re-check (REVIEW_VISUAL_W2.md 'Final re-check after repair 4'): the outer-deck limb is discharged by measurement (a night where the upper bowl is not offered and a night where it was offered and declined render the identical shuttered construction, 40 paths, same cover colour; an open bowl lights at the same proportion, R-7 intact). The mid-fill limb is restated narrowed as the new advisory dissent w2-final-visual-dissent and stays open: 54.4/58.3/63.2/67.9/76.7 percent are not orderable without their captions. The owner rules it structural and not fixable by copy or layout, and rules it evidence for founder decision FD-3 (single whole-bowl seam versus the economically true per-deck seams), not a decision it may take.",
+      "resolvedAt": "2026-09-02T18:50:01.022Z",
+      "resolvedBy": "boss-lead"
     },
     "w2-analyst-dissent": {
       "id": "w2-analyst-dissent",
@@ -11567,6 +11817,23 @@
       "status": "open",
       "recordedAt": "2026-09-02T18:44:18.458Z",
       "actor": "browser-qa-w2"
+    },
+    "w2-final-visual-dissent": {
+      "id": "w2-final-visual-dissent",
+      "wave": 2,
+      "category": "visual-quality",
+      "severity": "advisory",
+      "finding": "Narrowed restatement of the standing advisory dissent w2-recheck-visual-dissent, which is NOT dischargeable. Its outer-deck limb IS discharged: the ring now has one meaning, measured across bowl-not-offered (63.2 percent), offered-and-declined (67.9 percent) and open (65.3 percent) on the same building. The remaining limb stands: the drawn arena, the flagship asset of this module, separates empty / partly / full but carries no legible HOW FULL between roughly 50 and 80 percent, which is where most settled nights land - 54.4 / 58.3 / 63.2 / 67.9 / 76.7 percent are not orderable without their captions at native size or at 33 percent. Recorded so a later PREMIUM claim cannot be made without disposing of it or of FD-3.",
+      "evidenceIds": [
+        "w2-final-visual-fill-ladder",
+        "w2-final-visual-fill-ladder-33",
+        "w2-final-visual-bowl-three-states",
+        "w2-final-visual-report"
+      ],
+      "blocking": false,
+      "status": "open",
+      "recordedAt": "2026-09-02T18:50:00.732Z",
+      "actor": "visual-critic-3"
     }
   },
   "meetings": {},
@@ -11745,11 +12012,11 @@
     "agentsActivated": 39,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 365,
+    "evidenceRecorded": 378,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 491,
-  "eventHead": "a2aff03201ceef0a6c7ba5fdf5f0ed62810468fda324d46a6e5f0808e7db1e9a",
+  "eventCount": 507,
+  "eventHead": "4066a827a3f4fb805b9e8cde545a91afa8ef2301c0447d0790e9addca23c158d",
   "warnings": []
 }

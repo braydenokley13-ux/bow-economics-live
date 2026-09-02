@@ -1,0 +1,60 @@
+# screens-w2-visual-final manifest
+
+- `01-hook-1366.png` — HOOK 1366x768 scrollY=0
+- `01b-hook-1366-full.png` — HOOK full page 1366
+- `01c-hook-1024.png` — HOOK 1024x600 scrollY=0
+- `01d-hook-1024-full.png` — HOOK full page 1024
+- `02-prelock-n1-1366.png` — Pre-lock Night 1, 1366x768, scrollY=0
+- `02b-prelock-n1-1366-full.png` — Pre-lock N1 full page
+- `02c-prelock-n1-1024.png` — Pre-lock Night 1, 1024x600, scrollY=0
+- `05-locked-waiting-1366.png` — Post-lock waiting N1, 1366x768
+- `10-res-n1-d1-1366.png` — Night 1 results d1 1366x768
+- `crop-arena-n1-d1.png` — Night 1 arena crop d1
+- `10-res-n1-d2-1366.png` — Night 1 results d2 1366x768
+- `crop-arena-n1-d2.png` — Night 1 arena crop d2
+- `10b-res-n1-d2-1366-sellout.png` — Sellout frame d2 night 1
+- `10c-res-n1-d2-1024.png` — Sellout d2 n1 1024x600
+- `10-res-n1-d3-1366.png` — Night 1 results d3 1366x768
+- `crop-arena-n1-d3.png` — Night 1 arena crop d3
+- `10-res-n2-d1-1366.png` — Night 2 results d1 1366x768
+- `crop-arena-n2-d1.png` — Night 2 arena crop d1
+- `10-res-n2-d2-1366.png` — Night 2 results d2 1366x768
+- `crop-arena-n2-d2.png` — Night 2 arena crop d2
+- `10-res-n2-d3-1366.png` — Night 2 results d3 1366x768
+- `crop-arena-n2-d3.png` — Night 2 arena crop d3
+- `03-prelock-n3-chart-1366.png` — Pre-lock N3, chart with 2 settled nights, 1366
+- `crop-chart-prelock-n3.png` — Nights chart crop, pre-lock N3
+- `03b-prelock-n3-1024.png` — Pre-lock N3, 1024x600
+- `10-res-n3-d1-1366.png` — Night 3 results d1 1366x768
+- `crop-arena-n3-d1.png` — Night 3 arena crop d1
+- `10-res-n3-d2-1366.png` — Night 3 results d2 1366x768
+- `crop-arena-n3-d2.png` — Night 3 arena crop d2
+- `10-res-n3-d3-1366.png` — Night 3 results d3 1366x768
+- `crop-arena-n3-d3.png` — Night 3 arena crop d3
+- `04-prelock-n4-bowl-offered-1366.png` — Pre-lock N4, bowl offered, not pressed
+- `10-res-n4-d1-1366.png` — Night 4 results d1 1366x768
+- `crop-arena-n4-d1.png` — Night 4 arena crop d1
+- `10-res-n4-d2-1366.png` — Night 4 results d2 1366x768
+- `crop-arena-n4-d2.png` — Night 4 arena crop d2
+- `10b-res-n4-d2-1366-sellout.png` — Sellout frame d2 night 4
+- `10c-res-n4-d2-1024.png` — Sellout d2 n4 1024x600
+- `10-res-n4-d3-1366.png` — Night 4 results d3 1366x768
+- `crop-arena-n4-d3.png` — Night 4 arena crop d3
+- `10-res-n5-d1-1366.png` — Night 5 results d1 1366x768
+- `crop-arena-n5-d1.png` — Night 5 arena crop d1
+- `10d-res-n5-d1-1024.png` — Settled night d1 n5 1024x600
+- `10-res-n5-d2-1366.png` — Night 5 results d2 1366x768
+- `crop-arena-n5-d2.png` — Night 5 arena crop d2
+- `10-res-n5-d3-1366.png` — Night 5 results d3 1366x768
+- `crop-arena-n5-d3.png` — Night 5 arena crop d3
+- `11-allnights-1366.png` — All nights done, 1366x768
+- `crop-chart-allnights-d1.png` — Nights chart crop, d1 all 5 nights ($40/60/80/100/40)
+- `crop-chart-allnights-d2.png` — Nights chart crop, d2 all 5 nights at $16
+- `11b-allnights-d2-1366.png` — All nights done d2 ($16 x5), 1366x768
+- `11c-allnights-1024.png` — All nights done 1024x600
+- `12-reveal-final-1366.png` — REVEAL final, 1366x768
+- `13-counterfactual-1366.png` — COUNTERFACTUAL 1366x768
+- `14-synthesis-p1-1366.png` — SYNTHESIS page 1, 1366x768
+- `14b-synthesis-p1-full.png` — SYNTHESIS page 1 full
+- `14c-synthesis-p2-1366.png` — SYNTHESIS page 2, 1366x768
+- `15-complete-1366.png` — COMPLETE 1366x768
