@@ -1889,6 +1889,42 @@ export function nightFactLineFor(price: number, day: string, draw: number): stri
 }
 
 /**
+ * W2 repair-5 R5-2 (Kid C final re-read): the turnout hero — the largest figure
+ * on the settled night — had no cause line. The four-clause renewals rule sat
+ * beside it, byte-identical at byte-identical coordinates after a zero night
+ * and after a sellout, and WHAT HAPPENED only re-printed the pair's own inputs,
+ * so nothing on the frame said anything about the number the night turns on.
+ *
+ * This sentence names which side of the night bound the crowd: what people
+ * would pay at this price on this card, or the seats the desk opened. Both
+ * quantities are already printed on the same frame (the turnout in the hero,
+ * the turned-away count on a sellout), so it discloses nothing new about the
+ * demand curve — no slope, no base, no other price. It grades nothing and it
+ * previews nothing, and it speaks only to the crowd: the renewals book keeps
+ * its own rule, in its own card.
+ */
+export function turnoutCauseFor(
+  price: number,
+  cardLabel: string,
+  turnout: number,
+  seatsOpen: number,
+  turnedAway: number,
+): string {
+  const seats = seatsOpen.toLocaleString();
+  const head = `${cardLabel} \u00b7 at $${price}, `;
+  if (turnedAway > 0) {
+    return `${head}more people wanted in than the ${seats} seats you opened. The limit was the seats, not the price.`;
+  }
+  if (turnout >= seatsOpen) {
+    return `${head}exactly the ${seats} seats you opened filled. The price and the seats met at the same number.`;
+  }
+  if (turnout === 0) {
+    return `${head}nobody wanted in, so all ${seats} seats you opened stayed empty. The limit was the price, not the seats.`;
+  }
+  return `${head}${turnout.toLocaleString()} people wanted in and you opened ${seats} seats. The limit was the price, not the seats.`;
+}
+
+/**
  * Night 5's callback on the pair's OWN screen (W2 repair-2 B6, Kid A #3 /
  * Kid C #5). Two figures and the two prices, no interpretation: the ADAPT and
  * COUNTERFACTUAL frames keep the explanation.
@@ -2205,6 +2241,16 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
     // R-1: the headline is composed server-side from settled facts, so the
     // renderer prints a sentence instead of building one.
     resultHeadline: resultHeadlineFor(night),
+    // W2 repair-5 R5-2: the cause line for the TURNOUT, computed from this
+    // night's own settled facts, so a zero night and a sellout never render the
+    // same sentence.
+    turnoutCause: turnoutCauseFor(
+      night.price,
+      nightCard?.label ?? night.cardId,
+      night.settlement.turnout,
+      night.settlement.seatsOpen,
+      night.settlement.turnedAway,
+    ),
     // W2 repair-2 B1: the price-and-card line, registered rather than composed
     // in the renderer, so the settled outcome is attributable to the choice.
     factLine: nightFactLineFor(night.price, nightCard?.day ?? "", nightCard?.draw ?? 0),

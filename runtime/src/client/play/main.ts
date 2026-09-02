@@ -1913,6 +1913,8 @@ type FHNight = {
   spendLine?: string | null;
   /** R-1: the night's headline sentence, composed server-side from settled facts. */
   resultHeadline?: string;
+  /** R5-2: the registered cause line for the turnout, computed server-side. */
+  turnoutCause?: string;
   /** R6/P2: last night's event money, confirmed or refuted by this night's seats. */
   spendVerdict: { carryFans: number; seated: number; wasted: number; label: string } | null;
   /** B1: the registered price-and-card line for this night. */
@@ -2452,7 +2454,8 @@ function fhArenaPanel(n: FHNight, ui: FHUiCopy, opts: { height: number; loud: bo
         ${marker(n.turnout.toLocaleString(), ui.cameLabel, false)}
         ${marker(open.toLocaleString(), ui.openSeatsLabel, true)}
         ${bowlOffered ? `<span style="font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(n.openBowl ? ui.moreSeatsOpenLabel : ui.moreSeatsClosedLabel)}</span>` : ""}
-        ${opts.compact ? "" : `<span style="font-size:11px; color:${FH_INK_CAPTION};">${n.fillPct}% ${escapeHtml(ui.fillQualifier)}</span>`}
+        ${/* R5-2: the fill line lives in the WHO CAME card, once. It used to be
+             printed again here, word for word, under the drawing. */ ""}
       </div>
       ${
         n.turnedAway > 0 && !opts.compact
@@ -2760,10 +2763,17 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
   // fault. The zero night centres the figure over its own sentence instead.
   const empty = n.turnout === 0;
   const heroCard = `
-    <div class="m2-card m2-result-hero fh-hero${empty ? " is-empty" : ""}" style="${FH_CARD} padding:${tight ? "11px 14px" : "14px 18px"}; ${empty ? "text-align:center;" : ""}">
+    <div class="m2-card m2-result-hero fh-hero${empty ? " is-empty" : ""}" style="${FH_CARD} padding:${tight ? "11px 14px" : "14px 18px"}; gap:${tight ? 9 : 14}px; ${empty ? "text-align:center;" : ""}">
       <div style="display:flex; align-items:center; gap:9px; ${empty ? "justify-content:center;" : ""}">${fhBadge("people", "violet", 26)}<span style="${FH_LABEL}">${escapeHtml(ui.whoCameLabel)}</span></div>
       <span class="m2-hero-figure fh-who-came" style="display:block; margin-top:${tight ? 2 : 6}px; font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${hero}px; line-height:${hero + 4}px; font-weight:700; letter-spacing:-0.035em; color:${FH_INK};">${n.turnout.toLocaleString()}</span>
       <span style="display:block; margin-top:3px; font-size:13px; line-height:18px; color:${FH_INK_LABEL};">of ${n.seatsOpen.toLocaleString()} · ${n.fillPct}% ${escapeHtml(ui.fillQualifier)}</span>
+      ${
+        // R5-2: the cause of the figure directly above it, verbatim from the
+        // module. Never composed here.
+        n.turnoutCause
+          ? `<p class="fh-turnout-cause" style="margin:0; width:100%; padding-top:${tight ? 6 : 8}px; border-top:1px solid ${FH_HAIR}; font-size:11.5px; line-height:15px; color:${FH_INK_BODY}; ${empty ? "text-align:left;" : ""}">${escapeHtml(n.turnoutCause)}</p>`
+          : ""
+      }
       ${
         tight && n.turnedAway > 0
           ? `<div class="fh-turned" style="display:flex; align-items:baseline; gap:9px; margin-top:6px; padding-top:6px; border-top:1px solid ${FH_HAIR};">
@@ -2823,7 +2833,10 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
         <div style="display:flex; flex-direction:column; gap:${tight ? 8 : 10}px; min-width:0;">
           ${heroCard}
           ${fhArenaPanel(n, ui, {
-            height: tight ? 104 : 150,
+            // R5-2: the turnout cause line joins the hero card above this panel;
+            // the drawn building gives back the height so the panel, its
+            // labels and the turned-away figure all stay inside the fold.
+            height: tight ? 104 : 118,
             loud: n.soldOut,
             compact: tight,
             bowlSeats: (view["market"] as FHMarket | undefined)?.bowlSeats ?? 0,

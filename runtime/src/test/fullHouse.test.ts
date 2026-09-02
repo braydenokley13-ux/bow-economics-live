@@ -41,6 +41,7 @@ import {
   renewalRuleLinesFor,
   renewalShortRuleFor,
   spendFactLineFor,
+  turnoutCauseFor,
   twoPeaksNoteFor,
   replayPlan,
   settleNight,
@@ -1199,6 +1200,54 @@ test("R4-4b: the floor line fires only when the 20-point clamp bound — never o
       [10, 0, -10, false],
     ],
   );
+});
+
+test("R5-2: every settled night carries a turnout cause that is true of that night and varies with it", () => {
+  // the four limbs of the registered sentence, against the settlement they describe
+  assert.equal(
+    turnoutCauseFor(10, "Night 4", 22_200, 22_200, 4_750),
+    "Night 4 \u00b7 at $10, more people wanted in than the 22,200 seats you opened. The limit was the seats, not the price.",
+  );
+  assert.equal(
+    turnoutCauseFor(10, "Night 2", 19_800, 19_800, 0),
+    "Night 2 \u00b7 at $10, exactly the 19,800 seats you opened filled. The price and the seats met at the same number.",
+  );
+  assert.equal(
+    turnoutCauseFor(120, "Night 1", 0, 19_800, 0),
+    "Night 1 \u00b7 at $120, nobody wanted in, so all 19,800 seats you opened stayed empty. The limit was the price, not the seats.",
+  );
+  assert.equal(
+    turnoutCauseFor(46, "Night 3", 4_690, 19_800, 0),
+    "Night 3 \u00b7 at $46, 4,690 people wanted in and you opened 19,800 seats. The limit was the price, not the seats.",
+  );
+
+  // driven through the module: a desk that sells out and a desk that draws nobody
+  // are told different things about their own crowd, on every night.
+  let state = seated(2);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) state = playNight(state, { "seat-1": PRICE_MIN, "seat-2": PRICE_MAX });
+  const sellouts = (fullHouseModule.studentView(state, "seat-1", "PLAY") as {
+    history: { turnoutCause: string; turnout: number; seatsOpen: number; turnedAway: number; price: number; label: string }[];
+  }).history;
+  const empties = (fullHouseModule.studentView(state, "seat-2", "PLAY") as {
+    history: { turnoutCause: string; turnout: number; seatsOpen: number; turnedAway: number; price: number; label: string }[];
+  }).history;
+  assert.equal(sellouts.length, NIGHT_COUNT);
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const a = sellouts[i]!;
+    const b = empties[i]!;
+    // computed from the model, not hand-written per night
+    assert.equal(a.turnoutCause, turnoutCauseFor(a.price, a.label, a.turnout, a.seatsOpen, a.turnedAway));
+    assert.equal(b.turnoutCause, turnoutCauseFor(b.price, b.label, b.turnout, b.seatsOpen, b.turnedAway));
+    // R5-2: two materially different nights never render the same sentence
+    assert.notEqual(a.turnoutCause, b.turnoutCause);
+    // every night names its own card, so two identical settlements still differ
+    assert.match(a.turnoutCause, new RegExp(`^${a.label} `));
+  }
+  // no night in either season previews another night, grades the choice, or
+  // reaches across into the renewals book
+  for (const n of [...sellouts, ...empties]) {
+    assert.doesNotMatch(n.turnoutCause, /renewal|season|profit|should|better|worse|best|good|bad|next night|tomorrow|try/i);
+  }
 });
 
 test("R4-4c / R4-5: the ledger says a quarter, and the renderer's former sentences are module strings", () => {
