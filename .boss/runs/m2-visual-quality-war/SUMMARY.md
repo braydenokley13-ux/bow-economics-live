@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `527:112b9e5d12eed26146df5468aa419114be2e6a126acbfd13b8be773fb428b6e2`  
-Updated: 2026-09-02T19:46:18.606Z
+Event head: `549:0c66934d388981c8c05b9370ff81be9753c3d742406809338abb392aa8f529d8`  
+Updated: 2026-09-02T19:53:02.088Z
 
 ## Founder intent
 
@@ -33,7 +33,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - builder — builder-a — completed-with-concerns — claude-opus-5
 - builder — builder-b — completed-with-concerns — claude-opus-5
 - builder — builder-c — completed-with-concerns — claude-opus-5
-- lead-integrator — boss-lead — active — claude-fable-5-1
+- lead-integrator — boss-lead — completed-with-concerns — claude-fable-5-1
 - sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
 - browser-qa — browser-qa-w2base — completed — claude-sonnet-5
 - browser-qa — browser-qa-w2 — completed-with-concerns — claude-sonnet-5
@@ -61,6 +61,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - regression-hunter — regression-w2b — completed-with-concerns — claude-opus-5
 - player-gameplay-critic — kid-c3-nonsports — completed-with-concerns — claude-opus-5
 - builder — builder-r5 — completed-with-concerns — claude-opus-5
+- browser-qa — browser-qa-w2 — active — claude-opus-5
 
 ## Required evidence
 
@@ -383,15 +384,25 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-e2e-misclick-47a992b — e2e — node runtime/scripts/e2e-m2l1-misclick.cjs at the wave-2 final head 47a992b
 - w2-mutation-a-47a992b — e2e — R-1 mutation A at the wave-2 final head 47a992b: the true Night-1 turnout figure injected into the pre-lock render; the claim limb must FAIL the run (non-zero exit = bite)
 - w2-mutation-b-47a992b — e2e — R-1 mutation B at the wave-2 final head 47a992b: a 'Target' price band injected into the pre-lock render; the claim limb must FAIL the run
+- w2-npm-test-afa018d — test — cd runtime && npm test at the wave-2 final head afa018d (build + full suite, 477 tests, incl. the three M2 tuning harnesses)
+- w2-e2e-afa018d — e2e — node runtime/scripts/e2e-m2l1.cjs at the wave-2 final head afa018d (R-1 whole-figure limb active)
+- w2-e2e-misclick-afa018d — e2e — node runtime/scripts/e2e-m2l1-misclick.cjs at the wave-2 final head afa018d
+- w2-mutation-a-afa018d — e2e — R-1 mutation A at the wave-2 final head afa018d: the true Night-1 turnout injected into the pre-lock render; the claim limb must FAIL the run (non-zero exit = bite)
+- w2-mutation-b-afa018d — e2e — R-1 mutation B at the wave-2 final head afa018d: a 'Target' price band injected into the pre-lock render; the claim limb must FAIL the run
+- w2-claim-filing-note — note — Lead filing error: w2-e2e-pass and w2-e2e-misclick-pass cite command records filed with --kind test, so they cannot reconcile as e2e proof; the runs did pass and the claims are superseded by the correctly-filed final-head claims
+- w2-founder-decisions — note — Wave-2 founder-decision candidates FD-1 (frontier shape in synthesis), FD-2 (pre-lock reading budget vs printed-before-commitment), FD-3 (arena fill encoding) with the Boss recommendation on each
 
 ## Claim ledger
 
-- w2-tests-pass — pending — cd runtime && npm test (build + full suite incl. clientClaims) passes at repaired head f65e865
-- w2-e2e-pass — pending — node runtime/scripts/e2e-m2l1.cjs passes at f65e865 with the whole-figure R-1 claim limb active (4-desk arc + 12-desk class scale)
-- w2-e2e-misclick-pass — pending — node runtime/scripts/e2e-m2l1-misclick.cjs passes at f65e865 (teacher cancel-then-advance path with the results state)
-- w2-tests-pass-r4 — pending — cd runtime && npm test passes at repair-4 head 84d8983 (build + full suite incl. the clientClaims sentence scanner)
-- w2-e2e-pass-r4 — pending — node runtime/scripts/e2e-m2l1.cjs passes at repair-4 head 84d8983 with the whole-figure R-1 claim limb active
-- w2-e2e-misclick-pass-r4 — pending — node runtime/scripts/e2e-m2l1-misclick.cjs passes at repair-4 head 84d8983
+- w2-tests-pass — confirmed — cd runtime && npm test (build + full suite incl. clientClaims) passes at repaired head f65e865
+- w2-e2e-pass — contradicted — node runtime/scripts/e2e-m2l1.cjs passes at f65e865 with the whole-figure R-1 claim limb active (4-desk arc + 12-desk class scale)
+- w2-e2e-misclick-pass — contradicted — node runtime/scripts/e2e-m2l1-misclick.cjs passes at f65e865 (teacher cancel-then-advance path with the results state)
+- w2-tests-pass-r4 — confirmed — cd runtime && npm test passes at repair-4 head 84d8983 (build + full suite incl. the clientClaims sentence scanner)
+- w2-e2e-pass-r4 — confirmed — node runtime/scripts/e2e-m2l1.cjs passes at repair-4 head 84d8983 with the whole-figure R-1 claim limb active
+- w2-e2e-misclick-pass-r4 — confirmed — node runtime/scripts/e2e-m2l1-misclick.cjs passes at repair-4 head 84d8983
+- w2-tests-pass-final — confirmed — cd runtime && npm test passes at the wave-2 final head afa018d: 477 tests, 0 fail, including the three M2 tuning harnesses (the L1 reveal harness's 16 properties all hold)
+- w2-e2e-pass-final — confirmed — node runtime/scripts/e2e-m2l1.cjs passes at the wave-2 final head afa018d with the whole-figure R-1 claim limb active
+- w2-e2e-misclick-pass-final — confirmed — node runtime/scripts/e2e-m2l1-misclick.cjs passes at the wave-2 final head afa018d
 
 ## Dissent
 
@@ -412,16 +423,16 @@ Recommendation: **REPAIR**
 - PASS — role:browser-qa: browser-qa completed.
 - PASS — role:builder: builder completed.
 - PASS — role:economic-truth-critic: economic-truth-critic completed.
-- FAIL — role:experience-director: experience-director is required and incomplete.
-- FAIL — role:lead-integrator: lead-integrator is required and incomplete.
+- PASS — role:experience-director: experience-director completed.
+- PASS — role:lead-integrator: lead-integrator completed.
 - PASS — role:player-gameplay-critic: player-gameplay-critic completed.
-- FAIL — role:product-analyst: product-analyst is required and incomplete.
+- PASS — role:product-analyst: product-analyst completed.
 - PASS — role:regression-hunter: regression-hunter completed.
 - PASS — role:visual-experience-director: visual-experience-director completed.
 - PASS — blocking-role:economic-truth-critic: economic-truth-critic blocking review is present.
 - PASS — role-independence: Builders and independent reviewers are different actors.
-- FAIL — analyst-contract: Independent Analyst is missing.
-- FAIL — evidence:analyst-report: analyst-report evidence is required.
+- PASS — analyst-contract: Analyst output contract is complete.
+- PASS — evidence:analyst-report: analyst-report evidence is present.
 - PASS — evidence:browser-trace: browser-trace evidence is present.
 - PASS — evidence:economic-truth-report: economic-truth-report evidence is present.
 - PASS — evidence:gameplay-report: gameplay-report evidence is present.
@@ -594,12 +605,162 @@ Recommendation: **REPAIR**
 - PASS — evidence-integrity:w2r-npm-test-f65e865: Evidence w2r-npm-test-f65e865 hash is intact.
 - PASS — evidence-integrity:w2r-e2e-f65e865: Evidence w2r-e2e-f65e865 hash is intact.
 - PASS — evidence-integrity:w2r-e2e-misclick-f65e865: Evidence w2r-e2e-misclick-f65e865 hash is intact.
-- FAIL — claim-ledger-present: Level 2+ wave needs at least one explicit progress claim.
-- PASS — claims-reconciled: All claims are confirmed.
-- FAIL — blocking-dissent: Blocking dissent remains: w2-gameplay-dissent, w2-econ-confirm-dissent, w2-regression-rs-dissent.
+- PASS — evidence-integrity:w2-direction-report: Evidence w2-direction-report hash is intact.
+- PASS — evidence-integrity:w2-recheck-bt-browser-truth-w2-recheck: Evidence w2-recheck-bt-browser-truth-w2-recheck hash is intact.
+- PASS — evidence-integrity:w2-recheck-bt-measurements-1366x768: Evidence w2-recheck-bt-measurements-1366x768 hash is intact.
+- PASS — evidence-integrity:w2-recheck-bt-measurements-1024x600: Evidence w2-recheck-bt-measurements-1024x600 hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-report: Evidence w2r-gameplay-report hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-manifest: Evidence w2r-gameplay-manifest hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-measurements: Evidence w2r-gameplay-measurements hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-probe-fold: Evidence w2r-gameplay-probe-fold hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-probe-carried: Evidence w2r-gameplay-probe-carried hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-prelock-discharge: Evidence w2r-gameplay-prelock-discharge hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-1024-n4-standing: Evidence w2r-gameplay-1024-n4-standing hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-reveal-mirror: Evidence w2r-gameplay-reveal-mirror hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-synth-mirror: Evidence w2r-gameplay-synth-mirror hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-sellout: Evidence w2r-gameplay-sellout hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-sellout-lowball: Evidence w2r-gameplay-sellout-lowball hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-dotlabels: Evidence w2r-gameplay-dotlabels hash is intact.
+- PASS — evidence-integrity:w2r-gameplay-counterfactual: Evidence w2r-gameplay-counterfactual hash is intact.
+- PASS — evidence-integrity:recheck-report: Evidence recheck-report hash is intact.
+- PASS — evidence-integrity:run1-log: Evidence run1-log hash is intact.
+- PASS — evidence-integrity:run2-log: Evidence run2-log hash is intact.
+- PASS — evidence-integrity:debug-b-log: Evidence debug-b-log hash is intact.
+- PASS — evidence-integrity:recheck-script: Evidence recheck-script hash is intact.
+- PASS — evidence-integrity:screenshot-a1: Evidence screenshot-a1 hash is intact.
+- PASS — evidence-integrity:screenshot-a2: Evidence screenshot-a2 hash is intact.
+- PASS — evidence-integrity:screenshot-a3: Evidence screenshot-a3 hash is intact.
+- PASS — evidence-integrity:screenshot-f1: Evidence screenshot-f1 hash is intact.
+- PASS — evidence-integrity:screenshot-g1: Evidence screenshot-g1 hash is intact.
+- PASS — evidence-integrity:w2r-m1-compare-f65e865: Evidence w2r-m1-compare-f65e865 hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-report: Evidence w2-recheck-visual-report hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-manifest: Evidence w2-recheck-visual-manifest hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-measurements: Evidence w2-recheck-visual-measurements hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-arena-ladder: Evidence w2-recheck-visual-arena-ladder hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-arena-2x: Evidence w2-recheck-visual-arena-2x hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-bowl-states: Evidence w2-recheck-visual-bowl-states hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-sellout: Evidence w2-recheck-visual-sellout hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-zero: Evidence w2-recheck-visual-zero hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-locked: Evidence w2-recheck-visual-locked hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-prelock: Evidence w2-recheck-visual-prelock hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-1024-sellout: Evidence w2-recheck-visual-1024-sellout hash is intact.
+- PASS — evidence-integrity:w2-recheck-visual-chart: Evidence w2-recheck-visual-chart hash is intact.
+- PASS — evidence-integrity:w2r-m1-compare-f65e865-full: Evidence w2r-m1-compare-f65e865-full hash is intact.
+- PASS — evidence-integrity:w2-recheck-econ-report: Evidence w2-recheck-econ-report hash is intact.
+- PASS — evidence-integrity:w2-recheck-econ-arena-measure: Evidence w2-recheck-econ-arena-measure hash is intact.
+- PASS — evidence-integrity:w2-recheck-econ-drive-dump: Evidence w2-recheck-econ-drive-dump hash is intact.
+- PASS — evidence-integrity:w2-recheck-econ-n4-bowl-closed: Evidence w2-recheck-econ-n4-bowl-closed hash is intact.
+- PASS — evidence-integrity:w2-recheck-econ-n1-partial-fill: Evidence w2-recheck-econ-n1-partial-fill hash is intact.
+- PASS — evidence-integrity:w2-recheck-econ-driver: Evidence w2-recheck-econ-driver hash is intact.
+- PASS — evidence-integrity:w2r-m1-l3-05-crop-a: Evidence w2r-m1-l3-05-crop-a hash is intact.
+- PASS — evidence-integrity:w2r-m1-l3-05-crop-b: Evidence w2r-m1-l3-05-crop-b hash is intact.
+- PASS — evidence-integrity:w2r-m1-l3-09-crop-a: Evidence w2r-m1-l3-09-crop-a hash is intact.
+- PASS — evidence-integrity:w2r-m1-l3-09-crop-b: Evidence w2r-m1-l3-09-crop-b hash is intact.
+- PASS — evidence-integrity:w2-analyst-report: Evidence w2-analyst-report hash is intact.
+- PASS — evidence-integrity:w2r-mutation-a-f65e865: Evidence w2r-mutation-a-f65e865 hash is intact.
+- PASS — evidence-integrity:w2r-mutation-b-f65e865: Evidence w2r-mutation-b-f65e865 hash is intact.
+- PASS — evidence-integrity:w2-repair-4-report: Evidence w2-repair-4-report hash is intact.
+- PASS — evidence-integrity:w2-repair-4-manifest: Evidence w2-repair-4-manifest hash is intact.
+- PASS — evidence-integrity:w2-repair-4-measure-before: Evidence w2-repair-4-measure-before hash is intact.
+- PASS — evidence-integrity:w2-repair-4-measure-after: Evidence w2-repair-4-measure-after hash is intact.
+- PASS — evidence-integrity:w2-repair-4-before-sellout-1024: Evidence w2-repair-4-before-sellout-1024 hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-sellout-1024: Evidence w2-repair-4-after-sellout-1024 hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-carried-1366: Evidence w2-repair-4-after-carried-1366 hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-chart-ladder: Evidence w2-repair-4-after-chart-ladder hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-chart-flat: Evidence w2-repair-4-after-chart-flat hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-cause-1366: Evidence w2-repair-4-after-cause-1366 hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-hook-1366: Evidence w2-repair-4-after-hook-1366 hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-hook-1024: Evidence w2-repair-4-after-hook-1024 hash is intact.
+- PASS — evidence-integrity:w2-repair-4-after-reveal: Evidence w2-repair-4-after-reveal hash is intact.
+- PASS — evidence-integrity:w2-repair-4-arena-not-offered: Evidence w2-repair-4-arena-not-offered hash is intact.
+- PASS — evidence-integrity:w2-repair-4-arena-open: Evidence w2-repair-4-arena-open hash is intact.
+- PASS — evidence-integrity:w2-repair-4-npm-test: Evidence w2-repair-4-npm-test hash is intact.
+- PASS — evidence-integrity:w2-repair-4-e2e: Evidence w2-repair-4-e2e hash is intact.
+- PASS — evidence-integrity:w2-repair-4-misclick: Evidence w2-repair-4-misclick hash is intact.
+- PASS — evidence-integrity:w2-npm-test-84d8983: Evidence w2-npm-test-84d8983 hash is intact.
+- PASS — evidence-integrity:w2-e2e-84d8983: Evidence w2-e2e-84d8983 hash is intact.
+- PASS — evidence-integrity:w2-e2e-misclick-84d8983: Evidence w2-e2e-misclick-84d8983 hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-report: Evidence w2-final-bqa-report hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-measurements-1024: Evidence w2-final-bqa-measurements-1024 hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-measurements-1366: Evidence w2-final-bqa-measurements-1366 hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-manifest: Evidence w2-final-bqa-manifest hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-driver: Evidence w2-final-bqa-driver hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-1366-overflow: Evidence w2-final-bqa-1366-overflow hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-1024-discharged: Evidence w2-final-bqa-1024-discharged hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-1024-sellout-closed: Evidence w2-final-bqa-1024-sellout-closed hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-zero-turnout: Evidence w2-final-bqa-zero-turnout hash is intact.
+- PASS — evidence-integrity:w2-final-bqa-prelock-n4: Evidence w2-final-bqa-prelock-n4 hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-report: Evidence w2-final-kidc-report hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-log: Evidence w2-final-kidc-log hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-manifest: Evidence w2-final-kidc-manifest hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-script: Evidence w2-final-kidc-script hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-hook: Evidence w2-final-kidc-hook hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-n2-settled: Evidence w2-final-kidc-n2-settled hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-n4-pre: Evidence w2-final-kidc-n4-pre hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-n5-pre: Evidence w2-final-kidc-n5-pre hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-reveal3: Evidence w2-final-kidc-reveal3 hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-cf: Evidence w2-final-kidc-cf hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-n5-1024: Evidence w2-final-kidc-n5-1024 hash is intact.
+- PASS — evidence-integrity:w2-final-kidc-1024-pre: Evidence w2-final-kidc-1024-pre hash is intact.
+- PASS — evidence-integrity:w2-final-reg-report: Evidence w2-final-reg-report hash is intact.
+- PASS — evidence-integrity:w2-final-reg-m1-compare: Evidence w2-final-reg-m1-compare hash is intact.
+- PASS — evidence-integrity:w2-final-reg-m1-crop-l3-05: Evidence w2-final-reg-m1-crop-l3-05 hash is intact.
+- PASS — evidence-integrity:w2-final-reg-m1-crop-l2-10-b: Evidence w2-final-reg-m1-crop-l2-10-b hash is intact.
+- PASS — evidence-integrity:w2-final-reg-facts: Evidence w2-final-reg-facts hash is intact.
+- PASS — evidence-integrity:w2-final-reg-facts2: Evidence w2-final-reg-facts2 hash is intact.
+- PASS — evidence-integrity:w2-final-reg-manifest: Evidence w2-final-reg-manifest hash is intact.
+- PASS — evidence-integrity:w2-final-reg-refresh-after: Evidence w2-final-reg-refresh-after hash is intact.
+- PASS — evidence-integrity:w2-final-reg-latejoin: Evidence w2-final-reg-latejoin hash is intact.
+- PASS — evidence-integrity:w2-final-reg-d3-bell2: Evidence w2-final-reg-d3-bell2 hash is intact.
+- PASS — evidence-integrity:w2-final-reg-d3-recovered: Evidence w2-final-reg-d3-recovered hash is intact.
+- PASS — evidence-integrity:w2-final-reg-dupname: Evidence w2-final-reg-dupname hash is intact.
+- PASS — evidence-integrity:w2-final-reg-rejoin-2nd: Evidence w2-final-reg-rejoin-2nd hash is intact.
+- PASS — evidence-integrity:w2-final-reg-signedout: Evidence w2-final-reg-signedout hash is intact.
+- PASS — evidence-integrity:w2-final-reg-chart1: Evidence w2-final-reg-chart1 hash is intact.
+- PASS — evidence-integrity:w2-final-visual-report: Evidence w2-final-visual-report hash is intact.
+- PASS — evidence-integrity:w2-final-visual-manifest: Evidence w2-final-visual-manifest hash is intact.
+- PASS — evidence-integrity:w2-final-visual-measurements: Evidence w2-final-visual-measurements hash is intact.
+- PASS — evidence-integrity:w2-final-visual-probe2: Evidence w2-final-visual-probe2 hash is intact.
+- PASS — evidence-integrity:w2-final-visual-probe3: Evidence w2-final-visual-probe3 hash is intact.
+- PASS — evidence-integrity:w2-final-visual-bowl-three-states: Evidence w2-final-visual-bowl-three-states hash is intact.
+- PASS — evidence-integrity:w2-final-visual-fill-ladder: Evidence w2-final-visual-fill-ladder hash is intact.
+- PASS — evidence-integrity:w2-final-visual-fill-ladder-33: Evidence w2-final-visual-fill-ladder-33 hash is intact.
+- PASS — evidence-integrity:w2-final-visual-chart: Evidence w2-final-visual-chart hash is intact.
+- PASS — evidence-integrity:w2-final-visual-hook-1366: Evidence w2-final-visual-hook-1366 hash is intact.
+- PASS — evidence-integrity:w2-final-visual-hook-1024: Evidence w2-final-visual-hook-1024 hash is intact.
+- PASS — evidence-integrity:w2-final-visual-regression: Evidence w2-final-visual-regression hash is intact.
+- PASS — evidence-integrity:w2-final-visual-prelock-1366: Evidence w2-final-visual-prelock-1366 hash is intact.
+- PASS — evidence-integrity:w2-repair-5-report: Evidence w2-repair-5-report hash is intact.
+- PASS — evidence-integrity:w2-repair-5-frames-manifest: Evidence w2-repair-5-frames-manifest hash is intact.
+- PASS — evidence-integrity:w2-repair-5-measure-before: Evidence w2-repair-5-measure-before hash is intact.
+- PASS — evidence-integrity:w2-repair-5-measure-after: Evidence w2-repair-5-measure-after hash is intact.
+- PASS — evidence-integrity:w2-repair-5-before-overflow: Evidence w2-repair-5-before-overflow hash is intact.
+- PASS — evidence-integrity:w2-repair-5-after-overflow: Evidence w2-repair-5-after-overflow hash is intact.
+- PASS — evidence-integrity:w2-repair-5-after-dense: Evidence w2-repair-5-after-dense hash is intact.
+- PASS — evidence-integrity:w2-repair-5-after-zero-night: Evidence w2-repair-5-after-zero-night hash is intact.
+- PASS — evidence-integrity:w2-repair-5-before-chart-pair: Evidence w2-repair-5-before-chart-pair hash is intact.
+- PASS — evidence-integrity:w2-repair-5-after-chart-pair: Evidence w2-repair-5-after-chart-pair hash is intact.
+- PASS — evidence-integrity:w2-repair-5-after-chart-flat: Evidence w2-repair-5-after-chart-flat hash is intact.
+- PASS — evidence-integrity:w2-repair-5-before-false-cue: Evidence w2-repair-5-before-false-cue hash is intact.
+- PASS — evidence-integrity:w2-repair-5-after-false-cue: Evidence w2-repair-5-after-false-cue hash is intact.
+- PASS — evidence-integrity:w2-npm-test-47a992b: Evidence w2-npm-test-47a992b hash is intact.
+- PASS — evidence-integrity:w2-e2e-47a992b: Evidence w2-e2e-47a992b hash is intact.
+- PASS — evidence-integrity:w2-e2e-misclick-47a992b: Evidence w2-e2e-misclick-47a992b hash is intact.
+- PASS — evidence-integrity:w2-mutation-a-47a992b: Evidence w2-mutation-a-47a992b hash is intact.
+- PASS — evidence-integrity:w2-mutation-b-47a992b: Evidence w2-mutation-b-47a992b hash is intact.
+- PASS — evidence-integrity:w2-npm-test-afa018d: Evidence w2-npm-test-afa018d hash is intact.
+- PASS — evidence-integrity:w2-e2e-afa018d: Evidence w2-e2e-afa018d hash is intact.
+- PASS — evidence-integrity:w2-e2e-misclick-afa018d: Evidence w2-e2e-misclick-afa018d hash is intact.
+- PASS — evidence-integrity:w2-mutation-a-afa018d: Evidence w2-mutation-a-afa018d hash is intact.
+- PASS — evidence-integrity:w2-mutation-b-afa018d: Evidence w2-mutation-b-afa018d hash is intact.
+- PASS — evidence-integrity:w2-claim-filing-note: Evidence w2-claim-filing-note hash is intact.
+- PASS — evidence-integrity:w2-founder-decisions: Evidence w2-founder-decisions hash is intact.
+- PASS — claim-ledger-present: Wave contains progress claims.
+- FAIL — claims-reconciled: Unconfirmed or contradicted claims: w2-e2e-pass:contradicted, w2-e2e-misclick-pass:contradicted.
+- FAIL — blocking-dissent: Blocking dissent remains: w2-final-browser-dissent.
 - PASS — meetings-closed: All meetings are closed.
 - PASS — meeting-budget: Meeting count 0/2.
-- FAIL — agent-budget: Agent soft budget exceeded: 24/14.
+- PASS — agent-budget: Agent soft budget exceeded with a recorded reason.
 - PASS — failure-budget: Repairs 0/8; waves 2/6.
 - PASS — ownership-conflicts: No active ownership conflicts.
 - PASS — config-integrity: Harness constitution is unchanged since run creation.
