@@ -2921,25 +2921,49 @@ function renderFHHook(view: Record<string, unknown>): void {
   const rules = (view["rules"] as string[]) ?? [];
   const slate = (view["slate"] as FHSlateNight[]) ?? [];
   const tight = fhTight();
-  const slateStrip = `
-    <div style="display:grid; grid-template-columns:repeat(${slate.length || 5}, minmax(0,1fr)); gap:${tight ? 6 : 9}px;">
+  // W2 repair-4 R4-6 (visual C3 / contract A9): the HOOK opens on the dark,
+  // closed building with ONE registered line over it, then the season slate
+  // as five cards — day, visiting club, Draw and TV on each — and nothing
+  // else in the first viewport (<= 90 words). Every registered paragraph
+  // still renders verbatim, below the slate; the message is set one sentence
+  // per line so no paragraph runs past two lines.
+  const hero = `
+    <div class="m2-card fh-hook-hero" style="${FH_CARD} padding:0; overflow:hidden; position:relative;">
+      ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: tight ? 300 : 340, motion: false, label: "", cls: "fh-dark-building", maxHeight: tight ? 150 : 404 })}
+      <div style="position:absolute; inset:auto 0 0 0; padding:${tight ? "12px 16px" : "16px 22px"}; background:linear-gradient(0deg, rgba(8,8,15,0.94) 45%, rgba(8,8,15,0));">
+        <p class="fh-hook-line" style="margin:0; font-size:${tight ? 17 : 22}px; line-height:${tight ? 23 : 29}px; font-weight:600; letter-spacing:-0.01em; color:${FH_INK}; max-width:34ch;">${escapeHtml(ui.twoBooksLine)}</p>
+      </div>
+    </div>`;
+  const tvLabel = (tv: string) => (tv === "national" ? "national TV" : tv === "local" ? "local TV" : "not on TV");
+  const slateRow = `
+    <div class="fh-slate" id="fhSlate" style="display:grid; grid-template-columns:repeat(${slate.length || 5}, minmax(0,1fr)); gap:${tight ? 7 : 10}px;">
       ${slate
         .map(
-          (n) => `<div class="m2-chip" style="padding:9px 10px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
+          (n) => `<div class="m2-card fh-slate-card" style="${FH_CARD} padding:${tight ? "10px 11px" : "13px 14px"}; display:flex; flex-direction:column; gap:${tight ? 4 : 7}px; min-height:${tight ? 0 : 190}px;">
             <span style="${FH_LABEL} font-size:10px;">${escapeHtml(n.label)}</span>
-            <span style="display:block; margin-top:3px; font-size:12.5px; font-weight:600; color:${FH_INK};">${escapeHtml(n.day)}</span>
-            <span style="display:block; font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(n.visitor)}</span>
-            <span style="display:block; margin-top:3px; font-size:10.5px; color:${FH_INK_LABEL};">draw ${n.draw}/100 · ${n.tv === "national" ? "national TV" : n.tv === "local" ? "local TV" : "not on TV"}</span>
+            <span style="display:block; font-size:${tight ? 15 : 18}px; line-height:${tight ? 19 : 22}px; font-weight:600; color:${FH_INK};">${escapeHtml(n.day)}</span>
+            <span style="display:block; font-size:${tight ? 11.5 : 12.5}px; line-height:${tight ? 15 : 17}px; color:${FH_INK_BODY}; min-height:${tight ? 30 : 34}px;">${escapeHtml(n.visitor)}</span>
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span class="m2-bar" style="flex:1; height:6px; border-radius:999px; background:rgba(255,255,255,0.07); overflow:hidden;"><i style="display:block; height:100%; width:${Math.max(0, Math.min(100, n.draw))}%; border-radius:999px; background:${FH_VIOLET};"></i></span>
+              <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${tight ? 12 : 13}px; font-weight:600; color:${FH_INK}; white-space:nowrap;">draw ${n.draw}/100</b>
+            </span>
+            <span style="display:block; font-size:11px; letter-spacing:0.04em; color:${n.tv === "national" ? FH_VIOLET_BRIGHT : FH_INK_LABEL};">${tvLabel(n.tv)}</span>
           </div>`,
         )
         .join("")}
     </div>`;
+  const sentences = String(view["message"] ?? "").split(/(?<=[.!?]) (?=[A-Z])/);
   const main = `
     <div style="display:flex; flex-direction:column; gap:${tight ? 10 : 14}px;">
-      ${fhHeader(view, { goal: true })}
-      <p style="margin:0; font-size:${tight ? 14 : 15.5}px; line-height:${tight ? 20 : 23}px; color:${FH_INK_BODY}; max-width:78ch;">${escapeHtml(String(view["message"] ?? ""))}</p>
-      ${slateStrip}
-      <div class="m2-card" style="${FH_CARD} padding:14px 16px;">
+      <div class="m2-header fh-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:18px;">
+        <h1 class="m2-h1" style="margin:0; font-size:${tight ? 22 : 28}px; line-height:${tight ? 26 : 32}px; font-weight:600; letter-spacing:-0.022em; color:${FH_INK};">Full House</h1>
+      </div>
+      ${hero}
+      ${slateRow}
+      <div class="m2-card fh-hook-message" style="${FH_CARD} padding:14px 16px;">
+        ${sentences.map((t) => `<p style="margin:0; font-size:${tight ? 14 : 15.5}px; line-height:${tight ? 20 : 23}px; color:${FH_INK_BODY}; max-width:78ch;">${escapeHtml(t)}</p>`).join("")}
+      </div>
+      <div class="m2-card" id="fhBooks" style="${FH_CARD} padding:14px 16px;">
         <span style="${FH_LABEL} margin-bottom:6px;">The two books</span>
         <p style="margin:0; font-size:13.5px; line-height:19px; color:${FH_INK_BODY};">${escapeHtml(String(view["objective"] ?? ""))}</p>
       </div>
@@ -2970,7 +2994,6 @@ function renderFHHook(view: Record<string, unknown>): void {
           .join("")}
       </div>
       <p style="margin:0; font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(String(view["horizonLine"] ?? ""))} ${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</p>
-      <p style="margin:0; font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(ui.twoBooksLine)}</p>
     </div>`;
   $("gameBody").innerHTML = fhShell(view, main, { books: false, nightIndex: 0, settled: 0 });
 }

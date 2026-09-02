@@ -479,7 +479,14 @@ html[data-module="m2"] .m2-goal-books .dot {
 html[data-module="m2"] .m2-rail {
   width: 200px;
   flex: none;
-  align-self: stretch;
+  /* W2 repair-4 R4-7: the rail is bound to the viewport, not to the frame. A
+     stretched rail on a frame taller than the screen pushed its last item —
+     the rejoin PIN chip — to 746..781 (and 737..772 on a sellout) in a 768px
+     viewport. The rail now ends where the first viewport ends; the frame
+     canvas continues beneath it on taller frames. */
+  align-self: flex-start;
+  height: calc(100vh - 72px);
+  box-sizing: border-box;
   padding: 18px 14px;
   border-right: 1px solid var(--m2-hairline);
   background: linear-gradient(180deg, #0b0b14 0%, var(--m2-canvas) 55%);
@@ -1162,7 +1169,10 @@ html[data-module="m2"] .m2-frame {
   display: flex;
   align-items: stretch;
   background: var(--m2-canvas);
-  min-height: calc(100vh - 34px);
+  /* W2 repair-4 R4-7: the frame sits under ~66px of page chrome (the BOW bar
+     and the session line). 100vh - 34px overshot a 768px viewport by ~32px,
+     which put the rail's last item — the rejoin PIN chip — at 746..781. */
+  min-height: calc(100vh - 72px);
   position: relative;
 }
 html[data-module="m2"] .m2-main {
@@ -1908,6 +1918,7 @@ html[data-module="m2"] .m2-filter b {
   html[data-module="m2"] .m2-rail {
     width: 100%;
     align-self: auto;
+    height: auto;
     flex-direction: row;
     align-items: center;
     gap: 12px;
