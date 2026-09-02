@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `201:4ba225f4062d3dc33dde00d835bd48b3f95c5f5ea655d26fe81804d22356004c`  
-Updated: 2026-09-02T16:18:24.996Z
+Event head: `209:93b2d2de07643334c848c3847bed453ee86b4a9c1429635875d33b179a3e559b`  
+Updated: 2026-09-02T16:19:27.115Z
 
 ## Founder intent
 
@@ -36,7 +36,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - lead-integrator — boss-lead — active — claude-fable-5-1
 - sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
 - browser-qa — browser-qa-w2base — completed — claude-sonnet-5
-- browser-qa — browser-qa-w2 — active — claude-sonnet-5
+- browser-qa — browser-qa-w2 — completed-with-concerns — claude-sonnet-5
 - visual-experience-director — visual-critic-3 — active — claude-opus-5
 - player-gameplay-critic — gameplay-critic-w2 — active — claude-opus-5
 - player-gameplay-critic — kid-a2-basketball — active — claude-opus-5
@@ -106,6 +106,13 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-regression-l2-05-crop — screenshot — l2-05-teach-hook crop: baseline vs head, diff is join-order counter + build-version label text only, no layout shift
 - w2-regression-l2-10-crop — screenshot — l2-10-play-reveal crop: baseline vs head, diff is reveal-stage animation timing (already a known-race frame)
 - w2-regression-misclick-log — browser-trace — e2e-m2l1-misclick.cjs full stdout, exit 0, PASS
+- w2-browser-truth-report — browser-trace — BROWSER_TRUTH_W2.md — full report: paths, §H measurement table, defects, not-verified
+- w2-browser-truth-sellout-gold-leak — screenshot — Night-4 shock sellout (Desk 2, Memphis, held $16, bowl closed) — FULL HOUSE, 17,794 of 17,794, 7,256 turned away; headline box shows an unremoved legacy gold border/gradient (theme.css .fh-sellout) instead of violet
+- w2-browser-truth-prelock-fulldial — screenshot — Full pre-lock card stack at 1366x768 — LOCK IT IN and its caption confirmed inside the first viewport; price readout 68px, largest figure on frame
+- w2-browser-truth-1024-pin-uncollapsed — screenshot — First-contact viewport 1024x600, PIN card still open (un-collapsed)
+- w2-browser-truth-locked-waiting — screenshot — H1 locked-waiting state — dark building, 'Doors in a minute', no timer/spinner
+- w2-browser-truth-zero-turnout — screenshot — Desk 3, Night 1, priced at $120 on the lowest-draw card — a true zero-turnout night (0 of 19,800, 0%, cash -$520,000)
+- w2-browser-truth-measurements-raw — note — Raw console-logged + file-written DOM measurements from all 5 driving passes (measurements.json, measurements2.json, measurements3.json)
 
 ## Claim ledger
 

@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:18:24.996Z",
+  "updatedAt": "2026-09-02T16:19:27.115Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1483,11 +1483,24 @@
           "model": "claude-sonnet-5",
           "reason": "Browser truth of the rebuilt /play at the wave-2 head, both viewports, plus unchanged-shape checks on /teach and /board",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T21:29:12.111Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:19:27.115Z",
+          "sections": {
+            "paths-exercised": "Full 5-night Full House class, 4 desks (1&3 New York, 2&4 Memphis), /teach + /board + /play. Desk 2 held plan price $16 all 5 nights (bowl never opened) and sold out twice, including the required Night-4-shock-with-bowl-closed FULL HOUSE (7,256 turned away). Desk 3 priced $120 on the lowest-draw card (Night 1) and reached a true zero-turnout night (0 of 19,800). Desk 3 did not lock Night 5; the bell auto-committed it, labelled 'auto'. Desk 4 joined late at Night 3 with covered/labelled books. Second pass re-measured all 5 nights on 2 desks with precise selectors (.fh-hero/.fh-chain/.fh-renewals/headline). Additional passes covered the locked-waiting (H1) state, #fhLock/caption viewport-fit at 1366x768 and 1024x600, refresh mid-result-state and after NEXT, and fresh-page PIN rejoin. /board viewed at 1920x1080 and 1366x768; /teach at 1366x768 (both shape-only, wave-3, not graded).",
+            "artifacts": "docs/gauntlet/module-2/premium/BROWSER_TRUTH_W2.md (full report with the §H measurement table); 27 screenshots under docs/gauntlet/module-2/premium/screens-w2-browser-truth/; raw DOM measurement JSON in the scratch folder (measurements.json, measurements2.json, measurements3.json); 5 driving scripts (drive.cjs through drive5.cjs) in the scratch folder.",
+            "defects": "BLOCKING: legacy unscoped theme.css rules leak the forbidden gold accent and Bebas Neue display face onto the rebuilt /play result states because the wave-2 renderer reuses old .fh-* class names without removing/scoping the old rules. Confirmed live: (1) sellout headline renders in a gold-bordered/amber-gradient box (theme.css .fh-sellout, .fh-result.soldout) instead of violet, screenshot 13-result-desk2-Night4.png; (2) every non-sellout night's result headline computes font-family Bebas Neue instead of Inter (theme.css .fh-result-head), measured on all 10 captured non-sellout headlines. Both directly contradict named A2/A4 acceptance criteria. Pattern likely extends further (.fh-desk-name, .fh-card also carry unscoped legacy rules) but not independently re-measured. IMPORTANT: sellout turned-away figure (40px) ties the headline title span (40px) rather than being uniquely second-largest. ADVISORY: CASH and RENEWALS headline figures share font-family+size (31px, tabular numeric), differ only by colour (source-confirmed, not live-remeasured due to a selector bug). ADVISORY: reduced-motion durations measured exactly at the 120ms ceiling with no margin.",
+            "not-verified": "Easing/timing-function on reduced-motion transitions; .fh-desk-name/.fh-card computed styles (source-only, not live-remeasured); corrected live CASH-vs-RENEWALS row typography selector; #pinDisplay vs price readout at exact +5s/+20s timestamps (inferred from static CSS instead); dead-region check on locked-waiting/allNightsDone/REVEAL/ADAPT/COUNTERFACTUAL/SYNTHESIS/COMPLETE states; /board fit at phases other than COMPLETE; 12-desk class-scale /play capture; root cause of two 401 console errors on Desk 1; contrast on RENEWALS-dim and CASH-red (debt) figures."
+          },
+          "evidenceIds": [
+            "w2-browser-truth-report",
+            "w2-browser-truth-sellout-gold-leak",
+            "w2-browser-truth-prelock-fulldial",
+            "w2-browser-truth-1024-pin-uncollapsed",
+            "w2-browser-truth-locked-waiting",
+            "w2-browser-truth-zero-turnout",
+            "w2-browser-truth-measurements-raw"
+          ],
           "cost": null
         },
         "w2-visual-review": {
@@ -1676,7 +1689,14 @@
         "w2-regression-m1-compare-head-vs-head",
         "w2-regression-l2-05-crop",
         "w2-regression-l2-10-crop",
-        "w2-regression-misclick-log"
+        "w2-regression-misclick-log",
+        "w2-browser-truth-report",
+        "w2-browser-truth-sellout-gold-leak",
+        "w2-browser-truth-prelock-fulldial",
+        "w2-browser-truth-1024-pin-uncollapsed",
+        "w2-browser-truth-locked-waiting",
+        "w2-browser-truth-zero-turnout",
+        "w2-browser-truth-measurements-raw"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -4086,6 +4106,134 @@
       },
       "recordedAt": "2026-09-02T16:17:26.162Z",
       "actor": "regression-w2"
+    },
+    "w2-browser-truth-report": {
+      "id": "w2-browser-truth-report",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "BROWSER_TRUTH_W2.md — full report: paths, §H measurement table, defects, not-verified",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-browser-truth-report--BROWSER_TRUTH_W2.md",
+      "sha256": "8cad46b0e41c94c070ed6cfdd19c283cdaff3de6fb10687de3456fb069b75f33",
+      "size": 20969,
+      "metadata": {
+        "tags": [
+          "play",
+          "board",
+          "teach",
+          "viewport-1366x768",
+          "viewport-1024x600",
+          "viewport-1920x1080"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:19:25.090Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-browser-truth-sellout-gold-leak": {
+      "id": "w2-browser-truth-sellout-gold-leak",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Night-4 shock sellout (Desk 2, Memphis, held $16, bowl closed) — FULL HOUSE, 17,794 of 17,794, 7,256 turned away; headline box shows an unremoved legacy gold border/gradient (theme.css .fh-sellout) instead of violet",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-browser-truth-sellout-gold-leak--13-result-desk2-Night4.png",
+      "sha256": "671cbb11c829fda7557c4af8a92662730c8e8baf9bd1ec04fe9060d1153eff03",
+      "size": 238172,
+      "metadata": {
+        "tags": [
+          "screenshot",
+          "viewport-1366x768",
+          "sellout",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:19:25.580Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-browser-truth-prelock-fulldial": {
+      "id": "w2-browser-truth-prelock-fulldial",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Full pre-lock card stack at 1366x768 — LOCK IT IN and its caption confirmed inside the first viewport; price readout 68px, largest figure on frame",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-browser-truth-prelock-fulldial--20-prelock-1366x768-fulldial.png",
+      "sha256": "5cf526c6d6782a1fd4698960f826b03c4dce4bf5baebeed1e162b5edd2e82d17",
+      "size": 160483,
+      "metadata": {
+        "tags": [
+          "screenshot",
+          "viewport-1366x768",
+          "prelock"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:19:25.824Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-browser-truth-1024-pin-uncollapsed": {
+      "id": "w2-browser-truth-1024-pin-uncollapsed",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "First-contact viewport 1024x600, PIN card still open (un-collapsed)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-browser-truth-1024-pin-uncollapsed--10-1024x600-prelock-pin-uncollapsed.png",
+      "sha256": "bf851fac20a20f087bd5269e735103d37d0b45e140cf5ddc9d49abd5de14bcb4",
+      "size": 116736,
+      "metadata": {
+        "tags": [
+          "screenshot",
+          "viewport-1024x600",
+          "prelock"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:19:26.094Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-browser-truth-locked-waiting": {
+      "id": "w2-browser-truth-locked-waiting",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "H1 locked-waiting state — dark building, 'Doors in a minute', no timer/spinner",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-browser-truth-locked-waiting--19-locked-waiting-h1.png",
+      "sha256": "5260b34edac04c57023e155df77e35f5640f238191f275aa74bf1425bc1f34af",
+      "size": 173051,
+      "metadata": {
+        "tags": [
+          "screenshot",
+          "viewport-1366x768",
+          "locked-waiting"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:19:26.340Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-browser-truth-zero-turnout": {
+      "id": "w2-browser-truth-zero-turnout",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Desk 3, Night 1, priced at $120 on the lowest-draw card — a true zero-turnout night (0 of 19,800, 0%, cash -$520,000)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-browser-truth-zero-turnout--13-result-desk3-Night1.png",
+      "sha256": "15a670949a742729e46afb85b793a3b6a28a68027e531e169c85c66e881147b4",
+      "size": 210755,
+      "metadata": {
+        "tags": [
+          "screenshot",
+          "viewport-1366x768",
+          "zero-turnout"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:19:26.603Z",
+      "actor": "browser-qa-w2"
+    },
+    "w2-browser-truth-measurements-raw": {
+      "id": "w2-browser-truth-measurements-raw",
+      "wave": 2,
+      "kind": "note",
+      "label": "Raw console-logged + file-written DOM measurements from all 5 driving passes (measurements.json, measurements2.json, measurements3.json)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-browser-truth-measurements-raw--measurements.json",
+      "sha256": "dd9a8e598c8a8d331fb8c116fc3d26240b37b7ee77a925cc3ee3516fe4f5fd38",
+      "size": 43413,
+      "metadata": {
+        "tags": [
+          "raw-data"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:19:26.862Z",
+      "actor": "browser-qa-w2"
     }
   },
   "claims": {},
@@ -4369,11 +4517,11 @@
     "agentsActivated": 25,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 134,
+    "evidenceRecorded": 141,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 201,
-  "eventHead": "4ba225f4062d3dc33dde00d835bd48b3f95c5f5ea655d26fe81804d22356004c",
+  "eventCount": 209,
+  "eventHead": "93b2d2de07643334c848c3847bed453ee86b4a9c1429635875d33b179a3e559b",
   "warnings": []
 }
