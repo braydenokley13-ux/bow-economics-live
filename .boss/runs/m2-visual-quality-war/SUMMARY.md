@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `447:73f260aba4b22b382a41f26f5179f687d99a6389844584c393c02c699c5c9854`  
-Updated: 2026-09-02T18:32:21.054Z
+Event head: `450:568c03f12333be39d3d1f170f26262394936771d1bd16e329ae77efdfcee1daf`  
+Updated: 2026-09-02T18:32:55.038Z
 
 ## Founder intent
 
@@ -320,6 +320,9 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-tests-pass — pending — cd runtime && npm test (build + full suite incl. clientClaims) passes at repaired head f65e865
 - w2-e2e-pass — pending — node runtime/scripts/e2e-m2l1.cjs passes at f65e865 with the whole-figure R-1 claim limb active (4-desk arc + 12-desk class scale)
 - w2-e2e-misclick-pass — pending — node runtime/scripts/e2e-m2l1-misclick.cjs passes at f65e865 (teacher cancel-then-advance path with the results state)
+- w2-tests-pass-r4 — pending — cd runtime && npm test passes at repair-4 head 84d8983 (build + full suite incl. the clientClaims sentence scanner)
+- w2-e2e-pass-r4 — pending — node runtime/scripts/e2e-m2l1.cjs passes at repair-4 head 84d8983 with the whole-figure R-1 claim limb active
+- w2-e2e-misclick-pass-r4 — pending — node runtime/scripts/e2e-m2l1-misclick.cjs passes at repair-4 head 84d8983
 
 ## Dissent
 
