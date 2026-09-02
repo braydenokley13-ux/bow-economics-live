@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `419:98dd02f6e0fa95256bfca10649c82d05aa14dbdcdc82e2ee33131311005086b2`  
-Updated: 2026-09-02T17:50:13.580Z
+Event head: `421:bffc92128ec3480acdf99241c9a694fcf73ad065ba5353ad3384d43d5f021f41`  
+Updated: 2026-09-02T17:51:33.466Z
 
 ## Founder intent
 
@@ -287,6 +287,8 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2r-m1-l3-09-crop-a — screenshot — M1 l3-09-teach-reveal at 1366x768: pixel-diff crop side A (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc
 - w2r-m1-l3-09-crop-b — screenshot — M1 l3-09-teach-reveal at 1366x768: pixel-diff crop side B (baseline vs repaired head f65e865); single 140x26px bbox [885,276,1025,302], the build-label/join-counter text region known non-stable since 6c4c7cc
 - w2-analyst-report — analyst-report — Independent analyst disproof attempt on the wave-2 pass claim at f65e865
+- w2r-mutation-a-f65e865 — e2e — R-1 mutation A re-run against the repaired head f65e865 dist: true Night-1 turnout figure 14,142 injected into the pre-lock render; the whole-figure claim limb must FAIL the run (non-zero exit = bite)
+- w2r-mutation-b-f65e865 — e2e — R-1 mutation B re-run against the repaired head f65e865 dist: 'Target: $110–$120' injected into the pre-lock render; the whole-figure claim limb must FAIL the run (non-zero exit = bite)
 
 ## Claim ledger
 

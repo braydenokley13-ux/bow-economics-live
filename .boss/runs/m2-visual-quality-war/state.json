@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T17:50:13.580Z",
+  "updatedAt": "2026-09-02T17:51:33.466Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -2261,7 +2261,9 @@
         "w2r-m1-l3-05-crop-b",
         "w2r-m1-l3-09-crop-a",
         "w2r-m1-l3-09-crop-b",
-        "w2-analyst-report"
+        "w2-analyst-report",
+        "w2r-mutation-a-f65e865",
+        "w2r-mutation-b-f65e865"
       ],
       "claimIds": [
         "w2-tests-pass",
@@ -9988,6 +9990,50 @@
       "metadata": {},
       "recordedAt": "2026-09-02T17:50:13.205Z",
       "actor": "analyst-w2"
+    },
+    "w2r-mutation-a-f65e865": {
+      "id": "w2r-mutation-a-f65e865",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "R-1 mutation A re-run against the repaired head f65e865 dist: true Night-1 turnout figure 14,142 injected into the pre-lock render; the whole-figure claim limb must FAIL the run (non-zero exit = bite)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-mutation-a-f65e865--record.json",
+      "sha256": "302c8671938b262c319dc854729aec0ea0c54ac8c850a44117b25153b59609e3",
+      "size": 1730,
+      "metadata": {
+        "command": [
+          "env",
+          "E2E_DIST=/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/mutant-A",
+          "E2E_PORT=4439",
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T17:51:27.004Z",
+      "actor": "boss-lead"
+    },
+    "w2r-mutation-b-f65e865": {
+      "id": "w2r-mutation-b-f65e865",
+      "wave": 2,
+      "kind": "e2e",
+      "label": "R-1 mutation B re-run against the repaired head f65e865 dist: 'Target: $110–$120' injected into the pre-lock render; the whole-figure claim limb must FAIL the run (non-zero exit = bite)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2r-mutation-b-f65e865--record.json",
+      "sha256": "8d7b05b37d7d4709226bba5ebde4c3e29f653d6d5a3e1b16ec135e097f38c837",
+      "size": 1740,
+      "metadata": {
+        "command": [
+          "env",
+          "E2E_DIST=/tmp/claude-0/-home-user-bow-economics-live/b7d92d84-0c75-5390-a162-cde0bce24742/scratchpad/boss/lead-w2/mutant-B",
+          "E2E_PORT=4440",
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T17:51:33.466Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {
@@ -10440,11 +10486,11 @@
     "agentsActivated": 35,
     "gateFailures": 3,
     "claimsContradicted": 0,
-    "evidenceRecorded": 305,
+    "evidenceRecorded": 307,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 419,
-  "eventHead": "98dd02f6e0fa95256bfca10649c82d05aa14dbdcdc82e2ee33131311005086b2",
+  "eventCount": 421,
+  "eventHead": "bffc92128ec3480acdf99241c9a694fcf73ad065ba5353ad3384d43d5f021f41",
   "warnings": []
 }
