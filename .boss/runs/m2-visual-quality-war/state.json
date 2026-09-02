@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-02T16:36:48.032Z",
+  "updatedAt": "2026-09-02T16:37:25.020Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1767,11 +1767,29 @@
           "model": "claude-opus-5",
           "reason": "Repair 1 of wave-2 budget: Browser QA BLOCKING defect — legacy unscoped theme.css .fh-* rules leak the gold accent and Bebas Neue onto the rebuilt /play result states (contract A2/A4); plus the two 401 console errors on a desk",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-02T16:19:41.099Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:37:25.020Z",
+          "sections": {
+            "what-changed": "Commit 002f14e on claude/economics-boss-module-2-8s591f. runtime/src/client/shared/theme.css: 68 legacy Full House / price-dial rules prefixed html:not([data-module=\"m2\"]) plus a header comment recording the invariant (stripping the prefix reproduces the old file byte-for-byte, so no declaration was altered). runtime/src/client/shared/m2.css: one added declaration, font-family: var(--m2-font) on the existing html[data-module=\"m2\"] #gameHeader rule, because that element carries the shared .eyebrow class (Bebas) and sits outside #gameBody. runtime/src/client/play/main.ts: UNCHANGED — no renderer edit was needed. Also added docs/gauntlet/module-2/premium/REPAIR_W2_THEME_LEAK.md and six before/after screenshots under screens-w2-repair-1/. Scoping was chosen over per-property resets in m2.css because it makes the leak structurally impossible (a newly added leaked property cannot return) instead of neutralising ~40 declarations, and it is provably inert for /board and /teach.",
+            "evidence": "OBSERVED (w2-repair-1-proof-log, w2-repair-1-proof-script): a Playwright driver ran a real 4-desk, 5-night class to three sellouts and, on each of 33 /play states (LOBBY, HOOK, pre-lock, locked-waiting, 20 results, all-nights-done, REVEAL x2, ADAPT, COUNTERFACTUAL x2, SYNTHESIS x2, COMPLETE), walked every element in #gameBody asserting no computed font-family contains Bebas and no computed colour/border-*-colour/background-colour/background-image/outline-colour/box-shadow contains 244,185,66 outside the arena SVG. BEFORE (pristine dist, git 6c4c7cc): 33/33 states violating, 11,137 elements checked, exit 1. AFTER: 0/33 violating, 11,240 elements checked, exit 0. OBSERVED (w2-repair-1-audit): 133 emitted class tokens x 555 parsed theme.css rules -> 68 matching rules; two id rules matched but are gated on body.fh-compact-play, which renderFullHouse removes; no non-fh class collisions. OBSERVED (w2-repair-1-wholedoc): whole-document pass confirms #gameHeader now computes Inter. OBSERVED (screenshots): before/after pairs for the Night-4 sellout, an ordinary settled night and pre-lock. TECHNICALLY VERIFIED (w2-repair-1-npm-test): npm test in the scratch copy, 468/468 pass, exit 0.",
+            "claims": "CLAIM 1 (OBSERVED): on every /play state of a full M2 L1 class, no element in #gameBody renders Bebas Neue or the gold triplet 244,185,66 outside the arena SVG — contract rows A2 and A4 are met for the Full House student surface as measured by that test. CLAIM 2 (OBSERVED, static + build): /board and /teach cannot be affected — only play/main.ts:207 sets data-module, and none of the 68 scoped selectors targets a class those surfaces use (board uses a disjoint fh-board-*/fh-slate-*/fh-market-*/fh-synth* family styled inline in board/index.html; teach uses only fh-play); a rebuilt scratch dist differed from the pristine dist in the two stylesheets only, no board/teach JS or HTML byte changed. CLAIM 3 (OBSERVED): the reported defect was wider than filed — it was present on all 33 states, and .fh-card-night and .fh-repeat-split were leaking too. CLAIM 4 (OBSERVED, correction): .fh-sellout-title did NOT render gold (the renderer sets colour inline; the leak there is font-family only), and .fh-card gold border did NOT leak (already beaten by html[data-module=m2] .m2-card). I certify no acceptance; the Analyst and the visual critic should re-measure.",
+            "known-gaps": "1. 401 INVESTIGATION — root cause NOT VERIFIED by reproduction. Instrumenting every response with status>=400 across a full 33-state 4-desk run produced ZERO 4xx, so the two 401s Browser QA saw on Desk 1 were not reproduced. INFERRED root cause from source, not confirmed: the only 401s a seated desk can receive are ServiceError(401,\"retired\") from sessionService.resumeByToken (GET /api/me) and submitAction (POST .../actions), thrown when the presented device token no longer hashes to a seat. sessionService.rejoin ROTATES the device token on every successful PIN rejoin and retires the old one; Browser QA ran a fresh-page PIN rejoin on Desk 1, so any in-flight or subsequent poll issued with the pre-rotation token gets exactly one 401 per stale context — two 401s over a run with one rejoin is consistent with that. This is server-side, by design, and NOT bounded inside play/main.ts, so per the assignment I did not fix it. What I could not rule out: a genuine race at join (token stored after the first poll fires). Recommend the Analyst reproduce with a rejoin-specific driver.\n2. E2E NOT VERIFIED — scripts/e2e-m2l1.cjs and the misclick e2e were NOT run (coordinator instruction to finish). npm test (468/468) does not substitute.\n3. M1 BOARD BASELINE NOT VERIFIED — tools/shots-m1-extended.cjs / compare-m1-ext.cjs were not run against the scratch dist. The /board-and-/teach-unchanged claim rests on the source and dist arguments, not on a pixel baseline.\n4. RESIDUAL GOLD, OUT OF SCOPE, OBSERVED — a whole-document pass finds 12 gold hits on /play, all inside the HIDDEN pre-lesson join card (#btnJoin, #btnRejoin, the \"Join your class\" .eyebrow). data-module is not set while that card is visible, so it cannot be scoped under [data-module=m2]; it is the shared join flow, not the M2 renderer. Contract A2 says \"any M2 rendered element\" — a strict reading may still call this a miss. Flagged, not fixed.\n5. DEVIATION FROM ASSIGNMENT METHOD — the 68 theme.css prefixes were applied by a deterministic script rather than 68 hand Edit calls, then the real repo file was made byte-identical to the verified scratch file (diff -q clean) and git diff confirmed only the two allowed files changed. No build was run in the real runtime/; runtime/dist there is untouched.\n6. VISUAL SIDE-EFFECT, INTENTIONAL, NEEDS A CRITIC EYE — dropping .fh-result removed a legacy card background/border/12px padding around #fhResult, recovering ~48px of vertical room on every settled-night state. Layout on those states changed; see the before/after screenshots. A visual critic should confirm this is the intended M2 frame and not a lost boundary."
+          },
+          "evidenceIds": [
+            "w2-repair-1-report",
+            "w2-repair-1-audit",
+            "w2-repair-1-proof-log",
+            "w2-repair-1-proof-script",
+            "w2-repair-1-wholedoc",
+            "w2-repair-1-npm-test",
+            "w2-repair-1-shot-sellout-before",
+            "w2-repair-1-shot-sellout-after",
+            "w2-repair-1-shot-night-before",
+            "w2-repair-1-shot-night-after",
+            "w2-repair-1-shot-prelock-before",
+            "w2-repair-1-shot-prelock-after"
+          ],
           "cost": null
         },
         "w2-repair-3-arena-fill": {
@@ -1931,7 +1949,19 @@
         "w2-regression-rs-item1-blank-after-refresh",
         "w2-regression-rs-item4-n2-skips-n1",
         "w2-regression-rs-item4-two-nights-unacked",
-        "w2-regression-rs-probe2-log"
+        "w2-regression-rs-probe2-log",
+        "w2-repair-1-report",
+        "w2-repair-1-audit",
+        "w2-repair-1-proof-log",
+        "w2-repair-1-proof-script",
+        "w2-repair-1-wholedoc",
+        "w2-repair-1-npm-test",
+        "w2-repair-1-shot-sellout-before",
+        "w2-repair-1-shot-sellout-after",
+        "w2-repair-1-shot-night-before",
+        "w2-repair-1-shot-night-after",
+        "w2-repair-1-shot-prelock-before",
+        "w2-repair-1-shot-prelock-after"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -5797,6 +5827,207 @@
       },
       "recordedAt": "2026-09-02T16:36:12.156Z",
       "actor": "regression-w2b"
+    },
+    "w2-repair-1-report": {
+      "id": "w2-repair-1-report",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "REPAIR_W2_THEME_LEAK — fix, rationale, before/after proof table, commands run",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-report--REPAIR_W2_THEME_LEAK.md",
+      "sha256": "d4900be8d538ccac44681b4f81893e30d604b88702fd94feeaeec64f33e982b8",
+      "size": 4821,
+      "metadata": {
+        "tags": [
+          "blocking-repair",
+          "contract-A2",
+          "contract-A4"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:21.851Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-audit": {
+      "id": "w2-repair-1-audit",
+      "wave": 2,
+      "kind": "visual-report",
+      "label": "AUDIT.md — 133 emitted classes x 68 theme.css rules, leaked properties, observed-vs-static",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-audit--AUDIT.md",
+      "sha256": "815ad4e57bd522be563792398543e43cc07e03bba5adb83f75f1743d9be33f2c",
+      "size": 16409,
+      "metadata": {
+        "tags": [
+          "class-collision-audit"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:22.125Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-proof-log": {
+      "id": "w2-repair-1-proof-log",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "proof.log — BEFORE (33/33 states violating, 11137 elements) and AFTER (0/33, 11240 elements) computed-style runs of a real 4-desk 5-night class",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-proof-log--proof.log",
+      "sha256": "405835b12c4c25bbfea53c42c7371ae110c14856d42ed6dd56812c8bd5255868",
+      "size": 22594,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "agent-playtested"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:22.392Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-proof-script": {
+      "id": "w2-repair-1-proof-script",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "proof.cjs — the driver: 33 /play states, per-element Bebas/gold assertions with the arena-SVG carve-out",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-proof-script--proof.cjs",
+      "sha256": "d007c3278b6dad0d78f02a7df72be2efa89ac82bfda4c87863735e4e9060e9d8",
+      "size": 13424,
+      "metadata": {
+        "tags": [
+          "playwright"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:22.653Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-wholedoc": {
+      "id": "w2-repair-1-wholedoc",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "wholedoc-after.log — whole-document pass: #gameHeader now Inter; 12 residual gold hits all inside the hidden pre-lesson join card",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-wholedoc--wholedoc-after.log",
+      "sha256": "5e62c0093d21bbe7e62a7a47135eeffaeffb419328dd1c89be4c237132e24d28",
+      "size": 1742,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:22.920Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-npm-test": {
+      "id": "w2-repair-1-npm-test",
+      "wave": 2,
+      "kind": "note",
+      "label": "npm test in the scratch copy — 468/468 pass, exit 0",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-npm-test--npm-test.log",
+      "sha256": "99a3b7e62cf210deca3ed41927e8ea3073193010304e0c41f029109bb559b33b",
+      "size": 113318,
+      "metadata": {
+        "tags": [
+          "technically-verified"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:23.183Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-shot-sellout-before": {
+      "id": "w2-repair-1-shot-sellout-before",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE — Night-4 sellout, gold-bordered amber headline box, Bebas FULL HOUSE",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-shot-sellout-before--before-sellout-desk2-night4.png",
+      "sha256": "b558504baf31a55564e2d63f9406b93f4ce1291521177a642bfb9642ba136868",
+      "size": 238095,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:23.438Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-shot-sellout-after": {
+      "id": "w2-repair-1-shot-sellout-after",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER — same Night-4 sellout, violet-only, Inter 800 FULL HOUSE, legacy result card chrome gone",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-shot-sellout-after--after-sellout-desk2-night4.png",
+      "sha256": "99ec253e644ec69aa78fe84b0f35e4fbf637a9cd74c0a7a4eaa75a1800a9b600",
+      "size": 226788,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "repair"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:23.720Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-shot-night-before": {
+      "id": "w2-repair-1-shot-night-before",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE — ordinary settled night, headline in Bebas Neue",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-shot-night-before--before-result-desk1-night1.png",
+      "sha256": "f34742faddac983a8548c9486120f0ae6ada42fe795fe425aee9b9aea61f5f99",
+      "size": 227982,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:23.985Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-shot-night-after": {
+      "id": "w2-repair-1-shot-night-after",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER — ordinary settled night, headline in Inter",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-shot-night-after--after-result-desk1-night1.png",
+      "sha256": "250d4c38f298c83f5a359ecb8d76f2e77771d1f7adb1d48be871e6901c348f84",
+      "size": 229566,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "repair"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:24.240Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-shot-prelock-before": {
+      "id": "w2-repair-1-shot-prelock-before",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "BEFORE — pre-lock state, Bebas night eyebrow and legacy dial chrome",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-shot-prelock-before--before-prelock.png",
+      "sha256": "67f901e163309729b373b5d6c66d8f4f660010eafd8d8f9fe6c619aa72e26010",
+      "size": 160645,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "defect"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:24.497Z",
+      "actor": "builder-r1"
+    },
+    "w2-repair-1-shot-prelock-after": {
+      "id": "w2-repair-1-shot-prelock-after",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "AFTER — pre-lock state, Inter throughout, violet dial only",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-repair-1-shot-prelock-after--after-prelock.png",
+      "sha256": "855a9c9d8878b79388a13ea6b7394ddde34e6ac954d01c56c77b3e836ca9c0ef",
+      "size": 168776,
+      "metadata": {
+        "tags": [
+          "viewport-1366x768",
+          "repair"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:37:24.758Z",
+      "actor": "builder-r1"
     }
   },
   "claims": {},
@@ -6151,11 +6382,11 @@
     "agentsActivated": 28,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 215,
+    "evidenceRecorded": 227,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 297,
-  "eventHead": "b5dddebb14b255078032c86f6bd01ea20661ce78bbf1f81f1bad68776a6d5883",
+  "eventCount": 310,
+  "eventHead": "e5fe391197cb632a313dc7d230594e6fa7c219880d039b16ad86f564a64219f7",
   "warnings": []
 }

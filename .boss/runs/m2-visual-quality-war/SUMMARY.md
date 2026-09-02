@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `297:b5dddebb14b255078032c86f6bd01ea20661ce78bbf1f81f1bad68776a6d5883`  
-Updated: 2026-09-02T16:36:48.032Z
+Event head: `310:e5fe391197cb632a313dc7d230594e6fa7c219880d039b16ad86f564a64219f7`  
+Updated: 2026-09-02T16:37:25.020Z
 
 ## Founder intent
 
@@ -46,7 +46,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - regression-hunter — regression-w2 — completed-with-concerns — claude-sonnet-5
 - product-analyst — analyst-w2 — active — claude-opus-5
 - regression-hunter — regression-w2b — completed-with-concerns — claude-sonnet-5
-- builder — builder-r1 — active — claude-opus-5
+- builder — builder-r1 — completed-with-concerns — claude-opus-5
 - builder — builder-r3 — active — claude-opus-5
 - builder — builder-r2 — active — claude-opus-5
 
@@ -190,6 +190,18 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - w2-regression-rs-item4-n2-skips-n1 — screenshot — Item 4 — desk that never pressed NEXT on Night 1: after the Night 2 bell it shows ONLY Night 2's result, Night 1's own result was superseded and never individually shown
 - w2-regression-rs-item4-two-nights-unacked — screenshot — Item 4 — desk still coherent (not blank, not stuck) after two consecutive bells (N3, N4) with zero NEXT presses since Night 2
 - w2-regression-rs-probe2-log — note — probe2.cjs raw console output — isolated repro of the rejoin-revokes-original-token blocking finding, showing server stays alive throughout while the original tab goes permanently blank (bodyLen=0 for 5.6s of polling, sync='offline — retrying')
+- w2-repair-1-report — visual-report — REPAIR_W2_THEME_LEAK — fix, rationale, before/after proof table, commands run
+- w2-repair-1-audit — visual-report — AUDIT.md — 133 emitted classes x 68 theme.css rules, leaked properties, observed-vs-static
+- w2-repair-1-proof-log — browser-trace — proof.log — BEFORE (33/33 states violating, 11137 elements) and AFTER (0/33, 11240 elements) computed-style runs of a real 4-desk 5-night class
+- w2-repair-1-proof-script — browser-trace — proof.cjs — the driver: 33 /play states, per-element Bebas/gold assertions with the arena-SVG carve-out
+- w2-repair-1-wholedoc — browser-trace — wholedoc-after.log — whole-document pass: #gameHeader now Inter; 12 residual gold hits all inside the hidden pre-lesson join card
+- w2-repair-1-npm-test — note — npm test in the scratch copy — 468/468 pass, exit 0
+- w2-repair-1-shot-sellout-before — screenshot — BEFORE — Night-4 sellout, gold-bordered amber headline box, Bebas FULL HOUSE
+- w2-repair-1-shot-sellout-after — screenshot — AFTER — same Night-4 sellout, violet-only, Inter 800 FULL HOUSE, legacy result card chrome gone
+- w2-repair-1-shot-night-before — screenshot — BEFORE — ordinary settled night, headline in Bebas Neue
+- w2-repair-1-shot-night-after — screenshot — AFTER — ordinary settled night, headline in Inter
+- w2-repair-1-shot-prelock-before — screenshot — BEFORE — pre-lock state, Bebas night eyebrow and legacy dial chrome
+- w2-repair-1-shot-prelock-after — screenshot — AFTER — pre-lock state, Inter throughout, violet dial only
 
 ## Claim ledger
 
