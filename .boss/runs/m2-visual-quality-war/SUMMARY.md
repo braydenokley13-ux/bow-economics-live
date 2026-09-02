@@ -5,8 +5,8 @@ Level: **3 — QUALITY_WAR**
 Intent: **build-to-ship**  
 Wave: **2**  
 Base: `claude/economics-boss-module-2-8s591f@128236a2856e847ac38129a8b318bd13e7b2ebce`  
-Event head: `177:65670e9db70bafcd9b520eebff08fd1ff4fa4efb40daedb3434e86bb5bc8555a`  
-Updated: 2026-09-01T21:29:14.170Z
+Event head: `192:e8b8e02c7e01d2c9fe187a0950458f1d0d577b3ad7365a9da57a09f7f3507487`  
+Updated: 2026-09-02T16:07:35.083Z
 
 ## Founder intent
 
@@ -31,7 +31,7 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 ## Role status
 
 - builder — builder-a — completed-with-concerns — claude-opus-5
-- builder — builder-b — active — claude-opus-5
+- builder — builder-b — completed-with-concerns — claude-opus-5
 - builder — builder-c — completed-with-concerns — claude-opus-5
 - lead-integrator — boss-lead — active — claude-fable-5-1
 - sports-reality-director — sports-reality-w2 — completed-with-concerns — claude-sonnet-5
@@ -84,6 +84,20 @@ Full House's student surface (/play, every state from lobby to complete) can be 
 - lane-c-source-limb-mutation — note — clientClaims source test: mutation (projection + target literal appended to board/main.ts, then restored) fails with three hits
 - lane-c-source-limb-clean — note — clientClaims source test clean at head (27 allowlisted non-claims with reasons)
 - lane-c-npm-test — note — cd runtime && npm test after Lane C: 468/468 (lane-run log; authentic command record re-taken by the lead at the wave head)
+- w2-npm-test-6c4c7cc — test — cd runtime && npm test at wave-2 head 6c4c7cc (build + full suite)
+- w2-e2e-6c4c7cc — test — node runtime/scripts/e2e-m2l1.cjs at wave-2 head 6c4c7cc with the R-1 client claim limb active (4-desk arc + 12-desk class scale)
+- w2-e2e-misclick-6c4c7cc — test — node runtime/scripts/e2e-m2l1-misclick.cjs at wave-2 head 6c4c7cc
+- lane-b-diff — git-diff — Lane B diff: play/main.ts 31fb8c8..3adcbda plus m2.css after Lane A handoff 46a88e1..3adcbda (rebuilt Full House /play: desk rail, hero dial, results state, arena outcome, sellout beat, PIN demotion)
+- lane-b-measurements — note — Lane B DOM measurements at 1366x768 (wide) and 1024x600 (tight): price readout 68px/64px, PIN 16px, LOCK bottom 392/367, blind note 14.5px, result headline+WHO CAME within 768, vocabulary hits 0 on N1 pre-lock — builder's own numbers, not accepted
+- lane-b-shots-manifest — browser-trace — Lane B builder screenshot set (17 frames, lobby→complete, 1366 + 1024x600) — builder captures, superseded by Browser QA's wave-2 set
+- lane-b-shot-prelock-1366 — screenshot — Lane B: Night 1 pre-lock at 1366x768 — hero price, desk rail, LOCK IT IN with blind note
+- lane-b-shot-prelock-1024 — screenshot — Lane B: Night 1 pre-lock at 1024x600 with the PIN card un-collapsed
+- lane-b-shot-result-1366 — screenshot — Lane B: Night 1 results state at 1366x768 (#fhResult owns the desk; NEXT below)
+- lane-b-shot-sellout-1366 — screenshot — Lane B: Night 4 sellout results state at 1366x768 (FULL HOUSE beat, turned-away count)
+- lead-e2e-repair-6c4c7cc — note — Boss lead e2e repair at 6c4c7cc: the e2e read the sellout beat and spend verdict AFTER pressing NEXT and took its NEXT handle before the desk's poll re-rendered; the R-1 limb matched hidden quantities as substrings (a settled '1,232' read as hidden sens 232). Fixed in runtime/scripts/e2e-m2l1.cjs; both mutations still bite at Night 1
+- w2-mutation-a-6c4c7cc — note — R-1 mutation A at head 6c4c7cc (whole-figure limb): injected the true Night-1 turnout (14,142 fans) into the pre-lock render of a scratch dist — limb FAILED the run at Night 1 desk1 (exit 1)
+- w2-mutation-b-6c4c7cc — note — R-1 mutation B at head 6c4c7cc: injected 'Target: $110–$120' into the pre-lock render of a scratch dist — limb FAILED the run on the forbidden word at Night 1 desk1 (exit 1)
+- w2-git-diff-6c4c7cc — git-diff — Wave-2 diff from the wave-1 checkpoint 31fb8c8 to the prosecution head 6c4c7cc (runtime + design + contract); diffstat alongside
 
 ## Claim ledger
 

@@ -21,7 +21,7 @@
     "dirtyPaths": []
   },
   "createdAt": "2026-09-01T20:13:41.264Z",
-  "updatedAt": "2026-09-01T21:29:14.170Z",
+  "updatedAt": "2026-09-02T16:07:35.083Z",
   "currentWave": 2,
   "waves": {
     "1": {
@@ -1356,11 +1356,27 @@
           "model": "claude-opus-5",
           "reason": "Lane B: Full House /play rebuild to the contract",
           "ephemeral": false,
-          "status": "active",
+          "status": "completed-with-concerns",
           "activatedAt": "2026-09-01T20:45:35.225Z",
-          "completedAt": null,
-          "sections": null,
-          "evidenceIds": [],
+          "completedAt": "2026-09-02T16:07:18.687Z",
+          "sections": {
+            "what-changed": "Lane B (builder-b, claude-opus-5) rebuilt the Full House student surface in runtime/src/client/play/main.ts against VISUAL_REFERENCE_CONTRACT.md §A–§D/§G in three commits: 411affa (desk rail, hero price dial, results state #fhResult/#fhNextNight that owns the desk after the bell, arena outcome via shared/arena.ts, factual sellout beat, module `uiCopy`/`resultHeadline` consumed instead of client literals, html[data-module=m2] gate so Module 1 renders untouched), b915252 (a desk joining mid-window lands on the dials), 3adcbda (rejoin PIN demoted out of the hero slot, A5/B9; m2.css touched under the handed-over reservation). The builder was terminated by a provider rate limit before delivering its own final report; this record is compiled by the Boss lead from its commits, its measurements.json and its screenshot set, and claims nothing the builder did not measure.",
+            "evidence": "lane-b-diff (git-diff), lane-b-measurements (builder DOM measurements: price readout 68px at 1366x768 / 64px at 1024x600, PIN 16px, LOCK bottom 392 / 367, blind note 14.5px, N1 result headline 22px + WHO CAME 64px inside 768, vocabulary hits 0 on N1 pre-lock), lane-b-shots-manifest + four key frames, lead-e2e-repair-6c4c7cc (the e2e's own defects against the results state and the limb's substring match — script repairs by the lead, no product change), w2-mutation-a/b-6c4c7cc (R-1 limb bites under both mutations on the rebuilt surface). Authentic head command records for npm test / e2e / misclick are recorded separately by the lead as w2-npm-test-*, w2-e2e-*, w2-e2e-misclick-*.",
+            "claims": "Builder-level only, none accepted: (1) results state renders after every bell and NEXT clears it (e2e drives it on 4 + 12 desks); (2) hero price is the largest figure pre-lock and the PIN is strictly smaller (builder-measured 68 vs 16); (3) LOCK IT IN and its blind note sit inside the first viewport at both shapes (builder-measured bottoms 392/768 and 471/600 with PIN card visible); (4) forbidden vocabulary 0 on the N1 pre-lock state (builder-measured, one state only). Whether the fold/figure-count/contrast/animation rows of §H hold at every night incl. sellout and zero-turnout is NOT measured by the builder — that is Browser QA's and the visual critic's to take.",
+            "known-gaps": "(a) No builder report — the persona's own deviation log (REFERENCE DECISION → PROBLEM → REPLACEMENT) was not written; the visual critic must reconstruct deviations from the diff against the contract. (b) The desk re-renders on its ~1.2s poll while the results state is on screen (the e2e saw a detached NEXT handle); a human tap racing a re-render is a regression-hunter question. (c) Only the N1 states were measured at 1024x600; sellout and zero-turnout folds unmeasured. (d) The e2e's screens-l1 set was refreshed by the lead's passing run, not by an independent capture."
+          },
+          "evidenceIds": [
+            "lane-b-diff",
+            "lane-b-measurements",
+            "lane-b-shots-manifest",
+            "lane-b-shot-prelock-1366",
+            "lane-b-shot-prelock-1024",
+            "lane-b-shot-result-1366",
+            "lane-b-shot-sellout-1366",
+            "lead-e2e-repair-6c4c7cc",
+            "w2-mutation-a-6c4c7cc",
+            "w2-mutation-b-6c4c7cc"
+          ],
           "cost": null
         },
         "lane-c-module-claims": {
@@ -1613,7 +1629,21 @@
         "lane-c-e2e-clean",
         "lane-c-source-limb-mutation",
         "lane-c-source-limb-clean",
-        "lane-c-npm-test"
+        "lane-c-npm-test",
+        "w2-npm-test-6c4c7cc",
+        "w2-e2e-6c4c7cc",
+        "w2-e2e-misclick-6c4c7cc",
+        "lane-b-diff",
+        "lane-b-measurements",
+        "lane-b-shots-manifest",
+        "lane-b-shot-prelock-1366",
+        "lane-b-shot-prelock-1024",
+        "lane-b-shot-result-1366",
+        "lane-b-shot-sellout-1366",
+        "lead-e2e-repair-6c4c7cc",
+        "w2-mutation-a-6c4c7cc",
+        "w2-mutation-b-6c4c7cc",
+        "w2-git-diff-6c4c7cc"
       ],
       "claimIds": [],
       "dissentIds": [
@@ -3654,6 +3684,258 @@
       },
       "recordedAt": "2026-09-01T21:15:45.580Z",
       "actor": "builder-c"
+    },
+    "w2-npm-test-6c4c7cc": {
+      "id": "w2-npm-test-6c4c7cc",
+      "wave": 2,
+      "kind": "test",
+      "label": "cd runtime && npm test at wave-2 head 6c4c7cc (build + full suite)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-npm-test-6c4c7cc--record.json",
+      "sha256": "55da49f5d3f0c10a0e5853fbe9888c1d4f3a17f0a5f6c246fb99bb06638814c4",
+      "size": 115886,
+      "metadata": {
+        "command": [
+          "npm",
+          "test",
+          "--prefix",
+          "runtime"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T16:02:55.408Z",
+      "actor": "boss-lead"
+    },
+    "w2-e2e-6c4c7cc": {
+      "id": "w2-e2e-6c4c7cc",
+      "wave": 2,
+      "kind": "test",
+      "label": "node runtime/scripts/e2e-m2l1.cjs at wave-2 head 6c4c7cc with the R-1 client claim limb active (4-desk arc + 12-desk class scale)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-e2e-6c4c7cc--record.json",
+      "sha256": "cd6dc85232c33563590c5f445fe67b76d57e242b6c93787b63051ab02a19a038",
+      "size": 11380,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T16:04:22.492Z",
+      "actor": "boss-lead"
+    },
+    "w2-e2e-misclick-6c4c7cc": {
+      "id": "w2-e2e-misclick-6c4c7cc",
+      "wave": 2,
+      "kind": "test",
+      "label": "node runtime/scripts/e2e-m2l1-misclick.cjs at wave-2 head 6c4c7cc",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-e2e-misclick-6c4c7cc--record.json",
+      "sha256": "5bdab4ea37c703343820a7456c70397ac54656663f7af3ac6469df0802a12aa0",
+      "size": 845,
+      "metadata": {
+        "command": [
+          "node",
+          "runtime/scripts/e2e-m2l1-misclick.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null
+      },
+      "recordedAt": "2026-09-02T16:04:29.102Z",
+      "actor": "boss-lead"
+    },
+    "lane-b-diff": {
+      "id": "lane-b-diff",
+      "wave": 2,
+      "kind": "git-diff",
+      "label": "Lane B diff: play/main.ts 31fb8c8..3adcbda plus m2.css after Lane A handoff 46a88e1..3adcbda (rebuilt Full House /play: desk rail, hero dial, results state, arena outcome, sellout beat, PIN demotion)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-b-diff--lane-b.diff",
+      "sha256": "3c128298450e159c9e9ed0c44f23fdf6524ca0abb8cb24e0c4936e00d7b47d2c",
+      "size": 112471,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "play-surface"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:15.094Z",
+      "actor": "builder-b"
+    },
+    "lane-b-measurements": {
+      "id": "lane-b-measurements",
+      "wave": 2,
+      "kind": "note",
+      "label": "Lane B DOM measurements at 1366x768 (wide) and 1024x600 (tight): price readout 68px/64px, PIN 16px, LOCK bottom 392/367, blind note 14.5px, result headline+WHO CAME within 768, vocabulary hits 0 on N1 pre-lock — builder's own numbers, not accepted",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-b-measurements--measurements.json",
+      "sha256": "e4bc36d79007620e3816b542dfdbafb85bf0b857da8814b2a4d054fb15b18240",
+      "size": 14109,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "measurements",
+          "builder-self-measured"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:15.378Z",
+      "actor": "builder-b"
+    },
+    "lane-b-shots-manifest": {
+      "id": "lane-b-shots-manifest",
+      "wave": 2,
+      "kind": "browser-trace",
+      "label": "Lane B builder screenshot set (17 frames, lobby→complete, 1366 + 1024x600) — builder captures, superseded by Browser QA's wave-2 set",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-b-shots-manifest--shots-manifest.txt",
+      "sha256": "ae4f5b22991662b736dd4e12cafd6922f7a51db3697a7bc95dd00a669d12ac35",
+      "size": 618,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "builder-captures"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:15.670Z",
+      "actor": "builder-b"
+    },
+    "lane-b-shot-prelock-1366": {
+      "id": "lane-b-shot-prelock-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Lane B: Night 1 pre-lock at 1366x768 — hero price, desk rail, LOCK IT IN with blind note",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-b-shot-prelock-1366--03-play-n1-prelock-1366.png",
+      "sha256": "c9638ff7cf8cc3d7b22696208128e94c6627ac5737ea02e28ed07225c4322aa9",
+      "size": 160473,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "viewport-1366x768"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:15.935Z",
+      "actor": "builder-b"
+    },
+    "lane-b-shot-prelock-1024": {
+      "id": "lane-b-shot-prelock-1024",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Lane B: Night 1 pre-lock at 1024x600 with the PIN card un-collapsed",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-b-shot-prelock-1024--03b-play-n1-prelock-1024x600.png",
+      "sha256": "02138777740ae41a5b81e57988fbd45065ddafd4c512af1419bc571131cad5d8",
+      "size": 117410,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "viewport-1024x600"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:16.186Z",
+      "actor": "builder-b"
+    },
+    "lane-b-shot-result-1366": {
+      "id": "lane-b-shot-result-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Lane B: Night 1 results state at 1366x768 (#fhResult owns the desk; NEXT below)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-b-shot-result-1366--05-play-n1-result-1366.png",
+      "sha256": "83ce8cbe33c9a675b256d86fd24c27b373718316a1c0d21d1893ecbb8f18edc0",
+      "size": 225792,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "viewport-1366x768",
+          "results-state"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:16.475Z",
+      "actor": "builder-b"
+    },
+    "lane-b-shot-sellout-1366": {
+      "id": "lane-b-shot-sellout-1366",
+      "wave": 2,
+      "kind": "screenshot",
+      "label": "Lane B: Night 4 sellout results state at 1366x768 (FULL HOUSE beat, turned-away count)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lane-b-shot-sellout-1366--07-play-n4-result-sellout-1366.png",
+      "sha256": "3a230f3865611a48c95bcc60aee6898918020c47a53a20df3ac15e1ecc5ed7bd",
+      "size": 234946,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "viewport-1366x768",
+          "sellout"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:16.844Z",
+      "actor": "builder-b"
+    },
+    "lead-e2e-repair-6c4c7cc": {
+      "id": "lead-e2e-repair-6c4c7cc",
+      "wave": 2,
+      "kind": "note",
+      "label": "Boss lead e2e repair at 6c4c7cc: the e2e read the sellout beat and spend verdict AFTER pressing NEXT and took its NEXT handle before the desk's poll re-rendered; the R-1 limb matched hidden quantities as substrings (a settled '1,232' read as hidden sens 232). Fixed in runtime/scripts/e2e-m2l1.cjs; both mutations still bite at Night 1",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/lead-e2e-repair-6c4c7cc--e2e-head.log",
+      "sha256": "49ada906d9d4329c069216b069cfe15e410b33ce72c825be0a0866471de59499",
+      "size": 11047,
+      "metadata": {
+        "tags": [
+          "lane-b",
+          "e2e",
+          "lead-repair"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:17.182Z",
+      "actor": "builder-b"
+    },
+    "w2-mutation-a-6c4c7cc": {
+      "id": "w2-mutation-a-6c4c7cc",
+      "wave": 2,
+      "kind": "note",
+      "label": "R-1 mutation A at head 6c4c7cc (whole-figure limb): injected the true Night-1 turnout (14,142 fans) into the pre-lock render of a scratch dist — limb FAILED the run at Night 1 desk1 (exit 1)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-mutation-a-6c4c7cc--e2e-mutation-A.log",
+      "sha256": "d3b400172642aa81279a6b16750ef76894e45f557aedf79bfc457eb6d507de48",
+      "size": 1354,
+      "metadata": {
+        "tags": [
+          "r-1",
+          "mutation",
+          "limb-bites"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:17.778Z",
+      "actor": "builder-b"
+    },
+    "w2-mutation-b-6c4c7cc": {
+      "id": "w2-mutation-b-6c4c7cc",
+      "wave": 2,
+      "kind": "note",
+      "label": "R-1 mutation B at head 6c4c7cc: injected 'Target: $110–$120' into the pre-lock render of a scratch dist — limb FAILED the run on the forbidden word at Night 1 desk1 (exit 1)",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-mutation-b-6c4c7cc--e2e-mutation-B.log",
+      "sha256": "575ee9dbb21d2166c74027f83570fe017989b0def836654d921525a83640dee0",
+      "size": 1366,
+      "metadata": {
+        "tags": [
+          "r-1",
+          "mutation",
+          "limb-bites"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:18.216Z",
+      "actor": "builder-b"
+    },
+    "w2-git-diff-6c4c7cc": {
+      "id": "w2-git-diff-6c4c7cc",
+      "wave": 2,
+      "kind": "git-diff",
+      "label": "Wave-2 diff from the wave-1 checkpoint 31fb8c8 to the prosecution head 6c4c7cc (runtime + design + contract); diffstat alongside",
+      "path": ".boss/runs/m2-visual-quality-war/evidence/w2-git-diff-6c4c7cc--wave2.diff",
+      "sha256": "bce0b6c2e5ef7e7d7e7883fbe0918e3426c80b6e335b5c3251f6759a763312ed",
+      "size": 306700,
+      "metadata": {
+        "tags": [
+          "wave-2",
+          "git-diff"
+        ]
+      },
+      "recordedAt": "2026-09-02T16:07:35.083Z",
+      "actor": "boss-lead"
     }
   },
   "claims": {},
@@ -3937,11 +4219,11 @@
     "agentsActivated": 24,
     "gateFailures": 1,
     "claimsContradicted": 0,
-    "evidenceRecorded": 113,
+    "evidenceRecorded": 127,
     "tokenEstimate": 0,
     "toolCalls": 0
   },
-  "eventCount": 177,
-  "eventHead": "65670e9db70bafcd9b520eebff08fd1ff4fa4efb40daedb3434e86bb5bc8555a",
+  "eventCount": 192,
+  "eventHead": "e8b8e02c7e01d2c9fe187a0950458f1d0d577b3ad7365a9da57a09f7f3507487",
   "warnings": []
 }

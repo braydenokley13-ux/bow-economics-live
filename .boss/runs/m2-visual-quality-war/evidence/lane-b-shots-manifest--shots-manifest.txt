@@ -1,0 +1,17 @@
+01-lobby-1366.png  1366x768
+02-hook-1366.png  1366x768
+03-play-n1-prelock-1366.png  1366x768
+03b-play-n1-prelock-1024x600.png  1024x600
+04-play-locked-waiting-1366.png  1366x768
+05-play-n1-result-1366.png  1366x768
+05b-play-n1-result-1024x600.png  1024x600
+05c-play-n2-prelock-1366.png  1366x768
+06-play-n4-prelock-bowl-1366.png  1366x768
+07-play-n4-result-sellout-1366.png  1366x768
+08-play-books-closed-1366.png  1366x768
+09-reveal-1366.png  1366x768
+09b-reveal-stage7-1366.png  1366x768
+10-adapt-1366.png  1366x768
+11-counterfactual-1366.png  1366x768
+12-synthesis-1366.png  1366x768
+13-complete-1366.png  1366x768
