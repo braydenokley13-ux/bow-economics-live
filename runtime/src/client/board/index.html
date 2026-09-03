@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BOW Economics — Board</title>
+<!-- the projector — blue, so it is unmistakable in a strip of tabs. Three surfaces run side by side in one teacher's tab strip. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%234da2e8%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2223%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2221%22%20font-weight%3D%22700%22%20text-anchor%3D%22middle%22%20fill%3D%22%230b0e14%22%3EB%3C%2Ftext%3E%3C%2Fsvg%3E" />
 <link rel="stylesheet" href="/shared/theme.css" />
 <link rel="stylesheet" href="/shared/m2.css" />
 <style>
@@ -31,6 +33,20 @@
   .code { font-family: var(--font-number); font-size: 12vw; font-weight: 800; letter-spacing: .05em; color: var(--accent-gold); }
   .banner { font-size: 2.4vw; color: var(--ink-primary); }
   #hud { position: fixed; top: 14px; right: 18px; font-size: 12px; color: var(--ink-muted); z-index: 2; }
+  /* FINAL CALL, projector scale. The room's shared clock: whatever is on the
+     board, everybody in the room is counting down off the same number. Sits
+     above every lesson renderer so no frame has to make space for it. */
+  #fcBand { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: none;
+    align-items: baseline; justify-content: center; gap: 32px; padding: 18px 40px;
+    background: linear-gradient(180deg, rgba(10,8,4,0) 0%, rgba(10,8,4,0.92) 45%);
+    border-top: 2px solid var(--accent-gold); }
+  #fcBand.on { display: flex; }
+  #fcBandLabel { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .16em;
+    font-size: clamp(20px, 2.4vw, 34px); color: var(--accent-gold); }
+  #fcBandClock { font-family: var(--font-number); font-weight: 800; font-variant-numeric: tabular-nums;
+    font-size: clamp(46px, 7vw, 108px); line-height: 1; color: var(--ink-primary); }
+  #fcBand.late #fcBandClock { color: var(--over-the-line); }
+  #fcBandSub { font-size: clamp(14px, 1.3vw, 20px); color: var(--ink-secondary); }
 
   /* Bar chart sizing note: `.bars` deliberately keeps the default `align-items: stretch` (do not
      set flex-end here) so every `.barwrap` gets a *definite* height equal to the container's
@@ -399,15 +415,13 @@
      floor — and together they reclaim roughly 11px at 768, so another wrapped
      line of the summary still lands inside the frame. Declared AFTER .hl-tight
      because the two selectors have identical specificity. */
-  #stage.hl-ledger-frame { padding-top: 1vh; padding-bottom: 1vh; }
-  #stage.hl-ledger-frame .label { margin-bottom: .2vh; }
-  #stage.hl-ledger-frame .hl-bar-pager { margin-top: .4vh; }
-  #stage.hl-ledger-frame .hl-ledger { gap: .45vh; margin-top: .5vh; }
-  #stage.hl-ledger-frame .hl-ledger-bars { gap: .18vh; }
-  #stage.hl-ledger-frame .hl-legend { margin-top: .5vh; }
-  #stage.hl-ledger-frame .hl-summary { margin-top: .45vh; }
-  #stage.hl-ledger-frame .hl-foot { margin-top: .45vh; }
-  #stage.hl-ledger-frame .exit-prompt { margin-top: .4vh; }
+  /* REVEAL stage 2 used to need a whole-frame squeeze to survive a 190-word
+     computed summary at 1366x768. The summary is now the finding rather than
+     the argument (see `Claimed.board` in hostTheLeague.ts), the frame clears
+     the projector with room to spare, and squeezing it further would only make
+     a frame that fits look like a frame that barely fits. `hl-ledger-frame` is
+     kept as a hook with no compression in it, so the guard in e2e-m2l2 can
+     still identify the beat. */
 
   .hl-club-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .7vw; max-width: 88vw; margin-top: 1.4vh; }
   .hl-club-grid.tight { grid-template-columns: repeat(7, 1fr); gap: .5vw; margin-top: 1vh; }
@@ -503,7 +517,19 @@
   .hl-means { display: flex; align-items: flex-end; gap: 3vw; height: 30vh; margin-top: 1.6vh; }
   .hl-mean-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: .6vh; height: 100%; width: 9vw; }
   .hl-mean-num { font-family: var(--font-number); font-size: 2.6vw; font-weight: 800; color: var(--accent-gold); }
+  /* The standing rule chip on REVEAL stage 5, sharing L3's rule-in-force
+     treatment: this is the same kind of object — the rule the room is arguing
+     under — so it should look like one. */
+  .hl-rule-chip { font-size: 1.4vw; letter-spacing: .06em; margin-bottom: 1.2vh; }
+  .hl-mean-track { position: relative; width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: flex-end; }
   .hl-mean-bar { width: 100%; background: linear-gradient(180deg, var(--accent-gold), rgba(244,185,66,0.35)); border-radius: 6px 6px 0 0; }
+  /* The comparison the sentence under the chart makes, drawn. Spills a little
+     past each column so three segments read as one rule across the chart. */
+  .hl-mean-base { position: absolute; left: -1.6vw; right: -1.6vw; height: 0; border-top: 2px dashed rgba(232,236,244,0.55); }
+  /* Beside the line, clear of the chart: sitting it above the line put it
+     through the last column's own percentage. */
+  .hl-mean-base span { position: absolute; left: calc(100% + .9vw); bottom: -.85vh; font-size: 1.15vw;
+    color: var(--ink-secondary); letter-spacing: .05em; white-space: nowrap; }
   .hl-mean-lbl { font-size: 1.5vw; color: var(--ink-secondary); letter-spacing: .08em; }
 </style>
 </head>
@@ -511,6 +537,11 @@
 <div id="backdrop"></div>
 <div id="stage"><div class="label">Connecting…</div></div>
 <div id="hud"></div>
+<div id="fcBand">
+  <span id="fcBandLabel">Final call</span>
+  <span id="fcBandClock"></span>
+  <span id="fcBandSub">Locking in now still counts.</span>
+</div>
 <script type="module" src="/board/main.js"></script>
 </body>
 </html>

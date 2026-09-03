@@ -9,13 +9,26 @@
  * dialog AND discarded the $56 the pair had dialled, settling all five nights
  * at the flat season-plan price.
  *
- * This asserts the repair on both limbs:
+ * This asserts the repair on three limbs:
  *   1. a confirm() now guards the click, names the night, the desks that have
  *      not locked and the nights that will never happen — and CANCELLING it
  *      leaves the session in PLAY with nothing settled;
- *   2. accepting it settles the currently-open night on the dials as they
- *      stand ($56), not on the plan price, per D17's auto-resolve-on-exit
- *      precedent.
+ *   2. accepting it settles every night the same way the teacher's own bell
+ *      does: an uncommitted desk goes to its season plan price with nothing
+ *      spent, marked AUTO. This limb used to assert the OPPOSITE — that the
+ *      exit honoured the $56 on the dial — and that divergence was the defect,
+ *      not the repair: the same room, the same student action, and two
+ *      different economies depending on which control the teacher happened to
+ *      press. Reproduced directly against the module (a desk showing $56
+ *      settled at $56 through the exit and $24 through the bell, which is the
+ *      path a real class takes every night). D17 governs M1 L2's unresolved
+ *      BIDS; it does not license M2 from having one fallback. The product
+ *      promises the bell's version in three places — the bell's own confirm
+ *      line, the WATCH FOR flag, and the desk's AUTO badge — and honouring an
+ *      unlocked dial would dissolve LOCK IT IN, the signature commitment beat
+ *      of all three Module 2 lessons;
+ *   3. and because that fallback is real, the misclick has to be survivable:
+ *      Restore puts the five nights back.
  *
  *   node runtime/scripts/e2e-m2l1-misclick.cjs
  */
@@ -25,6 +38,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { chromium } = require("/opt/node22/lib/node_modules/playwright");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.resolve(__dirname, "..");
 const PORT = 4316;
 const BASE = `http://localhost:${PORT}`;
@@ -38,6 +52,7 @@ async function boot() {
   fs.mkdirSync(SCRATCH, { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
   const snapshot = path.join(SCRATCH, `snapshot-m2l1-misclick-${Date.now()}.json`);
+  await assertPortFree(PORT, require("path").basename(__filename));
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: snapshot },
     stdio: ["ignore", "pipe", "pipe"],
@@ -125,28 +140,62 @@ async function main() {
     console.log("[misclick] cancelled: session is still in PLAY, nothing settled");
     await teach.screenshot({ path: path.join(SCREEN_DIR, "misclick-02-teach-cancelled.png"), fullPage: true });
 
-    /* ---- limb 2: accepting honours the dials the pair actually set ---- */
+    /* ---- limb 2: accepting settles exactly as the night bell does ---- */
+    // The warning the teacher is agreeing to has to be TRUE. It used to promise
+    // the dial would be honoured, which stopped being the case when the two
+    // close paths were unified onto the bell's policy.
+    assert.ok(
+      /season plan price with nothing spent, marked AUTO/.test(dialogText),
+      `the warning does not state the real fallback: ${dialogText}`,
+    );
+    assert.ok(
+      !/whatever price is on/.test(dialogText),
+      `the warning still promises the pair's dial will be honoured, which is no longer what happens: ${dialogText}`,
+    );
+
+    const teacherKey = await teach.evaluate(() => localStorage.getItem("bow-teach-session-key"));
+    const readTeacher = async () =>
+      (await (await fetch(`${BASE}/api/sessions/${code}/teacher`, { headers: { Authorization: `Bearer ${teacherKey}` } })).json());
+
     teach.once("dialog", async (d) => d.accept());
     await teach.click("#btnAdvance");
     await teach.waitForSelector(".phasechip.current:text('REVEAL')");
     await play.waitForFunction(() => document.body.innerText.includes("Your five nights"), null, { timeout: 20000 });
-    const playText = await play.evaluate(() => document.body.innerText);
     await play.screenshot({ path: path.join(SCREEN_DIR, "misclick-03-play-after-advance.png"), fullPage: true });
-    assert.ok(
-      playText.includes(`$${SET_PRICE}`),
-      `the pair's own $${SET_PRICE} was discarded — this is the D1 defect, not the repair`,
+
+    const settled = await readTeacher();
+    const desk = settled.view.desks[0];
+    assert.equal(desk.nightsPlayed, 5, `expected all five nights settled by the exit, got ${desk.nightsPlayed}`);
+    assert.notEqual(
+      desk.price,
+      SET_PRICE,
+      `the exit honoured an unlocked $${SET_PRICE} dial — the bell would not have, and one lesson cannot have two fallbacks`,
     );
-    const teacherKey = await teach.evaluate(() => localStorage.getItem("bow-teach-session-key"));
-    const teacher = await (
-      await fetch(`${BASE}/api/sessions/${code}/teacher`, { headers: { Authorization: `Bearer ${teacherKey}` } })
-    ).json();
-    const nights = teacher.view.desks[0].nightsPlayed;
-    assert.equal(nights, 5, `expected all five nights settled by the exit, got ${nights}`);
-    console.log(`[misclick] accepted: five nights settled, and Night 1 kept the pair's own $${SET_PRICE}`);
+
+    // The pair's own screen has to SAY the night was settled for them rather
+    // than by them. A number appearing with no explanation is how a pair
+    // concludes the game cheated.
+    const history = await play.evaluate(() => document.body.innerText);
+    assert.ok(
+      /AUTO/i.test(history),
+      "the desk's nights are not marked AUTO — a pair whose dial was not used must be told so, not left to infer it",
+    );
+    console.log(`[misclick] accepted: five nights settled at the plan price ($${desk.price}), marked AUTO — same as the bell`);
+
+    /* ---- limb 3: and the misclick is recoverable ---- */
+    // An honest fallback that cannot be undone is still a class lost to one
+    // stray click.
+    teach.once("dialog", async (d) => d.accept());
+    await teach.click("#btnRestore");
+    await teach.waitForSelector(".phasechip.current:text('PLAY')", { timeout: 15000 });
+    const restored = (await readTeacher()).view.desks[0];
+    assert.equal(restored.nightsPlayed, 0, `Restore did not bring the five nights back (nightsPlayed ${restored.nightsPlayed})`);
+    assert.equal(restored.price, SET_PRICE, `Restore did not bring back the pair's own $${SET_PRICE} on the dial`);
+    console.log(`[misclick] restored: back in PLAY, five nights unplayed, the pair's $${SET_PRICE} still on the dial`);
 
     assert.deepEqual(errors, [], `console errors: ${errors.join(" | ")}`);
     console.log("[misclick] zero console errors");
-    console.log("[misclick] PASS — the misclick is guarded, cancellable, and no longer throws away a set price.");
+    console.log("[misclick] PASS — the misclick is guarded, cancellable, honestly described, and recoverable.");
   } catch (error) {
     console.error("[misclick] FAILED:", error);
     console.error("[misclick] server log tail:\n" + log().split("\n").slice(-12).join("\n"));

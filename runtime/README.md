@@ -1,7 +1,7 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (458 passing, see below), `npm run build` and `npm test` are
+real tests (595 passing, see below), `npm run build` and `npm test` are
 green, and `m1l1-draft-day`, `m1l2-trade-deadline`, and `m1l3-free-agency`
 have all been driven end-to-end with Playwright against the real compiled
 server (L1: create → join → advance → build → lock → reveal → shock → adapt
@@ -223,6 +223,147 @@ named reveal beats with a line for each, what the student screen is offering,
 and the simplifications ledger. Ported from `DESIGN_C_FIRSTPRINCIPLES.md`'s
 "TEACHER FLOW"; see `teacherDirector()` in `fullHouse.ts`. It is intelligence,
 not a script to read aloud.
+
+**The room read.** While a night is open `/teach` carries THE ROOM: the
+spread of the committed dials as a sentence a teacher can say standing up, a
+histogram that stacks decisions (solid) against undecided dial positions
+(ghosted) so the two are never confused, and movement chips. Two rules it
+keeps. The spread describes COMMITTED decisions only — measured over every
+dial it read "the room is between $16 and $24" at nought-of-six locked, which
+is the two season plan defaults, not a spread anybody chose. And movement is
+only claimed for a desk whose previous night was its own decision: a night
+the bell auto-committed is not a price anyone picked, so moving off it is not
+adaptation. It is teacher-private by construction — it comes off `teacherView`
+and the projector never sees it, because the room committing blind is what
+makes the staged reveal land. `roomRead()` in `fullHouse.ts`; browser proof
+`scripts/e2e-teach-room.cjs`.
+
+Every M2 lesson with a live decision window now has one, and each reads its own
+economics rather than reusing one panel: L2 bins the reinvest dial and names the
+free riders; L3 reads two different rooms inside one PLAY phase — the rule
+rounds as a BARGAINING spread (converging or dug in, movement against a desk's
+own previous proposal, an abstention reported separately) and the season as a
+COMPLIANCE spread (who is about to be bitten by the rule this room voted in).
+The panel heading is authored by the module, because "locked in" is wrong in a
+stage where desks propose a number at the league. Browser proofs in
+`scripts/e2e-m2l2.cjs` and `scripts/e2e-m2l3.cjs` assert the read is on the
+console and on neither the projector nor a desk (D30).
+
+**Linking a session that has not finished.** The link picker lists live
+sessions beside finished ones and the seed is read at creation time, so a
+mis-click used to carry a half-played league into the next lesson silently. It
+is still allowed — a period that ran long, a class split over two days — but the
+picker now says what it means before the room is created and stands down for a
+finished session. Browser proof in `scripts/e2e-l2.cjs` (D39).
+
+**The desks, named.** Beside THE ROOM, `/teach` carries THE DESKS: one chip per
+live desk with the module's own handle, the pair actually sitting there, what
+that desk is doing right now, and at most one note. THE ROOM answers *what shape
+is the room in* and deliberately names nobody, because shape is what a teacher
+says out loud; THE DESKS answers *who do I walk to*, which the console used to
+leave as a join a teacher made in their head, standing up, from a name list with
+no desks and a WATCH FOR list with no names. Modules own the vocabulary — a desk
+in L3's offer rounds has a NUMBER IN, it has not "locked" anything — and own
+which of their notes is a reason to walk over rather than context for reading
+that desk's books, so a pair who joined at Night 2 is annotated but never
+reported as having "never once locked a night of its own". A desk whose device
+has stopped talking is marked from the SERVER's reading of the gap, in buckets
+(30s+ / 1m+ / 5m+ / 15m+) that are part of the teacher payload's ETag: a
+millisecond count would have frozen inside a conditionally-cached body and then
+lied about how long, and this laptop's own clock would have read the whole room
+as gone on a Chromebook that had drifted. It grows with the class, so it scrolls
+inside its own card — proven at 32 desks — and a filter collapses it to the
+desks that need the teacher. Teacher-only by construction: `boardView` is never
+handed it. Unit proof in the three module test files, browser proof at Night 1
+in `scripts/e2e-m2l1.cjs`, at 32 desks in `scripts/e2e-full-room.cjs`, and the
+quiet marker in `scripts/e2e-away.cjs` (D34, D35, D36).
+
+**The projector, on the console.** `/teach` carries a live mirror of `/board`
+for the room it is driving: an iframe of the board itself, scaled by transform,
+inert (`pointer-events: none`), collapsible, gone when the session ends. A
+teacher directing a class faces the room, which means facing away from the
+board — the director panel can say what is on the projector, only the projector
+can show whether the reveal landed. It is an iframe rather than a second
+renderer so it cannot drift from what the class is looking at, and it carries
+nothing private for the same structural reason. Browser proof: the
+projector-preview assertions in `scripts/e2e-m2l1.cjs`, at HOOK and again at
+REVEAL stage 5 (D31).
+
+**A surface never moves backwards.** Polls are serialised against each other,
+but an action is a different request on a different socket: a poll issued before
+a lock can answer after it and draw the pair's own committed decision back into
+an unlocked dial. Every surface now refuses a frame older than one it has
+already drawn, compared on the session version the server never lowers, scoped
+to the room and reset when pointed at another one; equal versions pass, and the
+frame returned by an action or a teacher control goes through the same gate
+because it is the frame that sets the floor. `client/shared/freshness.ts`; unit
+proof `src/test/freshness.test.ts`; browser reproduction and regression
+`scripts/e2e-stale-poll.cjs`, which holds one `/api/me` response at the
+transport, locks underneath it, releases the stale body and watches the DOM with
+a MutationObserver rather than sampling it (D32).
+
+**While you were away.** A Chromebook sleeps through a bell; a tab is closed
+for five minutes; a pair goes to the nurse. The returning desk gets CURRENT
+AUTHORITATIVE STATE plus a compact recap card, and the class is never rewound.
+The runtime keeps a bounded class log; the lines in it come from the module's
+own `classEvents(prev, next, transition)` (`shared/lessonModule.ts`), because
+the runtime does not know a night from a week from a signing day and must not
+learn. Four rules the design turns on:
+
+- CLASS-LEVEL ONLY. The log is read back by whichever desk returns, so a line
+  naming one desk's price would print it on another desk's screen.
+- A recap survives the poll that discovers it. The seat's `seenSeq` stops
+  advancing the moment `awaySince` opens, so the card lives through following
+  polls, a refresh and a rejoin until the pair presses "Got it" — the whole
+  point is reaching a device that just came back.
+- `/api/me`'s ETag carries the recap. Seat bookkeeping deliberately does not
+  bump the session version (a desk coming back is not a change to the class),
+  so on version alone the poll that discovers the recap answers 304 with no
+  body and it never arrives.
+- A restore rewinds the log with the class. The checkpoint carries it;
+  otherwise an undone night is still in an append-only log and the next desk
+  back is told it closed twice.
+
+Threshold 30s, well clear of a dropped poll (1.2s) or a slow reconcile (6s) and
+of Chromium's ~1/minute throttle on a backgrounded tab — which is the point: a
+tab that was not on screen was not in the room. A long gap over which the class
+did nothing is not a recap. Unit proof `src/test/whileYouWereAway.test.ts`;
+browser proof `scripts/e2e-away.cjs`, which takes a desk genuinely offline for
+38 seconds through a bell.
+
+**The deck.** A live console runs to ~2800px and the night bell — the control
+a teacher presses five times in fifty minutes — sat in the middle of it, below
+a page of director script. `/teach` now carries a sticky bottom bar that HOSTS
+the phase's live controls: each button is MOVED into the deck and moved home
+again against a comment-node marker, so there is exactly one of each in the
+document — one node, one listener, one disabled state, and no way to ring the
+bell twice off two copies that disagree. It also says where the class is and
+whether the room is held. Browser proof `scripts/e2e-teach-deck.cjs`, which
+asserts the strip is on screen unscrolled, that the bell is moved and not
+copied, and that a bell fired from the deck really closes the night.
+
+It also carries the class clock — minutes since the session was created, read
+off the session's `createdAt` corrected once by the server/console skew and
+repainted on its own 15-second beat, not by polling. Every director panel is
+written in minute budgets ("Now — 6 min"); a console that budgets a period and
+does not say the time makes the teacher do the one piece of arithmetic they
+cannot do while running a room. `createdAt` is constant, so it is ETag-safe —
+the live minute is never sent in a cacheable body (D35).
+
+**The prescribed rehearsal.** `/teach` tells a first-time teacher to create a
+session with nobody in it and walk the console, so that walk has to be the
+whole lesson. With zero desks all three directed lessons now show the real
+WATCH FOR flag shapes against stand-in desks and the complete synthesis deck —
+the same number of cards, with the same titles, as a played room gets. Every
+stand-in title is prefixed `REHEARSAL — ` and every stand-in figure carries a
+STAND-IN sentence; dated real-world content is left unmarked because it is the
+same sentence tomorrow. Before this, M2 L1 rendered no watch flags at all cold
+and collapsed six synthesis cards to one placeholder, and M2 L3 computed its
+real cards against an empty room and put them on the projector as fact
+(D40). The setup screen also no longer promises a directing panel for the four
+lessons that ship none, and the picker no longer opens on one of them (D41).
+Browser proof `scripts/e2e-rehearsal.cjs`, which walks all three lessons cold
+and reads the cards off the projector the teacher is rehearsing in front of.
 
 **Board privacy.** Desks appear as `Desk 4 · Memphis Grizzlies` with a
 crest — never a student name, never a seat id. Markets are assigned
@@ -591,15 +732,17 @@ src/
                 boxOffice.ts                 — Module 2 prototype, "The Box Office"
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
-                shared/ (api, poll, storage, outbox, crest)
-  test/         313 tests over crypto, every reducer, the service layer
-                (incl. the L1->L2 and L2/L1->L3 seeds), and snapshot persistence
+                shared/ (api, poll, storage, outbox, crest, freshness)
+  test/         595 tests over crypto, every reducer, the service layer
+                (incl. the L1->L2 and L2/L1->L3 seeds), snapshot persistence,
+                the client claim audit and the surface freshness gate
 scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)
                 e2e-l2-early-advance.cjs     — focused probe: advancing out of REVEAL early
                 e2e-l3.cjs                   — rerunnable Playwright L3 proof (full L1->L2->L3 arc)
                 e2e-l3-early-advance.cjs     — focused probe: advancing out of PLAY early
                 e2e-m2l2.cjs                 — rerunnable 12-desk M2 L2 proof (every board frame fits, both shapes)
                 e2e-m2l3.cjs                 — rerunnable 12-desk M2 L3 proof (full arc incl. capstone + finale)
+                e2e-stale-poll.cjs           — focused probe: a poll held at the transport must not undo a lock
 ```
 
 **Teacher authentication (R1).** `POST /api/sessions` issues a per-session
@@ -614,6 +757,28 @@ session without it. There is still no login, no password, no multi-teacher
 account system — this is one secret per session, sized for "the teacher's
 own laptop, projected to the room," not a hosted multi-tenant deployment.
 
+**Who may see the building.** Two calls are about the SET of sessions rather
+than one of them, so the per-session key could not answer them and they were
+open to anyone who could reach the server — on a school network, every student
+in the building:
+
+- `GET /api/sessions` handed back every live class's join code and title, which
+  is a way into any other room. It now answers only a caller presenting a key
+  that matches some session on this server, and answers everyone else with an
+  EMPTY list rather than a refusal: a first-ever session on a fresh browser has
+  no key and nothing to link to, and must not put a 401 in the console every
+  time the lesson picker opens. `/teach` says so in the picker, and points a
+  teacher who ran that lesson elsewhere at the reopen-with-key flow.
+- `POST /api/sessions` with `sourceSessionId` reads another session's stored
+  state as a seed — one class's franchises out of another class's room. Creating
+  a room stays open (this product has no accounts, D12); seeding from one
+  requires the same proof.
+
+Any live session's key clears both, which is the right bar: every key was issued
+by creating a room, a student never holds one, and linking is only ever done to
+a lesson the same teacher already ran on this machine — which is where the key
+in their browser came from. No accounts, no login, no second credential.
+
 **Session store.** `SnapshotRepository` (`src/server/snapshotRepository.ts`)
 is in-memory Maps as the source of truth, with every mutation queued onto a
 single write-chain that serializes writes to a JSON file: write to a temp
@@ -625,26 +790,51 @@ parse, and a full "kill the process, start a new `SnapshotRepository`
 pointed at the same file" simulation that confirms phase, version, and seat
 data all survive.
 
-**Transport: short-interval polling with ETag/If-None-Match, not SSE or
-WebSockets.** All three surfaces poll a versioned state endpoint (1–1.5s for
-`/teach` and `/play`, 1s for `/board`) with `If-None-Match`; an unchanged
-session answers `304` with an empty body. This was chosen deliberately over
-a push transport:
+**Transport: a push nudge in front of ETagged polling — never instead of
+it.** All three surfaces poll a versioned state endpoint (1.2s `/play`, 1.5s
+`/teach`, 1s `/board`) with `If-None-Match`; an unchanged session answers
+`304` with an empty body. On top of that, each surface opens
+`GET /api/sessions/:code/stream`, a server-sent event stream carrying **only**
+`{version, seatEpoch}` — no payload, no private data, nothing a surface
+renders. A nudge fires an immediate poll tick and stretches the timer out to a
+slow reconciliation interval; when the stream drops, the timer snaps back to
+the short interval and every surface behaves exactly as it did before push
+existed. Nudges are spent from a small token bucket (3 immediate, then one per
+120 ms), so no amount of server chatter can drive a surface faster than that
+ceiling.
 
-- A real classroom AP is exactly the environment most likely to silently
-  kill a long-lived connection — idle timeouts, captive-portal-style
-  proxying, a laptop that sleeps and wakes on a different channel. SSE and
-  WebSockets need reconnect logic to recover from that; polling's failure
-  mode is *already* "try again next tick," with no separate reconnect path
-  to write, test, or get wrong live in a classroom.
-- At ~35 clients polling every 1–2s, that is roughly 20–35 requests/second
-  against one Node process serving small JSON payloads (a `304` has no
-  body) — trivial load, so the "keep a persistent connection open"
-  argument for SSE/WS buys nothing at this scale.
-- `/board`'s "auto-reconnect" requirement and `/play`'s "instant resume"
-  requirement both fall out of the same mechanism for free: there is
-  nothing to "reconnect," a poll either succeeds or it doesn't, and the next
-  one fires on schedule regardless (`src/client/shared/poll.ts`).
+Why this shape rather than either extreme:
+
+- **Realtime is not truth.** The nudge says only "ask again." Every byte a
+  surface displays still comes from the authenticated, ETagged endpoint it was
+  already polling, so a push that is lossy, duplicated, out of order, or
+  entirely absent can only ever cost latency. There is one code path, not two
+  that can disagree.
+- **A classroom AP will kill a long-lived connection**, and the original
+  argument for polling still stands under that: idle timeouts,
+  captive-portal-style proxying, a laptop that sleeps and wakes. The poll loop
+  underneath is the reconnect path, already written and already tested, and
+  the failure mode is still "try again next tick."
+- **Polling alone was costing the room a visible beat.** Measured at 32 desks
+  (`scripts/latency-harness.cjs`): teacher action → every desk p99 **1065 ms**
+  poll-only vs **32 ms** with the stream; teacher → projector 946 ms vs 28 ms;
+  a student's lock → the teacher's own desk panel 1385 ms vs 22 ms. In
+  Chromium end to end (`scripts/e2e-realtime.cjs`): projector ~150 ms, desk
+  ~130 ms, against ~3.9 s for the same repaint with the stream blocked.
+- **Presence is not a class event.** Every `/play` poll stamps the seat's
+  `lastSeenAt`, and while that stamp went on the bus the room drove itself: the
+  nudge woke every desk, every woken desk polled, every poll stamped again.
+  Measured in Chromium with two desks, one teacher console was issuing **~230
+  requests per second**, and the amplification grows with the class — the exact
+  opposite of what 16 desks are supposed to feel like. Presence-only seat
+  writes are now silent and ride the next reconciliation; the same page now
+  polls **0.6/s**, asserted in `scripts/e2e-time-cut.cjs`.
+- **SSE rather than WebSockets** because it needs no dependency (D12 — zero
+  runtime packages), reconnects natively in the browser, and is one-way, which
+  is all a nudge needs. Actions still travel by `POST`.
+- Each surface marks which transport is carrying it on its own document
+  (`data-push="on"|"off"`), and `/teach` prints `· polling` in its status
+  line. "The room feels laggy" is otherwise unanswerable.
 
 The one place this deliberately does *not* use polling is action
 submission — `POST .../actions` and `POST .../control` are sent immediately
@@ -852,11 +1042,18 @@ three static pages), not a general-purpose framework being reinvented.
   JSON-dump fallback for anything else).
   Adding another real lesson module means writing its render functions too;
   the *server* contract is fully generic today, the client shell is not yet.
-- `GET /api/sessions` (the session list) is still unauthenticated — it
-  returns code/title/phase for every session ever created on the box, not
-  seat- or team-identifying data. Lower severity than the R1 gap it was
-  found alongside (that one is closed); worth gating in a future round if
-  this ever runs somewhere less trusted than one teacher's own laptop.
+- **Module 1 defects found during the M2 gauntlet, deliberately NOT fixed here**
+  (M1 is outside this run's scope; both are recorded so they are not lost).
+  (a) `freeAgency.ts` breaks a tie between two identical sealed bids on
+  `submittedAt` — the server's record of when the HTTP request arrived. Two
+  pairs who bid the same number are separated by whose Chromebook was faster,
+  which is the one thing a sealed bid is supposed to rule out. A deterministic
+  seat-id fallback sits behind it, so the outcome is at least reproducible from
+  a snapshot, but the lesson has no economically honest tie-break (cap room, or
+  the agent choosing, would be one). (b) `tradeDeadline.ts` writes
+  `claimedBy[idx]` when a pair claims a carried franchise and never deletes it:
+  there is no release path, so a pair that claims the wrong franchise cannot be
+  unstuck by anyone, including the teacher.
 - `SnapshotRepository` keeps every session/seat ever created in memory for
   the process lifetime — there is no archive/prune path. Not a problem at
   classroom scale (one class, a handful of sessions per day), worth

@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BOW Economics — Play</title>
+<!-- the student device — gold, the colour of the dial they hold. Three surfaces run side by side in one teacher's tab strip. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23f4b942%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2223%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2221%22%20font-weight%3D%22700%22%20text-anchor%3D%22middle%22%20fill%3D%22%23131822%22%3EP%3C%2Ftext%3E%3C%2Fsvg%3E" />
 <link rel="stylesheet" href="/shared/theme.css" />
 <link rel="stylesheet" href="/shared/m2.css" />
 <style>
@@ -22,8 +24,48 @@
   .pinbox { font-family: var(--font-number); font-size: 32px; letter-spacing: .2em; font-weight: 800; text-align: center; color: var(--accent-gold); }
   #err { color: var(--over-the-line); font-size: 13px; min-height: 16px; }
   #syncStatus { font-size: 11px; color: var(--ink-muted); }
+  /* WHILE YOU WERE AWAY — loud enough to be read before anything else on the
+     screen, quiet enough that it is obviously not the game. Gold rule, not a
+     gold fill: this is orientation, not an alarm, and the pair has already
+     missed enough without being shouted at. */
+  #awayCard { border: 1px solid var(--accent-gold); border-left-width: 3px; border-radius: 10px;
+    background: linear-gradient(180deg, rgba(244,185,66,0.10), rgba(244,185,66,0.03));
+    padding: 14px 16px; margin: 0 0 14px; }
+  #awayCard[hidden] { display: none; }
+  #awayCard .away-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  #awayCard .away-title { font-family: var(--font-display); font-size: 15px; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--accent-gold); }
+  #awayCard .away-gap { font-size: 12px; color: var(--ink-muted); }
+  #awayCard .away-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  #awayCard .away-list li { font-size: 14px; line-height: 1.45; color: var(--ink-primary);
+    padding-left: 16px; position: relative; }
+  #awayCard .away-list li::before { content: ""; position: absolute; left: 0; top: 8px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-gold); opacity: .75; }
+  #awayCard .btn { font-size: 13px; }
   .banner { padding: 14px; border-radius: 10px; background: var(--surface-panel); font-size: 14px; color: var(--ink-secondary); text-align: center; }
   section.card { padding: 20px; }
+  /* FINAL CALL. Sticky, because the pair is usually looking at a dial halfway
+     down a scrolled page when the window starts closing, and a warning they
+     have to scroll up to find is not a warning. */
+  /* `#finalCall` outranks the [hidden] attribute's own display:none, so the
+     hidden state has to be restated at this specificity — without it an empty
+     sticky bar sits over every play screen and pushes the dials down. */
+  #finalCall[hidden] { display: none; }
+  #finalCall { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 10px; margin-bottom: 2px;
+    background: var(--surface-elevated, #241c0c); border: 1px solid var(--accent-gold);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45); }
+  #finalCall.unlocked { border-color: var(--over-the-line); background: #2a1410; }
+  #fcClock { font-family: var(--font-number); font-weight: 800; font-size: 30px; line-height: 1;
+    color: var(--accent-gold); font-variant-numeric: tabular-nums; min-width: 74px; }
+  #finalCall.unlocked #fcClock { color: var(--over-the-line); }
+  #fcText { font-size: 13px; color: var(--ink-secondary); }
+  #fcText b { color: var(--ink-primary); display: block; font-family: var(--font-display); letter-spacing: .06em;
+    text-transform: uppercase; font-size: 12px; margin-bottom: 2px; }
+  @media (prefers-reduced-motion: no-preference) {
+    #finalCall.unlocked { animation: fcPulse 1.4s ease-in-out infinite; }
+    @keyframes fcPulse { 0%,100% { box-shadow: 0 6px 18px rgba(0,0,0,0.45); } 50% { box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 0 3px rgba(224,87,79,0.28); } }
+  }
 </style>
 </head>
 <body>
@@ -75,6 +117,25 @@
   <button type="button" class="pin-reopen" id="btnShowPin" hidden>Rejoin PIN</button>
 
   <section id="gameCard" hidden>
+    <!-- W3: the closing window, said to the pair in their own terms. Not a
+         generic "time's up" — when this desk has committed nothing it names the
+         lesson's own fallback, which is the only version of this warning that
+         changes what a student does next. -->
+    <div id="finalCall" hidden>
+      <span id="fcClock"></span>
+      <span id="fcText"></span>
+    </div>
+    <!-- WHILE YOU WERE AWAY. A card ON TOP of current truth, never a rewind:
+         the screen underneath it is the room as it stands right now. It says
+         what the CLASS did — this pair's own books are already below it. -->
+    <div id="awayCard" hidden>
+      <div class="away-head">
+        <span class="away-title">While you were away</span>
+        <span class="away-gap" id="awayGap"></span>
+      </div>
+      <ul class="away-list" id="awayList"></ul>
+      <button type="button" class="btn" id="btnAwaySeen">Got it — I'm back</button>
+    </div>
     <div class="eyebrow" id="gameHeader" style="font-size:12px; margin-bottom:10px;"></div>
     <div id="gameBody"></div>
   </section>

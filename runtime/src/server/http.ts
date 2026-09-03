@@ -8,19 +8,23 @@
  * matters directly for cold-start on a teacher's laptop plugged in five
  * minutes before class.
  *
- * Transport: short-interval polling with ETag/If-None-Match, not SSE/WS.
- * Justified at length in runtime/README.md; the summary is that a real
- * classroom AP is exactly the environment where a long-lived connection
- * (SSE or a WebSocket) is most likely to be silently killed by an idle
- * timeout or a proxy, and polling's failure mode is simply "try again next
- * tick" — identical code path for the initial load, a dropped packet, and
- * a full reconnect after the teacher's laptop sleeps.
+ * Transport (W4): a nudge stream in front of the same ETagged polling, never
+ * instead of it. `GET /api/sessions/:code/stream` is a server-sent event
+ * stream carrying ONLY "this session moved to version N" — no payload, no
+ * private data, nothing a surface renders. Every surface still re-reads truth
+ * through the authenticated endpoint it was already polling; the stream only
+ * decides WHEN. So the original argument for polling still holds in full: a
+ * classroom AP that silently kills a long-lived connection costs the room
+ * nothing but latency, because the poll loop underneath never stopped, and the
+ * failure path for a dead stream, a dropped packet, a cold load and a laptop
+ * waking from sleep is still the identical "ask again" tick.
  */
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { SessionBus } from "./sessionBus.js";
 import { ServiceError, type SessionService } from "./sessionService.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -37,12 +41,19 @@ function sendJson(res: http.ServerResponse, status: number, body: unknown, heade
 
 function sendError(res: http.ServerResponse, error: unknown): void {
   if (error instanceof ServiceError) {
-    sendJson(res, error.status, { error: { code: error.code, message: error.message } });
+    // `retryable` is the field the student's durable outbox reads to decide
+    // whether to hold an action or discard it. It is on the wire explicitly
+    // rather than inferred from the status code, because the same 409 covers
+    // both a semantic ruling ("price must be $10-$120") and a transient write
+    // race, and a client guessing between them is how a decision gets lost.
+    sendJson(res, error.status, { error: { code: error.code, message: error.message, retryable: error.retryable } });
     return;
   }
   // eslint-disable-next-line no-console
   console.error("[http] unexpected error:", error);
-  sendJson(res, 500, { error: { code: "internal", message: "something went wrong" } });
+  // An unexpected server fault says nothing about the action's validity, so the
+  // action is worth trying again.
+  sendJson(res, 500, { error: { code: "internal", message: "something went wrong", retryable: true } });
 }
 
 async function readJson(req: http.IncomingMessage): Promise<Json> {
@@ -120,13 +131,76 @@ function maybeNotModified(req: http.IncomingMessage, res: http.ServerResponse, e
   return false;
 }
 
-export function createHttpServer(service: SessionService): http.Server {
-  return http.createServer((req, res) => {
-    void handle(service, req, res).catch((error) => sendError(res, error));
+/** Keeps a proxy or an idle-timeout from quietly closing a stream nobody is talking on. */
+const SSE_HEARTBEAT_MS = 15_000;
+
+export function createHttpServer(service: SessionService, bus?: SessionBus): http.Server {
+  const server = http.createServer((req, res) => {
+    void handle(service, req, res, bus).catch((error) => sendError(res, error));
   });
+  // An SSE response is open for the whole lesson. Node's default 5s
+  // keep-alive/headers timeouts are about IDLE sockets between requests, but
+  // being explicit here stops a future default from cutting a class in half.
+  server.keepAliveTimeout = 0;
+  server.headersTimeout = 0;
+  server.requestTimeout = 0;
+  return server;
 }
 
-async function handle(service: SessionService, req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+/**
+ * The nudge stream.
+ *
+ * Carries the session's version and a seat-change epoch, and nothing else. It
+ * is reachable with the join code alone — deliberately, because that is exactly
+ * what it discloses: that a room somebody already has the code for has moved.
+ * Every byte a surface actually renders still comes from the authenticated,
+ * ETagged endpoint behind it.
+ */
+async function serveStream(
+  service: SessionService,
+  bus: SessionBus,
+  code: string,
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+): Promise<void> {
+  const session = await service.sessionIdForCode(code);
+  if (!session) {
+    sendJson(res, 404, { error: { code: "not_found", message: "no such session", retryable: false } });
+    return;
+  }
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    // Nginx and friends buffer text/event-stream by default, which turns a
+    // push stream into a very slow poll.
+    "X-Accel-Buffering": "no",
+  });
+  // The first frame doubles as the client's "the stream is live" signal, and it
+  // carries current truth so a surface that connects mid-class refetches once
+  // immediately rather than waiting for the next change.
+  res.write(`retry: 2000\ndata: ${JSON.stringify({ version: session.version, seatEpoch: 0, hello: true })}\n\n`);
+
+  const unsubscribe = bus.subscribe(session.id, (nudge) => {
+    res.write(`data: ${JSON.stringify(nudge)}\n\n`);
+  });
+  const heartbeat = setInterval(() => res.write(": ping\n\n"), SSE_HEARTBEAT_MS);
+  heartbeat.unref?.();
+  const close = () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  };
+  req.on("close", close);
+  res.on("close", close);
+  res.on("error", close);
+}
+
+async function handle(
+  service: SessionService,
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  bus?: SessionBus,
+): Promise<void> {
   const url = new URL(req.url ?? "/", "http://localhost");
   const parts = url.pathname.split("/").filter(Boolean);
   const method = req.method ?? "GET";
@@ -164,14 +238,19 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
       // Optional cross-lesson continuity link (e.g. M1 L2 linked to a
       // completed L1 session) — an opaque id, meaningless to this layer.
       const sourceSessionId = body["sourceSessionId"] ? String(body["sourceSessionId"]) : undefined;
-      const payload = await service.createSession({ lessonModuleId, title, sourceSessionId });
+      const payload = await service.createSession({
+        lessonModuleId,
+        title,
+        sourceSessionId,
+        teacherKey: bearerToken(req),
+      });
       sendJson(res, 201, payload);
       return;
     }
 
     // GET /api/sessions
     if (method === "GET" && parts[1] === "sessions" && parts.length === 2) {
-      sendJson(res, 200, { sessions: await service.listSessions() });
+      sendJson(res, 200, { sessions: await service.listSessions(bearerToken(req)) });
       return;
     }
 
@@ -182,11 +261,26 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
       const payload = await service.resumeByToken(token);
       // Every session mutation — the student's own action or a teacher
       // control — bumps session.version, and a seat's view only ever
-      // derives from session state/phase, so version alone is a correct
-      // change fingerprint here.
-      const etag = `"${payload.session.version}"`;
+      // derives from session state/phase, so version alone would be a correct
+      // change fingerprint for the view.
+      //
+      // It is NOT a correct fingerprint for the whole payload. WHILE YOU WERE
+      // AWAY turns on seat bookkeeping that deliberately does not bump the
+      // session version — a desk coming back is not a change to the class —
+      // so on version alone the poll that discovers the recap answers 304 with
+      // no body and the recap never reaches the pair who missed the class. It
+      // is part of the fingerprint.
+      const etag = `"${payload.session.version}${payload.away ? `:away${payload.away.lines.length}` : ""}"`;
       if (maybeNotModified(req, res, etag)) return;
       sendJson(res, 200, payload, { ETag: etag });
+      return;
+    }
+
+    // POST /api/me/recap/seen  (the pair has read what they missed)
+    if (method === "POST" && parts[1] === "me" && parts[2] === "recap" && parts[3] === "seen" && parts.length === 4) {
+      const token = bearerToken(req);
+      if (!token) throw new ServiceError(401, "no_token", "missing device token");
+      sendJson(res, 200, await service.acknowledgeRecap(token));
       return;
     }
 
@@ -227,9 +321,18 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
         const teacherKey = bearerToken(req);
         const body = await readJson(req);
         const type = String(body["type"] ?? "");
-        const allowed = new Set(["advance", "reveal", "pause", "unpause", "freeze", "unfreeze", "hook", "end", "restore"]);
+        const allowed = new Set([
+          "advance", "reveal", "pause", "unpause", "freeze", "unfreeze", "hook", "end", "restore",
+          // TIME CUT
+          "finalCall", "closeNow", "cancelFinalCall",
+        ]);
         if (!allowed.has(type)) throw new ServiceError(400, "bad_control", `unknown control action "${type}"`);
-        const action = type === "hook" ? { type: "hook" as const, hook: String(body["hook"] ?? "") } : { type: type as Exclude<typeof type, "hook"> };
+        const action =
+          type === "hook"
+            ? { type: "hook" as const, hook: String(body["hook"] ?? "") }
+            : type === "finalCall"
+              ? { type: "finalCall" as const, ...(body["durationMs"] === undefined ? {} : { durationMs: Number(body["durationMs"]) }) }
+              : { type: type as Exclude<typeof type, "hook"> };
         const payload = await service.control(code, action as Parameters<SessionService["control"]>[1], teacherKey);
         sendJson(res, 200, payload);
         return;
@@ -244,6 +347,18 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
         return;
       }
 
+      // POST /api/sessions/:code/seats/:seatId/reseat
+      // Teacher-only: mint a fresh rejoin PIN for a pair whose device died, and
+      // retire the old one in the same write. Returns the PIN to the TEACHER —
+      // it is read aloud to the pair, never sent to a student surface.
+      if (method === "POST" && sub === "seats" && parts[5] === "reseat" && parts.length === 6) {
+        const teacherKey = bearerToken(req);
+        const seatId = decodeURIComponent(parts[4]!);
+        const out = await service.reseatSeat(code, seatId, teacherKey);
+        sendJson(res, 200, out);
+        return;
+      }
+
       // GET /api/sessions/:code/teacher  (R1: requires the teacher key)
       if (method === "GET" && sub === "teacher" && parts.length === 4) {
         const teacherKey = bearerToken(req);
@@ -255,15 +370,49 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
         // live join list has to update on its own, not piggyback on a
         // phase change.
         const lastJoin = payload.seats.at(-1)?.joinedAt ?? "";
-        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}"`;
+        // A seat crossing the rejoin-lockout threshold changes none of
+        // version/count/lastJoin, so the teacher's conditional poll answered 304
+        // and the "PIN LOCKED" pill and its Unlock button never rendered — the
+        // one control that can free that student was unreachable, and in LOBBY
+        // or right after a restart nothing else was bumping the version to
+        // shake it loose. Reproduced: five wrong PINs, then a conditional GET
+        // returning 304 while an unconditional GET showed rejoinLocked: true.
+        // The lock count is now part of the room's fingerprint.
+        const locked = payload.seats.reduce((n, s) => n + (s.rejoinLocked ? 1 : 0), 0);
+        // Same failure mode as the lockout above, for a signal that changes with
+        // nothing but the passage of time: a desk whose device goes silent bumps
+        // no version, so the teacher's conditional poll answered 304 and the
+        // console could not show the one thing it cannot see from the front of
+        // the room. Buckets, not milliseconds — see quietBucketOf() — so this
+        // fingerprint moves when the fact changes, not on every tick.
+        const quiet = payload.seats.map((s) => s.quietBucket).join("");
+        // The projector-liveness bucket varies with time alone, so it must be
+        // in the fingerprint or the conditional poll answers 304 forever and
+        // the console goes on saying BOARD LIVE at a dead HDMI cable (D35).
+        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}-L${locked}-Q${quiet}-B${payload.session.boardSeenBucket}"`;
         if (maybeNotModified(req, res, etag)) return;
         sendJson(res, 200, payload, { ETag: etag });
         return;
       }
 
+      // GET /api/sessions/:code/stream  (SSE nudges; W4)
+      if (method === "GET" && sub === "stream" && parts.length === 4) {
+        if (!bus) {
+          // No bus wired (a test harness, an older embedding): say so plainly
+          // rather than hanging an EventSource open forever. The client falls
+          // back to its polling interval, which is the designed behaviour.
+          sendJson(res, 501, { error: { code: "no_stream", message: "this server has no push stream", retryable: false } });
+          return;
+        }
+        await serveStream(service, bus, code, req, res);
+        return;
+      }
+
       // GET /api/sessions/:code/board
       if (method === "GET" && sub === "board" && parts.length === 4) {
-        const payload = await service.boardView(code);
+        // `preview=1` is the teacher console's own embedded mirror. It reads
+        // the same frame but must not count as a projector watching the room.
+        const payload = await service.boardView(code, url.searchParams.get("preview") === "1");
         const etag = `"${payload.version}"`;
         if (maybeNotModified(req, res, etag)) return;
         sendJson(res, 200, payload, { ETag: etag });

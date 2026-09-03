@@ -63,7 +63,7 @@
  * See SOURCE_NOTES.
  */
 import { CREST_COUNT } from "./draftDay.js";
-import type { LessonModule, ReduceContext, ReduceResult, SeatId } from "../shared/lessonModule.js";
+import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 
 /* ------------------------------------------------------------- markets -- */
@@ -223,7 +223,7 @@ export const MARKETS: readonly Market[] = [
     ancillary: 18,
     eventFans: 0.01,
     eventRenewalDollars: 60_000,
-    planSlope: 3.6,
+    planSlope: 3.2,
     premiumSpan: 92,
     capacityNote: "listed basketball capacity 19,812 · 2025-26",
   },
@@ -250,7 +250,7 @@ export const MARKETS: readonly Market[] = [
     ancillary: 12,
     eventFans: 0.016,
     eventRenewalDollars: 30_000,
-    planSlope: 3.6,
+    planSlope: 4.1,
     premiumSpan: 90,
     capacityNote: "modeled seat count · published figures range 16,667-18,119",
   },
@@ -488,12 +488,65 @@ export const PRICE_STEP = 2;
 export const SPEND_STEP = 5_000;
 export const RENEWALS_START = 50;
 export const RENEWAL_TENT_PEAK = 6;
-export const RENEWAL_DELTA_FLOOR = -20;
+export const RENEWAL_DELTA_FLOOR = -26;
 export const RENEWAL_DELTA_CEIL = 12;
 /** Renewal points lost per $1 the price sits BELOW the season-plan price (the low arm). */
 export const RENEWAL_UNDERCUT_SLOPE = 2.5;
 /** Extra renewal points at the top of the "your plan is a bargain tonight" ramp. */
 export const RENEWAL_BARGAIN_BONUS = 6;
+/**
+ * How fast the gouging arm stops getting worse (W6 repair `econ-l1-renewals-dead-arm`).
+ *
+ * The arm used to be straight: `planSlope` renewal points per dollar over what
+ * the night is worth, all the way up, and then a hard clip at the one-night
+ * limit. The clip arrived a few dollars above the reference price — which on
+ * three of the five cards is BELOW the night's own cash optimum. On Night 2 in
+ * New York the renewals number was identical at the cash-best price, at $80 and
+ * at $120, a price that draws nobody at all. A pair could not read its own
+ * choice out of the second book, and worse, playing the money book WELL scored
+ * the same as gouging an empty building — FL3 ("charging high is greedy")
+ * reintroduced through the clip on the majority of the lesson's nights.
+ *
+ * The arm is bent instead of clipped: `bend * ln(1 + planSlope * over / bend)`.
+ * Two properties earn it. Its slope at `over = 0` is exactly `planSlope`, so the
+ * local tradeoff every earlier round tuned is preserved to first order. And it
+ * keeps rising forever, so the one-night limit is still reached — just out where
+ * the cash book has already collapsed, which is the only place a flat penalty is
+ * honest ("you have already lost everyone you were going to lose").
+ *
+ * W6 SECOND PASS — THE BEND DID NOT ACTUALLY CLEAR THE CLIP. The repair above
+ * shipped `bend` 12 with `planSlope` raised 3.6 -> 9.0 and the one-night limit
+ * deepened -20 -> -26, because at a cheap near-field slope the season
+ * cash-maximising policy kept its renewals too and P14 limb (i) — the flat line
+ * must end at least 15 renewal points ahead of the most-cash line — fell to a
+ * margin of 7. Bending the arm and then tripling its slope put the clip back
+ * where it started: measured on those constants, `renewalDelta` returned the
+ * -26 floor at 41 of the 56 legal prices on Nights 1 and 5 and on 50% of the
+ * whole grid. The board's own class line printed median renewals New York 2%,
+ * Memphis 0%. The defect the bend exists to kill was still shipping.
+ *
+ * What the sweep found is that limb (i) does not need a steep New York arm at
+ * all; it needs a steep MEMPHIS one. Memphis prices from a $16 plan against New
+ * York's $24, so a dollar of gouging is half again as large a share of the
+ * ticket there, and the season cash-max policy is the one that notices. Exact
+ * forward DP over (renewals x carry) at each candidate — the same DP P14 runs —
+ * gives, at `bend` 9:
+ *
+ *   New York  planSlope 3.2 : margin 17 (bar 15) · range 37 (bar 30) ·
+ *             renewals cost 7.2% of season cash (bar 4%) · 8 frontier points ·
+ *             floor binds on 4% of the grid
+ *   Memphis   planSlope 4.1 : margin 16 · range 36 · 4.6% · 6 frontier points ·
+ *             floor binds on 12% of the grid
+ *
+ * Both sit mid-plateau, not on a knife edge: New York holds margin >= 15 across
+ * 2.8-3.4 and Memphis across 3.9-4.2. Floor-binding falls from 50% of the grid
+ * to 8%, and every price a desk would reach while actually playing the money
+ * book now returns its own number. Asserted by P14 in
+ * `docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs` and by "R4-5" in the
+ * suite; the deepened -26 one-night limit is kept, because it is what gives the
+ * bent arm somewhere to go.
+ */
+export const RENEWAL_GOUGE_BEND = 9;
 
 export const isValidPrice = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v) && v >= PRICE_MIN && v <= PRICE_MAX && (v - PRICE_MIN) % PRICE_STEP === 0;
@@ -610,6 +663,15 @@ export function renewalDelta(market: Market, card: NightCard, price: number, spe
 }
 
 /** The rule's answer BEFORE the one-night clamp (W2 repair-4 R4-4b). */
+/**
+ * The gouging arm's diminishing bite (`RENEWAL_GOUGE_BEND`). Takes the straight
+ * arm's answer and bends it: unchanged in slope where the excess is small,
+ * still climbing without limit where it is large.
+ */
+function gougeBite(straight: number): number {
+  return straight <= 0 ? 0 : RENEWAL_GOUGE_BEND * Math.log(1 + straight / RENEWAL_GOUGE_BEND);
+}
+
 export function renewalDeltaRaw(market: Market, card: NightCard, price: number, spend: number): number {
   const reference = renewalReferencePrice(market, card);
   const span = reference - market.planPrice;
@@ -618,7 +680,7 @@ export function renewalDeltaRaw(market: Market, card: NightCard, price: number, 
     RENEWAL_TENT_PEAK +
     RENEWAL_BARGAIN_BONUS * ramp * ramp -
     RENEWAL_UNDERCUT_SLOPE * Math.max(0, market.planPrice - price) -
-    market.planSlope * Math.max(0, price - reference) +
+    gougeBite(market.planSlope * Math.max(0, price - reference)) +
     spend / market.eventRenewalDollars;
   return Math.round(value);
 }
@@ -688,6 +750,12 @@ export type SettledNight = {
   renewalMove: number;
   cashAfter: number;
   settlement: NightSettlement;
+  /**
+   * The gate call that stood when the bell rang, or null on a desk that made
+   * none (and on any night rehydrated from a snapshot written before the call
+   * existed). Frozen here so the bell answers what the pair actually said.
+   */
+  gateCall: GateCall | null;
   /** Frozen at lock (D15). NEVER serialized — see viewNight(). */
   hidden: Curve;
 };
@@ -703,6 +771,12 @@ export type Desk = {
   spend: number;
   openBowl: boolean;
   locked: boolean;
+  /**
+   * The pair's call on TONIGHT's crowd, made while locked and waiting for the
+   * room. Cleared when the night settles (it moves onto the settled night), and
+   * null on any desk rehydrated from a snapshot written before it existed.
+   */
+  gateCall: GateCall | null;
   nights: SettledNight[];
 };
 
@@ -737,6 +811,11 @@ export type FullHouseState = {
    * the reveal beats and the repeat-card groups.
    */
   synthPage: number;
+  /**
+   * Pairs who arrived after the fifth bell and could not be given a desk.
+   * Optional so a snapshot written before this field existed still loads.
+   */
+  observerSeats?: string[];
 };
 
 /**
@@ -813,6 +892,25 @@ export type RevealStage = {
   say: string;
 };
 
+/**
+ * What the class moving into a phase is called, out loud, in this lesson.
+ *
+ * The runtime's own fallback is the phase name — "The class moved on to
+ * CONSEQUENCE" — which is a word from the engine's vocabulary, not the room's.
+ * Nothing here is a spoiler: it says where the class IS, never what it found.
+ */
+const PHASE_EVENT: Partial<Record<CanonicalPhase, string>> = {
+  HOOK: "Your teacher set up the season.",
+  PLAY: "The doors opened \u2014 the room started pricing nights.",
+  REVEAL: "The season went up on the projector.",
+  CONSEQUENCE: "The class started reading what the season cost.",
+  ADAPT: "The class went looking for the price it should have charged.",
+  COUNTERFACTUAL: "The class started replaying the season at other prices.",
+  ARGUE: "The class started arguing from the board.",
+  SYNTHESIS: "Your teacher started naming the economics.",
+  COMPLETE: "The lesson finished.",
+};
+
 export const REVEAL_STAGES: readonly RevealStage[] = [
   {
     stage: 1,
@@ -857,6 +955,106 @@ export const REVEAL_STAGES: readonly RevealStage[] = [
     say: "Two books, side by side. Ask which one they were playing for — and whether they knew.",
   },
 ];
+
+/* ------------------------------------------------------ the gate call -- */
+
+/**
+ * THE GATE CALL (W6 repair `play-l1-locked-dead-time`).
+ *
+ * A pair that commits early sits in front of a dark building until the slowest
+ * desk in the room finishes, five times in a fifty-minute class. The screen was
+ * already the right picture — H1's dark house, no timer, no spinner — and it
+ * still said, in the product's own words, "Nothing to do but find out".
+ *
+ * The wait stays teacher-paced. It gets the one thing the pair cannot look up:
+ * the crowd in the building they are looking at. Free, carries no money,
+ * changes no settled number; its whole job is to make the pair COMMIT to a
+ * reading before the doors open, so the bell answers something they said.
+ *
+ * The bands are the same three names L2 uses -- one ritual across the module --
+ * but the FLOORS are tuned per lesson, because two lessons with different
+ * demand models and different buildings do not become uncertain at the same
+ * numbers. Measured over both markets, all five cards, renewals 20-80 and the
+ * $16-$70 band, these land 32% / 30% / 39%. L2's own floors give this lesson a
+ * 14% middle band, which is a call nobody makes.
+ */
+export type GateCall = "packed" | "busy" | "quiet";
+
+/** The fill fraction at or above which the house reads PACKED. */
+export const GATE_PACKED_FLOOR = 0.85;
+/** The fill fraction at or above which the house reads BUSY. */
+export const GATE_BUSY_FLOOR = 0.55;
+
+export const GATE_BANDS: readonly { id: GateCall; label: string; blurb: string }[] = [
+  { id: "packed", label: "PACKED", blurb: "nearly every seat sold" },
+  { id: "busy", label: "BUSY", blurb: "a good crowd, real gaps in it" },
+  { id: "quiet", label: "QUIET", blurb: "a lot of empty seats" },
+];
+
+export const GATE_CALL_PROMPT = "Your price is in. Nobody knows tonight's crowd yet — not even you. Call it: how full does this building get?";
+export const GATE_CALL_HEADING = "While the rest of the room commits";
+/** What the card says before the pair has called, and after. Both authored here (R-H/E4). */
+export const GATE_CALL_FOOT_OPEN = "No money rides on this. It is only worth something if you say it out loud before you know.";
+export const gateCallFootCalledFor = (building: string): string =>
+  `Your call is in — ${building} answers when the bell rings. You can change it until then.`;
+
+/**
+ * How much of the room has committed, as an aggregate. Never a seat identity —
+ * `/play` is private and stays private (CLAUDE.md 11); this is the class-level
+ * fact the projector already carries, and it is what turns "wait" into a finite
+ * thing the pair can see the end of.
+ */
+export function roomLockLine(state: FullHouseState): { locked: number; seated: number; line: string } {
+  const desks = state.deskOrder.map((id) => state.desks[id]!).filter(Boolean);
+  const locked = desks.filter((d) => d.locked).length;
+  const seated = desks.length;
+  const waiting = seated - locked;
+  return {
+    locked,
+    seated,
+    line:
+      waiting <= 0
+        ? `All ${seated} desks are in. Your teacher rings the bell.`
+        : `${locked} of ${seated} desks are in. ${waiting === 1 ? "One desk is" : `${waiting} desks are`} still deciding.`,
+  };
+}
+
+/**
+ * Which band a settled night actually landed in.
+ *
+ * Fill is of the seats the desk OPENED, never of capacity — on Night 4 those
+ * are different numbers and `fillQualifier` already says so everywhere else on
+ * this surface (R-2).
+ */
+export function gateBandOf(settlement: NightSettlement): GateCall {
+  const fill = settlement.seatsOpen > 0 ? settlement.turnout / settlement.seatsOpen : 0;
+  return fill >= GATE_PACKED_FLOOR ? "packed" : fill >= GATE_BUSY_FLOOR ? "busy" : "quiet";
+}
+
+const gateLabel = (band: GateCall): string => GATE_BANDS.find((b) => b.id === band)!.label;
+
+/**
+ * How the settled night answers the pair's call.
+ *
+ * Forecasting language, never a verdict on the price: reading a crowd and
+ * pricing well are different skills and the product must not let one stand in
+ * for the other. `null` on a night nobody called.
+ */
+export function gateCallResolvedFor(night: SettledNight): { called: GateCall; actual: GateCall; right: boolean; line: string } | null {
+  const called = night.gateCall;
+  if (called === null || called === undefined) return null;
+  const actual = gateBandOf(night.settlement);
+  const crowd = `${night.settlement.turnout.toLocaleString()} came — ${night.settlement.fillPct}% of the seats you opened`;
+  return {
+    called,
+    actual,
+    right: called === actual,
+    line:
+      called === actual
+        ? `You called ${gateLabel(called)}. ${crowd}. You read it.`
+        : `You called ${gateLabel(called)}. ${crowd}, which is ${gateLabel(actual)}. The night did not go the way you read it.`,
+  };
+}
 
 /** The renewals rule lands on the projector with Night 5, where the room can see it caused something. */
 export const RENEWALS_REVEAL_STAGE = 5;
@@ -908,6 +1106,7 @@ function applyNight(
     renewalMove: renewalsAfter - desk.renewals,
     cashAfter,
     settlement,
+    gateCall: desk.gateCall ?? null,
     hidden: curve,
   };
   return {
@@ -919,6 +1118,7 @@ function applyNight(
     spend: 0,
     openBowl: false,
     locked: false,
+    gateCall: null,
   };
 }
 
@@ -947,6 +1147,7 @@ function seatDesk(state: FullHouseState, seatId: SeatId): FullHouseState {
     spend: 0,
     openBowl: false,
     locked: false,
+    gateCall: null,
     nights: [],
   };
   for (let i = 0; i < state.nightIndex; i += 1) {
@@ -955,6 +1156,42 @@ function seatDesk(state: FullHouseState, seatId: SeatId): FullHouseState {
   }
   return { ...state, desks: { ...state.desks, [seatId]: desk }, deskOrder: [...state.deskOrder, seatId] };
 }
+
+/** Pairs recorded as observers, tolerant of a snapshot written before the field existed. */
+export const observersOf = (state: FullHouseState): readonly string[] => state.observerSeats ?? [];
+
+/**
+ * THE LATE ARRIVAL, AFTER THE NIGHTS.
+ *
+ * During LOBBY, HOOK and PLAY a late pair gets a REAL desk, with the nights it
+ * missed played at its own season plan price and labelled as such — that path is
+ * unchanged and it is the one that matters. From REVEAL onwards it cannot have
+ * one, and not because a 409 is convenient: every figure the room has already
+ * been shown — the class curve, the two peaks, the repeat-card rows, every
+ * synthesis card — is computed over the desks that played. Seating a new desk
+ * during REVEAL would silently re-derive numbers the teacher has already read
+ * out loud and put a point on the projector for a desk nobody in the room
+ * played. Rewriting the class's own evidence to avoid a refusal is worse than
+ * the refusal.
+ *
+ * What was actually broken is what happened instead: the refusal was definitive,
+ * the outbox correctly dropped it, and the device sat on "You're in — finding
+ * your desk…" for the rest of the lesson with nothing said to anybody. So the
+ * pair is now RECORDED, their own screen is told the truth and told what to do,
+ * and `/teach` gets a WATCH FOR entry that names them. Nothing is silent.
+ */
+function seatLate(state: FullHouseState, seatId: SeatId): FullHouseState {
+  if (state.desks[seatId]) return state;
+  const observers = observersOf(state);
+  if (observers.includes(seatId)) return state;
+  return { ...state, observerSeats: [...observers, seatId] };
+}
+
+export const OBSERVER_EYEBROW = "You arrived after the last night closed";
+export const OBSERVER_MESSAGE =
+  "You got here after the last night closed, so there is no desk left to hand you \u2014 all five nights are already in the books.";
+export const OBSERVER_ACTION =
+  "Pull your chair up to the nearest desk and read their screen with them. Everything from here is the whole room's: the board, the argument, and the questions. You are not missing a turn, because nobody is taking one.";
 
 const withDesk = (state: FullHouseState, seatId: SeatId, desk: Desk): FullHouseState => ({
   ...state,
@@ -1200,6 +1437,85 @@ export type FullHouseAggregate = {
 
 export const deskHandle = (desk: Desk): string => `Desk ${desk.deskNumber} · ${marketOf(desk).club}`;
 
+/* --------------------------------------------------------------- desks -- */
+
+/**
+ * THE DESKS — the teacher's walk-to list.
+ *
+ * THE ROOM says the shape of the room ("nine desks between $28 and $70, three
+ * still deciding"). It deliberately never names a desk, because shape is what
+ * you read out loud. But the moment a teacher decides to DO something about it
+ * they need the other half: which desk, run by whom, and what is actually wrong
+ * with it. That cross-reference used to be manual — the console showed a join
+ * list of names with no desks, and a WATCH FOR list of desks with no names.
+ *
+ * Teacher-only, like THE ROOM: this pairs desk handles with seat ids so the
+ * console can put the pair's real names on the chip. `boardView` is never
+ * handed it.
+ */
+export type DeskStripEntry = {
+  seatId: SeatId;
+  label: string;
+  /** A small closed vocabulary the console styles against; the words come from `stateLabel`. */
+  state: "in" | "deciding" | "auto" | "closed";
+  stateLabel: string;
+  note: string | null;
+  /**
+   * True when the note is a reason to WALK OVER, not merely context. A desk that
+   * has never committed a night is a reason; a desk that joined late and carries
+   * covered nights in its books is something to know when you read them.
+   */
+  flag: boolean;
+};
+export type DeskStrip = { countLine: string; entries: DeskStripEntry[] };
+
+function deskStripOf(state: FullHouseState): DeskStrip | null {
+  const seatIds = state.deskOrder.filter((id) => state.desks[id] !== undefined);
+  if (seatIds.length === 0) return null;
+  const windowOpen = state.nightIndex < NIGHT_COUNT;
+  const nightNo = Math.min(state.nightIndex + 1, NIGHT_COUNT);
+
+  const entries: DeskStripEntry[] = seatIds.map((seatId) => {
+    const desk = state.desks[seatId]!;
+    const own = desk.nights.filter((n) => !n.auto && !n.stock);
+    const autos = desk.nights.filter((n) => n.auto).length;
+    const label = deskHandle(desk);
+
+    // The note is the reason to walk over, and only one thing is worth saying.
+    // Ordered by what a teacher can still act on tonight: a pair that has never
+    // decided anything outranks a pair that is merely in the red.
+    // `joinedAtNight` is 1-based: a pair seated in the lobby joined at night 1.
+    const covered = desk.joinedAtNight - 1;
+    // Only nights this pair was actually AT count against them. A pair who
+    // joined at Night 4 has one night in its books it never saw; calling that
+    // "never once locked a night of its own" would send a teacher across the
+    // room to scold a pair that has not had a turn yet.
+    const theirs = desk.nights.filter((n) => !n.stock);
+    const [note, flag]: [string | null, boolean] =
+      theirs.length >= 1 && own.length === 0
+        ? ["Has never once locked a night of its own — every night so far was settled by the bell or covered before they arrived.", true]
+        : autos >= 2
+          ? [`The bell has settled ${autos} of this desk's nights.`, true]
+          : covered > 0
+            ? [`Joined at Night ${desk.joinedAtNight}; the first ${covered} night${covered === 1 ? " was" : "s were"} covered for them.`, false]
+            : desk.cash < 0
+              ? ["Books are in the red.", false]
+              : [null, false];
+
+    if (!windowOpen) {
+      return { seatId, label, state: "closed", stateLabel: "Five nights in", note, flag };
+    }
+    if (desk.locked) return { seatId, label, state: "in", stateLabel: `Locked Night ${nightNo}`, note, flag };
+    return { seatId, label, state: "deciding", stateLabel: "Still dialling", note, flag };
+  });
+
+  const deciding = entries.filter((e) => e.state === "deciding").length;
+  const countLine = windowOpen
+    ? `${entries.length - deciding} of ${entries.length} locked · night ${nightNo} of ${NIGHT_COUNT}`
+    : `${entries.length} desk${entries.length === 1 ? "" : "s"} · all five nights settled`;
+  return { countLine, entries };
+}
+
 function median(values: number[]): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -1237,8 +1553,15 @@ export function repeatRowFor(
   // see. Read off the same curve the night settled on (D15), never recomputed.
   const rawWantedN1 = Math.round(n1.hidden.base - n1.hidden.sens * n1.price);
   const rawWantedN5 = Math.round(n5.hidden.base - n5.hidden.sens * n5.price);
-  const floored = rawWantedN1 < 0 || rawWantedN5 < 0;
-  const bothFloored = rawWantedN1 < 0 && rawWantedN5 < 0;
+  // W6: the boundary is `<= 0`, not `< 0`. A night whose raw demand lands on
+  // EXACTLY zero drew nobody, same as one that landed below it, but under `< 0`
+  // it counted as readable — so a desk with 0 then 0 was told a crowd hit zero
+  // "on one of the two nights". The predicate is "did anybody come", and it has
+  // to match what the room saw.
+  const flooredN1 = rawWantedN1 <= 0;
+  const flooredN5 = rawWantedN5 <= 0;
+  const floored = flooredN1 || flooredN5;
+  const bothFloored = flooredN1 && flooredN5;
   const samePrice = n1.price === n5.price;
 
   const channels: { id: "renewals" | "spend" | "price"; size: number }[] = [
@@ -2268,6 +2591,10 @@ function resultHeadlineFor(night: SettledNight): string {
 function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
   const nightCard = CARD_BY_ID.get(night.cardId) ?? null;
   return {
+    // How the pair's locked-and-waiting call came out. The SENTENCE is authored
+    // here, never in the client: the desk renders words, it does not write
+    // verdicts (R-1).
+    call: gateCallResolvedFor(night),
     cardId: night.cardId,
     label: CARD_BY_ID.get(night.cardId)?.label ?? night.cardId,
     day: CARD_BY_ID.get(night.cardId)?.day ?? "",
@@ -2589,17 +2916,116 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
    * (every desk settles with the same math the bell uses) and releases the
    * Two Peaks panel; leaving REVEAL plays out every remaining reveal stage.
    */
+  /**
+   * TIME CUT for Full House. The round is a NIGHT; the bell settles it.
+   *
+   * The fallback is the one the desk's own screen, the bell's confirm line and
+   * the WATCH FOR flag all already promise: a pair who never pressed LOCK IT IN
+   * did not choose, so the night settles on the season plan with nothing spent.
+   * Naming it per desk, with the desk's actual dialled number beside the number
+   * it would actually settle at, is what turns that from a trap into a stake.
+   */
+  round: {
+    closeHook: "teacher:closeNight",
+    noun: "night",
+    fallbackPolicy:
+      "A desk that never locks settles tonight at its season plan price with nothing spent — the dial it is sitting on does not count as a decision.",
+    currentKey(state, phase) {
+      if (phase !== "PLAY") return null;
+      const card = openCard(state);
+      return card ? card.id : null;
+    },
+    unresolved(state, phase, seatIds) {
+      if (phase !== "PLAY" || !openCard(state)) return [];
+      const out: UnresolvedSeat[] = [];
+      for (const seatId of seatIds) {
+        const desk = state.desks[seatId];
+        if (!desk || desk.locked) continue;
+        const market = marketOf(desk);
+        const dialled = desk.price;
+        out.push({
+          seatId,
+          label: deskHandle(desk),
+          fallback:
+            dialled === market.planPrice && desk.spend === 0 && !desk.openBowl
+              ? `settles at the $${market.planPrice} season plan (their dial is already there)`
+              : `settles at the $${market.planPrice} season plan, NOT the $${dialled} on their dial`,
+          selfFallback:
+            dialled === market.planPrice && desk.spend === 0 && !desk.openBowl
+              ? `Lock in, or tonight settles at your $${market.planPrice} season plan — which is where your dial already is.`
+              : `Lock in, or tonight settles at your $${market.planPrice} season plan, NOT the $${dialled} you have dialled.`,
+        });
+      }
+      return out;
+    },
+  },
+
+  /**
+   * WHILE YOU WERE AWAY, in Full House's own nouns.
+   *
+   * A pair whose Chromebook slept through the Night 3 bell comes back to a
+   * settled book and no idea why. This is the "what did the ROOM do" half of
+   * that; their own numbers are already on their screen, because the runtime
+   * hands back current truth and never rewinds.
+   *
+   * Class-level only — no desk is ever named here. The log this feeds is read
+   * back by whichever desk returns, so a line about one pair's price would be
+   * printed on another pair's screen, and this lesson's whole reveal depends
+   * on the room not seeing each other's dials before the bell.
+   */
+  classEvents(prev, next, { fromPhase, toPhase }) {
+    const out: string[] = [];
+    // Nights only ever move forward here. Restore walks the index BACK, and a
+    // recap that announced Night 3 settling because the teacher undid it would
+    // be telling the room the opposite of what happened.
+    for (let n = prev.nightIndex; n < next.nightIndex; n += 1) {
+      const card = CARDS[n];
+      out.push(
+        card
+          ? `${card.label} closed. Every desk settled at once against the card that was printed before anybody touched a dial.`
+          : "A night closed and settled.",
+      );
+    }
+    if (!prev.twoPeaksReleased && next.twoPeaksReleased && next.nightIndex < NIGHT_COUNT) {
+      out.push("The Two Peaks went up on the projector.");
+    }
+    for (let i = prev.revealStage; i < next.revealStage; i += 1) {
+      const stage = REVEAL_STAGES[i];
+      if (stage) out.push(`On the projector: ${stage.name}.`);
+    }
+    if (fromPhase !== toPhase) {
+      const moved = PHASE_EVENT[toPhase];
+      if (moved) out.push(moved);
+    }
+    return out;
+  },
+
   onPhaseExit(state, fromPhase) {
     let next = state;
     if (fromPhase === "PLAY") {
       // The night that is actually open settles on the pair's own dials (see
       // closeNight); nights nobody ever saw settle at the plan price, which is
       // where every dial rests after a night is applied anyway.
-      let first = true;
-      while (next.nightIndex < NIGHT_COUNT) {
-        next = closeNight(next, first);
-        first = false;
-      }
+      // ONE FALLBACK PER LESSON, ON EVERY PATH.
+      //
+      // This loop used to pass `first = true` on the open round, settling it on
+      // the pairs' pending dials while the teacher's own bell settled the same
+      // round at the house/plan price. Same room, same student action, two
+      // different economies depending on which control the teacher happened to
+      // press — reproduced directly against the module: a desk showing $56 on
+      // its dial settled at $56 through this path and at $16 through the bell.
+      //
+      // The bell's policy is the one the product PROMISES, in three places at
+      // once (the bell's own confirm line, the WATCH FOR flag, and the desk's
+      // AUTO badge): a desk that never committed did not choose, and is not
+      // credited with a choice. Honouring a dial nobody locked would also
+      // dissolve LOCK IT IN, which is the signature commitment beat of all
+      // three Module 2 lessons. So the exit path now settles exactly as the
+      // bell does, and the trap that made the divergence tempting is closed
+      // somewhere better: the FINAL CALL window tells a pair, in their own
+      // numbers, what an uncommitted dial is about to cost them, and tells the
+      // teacher the same thing per desk before they close.
+      while (next.nightIndex < NIGHT_COUNT) next = closeNight(next, false);
       if (!next.twoPeaksReleased) next = { ...next, twoPeaksReleased: true };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };
@@ -2610,7 +3036,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
     if (action.type === "takeSeat") {
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair can take a desk" };
       if (ctx.phase !== "LOBBY" && ctx.phase !== "HOOK" && ctx.phase !== "PLAY") {
-        return { ok: false, reason: `desks are handed out in LOBBY, HOOK or PLAY (session is in ${ctx.phase})` };
+        // Not a refusal: an honest landing. See `seatLate`.
+        return { ok: true, state: seatLate(state, ctx.seatId) };
       }
       return { ok: true, state: seatDesk(state, ctx.seatId) };
     }
@@ -2621,6 +3048,21 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       if (action.type === "setSpend") return doSetSpend(state, action["spend"], ctx.seatId);
       if (action.type === "setBowl") return doSetBowl(state, action["open"], ctx.seatId);
       return doLock(state, ctx.seatId);
+    }
+    if (action.type === "gateCall") {
+      // The locked-and-waiting beat. Free, carries no money, changes no settled
+      // number. Changeable while the night is open on purpose: a fifth-grader's
+      // misclick must not cost a whole night, and what the bell freezes is the
+      // call standing when it rings.
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the gate" };
+      if (ctx.phase !== "PLAY") return { ok: false, reason: `the gate is called during PLAY (session is in ${ctx.phase})` };
+      const desk = state.desks[ctx.seatId];
+      if (!desk) return { ok: false, reason: "this seat has no desk" };
+      if (state.nightIndex >= NIGHT_COUNT) return { ok: false, reason: "all five nights are already in the books" };
+      if (!desk.locked) return { ok: false, reason: "commit your price first — the call is what you do while the room finishes" };
+      const band = action["band"];
+      if (band !== "packed" && band !== "busy" && band !== "quiet") return { ok: false, reason: "call it packed, busy or quiet" };
+      return { ok: true, state: { ...state, desks: { ...state.desks, [ctx.seatId]: { ...desk, gateCall: band } } } };
     }
     if (action.type === "teacher:closeNight") {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher rings the night bell" };
@@ -2685,15 +3127,29 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
 
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
-    if (phase === "PLAY") return ["takeSeat", "setPrice", "setSpend", "setBowl", "lock"];
-    return [];
+    if (phase === "PLAY") return ["takeSeat", "setPrice", "setSpend", "setBowl", "lock", "gateCall"];
+    // Still offered after the nights close, so a late device gets an answer
+    // instead of a silent 409 loop behind "finding your desk…" (see `seatLate`).
+    return ["takeSeat"];
   },
 
   studentView(state, seatId, phase) {
     const desk = state.desks[seatId];
     const view = ((): Record<string, unknown> => {
       if (!desk) {
-        return { phase, seated: false, uiCopy: uiCopyFor(null, 0), message: "You're in! Taking a desk…" };
+        // "Taking a desk…" is true in LOBBY and a lie afterwards.
+        if (observersOf(state).includes(seatId)) {
+          return {
+            phase,
+            seated: false,
+            observer: true,
+            uiCopy: uiCopyFor(null, 0),
+            observerEyebrow: OBSERVER_EYEBROW,
+            message: OBSERVER_MESSAGE,
+            observerAction: OBSERVER_ACTION,
+          };
+        }
+        return { phase, seated: false, observer: false, uiCopy: uiCopyFor(null, 0), message: "You're in! Taking a desk…" };
       }
       const market = marketOf(desk);
       const identity = deskIdentity(desk);
@@ -2835,8 +3291,21 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // renders comes from the module. `nextNightLabel` names the night the
             // desk is about to play (the open card), from its printed facts only.
             uiCopy: uiCopyFor(card, state.nightIndex),
+            // The locked-and-waiting beat (W6 `play-l1-locked-dead-time`).
+            ...(desk.locked
+              ? {
+                  gateCall: {
+                    prompt: GATE_CALL_PROMPT,
+                    heading: GATE_CALL_HEADING,
+                    bands: GATE_BANDS,
+                    called: desk.gateCall ?? null,
+                    foot: desk.gateCall ? gateCallFootCalledFor(market.building) : GATE_CALL_FOOT_OPEN,
+                    room: roomLockLine(state),
+                  },
+                }
+              : {}),
             message: desk.locked
-              ? "Locked. Nothing to do but find out — the doors open when your teacher rings the bell."
+              ? "Your price is in. The doors open when your teacher rings the bell."
               : "No preview. Read the card, read your own nights, and commit.",
           };
         }
@@ -3002,6 +3471,16 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         joinedAtNight: desk.joinedAtNight,
         lastFillPct: desk.nights[desk.nights.length - 1]?.settlement.fillPct ?? null,
         heldSamePriceRun: sameRun(desk),
+        // W6: where this desk moved from, so the teacher can see adaptation
+        // rather than reconstruct it from sixteen tiles. `ownLastPrice` is null
+        // when the previous night was not the pair's own decision (the bell
+        // auto-committed it, or the desk manager covered it before they
+        // joined) — moving off a number you never chose is not adaptation, and
+        // calling it that would be a story about desks that did not decide.
+        ownLastPrice: ((): number | null => {
+          const last = desk.nights[desk.nights.length - 1];
+          return last && !last.auto && !last.stock ? last.price : null;
+        })(),
       }));
     return tag({
       phase,
@@ -3012,6 +3491,12 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       card: card ? cardView(card, state.nightIndex) : null,
       lockedCount: desks.filter((d) => d.locked).length,
       deskCount: desks.length,
+      // THE ROOM: spread, shape and movement of the live dials. Teacher-only —
+      // see roomRead(). Null once the window is closed: after the last bell
+      // there is no live dial to read, and the reveal owns the numbers.
+      room: state.nightIndex >= NIGHT_COUNT ? null : roomRead(desks, state.nightIndex),
+      // THE DESKS: the same room, named. Teacher-only — see deskStripOf().
+      deskStrip: deskStripOf(state),
       twoPeaksReleased: state.twoPeaksReleased,
       twoPeaksAvailable: state.nightIndex >= 3 && !state.twoPeaksReleased,
       twoPeaksReason:
@@ -3314,6 +3799,152 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
 /* --------------------------------------------------------- teacher aids -- */
 
 /** Longest run of identical prices — the design's "WATCH FOR" voice at ADAPT. */
+/** One desk as the live-room read sees it: what it is dialling and where it came from. */
+type RoomDesk = { handle: string; price: number; locked: boolean; nightsPlayed: number; ownLastPrice: number | null };
+
+/**
+ * THE ROOM — the live class read on /teach, and nowhere else.
+ *
+ * A teacher directing sixteen desks was being handed sixteen tiles and asked to
+ * do the arithmetic in their head while a night ran. The three facts they
+ * actually need out loud are the spread (how far apart is this room?), the shape
+ * (is it one cluster or two camps?), and the movement (who adapted, and which
+ * way?) — and all three are already sitting in state, uncomputed.
+ *
+ * Two disciplines this must keep:
+ *
+ * - It is TEACHER-PRIVATE. Nothing here may reach `boardView` while a night is
+ *   open: the room committing blind is what makes the reveal land (R13), and a
+ *   live histogram on the projector would end that in one press.
+ * - Movement is only claimed for a desk whose previous night was its OWN
+ *   decision. A bell-committed AUTO night is not a price anybody chose, so
+ *   "moved off it" is not adaptation, and counting it as such would tell the
+ *   room a story about desks that never decided.
+ */
+function roomRead(desks: readonly RoomDesk[], nightIndex: number): Record<string, unknown> | null {
+  if (desks.length === 0) return null;
+
+  // THE SPREAD IS A FACT ABOUT DECISIONS, NOT ABOUT DIALS.
+  //
+  // Measured over every desk, this sentence read "The room is between $16 and
+  // $24, middle $20" at nought-of-six locked — which is not the room at all,
+  // it is the two season plan prices the dials open on. A teacher reading that
+  // out has told the class a spread that nobody chose. Committed decisions
+  // only; where the undecided dials are sitting stays visible as the ghosted
+  // half of each bar, which is a position and is drawn as one.
+  const committed = desks.filter((d) => d.locked);
+  const prices = committed.map((d) => d.price).sort((a, b) => a - b);
+  const min = prices.length > 0 ? prices[0]! : null;
+  const max = prices.length > 0 ? prices[prices.length - 1]! : null;
+  const mid = prices.length === 0
+    ? null
+    : prices.length % 2 === 1
+      ? prices[(prices.length - 1) / 2]!
+      : Math.round((prices[prices.length / 2 - 1]! + prices[prices.length / 2]!) / 2);
+
+  // The histogram still bins EVERY desk — the teacher needs to see where the
+  // undecided dials are sitting — so its grid is set by the whole room.
+  const allPrices = desks.map((d) => d.price).sort((a, b) => a - b);
+  const binMin = allPrices[0]!;
+  const binMax = allPrices[allPrices.length - 1]!;
+
+  // Bin width on the dial's own grid, so a bar edge is always a price a desk
+  // could actually have chosen. Capped at a dozen bars: past that a histogram
+  // stops being a shape and becomes a comb.
+  const span = Math.max(PRICE_STEP, binMax - binMin);
+  const width = Math.max(PRICE_STEP, Math.ceil(span / 12 / PRICE_STEP) * PRICE_STEP);
+  const start = binMin - ((binMin - PRICE_MIN) % width);
+  const bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[] = [];
+  for (let from = start; from <= binMax; from += width) {
+    const to = from + width - PRICE_STEP;
+    const inBin = desks.filter((d) => d.price >= from && d.price <= to);
+    bins.push({
+      from,
+      to,
+      label: width === PRICE_STEP ? `$${from}` : `$${from}\u2013${to}`,
+      count: inBin.length,
+      // Split so the teacher can see decisions and dials apart at a glance: a
+      // desk that has not locked is sitting wherever its dial opened, which is
+      // a position, not a choice.
+      lockedCount: inBin.filter((d) => d.locked).length,
+      handles: inBin.map((d) => d.handle),
+    });
+  }
+
+  // MOVEMENT IS COUNTED OVER COMMITTED DECISIONS ONLY.
+  //
+  // The obvious version — compare every desk's current dial to its last night —
+  // reports moves nobody made. The dial reopens each night at the desk's season
+  // plan price, so a pair who has not touched anything yet appears to have cut
+  // their price, and a console that says "3 lowered" when two desks lowered is
+  // worse than one that says nothing. A lock is the only thing in this lesson
+  // that means "we decided".
+  let raised = 0;
+  let held = 0;
+  let lowered = 0;
+  let noOwnPrior = 0;
+  let noPrior = 0;
+  let deciding = 0;
+  for (const d of desks) {
+    if (!d.locked) {
+      deciding += 1;
+    } else if (d.nightsPlayed === 0) {
+      // Night one. There is nothing behind this desk to have moved off, which
+      // is a fact about the night, not about the desk.
+      noPrior += 1;
+    } else if (d.ownLastPrice === null) {
+      // Locked, but the night it is being compared to was not its own decision
+      // (the bell auto-committed it, or the desk manager covered it before this
+      // pair joined). Moving off a number you never chose is not adaptation.
+      noOwnPrior += 1;
+    } else if (d.price > d.ownLastPrice) {
+      raised += 1;
+    } else if (d.price < d.ownLastPrice) {
+      lowered += 1;
+    } else {
+      held += 1;
+    }
+  }
+  const moved = raised + held + lowered;
+  const inSoFar = moved + noOwnPrior + noPrior;
+
+  return {
+    deskCount: desks.length,
+    lockedCount: desks.filter((d) => d.locked).length,
+    decidingCount: deciding,
+    // The panel's own heading. Authored here rather than in the renderer so a
+    // lesson whose desks do not "lock" can say what its desks actually do.
+    countLine: `${desks.filter((d) => d.locked).length} of ${desks.length} locked in \u00b7 night ${nightIndex + 1} of ${NIGHT_COUNT}`,
+    spread: min === null || max === null || mid === null ? null : { min, max, median: mid, range: max - min },
+    bins,
+    movement: { raised, held, lowered, basis: moved, noOwnPrior, noPrior, deciding },
+    firstNight: noPrior > 0 && moved === 0 && noOwnPrior === 0,
+    // The sentence a teacher can say without doing arithmetic on a projector.
+    movementLine:
+      inSoFar === 0
+        ? "Nobody is in yet — movement shows up as desks lock."
+        : noPrior === inSoFar
+          ? "First night — there is nothing behind these desks to have moved off yet."
+          : moved === 0
+            ? "Nobody in so far has a night of their own to have moved off."
+            : `Of the ${inSoFar} in so far: ${raised} raised, ${held} held, ${lowered} lowered${
+                noOwnPrior > 0 ? ` \u00b7 ${noOwnPrior} moving off a night the bell committed for them` : ""
+              }${noPrior > 0 ? ` \u00b7 ${noPrior} on their first night` : ""}.`,
+    spreadLine:
+      min === null || max === null
+        ? "Nothing is committed yet \u2014 every dial is still sitting where the night opened."
+        : prices.length === 1
+          ? `One desk is in, at $${min}.`
+          : min === max
+            ? `${prices.length === desks.length ? "Every desk is in" : `All ${prices.length} in so far are`} on $${min}.`
+            : prices.length === desks.length
+              ? `The room is between $${min} and $${max}, middle $${mid}.`
+              : `The ${prices.length} in so far are between $${min} and $${max}, middle $${mid}.`,
+    // The guard that keeps this panel from destroying the thing it serves.
+    privacyNote: "Yours only \u2014 the projector never shows this while the night is open. Reading it out before the bell tells the room what to copy.",
+  };
+}
+
 function sameRun(desk: Desk): number {
   let best = 0;
   let run = 0;
@@ -3350,10 +3981,98 @@ export type WatchFlag = {
   urgency: "now" | "later";
 };
 
+/**
+ * `gate-l2-teacher` B5 (BLOCKING) — the same repair the sibling module already
+ * carries, missing here. The /teach landing page tells a first-time teacher to
+ * open an empty session and press Advance through every phase, and promises the
+ * whole period is rehearsable that way. It was not: with zero desks WATCH FOR
+ * rendered nothing at all, because every flag is computed off live desks. A
+ * teacher who rehearsed exactly as instructed met the room's only diagnostic
+ * panel for the first time in front of a class.
+ *
+ * These are the real flags with stand-in desks, every label prefixed REHEARSAL
+ * so they can never be mistaken for a live room, and they render ONLY when the
+ * session has no desks in it at all.
+ */
+function rehearsalWatchFor(phase: CanonicalPhase): WatchFlag[] {
+  const sample = (label: string, desks: string[], action: string, urgency: "now" | "later"): WatchFlag => ({
+    id: `rehearsal-${label.toLowerCase().replace(/[^a-z]+/g, "-").slice(0, 24)}`,
+    label: `REHEARSAL — ${label}`,
+    desks,
+    action,
+    urgency,
+  });
+  const flags: WatchFlag[] = [
+    sample(
+      "this panel is a sample, because nobody has joined",
+      ["Desk 1 · New York Knicks", "Desk 2 · Memphis Grizzlies"],
+      "With a real class this panel is computed live and names your actual desks. You are seeing the shapes now so none of them is new to you in front of the room.",
+      "now",
+    ),
+  ];
+  if (phase === "PLAY") {
+    flags.push(
+      sample(
+        "3 of 8 desks have not locked tonight",
+        ["Desk 4 · Memphis Grizzlies", "Desk 6 · New York Knicks", "Desk 7 · Memphis Grizzlies"],
+        "Ring the bell when you are ready — an unlocked desk settles at its own season-plan price and is marked AUTO on its own screen. Nobody is skipped and nobody gets a zero.",
+        "now",
+      ),
+      sample(
+        "Held the same price 3+ nights",
+        ["Desk 3 · New York Knicks"],
+        "Call on this desk when you reach the ADAPT questions — a desk that never moved the dial is the clearest contrast in the room.",
+        "later",
+      ),
+      sample(
+        "Paid to open more of the building on Night 4",
+        ["Desk 5 · New York Knicks", "Desk 8 · Memphis Grizzlies"],
+        "Keep this for the Night 4 reveal. Opening seats never beat pricing the night right — it only ever refunds part of a price that was already too low.",
+        "later",
+      ),
+    );
+  }
+  if (phase === "REVEAL" || phase === "ADAPT" || phase === "COUNTERFACTUAL" || phase === "SYNTHESIS") {
+    flags.push(
+      sample(
+        "Turned away 500+ fans on some night",
+        ["Desk 5 · New York Knicks", "Desk 2 · Memphis Grizzlies"],
+        "Ask what on the card should have told them, before you say anything about the answer.",
+        "later",
+      ),
+      sample(
+        "In the red — their night-spend dial is locked at $0 until the books clear",
+        ["Desk 7 · Memphis Grizzlies"],
+        "This is recoverable and usually recovers on its own; one good night clears it. Say so if the pair looks sunk.",
+        "now",
+      ),
+    );
+  }
+  return flags;
+}
+
 function teacherWatchFor(state: FullHouseState, phase: CanonicalPhase): WatchFlag[] {
   const out: WatchFlag[] = [];
   const desks = Object.values(state.desks);
   const windowOpen = phase === "PLAY" && state.nightIndex < NIGHT_COUNT;
+
+  // A pair standing in the room with a device that cannot join the lesson is
+  // the teacher's problem to solve in the next ten seconds, so it goes first.
+  const observers = observersOf(state);
+  if (observers.length > 0) {
+    out.push({
+      id: "late-observers",
+      label: `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the last night closed and could not be given a desk`,
+      desks: observers.map((_, i) => `Late pair ${i + 1}`),
+      action:
+        "There is no desk left to hand them \u2014 the nights are in the books and seating them now would change numbers this room has already been shown. Their screen says so and tells them to pull up to the nearest desk; say the same out loud and pair them with a desk near the door. Everything from here \u2014 the board, the argument, the synthesis \u2014 is the whole room's, so they lose nothing but the five nights.",
+      urgency: "now",
+    });
+  }
+
+  // Comes after the doorway flag and before everything else: a pair standing in
+  // the room outranks a rehearsal, and a rehearsal session has no desks at all.
+  if (desks.length === 0) return [...out, ...rehearsalWatchFor(phase)];
 
   if (windowOpen && desks.length > 0) {
     const stalled = desks.filter((d) => !d.locked).map((d) => deskHandle(d));
@@ -3607,6 +4326,7 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
           "Pairs join at /play on one device. Markets are handed out by desk number — odd desks run New York, even desks run Memphis — and the board shows the assignment as it happens.",
           "Read the board line out loud: \"You are not the GM today. You run the building.\"",
           `${deskCount} desk${deskCount === 1 ? "" : "s"} in so far.`,
+          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts the pair straight back in their own desk. If they lost it, press Reseat beside their name and read them a new one.",
         ],
         ask: [{ q: "Who has ever bought a ticket to anything? Who decided what it cost?", answer: null }],
         dontExplainYet: ["Do not explain the two books yet — the board does it in HOOK.", "Say nothing about price yet."],
@@ -4245,18 +4965,74 @@ export function frontierVisualForDesk(visual: SynthesisVisual | undefined, desk:
 }
 
 /**
+ * The season-long half of TWO BOOKS, NO EXCHANGE RATE. It is read off the
+ * model's own exact frontier for one market and depends on nothing the class
+ * played, which is why the rehearsal deck can print it verbatim: it is the one
+ * sentence on that card that is already true before a single desk joins.
+ */
+function seasonTradeoffLine(): string {
+  const market = MARKETS[0]!;
+  const strong = bestFoundSeason(market);
+  const corner = renewalsCornerSeason(market);
+  const marginal = renewalMarginalCost(market);
+  const gap = corner.renewals - strong.renewals;
+  if (gap <= 0) {
+    return "On this model, over five nights, the two books did not pull against each other as hard as they do night by night — the choice is sharpest inside one night.";
+  }
+  const perPoint = Math.round((strong.cash - corner.cash) / gap);
+  return `Over the whole five nights at the ${market.club}: the most cash we could find was $${strong.cash.toLocaleString()}, ending at ${strong.renewals}% renewals. The most season-ticket holders we could find was ${corner.renewals}%, and the best that line could make was $${corner.cash.toLocaleString()}. So ${gap} renewal points cost $${(strong.cash - corner.cash).toLocaleString()} — about $${perPoint.toLocaleString()} a point on average. But they do not cost the same: the cheapest points go for about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.`;
+}
+
+/**
  * Every card is computed from THIS class's locked-at-time numbers (D15) —
  * never scripted, never recomputed against a curve the room did not play.
  */
 export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): SynthesisCard[] {
   const cards: SynthesisCard[] = [];
+  // `gate-l2-teacher` B5 (BLOCKING), the L1 regression. The rehearsal this
+  // product prescribes runs with zero desks, and this deck collapsed to ONE
+  // placeholder card. A teacher who rehearsed exactly as instructed then met
+  // six unseen cards in the last seven minutes of a real period — the phase
+  // where the economics is finally named out loud and the teacher is doing the
+  // most talking. These are the six real card TEMPLATES with stand-in figures,
+  // every one marked REHEARSAL in the title so no live room could ever read
+  // them as its own arithmetic.
   if (agg.curves.length === 0) {
+    const stand = (id: string, title: string, body: string): SynthesisCard => ({
+      id: `rehearsal-${id}`,
+      title: `REHEARSAL — ${title}`,
+      body: `${body}\n\nEvery figure above is a STAND-IN. With a real class this card is computed from your room's own five nights and names your own desks.`,
+    });
     return [
-      {
-        id: "revenue",
-        title: "REVENUE = PRICE × PEOPLE",
-        body: "No nights are in the books yet. Once the room plays, this card fills in with the class's own numbers.",
-      },
+      stand(
+        "revenue",
+        "REVENUE = PRICE × PEOPLE",
+        "Night 2 at the Memphis Grizzlies, the same Saturday card for every desk in that market. One desk charged $34 and 14,904 people came — $506,736. Another charged $58 and 9,120 came — $528,960. The higher price took more money that night. Night 3 in the same building, the desk that charged $71 took $1,015,300 and the desk that charged $92 took $846,400: there the higher price took LESS. The number on the dial is not the revenue. Price times people is.",
+      ),
+      stand(
+        "shifters",
+        "THE CARD MOVED THE CROWD",
+        "The best price this room found on the quiet Tuesday card was $31. On the Saturday card, in the same building, with the same dial, it was $49. Nothing about the arena changed. What changed was the night: the day of the week, who was visiting, and whether it was on TV. The card moves the whole crowd, and the best price moves with it.",
+      ),
+      stand(
+        "loss-leader",
+        "THE TICKET IS NOT THE PRODUCT",
+        "On Night 3 in New York, tickets alone made the most money at $84. Add what those same people spent inside the building and the best price drops to $66 — $18 lower, 6 clicks of the dial. The cheaper ticket made more money, because a cheaper ticket brings more people and every one of them buys something. Stores call that a loss leader.",
+      ),
+      stand(
+        "path-dependence",
+        "NIGHT 5 WAS NIGHT 1",
+        "Night 5 was Night 1's card again — the same Tuesday, the same visiting club, no TV. 6 desks charged the exact same price both nights. Every one of them drew a different crowd the second time. The desks that had filled their building over the middle three nights drew MORE on Night 5 than they did on Night 1; the desks that had priced people out drew fewer. Nothing on the card changed. What changed was what those five nights had already done to the building's habit of showing up.",
+      ),
+      stand(
+        "two-books",
+        "TWO BOOKS, NO EXCHANGE RATE",
+        `Best full house each market managed: New York Knicks 99% · Memphis Grizzlies 100%. Median renewals: New York Knicks 61% · Memphis Grizzlies 58%. You cannot add a dollar to a renewal, and no price is best on both. ${seasonTradeoffLine()}`,
+      ),
+      // The one card with no stand-in figures in it at all: it is the same
+      // sentence in a rehearsal and in a live room, because it is about the
+      // world rather than about this class.
+      { id: "rehearsal-real-world", title: "REHEARSAL — YOUR JOB IS REAL", body: DYNAMIC_PRICING_COPY },
     ];
   }
 
@@ -4301,18 +5077,7 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
   // room infers is the model's true average marginal cost over exactly that
   // range — and the card says the thing that makes it economics rather than a
   // pair of numbers: the points are not all the same price.
-  const seasonTradeoff = ((): string => {
-    const market = MARKETS[0]!;
-    const strong = bestFoundSeason(market);
-    const corner = renewalsCornerSeason(market);
-    const marginal = renewalMarginalCost(market);
-    const gap = corner.renewals - strong.renewals;
-    if (gap <= 0) {
-      return "On this model, over five nights, the two books did not pull against each other as hard as they do night by night — the choice is sharpest inside one night.";
-    }
-    const perPoint = Math.round((strong.cash - corner.cash) / gap);
-    return `Over the whole five nights at the ${market.club}: the most cash we could find was $${strong.cash.toLocaleString()}, ending at ${strong.renewals}% renewals. The most season-ticket holders we could find was ${corner.renewals}%, and the best that line could make was $${corner.cash.toLocaleString()}. So ${gap} renewal points cost $${(strong.cash - corner.cash).toLocaleString()} — about $${perPoint.toLocaleString()} a point on average. But they do not cost the same: the cheapest points go for about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.`;
-  })();
+  const seasonTradeoff = seasonTradeoffLine();
   cards.push({
     id: "two-books",
     title: "TWO BOOKS, NO EXCHANGE RATE",

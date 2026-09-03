@@ -33,11 +33,18 @@ import {
   SHARE_GRID,
   SHARE_MAX,
   WEEK_COUNT,
+  GATE_PACKED_FLOOR,
+  GATE_BUSY_FLOOR,
   MODELED_DOLLARS_LINE,
+  MODELED_DOLLARS_SHORT,
   OBJECTIVE_COPY,
   barReleaseArm,
   botShareFor,
   computeAggregate,
+  giveAndTakeSummary,
+  giveAndTakeSummaryBoard,
+  reinvestBaseline,
+  reinvestChangeLineBoard,
   dealtLineClaimed,
   deskChoiceHeadingClaimed,
   deskChoiceLineClaimed,
@@ -404,11 +411,49 @@ test("leaving PLAY settles every remaining week and releases the bar; leaving RE
   state = hostTheLeagueModule.onPhaseExit!(state, "PLAY", "REVEAL");
   assert.equal(state.weekIndex, WEEK_COUNT);
   assert.equal(state.barReleased, true);
-  // D17's honour-what-was-submitted precedent: the week that was open commits
-  // on the dial the pair actually moved, not on the house price.
-  assert.equal(state.clubs[state.seatToSlot["seat-1"]!]!.weeks[0]!.price, 50);
+  // ONE FALLBACK PER LESSON. This path used to honour the pair's pending dial
+  // ($50) while the teacher's own week bell settled the same club at its house
+  // price — two different economies for the same student action, decided by
+  // which control the teacher pressed. Both paths now apply the policy the
+  // product promises: a club that never locked did not choose.
+  const slot = state.seatToSlot["seat-1"]!;
+  assert.notEqual(state.clubs[slot]!.weeks[0]!.price, 50, "an unlocked dial must not commit itself");
+  assert.equal(state.clubs[slot]!.weeks[0]!.auto, true, "and the week must be flagged as one nobody locked");
   state = hostTheLeagueModule.onPhaseExit!(state, "REVEAL", "ADAPT");
   assert.equal(state.revealStage, REVEAL_STEPS);
+});
+
+test("the week bell and a teacher's early exit settle an unlocked club identically", () => {
+  const build = (): ReturnType<typeof seated> => {
+    let s2 = seated(4);
+    return ok(act(s2, { type: "setPrice", price: 50 }, "PLAY", "seat-1"));
+  };
+  const exited = hostTheLeagueModule.onPhaseExit!(build(), "PLAY", "REVEAL");
+  const belled = ok(act(build(), { type: "teacher:closeWeek" }, "PLAY", "teacher"));
+  const slot = exited.seatToSlot["seat-1"]!;
+  assert.equal(
+    exited.clubs[slot]!.weeks[0]!.price,
+    belled.clubs[slot]!.weeks[0]!.price,
+    "the two close paths settle an unlocked club at different prices",
+  );
+});
+
+test("You Don't Play Alone declares a round contract naming the fallback per club", () => {
+  const contract = hostTheLeagueModule.round!;
+  let state = seated(4);
+  assert.equal(contract.currentKey(state, "PLAY"), "W1");
+  assert.equal(contract.currentKey(state, "REVEAL"), null);
+
+  state = ok(act(state, { type: "setPrice", price: 50 }, "PLAY", "seat-1"));
+  const seatIds = ["seat-1", "seat-2", "seat-3", "seat-4"];
+  const dialled = contract.unresolved(state, "PLAY", seatIds).find((u) => u.seatId === "seat-1")!;
+  assert.match(dialled.fallback, /NOT the \$50/, "the teacher must see the number the club is about to lose");
+
+  // League-office clubs have no seat and are never listed as unresolved.
+  assert.ok(contract.unresolved(state, "PLAY", seatIds).every((u) => seatIds.includes(u.seatId)));
+
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  assert.ok(!contract.unresolved(state, "PLAY", seatIds).some((u) => u.seatId === "seat-1"));
 });
 
 test("teacher pacing hooks are gated and cannot be double-fired", () => {
@@ -1742,6 +1787,17 @@ test("sr BLOCKING-1: no club renders a factual claim about a different club", ()
 test("sr BLOCKING-2: the modelled-dollars caption states no universal the bars falsify", () => {
   assert.equal(/for every club in this league/i.test(MODELED_DOLLARS_LINE), false, "'the biggest single pipe for every club' is false by week 1");
   assert.match(MODELED_DOLLARS_LINE, /Near a club's house price/);
+  // The desk gets the one sentence that changes how a pair reads a number; the
+  // full methodology stays on the board at SYNTHESIS. A student HOOK banner
+  // that is five sentences of parabola-shape prose is not a disclosure a
+  // ten-year-old reads, it is one they scroll past.
+  assert.ok(MODELED_DOLLARS_SHORT.length * 3 < MODELED_DOLLARS_LINE.length, "the desk's disclosure is not meaningfully shorter than the board's");
+  assert.match(MODELED_DOLLARS_SHORT, /shrunk to classroom size/i);
+  assert.match(MODELED_DOLLARS_SHORT, /SHARES/);
+  const hookDesk = hostTheLeagueModule.studentView(seated(4), "seat-1", "HOOK") as Record<string, unknown>;
+  assert.equal(hookDesk["modeledDollarsLine"], MODELED_DOLLARS_SHORT, "the desk still carries the board's paragraph");
+  const hookBoard = hostTheLeagueModule.boardView(seated(4), "HOOK") as Record<string, unknown>;
+  assert.equal(hookBoard["modeledDollarsLine"], MODELED_DOLLARS_LINE, "the full disclosure must survive somewhere");
   // And the counterexamples are real: local media overtakes the national check
   // at Draw 50 on the new-york profile, and Boston starts at 55.
   const ny = MARKET_PROFILES.find((m) => m.id === "new-york")!;
@@ -1778,4 +1834,335 @@ test("teacher B3: a desk that never locked is never presented as a free-rider", 
   const d6 = desks.find((d) => d.handle.includes("Desk 6"))!;
   assert.equal(d6.neverLocked, true);
   assert.equal(d6.autoWeeks, WEEK_COUNT);
+});
+
+/* ---------------------------------------- the projector is not a lecture -- */
+
+/**
+ * W6/RC2. The projector's REVEAL summaries had accreted a clause per econ
+ * finding — every one correct, every one necessary — until stages 2 and 5 were
+ * holding 190 and 150 words of body copy at 1.5vw in front of a room of
+ * ten-year-olds. A wall of text is not a consequence beat; it is a paragraph
+ * nobody in the back row reads and no teacher can narrate.
+ *
+ * The repair splits WHERE each sentence renders, not WHETHER it exists. So this
+ * test has two halves and neither is optional: the wall stays short, AND every
+ * word it no longer holds is in the teacher's hand instead.
+ */
+const WORDS = (s: string): number => s.trim().split(/\s+/).filter(Boolean).length;
+
+/**
+ * The budget is in CHARACTERS, not words, because characters are what decide
+ * lines. `.hl-summary` is 1.5vw on an 88vw box: at 1366x768 that is a 20.5px
+ * face in a 1202px column, about 118 characters a line at this font's average
+ * advance. Three lines is what a projector frame can spare under a chart
+ * without the reader losing the chart. 340 is those three lines.
+ *
+ * The real guard is `e2e-m2l2.cjs`, which measures actual overflow of `#stage`
+ * at both projector shapes. This one fails first, in milliseconds, and says why.
+ */
+const PROJECTOR_SUMMARY_CHARS = 340;
+
+/** Rooms whose findings take different branches, so the budget holds on all of them. */
+function summaryRooms(): { label: string; state: HostLeagueState }[] {
+  let noSpend = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) noSpend = playWeek(noSpend, (i) => 20 + i * 8, () => 0);
+  let heavy = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) heavy = playWeek(heavy, (i) => 30 + i * 6, () => 40);
+  let flat = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) flat = playWeek(flat, () => 50, () => 20);
+  let rising = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) rising = playWeek(rising, () => 44, () => 5 + w * 15);
+  const mixed = fullSession(9);
+  return [
+    { label: "nobody reinvested", state: noSpend },
+    { label: "everybody reinvested hard", state: heavy },
+    { label: "the room held flat", state: flat },
+    { label: "the room went up", state: rising },
+    { label: "mixed, twelve desks", state: fullSession(12) },
+    { label: "mixed, nine desks", state: mixed },
+    { label: "mixed, saw the bar early", state: { ...mixed, barReleased: true, barReleasedAtWeek: 1 } },
+  ];
+}
+
+test("W6/RC2: no REVEAL summary puts a paragraph on the projector", () => {
+  for (const { label, state } of summaryRooms()) {
+    const agg = computeAggregate(state);
+    for (const [stage, text] of [
+      ["2 — what you gave, what you got", giveAndTakeSummaryBoard(agg)],
+      ["5 — what you did in the last week", reinvestChangeLineBoard(agg, state)],
+      ["1 — the Handed-To-You bar", agg.barSummary],
+    ] as const) {
+      assert.ok(
+        text.length <= PROJECTOR_SUMMARY_CHARS,
+        `${label}: reveal stage ${stage} puts ${text.length} characters (${WORDS(text)} words) on the projector — budget ${PROJECTOR_SUMMARY_CHARS}, about three readable lines: "${text}"`,
+      );
+      assert.ok(text.trim().length > 0, `${label}: reveal stage ${stage} left the projector with no finding at all`);
+    }
+  }
+});
+
+test("W6/RC2: every word the projector gave up is in the teacher's hand", () => {
+  for (const { label, state } of summaryRooms()) {
+    const agg = computeAggregate(state);
+    const mirrorFor = (stage: number): string[] => {
+      const view = hostTheLeagueModule.teacherView({ ...state, revealStage: stage }, "REVEAL") as Record<string, unknown>;
+      const p = view["projectorNow"] as { title: string; lines: string[] };
+      return p.lines;
+    };
+    for (const [stage, full, board] of [
+      [2, giveAndTakeSummary(agg), giveAndTakeSummaryBoard(agg)],
+      [5, reinvestChangeLine(agg, state), reinvestChangeLineBoard(agg, state)],
+    ] as const) {
+      const lines = mirrorFor(stage).join("\n");
+      assert.ok(lines.includes(full), `${label}: stage ${stage}'s full finding is on neither surface — the reasoning was deleted, not moved`);
+      assert.ok(lines.includes(board), `${label}: the mirror does not tell the teacher what is literally on the frame at stage ${stage}`);
+      // The short rendering may never assert something the long one does not.
+      assert.ok(WORDS(board) < WORDS(full), `${label}: stage ${stage}'s board rendering is not shorter than the full finding`);
+    }
+  }
+});
+
+test("W6/RC2: the reinvest chart carries the comparison its sentence makes", () => {
+  for (const { label, state } of summaryRooms()) {
+    const agg = computeAggregate(state);
+    const base = reinvestBaseline(agg);
+    const [w1, w2, w3] = agg.meanShareByWeek;
+    if (w3 === null || (w1 === null && w2 === null)) {
+      assert.equal(base, null, `${label}: a room with no before must draw no reference line`);
+      continue;
+    }
+    const before = [w1, w2].filter((x): x is number => typeof x === "number");
+    const expected = Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
+    assert.equal(base, expected, `${label}: the line on the chart and the mean in the sentence must be the same number`);
+    // The sentence prints the same figure, so the two can never disagree.
+    assert.match(reinvestChangeLineBoard(agg, state), new RegExp(`${expected}%`.replace(".", "\\.")));
+  }
+});
+
+/* ------------------------------------------------------- the desk's reveal -- */
+
+/**
+ * W6 — THE DESK MUST NOT SPOIL THE BOARD.
+ *
+ * The reveal is five teacher-paced beats on the projector. The desk used to
+ * carry every number all five of them are about from beat 0: the season
+ * decomposition, the whole give-and-take ledger, the four pipes. A pair that
+ * looked down had already read the answer to every question the room was about
+ * to be asked, and a DOM diff of the desk across all six presses came back
+ * byte-identical.
+ *
+ * Gating that in the renderer alone would have left the numbers sitting in the
+ * payload one devtools panel away, and put the choreography somewhere no unit
+ * test can reach. The beat a number belongs to is a property of the lesson, so
+ * this asserts it on the payload the lesson emits.
+ */
+test("W6: no reveal beat's numbers reach the desk before the teacher presses it", () => {
+  let state = fullSession(6);
+  const KEY_BEAT: [string, number][] = [
+    ["doorBlocks", 1],
+    ["give", 2],
+    ["mine", 3],
+    ["bestNight", 4],
+    ["ownReinvest", 5],
+  ];
+  for (let beat = 0; beat <= REVEAL_STEPS; beat += 1) {
+    const view = hostTheLeagueModule.studentView({ ...state, revealStage: beat }, "seat-1", "REVEAL") as Record<string, unknown>;
+    assert.equal(view["deskBeat"], beat, `the desk does not know which beat it is on at stage ${beat}`);
+    for (const [key, itsBeat] of KEY_BEAT) {
+      if (beat >= itsBeat) {
+        assert.ok(view[key] !== undefined, `beat ${itsBeat} is up but the desk was not given "${key}"`);
+      } else {
+        assert.equal(view[key], undefined, `at beat ${beat} the desk already holds "${key}", which belongs to beat ${itsBeat}`);
+      }
+    }
+    // The three ledger sentences belong to beat 2 with the ledger they describe.
+    for (const key of ["giveLine", "giveHeading", "dealtLine"]) {
+      if (beat < 2) assert.equal(view[key], "", `at beat ${beat} the desk is already printing "${key}"`);
+      else assert.ok(String(view[key] ?? "").length > 0, `beat 2 is up but "${key}" is empty`);
+    }
+  }
+  // ADAPT is after the reveal: everything is on the table.
+  const adapt = hostTheLeagueModule.studentView(state, "seat-1", "ADAPT") as Record<string, unknown>;
+  assert.equal(adapt["deskBeat"], REVEAL_STEPS, "ADAPT must show the whole reveal, not beat 0");
+  for (const [key] of KEY_BEAT) assert.ok(adapt[key] !== undefined, `ADAPT is missing "${key}"`);
+});
+
+test("W6: the pair's one reveal call is taken before the beat that answers it, and only from a seat", () => {
+  const state = fullSession(6);
+  const atStage = (n: number): HostLeagueState => ({ ...state, revealStage: n });
+
+  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "gave" }, "PLAY", "seat-1")), /during REVEAL/);
+  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "teacher")), /seated pair/);
+  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "maybe" }, "REVEAL", "seat-1")), /gave or took/);
+  assert.match(bad(act(atStage(2), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "seat-1")), /already on the projector/);
+
+  const called = ok(act(atStage(1), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "seat-1"));
+  const before = hostTheLeagueModule.studentView(called, "seat-1", "REVEAL") as Record<string, unknown>;
+  assert.equal(before["prediction"], "gave");
+  assert.equal(before["predictOpen"], false, "a pair that has called must not be asked again");
+  assert.equal(before["predictionResolved"], null, "the call may not be settled before the ledger goes up");
+
+  const after = hostTheLeagueModule.studentView({ ...called, revealStage: 2 }, "seat-1", "REVEAL") as Record<string, unknown>;
+  const resolved = after["predictionResolved"] as { actual: string; right: boolean; line: string };
+  assert.ok(resolved, "beat 2 did not settle the call");
+  assert.ok(resolved.actual === "gave" || resolved.actual === "took");
+  // The verdict is the room's own arithmetic, not a hand-written branch: it has
+  // to agree with the ledger the same payload prints.
+  const give = after["give"] as { gave: number; received: number };
+  assert.equal(resolved.actual, give.gave > give.received ? "gave" : "took", "the verdict disagrees with the ledger beside it");
+  assert.equal(resolved.right, resolved.actual === "gave");
+  assert.match(resolved.line, /You called/);
+
+  // A desk that never called is never shown a verdict on a call it did not make.
+  const silent = hostTheLeagueModule.studentView({ ...called, revealStage: 2 }, "seat-2", "REVEAL") as Record<string, unknown>;
+  assert.equal(silent["prediction"], null);
+  assert.equal(silent["predictionResolved"], null);
+  assert.equal(silent["predictOpen"], false, "the call closes for everyone once the ledger is up");
+});
+
+test("W6: the locked pair gets the gate call, and only a locked pair does", () => {
+  let state = seated(4);
+  // Before the lock there is no call to make: the dials are still the work.
+  const preLock = hostTheLeagueModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>;
+  assert.equal(preLock["gateCall"], undefined, "an undecided desk was offered the waiting beat");
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1")), /commit your price first/);
+
+  state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+
+  const offered = hostTheLeagueModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>;
+  const gate = offered["gateCall"] as { prompt: string; bands: { id: string }[]; called: string | null; room: { locked: number; seated: number; line: string } };
+  assert.ok(gate, "the locked desk was left with nothing to do");
+  assert.deepEqual(
+    gate.bands.map((b) => b.id),
+    ["packed", "busy", "quiet"],
+  );
+  assert.equal(gate.called, null);
+  // The room line is an AGGREGATE. /play must never learn which desk is which.
+  assert.equal(gate.room.locked, 1);
+  assert.equal(gate.room.seated, 4);
+  assert.match(gate.room.line, /1 of 4/);
+  assert.ok(!/seat-/.test(JSON.stringify(gate)), "the room line leaked a seat identity onto a private surface");
+
+  // Rejections are semantic, never transport-shaped.
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "teacher")), /seated pair/);
+  assert.match(bad(act(state, { type: "gateCall", band: "maybe" }, "PLAY", "seat-1")), /packed, busy or quiet/);
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "REVEAL", "seat-1")), /during PLAY/);
+
+  // The call is changeable while the week is open — a misclick must not cost a
+  // fifth-grader a whole week — and the LAST one standing is what is frozen.
+  state = ok(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1"));
+  assert.equal((hostTheLeagueModule.studentView(state, "seat-1", "PLAY") as { gateCall: { called: string } }).gateCall.called, "packed");
+  state = ok(act(state, { type: "gateCall", band: "quiet" }, "PLAY", "seat-1"));
+  assert.equal((hostTheLeagueModule.studentView(state, "seat-1", "PLAY") as { gateCall: { called: string } }).gateCall.called, "quiet");
+
+  // A desk that never called is never asked to answer for one.
+  const silent = hostTheLeagueModule.studentView(state, "seat-2", "PLAY") as Record<string, unknown>;
+  assert.equal(silent["gateCall"], undefined, "an unlocked desk was shown the waiting beat");
+});
+
+test("W6: the settled week answers the call it was actually given, and calls nothing else", () => {
+  let state = seated(4);
+  for (const seatId of ["seat-1", "seat-2", "seat-3", "seat-4"]) {
+    state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", seatId));
+    state = ok(act(state, { type: "lock" }, "PLAY", seatId));
+  }
+  state = ok(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "gateCall", band: "quiet" }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "teacher:closeWeek" }, "PLAY", "teacher"));
+
+  const weekOf = (seatId: string) => {
+    const v = hostTheLeagueModule.studentView(state, seatId, "PLAY") as { history: { call: { called: string; actual: string; right: boolean; line: string } | null; turnout: number; capacity: number }[] };
+    return v.history[0]!;
+  };
+
+  const one = weekOf("seat-1");
+  assert.ok(one.call, "the call the pair made never came back");
+  assert.equal(one.call!.called, "packed");
+  // The verdict must be the settled week's OWN arithmetic, recomputed here from
+  // the numbers printed beside it rather than trusted.
+  const fill = one.turnout / one.capacity;
+  const expected = fill >= GATE_PACKED_FLOOR ? "packed" : fill >= GATE_BUSY_FLOOR ? "busy" : "quiet";
+  assert.equal(one.call!.actual, expected, "the verdict disagrees with the crowd on the same card");
+  assert.equal(one.call!.right, one.call!.called === one.call!.actual);
+  assert.match(one.call!.line, /You called PACKED\./);
+  assert.match(one.call!.line, new RegExp(`${one.turnout.toLocaleString()} came`));
+  // Forecasting language only: the call is about reading a crowd, never about
+  // whether the PRICE was any good (economic truth — outcome is not decision
+  // quality).
+  assert.ok(!/good|bad|wrong price|mistake|should have/i.test(one.call!.line), `the call's verdict judged the decision: ${one.call!.line}`);
+
+  const two = weekOf("seat-2");
+  assert.equal(two.call!.called, "quiet");
+  // Two desks at the same price in different buildings may land in different
+  // bands; what may never happen is one desk's call reaching another's week.
+  assert.notEqual(one.call!.called, two.call!.called);
+
+  const three = weekOf("seat-3");
+  assert.equal(three.call, null, "a desk that made no call was handed a verdict on one");
+
+  // The pending call does not survive its own week: week 2 starts uncalled.
+  state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  assert.equal(
+    (hostTheLeagueModule.studentView(state, "seat-1", "PLAY") as { gateCall: { called: string | null } }).gateCall.called,
+    null,
+    "week 1's call carried into week 2",
+  );
+});
+
+/* ------------------------------------------------------------------------ */
+/* THE DESKS — the walk-to list                                             */
+/* ------------------------------------------------------------------------ */
+
+test("the desk strip names every live club and stays teacher-only", () => {
+  type Strip = { countLine: string; entries: { seatId: string; label: string; state: string; stateLabel: string; note: string | null }[] };
+  const stripOf = (s: HostLeagueState, phase: CanonicalPhase = "PLAY"): Strip | null =>
+    ((hostTheLeagueModule.teacherView(s, phase) as Record<string, unknown>)["deskStrip"] as Strip | null) ?? null;
+
+  assert.equal(stripOf(empty()), null);
+  const state = seated(4);
+  const strip = stripOf(state)!;
+  assert.equal(strip.entries.length, 4);
+  assert.match(strip.countLine, /0 of 4 locked · week 1 of 3/);
+  for (const e of strip.entries) assert.equal(e.state, "deciding");
+
+  const one = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const after = stripOf(one)!;
+  assert.match(after.countLine, /1 of 4 locked/);
+  assert.equal(after.entries.find((e) => e.seatId === "seat-2")!.stateLabel, "Locked Week 1");
+
+  // Never on the projector, never on a student device.
+  for (const phase of ALL_PHASES) {
+    const board = JSON.stringify(hostTheLeagueModule.boardView(one, phase));
+    assert.equal(board.includes("deskStrip"), false, `the projector carries the walk-to list in ${phase}`);
+    assert.equal(/seat-\d/.test(board), false, `a seat id reached the projector in ${phase}`);
+  }
+  assert.equal(JSON.stringify(hostTheLeagueModule.studentView(one, "seat-1", "PLAY")).includes("deskStrip"), false);
+});
+
+test("the desk mirrors the synthesis card the projector is on, and changes with every press", () => {
+  // The desk used to be one frozen sentence for the whole of SYNTHESIS —
+  // byte-identical through every card the teacher turned, in the stretch of the
+  // period where the economics is finally named out loud.
+  let state = fullSession(6);
+  const seat = state.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const seen = new Set<string>();
+  const total = synthesisCards(state, computeAggregate(state)).length;
+  assert.ok(total > 1, "guard: the fixture must produce a multi-card deck");
+  for (let i = 0; i < total; i += 1) {
+    const student = hostTheLeagueModule.studentView(state, seat, "SYNTHESIS") as Record<string, unknown>;
+    const board = hostTheLeagueModule.boardView(state, "SYNTHESIS") as Record<string, unknown>;
+    const title = String(student["synthCardTitle"] ?? "");
+    assert.ok(title.length > 0, `the desk showed no card at page ${i + 1}`);
+    const onBoard = JSON.stringify(board["cards"] ?? board["card"] ?? "");
+    assert.ok(onBoard.includes(title), `the desk showed "${title}" while the projector showed something else`);
+    assert.equal(String(student["synthPage"]), String(i + 1));
+    seen.add(title);
+    const next = hostTheLeagueModule.reduce(state, { type: "teacher:synthPage" }, { phase: "SYNTHESIS", seatId: "teacher", seatIds: [], now: 0 });
+    assert.ok(next.ok, next.ok ? "" : next.reason);
+    state = next.state;
+  }
+  assert.equal(seen.size, total, "the desk repeated a card instead of following the board");
 });

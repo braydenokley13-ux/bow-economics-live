@@ -12,6 +12,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  OBSERVER_ACTION,
+  OBSERVER_MESSAGE,
+  observersOf,
   CARDS,
   FULL_HOUSE_UI_COPY,
   MARKETS,
@@ -22,12 +25,16 @@ import {
   PRICE_MIN,
   PRICE_STEP,
   RENEWALS_START,
+  RENEWAL_DELTA_FLOOR,
+  GATE_PACKED_FLOOR,
+  GATE_BUSY_FLOOR,
   REVEAL_STEPS,
   SIMPLIFICATIONS,
   TWO_PEAKS_CARD_ID,
   CF_ROWS_PER_PAGE,
   bestFoundSeason,
   computeAggregate,
+  synthesisCards,
   orderRepeatRows,
   pathDependenceCardBody,
   repeatSummary,
@@ -91,6 +98,17 @@ function playNight(state: FullHouseState, prices: Record<SeatId, number>, spends
     next = ok(act(next, { type: "lock" }, "PLAY", seatId));
   }
   return ok(act(next, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+}
+
+/** Four desks that played all five nights at prices that move — a live deck. */
+function playedOut(): FullHouseState {
+  let state = seated(4);
+  const prices = [34, 58, 70, 46, 34];
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const p = prices[i]!;
+    state = playNight(state, { "seat-1": p, "seat-2": p + 6, "seat-3": p - 6, "seat-4": p });
+  }
+  return state;
 }
 
 /** Every number appearing anywhere in a view payload, with its key path. */
@@ -536,6 +554,88 @@ test("B1: the renewals low arm binds inside the legal dial, in every market", ()
   }
 });
 
+test("R4-5: the renewals book is still moving where the pair is actually deciding", () => {
+  // The shipped straight-then-clipped gouging arm hit its 20-point limit about
+  // $9 above the reference price, which on N1/N2/N5 is below the night's own
+  // cash optimum: 43 of the 56 legal prices on N2 returned the identical -20,
+  // so a pair playing the money book WELL scored exactly as badly on renewals
+  // as a pair pricing $120 to an empty building. Two things have to hold for
+  // the second book to be a book at all rather than a night-shaped tax.
+  for (const market of MARKETS) {
+    for (const card of CARDS) {
+      const curve = curveFor(market, card, RENEWALS_START, 0);
+      const net = (p: number) => settleNight(market, curve, p, 0, false, card.bowlOffer).net;
+      const cashOpt = PRICE_GRID.reduce((a, p) => (net(p) > net(a) ? p : a));
+      // (1) the night's own cash-best price is never on the floor
+      assert.ok(
+        renewalDelta(market, card, cashOpt, 0) > RENEWAL_DELTA_FLOOR,
+        `${market.id} ${card.id}: the cash-best price $${cashOpt} already sits on the renewals floor, so every price at or above it reads the same`,
+      );
+      // (2) across the prices a pair actually argues over, the book discriminates
+      const best = Math.max(...PRICE_GRID.map(net));
+      const band = PRICE_GRID.filter((p) => net(p) >= best - Math.abs(best) * 0.15);
+      const counts = new Map<number, number>();
+      for (const p of band) {
+        const v = renewalDelta(market, card, p, 0);
+        counts.set(v, (counts.get(v) ?? 0) + 1);
+      }
+      const longest = Math.max(...counts.values());
+      assert.ok(
+        longest <= Math.ceil(band.length / 3),
+        `${market.id} ${card.id}: ${longest} of the ${band.length} prices within 15% of the night's best net read the identical renewals number`,
+      );
+    }
+  }
+});
+
+test("R4-5: the gouging arm bites all the way up, and the one-night limit is live but never near a real price", () => {
+  for (const market of MARKETS) {
+    for (const card of CARDS) {
+      const reference = renewalReferencePrice(market, card);
+      const above = PRICE_GRID.filter((p) => p > reference);
+      // strictly monotone before the clamp: the bent arm never stops biting
+      for (let i = 1; i < above.length; i += 1) {
+        const lo = renewalDeltaRaw(market, card, above[i - 1]!, 0);
+        const hi = renewalDeltaRaw(market, card, above[i]!, 0);
+        assert.ok(hi <= lo, `${market.id} ${card.id}: $${above[i]} is not worse for renewals than $${above[i - 1]}`);
+      }
+      // W6 second pass. This used to assert the OPPOSITE of what the lesson
+      // wants: that $120 reaches the one-night limit on every gougeable card.
+      // It passed on constants where the limit was reached at 41 of 56 legal
+      // prices, so three quarters of the dial returned one number and a pair
+      // could not read its own choice out of the second book. What the arm owes
+      // the desk is a DISTINCT number wherever a price is worth considering; the
+      // limit is a backstop for prices that have already emptied the building.
+      const curve = curveFor(market, card, RENEWALS_START, 0);
+      const cashBest = PRICE_GRID.reduce((best, p) =>
+        settleNight(market, curve, p, 0, false, card.bowlOffer).net > settleNight(market, curve, best, 0, false, card.bowlOffer).net ? p : best,
+      );
+      // The LOW arm reaching the limit at the $10 floor is deliberate and is
+      // P12's business; this is about the gouging side.
+      const clipped = PRICE_GRID.filter((p) => p > reference && renewalDelta(market, card, p, 0) <= RENEWAL_DELTA_FLOOR);
+      for (const p of clipped) {
+        // "you have already lost everyone you were going to lose" has to be
+        // literally true where the arm goes flat, or it is just the old clip.
+        assert.equal(
+          settleNight(market, curve, p, 0, false, card.bowlOffer).turnout,
+          0,
+          `${market.id} ${card.id}: the renewals limit binds at $${p}, where people are still walking in`,
+        );
+        assert.ok(
+          p >= cashBest * 2,
+          `${market.id} ${card.id}: the renewals limit binds at $${p}, under twice the night's cash-best $${cashBest}`,
+        );
+      }
+    }
+  }
+  // The clamp is still live code, not a number nothing can reach: the cards
+  // whose reference IS the plan price still bottom out at the top of the dial.
+  const reachable = MARKETS.flatMap((market) =>
+    CARDS.filter((card) => renewalDelta(market, card, PRICE_MAX, 0) === RENEWAL_DELTA_FLOOR).map((card) => `${market.id}/${card.id}`),
+  );
+  assert.ok(reachable.length >= 4, `the one-night limit is unreachable at every market x card: ${reachable.join(", ") || "none"}`);
+});
+
 test("B1: the two-book frontier is not one-directional — some price above a night's cash optimum is undominated", () => {
   for (const market of MARKETS) {
     let found = 0;
@@ -808,10 +908,22 @@ test("locked-at-time: the Two Peaks numbers do not move when a desk's later stat
   assert.deepEqual(computeAggregate(moved).twoPeaks, before);
 });
 
-test("the empty-room synthesis card is honest rather than fabricated", () => {
-  const board = fullHouseModule.boardView(empty(), "SYNTHESIS") as { cards: { id: string; body: string }[] };
-  assert.equal(board.cards.length, 1);
-  assert.match(board.cards[0]!.body, /No nights are in the books yet/);
+test("the empty-room synthesis deck is honest rather than fabricated", () => {
+  // It is the full rehearsal deck now, not one apology card — but nothing the
+  // projector prints may be readable as this room's own arithmetic. The board
+  // stages one card per frame, so walk every frame.
+  type Frame = { cards: { id: string; title: string; body: string }[]; cardCount: number; synthPageCount: number };
+  let state = empty();
+  const first = fullHouseModule.boardView(state, "SYNTHESIS") as Frame;
+  assert.ok(first.cardCount > 1, "the empty-room deck is still one apology card");
+  for (let i = 0; i < first.synthPageCount; i += 1) {
+    const frame = fullHouseModule.boardView(state, "SYNTHESIS") as Frame;
+    for (const card of frame.cards) {
+      assert.match(card.title, /^REHEARSAL — /, `${card.id} could be read as a played card`);
+      if (/\$[\d,]|\d+%/.test(card.body)) assert.match(card.body, /Every figure above is a STAND-IN/);
+    }
+    state = ok(act(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher"));
+  }
 });
 
 test("aggregate curve points always carry their market and their card (R9)", () => {
@@ -886,25 +998,75 @@ test("gate-l1-sr F4: every real figure that reaches a screen carries its stamp a
  * on now settles on the dials the pairs set, per D17's auto-resolve-on-exit
  * precedent, instead of throwing away a real price for the plan price.
  */
-test("teacher misclick: leaving PLAY settles the open night on the dials as they stand", () => {
-  let state = seated(2);
-  state = ok(act(state, { type: "setPrice", price: 56 }, "PLAY", "seat-1")); // set, deliberately NOT locked
-  state = ok(act(state, { type: "setSpend", spend: 20_000 }, "PLAY", "seat-1"));
-  const after = fullHouseModule.onPhaseExit!(state, "PLAY", "REVEAL");
-  const n1 = after.desks["seat-1"]!.nights[0]!;
-  assert.equal(n1.price, 56, "the price the pair had actually set was thrown away");
-  assert.equal(n1.spend, 20_000, "the night spend the pair had actually set was thrown away");
-  assert.equal(n1.auto, true, "the night must still be flagged as one nobody locked");
-  // a desk that touched nothing is unchanged: it still settles at the plan price
-  assert.equal(after.desks["seat-2"]!.nights[0]!.price, MARKETS.find((m) => m.id === "memphis")!.planPrice);
-  // and the nights nobody ever saw are still auto-played at the plan price
-  assert.equal(after.nightIndex, NIGHT_COUNT);
-  assert.equal(after.desks["seat-1"]!.nights[1]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
-  // the night bell itself is unchanged: an unlocked desk is the "did nothing" line
-  let belled = seated(1);
+test("one fallback per lesson: the bell and a teacher's early exit settle an unlocked desk identically", () => {
+  // The two paths used to disagree. Leaving PLAY honoured the pair's pending
+  // dials; the bell settled the same desk at the season plan. Same room, same
+  // student action, two different economies depending on which control the
+  // teacher happened to press — and the bell is the path a real class takes
+  // every night. The policy that survives is the one the product PROMISES in
+  // three places (the bell's confirm line, the WATCH FOR flag, the desk's AUTO
+  // badge): a desk that never locked did not choose. Honouring an unlocked dial
+  // would also dissolve LOCK IT IN, the lesson's signature commitment beat.
+  const plan = (id: string) => MARKETS.find((m) => m.id === id)!.planPrice;
+
+  let exited = seated(2);
+  exited = ok(act(exited, { type: "setPrice", price: 56 }, "PLAY", "seat-1")); // set, deliberately NOT locked
+  exited = ok(act(exited, { type: "setSpend", spend: 20_000 }, "PLAY", "seat-1"));
+  const afterExit = fullHouseModule.onPhaseExit!(exited, "PLAY", "REVEAL");
+  const exitNight = afterExit.desks["seat-1"]!.nights[0]!;
+
+  let belled = seated(2);
   belled = ok(act(belled, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
+  belled = ok(act(belled, { type: "setSpend", spend: 20_000 }, "PLAY", "seat-1"));
   belled = ok(act(belled, { type: "teacher:closeNight" }, "PLAY", "teacher"));
-  assert.equal(belled.desks["seat-1"]!.nights[0]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
+  const bellNight = belled.desks["seat-1"]!.nights[0]!;
+
+  assert.equal(exitNight.price, bellNight.price, "the two close paths settle an unlocked desk at different prices");
+  assert.equal(exitNight.spend, bellNight.spend, "the two close paths settle an unlocked desk at different spends");
+  assert.equal(exitNight.price, plan("new-york"), "an unlocked desk must settle at its season plan price");
+  assert.equal(exitNight.spend, 0, "an unlocked desk must settle having spent nothing");
+  assert.equal(exitNight.auto, true, "the night must still be flagged as one nobody locked");
+
+  // A locked desk is untouched by any of this: it settles at what it committed.
+  let locked = seated(2);
+  locked = ok(act(locked, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
+  locked = ok(act(locked, { type: "lock" }, "PLAY", "seat-1"));
+  const afterLock = fullHouseModule.onPhaseExit!(locked, "PLAY", "REVEAL");
+  assert.equal(afterLock.desks["seat-1"]!.nights[0]!.price, 56);
+  assert.equal(afterLock.desks["seat-1"]!.nights[0]!.auto, false);
+
+  // A desk that touched nothing is unchanged, and the nights nobody ever saw
+  // are still auto-played at the plan price.
+  assert.equal(afterExit.desks["seat-2"]!.nights[0]!.price, plan("memphis"));
+  assert.equal(afterExit.nightIndex, NIGHT_COUNT);
+  assert.equal(afterExit.desks["seat-1"]!.nights[1]!.price, plan("new-york"));
+});
+
+test("Full House declares a round contract naming the fallback per desk", () => {
+  const contract = fullHouseModule.round!;
+  let state = seated(2);
+  assert.equal(contract.currentKey(state, "PLAY"), "N1");
+  assert.equal(contract.currentKey(state, "REVEAL"), null, "no round is open outside PLAY");
+
+  // Both desks unresolved at the start of a night; each is named.
+  const before = contract.unresolved(state, "PLAY", ["seat-1", "seat-2"]);
+  assert.equal(before.length, 2);
+
+  // A desk sitting on a dial it never locked is told what the dial is NOT worth.
+  state = ok(act(state, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
+  const dialled = contract.unresolved(state, "PLAY", ["seat-1", "seat-2"]).find((u) => u.seatId === "seat-1")!;
+  assert.match(dialled.fallback, /NOT the \$56/, "the teacher must see the number the desk is about to lose");
+  assert.match(dialled.fallback, /\$24/, "and the number it will actually settle at");
+
+  // Locking removes the desk from the unresolved list entirely.
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  const after = contract.unresolved(state, "PLAY", ["seat-1", "seat-2"]);
+  assert.deepEqual(after.map((u) => u.seatId), ["seat-2"]);
+
+  // The declared policy and what the close actually does must agree.
+  assert.match(contract.fallbackPolicy, /season plan/);
+  const closed = ok(act(state, { type: contract.closeHook }, "PLAY", "teacher"));
+  assert.equal(closed.desks["seat-2"]!.nights[0]!.price, MARKETS.find((m) => m.id === "memphis")!.planPrice);
 });
 
 /* ------------------------------------- m2-visual-quality-war wave 2, Lane C -- */
@@ -1176,16 +1338,22 @@ test("R4-4a: the settled night's cause is the FULL renewals rule, carrying the a
   }
 });
 
-test("R4-4b: the floor line fires only when the 20-point clamp bound — never on the book's 0 floor, never at exactly the clamp", () => {
-  assert.equal(renewalFloorBinds(-29, -20), true);
-  assert.equal(renewalFloorBinds(-20, -20), false, "the rule asked for exactly the clamp, not more");
-  assert.equal(renewalFloorBinds(-29, -10), false, "the book's own floor took the rest");
-  assert.equal(renewalFloorBinds(-29, 0), false);
+test("R4-4b: the floor line fires only when the one-night clamp bound — never on the book's 0 floor, never at exactly the clamp", () => {
+  // Every number here comes off RENEWAL_DELTA_FLOOR rather than a literal, so
+  // the property survives a retune of the clamp instead of failing as a stale
+  // transcript of one (W6 `econ-l1-renewals-dead-arm` moved it).
+  const F = RENEWAL_DELTA_FLOOR;
+  assert.equal(renewalFloorBinds(F - 9, F), true);
+  assert.equal(renewalFloorBinds(F, F), false, "the rule asked for exactly the clamp, not more");
+  assert.equal(renewalFloorBinds(F - 9, F + 10), false, "the book's own floor took the rest");
+  assert.equal(renewalFloorBinds(F - 9, 0), false);
   assert.equal(renewalFloorBinds(-5, -5), false);
   const ny = MARKETS.find((m) => m.id === "new-york")!;
-  assert.ok(renewalDeltaRaw(ny, CARDS[0]!, PRICE_MIN, 0) < -20, "the $10 New York night asks for more than the clamp");
-  assert.equal(renewalDelta(ny, CARDS[0]!, PRICE_MIN, 0), -20);
-  // three $10 nights in New York: 50 -> 30 (clamped), 30 -> 10 (clamped), 10 -> 0 (the book's floor)
+  assert.ok(renewalDeltaRaw(ny, CARDS[0]!, PRICE_MIN, 0) < F, "the $10 New York night asks for more than the clamp");
+  assert.equal(renewalDelta(ny, CARDS[0]!, PRICE_MIN, 0), F);
+  // Three $10 nights in New York. The first two clamp; the third finds a stock
+  // too small to absorb the whole clamp, so the book's own 0 floor takes the
+  // rest and the clamp line must go quiet.
   let state = seated(2);
   for (let i = 0; i < 3; i += 1) state = playNight(state, { "seat-1": PRICE_MIN, "seat-2": 24 });
   const history = (
@@ -1193,14 +1361,19 @@ test("R4-4b: the floor line fires only when the 20-point clamp bound — never o
       history: { renewalsBefore: number; renewalsAfter: number; renewalMove: number; renewalAtFloor: boolean }[];
     }
   ).history;
+  const walked: [number, number, number, boolean][] = [];
+  let stock = RENEWALS_START;
+  for (let i = 0; i < 3; i += 1) {
+    const after = Math.max(0, Math.min(100, stock + F));
+    walked.push([stock, after, after - stock, after - stock === F]);
+    stock = after;
+  }
   assert.deepEqual(
     history.map((h) => [h.renewalsBefore, h.renewalsAfter, h.renewalMove, h.renewalAtFloor]),
-    [
-      [50, 30, -20, true],
-      [30, 10, -20, true],
-      [10, 0, -10, false],
-    ],
+    walked,
   );
+  assert.equal(walked[0]![3], true, "the first $10 night must be a clamped night");
+  assert.equal(walked[walked.length - 1]![3], false, "the last night must be the book's floor, not the clamp");
 });
 
 test("R5-5: the carried-dial cue never names a night the pair did not price, and the dial resets to the plan price", () => {
@@ -1306,4 +1479,475 @@ test("R4-4c / R4-5: the ledger says a quarter, and the renderer's former sentenc
   const peaks = (fullHouseModule.studentView(at, "seat-1", "REVEAL") as { twoPeaks: { gapDollars: number; gapSteps: number; note: string }[] }).twoPeaks;
   assert.ok(peaks.length > 0);
   for (const p of peaks) assert.equal(p.note, twoPeaksNoteFor(p.gapDollars, p.gapSteps));
+});
+
+/* -------------------------------------------------- THE ROOM (W6) -- */
+
+type RoomRead = {
+  deskCount: number;
+  lockedCount: number;
+  spread: { min: number; max: number; median: number; range: number };
+  decidingCount: number;
+  bins: { from: number; to: number; count: number; lockedCount: number; handles: string[] }[];
+  movement: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; deciding: number };
+  firstNight: boolean;
+  movementLine: string;
+  spreadLine: string;
+};
+const roomOf = (state: FullHouseState): RoomRead | null =>
+  (fullHouseModule.teacherView(state, "PLAY") as Record<string, unknown>)["room"] as RoomRead | null;
+
+test("the room read never reaches the projector while a night is open", () => {
+  // R13 is the reason this lesson's reveal lands at all: the class commits
+  // blind. A live histogram of everyone's dial on the projector would end that
+  // in one press, so the read exists on the teacher's console and nowhere else.
+  let state = seated(4);
+  for (const [i, price] of [24, 30, 36, 42].entries()) {
+    state = ok(act(state, { type: "setPrice", price }, "PLAY", `seat-${i + 1}`));
+  }
+  assert.ok(roomOf(state), "the teacher must have the read");
+  const board = JSON.stringify(fullHouseModule.boardView(state, "PLAY"));
+  for (const price of [24, 30, 36, 42]) {
+    assert.ok(
+      !board.includes(`"price":${price}`),
+      `the projector is carrying a live dial (${price}) while the night is open`,
+    );
+  }
+  assert.ok(!board.includes("movement"), "the projector is carrying the class movement read");
+  assert.ok(!board.includes("spreadLine"), "the projector is carrying the class spread read");
+});
+
+test("the room read counts the spread and the shape of the live dials", () => {
+  let state = seated(4);
+  for (const [i, price] of [20, 24, 24, 40].entries()) {
+    state = ok(act(state, { type: "setPrice", price }, "PLAY", `seat-${i + 1}`));
+    state = ok(act(state, { type: "lock" }, "PLAY", `seat-${i + 1}`));
+  }
+  const room = roomOf(state)!;
+  assert.deepEqual(room.spread, { min: 20, max: 40, median: 24, range: 20 });
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 4, "every desk lands in exactly one bin");
+  assert.ok(room.bins.every((b) => b.from % 2 === 0), "a bar edge must be a price a desk could have chosen");
+  assert.match(room.spreadLine, /\$20 and \$40/);
+  assert.equal(room.deskCount, 4);
+});
+
+test("the spread is a fact about decisions — an untouched room has no spread to read out", () => {
+  // Rendered on the console at nought-of-six locked, this sentence said "The
+  // room is between $16 and $24, middle $20" — which was not the room, it was
+  // the two season plan prices the dials open on. A teacher reading it out has
+  // told the class a spread nobody chose.
+  const untouched = roomOf(seated(4))!;
+  assert.equal(untouched.spread, null, "no decisions, no spread");
+  assert.doesNotMatch(untouched.spreadLine, /between/, `invented a spread: "${untouched.spreadLine}"`);
+  assert.match(untouched.spreadLine, /Nothing is committed yet/);
+  assert.equal(untouched.bins.reduce((n, b) => n + b.count, 0), 4, "the dials are still drawn — as positions");
+  assert.equal(untouched.bins.reduce((n, b) => n + b.lockedCount, 0), 0, "and none of them is a decision");
+
+  // Part-way through a night the sentence says how many it speaks for, and
+  // speaks only for them.
+  let state = seated(4);
+  state = ok(act(state, { type: "setPrice", price: 20 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "setPrice", price: 40 }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  // seat-3 has moved its dial a long way and NOT committed: it must not widen
+  // the spread the teacher is about to say out loud.
+  state = ok(act(state, { type: "setPrice", price: 90 }, "PLAY", "seat-3"));
+  const part = roomOf(state)!;
+  assert.deepEqual(part.spread, { min: 20, max: 40, median: 30, range: 20 });
+  assert.match(part.spreadLine, /The 2 in so far are between \$20 and \$40/, part.spreadLine as string);
+  assert.equal(part.bins.reduce((n, b) => n + b.count, 0), 4, "the uncommitted dial is still on the histogram");
+  assert.ok(
+    part.bins.some((b) => b.from <= 90 && 90 <= b.to && b.lockedCount === 0),
+    "and it is drawn where it actually is, as an undecided position",
+  );
+
+  const one = roomOf(ok(act(ok(act(seated(4), { type: "setPrice", price: 20 }, "PLAY", "seat-1")), { type: "lock" }, "PLAY", "seat-1")))!;
+  assert.match(one.spreadLine, /One desk is in, at \$20\./, one.spreadLine as string);
+});
+
+test("movement is counted over committed decisions, not over open dials", () => {
+  // The obvious version reports moves nobody made: the dial reopens each night
+  // at the desk's season plan price, so a pair who has not touched anything yet
+  // looks like it cut its price. A lock is the only thing here that means "we
+  // decided".
+  let state = seated(3);
+  // seat-1 and seat-2 price night 1 themselves; seat-3 never locks and is
+  // auto-committed by the bell.
+  state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+
+  // Night two. seat-1 raises and locks; seat-2 lowers and locks; seat-3, whose
+  // night one the bell committed, also locks.
+  state = ok(act(state, { type: "setPrice", price: 40 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "setPrice", price: 20 }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const midNight = roomOf(state)!;
+  assert.equal(midNight.movement.deciding, 1, "seat-3 has not committed, so it is deciding — not moving");
+  assert.equal(midNight.movement.basis, 2);
+
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-3"));
+  const room = roomOf(state)!;
+  assert.equal(room.movement.raised, 1);
+  assert.equal(room.movement.lowered, 1);
+  assert.equal(room.movement.held, 0);
+  assert.equal(room.movement.basis, 2, "only the two desks that priced their own night count");
+  assert.equal(room.movement.noOwnPrior, 1, "the bell-committed desk is reported, not counted as adaptation");
+  assert.equal(room.movement.deciding, 0);
+  assert.match(room.movementLine, /1 raised, 0 held, 1 lowered/);
+});
+
+test("an untouched dial is never reported as a price cut", () => {
+  // The defect this exists for: night two reopens every dial at the season plan
+  // price. A desk that has done nothing at all was being counted as "lowered".
+  let state = seated(2);
+  state = playNight(state, { "seat-1": 48, "seat-2": 48 });
+  const room = roomOf(state)!;
+  assert.equal(room.movement.lowered, 0, "nobody has decided anything on this night yet");
+  assert.equal(room.movement.basis, 0);
+  assert.equal(room.decidingCount, 2);
+  assert.match(room.movementLine, /Nobody is in yet/);
+});
+
+test("the room read goes away once the five-night window is closed", () => {
+  // After the last bell there is no live dial to read, and the staged REVEAL
+  // owns the numbers. A stale histogram beside it would compete with it.
+  let state = seated(2);
+  for (let n = 0; n < 5; n += 1) {
+    state = playNight(state, { "seat-1": 30, "seat-2": 34 });
+  }
+  assert.equal(roomOf(state), null);
+});
+
+test("a first night reports no movement rather than inventing some", () => {
+  let state = seated(2);
+  state = ok(act(state, { type: "setPrice", price: 26 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  const room = roomOf(state)!;
+  assert.equal(room.movement.basis, 0);
+  assert.equal(room.firstNight, true);
+  assert.match(room.movementLine, /First night/);
+});
+
+test("every desk lands in exactly one bar, locked and deciding kept apart", () => {
+  let state = seated(4);
+  for (const [i, price] of [20, 24, 24, 40].entries()) {
+    state = ok(act(state, { type: "setPrice", price }, "PLAY", `seat-${i + 1}`));
+  }
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const room = roomOf(state)!;
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 4);
+  assert.equal(room.bins.reduce((n, b) => n + b.lockedCount, 0), 1);
+  assert.ok(room.bins.every((b) => b.lockedCount <= b.count), "a bar cannot hold more decisions than desks");
+});
+
+test("W6: the locked pair gets the gate call, and only a locked pair does", () => {
+  let state = seated(4);
+  const bad = (r: ReturnType<typeof fullHouseModule.reduce>): string => {
+    assert.equal(r.ok, false, "expected a refusal");
+    return (r as { ok: false; reason: string }).reason;
+  };
+
+  // Before the lock there is no call to make: the dials are still the work.
+  assert.equal(
+    (fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"],
+    undefined,
+    "an undecided desk was offered the waiting beat",
+  );
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1")), /commit your price first/);
+
+  state = ok(act(state, { type: "setPrice", price: 34 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+
+  const gate = (fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"] as {
+    bands: { id: string }[];
+    called: string | null;
+    heading: string;
+    foot: string;
+    room: { locked: number; seated: number; line: string };
+  };
+  assert.ok(gate, "the locked desk was left with nothing to do");
+  assert.deepEqual(
+    gate.bands.map((b) => b.id),
+    ["packed", "busy", "quiet"],
+  );
+  assert.equal(gate.called, null);
+  // The room line is an AGGREGATE. /play must never learn which desk is which.
+  assert.equal(gate.room.locked, 1);
+  assert.equal(gate.room.seated, 4);
+  assert.match(gate.room.line, /1 of 4/);
+  assert.ok(!/seat-/.test(JSON.stringify(gate)), "the room line leaked a seat identity onto a private surface");
+
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "teacher")), /seated pair/);
+  assert.match(bad(act(state, { type: "gateCall", band: "sold" }, "PLAY", "seat-1")), /packed, busy or quiet/);
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "REVEAL", "seat-1")), /during PLAY/);
+
+  // Changeable while the night is open; the last one standing is what freezes.
+  state = ok(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "gateCall", band: "quiet" }, "PLAY", "seat-1"));
+  assert.equal(
+    ((fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"] as { called: string }).called,
+    "quiet",
+  );
+  assert.equal(
+    (fullHouseModule.studentView(state, "seat-2", "PLAY") as Record<string, unknown>)["gateCall"],
+    undefined,
+    "an unlocked desk was shown the waiting beat",
+  );
+});
+
+test("W6: the bell answers the call it was actually given, and calls nothing else", () => {
+  let state = seated(4);
+  for (const seatId of ["seat-1", "seat-2", "seat-3", "seat-4"]) {
+    state = ok(act(state, { type: "setPrice", price: 24 }, "PLAY", seatId));
+    state = ok(act(state, { type: "lock" }, "PLAY", seatId));
+  }
+  state = ok(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "gateCall", band: "quiet" }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+
+  const nightOf = (seatId: SeatId) => {
+    const v = fullHouseModule.studentView(state, seatId, "PLAY") as {
+      history: { call: { called: string; actual: string; right: boolean; line: string } | null; turnout: number; seatsOpen: number; fillPct: number }[];
+    };
+    return v.history[0]!;
+  };
+
+  const one = nightOf("seat-1");
+  assert.ok(one.call, "the call the pair made never came back");
+  assert.equal(one.call!.called, "packed");
+  // Recomputed from the numbers printed beside it, never trusted. Fill is of the
+  // seats OPENED, which on the bowl night is not capacity (R-2).
+  const fill = one.turnout / one.seatsOpen;
+  assert.equal(one.call!.actual, fill >= GATE_PACKED_FLOOR ? "packed" : fill >= GATE_BUSY_FLOOR ? "busy" : "quiet");
+  assert.equal(one.call!.right, one.call!.called === one.call!.actual);
+  assert.match(one.call!.line, /^You called PACKED\./);
+  assert.match(one.call!.line, new RegExp(`${one.turnout.toLocaleString()} came`));
+  // Forecasting language only. Reading a crowd and pricing well are different
+  // skills, and the product must never let one stand in for the other.
+  assert.ok(!/good|bad|wrong price|mistake|should have/i.test(one.call!.line), `the call's answer judged the decision: ${one.call!.line}`);
+
+  assert.equal(nightOf("seat-2").call!.called, "quiet");
+  assert.equal(nightOf("seat-3").call, null, "a desk that made no call was handed a verdict on one");
+
+  // The pending call does not survive its own night.
+  state = ok(act(state, { type: "setPrice", price: 24 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  assert.equal(
+    ((fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"] as { called: string | null }).called,
+    null,
+    "night 1's call carried into night 2",
+  );
+});
+
+/* ------------------------------------------- the late arrival (W6) -- */
+
+test("a pair who arrives after the fifth bell is landed honestly, not left finding a desk", () => {
+  // Every figure this room has already been shown — the class curve, the two
+  // peaks, the repeat rows, the synthesis cards — is computed over the desks
+  // that played. Seating a new desk during REVEAL would silently re-derive
+  // numbers the teacher has read out loud. So it is not seated; what it must
+  // never get is what it used to get, which was "finding your desk…" for the
+  // rest of the period behind a refusal nobody was told about.
+  let state = seated(3);
+  for (let night = 0; night < NIGHT_COUNT; night += 1) {
+    for (const seat of ["seat-1", "seat-2", "seat-3"]) {
+      state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", seat));
+      state = ok(act(state, { type: "lock" }, "PLAY", seat));
+    }
+    state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+  }
+
+  // The action is ACCEPTED — a definitive refusal is what stranded the device.
+  assert.ok(
+    (fullHouseModule.allowedActions("REVEAL") as readonly string[]).includes("takeSeat"),
+    "takeSeat must stay offered after the nights close, or the runtime refuses it before the module can answer",
+  );
+  const before = Object.keys(state.desks).length;
+  state = ok(act(state, { type: "takeSeat" }, "REVEAL", "seat-late"));
+  assert.equal(Object.keys(state.desks).length, before, "a late pair was given a desk and rewrote the room's evidence");
+  assert.deepEqual([...observersOf(state)], ["seat-late"], "the late pair was not recorded anywhere");
+
+  // Its own screen is told the truth, in the module's words.
+  const view = fullHouseModule.studentView(state, "seat-late", "REVEAL") as Record<string, unknown>;
+  assert.equal(view["seated"], false);
+  assert.equal(view["observer"], true);
+  assert.equal(view["message"], OBSERVER_MESSAGE);
+  assert.equal(view["observerAction"], OBSERVER_ACTION);
+  assert.doesNotMatch(String(view["message"]), /finding your desk/i);
+  // ...and it says what to DO, not only what went wrong.
+  assert.match(String(view["observerAction"]), /nearest desk/i);
+
+  // The teacher is told, because this is a pair standing in the room.
+  const teacher = fullHouseModule.teacherView(state, "REVEAL") as Record<string, unknown>;
+  const flags = teacher["watchFor"] as { id: string; label: string; desks: string[]; urgency: string }[];
+  const flag = flags.find((f) => f.id === "late-observers");
+  assert.ok(flag, "the console said nothing about a pair that cannot join");
+  assert.equal(flag.urgency, "now");
+  assert.match(flag.label, /1 pair arrived after the last night closed/);
+  assert.equal(/seat-/.test(JSON.stringify(flag)), false, "the console flag carries a seat identity");
+
+  // Repeating it is idempotent, and a second late pair is counted.
+  state = ok(act(state, { type: "takeSeat" }, "REVEAL", "seat-late"));
+  assert.equal(observersOf(state).length, 1, "the same device was recorded twice");
+  state = ok(act(state, { type: "takeSeat" }, "SYNTHESIS", "seat-later"));
+  assert.equal(observersOf(state).length, 2);
+
+  // And the projector never carries any of it.
+  const board = JSON.stringify(fullHouseModule.boardView(state, "REVEAL"));
+  assert.equal(/seat-late|observerSeats/.test(board), false, "the projector is carrying the observer list");
+});
+
+test("a late pair during PLAY still gets a real desk — the observer path is only for a closed room", () => {
+  // The path that matters is unchanged: a pair arriving at Night 3 gets a desk
+  // with the nights it missed played at its own plan price and labelled.
+  let state = seated(2);
+  state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+  state = ok(act(state, { type: "takeSeat" }, "PLAY", "seat-late"));
+  assert.ok(state.desks["seat-late"], "a late pair was refused a desk while nights were still open");
+  assert.equal(observersOf(state).length, 0, "a pair that CAN be seated must never be recorded as an observer");
+  const view = fullHouseModule.studentView(state, "seat-late", "PLAY") as Record<string, unknown>;
+  assert.equal(view["seated"], true);
+});
+
+/* ------------------------------------------------------------------------ */
+/* THE DESKS — the walk-to list                                             */
+/* ------------------------------------------------------------------------ */
+
+type Strip = {
+  countLine: string;
+  entries: { seatId: string; label: string; state: string; stateLabel: string; note: string | null; flag: boolean }[];
+};
+const stripOf = (state: FullHouseState, phase: CanonicalPhase = "PLAY"): Strip | null =>
+  ((fullHouseModule.teacherView(state, phase) as Record<string, unknown>)["deskStrip"] as Strip | null) ?? null;
+
+test("the desk strip names every live desk, and says which ones have not committed", () => {
+  assert.equal(stripOf(empty()), null, "an empty room has no walk-to list");
+
+  const state = seated(3);
+  const strip = stripOf(state)!;
+  assert.ok(strip);
+  assert.equal(strip.entries.length, 3);
+  assert.match(strip.countLine, /0 of 3 locked · night 1 of 5/);
+  for (const e of strip.entries) {
+    assert.equal(e.state, "deciding");
+    assert.equal(e.stateLabel, "Still dialling");
+    assert.match(e.label, /^Desk \d+ · /);
+    assert.ok(e.seatId, "a chip with no seat id cannot be paired with the pair sitting there");
+  }
+
+  // One desk commits: the strip must move with it, and only it.
+  const one = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const after = stripOf(one)!;
+  assert.match(after.countLine, /1 of 3 locked/);
+  const locked = after.entries.filter((e) => e.state === "in");
+  assert.equal(locked.length, 1);
+  assert.equal(locked[0]!.seatId, "seat-2");
+  assert.equal(locked[0]!.stateLabel, "Locked Night 1");
+});
+
+test("a desk the bell has been deciding for is named as such, and a settled room stops asking", () => {
+  // Two desks play; the third never locks and the bell settles it, twice.
+  let state = seated(3);
+  state = playNight(state, { "seat-1": 40, "seat-2": 30 });
+  state = playNight(state, { "seat-1": 44, "seat-2": 32 });
+  const strip = stripOf(state)!;
+  const stranded = strip.entries.find((e) => e.seatId === "seat-3")!;
+  assert.match(String(stranded.note), /never once locked a night of its own/i);
+  const decided = strip.entries.find((e) => e.seatId === "seat-1")!;
+  assert.equal(decided.note, null, "a desk that has been deciding for itself was flagged anyway");
+
+  // After the fifth bell there is nothing left to walk over about tonight.
+  let done = state;
+  for (let i = 0; i < 3; i += 1) done = playNight(done, { "seat-1": 40, "seat-2": 30, "seat-3": 50 });
+  const closed = stripOf(done)!;
+  assert.match(closed.countLine, /all five nights settled/);
+  for (const e of closed.entries) assert.equal(e.state, "closed");
+});
+
+test("the walk-to list is teacher-only — no seat id and no desk strip ever reaches the projector", () => {
+  const state = ok(act(seated(3), { type: "lock" }, "PLAY", "seat-1"));
+  for (const phase of ["LOBBY", "HOOK", "PLAY", "REVEAL", "COUNTERFACTUAL", "SYNTHESIS"] as const) {
+    const board = JSON.stringify(fullHouseModule.boardView(state, phase));
+    assert.equal(board.includes("deskStrip"), false, `the projector carries the walk-to list in ${phase}`);
+    assert.equal(/seat-\d/.test(board), false, `a seat id reached the projector in ${phase}`);
+  }
+  // And a student never gets one either — it is a list of other people's desks.
+  const student = JSON.stringify(fullHouseModule.studentView(state, "seat-1", "PLAY"));
+  assert.equal(student.includes("deskStrip"), false, "a student device carries the teacher's walk-to list");
+});
+
+test("a late desk is annotated but is not a reason to walk over", () => {
+  // Two desks play a night, then a third pair arrives. Their books carry a night
+  // they did not play, which the teacher needs to know when reading them — but
+  // it is not a malfunction, and the console must not send the teacher across
+  // the room for it.
+  let state = seated(2);
+  state = playNight(state, { "seat-1": 40, "seat-2": 30 });
+  state = ok(act(state, { type: "takeSeat" }, "PLAY", "seat-9"));
+  const late = stripOf(state)!.entries.find((e) => e.seatId === "seat-9")!;
+  assert.match(String(late.note), /Joined at Night 2; the first 1 night was covered for them\./);
+  assert.equal(late.flag, false, "a late desk was marked as a reason to walk over");
+
+  // But once that same pair has sat through a night they COULD have locked and
+  // let the bell take it, they are.
+  const stranded = stripOf(playNight(state, { "seat-1": 40, "seat-2": 30 }))!.entries.find((e) => e.seatId === "seat-9")!;
+  assert.match(String(stranded.note), /never once locked a night of its own/i);
+  assert.equal(stranded.flag, true);
+});
+
+test("a zero-desk rehearsal walks the whole synthesis deck, marked REHEARSAL, never as the room's own arithmetic", () => {
+  // `gate-l2-teacher` B5, the L1 regression. /teach tells a first-time teacher
+  // to open an empty session and advance through every phase. This deck used to
+  // collapse to one placeholder, so the rehearsal that the product prescribes
+  // taught the teacher one sixth of the phase where they talk the most.
+  const cold = empty();
+  const rehearsal = synthesisCards(cold, computeAggregate(cold));
+  const played = playedOut();
+  const live = synthesisCards(played, computeAggregate(played));
+  assert.equal(rehearsal.length, live.length, "the rehearsal deck is a different length from the live deck");
+  assert.deepEqual(
+    rehearsal.map((c) => c.title.replace(/^REHEARSAL — /, "")),
+    live.map((c) => c.title),
+    "the rehearsal deck teaches card titles the live deck does not have",
+  );
+  for (const card of rehearsal) {
+    assert.match(card.title, /^REHEARSAL — /, `${card.id} could be mistaken for a live card`);
+    assert.ok(card.body.trim().length > 40, `${card.id} is a stub`);
+  }
+  // Every card carrying a made-up figure says so; the one card with no figures
+  // in it is the same sentence live and in rehearsal, and does not need to.
+  for (const card of rehearsal) {
+    if (/\$[\d,]|\d+%/.test(card.body)) {
+      assert.match(card.body, /Every figure above is a STAND-IN/, `${card.id} prints figures with no stand-in warning`);
+    }
+  }
+});
+
+test("a live room never sees a REHEARSAL card or a REHEARSAL watch flag", () => {
+  const state = playedOut();
+  for (const card of synthesisCards(state, computeAggregate(state))) {
+    assert.equal(/REHEARSAL/.test(card.title), false, `${card.id} leaked the rehearsal deck into a played room`);
+    assert.equal(/STAND-IN/.test(card.body), false, `${card.id} leaked a stand-in warning into a played room`);
+  }
+  const teach = JSON.stringify(fullHouseModule.teacherView(state, "PLAY"));
+  assert.equal(teach.includes("REHEARSAL"), false, "a live room's WATCH FOR carried a rehearsal flag");
+});
+
+test("a zero-desk rehearsal shows WATCH FOR in every phase it exists in, always marked", () => {
+  const cold = empty();
+  for (const phase of ["PLAY", "REVEAL", "ADAPT", "COUNTERFACTUAL", "SYNTHESIS"] as const) {
+    const view = fullHouseModule.teacherView(cold, phase) as Record<string, unknown>;
+    const flags = view["watchFor"] as { label: string; desks: string[]; action: string }[];
+    assert.ok(flags.length > 0, `WATCH FOR was empty in ${phase} — the prescribed rehearsal teaches nothing there`);
+    for (const f of flags) {
+      assert.match(f.label, /^REHEARSAL — /, `an unmarked flag rendered in a rehearsal ${phase}`);
+      assert.ok(f.desks.length > 0, "a flag rendered with no desks named");
+      assert.ok(f.action.trim().length > 30, "a flag rendered with no instruction");
+    }
+  }
 });

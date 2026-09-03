@@ -35,6 +35,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = 4305;
 const BASE = `http://localhost:${PORT}`;
@@ -122,7 +123,11 @@ async function buildL1AndL2() {
   console.log(`[e2e-l3] L1 complete and ended (code ${l1Code})`);
 
   console.log("[e2e-l3] === L2: playing the Trade Deadline through the real API ===");
-  const l2 = await api("/api/sessions", { method: "POST", body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "E2E L3 chain — L2", sourceSessionId: l1.session.id }) });
+  // Linking a new session to an old one reads the old one's state, so it needs
+  // proof the caller runs a room on this server (see SessionService's
+  // assertAnyTeacher). In a classroom the teacher's own console holds that key
+  // already; here the harness presents the L1 key it was just issued.
+  const l2 = await api("/api/sessions", { method: "POST", headers: { Authorization: `Bearer ${l1TeacherKey}` }, body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "E2E L3 chain — L2", sourceSessionId: l1.session.id }) });
   const l2Code = l2.session.code;
   const l2TeacherKey = l2.teacherKey;
   const l2SessionId = l2.session.id;
@@ -151,7 +156,7 @@ async function buildL1AndL2() {
   await api(`/api/sessions/${l2Code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l2TeacherKey}` }, body: JSON.stringify({ type: "end" }) });
   console.log(`[e2e-l3] L2 complete and ended (code ${l2Code}) — Alpha stood pat, Beta signed a veteran, Gamma won a sealed bid`);
 
-  return { l2SessionId };
+  return { l2SessionId, l2TeacherKey };
 }
 
 /* --------------------------------------------------------------- L3 UI helpers -- */
@@ -165,9 +170,24 @@ async function submitOffer(page, agentId, desiredAmount, slotId) {
   // N1 repair (VERIFY_L3.md N1): confirm the composer actually scrolled into the visible viewport (the
   // app's own fix, not Playwright's separate auto-scroll-before-click on the slot chip below) -- read the
   // bounding box right after the composer opens, before clicking anything inside it.
-  const box = await page.locator("#faComposerRoot .fa-offer-composer").boundingBox();
+  // Read the box from the page rather than through Playwright's locator, which
+  // additionally requires the element to hold still across two animation
+  // frames. /play re-renders on its own poll, so a composer that is measured
+  // across a re-render times out on stability and reports as a missing box --
+  // a harness artifact wearing the costume of the N1 regression this check
+  // exists to catch. getBoundingClientRect answers about the element that is
+  // on screen right now, which is exactly the question being asked.
+  const box = await page.evaluate(() => {
+    const el = document.querySelector("#faComposerRoot .fa-offer-composer");
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
+  });
   const viewportSize = page.viewportSize();
   if (!box || !viewportSize) throw new Error(`composer for ${agentId} has no bounding box -- N1 regression`);
+  if (box.width === 0 || box.height === 0) {
+    throw new Error(`composer for ${agentId} rendered at 0x0 -- N1 regression`);
+  }
   const withinViewport = box.y >= 0 && box.y < viewportSize.height && box.y + box.height > 0;
   if (!withinViewport) {
     throw new Error(`composer for ${agentId} opened off-screen at ${viewportSize.width}x${viewportSize.height} (box.y=${box.y}, box.height=${box.height}) -- N1 regression`);
@@ -208,6 +228,7 @@ async function main() {
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
 
   console.log("[e2e-l3] starting server...");
+  await assertPortFree(PORT, require("path").basename(__filename));
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
@@ -221,7 +242,7 @@ async function main() {
 
   let browser;
   try {
-    const { l2SessionId } = await buildL1AndL2();
+    const { l2SessionId, l2TeacherKey } = await buildL1AndL2();
 
     console.log("[e2e-l3] === L3: driving /teach, /play x4, /board through real Chromium pages ===");
     browser = await chromium.launch();
@@ -242,6 +263,13 @@ async function main() {
       page.on("dialog", (d) => d.accept());
     }
 
+    // The link list only answers a teacher of a room on this server, because
+    // it hands out every live class's join code. A real teacher's console is
+    // already holding the key from the lesson they just ran; this harness ran
+    // L1 and L2 through the API, so it puts that key where /teach keeps it.
+    await teach.addInitScript((key) => {
+      try { localStorage.setItem("bow-teach-session-key", key); } catch { /* private mode */ }
+    }, l2TeacherKey);
     await teach.goto(`${BASE}/teach`);
     await teach.selectOption("#lesson", "m1l3-free-agency");
     await teach.waitForSelector("#sourceSessionRow:not([hidden])");

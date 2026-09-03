@@ -1,5 +1,6 @@
 import { ApiError } from "../shared/api.js";
 import { crestStyle } from "../shared/crest.js";
+import { createFreshness } from "../shared/freshness.js";
 import { startPolling } from "../shared/poll.js";
 
 type BoardPayload = {
@@ -8,6 +9,13 @@ type BoardPayload = {
   frozen: boolean;
   ended: boolean;
   version: number;
+  round: {
+    status: "OPEN" | "FINAL_CALL" | "CLOSED";
+    key: string;
+    endsAt: string | null;
+    serverNow: string;
+    closedBy: "final_call_expired" | "close_now" | "module" | null;
+  } | null;
   view: Record<string, unknown>;
 };
 
@@ -65,8 +73,43 @@ function askForCode(message: string): void {
 
 const PEAK_MODES = new Set(["reveal", "synthesis", "consequence"]);
 
+/* ---------------------------------------------------------------- FINAL CALL --
+ * The room's shared clock. Drawn from `endsAt - serverNow` as a duration and
+ * ticked locally, exactly as /play and /teach do it, so the projector and every
+ * desk in the room count down off the same number regardless of what any
+ * device's clock says. The board never rules on time — it only shows it.
+ * ------------------------------------------------------------------------- */
+const fcBand = document.getElementById("fcBand")!;
+let fcDeadline: number | null = null;
+let fcTimer: ReturnType<typeof setInterval> | null = null;
+
+function paintFcBand(): void {
+  if (fcDeadline === null) return;
+  const left = Math.max(0, fcDeadline - Date.now());
+  document.getElementById("fcBandClock")!.textContent = `${Math.ceil(left / 1000)}`;
+  fcBand.classList.toggle("late", left <= 5000);
+}
+
+function renderFinalCallBand(payload: BoardPayload): void {
+  const round = payload.round;
+  const on = !payload.ended && round?.status === "FINAL_CALL" && Boolean(round.endsAt);
+  fcBand.classList.toggle("on", on);
+  if (!on || !round?.endsAt) {
+    if (fcTimer !== null) {
+      clearInterval(fcTimer);
+      fcTimer = null;
+    }
+    fcDeadline = null;
+    return;
+  }
+  fcDeadline = Date.now() + Math.max(0, Date.parse(round.endsAt) - Date.parse(round.serverNow));
+  if (fcTimer === null) fcTimer = setInterval(paintFcBand, 200);
+  paintFcBand();
+}
+
 function render(payload: BoardPayload): void {
   setHud(`v${payload.version} · ${payload.phase}`);
+  renderFinalCallBand(payload);
 
   if (payload.ended) {
     backdrop.classList.remove("peak");
@@ -206,7 +249,7 @@ function renderDraftDay(view: Record<string, unknown>, mode: string): void {
           // this team's spend as a share of the class-wide max, so shorter-spend
           // rosters read as visibly shorter columns next to bigger spenders.
           const segs = g.positions
-            .map((p) => `<div class="seg" title="${p.slot} $${p.price}M" style="height:${g.spent > 0 ? (p.price / g.spent) * 100 : 0}%; background:${POSITION_COLOR[p.slot] ?? "var(--accent-blue)"};"></div>`)
+            .map((p) => `<div class="seg" title="${escapeHtml(p.slot)} $${p.price}M" style="height:${g.spent > 0 ? (p.price / g.spent) * 100 : 0}%; background:${POSITION_COLOR[p.slot] ?? "var(--accent-blue)"};"></div>`)
             .join("");
           // G4: label every bar with its franchise (crest + fictional name) — never a
           // student name — so a class can point at the projector and say "that's ours!"
@@ -1325,6 +1368,13 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
   // existing fit discipline applied one frame further: spacing gives way, type
   // never does, so the 2.6%-of-screen-height back-row floor is untouched.
   if (mode === "reveal" && Number(view["revealStage"] ?? 0) === 2) stage.classList.add("hl-ledger-frame");
+  // Which beat is ACTUALLY on the projector, readable from outside the page.
+  // A harness that identifies the beat by its headline can sample the previous
+  // frame during the poll that carries the press — the e2e's reveal-stage log
+  // shifted by one the first time a beat's render time changed — and a guard
+  // that silently checks stage N-1 for stage N's defect is worse than no guard.
+  if (mode === "reveal") stage.dataset["revealStage"] = String(Number(view["revealStage"] ?? 0));
+  else delete stage.dataset["revealStage"];
   switch (mode) {
     case "lobby": {
       const league = (view["league"] as HLClubB[]) ?? [];
@@ -1477,11 +1527,28 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
       } else if (stageNo >= 5) {
         const shown = (means ?? []).map((m, i) => ({ week: i + 1, m }));
         const maxM = Math.max(1, ...shown.map((x) => x.m ?? 0));
+        // The bars are drawn from zero, so a 1.9-point move looks like a
+        // 1.9-point move — which is the truth, and which is also why the three
+        // columns alone carry almost none of the claim under them. The
+        // reference line is the comparison the sentence actually makes: the
+        // weeks-1-2 mean, so the eye can see week 3 sitting under it without
+        // the axis being zoomed to manufacture a cliff.
+        const baseline = view["meanBaseline"];
+        const baseAt = typeof baseline === "number" ? (baseline / maxM) * 100 : null;
+        const chip = view["ruleChip"];
         bodyHtml = `
+          ${typeof chip === "string" && chip ? `<div class="wr-board-rule hl-rule-chip" id="hlRule">${escapeHtml(chip)}</div>` : ""}
           <div class="hl-means" id="hlMeans">${shown
             .map(
-              (x) =>
-                `<div class="hl-mean-col"><div class="hl-mean-num">${x.m === null ? "—" : `${x.m}%`}</div><div class="hl-mean-bar" style="height:${x.m === null ? 2 : Math.max(4, ((x.m ?? 0) / maxM) * 100)}%"></div><div class="hl-mean-lbl">WEEK ${x.week}</div></div>`,
+              (x, i) =>
+                `<div class="hl-mean-col">
+                   <div class="hl-mean-num">${x.m === null ? "—" : `${x.m}%`}</div>
+                   <div class="hl-mean-track">
+                     <div class="hl-mean-bar" style="height:${x.m === null ? 2 : Math.max(4, ((x.m ?? 0) / maxM) * 100)}%"></div>
+                     ${baseAt === null ? "" : `<div class="hl-mean-base" style="bottom:${baseAt}%">${i === shown.length - 1 ? `<span>weeks 1–2 · ${baseline}%</span>` : ""}</div>`}
+                   </div>
+                   <div class="hl-mean-lbl">WEEK ${x.week}</div>
+                 </div>`,
             )
             .join("")}</div>
           <div class="synthesis-note hl-summary" id="hlChange">${escapeHtml(String(view["changeLine"] ?? ""))}</div>`;
@@ -1925,17 +1992,37 @@ function boot(): void {
     askForCode("This projector is not pointed at a room yet. Type your class code — the same one your students join with.");
     return;
   }
-  startPolling<BoardPayload>(`/api/sessions/${code}/board`, 1000, render, {
-    onError: (error) => {
-      if (error instanceof ApiError && error.status === 404) {
-        // Never roam to another room. A 404 means THIS code is gone, and the
-        // only safe next frame is a prompt, not somebody else's class.
-        askForCode(`There is no live session with the code ${code}. Check the code on your teacher console and type it here.`);
-        return;
-      }
-      setHud("reconnecting…");
+  // W2: a frame from before the press the room just watched must never reach
+  // the projector. `version` never goes backwards on the server, so a lower one
+  // is a response that was already in flight when the teacher pressed.
+  const freshness = createFreshness<BoardPayload>((p) => ({ code, version: p.version }));
+  // Carried through from the page URL: the teacher console embeds this page as
+  // its own mirror, and that mirror must not be counted as a projector watching
+  // the room, or BOARD LIVE would be true in an empty gym.
+  const preview = new URLSearchParams(window.location.search).get("preview") === "1"; // claim-ok: a URL flag naming the console's own mirror, never rendered
+  startPolling<BoardPayload>(
+    `/api/sessions/${code}/board${preview ? "?preview=1" : ""}`, // claim-ok: a query flag, never rendered
+    1000,
+    (payload) => {
+      if (!freshness.accept(payload)) return;
+      render(payload);
     },
-  });
+    {
+      // W4: the projector is the surface a teacher watches while they press the
+      // button, so it is the one where a poll interval reads as lag. The stream
+      // only says "ask again"; the frame still comes from /board.
+      streamUrl: `/api/sessions/${code}/stream`,
+      onError: (error) => {
+        if (error instanceof ApiError && error.status === 404) {
+          // Never roam to another room. A 404 means THIS code is gone, and the
+          // only safe next frame is a prompt, not somebody else's class.
+          askForCode(`There is no live session with the code ${code}. Check the code on your teacher console and type it here.`);
+          return;
+        }
+        setHud("reconnecting…");
+      },
+    },
+  );
 }
 
 boot();

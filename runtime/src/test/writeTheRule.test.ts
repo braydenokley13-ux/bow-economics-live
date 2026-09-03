@@ -784,3 +784,414 @@ test("ADOPT_BAND, the dial and the two-thirds rule are the numbers the copy prom
   assert.equal(ROUND_COUNT, 3);
   assert.equal(WEEK_COUNT, 3);
 });
+
+/* ------------------------------------------------------- the league floor -- */
+
+/**
+ * W6/RC3 — the room is asked to tax itself while looking at how unequal it is.
+ *
+ * The league strip on the vote screen draws every club's opening bank on one
+ * baseline. That is only safe because every place it is sent is PRE-SEASON: no
+ * week has settled, so no figure in it can carry another desk's decision. The
+ * season view must never ask for it, and this test is what stops a later arm
+ * from adding `league:` to a settled-week payload without noticing that it has
+ * just published eleven other desks' outcomes to a private screen.
+ */
+test("W6/RC3: the league floor carries what it draws, and never survives into the season", () => {
+  const desks = 9;
+  const seated = withDesks(desks);
+
+  for (const phase of ["LOBBY", "HOOK"] as const) {
+    const v = writeTheRuleModule.studentView(seated, "seat-3", phase) as Record<string, unknown>;
+    assert.ok(Array.isArray(v["league"]), `${phase} must carry the league`);
+  }
+
+  const rounds = writeTheRuleModule.studentView(seated, "seat-3", "PLAY") as Record<string, unknown>;
+  const league = rounds["league"] as { short: string; code: string; cash: number; capacity: number; draw: number; you: boolean }[];
+  assert.ok(Array.isArray(league) && league.length === seated.leagueSize, "the vote screen must carry every club in the league");
+  assert.equal(league.filter((c) => c.you).length, 1, "exactly one club on the floor is this desk's own");
+  for (const c of league) {
+    assert.equal(typeof c.cash, "number", `${c.short} has no bank to draw`);
+    assert.ok(c.cash > 0 && Number.isFinite(c.cash), `${c.short} drew a bar off a nonsense number`);
+    assert.ok(c.code.length >= 2 && c.code.length <= 4, `${c.short} has no usable league code`);
+    assert.ok(c.capacity > 1000, `${c.short} has no building`);
+  }
+  // The gap is worth drawing: if every club opened with the same money the strip
+  // would be twelve identical bars saying nothing, and this lesson's whole
+  // argument ("the pot is the big markets' money") would have no picture.
+  const cashes = league.map((c) => c.cash);
+  assert.ok(Math.max(...cashes) / Math.min(...cashes) >= 2, "the league floor is drawing an equality this lesson does not have");
+
+  // Codes must be unique or two columns are indistinguishable.
+  const codes = new Set(league.map((c) => c.code));
+  assert.equal(codes.size, league.length, "two clubs share a league code");
+
+  // PRE-SEASON ONLY. Once a week settles, cash is a decision outcome.
+  const adopted = toAdopted(seated, [20, 25, 30]);
+  const adoptedView = writeTheRuleModule.studentView(adopted, "seat-3", "PLAY") as Record<string, unknown>;
+  assert.ok(Array.isArray(adoptedView["league"]), "the adoption screen is still pre-season");
+
+  const season = playSeason(toSeason(adopted));
+  const settled = writeTheRuleModule.studentView(season, "seat-3", "PLAY") as Record<string, unknown>;
+  assert.equal(
+    settled["league"],
+    undefined,
+    "a settled-week view carried the league table — that publishes every other desk's cash outcome to a private screen",
+  );
+});
+
+/* -------------------------------------------------- THE ROOM (W6) -- */
+
+type L3Room = {
+  deskCount: number;
+  lockedCount: number;
+  decidingCount: number;
+  spread: { min: number; max: number; median: number; range: number } | null;
+  bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[];
+  movement: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number; deciding: number };
+  countLine: string;
+  movementLine: string;
+  spreadLine: string;
+  privacyNote: string;
+};
+const roomOf = (state: WriteRuleState): L3Room | null =>
+  (writeTheRuleModule.teacherView(state, "PLAY") as Record<string, unknown>)["room"] as L3Room | null;
+
+test("THE ROOM reads the rule rounds as a bargaining spread, and never reaches the projector", () => {
+  // The two-thirds test is only worth running on numbers the desks chose. A
+  // live median on the projector ends that in one press, so this read exists on
+  // the teacher's console and nowhere else.
+  let state = withDesks(6);
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  const shares = [0, 10, 10, 20, 40];
+  live.slice(0, 5).forEach((club, i) => {
+    state = apply(state, { type: "propose", share: shares[i]!, condition: i >= 3 }, "PLAY", club.seatId!);
+  });
+
+  const room = roomOf(state)!;
+  assert.equal(room.deskCount, 6);
+  assert.equal(room.lockedCount, 5, "five numbers are in");
+  assert.equal(room.decidingCount, 1, "and one desk has proposed nothing");
+  assert.deepEqual(room.spread, { min: 0, max: 40, median: 10, range: 40 });
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 5, "only proposals are on the grid");
+  assert.equal(
+    room.bins.reduce((n, b) => n + b.lockedCount, 0),
+    5,
+    "a proposal IS the commitment in this stage — there is no ghosted half to draw",
+  );
+  assert.deepEqual(
+    room.bins.map((b) => b.from),
+    [...SHARE_GRID],
+    "the bars stand on the dial the room was actually given",
+  );
+  assert.match(room.countLine, /5 of 6 numbers in .* round 1 of 3/);
+  assert.doesNotMatch(room.countLine, /locked/i, "desks propose in this stage, they do not lock");
+  assert.match(room.spreadLine, /between 0% and 40%, middle 10%/, room.spreadLine);
+  assert.match(room.spreadLine, /2 of them want the CONDITION on/, room.spreadLine);
+  assert.match(room.privacyNote, /never shows this while the round is open/);
+
+  // The projector must not be carrying any of it.
+  const board = JSON.stringify(writeTheRuleModule.boardView(state, "PLAY"));
+  assert.ok(!board.includes("spreadLine"), "the projector is carrying the class spread read");
+  assert.ok(!board.includes("movementLine"), "the projector is carrying the class movement read");
+  assert.ok(!/seat-\d/.test(board), "the projector is carrying a seat identity");
+
+  // First round: nothing behind these desks to have moved off.
+  assert.equal(room.movement.basis, 0);
+  assert.equal(room.movement.noPrior, 5);
+  assert.match(room.movementLine, /First round/, room.movementLine);
+});
+
+test("THE ROOM counts round movement against a desk's OWN previous number, not against an abstention", () => {
+  let state = withDesks(4);
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  // Round 1: three desks propose, the fourth abstains.
+  state = apply(state, { type: "propose", share: 10, condition: false }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "propose", share: 20, condition: false }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "propose", share: 30, condition: false }, "PLAY", live[2]!.seatId!);
+  state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
+
+  // Round 2: one moves up, one holds, one moves down, and the abstainer joins.
+  state = apply(state, { type: "propose", share: 25, condition: false }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "propose", share: 20, condition: false }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "propose", share: 15, condition: false }, "PLAY", live[2]!.seatId!);
+  state = apply(state, { type: "propose", share: 20, condition: false }, "PLAY", live[3]!.seatId!);
+
+  const room = roomOf(state)!;
+  assert.equal(room.movement.raised, 1, "one desk asked for more than it asked for last round");
+  assert.equal(room.movement.held, 1);
+  assert.equal(room.movement.lowered, 1);
+  assert.equal(room.movement.basis, 3);
+  assert.equal(
+    room.movement.noOwnPrior,
+    1,
+    "the desk that sat round 1 out has no number of its own to have moved off — it is not a 'held'",
+  );
+  assert.equal(room.movement.noPrior, 0, "round 2 is not anybody's first round");
+  assert.match(room.movementLine, /1 asked for more, 1 held their number, 1 asked for less/, room.movementLine);
+  assert.match(room.movementLine, /1 moving off a round they sat out/, room.movementLine);
+  assert.match(room.countLine, /round 2 of 3/);
+});
+
+test("THE ROOM switches to a compliance spread once the season opens under the room's own rule", () => {
+  // The rule the room voted in taxes and conditions on the reinvest dial, so
+  // that is the shape; price is the sentence. The teacher needs to see who is
+  // about to be bitten by a rule this room wrote.
+  let state = withDesks(5);
+  state = toAdopted(state, [20], [true]);
+  assert.equal(state.adopted!.condition, true, "this fixture needs the condition ON to test the compliance read");
+  state = toSeason(state);
+
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  // Four commit; the fifth leaves its dial parked without locking.
+  const set = [
+    { price: 30, reinvest: 0 },
+    { price: 40, reinvest: 5 },
+    { price: 50, reinvest: 20 },
+    { price: 60, reinvest: 40 },
+  ];
+  set.forEach((row, i) => {
+    state = apply(state, { type: "setPrice", price: row.price }, "PLAY", live[i]!.seatId!);
+    state = apply(state, { type: "setReinvest", reinvest: row.reinvest }, "PLAY", live[i]!.seatId!);
+    state = apply(state, { type: "lock" }, "PLAY", live[i]!.seatId!);
+  });
+  state = apply(state, { type: "setPrice", price: 120 }, "PLAY", live[4]!.seatId!);
+  state = apply(state, { type: "setReinvest", reinvest: 35 }, "PLAY", live[4]!.seatId!);
+
+  const room = roomOf(state)!;
+  assert.equal(room.lockedCount, 4);
+  assert.equal(room.decidingCount, 1);
+  assert.deepEqual(room.spread, { min: 30, max: 60, median: 45, range: 30 }, "the uncommitted $120 dial must not widen the spread");
+  assert.match(room.countLine, /4 of 5 locked in .* week 1 of 3/);
+  assert.match(room.spreadLine, /between \$30 and \$60, middle \$45/, room.spreadLine);
+  assert.match(
+    room.spreadLine,
+    new RegExp(`2 of them are under the ${CONDITION_MIN_REINVEST}% condition this room voted in`),
+    room.spreadLine,
+  );
+  assert.deepEqual(room.bins.map((b) => b.from), [...REINVEST_GRID], "the bars stand on the reinvest dial's own grid");
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 5, "an undecided dial is still drawn where it actually is");
+  assert.equal(room.bins.reduce((n, b) => n + b.lockedCount, 0), 4, "and it is not drawn as a decision");
+  const parked = room.bins.find((b) => b.from === 35)!;
+  assert.equal(parked.count - parked.lockedCount, 1, "the parked dial sits in its own bar as an undecided position");
+  assert.match(room.privacyNote, /never shows this while the week is open/);
+
+  const board = JSON.stringify(writeTheRuleModule.boardView(state, "PLAY"));
+  assert.ok(!board.includes("spreadLine") && !board.includes("movementLine"), "the projector is carrying the live read");
+});
+
+test("THE ROOM claims season movement only off a week the desk decided itself", () => {
+  let state = withDesks(3);
+  state = toSeason(toAdopted(state, [10], [false]));
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  // Week 1: two desks decide, the third is committed by the bell (AUTO).
+  for (const i of [0, 1]) {
+    state = apply(state, { type: "setReinvest", reinvest: 20 }, "PLAY", live[i]!.seatId!);
+    state = apply(state, { type: "lock" }, "PLAY", live[i]!.seatId!);
+  }
+  state = apply(state, { type: "teacher:closeWeek" }, "PLAY", "teacher");
+
+  // Week 2: one raises, one holds, and the AUTO desk locks for the first time.
+  state = apply(state, { type: "setReinvest", reinvest: 30 }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "lock" }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "setReinvest", reinvest: 20 }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "lock" }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "setReinvest", reinvest: 5 }, "PLAY", live[2]!.seatId!);
+  state = apply(state, { type: "lock" }, "PLAY", live[2]!.seatId!);
+
+  const room = roomOf(state)!;
+  assert.equal(room.movement.raised, 1);
+  assert.equal(room.movement.held, 1);
+  assert.equal(room.movement.lowered, 0);
+  assert.equal(room.movement.basis, 2);
+  assert.equal(room.movement.noOwnPrior, 1, "an AUTO week is not a decision the desk moved off");
+  assert.match(room.movementLine, /1 moving off a week the bell committed for them/, room.movementLine);
+});
+
+test("THE ROOM is silent where there is no live decision to read", () => {
+  // Between the last round and the season, and after the final bell, there is
+  // no open window — a panel reporting a stale shape would be reporting a room
+  // that no longer exists.
+  assert.equal(roomOf(fresh()), null, "no desks, no read");
+  const adopted = toAdopted(withDesks(4), [15], [false]);
+  assert.equal(adopted.stage, "adopted");
+  assert.equal(roomOf(adopted), null, "the rule is written and the season has not opened");
+  const done = playSeason(toSeason(adopted));
+  assert.equal(roomOf(done), null, "the season is over");
+});
+
+/* ------------------------------------------------------------------------ */
+/* A pair who walks in after the season closed                              */
+/* ------------------------------------------------------------------------ */
+
+test("a pair who arrives after the last week closed is landed honestly, not left finding a club", () => {
+  const state = withDesks(3);
+  // The runtime asks the module what it may forward. If takeSeat is not offered
+  // after PLAY, a late device is refused one layer above this file and never
+  // reaches the landing below at all.
+  for (const phase of ["REVEAL", "CONSEQUENCE", "COUNTERFACTUAL", "ARGUE", "SYNTHESIS", "COMPLETE"] as const) {
+    assert.ok(
+      (writeTheRuleModule.allowedActions?.(phase) ?? []).includes("takeSeat"),
+      `takeSeat is not forwardable in ${phase}, so a late pair is refused before the module can land them`,
+    );
+  }
+
+  const landed = apply(state, { type: "takeSeat" }, "REVEAL", "walk-in");
+  assert.equal(landed.seatToSlot["walk-in"], undefined, "a late pair was handed a club after the season settled");
+  assert.deepEqual(landed.observerSeats, ["walk-in"]);
+
+  const view = writeTheRuleModule.studentView(landed, "walk-in", "REVEAL") as Record<string, unknown>;
+  assert.equal(view["seated"], false);
+  assert.equal(view["observer"], true);
+  const message = String(view["message"]);
+  assert.equal(/Finding your club/i.test(message), false, "the late pair is still being told we are finding their club");
+  assert.match(message, /after the last week closed/i);
+  assert.match(message, /three weeks are already in the books/i);
+  assert.ok(view["ruleNote"], "the observer screen never says what rule the room voted in");
+
+  // Idempotent: a retrying device is one pair, not five.
+  const again = apply(landed, { type: "takeSeat" }, "ARGUE", "walk-in");
+  assert.deepEqual(again.observerSeats, ["walk-in"]);
+
+  // The console is told, in seat-free language, with something to do.
+  const flags = teacherWatchFor(again, "REVEAL");
+  const flag = flags.find((f) => f.id === "late-observers");
+  assert.ok(flag, "the console was never told a pair is standing in the doorway");
+  assert.equal(flag.urgency, "now");
+  assert.deepEqual(flag.desks, ["Late pair 1"]);
+  assert.match(flag.label, /after the last week closed/i);
+  assert.match(flag.action, /seat them beside a desk/i);
+  assert.equal(/walk-in|seat-/.test(`${flag.label} ${flag.action} ${flag.desks.join(" ")}`), false, "a seat id reached the console");
+
+  // And nothing about them reaches the projector as a club.
+  const board = JSON.stringify(writeTheRuleModule.boardView(again, "REVEAL"));
+  assert.equal(board.includes("walk-in"), false, "a late observer's seat id reached the projector");
+});
+
+test("a full league during PLAY still says the league is full, not that the season ended", () => {
+  // Leaving HOOK freezes the league; with all 12 clubs taken there is nothing to
+  // hand over, so a thirteenth device lands as an observer while play continues.
+  const frozen = writeTheRuleModule.onPhaseExit!(withDesks(12), "HOOK", { phase: "HOOK", seatIds: [], now: 0 } as never);
+  assert.equal(frozen.leagueFrozen, true);
+  const landed = apply(frozen, { type: "takeSeat" }, "PLAY", "thirteenth");
+  assert.deepEqual(landed.observerSeats, ["thirteenth"]);
+  const view = writeTheRuleModule.studentView(landed, "thirteenth", "PLAY") as Record<string, unknown>;
+  assert.match(String(view["message"]), /every club already has a pair running it/i);
+  const flag = teacherWatchFor(landed, "PLAY").find((f) => f.id === "late-observers");
+  assert.ok(flag);
+  assert.match(flag.label, /after the league closed/i);
+});
+
+/* ------------------------------------------------------------------------ */
+/* THE DESKS — the walk-to list                                             */
+/* ------------------------------------------------------------------------ */
+
+test("the desk strip reads the round it is actually in, and stays teacher-only", () => {
+  type Strip = { countLine: string; entries: { seatId: string; label: string; state: string; stateLabel: string; note: string | null }[] };
+  const stripOf = (s: WriteRuleState, phase: CanonicalPhase = "PLAY"): Strip | null =>
+    ((writeTheRuleModule.teacherView(s, phase) as Record<string, unknown>)["deskStrip"] as Strip | null) ?? null;
+
+  assert.equal(stripOf(fresh()), null);
+  const state = withDesks(4);
+  const rounds = stripOf(state)!;
+  assert.equal(rounds.entries.length, 4);
+  // A desk in the offer rounds has not "locked" anything — it either has a
+  // number at the league or it does not.
+  assert.match(rounds.countLine, /0 of 4 numbers in · round 1 of 3/);
+  for (const e of rounds.entries) assert.equal(e.stateLabel, "No number yet");
+
+  const proposed = apply(state, { type: "propose", share: 30, condition: false }, "PLAY", "seat-1");
+  const after = stripOf(proposed)!;
+  assert.match(after.countLine, /1 of 4 numbers in/);
+  assert.match(after.entries.find((e) => e.seatId === "seat-1")!.stateLabel, /Number in · round 1/);
+
+  // The season is a different window and says so.
+  const season = toSeason(toAdopted(state, [30], [false]));
+  const week = stripOf(season)!;
+  assert.match(week.countLine, /locked · week 1 of 3/);
+  assert.equal(week.entries[0]!.stateLabel, "Still deciding");
+
+  for (const phase of writeTheRuleModule.phases) {
+    const board = JSON.stringify(writeTheRuleModule.boardView(season, phase));
+    assert.equal(board.includes("deskStrip"), false, `the projector carries the walk-to list in ${phase}`);
+    assert.equal(/seat-\d/.test(board), false, `a seat id reached the projector in ${phase}`);
+  }
+  assert.equal(JSON.stringify(writeTheRuleModule.studentView(season, "seat-1", "PLAY")).includes("deskStrip"), false);
+});
+
+test("a cold walk marks every finale card, and a played room never sees a mark", () => {
+  // `gate-l2-teacher` B5, third limb. This deck never collapsed on a zero-desk
+  // rehearsal — it rendered the real cards against an empty room, so the walk
+  // the console prescribes put "Nobody in this room ended down on the pot this
+  // time" on the projector as a fact about a class that does not exist.
+  const cold = synthesisCards(fresh(), computeAggregate(fresh()));
+  const played = playSeason(toSeason(toAdopted(withDesks(12), [30])));
+  const live = synthesisCards(played, computeAggregate(played));
+
+  assert.equal(cold.length, live.length, "the rehearsal deck is a different length from the live deck");
+  assert.deepEqual(
+    cold.map((c) => c.title.replace(/^REHEARSAL — /, "")),
+    live.map((c) => c.title),
+    "the rehearsal deck teaches card titles the live deck does not have",
+  );
+  for (const card of cold) {
+    assert.match(card.title, /^REHEARSAL — /, `${card.id} could be read as this room's own card`);
+    assert.match(card.rails.ourClass, /STAND-IN/, `${card.id}: the computed rail does not say it is imaginary`);
+    assert.match(card.rails.rememberWhen, /STAND-IN/, `${card.id}: the remembered moment does not say it is imaginary`);
+    // The dated real-world rails are the same sentence tomorrow, so they are
+    // left exactly alone — marking them would be a lie in the other direction.
+    assert.equal(/STAND-IN/.test(card.rails.inSports), false, `${card.id}: a dated real-world fact was marked as a stand-in`);
+  }
+  for (const card of live) {
+    assert.equal(/REHEARSAL/.test(card.title), false, `${card.id} leaked the rehearsal deck into a played room`);
+    assert.equal(/STAND-IN/.test(card.rails.ourClass), false, `${card.id} leaked a stand-in warning into a played room`);
+  }
+});
+
+test("the finale desk never reads ahead of the projector", () => {
+  // The desk used to carry the whole deck the instant SYNTHESIS opened, so at
+  // CARD 1 OF 7 on the projector every pair already had card 7's title on their
+  // own screen — the exact defect D26 was written to kill in Lesson 2's reveal,
+  // in the module finale, the one stretch where the room looks up together.
+  let state = playSeason(toSeason(toAdopted(withDesks(12), [30])));
+  const seat = state.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const all = synthesisCards(state, computeAggregate(state));
+  assert.ok(all.length > 2, "guard: the fixture must produce a multi-card finale");
+
+  for (let page = 0; page < all.length; page += 1) {
+    const student = writeTheRuleModule.studentView(state, seat, "SYNTHESIS") as Record<string, unknown>;
+    const shown = (student["cards"] as { title: string }[]) ?? [];
+    assert.equal(shown.length, page + 1, `the desk carried ${shown.length} cards while the board was on card ${page + 1}`);
+    assert.equal(shown[shown.length - 1]!.title, all[page]!.title, "the newest card on the desk is not the one on the board");
+    // Everything the room has already seen is still there to scroll back to.
+    for (let i = 0; i <= page; i += 1) assert.equal(shown[i]!.title, all[i]!.title);
+    // And nothing it has not.
+    const blob = JSON.stringify(shown);
+    for (let i = page + 1; i < all.length; i += 1) {
+      assert.equal(blob.includes(all[i]!.title), false, `the desk leaked "${all[i]!.title}" while the board was on card ${page + 1}`);
+    }
+    if (page < all.length - 1) state = apply(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher");
+  }
+});
+
+test("paging the finale backwards does not take cards off thirty desks", () => {
+  // The desk carries what the board has REACHED, which has to be a high-water
+  // mark. Read off `synthPage` alone, the teacher's own Back button — and the
+  // forward wrap past the last card — would delete cards the room had already
+  // discussed from every student device mid-discussion.
+  let state = playSeason(toSeason(toAdopted(withDesks(12), [30])));
+  const seat = state.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const all = synthesisCards(state, computeAggregate(state));
+  const held = (): number => (((writeTheRuleModule.studentView(state, seat, "SYNTHESIS") as Record<string, unknown>)["cards"] as unknown[]) ?? []).length;
+
+  for (let i = 1; i < all.length; i += 1) state = apply(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher");
+  assert.equal(held(), all.length, "the desk does not hold the whole deck once the board has walked it");
+
+  state = apply(state, { type: "teacher:synthPageBack" }, "SYNTHESIS", "teacher");
+  assert.equal(held(), all.length, "paging back stripped the deck the room had already seen");
+
+  // Forward from the last card wraps the projector to card 1. The desk keeps its deck.
+  for (let i = 0; i < 2; i += 1) state = apply(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher");
+  assert.equal((state as unknown as { synthPage: number }).synthPage, 0, "guard: the projector did not wrap");
+  assert.equal(held(), all.length, "the forward wrap emptied every desk's finale deck");
+});

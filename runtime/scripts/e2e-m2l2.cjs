@@ -33,6 +33,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = 4308;
 const BASE = `http://localhost:${PORT}`;
@@ -89,6 +90,7 @@ const foldChecks = [];
 const occlusionChecks = [];
 const nonVacuityProofs = [];
 const realDialDrives = [];
+const gateCalls = [];
 const soldOutSettlements = [];
 /** play N-7: every price-counterfactual card hit-tested for occlusion. */
 const cfProbes = [];
@@ -317,7 +319,7 @@ function assertUnoccluded(results, label) {
  * Asserted with NO manual scroll of any kind: whatever the page does on its own
  * after the bell is what a grade-5 pair gets.
  */
-async function assertSettlementAboveFold(desk, label) {
+async function assertSettlementAboveFold(desk, label, opts = {}) {
   // play N-7 (BLOCKING): the price counterfactual is the element the N-5 repair
   // ADDED, and the instrument was pointed at the three older selectors, so it
   // passed a card whose verdict line — "$62 would have kept $522,856 more than
@@ -368,7 +370,9 @@ async function assertSettlementAboveFold(desk, label) {
       vh: window.innerHeight,
       scrollY: Math.round(window.scrollY),
       mainScroll: Math.round(document.querySelector("main")?.scrollTop ?? 0),
-      soldOut: !!document.querySelector(".fh-sellout"),
+      // The sell-out is now marked on the stage beside the building rather
+      // than in a banner above it; `.turned` is the arm with a crowd outside.
+      soldOut: !!document.querySelector("#hlGates.turned") || /FULL HOUSE/.test(document.querySelector("#hlGates")?.textContent ?? ""),
       dial: box("#hlPriceDial"),
       lock: box("#hlLock"),
       bar: box("#hlLockBar"),
@@ -384,11 +388,21 @@ async function assertSettlementAboveFold(desk, label) {
   // without ever seeing a dial. The settlement and the decision are not rivals
   // for the band; they are the two columns of it. The dial must be IN it.
   const bandBottom = m.bar ? m.bar.top : m.vh;
-  assert.ok(
-    m.dial !== null && m.dial.top >= 0 && m.dial.bottom <= bandBottom + 1,
-    `${label}: the decision is not on the screen the bell landed — next week's price dial is at ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}, content band is 0..${bandBottom}`,
-  );
-  assert.ok(m.lock && m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is not reachable — box ${m.lock && m.lock.top}..${m.lock && m.lock.bottom}`);
+  // After the LAST bell there is no next week, so there is no dial and no lock
+  // bar to hold the settlement against — but every part of the settlement
+  // itself is still probed above, by the same hit test. The caller says which
+  // bell this is; the check is not skipped, only the half of it that would be
+  // asserting the presence of a decision the lesson has stopped offering.
+  if (opts.noNextWeek) {
+    assert.equal(m.dial, null, `${label}: a price dial for a week that does not exist is on the screen`);
+    assert.equal(m.bar, null, `${label}: the commit bar is still pinned after the season ended`);
+  } else {
+    assert.ok(
+      m.dial !== null && m.dial.top >= 0 && m.dial.bottom <= bandBottom + 1,
+      `${label}: the decision is not on the screen the bell landed — next week's price dial is at ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}, content band is 0..${bandBottom}`,
+    );
+    assert.ok(m.lock && m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is not reachable — box ${m.lock && m.lock.top}..${m.lock && m.lock.bottom}`);
+  }
   foldChecks.push(`${label}${m.soldOut ? " [SOLD OUT week]" : ""}`);
   if (m.soldOut) soldOutSettlements.push(label);
   return m;
@@ -573,6 +587,23 @@ async function setPrice(page, price) {
   // viewport coordinates, hitting whatever is actually on top.
   const handle = await page.$("#hlPriceDial");
   await handle.scrollIntoViewIfNeeded();
+  // A re-mount between the selector resolving and the box being read hands back
+  // a 0x0 rectangle for a control that is reachable again a frame later — twice,
+  // that flaked this whole proof. Wait for a real box before judging. A dial
+  // that is genuinely hidden, collapsed, or stripped of its styling never grows
+  // one, so the assertion keeps its teeth.
+  await page
+    .waitForFunction(
+      (sel) => {
+        const node = document.querySelector(sel);
+        if (!node) return false;
+        const box = node.getBoundingClientRect();
+        return box.width > 40 && box.height > 8;
+      },
+      "#hlPriceDial",
+      { timeout: 5000 },
+    )
+    .catch(() => { /* still degenerate: the assertion below says so */ });
   const dial = await page.$eval("#hlPriceDial", (el) => {
     const r = el.getBoundingClientRect();
     return { x: r.x, y: r.y, w: r.width, h: r.height, min: Number(el.min), max: Number(el.max) };
@@ -618,6 +649,51 @@ async function lockWeek(page) {
   await page.waitForSelector(".fh-locked-recap", { timeout: 20000 });
 }
 
+
+/**
+ * THE GATE CALL — the locked-and-waiting beat (W6 `play-l2-locked-dead-time`).
+ *
+ * The screen a pair sits on after committing used to say, in the product's own
+ * words, "Nothing to do but find out" over an empty half-device. Three things
+ * have to be true of the repair, and none of them is provable from the module
+ * alone: the card is actually ON the locked screen and reachable without a
+ * scroll at Chromebook height, a real press registers the call, and the room
+ * line never carries a seat identity onto a private surface.
+ */
+async function callTheGate(page, band, label) {
+  const seen = await page.evaluate(() => {
+    const gate = document.getElementById("hlGate");
+    if (!gate) return null;
+    const r = gate.getBoundingClientRect();
+    const bands = [...gate.querySelectorAll(".hl-gate-band")].map((b) => b.dataset.band);
+    const first = gate.querySelector(".hl-gate-band").getBoundingClientRect();
+    const probe = document.elementFromPoint(Math.round(first.left + first.width / 2), Math.round(first.top + first.height / 2));
+    return {
+      top: Math.round(r.top),
+      bottom: Math.round(r.bottom),
+      vh: window.innerHeight,
+      bands,
+      room: gate.querySelector(".hl-gate-room")?.textContent?.trim() ?? "",
+      text: gate.textContent,
+      reachable: Boolean(probe && probe.closest(".hl-gate-band")),
+    };
+  });
+  assert.ok(seen, `${label}: the locked desk has no gate call — it is back to having nothing to do`);
+  assert.deepEqual(seen.bands, ["packed", "busy", "quiet"], `${label}: the gate call's bands are wrong`);
+  assert.ok(seen.bottom <= seen.vh + 1, `${label}: the gate call is below the fold — box ${seen.top}..${seen.bottom} in ${seen.vh}px`);
+  assert.ok(seen.reachable, `${label}: the gate call's first band is occluded and cannot be pressed`);
+  assert.match(seen.room, /\d+ of \d+ desks/, `${label}: the room line does not say how much of the room is in: "${seen.room}"`);
+  assert.ok(!/seat-\d/.test(seen.text), `${label}: the gate call leaked a seat identity onto a private surface`);
+
+  await page.click(`.hl-gate-band[data-band="${band}"]`);
+  await page.waitForFunction(
+    (b) => document.querySelector(`.hl-gate-band[data-band="${b}"]`)?.getAttribute("aria-pressed") === "true",
+    band,
+    { timeout: 20000 },
+  );
+  gateCalls.push(`${label}:${band}`);
+}
+
 async function waitForWeek(page, weekNumber) {
   await page.waitForFunction(
     (w) => document.querySelector(".hl-week-num")?.textContent?.includes(`Week ${w} of`),
@@ -633,9 +709,24 @@ async function advanceTo(teach, phase) {
 
 /* ------------------------------------------------------------- the run -- */
 
+/** THE ROOM, as the teacher's console has actually rendered it (W6). */
+async function readRoom(teach) {
+  return teach.evaluate(() => ({
+    hidden: document.getElementById("liveroom")?.hidden ?? true,
+    count: document.getElementById("roomCount")?.textContent || "",
+    spread: (document.getElementById("roomSpread")?.textContent || "").replace(/\s+/g, " ").trim(),
+    note: (document.getElementById("roomNote")?.textContent || "").replace(/\s+/g, " ").trim(),
+    chips: [...document.querySelectorAll("#roomMove .room-chip")].map((c) => c.textContent.replace(/\s+/g, " ").trim()),
+    bars: [...document.querySelectorAll("#roomHist .room-bar")].map((b) => Number(b.querySelector("u")?.textContent || 0)),
+    axis: [...document.querySelectorAll("#roomAxis span")].map((x) => x.textContent),
+  }));
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
+
+  await assertPortFree(PORT, require("path").basename(__filename));
 
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
@@ -784,7 +875,100 @@ async function main() {
       await setShare(desks[i], i === FREE_RIDER_IDX ? 0 : SHARES[i]);
       await lockWeek(desks[i]);
     }
+    await callTheGate(desks[0], "packed", "week 1, desk 1 (at the $10 floor)");
+    await callTheGate(desks[4], "quiet", "week 1, desk 5");
+    // The call is changeable while the week is open: a fifth-grader's misclick
+    // must not cost a whole week. The LAST one standing is what gets frozen.
+    await callTheGate(desks[4], "busy", "week 1, desk 5 changing its mind");
+    // The way back to this seat has to survive a refresh.
+    //
+    // The rejoin PIN is handed over once, on join, and its banner auto-collapses
+    // after twenty seconds so the decision surface gets its first viewport back.
+    // Nothing restored the strip that reopens it, so a pair who refreshed — a
+    // dropped Chromebook, a browser update, a stray Ctrl+R — came back seated
+    // and playing with their own PIN permanently unreachable, which is the one
+    // thing that moves them to another device when this one dies. (Full House
+    // is unaffected: its desk rail carries the digits as a permanent chip. This
+    // lesson has no such rail, so the strip IS the way back.)
+    {
+      const before = await desks[1].evaluate(() => (document.getElementById("pinDisplay")?.textContent || "").trim());
+      assert.match(before, /^\d{4}$/, `this desk never received a rejoin PIN: "${before}"`);
+      await desks[1].reload();
+      await desks[1].waitForSelector("#gameCard:not([hidden])", { timeout: 25000 });
+      const after = await desks[1].evaluate(() => {
+        const strip = document.getElementById("btnShowPin");
+        const r = strip?.getBoundingClientRect();
+        return {
+          stripHidden: strip?.hidden ?? true,
+          drawn: !!r && r.width > 0 && r.height > 0,
+          cardHidden: document.getElementById("pinCard")?.hidden ?? true,
+        };
+      });
+      assert.equal(after.stripHidden, false, "a refreshed desk has no way back to its own rejoin PIN");
+      assert.equal(after.drawn, true, "the reopen strip is in the DOM but drawn at zero size");
+      assert.equal(after.cardHidden, true, "the PIN banner reopened itself over the decision surface on a refresh");
+      await desks[1].click("#btnShowPin");
+      const reopened = await desks[1].evaluate(() => ({
+        cardHidden: document.getElementById("pinCard")?.hidden ?? true,
+        pin: (document.getElementById("pinDisplay")?.textContent || "").trim(),
+      }));
+      assert.equal(reopened.cardHidden, false, "the strip did not reopen the PIN");
+      assert.equal(reopened.pin, before, `the reopened PIN is not this seat's: "${reopened.pin}" vs "${before}"`);
+      await desks[1].click("#btnHidePin");
+      // The refresh must not have cost the week's decision either.
+      await desks[1].waitForSelector(".hl-gate-band", { timeout: 20000 });
+      console.log(`[e2e-m2l2] the rejoin PIN survived a mid-week refresh and the desk came back still locked`);
+    }
     await desks[0].screenshot({ path: path.join(SCREEN_DIR, "05-play-week1-locked.png") });
+
+    // THE ROOM (W6) — this lesson's give-and-take happens on the reinvest dial,
+    // so that is the shape the console draws; price is the sentence. A teacher
+    // standing up cannot count eleven dials, and the free riders are the whole
+    // argument the ledger reveal is about to have.
+    {
+      await teach.waitForFunction(
+        () => (document.getElementById("roomCount")?.textContent || "").startsWith("11 of 12 locked in"),
+        null,
+        { timeout: 25000 },
+      );
+      const room = await readRoom(teach);
+      assert.equal(room.hidden, false, "the live read must be on the console while the week is open");
+      assert.match(room.count, /week 1 of 3/, room.count);
+      const locked = PRICES.filter((_, i) => i !== NEVER_LOCK_IDX);
+      assert.match(
+        room.spread,
+        new RegExp(`between \\$${Math.min(...locked)} and \\$${Math.max(...locked)}`),
+        `the spread must speak only for the desks that committed: ${room.spread}`,
+      );
+      assert.equal(
+        room.spread.includes(`$${PRICES[NEVER_LOCK_IDX]}`),
+        false,
+        `the desk that never touched the console widened the spread: ${room.spread}`,
+      );
+      // Two desks are locked at 0% reinvest (the free rider and desk 10), and
+      // the sentence a teacher reads out has to carry that, because it is the
+      // fact the ledger reveal turns on.
+      assert.match(room.spread, /2 of them are putting NOTHING back/, room.spread);
+      assert.deepEqual(room.axis, ["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%"], "the bars stand on the reinvest dial's own grid");
+      assert.equal(room.bars.reduce((n, v) => n + v, 0), DESKS, "every desk lands in exactly one bar, undecided ones included");
+      assert.match(room.chips.join(" "), /still deciding/, `the unlocked desk must be named as undecided: ${room.chips.join(" ")}`);
+      assert.match(room.note, /First week/, room.note);
+      assert.equal(/Desk \d|seat-\d/.test(room.spread + room.note), false, "the read named a desk in a sentence a teacher reads out");
+      // Teacher-private, in the browser, on the frame it is up.
+      const boardText = await board.evaluate(() => document.body.innerText);
+      const deskText = await desks[0].evaluate(() => document.body.innerText);
+      for (const [name, text] of [["projector", boardText], ["a desk", deskText]]) {
+        assert.equal(
+          // "N desks are still deciding" is a line the gate call gives the
+          // STUDENTS on purpose. The teacher-only facts are the spread's middle
+          // and the free-rider count.
+          /middle \$\d+|putting NOTHING back/.test(text),
+          false,
+          `${name} is carrying the teacher's live room read while the week is open`,
+        );
+      }
+      await teach.screenshot({ path: path.join(SCREEN_DIR, "04b-teach-room-week1.png") });
+    }
     await teach.click("#btnCloseWeek");
     for (const p of desks) await waitForWeek(p, 2);
     console.log("[e2e-m2l2] week 1 settled");
@@ -792,6 +976,49 @@ async function main() {
     // play R1/N-1: the consequence, staged AND legible. Asserted on every desk,
     // immediately after the bell, with no manual scroll of any kind.
     for (let i = 0; i < DESKS; i += 1) await assertSettlementAboveFold(desks[i], `after the week 1 bell, desk ${i + 1}`);
+
+    // The bell has to ANSWER the call, on the desk that made it, in forecasting
+    // language — never a verdict on the price. And a desk that never called
+    // must not be handed a verdict on one.
+    const answered = await Promise.all(
+      [0, 4, 1].map((i) =>
+        desks[i].evaluate(() => {
+          const el = document.getElementById("hlGateResult");
+          const crowd = document.querySelector(".hl-gates-num")?.textContent?.trim() ?? "";
+          return el ? { line: el.textContent.trim(), right: el.classList.contains("right"), crowd } : null;
+        }),
+      ),
+    );
+    assert.ok(answered[0], "desk 1 called the gate and the bell said nothing about it");
+    assert.match(answered[0].line, /^You called PACKED\./, `desk 1's answer does not name its own call: "${answered[0].line}"`);
+    assert.ok(answered[1], "desk 5 called the gate and the bell said nothing about it");
+    assert.match(answered[1].line, /^You called BUSY\./, `desk 5's answer resolved the call it CHANGED AWAY from: "${answered[1].line}"`);
+    for (const a of [answered[0], answered[1]]) {
+      assert.ok(
+        !/good|bad|mistake|should have|wrong price/i.test(a.line),
+        `the gate call's answer judged the DECISION instead of the reading: "${a.line}"`,
+      );
+    }
+    assert.equal(answered[2], null, "desk 2 never called the gate and was handed a verdict on one anyway");
+    console.log(`[e2e-m2l2] the gate call: ${gateCalls.join(" · ")} — answered on the desk that made it, silent on the desk that did not`);
+
+    // NON-VACUITY: a settlement whose answer resolves the WRONG call must be
+    // caught. Rewrite desk 1's answer to name a band it never chose and require
+    // the assertion above to reject it.
+    const poisonCaught = await desks[0].evaluate(() => {
+      const el = document.getElementById("hlGateResult");
+      const before = el.textContent;
+      el.textContent = "You called QUIET. 19,812 came — 100% of the building. You read it.";
+      const bad = /^You called PACKED\./.test(el.textContent.trim());
+      el.textContent = before;
+      return !bad;
+    });
+    assert.ok(poisonCaught, "the gate-call answer check does not bite: it accepted a frame naming a call the desk never made");
+    console.log("[e2e-m2l2] NON-VACUITY — an answer resolving a call the desk never made is rejected");
+    const bellWidth = await desks[0].evaluate(() => ({
+      main: Math.round(document.querySelector("main").getBoundingClientRect().width),
+      col: Math.round(document.querySelector(".hl-col-context")?.getBoundingClientRect().width ?? 0),
+    }));
     // play N-6: the same frame carries WEEK 2's decision, and it is asserted
     // with the same standard week 1 met — no manual scroll, every desk.
     for (let i = 0; i < DESKS; i += 1) await assertPrelockFold(desks[i], `week 2 first contact, desk ${i + 1}`, 2);
@@ -947,31 +1174,134 @@ async function main() {
       await lockWeek(desks[i]);
     }
     await teach.click("#btnCloseWeek");
-    for (const p of desks) await p.waitForFunction(() => document.body.innerText.includes("in the books"), null, { timeout: 40000 });
+    // Wait on the thing under test, not on a sentence: the last week's own
+    // settlement block appearing on the desk. (The previous wait keyed off the
+    // words "in the books" in the season-over banner, which made an ordinary
+    // copy edit look like a 40-second hang.)
+    for (const p of desks) await p.waitForFunction(() => !!document.querySelector("#hlSplit") && !document.querySelector("#hlLockBar"), null, { timeout: 40000 });
     // `.fh-flag` is CSS-uppercased, so innerText comes back shouting.
     const autoFlags = await desks[NEVER_LOCK_IDX].evaluate(() => (document.body.innerText.match(/\bauto\b/gi) || []).length);
     assert.ok(autoFlags >= WEEK_COUNT_E2E, `the desk that never locked must have all ${WEEK_COUNT_E2E} weeks settled and marked AUTO, never skipped — found ${autoFlags}`);
-    console.log("[e2e-m2l2] three weeks settled");
+
+    // THE LAST WEEK SETTLES LIKE EVERY OTHER WEEK.
+    //
+    // Weeks 1 and 2 reach the desk because the NEXT week's pre-lock payload
+    // carries `lastSettled` and the client draws it first. There is no week 4,
+    // so week 3 — the highest-stakes call of the lesson, made with the reinvest
+    // dial retired — used to land as a three-row summary table and "look up at
+    // the board". The pair's own final decision produced the least feedback of
+    // the three on the device they were looking at. Every element the earlier
+    // bells are held to is held to here too, at the same fold.
+    for (let i = 0; i < DESKS; i += 1) await assertSettlementAboveFold(desks[i], `after the LAST week's bell, desk ${i + 1}`, { noNextWeek: true });
+    // The finale is not allowed to be a narrower page than the weeks that led
+    // to it. The two-column decision band's width used to be bundled into the
+    // lock-bar rule, so the one screen with nothing left to commit rendered at
+    // 640px instead of 1000px: the evidence column collapsed 608px -> 248px and
+    // the price counterfactual grew to 380px and fell off the bottom. Coupling
+    // a page's width to the presence of a button is the kind of thing that only
+    // shows up on the last screen of the lesson, in front of the class.
+    const finaleWidth = await desks[0].evaluate(() => ({
+      main: Math.round(document.querySelector("main").getBoundingClientRect().width),
+      col: Math.round(document.querySelector(".hl-col-context")?.getBoundingClientRect().width ?? 0),
+    }));
+    assert.ok(
+      finaleWidth.main >= bellWidth.main && finaleWidth.col >= bellWidth.col - 1,
+      `the season-over screen is narrower than a played week — main ${finaleWidth.main}px vs ${bellWidth.main}px, evidence column ${finaleWidth.col}px vs ${bellWidth.col}px`,
+    );
+    const lastWeekOnDesk = await desks[0].evaluate(() => ({
+      title: document.querySelector(".fh-result .fh-result-head")?.textContent?.trim() ?? "",
+      arena: !!document.querySelector(".fh-result .hl-arena svg"),
+    }));
+    assert.match(lastWeekOnDesk.title, /Week 3/, `the desk's own final week did not settle on the device — read "${lastWeekOnDesk.title}"`);
+    assert.ok(lastWeekOnDesk.arena, "the last week settled without drawing the building it was played in");
+    console.log("[e2e-m2l2] three weeks settled — the last one lands on the desk in full, not only on the board");
 
     // ---- REVEAL ---------------------------------------------------------
     await advanceTo(teach, "REVEAL");
     const headlines = [];
-    // Wait for the PROJECTOR to actually change beat, not for the POST to
-    // return. A fixed sleep here samples the previous stage twice and reports
-    // five presses as three beats — exactly the blind spot this guard exists
-    // to close.
-    let prevHeadline = (await board.textContent("#stage .label")).trim();
+    // Wait for the PROJECTOR to actually reach the beat that was just pressed,
+    // not for the POST to return and not merely for the headline to change.
+    // Waiting on the headline sampled the intermediate revealStage-0 frame the
+    // first time a beat's render cost shifted, and logged five presses as
+    // "Waiting" plus four beats — a guard checking stage N-1 for stage N's
+    // defect is worse than no guard. The board publishes which beat it is
+    // holding; that is what is waited on.
+    await board.waitForSelector('#stage[data-reveal-stage="0"]', { timeout: 30000 });
+
+    // THE DESK MUST NOT SPOIL THE BOARD.
+    //
+    // At beat 0 the desk used to print every number all five beats are about —
+    // the season decomposition, the whole give-and-take ledger, the four pipes.
+    // A pair that looked down had already read the answer to every question the
+    // room was about to be asked, and a DOM diff across all six presses of the
+    // teacher's advance came back byte-identical. Both halves are checked here:
+    // nothing is on the desk before its beat, and the desk changes when the
+    // board does.
+    const beatMarks = [
+      { stage: 1, sel: "#hlSeasonDoor", what: "who filled your building" },
+      { stage: 2, sel: "#hlGive", what: "the give-and-take ledger" },
+      { stage: 3, sel: "#hlSeasonSplit", what: "the four pipes" },
+      { stage: 4, sel: "#hlBigNight", what: "your biggest night" },
+      { stage: 5, sel: "#hlOwnReinvest", what: "your own reinvest per week" },
+    ];
+    const deskHasBeats = async (page) => page.evaluate((sels) => sels.filter((x) => !!document.querySelector(x)), beatMarks.map((b) => b.sel));
+    await desks[0].waitForSelector("#hlLedgerCall", { timeout: 30000 });
+    const spoiled = await deskHasBeats(desks[0]);
+    assert.deepEqual(
+      spoiled,
+      [],
+      `at beat 0 the desk is already showing ${spoiled.join(", ")} — the student device is spoiling the room's reveal`,
+    );
+
+    // NON-VACUITY. The spoiler check is only worth anything if it rejects a
+    // spoiled desk, so it is shown one.
+    await desks[0].evaluate(() => {
+      const d = document.createElement("div");
+      d.id = "hlGive";
+      d.dataset.poison = "1";
+      document.getElementById("gameBody").appendChild(d);
+    });
+    const poisonSeen = await deskHasBeats(desks[0]);
+    assert.deepEqual(poisonSeen, ["#hlGive"], "the spoiler check did not see a planted ledger — it proves nothing");
+    await desks[0].evaluate(() => document.querySelector('[data-poison="1"]')?.remove());
+    assert.deepEqual(await deskHasBeats(desks[0]), [], "the planted ledger did not come back out");
+    console.log("[e2e-m2l2] NON-VACUITY — a desk showing beat 2's ledger at beat 0 is rejected");
+
+    // The call: taken before the ledger goes up, on this pair's own club.
+    await desks[0].click("#hlCallGave");
+    await desks[1].click("#hlCallTook");
+    await desks[0].waitForSelector("#hlCallLocked", { timeout: 20000 });
+    const lateCall = await desks[2].evaluate(() => !!document.querySelector("#hlCallGave"));
+    assert.ok(lateCall, "a desk that has not called yet must still have the buttons");
+
+    let deskDom = await desks[0].evaluate(() => document.getElementById("gameBody").innerHTML);
     for (let stage = 1; stage <= 5; stage += 1) {
       await teach.click("#btnRevealNext");
-      await board.waitForFunction(
-        (prev) => ((document.querySelector("#stage .label") || {}).textContent || "").trim() !== prev,
-        prevHeadline,
-        { timeout: 30000 },
-      );
+      await board.waitForSelector(`#stage[data-reveal-stage="${stage}"]`, { timeout: 30000 });
       const headline = (await board.textContent("#stage .label")).trim();
-      prevHeadline = headline;
       assert.ok(headline.length > 0, `reveal stage ${stage} rendered no headline`);
+      assert.notEqual(headline, "Waiting", `reveal stage ${stage} is still showing the pre-press frame`);
       headlines.push(headline);
+      // The desk carries THIS club's version of the beat that is up — and
+      // nothing that belongs to a beat the teacher has not pressed yet.
+      const want = beatMarks.filter((b) => b.stage <= stage).map((b) => b.sel);
+      await desks[0].waitForSelector(want[want.length - 1], { timeout: 20000 });
+      const shown = await deskHasBeats(desks[0]);
+      assert.deepEqual(
+        shown.slice().sort(),
+        want.slice().sort(),
+        `at beat ${stage} the desk shows ${shown.join(", ") || "nothing"}, expected exactly ${want.join(", ")}`,
+      );
+      const nextDom = await desks[0].evaluate(() => document.getElementById("gameBody").innerHTML);
+      assert.notEqual(nextDom, deskDom, `the desk did not change when the board moved to beat ${stage}`);
+      deskDom = nextDom;
+      if (stage === 2) {
+        const verdict = await desks[0].evaluate(() => document.querySelector("#hlCallResult")?.textContent?.trim() ?? "");
+        assert.match(verdict, /You called/, "beat 2 did not settle the pair's call");
+        assert.ok(/You had it\.|worth arguing about/.test(verdict), `the call's verdict says nothing either way: "${verdict}"`);
+        const uncalled = await desks[2].evaluate(() => !!document.querySelector("#hlCallResult") || !!document.querySelector("#hlCallGave"));
+        assert.equal(uncalled, false, "a desk that never called is being shown a verdict on a call it did not make");
+      }
       if (stage === 1) {
         await assertPagedBars(board, teach, "REVEAL stage 1", "09");
       } else {
@@ -1037,11 +1367,17 @@ async function main() {
         assert.equal(headroom.rows, BARS_PER_PAGE, `W5 N-2: the measurement must be taken on a full ${BARS_PER_PAGE}-row page, got ${headroom.rows}`);
         const reclaimed = headroom.withoutClass - headroom.withClass;
         const spare = headroom.clientH - headroom.withClass;
-        // The frame this run renders must overflow WITHOUT the repair, or the
-        // repair is being credited for a frame that never had the defect.
+        // W6/RC2 supersedes the original form of this guard. It used to demand
+        // that the frame OVERFLOW without its compression class, proving the
+        // class was load-bearing. It no longer is: the 190-word computed
+        // paragraph that made stage 2 overflow by 2px is now a 200-character
+        // finding, with the argument moved to the teacher's mirror, and the
+        // class carries no compression at all. So the assertion inverts —
+        // stage 2 must clear 1366x768 on its OWN metrics, with no squeeze
+        // helping it, or the paragraph has crept back.
         assert.ok(
-          headroom.withoutClass > headroom.clientH,
-          `W5 N-2: this room's stage 2 fits at 1366x768 even without the fit class (${headroom.withoutClass}px in ${headroom.clientH}px), so the measurement below proves nothing about the defect`,
+          headroom.withoutClass <= headroom.clientH,
+          `W5 N-2 / W6/RC2: stage 2 needs a squeeze to fit at 1366x768 again — ${headroom.withoutClass}px of content in ${headroom.clientH}px. Something put a paragraph back on the projector.`,
         );
         assert.ok(
           headroom.withClass <= headroom.clientH,
@@ -1054,10 +1390,10 @@ async function main() {
         // which is why the guard could not be discharged by testing more desks.
         assert.ok(
           spare >= 24,
-          `W5 N-2: stage 2 fits by only ${spare}px at 1366x768. The summary sentence is computed and wraps to a different number of lines in different rooms, so a frame with less than one spare line is still a frame that overflows in somebody's class (content ${headroom.withClass}px, projector ${headroom.clientH}px, reclaimed ${reclaimed}px)`,
+          `W5 N-2: stage 2 fits by only ${spare}px at 1366x768. The summary sentence is computed and wraps to a different number of lines in different rooms, so a frame with less than one spare line is still a frame that overflows in somebody's class (content ${headroom.withClass}px, projector ${headroom.clientH}px)`,
         );
         console.log(
-          `[e2e-m2l2] W5 N-2: REVEAL stage 2 at 1366x768 — ${headroom.withoutClass}px WITHOUT the fit class (overflow), ${headroom.withClass}px with it in a ${headroom.clientH}px projector: ${reclaimed}px reclaimed, ${spare}px spare, room for another wrapped line of the computed summary`,
+          `[e2e-m2l2] W5 N-2 / W6/RC2: REVEAL stage 2 at 1366x768 — ${headroom.withoutClass}px of content in a ${headroom.clientH}px projector with no compression applied, ${spare}px spare (${reclaimed}px of squeeze left in the class: it is now a hook, not a repair)`,
         );
 
         // ...and every PAGE of the beat fits, not only the one the press opened
@@ -1089,22 +1425,48 @@ async function main() {
       if (stage === 5) {
         const changeText = await board.textContent("#hlChange");
         assert.equal(/[Nn]obody told this room to move/.test(changeText), false, "reveal 5 must not claim spontaneity it cannot see");
-        assert.match(changeText, /earns nothing else in this lesson/, "reveal 5 must teach the last-week horizon rule");
-        await assertBackRowType(board, ".hl-mean-lbl", "REVEAL stage 5: the week labels");
-        // projector W4-1: this run releases the bar right after the week-2 bell
-        // with no desk locked into week 3 — the arm /teach prescribes, and the
-        // arm on which the board asserted "some desks had already locked" to a
-        // room in which none had.
+        // W6/RC2: the rule is still on the frame and still teaches the horizon
+        // — it has moved out of the summary paragraph and into the standing
+        // chip above the chart, where a class arguing under it can read it.
+        const ruleText = await board.textContent("#hlRule");
+        assert.match(ruleText, /earns nothing else in this lesson/, "reveal 5 must teach the last-week horizon rule");
         assert.equal(
-          /desks had already locked/.test(changeText),
+          /earns nothing else in this lesson/.test(changeText),
           false,
-          `the prescribed release printed a lock count to a room where no desk had locked: ${changeText}`,
+          "the horizon rule belongs to the chip now — printing it twice on one frame is the paragraph coming back",
         );
-        assert.match(changeText, /before a single desk had locked week 3 in/, "the prescribed release must say every desk saw the bar before it priced");
+        await assertBackRowType(board, ".hl-mean-lbl", "REVEAL stage 5: the week labels");
+        const teachStage5 = await teach.evaluate(() => document.body.innerText);
+        // projector W4-1, retargeted by W6/RC2. This run releases the bar right
+        // after the week-2 bell with no desk locked into week 3 — the arm
+        // /teach prescribes, and the arm on which the ORIGINAL defect asserted
+        // "some desks had already locked" to a room in which none had. That
+        // clause is a provenance qualifier on the argument, not a finding the
+        // back row reads off a wall, so it now lives in the teacher's hand —
+        // and the false-lock-count guard follows it there rather than being
+        // discharged by its absence from the projector.
+        assert.equal(
+          /desks had already locked/.test(teachStage5),
+          false,
+          `the prescribed release told the teacher a lock count for a room where no desk had locked: ${teachStage5.slice(0, 400)}`,
+        );
+        assert.match(
+          teachStage5,
+          /before a single desk had locked week 3 in/,
+          "the prescribed release must tell the teacher every desk saw the bar before it priced",
+        );
+        assert.equal(
+          /had already locked|before a single desk had locked/.test(changeText),
+          false,
+          `the bar-release arm belongs to the teacher's mirror now, not the projector: ${changeText}`,
+        );
         // projector W4-2: /teach's ON-THE-PROJECTOR mirror must describe the arm
         // the board is actually in, not a fixed script.
-        const teachStage5 = await teach.evaluate(() => document.body.innerText);
         assert.match(teachStage5, /NOT ONE desk had locked week 3 yet/, "the /teach stage-5 mirror does not describe the arm the board printed");
+        // W6/RC2: nothing was deleted. Every word the wall gave up is on the
+        // teacher's screen, verbatim, labelled as theirs to say.
+        assert.match(teachStage5, /YOURS TO SAY, not on the wall/, "the teacher was not handed the reasoning the projector stopped carrying");
+        assert.match(teachStage5, /investment dies when there is no tomorrow to collect in/, "the horizon argument reached neither surface");
         await teach.screenshot({ path: path.join(SCREEN_DIR, "15b-teach-reveal5-mirror.png"), fullPage: true });
       }
     }

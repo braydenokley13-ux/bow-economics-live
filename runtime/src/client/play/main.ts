@@ -1,7 +1,8 @@
 import { ApiError, apiFetch } from "../shared/api.js";
-import { arenaSvg } from "../shared/arena.js";
+import { arenaSvg, type ArenaBand } from "../shared/arena.js";
 import { crestStyle } from "../shared/crest.js";
 import { brandMark, dotChart } from "../shared/m2ui.js";
+import { createFreshness } from "../shared/freshness.js";
 import { ActionOutbox } from "../shared/outbox.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
@@ -14,8 +15,29 @@ type StudentPayload = {
   seat: { id: string; displayName: string };
   deviceToken?: string;
   rejoinPin?: string;
+  /** Mirrors `RoundPublic` on the server; `serverNow` makes the countdown a duration, not a clock comparison. */
+  round: {
+    status: "OPEN" | "FINAL_CALL" | "CLOSED";
+    key: string;
+    endsAt: string | null;
+    serverNow: string;
+    closedBy: "final_call_expired" | "close_now" | "module" | null;
+  } | null;
+  /** Has THIS desk committed for the round now open? Null when no round is open. */
+  committed: boolean | null;
+  /** What closing would do to THIS desk, in the lesson's own words, when it has committed nothing. */
+  fallback: string | null;
+  /** Set only when this desk went dark long enough to miss something and has not said it is back. */
+  away: { since: string; awayMs: number; lines: string[] } | null;
   view: Record<string, unknown>;
 };
+
+/**
+ * Lesson renderers that have been ported to the M2 design layer (shared/m2.css)
+ * and may therefore have the legacy sheet switched off under them. Add a
+ * lesson here in the same change that ports its renderer, never before.
+ */
+const M2_DESIGN_LAYER_MODULES = new Set(["m2l1-full-house"]);
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 const joinCard = $("joinCard");
@@ -54,6 +76,16 @@ const SIGNED_OUT_LINE = "This desk was opened on another device. Rejoin with you
  * strings are the module's own (`fullHouse.ts` `reduce`); matching them here
  * keeps the error slot for things a pair can act on.
  */
+/**
+ * What a held action looks like to the pair holding it. Keyed by the server's
+ * own reason code so the screen never guesses.
+ */
+const HOLD_LABELS: Record<string, string> = {
+  paused: "your teacher paused the room — your choice is saved and goes when they resume",
+  frozen: "screens are frozen — your choice is saved and goes when they unfreeze",
+  version_conflict: "busy room — resending your choice",
+};
+
 const NIGHT_CLOSED_REJECTIONS = new Set([
   "all five nights are done",
   "all five nights are already in the books",
@@ -73,6 +105,9 @@ const SIGNED_OUT_FLAG = "bow-signed-out";
 
 /** Sign this device out in place: no reload, no blank body, a control to come back with. */
 function signedOut(): void {
+  outbox?.stop();
+  stopFinalCallClock();
+  $("finalCall").hidden = true;
   try {
     window.sessionStorage.setItem(SIGNED_OUT_FLAG, "1");
   } catch {
@@ -83,6 +118,7 @@ function signedOut(): void {
   outbox = null;
   clearPlayCredentials();
   creds = null;
+  resetSeatRenderState();
   gameCard.hidden = true;
   pinCard.hidden = true;
   rejoinCard.hidden = true;
@@ -152,6 +188,64 @@ $("btnRejoin").addEventListener("click", () => {
   })();
 });
 
+/**
+ * Every piece of per-seat render state this page keeps outside the DOM.
+ *
+ * The renderers memoise aggressively — a mount key so a poll tick does not
+ * rebuild the desk under a pair's finger, a local dial value so dragging is
+ * smooth, a "have I already asked for a seat" latch, an acknowledged-result
+ * marker. All of it is scoped to ONE seat in ONE session, and all of it lives
+ * in module-level `let`s that outlive a credential change: this page never
+ * reloads when a pair signs out and rejoins, or rejoins as a different seat on
+ * a shared Chromebook. Left alone, the next seat inherits the previous seat's
+ * mount key (so the desk never re-renders), its dial number (so the readout
+ * shows a price this pair never chose), and its seat-requested latch (so the
+ * new seat never asks for a franchise and sits on "finding your desk…").
+ *
+ * Called on every transition into a seat and out of one. Adding a new
+ * module-level render cache means adding it here in the same change.
+ */
+function resetSeatRenderState(): void {
+  lastRoundKey = null;
+  // The closing countdown belongs to the seat that was in the round, not to
+  // the device — handing the Chromebook to the next pair must not leave the
+  // previous pair's final call ticking over their screen.
+  stopFinalCallClock();
+  // Same rule for the recap: what the PREVIOUS pair missed is not this pair's
+  // card. The server decides whether the new seat has anything to be shown.
+  awayShowing = "";
+  $("awayCard").hidden = true;
+
+  fhSeatRequested = false;
+  fhMountKey = null;
+  fhLocalPrice = null;
+  fhLocalPriceCard = null;
+  fhLastSession = null;
+  fhLastView = null;
+  hlSeatRequested = false;
+  hlMountKey = null;
+  hlLocalPrice = null;
+  hlLastSettledSeen = null;
+  wrSeatRequested = false;
+  wrMountKey = null;
+  wrLocalPrice = null;
+  wrLocalShare = null;
+  wrLocalCondition = null;
+  wrLastSettledSeen = null;
+  boxDialMounted = null;
+  boxDragging = false;
+  boxLatestPrice = null;
+  if (boxThrottleTimer !== null) {
+    window.clearTimeout(boxThrottleTimer);
+    boxThrottleTimer = null;
+  }
+  tdPlayMounted = null;
+  faPlayMounted = null;
+  faComposerSlot = null;
+  faComposerAmount = 0;
+  document.body.classList.remove("fh-compact-play");
+}
+
 function onSeated(payload: StudentPayload, code: string): void {
   if (!payload.deviceToken) return showError("Server did not issue a device token.");
   try {
@@ -161,6 +255,9 @@ function onSeated(payload: StudentPayload, code: string): void {
   }
   creds = { deviceToken: payload.deviceToken, sessionCode: code, seatId: payload.seat.id, displayName: payload.seat.displayName, rejoinPin: payload.rejoinPin };
   savePlayCredentials(creds);
+  // A seat is being (re)claimed on this page without a reload — drop every
+  // render cache belonging to whichever seat was here before.
+  resetSeatRenderState();
   joinCard.hidden = true;
   rejoinCard.hidden = true;
   if (payload.rejoinPin) {
@@ -184,8 +281,18 @@ $("btnShowPin").addEventListener("click", () => {
   $("btnShowPin").hidden = true;
 });
 
+/** Registered once, not once per join — a rejoin used to stack another listener on every seat. */
+let onlineListenerBound = false;
+
 function startGame(): void {
   if (!creds) return;
+  // A rejoin (or a seat replacement) calls this again. Without tearing the old
+  // pair down first, the previous poller kept running against a dead token and
+  // a second `online` listener stacked on top of the first, so every reconnect
+  // fired N retries and two render loops fought over the screen.
+  poll?.stop();
+  poll = null;
+  outbox?.stop();
   gameCard.hidden = false;
   outbox = new ActionOutbox(
     () => `/api/sessions/${creds!.sessionCode}/actions`,
@@ -209,13 +316,34 @@ function startGame(): void {
         // own response right away instead of waiting for the next poll tick,
         // so the wall, meter, and Foregone Panel feel live, not laggy.
         showError("");
+        // Through the same gate as a poll, and for the same reason. This is the
+        // frame that MOVES the desk forward, so it is also the one that sets the
+        // floor: a poll issued before this action answers after it, and without
+        // recording this version here that older frame is not recognisably old.
+        // That is the exact reproduction in `scripts/e2e-stale-poll.cjs`.
+        if (!freshness.accept(response as StudentPayload)) return;
         renderGame(response as StudentPayload);
+      },
+      onHolding: (_action, error) => {
+        // W2: the decision is NOT lost — it is queued against a room that is
+        // paused, frozen, or mid-advance, and it will go the moment the room
+        // moves. Say that, because "syncing…" during a two-minute freeze reads
+        // as a broken screen and invites the pair to change their answer.
+        setSyncLabel(HOLD_LABELS[error.code] ?? "holding your choice — sending when the room moves");
       },
       onPending: (count) => setSyncLabel(count > 0 ? `syncing… (${count} pending)` : "synced"),
     },
     creds.seatId,
+    () => lastRoundKey,
+    // Taking a desk is not a decision about a night — a late joiner whose
+    // takeSeat crosses a close must still get a franchise, not a refusal.
+    new Set(["takeSeat"]),
   );
 
+  // W2: a poll issued before this desk's own action can answer after it. The
+  // fetch still counts as proof the transport is alive — it just never draws a
+  // frame from before the decision the pair has already made.
+  freshness.reset();
   poll = startPolling<StudentPayload>(
     "/api/me",
     1200,
@@ -223,9 +351,16 @@ function startGame(): void {
       showError("");
       setSyncLabel(outbox && outbox.pendingCount > 0 ? `syncing… (${outbox.pendingCount} pending)` : "synced");
       outbox?.retryNow();
+      if (!freshness.accept(payload)) return;
+      renderAway(payload);
       renderGame(payload);
     },
     {
+      // W4. The nudge carries no seat data and is not what /play renders — the
+      // authenticated /api/me fetch below still is. It exists so a teacher's
+      // reveal reaches thirty desks at once instead of arriving over a poll
+      // interval, desk by desk.
+      streamUrl: `/api/sessions/${creds.sessionCode}/stream`,
       headers: (): Record<string, string> => (creds ? { Authorization: `Bearer ${creds.deviceToken}` } : {}),
       // D1: a 304 is proof the server answered. Clearing the label here is what
       // makes "offline — retrying" self-heal instead of sticking for the lesson.
@@ -234,7 +369,8 @@ function startGame(): void {
         setSyncLabel(outbox && outbox.pendingCount > 0 ? `syncing… (${outbox.pendingCount} pending)` : "synced");
       },
       onError: (error) => {
-        // F1: `poll.ts` passes the parsed body, so match on the code, not the class.
+        // W0: `poll.ts` now hands over a real ApiError; `errorCode` still reads
+        // the older shape too, so an out-of-step build cannot strand a seat.
         const code = errorCode(error);
         if (code !== null && SIGNED_OUT_CODES.has(code)) {
           signedOut();
@@ -245,12 +381,140 @@ function startGame(): void {
     },
   );
 
-  window.addEventListener("online", () => outbox?.retryNow());
+  if (!onlineListenerBound) {
+    onlineListenerBound = true;
+    window.addEventListener("online", () => outbox?.retryNow());
+  }
 }
 
 /* ---------------------------------------------------------------- render -- */
 
+/* ---------------------------------------------------------------- FINAL CALL --
+ * Same conversion as /teach and /board: the server hands over `endsAt` and its
+ * own `serverNow`, the difference is a DURATION, and the countdown runs off a
+ * local deadline derived from it. A Chromebook an hour out of sync therefore
+ * shows exactly the projector's number — and none of these clocks decide
+ * anything. Whether an action was in time is ruled on by the server alone.
+ * ------------------------------------------------------------------------- */
+let fcDeadline: number | null = null;
+let fcTimer: ReturnType<typeof setInterval> | null = null;
+
+function stopFinalCallClock(): void {
+  if (fcTimer !== null) {
+    clearInterval(fcTimer);
+    fcTimer = null;
+  }
+  fcDeadline = null;
+}
+
+function paintFinalCallClock(): void {
+  const el = $("fcClock");
+  if (fcDeadline === null) {
+    el.textContent = "";
+    return;
+  }
+  el.textContent = `${(Math.max(0, fcDeadline - Date.now()) / 1000).toFixed(1)}s`;
+}
+
+/** The round this desk is currently looking at. Stamped onto every decision it submits. */
+let lastRoundKey: string | null = null;
+const freshness = createFreshness<StudentPayload>((p) => ({ code: p.session?.code ?? null, version: p.session?.version ?? NaN }));
+
+function renderFinalCall(payload: StudentPayload): void {
+  const bar = $("finalCall");
+  const round = payload.round;
+  if (!round || round.status !== "FINAL_CALL" || !round.endsAt || payload.session.ended) {
+    bar.hidden = true;
+    stopFinalCallClock();
+    return;
+  }
+  bar.hidden = false;
+  fcDeadline = Date.now() + Math.max(0, Date.parse(round.endsAt) - Date.parse(round.serverNow));
+  if (fcTimer === null) fcTimer = setInterval(paintFinalCallClock, 250);
+  paintFinalCallClock();
+
+  const unlocked = payload.committed === false;
+  bar.classList.toggle("unlocked", unlocked);
+  const text = $("fcText");
+  text.innerHTML = "";
+  const head = document.createElement("b");
+  head.textContent = unlocked ? "Final call — you have not locked in" : "Final call";
+  text.appendChild(head);
+  // The fallback is the lesson's own sentence, not a generic one. A pair that
+  // knows exactly what "nothing" settles as can decide whether to accept it —
+  // which is a decision, where "time's up" is only a scare.
+  text.appendChild(
+    document.createTextNode(
+      unlocked
+        ? payload.fallback ?? "Lock in now or this round closes without your choice."
+        : "You're in. Nothing more to do — the room is finishing up.",
+    ),
+  );
+}
+
+/* ------------------------------------------------------ while you were away --
+ * A Chromebook sleeps through a bell. A tab is closed for five minutes. The
+ * pair comes back to a settled book and no idea what moved.
+ *
+ * The founder's rule for this is: current authoritative state PLUS a compact
+ * recap, and do not rewind the class. So this is a card that sits ON TOP of
+ * the live screen — everything under it is the room exactly as it stands now,
+ * and dismissing it changes nothing but the card. It carries what the CLASS
+ * did; this desk's own numbers are already below it.
+ * ------------------------------------------------------------------------- */
+let awayShowing = "";
+
+function humanGap(ms: number): string {
+  const s = Math.round(ms / 1000);
+  if (s < 90) return `about ${Math.max(1, Math.round(s / 10) * 10)} seconds`;
+  const m = Math.round(s / 60);
+  return m < 60 ? `about ${m} minute${m === 1 ? "" : "s"}` : "a while";
+}
+
+function renderAway(payload: StudentPayload): void {
+  const card = $("awayCard");
+  const away = payload.away;
+  if (!away || away.lines.length === 0) {
+    card.hidden = true;
+    awayShowing = "";
+    return;
+  }
+  // Only redraw when the content actually changes: this runs on every poll,
+  // and rebuilding the list under a pair who is reading it moves the button
+  // they are aiming at.
+  const key = `${away.since}|${away.lines.join("|")}`;
+  if (key !== awayShowing) {
+    awayShowing = key;
+    $("awayGap").textContent = `off for ${humanGap(away.awayMs)}`;
+    const list = $("awayList");
+    list.innerHTML = "";
+    for (const line of away.lines) {
+      const li = document.createElement("li");
+      li.textContent = line;
+      list.appendChild(li);
+    }
+  }
+  card.hidden = false;
+}
+
+$("btnAwaySeen").addEventListener("click", () => {
+  const card = $("awayCard");
+  // Hide first. The acknowledgement is a network call and the pair has already
+  // waited long enough; if it fails the next poll simply puts the card back.
+  card.hidden = true;
+  awayShowing = "";
+  if (!creds) return;
+  void fetch("/api/me/recap/seen", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${creds.deviceToken}` },
+  }).catch(() => {
+    /* the poll owns the truth; a failed acknowledgement just means it comes back */
+  });
+});
+
 function renderGame(payload: StudentPayload): void {
+  lastRoundKey = payload.round?.key ?? null;
+  renderFinalCall(payload);
   const s = payload.session;
   const header = $("gameHeader");
   const franchise = payload.view["franchise"] as Franchise | null | undefined;
@@ -285,8 +549,20 @@ function renderGame(payload: StudentPayload): void {
   const view = payload.view;
   // The Module-2 token/component layer is scoped to this attribute; Module 1
   // renders unchanged because nothing under it is ever set for an m1 view.
+  //
+  // The membership test is the renderer, not the lesson number. `theme.css`
+  // switches OFF every legacy `.fh-*` / `.price-dial-input` rule whenever this
+  // attribute is present, on the understanding that `m2.css` re-provides that
+  // look. That trade is only true for a renderer that was actually ported to
+  // the M2 design layer. Gating on the `m2l` id prefix swept in L2 and L3,
+  // whose renderers still speak the legacy class vocabulary: measured in
+  // Chromium, their price dial fell back to the browser's default range input
+  // (`appearance: auto`, the one blue object on a dark violet screen) and the
+  // price readout — the headline number of the whole decision — dropped from
+  // 22px to 15px. A lesson joins this set when its renderer is ported, not
+  // when its id is assigned.
   const moduleId = String(view["module"] ?? "");
-  if (moduleId.startsWith("m2l")) document.documentElement.dataset.module = "m2";
+  if (M2_DESIGN_LAYER_MODULES.has(moduleId)) document.documentElement.dataset.module = "m2";
   else delete document.documentElement.dataset.module;
   if (view["module"] === "m1l1-draft-day") {
     renderDraftDay(s, view);
@@ -1882,6 +2158,7 @@ type FHCard = {
   repeatOf: string | null;
 };
 type FHNight = {
+  call: { called: string; actual: string; right: boolean; line: string } | null;
   cardId: string;
   label: string;
   day: string;
@@ -2406,9 +2683,19 @@ function fhArenaFrame(o: {
   label: string;
   maxHeight?: number;
   cls?: string;
+  /**
+   * Settled count of people who wanted in and could not get a seat. Lane A
+   * draws them as a crowd outside the gates — the consequence of pricing a
+   * night below what the room would bear is a picture of people left on the
+   * pavement, not only a number on the slate. The hero (pre-lock) frame has no
+   * settlement yet and passes nothing.
+   */
+  turnedAway?: number;
   /** Lane A's third state: the top deck as a shuttered deck, or in the pool. */
   bowlSeats?: number;
   bowlOpen?: boolean;
+  /** Attribution bands inside the crowd (M2 L2). See `ArenaBand`. */
+  bands?: readonly ArenaBand[];
 }): string {
   const svg = arenaSvg({
     view: o.view,
@@ -2417,13 +2704,14 @@ function fhArenaFrame(o: {
     capacity: Math.max(1, o.seatsOpen),
     turnout: o.turnout,
     soldOut: o.soldOut,
-    turnedAway: 0,
+    turnedAway: o.turnedAway ?? 0,
     lit: o.view === "hero" ? "idle" : o.soldOut ? "sellout" : "night",
     seed: Math.max(1, o.seatsOpen % 97),
     motion: o.motion,
     label: o.label,
     bowlSeats: o.bowlSeats,
     bowlOpen: o.bowlOpen,
+    bands: o.bands,
   });
   // Lane A's redraw fits the silhouette inside a panoramic viewBox and emits
   // `preserveAspectRatio="xMidYMid meet"`, so the frame can be any shape and
@@ -2449,7 +2737,7 @@ function fhArenaPanel(n: FHNight, ui: FHUiCopy, opts: { height: number; loud: bo
   // them the same amber and none of them matching the drawing, was worse than
   // no key. The picture is labelled directly, in the module's own words.
   return `<div class="m2-card m2-arena fh-arena" style="${FH_CARD} padding:12px 14px; display:flex; flex-direction:column; gap:7px;">
-      ${fhArenaFrame({ view: "outcome", turnout: n.turnout, seatsOpen: n.seatsOpen, soldOut: n.soldOut, w: 620, h: 300, motion: opts.loud, label: String(n.turnout), maxHeight: opts.height, bowlSeats: bowlOffered ? opts.bowlSeats : 0, bowlOpen: n.openBowl })}
+      ${fhArenaFrame({ view: "outcome", turnout: n.turnout, seatsOpen: n.seatsOpen, soldOut: n.soldOut, turnedAway: n.turnedAway, w: 620, h: 300, motion: opts.loud, label: String(n.turnout), maxHeight: opts.height, bowlSeats: bowlOffered ? opts.bowlSeats : 0, bowlOpen: n.openBowl })}
       <div class="fh-arena-labels" style="display:flex; flex-direction:column; gap:2px;">
         ${marker(n.turnout.toLocaleString(), ui.cameLabel, false)}
         ${marker(open.toLocaleString(), ui.openSeatsLabel, true)}
@@ -2794,6 +3082,12 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
           : ""
       }
       ${
+        // The bell answering the gate call, directly under the fill figure the
+        // call was a call about. Forecasting language only: the module writes
+        // the sentence.
+        n.call ? `<div class="fh-gate-result ${n.call.right ? "right" : "wrong"}" id="fhGateResult">${escapeHtml(n.call.line)}</div>` : ""
+      }
+      ${
         tight && n.turnedAway > 0
           ? `<div class="fh-turned" style="display:flex; align-items:baseline; gap:9px; margin-top:6px; padding-top:6px; border-top:1px solid ${FH_HAIR};">
                <b class="${n.soldOut ? "m2-turnedaway" : ""}" style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:34px; line-height:36px; font-weight:700; letter-spacing:-0.03em; color:${FH_INK};">${n.turnedAway.toLocaleString()}</b>
@@ -2873,6 +3167,48 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
 
 /* ------------------------------------------------------- locked-waiting -- */
 
+type FHGateCall = {
+  prompt: string;
+  heading: string;
+  foot: string;
+  bands: { id: string; label: string; blurb: string }[];
+  called: string | null;
+  building: string;
+  room: { locked: number; seated: number; line: string };
+};
+
+/**
+ * THE GATE CALL — what a pair does while the rest of the room commits.
+ *
+ * The dark house above it was already the right picture; the screen just had
+ * nothing on it to do, five times a lesson. Every word here comes off the
+ * module's payload; the client picks no band and writes no verdict.
+ */
+function fhGateCallHtml(gate: FHGateCall | undefined): string {
+  if (!gate) return "";
+  const called = gate.called;
+  return `<div class="hl-gate" id="fhGate">
+      <div class="hl-gate-head">
+        <span class="eyebrow" style="font-size:11px;">${escapeHtml(gate.heading)}</span>
+        <span class="hl-gate-room">${escapeHtml(gate.room.line)}</span>
+      </div>
+      <p class="hl-gate-prompt">${escapeHtml(gate.prompt)}</p>
+      <div class="hl-gate-bands">
+        ${gate.bands
+          .map(
+            (b) => `<button type="button" class="hl-gate-band${called === b.id ? " is-called" : ""}" data-band="${escapeHtml(b.id)}" aria-pressed="${
+              called === b.id ? "true" : "false"
+            }">
+              <span class="hl-gate-band-label">${escapeHtml(b.label)}</span>
+              <span class="hl-gate-band-blurb">${escapeHtml(b.blurb)}</span>
+            </button>`,
+          )
+          .join("")}
+      </div>
+      <p class="hl-gate-foot">${escapeHtml(gate.foot)}</p>
+    </div>`;
+}
+
 /** H1: the desk recedes, the building comes up dark, no timer and no spinner. */
 function fhLockedWaiting(view: Record<string, unknown>): string {
   const ui = fhUi(view);
@@ -2880,21 +3216,36 @@ function fhLockedWaiting(view: Record<string, unknown>): string {
   const price = Number(view["price"] ?? 0);
   const spend = Number(view["spend"] ?? 0);
   const card = view["card"] as FHCard;
+  // The gate call gave this screen something to do and, at 1024x600, one column
+  // too many things to stack: the card measured 538..699 in a 600px viewport.
+  // The building and the call sit side by side instead — the drawing is a fixed
+  // 4.6:1, so halving its width halves its height, and the two together now cost
+  // less than the building alone did.
   const main = `
     <div style="display:flex; flex-direction:column; gap:${tight ? 10 : 14}px;">
-      ${fhHeader(view, { subtitle: String(view["message"] ?? ""), goal: false, h1: "Doors in a minute" })}
+      ${
+        // No subtitle here: the building's own overlay already says the doors
+        // open on the teacher's bell, and printing it twice on one screen reads
+        // as a stall rather than a beat.
+        fhHeader(view, { subtitle: "", goal: false, h1: "Doors in a minute" })
+      }
+      <div class="fh-locked-grid">
       <div class="m2-card m2-doors fh-doors" style="${FH_CARD} padding:0; overflow:hidden; position:relative;">
-        ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: tight ? 300 : 340, motion: false, label: "", cls: "fh-dark-building", maxHeight: tight ? 190 : 300 })}
+        ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: tight ? 300 : 340, motion: false, label: "", cls: "fh-dark-building", maxHeight: tight ? 150 : 230 })}
         <div style="position:absolute; inset:auto 0 0 0; padding:14px 18px; background:linear-gradient(0deg, rgba(8,8,15,0.92) 40%, rgba(8,8,15,0));">
           <span style="${FH_LABEL} font-size:11px;">${escapeHtml(card?.label ?? "")} · locked</span>
           <p style="margin:4px 0 0; font-size:${tight ? 15 : 18}px; line-height:24px; color:${FH_INK};">${escapeHtml(ui.doorsLine)}</p>
         </div>
       </div>
-      <div class="fh-locked-recap" style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:11px 14px; border-radius:12px; background:${FH_PANEL_2}; border:1px solid ${FH_HAIR};">
-        <span style="${FH_LABEL} font-size:10.5px;">Locked at</span>
-        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">$${price}</b>
-        ${spend > 0 ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· ${money(spend)} on the night</span>` : ""}
-        ${view["openBowl"] ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· upper bowl open</span>` : ""}
+      <div class="fh-locked-side">
+        <div class="fh-locked-recap" style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:11px 14px; border-radius:12px; background:${FH_PANEL_2}; border:1px solid ${FH_HAIR};">
+          <span style="${FH_LABEL} font-size:10.5px;">Locked at</span>
+          <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">$${price}</b>
+          ${spend > 0 ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· ${money(spend)} on the night</span>` : ""}
+          ${view["openBowl"] ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· upper bowl open</span>` : ""}
+        </div>
+        ${fhGateCallHtml(view["gateCall"] as FHGateCall | undefined)}
+      </div>
       </div>
     </div>`;
   return fhShell(view, main, { books: true, nightIndex: Math.max(0, (card?.index ?? 1) - 1), settled: ((view["history"] as FHNight[]) ?? []).length });
@@ -3358,7 +3709,11 @@ function renderFHPlay(view: Record<string, unknown>): void {
   const unread = settled > ack ? history[settled - 1]! : null;
   const kind = unread ? "result" : allDone ? "closed" : locked ? "waiting" : "desk";
 
-  const key = `${kind}|${card?.id ?? "-"}|${settled}|${ack}|${Number(view["spendCap"] ?? 0)}|${tight ? "t" : "w"}`;
+  // The gate call and the room's lock count both move while the frame is up, so
+  // they belong in the mount key: without them the waiting screen keeps a stale
+  // "3 of 12 desks are in" for the whole wait, which is worse than not saying it.
+  const gate = view["gateCall"] as FHGateCall | undefined;
+  const key = `${kind}|${card?.id ?? "-"}|${settled}|${ack}|${Number(view["spendCap"] ?? 0)}|${tight ? "t" : "w"}|${gate?.called ?? "-"}|${gate?.room.locked ?? "-"}/${gate?.room.seated ?? "-"}`;
   if (fhMountKey === key && document.getElementById("fhPlayRoot")) return;
   fhMountKey = key;
 
@@ -3393,6 +3748,19 @@ function renderFHPlay(view: Record<string, unknown>): void {
   if (locked) {
     body.innerHTML = `<div id="fhPlayRoot">${fhLockedWaiting(view)}</div>`;
     fhAnimate(document.querySelector(".fh-doors"), [{ opacity: 0 }, { opacity: 1 }], 220);
+    // The gate call is the only live control on a locked desk. It changes no
+    // economics, so it needs none of the commit path's guards.
+    for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("#fhGate .hl-gate-band"))) {
+      btn.onclick = () => {
+        const band = btn.dataset["band"];
+        if (!band) return;
+        for (const other of Array.from(document.querySelectorAll<HTMLButtonElement>("#fhGate .hl-gate-band"))) {
+          other.classList.toggle("is-called", other === btn);
+          other.setAttribute("aria-pressed", other === btn ? "true" : "false");
+        }
+        outbox?.submit({ type: "gateCall", band });
+      };
+    }
     return;
   }
 
@@ -3537,7 +3905,21 @@ function renderFullHouse(s: SessionInfo, view: Record<string, unknown>): void {
       fhSeatRequested = true;
       outbox?.submit({ type: "takeSeat" });
     }
-    body.innerHTML = `<p style="font-size:14px; color:${FH_INK_BODY};">You're in — finding your desk…</p>`;
+    // A pair who arrived after the fifth bell cannot be given a desk without
+    // rewriting numbers this room has already been shown. What they must never
+    // get is what they used to: "finding your desk…" for the rest of the period
+    // while the request 409'd behind them and nobody was told. The module
+    // records them and says so; this renders its words, not the client's.
+    if (view["observer"]) {
+      body.innerHTML = `
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">${escapeHtml(String(view["observerEyebrow"] ?? ""))}</div>
+          <p style="margin:0 0 10px; font-size:16px; line-height:1.5; color:${FH_INK};">${escapeHtml(String(view["message"] ?? ""))}</p>
+          <p style="margin:0; font-size:14px; line-height:1.5; color:${FH_INK_BODY};">${escapeHtml(String(view["observerAction"] ?? ""))}</p>
+        </div>`;
+      return;
+    }
+    body.innerHTML = `<p style="font-size:14px; color:${FH_INK_BODY};">${escapeHtml(String(view["message"] ?? "You're in — finding your desk…"))}</p>`;
     return;
   }
   if (s.phase !== "PLAY") fhMountKey = null;
@@ -3593,6 +3975,7 @@ type HLProfile = { id: string; sizeLabel: string; plainLine: string; bill: numbe
 type HLBooks = { cash: number; draw: number; inDebt: boolean };
 type HLSlateRow = { week: number; settled: boolean; open: boolean; hosting: HLClub; visiting: HLClub };
 type HLWeek = {
+  call: { called: string; actual: string; right: boolean; line: string } | null;
   week: number;
   price: number;
   share: number;
@@ -3732,15 +4115,34 @@ function renderHostLeague(s: SessionInfo, view: Record<string, unknown>): void {
           <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["prompt"] ?? ""))}</p>
         </div>`;
       return;
-    case "SYNTHESIS":
+    case "SYNTHESIS": {
+      // The desk used to be one frozen banner for the whole phase — the same
+      // pixels through every card the teacher turned. It now mirrors the card
+      // the projector is on, page for page, exactly as M2 L1 does.
+      const synthTitle = String(view["synthCardTitle"] ?? "");
+      const synthBody = String(view["synthCardBody"] ?? "");
+      const synthPage = Number(view["synthPage"] ?? 0);
+      const synthPages = Number(view["synthPageCount"] ?? 0);
       body.innerHTML = `
         ${hlDeskHeader(view)}
         <div class="banner">${escapeHtml(String(view["message"] ?? "Look up at the board."))}</div>
+        ${
+          synthTitle
+            ? `<div class="panel" style="padding:16px; margin-top:12px;">
+                 <div style="display:flex; align-items:baseline; gap:10px;">
+                   <span class="eyebrow" style="font-size:12px;">${escapeHtml(synthTitle)}</span>
+                   ${synthPages > 1 ? `<span style="margin-left:auto; font-size:11px; color:var(--ink-secondary);">${synthPage} / ${synthPages}</span>` : ""}
+                 </div>
+                 <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(synthBody)}</p>
+               </div>`
+            : ""
+        }
         <div class="panel" style="padding:16px; margin-top:12px;">
           <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
           <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
         </div>`;
       return;
+    }
     case "COMPLETE":
       body.innerHTML = `${hlDeskHeader(view)}<div class="banner">${escapeHtml(String(view["message"] ?? ""))}</div>`;
       return;
@@ -3939,14 +4341,79 @@ function hlPriceCfHtml(w: HLWeek): string {
     </div>`;
 }
 
+/**
+ * THE HOME NIGHT, DRAWN — and coloured by who brought the people.
+ *
+ * L1 gives a pair a building to look at; L2 used to give them a 10px progress
+ * strip and a stacked bar, which is the same night rendered as a spreadsheet.
+ * That is RC3, "L2 has no world", and it costs the lesson more than looks: the
+ * thing L2 exists to teach is that the biggest block of people in YOUR building
+ * is usually somebody else's doing, and a legend under a bar is a weak way to
+ * say it next to a picture of the actual crowd with that block in a different
+ * colour.
+ *
+ * The bands are shares of the seats open tonight and are drawn by equal AREA,
+ * the same law the arena's single seam has always obeyed — so the picture
+ * cannot overstate the visitor's block, and a half-full building looks half
+ * full with all three colours in the front rows rather than a full bowl of
+ * three colours. The hues are the legend's own three swatches, so the rows
+ * underneath ARE the key and a pair can point from one to the other.
+ */
+/**
+ * The three wedges, in the legend's own colours. Shares of the crowd, computed
+ * from the same three fan counts the rows print, so the picture and the numbers
+ * beside it cannot disagree. A week with nobody in the building has no wedges.
+ */
+function hlCrowdBands(w: HLWeek): ArenaBand[] {
+  const people = w.bareFans + w.ownFans + w.visitorFans;
+  if (people <= 0) return [];
+  return [
+    { share: w.bareFans / people, hue: 209, sat: 42 },
+    { share: w.ownFans / people, hue: 206, sat: 70 },
+    { share: w.visitorFans / people, hue: 41, sat: 80 },
+  ];
+}
+
+function hlArenaHtml(w: HLWeek): string {
+  const cap = Math.max(1, w.capacity);
+  const tight = fhTight();
+  return fhArenaFrame({
+    view: "outcome",
+    turnout: w.turnout,
+    seatsOpen: cap,
+    soldOut: w.soldOut,
+    turnedAway: w.turnedAway,
+    w: 620,
+    h: 300,
+    motion: false,
+    label: `${w.turnout.toLocaleString()} in the building, ${w.visitorFans.toLocaleString()} of them brought by ${w.visitor}`,
+    // The outcome drawing composes itself into a 4.6:1 box. Give the frame any
+    // other shape and `meet` fits the building to the narrow dimension and
+    // letterboxes the rest — which is why an apparently taller panel drew a
+    // SMALLER building with dark bands above and below it. The frame takes the
+    // drawing's own aspect, so every pixel of it is building.
+    // The drawing composes into a 4.6:1 box; give the frame any other shape and
+    // `meet` fits the building to the narrow dimension and letterboxes the rest,
+    // which is why an apparently taller panel once drew a SMALLER building. The
+    // frame takes the drawing's own aspect, so every pixel of it is building —
+    // and the width it is given is therefore what sets its height. This column
+    // is now the wider half of the crowd row, which is where the extra height
+    // comes from: it is not spent, it is the aspect ratio doing its job.
+    maxHeight: Math.round((tight ? 430 : 500) / 4.6),
+    cls: "hl-arena",
+    // Wedges of the house, in the order the rows below name them: your building
+    // at your price, your own Draw, then the club visiting you. Shares of the
+    // CROWD, so they sum to the whole house however full it is.
+    bands: hlCrowdBands(w),
+  });
+}
+
 function hlWeekResultHtml(w: HLWeek, title: string): string {
-  const sellout = w.soldOut
-    ? `<div class="fh-sellout">
-         <div class="fh-sellout-title">FULL HOUSE</div>
-         <div class="fh-sellout-sub">${w.turnout.toLocaleString()} of ${w.capacity.toLocaleString()} seats · every one sold</div>
-         ${w.turnedAway > 0 ? `<div class="fh-sellout-turned"><span class="numeric">${w.turnedAway.toLocaleString()}</span><span>could not get in</span></div>` : ""}
-       </div>`
-    : "";
+  // The sell-out used to be a separate banner ABOVE the drawing, which said in
+  // words the thing the picture underneath it was already drawing — a full bowl
+  // and a crowd on the pavement outside the gates. It now rides with the
+  // building, so the consequence and the picture of the consequence are one
+  // object, and the height the banner was spending goes into the building.
   const door = Math.max(1, w.doorMoney);
   return `
     <div class="fh-result ${w.soldOut ? "soldout" : ""}">
@@ -3954,8 +4421,22 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
         <span>${escapeHtml(title)} <span class="fh-history-sub">vs ${escapeHtml(w.visitor)} · Draw ${w.visitorDraw}</span>${w.auto ? ' <span class="fh-flag">auto</span>' : ""}${w.stock ? ' <span class="fh-flag">covered</span>' : ""}</span>
         <span class="numeric">$${w.price}${w.share > 0 ? ` · ${w.share}% back in` : ""}</span>
       </div>
-      ${sellout}
-      <div class="fh-fill-track"><div class="fh-fill-bar ${w.soldOut ? "soldout" : ""}" style="width:${Math.min(100, w.fillPct)}%"></div></div>
+      <div class="hl-crowd">
+        <div class="hl-stage">
+          ${hlArenaHtml(w)}
+          ${
+            w.soldOut
+              ? `<div class="hl-gates ${w.turnedAway > 0 ? "turned" : ""}" id="hlGates">
+                   <span class="hl-gates-tag">FULL HOUSE</span>
+                   ${
+                     w.turnedAway > 0
+                       ? `<span class="hl-gates-num numeric">${w.turnedAway.toLocaleString()}</span><span class="hl-gates-lbl">outside the gates</span>`
+                       : `<span class="hl-gates-lbl">${w.capacity.toLocaleString()} seats, every one sold</span>`
+                   }
+                 </div>`
+              : `<div class="hl-gates" id="hlGates"><span class="hl-gates-num numeric">${Math.max(0, w.capacity - w.turnout).toLocaleString()}</span><span class="hl-gates-lbl">seats nobody sat in</span></div>`
+          }
+        </div>
       <div class="hl-split" id="hlSplit">
         <div class="hl-split-title">Who filled your building</div>
         <div class="hl-split-bar">
@@ -3969,10 +4450,16 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
           <div class="hl-split-row"><span class="hl-key visitor"></span><span>${escapeHtml(w.visitor)} visiting (Draw ${w.visitorDraw})</span><span class="numeric">${w.visitorFans.toLocaleString()} · ${money(w.visitorDollars)}</span></div>
         </div>
       </div>
+      </div>
       <div class="fh-kept ${w.net < 0 ? "neg" : ""}" data-hl-kept="1">
         <span class="fh-kept-label">Kept</span>
         <span class="fh-kept-num numeric">${money(w.net)}</span>
       </div>
+      ${
+        w.call
+          ? `<div class="hl-gate-result ${w.call.right ? "right" : "wrong"}" id="hlGateResult">${escapeHtml(w.call.line)}</div>`
+          : ""
+      }
       <div class="hl-road" id="hlRoad">${escapeHtml(w.road.line)}</div>
       ${hlPriceCfHtml(w)}
       <div class="hl-ledger-block">
@@ -4010,17 +4497,121 @@ function hlHistoryHtml(history: HLWeek[]): string {
     </div>`;
 }
 
+type HLGateBand = { id: string; label: string; blurb: string };
+type HLGateCall = {
+  prompt: string;
+  heading: string;
+  foot: string;
+  bands: HLGateBand[];
+  called: string | null;
+  building: string;
+  capacity: number;
+  room: { locked: number; seated: number; line: string };
+};
+
+/**
+ * THE GATE CALL — what a pair does while the rest of the room commits.
+ *
+ * The locked screen used to be a banner saying there was nothing to do, over
+ * an empty half-screen, three times a lesson. This is the same wait, spent on
+ * the one thing the pair cannot look up: the crowd. Every word here comes off
+ * the module's payload; the client picks no band and writes no verdict.
+ */
+function hlGateCallHtml(gate: HLGateCall | undefined): string {
+  if (!gate) return "";
+  const called = gate.called;
+  return `<div class="hl-gate" id="hlGate">
+      <div class="hl-gate-head">
+        <span class="eyebrow" style="font-size:11px;">${escapeHtml(gate.heading)}</span>
+        <span class="hl-gate-room">${escapeHtml(gate.room.line)}</span>
+      </div>
+      <p class="hl-gate-prompt">${escapeHtml(gate.prompt)}</p>
+      <div class="hl-gate-bands">
+        ${gate.bands
+          .map(
+            (b) => `<button type="button" class="hl-gate-band${called === b.id ? " is-called" : ""}" data-band="${escapeHtml(b.id)}" ${
+              called === b.id ? 'aria-pressed="true"' : 'aria-pressed="false"'
+            }>
+              <span class="hl-gate-band-label">${escapeHtml(b.label)}</span>
+              <span class="hl-gate-band-blurb">${escapeHtml(b.blurb)}</span>
+            </button>`,
+          )
+          .join("")}
+      </div>
+      <p class="hl-gate-foot">${escapeHtml(gate.foot)}</p>
+    </div>`;
+}
+
+/**
+ * The building before the doors open: full house drawn dark, nobody in it.
+ *
+ * H1 in L1's `fhLockedWaiting` and the same beat here — no timer, no spinner,
+ * no fake activity. The pair is looking at the room it just priced, which is
+ * exactly what the gate call beside it asks about.
+ */
+function hlDarkBuildingHtml(view: Record<string, unknown>): string {
+  const capacity = Number(view["capacity"] ?? 0);
+  const gate = view["gateCall"] as HLGateCall | undefined;
+  const building = gate?.building ?? "";
+  return `<div class="hl-dark-house" id="hlDarkHouse">
+      ${fhArenaFrame({
+        view: "hero",
+        turnout: 0,
+        seatsOpen: Math.max(1, capacity),
+        soldOut: false,
+        w: 620,
+        h: 300,
+        motion: false,
+        label: "",
+        cls: "hl-arena fh-dark-building",
+        maxHeight: Math.round((fhTight() ? 430 : 500) / 4.6),
+      })}
+      <div class="hl-dark-house-foot">
+        <span class="hl-dark-house-name">${escapeHtml(building)}</span>
+        <span class="hl-dark-house-cap numeric">${capacity.toLocaleString()} seats, doors shut</span>
+      </div>
+    </div>`;
+}
+
 function renderHLPlay(view: Record<string, unknown>): void {
   const body = $("gameBody");
-  document.body.classList.toggle("fh-compact-play", !view["allWeeksDone"]);
+  // The season-over screen used to be the one PLAY screen with room to spare, so
+  // it ran uncompacted and left the rejoin-PIN card in the hero slot. It now
+  // carries a full settlement, and is held to the same fold as every other bell:
+  // compact spacing, and the PIN collapsed to its reopen strip.
+  document.body.classList.add("fh-compact-play");
   if (view["allWeeksDone"]) {
     hlMountKey = null;
+    hidePin();
     document.body.classList.remove("hl-has-lockbar");
+    document.body.classList.add("hl-wide");
+    // The last week settles like every other week: its own result first, in
+    // full — building, crowd, what was kept, what the road cost — and only then
+    // the season summary. Sending the pair to the projector before their own
+    // final call has landed on their own screen throws away the one moment the
+    // whole three weeks were building to.
+    const done = view["lastSettled"] as HLWeek | null;
+    // Two columns, for the same reason every settled week has two: stacked
+    // full-width, the last week's own result ran the price counterfactual — the
+    // largest teaching number the lesson prints — past 600px on desks whose
+    // settlement carried a sell-out banner. The result keeps the wide column it
+    // has every other week; the season's books and the three-week table take
+    // the rail beside it, where they are a summary rather than a queue.
     body.innerHTML = `
-      ${hlDeskHeader(view)}
-      ${hlBooksHtml(view["books"] as HLBooks)}
-      <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-      ${hlHistoryHtml((view["history"] as HLWeek[]) ?? [])}`;
+      <div class="hl-decide" id="hlPlayRoot">
+        <div class="hl-span">${hlTopStrip(view)}</div>
+        <div class="hl-col-context">
+          <div class="hl-bell-head">THE SEASON IS IN THE BOOKS</div>
+          ${done ? hlWeekResultHtml(done, `Week ${done.week} — how it went`) : ""}
+          <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your three weeks</div>
+          ${hlHistoryHtml((view["history"] as HLWeek[]) ?? [])}
+        </div>
+        <div class="hl-col-decide">
+          ${hlBooksHtml(view["books"] as HLBooks)}
+          <div class="banner" style="margin-top:10px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        </div>
+      </div>`;
+    window.scrollTo(0, 0);
     return;
   }
 
@@ -4108,8 +4699,8 @@ function renderHLPlay(view: Record<string, unknown>): void {
         ${shock ? `<div class="hl-shock ${shock.hostingThem ? "mine" : ""}" id="hlShock">${escapeHtml(shock.line)}</div>` : ""}
       </div>`;
   const dialsHtml = locked
-    ? `<div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-       <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>`
+    ? `<div class="fh-locked-recap" style="margin-top:12px;"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>
+       ${hlGateCallHtml(view["gateCall"] as HLGateCall | undefined)}`
     : `
         <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
@@ -4148,7 +4739,13 @@ function renderHLPlay(view: Record<string, unknown>): void {
     ? `<div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}`
     : last
       ? hlWeekResultHtml(last, `Week ${last.week} — how it went`)
-      : "";
+      : locked
+        ? // Week 1 has no evidence yet, so a locked pair used to sit beside an
+          // empty half-screen. It gets the thing the gate call is a call ABOUT:
+          // its own building, doors shut, nobody in it. Same treatment L1 gives
+          // the same moment (`fhLockedWaiting`).
+          hlDarkBuildingHtml(view)
+        : "";
   body.innerHTML = `
     <div id="hlPlayRoot" class="hl-decide">
       <div class="hl-span">${hlTopStrip(view)}</div>
@@ -4172,6 +4769,7 @@ function renderHLPlay(view: Record<string, unknown>): void {
            </div>`
     }`;
   document.body.classList.toggle("hl-has-lockbar", !locked);
+  document.body.classList.add("hl-wide");
 
   // play N-1/N-2: the shell reserves the lock bar's band as body padding, so
   // the bar's real rendered height has to be the number the CSS reserves. Read
@@ -4192,7 +4790,22 @@ function renderHLPlay(view: Record<string, unknown>): void {
     if (scroller) scroller.scrollTop = 0;
   }
 
-  if (locked) return;
+  if (locked) {
+    // The gate call is the only live control on a locked desk. It changes no
+    // economics, so it never needs the lock bar's arming guard.
+    for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("#hlGate .hl-gate-band"))) {
+      btn.onclick = () => {
+        const band = btn.dataset["band"];
+        if (!band) return;
+        for (const other of Array.from(document.querySelectorAll<HTMLButtonElement>("#hlGate .hl-gate-band"))) {
+          other.classList.toggle("is-called", other === btn);
+          other.setAttribute("aria-pressed", other === btn ? "true" : "false");
+        }
+        outbox?.submit({ type: "gateCall", band });
+      };
+    }
+    return;
+  }
 
   const dial = $<HTMLInputElement>("hlPriceDial");
   const readout = $("hlPriceReadout");
@@ -4288,68 +4901,182 @@ function renderHLPlay(view: Record<string, unknown>): void {
   });
 }
 
+/**
+ * THE REVEAL, ON THE DESK.
+ *
+ * Five teacher-paced beats go up on the projector. This screen used to print
+ * every number all five of them are about from beat 0 and then never change
+ * again — a diff of the desk's DOM across all six presses came back
+ * byte-identical. Two things were wrong with that at once: the pair had nothing
+ * to do for the longest stretch of the lesson, and, worse, they had already
+ * read the answer to every question the room was about to be asked. The device
+ * was spoiling the room's own reveal.
+ *
+ * The desk now unfolds with the board. Each beat adds THIS club's version of
+ * what the projector is showing, and nothing further. The one interaction is a
+ * call taken before beat 2 answers it — did your drawing power put more money
+ * on other clubs' books than they put on yours — which is a real coin-flip for
+ * a pair that has not seen the ledger, and is settled by their own numbers.
+ */
 function renderHLReveal(view: Record<string, unknown>): void {
   const history = (view["history"] as HLWeek[]) ?? [];
   const mine = view["mine"] as HLMine | null;
   const give = view["give"] as HLGive | null;
   const questions = (view["questions"] as string[]) ?? [];
   const total = Math.max(1, mine?.total ?? 1);
+  const beat = Number(view["deskBeat"] ?? 0);
+  const steps = Number(view["totalRevealSteps"] ?? 5);
+  const predictOpen = Boolean(view["predictOpen"]);
+  const prediction = view["prediction"] as string | null;
+  const resolved = view["predictionResolved"] as { actual: string; right: boolean; line: string } | null;
+  const door = view["doorBlocks"] as
+    | { fromBuilding: number; fromOwnDraw: number; fromVisitorDraw: number; visitors: HLMine["visitors"] }
+    | undefined;
+  const doorTotal = door ? Math.max(1, door.fromBuilding + door.fromOwnDraw + door.fromVisitorDraw) : 1;
+  const bestWeek = view["bestNight"] as
+    | { week: number; price: number; visitor: string; visitorDraw: number; turnout: number; doorMoney: number; visitorDollars: number }
+    | undefined;
+  const ownReinvest = (view["ownReinvest"] as { week: number; share: number; auto: boolean }[] | undefined) ?? [];
+
+  const waiting = `<div class="panel hl-beat-wait" id="hlBeatWait" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">Beat ${beat || "—"} of ${steps}</div>
+      <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-secondary);">Your teacher has not put the first beat up yet. As each one lands, your club's own version of it appears here — the room's is on the board.</p>
+    </div>`;
+
+  const callCard = `
+    <div class="panel hl-call" id="hlLedgerCall" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">Your call, before the ledger goes up</div>
+      <p style="margin:8px 0 0; font-size:14.5px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["predictPrompt"] ?? ""))}</p>
+      ${
+        predictOpen
+          ? `<div class="wr-choice" style="margin-top:10px;">
+               <button type="button" class="btn" id="hlCallGave">I PUT MORE ON THEIRS</button>
+               <button type="button" class="btn" id="hlCallTook">THEY PUT MORE ON MINE</button>
+             </div>`
+          : ""
+      }
+      ${
+        prediction && !resolved
+          ? `<div class="hl-give-note" id="hlCallLocked">You called it: ${prediction === "gave" ? "you put more on theirs" : "they put more on yours"}. Beat 2 settles it.</div>`
+          : ""
+      }
+      ${
+        resolved
+          ? `<div class="hl-give-note ${resolved.right ? "hl-call-right" : ""}" id="hlCallResult">${escapeHtml(resolved.line)}</div>`
+          : ""
+      }
+    </div>`;
+
+  const doorBlocks = door
+      ? `<div class="hl-split" id="hlSeasonDoor">
+           <div class="hl-split-title">Beat 1 · Who filled YOUR building, all three weeks</div>
+           <div class="hl-split-bar">
+             <span class="hl-seg bare" style="width:${(door.fromBuilding / doorTotal) * 100}%"></span>
+             <span class="hl-seg own" style="width:${(door.fromOwnDraw / doorTotal) * 100}%"></span>
+             <span class="hl-seg visitor" style="width:${(door.fromVisitorDraw / doorTotal) * 100}%"></span>
+           </div>
+           <div class="hl-split-rows">
+             <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at your prices</span><span class="numeric">${money(door.fromBuilding)}</span></div>
+             <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw</span><span class="numeric">${money(door.fromOwnDraw)}</span></div>
+             <div class="hl-split-row"><span class="hl-key visitor"></span><span>The clubs who visited you</span><span class="numeric">${money(door.fromVisitorDraw)}</span></div>
+           </div>
+           <div class="hl-split-visitors">${door.visitors
+             .map((v) => `<span>W${v.week}: ${escapeHtml(v.short)} (Draw ${v.draw}) brought ${money(v.dollars)}</span>`)
+             .join("")}</div>
+         </div>`
+      : "";
+
+  const ledger = give
+      ? `<div class="hl-give" id="hlGive">
+           <div class="hl-split-title">Beat 2 · What you gave, what you got</div>
+           <div class="hl-give-sub" id="hlDealtLine">${escapeHtml(String(view["dealtLine"] ?? ""))}</div>
+           <div class="hl-give-row"><span>Your Draw put this on OTHER clubs' books</span><span class="numeric">${money(give.gave)}</span></div>
+           <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
+           <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
+           <div class="hl-give-note">This is not money you kept or lost. It is money that moved because of drawing power — yours and theirs.</div>
+           <div class="hl-give-sub" id="hlGiveChoice">${escapeHtml(String(view["giveHeading"] ?? ""))}</div>
+           <div class="hl-give-row"><span>Of the above, what YOUR spending put in other buildings</span><span class="numeric">${money(give.gaveByChoice)}</span></div>
+           <div class="hl-give-row"><span>What OTHER desks' spending put in yours</span><span class="numeric">${money(give.receivedByChoice)}</span></div>
+           <div class="hl-give-row net"><span>What your spending was worth to YOUR OWN cash</span><span class="numeric ${give.ownGain < 0 ? "neg" : ""}">${money(give.ownGain)}</span></div>
+           <div class="hl-give-note" id="hlGiveLine">${escapeHtml(String(view["giveLine"] ?? ""))} Your Draw went from ${give.drawStart} to ${give.drawEnd}; ${
+             // W5 B-1: the same distinction, one clause later. "you put an
+             // average of 0% back in" is a decision sentence too, and the
+             // abstaining desk never made it.
+             give.neverLocked
+               ? `the house default put an average of ${give.meanShare}% of your door money back in.`
+               : `you put an average of ${give.meanShare}% of your door money back in.`
+           }</div>
+         </div>`
+      : "";
+
+  const pipes = mine
+      ? `<div class="hl-split" id="hlSeasonSplit">
+           <div class="hl-split-title">Beat 3 · All four pipes, plus the national check</div>
+           <div class="hl-split-bar">
+             <span class="hl-seg bare" style="width:${(mine.fromBuilding / total) * 100}%"></span>
+             <span class="hl-seg own" style="width:${(mine.fromOwnDraw / total) * 100}%"></span>
+             <span class="hl-seg visitor" style="width:${(mine.fromVisitorDraw / total) * 100}%"></span>
+             <span class="hl-seg local" style="width:${(mine.localMedia / total) * 100}%"></span>
+             <span class="hl-seg national" style="width:${(mine.national / total) * 100}%"></span>
+           </div>
+           <div class="hl-split-rows">
+             <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at your prices</span><span class="numeric">${money(mine.fromBuilding)}</span></div>
+             <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw</span><span class="numeric">${money(mine.fromOwnDraw)}</span></div>
+             <div class="hl-split-row"><span class="hl-key visitor"></span><span>The clubs who visited you</span><span class="numeric">${money(mine.fromVisitorDraw)}</span></div>
+             <div class="hl-split-row"><span class="hl-key local"></span><span>Local media and sponsors</span><span class="numeric">${money(mine.localMedia)}</span></div>
+             <div class="hl-split-row"><span class="hl-key national"></span><span>National television check</span><span class="numeric">${money(mine.national)}</span></div>
+           </div>
+         </div>`
+      : "";
+
+  const bigNight = bestWeek
+      ? `<div class="hl-give" id="hlBigNight">
+           <div class="hl-split-title">Beat 4 · Your biggest night</div>
+           <div class="hl-give-row"><span>Week ${bestWeek.week} vs ${escapeHtml(bestWeek.visitor)} (Draw ${bestWeek.visitorDraw})</span><span class="numeric">${money(bestWeek.doorMoney)}</span></div>
+           <div class="hl-give-row"><span>Of that, what the visiting club brought</span><span class="numeric">${money(bestWeek.visitorDollars)}</span></div>
+           <div class="hl-give-row"><span>At $${bestWeek.price} a seat</span><span class="numeric">${bestWeek.turnout.toLocaleString()} in</span></div>
+           <div class="hl-give-note">The board is asking which the room would rather have: a big market, or a big visitor. This was your best night — say which one made it.</div>
+         </div>`
+      : "";
+
+  const reinvest =
+    ownReinvest.length > 0
+      ? `<div class="hl-give" id="hlOwnReinvest">
+           <div class="hl-split-title">Beat 5 · What YOU put back, week by week</div>
+           ${ownReinvest
+             .map(
+               (w) =>
+                 `<div class="hl-give-row"><span>Week ${w.week}${w.auto ? " · auto" : ""}</span><span class="numeric">${w.share}%</span></div>`,
+             )
+             .join("")}
+           <div class="hl-give-note">The board has the room's three numbers beside the last-week rule. Yours are here. They are not the same question — the room's is about what a room does when tomorrow runs out.</div>
+         </div>`
+      : "";
+
+  const anyBeat = doorBlocks || ledger || pipes || bigNight || reinvest;
+
   $("gameBody").innerHTML = `
     ${hlDeskHeader(view)}
     ${hlBooksHtml(view["books"] as HLBooks)}
     <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-    ${
-      mine
-        ? `<div class="hl-split" id="hlSeasonSplit">
-             <div class="hl-split-title">Your three weeks, where the money came from</div>
-             <div class="hl-split-bar">
-               <span class="hl-seg bare" style="width:${(mine.fromBuilding / total) * 100}%"></span>
-               <span class="hl-seg own" style="width:${(mine.fromOwnDraw / total) * 100}%"></span>
-               <span class="hl-seg visitor" style="width:${(mine.fromVisitorDraw / total) * 100}%"></span>
-               <span class="hl-seg local" style="width:${(mine.localMedia / total) * 100}%"></span>
-               <span class="hl-seg national" style="width:${(mine.national / total) * 100}%"></span>
-             </div>
-             <div class="hl-split-rows">
-               <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at your prices</span><span class="numeric">${money(mine.fromBuilding)}</span></div>
-               <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw</span><span class="numeric">${money(mine.fromOwnDraw)}</span></div>
-               <div class="hl-split-row"><span class="hl-key visitor"></span><span>The clubs who visited you</span><span class="numeric">${money(mine.fromVisitorDraw)}</span></div>
-               <div class="hl-split-row"><span class="hl-key local"></span><span>Local media and sponsors</span><span class="numeric">${money(mine.localMedia)}</span></div>
-               <div class="hl-split-row"><span class="hl-key national"></span><span>National television check</span><span class="numeric">${money(mine.national)}</span></div>
-             </div>
-             <div class="hl-split-visitors">${mine.visitors
-               .map((v) => `<span>W${v.week}: ${escapeHtml(v.short)} (Draw ${v.draw}) brought ${money(v.dollars)}</span>`)
-               .join("")}</div>
-           </div>`
-        : ""
-    }
-    ${
-      give
-        ? `<div class="hl-give" id="hlGive">
-             <div class="hl-split-title">What you gave, what you got</div>
-             <div class="hl-give-sub" id="hlDealtLine">${escapeHtml(String(view["dealtLine"] ?? ""))}</div>
-             <div class="hl-give-row"><span>Your Draw put this on OTHER clubs' books</span><span class="numeric">${money(give.gave)}</span></div>
-             <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
-             <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
-             <div class="hl-give-note">This is not money you kept or lost. It is money that moved because of drawing power — yours and theirs.</div>
-             <div class="hl-give-sub" id="hlGiveChoice">${escapeHtml(String(view["giveHeading"] ?? ""))}</div>
-             <div class="hl-give-row"><span>Of the above, what YOUR spending put in other buildings</span><span class="numeric">${money(give.gaveByChoice)}</span></div>
-             <div class="hl-give-row"><span>What OTHER desks' spending put in yours</span><span class="numeric">${money(give.receivedByChoice)}</span></div>
-             <div class="hl-give-row net"><span>What your spending was worth to YOUR OWN cash</span><span class="numeric ${give.ownGain < 0 ? "neg" : ""}">${money(give.ownGain)}</span></div>
-             <div class="hl-give-note" id="hlGiveLine">${escapeHtml(String(view["giveLine"] ?? ""))} Your Draw went from ${give.drawStart} to ${give.drawEnd}; ${
-               // W5 B-1: the same distinction, one clause later. "you put an
-               // average of 0% back in" is a decision sentence too, and the
-               // abstaining desk never made it.
-               give.neverLocked
-                 ? `the house default put an average of ${give.meanShare}% of your door money back in.`
-                 : `you put an average of ${give.meanShare}% of your door money back in.`
-             }</div>
-           </div>`
-        : ""
-    }
+    ${beat < 2 || prediction ? callCard : ""}
+    ${anyBeat ? "" : waiting}
+    ${doorBlocks}
+    ${ledger}
+    ${pipes}
+    ${bigNight}
+    ${reinvest}
     ${questions.length > 0 ? `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">Talk to your partner</div><ol class="fh-questions">${questions.map((q) => `<li>${escapeHtml(q)}</li>`).join("")}</ol></div>` : ""}
     <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks</div>
     ${history.map((w) => hlWeekResultHtml(w, `Week ${w.week}`)).join("")}`;
+
+  if (predictOpen) {
+    const send = (choice: string) => outbox?.submit({ type: "ledgerPredict", choice });
+    document.getElementById("hlCallGave")?.addEventListener("click", () => send("gave"));
+    document.getElementById("hlCallTook")?.addEventListener("click", () => send("took"));
+  }
 }
+
 
 /* ================= M2 L3 "Writing the Rule" — student device =================
    Same architecture as L2, deliberately: the pinned commit bar, the two-column
@@ -4449,21 +5176,81 @@ function wrBooks(view: Record<string, unknown>): string {
     </div>`;
 }
 
-function wrLeagueTable(view: Record<string, unknown>): string {
-  const league = (view["league"] as { deskNumber: number; short: string; sizeLabel: string; draw: number; live: boolean }[]) ?? [];
+/** Money at a glance: $2.4M, $540K — the bar carries the magnitude, this labels it. */
+function wrShortMoney(n: number): string {
+  const v = Math.abs(n);
+  if (v >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${Math.round(n)}`;
+}
+
+type WRLeagueClub = {
+  deskNumber: number;
+  short: string;
+  code: string;
+  building: string;
+  capacity: number;
+  sizeLabel: string;
+  draw: number;
+  cash: number;
+  live: boolean;
+  you: boolean;
+};
+
+/**
+ * THE LEAGUE FLOOR — the room this desk is legislating for, drawn.
+ *
+ * This replaced a collapsed `<details>` list of club names. A student about to
+ * vote on how much of every club's money goes into a shared pot was being asked
+ * to do it while looking at four paragraphs of text and a slider; the twelve
+ * unequal franchises the rule is ABOUT were one click away and, in a live class,
+ * therefore invisible. ADOPT_COPY tells the room "the pot is the big markets'
+ * money" — this is that sentence as a picture, from the room's own opening books.
+ *
+ * Two encodings, both labelled in the header, both straight off state:
+ *   - column height = cash in the bank, on a shared baseline and a shared max,
+ *     so the 5x gap between a big market and a small one is drawn at 5x;
+ *   - the numeral under each name = Draw.
+ * Nothing here is scaled, curved, or dramatised. The gap on screen is the gap
+ * in the model.
+ *
+ * Order is desk order, never wealth order: this lesson deliberately refuses to
+ * rank its clubs (see `applyRookie` — "determined by the model, never shown as a
+ * ranking"), and a sorted floor would hand the room a league table it never
+ * earned.
+ */
+function wrLeagueFloor(view: Record<string, unknown>, opts?: { compact?: boolean }): string {
+  const league = (view["league"] as WRLeagueClub[]) ?? [];
   if (league.length === 0) return "";
+  const max = Math.max(1, ...league.map((c) => c.cash));
+  const compact = opts?.compact === true;
   return `
-    <details class="fa-rules" style="margin-top:12px;">
-      <summary>Every club in the league</summary>
-      <div class="fh-slate">
+    <div class="wr-league${compact ? " compact" : ""}" id="wrLeague">
+      <div class="wr-league-head">
+        <span class="eyebrow">THE LEAGUE — ${league.length} clubs, and what each one has in the bank right now</span>
+        <span class="wr-league-legend">bar = money in the bank · tallest = ${wrShortMoney(max)} · number = Draw</span>
+      </div>
+      <div class="wr-league-floor">
         ${league
-          .map(
-            (c) =>
-              `<div class="fh-slate-row"><span>${escapeHtml(c.short)}</span><span>${escapeHtml(c.sizeLabel)}</span><span>${c.live ? `Desk ${c.deskNumber}` : "league office"}</span><span class="numeric">Draw ${c.draw}</span></div>`,
-          )
+          .map((c) => {
+            const h = Math.max(3, Math.round((c.cash / max) * 100));
+            const title = `${c.short} (${c.code}) · ${c.building} · ${c.capacity.toLocaleString()} seats · ${c.sizeLabel} · ${wrShortMoney(c.cash)} in the bank · Draw ${c.draw}`;
+            // Every column carries the SAME four rows in the same order, so every
+            // bar sits on one baseline and the drawn heights are comparable. The
+            // first version made the YOU badge a fifth row on one column only:
+            // with the floor bottom-aligned, that lifted this desk's own club
+            // clear of everyone else's baseline and drew $2.4M taller than the
+            // $2.6M beside it. A marker may never move the thing it marks.
+            return `<div class="wr-club${c.you ? " is-you" : ""}${c.live ? "" : " is-office"}" data-wr-club="${c.deskNumber}" data-cash="${c.cash}" title="${escapeHtml(title)}">
+              <div class="wr-club-cash numeric">${wrShortMoney(c.cash)}</div>
+              <div class="wr-club-track"><div class="wr-club-bar" style="height:${h}%"></div>${c.you ? `<div class="wr-club-you">YOU</div>` : ""}</div>
+              <div class="wr-club-name" data-code="${escapeHtml(c.code)}"><span>${escapeHtml(c.short)}</span></div>
+              <div class="wr-club-draw numeric">${c.draw}</div>
+            </div>`;
+          })
           .join("")}
       </div>
-    </details>`;
+    </div>`;
 }
 
 function wrHistogramHtml(h: WRHistogram | null, held: boolean, heldCopy: string, band: number): string {
@@ -4587,7 +5374,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
       const rule = view["rule"] as WRRule;
       body.innerHTML = `
         <div class="panel" style="padding:18px;">
-          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">You arrived after the league closed</div>
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">${escapeHtml(String(view["observerEyebrow"] ?? ""))}</div>
           <p style="margin:0 0 10px; font-size:16px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
           <p style="margin:0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["ruleNote"] ?? ""))}</p>
         </div>
@@ -4603,7 +5390,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
   }
   if (s.phase !== "PLAY") {
     wrMountKey = null;
-    document.body.classList.remove("hl-has-lockbar", "fh-compact-play");
+    document.body.classList.remove("hl-has-lockbar", "fh-compact-play", "hl-wide");
   }
   switch (s.phase) {
     case "LOBBY":
@@ -4625,7 +5412,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
           <summary>How today works</summary>
           <ul>${((view["houseRules"] as string[]) ?? []).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
         </details>
-        ${wrLeagueTable(view)}
+        ${wrLeagueFloor(view)}
         <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
       return;
 
@@ -4677,7 +5464,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
       const myLens = view["myLens"] as WRLens | null;
       const predictOpen = Boolean(view["predictOpen"]);
       const prediction = view["prediction"] as string | null;
-      const resolved = view["predictionResolved"] as { actual: string; right: boolean } | null;
+      const resolved = view["predictionResolved"] as { actual: string; right: boolean; line: string } | null;
       const key = `reveal|${stageNo}|${prediction ?? "none"}|${resolved ? String(resolved.right) : "no"}`;
       if (wrMountKey === key && document.getElementById("wrLens")) return;
       wrMountKey = key;
@@ -4847,7 +5634,7 @@ function renderWRPlay(view: Record<string, unknown>): void {
   }
   if (mode === "adopted") {
     wrMountKey = null;
-    document.body.classList.remove("hl-has-lockbar", "fh-compact-play");
+    document.body.classList.remove("hl-has-lockbar", "fh-compact-play", "hl-wide");
     $("gameBody").innerHTML = `
       ${wrDeskHeader(view)}
       ${wrRuleStrip(view["rule"] as WRRule)}
@@ -4880,11 +5667,18 @@ function renderWRRounds(view: Record<string, unknown>): void {
   $("gameBody").innerHTML = `
     <div id="wrRoundsRoot" class="hl-decide">
       <div class="hl-span">${wrDeskHeader(view)}</div>
+      <!-- The veil reads as a league announcement rather than a card: a gold-
+           ruled band, not a padded panel. That is ~50px cheaper, which is what
+           buys the league floor its place above a 1024x600 fold on the same
+           screen. It stays inside the left column on purpose — spanning both
+           columns pushed the CONDITION control under the commit bar, which the
+           occlusion probe caught. -->
       <div class="hl-col-context">
-        <div class="panel" id="wrVeil" style="padding:14px;">
-          <div class="eyebrow" style="font-size:12px;">Before you write anything</div>
-          <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["veil"] ?? ""))}</p>
+        <div class="wr-veil-band" id="wrVeil">
+          <span class="eyebrow">Before you write anything</span>
+          <p>${escapeHtml(String(view["veil"] ?? ""))}</p>
         </div>
+        ${wrLeagueFloor(view, { compact: true })}
         <div class="panel" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">Your club, while you vote</div>
           <div class="fh-market-facts">
@@ -4895,6 +5689,7 @@ function renderWRRounds(view: Record<string, unknown>): void {
             <div><span>Cash</span><span class="numeric">${money(Number(view["cash"] ?? 0))}</span></div>
           </div>
           <div class="hl-give-note">${escapeHtml(String(view["plainLine"] ?? ""))}</div>
+          ${view["identityLine"] ? `<p class="hl-identity">${escapeHtml(String(view["identityLine"]))}</p>` : ""}
         </div>
         ${
           !sealed && view["abstainNote"]
@@ -4947,6 +5742,7 @@ function renderWRRounds(view: Record<string, unknown>): void {
       <button class="btn btn-primary" id="wrPropose" disabled data-wr-armed="${sealed ? "1" : "0"}">${sealed ? "VOTE SEALED" : "PUT IT IN"}</button>
     </div>`;
   document.body.classList.add("hl-has-lockbar");
+  document.body.classList.add("hl-wide");
   const bar = document.getElementById("wrLockBar");
   if (bar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(bar.getBoundingClientRect().height)}px`);
 
@@ -5027,7 +5823,7 @@ function renderWRSeason(view: Record<string, unknown>): void {
   const weeks = (view["weeks"] as WRWeek[]) ?? [];
   if (done) {
     wrMountKey = null;
-    document.body.classList.remove("hl-has-lockbar");
+    document.body.classList.remove("hl-has-lockbar", "hl-wide");
     body.innerHTML = `
       ${wrDeskHeader(view)}
       ${wrRuleStrip(view["rule"] as WRRule)}
@@ -5123,6 +5919,7 @@ function renderWRSeason(view: Record<string, unknown>): void {
            </div>`
     }`;
   document.body.classList.toggle("hl-has-lockbar", !locked);
+  document.body.classList.add("hl-wide");
   const lockBar = document.getElementById("wrLockBar");
   if (lockBar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(lockBar.getBoundingClientRect().height)}px`);
   else document.body.style.removeProperty("--hl-lockbar-h");
@@ -5219,6 +6016,20 @@ function escapeHtml(s: string): string {
 if (creds) {
   joinCard.hidden = true;
   gameCard.hidden = false;
+  // The rejoin PIN survives a refresh, and so must the way to read it.
+  //
+  // The PIN is handed over once, on join, and auto-collapses after 20 seconds
+  // so the decision surface gets its first viewport back. Nothing restored it
+  // afterwards: a pair who refreshed — a dropped Chromebook, a browser update,
+  // a stray Ctrl+R, or simply the next morning — came back seated and playing
+  // with their own PIN permanently unreachable, which is the one thing that
+  // moves them to another device when this one dies. It is in storage; this
+  // puts the strip that opens it back on the screen, collapsed, so it costs the
+  // decision nothing.
+  if (creds.rejoinPin) {
+    $("pinDisplay").textContent = creds.rejoinPin;
+    $("btnShowPin").hidden = false;
+  }
   startGame();
 } else {
   // F1: a pair that was signed out and then refreshed still gets told why.

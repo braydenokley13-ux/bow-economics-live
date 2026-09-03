@@ -44,6 +44,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = 4309;
 const BASE = `http://localhost:${PORT}`;
@@ -657,6 +658,23 @@ async function driveDial(page, selector, readoutSel, target, renderReadout) {
       await page.waitForSelector(selector);
       const handle = await page.$(selector);
       await handle.scrollIntoViewIfNeeded();
+      // A re-mount between the selector resolving and the box being read hands back
+      // a 0x0 rectangle for a control that is reachable again a frame later — twice,
+      // that flaked this whole proof. Wait for a real box before judging. A dial
+      // that is genuinely hidden, collapsed, or stripped of its styling never grows
+      // one, so the assertion keeps its teeth.
+      await page
+        .waitForFunction(
+          (sel) => {
+            const node = document.querySelector(sel);
+            if (!node) return false;
+            const box = node.getBoundingClientRect();
+            return box.width > 40 && box.height > 8;
+          },
+          selector,
+          { timeout: 5000 },
+        )
+        .catch(() => { /* still degenerate: the assertion below says so */ });
       const dial = await page.$eval(selector, (el) => {
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, w: r.width, h: r.height, min: Number(el.min), max: Number(el.max) };
@@ -748,9 +766,114 @@ async function advanceTo(teach, phase) {
 
 /* ------------------------------------------------------------- the run -- */
 
+/**
+ * Read the league floor out of the live DOM and check that bar height is a
+ * straight linear function of cash through the origin, on ONE baseline.
+ *
+ * Two separate failures are in scope and both have happened:
+ *   - a bar drawn out of proportion to its club's money, and
+ *   - bars drawn correctly but on different baselines, so the comparison the
+ *     strip invites is between two different rulers.
+ * Tolerance is 2 device pixels on the baseline and 4% of the tallest bar on the
+ * proportion, which is tighter than the 3% min-height floor the renderer applies
+ * to the smallest club — so that floor is measured too, not exempted.
+ */
+async function assertLeagueFloorHonest(page, where) {
+  const rows = await page.evaluate(() => {
+    const out = [];
+    for (const el of document.querySelectorAll("#wrLeague .wr-club")) {
+      const bar = el.querySelector(".wr-club-bar");
+      if (!bar) continue;
+      const b = bar.getBoundingClientRect();
+      // The MODEL's number, not the abbreviated label: "$2.4M" and "$2.6M" are
+      // both one significant figure apart, and a check that rounds before it
+      // compares cannot see an 8% error between them.
+      const n = Number(el.dataset.cash);
+      out.push({ name: el.querySelector(".wr-club-name")?.textContent?.trim() ?? "?", cash: n, h: b.height, bottom: b.bottom, you: el.classList.contains("is-you") });
+    }
+    return out;
+  });
+  assert.ok(rows.length >= 4, `${where}: the league floor drew ${rows.length} clubs — nothing to compare`);
+
+  const baseline = rows[0].bottom;
+  for (const r of rows) {
+    assert.ok(
+      Math.abs(r.bottom - baseline) <= 2,
+      `${where}: ${r.name}'s bar sits on a different baseline (${r.bottom.toFixed(1)} vs ${baseline.toFixed(1)}) — twelve bars on twelve rulers is not a comparison`,
+    );
+  }
+  const maxH = Math.max(...rows.map((r) => r.h));
+  const maxCash = Math.max(...rows.map((r) => r.cash));
+  let worst = { name: "-", off: 0 };
+  for (const r of rows) {
+    const want = (r.cash / maxCash) * maxH;
+    const off = Math.abs(r.h - want) / maxH;
+    if (off > worst.off) worst = { name: r.name, off };
+    assert.ok(
+      off <= 0.04,
+      `${where}: ${r.name} holds ${r.cash.toLocaleString()} of a ${maxCash.toLocaleString()} maximum but drew ${r.h.toFixed(1)}px where ${want.toFixed(1)}px is proportional (${(off * 100).toFixed(1)}% of the tallest bar off)`,
+    );
+  }
+  assert.equal(rows.filter((r) => r.you).length, 1, `${where}: exactly one club on the floor is this desk's own`);
+  console.log(`[e2e-m2l3] league floor honest at ${where} — ${rows.length} bars on one baseline, worst is ${worst.name} at ${(worst.off * 100).toFixed(1)}% of the tallest (tolerance 4%)`);
+}
+
+/** The instrument must reject a floor it should reject. */
+async function proveLeagueInstrumentBites(page) {
+  const poisoned = await page.evaluate(() => {
+    const bar = document.querySelector("#wrLeague .wr-club:not(.is-you) .wr-club-bar");
+    if (!bar) return false;
+    bar.dataset.prevH = bar.style.height;
+    bar.style.height = "100%";
+    return true;
+  });
+  assert.ok(poisoned, "could not stage a poisoned league floor");
+  let caught = false;
+  try {
+    await assertLeagueFloorHonest(page, "POISONED");
+  } catch {
+    caught = true;
+  }
+  await page.evaluate(() => {
+    const bar = document.querySelector("#wrLeague .wr-club:not(.is-you) .wr-club-bar");
+    if (bar) bar.style.height = bar.dataset.prevH ?? "";
+  });
+  assert.ok(caught, "the league-floor instrument passed a bar stretched to full height — it proves nothing");
+  await assertLeagueFloorHonest(page, "restored after poison");
+  console.log("[e2e-m2l3] NON-VACUITY — a club's bar stretched to the tallest in the league is rejected");
+}
+
+/** THE ROOM, as the teacher's console has actually rendered it (W6). */
+async function readRoom(teach) {
+  return teach.evaluate(() => ({
+    hidden: document.getElementById("liveroom")?.hidden ?? true,
+    count: document.getElementById("roomCount")?.textContent || "",
+    spread: (document.getElementById("roomSpread")?.textContent || "").replace(/\s+/g, " ").trim(),
+    note: (document.getElementById("roomNote")?.textContent || "").replace(/\s+/g, " ").trim(),
+    chips: [...document.querySelectorAll("#roomMove .room-chip")].map((c) => c.textContent.replace(/\s+/g, " ").trim()),
+    bars: [...document.querySelectorAll("#roomHist .room-bar")].map((b) => Number(b.querySelector("u")?.textContent || 0)),
+    axis: [...document.querySelectorAll("#roomAxis span")].map((x) => x.textContent),
+  }));
+}
+
+/** The live read is teacher-private, in the browser, on the frame it is up. */
+async function assertRoomIsTeacherOnly(board, desk, label) {
+  const boardText = await board.evaluate(() => document.body.innerText);
+  const deskText = await desk.evaluate(() => document.body.innerText);
+  for (const [name, text] of [["projector", boardText], ["a desk", deskText]]) {
+    assert.equal(
+      /middle \d+%|middle \$\d+|under the \d+% condition this room voted in/.test(text),
+      false,
+      `${label}: ${name} is carrying the teacher's live room read`,
+    );
+  }
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
+
+  await assertPortFree(PORT, require("path").basename(__filename));
 
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
@@ -856,6 +979,19 @@ async function main() {
     for (let i = 0; i < DESKS; i += 1) await assertRoundsFirstContact(desks[i], `round 1 first contact, desk ${i + 1}`);
     await proveOcclusionInstrumentBites(desks[0], "#wrShareDial", "the SHARE dial at first contact");
 
+    // THE LEAGUE FLOOR — the drawn gap must be the modeled gap.
+    //
+    // This strip exists to show a room about to tax itself how unequal it is,
+    // and its whole claim rests on twelve bars being comparable. The first build
+    // was not: the YOU badge was an extra row on one column only, and with the
+    // floor bottom-aligned that lifted the student's own club clear of everyone
+    // else's baseline. It drew $2.4M taller than the $2.6M beside it — the
+    // exact thing `<economic_truth>` forbids, visual drama misrepresenting
+    // magnitude, and on the student's OWN club. So it is measured, not eyeballed:
+    // every bar's rendered height in device pixels against its club's cash.
+    await assertLeagueFloorHonest(desks[0], "round 1");
+    await proveLeagueInstrumentBites(desks[0]);
+
     // A room that trades: big markets low, small markets high, converging.
     const ROUND_SHARES = [
       [0, 10, 45, 55, 50, 5, 60, 10, 45, 5, 50, 15],
@@ -870,6 +1006,39 @@ async function main() {
         await desks[i].click("#wrPropose");
       }
       if (round === 0) await desks[0].screenshot({ path: path.join(SCREEN_DIR, "07-play-round1.png") });
+
+      // THE ROOM (W6) — the rule rounds are a BARGAINING spread, and the read
+      // that lets a teacher see whether the room is converging or dug in lives
+      // on the console and nowhere else. Round 1 opens 0%..60% and closes at a
+      // 10-point band; a teacher who can see that is the one who can ask the
+      // right question before the two-thirds test runs.
+      {
+        await teach.waitForFunction(
+          () => (document.getElementById("roomCount")?.textContent || "").startsWith("12 of 12 numbers in"),
+          null,
+          { timeout: 25000 },
+        );
+        const room = await readRoom(teach);
+        assert.equal(room.hidden, false, `round ${round + 1}: the live read must be on the console`);
+        assert.match(room.count, new RegExp(`round ${round + 1} of 3`), `round ${round + 1}: ${room.count}`);
+        assert.equal(/locked/i.test(room.count), false, `desks propose in the rule rounds, they do not lock: "${room.count}"`);
+        const shares = ROUND_SHARES[round];
+        const lo = Math.min(...shares);
+        const hi = Math.max(...shares);
+        assert.match(room.spread, new RegExp(`between ${lo}% and ${hi}%`), `round ${round + 1} spread: ${room.spread}`);
+        assert.match(room.spread, /CONDITION on/, room.spread);
+        assert.equal(room.bars.reduce((n, v) => n + v, 0), DESKS, "every proposal lands in exactly one bar");
+        assert.deepEqual(room.axis, ["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%", "55%", "60%"], "the bars stand on the dial the room was given");
+        assert.equal(/Desk \d|seat-\d/.test(room.spread + room.note), false, "the read named a desk in a sentence a teacher reads out");
+        if (round === 0) {
+          assert.match(room.note, /First round/, room.note);
+          assert.equal(room.chips.length, 0, "round 1 must claim no movement rather than invent some");
+        } else {
+          const moved = room.chips.join(" ");
+          assert.match(moved, /asked for (more|less)|held/, `round ${round + 1} movement chips: ${moved}`);
+        }
+        await assertRoomIsTeacherOnly(board, desks[0], `round ${round + 1}`);
+      }
       // The pacing control names what the NEXT press does, so it is the honest
       // thing to wait on: after round 3 there is no "round 4" frame to look for.
       const want = round < 2 ? `Close round ${round + 2} of 3` : "Run the two-thirds test";
@@ -1059,6 +1228,35 @@ async function main() {
       await desks[i].waitForSelector(".fh-locked-recap", { timeout: 20000 });
     }
     await desks[0].screenshot({ path: path.join(SCREEN_DIR, "12-play-week1-locked.png") });
+
+    // THE ROOM (W6) — the season is a COMPLIANCE spread. Same panel, different
+    // economics: the room wrote a rule with a condition in it, and the thing a
+    // teacher needs before the bell is who is about to be bitten by it.
+    {
+      await teach.waitForFunction(
+        () => (document.getElementById("roomCount")?.textContent || "").startsWith("11 of 12 locked in"),
+        null,
+        { timeout: 25000 },
+      );
+      const room = await readRoom(teach);
+      assert.match(room.count, /week 1 of 3/, room.count);
+      const locked = PRICES.slice(0, DESKS - 1);
+      assert.match(
+        room.spread,
+        new RegExp(`between \\$${Math.min(...locked)} and \\$${Math.max(...locked)}`),
+        `the spread must speak only for the desks that committed: ${room.spread}`,
+      );
+      assert.equal(
+        room.spread.includes(`$${PRICES[DESKS - 1]}`),
+        false,
+        `the uncommitted desk widened a spread the teacher is about to say out loud: ${room.spread}`,
+      );
+      assert.deepEqual(room.axis, ["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%"], "week bars stand on the reinvest dial");
+      assert.equal(room.bars.reduce((n, v) => n + v, 0), DESKS, "an undecided dial is still drawn, where it actually is");
+      assert.match(room.chips.join(" "), /still deciding/, `one desk has not locked: ${room.chips.join(" ")}`);
+      await assertRoomIsTeacherOnly(board, desks[0], "season week 1");
+      await teach.screenshot({ path: path.join(SCREEN_DIR, "11b-teach-room-week1.png") });
+    }
     await teach.click("#btnCloseWeek");
     for (const p of desks) await p.waitForFunction(() => /Week 2 of/.test(document.querySelector(".hl-week-num")?.textContent ?? ""), null, { timeout: 30000 });
     console.log("[e2e-m2l3] week 1 settled");
@@ -1182,6 +1380,59 @@ async function main() {
       await board.screenshot({ path: path.join(SCREEN_DIR, `15-board-reveal-${stage}.png`) });
     }
     assert.ok(potFrameSeen && arrowFrameSeen && eraFrameSeen, "a staged reveal beat never rendered its own evidence");
+
+    // ---- A pair walks in during the reveal -------------------------------
+    // The season is settled and the teacher has read numbers out loud. Handing
+    // out a club now would re-derive three weeks the room has already seen — but
+    // the runtime used to refuse takeSeat outright past PLAY, which left the
+    // device on "finding your club…" with nothing to retry into.
+    {
+      expectingRefusals = true;
+      const walkIn = await browser.newPage({ viewport: { width: 1024, height: 600 } });
+      watchConsole(walkIn, "reveal-walk-in");
+      walkIn.on("dialog", (d) => d.accept());
+      await walkIn.goto(`${BASE}/play`);
+      await walkIn.fill("#joinCode", code);
+      await walkIn.fill("#joinName", "Walk In");
+      await walkIn.click("#btnJoin");
+      await walkIn.waitForSelector("#gameCard:not([hidden])", { timeout: 30000 });
+      await walkIn.waitForFunction(
+        () => /after the last week closed/i.test(document.body.innerText),
+        null,
+        { timeout: 30000 },
+      );
+      const landing = await walkIn.evaluate(() => document.body.innerText);
+      assert.equal(/finding your club/i.test(landing), false, "a pair arriving during REVEAL is stranded on \"finding your club…\"");
+      assert.match(landing, /three weeks are already in the books/i);
+      assert.match(landing, /Sit with the desk next to you/i);
+      // An observer, not a club: no dials and no lock of their own.
+      const controls = await walkIn.evaluate(() => document.querySelectorAll("#wrPrice, #wrReinvest, #wrLock, #wrShare").length);
+      assert.equal(controls, 0, "the observer landing handed a walk-in live club controls");
+      await walkIn.screenshot({ path: path.join(SCREEN_DIR, "15c-play-reveal-observer.png"), fullPage: true });
+
+      // Not a club on the projector either.
+      const observerBoard = await board.evaluate(() => document.body.innerText);
+      assert.equal(/Walk In/i.test(observerBoard), false, "a walk-in pair's name reached the projector");
+
+      await teach.waitForFunction(
+        () => /arrived after the last week closed/i.test(document.body.innerText),
+        null,
+        { timeout: 30000 },
+      );
+      const flag = await teach.evaluate(() => {
+        const el = [...document.querySelectorAll(".dir-flag")].find((n) => n.textContent?.includes("arrived after the last week closed"));
+        return el ? { cls: el.className, text: el.innerText } : null;
+      });
+      assert.ok(flag, "the console never flagged the pair standing in the doorway during REVEAL");
+      assert.match(flag.cls, /\bnow\b/);
+      assert.match(flag.text, /Late pair 1/);
+      assert.match(flag.text, /seat them beside a desk/i);
+      assert.equal(/Walk In|seat_/.test(flag.text), false, "the console named the walk-in pair instead of the desk");
+      await teach.screenshot({ path: path.join(SCREEN_DIR, "15d-teach-reveal-observer.png") });
+      console.log("[e2e-m2l3] a pair arriving during REVEAL lands as an announced observer, with the rule in force on their screen");
+      await walkIn.close();
+      expectingRefusals = false;
+    }
     assert.equal(
       new Set(deskAtStage).size,
       deskAtStage.length,

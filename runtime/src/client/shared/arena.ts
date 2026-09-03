@@ -121,6 +121,43 @@ export interface ArenaOptions {
   motion?: boolean;
   /** Accessible name. Supply payload-derived text; never composed here. */
   label?: string;
+  /**
+   * ATTRIBUTION BANDS inside the lit crowd, innermost (front row) outward.
+   *
+   * The default drawing answers one question: how full is the building. M2 L2
+   * asks a second one that no bar chart answers as well — WHO in this crowd is
+   * here because of you, and who was brought by the club you are hosting. The
+   * whole lesson is that the biggest block of people in your building is
+   * usually somebody else's doing, and the honest way to say that is to colour
+   * the people.
+   *
+   * The bands are WEDGES OF THE HOUSE, not rings. That is deliberate on two
+   * counts. A ring encoding would put one group in the front rows and another
+   * in the back, which is a claim about seat quality the model does not make
+   * and the lesson does not mean. And wedges are how people actually talk about
+   * this in a real building — a third of the arena wearing the other team's
+   * colours — so the picture names a phenomenon a student may have seen.
+   *
+   * The two encodings stay separate and each says exactly one thing: the RADIAL
+   * seam still says how full the building is, by equal area, on every open deck
+   * (law 3, untouched); the ANGULAR wedges say who brought the crowd that is
+   * there. A half-full building shows three colours in its front rows.
+   *
+   * Each `share` is a share of the CROWD and the bands sum to 1. Shares that
+   * sum to less leave the remainder in the house tone; pass none and the crowd
+   * is drawn in one tone as before.
+   */
+  bands?: readonly ArenaBand[];
+}
+
+/** One attribution wedge of the lit crowd: its share of the people, and its colour. */
+export interface ArenaBand {
+  /** Share of TURNOUT this wedge accounts for. Bands sum to 1. */
+  share: number;
+  /** Base hue of the wedge's seats, so the surface's own legend can match it. */
+  hue: number;
+  /** Base saturation. The three depth tones vary lightness around it, as before. */
+  sat: number;
 }
 
 type Pt = [number, number];
@@ -216,6 +253,7 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
      the option was on the card changes nothing in the drawing. */
   const bowlOpen = !!opts.bowlOpen;
   const litMode: ArenaLit = opts.lit || "night";
+  const bandsIn = opts.bands ?? [];
   const motion = !!opts.motion;
   const uid = "ar" + (++UID).toString(36);
   const rand = mulberry32(((opts.seed === undefined ? 7 : opts.seed) * 2654435761) ^ 0x5f3759df);
@@ -507,7 +545,100 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
    * carries the number (visual-critic-3 direction 1).
    */
   const seatSteps = detail === "high" ? 5 : 3;
-  const litPaths: string[][] = [[], [], []]; /* far / side / near tone groups */
+  /* Attribution bands, innermost first, clipped so they can never claim more
+     of the bowl than the crowd actually fills. With no bands this is the one
+     house-tone band the drawing has always had. */
+  const HOUSE_BAND: ArenaBand = { share: 1, hue: 256, sat: 34 };
+  const bands: ArenaBand[] = [];
+  if (bandsIn.length > 0 && fill > 0) {
+    let used = 0;
+    for (const b of bandsIn) {
+      const share = clamp(b.share, 0, 1 - used);
+      if (share > 0) bands.push({ ...b, share });
+      used += share;
+      if (used >= 1 - 1e-9) break;
+    }
+    /* Whatever the caller's wedges do not account for stays house tone, so a
+       band list that undershoots loses no people from the picture. */
+    if (used < 1 - 1e-9) bands.push({ share: 1 - used, hue: 256, sat: 34 });
+  } else if (fill > 0) {
+    bands.push(HOUSE_BAND);
+  }
+  /*
+   * Wedge boundaries, sized by the area each one will actually OCCUPY in the
+   * drawing rather than by angle.
+   *
+   * Equal angle is nowhere near equal drawn area in this bowl. Two effects
+   * push in opposite directions — `PERSP` swells the near side, and the seat
+   * rake stretches the far side vertically — and the rake wins by a long way.
+   * Measured on the shipped constants by rendering one wedge at a time and
+   * counting its pixels, four equal quarters of the house drew as 14.6%, 35.4%,
+   * 35.3% and 14.7% of the crowd. A picture in which a quarter of the building
+   * can look like a seventh or like a third, depending only on where it lands,
+   * is misrepresenting a magnitude, and no legend underneath undoes that.
+   *
+   * An analytic correction is not trustworthy here: the closed form for the
+   * perspective term alone left the error at ±42%, because the rake is the
+   * dominant term and it is piecewise. So the area is MEASURED, off the same
+   * `pt()` projection the drawing itself uses — the lit region of every open
+   * deck, swept in 360 steps, accumulated by shoelace. Whatever the geometry
+   * does, the wedges own their share of what is drawn.
+   *
+   * The radial seam is untouched: it still says how full the house is, by equal
+   * area, on every open deck (law 3).
+   */
+  const WEDGE_START = Math.PI / 2;
+  const SWEEP_STEPS = 360;
+  /** Drawn area of the lit crowd in each of `SWEEP_STEPS` slices from WEDGE_START. */
+  const sweep: number[] = new Array<number>(SWEEP_STEPS).fill(0);
+  if (bands.length > 1 && fill > 0.004) {
+    for (const deck of DECKS) {
+      if (!isOpenDeck(deck)) continue;
+      const rSeam = Math.sqrt(deck.rIn * deck.rIn + fill * (deck.rOut * deck.rOut - deck.rIn * deck.rIn));
+      for (let i = 0; i < SWEEP_STEPS; i += 1) {
+        const a0 = WEDGE_START + (i / SWEEP_STEPS) * Math.PI * 2;
+        const a1 = WEDGE_START + ((i + 1) / SWEEP_STEPS) * Math.PI * 2;
+        const q: Pt[] = [pt(deck.rIn, a0), pt(deck.rIn, a1), pt(rSeam, a1), pt(rSeam, a0)];
+        let A = 0;
+        for (let k = 0; k < 4; k += 1) {
+          const [x1, y1] = q[k]!;
+          const [x2, y2] = q[(k + 1) % 4]!;
+          A += x1 * y2 - x2 * y1;
+        }
+        sweep[i] = sweep[i]! + Math.abs(A) / 2;
+      }
+    }
+  }
+  const sweepTotal = sweep.reduce((a, x) => a + x, 0);
+  /** The angle by which the DRAWN crowd has covered `c` of its area since WEDGE_START. */
+  const angleForArea = (c: number): number => {
+    if (c <= 0) return WEDGE_START;
+    if (c >= 1) return WEDGE_START + Math.PI * 2;
+    if (sweepTotal <= 0) return WEDGE_START + c * Math.PI * 2;
+    let acc = 0;
+    const want = c * sweepTotal;
+    for (let i = 0; i < SWEEP_STEPS; i += 1) {
+      const nextAcc = acc + sweep[i]!;
+      if (nextAcc >= want) {
+        /* linear inside the slice — one slice is a degree of arc */
+        const t = sweep[i]! > 0 ? (want - acc) / sweep[i]! : 0;
+        return WEDGE_START + ((i + t) / SWEEP_STEPS) * Math.PI * 2;
+      }
+      acc = nextAcc;
+    }
+    return WEDGE_START + Math.PI * 2;
+  };
+  const wedges: { a0: number; a1: number; band: ArenaBand }[] = [];
+  {
+    let cum = 0;
+    for (const b of bands) {
+      const next = cum + b.share;
+      wedges.push({ a0: angleForArea(cum), a1: angleForArea(next), band: b });
+      cum = next;
+    }
+  }
+  /* One tone-group triple per band, so depth shading survives the colouring. */
+  const litPaths: string[][][] = bands.map(() => [[], [], []]); /* far / side / near, per wedge */
   const darkPaths: string[][] = [[], [], []];
   const litUnion: string[] = [];
   const emptyUnion: string[] = [];
@@ -550,9 +681,22 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
       darkPaths[tone]!.push(band(deck.rIn, deck.rOut, b0, b1, seatSteps));
       emptyUnion.push(band(rSeam, deck.rOut, b0, b1, seatSteps));
       if (fill > 0.004) {
-        const d = band(deck.rIn, rSeam, b0, b1, seatSteps);
-        litPaths[tone]!.push(d);
-        litUnion.push(d);
+        /* This section's slice of each wedge. The radial extent is the same
+           rIn..rSeam every section has; only the ANGULAR span is split, so the
+           fill law is untouched and the wedge shares are exact rather than
+           quantised to the section count. */
+        for (let bi = 0; bi < wedges.length; bi += 1) {
+          const wg = wedges[bi]!;
+          /* Wedges run past 2*PI; compare this section against both turns. */
+          for (const shift of [0, Math.PI * 2, -Math.PI * 2]) {
+            const s0 = Math.max(b0, wg.a0 + shift);
+            const s1 = Math.min(b1, wg.a1 + shift);
+            if (s1 - s0 <= 1e-6) continue;
+            const d = band(deck.rIn, rSeam, s0, s1, seatSteps);
+            litPaths[bi]![tone]!.push(d);
+            litUnion.push(d);
+          }
+        }
       }
       if (detail === "high") {
         rowPath += arc(deck.rIn + (deck.rOut - deck.rIn) * 0.5, b0, b1, 3, "M");
@@ -586,12 +730,15 @@ export function arenaSvg(opts: ArenaOptions = {}): string {
         n(0.05 * dim) + '"/>'
     );
   }
-  for (let t = 0; t < 3; t++) {
-    if (litPaths[t]!.length) {
-      out.push(
-        '<path d="' + litPaths[t]!.join("") + '" fill="' +
-          hsl(256 - t * 6, 34 + t * 4, LIT_L[t]! * (0.62 + 0.38 * light) * dim + 1.5) + '"/>'
-      );
+  for (let bi = 0; bi < bands.length; bi++) {
+    const b = bands[bi]!;
+    for (let t = 0; t < 3; t++) {
+      if (litPaths[bi]![t]!.length) {
+        out.push(
+          '<path d="' + litPaths[bi]![t]!.join("") + '" fill="' +
+            hsl(b.hue - t * 6, b.sat + t * 4, LIT_L[t]! * (0.62 + 0.38 * light) * dim + 1.5) + '"/>'
+        );
+      }
     }
   }
   if (litUnion.length) {

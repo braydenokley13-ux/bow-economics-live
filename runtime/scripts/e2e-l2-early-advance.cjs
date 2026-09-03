@@ -29,6 +29,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = 4304;
 const BASE = `http://localhost:${PORT}`;
@@ -66,6 +67,7 @@ async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
 
   console.log("[early-advance] starting server...");
+  await assertPortFree(PORT, require("path").basename(__filename));
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
@@ -97,7 +99,14 @@ async function main() {
     await api(`/api/sessions/${l1.session.code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l1.teacherKey}` }, body: JSON.stringify({ type: "end" }) });
 
     // --- L2: linked creation, claim, and the deadline commit via API (fast setup; the UI parts under test are below) ---
-    const l2 = await api("/api/sessions", { method: "POST", body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "early-advance L2", sourceSessionId: l1.session.id }) });
+    // Seeding from a source session needs proof of teacher-hood — the same
+    // header a real console already sends, and the gate that stops one class
+    // from reading another's stored state.
+    const l2 = await api("/api/sessions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${l1.teacherKey}` },
+      body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "early-advance L2", sourceSessionId: l1.session.id }),
+    });
     const l2seat = await api(`/api/sessions/${l2.session.code}/join`, { method: "POST", body: JSON.stringify({ displayName: "Team X" }) });
     await api(`/api/sessions/${l2.session.code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l2.teacherKey}` }, body: JSON.stringify({ type: "advance" }) }); // LOBBY -> HOOK
     await api(`/api/sessions/${l2.session.code}/actions`, { method: "POST", headers: { Authorization: `Bearer ${l2seat.deviceToken}` }, body: JSON.stringify({ type: "claim", carriedIndex: 0 }) });

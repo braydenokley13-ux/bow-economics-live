@@ -75,6 +75,28 @@ export interface LessonModule<TState = unknown> {
   aggregate(state: TState, phase: CanonicalPhase): unknown;
 
   /**
+   * TIME CUT, declared by the lesson rather than assumed by the runtime.
+   *
+   * A lesson that closes and settles in rounds — Full House's night, Host the
+   * League's week, Free Agency's day — describes that here, and the runtime
+   * gains a real closing window for it (FINAL CALL / CLOSE NOW, a
+   * server-authoritative deadline, and a drain during which a last-second
+   * change still lands). A lesson with no such unit omits this entirely and
+   * nothing about it changes.
+   *
+   * The point of making it a declaration is the FALLBACK. Every round that
+   * closes has to do something about the students who never committed, and
+   * "something" is an economic claim: carrying yesterday's price forward,
+   * honouring the dials as they stand, and charging a neutral default are
+   * three different lessons. So the module states its policy in words, and
+   * names — per seat, before the teacher closes — exactly what is about to
+   * happen to each unresolved desk. No universal mystery fallback, and
+   * nothing random unless the lesson has proved randomness is the honest
+   * model.
+   */
+  round?: RoundContract<TState>;
+
+  /**
    * Optional lifecycle hook: called by the runtime on every teacher-
    * triggered phase transition (`advance`/`reveal`), right before the new
    * phase is committed, with the phase being left and the phase being
@@ -94,6 +116,92 @@ export interface LessonModule<TState = unknown> {
    * never "asked to re-enter X."
    */
   onPhaseExit?(state: TState, fromPhase: CanonicalPhase, toPhase: CanonicalPhase): TState;
+
+  /**
+   * WHILE YOU WERE AWAY — what the class just did, in the lesson's own words.
+   *
+   * A Chromebook sleeps, a tab closes, a pair goes to the nurse. The founder's
+   * rule for the return is: current authoritative state plus a compact recap,
+   * and do NOT rewind the class. That needs a record of what happened, and the
+   * runtime cannot write one — it does not know a night from a week from a
+   * signing day, and §12 says it must not learn. So the module names the
+   * events and the runtime keeps the log and decides who has missed what.
+   *
+   * Called after every write that changes state or phase, with the state
+   * before and after and the transition (`fromPhase === toPhase` when only
+   * state moved). Must be PURE and cheap: it runs on every action from every
+   * desk, so the honest answer for "a pair moved their dial" is `[]`.
+   *
+   * Two rules on the lines themselves:
+   *
+   * - CLASS-LEVEL ONLY. The log is read back by whichever desk returns, so a
+   *   line naming one desk's decision would hand it to another desk's screen.
+   *   A returning pair's own books are already on their screen — that is what
+   *   "authoritative state" means — and this says what the ROOM did.
+   * - Past tense, settled facts, no grading. "Night 2 settled" is a recap;
+   *   "the room over-priced Night 2" is a verdict, and this is not the surface
+   *   that gets to deliver one.
+   *
+   * Omit entirely if a lesson has no class beats worth returning to; the
+   * runtime falls back to naming the phase the class moved into.
+   */
+  classEvents?(
+    prev: TState,
+    next: TState,
+    transition: { fromPhase: CanonicalPhase; toPhase: CanonicalPhase },
+  ): readonly string[];
+}
+
+/** One desk that has not committed, and what closing the round will do about it. */
+export type UnresolvedSeat = {
+  seatId: SeatId;
+  /** How this desk is named on /teach — the module's handle, not a raw id. */
+  label: string;
+  /**
+   * What the close will apply for this desk, in words a teacher can read out.
+   * Concrete and per-desk ("keeps last night's $48"), never the generic policy
+   * sentence: the teacher is deciding whether to wait, and needs to know what
+   * waiting would save.
+   */
+  fallback: string;
+  /**
+   * The same fact said TO the pair, in second person, for their own screen
+   * during FINAL CALL. A warning written for the teacher ("their dial") reads
+   * as being about somebody else at the moment it most needs to be about you.
+   */
+  selfFallback: string;
+};
+
+export interface RoundContract<TState = unknown> {
+  /**
+   * The teacher hook (`teacher:<name>`) that settles the open round. The
+   * runtime calls it through the module's own `reduce`, exactly as a teacher
+   * pressing the button would, so a round closed by the clock and a round
+   * closed by hand travel the identical code path and cannot diverge.
+   */
+  closeHook: string;
+  /**
+   * What this lesson calls a round, lower case, singular — "night", "week",
+   * "signing day". The runtime uses it to tell a student, in this lesson's own
+   * language, that the thing they were deciding on closed while their choice
+   * was still in the air.
+   */
+  noun: string;
+
+  /**
+   * Stable id of the round currently open, or null when none is (between
+   * rounds, after the last one, outside PLAY). The runtime keys its TIME CUT
+   * record to this so a FINAL CALL started on one round can never close the
+   * next one — the case a teacher creates by starting the call, changing their
+   * mind, and letting the room run on.
+   */
+  currentKey(state: TState, phase: CanonicalPhase): string | null;
+
+  /** One sentence naming this lesson's fallback policy. Shown on /teach beside the close control. */
+  fallbackPolicy: string;
+
+  /** Who has not committed, and what closing will do to each. Empty when the room is ready. */
+  unresolved(state: TState, phase: CanonicalPhase, seatIds: readonly SeatId[]): readonly UnresolvedSeat[];
 }
 
 /** Type-erasing helper so the registry can hold modules of differing TState. */

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { draftDayModule } from "../modules/draftDay.js";
 import { lobbyDemoModule } from "../modules/lobbyDemo.js";
 import { tradeDeadlineModule } from "../modules/tradeDeadline.js";
-import { ServiceError, SessionService } from "../server/sessionService.js";
+import { ServiceError, SessionService, boardSeenBucketOf } from "../server/sessionService.js";
 import { SnapshotRepository } from "../server/snapshotRepository.js";
 
 function freshService(): SessionService {
@@ -135,13 +135,23 @@ test("rejoin with a wrong PIN is rejected", async () => {
 
 /* --------------------------------------------------------- R3: rejoin lockout -- */
 
+/**
+ * A PIN that is guaranteed not to be this seat's. `generatePin` is uniform over
+ * all 10,000 values, so a hard-coded "0000" is the seat's real PIN once every
+ * ten thousand runs and the test then fails for a reason that has nothing to do
+ * with what it is checking. A rare flake is worse than a frequent one: it is
+ * the kind that gets re-run and waved through.
+ */
+const notThePin = (pin: string): string => (pin === "0000" ? "1111" : "0000");
+
 test("R3: a seat locks out after 5 wrong PINs, even against the correct PIN, until the teacher clears it", async () => {
   const service = freshService();
   const { session, teacherKey } = await newSession(service);
   const joined = await service.join(session.code, "Alex");
 
+  const wrong = notThePin(joined.rejoinPin!);
   for (let i = 0; i < 5; i += 1) {
-    await expectServiceError(service.rejoin(session.code, "Alex", "0000"), 401, "bad_rejoin");
+    await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
   }
   // The 6th attempt is locked out — rejected even with the CORRECT PIN, before it's ever checked.
   await expectServiceError(service.rejoin(session.code, "Alex", joined.rejoinPin!), 423, "rejoin_locked");
@@ -156,13 +166,14 @@ test("R3: a correct rejoin resets the failure counter (occasional typos don't ac
   const service = freshService();
   const { session } = await newSession(service);
   const joined = await service.join(session.code, "Alex");
-  await expectServiceError(service.rejoin(session.code, "Alex", "0000"), 401, "bad_rejoin");
-  await expectServiceError(service.rejoin(session.code, "Alex", "0000"), 401, "bad_rejoin");
+  const wrong = notThePin(joined.rejoinPin!);
+  await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
+  await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
   const rejoined = await service.rejoin(session.code, "Alex", joined.rejoinPin!); // succeeds, resets counter
   assert.ok(rejoined.deviceToken);
   // Now four more wrong guesses shouldn't lock it out yet (counter was reset, not accumulated to 6).
   for (let i = 0; i < 4; i += 1) {
-    await expectServiceError(service.rejoin(session.code, "Alex", "9999"), 401, "bad_rejoin");
+    await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
   }
 });
 
@@ -440,7 +451,7 @@ test("R2: restore after end reaching all the way back past freeze still clears e
 
 /** Drives a real L1 (draftDay) session through the service layer to a single locked, at-$100M-cap roster, and
  *  returns its session id — the same path a real teacher/class would take, not a hand-forged snapshot. */
-async function playThroughL1(service: SessionService): Promise<{ sessionId: string; code: string }> {
+async function playThroughL1(service: SessionService): Promise<{ sessionId: string; code: string; teacherKey: string }> {
   const { session, teacherKey } = await newSession(service, draftDayModule.id, "L1 class");
   const seat = await service.join(session.code, "Alex & Sam");
   await service.control(session.code, { type: "advance" }, teacherKey); // LOBBY -> HOOK
@@ -456,14 +467,14 @@ async function playThroughL1(service: SessionService): Promise<{ sessionId: stri
     await service.submitAction(seat.deviceToken!, { type: "place", slotId: slot, playerId });
   }
   await service.submitAction(seat.deviceToken!, { type: "lock" });
-  return { sessionId: session.id, code: session.code };
+  return { sessionId: session.id, code: session.code, teacherKey };
 }
 
 test("SEED: linked creation happy path — L2 created with sourceSessionId carries the real L1 roster through submitAction/join, not a forged snapshot", async () => {
   const service = freshL1L2Service();
-  const { sessionId: l1Id } = await playThroughL1(service);
+  const { sessionId: l1Id, teacherKey: l1Key } = await playThroughL1(service);
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1Id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1Id, teacherKey: l1Key });
   const l2View = l2.view as { carriedFranchiseCount: number };
   assert.equal(l2View.carriedFranchiseCount, 1, "the one locked L1 team must be offered as a claimable carried franchise");
 
@@ -494,14 +505,14 @@ test("SEED: an ENDED L1 session is still a valid, usable seed — its state is e
   await service.submitAction(seat.deviceToken!, { type: "lock" });
   await service.control(l1.session.code, { type: "end" }, l1.teacherKey!); // teacher ends class — the normal end-of-lesson flow
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1.session.id, teacherKey: l1.teacherKey });
   const l2View = l2.view as { carriedFranchiseCount: number };
   assert.equal(l2View.carriedFranchiseCount, 1, "an ended L1 session's locked roster still carries forward — ending class doesn't erase what happened in it");
 });
 
 test("SEED: a missing/nonexistent sourceSessionId does not fail session creation — it just yields no carried franchises", async () => {
   const service = freshL1L2Service();
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: "not-a-real-session-id" });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: "not-a-real-session-id", teacherKey: (await service.createSession({ lessonModuleId: draftDayModule.id, title: "" })).teacherKey });
   const view = l2.view as { carriedFranchiseCount: number };
   assert.equal(view.carriedFranchiseCount, 0);
   // The whole class must still be fully playable on stock franchises — claim() with carriedIndex null works.
@@ -516,7 +527,7 @@ test("SEED: a missing/nonexistent sourceSessionId does not fail session creation
 test("SEED: sourceSessionId pointing at a session using a DIFFERENT lesson module is ignored (empty pool), not crashed or misread", async () => {
   const service = freshL1L2Service();
   const other = await service.createSession({ lessonModuleId: draftDayModule.id, title: "" }); // never played — irrelevant, wrong module id path is what's tested
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: other.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: other.session.id, teacherKey: other.teacherKey });
   const view = l2.view as { carriedFranchiseCount: number };
   assert.equal(view.carriedFranchiseCount, 0, "an unlocked/empty L1 session naturally carries nothing forward");
 });
@@ -529,7 +540,7 @@ test("SEED: malformed/incomplete L1 state (never locked) normalizes to zero carr
   await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!);
   await service.submitAction(seat.deviceToken!, { type: "place", slotId: "SCORER", playerId: "sc-10" }); // never locks
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id, teacherKey: l1.teacherKey });
   const view = l2.view as { carriedFranchiseCount: number };
   assert.equal(view.carriedFranchiseCount, 0);
 });
@@ -561,7 +572,7 @@ test("SEED: two seats can claim two different carried franchises from the same l
   for (const { slot, playerId } of picksB) await service.submitAction(b.deviceToken!, { type: "place", slotId: slot, playerId });
   await service.submitAction(b.deviceToken!, { type: "lock" });
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id, teacherKey: l1.teacherKey });
   assert.equal((l2.view as { carriedFranchiseCount: number }).carriedFranchiseCount, 2);
 
   const l2SeatA = await service.join(l2.session.code, "Pair One");
@@ -673,4 +684,183 @@ test("re-verification repair: a real (different-phase) reveal jump — e.g. from
   const team = (jumped.view as { teams: { bidOutcome: string | null }[]; revealedCount: number }).teams[0]!;
   assert.equal(team.bidOutcome, null, "jumping INTO REVEAL resolves nothing — there's nothing to resolve yet");
   assert.equal((jumped.view as { revealedCount: number }).revealedCount, 0);
+});
+
+/* ----------------------------------------------------- who may see the building -- */
+
+/** The ServiceError a call throws, so a refusal can be asserted on rather than merely awaited. */
+async function caught(promise: Promise<unknown>): Promise<ServiceError> {
+  try {
+    await promise;
+    assert.fail("expected a ServiceError");
+  } catch (error) {
+    assert.ok(error instanceof ServiceError, `expected a ServiceError, got ${String(error)}`);
+    return error;
+  }
+}
+
+test("the session listing is not open to the room: a join code is not a key to every other class", async () => {
+  const svc = freshService();
+  const a = await svc.createSession({ lessonModuleId: "lobby-demo", title: "Period 1" });
+  await svc.createSession({ lessonModuleId: "lobby-demo", title: "Period 3" });
+
+  // This was open to anyone who could reach the server. On a school network
+  // that is every student in the building, and what it hands back is every
+  // live class's join code — a way into any other room. An unproven caller now
+  // gets nothing, rather than a refusal: a first-ever session on a fresh
+  // browser has no key and nothing to link to, and must not put a 401 in the
+  // console every time the lesson picker opens.
+  for (const attempt of [null, "", "not-a-key", (await svc.join(a.session.code, "Rae & Ben")).deviceToken!]) {
+    assert.deepEqual(
+      await svc.listSessions(attempt),
+      [],
+      `the listing handed out sessions to "${String(attempt).slice(0, 12)}"`,
+    );
+  }
+
+  const listed = await svc.listSessions(a.teacherKey!);
+  assert.equal(listed.length, 2, "a teacher of a room on this server can still see the sessions to link to");
+});
+
+test("seeding a new session from another one needs a teacher key, not just its id", async () => {
+  const svc = freshService();
+  const source = await svc.createSession({ lessonModuleId: "lobby-demo", title: "Period 1" });
+  // The id is opaque and unguessable, but it is not a credential — it travels
+  // in a picker, a URL and a screenshot. Reading another room's stored state
+  // is the one thing creating a session can do to a session it does not own.
+  const err = await caught(
+    svc.createSession({ lessonModuleId: "lobby-demo", title: "stolen", sourceSessionId: source.session.id }),
+  );
+  assert.equal(err.status, 401);
+
+  const linked = await svc.createSession({
+    lessonModuleId: "lobby-demo",
+    title: "Period 3",
+    sourceSessionId: source.session.id,
+    teacherKey: source.teacherKey,
+  });
+  assert.ok(linked.session.code, "a teacher linking their own earlier session is unaffected");
+
+  // And creating an UNLINKED session stays open — this product has no accounts
+  // and a first-ever room on a fresh browser has no key to present.
+  const fresh = await svc.createSession({ lessonModuleId: "lobby-demo", title: "first ever" });
+  assert.ok(fresh.teacherKey);
+});
+
+test("a session built by a lesson this build no longer registers does not take the whole picker down", async () => {
+  // One stale row — a renamed module, a snapshot carried over from an older
+  // build — used to throw out of listSessions (moduleFor 500s on it), so the
+  // "link to a previous session" picker returned nothing for EVERY lesson and
+  // /teach swallowed the error. A teacher would have concluded yesterday's
+  // session was gone and started an unlinked room, silently breaking the
+  // L1 -> L2 -> L3 chain the whole module rests on.
+  const repo = new SnapshotRepository(null);
+  const service = new SessionService(repo);
+  service.registerModule(lobbyDemoModule);
+  const live = await service.createSession({ lessonModuleId: "lobby-demo", title: "Period 1" });
+
+  // A row naming a module nobody registered, exactly as a stale snapshot would.
+  const ghost = await service.createSession({ lessonModuleId: "lobby-demo", title: "Period 2" });
+  const ghostRow = (await repo.listSessions()).find((r) => r.code === ghost.session.code)!;
+  const wrote = await repo.updateSession(ghostRow.id, { lessonModuleId: "a-lesson-this-build-does-not-have" } as never, null);
+  assert.equal(wrote.ok, true);
+
+  const listed = await service.listSessions(live.teacherKey!);
+  assert.equal(listed.length, 1, "the stale row took the listing down with it");
+  assert.equal(listed[0]!.code, live.session.code);
+  assert.equal(
+    listed.some((s) => s.lessonModuleId === "a-lesson-this-build-does-not-have"),
+    false,
+    "the picker offered a session this build cannot open",
+  );
+});
+
+/* ------------------------------------------------- dead-device reseat -- */
+
+test("a teacher can reseat a pair whose device died: same seat, new PIN, old credentials dead", async () => {
+  // The case the rejoin path could not reach. A Chromebook that dies takes the
+  // device token AND the screen that showed the PIN with it, in the same
+  // instant, and the pair is not "locked out" — they are simply outside, with
+  // nothing the seat will accept. Rejoining under a new name means a new desk
+  // and a blank book in the middle of the class's own evidence.
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+  const joined = await service.join(session.code, "Alex");
+
+  const out = await service.reseatSeat(session.code, joined.seat.id, teacherKey);
+  assert.equal(out.seatId, joined.seat.id);
+  assert.equal(out.displayName, "Alex");
+  assert.match(out.pin, /^\d{4}$/);
+  assert.notEqual(out.pin, joined.rejoinPin);
+
+  // The dead device is retired the moment the recovery is OFFERED, not when it
+  // is used: nothing that comes back to life later can write to this seat.
+  await expectServiceError(service.resumeByToken(joined.deviceToken!), 401, "retired");
+  // And the PIN that device once showed is dead with it.
+  await expectServiceError(service.rejoin(session.code, "Alex", joined.rejoinPin!), 401, "bad_rejoin");
+
+  // The pair walks back into the SAME seat on the spare laptop.
+  const back = await service.rejoin(session.code, "Alex", out.pin);
+  assert.equal(back.seat.id, joined.seat.id, "a reseated pair must land in their own desk, not a new one");
+});
+
+test("a reseat clears a lockout, so a pair who forgot the PIN is recoverable in one move", async () => {
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+  const joined = await service.join(session.code, "Alex");
+  const wrong = notThePin(joined.rejoinPin!);
+  for (let i = 0; i < 5; i += 1) {
+    await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
+  }
+  await expectServiceError(service.rejoin(session.code, "Alex", joined.rejoinPin!), 423, "rejoin_locked");
+  const out = await service.reseatSeat(session.code, joined.seat.id, teacherKey);
+  const back = await service.rejoin(session.code, "Alex", out.pin);
+  assert.equal(back.seat.id, joined.seat.id);
+});
+
+test("minting a credential for someone else's seat needs the teacher key, and cannot cross sessions", async () => {
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+  const other = await newSession(service);
+  const joined = await service.join(session.code, "Alex");
+
+  await expectServiceError(service.reseatSeat(session.code, joined.seat.id, null), 401, "bad_teacher_key");
+  await expectServiceError(service.reseatSeat(session.code, joined.seat.id, "not-the-key"), 401, "bad_teacher_key");
+  // Another room's teacher key does not open this seat either...
+  await expectServiceError(service.reseatSeat(session.code, joined.seat.id, other.teacherKey), 401, "bad_teacher_key");
+  // ...and a real key does not reach a seat that is not in its own session.
+  await expectServiceError(service.reseatSeat(other.session.code, joined.seat.id, other.teacherKey), 404, "not_found");
+
+  // None of that touched the seat: the original credentials still work.
+  const resumed = await service.resumeByToken(joined.deviceToken!);
+  assert.equal(resumed.seat.id, joined.seat.id);
+  const _ = teacherKey;
+});
+
+test("the console can tell whether a projector is actually watching", async () => {
+  // A teacher says "look at the board" with their back to it. The console's own
+  // preview iframe is THIS laptop's copy of /board, so it looks perfect while
+  // the room stares at a dark wall.
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+
+  const cold = await service.teacherView(session.code, teacherKey);
+  assert.equal(cold.session.boardSeenBucket, 2, "a room no projector has ever opened must not read as live");
+
+  await service.boardView(session.code);
+  const warm = await service.teacherView(session.code, teacherKey);
+  assert.equal(warm.session.boardSeenBucket, 0, "a board that just polled must read as live");
+});
+
+test("projector liveness is bucketed, not a live millisecond count", async () => {
+  // Same rule as the desk quiet marker (D35): a time-varying number inside a
+  // cacheable body freezes at whatever it was when the body was last sent, and
+  // a frozen "seen 3s ago" that is really four minutes old is worse than
+  // nothing. Buckets change rarely enough to ride in an ETagged payload.
+  assert.equal(boardSeenBucketOf(null), 2);
+  assert.equal(boardSeenBucketOf(0), 0);
+  assert.equal(boardSeenBucketOf(14_999), 0);
+  assert.equal(boardSeenBucketOf(15_000), 1);
+  assert.equal(boardSeenBucketOf(89_999), 1);
+  assert.equal(boardSeenBucketOf(90_000), 2);
 });

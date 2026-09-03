@@ -75,7 +75,7 @@
  *
  * No random source exists anywhere in this file (R7).
  */
-import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId } from "../shared/lessonModule.js";
+import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 
 /* ------------------------------------------------------------- markets -- */
@@ -213,6 +213,10 @@ export type ClubDef = {
   readonly capacity: number;
   /** BC-3: the season stamp travels with the seat count wherever it prints. */
   readonly capacityNote: string;
+  /** The league's own three-letter code. The league floor draws twelve clubs in
+   *  roughly 44px each; "New York" and "New Orleans" both truncate to "New …"
+   *  there, which is worse than useless in a room that has to tell them apart. */
+  readonly code: string;
   readonly profileId: MarketId;
   readonly startDraw: number;
   readonly startCash: number;
@@ -231,26 +235,26 @@ export type ClubDef = {
  * own numbers, which is the whole point of the seed.
  */
 export const CLUBS: readonly ClubDef[] = [
-  { name: "New York Knicks", short: "New York", building: "Madison Square Garden", capacity: 19_812, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 44, startCash: 2_400_000, identityLine: "The biggest market in American sports, and the league's biggest gate — about $193M in gate receipts in 2024-25, a franchise record and the largest in the NBA." },
-  { name: "Memphis Grizzlies", short: "Memphis", building: "FedExForum", capacity: 17_794, capacityNote: "modeled seat count · published figures range 16,667-18,119", profileId: "memphis", startDraw: 62, startCash: 700_000, identityLine: "One of the league's smallest markets. In the leaked 2016-17 league year its local media deal was worth under $10M a year, against about $149M for the Lakers — and it received about $32M in revenue sharing, the most in the league." },
-  { name: "Golden State Warriors", short: "Golden State", building: "Chase Center", capacity: 18_064, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 30, startCash: 2_600_000, identityLine: "Paid for Chase Center itself — about $1.4B, privately financed, opened 2019 — and owns it, so it keeps the concert money and the real estate too. $833M of revenue in 2024-25, the highest in the NBA." },
-  { name: "Oklahoma City Thunder", short: "Oklahoma City", building: "Paycom Center", capacity: 18_203, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 71, startCash: 900_000, identityLine: "One of the league's smallest markets — and the 2025 champions, 4-3 over Indiana." },
-  { name: "Milwaukee Bucks", short: "Milwaukee", building: "Fiserv Forum", capacity: 17_341, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 38, startCash: 620_000, identityLine: "In 2015 Wisconsin approved about $250M of public money toward Fiserv Forum under an explicit relocation threat. The Bucks stayed, and won the 2021 title." },
-  { name: "Boston Celtics", short: "Boston", building: "TD Garden", capacity: 19_156, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 55, startCash: 2_100_000, identityLine: "In June 2025, a year after the 2024 title, Boston faced a projected salary-and-tax bill reported north of $500M under the second-apron rules — and traded two starters inside 24 hours." },
-  { name: "Indiana Pacers", short: "Indiana", building: "Gainbridge Fieldhouse", capacity: 17_274, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 26, startCash: 540_000 },
-  { name: "Los Angeles Lakers", short: "L.A. Lakers", building: "Crypto.com Arena", capacity: 18_997, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 68, startCash: 2_500_000, identityLine: "One of the biggest markets in the league — and it does NOT own its building: AEG owns and operates Crypto.com Arena, and the Lakers are tenants on a lease running to 2041." },
-  { name: "Denver Nuggets", short: "Denver", building: "Ball Arena", capacity: 19_520, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 34, startCash: 810_000 },
-  { name: "Philadelphia 76ers", short: "Philadelphia", building: "Xfinity Mobile Arena", capacity: 20_478, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 49, startCash: 1_950_000 },
-  { name: "New Orleans Pelicans", short: "New Orleans", building: "Smoothie King Center", capacity: 16_867, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 72, startCash: 660_000 },
-  { name: "Chicago Bulls", short: "Chicago", building: "United Center", capacity: 20_917, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 28, startCash: 2_050_000 },
-  { name: "Sacramento Kings", short: "Sacramento", building: "Golden 1 Center", capacity: 17_608, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 58, startCash: 870_000, identityLine: "On May 15, 2013 the league's owners voted 22-8 to deny a sale that would have moved this club to Seattle. Golden 1 Center opened downtown in 2016." },
-  { name: "Toronto Raptors", short: "Toronto", building: "Scotiabank Arena", capacity: 19_800, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 40, startCash: 2_200_000 },
-  { name: "Utah Jazz", short: "Utah", building: "Delta Center", capacity: 18_206, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 65, startCash: 840_000 },
-  { name: "Miami Heat", short: "Miami", building: "Kaseya Center", capacity: 19_600, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 33, startCash: 2_150_000 },
-  { name: "Cleveland Cavaliers", short: "Cleveland", building: "Rocket Arena", capacity: 19_432, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 51, startCash: 700_000, identityLine: "LeBron James left in 2010 and this club's ticket demand and franchise value cratered; his July 2014 return sold out the season-ticket base within hours." },
-  { name: "Portland Trail Blazers", short: "Portland", building: "Moda Center", capacity: 19_393, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 36, startCash: 790_000 },
-  { name: "Orlando Magic", short: "Orlando", building: "Kia Center", capacity: 18_846, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 60, startCash: 680_000 },
-  { name: "Detroit Pistons", short: "Detroit", building: "Little Caesars Arena", capacity: 20_332, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 31, startCash: 1_900_000 },
+  { name: "New York Knicks", code: "NYK", short: "New York", building: "Madison Square Garden", capacity: 19_812, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 44, startCash: 2_400_000, identityLine: "The biggest market in American sports, and the league's biggest gate — about $193M in gate receipts in 2024-25, a franchise record and the largest in the NBA." },
+  { name: "Memphis Grizzlies", code: "MEM", short: "Memphis", building: "FedExForum", capacity: 17_794, capacityNote: "modeled seat count · published figures range 16,667-18,119", profileId: "memphis", startDraw: 62, startCash: 700_000, identityLine: "One of the league's smallest markets. In the leaked 2016-17 league year its local media deal was worth under $10M a year, against about $149M for the Lakers — and it received about $32M in revenue sharing, the most in the league." },
+  { name: "Golden State Warriors", code: "GSW", short: "Golden State", building: "Chase Center", capacity: 18_064, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 30, startCash: 2_600_000, identityLine: "Paid for Chase Center itself — about $1.4B, privately financed, opened 2019 — and owns it, so it keeps the concert money and the real estate too. $833M of revenue in 2024-25, the highest in the NBA." },
+  { name: "Oklahoma City Thunder", code: "OKC", short: "Oklahoma City", building: "Paycom Center", capacity: 18_203, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 71, startCash: 900_000, identityLine: "One of the league's smallest markets — and the 2025 champions, 4-3 over Indiana." },
+  { name: "Milwaukee Bucks", code: "MIL", short: "Milwaukee", building: "Fiserv Forum", capacity: 17_341, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 38, startCash: 620_000, identityLine: "In 2015 Wisconsin approved about $250M of public money toward Fiserv Forum under an explicit relocation threat. The Bucks stayed, and won the 2021 title." },
+  { name: "Boston Celtics", code: "BOS", short: "Boston", building: "TD Garden", capacity: 19_156, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 55, startCash: 2_100_000, identityLine: "In June 2025, a year after the 2024 title, Boston faced a projected salary-and-tax bill reported north of $500M under the second-apron rules — and traded two starters inside 24 hours." },
+  { name: "Indiana Pacers", code: "IND", short: "Indiana", building: "Gainbridge Fieldhouse", capacity: 17_274, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 26, startCash: 540_000 },
+  { name: "Los Angeles Lakers", code: "LAL", short: "L.A. Lakers", building: "Crypto.com Arena", capacity: 18_997, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 68, startCash: 2_500_000, identityLine: "One of the biggest markets in the league — and it does NOT own its building: AEG owns and operates Crypto.com Arena, and the Lakers are tenants on a lease running to 2041." },
+  { name: "Denver Nuggets", code: "DEN", short: "Denver", building: "Ball Arena", capacity: 19_520, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 34, startCash: 810_000 },
+  { name: "Philadelphia 76ers", code: "PHI", short: "Philadelphia", building: "Xfinity Mobile Arena", capacity: 20_478, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 49, startCash: 1_950_000 },
+  { name: "New Orleans Pelicans", code: "NOP", short: "New Orleans", building: "Smoothie King Center", capacity: 16_867, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 72, startCash: 660_000 },
+  { name: "Chicago Bulls", code: "CHI", short: "Chicago", building: "United Center", capacity: 20_917, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 28, startCash: 2_050_000 },
+  { name: "Sacramento Kings", code: "SAC", short: "Sacramento", building: "Golden 1 Center", capacity: 17_608, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 58, startCash: 870_000, identityLine: "On May 15, 2013 the league's owners voted 22-8 to deny a sale that would have moved this club to Seattle. Golden 1 Center opened downtown in 2016." },
+  { name: "Toronto Raptors", code: "TOR", short: "Toronto", building: "Scotiabank Arena", capacity: 19_800, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 40, startCash: 2_200_000 },
+  { name: "Utah Jazz", code: "UTA", short: "Utah", building: "Delta Center", capacity: 18_206, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 65, startCash: 840_000 },
+  { name: "Miami Heat", code: "MIA", short: "Miami", building: "Kaseya Center", capacity: 19_600, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 33, startCash: 2_150_000 },
+  { name: "Cleveland Cavaliers", code: "CLE", short: "Cleveland", building: "Rocket Arena", capacity: 19_432, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 51, startCash: 700_000, identityLine: "LeBron James left in 2010 and this club's ticket demand and franchise value cratered; his July 2014 return sold out the season-ticket base within hours." },
+  { name: "Portland Trail Blazers", code: "POR", short: "Portland", building: "Moda Center", capacity: 19_393, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 36, startCash: 790_000 },
+  { name: "Orlando Magic", code: "ORL", short: "Orlando", building: "Kia Center", capacity: 18_846, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 60, startCash: 680_000 },
+  { name: "Detroit Pistons", code: "DET", short: "Detroit", building: "Little Caesars Arena", capacity: 20_332, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 31, startCash: 1_900_000 },
 ];
 
 /** The most desks this league can seat. Always leaves at least two league-office clubs. */
@@ -563,6 +567,16 @@ export type WriteRuleState = {
   kingsSplitShown: boolean;
   kingsRevealed: boolean;
   synthPage: number;
+  /**
+   * The furthest finale card the projector has EVER turned to this session.
+   *
+   * The desk carries the cards the board has reached, so a pair can look back
+   * without reading ahead of the room. That has to be a high-water mark, not
+   * `synthPage`: the teacher's own Back button — and the forward wrap at the
+   * last card — would otherwise take cards off thirty students' screens that
+   * the room has already discussed.
+   */
+  synthSeen: number;
   finalePage: number;
   /** Pairs who arrived after the league closed and could not be given a club. */
   observerSeats: string[];
@@ -572,6 +586,19 @@ export type WriteRuleState = {
 
 export const SYNTH_CARDS_PER_PAGE = 1;
 export const synthPageCount = (cards: number): number => Math.max(1, Math.ceil(cards / SYNTH_CARDS_PER_PAGE));
+
+/** Where the class is, in this lesson's words rather than the engine's. Never what it found. */
+const PHASE_EVENT: Partial<Record<CanonicalPhase, string>> = {
+  HOOK: "Your teacher set up the league and the question.",
+  PLAY: "The rule rounds opened \u2014 the room started writing its own rule.",
+  REVEAL: "The season went up on the projector.",
+  CONSEQUENCE: "The class started reading what the rule cost and paid.",
+  ADAPT: "The class went back over the rule.",
+  COUNTERFACTUAL: "The class started replaying the season under other rules.",
+  ARGUE: "The class started arguing from the board.",
+  SYNTHESIS: "Your teacher started naming the economics.",
+  COMPLETE: "The lesson finished.",
+};
 
 export const REVEAL_STEPS = 5;
 
@@ -658,6 +685,18 @@ function seatDesk(state: WriteRuleState, seatId: SeatId): ReduceResult<WriteRule
       },
     };
   }
+  return seatLate(state, seatId);
+}
+
+/**
+ * Record a pair we cannot hand a club to. Two different things land here — a
+ * full league during PLAY, and a device that arrives after the season closed —
+ * and both are honest observers rather than refusals: a refusal leaves the
+ * student's screen saying "Finding your club..." for the rest of the period.
+ * The reason is derived from the phase at render time, not stored, because the
+ * same pair can arrive full-league during PLAY and still be an observer later.
+ */
+function seatLate(state: WriteRuleState, seatId: SeatId): ReduceResult<WriteRuleState> {
   const observers = state.observerSeats ?? [];
   if (observers.includes(seatId)) return { ok: true, state };
   return { ok: true, state: { ...state, observerSeats: [...observers, seatId] } };
@@ -1264,6 +1303,76 @@ export function runnerUpShare(proposals: readonly number[], adoptedShare: number
 /* ---------------------------------------------------------- aggregates -- */
 
 export const deskHandleFor = (club: Club): string => `Desk ${club.deskNumber} · ${CLUBS[club.slot]!.short}`;
+
+/**
+ * THE DESKS — the teacher's walk-to list. THE ROOM gives the shape and names
+ * nobody; this names the desks so the console can pair a handle with the pair
+ * sitting there. Teacher-only, never `boardView`.
+ *
+ * This lesson has two different live windows and they ask for different words:
+ * during the offer rounds a desk is IN when it has a number at the league, and
+ * during the season it is IN when it has locked the week.
+ */
+export type DeskStripEntry = {
+  seatId: SeatId;
+  label: string;
+  state: "in" | "deciding" | "auto" | "closed";
+  stateLabel: string;
+  note: string | null;
+  /** True when the note is a reason to walk over, not merely context. */
+  flag: boolean;
+};
+export type DeskStrip = { countLine: string; entries: DeskStripEntry[] };
+
+function deskStripOf(state: WriteRuleState): DeskStrip | null {
+  const live = state.clubs
+    .slice(0, state.leagueSize)
+    .filter((c) => c.seatId !== null)
+    .sort((a, b) => (a.deskNumber ?? 0) - (b.deskNumber ?? 0));
+  if (live.length === 0) return null;
+
+  const inRounds = state.stage === "rounds" && state.roundIndex < ROUND_COUNT;
+  const inSeason = state.stage === "season" && state.weekIndex < WEEK_COUNT;
+
+  const entries: DeskStripEntry[] = live.map((c) => {
+    const label = deskHandleFor(c);
+    const autos = c.weeks.filter((w) => w.auto).length;
+    const own = c.weeks.filter((w) => !w.auto);
+    // A handed-over club carries weeks the league office played. Those are not
+    // weeks this pair failed to commit, so they are never counted against them —
+    // but a pair that has held the club for a week and still not locked one is.
+    const [note, flag]: [string | null, boolean] =
+      c.weeks.length >= 1 && own.length === 0 && !c.handedOver
+        ? ["Has never once locked a week of its own — every week so far was settled by the bell.", true]
+        : autos >= 2
+          ? [`The bell has settled ${autos} of this desk's weeks.`, true]
+          : c.handedOver
+            ? ["Took this club over from the league office after the vote had started.", false]
+            : c.cash < 0
+              ? ["Books are in the red.", false]
+              : [null, false];
+
+    if (inRounds) {
+      return c.proposal
+        ? { seatId: c.seatId!, label, state: "in", stateLabel: `Number in · round ${state.roundIndex + 1}`, note, flag }
+        : { seatId: c.seatId!, label, state: "deciding", stateLabel: "No number yet", note, flag };
+    }
+    if (inSeason) {
+      return c.locked
+        ? { seatId: c.seatId!, label, state: "in", stateLabel: `Locked Week ${state.weekIndex + 1}`, note, flag }
+        : { seatId: c.seatId!, label, state: "deciding", stateLabel: "Still deciding", note, flag };
+    }
+    return { seatId: c.seatId!, label, state: "closed", stateLabel: state.stage === "season" ? "Three weeks in" : "Vote sealed", note, flag };
+  });
+
+  const waiting = entries.filter((e) => e.state === "deciding").length;
+  const countLine = inRounds
+    ? `${entries.length - waiting} of ${entries.length} numbers in · round ${state.roundIndex + 1} of ${ROUND_COUNT}`
+    : inSeason
+      ? `${entries.length - waiting} of ${entries.length} locked · week ${state.weekIndex + 1} of ${WEEK_COUNT}`
+      : `${entries.length} desk${entries.length === 1 ? "" : "s"} in this league`;
+  return { countLine, entries };
+}
 
 export type HistogramBin = { share: number; count: number };
 
@@ -2051,6 +2160,14 @@ export type SynthesisCard = {
  */
 export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): SynthesisCard[] {
   const cards: SynthesisCard[] = [];
+  // `gate-l2-teacher` B5, third limb. Unlike its siblings this deck never
+  // collapsed on a cold walk — every card still rendered. What it rendered was
+  // worse: the real cards computed against an empty room, so the prescribed
+  // rehearsal put sentences like "Nobody in this room ended down on the pot
+  // this time" on the projector as statements of fact about a class that does
+  // not exist, and a teacher had no way to tell which of them would still be
+  // true tomorrow. `rehearsing` marks them, at the bottom of this function.
+  const rehearsing = state.clubs.every((c) => c.seatId === null);
   /* --- C6 revenue sharing: both halves --- */
   {
     const pot = potLineClaimed(agg);
@@ -2253,6 +2370,22 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
     // without an atom is a detectable hole rather than an invisible one.
   });
 
+  // The cold walk. Every card is kept — a rehearsal that shows five of eight is
+  // the defect, not the fix — but the title says what it is and the one rail
+  // that is computed from the room says the room is imaginary. IN SPORTS,
+  // ECONOMISTS CALL THIS and OUTSIDE SPORTS are dated real-world content and
+  // are identical tomorrow, so they are left exactly as they are.
+  if (rehearsing) {
+    return cards.map((c) => ({
+      ...c,
+      title: `REHEARSAL — ${c.title}`,
+      rails: {
+        ...c.rails,
+        rememberWhen: `${c.rails.rememberWhen} (A STAND-IN: with a class this names a moment your room actually had.)`,
+        ourClass: `${c.rails.ourClass}\n\nEvery figure above is a STAND-IN — no desks have played. With a real class this rail is computed from your room's own three weeks and its own vote.`,
+      },
+    }));
+  }
   return cards;
 }
 
@@ -2665,12 +2798,16 @@ export function teacherWatchFor(state: WriteRuleState, phase: CanonicalPhase): W
   // be silent on this console again.
   const observers = state.observerSeats ?? [];
   if (observers.length > 0) {
+    const seasonClosed = phase !== "LOBBY" && phase !== "HOOK" && phase !== "PLAY";
     out.push({
       id: "late-observers",
-      label: `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the league closed and could not be given a club`,
+      label: seasonClosed
+        ? `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the last week closed and could not be given a club`
+        : `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the league closed and could not be given a club`,
       desks: observers.map((_, i) => `Late pair ${i + 1}`),
-      action:
-        "Every club in this league is already being run. Seat them with a neighbouring desk and tell that desk they now have four people. Their own device says the same thing and shows them the rule in force, so they are not staring at a blank screen.",
+      action: seasonClosed
+        ? "There is no club left to hand them — the three weeks are settled and starting one now would change numbers this room has already been shown. Their screen says so and shows them the rule in force; seat them beside a desk near the door. Everything from here — the board, the argument, the synthesis — is the whole room's, so they lose nothing but the three weeks."
+        : "Every club in this league is already being run. Seat them with a neighbouring desk and tell that desk they now have four people. Their own device says the same thing and shows them the rule in force, so they are not staring at a blank screen.",
       urgency: "now",
     });
   }
@@ -2922,6 +3059,7 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
             ? "Read one 'how you got here' card out loud — a desk's own Draw and bank balance from last lesson, with its name on it."
             : "No Lesson 2 session is linked. Say so plainly: today's league is a stock spread, and it is still this room's league by the end of the hour.",
           `${live} desk${live === 1 ? "" : "s"} in so far, in a ${state.leagueSize}-club league.`,
+          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts the pair straight back in their own desk. If they lost it, press Reseat beside their name and read them a new one.",
         ],
         ask: [{ q: "Whose building are you running, and is it a big market or a small one?", answer: "Both answers are on their own screen. You are only making sure every pair has found theirs before the vote." }],
         dontExplainYet: [
@@ -2972,7 +3110,7 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
                 })(),
             state.roundIndex >= ROUND_COUNT
               ? "The vote is SEALED. Nothing a desk touches now can change the rule — the two-thirds test runs on the numbers that were in when the round closed."
-              : "If the room stalls or you are short of time, `Operate the league office's rule` beside this control ends the vote and puts a real 30% rule in force. It cannot be undone.",
+              : "If the room stalls or you are short of time, the \u201cOperate the league office's rule\u201d button beside this control ends the vote and puts a real 30% rule in force. It cannot be undone.",
           ],
           ask: [
             { q: "Somebody at the low end — why?", answer: "Never editorialise. Collect it and move to the next voice." },
@@ -3174,13 +3312,36 @@ function clubCard(state: WriteRuleState, slot: number) {
   };
 }
 
-const leagueTable = (state: WriteRuleState) =>
+/**
+ * THE LEAGUE, as a thing the room can see.
+ *
+ * Every call site of this is PRE-SEASON — lobby, hook, the three voting rounds,
+ * and the adoption screen. Nothing has settled yet at any of them, so every
+ * figure here is opening state: it cannot carry another desk's decision, and
+ * there is no leak to weigh. The moment a week settles, `cash` and `draw` become
+ * decision-derived and this table stops being sent (the season view never asks
+ * for it). If a future arm wants the league DURING the season it needs its own
+ * function and its own privacy argument, not this one.
+ *
+ * Why cash and not seats: the buildings are 16,867 to 20,917 seats — a 24%
+ * spread that would draw as twelve near-identical shapes and say nothing true.
+ * The inequality this room is legislating about is MONEY (ADOPT_COPY: "the pot
+ * is the big markets' money"), and the opening banks run 540k to 2.6M. Drawing
+ * the real 5x gap is the honest picture; drawing the seat counts would be
+ * decoration pretending to be evidence.
+ */
+const leagueTable = (state: WriteRuleState, viewerSlot: number) =>
   state.clubs.slice(0, state.leagueSize).map((c) => ({
     deskNumber: c.deskNumber,
     short: defOf(c).short,
+    code: defOf(c).code,
+    building: defOf(c).building,
+    capacity: defOf(c).capacity,
     sizeLabel: profileOf(c).sizeLabel,
     draw: c.draw,
+    cash: c.cash,
     live: c.seatId !== null,
+    you: c.slot === viewerSlot,
   }));
 
 function slateFor(state: WriteRuleState, slot: number) {
@@ -3325,6 +3486,234 @@ export function adoptLeagueOfficeRule(state: WriteRuleState): WriteRuleState {
   };
 }
 
+/* ----------------------------------------------------------------- room -- */
+
+/**
+ * THE ROOM — the teacher-private live read of what the desks are doing while
+ * they are still doing it. This lesson runs two different rooms inside one PLAY
+ * phase and they get two different reads, because they are two different
+ * economics: the rule rounds are a BARGAINING spread, where every desk is
+ * proposing a number at the whole league and the thing a teacher needs to see
+ * is whether the room is converging or dug in; the season is a COMPLIANCE
+ * spread, where each club sets its own price and dial alone under a rule the
+ * room itself wrote, and the thing a teacher needs to see is who is about to be
+ * bitten by it.
+ *
+ * Aggregate only, and teacher-only. Nothing here reaches /board or /play while
+ * the round or the week is open — reading the shape out early tells the room
+ * what to copy, and both reveals in this lesson are built on them not knowing.
+ */
+type L3RoomDesk = {
+  handle: string;
+  proposal: RuleProposal | null;
+  ownLastProposal: RuleProposal | null;
+  roundsPlayed: number;
+  price: number;
+  reinvest: number;
+  locked: boolean;
+  weeksPlayed: number;
+  ownLastReinvest: number | null;
+};
+
+type L3RoomBin = { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] };
+
+function roomSpreadOf(values: readonly number[]): { min: number; max: number; median: number; range: number } | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const min = sorted[0]!;
+  const max = sorted[sorted.length - 1]!;
+  return { min, max, median: Math.round(medianOf(sorted)), range: max - min };
+}
+
+function roomBinsOn(
+  grid: readonly number[],
+  label: (v: number) => string,
+  rows: readonly { handle: string; value: number; committed: boolean }[],
+): L3RoomBin[] {
+  return grid.map((from) => {
+    const inBin = rows.filter((r) => r.value === from);
+    return {
+      from,
+      to: from,
+      label: label(from),
+      count: inBin.length,
+      lockedCount: inBin.filter((r) => r.committed).length,
+      handles: inBin.map((r) => r.handle),
+    };
+  });
+}
+
+/** raised / held / lowered against a desk's OWN previous committed number. */
+function roomMovement(
+  rows: readonly { value: number | null; own: number | null; hasPrior: boolean }[],
+): { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number; deciding: number } {
+  let raised = 0;
+  let held = 0;
+  let lowered = 0;
+  let noOwnPrior = 0;
+  let noPrior = 0;
+  let deciding = 0;
+  for (const r of rows) {
+    if (r.value === null) deciding += 1;
+    else if (!r.hasPrior) noPrior += 1;
+    else if (r.own === null) noOwnPrior += 1;
+    else if (r.value > r.own) raised += 1;
+    else if (r.value < r.own) lowered += 1;
+    else held += 1;
+  }
+  return { raised, held, lowered, basis: raised + held + lowered, noOwnPrior, noPrior, deciding };
+}
+
+function movementSentence(
+  m: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number },
+  dial: string,
+  unit: string,
+  words: { up: string; same: string; down: string },
+  firstLabel: string,
+  bellLabel: string,
+): string {
+  const inSoFar = m.basis + m.noOwnPrior + m.noPrior;
+  if (inSoFar === 0) return `Nobody is in yet — movement shows up as ${unit}.`;
+  if (m.noPrior === inSoFar) return `${firstLabel} — there is nothing behind these desks to have moved off yet.`;
+  if (m.basis === 0) return `Nobody in so far has a ${dial} of their own to have moved off.`;
+  return `Of the ${inSoFar} in so far: ${m.raised} ${words.up}, ${m.held} ${words.same}, ${m.lowered} ${words.down}${
+    m.noOwnPrior > 0 ? ` · ${m.noOwnPrior} moving off ${bellLabel}` : ""
+  }${m.noPrior > 0 ? ` · ${m.noPrior} on their first one` : ""}.`;
+}
+
+function roomRead(state: WriteRuleState, desks: readonly L3RoomDesk[]): Record<string, unknown> | null {
+  if (desks.length === 0) return null;
+
+  /* ---- the rule rounds: a bargaining spread ---- */
+  if (state.stage === "rounds" && state.roundIndex < ROUND_COUNT) {
+    const inRound = desks.filter((d) => d.proposal !== null);
+    const shares = inRound.map((d) => d.proposal!.share);
+    const spread = roomSpreadOf(shares);
+    // Only desks that have actually put a number in appear on the grid. This
+    // lesson holds no uncommitted proposal — a desk that has not proposed has
+    // no number anywhere in state — so there is no ghosted half to draw here,
+    // and inventing one out of a client dial would be a fabricated fact.
+    const bins = roomBinsOn(
+      SHARE_GRID,
+      (v) => `${v}%`,
+      inRound.map((d) => ({ handle: d.handle, value: d.proposal!.share, committed: true })),
+    );
+    const movement = roomMovement(
+      desks.map((d) => ({
+        value: d.proposal === null ? null : d.proposal.share,
+        own: d.ownLastProposal === null ? null : d.ownLastProposal.share,
+        hasPrior: d.roundsPlayed > 0,
+      })),
+    );
+    const conditionOn = inRound.filter((d) => d.proposal!.condition).length;
+    return {
+      deskCount: desks.length,
+      lockedCount: inRound.length,
+      decidingCount: desks.length - inRound.length,
+      spread,
+      bins,
+      movement,
+      firstRound: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      firstNight: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      countLine: `${inRound.length} of ${desks.length} numbers in · round ${state.roundIndex + 1} of ${ROUND_COUNT}`,
+      movementSubject: "the share they are asking the league to take",
+      movementLine: movementSentence(
+        movement,
+        "round",
+        "desks put numbers in",
+        { up: "asked for more", same: "held their number", down: "asked for less" },
+        "First round",
+        "a round they sat out",
+      ),
+      spreadLine:
+        spread === null
+          ? "Nothing is in yet — no desk has proposed a number this round."
+          : `${inRound.length === desks.length ? "The room" : `The ${inRound.length} in so far`} ${
+              spread.min === spread.max
+                ? `all proposed ${spread.min}%`
+                : `proposed between ${spread.min}% and ${spread.max}%, middle ${spread.median}%`
+            } — and ${
+              conditionOn === 0
+                ? "not one of them wants the CONDITION on"
+                : conditionOn === inRound.length
+                  ? "every one of them wants the CONDITION on"
+                  : `${conditionOn} of them want the CONDITION on`
+            }.`,
+      privacyNote:
+        "Yours only — the projector never shows this while the round is open. A room that can see the middle number stops proposing and starts copying, and the two-thirds test is only worth running on numbers the desks actually chose.",
+    };
+  }
+
+  /* ---- the season: a compliance spread under the room's own rule ---- */
+  if (state.stage === "season" && state.weekIndex < WEEK_COUNT) {
+    const committed = desks.filter((d) => d.locked);
+    const spread = roomSpreadOf(committed.map((d) => d.price));
+    // Every desk is binned on the reinvest dial, undecided ones included: where
+    // an uncommitted dial is sitting is exactly what a teacher is walking the
+    // room to see. Price is the sentence, reinvest is the shape, because the
+    // rule the room wrote taxes and conditions on the second one.
+    const bins = roomBinsOn(
+      REINVEST_GRID,
+      (v) => `${v}%`,
+      desks.map((d) => ({ handle: d.handle, value: d.reinvest, committed: d.locked })),
+    );
+    const movement = roomMovement(
+      desks.map((d) => ({
+        value: d.locked ? d.reinvest : null,
+        own: d.ownLastReinvest,
+        hasPrior: d.weeksPlayed > 0,
+      })),
+    );
+    const rule = state.adopted;
+    const under = committed.filter((d) => d.reinvest < CONDITION_MIN_REINVEST).length;
+    const nothing = committed.filter((d) => d.reinvest === 0).length;
+    const tail =
+      rule && rule.condition
+        ? under === 0
+          ? `not one of them is under the ${CONDITION_MIN_REINVEST}% condition this room voted in`
+          : under === committed.length
+            ? `every one of them is under the ${CONDITION_MIN_REINVEST}% condition this room voted in`
+            : `${under} of them are under the ${CONDITION_MIN_REINVEST}% condition this room voted in`
+        : nothing === 0
+          ? "not one of them is putting nothing back"
+          : nothing === committed.length
+            ? "every one of them is putting NOTHING back"
+            : `${nothing} of them are putting NOTHING back`;
+    return {
+      deskCount: desks.length,
+      lockedCount: committed.length,
+      decidingCount: desks.length - committed.length,
+      spread,
+      bins,
+      movement,
+      firstRound: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      firstNight: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      countLine: `${committed.length} of ${desks.length} locked in · week ${state.weekIndex + 1} of ${WEEK_COUNT}`,
+      movementSubject: "the reinvest dial",
+      movementLine: movementSentence(
+        movement,
+        "week",
+        "desks lock",
+        { up: "put back more", same: "held", down: "put back less" },
+        "First week",
+        "a week the bell committed for them",
+      ),
+      spreadLine:
+        spread === null
+          ? "Nothing is committed yet — every dial is still sitting where the week opened."
+          : `${committed.length === desks.length ? "The room" : `The ${committed.length} in so far`} ${
+              spread.min === spread.max
+                ? `all priced $${spread.min}`
+                : `priced between $${spread.min} and $${spread.max}, middle $${spread.median}`
+            } — and ${tail}.`,
+      privacyNote:
+        "Yours only — the projector never shows this while the week is open. Naming who is under the condition before the bell is the one thing that would stop the rule from biting, and the bite is the lesson.",
+    };
+  }
+
+  return null;
+}
+
 export const writeTheRuleModule: LessonModule<WriteRuleState> = {
   id: MODULE_ID,
   title: "Module 2 · Lesson 3 — Writing the Rule",
@@ -3376,6 +3765,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       kingsSplitShown: false,
       kingsRevealed: false,
       synthPage: 0,
+      synthSeen: 0,
       finalePage: 0,
       observerSeats: [],
     };
@@ -3388,6 +3778,82 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
    * leaving REVEAL plays out every stage; leaving COUNTERFACTUAL runs the replay;
    * leaving ARGUE reveals the Kings vote.
    */
+  /**
+   * TIME CUT for Writing the Rule. The round is a SEASON WEEK.
+   *
+   * Only the season stage has a closable round — the rule-writing rounds
+   * beforehand are a different beat with their own teacher controls, and the
+   * runtime must not offer to "close" one of those. Same fallback as the other
+   * two lessons, in this lesson's own words.
+   */
+  round: {
+    closeHook: "teacher:closeWeek",
+    noun: "week",
+    fallbackPolicy:
+      "A club that never locks plays this week at its own house price with nothing reinvested — the dial it is sitting on does not count as a decision.",
+    currentKey(state, phase) {
+      if (phase !== "PLAY" || state.stage !== "season") return null;
+      return state.weekIndex < WEEK_COUNT ? `W${state.weekIndex + 1}` : null;
+    },
+    unresolved(state, phase, seatIds) {
+      if (phase !== "PLAY" || state.stage !== "season" || state.weekIndex >= WEEK_COUNT) return [];
+      const seated = new Set(seatIds);
+      const out: UnresolvedSeat[] = [];
+      for (const club of state.clubs) {
+        if (club.seatId === null || !seated.has(club.seatId) || club.locked) continue;
+        const house = profileOf(club).housePrice;
+        out.push({
+          seatId: club.seatId,
+          label: deskHandleFor(club),
+          fallback:
+            club.price === house && club.reinvest === 0
+              ? `plays at its $${house} house price (their dial is already there)`
+              : `plays at its $${house} house price, NOT the $${club.price} on their dial`,
+          selfFallback:
+            club.price === house && club.reinvest === 0
+              ? `Lock in, or this week plays at your $${house} house price — which is where your dial already is.`
+              : `Lock in, or this week plays at your $${house} house price, NOT the $${club.price} you have dialled.`,
+        });
+      }
+      return out;
+    },
+  },
+
+  /**
+   * WHILE YOU WERE AWAY, in this lesson's nouns. Class-level only, and in this
+   * lesson that discipline bites hardest: the rule rounds are a live vote, and
+   * a recap that named a club's share would hand one desk another's position
+   * before the room has finished arguing. See `LessonModule.classEvents`.
+   */
+  classEvents(prev, next, { fromPhase, toPhase }) {
+    const out: string[] = [];
+    // Forward only. A restore rewinds the log with the state.
+    if (!prev.hookRevealed && next.hookRevealed) {
+      out.push("On the projector: what Boston actually did.");
+    }
+    for (let r = prev.closedRounds.length; r < next.closedRounds.length; r += 1) {
+      out.push(`Round ${r + 1} of the rule vote closed \u2014 every desk's number went in at once.`);
+    }
+    if (!prev.adopted && next.adopted) {
+      // The rule itself is the room's collective decision, not one desk's, and
+      // the projector is already carrying it.
+      out.push("The room's rule was adopted. It is on the projector.");
+    }
+    for (let w = prev.weekIndex; w < next.weekIndex; w += 1) {
+      out.push(`Week ${w + 1} of the season closed. Every building settled at once, under the room's own rule.`);
+    }
+    if (!prev.kingsRevealed && next.kingsRevealed) out.push("On the projector: what Sacramento did.");
+    for (let i = prev.revealStage; i < next.revealStage; i += 1) {
+      const stage = revealStagesFor(next)[i];
+      if (stage) out.push(`On the projector: ${stage.name}.`);
+    }
+    if (fromPhase !== toPhase) {
+      const moved = PHASE_EVENT[toPhase];
+      if (moved) out.push(moved);
+    }
+    return out;
+  },
+
   onPhaseExit(state, fromPhase) {
     let next = state;
     if (fromPhase === "HOOK") next = { ...next, hookRevealed: true, leagueFrozen: true };
@@ -3395,11 +3861,26 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       while (next.stage === "rounds" && next.roundIndex < ROUND_COUNT) next = closeRound(next);
       if (next.stage === "rounds") next = adoptRule(next);
       if (next.stage === "adopted") next = { ...next, stage: "season" };
-      let first = true;
-      while (next.weekIndex < WEEK_COUNT) {
-        next = settleWeek(next, first);
-        first = false;
-      }
+      // ONE FALLBACK PER LESSON, ON EVERY PATH.
+      //
+      // This loop used to pass `first = true` on the open round, settling it on
+      // the pairs' pending dials while the teacher's own bell settled the same
+      // round at the house/plan price. Same room, same student action, two
+      // different economies depending on which control the teacher happened to
+      // press — reproduced directly against the module: a desk showing $56 on
+      // its dial settled at $56 through this path and at $16 through the bell.
+      //
+      // The bell's policy is the one the product PROMISES, in three places at
+      // once (the bell's own confirm line, the WATCH FOR flag, and the desk's
+      // AUTO badge): a desk that never committed did not choose, and is not
+      // credited with a choice. Honouring a dial nobody locked would also
+      // dissolve LOCK IT IN, which is the signature commitment beat of all
+      // three Module 2 lessons. So the exit path now settles exactly as the
+      // bell does, and the trap that made the divergence tempting is closed
+      // somewhere better: the FINAL CALL window tells a pair, in their own
+      // numbers, what an uncommitted dial is about to cost them, and tells the
+      // teacher the same thing per desk before they close.
+      while (next.weekIndex < WEEK_COUNT) next = settleWeek(next, false);
       next = { ...next, stage: "seasonDone" };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };
@@ -3411,8 +3892,12 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
   reduce(state, action: LessonAction, ctx: ReduceContext): ReduceResult<WriteRuleState> {
     if (action.type === "takeSeat") {
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair can take a club" };
+      // The season is closed. Handing out a club now would re-derive three weeks
+      // of numbers the room has already been read out loud, so this pair gets an
+      // honest observer landing instead of a refusal the device would retry
+      // against forever.
       if (ctx.phase !== "LOBBY" && ctx.phase !== "HOOK" && ctx.phase !== "PLAY") {
-        return { ok: false, reason: `clubs are handed out in LOBBY, HOOK or PLAY (session is in ${ctx.phase})` };
+        return seatLate(state, ctx.seatId);
       }
       return seatDesk(state, ctx.seatId);
     }
@@ -3555,7 +4040,8 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       if (ctx.phase !== "SYNTHESIS") return { ok: false, reason: `the cards are paged in SYNTHESIS (session is in ${ctx.phase})` };
       const total = synthPageCount(synthesisCards(state, computeAggregate(state)).length);
       const delta = action.type === "teacher:synthPage" ? 1 : -1;
-      return { ok: true, state: { ...state, synthPage: (state.synthPage + delta + total) % total } };
+      const synthPage = (state.synthPage + delta + total) % total;
+      return { ok: true, state: { ...state, synthPage, synthSeen: Math.max(state.synthSeen ?? 0, synthPage) } };
     }
 
     return { ok: false, reason: `unknown action ${action.type}` };
@@ -3569,16 +4055,19 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
         return ["takeSeat", "hookPick", "teacher:commitReveal"];
       case "PLAY":
         return ["takeSeat", "propose", "setPrice", "setReinvest", "lock", "teacher:ruleStep", "teacher:realRule", "teacher:closeWeek"];
+      // takeSeat stays offered after the season closes: a device arriving now is
+      // landed as an observer by `reduce`, and a runtime-level refusal here would
+      // strand it on "Finding your club..." with nothing to retry into.
       case "REVEAL":
-        return ["arrowPredict", "teacher:revealNext"];
+        return ["takeSeat", "arrowPredict", "teacher:revealNext"];
       case "COUNTERFACTUAL":
-        return ["teacher:counterfactual"];
+        return ["takeSeat", "teacher:counterfactual"];
       case "ARGUE":
-        return ["kingsVote", "teacher:commitReveal"];
+        return ["takeSeat", "kingsVote", "teacher:commitReveal"];
       case "SYNTHESIS":
-        return ["teacher:synthPage", "teacher:synthPageBack"];
+        return ["takeSeat", "teacher:synthPage", "teacher:synthPageBack"];
       default:
-        return [];
+        return ["takeSeat"];
     }
   },
 
@@ -3589,11 +4078,14 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       // read "You're in — finding your club…" forever. They now get a real
       // screen that says what happened and what to do about it.
       if ((state.observerSeats ?? []).includes(seatId)) {
+        const seasonClosed = phase !== "LOBBY" && phase !== "HOOK" && phase !== "PLAY";
         return tag({
           seated: false,
           observer: true,
-          message:
-            "You arrived after this league closed, so every club already has a pair running it. Sit with the desk next to you — you are on their club now, and you get a say in what they do with it.",
+          observerEyebrow: seasonClosed ? "You arrived after the last week closed" : "You arrived after the league closed",
+          message: seasonClosed
+            ? "You got here after the last week closed, so there is no club left to hand you — all three weeks are already in the books. Sit with the desk next to you and read their screen with them: everything from here is the whole room's."
+            : "You arrived after this league closed, so every club already has a pair running it. Sit with the desk next to you — you are on their club now, and you get a say in what they do with it.",
           rule: ruleView(state),
           ruleNote: state.adopted
             ? `The rule in force is SHARE ${state.adopted.share}% · CONDITION ${state.adopted.condition ? `${CONDITION_MIN_REINVEST}% or you collect half a share` : "OFF"}. The room voted on it before you got here.`
@@ -3620,7 +4112,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     };
     switch (phase) {
       case "LOBBY":
-        return tag({ ...base, message: LOBBY_COPY, houseRules: HOUSE_RULES, league: leagueTable(state) });
+        return tag({ ...base, message: LOBBY_COPY, houseRules: HOUSE_RULES, league: leagueTable(state, slot) });
       case "HOOK":
         return tag({
           ...base,
@@ -3629,7 +4121,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           pick: club.hookPick,
           revealed: state.hookRevealed,
           ...(state.hookRevealed ? { revealCopy: HOOK_REVEAL_COPY, split: agg.hookSplit } : {}),
-          league: leagueTable(state),
+          league: leagueTable(state, slot),
         });
       case "PLAY": {
         if (state.stage === "rounds") {
@@ -3662,7 +4154,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
               club.proposal === null
                 ? "You have not put a number in this round. A desk with no number in has ABSTAINED: it is not counted in the room's middle number, and it cannot be inside the ten-point band — so the two-thirds test counts it as a desk that did not back the rule."
                 : null,
-            league: leagueTable(state),
+            league: leagueTable(state, slot),
           });
         }
         if (state.stage === "adopted") {
@@ -3671,7 +4163,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             mode: "adopted",
             adoption: adoptionLineClaimed(agg).text,
             seasonCopy: seasonCopyFor(state.adopted?.how),
-            league: leagueTable(state),
+            league: leagueTable(state, slot),
           });
         }
         const week = Math.min(state.weekIndex, WEEK_COUNT - 1);
@@ -3779,15 +4271,30 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           ...(state.kingsSplitShown ? { split: agg.kingsSplit } : {}),
           ...(state.kingsRevealed ? { revealCopy: ARGUE_REVEAL_COPY } : {}),
         });
-      case "SYNTHESIS":
+      case "SYNTHESIS": {
+        // The desk used to carry the whole deck the moment SYNTHESIS opened, so
+        // at CARD 1 OF 7 on the projector every pair was already reading card
+        // 7's title off their own screen. That is the exact defect D26 was
+        // written to kill in Lesson 2's reveal, and this is the module finale —
+        // the one stretch of the course where the room is supposed to be
+        // looking up together.
+        //
+        // The desk now carries the cards the board has actually reached, newest
+        // last, so a pair can still scroll back through what has been said and
+        // cannot read ahead of the room.
+        const all = synthesisCards(state, agg);
+        const page = Math.min(Math.max(0, Math.max(state.synthPage, state.synthSeen ?? 0)), Math.max(0, all.length - 1));
         return tag({
           ...base,
-          message: "Look up at the board. Every card is here too — scroll back through them any time.",
+          message: "Look up at the board. Every card you have seen is here too — scroll back through them any time.",
           exitPrompt: EXIT_PROMPT,
-          cards: synthesisCards(state, agg),
+          cards: all.slice(0, page + 1),
+          synthPage: page + 1,
+          synthPageCount: all.length,
           simplifications: SIMPLIFICATIONS,
           sources: SOURCE_NOTES,
         });
+      }
       case "COMPLETE":
         return tag({ ...base, message: completeCopyFor(state.adopted?.how), ruleTitle: completeTitleFor(state.adopted?.how), rule: ruleView(state) });
       default:
@@ -3799,8 +4306,35 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     const agg = computeAggregate(state);
     const live = state.clubs.filter((c) => c.seatId !== null).length;
     const nextStage = state.revealStage < REVEAL_STEPS ? revealStagesFor(state)[state.revealStage] ?? null : null;
+    const room = roomRead(
+      state,
+      state.clubs
+        .slice(0, state.leagueSize)
+        .filter((c) => c.seatId !== null)
+        .map((c) => {
+          // Movement is only ever claimed against a number this desk chose
+          // itself. A week the bell settled for them is not a decision they
+          // moved off, and a round they sat out is not a position they changed.
+          const ownWeek = [...c.weeks].reverse().find((w) => !w.auto) ?? null;
+          const ownRound = [...c.proposals].reverse().find((p) => p !== null) ?? null;
+          return {
+            handle: deskHandleFor(c),
+            proposal: c.proposal,
+            ownLastProposal: ownRound ?? null,
+            roundsPlayed: c.proposals.length,
+            price: c.price,
+            reinvest: c.reinvest,
+            locked: c.locked,
+            weeksPlayed: c.weeks.length,
+            ownLastReinvest: ownWeek ? ownWeek.reinvest : null,
+          };
+        }),
+    );
     return tag({
       phase,
+      room,
+      // THE DESKS: the same room, named. Teacher-only — see deskStripOf().
+      deskStrip: deskStripOf(state),
       leagueSize: state.leagueSize,
       deskCount: live,
       lockedCount: state.clubs.filter((c) => c.seatId !== null && c.locked).length,
@@ -3856,7 +4390,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       synthNextLabel: "Next card",
       synthPrevLabel: "Back a card",
       synthCurrentLabel: `Card ${state.synthPage + 1} of ${synthesisCards(state, agg).length}`,
-      synthPageNote: "One card at a time on the projector. The pairs have the whole set on their own screens.",
+      synthPageNote: "One card at a time on the projector. Each desk gets the cards you have already turned to, so a pair can look back without reading ahead of the room.",
       director: teacherDirector(state, phase),
       watchFor: teacherWatchFor(state, phase),
       // The shell's director layer reads `projectorNow`; the same key name L1

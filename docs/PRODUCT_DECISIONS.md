@@ -361,3 +361,499 @@ the founder must not be a hidden runtime dependency for either band.
 - **Owner:** Founder (program sequence and scope ruled directly; recorded by the Boss lead)
 - **Evidence:** founder instruction of 2026-09-02; wave-3 ship case section
   "TECHNICAL REALITY HANDOFF FOR CLASSROOM RUNTIME WAR" carries the repo-grounded inputs.
+
+## D23. Live-classroom runtime contract for Module 2 — transport, action integrity, TIME CUT, recovery, presence
+
+- **Decision:** The M2 live runtime holds five standing rules, all now implemented and
+  browser-proven. (a) TRANSPORT: push/realtime is primary, the server is the only truth,
+  and poll/refetch reconciliation is the fallback — realtime is a delivery optimisation
+  and is never itself authoritative. (b) ACTION INTEGRITY: a valid student action inside
+  an open decision window is applied exactly once OR receives an explicit authoritative
+  refusal naming a legitimate semantic reason (stale, wrong phase, duplicate, retired
+  credential, past TIME CUT). A transport or version race is never a legitimate reason to
+  lose a student's choice. (c) TIME CUT: the teacher holds both FINAL CALL and CLOSE NOW;
+  fairness is adjudicated on server time, never on an untrusted client clock; each lesson
+  defines its own economically honest fallback for an uncommitted desk — there is no
+  universal mystery fallback and no random one. (d) RECOVERY: automatic safe checkpoints
+  at pre-reveal boundaries; a returning student receives current authoritative state plus
+  a compact "while you were away" recap, and the class is never rewound. (e) PRESENCE: the
+  teacher's room view carries committed decisions and teacher-private diagnostics; the
+  projector is structurally never handed a seat identity.
+- **Grounds:** Founder runtime instruction of this program; every clause is a behaviour
+  requirement, with schema and system design left to the build.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Founder (behaviour); lead integrator (design and evidence)
+- **Evidence:** `runtime/scripts/e2e-time-cut.cjs`, `e2e-realtime.cjs`, `e2e-away.cjs`,
+  `e2e-teach-room.cjs`, `concurrency-harness.cjs`, `e2e-full-room.cjs` at 16 and 32 desks.
+
+## D24. A computed finding may be split by SURFACE — the projector gets the finding, the teacher gets the argument
+
+- **Decision:** When a computed finding is too long for the projector, the repair is to
+  split WHERE it renders, never WHETHER it exists. A `Claimed` value carries `text` (the
+  whole finding, which the claim audit recomputes and which the teacher's script prints in
+  full under an explicit "yours to say, not on the wall" label) and an optional `board`
+  (the short rendering the projector shows). Deleting the reasoning to fit a frame is
+  forbidden; so is putting a paragraph on a wall a class is meant to read in one look.
+- **Grounds:** M2 L2's REVEAL put 13 lines of argument on the projector at stage 2 and 10
+  at stage 5. Cutting them would have destroyed the economics; keeping them destroyed the
+  reveal. A test now fails if a finding reaches neither surface.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** commit "W6/RC2"; `hostTheLeague.test.ts` "no REVEAL summary puts a
+  paragraph on the projector" and "every word the projector gave up is in the teacher's hand".
+
+## D25. Drawn magnitude must equal modeled magnitude, and it is measured, not eyeballed
+
+- **Decision:** Any product drawing whose SIZE carries a quantity — a crowd wedge, a bar,
+  a building — must be measured against the model in a browser, by an instrument that
+  poisons itself before its result is believed. Where a projection makes equal inputs draw
+  unequally, the renderer corrects by MEASURING the projected area rather than by an
+  analytic approximation. What a drawing may encode is limited to quantities the model
+  actually holds: L3's league floor draws opening cash (a real 5x spread) and refuses to
+  draw seat counts (a 24% spread that would render as twelve identical shapes and teach
+  nothing).
+- **Grounds:** L2's crowd attribution drew a true quarter of the house as anywhere from
+  14.6% to 35.4% of the drawing. L3's league floor drew the student's own club's $2.4M
+  taller than the $2.6M beside it, because a YOU badge was an extra layout row on one
+  column. Both are `<economic_truth>` violations — visual drama misrepresenting
+  magnitude — and neither was visible without measuring.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `runtime/scripts/arena-wedge-fidelity.cjs` (worst wedge 7.3%, tolerance
+  10%, poison rejects a 40/20/20/20 house offered as equal quarters);
+  `e2e-m2l3.cjs` league-floor instrument (worst bar 0.4% of the tallest, tolerance 4%,
+  one baseline, poison rejects a stretched bar).
+
+## D26. The student device paces WITH the projector, never ahead of it
+
+- **Decision:** During a teacher-paced reveal, the student device shows this desk's own
+  version of the beat that is currently up, and nothing belonging to a beat the teacher
+  has not pressed. The gate lives in the module payload, not the renderer, so the numbers
+  are not merely unrendered but unsent — and the invariant is assertable without a
+  browser. Each lesson's reveal also gives the desk at least one thing to DO; M2 L2 and
+  M2 L3 both take a single call from the pair before the beat that settles it.
+- **Grounds:** L2's desk carried every number all five beats are about from beat 0 and
+  then never changed: a pair that looked down had already read the answer to every
+  question the room was about to be asked. A DOM diff across all six presses came back
+  byte-identical. The student device was defeating the classroom choreography the lesson
+  is built on.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `hostTheLeague.test.ts` "no reveal beat's numbers reach the desk before
+  the teacher presses it"; `e2e-m2l2.cjs` per-beat DOM diff plus a planted-ledger poison.
+
+## D27. Page width belongs to the layout, never to a control
+
+- **Decision:** A surface's dimensions may not be derived from the presence of a button or
+  any other control. Layout-scoped CSS classes carry layout facts.
+- **Grounds:** L2's two-column decision band took its 1000px width from the lock-bar rule,
+  so the one screen in the lesson with nothing left to commit — the season finale —
+  silently rendered at 640px: the evidence column collapsed 608px to 248px and the price
+  counterfactual grew from 150px to 382px and fell off the bottom of a Chromebook. This
+  class of defect appears only on the last screen of the lesson, in front of the class.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-m2l2.cjs` "the finale is not allowed to be a narrower page than the
+  weeks that led to it".
+
+## D28. Dead air inside a decision phase is a design defect, and the fix is a free commitment
+
+- **Decision:** Where a lesson leaves a committed pair with nothing to do while the rest of
+  the room finishes, it owes them a stake rather than a waiting message. The standing
+  answer for M2 is THE GATE CALL: before the bell, the pair calls how full the building
+  gets — packed / busy / quiet — for no money, changeable until the bell, and the
+  settlement answers the call they actually made. A pair that never called is handed
+  nothing. Its bands are measured against the lesson's own outcome distribution, never
+  guessed, and its answer stays forecasting language: "you read it" or "the night did not
+  go the way you read it", never a verdict on the price. The same screen carries an
+  aggregate room line (N of M desks in) so the wait is finite and legible without ever
+  naming a seat.
+- **Grounds:** L1 and L2 both told a locked pair, three to five times a lesson, that there
+  was nothing to do but find out. That is several minutes of dead air inside the phase the
+  lesson is named after, at the exact moment the pair is most invested. A free prediction
+  costs the economics nothing, is honest about what is knowable, and converts the wait
+  into the second-cheapest kind of engagement there is: having said it out loud first.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts` / `hostTheLeague.test.ts` W6 gate-call tests (bands,
+  aggregate-only room line, all four semantic rejections, changeability, no carry across
+  the bell, forecasting-only language); `e2e-m2l1.cjs` and `e2e-m2l2.cjs` above-fold and
+  answer-names-the-call-actually-made assertions plus a DOM-poison non-vacuity check.
+
+## D29. A second book that returns one number over most of its dial is not a second book
+
+- **Decision:** Where a lesson claims a decision trades two objectives off against each
+  other, both objectives must respond across the range the pair is actually deciding in.
+  A clipped arm that reads the same value at the cash-best price and at a price nobody
+  would ever choose is informationless, and the claim it supports is false however good
+  the settlement arithmetic is. Curves are bent, not clipped, and the property is
+  asserted where the decision lives — near the optimum — not merely at the extremes.
+- **Grounds:** L1's renewals book returned the identical -20 at 43 of 56 legal prices,
+  including the cash optimum. Worse, the season-scale two-book property (harness P14) had
+  been passing *because of* that clip. Deepening the floor changed nothing; the near-field
+  slope is what carries the trade-off.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts` R4-5 (the band is not flat at the cash optimum; no
+  single value occupies more than a third of the prices near the best net; gouging always
+  costs more than gouging less); harness P14 limbs (i)-(v.f).
+
+## D30. THE ROOM belongs to every lesson with a live decision window, and reads that lesson's own economics
+
+- **Decision:** Every lesson with an open decision window gives the teacher a private live
+  read of spread, shape and movement, on `/teach` and nowhere else. It is not one panel
+  reused: each lesson bins the dial its own economics turn on (L1 price, L2 the reinvest
+  dial, L3 the proposed share while the rule is being written and the reinvest dial once
+  the season opens), and each authors its own heading, spread sentence and movement
+  sentence. Movement is claimed only against a number that desk chose itself — never a
+  bell-committed round, an auto-settled week, or a round the desk sat out.
+- **Grounds:** A teacher standing up cannot count twelve dials, and the arithmetic they
+  cannot do is exactly the arithmetic that picks the next question. The renderer is
+  generic; the words are not, because "locked in" is wrong in a stage where desks propose
+  a number at the league rather than committing a dial.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts`, `hostTheLeague.test.ts`, `writeTheRule.test.ts` THE
+  ROOM tests, including a poisoned instrument (counting AUTO weeks as decisions, and
+  letting uncommitted dials into the spread, both fail); `e2e-m2l2.cjs` / `e2e-m2l3.cjs`
+  browser assertions that the read is on the console and on neither the projector nor a
+  desk.
+
+## D31. The console shows the projector, it does not describe it
+
+- **Decision:** `/teach` carries a live mirror of `/board` for the room it is driving. It
+  is an iframe of the board itself — same page, same session, same poll — scaled by
+  transform and made completely inert (`pointer-events: none`), never a second renderer
+  fed board data. It is capped to a monitor-sized box, collapsible, and disappears with
+  the session.
+- **Grounds:** A teacher directing a class faces the room, which means facing away from
+  the board. The director panel can say what is on the projector; only the projector can
+  show whether the reveal actually landed. A mirror built from a second renderer can drift
+  from the board and quietly misreport the room's own evidence; an iframe structurally
+  cannot, and it carries nothing private for the same structural reason — it is exactly
+  what the class can already see.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-m2l1.cjs` projector-preview assertions at HOOK and at REVEAL stage 5
+  (pointed at this room, inert at its centre point, the projector's own shape, not
+  reflowed, showing the board's own words, and tracking the room from one to the other).
+
+## D32. A surface never moves backwards
+
+- **Decision:** Every polled surface refuses a frame older than one it has already drawn,
+  compared on the session version the server never lowers, scoped to the room and reset
+  when the surface is pointed at another one. Equal versions pass — the same version
+  legitimately carries a countdown tick or a recap arriving. The frame returned by an
+  ACTION or a teacher CONTROL goes through the same gate, because that is the frame that
+  moves the surface forward and therefore the one that sets the floor.
+- **Grounds:** The transport serialises its own fetches, so two polls cannot land out of
+  order; an action is a different request on a different socket. Reproduced in the
+  browser: a poll held at the transport, a lock submitted underneath it, and the released
+  body drew the pair's own committed decision back into an unlocked dial. Nothing was lost
+  on the server — which is why no state test had ever seen it — but a fifth-grader
+  watching their decision come undone presses it again.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `freshness.test.ts` (monotonicity, equal-version acceptance, room change,
+  reset, unreadable payloads passed through); `scripts/e2e-stale-poll.cjs`, which drives
+  the window deterministically and includes an over-blocking limb — the desk must still
+  follow the room to the next night.
+
+## D33. The way back to a seat survives a refresh
+
+- **Decision:** A pair's rejoin PIN must be reachable on their own device for the whole
+  lesson, not only in the twenty seconds after they join. Where the PIN banner collapses,
+  the affordance that reopens it is restored from stored credentials on every load.
+- **Grounds:** The PIN is the one thing that moves a pair to another device when this one
+  dies, and a refresh is not an unusual event on a classroom Chromebook. Full House was
+  already safe — its desk rail carries the digits permanently — which is exactly why the
+  gap in the other two lessons went unnoticed.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-m2l2.cjs` mid-week refresh (strip restored, drawn, opens this seat's
+  own PIN, decision intact) — proven to fail without the repair; `e2e-away.cjs` reloads a
+  Full House desk and rejoins from a second device on the PIN its rail still carries.
+
+## D34. THE DESKS — the room, named
+
+- **Decision:** Every M2 lesson exposes a teacher-only walk-to list beside THE ROOM: the
+  module's own desk handle, the pair actually sitting there, what that desk is doing right
+  now, and at most one note. THE ROOM keeps its job of describing shape and naming nobody;
+  THE DESKS does the join a teacher was otherwise making in their head, standing up,
+  mid-class. Modules own the vocabulary (a desk in L3's offer rounds has a *number in*, it
+  has not *locked* anything) and own which of their notes is a reason to walk over
+  (`flag`) rather than context for reading that desk's books.
+- **Grounds:** The console had a join list of student names with no desks and a WATCH FOR
+  list of desk handles with no names. The one question a teacher asks during a live window
+  — *who do I walk to* — was the one question neither list answered.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts`, `hostTheLeague.test.ts`, `writeTheRule.test.ts` (state
+  vocabulary per lesson; never in `boardView`, never in a student view); `e2e-m2l1.cjs`
+  Night 1 (three chips, the split named, the filter, nothing of it on the projector).
+
+## D35. A signal that changes with nothing but time must be part of what re-sends the body
+
+- **Decision:** The console shows when a desk's device has gone silent, measured on the
+  server's clock and reported in buckets (30s+ / 1m+ / 5m+ / 15m+), with the bucket in the
+  teacher payload's ETag fingerprint.
+- **Grounds:** Three separate ways to get this wrong, all of them shipped somewhere first.
+  Subtracting a server timestamp from the console's own `Date.now()` reads every desk in
+  the room as gone on a laptop whose clock has drifted. A live millisecond count inside a
+  conditionally-cached payload freezes at whatever it was when the body was last sent and
+  then lies about how long. And a fact that bumps no session version answers 304 forever —
+  the same failure already recorded for the rejoin lockout pill. The threshold is the same
+  AWAY_MS that opens a student's own "while you were away" recap, so the console and the
+  returning pair never disagree about who was gone.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-away.cjs` — the console marks exactly the one offline desk, in bucket
+  language, while it is still dark; the assertion timed out against the pre-repair ETag.
+
+## D36. A pair is never blamed for a night they were not in the room for
+
+- **Decision:** Teacher-facing flags about a desk that "has never committed" count only the
+  rounds that pair was actually present for. Nights covered by the desk manager before a
+  late pair arrived, and weeks a league-office club was run before a handover, are context
+  on the chip and never a reason to walk over.
+- **Grounds:** Caught by its own test: a pair who joined at Night 2 was being reported to
+  the teacher as having "never once locked a night of its own" before they had taken a
+  single turn. A console that sends a teacher across the room to scold a pair for a night
+  they were not there for is worse than a console with no flags at all.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts` "a late desk is annotated but is not a reason to walk
+  over".
+
+## D37. The link picker skips what this build cannot open, and says so when it fails
+
+- **Decision:** `listSessions` skips rows naming a lesson module this build does not
+  register instead of throwing, and /teach distinguishes "nothing to link to" from "could
+  not read the list".
+- **Grounds:** One stale snapshot — a renamed module, a session carried over from an older
+  build — threw out of the whole listing, so the "link to a previous session" picker
+  returned nothing for every lesson and the console swallowed the error. A teacher would
+  have concluded yesterday's session was gone and started an unlinked room, silently
+  breaking the L1 -> L2 -> L3 chain the module rests on. A session whose module is gone is
+  exactly the one thing the picker cannot offer anyway.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `sessionService.test.ts` "a session built by a lesson this build no longer
+  registers does not take the whole picker down" — proven to fail without the repair.
+
+## D38. No grade-band seam is built until a second band exists to switch on
+
+- **Decision:** No `gradeBand` field, context, or switch is added to the session, the
+  module contract, or any lesson. Recorded instead: if a 7-8 band is ever built, it
+  attaches at exactly two places — `createSession` input carried onto the session row, and
+  the `initialState` context each module already receives — and nothing else in the runtime
+  needs to know.
+- **Grounds:** Track 101 is grades 5-6 only (D6), and no 7-8 content exists to select. A
+  field with no consumer cannot be tested, cannot be proven, and invites content forks
+  nobody has designed — the same premature-generality trap CLAUDE.md section 12 forbids for
+  the lesson engine. Naming the attachment point costs nothing and keeps the future change
+  small; shipping an unused switch does not.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** None required — this decision is not to build.
+
+## D39. Linking a session that has not finished is allowed, but never silent
+
+- **Decision:** The link picker warns, before the room is created, when the selected
+  source session is still live: the books carried forward are whatever that room holds at
+  the instant this one is created. Linking a live session stays permitted — a period that
+  ran long, a class split across two days — the warning only makes it deliberate.
+- **Grounds:** The picker lists live sessions ("live, PLAY") beside finished ones and the
+  seed is read at creation time, so a mis-click carried a half-played league into the next
+  lesson with nothing downstream able to tell: L3's own seed note says the books "walked in
+  from this room's own Lesson 2 session", which stays true and stops being the whole truth.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-l2.cjs` — a still-running L1 raises the warning, a finished one clears
+  it.
+
+## D40. The rehearsal the console prescribes is the whole lesson, marked
+
+- **Decision:** Every lesson that ships a directing panel must be fully walkable with zero
+  desks in the session, because that is what `/teach` tells a first-time teacher to do. A
+  cold walk shows the real WATCH FOR flag shapes with stand-in desks, and the complete
+  synthesis deck — every card the live room gets, none dropped. Every stand-in title is
+  prefixed `REHEARSAL — ` and every stand-in figure carries a STAND-IN sentence, so nothing
+  a rehearsing teacher sees can be mistaken for a room's own arithmetic. Dated real-world
+  content is left unmarked: it is the same sentence tomorrow, and marking it would be a lie
+  in the other direction.
+- **Grounds:** M2 L2 was repaired for this under `gate-l2-teacher` B5 and its two siblings
+  were not. M2 L1 rendered NO watch flags at all with zero desks and collapsed a six-card
+  synthesis deck to one placeholder; M2 L3 kept all its cards but computed them against an
+  empty room, so the prescribed rehearsal put sentences like "Nobody in this room ended
+  down on the pot this time" on the projector as statements of fact. In both cases a teacher
+  who did exactly what the product instructed met the room's only diagnostic panel, and most
+  of the phase where they talk the most, for the first time in front of students.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — all three directed lessons walked cold: L1 6 cards /
+  4 flags, L2 5 cards / 4 flags, L3 7 cards / 5 flags, every one marked on the projector,
+  with an unmarked-flag poison frame caught in each lesson. Unit: `fullHouse.test.ts`,
+  `writeTheRule.test.ts` (deck length and titles must match the live deck exactly).
+
+## D41. The console never claims a surface the selected lesson does not have
+
+- **Decision:** The pre-session note promises a directing panel only for lessons whose
+  module authors one; the other lessons are told plainly that they ship none and must be
+  prepared from their own lesson plan. The lesson picker says which kind each option is,
+  lists the directed lessons first, and never opens on an undirected one. The connection
+  test is labelled as a connection test, not offered as a lesson.
+- **Grounds:** One sentence promised "the directing panel — what to say, what to ask, what
+  to hold back, and the line for each reveal" for all seven registered lessons, while three
+  ship it. The picker then opened on Draft Day, one of the four without it, under a comment
+  claiming it was the module teachers actually run class with — so the console's own default
+  contradicted the paragraph directly beneath it, and a teacher who rehearsed Draft Day was
+  left hunting for a panel that does not exist.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — the picker opens on a directed lesson, the connection
+  test is labelled, and the note under Draft Day says no directing panel and does not carry
+  the director promise.
+
+## D42. The console carries a class clock, on the server's clock
+
+- **Decision:** THE DECK shows minutes elapsed since the session was created, painted from
+  the session's `createdAt` corrected once by the server/console skew read at first paint,
+  and repainted on its own 15-second beat rather than by polling. `createdAt` is constant,
+  so it is ETag-safe; the live minute is never sent in a cacheable body (D35).
+- **Grounds:** Every director panel is written in minute budgets ("Now — 6 min") and the
+  teacher had no way to know where they were against them. A console that budgets a period
+  and does not say the time makes the teacher do the one piece of arithmetic they cannot do
+  while directing a room.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — the strip reads MIN 0 at creation and repaints to
+  MIN 7 on its own beat when the console's wall clock is pushed forward, with no poll and no
+  press.
+
+## D43. A pair whose device died can be put back in their own desk
+
+- **Decision:** The console can reseat any seat: it mints a fresh 4-digit rejoin PIN, shows it
+  to the teacher to read aloud, and retires the old device token in the same write. The desk,
+  its books, its history and its identity in the room's evidence are untouched — the pair
+  rejoins under the same name on a spare device and lands in the seat they already held.
+  Minting a credential for someone else's seat requires the teacher key and never crosses
+  sessions. Every M2 lesson's LOBBY script now tells the room to write the PIN down somewhere
+  that is not the screen showing it.
+- **Grounds:** Rejoin assumes the pair still holds something the seat will accept — the device
+  token, or the PIN their device showed once at join. A dead Chromebook takes both in the same
+  instant, and such a pair is not locked out (so `unlockRejoin` does nothing for them); they
+  are simply outside. In a fifty-minute period the only moves left were to rejoin as a NEW seat
+  — a fresh desk and a blank book in the middle of the evidence the class is about to be shown
+  — or to lose the pair for the rest of the lesson.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-away.cjs` — a genuinely offline device is reseated from the console and
+  the pair rejoins on a second laptop keeping `Desk 1 · New York Knicks`. Unit:
+  `sessionService.test.ts` (old token and old PIN both dead; teacher key required; no
+  cross-session reach).
+
+## D44. The console says whether a projector is really watching
+
+- **Decision:** The Projector card carries BOARD LIVE / BOARD QUIET / BOARD NOT SEEN, from a
+  coarse bucket of when a `/board` poll last arrived (in memory, never on the session row, so
+  a projector poll neither bumps the version nor writes to disk). The console's own embedded
+  mirror polls with `preview=1` and is deliberately NOT counted; the bucket is in the teacher
+  ETag fingerprint (D35).
+- **Grounds:** A teacher says "look at the board" with their back to it. A dead HDMI cable, a
+  sleeping projector, or a `/board` tab left on yesterday's code are all silent from the
+  console — and the console's own preview iframe looks perfect throughout, because it is this
+  laptop's copy of the page rather than the one on the wall.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — BOARD NOT SEEN while only the console's own mirror is
+  polling, BOARD LIVE once a real projector opens the room, and back to BOARD QUIET after it
+  closes.
+
+## D45. Device health outlives the decision window; undo depth is stated everywhere
+
+- **Decision:** THE DESKS no longer stands down when PLAY ends. Outside PLAY it becomes a
+  device-health strip: it appears only when a device has gone quiet, shows only those desks,
+  and says plainly that nothing on it is about a decision. And every skip-content confirm, plus
+  Restore itself, carries one shared sentence saying the undo is ONE step deep.
+- **Grounds:** A Chromebook that dies in REVEAL leaves a pair watching the class's whole
+  payoff on a black screen, and the console said nothing because the panel keyed off PLAY. On
+  undo, two of six confirm branches claimed "Restore last good state is the only way back" and
+  four said nothing, so the same click read as recoverable in one lesson and unqualified in the
+  next — and "the only way back" was never the whole truth, because there is exactly one
+  checkpoint and no second step backwards.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-away.cjs` (a genuinely offline device is marked quiet on the console);
+  the undo sentence is one shared constant, so the six branches cannot drift apart again.
+
+## D46. Lesson 1's second book reads differently at every price worth taking
+
+The W6 repair `econ-l1-renewals-dead-arm` bent the renewals gouging arm instead
+of clipping it, and then paid for the two-book season claim by tripling the
+near-field slope (`planSlope` 3.6 -> 9.0) and deepening the one-night limit
+(-20 -> -26). Measured at those shipped constants, `renewalDelta` returned the
+-26 floor at **41 of the 56 legal prices on Nights 1 and 5, and on 50% of the
+whole price grid**. Three quarters of the dial returned one number; the board's
+own class line printed median renewals New York 2%, Memphis 0%. The defect the
+bend existed to kill was still shipping — a pair could not read its own choice
+out of the second book, and gouging past about $48 was free.
+
+The season-scale claim (harness P14 limb i: the never-move-the-dial line must
+end at least 15 renewal points ahead of the most-cash line) does not need a
+steep New York arm. It needs a steep **Memphis** one: Memphis prices off a $16
+plan against New York's $24, so the same dollar of gouging is half again as
+large a share of the ticket, and the season cash-maximising policy is what
+notices. `planSlope` is now per-market — New York 3.2, Memphis 4.1 — at
+`RENEWAL_GOUGE_BEND` 9, chosen by exact forward DP over (renewals x carry), the
+same DP P14 runs. Both markets clear all four P14 bars with headroom (margin
+17/16 against 15; range 37/36 against 30; renewals cost 7.2%/4.6% of season cash
+against 4%), both sit mid-plateau rather than on a knife edge, and floor-binding
+falls from 50% of the grid to 8%. Where the limit still binds it binds only
+above three times the night's cash-best price, in a building that already draws
+nobody — which is the only place a flat penalty is honest.
+
+The suite property that guarded this was asserting the opposite of what the
+lesson wants ("$120 still reaches the one-night limit on every gougeable card")
+and passed happily on the broken constants. It now asserts what the desk is
+owed: the arm bites monotonically all the way up, the limit never binds at a
+price where people are still walking in, and the limit is still reachable
+somewhere so it is not dead code.
+
+Also repaired in the same pass: `repeatRowFor`'s floor predicate was `raw < 0`,
+so a night whose raw demand landed on exactly zero counted as readable. A desk
+that drew 0 then 0 was told a crowd hit zero "on one of the two nights". The
+predicate is "did anybody come" — `<= 0` — in the product and in the harness.
+
+## D47. The finale deck a desk holds is a high-water mark, not the current page
+
+D26's rule is that a desk never reads ahead of the projector, and Lesson 3's
+finale now hands each desk the cards the board has reached. That has to be the
+furthest card the projector has EVER turned to (`synthSeen`), not `synthPage`:
+the teacher's own Back button, and the forward wrap past the last card, would
+otherwise take cards off thirty screens in the middle of the discussion those
+cards are for. Reading ahead is the thing forbidden; looking back is the thing
+the desk copy promises.

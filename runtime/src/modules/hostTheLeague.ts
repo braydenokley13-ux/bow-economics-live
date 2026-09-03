@@ -89,7 +89,7 @@
  * debrief (R7).
  */
 import { CREST_COUNT } from "./draftDay.js";
-import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId } from "../shared/lessonModule.js";
+import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 
 /* ------------------------------------------------------------- markets -- */
@@ -514,6 +514,13 @@ export type SettledWeek = {
   roadHostDrawBefore: number;
   roadDollars: number;
   roadTurnoutLift: number;
+  /**
+   * The gate call that stood when the week bell rang, or null on a desk that
+   * did not make one (and on any week rehydrated from a snapshot written before
+   * the call existed). Frozen here so the settlement resolves against what the
+   * pair actually said, not against a later state.
+   */
+  gateCall: GateCall | null;
 };
 
 export type Club = {
@@ -530,6 +537,19 @@ export type Club = {
   joinedAtWeek: number;
   starGone: boolean;
   weeks: SettledWeek[];
+  /**
+   * The pair's one call during REVEAL: did their Draw put MORE money on other
+   * clubs' books than the visiting clubs put on theirs? Taken before beat 2
+   * answers it. `null` on a desk that never called it, and on any club
+   * rehydrated from a snapshot written before this field existed.
+   */
+  ledgerPrediction: "gave" | "took" | null;
+  /**
+   * The pair's call on THIS week's crowd, made while locked and waiting for the
+   * room. Cleared when the week settles (it moves onto the settled week), and
+   * null on any club rehydrated from a snapshot written before it existed.
+   */
+  gateCall: GateCall | null;
 };
 
 export type HostLeagueState = {
@@ -612,7 +632,124 @@ export const synthPageCount = (cards: number): number => Math.max(1, Math.ceil(c
 
 export const REVEAL_STEPS = 5;
 
+/* ------------------------------------------------------ the gate call -- */
+
+/**
+ * THE GATE CALL (W6 repair `play-l2-locked-dead-time`).
+ *
+ * A pair that commits early used to sit on a screen that said, in the product's
+ * own words, "Locked. Nothing to do but find out" — with the bottom half of the
+ * device blank — until the slowest desk in the room finished. Three weeks of
+ * that is three stretches of dead air in a fifty-minute class, and dead air is
+ * where a room stops being in the lesson.
+ *
+ * The wait is real and should stay teacher-paced, so the repair does not remove
+ * it. It gives the wait the one thing the pair genuinely does not know and
+ * cannot look up: the crowd. The call is free, changeable while the week is
+ * open, and carries no money — its whole job is to make the pair COMMIT to a
+ * reading before the building answers, so that the settlement is an answer to
+ * something they said rather than a number that merely arrives.
+ *
+ * The three bands are honestly uncertain at the prices pairs actually choose:
+ * measured across the sixteen real clubs, the six league Draws and the $16-$60
+ * band, they come out 26% / 28% / 46%. A call nobody can get wrong teaches
+ * nothing, and neither does one nobody can get right.
+ */
+export type GateCall = "packed" | "busy" | "quiet";
+
+/** The fill fraction at or above which the building reads PACKED. */
+export const GATE_PACKED_FLOOR = 0.85;
+/** The fill fraction at or above which the building reads BUSY. */
+export const GATE_BUSY_FLOOR = 0.7;
+
+export const GATE_BANDS: readonly { id: GateCall; label: string; blurb: string }[] = [
+  { id: "packed", label: "PACKED", blurb: "nearly every seat sold" },
+  { id: "busy", label: "BUSY", blurb: "a good crowd, real gaps in it" },
+  { id: "quiet", label: "QUIET", blurb: "a lot of empty seats" },
+];
+
+export const GATE_CALL_PROMPT = "Your price is in. Nobody knows the crowd yet — not even you. Call it: how full does your building get?";
+export const GATE_CALL_HEADING = "While the rest of the league commits";
+/** What the card says before the pair has called, and after. Both authored here, never in the client. */
+export const GATE_CALL_FOOT_OPEN = "No money rides on this. It is only worth something if you say it out loud before you know.";
+export const gateCallFootCalledFor = (building: string): string =>
+  `Your call is in — ${building} answers when the week closes. You can change it until then.`;
+
+/**
+ * How much of the room has committed, as an aggregate. Never a seat identity —
+ * `/play` is private and stays private (D14/CLAUDE.md 11); this is the same
+ * class-level fact the projector already carries, and it is what turns "wait"
+ * into a finite, legible thing the pair can see the end of.
+ */
+export function roomLockLine(state: HostLeagueState): { locked: number; seated: number; line: string } {
+  const seatedClubs = state.clubs.slice(0, state.leagueSize).filter((c) => c.seatId !== null);
+  const locked = seatedClubs.filter((c) => c.locked).length;
+  const seated = seatedClubs.length;
+  const waiting = seated - locked;
+  return {
+    locked,
+    seated,
+    line:
+      waiting <= 0
+        ? `All ${seated} desks are in. Your teacher closes the week.`
+        : `${locked} of ${seated} desks are in. ${waiting === 1 ? "One desk is" : `${waiting} desks are`} still deciding.`,
+  };
+}
+
+/** Which band a settled home night actually landed in. */
+export function gateBandOf(home: HomeSettlement): GateCall {
+  const fill = home.capacity > 0 ? home.turnout / home.capacity : 0;
+  return fill >= GATE_PACKED_FLOOR ? "packed" : fill >= GATE_BUSY_FLOOR ? "busy" : "quiet";
+}
+
+const gateLabel = (band: GateCall): string => GATE_BANDS.find((b) => b.id === band)!.label;
+
+/**
+ * How the settled week answers the pair's call.
+ *
+ * Deliberately forecasting language, never a verdict on the price: reading a
+ * crowd right and pricing well are different skills, and the product must not
+ * let one stand in for the other. `null` on a week nobody called.
+ */
+export function gateCallResolvedFor(week: SettledWeek): { called: GateCall; actual: GateCall; right: boolean; line: string } | null {
+  const called = week.gateCall;
+  if (called === null) return null;
+  const actual = gateBandOf(week.home);
+  const fill = Math.round((week.home.turnout / Math.max(1, week.home.capacity)) * 100);
+  const crowd = `${week.home.turnout.toLocaleString()} came — ${fill}% of the building`;
+  return {
+    called,
+    actual,
+    right: called === actual,
+    line:
+      called === actual
+        ? `You called ${gateLabel(called)}. ${crowd}. You read it.`
+        : `You called ${gateLabel(called)}. ${crowd}, which is ${gateLabel(actual)}. The building did not go the way you read it.`,
+  };
+}
+
+/**
+ * The horizon rule, in the shortest true form that still teaches it, for the
+ * projector's standing chip on REVEAL stage 5. Every desk was shown this rule
+ * before it priced week 3 (`reinvestRuleFor`), which is exactly why the class
+ * has to be able to see it while it argues about what the room did.
+ */
+export const LAST_WEEK_RULE_CHIP = "LAST-WEEK RULE — week 3 was the end. Draw bought in week 3 earns nothing else in this lesson.";
+
 export type RevealStage = { stage: number; name: string; headline: string; say: string };
+
+/** Where the class is, in this lesson's words rather than the engine's. Never what it found. */
+const PHASE_EVENT: Partial<Record<CanonicalPhase, string>> = {
+  HOOK: "Your teacher set up the league.",
+  PLAY: "The league opened \u2014 clubs started pricing weeks and setting reinvest.",
+  REVEAL: "The season went up on the projector.",
+  CONSEQUENCE: "The class started reading what the season cost.",
+  ADAPT: "The class went back over the reinvest decision.",
+  COUNTERFACTUAL: "The class started replaying the season under other rules.",
+  ARGUE: "The class started arguing from the board.",
+  SYNTHESIS: "Your teacher started naming the economics.",
+  COMPLETE: "The lesson finished.",
+};
 
 export const REVEAL_STAGES: readonly RevealStage[] = [
   {
@@ -668,6 +805,8 @@ function makeClub(slot: number): Club {
     joinedAtWeek: 1,
     starGone: false,
     weeks: [],
+    ledgerPrediction: null,
+    gateCall: null,
   };
 }
 
@@ -825,6 +964,7 @@ function settleWeek(state: HostLeagueState, honorPendingDials: boolean): HostLea
       roadHostDrawBefore: drawBefore[roadHostSlot]!,
       roadDollars: roadHome.visitorDollars,
       roadTurnoutLift: roadHome.visitorFans,
+      gateCall: club.gateCall ?? null,
     };
     clubs[i] = {
       ...club,
@@ -833,6 +973,7 @@ function settleWeek(state: HostLeagueState, honorPendingDials: boolean): HostLea
       price: profile.housePrice,
       share: 0,
       locked: false,
+      gateCall: null,
       weeks: [...club.weeks, settled],
     };
   }
@@ -863,7 +1004,174 @@ function applyStarDeparture(state: HostLeagueState): HostLeagueState {
 
 /* ---------------------------------------------------------- aggregates -- */
 
+/**
+ * THE ROOM — the live class read on /teach, and nowhere else. L2's own.
+ *
+ * The console shape is L1's (`fullHouse.roomRead`), because a teacher who
+ * learned to read it on Monday must not have to learn a second console on
+ * Tuesday. What it is a read OF is this lesson's, and it is not the price.
+ *
+ * L2's economics is the give and take: what a club puts back into itself is
+ * what moves its Draw, and its Draw is what it hands the clubs it visits. So
+ * the SHAPE the teacher needs during an open week is the reinvest dial — is
+ * this a room of free riders, a room of investors, or two camps? — and the
+ * histogram bins that. Price is still the loudest number on a desk, so it is
+ * carried as the spread sentence rather than dropped.
+ *
+ * Two disciplines, both inherited and both load-bearing:
+ *
+ * - TEACHER-PRIVATE. Nothing here may reach `boardView` while a week is open.
+ *   The room committing blind is what makes the ledger reveal land; a live
+ *   histogram on the projector ends that in one press.
+ * - Movement is claimed only for a desk whose previous week was its OWN
+ *   decision. A bell-committed week is not a share anybody chose, and a week
+ *   the league office covered before the pair arrived is not theirs at all.
+ */
+type L2RoomDesk = { handle: string; price: number; share: number; locked: boolean; weeksPlayed: number; ownLastShare: number | null };
+
+function roomRead(desks: readonly L2RoomDesk[], weekIndex: number): Record<string, unknown> | null {
+  if (desks.length === 0) return null;
+
+  // Committed decisions only. Measured over every desk, the sentence reports
+  // the house price the dial opens on, which is a number nobody chose.
+  const committed = desks.filter((d) => d.locked);
+  const prices = committed.map((d) => d.price).sort((a, b) => a - b);
+  const min = prices.length > 0 ? prices[0]! : null;
+  const max = prices.length > 0 ? prices[prices.length - 1]! : null;
+  const mid =
+    prices.length === 0
+      ? null
+      : prices.length % 2 === 1
+        ? prices[(prices.length - 1) / 2]!
+        : Math.round((prices[prices.length / 2 - 1]! + prices[prices.length / 2]!) / 2);
+
+  // The histogram bins EVERY desk on the reinvest dial's own grid — a teacher
+  // needs to see where the undecided dials are sitting too — and the dial is
+  // short enough (0-40 in fives) that every step is its own bar.
+  const bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[] = [];
+  for (let from = SHARE_MIN; from <= SHARE_MAX; from += SHARE_STEP) {
+    const inBin = desks.filter((d) => d.share === from);
+    bins.push({
+      from,
+      to: from,
+      label: `${from}%`,
+      count: inBin.length,
+      lockedCount: inBin.filter((d) => d.locked).length,
+      handles: inBin.map((d) => d.handle),
+    });
+  }
+
+  let raised = 0;
+  let held = 0;
+  let lowered = 0;
+  let noOwnPrior = 0;
+  let noPrior = 0;
+  let deciding = 0;
+  for (const d of desks) {
+    if (!d.locked) deciding += 1;
+    else if (d.weeksPlayed === 0) noPrior += 1;
+    else if (d.ownLastShare === null) noOwnPrior += 1;
+    else if (d.share > d.ownLastShare) raised += 1;
+    else if (d.share < d.ownLastShare) lowered += 1;
+    else held += 1;
+  }
+  const moved = raised + held + lowered;
+  const inSoFar = moved + noOwnPrior + noPrior;
+  const lockedShares = committed.map((d) => d.share);
+  const freeRiders = lockedShares.filter((v) => v === 0).length;
+
+  return {
+    deskCount: desks.length,
+    lockedCount: committed.length,
+    decidingCount: deciding,
+    countLine: `${committed.length} of ${desks.length} locked in \u00b7 week ${weekIndex + 1} of ${WEEK_COUNT}`,
+    spread: min === null || max === null || mid === null ? null : { min, max, median: mid, range: max - min },
+    bins,
+    movement: { raised, held, lowered, basis: moved, noOwnPrior, noPrior, deciding },
+    firstNight: noPrior > 0 && moved === 0 && noOwnPrior === 0,
+    movementLine:
+      inSoFar === 0
+        ? "Nobody is in yet — movement shows up as desks lock."
+        : noPrior === inSoFar
+          ? "First week — there is nothing behind these desks to have moved off yet."
+          : moved === 0
+            ? "Nobody in so far has a week of their own to have moved off."
+            : `Of the ${inSoFar} in so far, on the reinvest dial: ${raised} put back more, ${held} held, ${lowered} put back less${
+                noOwnPrior > 0 ? ` \u00b7 ${noOwnPrior} moving off a week the bell committed for them` : ""
+              }${noPrior > 0 ? ` \u00b7 ${noPrior} on their first week` : ""}.`,
+    spreadLine:
+      min === null || max === null || mid === null
+        ? "Nothing is committed yet \u2014 every dial is still sitting where the week opened."
+        : `${
+            prices.length === desks.length ? "The room" : `The ${prices.length} in so far`
+          } ${min === max ? `all priced $${min}` : `priced between $${min} and $${max}, middle $${mid}`}\u2014 and ${
+            freeRiders === 0
+              ? "not one of them is putting nothing back"
+              : freeRiders === prices.length
+                ? `every one of them is putting NOTHING back`
+                : `${freeRiders} of them are putting NOTHING back`
+          }.`,
+    privacyNote:
+      "Yours only \u2014 the projector never shows this while the week is open. Reading the reinvest shape out before the bell tells the room what to copy, and the ledger reveal is built on them not knowing.",
+  };
+}
+
 export const deskHandleFor = (club: Club): string => `Desk ${club.deskNumber} · ${CLUBS[club.slot]!.short}`;
+
+/**
+ * THE DESKS — the teacher's walk-to list. THE ROOM gives the shape of the room
+ * and deliberately names nobody; this names the desks so the console can pair a
+ * handle with the pair actually sitting there. Teacher-only, never `boardView`.
+ */
+export type DeskStripEntry = {
+  seatId: SeatId;
+  label: string;
+  state: "in" | "deciding" | "auto" | "closed";
+  stateLabel: string;
+  note: string | null;
+  /** True when the note is a reason to walk over, not merely context. */
+  flag: boolean;
+};
+export type DeskStrip = { countLine: string; entries: DeskStripEntry[] };
+
+function deskStripOf(state: HostLeagueState): DeskStrip | null {
+  const live = state.clubs
+    .filter((c) => c.seatId !== null)
+    .sort((a, b) => (a.deskNumber ?? 0) - (b.deskNumber ?? 0));
+  if (live.length === 0) return null;
+  const windowOpen = state.weekIndex < WEEK_COUNT;
+  const weekNo = Math.min(state.weekIndex + 1, WEEK_COUNT);
+
+  const entries: DeskStripEntry[] = live.map((c) => {
+    const autos = c.weeks.filter((w) => w.auto).length;
+    const own = c.weeks.filter((w) => !w.auto && !w.stock);
+    const label = deskHandleFor(c);
+    // `joinedAtWeek` is 1-based: a pair seated in the lobby joined at week 1.
+    const covered = c.joinedAtWeek - 1;
+    // Only weeks this pair was actually at count against them — see the same
+    // guard in fullHouse: a covered week is not a week they failed to commit.
+    const theirs = c.weeks.filter((w) => !w.stock);
+    const [note, flag]: [string | null, boolean] =
+      theirs.length >= 1 && own.length === 0
+        ? ["Has never once locked a week of its own — every week so far was settled by the bell or covered before they arrived.", true]
+        : autos >= 2
+          ? [`The bell has settled ${autos} of this desk's weeks.`, true]
+          : covered > 0
+            ? [`Joined at Week ${c.joinedAtWeek}; the first ${covered} week${covered === 1 ? " was" : "s were"} covered for them.`, false]
+            : c.cash < 0
+              ? ["Books are in the red.", false]
+              : [null, false];
+    if (!windowOpen) return { seatId: c.seatId!, label, state: "closed", stateLabel: "Three weeks in", note, flag };
+    if (c.locked) return { seatId: c.seatId!, label, state: "in", stateLabel: `Locked Week ${weekNo}`, note, flag };
+    return { seatId: c.seatId!, label, state: "deciding", stateLabel: "Still deciding", note, flag };
+  });
+
+  const deciding = entries.filter((e) => e.state === "deciding").length;
+  const countLine = windowOpen
+    ? `${entries.length - deciding} of ${entries.length} locked · week ${weekNo} of ${WEEK_COUNT}`
+    : `${entries.length} desk${entries.length === 1 ? "" : "s"} · all three weeks settled`;
+  return { countLine, entries };
+}
 export const clubHandleFor = (club: Club): string =>
   club.seatId === null ? `${CLUBS[club.slot]!.short} · league office` : deskHandleFor(club);
 
@@ -1204,7 +1512,31 @@ export type ClaimAtom = {
   absent?: string;
 };
 
-export type Claimed = { text: string; claims: readonly ClaimAtom[] };
+/**
+ * A computed finding, in two renderings.
+ *
+ * `text` is the authoritative one: every clause the economics needs, and the
+ * string the claim audit recomputes against. `board` is what the PROJECTOR is
+ * allowed to hold — the finding itself, short enough to read from the back row
+ * of a classroom in one breath.
+ *
+ * They exist separately because of a defect this repair is named for. REVEAL
+ * stages 2 and 5 accreted a clause per econ finding — each one individually
+ * necessary, each one correct — until the projector was holding 190 and 150
+ * words of body copy in front of a room of ten-year-olds. That is not a reveal,
+ * it is a lecture nobody can read, and it fails `<spectacle_budget>`'s
+ * consequence beat and the projector's own legibility rule at once.
+ *
+ * Nothing is deleted: `board` never says anything `text` does not, every figure
+ * it renders is still an atom in `claims`, and the full text goes to `/teach`'s
+ * projector mirror where the teacher — who is standing three feet from their
+ * own screen — reads it and says it. The wall gets the finding; the teacher
+ * gets the reasoning. A surface with no `board` rendering keeps using `text`.
+ */
+export type Claimed = { text: string; board?: string; claims: readonly ClaimAtom[] };
+
+/** What the projector shows for a finding: its short rendering, or its only one. */
+export const onBoard = (c: Claimed): string => c.board ?? c.text;
 
 const renderClaim = (value: number, format: ClaimAtom["format"]): string =>
   format === "money"
@@ -2024,6 +2356,7 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
     const word = "Nobody in this room put a single dollar back";
     return {
       text: `${word} into their club, so nobody here gave anything they CHOSE to give.`,
+      board: `${word}.`,
       claims: [claimWord("spillover.nobodySpent", word, !ct.anySpend)],
     };
   }
@@ -2138,7 +2471,18 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
       : `Counted as one room instead of desk by desk — because a dollar that lands on another desk's books is still a dollar in this room — reinvesting left this room ${joint.rendered} ${direction}.`;
   claims.push(claimWord("spillover.jointDirection", direction, true));
 
-  return { text: `${privateLine} ${externalLine} ${jointLine} ${levelLine}`, claims };
+  // The projector's share of this. The private column, the level band and the
+  // "no share to print" clause are all reasoning ABOUT the two figures below;
+  // the figures are the finding. Both are atoms already pushed on every arm.
+  const boardJoint =
+    ct.roomJointGain === 0
+      ? `counted as one room, reinvesting left it exactly level`
+      : `counted as one room, reinvesting left it ${joint.rendered} ${direction}`;
+  return {
+    text: `${privateLine} ${externalLine} ${jointLine} ${levelLine}`,
+    board: `${gave.rendered} of this room's own spending landed on OTHER clubs' books \u2014 and ${boardJoint}.`,
+    claims,
+  };
 }
 
 export function giveAndTakeSummaryClaimed(agg: HostLeagueAggregate): Claimed {
@@ -2147,18 +2491,26 @@ export function giveAndTakeSummaryClaimed(agg: HostLeagueAggregate): Claimed {
     const core = spilloverClaim(ct);
     return {
       text: `Every bar here is EMPTY, and that is the finding. ${core.text} All the money that moved between these buildings came from the Draw each desk was dealt. Ask them what it would have taken to make a bar appear.`,
+      board: `Every bar here is EMPTY, and that is the finding. ${onBoard(core)}`,
       claims: core.claims,
     };
   }
   const core = spilloverClaim(ct);
   return {
     text: `These bars are what the DESKS CHOSE, not what they were dealt. ${core.text} The dealt totals — every dollar drawing power moved, most of it Draw nobody bought — are printed under each row.`,
+    board: `These bars are what the DESKS CHOSE, not what they were dealt. ${onBoard(core)}`,
     claims: core.claims,
   };
 }
 
+/** The full finding — the teacher's mirror and the claim audit. */
 export function giveAndTakeSummary(agg: HostLeagueAggregate): string {
   return giveAndTakeSummaryClaimed(agg).text;
+}
+
+/** What the projector holds for it. */
+export function giveAndTakeSummaryBoard(agg: HostLeagueAggregate): string {
+  return onBoard(giveAndTakeSummaryClaimed(agg));
 }
 
 export function barSummaryFromClaimed(rows: readonly HomeDecomposition[], visitorLed: number): Claimed {
@@ -2250,6 +2602,21 @@ export const HORIZON_LINE =
  * profile (Boston starts at 55, the Lakers at 68 — before anybody prices).
  * Quantified honestly, and the bars are invited to be the evidence.
  */
+/**
+ * The same disclosure, at the length a ten-year-old will actually read.
+ *
+ * The full line below is five sentences of methodology and it was the HOOK
+ * banner on the student device — a paragraph about the shape of a revenue
+ * parabola, in front of a pair who had not yet priced a single seat. Its
+ * content is not wrong and it is not optional (CLAUDE.md: when the economics
+ * is simplified, say what changed), but WHERE it lands is a choice. The desk
+ * gets the one sentence that changes how a pair reads a number; the projector
+ * and the teacher keep the whole thing at SYNTHESIS, where the room is being
+ * told how to trust what it just saw.
+ */
+export const MODELED_DOLLARS_SHORT =
+  "The dollars here are shrunk to classroom size — all of them by the same amount — so it is the SHARES that are real, not the totals.";
+
 export const MODELED_DOLLARS_LINE =
   "The dollars are shrunk to classroom size, all of them by the same amount, so the SHARES are the real story. Near a club's house price the gate is about a fifth to a quarter of what it earns — price far above or far below that and the share moves a long way. For most clubs here the national check is the biggest single pipe, and a club that builds a big Draw can push its local money past it. The bars on this board say which is which; do not take our word for it.";
 
@@ -2662,6 +3029,10 @@ function viewWeek(state: HostLeagueState, club: Club, w: SettledWeek) {
   const priceCf = priceCounterfactualFor(state, club, w);
   return {
     priceCf,
+    // How the pair's locked-and-waiting call came out. The SENTENCE is authored
+    // here, never in the client: the desk renders words, it does not write
+    // verdicts (R-1).
+    call: gateCallResolvedFor(w),
     week: w.week + 1,
     price: w.price,
     share: w.share,
@@ -2883,15 +3254,97 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
    * precedent) and releases the mid-lesson bar; leaving REVEAL plays out every
    * remaining stage.
    */
+  /**
+   * TIME CUT for You Don't Play Alone. The round is a WEEK.
+   *
+   * Same policy as Lesson 1, for the same reason and stated in the club's own
+   * terms: a club that never locks plays the week at its house price with
+   * nothing put back in. The league-office clubs are not desks and are never
+   * unresolved — they always have a line to play.
+   */
+  round: {
+    closeHook: "teacher:closeWeek",
+    noun: "week",
+    fallbackPolicy:
+      "A club that never locks plays this week at its own house price with nothing put back into the club — the dial it is sitting on does not count as a decision.",
+    currentKey(state, phase) {
+      if (phase !== "PLAY") return null;
+      return state.weekIndex < WEEK_COUNT ? `W${state.weekIndex + 1}` : null;
+    },
+    unresolved(state, phase, seatIds) {
+      if (phase !== "PLAY" || state.weekIndex >= WEEK_COUNT) return [];
+      const seated = new Set(seatIds);
+      const out: UnresolvedSeat[] = [];
+      for (const club of state.clubs) {
+        if (club.seatId === null || !seated.has(club.seatId) || club.locked) continue;
+        const house = profileOf(club).housePrice;
+        out.push({
+          seatId: club.seatId,
+          label: deskHandleFor(club),
+          fallback:
+            club.price === house && club.share === 0
+              ? `plays at its $${house} house price (their dial is already there)`
+              : `plays at its $${house} house price, NOT the $${club.price} on their dial`,
+          selfFallback:
+            club.price === house && club.share === 0
+              ? `Lock in, or this week plays at your $${house} house price — which is where your dial already is.`
+              : `Lock in, or this week plays at your $${house} house price, NOT the $${club.price} you have dialled.`,
+        });
+      }
+      return out;
+    },
+  },
+
+  /**
+   * WHILE YOU WERE AWAY, in this lesson's nouns. Class-level only — the log is
+   * read back by whichever desk returns, so nothing about one club's books can
+   * be written into it. See `LessonModule.classEvents`.
+   */
+  classEvents(prev, next, { fromPhase, toPhase }) {
+    const out: string[] = [];
+    // Forward only. A restore rewinds the log with the state, and a differ that
+    // fired on the way back would announce a week the teacher took back.
+    for (let w = prev.weekIndex; w < next.weekIndex; w += 1) {
+      out.push(`Week ${w + 1} closed. Every building in the league settled at once against the Draws that were already printed.`);
+    }
+    if (!prev.barReleased && next.barReleased) {
+      out.push("The Handed-To-You bar went up on the projector \u2014 who actually filled each building.");
+    }
+    for (let i = prev.revealStage; i < next.revealStage; i += 1) {
+      const stage = REVEAL_STAGES[i];
+      if (stage) out.push(`On the projector: ${stage.name}.`);
+    }
+    if (fromPhase !== toPhase) {
+      const moved = PHASE_EVENT[toPhase];
+      if (moved) out.push(moved);
+    }
+    return out;
+  },
+
   onPhaseExit(state, fromPhase) {
     let next = state;
     if (fromPhase === "HOOK") next = { ...next, leagueFrozen: true };
     if (fromPhase === "PLAY") {
-      let first = true;
-      while (next.weekIndex < WEEK_COUNT) {
-        next = settleWeek(next, first);
-        first = false;
-      }
+      // ONE FALLBACK PER LESSON, ON EVERY PATH.
+      //
+      // This loop used to pass `first = true` on the open round, settling it on
+      // the pairs' pending dials while the teacher's own bell settled the same
+      // round at the house/plan price. Same room, same student action, two
+      // different economies depending on which control the teacher happened to
+      // press — reproduced directly against the module: a desk showing $56 on
+      // its dial settled at $56 through this path and at $16 through the bell.
+      //
+      // The bell's policy is the one the product PROMISES, in three places at
+      // once (the bell's own confirm line, the WATCH FOR flag, and the desk's
+      // AUTO badge): a desk that never committed did not choose, and is not
+      // credited with a choice. Honouring a dial nobody locked would also
+      // dissolve LOCK IT IN, which is the signature commitment beat of all
+      // three Module 2 lessons. So the exit path now settles exactly as the
+      // bell does, and the trap that made the divergence tempting is closed
+      // somewhere better: the FINAL CALL window tells a pair, in their own
+      // numbers, what an uncommitted dial is about to cost them, and tells the
+      // teacher the same thing per desk before they close.
+      while (next.weekIndex < WEEK_COUNT) next = settleWeek(next, false);
       if (!next.barReleased) next = { ...next, barReleased: true, barReleasedAtWeek: next.weekIndex, lockedAtBarRelease: lockedNow(next) };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };
@@ -2951,6 +3404,44 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       return { ok: true, state: { ...state, barReleased: true, barReleasedAtWeek: state.weekIndex, lockedAtBarRelease: lockedNow(state) } };
     }
 
+    if (action.type === "gateCall") {
+      // The locked-and-waiting beat. Free, carries no money, changes no settled
+      // number — its whole job is to have the pair COMMIT to a reading of the
+      // crowd before the building answers. Changeable while the week is open on
+      // purpose: a fifth-grader's misclick must not lock a wrong call in for a
+      // whole week, and the commitment that matters is the one standing when
+      // the bell rings, which is what the settlement freezes.
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the gate" };
+      if (ctx.phase !== "PLAY") return { ok: false, reason: `the gate is called during PLAY (session is in ${ctx.phase})` };
+      const slot = state.seatToSlot[ctx.seatId];
+      if (slot === undefined) return { ok: false, reason: "this seat has no club" };
+      const club = state.clubs[slot]!;
+      if (state.weekIndex >= WEEK_COUNT) return { ok: false, reason: "the season is in the books" };
+      if (!club.locked) return { ok: false, reason: "commit your price first — the call is what you do while the room finishes" };
+      const band = action["band"];
+      if (band !== "packed" && band !== "busy" && band !== "quiet") return { ok: false, reason: "call it packed, busy or quiet" };
+      const clubs = state.clubs.slice();
+      clubs[slot] = { ...club, gateCall: band };
+      return { ok: true, state: { ...state, clubs } };
+    }
+
+    if (action.type === "ledgerPredict") {
+      // ONE CALL, before beat 2 answers it. This changes no economics and no
+      // settled number: it is the difference between a reveal happening TO the
+      // room and WITH it. The desk was otherwise byte-identical across all six
+      // presses of the teacher's advance button.
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the ledger" };
+      if (ctx.phase !== "REVEAL") return { ok: false, reason: `the call is taken during REVEAL (session is in ${ctx.phase})` };
+      if (state.revealStage >= 2) return { ok: false, reason: "the ledger is already on the projector" };
+      const choice = action["choice"];
+      if (choice !== "gave" && choice !== "took") return { ok: false, reason: "call it gave or took" };
+      const slot = state.seatToSlot[ctx.seatId];
+      if (slot === undefined) return { ok: false, reason: "this seat has no club" };
+      const clubs = state.clubs.slice();
+      clubs[slot] = { ...clubs[slot]!, ledgerPrediction: choice };
+      return { ok: true, state: { ...state, clubs } };
+    }
+
     if (action.type === "teacher:revealNext") {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher advances the reveal" };
       if (ctx.phase !== "REVEAL") return { ok: false, reason: `the reveal advances during REVEAL (session is in ${ctx.phase})` };
@@ -2999,7 +3490,8 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
 
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
-    if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock"];
+    if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock", "gateCall"];
+    if (phase === "REVEAL") return ["takeSeat", "ledgerPredict"];
     // W5 N-3: still offered, so a late device gets an answer instead of a 409 loop.
     return ["takeSeat"];
   },
@@ -3049,7 +3541,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             plainLine: profile.plainLine,
             books: booksFor(club),
             horizonLine: HORIZON_LINE,
-            modeledDollarsLine: MODELED_DOLLARS_LINE,
+            modeledDollarsLine: MODELED_DOLLARS_SHORT,
             slate: slateFor(state, slot),
             league: state.clubs.slice(0, state.leagueSize).map((c) => clubCard(state, c.slot)),
           };
@@ -3063,7 +3555,16 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
               allWeeksDone: true,
               books: booksFor(club),
               history,
-              message: "All three weeks are in the books. Look up at the board.",
+              // WEEK 3'S SETTLEMENT. Every other week's result reaches the desk
+              // because the NEXT week's pre-lock payload carries `lastSettled`
+              // and the client draws it first. There is no week 4, so the last
+              // week — the one with the retired reinvest dial, the highest
+              // stakes and the whole lesson riding on it — was the only one that
+              // settled into a three-row summary table and "look up at the
+              // board". The biggest week produced the least feedback on the
+              // device the pair is actually looking at.
+              lastSettled: history[history.length - 1] ?? null,
+              message: "That is week 3, and the season. Read what your last call did, then look up at the board.",
             };
           }
           const weekNumber = openWeekNumber(state);
@@ -3106,11 +3607,28 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             books: booksFor(club),
             rules: HOUSE_RULES,
             reinvestRule: reinvestRuleFor(weekNumber),
-            modeledDollarsLine: MODELED_DOLLARS_LINE,
+            modeledDollarsLine: MODELED_DOLLARS_SHORT,
             history,
             lastSettled: history[history.length - 1] ?? null,
+            // The locked-and-waiting beat (W6 `play-l2-locked-dead-time`). The
+            // room line is an aggregate, never a seat: /play still never learns
+            // which desk is which.
+            ...(club.locked
+              ? {
+                  gateCall: {
+                    prompt: GATE_CALL_PROMPT,
+                    heading: GATE_CALL_HEADING,
+                    bands: GATE_BANDS,
+                    called: club.gateCall ?? null,
+                    foot: club.gateCall ? gateCallFootCalledFor(defOf(club).building) : GATE_CALL_FOOT_OPEN,
+                    building: defOf(club).building,
+                    capacity: defOf(club).capacity,
+                    room: roomLockLine(state),
+                  },
+                }
+              : {}),
             message: club.locked
-              ? "Locked. Nothing to do but find out — the week closes when your teacher says so."
+              ? "Your price is in. The week closes when your teacher says so."
               : "No preview. Read the card, read the Draws, and commit.",
           };
         }
@@ -3120,25 +3638,102 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
           const agg = computeAggregate(state);
           const mine = agg.homeRevenueDecomposition.find((d) => d.slot === slot) ?? null;
           const give = agg.giveAndTake.find((g) => g.slot === slot) ?? null;
+          const beat = phase === "ADAPT" ? REVEAL_STEPS : state.revealStage;
+          // Beat 4's version of this desk: the home week that took the most at
+          // the door, and who was in the building for it.
+          const bestSettled =
+            club.weeks.length > 0 ? club.weeks.reduce((a, b) => (b.home.doorMoney > a.home.doorMoney ? b : a)) : null;
+          const bestHomeWeek = bestSettled
+            ? {
+                week: bestSettled.week,
+                price: bestSettled.price,
+                visitor: defOf(state.clubs[bestSettled.visitorSlot]!).short,
+                visitorDraw: bestSettled.visitorDrawBefore,
+                turnout: bestSettled.home.turnout,
+                doorMoney: Math.round(bestSettled.home.doorMoney),
+                visitorDollars: Math.round(bestSettled.home.visitorDollars),
+              }
+            : null;
           return {
             phase,
             seated: true,
             ...identity,
             books: booksFor(club),
             history,
-            mine,
-            give,
+            // ONE BEAT AT A TIME, IN THE PAYLOAD — not only in the renderer.
+            // Gating this on the client would leave every beat's numbers sitting
+            // in the desk's payload from beat 0, one devtools panel away, and
+            // would put the choreography in a place no unit test can reach. The
+            // beat a number belongs to is a property of the lesson, so the
+            // lesson decides it.
+            ...(beat >= 1 && mine
+              ? {
+                  doorBlocks: {
+                    fromBuilding: mine.fromBuilding,
+                    fromOwnDraw: mine.fromOwnDraw,
+                    fromVisitorDraw: mine.fromVisitorDraw,
+                    visitors: mine.visitors,
+                  },
+                }
+              : {}),
+            ...(beat >= 2 && give ? { give } : {}),
+            ...(beat >= 3 && mine ? { mine } : {}),
+            ...(beat >= 4 && bestHomeWeek ? { bestNight: bestHomeWeek } : {}),
+            ...(beat >= 5 ? { ownReinvest: club.weeks.map((w) => ({ week: w.week, share: w.share, auto: w.auto })) } : {}),
             // play N-4: the free-riding desk's block is three zeroes, and the
             // sentence under it has to be about ITS decision, not about a
             // counterfactual identical to what it did.
-            giveLine: give ? deskChoiceLineClaimed(give).text : "",
+            giveLine: beat >= 2 && give ? deskChoiceLineClaimed(give).text : "",
             // W5 B-1: the heading was the last hand-written branch on `spend`,
             // and it sat directly above the repaired sentence contradicting it.
-            giveHeading: give ? deskChoiceHeadingClaimed(give).text : "",
+            giveHeading: beat >= 2 && give ? deskChoiceHeadingClaimed(give).text : "",
             // econ FL-K: the "most of it was DEALT" sub-label is computed, not asserted.
-            dealtLine: give ? dealtLineClaimed(give).text : "",
+            dealtLine: beat >= 2 && give ? dealtLineClaimed(give).text : "",
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
+            /**
+             * THE BEAT THE DESK IS ON.
+             *
+             * The reveal is five teacher-paced beats on the projector, and the
+             * desk used to print EVERY number all five of them are about from
+             * beat 0 — the season decomposition, the full give-and-take ledger,
+             * the four pipes — before the teacher had revealed anything. The
+             * student device was spoiling the projector: a pair that looked down
+             * had already read the answer to every question the room was about
+             * to be asked, and the choreography the whole lesson is built around
+             * was defeated by the screen in front of them.
+             *
+             * The desk now unfolds WITH the board, one beat at a time, showing
+             * this club's own version of the beat that is up:
+             *   1  the three door blocks — who filled THIS building
+             *   2  this desk's give-and-take ledger (and the call resolves)
+             *   3  all five pipes, including the two nobody in the room can move
+             *   4  this desk's biggest night and what made it
+             *   5  this desk's own reinvest, week by week
+             * ADAPT is after the reveal, so ADAPT shows everything.
+             */
+            deskBeat: beat,
+            // ONE CALL, taken before beat 2 answers it, on this pair's own club.
+            predictOpen: phase === "REVEAL" && state.revealStage < 2 && (club.ledgerPrediction ?? null) === null,
+            predictPrompt:
+              "Across your three home weeks: did YOUR drawing power put more money on other clubs' books than the clubs who visited you put on yours?",
+            prediction: club.ledgerPrediction ?? null,
+            // The verdict sentence is computed HERE, off the settled ledger,
+            // rather than assembled on the client: it is a statement about what
+            // this desk's own season did, and the claim audit is right that the
+            // client is not the place to author one.
+            predictionResolved: (() => {
+              if (state.revealStage < 2 || (club.ledgerPrediction ?? null) === null || !give) return null;
+              const actual: "gave" | "took" = give.gave > give.received ? "gave" : "took";
+              const right = actual === club.ledgerPrediction;
+              const said = club.ledgerPrediction === "gave" ? "you put more on theirs" : "they put more on yours";
+              const was = actual === "gave" ? "You put more on theirs." : "They put more on yours.";
+              return {
+                actual,
+                right,
+                line: `You called ${said}. ${was} ${right ? "You had it." : "That is the one worth arguing about."}`,
+              };
+            })(),
             questions: phase === "ADAPT" ? ADAPT_QUESTIONS : [],
             message:
               phase === "ADAPT"
@@ -3158,8 +3753,29 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             message: "Nothing to click. Everything to argue about.",
           };
 
-        case "SYNTHESIS":
-          return { phase, seated: true, ...identity, books: booksFor(club), message: "Look up at the board.", exitPrompt: EXIT_PROMPT };
+        case "SYNTHESIS": {
+          // The desk used to be one frozen sentence — "Look up at the board." —
+          // byte-identical through every card the teacher turned, for the whole
+          // last stretch of the period. It now mirrors the card the projector is
+          // on, page for page, exactly as M2 L1 does: same registered title, same
+          // computed body, nothing seat-private (this is the public board card).
+          const cards = synthesisCards(state, computeAggregate(state));
+          const pages = synthPageCount(cards.length);
+          const page = Math.min(Math.max(0, state.synthPage ?? 0), pages - 1);
+          const card = cards[page] ?? null;
+          return {
+            phase,
+            seated: true,
+            ...identity,
+            books: booksFor(club),
+            message: "Look up at the board.",
+            exitPrompt: EXIT_PROMPT,
+            synthPage: page + 1,
+            synthPageCount: pages,
+            synthCardTitle: card?.title ?? "",
+            synthCardBody: card?.body ?? "",
+          };
+        }
 
         case "COMPLETE":
           return { phase, seated: true, ...identity, books: booksFor(club), message: COMPLETE_COPY, exitPrompt: EXIT_PROMPT };
@@ -3208,8 +3824,33 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
     const synthPage = Math.min(Math.max(0, state.synthPage ?? 0), synthPages - 1);
     const synthTitle = (i: number): string => cards[i * SYNTH_CARDS_PER_PAGE]?.title ?? "";
     const stagesNow = revealStagesFor(state);
+    // THE ROOM: the shape of the reinvest dial while the week is open.
+    // Teacher-only — never handed to `boardView` (see roomRead).
+    const room =
+      state.weekIndex >= WEEK_COUNT
+        ? null
+        : roomRead(
+            state.clubs
+              .slice(0, state.leagueSize)
+              .filter((c) => c.seatId !== null)
+              .map((c) => {
+                const own = [...c.weeks].reverse().find((w) => !w.auto && !w.stock) ?? null;
+                return {
+                  handle: deskHandleFor(c),
+                  price: c.price,
+                  share: c.share,
+                  locked: c.locked,
+                  weeksPlayed: c.weeks.length,
+                  ownLastShare: own ? own.share : null,
+                };
+              }),
+            state.weekIndex,
+          );
     return tag({
       phase,
+      room,
+      // THE DESKS: the same room, named. Teacher-only — see deskStripOf().
+      deskStrip: deskStripOf(state),
       weekIndex: state.weekIndex,
       weekNumber: openWeekNumber(state),
       weekCount: WEEK_COUNT,
@@ -3392,14 +4033,27 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             // lesson — but they are no longer what the beat's question is
             // answered with.
             ledgerAnySpend: state.revealStage === 2 ? agg.choiceTotals.anySpend : false,
-            ledgerSummary: state.revealStage === 2 ? giveAndTakeSummary(agg) : "",
+            ledgerSummary: state.revealStage === 2 ? giveAndTakeSummaryBoard(agg) : "",
             shockCopy: state.revealStage === 2 ? SHOCK_REVEAL_COPY : null,
             pipes: state.revealStage === 3 ? agg.pipes : [],
             pipesCopy: state.revealStage === 3 ? PIPES_REVEAL_COPY : null,
             warriorsLine: state.revealStage === 3 ? WARRIORS_LINE : null,
             smallMarketPath: state.revealStage === 4 ? agg.smallMarketPath : null,
             meanShareByWeek: state.revealStage === 5 ? agg.meanShareByWeek : null,
-            changeLine: state.revealStage === 5 ? reinvestChangeLine(agg, state) : null,
+            changeLine: state.revealStage === 5 ? reinvestChangeLineBoard(agg, state) : null,
+            // W6/RC2. The horizon rule used to be sentence two of a 150-word
+            // paragraph on the projector, which is where a rule goes to die.
+            // It is the controlling variable of this whole beat, so it gets the
+            // frame's standing chip — the same treatment L3 gives the rule in
+            // force — and stays legible for as long as the class argues under
+            // it. `REVEAL_STAGES[4].say` promises the teacher it is "printed
+            // beside" the chart; this is that promise, discharged.
+            ruleChip: state.revealStage === 5 ? LAST_WEEK_RULE_CHIP : null,
+            // The honest comparison the sentence beside it makes: week 3 read
+            // against the weeks-1-2 mean. Without it the three near-equal bars
+            // carry none of the claim — and zooming the axis to manufacture a
+            // visible drop would misrepresent a 1.9-point move as a collapse.
+            meanBaseline: state.revealStage === 5 ? reinvestBaseline(agg) : null,
             honestyLine: BOARD_HONESTY_LINE,
           };
         }
@@ -3554,15 +4208,38 @@ export function barReleaseArm(state: HostLeagueState): BarReleaseArm {
   return n > 0 ? "lastWeekSomeLocked" : "lastWeekNoneLocked";
 }
 
+/**
+ * The weeks-1-2 mean, or null when there is no before to compare against.
+ * Same arithmetic `reinvestChangeLineClaimed` prints, so the reference line on
+ * the projector and the sentence under it cannot disagree.
+ */
+export function reinvestBaseline(agg: HostLeagueAggregate): number | null {
+  const [w1, w2, w3] = agg.meanShareByWeek;
+  if (w3 === null || w3 === undefined) return null;
+  const before = [w1, w2].filter((x): x is number => typeof x === "number");
+  if (before.length === 0) return null;
+  return Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
+}
+
 export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostLeagueState): Claimed {
   const [w1, w2, w3] = agg.meanShareByWeek;
   const HORIZON =
     "Read that with the last-week rule in your hand: week 3 was the end. Every desk's screen said so before it priced — Draw bought in week 3 earns nothing else in this lesson. A desk doing the arithmetic had a reason to put the dial DOWN in week 3 whatever it thought of the bar. That is not cynicism, it is the horizon: investment dies when there is no tomorrow to collect in.";
   if (w3 === null || w3 === undefined) {
-    return { text: `Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth. ${HORIZON}`, claims: [] };
+    return {
+      text: `Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth. ${HORIZON}`,
+      board: "Week 3 was not played, so there is no after to compare.",
+      claims: [],
+    };
   }
   const before = [w1, w2].filter((x): x is number => typeof x === "number");
-  if (before.length === 0) return { text: `Only one week is in the books, so there is no before and after to compare. ${HORIZON}`, claims: [] };
+  if (before.length === 0) {
+    return {
+      text: `Only one week is in the books, so there is no before and after to compare. ${HORIZON}`,
+      board: "Only one week is in the books, so there is no before and after to compare.",
+      claims: [],
+    };
+  }
   const mean = Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
   const delta = Math.round((w3 - mean) * 10) / 10;
 
@@ -3614,9 +4291,9 @@ export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostL
   // play N-3, second residual: the DOWN sentence used to name the bar
   // unconditionally, four sentences after asserting nothing on the frame could
   // be about it. It may name the bar exactly when the room saw it.
-  const downLine = saw
-    ? "The room went DOWN. At least two things could have done that and this board will not choose between them: the last-week rule, which every desk was shown, and whatever they made of the bar. Ask them which one it was — and believe them."
-    : "The room went DOWN. This room never saw the bar in time, so the bar is not on the table: the last-week rule, which every desk was shown, is the cause this board can see. Ask them whether that is really why — and believe them.";
+  const downRest = saw
+    ? "At least two things could have done that and this board will not choose between them: the last-week rule, which every desk was shown, and whatever they made of the bar. Ask them which one it was — and believe them."
+    : "This room never saw the bar in time, so the bar is not on the table: the last-week rule, which every desk was shown, is the cause this board can see. Ask them whether that is really why — and believe them.";
   if (Math.abs(delta) >= 1 && delta < 0) {
     claims.push(
       saw
@@ -3625,18 +4302,40 @@ export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostL
     );
   }
 
-  const direction =
+  // The direction splits at its first sentence. The head IS the finding and goes
+  // on the wall with the numbers; the rest is the argument the teacher runs, and
+  // goes to the mirror.
+  const [directionHead, directionRest] =
     Math.abs(delta) < 1
-      ? "The room held its dial where it was. Under the last-week rule that is itself a move: holding steady in a week the arithmetic told them to cut is a choice about something other than this week's cash. Ask them what."
+      ? [
+          "The room held its dial where it was.",
+          "Under the last-week rule that is itself a move: holding steady in a week the arithmetic told them to cut is a choice about something other than this week's cash. Ask them what.",
+        ]
       : delta > 0
-        ? "The room went UP — against the last-week rule, which pushed the other way. Whatever moved these desks, it was not the arithmetic of this lesson. Ask them."
-        : downLine;
+        ? [
+            "The room went UP — against the last-week rule, which pushed the other way.",
+            "Whatever moved these desks, it was not the arithmetic of this lesson. Ask them.",
+          ]
+        : ["The room went DOWN.", downRest];
 
-  return { text: `${numbers} ${HORIZON} ${barClause} ${direction}`, claims };
+  return {
+    text: `${numbers} ${HORIZON} ${barClause} ${directionHead} ${directionRest}`,
+    // The wall holds the room's own three numbers and which way it moved. The
+    // horizon rule, the bar-release arm and the "do not resolve it" instruction
+    // are the teacher's beat, not the projector's paragraph.
+    board: `${numbers} ${directionHead}`,
+    claims,
+  };
 }
 
+/** The full finding — the teacher's mirror and the claim audit. */
 export function reinvestChangeLine(agg: HostLeagueAggregate, state: HostLeagueState): string {
   return reinvestChangeLineClaimed(agg, state).text;
+}
+
+/** What the projector holds for it. */
+export function reinvestChangeLineBoard(agg: HostLeagueAggregate, state: HostLeagueState): string {
+  return onBoard(reinvestChangeLineClaimed(agg, state));
 }
 
 /**
@@ -4079,9 +4778,38 @@ function projectorMirror(state: HostLeagueState, phase: CanonicalPhase): { title
     case "REVEAL": {
       // projector W4-2: `say` is resolved against this room's release arm.
       const stage = revealStagesFor(state)[state.revealStage - 1] ?? null;
+      if (!stage) {
+        return {
+          title: "Waiting for the first press",
+          lines: ['An empty frame and "Waiting for your teacher to put up the first beat."'],
+        };
+      }
+      // The full computed finding for the stages whose projector rendering is
+      // deliberately short. The wall holds the finding; these are the clauses
+      // the teacher says out loud, and they are here BECAUSE they are not up
+      // there — a mirror that repeats the wall verbatim tells the teacher
+      // nothing they cannot already see from where they are standing.
+      const agg = computeAggregate(state);
+      const full =
+        stage.stage === 2
+          ? giveAndTakeSummary(agg)
+          : stage.stage === 5
+            ? reinvestChangeLine(agg, state)
+            : null;
+      const board =
+        stage.stage === 2
+          ? giveAndTakeSummaryBoard(agg)
+          : stage.stage === 5
+            ? reinvestChangeLineBoard(agg, state)
+            : null;
+      const lines = [stage.headline, stage.say];
+      if (full !== null && board !== null && full !== board) {
+        lines.push(`On the frame, word for word: "${board}" — that is the whole of it up there.`);
+        lines.push(`YOURS TO SAY, not on the wall: ${full}`);
+      }
       return {
-        title: stage ? `Stage ${stage.stage} of ${REVEAL_STEPS} — ${stage.name}` : "Waiting for the first press",
-        lines: stage ? [stage.headline, stage.say] : ['An empty frame and "Waiting for your teacher to put up the first beat."'],
+        title: `Stage ${stage.stage} of ${REVEAL_STEPS} — ${stage.name}`,
+        lines,
       };
     }
     case "ADAPT":
@@ -4281,6 +5009,7 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
           "Pairs join at /play on one device. Clubs are handed out by desk number, visibly, and the board shows the whole league as it fills.",
           'Read the board line out loud: "This room is the league."',
           `${live} desk${live === 1 ? "" : "s"} in so far, in a ${state.leagueSize}-club league.`,
+          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts the pair straight back in their own desk. If they lost it, press Reseat beside their name and read them a new one.",
         ],
         ask: [{ q: "Whose building are you running? Say the club and the city.", answer: null }],
         dontExplainYet: [

@@ -30,6 +30,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 /**
  * The build under test. Defaults to this checkout's own `dist`. The mutation
@@ -203,9 +204,54 @@ async function bumpSpend(page, clicks) {
   for (let i = 0; i < clicks; i += 1) await page.click("#fhSpendUp");
 }
 
+const gateCalls = [];
+
 async function lockNight(page) {
   await page.click("#fhLock");
   await page.waitForSelector(".fh-locked-recap", { timeout: 15000 });
+}
+
+
+/**
+ * THE GATE CALL — the locked-and-waiting beat (W6 `play-l1-locked-dead-time`).
+ *
+ * A pair that commits early sits in front of a dark building until the slowest
+ * desk finishes, five times in a fifty-minute class, and the screen used to say
+ * so in as many words. Three things have to be true of the repair and none is
+ * provable from the module alone: the card is ON the locked screen and reachable
+ * without a scroll at Chromebook height, a real press registers the call, and
+ * the room line never carries a seat identity onto a private surface.
+ */
+async function callTheGate(page, band, label) {
+  const seen = await page.evaluate(() => {
+    const gate = document.getElementById("fhGate");
+    if (!gate) return null;
+    const r = gate.getBoundingClientRect();
+    const first = gate.querySelector(".hl-gate-band").getBoundingClientRect();
+    const probe = document.elementFromPoint(Math.round(first.left + first.width / 2), Math.round(first.top + first.height / 2));
+    return {
+      bottom: Math.round(r.bottom),
+      top: Math.round(r.top),
+      vh: window.innerHeight,
+      bands: [...gate.querySelectorAll(".hl-gate-band")].map((b) => b.dataset.band),
+      room: gate.querySelector(".hl-gate-room")?.textContent?.trim() ?? "",
+      text: gate.textContent,
+      reachable: Boolean(probe && probe.closest(".hl-gate-band")),
+    };
+  });
+  assert.ok(seen, `${label}: the locked desk has no gate call — it is back to having nothing to do`);
+  assert.deepEqual(seen.bands, ["packed", "busy", "quiet"], `${label}: the gate call's bands are wrong`);
+  assert.ok(seen.bottom <= seen.vh + 1, `${label}: the gate call is below the fold — box ${seen.top}..${seen.bottom} in ${seen.vh}px`);
+  assert.ok(seen.reachable, `${label}: the gate call's first band is occluded and cannot be pressed`);
+  assert.match(seen.room, /\d+ of \d+ desks|All \d+ desks/, `${label}: the room line does not say how much of the room is in: "${seen.room}"`);
+  assert.ok(!/seat-\d/.test(seen.text), `${label}: the gate call leaked a seat identity onto a private surface`);
+  await page.click(`#fhGate .hl-gate-band[data-band="${band}"]`);
+  await page.waitForFunction(
+    (b) => document.querySelector(`#fhGate .hl-gate-band[data-band="${b}"]`)?.getAttribute("aria-pressed") === "true",
+    band,
+    { timeout: 20000 },
+  );
+  gateCalls.push(`${label}:${band}`);
 }
 
 async function waitForNight(page, label) {
@@ -678,11 +724,99 @@ async function classScaleCounterfactual(browser) {
   await teach.close();
 }
 
+/**
+ * THE PROJECTOR PREVIEW on /teach (W6).
+ *
+ * A teacher directing a class faces the room, not the board. The console can
+ * SAY what the projector is showing; this makes it possible to see it. The
+ * whole claim rests on two things being true at once — it is the real board,
+ * and it is not a control — so both are measured on the live frame, not
+ * asserted from the source.
+ */
+async function assertProjectorPreview(teach, board, code, label) {
+  // 1. It is mounted, and it is pointed at THIS room.
+  const mount = await teach.evaluate(() => {
+    const sec = document.getElementById("projpreview");
+    const frame = document.getElementById("ppFrame");
+    const el = document.getElementById("ppBoard");
+    const r = frame?.getBoundingClientRect();
+    const card = sec?.getBoundingClientRect();
+    return {
+      hidden: sec?.hidden ?? true,
+      collapsed: sec?.classList.contains("collapsed") ?? false,
+      src: el?.getAttribute("src") || "",
+      pointerEvents: el ? getComputedStyle(el).pointerEvents : "",
+      scale: frame ? getComputedStyle(frame).getPropertyValue("--pp-scale").trim() : "",
+      width: r ? Math.round(r.width) : 0,
+      height: r ? Math.round(r.height) : 0,
+      overflowsCard: !!(r && card) && (r.right > card.right + 1 || r.bottom > card.bottom + 1),
+    };
+  });
+  assert.equal(mount.hidden, false, `${label}: the projector preview is not on the console`);
+  assert.equal(mount.collapsed, false, `${label}: this run needs the preview open`);
+  // `preview=1` marks this frame as the console's own mirror so the board
+  // liveness indicator does not count it as the projector being watched.
+  assert.equal(mount.src, `/board?code=${code}&preview=1`, `${label}: the preview is pointed at "${mount.src}"`);
+  assert.equal(mount.pointerEvents, "none", `${label}: the preview is clickable — a mirror is not a control`);
+  assert.ok(mount.width > 200, `${label}: the preview is ${mount.width}px wide, which is not a projector anybody can read`);
+  assert.ok(
+    Math.abs(mount.height - (mount.width * 720) / 1280) <= 2,
+    `${label}: the preview is ${mount.width}x${mount.height}, which is not the projector's shape`,
+  );
+  assert.equal(mount.overflowsCard, false, `${label}: the scaled board is spilling out of its card`);
+  const scale = Number(mount.scale);
+  assert.ok(
+    Math.abs(scale * 1280 - mount.width) <= 1,
+    `${label}: the board is drawn at scale ${mount.scale} inside a ${mount.width}px box — it has been reflowed, not mirrored`,
+  );
+
+  // 2. Nothing in it can be pressed. `pointer-events` is the mechanism; this is
+  //    the consequence, measured where a teacher would actually miss.
+  const hitCentre = await teach.evaluate(() => {
+    const r = document.getElementById("ppFrame").getBoundingClientRect();
+    const el = document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2));
+    return el ? el.id || el.tagName : "";
+  });
+  assert.notEqual(hitCentre, "ppBoard", `${label}: a press in the middle of the preview lands inside the board`);
+
+  // 3. It is showing what the room is showing. Compared against the projector
+  //    itself on the same frame, not against what the console claims.
+  const real = await board.evaluate(() => (document.body.innerText || "").replace(/\s+/g, " ").trim());
+  const mirrored = await teach.evaluate(() => {
+    const doc = document.getElementById("ppBoard")?.contentDocument;
+    return doc ? (doc.body.innerText || "").replace(/\s+/g, " ").trim() : "";
+  });
+  assert.ok(mirrored.length > 40, `${label}: the preview is blank (${mirrored.length} chars)`);
+  // The two clients poll independently, so they are compared on a stable
+  // fingerprint of the frame rather than character-for-character: the words the
+  // board is built out of, minus the live counters that legitimately differ by
+  // one poll between two clients.
+  const fingerprint = (text) =>
+    text
+      .toUpperCase()
+      .replace(/[^A-Z ]+/g, " ")
+      .split(" ")
+      .filter((w) => w.length >= 5);
+  const want = fingerprint(real);
+  const got = new Set(fingerprint(mirrored));
+  const missing = want.filter((w) => !got.has(w));
+  assert.ok(
+    want.length > 0 && missing.length / want.length < 0.25,
+    `${label}: the preview is not showing the projector — ${missing.length} of ${want.length} of the board's own words are absent: ${missing.slice(0, 12).join(", ")}`,
+  );
+
+  // 4. NON-VACUITY: the comparison above must be able to fail. A word the board
+  //    is not showing must not be found in something claiming to mirror it.
+  assert.equal(got.has("ZZZZQQQQ"), false, `${label}: the preview comparison finds words nobody rendered`);
+  return { real, mirrored, width: mount.width };
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
 
   console.log("[e2e-m2l1] starting server...");
+  await assertPortFree(PORT, require("path").basename(__filename));
   const server = spawn(process.execPath, [path.join(DIST, "server", "index.js")], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
@@ -705,6 +839,7 @@ async function main() {
     const d2 = await browser.newPage({ viewport: chromebook });
     const d3 = await browser.newPage({ viewport: chromebook });
     const d4 = await browser.newPage({ viewport: chromebook });
+    const d5 = await browser.newPage({ viewport: chromebook });
     for (const [label, page] of [
       ["teach", teach],
       ["board", board],
@@ -737,6 +872,18 @@ async function main() {
       await page.waitForSelector("#gameCard:not([hidden])");
       await page.waitForSelector(".fh-desk-name", { timeout: 20000 });
     }
+    async function join5(page, name) {
+      await page.goto(`${BASE}/play`);
+      await page.fill("#joinCode", code);
+      await page.fill("#joinName", name);
+      await page.click("#btnJoin");
+      await page.waitForSelector("#gameCard:not([hidden])");
+      await page.waitForFunction(
+        () => (document.getElementById("gameBody")?.innerText ?? "").trim().length > 0,
+        null,
+        { timeout: 20000 },
+      );
+    }
     await join(d1, "Rae & Ben");
     await join(d2, "Nour & Ivy");
     await join(d3, "Ari & Tal");
@@ -765,7 +912,9 @@ async function main() {
     await d1.screenshot({ path: path.join(SCREEN_DIR, "02-play-hook.png"), fullPage: true });
     await board.screenshot({ path: path.join(SCREEN_DIR, "03-board-hook.png") });
     await assertBoardFrameFits(board, "HOOK");
-    console.log("[e2e-m2l1] HOOK rendered on /play and /board");
+    const hookMirror = await assertProjectorPreview(teach, board, code, "HOOK");
+    await teach.screenshot({ path: path.join(SCREEN_DIR, "03b-teach-projector-preview.png") });
+    console.log(`[e2e-m2l1] HOOK rendered on /play and /board — and on the console's own ${hookMirror.width}px projector preview`);
 
     /* ---- PLAY ---- */
     await teach.click("#btnAdvance");
@@ -830,6 +979,63 @@ async function main() {
       await assertNoRenderedClaim(d1, `${night.label} · desk1 · dials set at $${night.d1}`);
       await lockNight(d1);
 
+      // THE DESKS, on the one frame where the room is genuinely split: Desk 1 is
+      // committed and the other two are still dialling. THE ROOM says the shape;
+      // this has to say WHO, by name, or the teacher does that join standing up.
+      if (i === 0) {
+        await teach.waitForFunction(
+          () => /1 of 3 locked/.test(document.getElementById("deskCount")?.textContent ?? ""),
+          null,
+          { timeout: 20000 },
+        );
+        const strip = await teach.evaluate(() => {
+          const sec = document.getElementById("desks");
+          return {
+            hidden: sec?.hidden ?? true,
+            count: document.getElementById("deskCount")?.textContent ?? "",
+            note: document.getElementById("deskNote")?.textContent ?? "",
+            filter: document.getElementById("deskFilter")?.textContent ?? "",
+            chips: [...document.querySelectorAll("#deskGrid .desk-chip")].map((c) => ({
+              cls: c.className,
+              handle: c.querySelector(".dk-handle")?.textContent ?? "",
+              who: c.querySelector(".dk-who")?.textContent ?? "",
+              state: c.querySelector(".dk-state")?.textContent ?? "",
+            })),
+          };
+        });
+        assert.equal(strip.hidden, false, "the walk-to list is not on the console while the night is open");
+        assert.match(strip.count, /1 of 3 locked · night 1 of 5/);
+        assert.equal(strip.chips.length, 3, `the walk-to list drew ${strip.chips.length} chips for 3 desks`);
+        const byWho = Object.fromEntries(strip.chips.map((c) => [c.who, c]));
+        // The join the console used to make the teacher do in their head.
+        assert.ok(byWho["Rae & Ben"], "the pair running Desk 1 is not named on their own chip");
+        assert.match(byWho["Rae & Ben"].handle, /Desk 1 · New York Knicks/);
+        assert.match(byWho["Rae & Ben"].state, /Locked Night 1/);
+        assert.match(byWho["Nour & Ivy"].state, /Still dialling/);
+        assert.match(byWho["Nour & Ivy"].cls, /attn/, "a desk that has not committed is not marked as needing the teacher");
+        assert.equal(/attn|quiet/.test(byWho["Rae & Ben"].cls), false, "a committed desk is marked as needing the teacher");
+        assert.match(strip.note, /2 of 3 desks could use you/);
+        assert.match(strip.note, /real names never reach the projector/i);
+
+        // Filter down to the ones that need walking to, then back.
+        assert.match(strip.filter, /Only the 2 that need me/);
+        await teach.click("#deskFilter");
+        await teach.waitForFunction(() => document.querySelectorAll("#deskGrid .desk-chip").length === 2, null, { timeout: 10000 });
+        const filtered = await teach.evaluate(() =>
+          [...document.querySelectorAll("#deskGrid .desk-chip")].map((c) => c.querySelector(".dk-who")?.textContent ?? ""),
+        );
+        assert.deepEqual(filtered.sort(), ["Ari & Tal", "Nour & Ivy"]);
+        await teach.click("#deskFilter");
+        await teach.waitForFunction(() => document.querySelectorAll("#deskGrid .desk-chip").length === 3, null, { timeout: 10000 });
+
+        // Real names are the whole point of this panel and the whole reason it
+        // may never exist on the projector.
+        const boardNow = await board.evaluate(() => document.body.innerText);
+        assert.equal(/Rae|Ben|Nour|Ivy|Ari|Tal/.test(boardNow), false, "a student name reached the projector while the walk-to list was up");
+        await teach.screenshot({ path: path.join(SCREEN_DIR, "05c-teach-desks-night1.png") });
+        console.log("[e2e-m2l1] THE DESKS: 3 chips, the split named, the filter working, nothing of it on the projector");
+      }
+
       await setPrice(d2, night.d2);
       await assertNoRenderedClaim(d2, `${night.label} · desk2 · dials set at $${night.d2}`);
       await lockNight(d2);
@@ -849,6 +1055,12 @@ async function main() {
       }
 
       if (i === 0) {
+        await callTheGate(d1, "packed", "Night 1, desk 1");
+        await callTheGate(d2, "quiet", "Night 1, desk 2");
+        // A misclick must not cost a fifth-grader a whole night: the call is
+        // changeable while the night is open, and the LAST one is what freezes.
+        await callTheGate(d2, "busy", "Night 1, desk 2 changing its mind");
+        await d1.screenshot({ path: path.join(SCREEN_DIR, "05b-play-night1-locked-gatecall.png") });
         // Nothing about an open night may reach the projector.
         const openBoard = await board.evaluate(() => document.body.innerText);
         assert.equal(openBoard.includes("$34"), false, "a locked price for the still-open night reached the projector");
@@ -858,8 +1070,59 @@ async function main() {
         await d1.screenshot({ path: path.join(SCREEN_DIR, "05-play-night1-dials.png"), fullPage: true });
       }
 
+      // The gate call is private to the desk that made it. A pair's reading of
+      // its own crowd is not the room's business until the room's own reveal.
+      if (i === 0) {
+        const boardText = await board.evaluate(() => document.body.innerText);
+        assert.ok(
+          !/PACKED|BUSY|QUIET/.test(boardText),
+          "a desk's private gate call reached the projector while the night was still open",
+        );
+      }
+
       // The teacher rings the bell. Every desk settles at once.
       await teach.click("#btnCloseNight");
+      if (i === 0) {
+        const answered = await Promise.all(
+          [d1, d2, d3].map((p) =>
+            p
+              .waitForSelector("#fhResult", { timeout: 20000 })
+              .then(() =>
+                p.evaluate(() => {
+                  const el = document.getElementById("fhGateResult");
+                  return el ? { line: el.textContent.trim(), right: el.classList.contains("right") } : null;
+                }),
+              ),
+          ),
+        );
+        assert.ok(answered[0], "desk 1 called the gate and the bell said nothing about it");
+        assert.match(answered[0].line, /^You called PACKED\./, `desk 1's answer does not name its own call: "${answered[0].line}"`);
+        assert.ok(answered[1], "desk 2 called the gate and the bell said nothing about it");
+        assert.match(
+          answered[1].line,
+          /^You called BUSY\./,
+          `desk 2's answer resolved the call it CHANGED AWAY from: "${answered[1].line}"`,
+        );
+        for (const a of [answered[0], answered[1]]) {
+          assert.ok(
+            !/good|bad|mistake|should have|wrong price/i.test(a.line),
+            `the gate call's answer judged the DECISION instead of the reading: "${a.line}"`,
+          );
+        }
+        assert.equal(answered[2], null, "desk 3 never called the gate and was handed a verdict on one anyway");
+        // NON-VACUITY: an answer naming a call the desk never made must be caught.
+        const poisonCaught = await d1.evaluate(() => {
+          const el = document.getElementById("fhGateResult");
+          const before = el.textContent;
+          el.textContent = "You called QUIET. 100 came — 1% of the seats you opened. You read it.";
+          const bad = /^You called PACKED\./.test(el.textContent.trim());
+          el.textContent = before;
+          return !bad;
+        });
+        assert.ok(poisonCaught, "the gate-call answer check does not bite");
+        console.log(`[e2e-m2l1] the gate call: ${gateCalls.join(" · ")} — answered on the desk that made it, silent on the desk that did not, absent from the projector`);
+        console.log("[e2e-m2l1] NON-VACUITY — an answer resolving a call the desk never made is rejected");
+      }
       // The settled night owns the desk until the pair presses NEXT (contract C).
       if (i === 3) {
         // Desk 1's Night-4 results state must rule on the $40,000 it put into Night 3.
@@ -978,6 +1241,14 @@ async function main() {
         await board.setViewportSize({ width: 1600, height: 900 });
         await board.waitForTimeout(250);
         console.log("[e2e-m2l1] REVEAL stage 5: the renewals rule is fully above the fold at 1366x768 and 1920x1080");
+        // The preview has to TRACK. A mirror that showed the HOOK correctly and
+        // then froze on it is worse than no mirror at all: a teacher would say
+        // "look at the board" at the wrong stage and believe they had checked.
+        const revealMirror = await assertProjectorPreview(teach, board, code, "REVEAL stage 5");
+        assert.match(revealMirror.mirrored, /THE RENEWALS RULE/i, "the preview is stuck on an earlier frame");
+        assert.equal(/RUN THE BUILDING/i.test(revealMirror.mirrored), false, "the preview is still showing the HOOK during REVEAL");
+        await teach.screenshot({ path: path.join(SCREEN_DIR, "10b-teach-projector-preview-reveal.png") });
+        console.log("[e2e-m2l1] the console's projector preview tracked the room from HOOK to REVEAL stage 5");
       }
       if (i === 5) {
         // gate-l1-projector repair 2, SPLIT limb: the Two Peaks money view owns
@@ -1003,6 +1274,54 @@ async function main() {
     assert.match(revealBoard, /modeled on real market differences/i);
     console.log("[e2e-m2l1] REVEAL played through all 7 stages — Two Peaks, then per-market books");
     await board.screenshot({ path: path.join(SCREEN_DIR, "10-board-reveal-books.png") });
+
+    // A pair walks in during the reveal. The five nights are in the books and the
+    // teacher has already read numbers out loud, so seating them would silently
+    // re-derive the room's own results — but "finding your desk…" forever is a
+    // student stranded on a spinner for the rest of the period. The landing has to
+    // be honest, and the console has to be told a body is in the room.
+    await join5(d5, "Kit & Ros");
+    const strandedBody = await d5.evaluate(() => document.body.innerText);
+    assert.equal(
+      /finding your desk/i.test(strandedBody),
+      false,
+      "a pair who arrived during REVEAL is still being told we are finding their desk",
+    );
+    assert.match(strandedBody, /arrived after the last night closed/i);
+    assert.match(strandedBody, /five nights are already in the books/i);
+    assert.match(strandedBody, /pull your chair up to the nearest desk/i);
+    // They are an observer, not a desk: no dials, no lock, no books of their own.
+    const strandedControls = await d5.evaluate(() => ({
+      dials: document.querySelectorAll("#fhPrice, #fhSpend, #fhBowl").length,
+      lock: document.querySelectorAll("#fhLock").length,
+    }));
+    assert.deepEqual(strandedControls, { dials: 0, lock: 0 }, "the observer landing handed a late pair a live desk");
+    await d5.screenshot({ path: path.join(SCREEN_DIR, "10c-play-reveal-observer.png"), fullPage: true });
+
+    // The projector must not grow a sixth desk out of it.
+    const observerBoard = await board.evaluate(() => document.body.innerText);
+    assert.equal(/Kit|Ros/.test(observerBoard), false, "a late pair's student names reached the projector");
+    assert.equal(/Desk 5/.test(observerBoard), false, "a late observer was drawn on the projector as a desk");
+
+    // And /teach is told, without a seat id, with something to actually do.
+    await teach.waitForFunction(
+      () => document.body.innerText.includes("arrived after the last night closed"),
+      null,
+      { timeout: 20000 },
+    );
+    const observerFlag = await teach.evaluate(() => {
+      const el = [...document.querySelectorAll(".dir-flag")].find((n) =>
+        n.textContent?.includes("arrived after the last night closed"),
+      );
+      return el ? { cls: el.className, text: el.innerText } : null;
+    });
+    assert.ok(observerFlag, "the console never flagged the pair standing in the doorway");
+    assert.match(observerFlag.cls, /\bnow\b/, "the late-arrival flag is not marked as needing the teacher now");
+    assert.match(observerFlag.text, /Late pair 1/);
+    assert.match(observerFlag.text, /pair them with a desk near the door/i);
+    assert.equal(/Kit|Ros|seat_/.test(observerFlag.text), false, "the console named the late pair instead of the desk");
+    await teach.screenshot({ path: path.join(SCREEN_DIR, "10d-teach-late-observer.png") });
+    console.log("[e2e-m2l1] a pair arriving during REVEAL lands as an honest observer, and the console is told to seat them beside a desk");
 
     /* ---- ADAPT: the room's whole curve, both markets, one labelled series each ---- */
     await teach.click("#btnAdvance");
@@ -1155,7 +1474,7 @@ async function main() {
     await assertBoardFrameFits(board, "COMPLETE", null);
     console.log("[e2e-m2l1] COMPLETE reached on all three surfaces");
 
-    for (const page of [d1, d2, d3, d4]) await page.close();
+    for (const page of [d1, d2, d3, d4, d5]) await page.close();
     await board.close();
     await teach.close();
 
