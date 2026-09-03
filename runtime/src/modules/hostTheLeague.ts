@@ -2323,6 +2323,21 @@ export const HORIZON_LINE =
  * profile (Boston starts at 55, the Lakers at 68 — before anybody prices).
  * Quantified honestly, and the bars are invited to be the evidence.
  */
+/**
+ * The same disclosure, at the length a ten-year-old will actually read.
+ *
+ * The full line below is five sentences of methodology and it was the HOOK
+ * banner on the student device — a paragraph about the shape of a revenue
+ * parabola, in front of a pair who had not yet priced a single seat. Its
+ * content is not wrong and it is not optional (CLAUDE.md: when the economics
+ * is simplified, say what changed), but WHERE it lands is a choice. The desk
+ * gets the one sentence that changes how a pair reads a number; the projector
+ * and the teacher keep the whole thing at SYNTHESIS, where the room is being
+ * told how to trust what it just saw.
+ */
+export const MODELED_DOLLARS_SHORT =
+  "The dollars here are shrunk to classroom size — all of them by the same amount — so it is the SHARES that are real, not the totals.";
+
 export const MODELED_DOLLARS_LINE =
   "The dollars are shrunk to classroom size, all of them by the same amount, so the SHARES are the real story. Near a club's house price the gate is about a fifth to a quarter of what it earns — price far above or far below that and the share moves a long way. For most clubs here the national check is the biggest single pipe, and a club that builds a big Draw can push its local money past it. The bars on this board say which is which; do not take our word for it.";
 
@@ -3222,7 +3237,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             plainLine: profile.plainLine,
             books: booksFor(club),
             horizonLine: HORIZON_LINE,
-            modeledDollarsLine: MODELED_DOLLARS_LINE,
+            modeledDollarsLine: MODELED_DOLLARS_SHORT,
             slate: slateFor(state, slot),
             league: state.clubs.slice(0, state.leagueSize).map((c) => clubCard(state, c.slot)),
           };
@@ -3288,7 +3303,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             books: booksFor(club),
             rules: HOUSE_RULES,
             reinvestRule: reinvestRuleFor(weekNumber),
-            modeledDollarsLine: MODELED_DOLLARS_LINE,
+            modeledDollarsLine: MODELED_DOLLARS_SHORT,
             history,
             lastSettled: history[history.length - 1] ?? null,
             message: club.locked

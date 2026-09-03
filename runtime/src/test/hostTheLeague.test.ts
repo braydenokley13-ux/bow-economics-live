@@ -34,6 +34,7 @@ import {
   SHARE_MAX,
   WEEK_COUNT,
   MODELED_DOLLARS_LINE,
+  MODELED_DOLLARS_SHORT,
   OBJECTIVE_COPY,
   barReleaseArm,
   botShareFor,
@@ -1784,6 +1785,17 @@ test("sr BLOCKING-1: no club renders a factual claim about a different club", ()
 test("sr BLOCKING-2: the modelled-dollars caption states no universal the bars falsify", () => {
   assert.equal(/for every club in this league/i.test(MODELED_DOLLARS_LINE), false, "'the biggest single pipe for every club' is false by week 1");
   assert.match(MODELED_DOLLARS_LINE, /Near a club's house price/);
+  // The desk gets the one sentence that changes how a pair reads a number; the
+  // full methodology stays on the board at SYNTHESIS. A student HOOK banner
+  // that is five sentences of parabola-shape prose is not a disclosure a
+  // ten-year-old reads, it is one they scroll past.
+  assert.ok(MODELED_DOLLARS_SHORT.length * 3 < MODELED_DOLLARS_LINE.length, "the desk's disclosure is not meaningfully shorter than the board's");
+  assert.match(MODELED_DOLLARS_SHORT, /shrunk to classroom size/i);
+  assert.match(MODELED_DOLLARS_SHORT, /SHARES/);
+  const hookDesk = hostTheLeagueModule.studentView(seated(4), "seat-1", "HOOK") as Record<string, unknown>;
+  assert.equal(hookDesk["modeledDollarsLine"], MODELED_DOLLARS_SHORT, "the desk still carries the board's paragraph");
+  const hookBoard = hostTheLeagueModule.boardView(seated(4), "HOOK") as Record<string, unknown>;
+  assert.equal(hookBoard["modeledDollarsLine"], MODELED_DOLLARS_LINE, "the full disclosure must survive somewhere");
   // And the counterexamples are real: local media overtakes the national check
   // at Draw 50 on the new-york profile, and Boston starts at 55.
   const ny = MARKET_PROFILES.find((m) => m.id === "new-york")!;

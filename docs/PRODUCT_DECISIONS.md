@@ -361,3 +361,102 @@ the founder must not be a hidden runtime dependency for either band.
 - **Owner:** Founder (program sequence and scope ruled directly; recorded by the Boss lead)
 - **Evidence:** founder instruction of 2026-09-02; wave-3 ship case section
   "TECHNICAL REALITY HANDOFF FOR CLASSROOM RUNTIME WAR" carries the repo-grounded inputs.
+
+## D23. Live-classroom runtime contract for Module 2 — transport, action integrity, TIME CUT, recovery, presence
+
+- **Decision:** The M2 live runtime holds five standing rules, all now implemented and
+  browser-proven. (a) TRANSPORT: push/realtime is primary, the server is the only truth,
+  and poll/refetch reconciliation is the fallback — realtime is a delivery optimisation
+  and is never itself authoritative. (b) ACTION INTEGRITY: a valid student action inside
+  an open decision window is applied exactly once OR receives an explicit authoritative
+  refusal naming a legitimate semantic reason (stale, wrong phase, duplicate, retired
+  credential, past TIME CUT). A transport or version race is never a legitimate reason to
+  lose a student's choice. (c) TIME CUT: the teacher holds both FINAL CALL and CLOSE NOW;
+  fairness is adjudicated on server time, never on an untrusted client clock; each lesson
+  defines its own economically honest fallback for an uncommitted desk — there is no
+  universal mystery fallback and no random one. (d) RECOVERY: automatic safe checkpoints
+  at pre-reveal boundaries; a returning student receives current authoritative state plus
+  a compact "while you were away" recap, and the class is never rewound. (e) PRESENCE: the
+  teacher's room view carries committed decisions and teacher-private diagnostics; the
+  projector is structurally never handed a seat identity.
+- **Grounds:** Founder runtime instruction of this program; every clause is a behaviour
+  requirement, with schema and system design left to the build.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Founder (behaviour); lead integrator (design and evidence)
+- **Evidence:** `runtime/scripts/e2e-time-cut.cjs`, `e2e-realtime.cjs`, `e2e-away.cjs`,
+  `e2e-teach-room.cjs`, `concurrency-harness.cjs`, `e2e-full-room.cjs` at 16 and 32 desks.
+
+## D24. A computed finding may be split by SURFACE — the projector gets the finding, the teacher gets the argument
+
+- **Decision:** When a computed finding is too long for the projector, the repair is to
+  split WHERE it renders, never WHETHER it exists. A `Claimed` value carries `text` (the
+  whole finding, which the claim audit recomputes and which the teacher's script prints in
+  full under an explicit "yours to say, not on the wall" label) and an optional `board`
+  (the short rendering the projector shows). Deleting the reasoning to fit a frame is
+  forbidden; so is putting a paragraph on a wall a class is meant to read in one look.
+- **Grounds:** M2 L2's REVEAL put 13 lines of argument on the projector at stage 2 and 10
+  at stage 5. Cutting them would have destroyed the economics; keeping them destroyed the
+  reveal. A test now fails if a finding reaches neither surface.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** commit "W6/RC2"; `hostTheLeague.test.ts` "no REVEAL summary puts a
+  paragraph on the projector" and "every word the projector gave up is in the teacher's hand".
+
+## D25. Drawn magnitude must equal modeled magnitude, and it is measured, not eyeballed
+
+- **Decision:** Any product drawing whose SIZE carries a quantity — a crowd wedge, a bar,
+  a building — must be measured against the model in a browser, by an instrument that
+  poisons itself before its result is believed. Where a projection makes equal inputs draw
+  unequally, the renderer corrects by MEASURING the projected area rather than by an
+  analytic approximation. What a drawing may encode is limited to quantities the model
+  actually holds: L3's league floor draws opening cash (a real 5x spread) and refuses to
+  draw seat counts (a 24% spread that would render as twelve identical shapes and teach
+  nothing).
+- **Grounds:** L2's crowd attribution drew a true quarter of the house as anywhere from
+  14.6% to 35.4% of the drawing. L3's league floor drew the student's own club's $2.4M
+  taller than the $2.6M beside it, because a YOU badge was an extra layout row on one
+  column. Both are `<economic_truth>` violations — visual drama misrepresenting
+  magnitude — and neither was visible without measuring.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `runtime/scripts/arena-wedge-fidelity.cjs` (worst wedge 7.3%, tolerance
+  10%, poison rejects a 40/20/20/20 house offered as equal quarters);
+  `e2e-m2l3.cjs` league-floor instrument (worst bar 0.4% of the tallest, tolerance 4%,
+  one baseline, poison rejects a stretched bar).
+
+## D26. The student device paces WITH the projector, never ahead of it
+
+- **Decision:** During a teacher-paced reveal, the student device shows this desk's own
+  version of the beat that is currently up, and nothing belonging to a beat the teacher
+  has not pressed. The gate lives in the module payload, not the renderer, so the numbers
+  are not merely unrendered but unsent — and the invariant is assertable without a
+  browser. Each lesson's reveal also gives the desk at least one thing to DO; M2 L2 and
+  M2 L3 both take a single call from the pair before the beat that settles it.
+- **Grounds:** L2's desk carried every number all five beats are about from beat 0 and
+  then never changed: a pair that looked down had already read the answer to every
+  question the room was about to be asked. A DOM diff across all six presses came back
+  byte-identical. The student device was defeating the classroom choreography the lesson
+  is built on.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `hostTheLeague.test.ts` "no reveal beat's numbers reach the desk before
+  the teacher presses it"; `e2e-m2l2.cjs` per-beat DOM diff plus a planted-ledger poison.
+
+## D27. Page width belongs to the layout, never to a control
+
+- **Decision:** A surface's dimensions may not be derived from the presence of a button or
+  any other control. Layout-scoped CSS classes carry layout facts.
+- **Grounds:** L2's two-column decision band took its 1000px width from the lock-bar rule,
+  so the one screen in the lesson with nothing left to commit — the season finale —
+  silently rendered at 640px: the evidence column collapsed 608px to 248px and the price
+  counterfactual grew from 150px to 382px and fell off the bottom of a Chromebook. This
+  class of defect appears only on the last screen of the lesson, in front of the class.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-m2l2.cjs` "the finale is not allowed to be a narrower page than the
+  weeks that led to it".
