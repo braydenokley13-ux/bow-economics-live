@@ -1019,3 +1019,65 @@ test("THE ROOM is silent where there is no live decision to read", () => {
   const done = playSeason(toSeason(adopted));
   assert.equal(roomOf(done), null, "the season is over");
 });
+
+/* ------------------------------------------------------------------------ */
+/* A pair who walks in after the season closed                              */
+/* ------------------------------------------------------------------------ */
+
+test("a pair who arrives after the last week closed is landed honestly, not left finding a club", () => {
+  const state = withDesks(3);
+  // The runtime asks the module what it may forward. If takeSeat is not offered
+  // after PLAY, a late device is refused one layer above this file and never
+  // reaches the landing below at all.
+  for (const phase of ["REVEAL", "CONSEQUENCE", "COUNTERFACTUAL", "ARGUE", "SYNTHESIS", "COMPLETE"] as const) {
+    assert.ok(
+      (writeTheRuleModule.allowedActions?.(phase) ?? []).includes("takeSeat"),
+      `takeSeat is not forwardable in ${phase}, so a late pair is refused before the module can land them`,
+    );
+  }
+
+  const landed = apply(state, { type: "takeSeat" }, "REVEAL", "walk-in");
+  assert.equal(landed.seatToSlot["walk-in"], undefined, "a late pair was handed a club after the season settled");
+  assert.deepEqual(landed.observerSeats, ["walk-in"]);
+
+  const view = writeTheRuleModule.studentView(landed, "walk-in", "REVEAL") as Record<string, unknown>;
+  assert.equal(view["seated"], false);
+  assert.equal(view["observer"], true);
+  const message = String(view["message"]);
+  assert.equal(/Finding your club/i.test(message), false, "the late pair is still being told we are finding their club");
+  assert.match(message, /after the last week closed/i);
+  assert.match(message, /three weeks are already in the books/i);
+  assert.ok(view["ruleNote"], "the observer screen never says what rule the room voted in");
+
+  // Idempotent: a retrying device is one pair, not five.
+  const again = apply(landed, { type: "takeSeat" }, "ARGUE", "walk-in");
+  assert.deepEqual(again.observerSeats, ["walk-in"]);
+
+  // The console is told, in seat-free language, with something to do.
+  const flags = teacherWatchFor(again, "REVEAL");
+  const flag = flags.find((f) => f.id === "late-observers");
+  assert.ok(flag, "the console was never told a pair is standing in the doorway");
+  assert.equal(flag.urgency, "now");
+  assert.deepEqual(flag.desks, ["Late pair 1"]);
+  assert.match(flag.label, /after the last week closed/i);
+  assert.match(flag.action, /seat them beside a desk/i);
+  assert.equal(/walk-in|seat-/.test(`${flag.label} ${flag.action} ${flag.desks.join(" ")}`), false, "a seat id reached the console");
+
+  // And nothing about them reaches the projector as a club.
+  const board = JSON.stringify(writeTheRuleModule.boardView(again, "REVEAL"));
+  assert.equal(board.includes("walk-in"), false, "a late observer's seat id reached the projector");
+});
+
+test("a full league during PLAY still says the league is full, not that the season ended", () => {
+  // Leaving HOOK freezes the league; with all 12 clubs taken there is nothing to
+  // hand over, so a thirteenth device lands as an observer while play continues.
+  const frozen = writeTheRuleModule.onPhaseExit!(withDesks(12), "HOOK", { phase: "HOOK", seatIds: [], now: 0 } as never);
+  assert.equal(frozen.leagueFrozen, true);
+  const landed = apply(frozen, { type: "takeSeat" }, "PLAY", "thirteenth");
+  assert.deepEqual(landed.observerSeats, ["thirteenth"]);
+  const view = writeTheRuleModule.studentView(landed, "thirteenth", "PLAY") as Record<string, unknown>;
+  assert.match(String(view["message"]), /every club already has a pair running it/i);
+  const flag = teacherWatchFor(landed, "PLAY").find((f) => f.id === "late-observers");
+  assert.ok(flag);
+  assert.match(flag.label, /after the league closed/i);
+});

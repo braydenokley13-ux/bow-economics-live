@@ -1380,6 +1380,59 @@ async function main() {
       await board.screenshot({ path: path.join(SCREEN_DIR, `15-board-reveal-${stage}.png`) });
     }
     assert.ok(potFrameSeen && arrowFrameSeen && eraFrameSeen, "a staged reveal beat never rendered its own evidence");
+
+    // ---- A pair walks in during the reveal -------------------------------
+    // The season is settled and the teacher has read numbers out loud. Handing
+    // out a club now would re-derive three weeks the room has already seen — but
+    // the runtime used to refuse takeSeat outright past PLAY, which left the
+    // device on "finding your club…" with nothing to retry into.
+    {
+      expectingRefusals = true;
+      const walkIn = await browser.newPage({ viewport: { width: 1024, height: 600 } });
+      watchConsole(walkIn, "reveal-walk-in");
+      walkIn.on("dialog", (d) => d.accept());
+      await walkIn.goto(`${BASE}/play`);
+      await walkIn.fill("#joinCode", code);
+      await walkIn.fill("#joinName", "Walk In");
+      await walkIn.click("#btnJoin");
+      await walkIn.waitForSelector("#gameCard:not([hidden])", { timeout: 30000 });
+      await walkIn.waitForFunction(
+        () => /after the last week closed/i.test(document.body.innerText),
+        null,
+        { timeout: 30000 },
+      );
+      const landing = await walkIn.evaluate(() => document.body.innerText);
+      assert.equal(/finding your club/i.test(landing), false, "a pair arriving during REVEAL is stranded on \"finding your club…\"");
+      assert.match(landing, /three weeks are already in the books/i);
+      assert.match(landing, /Sit with the desk next to you/i);
+      // An observer, not a club: no dials and no lock of their own.
+      const controls = await walkIn.evaluate(() => document.querySelectorAll("#wrPrice, #wrReinvest, #wrLock, #wrShare").length);
+      assert.equal(controls, 0, "the observer landing handed a walk-in live club controls");
+      await walkIn.screenshot({ path: path.join(SCREEN_DIR, "15c-play-reveal-observer.png"), fullPage: true });
+
+      // Not a club on the projector either.
+      const observerBoard = await board.evaluate(() => document.body.innerText);
+      assert.equal(/Walk In/i.test(observerBoard), false, "a walk-in pair's name reached the projector");
+
+      await teach.waitForFunction(
+        () => /arrived after the last week closed/i.test(document.body.innerText),
+        null,
+        { timeout: 30000 },
+      );
+      const flag = await teach.evaluate(() => {
+        const el = [...document.querySelectorAll(".dir-flag")].find((n) => n.textContent?.includes("arrived after the last week closed"));
+        return el ? { cls: el.className, text: el.innerText } : null;
+      });
+      assert.ok(flag, "the console never flagged the pair standing in the doorway during REVEAL");
+      assert.match(flag.cls, /\bnow\b/);
+      assert.match(flag.text, /Late pair 1/);
+      assert.match(flag.text, /seat them beside a desk/i);
+      assert.equal(/Walk In|seat_/.test(flag.text), false, "the console named the walk-in pair instead of the desk");
+      await teach.screenshot({ path: path.join(SCREEN_DIR, "15d-teach-reveal-observer.png") });
+      console.log("[e2e-m2l3] a pair arriving during REVEAL lands as an announced observer, with the rule in force on their screen");
+      await walkIn.close();
+      expectingRefusals = false;
+    }
     assert.equal(
       new Set(deskAtStage).size,
       deskAtStage.length,

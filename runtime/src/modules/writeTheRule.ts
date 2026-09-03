@@ -675,6 +675,18 @@ function seatDesk(state: WriteRuleState, seatId: SeatId): ReduceResult<WriteRule
       },
     };
   }
+  return seatLate(state, seatId);
+}
+
+/**
+ * Record a pair we cannot hand a club to. Two different things land here — a
+ * full league during PLAY, and a device that arrives after the season closed —
+ * and both are honest observers rather than refusals: a refusal leaves the
+ * student's screen saying "Finding your club..." for the rest of the period.
+ * The reason is derived from the phase at render time, not stored, because the
+ * same pair can arrive full-league during PLAY and still be an observer later.
+ */
+function seatLate(state: WriteRuleState, seatId: SeatId): ReduceResult<WriteRuleState> {
   const observers = state.observerSeats ?? [];
   if (observers.includes(seatId)) return { ok: true, state };
   return { ok: true, state: { ...state, observerSeats: [...observers, seatId] } };
@@ -2682,12 +2694,16 @@ export function teacherWatchFor(state: WriteRuleState, phase: CanonicalPhase): W
   // be silent on this console again.
   const observers = state.observerSeats ?? [];
   if (observers.length > 0) {
+    const seasonClosed = phase !== "LOBBY" && phase !== "HOOK" && phase !== "PLAY";
     out.push({
       id: "late-observers",
-      label: `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the league closed and could not be given a club`,
+      label: seasonClosed
+        ? `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the last week closed and could not be given a club`
+        : `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the league closed and could not be given a club`,
       desks: observers.map((_, i) => `Late pair ${i + 1}`),
-      action:
-        "Every club in this league is already being run. Seat them with a neighbouring desk and tell that desk they now have four people. Their own device says the same thing and shows them the rule in force, so they are not staring at a blank screen.",
+      action: seasonClosed
+        ? "There is no club left to hand them — the three weeks are settled and starting one now would change numbers this room has already been shown. Their screen says so and shows them the rule in force; seat them beside a desk near the door. Everything from here — the board, the argument, the synthesis — is the whole room's, so they lose nothing but the three weeks."
+        : "Every club in this league is already being run. Seat them with a neighbouring desk and tell that desk they now have four people. Their own device says the same thing and shows them the rule in force, so they are not staring at a blank screen.",
       urgency: "now",
     });
   }
@@ -3770,8 +3786,12 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
   reduce(state, action: LessonAction, ctx: ReduceContext): ReduceResult<WriteRuleState> {
     if (action.type === "takeSeat") {
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair can take a club" };
+      // The season is closed. Handing out a club now would re-derive three weeks
+      // of numbers the room has already been read out loud, so this pair gets an
+      // honest observer landing instead of a refusal the device would retry
+      // against forever.
       if (ctx.phase !== "LOBBY" && ctx.phase !== "HOOK" && ctx.phase !== "PLAY") {
-        return { ok: false, reason: `clubs are handed out in LOBBY, HOOK or PLAY (session is in ${ctx.phase})` };
+        return seatLate(state, ctx.seatId);
       }
       return seatDesk(state, ctx.seatId);
     }
@@ -3928,16 +3948,19 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
         return ["takeSeat", "hookPick", "teacher:commitReveal"];
       case "PLAY":
         return ["takeSeat", "propose", "setPrice", "setReinvest", "lock", "teacher:ruleStep", "teacher:realRule", "teacher:closeWeek"];
+      // takeSeat stays offered after the season closes: a device arriving now is
+      // landed as an observer by `reduce`, and a runtime-level refusal here would
+      // strand it on "Finding your club..." with nothing to retry into.
       case "REVEAL":
-        return ["arrowPredict", "teacher:revealNext"];
+        return ["takeSeat", "arrowPredict", "teacher:revealNext"];
       case "COUNTERFACTUAL":
-        return ["teacher:counterfactual"];
+        return ["takeSeat", "teacher:counterfactual"];
       case "ARGUE":
-        return ["kingsVote", "teacher:commitReveal"];
+        return ["takeSeat", "kingsVote", "teacher:commitReveal"];
       case "SYNTHESIS":
-        return ["teacher:synthPage", "teacher:synthPageBack"];
+        return ["takeSeat", "teacher:synthPage", "teacher:synthPageBack"];
       default:
-        return [];
+        return ["takeSeat"];
     }
   },
 
@@ -3948,11 +3971,14 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       // read "You're in — finding your club…" forever. They now get a real
       // screen that says what happened and what to do about it.
       if ((state.observerSeats ?? []).includes(seatId)) {
+        const seasonClosed = phase !== "LOBBY" && phase !== "HOOK" && phase !== "PLAY";
         return tag({
           seated: false,
           observer: true,
-          message:
-            "You arrived after this league closed, so every club already has a pair running it. Sit with the desk next to you — you are on their club now, and you get a say in what they do with it.",
+          observerEyebrow: seasonClosed ? "You arrived after the last week closed" : "You arrived after the league closed",
+          message: seasonClosed
+            ? "You got here after the last week closed, so there is no club left to hand you — all three weeks are already in the books. Sit with the desk next to you and read their screen with them: everything from here is the whole room's."
+            : "You arrived after this league closed, so every club already has a pair running it. Sit with the desk next to you — you are on their club now, and you get a say in what they do with it.",
           rule: ruleView(state),
           ruleNote: state.adopted
             ? `The rule in force is SHARE ${state.adopted.share}% · CONDITION ${state.adopted.condition ? `${CONDITION_MIN_REINVEST}% or you collect half a share` : "OFF"}. The room voted on it before you got here.`

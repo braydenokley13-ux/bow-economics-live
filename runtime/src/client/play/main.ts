@@ -5355,7 +5355,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
       const rule = view["rule"] as WRRule;
       body.innerHTML = `
         <div class="panel" style="padding:18px;">
-          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">You arrived after the league closed</div>
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">${escapeHtml(String(view["observerEyebrow"] ?? ""))}</div>
           <p style="margin:0 0 10px; font-size:16px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>
           <p style="margin:0; font-size:14px; color:var(--ink-secondary);">${escapeHtml(String(view["ruleNote"] ?? ""))}</p>
         </div>
