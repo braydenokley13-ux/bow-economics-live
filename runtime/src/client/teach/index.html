@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BOW Economics — Teach</title>
+<!-- the control room — dark with the gold mark. Three surfaces run side by side in one teacher's tab strip. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23131822%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2223%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2221%22%20font-weight%3D%22700%22%20text-anchor%3D%22middle%22%20fill%3D%22%23f4b942%22%3ET%3C%2Ftext%3E%3C%2Fsvg%3E" />
 <link rel="stylesheet" href="/shared/theme.css" />
 <link rel="stylesheet" href="/shared/m2.css" />
 <style>
@@ -36,7 +38,11 @@
      card on the page while a final call is running: this is the one control in
      the room that takes a decision away from a student who has not made it. */
   #timecut { border-color: rgba(255,255,255,0.14); }
-  #timecut.calling { border-color: var(--accent-gold); box-shadow: 0 0 0 1px var(--accent-gold) inset; }
+  /* While a call is running the clock must stay in the teacher's eye. The panel
+     is above the director script for the same reason: 20 seconds is not enough
+     time to scroll past a page of facilitation notes to find Close now. */
+  #timecut.calling { border-color: var(--accent-gold); box-shadow: 0 0 0 1px var(--accent-gold) inset;
+    position: sticky; top: 8px; z-index: 30; }
   #tcClock { font-family: var(--font-number); font-weight: 800; font-size: 40px; line-height: 1; color: var(--accent-gold); font-variant-numeric: tabular-nums; }
   #tcClock.late { color: var(--accent-red, #e0574f); }
   .tc-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -151,15 +157,6 @@
     </div>
   </section>
 
-  <!-- gate-l1-teacher TT-B1 (BLOCKING): the per-phase director panel. The design
-       carried a complete NOW / ASK / DON'T EXPLAIN YET / TRIGGER / TIME CUT
-       script with minute budgets and exactly one fragment of it had reached the
-       product. -->
-  <section id="director" class="card" hidden>
-    <h2 id="directorHeading">Directing this phase</h2>
-    <div id="directorBody"></div>
-  </section>
-
   <!-- W3 TIME CUT. The founder's locked pair of closing controls, plus the
        thing that makes either of them safe to press: before the teacher closes
        a window, this names every desk that has committed nothing and states
@@ -177,6 +174,15 @@
     </div>
     <p id="tcPolicy" class="tc-policy"></p>
     <div id="tcUnresolved"></div>
+  </section>
+
+  <!-- gate-l1-teacher TT-B1 (BLOCKING): the per-phase director panel. The design
+       carried a complete NOW / ASK / DON'T EXPLAIN YET / TRIGGER / TIME CUT
+       script with minute budgets and exactly one fragment of it had reached the
+       product. -->
+  <section id="director" class="card" hidden>
+    <h2 id="directorHeading">Directing this phase</h2>
+    <div id="directorBody"></div>
   </section>
 
   <section id="controls" class="card" hidden>

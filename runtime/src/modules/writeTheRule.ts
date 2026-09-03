@@ -3419,6 +3419,10 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             club.price === house && club.reinvest === 0
               ? `plays at its $${house} house price (their dial is already there)`
               : `plays at its $${house} house price, NOT the $${club.price} on their dial`,
+          selfFallback:
+            club.price === house && club.reinvest === 0
+              ? `Lock in, or this week plays at your $${house} house price — which is where your dial already is.`
+              : `Lock in, or this week plays at your $${house} house price, NOT the $${club.price} you have dialled.`,
         });
       }
       return out;

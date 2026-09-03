@@ -160,3 +160,27 @@ test("the outbox stamps the round key at submit time, and /play feeds it the rou
   assert.match(PLAY, /\(\) => lastRoundKey,/, "the outbox is not being given the round key");
   assert.match(PLAY, /new Set\(\["takeSeat"\]\)/, "takeSeat lost its exemption — a late joiner crossing a close would be refused a franchise");
 });
+
+/* ------------------------------------------------------------------------ *
+ * 5. An id selector that sets `display` outranks the `hidden` attribute.
+ *
+ * `[hidden]{display:none}` is a UA rule with attribute-selector specificity, so
+ * `#finalCall{display:flex}` silently beats it and the "hidden" bar renders
+ * empty over every play screen, pushing the dials down the page. Caught by the
+ * L2 projector-band e2e, one layout defect after it shipped.
+ * ------------------------------------------------------------------------ */
+test("a surface element toggled by [hidden] restates its hidden state at id specificity", () => {
+  const PLAY_HTML = fs.readFileSync(path.join(RUNTIME, "src", "client", "play", "index.html"), "utf8");
+  const displaySetters = [...PLAY_HTML.matchAll(/#([A-Za-z][\w-]*)\s*\{[^}]*\bdisplay:\s*(?!none)/g)].map((m) => m[1]!);
+  const toggledByHidden = new Set(
+    [...PLAY_HTML.matchAll(/id="([A-Za-z][\w-]*)"[^>]*\shidden\b/g)].map((m) => m[1]!),
+  );
+  const unguarded = displaySetters.filter(
+    (id) => toggledByHidden.has(id) && !new RegExp(`#${id}\\[hidden\\]\\s*\\{[^}]*display:\\s*none`).test(PLAY_HTML),
+  );
+  assert.deepEqual(
+    unguarded,
+    [],
+    `these /play elements set display at id specificity while being toggled by [hidden], so they never hide: ${unguarded.join(", ")}`,
+  );
+});

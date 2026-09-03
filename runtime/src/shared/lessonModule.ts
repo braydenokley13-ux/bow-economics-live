@@ -130,6 +130,12 @@ export type UnresolvedSeat = {
    * waiting would save.
    */
   fallback: string;
+  /**
+   * The same fact said TO the pair, in second person, for their own screen
+   * during FINAL CALL. A warning written for the teacher ("their dial") reads
+   * as being about somebody else at the moment it most needs to be about you.
+   */
+  selfFallback: string;
 };
 
 export interface RoundContract<TState = unknown> {

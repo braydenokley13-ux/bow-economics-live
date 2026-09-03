@@ -1968,6 +1968,10 @@ function boot(): void {
     return;
   }
   startPolling<BoardPayload>(`/api/sessions/${code}/board`, 1000, render, {
+    // W4: the projector is the surface a teacher watches while they press the
+    // button, so it is the one where a poll interval reads as lag. The stream
+    // only says "ask again"; the frame still comes from /board.
+    streamUrl: `/api/sessions/${code}/stream`,
     onError: (error) => {
       if (error instanceof ApiError && error.status === 404) {
         // Never roam to another room. A 404 means THIS code is gone, and the

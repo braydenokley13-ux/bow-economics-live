@@ -2623,6 +2623,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             dialled === market.planPrice && desk.spend === 0 && !desk.openBowl
               ? `settles at the $${market.planPrice} season plan (their dial is already there)`
               : `settles at the $${market.planPrice} season plan, NOT the $${dialled} on their dial`,
+          selfFallback:
+            dialled === market.planPrice && desk.spend === 0 && !desk.openBowl
+              ? `Lock in, or tonight settles at your $${market.planPrice} season plan — which is where your dial already is.`
+              : `Lock in, or tonight settles at your $${market.planPrice} season plan, NOT the $${dialled} you have dialled.`,
         });
       }
       return out;

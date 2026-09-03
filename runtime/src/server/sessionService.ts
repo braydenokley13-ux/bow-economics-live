@@ -110,7 +110,7 @@ export type StudentPayload = {
    * about them cannot disagree — one contract, two audiences.
    */
   committed: boolean | null;
-  /** What closing the round would do to THIS desk, if it has committed nothing. */
+  /** What closing the round would do to THIS desk, said TO the pair, when it has committed nothing. */
   fallback: string | null;
   view: unknown;
 };
@@ -833,6 +833,18 @@ export class SessionService {
     return this.buildTeacherPayload(await this.sweepRound(session));
   }
 
+  /**
+   * The session's id and current version for a join code, and nothing else.
+   *
+   * Used by the nudge stream, which needs to know WHICH session to subscribe to
+   * without reading any of its content. Returns null rather than throwing so a
+   * projector left on a dead code gets a 404 it can act on.
+   */
+  async sessionIdForCode(code: string): Promise<{ id: string; version: number } | null> {
+    const session = await this.repo.getSessionByCode(code);
+    return session ? { id: session.id, version: session.version } : null;
+  }
+
   async boardView(code: string): Promise<BoardPayload> {
     const session = await this.sweepRound(await this.requireSession(code));
     const mod = this.moduleFor(session);
@@ -875,7 +887,7 @@ export class SessionService {
     return {
       round: this.roundPublic(session),
       committed: roundOpen ? mine === null : null,
-      fallback: mine?.fallback ?? null,
+      fallback: mine?.selfFallback ?? null,
       session: {
         code: session.code,
         title: session.title,

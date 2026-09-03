@@ -337,6 +337,11 @@ function startGame(): void {
       renderGame(payload);
     },
     {
+      // W4. The nudge carries no seat data and is not what /play renders — the
+      // authenticated /api/me fetch below still is. It exists so a teacher's
+      // reveal reaches thirty desks at once instead of arriving over a poll
+      // interval, desk by desk.
+      streamUrl: `/api/sessions/${creds.sessionCode}/stream`,
       headers: (): Record<string, string> => (creds ? { Authorization: `Bearer ${creds.deviceToken}` } : {}),
       // D1: a 304 is proof the server answered. Clearing the label here is what
       // makes "offline — retrying" self-heal instead of sticking for the lesson.

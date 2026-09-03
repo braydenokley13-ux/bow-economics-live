@@ -236,6 +236,10 @@ function openSession(code: string): void {
     1500,
     render,
     {
+      streamUrl: `/api/sessions/${code}/stream`,
+      onPushState: (connected) => {
+        pushLive = connected;
+      },
       headers: authHeaders,
       onError: (err) => {
         if (err instanceof ApiError && err.status === 401) {
@@ -299,6 +303,8 @@ function describeError(err: unknown): string {
 
 /** What Restore would currently undo — read by the confirm dialog. */
 let lastCheckpointLabel: string | null = null;
+/** Whether the push stream is carrying this console, shown in the status line. */
+let pushLive = false;
 
 /* ------------------------------------------------------------------ TIME CUT --
  * The founder's two closing controls, and the thing that makes either safe to
@@ -415,7 +421,7 @@ function renderTimeCut(payload: TeacherPayload): void {
 }
 
 function render(payload: TeacherPayload): void {
-  statusEl.textContent = `live · v${payload.session.version}`;
+  statusEl.textContent = `live · v${payload.session.version}${pushLive ? "" : " · polling"}`;
   lastCheckpointLabel = payload.session.checkpointLabel;
   const s = payload.session;
   const pillClass = s.ended ? "ended" : s.frozen ? "frozen" : s.paused ? "paused" : "live";
@@ -963,7 +969,10 @@ function renderDirector(
         .join("")}</details>`,
     );
   }
-  if (d?.timeCut) extras.push(`<div class="dir-timecut"><span class="dir-eyebrow">Time cut</span>${escapeHtml(d.timeCut)}</div>`);
+  // NOT the TIME CUT panel above. This cue is the lesson's "you are running out
+  // of CLASS time, here is what to drop"; the panel is "close this round". Two
+  // different decisions, and sharing a name on one screen was a trap.
+  if (d?.timeCut) extras.push(`<div class="dir-timecut"><span class="dir-eyebrow">If you are running late</span>${escapeHtml(d.timeCut)}</div>`);
   if (extras.length > 0) parts.push(extras.join(""));
 
   wrap.innerHTML = parts.join("");

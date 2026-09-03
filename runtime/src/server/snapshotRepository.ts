@@ -23,6 +23,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { RepositoryError, type Repository } from "./repository.js";
+import type { SessionBus } from "./sessionBus.js";
 import type {
   NewSeat,
   NewSession,
@@ -59,6 +60,14 @@ export class SnapshotRepository implements Repository {
    */
   private seatsByDeviceTokenHash = new Map<string, SeatId>();
   private sessionsByCode = new Map<string, SessionId>();
+  /**
+   * Where every mutation is announced. Optional: the repository works exactly
+   * as before without one, which is what the unit tests use. It lives HERE
+   * rather than in the service because this is the single choke point every
+   * write already passes through — a change that reaches disk and not the bus
+   * would be a change some surface never hears about.
+   */
+  private readonly bus: SessionBus | null;
   private readonly filePath: string | null;
   private writeChain: Promise<void> = Promise.resolve();
   /**
@@ -81,8 +90,9 @@ export class SnapshotRepository implements Repository {
   /** Overridable so tests can pin timestamps. */
   now: () => string = () => new Date().toISOString();
 
-  constructor(filePath: string | null, options: { flushDelayMs?: number } = {}) {
+  constructor(filePath: string | null, options: { flushDelayMs?: number; bus?: SessionBus } = {}) {
     this.filePath = filePath;
+    this.bus = options.bus ?? null;
     // Zero means "write through on every mutation" — what the tests want, so
     // they never have to reason about a timer.
     this.flushDelayMs = options.flushDelayMs ?? 200;
@@ -254,6 +264,7 @@ export class SnapshotRepository implements Repository {
     };
     this.putSession(row);
     this.persist();
+    this.bus?.publish(row.id, row.version);
     return clone(row);
   }
 
@@ -287,6 +298,7 @@ export class SnapshotRepository implements Repository {
     const next: SessionRow = { ...row, ...patch, version: row.version + 1, updatedAt: this.now() };
     this.putSession(next, row.code);
     this.persist();
+    this.bus?.publish(next.id, next.version);
     return { ok: true, session: clone(next) };
   }
 
@@ -310,6 +322,7 @@ export class SnapshotRepository implements Repository {
     };
     this.putSeat(row);
     this.persist();
+    this.bus?.publishSeatChange(row.sessionId, this.sessions.get(row.sessionId)?.version ?? 0);
     return clone(row);
   }
 
@@ -348,6 +361,9 @@ export class SnapshotRepository implements Repository {
     const next: SeatRow = { ...row, ...patch };
     this.putSeat(next, row.deviceTokenHash);
     this.persist();
+    // A seat change moves no session state, so nothing else here would announce
+    // it — and the teacher's live join list is built out of exactly this.
+    this.bus?.publishSeatChange(next.sessionId, this.sessions.get(next.sessionId)?.version ?? 0);
     return clone(next);
   }
 }

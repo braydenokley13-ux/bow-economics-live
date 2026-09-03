@@ -8,6 +8,7 @@ import { lobbyDemoModule } from "../modules/lobbyDemo.js";
 import { tradeDeadlineModule } from "../modules/tradeDeadline.js";
 import { writeTheRuleModule } from "../modules/writeTheRule.js";
 import { createHttpServer } from "./http.js";
+import { SessionBus } from "./sessionBus.js";
 import { SnapshotRepository } from "./snapshotRepository.js";
 import { SessionService } from "./sessionService.js";
 
@@ -16,7 +17,9 @@ const DATA_FILE = process.env["RUNTIME_SNAPSHOT_FILE"] ?? path.join(here, "..", 
 const PORT = Number(process.env["PORT"] ?? 4300);
 
 async function main(): Promise<void> {
-  const repo = new SnapshotRepository(DATA_FILE);
+  // Push in front of polling, never instead of it — see http.ts.
+  const bus = new SessionBus();
+  const repo = new SnapshotRepository(DATA_FILE, { bus });
   await repo.whenReady();
 
   const service = new SessionService(repo);
@@ -29,7 +32,7 @@ async function main(): Promise<void> {
   service.registerModule(writeTheRuleModule);
   // Additional lesson modules register here as the gameplay team ships them.
 
-  const server = createHttpServer(service);
+  const server = createHttpServer(service, bus);
   server.listen(PORT, () => {
     // eslint-disable-next-line no-console
     console.log(`BOW Economics runtime listening on http://localhost:${PORT}`);

@@ -8,19 +8,23 @@
  * matters directly for cold-start on a teacher's laptop plugged in five
  * minutes before class.
  *
- * Transport: short-interval polling with ETag/If-None-Match, not SSE/WS.
- * Justified at length in runtime/README.md; the summary is that a real
- * classroom AP is exactly the environment where a long-lived connection
- * (SSE or a WebSocket) is most likely to be silently killed by an idle
- * timeout or a proxy, and polling's failure mode is simply "try again next
- * tick" — identical code path for the initial load, a dropped packet, and
- * a full reconnect after the teacher's laptop sleeps.
+ * Transport (W4): a nudge stream in front of the same ETagged polling, never
+ * instead of it. `GET /api/sessions/:code/stream` is a server-sent event
+ * stream carrying ONLY "this session moved to version N" — no payload, no
+ * private data, nothing a surface renders. Every surface still re-reads truth
+ * through the authenticated endpoint it was already polling; the stream only
+ * decides WHEN. So the original argument for polling still holds in full: a
+ * classroom AP that silently kills a long-lived connection costs the room
+ * nothing but latency, because the poll loop underneath never stopped, and the
+ * failure path for a dead stream, a dropped packet, a cold load and a laptop
+ * waking from sleep is still the identical "ask again" tick.
  */
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { SessionBus } from "./sessionBus.js";
 import { ServiceError, type SessionService } from "./sessionService.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -127,13 +131,76 @@ function maybeNotModified(req: http.IncomingMessage, res: http.ServerResponse, e
   return false;
 }
 
-export function createHttpServer(service: SessionService): http.Server {
-  return http.createServer((req, res) => {
-    void handle(service, req, res).catch((error) => sendError(res, error));
+/** Keeps a proxy or an idle-timeout from quietly closing a stream nobody is talking on. */
+const SSE_HEARTBEAT_MS = 15_000;
+
+export function createHttpServer(service: SessionService, bus?: SessionBus): http.Server {
+  const server = http.createServer((req, res) => {
+    void handle(service, req, res, bus).catch((error) => sendError(res, error));
   });
+  // An SSE response is open for the whole lesson. Node's default 5s
+  // keep-alive/headers timeouts are about IDLE sockets between requests, but
+  // being explicit here stops a future default from cutting a class in half.
+  server.keepAliveTimeout = 0;
+  server.headersTimeout = 0;
+  server.requestTimeout = 0;
+  return server;
 }
 
-async function handle(service: SessionService, req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+/**
+ * The nudge stream.
+ *
+ * Carries the session's version and a seat-change epoch, and nothing else. It
+ * is reachable with the join code alone — deliberately, because that is exactly
+ * what it discloses: that a room somebody already has the code for has moved.
+ * Every byte a surface actually renders still comes from the authenticated,
+ * ETagged endpoint behind it.
+ */
+async function serveStream(
+  service: SessionService,
+  bus: SessionBus,
+  code: string,
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+): Promise<void> {
+  const session = await service.sessionIdForCode(code);
+  if (!session) {
+    sendJson(res, 404, { error: { code: "not_found", message: "no such session", retryable: false } });
+    return;
+  }
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    // Nginx and friends buffer text/event-stream by default, which turns a
+    // push stream into a very slow poll.
+    "X-Accel-Buffering": "no",
+  });
+  // The first frame doubles as the client's "the stream is live" signal, and it
+  // carries current truth so a surface that connects mid-class refetches once
+  // immediately rather than waiting for the next change.
+  res.write(`retry: 2000\ndata: ${JSON.stringify({ version: session.version, seatEpoch: 0, hello: true })}\n\n`);
+
+  const unsubscribe = bus.subscribe(session.id, (nudge) => {
+    res.write(`data: ${JSON.stringify(nudge)}\n\n`);
+  });
+  const heartbeat = setInterval(() => res.write(": ping\n\n"), SSE_HEARTBEAT_MS);
+  heartbeat.unref?.();
+  const close = () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  };
+  req.on("close", close);
+  res.on("close", close);
+  res.on("error", close);
+}
+
+async function handle(
+  service: SessionService,
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  bus?: SessionBus,
+): Promise<void> {
   const url = new URL(req.url ?? "/", "http://localhost");
   const parts = url.pathname.split("/").filter(Boolean);
   const method = req.method ?? "GET";
@@ -283,6 +350,19 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
         const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}-L${locked}"`;
         if (maybeNotModified(req, res, etag)) return;
         sendJson(res, 200, payload, { ETag: etag });
+        return;
+      }
+
+      // GET /api/sessions/:code/stream  (SSE nudges; W4)
+      if (method === "GET" && sub === "stream" && parts.length === 4) {
+        if (!bus) {
+          // No bus wired (a test harness, an older embedding): say so plainly
+          // rather than hanging an EventSource open forever. The client falls
+          // back to its polling interval, which is the designed behaviour.
+          sendJson(res, 501, { error: { code: "no_stream", message: "this server has no push stream", retryable: false } });
+          return;
+        }
+        await serveStream(service, bus, code, req, res);
         return;
       }
 

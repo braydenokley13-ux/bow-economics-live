@@ -625,26 +625,41 @@ parse, and a full "kill the process, start a new `SnapshotRepository`
 pointed at the same file" simulation that confirms phase, version, and seat
 data all survive.
 
-**Transport: short-interval polling with ETag/If-None-Match, not SSE or
-WebSockets.** All three surfaces poll a versioned state endpoint (1–1.5s for
-`/teach` and `/play`, 1s for `/board`) with `If-None-Match`; an unchanged
-session answers `304` with an empty body. This was chosen deliberately over
-a push transport:
+**Transport: a push nudge in front of ETagged polling — never instead of
+it.** All three surfaces poll a versioned state endpoint (1.2s `/play`, 1.5s
+`/teach`, 1s `/board`) with `If-None-Match`; an unchanged session answers
+`304` with an empty body. On top of that, each surface opens
+`GET /api/sessions/:code/stream`, a server-sent event stream carrying **only**
+`{version, seatEpoch}` — no payload, no private data, nothing a surface
+renders. A nudge fires an immediate poll tick and stretches the timer out to a
+slow reconciliation interval; when the stream drops, the timer snaps back to
+the short interval and every surface behaves exactly as it did before push
+existed.
 
-- A real classroom AP is exactly the environment most likely to silently
-  kill a long-lived connection — idle timeouts, captive-portal-style
-  proxying, a laptop that sleeps and wakes on a different channel. SSE and
-  WebSockets need reconnect logic to recover from that; polling's failure
-  mode is *already* "try again next tick," with no separate reconnect path
-  to write, test, or get wrong live in a classroom.
-- At ~35 clients polling every 1–2s, that is roughly 20–35 requests/second
-  against one Node process serving small JSON payloads (a `304` has no
-  body) — trivial load, so the "keep a persistent connection open"
-  argument for SSE/WS buys nothing at this scale.
-- `/board`'s "auto-reconnect" requirement and `/play`'s "instant resume"
-  requirement both fall out of the same mechanism for free: there is
-  nothing to "reconnect," a poll either succeeds or it doesn't, and the next
-  one fires on schedule regardless (`src/client/shared/poll.ts`).
+Why this shape rather than either extreme:
+
+- **Realtime is not truth.** The nudge says only "ask again." Every byte a
+  surface displays still comes from the authenticated, ETagged endpoint it was
+  already polling, so a push that is lossy, duplicated, out of order, or
+  entirely absent can only ever cost latency. There is one code path, not two
+  that can disagree.
+- **A classroom AP will kill a long-lived connection**, and the original
+  argument for polling still stands under that: idle timeouts,
+  captive-portal-style proxying, a laptop that sleeps and wakes. The poll loop
+  underneath is the reconnect path, already written and already tested, and
+  the failure mode is still "try again next tick."
+- **Polling alone was costing the room a visible beat.** Measured at 32 desks
+  (`scripts/latency-harness.cjs`): teacher action → every desk p99 **1065 ms**
+  poll-only vs **32 ms** with the stream; teacher → projector 946 ms vs 28 ms;
+  a student's lock → the teacher's own desk panel 1385 ms vs 22 ms. In
+  Chromium end to end (`scripts/e2e-realtime.cjs`): projector 60 ms, desk
+  73 ms.
+- **SSE rather than WebSockets** because it needs no dependency (D12 — zero
+  runtime packages), reconnects natively in the browser, and is one-way, which
+  is all a nudge needs. Actions still travel by `POST`.
+- Each surface marks which transport is carrying it on its own document
+  (`data-push="on"|"off"`), and `/teach` prints `· polling` in its status
+  line. "The room feels laggy" is otherwise unanswerable.
 
 The one place this deliberately does *not* use polling is action
 submission — `POST .../actions` and `POST .../control` are sent immediately

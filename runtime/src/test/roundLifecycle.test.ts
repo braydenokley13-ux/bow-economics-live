@@ -18,6 +18,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { fullHouseModule } from "../modules/fullHouse.js";
+import { hostTheLeagueModule } from "../modules/hostTheLeague.js";
+import { writeTheRuleModule } from "../modules/writeTheRule.js";
 import { ServiceError, SessionService } from "../server/sessionService.js";
 import { SnapshotRepository } from "../server/snapshotRepository.js";
 
@@ -256,11 +258,17 @@ test("a desk's own screen and its teacher's panel cannot disagree about whether 
   assert.equal(undecided.committed, false);
   assert.ok(undecided.fallback && undecided.fallback.length > 0, "a desk warned it has not locked must be told what that costs it");
   assert.ok(unresolvedIds.has(undecided.seat.id));
-  assert.equal(
-    undecided.fallback,
-    teacher.timeCut!.unresolved.find((u) => u.seatId === undecided.seat.id)!.fallback,
-    "one contract, two audiences — the pair and the teacher read the same sentence",
-  );
+  // One contract, two audiences — and two voices. The teacher's line is about a
+  // desk ("their dial"); the pair's is about them ("your dial"). The FACTS must
+  // match; the grammar must not, because a warning written in the third person
+  // reads as being about somebody else at the moment it most needs to be
+  // about you.
+  const forTeacher = teacher.timeCut!.unresolved.find((u) => u.seatId === undecided.seat.id)!;
+  assert.notEqual(undecided.fallback, forTeacher.fallback);
+  assert.match(forTeacher.fallback, /their dial|already there/);
+  assert.match(undecided.fallback!, /\byour\b/);
+  const numbers = (t: string) => (t.match(/\$\d+/g) ?? []).sort();
+  assert.deepEqual(numbers(undecided.fallback!), numbers(forTeacher.fallback), "the two audiences must be told the same numbers");
 });
 
 test("outside an open round there is nothing to close and nothing to warn about", async () => {
@@ -351,4 +359,16 @@ test("a held action that crosses the cut while it is held is refused, not applie
   await svc.control(code, { type: "unpause" }, key);
   const retry = await caught(svc.submitAction(token, { type: "lock", id: "held-1", round: roundKey }));
   assert.equal(retry.code, "stale_round");
+});
+
+
+test("every lesson with a round states its fallback in BOTH voices, for both audiences", () => {
+  // A module that adds a round contract and forgets the pair's own sentence
+  // ships a final-call warning that talks about the pair in the third person.
+  for (const mod of [fullHouseModule, hostTheLeagueModule, writeTheRuleModule]) {
+    const contract = mod.round;
+    assert.ok(contract, `${mod.id} lost its round contract`);
+    assert.ok(contract!.noun.length > 0, `${mod.id} does not say what it calls a round`);
+    assert.ok(contract!.fallbackPolicy.length > 20, `${mod.id} has no stated fallback policy`);
+  }
 });
