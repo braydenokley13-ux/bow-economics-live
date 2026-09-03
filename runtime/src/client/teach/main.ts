@@ -180,13 +180,30 @@ async function syncSourceSessionRow(): Promise<void> {
     const eligibleModuleIds =
       lessonId === WRITE_RULE_ID ? [HOST_LEAGUE_ID] : lessonId === FREE_AGENCY_ID ? [TRADE_DEADLINE_ID, DRAFT_DAY_ID] : [DRAFT_DAY_ID];
     const eligible = sessions.filter((s) => eligibleModuleIds.includes(s.lessonModuleId)).sort((a, b) => eligibleModuleIds.indexOf(a.lessonModuleId) - eligibleModuleIds.indexOf(b.lessonModuleId));
+    const liveIds = new Set<string>();
     for (const s of eligible) {
       const option = document.createElement("option");
       option.value = s.id;
+      if (!s.ended) liveIds.add(s.id);
       const moduleLabel = s.lessonModuleId === HOST_LEAGUE_ID ? "M2 L2" : s.lessonModuleId === TRADE_DEADLINE_ID ? "L2" : "L1";
       option.textContent = `[${moduleLabel}] ${s.title || s.code} (${s.code}) — ${s.ended ? "ended" : `live, ${s.phase}`}`;
       select.appendChild(option);
     }
+    // A session that has not finished can still be linked, and sometimes should
+    // be (a room that ran long, a period split across two days). What must not
+    // happen is a teacher doing it by accident: the books carried forward are
+    // whatever that room had at the instant this one was created, so a league
+    // linked mid-week arrives half-played and nothing downstream can tell.
+    select.onchange = (): void => {
+      const warn = $("sourceLiveWarn");
+      const live = liveIds.has(select.value);
+      warn.hidden = !live;
+      if (live) {
+        warn.textContent =
+          "That session has not finished. Linking it copies its books exactly as they stand right now, mid-lesson — if you meant a session from an earlier period or yesterday, pick one marked \u201cended\u201d.";
+      }
+    };
+    select.onchange(new Event("change"));
     // The listing only answers a teacher of a room on this server, because it
     // hands out join codes. On a browser that has never run one there is
     // nothing to show — and a teacher who DID run that lesson, on another

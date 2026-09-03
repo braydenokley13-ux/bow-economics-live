@@ -115,6 +115,13 @@ async function main() {
     let teachPolls = 0;
     const rateT0 = Date.now();
     teach.on("requestfailed", (r) => {
+      // The projector preview is an iframe of /board that the console DESTROYS
+      // when the session ends. A frame torn down with a long-lived SSE stream
+      // and a poll in flight reports both as ERR_ABORTED, the same way closing
+      // a tab does. That is the teardown working, not a failed request — and it
+      // is carved out by FRAME, so a genuinely failed request on the console
+      // itself still fails the run.
+      if (r.frame()?.name() === "ppBoard" && r.failure()?.errorText === "net::ERR_ABORTED") return;
       if (notModified.has(r)) return;
       consoleErrors.push(`[teach] request failed: ${r.url()} :: ${r.failure()?.errorText}`);
     });

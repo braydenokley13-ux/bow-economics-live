@@ -183,6 +183,33 @@ async function main() {
     await teach.selectOption("#lesson", "m1l2-trade-deadline");
     await teach.waitForSelector("#sourceSessionRow:not([hidden])");
     await teach.waitForSelector(`#sourceSession option[value="${l1SessionId}"]`, { state: "attached" });
+
+    // A session that has not finished is still linkable, and sometimes should
+    // be — but never by accident. The books carried forward are whatever that
+    // room had at the instant this one was created, so a league linked mid-week
+    // arrives half-played and nothing downstream can tell.
+    {
+      const stillLive = await api("/api/sessions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${l1TeacherKey}` },
+        body: JSON.stringify({ lessonModuleId: "m1l1-draft-day", title: "period 4, still running" }),
+      });
+      await teach.reload();
+      await teach.selectOption("#lesson", "m1l2-trade-deadline");
+      await teach.waitForSelector(`#sourceSession option[value="${stillLive.session.id}"]`, { state: "attached" });
+
+      await teach.selectOption("#sourceSession", stillLive.session.id);
+      await teach.waitForSelector("#sourceLiveWarn:not([hidden])", { timeout: 10000 });
+      const warn = (await teach.textContent("#sourceLiveWarn")).trim();
+      assert.match(warn, /has not finished/i, `the live-source warning says nothing useful: "${warn}"`);
+      assert.match(warn, /exactly as they stand right now/i);
+
+      // And it must go away for the finished session, or it is wallpaper.
+      await teach.selectOption("#sourceSession", l1SessionId);
+      await teach.waitForFunction(() => document.getElementById("sourceLiveWarn")?.hidden === true, null, { timeout: 10000 });
+      console.log("[e2e] the picker warns before a still-running session is linked, and stands down for a finished one");
+    }
+
     await teach.selectOption("#sourceSession", l1SessionId);
     await teach.fill("#title", "E2E L2 class");
     await teach.click("#create");

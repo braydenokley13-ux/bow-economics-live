@@ -672,3 +672,19 @@ the founder must not be a hidden runtime dependency for either band.
 - **Date:** 2026-09-03
 - **Owner:** Lead integrator
 - **Evidence:** None required — this decision is not to build.
+
+## D39. Linking a session that has not finished is allowed, but never silent
+
+- **Decision:** The link picker warns, before the room is created, when the selected
+  source session is still live: the books carried forward are whatever that room holds at
+  the instant this one is created. Linking a live session stays permitted — a period that
+  ran long, a class split across two days — the warning only makes it deliberate.
+- **Grounds:** The picker lists live sessions ("live, PLAY") beside finished ones and the
+  seed is read at creation time, so a mis-click carried a half-played league into the next
+  lesson with nothing downstream able to tell: L3's own seed note says the books "walked in
+  from this room's own Lesson 2 session", which stays true and stops being the whole truth.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-l2.cjs` — a still-running L1 raises the warning, a finished one clears
+  it.
