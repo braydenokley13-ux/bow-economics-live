@@ -93,24 +93,84 @@ const STATIC_TYPES: Record<string, string> = {
   // Self-hosted webfonts (gate-l1-visual P1). Cached hard: the file name is
   // content-stable and a Chromebook should fetch each face exactly once.
   ".woff2": "font/woff2",
+  // Raster art. Until this existed `serveStatic` returned false for every
+  // extension not on this list, so a .png in dist/client fell through to the
+  // 404 branch and the product was structurally incapable of showing a
+  // photograph or a painted backdrop — a ceiling on the visual work, enforced
+  // by a lookup table nobody had revisited since the SVG-only visual pass.
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+  ".gif": "image/gif",
+  ".ico": "image/x-icon",
 };
 
 /** Fonts are immutable; everything else must never be cached across a class. */
 const STATIC_CACHE: Record<string, string> = { ".woff2": "public, max-age=31536000, immutable" };
 
-async function serveStatic(res: http.ServerResponse, relativePath: string): Promise<boolean> {
+/**
+ * A validator for a static file, so `no-cache` can mean REVALIDATE rather than
+ * REFETCH.
+ *
+ * `no-cache` is not `no-store`: it tells a browser to keep the file and ask
+ * before reusing it. But asking requires a validator, and this route sent
+ * none — no ETag, no Last-Modified — so every reload of /play re-downloaded
+ * the whole compiled client (main.js plus theme.css plus m2.css) in full. A
+ * refresh is not an unusual event on a classroom Chromebook, and thirty of
+ * them refreshing on one access point is exactly the moment the room cannot
+ * afford it.
+ *
+ * Size and mtime, not a content hash: the files are read off disk on every
+ * request anyway, hashing each one would put a read of the whole file in front
+ * of a 304 that exists to avoid reading it, and a rebuild always moves mtime.
+ * Weak (`W/`) because it is a metadata validator, not a byte-for-byte one.
+ */
+const staticETag = (size: number, mtimeMs: number): string => `W/"${size.toString(36)}-${Math.floor(mtimeMs).toString(36)}"`;
+
+/**
+ * Does an `If-None-Match` header name this entity?
+ *
+ * A browser is allowed to send a comma-separated list, and `*`. Comparison is
+ * weak (RFC 9110 §8.8.3.2 permits weak comparison for If-None-Match), so a
+ * `W/` prefix on either side is stripped before matching — otherwise the
+ * validator this route sends would never match the one it gets back.
+ */
+function headerMatchesEtag(header: string | string[] | undefined, etag: string): boolean {
+  if (header === undefined) return false;
+  const raw = Array.isArray(header) ? header.join(",") : header;
+  const strip = (v: string) => v.trim().replace(/^W\//, "");
+  const want = strip(etag);
+  for (const candidate of raw.split(",")) {
+    const c = candidate.trim();
+    if (c === "*") return true;
+    if (strip(c) === want) return true;
+  }
+  return false;
+}
+
+async function serveStatic(req: http.IncomingMessage, res: http.ServerResponse, relativePath: string): Promise<boolean> {
   const resolved = path.normalize(path.join(CLIENT_DIR, relativePath));
   if (!resolved.startsWith(CLIENT_DIR)) return false; // path traversal guard
   const ext = path.extname(resolved);
   const contentType = STATIC_TYPES[ext];
   if (!contentType) return false;
+  let etag: string;
   try {
     const info = await stat(resolved);
     if (!info.isFile()) return false;
+    etag = staticETag(info.size, info.mtimeMs);
   } catch {
     return false;
   }
-  res.writeHead(200, { "Content-Type": contentType, "Cache-Control": STATIC_CACHE[ext] ?? "no-cache" });
+  const cacheControl = STATIC_CACHE[ext] ?? "no-cache";
+  if (headerMatchesEtag(req.headers["if-none-match"], etag)) {
+    res.writeHead(304, { ETag: etag, "Cache-Control": cacheControl });
+    res.end();
+    return true;
+  }
+  res.writeHead(200, { "Content-Type": contentType, "Cache-Control": cacheControl, ETag: etag });
   await new Promise<void>((resolve, reject) => {
     const stream = createReadStream(resolved);
     stream.on("error", reject);
@@ -213,7 +273,7 @@ async function handle(
   }
   if (method === "GET" && parts[0] && ["teach", "play", "board", "shared", "assets"].includes(parts[0])) {
     const rel = parts.length === 1 ? `${parts[0]}/index.html` : parts.join("/");
-    if (await serveStatic(res, rel)) return;
+    if (await serveStatic(req, res, rel)) return;
     sendJson(res, 404, { error: { code: "not_found", message: "asset not found" } });
     return;
   }
