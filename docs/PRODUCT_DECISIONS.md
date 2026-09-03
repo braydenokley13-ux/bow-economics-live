@@ -857,3 +857,104 @@ the teacher's own Back button, and the forward wrap past the last card, would
 otherwise take cards off thirty screens in the middle of the discussion those
 cards are for. Reading ahead is the thing forbidden; looking back is the thing
 the desk copy promises.
+
+## D48. Module 1 architecture ruling — "THE SAME LINE", candidate D plus five sourced grafts
+
+MODULE 1 ARCHITECTURE SELECTION. Module 1 is rebuilt from the ground up on **Candidate D,
+"THE SAME LINE"** (`docs/gauntlet/module-1/rebuild/DESIGN_D_CHALLENGER.md`), with five named
+grafts. Decision record and the binding 23-item build charter BC-1..BC-23:
+`docs/gauntlet/module-1/rebuild/ARCHITECTURE_SELECTION.md`.
+
+**The war.** Four genuinely competing directions were designed independently against an Economic
+Learning Contract written before any of them existed, each shipping a PLAYABLE Stage-0 L1 loop:
+A FRONT OFFICE UNDER PRESSURE (eight face-up pressure cards), B THE FRANCHISE (inherit one real
+club's actual books), C CLEAN ROOM (five doors — you pick how you pay, not who you sign, produced
+with the existing M1 withheld), D THE SAME LINE (you hold a position relative to lines drawn in the
+same place for every desk, and the lines move). Three independent lenses prosecuted all four by
+executing their models, not by reading their prose.
+
+**The lenses conflicted, and the conflict resolved on inspection rather than by compromise.**
+Sports Reality ranked C > A > D > B and blocked B; Economic Truth ranked B > A > C > D and blocked
+D; Player/Classroom ranked D > B > C > A and rated only D and B STRONG. The apparent Economic-Truth
+/ Gameplay contradiction about D was not one: Economic Truth enumerated legal three-day *plans*
+scored on D's five displayed readings, Gameplay swept the *continuous bid space* scored on who the
+student actually got. Both hold, and together they say — **D's bid is the richest input in the war
+and D's five readings are the poorest register of it. The defect is not the mechanic; the reveal
+does not measure what the mechanic produces.** D's own author had already named that repair. Two
+prosecutors and the design converge on one fix, which no other candidate's fatal has.
+
+**Killed on evidence, not on taste.** A is dead and not repairable: no pair can ever lose anything
+to a rival (`rivalsTake()` sweeps only cards the pair declined), its central strategic premise was
+falsified by computation, and its intellectual reveal is never produced by its own model. B is
+disqualified by an interaction neither lens could see alone — the repair Sports Reality's block
+requires deletes the very cards that produced B's first-place economic evidence, so B's ranking
+rests on a model we are not allowed to build; and B's shipped reveal ranks desks by two composite
+scalars, which is the §0 defect at the prize. C is the best document in the war, owns the best
+cap-as-institution object anywhere, and its loop is FUNCTIONAL — below the bar for the first thing
+a student ever plays (CLAUDE.md §5) — with a repair its own instrument cannot detect.
+
+**The five grafts, each on a named prosecutor's finding:** (1) from C, the five lines rendered as
+five different KINDS of object — a compulsion, a permission system, a price, a confiscation, a
+prohibition; (2) from C, the frozen forgone receipt and THE SAME PLAYER COST EVERY DESK A DIFFERENT
+THING, which works better in D because D's tie-break always awards a contested player; (3) from B,
+THE SAME MOVE, TWO BOOKS as L1's intellectual reveal; (4) from B, the director voice wholesale plus
+THE TWIN DESK and its falsifiable P-TWIN property, the instrument against the dead seats every
+candidate shipped; (5) from A, THE POCKETS as the repair for D's degenerate over-cap tool ladder,
+plus A's invented-constants header and its rule that no real person is a decision object unless the
+situation is dated and sourced. A base plus five sourced grafts — not a design average.
+
+**Three findings every candidate failed, and which therefore discriminated nothing** — carried into
+the charter as obligations: the persistence property P1 is unsatisfied in all four; every candidate
+ships at least one seat with no game; no candidate allocates the 55 minutes, and none produced
+executable evidence that the 7–8 band faces a different economic object.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** CEO / lead integrator
+- **Evidence:** `docs/gauntlet/module-1/rebuild/` — ECONOMIC_CONTRACT.md, DESIGN_A..D, the four
+  Stage-0 prototypes in `stage0/`, ARCHITECTURE_SELECTION.md (three prosecutions, full rankings and
+  blockers). All four prototypes were played in real Chromium by the lead with zero console errors.
+
+## D49. The three questions the Module 1 selection could not settle, ruled under standing founder invariants
+
+The architecture selection surfaced three genuine calibration questions. None is a pair of
+incompatible visions, so per the founder's froth instruction they are ruled here rather than
+escalated; all three are revisable on real classroom evidence.
+
+**Q1 — how many of the five cap lines does L1 carry, at which band? RULED: all five are DRAWN in
+both bands; the number that are LIVE differs.** The five-line ladder is the war's best
+cap-as-institution object and is the module's title concept, so neither band loses it. But five
+lines is not five decision variables: at grades 5–6, L1 makes exactly **two** lines live constraints
+the student can hit — the cap (a permission system) and the first apron (a confiscation) — chosen
+because they are two different KINDS of object, which is the whole point of the ladder. The other
+three are drawn, labelled by what they do, and never bind in L1. At grades 7–8 all five are live.
+This satisfies BC-16's ≤2-variables rule and BC-1's ladder requirement simultaneously, which the
+selection record correctly says cannot both be met with five live lines at 5–6.
+
+**Q2 — open sequential bidding at 5–6, or hidden simultaneous in both bands? RULED: hidden
+simultaneous in both bands, with a 5–6 scaffold that is not a change of mechanic.** Design Rule 12
+prescribes the split and rates itself LOW confidence; the dossier records that it has no source at
+all. Against that, CLAUDE.md §8 names "hidden rival bid" explicitly as legitimate student-to-student
+interaction, the sealed typed number is D's spine, and it earned the war's only STRONG. Forking the
+mechanic by band would also break BC-17's one-reducer requirement. Grades 5–6 instead get the
+scaffolding the productive-failure evidence actually demands: the shared pool's remaining supply is
+visible, and each player carries a public count of how many desks are in on him — never who, and
+never how much. That is a scaffold on INFORMATION, not a different game. Revisit with real
+classroom evidence; running both variants at 5–6 remains the right first live comparison.
+
+**Q3 — does the module admit its staging out loud? RULED: yes, in the module's own voice, and this
+is already founder policy.** Every candidate with a player market places real people in a July 2026
+free agency none of them was in. CLAUDE.md §3 and the founder's §17 already answer this: prefer real
+or closely modelled facts, record what was simplified and why, and where a frozen snapshot makes a
+better stable simulation, say "based on the NBA as of [date]" and freeze it deliberately. So the
+student surface says so — these are real contracts real clubs really signed, on the dates shown,
+gathered into one window so you can shop them — and the staging is registered in the simplifications
+ledger with its misconception risk. The alternative (restricting the board to genuinely available
+dated free agents) shrinks the board below BC-13's frontier requirement and costs the real
+2016/2025/2026 cap-growth triple two charter items depend on.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** CEO / lead integrator (all three revisable by the founder, and by classroom evidence)
+- **Evidence:** `ARCHITECTURE_SELECTION.md` §7; `NBA_FINANCIAL_TRUTH.md` §6.4 rules 1, 6 and 12 and
+  §7.11; CLAUDE.md §3, §8; founder brief §17.
