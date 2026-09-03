@@ -35,7 +35,7 @@ const ctx = (phase: string, seatId = "seat-1", seatIds: string[] = ["seat-1", "s
   now: Date.now(),
 });
 
-const empty = (): BoxOfficeState => boxOfficeModule.initialState({ sessionId: "s1", seatIds: [] });
+const empty = (): BoxOfficeState => boxOfficeModule.initialState({ sessionId: "s1", seatIds: [], gradeBand: "5-6" });
 
 function expectOk(result: ReturnType<typeof boxOfficeModule.reduce>): BoxOfficeState {
   assert.equal(result.ok, true, !result.ok ? result.reason : undefined);

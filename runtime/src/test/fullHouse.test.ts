@@ -70,7 +70,7 @@ const ctx = (phase: CanonicalPhase, seatId: SeatId | "teacher" = "seat-1") => ({
   now: 0,
 });
 
-const empty = (): FullHouseState => fullHouseModule.initialState({ sessionId: "s1", seatIds: [] });
+const empty = (): FullHouseState => fullHouseModule.initialState({ sessionId: "s1", seatIds: [], gradeBand: "5-6" });
 
 function ok(result: ReturnType<typeof fullHouseModule.reduce>): FullHouseState {
   assert.equal(result.ok, true, result.ok ? "" : `expected ok, got: ${result.reason}`);

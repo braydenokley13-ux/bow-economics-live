@@ -29,7 +29,7 @@ const ctx = (phase: string, seatId = "seat-1", seatIds: string[] = ["seat-1", "s
   now: Date.now(),
 });
 
-const empty = (): DraftDayState => draftDayModule.initialState({ sessionId: "s1", seatIds: [] });
+const empty = (): DraftDayState => draftDayModule.initialState({ sessionId: "s1", seatIds: [], gradeBand: "5-6" });
 
 function place(state: DraftDayState, seatId: string, slotId: string, playerId: string) {
   return draftDayModule.reduce(state, { type: "place", slotId, playerId }, ctx("PLAY", seatId));

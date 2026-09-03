@@ -712,3 +712,404 @@ conflict is resolved.
 14. **Rights.** Names, salaries, dates and transaction terms are public facts and safe to render
     (dossier §8.1 #19, §8.2 #22). **No photograph, logo, mark, jersey image or likeness is
     proposed anywhere in this document, and none should be added without a founder call.**
+
+---
+
+# INCUMBENT FREE AGENTS AT THE APRON CLUBS (follow-up, 2026-09-03)
+
+**Research date:** 2026-09-03 · same session, same researcher role, same standard as the Method
+section above. **Nothing above this line was modified.**
+
+**Why this follow-up exists.** The board above has no free agents belonging to the **New York
+Knicks** or the **Minnesota Timberwolves**. Both clubs are over the **first apron**, which strips
+the non-taxpayer mid-level exception, the bi-annual exception and sign-and-trade acquisitions —
+but **does not touch a club's right to re-sign its own free agents using Bird rights.** The
+lesson turns on that asymmetry, and it could not be taught from the existing board.
+
+**Result: both clubs yielded real incumbent free agents. No secondary club was needed.**
+Boston, Sacramento, Milwaukee, Detroit, Memphis and Brooklyn were not worked as free-agent
+sources; Boston appears below only as the *destination* of two New York and Minnesota players.
+
+## ✅ AN OPEN QUESTION FROM ABOVE IS NOW RESOLVED
+
+Item **5** of "WHAT I COULD NOT CONFIRM" — the mid-level exception labels — is **confirmed**.
+Hoops Rumors' league-wide 2026/27 mid-level tracker states the three values *with their labels*:
+
+| Exception | 2026-27 value | Status |
+|---|---|---|
+| Non-taxpayer mid-level | **$15,044,000** | **confirmed** (was inferred) |
+| Room exception | **$9,366,000** | **confirmed** (was inferred) |
+| Taxpayer mid-level | **$6,064,000** | **confirmed** (was inferred) |
+
+Source: [Hoops Rumors — How Teams Are Using 2026/27 Mid-Level Exceptions](https://www.hoopsrumors.com/2026/07/how-teams-are-using-2026-27-mid-level-exceptions.html)
+(cap-database/reporting). The same page gives the **first apron as $209,015,000**. The inferred
+mapping used throughout the document above was correct.
+
+## ✅ A NEW SOURCE TIER BECAME AVAILABLE
+
+The document above records that **no cap-database-tier verification of any dollar figure** was
+possible (Spotrac/Forbes/WaPo all 403). This session found **`salaryswish.com` fetches
+successfully** and publishes, per player: **year-by-year salary**, total, guarantee structure,
+signing date, and — critically — **the exception used**. Every dollar figure in this section has
+been checked against it. That is a genuinely stronger evidence tier than anything above this line,
+and **`salaryswish.com` should be added to the research toolkit.** It is still a third-party
+database, not a league publication; it is not a substitute for the manual Spotrac spot-check the
+document above requires.
+
+## The two clubs' verified apron position
+
+| Club | 2026-27 cap figure | vs first apron ($209,015,000) | vs second apron | Largest exception available |
+|---|---|---|---|---|
+| **New York Knicks** | $218,412,232 | **over by $9,397,232** | **$3,273,768 below** | taxpayer MLE $6,064,000 |
+| **Minnesota Timberwolves** | $214,930,955 (payroll $252,638,473) | **over** | below | taxpayer MLE $6,064,000 |
+
+Sources: [SalarySwish — Knicks](https://www.salaryswish.com/teams/knicks) ·
+[SalarySwish — Timberwolves](https://www.salaryswish.com/teams/timberwolves) (cap-database) ·
+[Hoops Rumors MLE tracker](https://www.hoopsrumors.com/2026/07/how-teams-are-using-2026-27-mid-level-exceptions.html),
+which names both clubs in its over-the-first-apron list and states for each: *"operating above the
+first apron and can't currently use more than the taxpayer portion of the MLE."*
+The full over-first-apron list on that page: **Golden State, Houston, Minnesota, New York,
+Oklahoma City, Orlando, Phoenix.** **Confidence: HIGH.** This is the firmest structural fact in
+the whole research file — two independent origins, one of them a cap database.
+
+---
+
+## THE TABLE — 7 verified incumbent free agents at the two apron clubs
+
+| # | Player | Pos | Whose FA he was | Outcome | Date agreed | Date signed | Yrs | Total | **Year-1 salary** | Annual (AAV) | Mechanism | Conf. |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **NEW YORK KNICKS** |
+| N1 | **Mitchell Robinson** | BIG | New York | **LEFT** → Boston | Jul 1, 2026 | Jul 6, 2026 | 3 | $47,388,600 | **$15,044,000** | $15,796,200 | **Boston's full non-taxpayer MLE** (stated) | **high** |
+| N2 | **Jose Alvarado** | GUARD | New York | **RE-SIGNED** New York | Jun 26, 2026 | Jul 6, 2026 | 3 | $14,384,484 | **$4,439,656** | $4,794,828 | **Bird rights** (stated) | **high** |
+| N3 | **Landry Shamet** | GUARD | New York | **RE-SIGNED** New York | Jun 29, 2026 | Jul 6, 2026 | 4 | $23,978,467 | **$5,490,967** | $5,994,617 | **Early Bird rights** (stated; label disputed) | high (terms) / medium (label) |
+| **MINNESOTA TIMBERWOLVES** |
+| M1 | **Ayo Dosunmu** | GUARD | Minnesota | **RE-SIGNED** Minnesota | ~Jun 22, 2026 | Jul 10, 2026 | 5 | $112,000,000 | **$19,310,345** | $22,400,000 | **Bird rights** (stated) | **high** |
+| M2 | **Bones Hyland** | GUARD | Minnesota | **RE-SIGNED** Minnesota | Jun 30, 2026 | Jul 3, 2026 | 1 | $2,845,883 | **$2,845,883** (cap hit $2,449,421) | $2,845,883 | veteran minimum (stated) | **high** |
+| M3 | **Mike Conley** | GUARD | Minnesota | **LEFT** → Boston | ~Jul 1, 2026 | Jul 6, 2026 | 1 | $3,876,529 | **$3,876,529** (cap hit $2,449,421) | $3,876,529 | veteran minimum (stated) | high (terms) / ⚠ see note |
+| **CONTROL CARD — not an incumbent, included because it is the other half of the proof** |
+| M4 | **Jonathan Kuminga** | WING | *not Minnesota's* (Atlanta) | **JOINED** Minnesota from outside | Aug 26, 2026 | Aug 26, 2026 | 2 | $12,431,200 | **$6,064,000** | $6,215,600 | **taxpayer MLE** (stated) | **high** |
+
+**Note on Dosunmu already appearing above.** He is **entry 20** of the main board. This section
+adds what the main board lacked: **his year-1 salary ($19,310,345 — the main board's "~$19M, one
+source" is now confirmed to the dollar) and his mechanism (Bird rights, previously listed as "not
+reported" and explicitly warned against printing).** The main board's row for him can now be
+upgraded.
+
+---
+
+## ⭐ THE SINGLE BEST FINDING: MINNESOTA PAID TWO PRICES IN ONE SUMMER
+
+This is the cleanest demonstration of the apron asymmetry available anywhere in this research,
+and it is **one club, one offseason, both numbers confirmed at cap-database tier:**
+
+| | Ayo Dosunmu | Jonathan Kuminga |
+|---|---|---|
+| Whose free agent | **Minnesota's own** | **another club's** |
+| Year-1 salary from Minnesota | **$19,310,345** | **$6,064,000** |
+| Tool used | **Bird rights** | **taxpayer mid-level exception** |
+| Date | Jul 10, 2026 | Aug 26, 2026 |
+
+**Same buyer. Same summer. Same apron. Three times the price — because one player was already
+theirs.** Minnesota could not legally have offered Kuminga a dollar over $6,064,000 in year one;
+it could, and did, offer its own player $19,310,345. Kuminga's year-1 salary is **exactly** the
+taxpayer MLE to the dollar, which is what makes the pair airtight rather than suggestive.
+
+**This is the lesson.** If only one thing from this follow-up reaches a student screen, it is
+these two numbers side by side.
+
+---
+
+## ⚠ AN ACCURACY POINT THE LESSON MUST NOT GET WRONG
+
+**Over the FIRST apron, Bird rights are completely untouched.** New York did **not** lose
+Mitchell Robinson because a rule forbade re-signing him. New York had full Bird rights on him and
+could legally have paid him **any** amount. It chose not to, because it sat **$3,273,768 below the
+second apron** and $15,044,000 would have pushed it well past — and reporting attributes ownership
+unwillingness to cross that line.
+
+So the honest formulation is:
+
+- **First apron takes away the tools for buying OTHER clubs' players** (non-taxpayer MLE,
+  bi-annual exception, sign-and-trade). ← *this is the rule*
+- **Bird rights for your OWN players survive.** ← *this is the exemption*
+- **The second apron is where the real squeeze comes from** — it does not remove Bird rights
+  either, but it makes using them punishingly expensive and triggers further restrictions.
+
+A lesson that says "the apron stopped New York from re-signing Robinson" **teaches false
+economics** and would fail CLAUDE.md §8. The true and better story is: *the rules let them keep
+him, and they still couldn't afford to.* That is a sharper economics lesson anyway — constraint
+versus cost.
+
+---
+
+## PER-PLAYER NOTES
+
+> Same caveat as the main board: strength/risk lines are **my plain-language renderings** of facts
+> in the cited reporting, not quotations. Re-read them against the sources before they reach a
+> student screen.
+
+### N1. Mitchell Robinson — BIG — **left New York for Boston** ⭐
+- **Reached free agency:** contract expired after **eight seasons** with the Knicks, the only club
+  he had played for (drafted 36th overall, 2018). Unrestricted. He had just won the 2026
+  championship with New York.
+- **Terms:** 3 years, **$47,388,600**. **Year 1 = $15,044,000**, year 2 $15,796,200, year 3
+  $16,548,400 (**player option**). Fully guaranteed. Agreed **Jul 1, 2026**, official
+  **Jul 6, 2026**.
+- **Mechanism — the whole point:** Boston used **its entire non-taxpayer mid-level exception**.
+  Hoops Rumors' MLE tracker lists Boston's line verbatim as *"Used: $15,044,000 (Mitchell
+  Robinson)"*. The three years total **$47,388,600 exactly** — $15,044,000 with 5% raises — so the
+  arithmetic and the label agree perfectly. Using it **hard-capped Boston at the first apron.**
+- **Why this card is worth more than any other New York card:** the tool Boston used to take him
+  is **precisely the tool the first apron had taken away from New York.** New York's largest
+  exception was $6,064,000 — it could not have signed its own departing centre back off the open
+  market at this price by any route except Bird rights.
+- **Strength (plain):** "He is seven feet tall and nearly three of every four shots he takes go
+  in, because he only shoots from right beside the basket. He grabbed almost nine rebounds a game
+  and dunked 97 times last season."
+- **Risk (plain):** "He gets hurt. In the two seasons before last he played only 17 games, then
+  31 games, out of 82. He has never once attempted a long shot, and he misses about half his free
+  throws."
+- **Age:** 28 (born Apr 1, 1998).
+- **Sources:** [Hoops Rumors MLE tracker](https://www.hoopsrumors.com/2026/07/how-teams-are-using-2026-27-mid-level-exceptions.html) (cap-database/reporting; **the mechanism**) ·
+  [SalarySwish](https://www.salaryswish.com/players/mitchell-robinson) (cap-database; **year-by-year salary, exact total, MLE label**) ·
+  [NBA.com](https://www.nba.com/news/mitchell-robinson-celtics-free-agency-2026) (official-nba, editorial; terms, dates, stats) ·
+  [ESPN](https://www.espn.com/nba/story/_/id/49237335/sources-mitchell-robinson-celtics-agree-3-year-474m-deal) (reporting; **page fetched empty this session — headline only**) ·
+  [NBC Sports Boston](https://www.nbcsportsboston.com/nba/boston-celtics/nba-free-agents-mitchell-robinson-contract-stats-salary/793722/) (reporting; the 72.3% / 97-dunks / 17-and-31-games facts) ·
+  [Hoops Rumors — Knicks offseason check-in](https://www.hoopsrumors.com/2026/08/nba-2026-offseason-check-in-new-york-knicks.html) (cap-database/reporting; lists him as a departure)
+- **Confidence: HIGH** — on terms, year-1 salary, mechanism and status. **This is the best-sourced
+  single transaction in the entire research file**: a cap database, a mechanism tracker, a
+  league-published post and an exact arithmetic reconciliation all agree.
+
+### N2. Jose Alvarado — GUARD — **re-signed with New York (Bird rights)**
+- **Reached free agency:** **declined a $4,500,000 player option**. Genuine free agency, not an
+  option pick-up. He had been acquired from New Orleans during the 2025-26 season, so his Bird
+  rights travelled with him in the trade.
+- **Terms:** 3 years, **$14,384,484**. Year 1 **$4,439,656**, year 2 $4,794,828, year 3 $5,150,000
+  (partially guaranteed at $2,765,516, becoming full if he is not waived before **Jun 30, 2028**).
+  Agreed **Jun 26, 2026**, official **Jul 6, 2026**.
+- **Mechanism: Bird rights.** SalarySwish labels the exception **"Bird QVFA"** — *Qualifying
+  Veteran Free Agent*, the CBA's own term for a full-Bird free agent. Hoops Rumors independently
+  says "Bird rights."
+- **Strength (plain):** "He was on the floor at the end of the biggest game of the season — the
+  fourth quarter of a Finals game his team won after being 29 points behind."
+- **Risk (plain):** "He is a backup who plays behind the team's star guard. His own club's price
+  for him — under $4,500,000 in the first year — is what they think that is worth."
+- **Sources:** [Hoops Rumors — Knicks check-in](https://www.hoopsrumors.com/2026/08/nba-2026-offseason-check-in-new-york-knicks.html) (cap-database/reporting; **"Bird rights"**, exact total, guarantee structure) ·
+  [SalarySwish](https://www.salaryswish.com/players/jose-alvarado) (cap-database; **year-by-year salary, "Bird QVFA"**) ·
+  [NBA.com](https://www.nba.com/news/reports-champion-knicks-retain-key-reserve-jose-alvarado) (official-nba, editorial) ·
+  [ESPN](https://www.espn.com/nba/story/_/id/49190706/jose-alvarado-returning-new-york-knicks-new-3-year-deal) (reporting; **fetched empty — headline only**) ·
+  [Yahoo Sports](https://sports.yahoo.com/nba/article/knicks-fan-favorite-jose-alvarado-reportedly-declining-option-agrees-to-3-year-14-million-deal-with-hometown-team-210731156.html) (reporting; the declined $4.5M option)
+- **Confidence: HIGH** on terms, year-1 salary, mechanism and free-agency status.
+- ⚠ **One labelling wrinkle, flagged:** SalarySwish's *contract-type* field reads **"Veteran
+  Extension"** while its *exception* field reads **"Bird QVFA."** Those are contradictory on their
+  face. Four independent accounts (Hoops Rumors, ESPN, Yahoo, Bleacher Report) all describe a
+  **declined player option followed by a new contract**, and "QVFA" is by definition a free agent,
+  so the type field is almost certainly a database quirk. **Do not let it slide by unexamined —
+  this is the exact failure mode that got four players rejected in the main board.** I judge him a
+  genuine free agent; a reviewer should agree before he ships.
+
+### N3. Landry Shamet — GUARD — **re-signed with New York**
+- **Reached free agency:** contract expired. Unrestricted. Reported to have **turned down larger
+  offers from other contenders** to stay and defend the title.
+- **Terms:** 4 years, **$23,978,467**. Year 1 **$5,490,967**, then $5,737,500 / $6,162,500 /
+  $6,587,500, with a **player option in year 4** and only **$14,500,000 (about 61%) guaranteed**.
+  Agreed **Jun 29, 2026**, official **Jul 6, 2026**.
+- **Mechanism: ⚠ disputed label.** Hoops Rumors says **Early Bird rights**; SalarySwish says
+  **Bird**. Both are re-signing rights the apron leaves intact, so the *economics* of the card is
+  unaffected — but **do not print a specific rights label for Shamet.** Say "his own club's
+  re-signing rights."
+- **Strength (plain):** "He scored about nine points a game in 51 games, and then shot better in
+  the playoffs than in the regular season — he made almost half of his long shots when it
+  mattered most."
+- **Risk (plain):** "Only about six of every ten dollars in his contract is actually guaranteed.
+  In the later years his team can decide to stop paying him."
+- **Sources:** [Hoops Rumors — Knicks check-in](https://www.hoopsrumors.com/2026/08/nba-2026-offseason-check-in-new-york-knicks.html) (cap-database/reporting; **"Early Bird rights"**, exact total) ·
+  [SalarySwish](https://www.salaryswish.com/players/landry-shamet) (cap-database; year-by-year, **"Bird"**) ·
+  [NBA.com](https://www.nba.com/news/landry-shamet-knicks-free-agency-2026) (official-nba, editorial) ·
+  [Yahoo Sports / AP](https://sports.yahoo.com/articles/landry-shamet-stay-knicks-4-230358940.html) (reporting; the turned-down offers, the Jun 29 date, the 9.3 / 47.5% stats)
+- **Confidence: HIGH** on terms and year-1 salary (two cap databases agree to the dollar);
+  **MEDIUM** on the rights label.
+
+### M1. Ayo Dosunmu — GUARD — **re-signed with Minnesota (Bird rights)** ⭐⭐
+- **Reached free agency:** contract expired; **unrestricted for the first time in his career.**
+  Minnesota had acquired him from Chicago on **Feb 5, 2026** (with Julian Phillips, for Rob
+  Dillingham, Leonard Miller and four second-round picks), **and his Bird rights transferred with
+  him in the trade** — which is exactly why an over-the-apron club could pay him this much.
+  He carried a **$14,300,000 cap hold** into the offseason.
+- **Terms:** 5 years, **$112,000,000**, fully guaranteed. **Year 1 = $19,310,345**, then
+  $20,855,173 / $22,400,001 / $23,944,829 / $25,489,652 (**player option** in year 5).
+  Agreed **~Jun 22, 2026** (see the date caveat below), official **Jul 10, 2026**.
+- **Mechanism: Bird rights** — stated outright by SalarySwish ("Bird Exception") and corroborated
+  by the trade-rights reporting and by the cap-hold framing.
+- **Why he is the headline card:** at **$19,310,345 in year one** he sits squarely in the
+  $6,000,000-$25,000,000 band that an over-the-apron club **can only reach for its own players.**
+  Minnesota's largest exception for anyone else's free agent was **$6,064,000**. This one contract
+  is more than three times the maximum the same club could offer any outsider on the same day.
+- **Strength (plain):** "In the playoffs he averaged about sixteen points a game, and in one game
+  against Denver he scored 43 — the most he has ever scored — making thirteen of seventeen shots
+  and all five of his long ones."
+- **Risk (plain):** "He played only 24 regular-season games for this team before they agreed to
+  pay him $112,000,000. They are buying about half a season plus one hot playoff run."
+- **Age:** 26.
+- **Sources:** [SalarySwish](https://www.salaryswish.com/players/ayo-dosunmu) (cap-database; **year-by-year salary and "Bird Exception"** — the two facts the main board could not get) ·
+  [NBA.com](https://www.nba.com/news/reports-ayo-dosunmu-to-re-sign-with-timberwolves) (official-nba, editorial; Jul 10 official date, trade-deadline acquisition, stats) ·
+  [ESPN](https://www.espn.com/nba/story/_/id/49150075/dosunmu-gets-5-year-112m-deal-timberwolves) (reporting; **fetched empty — headline only**) ·
+  [Bleacher Report](https://bleacherreport.com/articles/25428800-ayo-dosunmu-wolves-reportedly-agree-new-contract-after-julius-randle-trade-updated-salary-cap) (reporting; **the $14.3M cap hold**, the Charania attribution) ·
+  [Yahoo Sports](https://sports.yahoo.com/articles/timberwolves-sign-ayo-dosunmu-five-050100065.html) (reporting) ·
+  [SI](https://www.si.com/nba/timberwolves/onsi/ayo-dosunmu-staying-with-timberwolves-on-reported-112-million-contract) (reporting)
+- **Confidence: HIGH** on terms, year-1 salary, mechanism and free-agency status.
+- ⚠ **Date caveat:** the **official** date (Jul 10, 2026) is firm from NBA.com and the team. The
+  **agreement** date is not: "~Jun 22" comes from an aggregator timestamp and Bleacher Report says
+  only "late June." **Print the July 10 date, or print no agreement date.**
+
+### M2. Bones Hyland — GUARD — **re-signed with Minnesota (minimum)**
+- **Reached free agency:** his one-year minimum deal with Minnesota expired. **Unrestricted.**
+  He re-signed **23 minutes into free agency.**
+- **Terms:** 1 year, **$2,845,883** player salary against a **$2,449,421 cap hit** — the
+  minimum-salary reimbursement gap the main board flags in the Gary Payton II note. Agreed
+  **Jun 30, 2026**, signed **Jul 3, 2026**.
+- **Mechanism: veteran minimum exception** (stated). **Note this is *not* a Bird-rights card** —
+  the minimum exception is available to every club regardless of apron, so he demonstrates
+  nothing about the apron. He is here for completeness, not for teaching.
+- **Strength (plain):** "He played 71 games last season — more than almost anyone else on this
+  list — and scored about eight and a half points a game coming off the bench."
+- **Risk (plain):** "He signed for the least the rules allow, 23 minutes into free agency. Nobody
+  bid against his own team."
+- **Sources:** [Hoops Rumors](https://www.hoopsrumors.com/2026/06/bones-hyland-re-signing-with-timberwolves-on-one-year-deal.html) (cap-database/reporting; **both dates, both dollar figures, the mechanism, UFA status, full stat line**) ·
+  [Star Tribune](https://www.startribune.com/minnesota-timberwolves-nba-free-agency-news-bones-hyland/601861806) (reporting) ·
+  [SI](https://www.si.com/nba/timberwolves/onsi/timberwolves-re-sign-fan-favorite-guard-bones-hyland) (reporting)
+- **Confidence: HIGH.**
+
+### M3. Mike Conley — GUARD — **left Minnesota for Boston (minimum)** ⚠
+- **Reached free agency:** contract expired. **Unrestricted.** He announced in May 2026 he would
+  not retire and intended to play a 20th season.
+- **Terms:** 1 year, **$3,876,529** (cap hit $2,449,421), **$0 guaranteed**. Signed
+  **Jul 6, 2026**. Veteran minimum exception.
+- **Age:** 38, turning 39 in October 2026. He becomes only the **14th player in NBA history to
+  reach 20 seasons.**
+- ⚠ **Why he is a weak apron card — read before using him.** SalarySwish shows he was **waived by
+  Charlotte on Feb 5, 2026** and signed with Minnesota **Feb 17, 2026** on a rest-of-season deal
+  worth $1,148,727. A player signed after clearing waivers mid-season does **not** bring full Bird
+  rights, so Minnesota's retention right on him was weak regardless of the apron. **He shows a
+  club losing its own free agent; he does not show anything about Bird rights.** Do not use him to
+  teach the mechanism.
+- **Strength (plain):** "He is about to play his twentieth season. Only thirteen players in the
+  entire history of the league have ever done that."
+- **Risk (plain):** "He is 38 and scored under five points a game last season. His own team
+  replaced him with younger guards and did not fight to keep him."
+- **Sources:** [SalarySwish](https://www.salaryswish.com/players/mike-conley) (cap-database; exact salary, cap hit, mechanism, **the Charlotte waiver and Feb 17 signing**) ·
+  [NBA.com](https://www.nba.com/news/mike-conley-free-agency-2026) (official-nba, editorial; UFA status, age 38, the 4.5/1.7/2.9 line, the reason Minnesota moved on) ·
+  [Star Tribune](https://www.startribune.com/mike-conley-leaves-minnesota-timberwolves-signs-boston-celtics/601863271) (reporting) ·
+  [ESPN](https://www.espn.com/nba/story/_/id/49236921/conley-celtics-becomes-12th-reach-20-nba-seasons) (reporting; **headline only, page not fetched**)
+- **Confidence: HIGH** on terms and status; the **teaching value is LOW** for this lesson.
+- ⚠ **Note a live source contradiction I could not settle:** one Yahoo headline in search results
+  reads *"Mike Conley Jr. reportedly rejoining Timberwolves after being waived by Hornets."* That
+  is almost certainly the **February 2026** signing surfacing out of order, not a second 2026-27
+  move — SalarySwish has him on Boston's books for 2026-27. **But I did not open that article.**
+  If Conley is used at all, resolve this first.
+
+### M4. Jonathan Kuminga — WING — **joined Minnesota from outside (taxpayer MLE)** — CONTROL CARD
+- **NOT an incumbent free agent.** He is included **only** because he is the other half of the
+  Dosunmu proof. He was unrestricted, coming from **Atlanta** (traded there from Golden State in
+  February 2026, 16 games played).
+- **Terms:** 2 years, **$12,431,200**, fully guaranteed. **Year 1 = $6,064,000**, year 2
+  $6,367,200 (**player option**). Agreed and reported **Aug 26, 2026**.
+- **Mechanism: the taxpayer mid-level exception**, stated explicitly by ESPN and Hoops Rumors, and
+  confirmed to the dollar by SalarySwish ("Taxpayer-MLE", year 1 = $6,064,000 exactly). Using it
+  **hard-capped Minnesota at the second apron** — Hoops Rumors reported the club was then "$4
+  million away" from that line and had to clear salary before finalising it.
+- **He chose Minnesota over the Lakers, Bulls and Trail Blazers.** The Lakers attempted a
+  sign-and-trade at more than $12,000,000 a year over three years; he took the shorter deal.
+- **Strength (plain):** "Four teams wanted him, and the team president flew to Miami to sit with
+  him for four hours to talk him into coming."
+- **Risk (plain):** "He played only 16 games for his last team, and he took a two-year deal
+  instead of a long one — which means either he thinks he can do better next year, or nobody
+  offered him more."
+- **Sources:** [SalarySwish](https://www.salaryswish.com/players/jonathan-kuminga) (cap-database; **year 1 = $6,064,000, "Taxpayer-MLE"**) ·
+  [Hoops Rumors](https://www.hoopsrumors.com/2026/08/jonathan-kuminga-agrees-to-two-year-deal-with-timberwolves.html) (cap-database/reporting; **the exception, the $6.1M first year, the second-apron hard cap, the Lakers sign-and-trade**) ·
+  [ESPN](https://www.espn.com/nba/story/_/id/49736014/jonathan-kuminga-reaches-2-year-deal-minnesota-timberwolves) (reporting; **headline only, page not fetched** — headline states "2-year, $12.4M") ·
+  [TSN](https://www.tsn.ca/nba/article/jonathan-kuminga-reaches-2-year-124m-deal-with-timberwolves-n1-49736014/) (reporting; carries the same ESPN report)
+- **Confidence: HIGH** on the year-1 salary and the mechanism — these are the two figures the
+  proof rests on, and both are confirmed by a cap database *and* stated in reporting.
+- ⚠ **Total-value discrepancy, flagged:** ESPN and TSN say **$12.4 million**; Hoops Rumors' article
+  body says **$13 million**. SalarySwish computes **$12,431,200**, which is $6,064,000 plus a 5%
+  raise — i.e. ESPN is right to the dollar and Hoops Rumors rounded loosely. **Print $12,431,200
+  or "about $12.4 million"; do not print $13 million.**
+
+---
+
+## WHAT THE LESSON CAN NOW TEACH THAT IT COULD NOT BEFORE
+
+| Beat | Card | The number |
+|---|---|---|
+| An apron club **can** pay its own player a big salary | **Dosunmu** re-signs Minnesota | **$19,310,345** year 1, Bird rights |
+| The same club **cannot** pay an outsider more than the taxpayer MLE | **Kuminga** joins Minnesota | **$6,064,000** year 1, taxpayer MLE |
+| A club **under** the apron has a tool the apron club does not | **Robinson** leaves New York for Boston | **$15,044,000** year 1, full non-taxpayer MLE |
+| Bird rights survive the apron but cost is still binding | **New York** keeps the right, declines to use it | **$3,273,768** below the second apron |
+| Small re-signings look the same at any apron level | **Alvarado** ($4,439,656), **Shamet** ($5,490,967), **Hyland** ($2,845,883) | below the taxpayer MLE — teach nothing about the apron |
+
+**A caution the designer should act on.** Neither club re-signed anyone in the
+**$6,064,000-$15,044,000** window. New York's two Bird re-signings both landed **below** the
+taxpayer MLE, meaning New York could have paid those two exact salaries without Bird rights at
+all. **New York alone cannot prove the asymmetry.** Only Minnesota can, via Dosunmu. If the lesson
+needs both apron seats to carry the mechanism, New York's seat must carry it through
+**Robinson's departure** — the tool Boston used and New York did not have — rather than through a
+re-signing.
+
+---
+
+## WHAT I COULD NOT CONFIRM (this follow-up)
+
+1. **Source independence is still the same single origin.** Terms for Robinson, Dosunmu, Alvarado,
+   Shamet and Kuminga all trace to **Shams Charania (ESPN)**. What is *new and genuinely
+   independent* is the **cap-database layer** — SalarySwish's year-by-year salary tables and
+   exception labels, and Hoops Rumors' MLE tracker — which do not merely repeat a report, they
+   publish structured contract data that **reconciles arithmetically** (Robinson $47,388,600 =
+   3-year full NTMLE; Kuminga $12,431,200 = 2-year full taxpayer MLE). **This section is better
+   evidenced than the main board above.** It is still not league-published fact.
+
+2. **ESPN pages would not fetch this session.** Every `espn.com` URL returned **empty content**.
+   All ESPN citations above are **headline-level only**. This is a new access failure not recorded
+   in the main document's §"Access failures".
+
+3. **Spotrac was not retried** (403 above). SalarySwish was used as the fetchable cap-database
+   substitute. **The manual Spotrac spot-check the main document demands still has not happened
+   for any figure, including these.**
+
+4. **Jose Alvarado's SalarySwish contract-type field says "Veteran Extension"** while its exception
+   field says "Bird QVFA" and four reporting sources describe a declined option plus a new deal.
+   I judge him a genuine free agent. **Unresolved on the face of one database field.**
+
+5. **Landry Shamet's rights label** — Early Bird (Hoops Rumors) vs Bird (SalarySwish). Economics
+   unaffected; **do not print a specific label.**
+
+6. **Dosunmu's agreement date** (~Jun 22 vs "late June"). The **Jul 10, 2026 official date is
+   firm.**
+
+7. **Jonathan Kuminga's total** — $12.4M (ESPN/TSN/SalarySwish, arithmetically exact) vs $13M
+   (Hoops Rumors body text).
+
+8. **Minnesota's hard-cap line.** Hoops Rumors says using the taxpayer MLE put Minnesota against
+   the **second-apron** hard cap; SalarySwish's team page summary rendered as "hard capped at the
+   first apron." Under the 2023 CBA the taxpayer MLE hard-caps at the **second** apron, so I
+   believe Hoops Rumors and treat the SalarySwish line as a parsing artefact — **but I did not
+   resolve it against primary CBA text.**
+
+9. **Mike Conley's 2026-27 club.** SalarySwish has him on Boston. A stray Yahoo headline suggests
+   a Minnesota return. **Almost certainly a stale February item; not opened; unresolved.**
+
+10. **First-apron restriction list.** That the first apron removes the non-taxpayer MLE, the
+    bi-annual exception and sign-and-trade acquisitions is stated by the Knicks reporting and by
+    thirdapron.com, and is consistent with the MLE tracker. **It is not verified against primary
+    CBA text**, and the second-apron restriction list is verified only from
+    [thirdapron.com](https://www.thirdapron.com/p/timberwolves-offseason-preview-edwards-dosunmu-aprons)
+    (single source, subscriber newsletter tier): *"limited to increasing their payroll by
+    re-signing or extending their own players, signing draft picks, and signing minimum-salary
+    players."* **The lesson's core rule claim should get one more source before it ships.**
+
+11. **Whether any of this has changed since.** Same warning as the main document: it is
+    **2026-09-03**, roughly three weeks before training camp. Kuminga signed only **eight days
+    ago**. Camp waivers and late trades are live.
+
+12. **Rights.** As above — names, salaries, dates and terms only. **No photograph, logo, mark,
+    jersey image or likeness is proposed here.**

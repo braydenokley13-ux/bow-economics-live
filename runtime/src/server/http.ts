@@ -301,6 +301,11 @@ async function handle(
       const payload = await service.createSession({
         lessonModuleId,
         title,
+        // Which class this room is for. Untrusted; the service normalises it
+        // and an unrecognised value becomes the default band rather than an
+        // error, because a teacher three minutes before a lesson should not be
+        // able to fail to create a room by mistyping a query parameter.
+        gradeBand: body["gradeBand"],
         sourceSessionId,
         teacherKey: bearerToken(req),
       });

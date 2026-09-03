@@ -25,6 +25,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { AnyLessonModule, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
+import { bandOrDefault, type GradeBand } from "../shared/gradeBand.js";
 import { isOrderedSubsequence, type CanonicalPhase } from "../shared/phases.js";
 import {
   generateDeviceToken,
@@ -183,6 +184,8 @@ export type TeacherPayload = {
     code: string;
     title: string;
     lessonModuleId: string;
+    /** The band this room is for. On the console so a teacher can see which class they opened. */
+    gradeBand: GradeBand;
     phase: CanonicalPhase;
     phases: readonly CanonicalPhase[];
     /** When this room was created — the anchor for the console's class clock. */
@@ -304,9 +307,12 @@ export class SessionService {
   async createSession(input: {
     lessonModuleId: string;
     title: string;
+    /** Which class this room is for. Defaults to 5-6, the band that existed first. */
+    gradeBand?: unknown;
     sourceSessionId?: string;
     teacherKey?: string | null;
   }): Promise<TeacherPayload> {
+    const gradeBand = bandOrDefault(input.gradeBand);
     const mod = this.modules.get(input.lessonModuleId);
     if (!mod) throw new ServiceError(400, "unknown_module", `no lesson module registered as "${input.lessonModuleId}"`);
     // Creating a room is open — this product has no accounts and never asked
@@ -344,10 +350,20 @@ export class SessionService {
           sourceSessionId: source.id,
           sourcePhase: source.phase,
           sourceEnded: source.ended,
+          // THE THIRD ATTACHMENT POINT, and the one D38 did not name.
+          //
+          // Without it a 7-8 room seeded from a 5-6 room accepts the carry in
+          // silence, and nothing in the runtime is able to notice: the
+          // receiving module sees a well-formed envelope from the right module
+          // id and every reason to trust it. The runtime still does not JUDGE
+          // this -- judging a cross-band carry is the module's call, because
+          // only the module knows whether its own state means the same thing in
+          // both bands. What the runtime owes is the fact.
+          sourceGradeBand: source.gradeBand,
         };
       }
     }
-    const state = mod.initialState({ sessionId, seatIds: [], seed });
+    const state = mod.initialState({ sessionId, seatIds: [], seed, gradeBand });
     let code = "";
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const candidate = generateJoinCode();
@@ -362,6 +378,7 @@ export class SessionService {
       code,
       title: input.title || mod.title,
       lessonModuleId: mod.id,
+      gradeBand,
       phase: mod.phases[0]!,
       state,
       teacherKeyHash: hashDeviceToken(teacherKey),
@@ -1340,6 +1357,7 @@ export class SessionService {
         code: session.code,
         title: session.title,
         lessonModuleId: session.lessonModuleId,
+        gradeBand: session.gradeBand,
         phase: session.phase,
         phases: mod.phases,
         // Every time-cut instruction in every lesson is written as "past minute

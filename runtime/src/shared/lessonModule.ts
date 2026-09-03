@@ -22,6 +22,7 @@
  * more dangerous than no claim: it is read by the author of the next lesson,
  * at the moment they are deciding whether to write the check.
  */
+import type { GradeBand } from "./gradeBand.js";
 import type { CanonicalPhase } from "./phases.js";
 
 export type SeatId = string;
@@ -72,7 +73,18 @@ export interface LessonModule<TState = unknown> {
    * lazily, on the seat's own first action, which is what the built lessons
    * do with a `takeSeat` action against a `seated: false` view.
    */
-  initialState(input: { sessionId: string; seatIds: readonly SeatId[]; seed?: unknown }): TState;
+  initialState(input: {
+    sessionId: string;
+    seatIds: readonly SeatId[];
+    seed?: unknown;
+    /**
+     * Which class this room is for. The second of the seam's three attachment
+     * points. A module that has only one band ignores it; a dual-band module
+     * stores it in its own state at creation, because it is fixed for the life
+     * of the room and every later view needs it.
+     */
+    gradeBand: GradeBand;
+  }): TState;
 
   /**
    * The single source of truth, and THE ONLY PHASE GATE THERE IS.

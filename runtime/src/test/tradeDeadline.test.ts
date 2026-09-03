@@ -42,7 +42,7 @@ function expectRejected<T>(result: { ok: boolean; reason?: string }, match?: Reg
 
 /** Builds and locks a full L1 draftDay roster for one seat, from explicit slot->playerId picks. */
 function buildLockedL1(picks: { slot: string; playerId: string }[], seatId = "s1", seatIds = ["s1"]): DraftDayState {
-  let state = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let state = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   for (const { slot, playerId } of picks) {
     state = expectOk(draftDayModule.reduce(state, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", seatId, seatIds)));
   }
@@ -71,7 +71,7 @@ const ROOMY_ROSTER = [
 function freshL2(picks: { slot: string; playerId: string }[] = AT_CAP_ROSTER, l1SeatId = "s1", l2SeatIds = ["t1", "t2", "t3"]): TradeDeadlineState {
   const l1 = buildLockedL1(picks, l1SeatId, [l1SeatId]);
   const seed = { lessonModuleId: draftDayModule.id, state: l1 };
-  return tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: l2SeatIds, seed });
+  return tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: l2SeatIds, seed, gradeBand: "5-6" });
 }
 
 function claim(state: TradeDeadlineState, seatId: string, carriedIndex: number | null, seatIds = ["t1", "t2", "t3"]): TradeDeadlineState {
@@ -127,7 +127,7 @@ test("SEED: happy path — one locked L1 team becomes exactly one carried franch
 });
 
 test("SEED: an unlocked L1 team is excluded — it never becomes a carried franchise", () => {
-  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: "SCORER", playerId: "sc-10" }, ddCtx("PLAY", "s1")));
   const carried = extractCarriedFranchises({ lessonModuleId: draftDayModule.id, state: l1 });
   assert.deepEqual(carried, []);
@@ -153,7 +153,7 @@ test("SEED: a locked L1 team with a corrupted player id in a slot is excluded (n
 });
 
 test("SEED: multiple locked L1 teams are sorted by original franchiseIndex (join order), not object key order", () => {
-  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   const seatIds = ["z-seat", "a-seat", "m-seat"]; // deliberately not alphabetical to prove sort isn't by key
   for (const [i, seatId] of seatIds.entries()) {
     for (const { slot, playerId } of AT_CAP_ROSTER) {
@@ -168,7 +168,7 @@ test("SEED: multiple locked L1 teams are sorted by original franchiseIndex (join
 });
 
 test("SEED: a mixed class — one valid, one unlocked, one corrupted — carries forward only the valid one", () => {
-  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   const seatIds = ["good", "unfinished", "bad"];
   for (const { slot, playerId } of AT_CAP_ROSTER) {
     l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "good", seatIds)));
@@ -248,7 +248,7 @@ test("M1 repair (VERIFY_L2.md MODERATE): a late joiner can still claim during PL
 });
 
 test("M1: claiming a stock franchise during PLAY works the same as during HOOK", () => {
-  const state = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1"] }); // no seed
+  const state = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1"], gradeBand: "5-6" }); // no seed
   const claimed = expectOk(tradeDeadlineModule.reduce(state, { type: "claim", carriedIndex: null }, tdCtx("PLAY", "t1")));
   assert.equal(claimed.teams["t1"]!.claim!.origin, "stock");
 });
@@ -259,7 +259,7 @@ test("CLAIM: the teacher cannot claim a franchise", () => {
 });
 
 test("CLAIM: stock franchises are deterministic, balanced, and honestly labeled — no L1 link needed at all", () => {
-  const emptyState = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"] }); // no seed passed
+  const emptyState = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"], gradeBand: "5-6" }); // no seed passed
   assert.deepEqual(emptyState.carriedFranchises, []);
   const t1 = claim(emptyState, "t1", null, ["t1", "t2"]);
   const t2 = claim(t1, "t2", null, ["t1", "t2"]);
@@ -273,7 +273,7 @@ test("CLAIM: stock franchises are deterministic, balanced, and honestly labeled 
 });
 
 test("CLAIM: a whole class with no L1 link runs entirely on stock franchises — the lesson is standalone-testable", () => {
-  const state = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: [] }); // no seed at all
+  const state = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: [], gradeBand: "5-6" }); // no seed at all
   assert.deepEqual(state.carriedFranchises, []);
   const claimed = claim(state, "t1", null, ["t1"]);
   assert.equal(claimed.teams["t1"]!.claim!.origin, "stock");
@@ -422,12 +422,12 @@ test("BID: the cut commits at submission — the slot goes empty immediately, de
 
 function twoBidders(bidA: number, bidB: number, targetId = "tgt-pm", picksA = ROOMY_ROSTER, picksB = ROOMY_ROSTER, commitOrder: "A-first" | "B-first" = "A-first") {
   // Build a two-seat L1 session so both teams get their own carried franchise.
-  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   for (const { slot, playerId } of picksA) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "a", ["a", "b"])));
   l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "a", ["a", "b"])));
   for (const { slot, playerId } of picksB) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "b", ["a", "b"])));
   l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "b", ["a", "b"])));
-  let state = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"], seed: { lessonModuleId: draftDayModule.id, state: l1 } });
+  let state = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"], seed: { lessonModuleId: draftDayModule.id, state: l1 }, gradeBand: "5-6" });
   state = claim(state, "t1", 0, ["t1", "t2"]);
   state = claim(state, "t2", 1, ["t1", "t2"]);
   const slotA = findSlotForTarget(state.teams["t1"]!, targetId);
@@ -596,14 +596,14 @@ test("B1 repair: class-wide aggregate open-slot count is correct after an early 
   // target gets manually revealed before the teacher advances early. Both bids are genuine lowballs here (unlike
   // the verifier's original repro where one bid happened to clear its reserve) so BOTH teams truly end up with
   // an open slot — the class-wide count this asserts is unambiguous either way.
-  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   const seatIds = ["india", "juliet"];
   for (const { slot, playerId } of ROOMY_ROSTER) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "india", seatIds)));
   l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "india", seatIds)));
   for (const { slot, playerId } of ROOMY_ROSTER) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "juliet", seatIds)));
   l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "juliet", seatIds)));
 
-  let s = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["india", "juliet"], seed: { lessonModuleId: draftDayModule.id, state: l1 } });
+  let s = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["india", "juliet"], seed: { lessonModuleId: draftDayModule.id, state: l1 }, gradeBand: "5-6" });
   s = claim(s, "india", 0, ["india", "juliet"]);
   s = claim(s, "juliet", 1, ["india", "juliet"]);
   // India cuts DEFENDER, lowballs tgt-df (reserve $25) at $10 — a genuine loss.
@@ -1049,7 +1049,7 @@ test("MIDSEASON REPORT: weakestFormSlot picks the lowest current-form slot, dete
 });
 
 test("MIDSEASON REPORT: standingFor ranks teams by real average current form, not randomly, and reflects the whole claimed class", () => {
-  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   const seatIds = ["strong", "weak"];
   const strongPicks = [
     { slot: "SCORER", playerId: "sc-30" }, // 74
@@ -1070,7 +1070,7 @@ test("MIDSEASON REPORT: standingFor ranks teams by real average current form, no
   for (const { slot, playerId } of weakPicks) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "weak", seatIds)));
   l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "weak", seatIds)));
 
-  let l2 = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"], seed: { lessonModuleId: draftDayModule.id, state: l1 } });
+  let l2 = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"], seed: { lessonModuleId: draftDayModule.id, state: l1 }, gradeBand: "5-6" });
   l2 = claim(l2, "t1", 0, ["t1", "t2"]); // strong
   l2 = claim(l2, "t2", 1, ["t1", "t2"]); // weak
 
@@ -1109,7 +1109,7 @@ test("AGGREGATE: synthesis cards cite this session's own real numbers, computed 
 
 test("AGGREGATE: path-dependence card connects each cut team's deadline budget back to its L1 spend explicitly", () => {
   // t1 spent to the exact $100M cap in L1 (AT_CAP_ROSTER) — cutting PLAYMAKER (pm-10) gives it a $9M budget.
-  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let l1 = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   const seatIds = ["atcap", "leftover"];
   for (const { slot, playerId } of AT_CAP_ROSTER) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "atcap", seatIds)));
   l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "atcap", seatIds)));
@@ -1123,7 +1123,7 @@ test("AGGREGATE: path-dependence card connects each cut team's deadline budget b
   for (const { slot, playerId } of leftoverPicks) l1 = expectOk(draftDayModule.reduce(l1, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", "leftover", seatIds)));
   l1 = expectOk(draftDayModule.reduce(l1, { type: "lock" }, ddCtx("PLAY", "leftover", seatIds)));
 
-  let l2 = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"], seed: { lessonModuleId: draftDayModule.id, state: l1 } });
+  let l2 = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1", "t2"], seed: { lessonModuleId: draftDayModule.id, state: l1 }, gradeBand: "5-6" });
   l2 = claim(l2, "t1", 0, ["t1", "t2"]); // the at-cap L1 team
   l2 = claim(l2, "t2", 1, ["t1", "t2"]); // the leftover-room L1 team
   const t1budget = cutBudgetFor(l2.teams["t1"]!, "PLAYMAKER");

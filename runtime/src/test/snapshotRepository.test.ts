@@ -23,6 +23,7 @@ test("writes are atomic: the snapshot file is always valid JSON, never a partial
         phase: "LOBBY",
         state: { picks: {} },
         teacherKeyHash: "hash-t",
+    gradeBand: "5-6" as const,
       });
     }
     await repo.flushToDisk();
@@ -46,6 +47,7 @@ test("a fresh repository pointed at an existing snapshot restores full state aft
       phase: "PLAY",
       state: { picks: { "seat-1": "red" } },
       teacherKeyHash: "hash-t",
+    gradeBand: "5-6" as const,
     });
     const seat = await first.createSeat({
       sessionId: session.id,
@@ -97,6 +99,7 @@ test("updateSession enforces optimistic concurrency via expectedVersion", async 
       phase: "LOBBY",
       state: {},
       teacherKeyHash: "hash-t",
+    gradeBand: "5-6" as const,
     });
     const stale = await repo.updateSession(session.id, { phase: "PLAY" }, 999);
     assert.equal(stale.ok, false);
@@ -136,6 +139,7 @@ test("R4: a corrupted snapshot file is quarantined (renamed aside) and the repos
       phase: "LOBBY",
       state: {},
       teacherKeyHash: "hash-t",
+    gradeBand: "5-6" as const,
     });
     await repo.flushToDisk();
     const raw = await readFile(file, "utf8");

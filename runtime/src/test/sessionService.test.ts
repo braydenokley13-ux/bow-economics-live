@@ -759,11 +759,22 @@ test("a session built by a lesson this build no longer registers does not take t
   service.registerModule(lobbyDemoModule);
   const live = await service.createSession({ lessonModuleId: "lobby-demo", title: "Period 1" });
 
-  // A row naming a module nobody registered, exactly as a stale snapshot would.
-  const ghost = await service.createSession({ lessonModuleId: "lobby-demo", title: "Period 2" });
-  const ghostRow = (await repo.listSessions()).find((r) => r.code === ghost.session.code)!;
-  const wrote = await repo.updateSession(ghostRow.id, { lessonModuleId: "a-lesson-this-build-does-not-have" } as never, null);
-  assert.equal(wrote.ok, true);
+  // A row naming a module nobody registered, written the way one actually
+  // arises: straight into the store, as the snapshot loader does on boot for a
+  // room created by a build that had a lesson this one does not. It used to be
+  // faked by patching `lessonModuleId` on a live row, which stopped working
+  // when session identity was made unpatchable at the repository — a room does
+  // not change which lesson it is any more than it changes which class it is
+  // for. Going through the create path is also the more faithful fixture.
+  await repo.createSession({
+    code: "GHOST1",
+    title: "Period 2",
+    lessonModuleId: "a-lesson-this-build-does-not-have",
+    gradeBand: "5-6",
+    phase: "LOBBY",
+    state: {},
+    teacherKeyHash: "x",
+  });
 
   const listed = await service.listSessions(live.teacherKey!);
   assert.equal(listed.length, 1, "the stale row took the listing down with it");

@@ -1,3 +1,4 @@
+import type { GradeBand } from "../shared/gradeBand.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 
 export type SessionId = string;
@@ -98,6 +99,12 @@ export type SessionRow = {
   code: string;
   title: string;
   lessonModuleId: string;
+  /**
+   * Which class this room is for. Fixed at creation and never patchable —
+   * a room does not change band mid-lesson, and `SessionPatch` deliberately
+   * omits it so nothing can.
+   */
+  gradeBand: GradeBand;
   phase: CanonicalPhase;
   paused: boolean;
   frozen: boolean;
@@ -166,6 +173,7 @@ export type NewSession = {
   code: string;
   title: string;
   lessonModuleId: string;
+  gradeBand: GradeBand;
   phase: CanonicalPhase;
   state: unknown;
   teacherKeyHash: string;
