@@ -106,13 +106,24 @@ not.
 
 The **FLOOR TABLE** goes up. Detroit's committed salary is **$136,252,755** (§4.1 #6, §4.4). The
 floor is **$148,465,000** — exactly 90% of the cap, and a real league rule a fifth grader can check
-by subtraction (§8.1 #2). Detroit is **$12,212,245 short**, and under the 2023 CBA that shortfall
-is paid out **to players league-wide, pro rata by salary — not to Detroit's own roster** (§2.1,
-hoopsrumors, medium).
+by subtraction (§8.1 #2). Under the 2023 CBA the shortfall is paid **to players league-wide, pro
+rata by salary — not to Detroit's own roster** (§2.1, hoopsrumors, medium).
 
-The pair that held everything back, kept every tool, and felt clever about it pays twelve million
-dollars and receives **nothing at all**. Not a player. Not a pick. Not a tool. The money leaves and
-goes to players on other teams.
+A Detroit pair that held everything back and felt clever about it ends the window at
+**$141,151,597** — its own $136,252,755 plus the two camp contracts the roster minimum forces on
+it — and pays **$7,313,403** for nothing. Not a player. Not a pick. Not a tool. Every number in
+that sentence is computed by the reducer, and the prototype reproduces it.
+
+**Honest scope, corrected against the prototype.** Checked against §4.4, **exactly one club in the
+real league — Detroit — starts below the floor**, and committed salary only ever rises, so the
+floor bill is reachable only from a Detroit-type seat. An earlier draft of this section claimed
+"three desks are below the floor," which is narrative outrunning the model and is precisely the
+class of defect §0 of the contract catalogues. What is true is FL2(c)'s actual requirement: **the
+floor binds on at least one reachable path in the module**, it binds on a real club for a real
+reason, and one named desk paying seven million dollars for nothing, on the projector, with the
+room watching, is a sharper beat than three anonymous ones. The teacher's director line is computed
+from the room, never authored: if no desk is below the floor this window, the beat does not fire
+and the director says so.
 
 *Replaces:* **"careful with money" is not a strategy either. Underspending is illegal here, and it
 is the only move in the lesson that buys literally nothing.**
@@ -337,7 +348,7 @@ which the student cannot know is a setup.
 | **SIGNATURE DECISION** | Signing day 2's offer, composed with the forgone panel live under your thumb and — for the desks it applies to — the wall warning inside the commit button. You are naming three people you will never have, by name, in order to have one. |
 | **CONSEQUENCE** | The simultaneous resolution. Cards leave the board with the club's wordmark stamped on them. Your day either closed a job or is simply gone. Then, thirty seconds later, **the floor table**. |
 | **CLASS REVEAL** | **THE LEDGE** — one ladder, five lines, every club's wordmark chip at its own height, all at once. The first time the room sees itself as a league. Then five conflicting readings side by side (§7). |
-| **INTELLECTUAL REVEAL** | The floor bill, said out loud: *"Three desks are below $148,465,000. They are about to pay $27.4 million between them, and every dollar of it goes to players who do not play for them."* Then the teacher names it: this is why saving is not a strategy here. |
+| **INTELLECTUAL REVEAL** | The floor bill, said out loud, from the computed table: *"Detroit is below $148,465,000. They are about to pay $7,313,403, and every dollar of it goes to players who do not play for them."* Then the teacher names it: this is why saving is not a strategy here. |
 
 #### 4.1.6 TIME CUT
 
@@ -378,7 +389,7 @@ which the student cannot know is a setup.
 | PLAY day 2 | **NOW:** walk to the desks THE DESKS has flagged red. **ASK:** "Who else do you think is bidding on him?" **WATCH FOR:** a desk that lost day 1 and is now bidding on the safest card — that is the winner's-curse story reversed, and it is worth naming at SYNTHESIS. |
 | PLAY day 3 | **NOW:** say out loud how many people are left on the board. **ASK:** "What happens if you don't sign anyone today?" **WATCH FOR:** desks below the floor with one day left. Do not tell them. |
 | REVEAL | **NOW:** press beat by beat. Say nothing over beat 1; the ladder does the work. **ASK (beat 3):** "Which of these two clubs would you rather run?" **DON'T EXPLAIN YET:** do not say "you can't buy quality." |
-| CONSEQUENCE | **NOW:** read the floor table out loud, slowly. **ASK:** "Where did that money go?" **WATCH FOR:** the room's face. This is the beat. |
+| CONSEQUENCE | **NOW:** read the floor table out loud, slowly — the director prints the desks and the dollars, computed; if nobody is under the floor it says so instead and hands you the near-miss. **ASK:** "Where did that money go?" **WATCH FOR:** the room's face. This is the beat. |
 | SYNTHESIS | **NOW:** name exactly two things: *scarcity* — the moment the board emptied; *opportunity cost* — the three names on your forgone panel. **ASK:** "Name one thing you gave up. Not a category — a person." |
 
 ---
@@ -896,11 +907,22 @@ desk not blamed).
 
 **Two properties the reveal must satisfy, asserted, not assured:**
 
-- **At least three distinct desks appear across the five readings** in the reachable outcome space
-  for any room of ≥6 desks. If one desk sweeps, the readings are not conflicting and the reveal is
-  a leaderboard wearing five hats.
+- **At least three distinct desks appear across the five readings.** If one desk sweeps, the
+  readings are not conflicting and the reveal is a leaderboard wearing five hats.
 - **The class evidence contains at least one actual instance, from the room's own play, of a
   cheaper allocation beating a more expensive one on a displayed dimension** (FL1(b)) — not a slide.
+
+**The prototype fails the first property on a six-club league, and this is recorded, not hidden.**
+Played with six clubs, the readings concentrate — Detroit takes four of five, because *most room
+left* and *most tools left* are dominated by the position a club inherited rather than by anything
+it did in the window. The prototype measures the distinct-club count on every run and colours it as
+a failure when it drops below three. Two consequences follow, and both belong to whoever builds
+this: **(a)** the reading set is a tuning target, not a settled list — at least two of the five must
+be replaced by readings that describe what a club **did** rather than what it **had**; and **(b)**
+the property must be evaluated at real class size (12–16 desks), not at six, and the tuning harness
+must sweep it there. The second property holds on five of six prototype seats; on the sixth
+(Sacramento) every strategy that could act had the same single legal move, which is a true result
+for a club that constrained and is reported as such rather than smoothed away.
 
 **And the reveal explicitly refuses to adjudicate.** The board's own words, verbatim, module-owned:
 *"Five clubs. Five different things they are best at. None of these is the answer."*
@@ -1131,6 +1153,35 @@ pair that joined and never touched anything"* is a named test case on `/play`, `
 deep-clones the whole thing through JSON while every write re-serialises the store and the
 checkpoint holds a second copy. The carry is capped at §5.1's flat record for exactly this reason,
 and `latency-harness.cjs` and `e2e-full-room.cjs` at 32 seats get run **early**, not at the end.
+
+---
+
+## 11.5 WHAT THE STAGE-0 PROTOTYPE ALREADY SHOWED
+
+`docs/gauntlet/module-1/rebuild/stage0/d-l1.html` plays L1's loop end to end for one student across
+three signing days against five live rival clubs, on the real model. It was played in a real browser
+this session (Chromium, zero console errors, full arc plus MODEL and STRATEGY PROBE). Four findings,
+all of which changed the design above:
+
+1. **The first model was degenerate and is fixed.** With every over-cap club clamping to the same
+   $15,044,000 mid-level, every contested bid tied, and the tie-break "more remaining room" handed
+   every tie to the lowest-payroll club — a monotone rule that made Milwaukee and Sacramento
+   structurally hopeless. Fixed by lowering the reserve so the mid-level is not universally binding,
+   and by replacing the tie-break with **each person's own stated preference, printed on his card**
+   ("he takes the club with more room left" / "he takes the club spending hardest"), which is
+   deliberately not monotone in payroll.
+2. **The trap strategy works.** COPY THE MOST EXPENSIVE spends the same as every other active
+   strategy and closes **zero** jobs on three of six seats, because the dearest person on the board
+   does not play the role you need. That is FL1 caught on the bench.
+3. **Hoarding is beaten on every seat** (P-B, 6 of 6), and "more money bought less" is demonstrable
+   on five of six (P-A). The sixth is reported as a genuine result, not smoothed.
+4. **Two properties do not yet hold and are written down rather than argued away:** the five
+   readings concentrate on one club in a six-club league (§7), and the active strategies are only
+   2–3 distinguishable out of 4 on the constrained seats, because an over-cap club's single big tool
+   is a fixed price. The prototype prints both as verdicts on its own STRATEGY PROBE panel.
+
+The prototype's header comment lists every invented constant. It uses no `Math.random`, so the same
+inputs give the same outputs every time.
 
 ---
 

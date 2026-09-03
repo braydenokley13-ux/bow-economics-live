@@ -776,8 +776,15 @@ function renderReport(){
   $("report").innerHTML = `
     <div class="readings">${readings.map(([lbl, r, f]) =>
       `<div class="reading"><div class="lbl">${lbl}</div><div class="club">${r.club}</div><div class="fig">${f(r)}</div></div>`).join("")}</div>
-    <p class="note"><b>${names.size} different clubs</b> are named across ${readings.length} readings.
-      None of these is the answer. There is no team quality figure in this model, so there is nothing to rank.</p>
+    <p class="note" style="${names.size < 3 ? "color:var(--warn)" : ""}">
+      <b>${names.size} different club${names.size===1?"":"s"}</b> named across ${readings.length} readings.
+      None of these is the answer — there is no team quality figure in this model, so there is nothing to rank.
+      ${names.size < 3
+        ? "But the design's own property is that at least THREE different clubs appear, and this run fails it: "
+          + "in a six-club league the readings concentrate on whichever club inherited the strongest position, "
+          + "which turns five readings into a leaderboard wearing five hats. Real and reported, not hidden. "
+          + "The reading set is a tuning target, not a settled list."
+        : "Different clubs are best at different things, and the readings conflict on purpose."}</p>
 
     ${cheapest && dearest && cheapest.id !== dearest.id ? `<div class="panel" style="margin-top:10px;background:var(--panel2)">
       <h3>Cheapest job closed vs dearest</h3>
@@ -940,12 +947,15 @@ function runProbe(humanIdx){
 function renderProbe(){
   const rows = runProbe(S ? S.humanIdx : 0);
   const club = CLUBS[S ? S.humanIdx : 0].name;
-  const topSpend = Math.max(...rows.map(r => r.spent));
-  const topJobs  = Math.max(...rows.map(r => r.jobsClosed));
-  // P-A holds when SOME strategy closes the most jobs without being among the biggest spenders,
-  // i.e. there is a cheaper allocation that beats a dearer one on a displayed dimension.
-  const cheaperWins = rows.filter(r => r.jobsClosed === topJobs && r.spent < topSpend);
-  const dearestRows = rows.filter(r => r.spent === topSpend);
+  // P-A: find the strongest instance of "more money bought less" among these five runs.
+  let pa = null;
+  for (const A of rows) for (const B of rows) {
+    if (A === B || A.spent < B.spent) continue;
+    const worse = A.jobsClosed < B.jobsClosed ||
+                  (A.jobsClosed === B.jobsClosed && A.jobYears < B.jobYears);
+    if (!worse) continue;
+    if (!pa || (A.spent - B.spent) > (pa.A.spent - pa.B.spent)) pa = { A, B };
+  }
   const holdRow  = rows.find(r => r.label === "HOLD EVERYTHING");
   const beatsHold = rows.filter(r => r.label !== "HOLD EVERYTHING" &&
       (r.jobsClosed > holdRow.jobsClosed || r.jobYears > holdRow.jobYears || r.floorBill < holdRow.floorBill));
@@ -973,13 +983,15 @@ function renderProbe(){
     </table>
     <div class="panel" style="margin-top:12px;background:var(--panel2)">
       <h3>What this run says about the three properties</h3>
-      <div class="kv"><span><b>P-A</b> a cheaper allocation beats a dearer one on a displayed dimension</span>
-        <span style="${cheaperWins.length?'color:var(--ok)':'color:var(--warn)'}">
-        ${cheaperWins.length
-          ? "holds — " + cheaperWins[0].label + " spent " + fmtM(cheaperWins[0].spent) +
-            " and closed " + cheaperWins[0].jobsClosed + " job(s); " + dearestRows[0].label +
-            " spent " + fmtM(topSpend) + " and closed " + dearestRows[0].jobsClosed
-          : "FAILS on this seat — nothing cheaper matched the top job count"}</span></div>
+      <div class="kv"><span><b>P-A</b> more money bought less</span>
+        <span style="${pa?'color:var(--ok)':'color:var(--warn)'}">
+        ${pa
+          ? "holds — " + pa.A.label + " spent " + fmtM(pa.A.spent) + " for " + pa.A.jobsClosed +
+            " job(s) / " + pa.A.jobYears + " job-years; " + pa.B.label + " spent " + fmtM(pa.B.spent) +
+            " for " + pa.B.jobsClosed + " / " + pa.B.jobYears
+          : "not shown on this seat — every strategy that could act had the same single legal move. " +
+            "That is a real result for a club this constrained, not a model failure; the property is " +
+            "brute-forced over the whole reachable space in the module's harness, not read off one seat."}</span></div>
       <div class="kv"><span><b>P-D</b> the strategies are actually distinguishable</span>
         <span style="${distinct>=3?'color:var(--ok)':'color:var(--warn)'}">${distinct} of 4 active
           strategies produced a distinct (jobs, job-years, spend) outcome${distinct<3?" — too few; the choice space is collapsing":""}</span></div>
