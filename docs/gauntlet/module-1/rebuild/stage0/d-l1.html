@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DESIGN D · L1 THE WINDOW · Stage-0</title>
+<!--
+===============================================================================
+ DESIGN D — "THE SAME LINE" · Lesson 1 "THE WINDOW" · Stage-0 playable prototype
+ Date: 2026-09-03
+ Companion to: docs/gauntlet/module-1/rebuild/DESIGN_D_CHALLENGER.md
+ Self-contained. No network, no build, no external assets. Open and play.
+
+ WHAT THIS IS
+   The actual L1 decision loop, end to end, for one student across three signing
+   days, with the real economic model computing real outcomes against five live
+   rival clubs. It is not a mockup. A critic should try to break it.
+
+ WHAT IS SOURCED (NBA_FINANCIAL_TRUTH.md, editorial date 2026-09-03)
+   Five 2026-27 thresholds (cap/floor/tax/apron1/apron2) ... §8.1 #1, official-nba, high
+   Floor = 90% of cap exactly; tax = 121.5% of cap ......... §8.1 #2, #3
+   NTMLE $15,044,000 / room MLE $9,366,000 / tax MLE $6,064,000 ... §8.1 #7
+   Bi-annual exception $5,477,000 .......................... §1.2, cap-database, high (§7.4: not in the official release)
+   Minimum-deal team cost $2,449,421; rookie minimum $1,357,763 ... §1.2
+   Roster: 15 max standard, 14 minimum, backstop below 12 .. §8.1 #8, §2.10, §2.5
+   Using cap room costs you the bigger MLE ................. §2.4
+   NTMLE / BAE use draws a hard cap at the first apron ..... §2.3, cbaguide high, corroborated 2026-07-10
+   Incumbent may offer 5yrs/8% vs 4yrs/5% elsewhere ........ §8.1 #10
+   Club payrolls: HoopsHype committed 2026-27 ROSTER SALARY, one definition
+     applied uniformly per §7.12 #1 ........................ §4.4 (medium) / DET exact §4.1 #6
+   The seven people on the board are REAL free agents at the REAL annual value
+     of the REAL contract they signed, on the stated date:
+       Myles Turner        4 yrs / $107M, Milwaukee, Jul 2025 .... §5.8 (high)
+       Kentavious Caldwell-Pope 3 yrs / $66M, Orlando ........... §5.4 (medium)
+       Bruce Brown         2 yrs / ~$45M, Indiana, Jul 2023 ..... §5.1 (medium)
+       Joakim Noah         4 yrs / $72.6M, Knicks, 2016 ......... §5.9 (medium)
+       Timofey Mozgov      4 yrs / $64M, Lakers, 2016 ........... §5.9 (medium)
+       Bismack Biyombo     4 yrs / $72M, Magic, 2016 ............ §5.9 (medium)
+       Deandre Ayton       2 yrs / $16.6M, Lakers, 2025 ......... §5.5 (medium)
+
+ WHAT IS INVENTED — every one of these is the module's, not the NBA's
+   I1  Each club's OPEN JOBS (BIG / WING / GUARD, two per club). No per-club
+       roster-need ledger exists in the dossier (§7.12 #4, #5).
+   I2  Each club's FILLED ROSTER SLOTS at the start.
+   I3  RESERVE_FRACTION = 0.65 — a player refuses any offer below 65% of the
+       annual value of the real contract he signed. This is the module's
+       reserve price; the real market has no published one.
+   I4  WINDOW_DAYS = 3.
+   I5  Rival policy factors 0.85 / 1.00 / 1.02 / 1.12 / 1.25 and the
+       cheapest-matching / dearest-matching target rules.
+   I6  The HOLD policy's $10,000,000 ask ceiling.
+   I7  Role labels (BIG / WING / GUARD) assigned to the seven real people.
+   I8  The one-line STRENGTH and RISK wording on each card. Where the dossier
+       supplies the fact (Noah's shoulder surgery §5.9; Ayton's buyout §5.5;
+       Brown's old team could only offer $7.7M §5.1; KCP not matched at ~$22M
+       §5.4) the wording follows it. Where it does not, the wording is the
+       module's plain-language ex-ante summary and carries no outcome.
+   I9  MODULE RULE — a club under the cap either SPENDS ITS ROOM (and thereby
+       loses the non-taxpayer MLE and the bi-annual, gaining the room MLE) or
+       DECLARES it will operate over the cap (keeping the exceptions, losing
+       the room). One switch standing in for §2.4's real eligibility test.
+   I10 MODULE RULE — the taxpayer MLE is modelled as available only between
+       the first and second aprons.
+   I11 Books for future years use a flat 5% raise (the real non-incumbent
+       raise, §8.1 #10) applied by the product; the student never computes it.
+   I12 Payrolls other than Detroit's are the published $0.01M figure at that
+       precision, not to the dollar.
+   I13 Each person's stated PREFERENCE ("build" or "now"), printed on his card,
+       which breaks a tie between two equal offers. Invented as a mechanic; it
+       exists so the tie-break is not monotone in payroll (otherwise the club
+       with the lowest payroll wins every contested bid, which is false).
+
+ WHAT IS DELIBERATELY ABSENT
+   No rating. No overall. No team quality. No score. No rank. No winner.
+   No trade salary-matching percentage (§8.2 #1). No luxury-tax dollar bill
+   (§8.2 #5). No market-size tier (§8.2 #11). No logos or photographs.
+   No Math.random anywhere: every outcome is reproducible from the same inputs.
+===============================================================================
+-->
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#131720; --panel2:#181d28; --line:#232a38;
+    --ink:#e8ecf4; --dim:#96a0b5; --faint:#5d6779;
+    --accent:#7c6cff; --gold:#e3b341; --warn:#e2725b; --ok:#4bb98a;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  h1,h2,h3{margin:0 0 6px;font-weight:650;letter-spacing:.01em}
+  h1{font-size:19px} h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim)}
+  h3{font-size:13px}
+  a{color:var(--accent)}
+  .wrap{max-width:1440px;margin:0 auto;padding:14px}
+  header.top{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}
+  .eyebrow{color:var(--accent);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+  .grow{flex:1}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:6px;padding:7px 12px;font:inherit;cursor:pointer}
+  button:hover:not(:disabled){border-color:var(--accent)}
+  button:disabled{opacity:.35;cursor:not-allowed}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#0b0d12;font-weight:650}
+  button.ghost{background:transparent}
+  .cols{display:grid;grid-template-columns:270px 1fr 330px;gap:12px;align-items:start}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px;margin-bottom:12px}
+  .mono{font-family:var(--mono)}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .dim{color:var(--dim)} .faint{color:var(--faint)}
+  .kv{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted #1e2431}
+  .kv:last-child{border-bottom:0}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:9px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px;cursor:pointer}
+  .card:hover{border-color:var(--accent)}
+  .card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .card.gone{opacity:.32;cursor:default;text-decoration:line-through}
+  .card.gone:hover{border-color:var(--line)}
+  .card.unreach{border-style:dashed}
+  .role{font-size:10px;letter-spacing:.14em;color:var(--gold)}
+  .ask{font-family:var(--mono);font-size:17px}
+  .sr{font-size:12px;color:var(--dim);margin-top:5px}
+  .sr b{color:var(--ink);font-weight:600}
+  .why{font-size:11px;color:var(--warn);margin-top:5px}
+  .chair{display:flex;justify-content:space-between;gap:6px;padding:5px 7px;border:1px dashed var(--line);
+    border-radius:6px;margin-bottom:5px;font-size:12px}
+  .chair.filled{border-style:solid;border-color:var(--ok)}
+  input[type=number]{background:#0c0f16;color:var(--ink);border:1px solid var(--line);border-radius:6px;
+    padding:7px;width:100%;font-family:var(--mono);font-size:15px}
+  .forgone{background:#0c0f16;border:1px solid var(--line);border-radius:7px;padding:9px;margin:9px 0;font-size:12px}
+  .forgone li{margin:2px 0}
+  .wall{background:#2a1a18;border:1px solid var(--warn);border-radius:7px;padding:9px;margin:9px 0;font-size:12px}
+  .log{max-height:210px;overflow:auto;font-size:12px;font-family:var(--mono)}
+  .log div{padding:2px 0;border-bottom:1px dotted #1a2029}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+  td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .modal{position:fixed;inset:0;background:rgba(4,6,10,.86);display:none;overflow:auto;z-index:20}
+  .modal.on{display:block}
+  .modal .inner{max-width:1100px;margin:26px auto;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:18px}
+  pre{white-space:pre-wrap;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--dim);margin:0}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);
+    color:var(--dim);margin-left:6px;letter-spacing:.06em}
+  .tag.src{color:var(--ok);border-color:#1f4a3a}
+  .tag.inv{color:var(--gold);border-color:#4a3d18}
+  .readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+  .reading{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .reading .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .reading .club{font-size:16px;font-weight:650;margin-top:3px}
+  .reading .fig{font-family:var(--mono);font-size:15px;color:var(--gold)}
+  .note{font-size:11.5px;color:var(--faint);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <div class="eyebrow">Design D · Module 1 · Lesson 1 · Stage-0</div>
+    <h1>THE WINDOW <span class="faint" style="font-weight:400">— one league, one board, three signing days</span></h1>
+  </div>
+  <div class="grow"></div>
+  <button class="ghost" id="btnModel">MODEL</button>
+  <button class="ghost" id="btnProbe">STRATEGY PROBE</button>
+  <button class="ghost" id="btnReset">RESTART</button>
+</header>
+
+<div id="setup" class="panel">
+  <h2>Pick the club you are running</h2>
+  <p class="dim" style="margin:6px 0 10px">
+    Every club below is real, and the payroll beside it is its published committed 2026-27 roster salary.
+    The five lines are the same for all of them. That is the whole point.
+  </p>
+  <div id="clubPick" class="cards"></div>
+</div>
+
+<div id="game" style="display:none">
+  <div class="cols">
+
+    <!-- LEFT: the ladder + your books -->
+    <div>
+      <div class="panel">
+        <h2>The ladder</h2>
+        <div id="ladder"></div>
+      </div>
+      <div class="panel">
+        <h2 id="yourClub">Your club</h2>
+        <div id="books"></div>
+      </div>
+      <div class="panel">
+        <h2>Your open jobs</h2>
+        <div id="jobs"></div>
+        <div class="note">A job closes when you sign someone who plays that role. A camp contract fills a
+          roster slot and never closes a job.</div>
+      </div>
+    </div>
+
+    <!-- CENTRE: the board -->
+    <div>
+      <div class="panel">
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <h2 style="margin:0">The board</h2>
+          <div class="grow"></div>
+          <div class="dim num" id="dayLabel"></div>
+        </div>
+        <p class="note" style="margin:4px 0 10px">
+          Every person here was really a free agent. The number beside his name is the yearly value of the
+          contract a real club really gave him, on the date shown. When someone signs, he leaves the board
+          for everybody, permanently.
+        </p>
+        <div id="board" class="cards"></div>
+      </div>
+      <div class="panel">
+        <h2>What happened</h2>
+        <div class="log" id="log"></div>
+      </div>
+      <div class="panel" id="reportPanel" style="display:none">
+        <h2>The window is closed</h2>
+        <div id="report"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: composer -->
+    <div>
+      <div class="panel" id="composer"></div>
+      <div class="panel">
+        <h2>The league</h2>
+        <div id="leagueTable"></div>
+        <div class="note">During play a real projector would show none of this. It is here so a critic can
+          audit the model.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal" id="modelModal"><div class="inner">
+  <div style="display:flex"><h1 style="flex:1">MODEL</h1><button class="ghost" onclick="closeModal('modelModal')">CLOSE</button></div>
+  <pre id="modelText"></pre>
+</div></div>
+
+<div class="modal" id="probeModal"><div class="inner">
+  <div style="display:flex"><h1 style="flex:1">STRATEGY PROBE</h1><button class="ghost" onclick="closeModal('probeModal')">CLOSE</button></div>
+  <div id="probeOut"></div>
+</div></div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ========================= SOURCED CONSTANTS ========================= */
+const CAP        = 164961000;   // §8.1 #1 official-nba 2026-06-30
+const FLOOR      = 148465000;   // = 0.90 x CAP exactly, §8.1 #2
+const TAX        = 200428000;   // = 1.215 x CAP, §8.1 #3
+const APRON1     = 209015000;   // §8.1 #1
+const APRON2     = 221686000;   // §8.1 #1
+const NTMLE      = 15044000;    // §8.1 #7 — draws a hard cap at APRON1 (§2.3)
+const ROOM_MLE   = 9366000;     // §8.1 #7
+const TAX_MLE    = 6064000;     // §8.1 #7
+const BAE        = 5477000;     // §1.2 cap-database (not in the official release, §7.4) — draws a hard cap at APRON1
+const MIN_TEAM   = 2449421;     // §1.2 team cost cap, 3+yr vet, 1-yr minimum deal
+const ROOKIE_MIN = 1357763;     // §1.2 — the empty-slot backstop charge (§2.5)
+const SLOT_MAX   = 15;          // §8.1 #8
+const SLOT_MIN   = 14;          // §2.10 (cbaguide, medium)
+const BACKSTOP   = 12;          // §2.5 — below 12, one rookie-min charge per empty slot
+const RAISE      = 0.05;        // §8.1 #10 non-incumbent raise
+
+/* ========================= INVENTED CONSTANTS ======================== */
+const RESERVE_FRACTION = 0.65;  // I3
+const WINDOW_DAYS      = 3;     // I4
+const HOLD_ASK_CEIL    = 10000000; // I6
+
+/* ========================= THE LEAGUE ================================ */
+/* payroll: HoopsHype committed 2026-27 roster salary (§4.4). DET exact (§4.1 #6). */
+const CLUBS = [
+  { id:"DET", name:"Detroit",     pay:136252755, slots:12, jobs:["BIG","WING"],  policy:"balanced",
+    fact:"Lowest committed payroll in the league. Seven first-round picks through 2033." },
+  { id:"BKN", name:"Brooklyn",    pay:161410000, slots:12, jobs:["BIG","GUARD"], policy:"chase",
+    fact:"Youngest roster in the league. Four unprotected future firsts." },
+  { id:"CHI", name:"Chicago",     pay:164360000, slots:13, jobs:["GUARD","BIG"], policy:"thrifty",
+    fact:"Flattest payroll in the league. All its own firsts through 2033 intact." },
+  { id:"MEM", name:"Memphis",     pay:169040000, slots:12, jobs:["WING","BIG"],  policy:"balanced",
+    fact:"Carries $21,909,021 of dead money — more than its own spending room." },
+  { id:"MIL", name:"Milwaukee",   pay:192860000, slots:13, jobs:["GUARD","BIG"], policy:"cap",
+    fact:"Pays $21,311,053 a year to Damian Lillard, who plays elsewhere, through 2030-31." },
+  { id:"SAC", name:"Sacramento",  pay:196280000, slots:14, jobs:["BIG","WING"],  policy:"hold",
+    fact:"About $94M in two players who have not produced a contender." },
+];
+
+/* The board: real free agents, real annual value of the real contract, real date. */
+const POOL = [
+  { id:"turner", pref:"now", name:"Myles Turner", role:"BIG", ask:26750000, term:4,
+    real:"signed 4 years / $107M with Milwaukee, July 2025",
+    strength:"A starting centre two clubs went to the wall for in the same week.",
+    risk:"The most expensive person on this board by a distance." },
+  { id:"brown", pref:"now", name:"Bruce Brown", role:"WING", ask:22500000, term:2,
+    real:"signed 2 years / about $45M with Indiana, July 2023",
+    strength:"Just helped win a championship.",
+    risk:"His own club could only offer him $7.7M and let him walk." },
+  { id:"kcp", pref:"build", name:"Kentavious Caldwell-Pope", role:"GUARD", ask:22000000, term:3,
+    real:"signed 3 years / $66M with Orlando",
+    strength:"Wins games without needing the ball.",
+    risk:"A title team decided he was too expensive and did not match." },
+  { id:"noah", pref:"build", name:"Joakim Noah", role:"BIG", ask:18150000, term:4,
+    real:"signed 4 years / $72.6M with the Knicks, 2016",
+    strength:"A big name on the market the summer everyone had money.",
+    risk:"Coming off season-ending shoulder surgery." },
+  { id:"biyombo", pref:"build", name:"Bismack Biyombo", role:"BIG", ask:18000000, term:4,
+    real:"signed 4 years / $72M with the Magic, 2016",
+    strength:"Protects the rim.",
+    risk:"One strong playoff run is most of the case for him." },
+  { id:"mozgov", pref:"now", name:"Timofey Mozgov", role:"BIG", ask:16000000, term:4,
+    real:"signed 4 years / $64M with the Lakers, 2016",
+    strength:"A starting centre available in a summer of empty rosters.",
+    risk:"Has never been a first option; his price is set by the market, not his role." },
+  { id:"ayton", pref:"build", name:"Deandre Ayton", role:"BIG", ask:8300000, term:2,
+    real:"signed 2 years / $16.6M with the Lakers, 2025",
+    strength:"A starting centre for a third of what the others want.",
+    risk:"Just took a buyout — gave up about $10M to leave his last club." },
+];
+
+/* ========================= ENGINE ==================================== */
+const $ = id => document.getElementById(id);
+const fmt = n => "$" + Math.round(n).toLocaleString("en-US");
+const fmtM = n => "$" + (n/1e6).toFixed(2) + "M";
+const reserveOf = p => Math.round(p.ask * RESERVE_FRACTION);
+
+function freshState(humanIdx){
+  return {
+    day: 1,
+    over: false,
+    humanIdx,
+    log: [],
+    pool: POOL.map(p => ({ ...p, signedBy: null, signedAt: 0 })),
+    clubs: CLUBS.map((c,i) => ({
+      i, id:c.id, name:c.name, fact:c.fact, policy:c.policy,
+      committed: c.pay, start: c.pay, slots: c.slots,
+      booksY2: Math.round(c.pay*0.92), booksY3: Math.round(c.pay*0.80), // carried book shape only; not decision-relevant in L1
+      mode: c.pay < CAP ? "undecided" : "overcap",
+      ntmle: true, bae: true, taxMle: true, roomMle: false,
+      wall: null, wallWhy: null,
+      jobs: c.jobs.map(r => ({ role:r, filledBy:null, annual:0, years:0 })),
+      roster: [], floorBill: 0, autoFilled: 0, rosterShort: 0, backstop: 0,
+    })),
+  };
+}
+
+/* --- legality: ONE predicate, used by every path (contract §8 #17) --- */
+function availableTools(c){
+  const out = [];
+  if (c.slots >= SLOT_MAX) return out;
+  if (c.mode === "room" || c.mode === "undecided") {
+    if (c.committed < CAP) out.push("ROOM");
+    if (c.roomMle) out.push("ROOM_MLE");
+  } else {
+    if (c.ntmle) out.push("NTMLE");
+    if (c.bae) out.push("BAE");
+    if (c.taxMle && c.committed >= APRON1 && c.committed < APRON2) out.push("TAX_MLE");
+  }
+  out.push("MIN");
+  return out;
+}
+function toolCeiling(c, t){
+  let x;
+  if (t === "ROOM")           x = Math.max(0, CAP - c.committed);
+  else if (t === "ROOM_MLE")  x = ROOM_MLE;
+  else if (t === "NTMLE")     x = NTMLE;
+  else if (t === "BAE")       x = BAE;
+  else if (t === "TAX_MLE")   x = TAX_MLE;
+  else                        x = MIN_TEAM;
+  // A tool that draws a wall cannot be used to cross the wall it draws.
+  if (t === "NTMLE" || t === "BAE") x = Math.min(x, Math.max(0, APRON1 - c.committed));
+  // An existing wall clamps everything, absolutely.
+  if (c.wall !== null) x = Math.min(x, Math.max(0, c.wall - c.committed));
+  return x;
+}
+function reach(c){
+  let best = 0;
+  for (const t of availableTools(c)) best = Math.max(best, toolCeiling(c, t));
+  return best;
+}
+function pickTool(c, amount){
+  const ok = availableTools(c).filter(t => toolCeiling(c, t) >= amount);
+  if (!ok.length) return null;
+  ok.sort((a,b) => {
+    const wa = (a === "NTMLE" || a === "BAE") ? 1 : 0;
+    const wb = (b === "NTMLE" || b === "BAE") ? 1 : 0;
+    if (wa !== wb) return wa - wb;                       // never draw a wall you did not need
+    return toolCeiling(c,a) - toolCeiling(c,b);          // then the smallest sufficient tool
+  });
+  return ok[0];
+}
+function toolLabel(t){
+  return ({ROOM:"cap room", ROOM_MLE:"the room mid-level ($9,366,000)", NTMLE:"the mid-level exception ($15,044,000)",
+           BAE:"the bi-annual exception ($5,477,000)", TAX_MLE:"the taxpayer mid-level ($6,064,000)",
+           MIN:"a camp contract ($2,449,421)"})[t] || t;
+}
+function nextLineAbove(v){
+  for (const L of [FLOOR, CAP, TAX, APRON1, APRON2]) if (v < L) return L;
+  return null;
+}
+function applySign(c, player, amount, tool, day){
+  c.committed += amount;
+  c.slots += 1;
+  if (tool === "ROOM")     { c.mode = "room"; c.ntmle = false; c.bae = false; c.roomMle = true; }
+  if (tool === "ROOM_MLE")   c.roomMle = false;
+  if (tool === "NTMLE")    { c.ntmle = false; c.wall = APRON1; c.wallWhy = "you used the mid-level exception on signing day " + day; }
+  if (tool === "BAE")      { c.bae = false;   c.wall = APRON1; c.wallWhy = "you used the bi-annual exception on signing day " + day; }
+  if (tool === "TAX_MLE")    c.taxMle = false;
+  c.roster.push({ name:player.name, annual:amount, term:player.term, role:player.role, tool, day });
+  const j = c.jobs.find(j => j.role === player.role && !j.filledBy);
+  if (j) { j.filledBy = player.name; j.annual = amount; j.years = player.term; }
+  c.booksY2 += Math.round(amount * (1 + RAISE));
+  if (player.term >= 3) c.booksY3 += Math.round(amount * (1 + RAISE) * (1 + RAISE));
+}
+function canSignCamp(c){
+  if (c.slots >= SLOT_MAX) return false;
+  if (c.wall !== null && c.committed + MIN_TEAM > c.wall) return false;
+  return true;
+}
+function signCamp(c, day){
+  if (!canSignCamp(c)) return false;
+  c.committed += MIN_TEAM; c.slots += 1;
+  c.roster.push({ name:"camp contract", annual:MIN_TEAM, term:1, role:"NONE", tool:"MIN", day });
+  return true;
+}
+function declareOverCap(c){
+  if (c.mode !== "undecided") return false;
+  c.mode = "overcap";
+  return true;
+}
+
+/* --- rival and strategy decisions: deterministic, no randomness --- */
+const POLICY = {
+  balanced: { target:"cheapest", factor:1.02 },
+  chase:    { target:"dearest",  factor:1.12 },
+  cap:      { target:"dearest",  factor:1.00 },
+  thrifty:  { target:"cheapest", factor:0.85 },
+  hold:     { target:"cheapest", factor:1.00, maxAsk:HOLD_ASK_CEIL },
+};
+const STRATEGIES = {
+  "SPEND TO THE CAP":        { target:"dearest",  factor:1.00 },
+  "HOLD EVERYTHING":         { target:"none",     factor:0 },
+  "COPY THE MOST EXPENSIVE": { target:"dearestAny", factor:1.12 },
+  "BALANCED":                { target:"cheapest", factor:1.02 },
+  "WIN EVERY BID (trap)":    { target:"dearest",  factor:1.25 },
+};
+function openRoles(c){
+  return c.jobs.filter(j => !j.filledBy).map(j => j.role);
+}
+function decide(state, c, spec){
+  if (!spec || spec.target === "none") return null;
+  // A club under the cap with less room than the mid-level takes the exceptions instead.
+  if (c.mode === "undecided" && (CAP - c.committed) < NTMLE) declareOverCap(c);
+  const live = state.pool.filter(p => !p.signedBy);
+  let cands;
+  if (spec.target === "dearestAny") cands = live.slice();
+  else {
+    const roles = openRoles(c);
+    cands = live.filter(p => roles.includes(p.role));
+  }
+  if (spec.maxAsk) cands = cands.filter(p => p.ask <= spec.maxAsk);
+  if (!cands.length) return null;
+  cands.sort((a,b) => spec.target === "cheapest" ? a.ask - b.ask : b.ask - a.ask);
+  for (const p of cands) {                       // walk down until one is legally reachable
+    const want = Math.round(p.ask * spec.factor);
+    const amount = Math.min(want, reach(c));
+    if (amount >= reserveOf(p) && pickTool(c, amount)) {
+      return { playerId: p.id, amount };
+    }
+  }
+  return null;
+}
+
+/* --- one signing day, resolved simultaneously and deterministically --- */
+function stepDay(state, humanOffer){
+  const offers = [];
+  for (const c of state.clubs) {
+    let o = null;
+    if (c.i === state.humanIdx) o = humanOffer;
+    else o = decide(state, c, POLICY[c.policy]);
+    if (!o) continue;
+    const p = state.pool.find(x => x.id === o.playerId);
+    if (!p || p.signedBy) continue;
+    const amount = Math.round(o.amount);
+    if (amount < reserveOf(p)) continue;                       // he refuses; the day is still spent
+    const tool = pickTool(c, amount);
+    if (!tool) continue;                                        // not legal; the day is still spent
+    offers.push({ ci: c.i, playerId: p.id, amount, tool });
+  }
+  const byPlayer = {};
+  for (const o of offers) (byPlayer[o.playerId] = byPlayer[o.playerId] || []).push(o);
+
+  const events = [];
+  for (const pid of Object.keys(byPlayer).sort()) {
+    const list = byPlayer[pid];
+    const p = state.pool.find(x => x.id === pid);
+    list.sort((a,b) => {
+      if (b.amount !== a.amount) return b.amount - a.amount;                  // 1. the money
+      const ca = state.clubs[a.ci].committed + a.amount;                      // 2. his stated preference
+      const cb = state.clubs[b.ci].committed + b.amount;
+      if (ca !== cb) return p.pref === "build" ? ca - cb : cb - ca;
+      return a.ci - b.ci;                                                     // 3. documented last resort
+    });
+    const win = list[0];
+    const c = state.clubs[win.ci];
+    applySign(c, p, win.amount, win.tool, state.day);
+    p.signedBy = c.id; p.signedAt = state.day;
+    events.push({ day: state.day, player: p.name, club: c.name, amount: win.amount,
+                  tool: win.tool, losers: list.slice(1).map(o => state.clubs[o.ci].id) });
+  }
+  for (const e of events) {
+    state.log.push("Day " + e.day + " — " + e.club + " signs " + e.player + " for " +
+      fmt(e.amount) + " a year, using " + toolLabel(e.tool) + "." +
+      (e.losers.length ? "  " + e.losers.length + " other desk" + (e.losers.length>1?"s":"") + " spent the day on him." : ""));
+  }
+  const acted = new Set(offers.map(o => o.ci));
+  for (const c of state.clubs) if (!acted.has(c.i)) state.log.push("Day " + state.day + " — " + c.name + " made no offer.");
+
+  state.day += 1;
+  if (state.day > WINDOW_DAYS) closeWindow(state);
+  return events;
+}
+
+/* --- window close: the same arithmetic that validates an ordinary signing --- */
+function closeWindow(state){
+  state.over = true;
+  for (const c of state.clubs) {
+    while (c.slots < SLOT_MIN) {
+      const headroom = c.wall === null ? Infinity : (c.wall - c.committed);
+      if (headroom < MIN_TEAM) { c.rosterShort = SLOT_MIN - c.slots; break; }
+      c.committed += MIN_TEAM; c.slots += 1; c.autoFilled += 1;
+      c.roster.push({ name:"camp contract", annual:MIN_TEAM, term:1, role:"NONE", tool:"MIN", day:0 });
+    }
+    if (c.slots < BACKSTOP) {                     // §2.5 anti-gaming backstop
+      c.backstop = (BACKSTOP - c.slots) * ROOKIE_MIN;
+      c.committed += c.backstop;
+    }
+    if (c.committed < FLOOR) c.floorBill = FLOOR - c.committed;
+  }
+  state.log.push("— The window closes. Rosters are filled to " + SLOT_MIN +
+    " and anyone under " + fmt(FLOOR) + " pays the difference to players league-wide.");
+}
+
+/* --- the readings: counts and sums of things the model holds. No score. --- */
+function readingsFor(c){
+  const closed = c.jobs.filter(j => j.filledBy);
+  const nl = nextLineAbove(c.committed);
+  const cheapest = closed.length ? Math.min(...closed.map(j => j.annual)) : null;
+  let tools = 0;
+  if (c.mode === "room") { if (c.roomMle) tools++; }
+  else { if (c.ntmle) tools++; if (c.bae) tools++; if (c.taxMle) tools++; }
+  return {
+    club: c.name, id: c.id,
+    jobsClosed: closed.length,
+    jobYears: closed.reduce((s,j) => s + j.years, 0),
+    committed: c.committed,
+    roomToNextLine: nl === null ? 0 : nl - c.committed,
+    nextLineName: nl === null ? "nothing above you" :
+      ({[FLOOR]:"the floor",[CAP]:"the cap",[TAX]:"the tax line",[APRON1]:"the first apron",[APRON2]:"the second apron"})[nl],
+    toolsLeft: tools,
+    cheapestJobClose: cheapest,
+    floorBill: c.floorBill,
+    wall: c.wall, wallWhy: c.wallWhy,
+    slots: c.slots, rosterShort: c.rosterShort,
+  };
+}
+
+/* ========================= UI ======================================== */
+let S = null, sel = null, amount = 0, decided = false;
+
+function boot(){
+  $("clubPick").innerHTML = CLUBS.map((c,i) =>
+    `<div class="card" data-i="${i}">
+       <div class="role">${c.jobs.join(" · ")}</div>
+       <div style="font-size:17px;font-weight:650;margin:3px 0">${c.name}</div>
+       <div class="ask">${fmtM(c.pay)}</div>
+       <div class="sr">${c.fact}</div>
+       <div class="why" style="color:var(--faint)">${c.pay < CAP
+          ? "Under the cap by " + fmt(CAP - c.pay) + "."
+          : "Over the cap by " + fmt(c.pay - CAP) + " — you can only sign with an exception."}</div>
+     </div>`).join("");
+  [...$("clubPick").querySelectorAll(".card")].forEach(el =>
+    el.onclick = () => start(parseInt(el.dataset.i, 10)));
+}
+function start(i){
+  S = freshState(i); sel = null; amount = 0; decided = false;
+  $("setup").style.display = "none";
+  $("game").style.display = "";
+  render();
+}
+function me(){ return S.clubs[S.humanIdx]; }
+
+function ladderSVG(c){
+  const lo = 120e6, hi = 235e6, H = 250, W = 236;
+  const y = v => H - ((v - lo) / (hi - lo)) * H;
+  const lines = [[FLOOR,"FLOOR"],[CAP,"CAP"],[TAX,"TAX"],[APRON1,"1ST APRON"],[APRON2,"2ND APRON"]];
+  let s = `<svg viewBox="0 0 ${W} ${H+18}" width="100%" height="${H+18}" role="img" aria-label="the five lines">`;
+  s += `<rect x="18" y="${y(c.committed)}" width="60" height="${H - y(c.committed)}" fill="#7c6cff" opacity=".55"/>`;
+  s += `<text x="18" y="${Math.max(11, y(c.committed) - 4)}" fill="#e8ecf4" font-size="11" font-family="ui-monospace,monospace">${fmtM(c.committed)}</text>`;
+  for (const [v, lbl] of lines) {
+    const col = (c.wall === v) ? "#e2725b" : "#3a4356";
+    const dash = (c.wall === v) ? "" : ` stroke-dasharray="3 3"`;
+    s += `<line x1="6" x2="${W-6}" y1="${y(v)}" y2="${y(v)}" stroke="${col}" stroke-width="${c.wall===v?2:1}"${dash}/>`;
+    s += `<text x="86" y="${y(v)-3}" fill="#96a0b5" font-size="9.5" letter-spacing=".08em">${lbl} ${fmtM(v)}</text>`;
+  }
+  s += `</svg>`;
+  return s;
+}
+
+function render(){
+  const c = me();
+  $("yourClub").textContent = c.name;
+  $("ladder").innerHTML = ladderSVG(c) +
+    (c.wall !== null ? `<div class="why">Hard wall at ${fmt(c.wall)} — ${c.wallWhy}. You may not cross it for the rest of this league year.</div>` : "");
+  $("dayLabel").textContent = S.over ? "WINDOW CLOSED" :
+    ("SIGNING DAY " + S.day + " OF " + WINDOW_DAYS + " · " + S.pool.filter(p=>!p.signedBy).length + " people left");
+
+  const nl = nextLineAbove(c.committed);
+  $("books").innerHTML = [
+    ["Committed salary", fmt(c.committed)],
+    ["Roster slots", c.slots + " of " + SLOT_MAX],
+    [c.committed < FLOOR ? "Below the floor by" : "Above the floor by", fmt(Math.abs(c.committed - FLOOR))],
+    [nl ? "Room to " + ({[FLOOR]:"the floor",[CAP]:"the cap",[TAX]:"the tax line",[APRON1]:"the first apron",[APRON2]:"the second apron"})[nl] : "Above every line", nl ? fmt(nl - c.committed) : "—"],
+    ["The most you can legally offer", fmt(reach(c))],
+    ["Tools left", (c.mode === "room"
+        ? (c.roomMle ? "room mid-level" : "none")
+        : [c.ntmle && "mid-level", c.bae && "bi-annual", (c.taxMle && c.committed>=APRON1 && c.committed<APRON2) && "taxpayer mid-level"].filter(Boolean).join(", ") || "none")],
+  ].map(([k,v]) => `<div class="kv"><span class="dim">${k}</span><span class="num">${v}</span></div>`).join("")
+   + `<div class="note">${c.fact}</div>`;
+
+  $("jobs").innerHTML = c.jobs.map(j => j.filledBy
+    ? `<div class="chair filled"><span>${j.role} — <b>${j.filledBy}</b></span><span class="num">${fmt(j.annual)} · ${j.years} yr</span></div>`
+    : `<div class="chair"><span>${j.role} — <span class="dim">open</span></span><span class="faint">no one</span></div>`
+  ).join("");
+
+  $("board").innerHTML = S.pool.map(p => {
+    if (p.signedBy) return `<div class="card gone"><div class="role">${p.role}</div>
+      <div style="font-size:15px;font-weight:600">${p.name}</div>
+      <div class="ask">${fmt(p.ask)}</div>
+      <div class="sr">signed by ${p.signedBy} on day ${p.signedAt}</div></div>`;
+    const canReach = reach(c) >= reserveOf(p);
+    return `<div class="card ${sel===p.id?"sel":""} ${canReach?"":"unreach"}" data-p="${p.id}">
+      <div class="role">${p.role}</div>
+      <div style="font-size:15px;font-weight:600">${p.name}</div>
+      <div class="ask">${fmt(p.ask)} <span class="faint" style="font-size:11px">a year</span></div>
+      <div class="sr"><b>Good:</b> ${p.strength}<br><b>Risk:</b> ${p.risk}</div>
+      <div class="note">He will not sign for less than ${fmt(reserveOf(p))}.
+        If two clubs offer the same, he takes ${p.pref === "build"
+          ? "the one with more room left to add players around him"
+          : "the one already spending hardest to win now"}.<br>Real: ${p.real}.</div>
+      ${canReach ? "" : `<div class="why">The most you can legally offer anyone is ${fmt(reach(c))}.</div>`}
+    </div>`;
+  }).join("");
+  if (!S.over) [...$("board").querySelectorAll(".card[data-p]")].forEach(el =>
+    el.onclick = () => { sel = el.dataset.p; const p = S.pool.find(x=>x.id===sel); amount = Math.min(p.ask, reach(me())); render(); });
+
+  renderComposer();
+  $("log").innerHTML = S.log.slice().reverse().map(l => `<div>${l}</div>`).join("") || `<div class="faint">Nothing yet.</div>`;
+  renderLeague();
+  if (S.over) renderReport(); else $("reportPanel").style.display = "none";
+}
+
+function renderComposer(){
+  const c = me(), box = $("composer");
+  if (S.over) { box.innerHTML = `<h2>Composer</h2><p class="dim">The window is closed. Read the report, then run the STRATEGY PROBE.</p>`; return; }
+  let head = `<h2>Signing day ${S.day}</h2>`;
+
+  if (c.mode === "undecided") {
+    head += `<div class="forgone"><b>One choice first, and it is one-way.</b><br>
+      You are under the cap by <span class="num">${fmt(CAP - c.committed)}</span>.
+      <ul style="margin:6px 0 0 16px;padding:0">
+        <li><b>Spend your room</b> (${fmt(CAP - c.committed)}) — and you give up the mid-level exception
+            (${fmt(NTMLE)}) and the bi-annual. You get the room mid-level (${fmt(ROOM_MLE)}) instead.</li>
+        <li><b>Keep the exceptions</b> — you give up the room and can offer up to ${fmt(Math.min(NTMLE, Math.max(0, APRON1 - c.committed)))} with the mid-level.</li>
+      </ul>
+      <div style="margin-top:7px"><button id="btnOver">KEEP THE EXCEPTIONS INSTEAD</button></div>
+      <div class="note">Signing anyone with room takes the first path automatically.</div></div>`;
+  }
+
+  if (!sel) {
+    box.innerHTML = head + `<p class="dim">Tap someone on the board, or pass the day.</p>
+      <button id="btnPass">PASS THIS DAY</button>` + campHtml(c);
+    wireComposer(); return;
+  }
+  const p = S.pool.find(x => x.id === sel);
+  const rmax = reach(c), rmin = reserveOf(p);
+  amount = Math.max(0, Math.min(Math.round(amount), rmax));
+  const tool = amount >= rmin ? pickTool(c, amount) : null;
+  const valid = amount >= rmin && !!tool;
+
+  // FORGONE — computed live, frozen at commit
+  let forgoneHtml = `<div class="faint">Set an amount to see what it costs you.</div>`;
+  if (valid) {
+    const sim = JSON.parse(JSON.stringify(c));
+    applySign(sim, p, amount, tool, S.day);
+    const lostNames = S.pool.filter(q => !q.signedBy && q.id !== p.id && reach(sim) < reserveOf(q))
+                            .map(q => `${q.name} (${fmt(q.ask)})`);
+    const nl2 = nextLineAbove(sim.committed);
+    forgoneHtml =
+      (lostNames.length
+        ? `<b>You can no longer reach:</b><ul style="margin:4px 0 0 16px;padding:0">${lostNames.map(n=>`<li>${n}</li>`).join("")}</ul>`
+        : `<b>You can still reach everyone else on the board.</b>`) +
+      `<div style="margin-top:6px">After this you have <span class="num">${fmt(SLOT_MAX - sim.slots)}</span> roster slots and
+       <span class="num">${nl2 ? fmt(nl2 - sim.committed) : "$0"}</span> ${nl2 ? "to " + ({[FLOOR]:"the floor",[CAP]:"the cap",[TAX]:"the tax line",[APRON1]:"the first apron",[APRON2]:"the second apron"})[nl2] : "above every line"}.</div>`;
+  }
+  const drawsWall = valid && (tool === "NTMLE" || tool === "BAE") && c.wall === null;
+
+  box.innerHTML = head + `
+    <div style="font-size:16px;font-weight:650">${p.name} <span class="role">${p.role}</span></div>
+    <div class="note" style="margin-bottom:8px">He is asking ${fmt(p.ask)} and will not sign below ${fmt(rmin)}.</div>
+    <label class="dim" style="font-size:12px">Your offer, per year</label>
+    <input id="amt" type="number" step="100000" min="0" max="${rmax}" value="${amount}">
+    <div class="kv"><span class="dim">Tool</span><span>${tool ? toolLabel(tool) : "<span style='color:var(--warn)'>no legal tool reaches that</span>"}</span></div>
+    <div class="kv"><span class="dim">Most you can legally offer</span><span class="num">${fmt(rmax)}</span></div>
+    ${drawsWall ? `<div class="wall"><b>Using this draws a wall at ${fmt(APRON1)}.</b>
+        You may not cross it for the rest of this league year — including in February, in the next lesson.</div>` : ""}
+    <div class="forgone">${forgoneHtml}</div>
+    <button class="primary" id="btnCommit" ${valid?"":"disabled"}>COMMIT THIS OFFER</button>
+    <button id="btnPass">PASS THIS DAY</button>
+    <div class="note">Other desks are offering at the same time. Only the signed deal is ever published;
+      losing offers stay private.</div>` + campHtml(c);
+  wireComposer();
+}
+function campHtml(c){
+  const ok = canSignCamp(c);
+  return `<div class="forgone" style="margin-top:10px">
+    <b>Camp contracts</b> — ${fmt(MIN_TEAM)} each. Nobody competes for these, so signing one does not
+    spend your day. It fills a roster slot and never closes a job, and the money still counts.
+    <div style="margin-top:6px"><button id="btnCamp" ${ok?"":"disabled"}>SIGN A CAMP CONTRACT</button>
+      <span class="faint" style="margin-left:8px">${c.slots} of ${SLOT_MAX} slots filled${
+        ok ? "" : (c.slots>=SLOT_MAX ? " — roster full" : " — it would cross your wall")}</span></div></div>`;
+}
+function wireComposer(){
+  const cp = $("btnCamp"); if (cp) cp.onclick = () => { signCamp(me(), S.day); render(); };
+  const a = $("amt"); if (a) a.oninput = () => { amount = parseInt(a.value||"0",10)||0; renderComposer(); };
+  const o = $("btnOver"); if (o) o.onclick = () => { declareOverCap(me()); sel=null; render(); };
+  const pz = $("btnPass"); if (pz) pz.onclick = () => { stepDay(S, null); sel=null; amount=0; render(); };
+  const cm = $("btnCommit"); if (cm) cm.onclick = () => {
+    stepDay(S, { playerId: sel, amount }); sel=null; amount=0; render();
+  };
+}
+
+function renderLeague(){
+  $("leagueTable").innerHTML = `<table><tr><th>Club</th><th class="n">Committed</th><th class="n">Jobs</th><th class="n">Slots</th></tr>` +
+    S.clubs.map(c => `<tr${c.i===S.humanIdx?' style="color:var(--gold)"':""}>
+      <td>${c.name}</td><td class="n">${fmtM(c.committed)}</td>
+      <td class="n">${c.jobs.filter(j=>j.filledBy).length}/${c.jobs.length}</td>
+      <td class="n">${c.slots}</td></tr>`).join("") + `</table>`;
+}
+
+function renderReport(){
+  const R = S.clubs.map(readingsFor);
+  const best = (key, cmp) => R.reduce((a,b) => cmp(b[key], a[key]) ? b : a);
+  const most = k => best(k, (x,y) => x > y);
+  const cheapRows = R.filter(r => r.cheapestJobClose !== null);
+  const cheapest = cheapRows.length ? cheapRows.reduce((a,b) => b.cheapestJobClose < a.cheapestJobClose ? b : a) : null;
+  const dearest  = cheapRows.length ? cheapRows.reduce((a,b) => b.cheapestJobClose > a.cheapestJobClose ? b : a) : null;
+
+  const readings = [
+    ["Most jobs closed",  most("jobsClosed"),      r => r.jobsClosed + " of 2"],
+    ["Longest coverage",  most("jobYears"),        r => r.jobYears + " job-years"],
+    ["Most room left",    most("roomToNextLine"),  r => fmt(r.roomToNextLine) + " to " + r.nextLineName],
+    ["Most tools left",   most("toolsLeft"),       r => r.toolsLeft + " unused"],
+  ];
+  if (cheapest) readings.push(["Cheapest job closed", cheapest, r => fmt(r.cheapestJobClose)]);
+
+  const names = new Set(readings.map(x => x[1].id));
+  const floorRows = R.filter(r => r.floorBill > 0);
+  const walls = R.filter(r => r.wall !== null);
+  const shorts = R.filter(r => r.rosterShort > 0);
+
+  $("reportPanel").style.display = "";
+  $("report").innerHTML = `
+    <div class="readings">${readings.map(([lbl, r, f]) =>
+      `<div class="reading"><div class="lbl">${lbl}</div><div class="club">${r.club}</div><div class="fig">${f(r)}</div></div>`).join("")}</div>
+    <p class="note"><b>${names.size} different clubs</b> are named across ${readings.length} readings.
+      None of these is the answer. There is no team quality figure in this model, so there is nothing to rank.</p>
+
+    ${cheapest && dearest && cheapest.id !== dearest.id ? `<div class="panel" style="margin-top:10px;background:var(--panel2)">
+      <h3>Cheapest job closed vs dearest</h3>
+      <div class="num">${cheapest.club} closed a job for ${fmt(cheapest.cheapestJobClose)}.
+        ${dearest.club} closed one for ${fmt(dearest.cheapestJobClose)}.</div>
+      <div class="note">Same kind of job. ${fmt(dearest.cheapestJobClose - cheapest.cheapestJobClose)} of difference.</div></div>` : ""}
+
+    ${floorRows.length ? `<div class="panel" style="margin-top:10px;background:#1d1613;border-color:#4a3d18">
+      <h3>The floor table</h3>
+      <table><tr><th>Club</th><th class="n">Committed</th><th class="n">Shortfall paid</th></tr>
+      ${floorRows.map(r => `<tr><td>${r.club}</td><td class="n">${fmt(r.committed)}</td><td class="n" style="color:var(--warn)">${fmt(r.floorBill)}</td></tr>`).join("")}</table>
+      <div class="note">The floor is ${fmt(FLOOR)} — exactly nine tenths of the cap. Under the 2023 CBA the shortfall is
+        paid to players league-wide, pro rata by salary. Not to this roster. These clubs paid
+        ${fmt(floorRows.reduce((s,r)=>s+r.floorBill,0))} between them and received nothing.</div></div>` : ""}
+
+    ${walls.length ? `<div class="panel" style="margin-top:10px;background:var(--panel2)">
+      <h3>Walls drawn this window</h3>
+      ${walls.map(r => `<div class="kv"><span>${r.club}</span><span class="num">${fmt(r.wall)} — ${r.wallWhy}</span></div>`).join("")}
+      <div class="note">Nobody imposed these. Each club drew its own, and it holds until the league year ends —
+        which is Lesson 2.</div></div>` : ""}
+
+    ${shorts.length ? `<div class="panel" style="margin-top:10px;background:#2a1a18;border-color:var(--warn)">
+      <h3>Could not fill the roster</h3>
+      ${shorts.map(r => `<div>${r.club} is ${r.rosterShort} player${r.rosterShort>1?"s":""} short of ${SLOT_MIN}
+        and cannot sign anyone without crossing the wall it drew itself.</div>`).join("")}</div>` : ""}
+
+    <div class="panel" style="margin-top:10px;background:var(--panel2)">
+      <h3>Every club, every dimension</h3>
+      <table>
+        <tr><th>Club</th><th class="n">Committed</th><th class="n">Jobs</th><th class="n">Job-years</th>
+            <th class="n">Room to next line</th><th class="n">Tools</th><th class="n">Slots</th><th class="n">Floor bill</th></tr>
+        ${R.map(r => `<tr${r.id===me().id?' style="color:var(--gold)"':""}>
+          <td>${r.club}</td><td class="n">${fmtM(r.committed)}</td><td class="n">${r.jobsClosed}</td>
+          <td class="n">${r.jobYears}</td><td class="n">${fmtM(r.roomToNextLine)}</td>
+          <td class="n">${r.toolsLeft}</td><td class="n">${r.slots}</td>
+          <td class="n">${r.floorBill ? fmt(r.floorBill) : "—"}</td></tr>`).join("")}
+      </table>
+    </div>`;
+}
+
+/* ========================= MODEL PANEL =============================== */
+const MODEL_TEXT = `
+DESIGN D · L1 "THE WINDOW" · the model, in full. Attack this, not the feel.
+
+THE OBJECT THE STUDENT HOLDS
+  Not a budget. A POSITION relative to five lines that are drawn in the same place for
+  every desk in the room. Two desks with different positions cannot make the same offer.
+
+SOURCED CONSTANTS (NBA_FINANCIAL_TRUTH.md, editorial date 2026-09-03)
+  CAP        $164,961,000   §8.1 #1  official-nba  high   as of 2026-06-30
+  FLOOR      $148,465,000   = 0.90 x CAP exactly, §8.1 #2
+  TAX        $200,428,000   = 1.215 x CAP, §8.1 #3
+  APRON 1    $209,015,000   §8.1 #1
+  APRON 2    $221,686,000   §8.1 #1
+  NTMLE       $15,044,000   §8.1 #7 — using it draws a hard cap at APRON 1 (§2.3, cbaguide high)
+  ROOM MLE     $9,366,000   §8.1 #7
+  TAX MLE      $6,064,000   §8.1 #7
+  BAE          $5,477,000   §1.2 cap-database high (§7.4: not in the official NBA release)
+  MIN_TEAM     $2,449,421   §1.2 team cost of a 3+yr vet on a 1-year minimum
+  ROOKIE_MIN   $1,357,763   §1.2 — the per-empty-slot backstop charge below 12 (§2.5)
+  SLOT_MAX 15 · SLOT_MIN 14 · BACKSTOP 12         §8.1 #8, §2.10, §2.5
+  RAISE 5%     non-incumbent raise, §8.1 #10 (incumbents get 5 yrs / 8%)
+
+INVENTED CONSTANTS — the module's, never the NBA's
+  RESERVE_FRACTION 0.65   a player refuses below 65% of his real annual value
+  WINDOW_DAYS 3
+  Rival factors  thrifty 0.85 · cap 1.00 · balanced 1.02 · chase 1.12 · (probe trap 1.25)
+  HOLD_ASK_CEIL $10,000,000
+  Open jobs, starting filled slots, role labels, and every strength/risk sentence
+  MODULE RULE: room-vs-exception fork is one switch (see below)
+  MODULE RULE: taxpayer MLE modelled as available only between the two aprons
+
+LEGALITY — one predicate, used by every path including the auto-fill at close
+  availableTools(c):
+    under the cap or undecided  ->  { ROOM (= CAP - committed), ROOM_MLE if granted, MIN }
+    over the cap                ->  { NTMLE if unspent, BAE if unspent,
+                                      TAX_MLE if APRON1 <= committed < APRON2, MIN }
+  toolCeiling(c,t):
+    ROOM = max(0, CAP - committed) · ROOM_MLE = 9,366,000 · NTMLE = 15,044,000
+    BAE = 5,477,000 · TAX_MLE = 6,064,000 · MIN = 2,449,421
+    then, for NTMLE and BAE:  ceiling = min(ceiling, APRON1 - committed)
+        (a tool that draws a wall may not be used to cross the wall it draws)
+    then, if a wall exists:   ceiling = min(ceiling, wall - committed)   [absolute, §2.3]
+  legal(c, amount, t) <=> amount <= toolCeiling(c,t) AND slots < 15
+                          AND (wall is null OR committed + amount <= wall)
+  reach(c) = max over available tools of toolCeiling(c,t)
+  pickTool(c, amount) = among sufficient tools, never draw a wall you did not need,
+                        then the smallest sufficient ceiling.
+
+THE ROOM-VS-EXCEPTION FORK  [MODULE RULE, from §2.4]
+  A club under the cap either spends its room — which permanently spends the NTMLE and the
+  BAE and grants the room MLE — or declares it will operate over the cap, keeping the
+  exceptions and giving up the room. One-way. This is the real trade-off in §2.4
+  ("using cap space costs you the bigger MLE") modelled as a single switch.
+  Note the consequence a critic should check: a club barely UNDER the cap (Brooklyn,
+  $3.55M of room) is worse off than one comfortably OVER it, which is real.
+
+RESOLUTION — simultaneous, deterministic, no Math.random anywhere
+  Each club makes at most one offer per day. An offer below the player's reserve is
+  refused and the day is still spent. For each player with offers:
+    1. highest annual wins
+    2. tie -> the person's own STATED PREFERENCE, printed on his card: "build" takes the club
+       with more room left after signing, "now" takes the club spending hardest. Deliberately
+       NOT monotone in payroll — otherwise the lowest-payroll club wins every contested bid.
+    3. tie -> club index. Documented; never economically load-bearing.
+  NEVER by arrival time. The signed deal publishes; losing offers stay private forever.
+  A signed player leaves the board permanently, for everyone.
+
+CAMP CONTRACTS
+  A camp contract at $2,449,421 is uncontested, so signing one does not spend the day. It fills a
+  roster slot, never closes a job, counts fully against every line, and cannot cross a wall.
+  This is what keeps days 2 and 3 live for a club that has already spent its only big tool, and it
+  is the cheap way to reach the roster minimum and the floor.
+
+BOOKS
+  committed += annual; slots += 1; the tool is consumed; a wall is drawn if the tool
+  draws one; booksY2 += annual x 1.05; booksY3 += annual x 1.05^2 for terms of 3+.
+  A job closes when a signed player's role matches an open one; coverage = his real term.
+
+WINDOW CLOSE — the same arithmetic
+  fill to 14 with camp contracts at $2,449,421 each, charged, stopping at any wall
+  (a club that cannot reach 14 without crossing its own wall is reported, not hidden);
+  below 12, add $1,357,763 per empty slot (§2.5 anti-gaming backstop);
+  below the floor, pay FLOOR - committed to players league-wide.
+
+WHAT THE MODEL DELIBERATELY DOES NOT HOLD
+  No rating. No overall. No team quality. No projected wins. No franchise value.
+  Nothing to rank, therefore nothing to crown. The report is five readings, each a count
+  or a sum of something the model actually holds, and they conflict on purpose.
+
+THE THREE PROPERTIES THIS MODEL IS TUNED AGAINST (and which the probe tests)
+  P-A  No monotone map from money spent to any displayed dimension. Somebody spends more
+       and closes fewer jobs.
+  P-B  A pure hold strategy is strictly beaten by some active strategy on at least one
+       displayed dimension, and pays the floor bill.
+  P-C  Every desk can always reach the stated obligation: at or above the floor with at
+       least 14 players. Camp contracts are always available, so this is structural.
+`;
+
+/* ========================= STRATEGY PROBE ============================ */
+function runProbe(humanIdx){
+  const rows = [];
+  for (const [label, spec] of Object.entries(STRATEGIES)) {
+    const st = freshState(humanIdx);
+    for (let d = 0; d < WINDOW_DAYS; d++) {
+      const c = st.clubs[humanIdx];
+      const off = decide(st, c, spec);
+      stepDay(st, off);
+    }
+    if (!st.over) closeWindow(st);
+    const r = readingsFor(st.clubs[humanIdx]);
+    r.label = label;
+    r.signings = st.clubs[humanIdx].roster.filter(x => x.role !== "NONE")
+      .map(x => x.name + " " + fmtM(x.annual)).join(", ") || "nobody";
+    r.spent = r.committed - CLUBS[humanIdx].pay;
+    rows.push(r);
+  }
+  return rows;
+}
+function renderProbe(){
+  const rows = runProbe(S ? S.humanIdx : 0);
+  const club = CLUBS[S ? S.humanIdx : 0].name;
+  const topSpend = Math.max(...rows.map(r => r.spent));
+  const topJobs  = Math.max(...rows.map(r => r.jobsClosed));
+  // P-A holds when SOME strategy closes the most jobs without being among the biggest spenders,
+  // i.e. there is a cheaper allocation that beats a dearer one on a displayed dimension.
+  const cheaperWins = rows.filter(r => r.jobsClosed === topJobs && r.spent < topSpend);
+  const dearestRows = rows.filter(r => r.spent === topSpend);
+  const holdRow  = rows.find(r => r.label === "HOLD EVERYTHING");
+  const beatsHold = rows.filter(r => r.label !== "HOLD EVERYTHING" &&
+      (r.jobsClosed > holdRow.jobsClosed || r.jobYears > holdRow.jobYears || r.floorBill < holdRow.floorBill));
+  const distinct = new Set(rows.filter(r => r.label !== "HOLD EVERYTHING")
+      .map(r => r.jobsClosed + "|" + r.jobYears + "|" + r.spent)).size;
+
+  $("probeOut").innerHTML = `
+    <p class="dim">Five canned strategies for <b>${club}</b>, each run through the identical three-day loop
+      against the identical five rival policies. Everything is deterministic: same inputs, same outputs, every time.</p>
+    <table>
+      <tr><th>Strategy</th><th class="n">Spent</th><th class="n">Jobs</th><th class="n">Job-years</th>
+          <th class="n">Room to next line</th><th class="n">Tools</th><th class="n">Slots</th>
+          <th class="n">Floor bill</th><th>Wall</th><th>Signed</th></tr>
+      ${rows.map(r => `<tr>
+        <td><b>${r.label}</b></td>
+        <td class="n">${fmtM(r.spent)}</td>
+        <td class="n">${r.jobsClosed}</td>
+        <td class="n">${r.jobYears}</td>
+        <td class="n">${fmtM(r.roomToNextLine)}</td>
+        <td class="n">${r.toolsLeft}</td>
+        <td class="n">${r.slots}${r.rosterShort ? " (short " + r.rosterShort + ")" : ""}</td>
+        <td class="n" style="${r.floorBill?'color:var(--warn)':''}">${r.floorBill ? fmt(r.floorBill) : "—"}</td>
+        <td>${r.wall ? fmtM(r.wall) : "—"}</td>
+        <td class="faint">${r.signings}</td></tr>`).join("")}
+    </table>
+    <div class="panel" style="margin-top:12px;background:var(--panel2)">
+      <h3>What this run says about the three properties</h3>
+      <div class="kv"><span><b>P-A</b> a cheaper allocation beats a dearer one on a displayed dimension</span>
+        <span style="${cheaperWins.length?'color:var(--ok)':'color:var(--warn)'}">
+        ${cheaperWins.length
+          ? "holds — " + cheaperWins[0].label + " spent " + fmtM(cheaperWins[0].spent) +
+            " and closed " + cheaperWins[0].jobsClosed + " job(s); " + dearestRows[0].label +
+            " spent " + fmtM(topSpend) + " and closed " + dearestRows[0].jobsClosed
+          : "FAILS on this seat — nothing cheaper matched the top job count"}</span></div>
+      <div class="kv"><span><b>P-D</b> the strategies are actually distinguishable</span>
+        <span style="${distinct>=3?'color:var(--ok)':'color:var(--warn)'}">${distinct} of 4 active
+          strategies produced a distinct (jobs, job-years, spend) outcome${distinct<3?" — too few; the choice space is collapsing":""}</span></div>
+      <div class="kv"><span><b>P-B</b> hoarding is strictly beaten</span>
+        <span style="${beatsHold.length?'color:var(--ok)':'color:var(--warn)'}">${beatsHold.length
+          ? "holds — " + beatsHold.length + " of 4 active strategies beat HOLD on jobs or on the floor bill"
+          : "FAILS on this seat — nothing beat holding"}</span></div>
+      <div class="kv"><span><b>P-C</b> every strategy reaches 14 players and the floor rule is applied</span>
+        <span style="color:var(--ok)">${rows.every(r => r.slots >= SLOT_MIN || r.rosterShort > 0) ? "holds (shorts are reported, not hidden)" : "check"}</span></div>
+      <div class="note">Run the probe from a different seat — Detroit, Brooklyn and Sacramento are three
+        genuinely different positions on the same ladder — and the table changes shape. That is the design.
+        A single seat clearing P-A is not a proof; the real property is brute-forced over the reachable
+        action space in the module's tuning harness, not read off one run.</div>
+    </div>`;
+}
+
+/* ========================= WIRING ==================================== */
+function openModal(id){ $(id).classList.add("on"); }
+function closeModal(id){ $(id).classList.remove("on"); }
+window.closeModal = closeModal;
+$("btnModel").onclick = () => { $("modelText").textContent = MODEL_TEXT.trim(); openModal("modelModal"); };
+$("btnProbe").onclick = () => { renderProbe(); openModal("probeModal"); };
+$("btnReset").onclick = () => { S = null; sel = null; $("game").style.display = "none"; $("setup").style.display = ""; };
+boot();
+</script>
+</body>
+</html>

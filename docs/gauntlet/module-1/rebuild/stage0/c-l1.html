@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DESIGN C · Stage-0 · JULY 1 (Module 1, L1)</title>
+<!--
+===============================================================================
+ DESIGN C — CLEAN ROOM · Stage-0 playable prototype of the L1 signature loop
+ Lesson: "JULY 1"  ·  Module 1 "The Cap"  ·  BOW Economics Track 101
+ Date: 2026-09-03
+ Design doc: ../DESIGN_C_CLEAN_ROOM.md
+ One file, no network, no build, no external assets. Opens and plays.
+
+ WHAT IS REAL (official-NBA / dossier-sourced, with as-of dates)
+ ---------------------------------------------------------------------------
+   Salary cap                 $164,961,000  pr.nba.com, 2026-06-30, high
+   Minimum team salary        $148,465,000  = 90% of cap exactly, official
+   First apron                $209,015,000  official
+   Non-taxpayer mid-level      $15,044,000  official, <=4 yrs
+   Room mid-level               $9,366,000  official, <=3 yrs
+   Taxpayer mid-level           $6,064,000  official, <=2 yrs
+   Veteran minimum (10+ yrs)    $3,876,529  cap-database, high
+   Rookie minimum               $1,357,763  cap-database, high
+   Roster maximum                       15  2023 CBA
+   12-counted backstop: fewer than 12 counted players => one rookie-minimum
+     charge per empty slot below 12                    2023 CBA
+   Using the non-taxpayer mid-level HARD-CAPS you at the first apron for the
+     rest of the league year                           2023 CBA / cbaguide, high
+   Re-signing your own player: 5 yrs / 8% raises; signing elsewhere 4 / 5%
+                                                       2023 CBA, high
+   Renouncing a free agent permanently destroys Bird rights to him
+                                                       2023 CBA, high
+   Club committed payrolls: HoopsHype committed 2026-27 roster salary,
+     dossier section 4.4, as of 2026-09-03, medium confidence.
+     DET $136,252,755 · BKN $161,411,000 · MEM $169,043,000 ·
+     SAS $203,340,000 · DEN $226,680,000
+   Dead money: MEM $21,909,021 (SalarySwish) · DEN $2,000,000 (Valanciunas)
+   Market prices are REAL DATED SIGNINGS, total divided evenly by years:
+     Myles Turner 4 yrs / $107,000,000 with Milwaukee, July 2025
+     Kentavious Caldwell-Pope 3 yrs / $66,000,000 with Orlando, 2024
+     Bruce Brown 2 yrs / ~$45,000,000 with Indiana, July 2023
+     Joakim Noah 4 yrs / $72,600,000 with New York, July 2016
+     Deandre Ayton 2 yrs / $16,600,000 with the Lakers, 2025
+
+ WHAT IS INVENTED — every constant not sourced above, named here
+ ---------------------------------------------------------------------------
+   INVENTED-1  Each club's FREE AGENT AMOUNTS (cap holds) and their re-sign
+               prices. The dossier has no per-team free-agent ledger. These
+               are the module's own scenario. They are UNNAMED and carry a
+               role only, exactly as a real cap sheet renders a Free Agent
+               Amount, so no real person is placed in an unsourced situation.
+                 DET  wing hold $18,000,000 / re-sign $20,000,000
+                      big  hold $14,000,000 / re-sign $16,000,000
+                 BKN  guard hold $12,000,000 / re-sign $14,000,000
+                 MEM  wing hold  $6,000,000 / re-sign  $7,500,000
+                 SAS  (none)   DEN  (none)
+   INVENTED-2  Each club's HOLES (which of guard/wing/big the base roster does
+               not cover). Position data is not in the dossier. Module scenario.
+   INVENTED-3  Even division of contract totals by years (Turner
+               $107,000,000 / 4 = $26,750,000). Real deals carry 5% or 8%
+               raises; multi-step percent is a grade-7 standard.
+   INVENTED-4  The three anonymous "veteran minimum" fillers, one per role,
+               at the real veteran-minimum figure. Unlimited supply, never
+               contested — this is the recoverability floor.
+   INVENTED-5  The ROOM TO MOVE probe set: six modelled next-summer
+               opportunities priced at the real rungs of the ladder —
+               $3,876,529 / $6,064,000 / $9,366,000 / $15,044,000 /
+               $20,000,000 / $26,750,000 (the last two are the module's). It
+               exists to make "flexibility" an ENUMERABLE COUNT OF LEGAL
+               ACTIONS rather than an adjective.
+   INVENTED-6  The four rival clubs' fixed strategies. In the real lesson the
+               rivals are other desks; here they are deterministic stand-ins
+               so contention is reproducible.
+   NOT MODELLED HERE: luxury tax, both aprons as lines (only the first apron
+   appears, and only as the mid-level's ceiling and hard cap), trades,
+   waives, the stretch provision, and the floor's shortfall payment mechanics
+   (the shortfall is computed and displayed; where the money goes is copy).
+
+ NO Math.random ANYWHERE. No chance events. Every outcome has a named cause.
+===============================================================================
+-->
+<style>
+:root{
+  --bg:#0a0c10; --panel:#12151c; --panel2:#171b24; --line:#242a36;
+  --ink:#e8ecf4; --dim:#8b95a8; --dimmer:#5d6678;
+  --accent:#8b6cff; --good:#4ec9a0; --warn:#e8b04b; --bad:#e2685f;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+h1,h2,h3{margin:0;font-weight:650;letter-spacing:.01em}
+a{color:var(--accent)}
+.wrap{max-width:1360px;margin:0 auto;padding:16px}
+.eyebrow{font:600 10px/1 var(--mono);letter-spacing:.16em;color:var(--accent);
+  text-transform:uppercase}
+.sub{color:var(--dim);font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:start}
+@media(max-width:1080px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  margin-bottom:10px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.big{font:700 30px/1 var(--mono);letter-spacing:-.02em}
+.bar{position:relative;height:20px;background:var(--panel2);border-radius:3px;margin:3px 0;
+  overflow:hidden}
+.bar > i{position:absolute;inset:0 auto 0 0;background:#2f3a55;display:block}
+.bar.dead > i{background:#4a2c33}
+.bar.hold > i{background:#2a3830}
+.bar.newsign > i{background:#4b3d86}
+.bar span{position:relative;display:flex;justify-content:space-between;
+  padding:0 7px;line-height:20px;font-size:11px;font-family:var(--mono)}
+.ruleline{display:flex;justify-content:space-between;border-top:1px dashed #46506a;
+  margin:9px 0 5px;padding-top:5px;font:11px/1.2 var(--mono);color:var(--dim)}
+button{font:inherit;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+  border-radius:7px;padding:7px 11px;cursor:pointer}
+button:hover:not(:disabled){border-color:#4a5570}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.sel{border-color:var(--accent);background:#221c3e}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
+.doorbtn{display:block;width:100%;text-align:left;margin-bottom:6px;padding:8px 10px}
+.doorbtn .dl{font-weight:650;font-size:13px}
+.doorbtn .dc{font-size:11px;color:var(--dim);margin-top:2px}
+.doorbtn.sel .dc{color:#c4b8ff}
+.pl{display:block;width:100%;text-align:left;margin-bottom:6px;padding:8px 10px}
+.pl .pn{font-weight:650}
+.pl .pm{font-size:11px;color:var(--dim);margin-top:2px}
+.pl .pr{font-size:10px;color:var(--dimmer);margin-top:3px;font-style:italic}
+.pl.gone{opacity:.3;text-decoration:line-through}
+.tag{display:inline-block;font:600 9px/1 var(--mono);letter-spacing:.1em;padding:3px 5px;
+  border-radius:3px;background:#232a38;color:var(--dim);margin-right:5px;vertical-align:1px}
+.tag.role{background:#1e2a3a;color:#7fb3e8}
+.tag.mod{background:#3a2a18;color:#e8b04b}
+.foregone{background:#160f22;border:1px solid #3a2a60;border-radius:8px;padding:11px;
+  font-size:12px}
+.foregone.frozen{background:#1a1210;border-color:#5a3a30}
+.foregone li{margin:4px 0}
+.foregone ul{margin:6px 0 0;padding-left:17px}
+.log{font:11px/1.5 var(--mono);color:var(--dim);max-height:220px;overflow:auto;
+  background:#0d0f14;border:1px solid var(--line);border-radius:7px;padding:9px}
+.log b{color:var(--ink)}
+.log .ok{color:var(--good)} .log .no{color:var(--bad)} .log .hl{color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{font:600 10px/1 var(--mono);letter-spacing:.1em;color:var(--dimmer);text-transform:uppercase}
+td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font:600 10px/1 var(--mono);padding:4px 6px;border-radius:3px}
+.pill.y{background:#16302a;color:var(--good)} .pill.n{background:#301a18;color:var(--bad)}
+.struck{text-decoration:line-through;color:var(--dimmer)}
+.modelpanel{font:11px/1.55 var(--mono);color:var(--dim);white-space:pre-wrap;
+  background:#0d0f14;border:1px solid var(--line);border-radius:7px;padding:11px;
+  max-height:420px;overflow:auto}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px;flex-wrap:wrap}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 11px;
+  min-width:118px}
+.stat .k{font:600 9px/1 var(--mono);letter-spacing:.11em;color:var(--dimmer);
+  text-transform:uppercase}
+.stat .v{font:700 17px/1.25 var(--mono);margin-top:4px}
+.v.warn{color:var(--warn)} .v.bad{color:var(--bad)} .v.good{color:var(--good)}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.hidden{display:none!important}
+.note{font-size:11px;color:var(--dimmer);margin-top:7px}
+.reveal h3{font-size:13px;margin:12px 0 6px;color:var(--accent)}
+.board{border:1px solid var(--line);border-radius:8px;padding:11px;background:var(--panel2);
+  margin-bottom:9px}
+.board .bt{font:600 10px/1 var(--mono);letter-spacing:.11em;color:var(--dimmer);
+  text-transform:uppercase;margin-bottom:7px}
+select,input[type=number]{font:inherit;background:var(--panel2);color:var(--ink);
+  border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div>
+    <div class="eyebrow">Module 1 · Lesson 1 · Stage-0 prototype · Design C (clean room)</div>
+    <h1 style="font-size:30px;margin-top:5px">JULY 1</h1>
+    <div class="sub">You do not pick a player. You pick <em>which door you pay through</em> —
+      and the door is what you are really choosing.</div>
+  </div>
+  <div class="stats" id="stats"></div>
+</div>
+
+<!-- ============================ CLUB PICK ============================ -->
+<div id="pick" class="card">
+  <h2>Take a desk</h2>
+  <div class="sub" style="margin-bottom:10px">Five real clubs, five genuinely different action
+    spaces. The other four run as deterministic rivals. All five are in the shared market —
+    a player another desk signs is gone forever.</div>
+  <div id="pickList" class="row"></div>
+  <div class="note">Committed roster salary: HoopsHype 2026-27 committed roster salary
+    (dossier §4.4, as of 2026-09-03, medium confidence). Free-agent amounts are the module's
+    own scenario and are marked MODELLED.</div>
+</div>
+
+<!-- ============================== PLAY =============================== -->
+<div id="play" class="hidden">
+  <div class="grid">
+
+    <!-- ---------------- THE SHEET ---------------- -->
+    <div class="card">
+      <h2>The sheet · <span id="clubName"></span></h2>
+      <div id="clubFact" class="sub" style="margin-bottom:9px"></div>
+      <div id="sheet"></div>
+      <div id="sheetTotals" style="margin-top:11px"></div>
+    </div>
+
+    <!-- ---------------- THE MARKET --------------- -->
+    <div class="card">
+      <h2>The market · <span id="dayLabel"></span></h2>
+      <div class="sub" style="margin-bottom:9px">Role · price per year · one strength · one risk.
+        No rating. No score. Nothing to sort on.</div>
+      <div id="market"></div>
+      <div class="note">Prices are real dated signings, total divided evenly by years
+        (see the MODEL panel, INVENTED-3).</div>
+    </div>
+
+    <!-- ---------------- THE DOORS ---------------- -->
+    <div class="card">
+      <h2>The doors</h2>
+      <div id="doors"></div>
+      <div class="row" style="margin:10px 0 8px">
+        <label class="sub">Years
+          <select id="term"></select>
+        </label>
+        <span id="termNote" class="sub"></span>
+      </div>
+      <div id="foregone" class="foregone">
+        <b>WHAT THIS WOULD COST YOU</b>
+        <div class="sub" style="margin-top:5px">Pick a player and a door.</div>
+      </div>
+      <div class="row" style="margin-top:11px">
+        <button id="lockBtn" class="primary">LOCK THIS DAY</button>
+        <button id="passBtn">Pass the day</button>
+      </div>
+      <div id="lockErr" class="note" style="color:var(--bad)"></div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="card">
+      <h2>Your own free agents</h2>
+      <div class="sub" style="margin-bottom:8px">They sit on your books until you re-sign them or
+        let them go. Letting one go frees the money <em>and destroys your right to keep him</em> —
+        another desk can then sign him at the same price.</div>
+      <div id="holds"></div>
+    </div>
+    <div class="card" style="grid-column:span 2">
+      <h2>The room · what happened</h2>
+      <div id="log" class="log">Take a desk to begin.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= REVEAL ============================== -->
+<div id="reveal" class="card hidden reveal" style="margin-top:14px">
+  <h2>Class reveal — four definitions of success, at the same time</h2>
+  <div class="sub" style="margin-bottom:11px">No rank. No overall. No trophy. These four cannot be
+    added together, and that is the point.</div>
+  <div id="revealBody"></div>
+  <div class="row" style="margin-top:12px">
+    <button onclick="location.reload()">Play again with another desk</button>
+  </div>
+</div>
+
+<!-- ========================== PROBE + MODEL ========================== -->
+<div class="grid" style="margin-top:14px">
+  <div class="card" style="grid-column:span 2">
+    <h2>Strategy probe — is there a dominant strategy?</h2>
+    <div class="sub" style="margin-bottom:9px">Runs five canned strategies for the selected desk
+      across the full three-day loop against the same four deterministic rivals, and prints the
+      four outcome boards side by side. If one row wins every column, the model is broken.</div>
+    <div class="row" style="margin-bottom:10px">
+      <label class="sub">Desk <select id="probeClub"></select></label>
+      <button id="probeBtn" class="primary">RUN PROBE</button>
+      <button id="probeAllBtn">RUN FOR ALL FIVE DESKS</button>
+    </div>
+    <div id="probeOut"></div>
+  </div>
+
+  <div class="card">
+    <h2>MODEL — every formula and constant</h2>
+    <div id="modelPanel" class="modelpanel"></div>
+  </div>
+</div>
+
+<div class="note" style="margin:18px 0 40px">
+  Stage-0 prototype. Not a mockup: the model below computes every outcome on this page.
+  Nothing here has been reviewed, tested, or run in a classroom. Real NBA figures carry their
+  as-of dates in the file header; every invented constant is named there as INVENTED-n.
+</div>
+
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   1. CONSTANTS  — real unless marked INVENTED
+   ========================================================================= */
+const K = {
+  CAP:        164961000,  // official-nba 2026-06-30
+  FLOOR:      148465000,  // = 90% of cap exactly
+  APRON1:     209015000,  // official
+  NTMLE:       15044000,  // official, <=4 yrs
+  ROOMMLE:      9366000,  // official, <=3 yrs
+  TAXMLE:       6064000,  // official, <=2 yrs
+  VETMIN:       3876529,  // cap-database
+  ROOKMIN:      1357763,  // cap-database
+  ROSTER_MAX:        15,  // 2023 CBA
+  COUNTED_MIN:       12   // 2023 CBA anti-gaming backstop
+};
+const ROLES = ["GUARD","WING","BIG"];
+// INVENTED-5: the next-summer opportunity set that makes flexibility countable.
+const PROBE_SET = [3876529, 6064000, 9366000, 15044000, 20000000, 26750000];
+
+/* =========================================================================
+   2. CLUBS — committed salary REAL (HoopsHype §4.4, 2026-09-03).
+      holds/holes/rosterBars are INVENTED-1 / INVENTED-2.
+   ========================================================================= */
+const CLUBS = [
+{ id:"DET", name:"DETROIT", committed:136252755, dead:0, slots:11,
+  fact:"Lowest committed payroll in the league. Seven first-round picks through 2033.",
+  bars:[["Cade Cunningham",50105628],["John Collins",17000000],["Duncan Robinson",15992957],
+        ["the rest of the roster",53154170]],
+  holds:[{role:"WING",hold:18000000,resign:20000000},{role:"BIG",hold:14000000,resign:16000000}],
+  holes:["WING","BIG"], strat:"spend" },
+
+{ id:"BKN", name:"BROOKLYN", committed:161411000, dead:0, slots:12,
+  fact:"Youngest roster in the league at 23.7. Four unprotected future first-round picks.",
+  bars:[["Michael Porter Jr.",40806150],["Julius Randle",33333334],["Terance Mann",15500000],
+        ["the rest of the roster",71771516]],
+  holds:[{role:"GUARD",hold:12000000,resign:14000000}],
+  holes:["GUARD","BIG"], strat:"balanced" },
+
+{ id:"MEM", name:"MEMPHIS", committed:169043000, dead:21909021, slots:12,
+  fact:"$21,909,021 of dead money — money paid to players who are not on this roster.",
+  bars:[["dead money · two players who left",21909021],["the rest of the roster",147133979]],
+  holds:[{role:"WING",hold:6000000,resign:7500000}],
+  holes:["WING","BIG"], strat:"hold" },
+
+{ id:"SAS", name:"SAN ANTONIO", committed:203340000, dead:0, slots:13,
+  fact:"Victor Wembanyama earns $16,868,013. De'Aaron Fox earns $49,488,300. Price is not value.",
+  bars:[["De'Aaron Fox",49488300],["Devin Vassell",27500000],["Keldon Johnson",18000000],
+        ["Victor Wembanyama",16868013],["the rest of the roster",91483687]],
+  holds:[], holes:["GUARD"], strat:"copy" },
+
+{ id:"DEN", name:"DENVER", committed:226680000, dead:2000000, slots:14,
+  fact:"The biggest payroll here. Above every line in the system, so almost every door is shut.",
+  bars:[["Nikola Jokic",59033114],["Jamal Murray",50105628],["Aaron Gordon",31978037],
+        ["Cameron Johnson",23062500],["dead money · Jonas Valanciunas",2000000],
+        ["the rest of the roster",60500721]],
+  holds:[], holes:["WING"], strat:"trap" }
+];
+
+/* =========================================================================
+   3. THE MARKET — real dated signings. INVENTED-3 (even division by years),
+      INVENTED-4 (the three anonymous minimum fillers).
+   ========================================================================= */
+const POOL = [
+{ id:"turner", name:"Myles Turner", role:"BIG", price:26750000, maxYears:4,
+  strength:"Protects the rim and shoots from outside — rare in one player.",
+  risk:"Turns 30 during the contract.",
+  real:"Signed 4 years / $107,000,000 with Milwaukee, July 2025." },
+{ id:"kcp", name:"Kentavious Caldwell-Pope", role:"WING", price:22000000, maxYears:3,
+  strength:"Guards the other team's best wing every night.",
+  risk:"Does not create his own shot.",
+  real:"Signed 3 years / $66,000,000 with Orlando, 2024." },
+{ id:"brown", name:"Bruce Brown", role:"GUARD", price:22500000, maxYears:2,
+  strength:"Plays three positions; a coach can hide him anywhere.",
+  risk:"Was worth this on a title team; nobody knows what he is worth on yours.",
+  real:"Signed 2 years / about $45,000,000 with Indiana, July 2023." },
+{ id:"noah", name:"Joakim Noah", role:"BIG", price:18150000, maxYears:4,
+  strength:"A former Defensive Player of the Year and a leader in a locker room.",
+  risk:"Coming off shoulder surgery. Four years is a long time.",
+  real:"Signed 4 years / $72,600,000 with New York, July 2016." },
+{ id:"ayton", name:"Deandre Ayton", role:"BIG", price:8300000, maxYears:2,
+  strength:"A starting centre for less than a third of what one usually costs.",
+  risk:"Available this cheap because his last team paid him to leave.",
+  real:"Signed 2 years / $16,600,000 with the Lakers, 2025." },
+// INVENTED-4 — unlimited supply, never contested. The recoverability floor.
+{ id:"minG", name:"a veteran minimum guard", role:"GUARD", price:K.VETMIN, maxYears:1,
+  strength:"Knows the league. Will not complain.", risk:"He is a minimum player.",
+  real:null, modelled:true, unlimited:true },
+{ id:"minW", name:"a veteran minimum wing", role:"WING", price:K.VETMIN, maxYears:1,
+  strength:"Knows the league. Will not complain.", risk:"He is a minimum player.",
+  real:null, modelled:true, unlimited:true },
+{ id:"minB", name:"a veteran minimum big", role:"BIG", price:K.VETMIN, maxYears:1,
+  strength:"Knows the league. Will not complain.", risk:"He is a minimum player.",
+  real:null, modelled:true, unlimited:true }
+];
+
+const DOORS = [
+{ id:"ROOM",    label:"CAP ROOM",                        maxYears:4 },
+{ id:"BIRD",    label:"YOUR OWN GUY (Bird rights)",      maxYears:5 },
+{ id:"NTMLE",   label:"MID-LEVEL · $15,044,000",         maxYears:4 },
+{ id:"ROOMMLE", label:"ROOM MID-LEVEL · $9,366,000",     maxYears:3 },
+{ id:"TAXMLE",  label:"SMALL MID-LEVEL · $6,064,000",    maxYears:2 },
+{ id:"MIN",     label:"MINIMUM",                         maxYears:1 }
+];
+
+/* =========================================================================
+   4. STATE
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+
+function newTeam(c){
+  return { id:c.id, club:c, committed:c.committed, dead:c.dead, slots:c.slots,
+    holds:c.holds.map(h => ({...h, status:"open"})),
+    ntmle:true, taxmle:true, roommle:false, roomUsed:false,
+    hardCapAt:null, hardCapBecause:null,
+    signings:[], covered:new Set(ROLES.filter(r => !c.holes.includes(r))),
+    lostRights:[] };
+}
+let G = null;
+
+function freshGame(myId){
+  return { my:myId, day:1,
+    teams:Object.fromEntries(CLUBS.map(c => [c.id, newTeam(c)])),
+    gone:new Set(),              // pool player ids permanently signed
+    goneHolds:new Set(),         // "TEAM:ROLE" holds signed by somebody
+    log:[], sel:{target:null,door:null,term:1,renounce:new Set()},
+    frozen:null, over:false };
+}
+
+/* =========================================================================
+   5. THE MODEL
+   ========================================================================= */
+function openHolds(t){ return t.holds.filter(h => h.status === "open"); }
+
+function books(t){
+  const oh = openHolds(t).reduce((s,h) => s + h.hold, 0);
+  const counted = t.slots + openHolds(t).length;
+  const emptyCharge = Math.max(0, K.COUNTED_MIN - counted) * K.ROOKMIN;
+  return t.committed + oh + emptyCharge;
+}
+function emptyCharge(t){
+  const counted = t.slots + openHolds(t).length;
+  return Math.max(0, K.COUNTED_MIN - counted) * K.ROOKMIN;
+}
+const room       = t => Math.max(0, K.CAP - books(t));
+const overCap    = t => books(t) > K.CAP;
+const shortfall  = t => Math.max(0, K.FLOOR - books(t));
+
+/* A provisional view of the desk with the currently-selected releases applied.
+   Selection is free and reversible until LOCK; the reducer applies releases
+   before any signing resolves, so legality must be judged against this. */
+function withRenounce(t, set){
+  if (!set || !set.size) return t;
+  return { ...t, holds: t.holds.map(h =>
+    (h.status === "open" && set.has(h.role)) ? {...h, status:"renounced"} : h) };
+}
+
+/* Every purchasable thing this desk can see today, with its price for THIS desk. */
+function marketFor(G, t){
+  const out = [];
+  for (const p of POOL){
+    if (!p.unlimited && G.gone.has(p.id)) continue;
+    out.push({ kind:"pool", id:p.id, name:p.name, role:p.role, price:p.price,
+      maxYears:p.maxYears, strength:p.strength, risk:p.risk, real:p.real,
+      modelled:!!p.modelled, unlimited:!!p.unlimited, owner:null });
+  }
+  for (const c of CLUBS){
+    const tt = G.teams[c.id];
+    for (const h of tt.holds){
+      if (h.status !== "open") continue;
+      const key = c.id + ":" + h.role;
+      if (G.goneHolds.has(key)) continue;
+      out.push({ kind:"hold", id:key, name:(c.id===t.id? "your own " : c.name.toLowerCase()+"'s ")
+          + h.role.toLowerCase(), role:h.role, price:h.resign, maxYears:5,
+        strength: c.id===t.id ? "You know exactly what he is." : "Somebody else knows him better than you do.",
+        risk: c.id===t.id ? "Keeping him means staying over the cap." : "He can re-sign with his own team for five years; you can offer four.",
+        real:null, modelled:true, unlimited:false, owner:c.id });
+    }
+  }
+  return out;
+}
+
+/* Door legality for (team, item, door, years). Returns {ok, why}. */
+function doorLegal(G, t, item, doorId, years){
+  const d = DOORS.find(x => x.id === doorId);
+  if (!d) return {ok:false, why:"No door selected."};
+  if (t.slots >= K.ROSTER_MAX) return {ok:false, why:"You already have 15 players under contract."};
+  if (years > d.maxYears) return {ok:false, why:"The "+d.label+" allows at most "+d.maxYears+" year(s)."};
+  const price = item.price, b = books(t);
+
+  if (doorId === "BIRD"){
+    if (item.kind !== "hold" || item.owner !== t.id)
+      return {ok:false, why:"Bird rights only work on your own free agent."};
+  }
+  if (doorId === "ROOM"){
+    if (overCap(t)) return {ok:false, why:"You are over the cap ("+money(b)+"). You have no room to use."};
+    if (room(t) < price) return {ok:false, why:"You have "+money(room(t))+" of room and he costs "+money(price)+"."};
+  }
+  if (doorId === "NTMLE"){
+    if (!t.ntmle) return {ok:false, why:"You already used the mid-level this year."};
+    if (t.roomUsed) return {ok:false, why:"You used cap room, so your tool is the room mid-level, not this one."};
+    if (!overCap(t)) return {ok:false, why:"The mid-level is for teams over the cap. You are under it — use your room."};
+    if (price > K.NTMLE) return {ok:false, why:"The mid-level is "+money(K.NTMLE)+". He costs "+money(price)+"."};
+    if (b + price > K.APRON1)
+      return {ok:false, why:"Using the mid-level would put you at "+money(b+price)+", above "+money(K.APRON1)+". The rule does not allow it."};
+  }
+  if (doorId === "ROOMMLE"){
+    if (!t.roommle) return {ok:false, why:"You only get the room mid-level after you have used cap room."};
+    if (price > K.ROOMMLE) return {ok:false, why:"The room mid-level is "+money(K.ROOMMLE)+". He costs "+money(price)+"."};
+  }
+  if (doorId === "TAXMLE"){
+    if (!t.taxmle) return {ok:false, why:"You already used the small mid-level this year."};
+    if (!overCap(t)) return {ok:false, why:"You are under the cap — use your room."};
+    if (price > K.TAXMLE) return {ok:false, why:"The small mid-level is "+money(K.TAXMLE)+". He costs "+money(price)+"."};
+  }
+  if (doorId === "MIN"){
+    if (price > K.VETMIN) return {ok:false, why:"The minimum is "+money(K.VETMIN)+". He costs "+money(price)+"."};
+  }
+  if (t.hardCapAt !== null && b + price > t.hardCapAt)
+    return {ok:false, why:"Your ceiling is "+money(t.hardCapAt)+" because of "+t.hardCapBecause
+      +". This would put you at "+money(b+price)+"."};
+  return {ok:true, why:""};
+}
+
+/* What an offer costs you that you cannot get back. Generated from the diff. */
+function foregoneFor(G, t, item, doorId, years, renounceSet){
+  const out = [];
+  for (const h of t.holds){
+    if (h.status === "open" && renounceSet.has(h.role))
+      out.push("You let go of your own " + h.role.toLowerCase() + " — permanently. "
+        + "Any other desk can sign him at " + money(h.resign) + ".");
+  }
+  if (doorId === "ROOM"){
+    out.push("Your room drops from " + money(room(t)) + " to "
+      + money(Math.max(0, room(t) - item.price)) + ".");
+    if (t.ntmle) out.push("Your next tool shrinks from " + money(K.NTMLE)
+      + " (four years) to " + money(K.ROOMMLE) + " (three years). That is the price of using room.");
+  }
+  if (doorId === "NTMLE"){
+    out.push("The " + money(K.NTMLE) + " mid-level is spent. It does not come back this year.");
+    out.push("You may not go above " + money(K.APRON1) + " for any reason for the rest of the season — "
+      + "not to sign, not to trade, not to fix an injury.");
+  }
+  if (doorId === "TAXMLE") out.push("The " + money(K.TAXMLE) + " small mid-level is spent.");
+  if (doorId === "ROOMMLE") out.push("The " + money(K.ROOMMLE) + " room mid-level is spent.");
+  if (doorId === "BIRD") out.push("You are committing " + money(item.price)
+    + " a year to a player you already had, instead of spending it on somebody you do not.");
+  if (years > 0) out.push(years + " summer" + (years>1?"s are":" is") + " spoken for.");
+  const after = books(t) + item.price;
+  if (after > K.CAP && !overCap(t))
+    out.push("This takes you over " + money(K.CAP) + ". From here you need a door for everything.");
+  if (t.slots + 1 >= K.ROSTER_MAX) out.push("This is your fifteenth contract. You are full.");
+  return out;
+}
+
+/* ---- day resolution: deterministic, simultaneous, no clock, no random ---- */
+function resolveDay(G, offers){
+  const lines = [];
+
+  // 1. renunciations first, and they are irreversible.
+  for (const o of offers){
+    const t = G.teams[o.team];
+    for (const role of (o.renounce || [])){
+      const h = t.holds.find(x => x.role === role && x.status === "open");
+      if (h){ h.status = "renounced";
+        t.lostRights.push("your own " + role.toLowerCase());
+        lines.push({c:"hl", s:t.club.name + " let go of its own " + role.toLowerCase()
+          + ". Those rights are gone for good."}); }
+    }
+  }
+
+  // 2. group the real offers by target
+  const byTarget = new Map();
+  for (const o of offers){
+    if (!o.item) continue;
+    if (!byTarget.has(o.item.id)) byTarget.set(o.item.id, []);
+    byTarget.get(o.item.id).push(o);
+  }
+
+  // 3. settle, in a fixed target order so replay is byte-identical
+  const keys = [...byTarget.keys()].sort();
+  for (const key of keys){
+    const bids = byTarget.get(key);
+    const item = bids[0].item;
+
+    if (item.unlimited){                       // minimum market: everybody gets one
+      for (const b of bids) applySign(G, b, lines, null);
+      continue;
+    }
+    let winner = null, reason = "";
+    // (a) the incumbent's Bird rights beat everyone — 5 years / 8% vs 4 / 5%.
+    const bird = bids.find(b => b.door === "BIRD");
+    if (bird){ winner = bird; reason = "his own team can offer five years; everyone else four"; }
+    else {
+      const sorted = bids.slice().sort((x,y) =>
+        (y.years - x.years) ||
+        (y.item.price - x.item.price) ||
+        (room(G.teams[y.team]) - room(G.teams[x.team])) || 0);
+      if (sorted.length > 1){
+        const a = sorted[0], b2 = sorted[1];
+        const tie = a.years === b2.years && a.item.price === b2.item.price
+                 && room(G.teams[a.team]) === room(G.teams[b2.team]);
+        if (tie){
+          lines.push({c:"hl", s:"Nobody signed " + item.name
+            + ". Two desks made the same offer, so he waited. He is back tomorrow."});
+          for (const b of bids) b.lost = "two desks offered exactly the same thing";
+          continue;
+        }
+      }
+      winner = sorted[0];
+      reason = sorted.length > 1 ? "the longest offer wins — " + winner.years + " years" : "nobody else bid";
+    }
+    applySign(G, winner, lines, reason);
+    for (const b of bids) if (b !== winner)
+      b.lost = G.teams[winner.team].club.name + " got him: " + reason;
+    if (item.kind === "pool") G.gone.add(item.id);
+    else { G.goneHolds.add(item.id);
+      const [oid, role] = item.id.split(":");
+      const h = G.teams[oid].holds.find(x => x.role === role && x.status === "open");
+      if (h) h.status = "signed"; }
+  }
+  return lines;
+}
+
+function applySign(G, o, lines, reason){
+  const t = G.teams[o.team], item = o.item;
+  t.committed += item.price;
+  t.slots += 1;
+  t.covered.add(item.role);
+  t.signings.push({name:item.name, role:item.role, price:item.price, years:o.years,
+    door:o.door, day:o.day});
+  if (o.door === "NTMLE"){ t.ntmle = false; t.hardCapAt = K.APRON1;
+    t.hardCapBecause = "the mid-level, on July " + o.day; }
+  if (o.door === "TAXMLE")  t.taxmle = false;
+  if (o.door === "ROOMMLE") t.roommle = false;
+  if (o.door === "ROOM"){ t.roomUsed = true; t.ntmle = false; t.roommle = true; }
+  lines.push({c:"ok", s:t.club.name + " signed " + item.name + " — " + money(item.price)
+    + " a year for " + o.years + " year" + (o.years>1?"s":"")
+    + ", through the " + DOORS.find(d=>d.id===o.door).label.split(" ·")[0].toLowerCase()
+    + (reason ? " (" + reason + ")" : "") + "."});
+}
+
+/* ---- the four outcome boards ---- */
+function boardsFor(G, t){
+  const covered = [...t.covered].sort();
+  const rack = [];
+  if (t.ntmle) rack.push("mid-level");
+  if (t.roommle) rack.push("room mid-level");
+  if (t.taxmle) rack.push("small mid-level");
+  if (!overCap(t) && room(t) > 0) rack.push("cap room");
+  if (openHolds(t).length) rack.push("your own guys");
+  if (t.hardCapAt === null) rack.push("no ceiling");
+  const years = t.signings.reduce((m,s) => Math.max(m, s.years), 0);
+  let moves = 0;
+  for (const price of PROBE_SET){
+    const item = {kind:"pool", id:"probe", name:"probe", role:"BIG", price, maxYears:4,
+      unlimited:false, owner:null};
+    for (const d of DOORS){
+      if (d.id === "BIRD") continue;
+      if (doorLegal(G, t, item, d.id, 1).ok){ moves++; break; }
+    }
+  }
+  return { covered, rolesCovered:covered.length, rack, rackCount:rack.length,
+    yearsLocked:years, roomToMove:moves, books:books(t), shortfall:shortfall(t),
+    hardCap:t.hardCapAt, signings:t.signings.length, lost:t.lostRights.length };
+}
+
+/* =========================================================================
+   6. THE RIVALS — INVENTED-6, deterministic, no random
+   ========================================================================= */
+function rivalOffer(G, t, day, strat){
+  const mk = marketFor(G, t).filter(m => m.owner === null || m.owner === t.id);
+  const need = ROLES.filter(r => !t.covered.has(r));
+  const wanted = m => need.length === 0 || need.includes(m.role);
+  const legalDoors = m => DOORS.filter(d => doorLegal(G, t, m, d.id, 1).ok);
+  const bestDoor = m => {
+    const ds = legalDoors(m);
+    // prefer the door with the longest term, which is also the strongest bid
+    return ds.sort((a,b) => b.maxYears - a.maxYears)[0] || null;
+  };
+  const mkOffer = (m, d) => ({ team:t.id, item:m, door:d.id,
+    years:Math.min(d.maxYears, m.maxYears), day, renounce:[] });
+
+  if (strat === "hold") return { team:t.id, item:null, door:null, years:0, day, renounce:[] };
+
+  if (strat === "strip")   // release everything, sign nothing — the hoard
+    return { team:t.id, item:null, door:null, years:0, day,
+      renounce: (day === 1) ? openHolds(t).map(h => h.role) : [] };
+
+  if (strat === "spend"){
+    const ren = (day === 1) ? openHolds(t).map(h => h.role) : [];
+    const tp = withRenounce(t, new Set(ren));
+    const legalP = m => DOORS.filter(d => doorLegal(G, tp, m, d.id, 1).ok);
+    const bestP  = m => legalP(m).sort((a,b) => b.maxYears - a.maxYears)[0] || null;
+    const cands = marketFor(G, tp).filter(m => m.owner === null || m.owner === t.id)
+      .filter(m => bestP(m)).sort((a,b) => b.price - a.price);
+    if (!cands[0]) return { team:t.id, item:null, door:null, years:0, day, renounce:ren };
+    const d = bestP(cands[0]);
+    return { team:t.id, item:cands[0], door:d.id,
+      years:Math.min(d.maxYears, cands[0].maxYears), day, renounce:ren };
+  }
+  if (strat === "copy"){
+    const cands = mk.filter(m => bestDoor(m)).sort((a,b) => b.price - a.price);
+    return cands[0] ? mkOffer(cands[0], bestDoor(cands[0]))
+                    : { team:t.id, item:null, door:null, years:0, day, renounce:[] };
+  }
+  if (strat === "trap"){
+    const cands = mk.filter(m => wanted(m))
+      .filter(m => legalDoors(m).some(d => d.id === "NTMLE" || d.id === "ROOM"))
+      .sort((a,b) => b.price - a.price);
+    if (cands[0]){
+      const d = legalDoors(cands[0]).find(x => x.id === "NTMLE")
+             || legalDoors(cands[0]).find(x => x.id === "ROOM");
+      return mkOffer(cands[0], d);
+    }
+    const any = mk.filter(m => bestDoor(m)).sort((a,b) => b.price - a.price)[0];
+    return any ? mkOffer(any, bestDoor(any))
+               : { team:t.id, item:null, door:null, years:0, day, renounce:[] };
+  }
+  // balanced: fill a hole, cheapest that does it, keep the mid-level if you can
+  const cands = mk.filter(m => wanted(m) && bestDoor(m)).sort((a,b) => a.price - b.price);
+  const pick = cands.find(m => legalDoors(m).some(d => d.id !== "NTMLE")) || cands[0];
+  if (!pick) return { team:t.id, item:null, door:null, years:0, day, renounce:[] };
+  const ds = legalDoors(pick).filter(d => d.id !== "NTMLE");
+  const d = (ds.sort((a,b) => b.maxYears - a.maxYears)[0]) || bestDoor(pick);
+  return mkOffer(pick, d);
+}
+
+/* =========================================================================
+   7. UI
+   ========================================================================= */
+function renderPick(){
+  $("pickList").innerHTML = CLUBS.map(c => {
+    const t = newTeam(c);
+    return `<button class="pl" style="width:260px" data-club="${c.id}">
+      <div class="pn">${c.name}</div>
+      <div class="pm num">${money(books(t))} on the books · ${overCap(t)?"over the cap":money(room(t))+" of room"}</div>
+      ${c.holds.length?`<div class="pm num">let your own free agents go and you would have
+        ${money(Math.max(0, K.CAP - (c.committed + Math.max(0,K.COUNTED_MIN-c.slots)*K.ROOKMIN)))} of room</div>`:""}
+      <div class="pm">Holes: ${c.holes.join(", ").toLowerCase()} ·
+        ${c.holds.length} free agent${c.holds.length===1?"":"s"} of your own</div>
+      <div class="pr">${c.fact}</div></button>`;
+  }).join("");
+  $("pickList").querySelectorAll("button").forEach(b =>
+    b.onclick = () => start(b.dataset.club));
+  $("probeClub").innerHTML = CLUBS.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+}
+
+function start(id){
+  G = freshGame(id);
+  $("pick").classList.add("hidden");
+  $("play").classList.remove("hidden");
+  $("probeClub").value = id;
+  push({c:"", s:"You are running " + G.teams[id].club.name + ". Three days. "
+    + "Every other desk is in the same market."});
+  render();
+}
+
+function push(l){ G.log.push(l); }
+
+function render(){
+  const t = G.teams[G.my];
+  const b = books(t);
+  $("clubName").textContent = t.club.name;
+  $("clubFact").textContent = t.club.fact;
+  $("dayLabel").textContent = G.over ? "closed" : "July " + G.day;
+
+  // ---- header stats
+  const sf = shortfall(t);
+  $("stats").innerHTML = `
+    <div class="stat"><div class="k">On the books</div>
+      <div class="v ${b>K.CAP?"warn":""}">${money(b)}</div></div>
+    <div class="stat"><div class="k">Cap room</div>
+      <div class="v ${overCap(t)?"dim":"good"}">${overCap(t)?"none":money(room(t))}</div></div>
+    <div class="stat"><div class="k">Roster spots</div>
+      <div class="v">${t.slots} / ${K.ROSTER_MAX}</div></div>
+    <div class="stat"><div class="k">Your ceiling</div>
+      <div class="v ${t.hardCapAt?"bad":""}">${t.hardCapAt? money(t.hardCapAt) : "none"}</div></div>
+    <div class="stat"><div class="k">Below the floor by</div>
+      <div class="v ${sf>0?"bad":"good"}">${sf>0?money(sf):"—"}</div></div>`;
+
+  // ---- the sheet
+  const all = [];
+  for (const [n,v] of t.club.bars)
+    all.push({n, v, cls: n.startsWith("dead")?"dead":""});
+  for (const s of t.signings) all.push({n:s.name+" · new", v:s.price, cls:"newsign"});
+  for (const h of openHolds(t))
+    all.push({n:"FREE AGENT AMOUNT · your own "+h.role.toLowerCase()+" (MODELLED)",
+      v:h.hold, cls:"hold"});
+  const ec = emptyCharge(t);
+  if (ec > 0) all.push({n:"empty roster spots below 12", v:ec, cls:""});
+  const max = Math.max(K.CAP, b) * 1.02;
+  $("sheet").innerHTML = all.map(x =>
+    `<div class="bar ${x.cls}"><i style="width:${(x.v/max*100).toFixed(2)}%"></i>
+      <span><b>${x.n}</b><em class="num" style="font-style:normal">${money(x.v)}</em></span></div>`
+  ).join("");
+  $("sheetTotals").innerHTML = `
+    <div class="ruleline"><span>THE FLOOR — the least you may spend at all</span>
+      <span>${money(K.FLOOR)}</span></div>
+    <div class="ruleline"><span>THE CAP — above here you need a door</span>
+      <span>${money(K.CAP)}</span></div>
+    <div class="ruleline"><span>Your total</span><span><b>${money(b)}</b></span></div>
+    ${t.hardCapBecause?`<div class="note" style="color:var(--bad)">Ceiling ${money(t.hardCapAt)} —
+      you set it yourself with ${t.hardCapBecause}.</div>`:""}`;
+
+  // ---- the market
+  const mk = marketFor(G, t);
+  $("market").innerHTML = mk.map(m => {
+    const sel = G.sel.target && G.sel.target.id === m.id;
+    return `<button class="pl ${sel?"sel":""}" data-t="${m.id}">
+      <div class="pn">${m.name}
+        <span class="tag role">${m.role}</span>
+        ${m.modelled?'<span class="tag mod">MODELLED</span>':""}</div>
+      <div class="pm num">${money(m.price)} a year${m.owner&&m.owner!==t.id?
+        " · "+CLUBS.find(c=>c.id===m.owner).name+" can offer him five years":""}</div>
+      <div class="pm">${m.strength}</div>
+      <div class="pm" style="color:var(--warn)">${m.risk}</div>
+      ${m.real?`<div class="pr">${m.real}</div>`:""}</button>`;
+  }).join("") || `<div class="sub">Nobody left.</div>`;
+  $("market").querySelectorAll("button").forEach(bt => bt.onclick = () => {
+    G.sel.target = mk.find(m => m.id === bt.dataset.t);
+    G.sel.door = null; render();
+  });
+
+  // ---- the doors
+  const it = G.sel.target;
+  const tp = withRenounce(t, G.sel.renounce);
+  $("doors").innerHTML = DOORS.map(d => {
+    const res = it ? doorLegal(G, tp, it, d.id, 1) : {ok:false, why:"Pick a player first."};
+    const sel = G.sel.door === d.id;
+    return `<button class="doorbtn ${sel?"sel":""}" data-d="${d.id}" ${res.ok?"":"disabled"}>
+      <div class="dl">${d.label}</div>
+      <div class="dc">${res.ok ? doorCost(t, d.id) : res.why}</div></button>`;
+  }).join("");
+  $("doors").querySelectorAll("button").forEach(bt => bt.onclick = () => {
+    G.sel.door = bt.dataset.d;
+    const d = DOORS.find(x => x.id === bt.dataset.d);
+    G.sel.term = Math.min(d.maxYears, it ? it.maxYears : 1);
+    render();
+  });
+
+  // ---- term
+  const dd = DOORS.find(x => x.id === G.sel.door);
+  const maxY = dd ? Math.min(dd.maxYears, it ? it.maxYears : 1) : 1;
+  $("term").innerHTML = "";
+  for (let y = 1; y <= maxY; y++)
+    $("term").innerHTML += `<option value="${y}" ${y===G.sel.term?"selected":""}>${y}</option>`;
+  $("term").disabled = !dd;
+  $("term").onchange = e => { G.sel.term = +e.target.value; render(); };
+  $("termNote").textContent = dd
+    ? "A longer offer beats a shorter one when two desks want the same man."
+    : "";
+
+  // ---- foregone
+  if (G.frozen){
+    $("foregone").className = "foregone frozen";
+    $("foregone").innerHTML = `<b>WHAT THIS COST YOU — July ${G.frozen.day}</b>
+      <ul>${G.frozen.lines.map(l => `<li>${l}</li>`).join("")}</ul>`;
+  } else if (it && G.sel.door){
+    const lines = foregoneFor(G, tp, it, G.sel.door, G.sel.term, G.sel.renounce);
+    $("foregone").className = "foregone";
+    $("foregone").innerHTML = `<b>WHAT THIS WOULD COST YOU</b>
+      <ul>${lines.map(l => `<li>${l}</li>`).join("")}</ul>`;
+  } else {
+    $("foregone").className = "foregone";
+    $("foregone").innerHTML = `<b>WHAT THIS WOULD COST YOU</b>
+      <div class="sub" style="margin-top:5px">Pick a player and a door.</div>`;
+  }
+
+  // ---- holds
+  $("holds").innerHTML = t.holds.map(h => {
+    if (h.status !== "open")
+      return `<div class="bar hold"><span><b class="struck">your own ${h.role.toLowerCase()}</b>
+        <em style="font-style:normal">${h.status === "renounced" ? "let go — gone for good" : "re-signed"}</em></span></div>`;
+    const on = G.sel.renounce.has(h.role);
+    return `<button class="pl ${on?"sel":""}" data-r="${h.role}">
+      <div class="pn">your own ${h.role.toLowerCase()} <span class="tag mod">MODELLED</span></div>
+      <div class="pm num">sits on your books at ${money(h.hold)} · costs ${money(h.resign)} a year to keep</div>
+      <div class="pm">${on ? "LETTING HIM GO — this frees "+money(h.hold)
+        +" and destroys your right to keep him." : "Click to let him go."}</div></button>`;
+  }).join("") || `<div class="sub">You have none. Everything you have is already under contract.</div>`;
+  $("holds").querySelectorAll("button").forEach(bt => bt.onclick = () => {
+    const r = bt.dataset.r;
+    G.sel.renounce.has(r) ? G.sel.renounce.delete(r) : G.sel.renounce.add(r);
+    render();
+  });
+
+  // ---- log
+  $("log").innerHTML = G.log.map(l => `<div class="${l.c}">${l.s}</div>`).join("");
+  $("log").scrollTop = 1e6;
+
+  $("lockBtn").disabled = G.over;
+  $("passBtn").disabled = G.over;
+  $("lockErr").textContent = "";
+}
+
+function doorCost(t, id){
+  if (id === "ROOM")    return "Uses your room. Afterwards your tool is the room mid-level, not the mid-level.";
+  if (id === "BIRD")    return "Legal above every line in the system. Five years.";
+  if (id === "NTMLE")   return "Sets a ceiling of " + money(K.APRON1) + " you may not cross all season.";
+  if (id === "ROOMMLE") return "Three years. This is what using room left you.";
+  if (id === "TAXMLE")  return "Two years only. Cheap, and it does not build a ceiling.";
+  if (id === "MIN")     return "Always legal. Costs you a roster spot and nothing else.";
+  return "";
+}
+
+/* ---- commit ---- */
+function lockDay(pass){
+  if (G.over) return;
+  const t = G.teams[G.my];
+  let offer = { team:G.my, item:null, door:null, years:0, day:G.day,
+    renounce:[...G.sel.renounce] };
+  if (!pass){
+    if (!G.sel.target || !G.sel.door){ $("lockErr").textContent =
+      "Pick a player and a door, or pass the day."; return; }
+    const tp2 = withRenounce(t, G.sel.renounce);
+    const chk = doorLegal(G, tp2, G.sel.target, G.sel.door, G.sel.term);
+    if (!chk.ok){ $("lockErr").textContent = chk.why; return; }
+    offer.item = G.sel.target; offer.door = G.sel.door; offer.years = G.sel.term;
+    G.frozen = { day:G.day,
+      lines: foregoneFor(G, tp2, G.sel.target, G.sel.door, G.sel.term, G.sel.renounce) };
+  } else {
+    G.frozen = { day:G.day, lines:[
+      "You signed nobody on July " + G.day + ".",
+      openHolds(t).length ? "Your own free agents stay on your books at "
+        + money(openHolds(t).reduce((s,h)=>s+h.hold,0)) + ", so waiting is paying."
+        : "Nothing changed.",
+      "The market moved without you."] };
+  }
+
+  const offers = [offer];
+  for (const c of CLUBS) if (c.id !== G.my)
+    offers.push(rivalOffer(G, G.teams[c.id], G.day, c.strat));
+
+  push({c:"hl", s:"— JULY " + G.day + " CLOSED —"});
+  const lines = resolveDay(G, offers);
+  lines.forEach(l => push(l));
+  if (offer.lost) push({c:"no", s:"You did not get " + offer.item.name + ". " + offer.lost + "."});
+
+  G.day += 1;
+  G.sel = {target:null, door:null, term:1, renounce:new Set()};
+  if (G.day > 3){ G.over = true; showReveal(); }
+  render();
+}
+$("lockBtn").onclick = () => lockDay(false);
+$("passBtn").onclick = () => lockDay(true);
+
+/* ---- reveal ---- */
+function showReveal(){
+  const rows = CLUBS.map(c => ({c, b:boardsFor(G, G.teams[c.id])}));
+  const top = (key, hi) => {
+    const best = rows.reduce((m,r) => hi ? Math.max(m, r.b[key]) : Math.min(m, r.b[key]),
+      hi ? -Infinity : Infinity);
+    return rows.filter(r => r.b[key] === best).map(r => r.c.name).join(", ");
+  };
+  const mine = rows.find(r => r.c.id === G.my);
+  $("reveal").classList.remove("hidden");
+  $("revealBody").innerHTML = `
+  <div class="board"><div class="bt">On the floor — roles covered next season</div>
+    ${rows.map(r=>`<div class="row" style="justify-content:space-between">
+      <span>${r.c.name}${r.c.id===G.my?" (you)":""}</span>
+      <span class="num">${r.b.covered.join(" · ") || "none"} (${r.b.rolesCovered}/3)</span></div>`).join("")}
+    <div class="note">Top: ${top("rolesCovered", true)}</div></div>
+
+  <div class="board"><div class="bt">Years locked — the longest new commitment</div>
+    ${rows.map(r=>`<div class="row" style="justify-content:space-between">
+      <span>${r.c.name}${r.c.id===G.my?" (you)":""}</span>
+      <span class="num">${r.b.yearsLocked} summer(s)</span></div>`).join("")}
+    <div class="note">Fewest years locked: ${top("yearsLocked", false)}</div></div>
+
+  <div class="board"><div class="bt">The rack — what you can still do</div>
+    ${rows.map(r=>`<div class="row" style="justify-content:space-between">
+      <span>${r.c.name}${r.c.id===G.my?" (you)":""}</span>
+      <span class="num">${r.b.rack.join(" · ") || "nothing"}</span></div>`).join("")}
+    <div class="note">Most tools left: ${top("rackCount", true)}</div></div>
+
+  <div class="board"><div class="bt">Room to move — how many of next summer's six chances
+      you could legally take</div>
+    ${rows.map(r=>`<div class="row" style="justify-content:space-between">
+      <span>${r.c.name}${r.c.id===G.my?" (you)":""}</span>
+      <span class="num">${r.b.roomToMove} of ${PROBE_SET.length}${
+        r.b.hardCap?" · ceiling "+money(r.b.hardCap):""}${
+        r.b.shortfall>0?" · BELOW THE FLOOR by "+money(r.b.shortfall):""}</span></div>`).join("")}
+    <div class="note">Most room to move: ${top("roomToMove", true)}</div></div>
+
+  <div class="board" style="border-color:var(--accent)">
+    <div class="bt">The desk that tops two</div>
+    ${(() => {
+      const names = {};
+      [["rolesCovered",true],["yearsLocked",false],["rackCount",true],["roomToMove",true]]
+        .forEach(([k,hi]) => top(k,hi).split(", ").forEach(n => names[n]=(names[n]||0)+1));
+      const two = Object.entries(names).filter(([,v]) => v >= 2);
+      if (!two.length) return `<div class="sub">No desk topped two boards. Four different desks
+        won four different definitions of success. That is the argument.</div>`;
+      return two.map(([n,v]) => {
+        const r = rows.find(x => x.c.name === n);
+        return `<div><b>${n}</b> tops ${v} of the four — and sits at
+          ${r.b.rolesCovered}/3 roles, ${r.b.yearsLocked} summers locked,
+          ${r.b.rackCount} tools, ${r.b.roomToMove}/${PROBE_SET.length} room to move.</div>`;
+      }).join("");
+    })()}
+    <div class="note">No overall. No rank. Nothing here can be added to anything else here.</div></div>
+
+  <div class="board"><div class="bt">Your receipt</div>
+    ${mine.b.signings ? G.teams[G.my].signings.map(s =>
+      `<div>${s.name} · ${money(s.price)} × ${s.years} yr · through the ${s.door} door, July ${s.day}</div>`
+      ).join("") : "<div>You signed nobody.</div>"}
+    ${G.teams[G.my].lostRights.length ? `<div style="color:var(--bad);margin-top:6px">
+      Gone for good: ${G.teams[G.my].lostRights.join(", ")}.</div>` : ""}
+    ${mine.b.shortfall > 0 ? `<div style="color:var(--bad);margin-top:6px">
+      You finished ${money(mine.b.shortfall)} below the floor. You pay the shortfall to players
+      across the league and none of it goes to your roster.</div>` : ""}
+  </div>`;
+}
+
+/* =========================================================================
+   8. STRATEGY PROBE
+   ========================================================================= */
+const STRATS = [
+  {id:"spend",    label:"Spend to the cap"},
+  {id:"hold",     label:"Hold everything (pass all three days)"},
+  {id:"copy",     label:"Copy the most expensive"},
+  {id:"balanced", label:"Balanced — fill holes cheapest first"},
+  {id:"trap",     label:"THE TRAP — mid-level on the biggest name, day 1"},
+  {id:"strip",    label:"Let everyone go and keep the money"}
+];
+
+function runStrategy(myId, strat){
+  const g = freshGame(myId);
+  for (let day = 1; day <= 3; day++){
+    const offers = [];
+    for (const c of CLUBS){
+      const s = (c.id === myId) ? strat : c.strat;
+      offers.push(rivalOffer(g, g.teams[c.id], day, s));
+    }
+    resolveDay(g, offers);
+    g.day = day + 1;
+  }
+  return boardsFor(g, g.teams[myId]);
+}
+
+function probeTable(myId){
+  const rows = STRATS.map(s => ({s, b:runStrategy(myId, s.id)}));
+  const cols = [
+    ["Roles covered", r => r.b.rolesCovered + "/3", r => r.b.rolesCovered, true],
+    ["Years locked",  r => r.b.yearsLocked,          r => r.b.yearsLocked, false],
+    ["Tools left",    r => r.b.rackCount,            r => r.b.rackCount, true],
+    ["Room to move",  r => r.b.roomToMove + "/" + PROBE_SET.length, r => r.b.roomToMove, true],
+    ["Below floor",   r => r.b.shortfall ? money(r.b.shortfall) : "—", r => -r.b.shortfall, true],
+    ["Ceiling built", r => r.b.hardCap ? money(r.b.hardCap) : "—", r => r.b.hardCap?0:1, true]
+  ];
+  const best = cols.map(([,,val,hi]) => rows.reduce((m,r) =>
+    hi ? Math.max(m, val(r)) : Math.min(m, val(r)), hi ? -Infinity : Infinity));
+  // dominance check: does any single strategy top every column?
+  let dominant = null;
+  for (let i = 0; i < rows.length; i++){
+    if (cols.every(([,,val], j) => val(rows[i]) === best[j])) dominant = rows[i].s.label;
+  }
+  // FL6b / FL8b: is the pure hoard strictly beaten (Pareto) by an active strategy?
+  const hold = rows.find(r => r.s.id === "hold");
+  const beats = rows.filter(r => r.s.id !== "hold" && r.s.id !== "strip").filter(r =>
+    cols.every(([,,val,hi],j) => hi ? val(r) >= val(hold) : val(r) <= val(hold)) &&
+    cols.some (([,,val,hi],j) => hi ? val(r) >  val(hold) : val(r) <  val(hold)));
+  const floorHit = rows.filter(r => r.b.shortfall > 0).map(r => r.s.label);
+
+  return `<div style="overflow:auto"><table>
+    <tr><th>Strategy</th>${cols.map(c => `<th>${c[0]}</th>`).join("")}</tr>
+    ${rows.map(r => `<tr><td>${r.s.label}</td>${cols.map(([,disp,val],j) =>
+      `<td class="n" ${val(r)===best[j]?'style="color:var(--good);font-weight:700"':""}>${disp(r)}</td>`
+    ).join("")}</tr>`).join("")}
+  </table></div>
+  <div class="note" style="color:${dominant?"var(--bad)":"var(--good)"};font-weight:650">
+    ${dominant ? "DOMINANT STRATEGY FOUND: “" + dominant
+        + "” tops every column. The model is broken and must be repaired."
+      : "NO DOMINANT STRATEGY. No row tops every column — each one wins something and loses something else."}
+  </div>
+  <div class="note">
+    <b>Hoard check (false-lesson FL6b / FL8b).</b>
+    ${beats.length
+      ? "“Hold everything” is strictly beaten by: " + beats.map(b=>b.s.label).join(", ") + "."
+      : "“Hold everything” is NOT strictly beaten here — it keeps the most tools, and “tools left” "
+        + "is one of the four boards, so holding cannot lose that column inside one lesson. "
+        + "This is reported, not hidden: the module-level guard against “saving is always good” "
+        + "belongs to L2 (a tool you never use still shrinks when you cross the tax line) and to L3 "
+        + "(room you never spend expires worth nothing). It is an OPEN PROPERTY for L1 alone."}
+  </div>
+  <div class="note">
+    <b>Floor check (false-lesson FL2c).</b>
+    ${floorHit.length
+      ? "The floor of " + money(K.FLOOR) + " binds on: " + floorHit.join(", ")
+        + " — that desk pays the shortfall to players across the league and none of it reaches its roster."
+      : "The floor does not bind on any of these paths for this desk."}
+  </div>`;
+}
+
+$("probeBtn").onclick = () => {
+  const id = $("probeClub").value;
+  $("probeOut").innerHTML = `<h3 style="font-size:13px;margin:8px 0 6px;color:var(--accent)">`
+    + CLUBS.find(c=>c.id===id).name + `</h3>` + probeTable(id);
+};
+$("probeAllBtn").onclick = () => {
+  $("probeOut").innerHTML = CLUBS.map(c =>
+    `<h3 style="font-size:13px;margin:14px 0 6px;color:var(--accent)">${c.name}</h3>`
+    + probeTable(c.id)).join("");
+};
+
+/* =========================================================================
+   9. MODEL PANEL
+   ========================================================================= */
+$("modelPanel").textContent =
+`CONSTANTS  (real unless marked INVENTED)
+  CAP              ${money(K.CAP)}   official-nba, 2026-06-30
+  FLOOR            ${money(K.FLOOR)}   = 90% of cap exactly
+  FIRST APRON      ${money(K.APRON1)}   official
+  MID-LEVEL        ${money(K.NTMLE)}   official, max 4 yrs
+  ROOM MID-LEVEL   ${money(K.ROOMMLE)}   official, max 3 yrs
+  SMALL MID-LEVEL  ${money(K.TAXMLE)}   official, max 2 yrs
+  VETERAN MINIMUM  ${money(K.VETMIN)}   cap-database
+  ROOKIE MINIMUM   ${money(K.ROOKMIN)}   cap-database
+  ROSTER MAX       ${K.ROSTER_MAX}            2023 CBA
+  COUNTED MINIMUM  ${K.COUNTED_MIN}            2023 CBA
+
+BOOKS  (addition and subtraction only — no percent, no ratio, no negatives shown)
+  books        = committed contracts (incl. dead money)
+               + every FREE AGENT AMOUNT still open
+               + emptySlotCharge
+  emptySlotCharge = max(0, 12 - (contracts + open free-agent amounts)) x ${money(K.ROOKMIN)}
+  room         = max(0, CAP - books)          [never displayed negative]
+  overCap      = books > CAP
+  floorShortfall = max(0, FLOOR - books)      [paid to players league-wide,
+                                               not to your own roster]
+
+DOOR LEGALITY  (one predicate each; the refusal sentence is generated from it)
+  ROOM     : !overCap AND room >= price
+             => roomUsed = true; the MID-LEVEL is replaced by the ROOM MID-LEVEL
+  BIRD     : the target is your own unreleased free agent
+             => legal above every line in the system; up to 5 years
+  NTMLE    : overCap AND unused AND !roomUsed AND price <= ${money(K.NTMLE)}
+             AND books + price <= ${money(K.APRON1)}
+             => hardCapAt = ${money(K.APRON1)} for the rest of the year
+  ROOMMLE  : you have used room AND price <= ${money(K.ROOMMLE)}
+  TAXMLE   : overCap AND unused AND price <= ${money(K.TAXMLE)}
+  MIN      : price <= ${money(K.VETMIN)}                     [always legal]
+  ALL      : contracts < 15
+             AND (hardCapAt is null OR books + price <= hardCapAt)
+
+CONTENTION  (deterministic, simultaneous, no clock, no Math.random anywhere)
+  Every desk commits one target + one door + a term. Then, per player, in a
+  fixed player order:
+    a. an offer from his own team through BIRD wins outright
+       — the real rule: your own team may offer 5 years / 8% raises,
+         everybody else 4 years / 5%
+    b. else the offer with the MOST GUARANTEED YEARS wins
+    c. else the higher first-year salary wins
+    d. else the desk with more room remaining after the signing wins
+    e. else NOBODY signs him today; he is back tomorrow at the same price
+  Ties are NEVER broken by who clicked first.
+  A signed player leaves the market FOREVER. Minimum players are unlimited
+  and never contested — that is the recoverability floor.
+  Letting go of your own free agent is IRREVERSIBLE, applied before any
+  signing resolves, and puts him in the shared market at his re-sign price.
+
+THE FOUR OUTCOME BOARDS  (none of these can be added to another)
+  ON THE FLOOR   = the SET of roles covered next season          (a set)
+  YEARS LOCKED   = the longest new commitment, in summers        (future time)
+  THE RACK       = which tools are still unspent                 (permissions)
+  ROOM TO MOVE   = how many of six modelled next-summer chances
+                   (${PROBE_SET.map(p=>"$"+(p/1e6)+"M").join(" / ")})
+                   this desk could LEGALLY take                  (a count of
+                                                                  legal actions)
+  There is no overall. There is no team rating. There is no score.
+
+INVENTED CONSTANTS  (full list in the file header)
+  1. every club's FREE AGENT AMOUNTS and re-sign prices (unnamed, role only)
+  2. every club's HOLES
+  3. even division of contract totals by years
+  4. the three anonymous veteran-minimum fillers
+  5. the six-price ROOM TO MOVE probe set
+  6. the four rival clubs' fixed strategies
+
+NOT MODELLED HERE
+  the luxury tax, the second apron, trades, waives, the stretch provision,
+  Bird/Early-Bird/Non-Bird tiers, raises, and where the floor shortfall goes.`;
+
+renderPick();
+</script>
+</body>
+</html>
