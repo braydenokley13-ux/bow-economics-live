@@ -169,7 +169,10 @@ async function syncSourceSessionRow(): Promise<void> {
   const select = $<HTMLSelectElement>("sourceSession");
   select.innerHTML = `<option value="">No link — stock/expansion franchises only</option>`;
   try {
-    const { sessions } = await apiFetch<{ sessions: { id: string; code: string; title: string; lessonModuleId: string; phase: string; ended: boolean }[] }>("/api/sessions");
+    const { sessions } = await apiFetch<{ sessions: { id: string; code: string; title: string; lessonModuleId: string; phase: string; ended: boolean }[] }>(
+      "/api/sessions",
+      { headers: setupAuthHeaders() },
+    );
     const eligibleModuleIds =
       lessonId === WRITE_RULE_ID ? [HOST_LEAGUE_ID] : lessonId === FREE_AGENCY_ID ? [TRADE_DEADLINE_ID, DRAFT_DAY_ID] : [DRAFT_DAY_ID];
     const eligible = sessions.filter((s) => eligibleModuleIds.includes(s.lessonModuleId)).sort((a, b) => eligibleModuleIds.indexOf(a.lessonModuleId) - eligibleModuleIds.indexOf(b.lessonModuleId));
@@ -179,6 +182,20 @@ async function syncSourceSessionRow(): Promise<void> {
       const moduleLabel = s.lessonModuleId === HOST_LEAGUE_ID ? "M2 L2" : s.lessonModuleId === TRADE_DEADLINE_ID ? "L2" : "L1";
       option.textContent = `[${moduleLabel}] ${s.title || s.code} (${s.code}) — ${s.ended ? "ended" : `live, ${s.phase}`}`;
       select.appendChild(option);
+    }
+    // The listing only answers a teacher of a room on this server, because it
+    // hands out join codes. On a browser that has never run one there is
+    // nothing to show — and a teacher who DID run that lesson, on another
+    // machine or before this browser was wiped, needs telling how to get at it
+    // rather than quietly seeing "no link" and assuming the feature is broken.
+    const hint = $("sourceSessionHint");
+    if (eligible.length === 0) {
+      hint.hidden = false;
+      hint.textContent = sessions.length === 0
+        ? "Nothing to link to on this device. If you ran that lesson on another computer, reopen it here with its teacher key first — that also unlocks this list."
+        : "No completed session of the right lesson to link to yet.";
+    } else {
+      hint.hidden = true;
     }
   } catch {
     /* if the listing fails, the teacher can still create an unlinked session — degrade quietly */
@@ -194,6 +211,7 @@ async function createSession(): Promise<void> {
       : undefined;
   const payload = await apiFetch<TeacherPayload>("/api/sessions", {
     method: "POST",
+    headers: setupAuthHeaders(),
     body: JSON.stringify({ lessonModuleId, title, sourceSessionId }),
   });
   if (!payload.teacherKey) {
@@ -208,6 +226,25 @@ async function createSession(): Promise<void> {
 
 function authHeaders(): Record<string, string> {
   return teacherKey ? { Authorization: `Bearer ${teacherKey}` } : {};
+}
+
+/**
+ * The setup screen's credential, before this browser has a session of its own.
+ *
+ * Listing sessions and seeding a new one from an old one both now require
+ * proof that the caller runs SOME room on this server, because both were open
+ * to any student who could reach it — the listing hands out every live class's
+ * join code, and a seed reads another room's state. At setup there is no
+ * current session, so the key that proves it is the one this machine was left
+ * holding by the last room it ran, which is also the only room a teacher can
+ * sensibly be linking to.
+ *
+ * A first-ever session on a fresh browser has no key and no link to make: the
+ * picker degrades to "no link" and creating an unlinked session is unchanged.
+ */
+function setupAuthHeaders(): Record<string, string> {
+  const key = teacherKey ?? loadTeachSessionKey();
+  return key ? { Authorization: `Bearer ${key}` } : {};
 }
 
 function openSession(code: string): void {

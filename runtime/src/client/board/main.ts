@@ -248,7 +248,7 @@ function renderDraftDay(view: Record<string, unknown>, mode: string): void {
           // this team's spend as a share of the class-wide max, so shorter-spend
           // rosters read as visibly shorter columns next to bigger spenders.
           const segs = g.positions
-            .map((p) => `<div class="seg" title="${p.slot} $${p.price}M" style="height:${g.spent > 0 ? (p.price / g.spent) * 100 : 0}%; background:${POSITION_COLOR[p.slot] ?? "var(--accent-blue)"};"></div>`)
+            .map((p) => `<div class="seg" title="${escapeHtml(p.slot)} $${p.price}M" style="height:${g.spent > 0 ? (p.price / g.spent) * 100 : 0}%; background:${POSITION_COLOR[p.slot] ?? "var(--accent-blue)"};"></div>`)
             .join("");
           // G4: label every bar with its franchise (crest + fictional name) — never a
           // student name — so a class can point at the projector and say "that's ours!"

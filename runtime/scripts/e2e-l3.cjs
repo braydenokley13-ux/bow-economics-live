@@ -123,7 +123,11 @@ async function buildL1AndL2() {
   console.log(`[e2e-l3] L1 complete and ended (code ${l1Code})`);
 
   console.log("[e2e-l3] === L2: playing the Trade Deadline through the real API ===");
-  const l2 = await api("/api/sessions", { method: "POST", body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "E2E L3 chain — L2", sourceSessionId: l1.session.id }) });
+  // Linking a new session to an old one reads the old one's state, so it needs
+  // proof the caller runs a room on this server (see SessionService's
+  // assertAnyTeacher). In a classroom the teacher's own console holds that key
+  // already; here the harness presents the L1 key it was just issued.
+  const l2 = await api("/api/sessions", { method: "POST", headers: { Authorization: `Bearer ${l1TeacherKey}` }, body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "E2E L3 chain — L2", sourceSessionId: l1.session.id }) });
   const l2Code = l2.session.code;
   const l2TeacherKey = l2.teacherKey;
   const l2SessionId = l2.session.id;
@@ -152,7 +156,7 @@ async function buildL1AndL2() {
   await api(`/api/sessions/${l2Code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l2TeacherKey}` }, body: JSON.stringify({ type: "end" }) });
   console.log(`[e2e-l3] L2 complete and ended (code ${l2Code}) — Alpha stood pat, Beta signed a veteran, Gamma won a sealed bid`);
 
-  return { l2SessionId };
+  return { l2SessionId, l2TeacherKey };
 }
 
 /* --------------------------------------------------------------- L3 UI helpers -- */
@@ -238,7 +242,7 @@ async function main() {
 
   let browser;
   try {
-    const { l2SessionId } = await buildL1AndL2();
+    const { l2SessionId, l2TeacherKey } = await buildL1AndL2();
 
     console.log("[e2e-l3] === L3: driving /teach, /play x4, /board through real Chromium pages ===");
     browser = await chromium.launch();
@@ -259,6 +263,13 @@ async function main() {
       page.on("dialog", (d) => d.accept());
     }
 
+    // The link list only answers a teacher of a room on this server, because
+    // it hands out every live class's join code. A real teacher's console is
+    // already holding the key from the lesson they just ran; this harness ran
+    // L1 and L2 through the API, so it puts that key where /teach keeps it.
+    await teach.addInitScript((key) => {
+      try { localStorage.setItem("bow-teach-session-key", key); } catch { /* private mode */ }
+    }, l2TeacherKey);
     await teach.goto(`${BASE}/teach`);
     await teach.selectOption("#lesson", "m1l3-free-agency");
     await teach.waitForSelector("#sourceSessionRow:not([hidden])");

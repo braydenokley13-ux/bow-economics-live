@@ -668,6 +668,28 @@ session without it. There is still no login, no password, no multi-teacher
 account system — this is one secret per session, sized for "the teacher's
 own laptop, projected to the room," not a hosted multi-tenant deployment.
 
+**Who may see the building.** Two calls are about the SET of sessions rather
+than one of them, so the per-session key could not answer them and they were
+open to anyone who could reach the server — on a school network, every student
+in the building:
+
+- `GET /api/sessions` handed back every live class's join code and title, which
+  is a way into any other room. It now answers only a caller presenting a key
+  that matches some session on this server, and answers everyone else with an
+  EMPTY list rather than a refusal: a first-ever session on a fresh browser has
+  no key and nothing to link to, and must not put a 401 in the console every
+  time the lesson picker opens. `/teach` says so in the picker, and points a
+  teacher who ran that lesson elsewhere at the reopen-with-key flow.
+- `POST /api/sessions` with `sourceSessionId` reads another session's stored
+  state as a seed — one class's franchises out of another class's room. Creating
+  a room stays open (this product has no accounts, D12); seeding from one
+  requires the same proof.
+
+Any live session's key clears both, which is the right bar: every key was issued
+by creating a room, a student never holds one, and linking is only ever done to
+a lesson the same teacher already ran on this machine — which is where the key
+in their browser came from. No accounts, no login, no second credential.
+
 **Session store.** `SnapshotRepository` (`src/server/snapshotRepository.ts`)
 is in-memory Maps as the source of truth, with every mutation queued onto a
 single write-chain that serializes writes to a JSON file: write to a temp

@@ -440,7 +440,7 @@ test("R2: restore after end reaching all the way back past freeze still clears e
 
 /** Drives a real L1 (draftDay) session through the service layer to a single locked, at-$100M-cap roster, and
  *  returns its session id — the same path a real teacher/class would take, not a hand-forged snapshot. */
-async function playThroughL1(service: SessionService): Promise<{ sessionId: string; code: string }> {
+async function playThroughL1(service: SessionService): Promise<{ sessionId: string; code: string; teacherKey: string }> {
   const { session, teacherKey } = await newSession(service, draftDayModule.id, "L1 class");
   const seat = await service.join(session.code, "Alex & Sam");
   await service.control(session.code, { type: "advance" }, teacherKey); // LOBBY -> HOOK
@@ -456,14 +456,14 @@ async function playThroughL1(service: SessionService): Promise<{ sessionId: stri
     await service.submitAction(seat.deviceToken!, { type: "place", slotId: slot, playerId });
   }
   await service.submitAction(seat.deviceToken!, { type: "lock" });
-  return { sessionId: session.id, code: session.code };
+  return { sessionId: session.id, code: session.code, teacherKey };
 }
 
 test("SEED: linked creation happy path — L2 created with sourceSessionId carries the real L1 roster through submitAction/join, not a forged snapshot", async () => {
   const service = freshL1L2Service();
-  const { sessionId: l1Id } = await playThroughL1(service);
+  const { sessionId: l1Id, teacherKey: l1Key } = await playThroughL1(service);
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1Id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1Id, teacherKey: l1Key });
   const l2View = l2.view as { carriedFranchiseCount: number };
   assert.equal(l2View.carriedFranchiseCount, 1, "the one locked L1 team must be offered as a claimable carried franchise");
 
@@ -494,14 +494,14 @@ test("SEED: an ENDED L1 session is still a valid, usable seed — its state is e
   await service.submitAction(seat.deviceToken!, { type: "lock" });
   await service.control(l1.session.code, { type: "end" }, l1.teacherKey!); // teacher ends class — the normal end-of-lesson flow
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "L2 class", sourceSessionId: l1.session.id, teacherKey: l1.teacherKey });
   const l2View = l2.view as { carriedFranchiseCount: number };
   assert.equal(l2View.carriedFranchiseCount, 1, "an ended L1 session's locked roster still carries forward — ending class doesn't erase what happened in it");
 });
 
 test("SEED: a missing/nonexistent sourceSessionId does not fail session creation — it just yields no carried franchises", async () => {
   const service = freshL1L2Service();
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: "not-a-real-session-id" });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: "not-a-real-session-id", teacherKey: (await service.createSession({ lessonModuleId: draftDayModule.id, title: "" })).teacherKey });
   const view = l2.view as { carriedFranchiseCount: number };
   assert.equal(view.carriedFranchiseCount, 0);
   // The whole class must still be fully playable on stock franchises — claim() with carriedIndex null works.
@@ -516,7 +516,7 @@ test("SEED: a missing/nonexistent sourceSessionId does not fail session creation
 test("SEED: sourceSessionId pointing at a session using a DIFFERENT lesson module is ignored (empty pool), not crashed or misread", async () => {
   const service = freshL1L2Service();
   const other = await service.createSession({ lessonModuleId: draftDayModule.id, title: "" }); // never played — irrelevant, wrong module id path is what's tested
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: other.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: other.session.id, teacherKey: other.teacherKey });
   const view = l2.view as { carriedFranchiseCount: number };
   assert.equal(view.carriedFranchiseCount, 0, "an unlocked/empty L1 session naturally carries nothing forward");
 });
@@ -529,7 +529,7 @@ test("SEED: malformed/incomplete L1 state (never locked) normalizes to zero carr
   await service.control(l1.session.code, { type: "advance" }, l1.teacherKey!);
   await service.submitAction(seat.deviceToken!, { type: "place", slotId: "SCORER", playerId: "sc-10" }); // never locks
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id, teacherKey: l1.teacherKey });
   const view = l2.view as { carriedFranchiseCount: number };
   assert.equal(view.carriedFranchiseCount, 0);
 });
@@ -561,7 +561,7 @@ test("SEED: two seats can claim two different carried franchises from the same l
   for (const { slot, playerId } of picksB) await service.submitAction(b.deviceToken!, { type: "place", slotId: slot, playerId });
   await service.submitAction(b.deviceToken!, { type: "lock" });
 
-  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id });
+  const l2 = await service.createSession({ lessonModuleId: tradeDeadlineModule.id, title: "", sourceSessionId: l1.session.id, teacherKey: l1.teacherKey });
   assert.equal((l2.view as { carriedFranchiseCount: number }).carriedFranchiseCount, 2);
 
   const l2SeatA = await service.join(l2.session.code, "Pair One");
@@ -673,4 +673,65 @@ test("re-verification repair: a real (different-phase) reveal jump — e.g. from
   const team = (jumped.view as { teams: { bidOutcome: string | null }[]; revealedCount: number }).teams[0]!;
   assert.equal(team.bidOutcome, null, "jumping INTO REVEAL resolves nothing — there's nothing to resolve yet");
   assert.equal((jumped.view as { revealedCount: number }).revealedCount, 0);
+});
+
+/* ----------------------------------------------------- who may see the building -- */
+
+/** The ServiceError a call throws, so a refusal can be asserted on rather than merely awaited. */
+async function caught(promise: Promise<unknown>): Promise<ServiceError> {
+  try {
+    await promise;
+    assert.fail("expected a ServiceError");
+  } catch (error) {
+    assert.ok(error instanceof ServiceError, `expected a ServiceError, got ${String(error)}`);
+    return error;
+  }
+}
+
+test("the session listing is not open to the room: a join code is not a key to every other class", async () => {
+  const svc = freshService();
+  const a = await svc.createSession({ lessonModuleId: "lobby-demo", title: "Period 1" });
+  await svc.createSession({ lessonModuleId: "lobby-demo", title: "Period 3" });
+
+  // This was open to anyone who could reach the server. On a school network
+  // that is every student in the building, and what it hands back is every
+  // live class's join code — a way into any other room. An unproven caller now
+  // gets nothing, rather than a refusal: a first-ever session on a fresh
+  // browser has no key and nothing to link to, and must not put a 401 in the
+  // console every time the lesson picker opens.
+  for (const attempt of [null, "", "not-a-key", (await svc.join(a.session.code, "Rae & Ben")).deviceToken!]) {
+    assert.deepEqual(
+      await svc.listSessions(attempt),
+      [],
+      `the listing handed out sessions to "${String(attempt).slice(0, 12)}"`,
+    );
+  }
+
+  const listed = await svc.listSessions(a.teacherKey!);
+  assert.equal(listed.length, 2, "a teacher of a room on this server can still see the sessions to link to");
+});
+
+test("seeding a new session from another one needs a teacher key, not just its id", async () => {
+  const svc = freshService();
+  const source = await svc.createSession({ lessonModuleId: "lobby-demo", title: "Period 1" });
+  // The id is opaque and unguessable, but it is not a credential — it travels
+  // in a picker, a URL and a screenshot. Reading another room's stored state
+  // is the one thing creating a session can do to a session it does not own.
+  const err = await caught(
+    svc.createSession({ lessonModuleId: "lobby-demo", title: "stolen", sourceSessionId: source.session.id }),
+  );
+  assert.equal(err.status, 401);
+
+  const linked = await svc.createSession({
+    lessonModuleId: "lobby-demo",
+    title: "Period 3",
+    sourceSessionId: source.session.id,
+    teacherKey: source.teacherKey,
+  });
+  assert.ok(linked.session.code, "a teacher linking their own earlier session is unaffected");
+
+  // And creating an UNLINKED session stays open — this product has no accounts
+  // and a first-ever room on a fresh browser has no key to present.
+  const fresh = await svc.createSession({ lessonModuleId: "lobby-demo", title: "first ever" });
+  assert.ok(fresh.teacherKey);
 });

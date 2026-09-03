@@ -234,9 +234,18 @@ export class SessionService {
    * like a device token, and required as a bearer credential on every
    * `control()`/`teacherView()` call thereafter (`assertTeacher`).
    */
-  async createSession(input: { lessonModuleId: string; title: string; sourceSessionId?: string }): Promise<TeacherPayload> {
+  async createSession(input: {
+    lessonModuleId: string;
+    title: string;
+    sourceSessionId?: string;
+    teacherKey?: string | null;
+  }): Promise<TeacherPayload> {
     const mod = this.modules.get(input.lessonModuleId);
     if (!mod) throw new ServiceError(400, "unknown_module", `no lesson module registered as "${input.lessonModuleId}"`);
+    // Creating a room is open — this product has no accounts and never asked
+    // for one (D12). Reading ANOTHER room's state as a seed is not: that is
+    // the one thing creation can do to a session it does not own.
+    if (input.sourceSessionId) await this.assertAnyTeacher(input.teacherKey ?? null);
     const sessionId = randomUUID();
     // Cross-lesson continuity hook (e.g. M1 L2 carrying forward L1's
     // franchise state): resolve the named source session's own stored
@@ -282,7 +291,56 @@ export class SessionService {
     }
   }
 
-  async listSessions(): Promise<TeacherPayload["session"][]> {
+  /**
+   * Proof that the caller runs SOME room in this building.
+   *
+   * The per-session key answers "may you control THIS session". Two calls need
+   * a different question — "are you a teacher at all" — because they are about
+   * the set of sessions rather than one of them, and they had no answer, so
+   * they were open to anyone who could reach the server:
+   *
+   *   GET /api/sessions      handed every live class's join code and title to
+   *                          any student on the school wifi, which is a way
+   *                          into any other room in the building.
+   *   POST /api/sessions     with `sourceSessionId` reads another session's
+   *                          stored state as a seed — one class's franchises
+   *                          out of another class's room.
+   *
+   * A key from any live session clears this, which is exactly the right bar:
+   * every key was issued by creating a room, a student never holds one, and
+   * the linking feature is only ever used to link to a lesson the same teacher
+   * already ran on this machine (which is where their key came from). It
+   * invents no accounts, no login, and no second credential — D12 stands.
+   */
+  private async isTeacherHere(teacherKey: string | null): Promise<boolean> {
+    if (!teacherKey) return false;
+    const hash = hashDeviceToken(teacherKey);
+    return (await this.repo.listSessions()).some((row) => row.teacherKeyHash === hash);
+  }
+
+  private async assertAnyTeacher(teacherKey: string | null): Promise<void> {
+    if (!(await this.isTeacherHere(teacherKey))) {
+      throw new ServiceError(
+        401,
+        "bad_teacher_key",
+        "this needs a teacher key from a session on this server — create or reopen a session first",
+      );
+    }
+  }
+
+  /**
+   * The sessions a teacher may link a new lesson to.
+   *
+   * Unproven callers get an EMPTY list rather than a refusal, and the
+   * difference matters twice. It is still closed — no join code, no title, no
+   * session id leaves here without proof — and the question this answers is
+   * "which rooms can I link to", whose honest answer for someone who runs none
+   * is "none", not an error. A first-ever session on a fresh browser has no key
+   * and nothing to link to, and it must not put a 401 in the console every
+   * time a teacher opens the lesson picker.
+   */
+  async listSessions(teacherKey: string | null): Promise<TeacherPayload["session"][]> {
+    if (!(await this.isTeacherHere(teacherKey))) return [];
     const rows = await this.repo.listSessions();
     return rows.map((row) => this.teacherPayload(row).session);
   }

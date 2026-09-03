@@ -103,7 +103,7 @@ async function main() {
     await api(`/api/sessions/${l1.session.code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l1.teacherKey}` }, body: JSON.stringify({ type: "end" }) });
 
     /* ---- L2: standPat, quick and clean ---- */
-    const l2 = await api("/api/sessions", { method: "POST", body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "early-advance-l3 L2", sourceSessionId: l1.session.id }) });
+    const l2 = await api("/api/sessions", { method: "POST", headers: { Authorization: `Bearer ${l1.teacherKey}` }, body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "early-advance-l3 L2", sourceSessionId: l1.session.id }) });
     const seat2 = await api(`/api/sessions/${l2.session.code}/join`, { method: "POST", body: JSON.stringify({ displayName: "Team X" }) });
     await api(`/api/sessions/${l2.session.code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l2.teacherKey}` }, body: JSON.stringify({ type: "advance" }) }); // LOBBY -> HOOK
     await api(`/api/sessions/${l2.session.code}/actions`, { method: "POST", headers: { Authorization: `Bearer ${seat2.deviceToken}` }, body: JSON.stringify({ type: "claim", carriedIndex: 0 }) });
@@ -113,7 +113,7 @@ async function main() {
     console.log("[early-advance-l3] L1 and L2 played and ended via the API");
 
     /* ---- L3: create linked, claim, day 1 closed for real, day 2 opened with a real pending offer ---- */
-    const l3 = await api("/api/sessions", { method: "POST", body: JSON.stringify({ lessonModuleId: "m1l3-free-agency", title: "early-advance-l3 L3", sourceSessionId: l2.session.id }) });
+    const l3 = await api("/api/sessions", { method: "POST", headers: { Authorization: `Bearer ${l2.teacherKey}` }, body: JSON.stringify({ lessonModuleId: "m1l3-free-agency", title: "early-advance-l3 L3", sourceSessionId: l2.session.id }) });
     const seat3 = await api(`/api/sessions/${l3.session.code}/join`, { method: "POST", body: JSON.stringify({ displayName: "Team X" }) });
     await api(`/api/sessions/${l3.session.code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l3.teacherKey}` }, body: JSON.stringify({ type: "advance" }) }); // LOBBY -> HOOK
     await api(`/api/sessions/${l3.session.code}/actions`, { method: "POST", headers: { Authorization: `Bearer ${seat3.deviceToken}` }, body: JSON.stringify({ type: "claim", carriedIndex: 0 }) });

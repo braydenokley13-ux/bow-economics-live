@@ -238,14 +238,19 @@ async function handle(
       // Optional cross-lesson continuity link (e.g. M1 L2 linked to a
       // completed L1 session) — an opaque id, meaningless to this layer.
       const sourceSessionId = body["sourceSessionId"] ? String(body["sourceSessionId"]) : undefined;
-      const payload = await service.createSession({ lessonModuleId, title, sourceSessionId });
+      const payload = await service.createSession({
+        lessonModuleId,
+        title,
+        sourceSessionId,
+        teacherKey: bearerToken(req),
+      });
       sendJson(res, 201, payload);
       return;
     }
 
     // GET /api/sessions
     if (method === "GET" && parts[1] === "sessions" && parts.length === 2) {
-      sendJson(res, 200, { sessions: await service.listSessions() });
+      sendJson(res, 200, { sessions: await service.listSessions(bearerToken(req)) });
       return;
     }
 

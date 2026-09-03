@@ -172,6 +172,13 @@ async function main() {
       page.on("dialog", (d) => d.accept()); // this UI's confirm() gates on final deadline decisions
     }
 
+    // The link list only answers a teacher of a room on this server, because it
+    // hands out every live class's join code. A real teacher's console already
+    // holds the key from the lesson they just ran; this harness drove L1
+    // through the API, so it puts that key where /teach keeps it.
+    await teach.addInitScript((key) => {
+      try { localStorage.setItem("bow-teach-session-key", key); } catch { /* private mode */ }
+    }, l1TeacherKey);
     await teach.goto(`${BASE}/teach`);
     await teach.selectOption("#lesson", "m1l2-trade-deadline");
     await teach.waitForSelector("#sourceSessionRow:not([hidden])");
