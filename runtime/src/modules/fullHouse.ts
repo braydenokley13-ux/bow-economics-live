@@ -223,7 +223,7 @@ export const MARKETS: readonly Market[] = [
     ancillary: 18,
     eventFans: 0.01,
     eventRenewalDollars: 60_000,
-    planSlope: 3.6,
+    planSlope: 9.0,
     premiumSpan: 92,
     capacityNote: "listed basketball capacity 19,812 · 2025-26",
   },
@@ -250,7 +250,7 @@ export const MARKETS: readonly Market[] = [
     ancillary: 12,
     eventFans: 0.016,
     eventRenewalDollars: 30_000,
-    planSlope: 3.6,
+    planSlope: 9.0,
     premiumSpan: 90,
     capacityNote: "modeled seat count · published figures range 16,667-18,119",
   },
@@ -488,12 +488,43 @@ export const PRICE_STEP = 2;
 export const SPEND_STEP = 5_000;
 export const RENEWALS_START = 50;
 export const RENEWAL_TENT_PEAK = 6;
-export const RENEWAL_DELTA_FLOOR = -20;
+export const RENEWAL_DELTA_FLOOR = -26;
 export const RENEWAL_DELTA_CEIL = 12;
 /** Renewal points lost per $1 the price sits BELOW the season-plan price (the low arm). */
 export const RENEWAL_UNDERCUT_SLOPE = 2.5;
 /** Extra renewal points at the top of the "your plan is a bargain tonight" ramp. */
 export const RENEWAL_BARGAIN_BONUS = 6;
+/**
+ * How fast the gouging arm stops getting worse (W6 repair `econ-l1-renewals-dead-arm`).
+ *
+ * The arm used to be straight: `planSlope` renewal points per dollar over what
+ * the night is worth, all the way up, and then a hard clip at the 20-point
+ * one-night limit. `planSlope` is 3.6, so the clip arrived about $9 above the
+ * reference price — which on three of the five cards is BELOW the night's own
+ * cash optimum. Measured on the shipped tuning: on Night 2 in New York the
+ * renewals number was the identical -20 at the cash-best $48, at $80, and at
+ * $120, a price that draws nobody at all. Forty-three of the fifty-six legal
+ * prices returned one number. A pair could not read its own choice out of the
+ * second book, and worse, playing the money book WELL scored the same as
+ * gouging an empty building — FL3 ("charging high is greedy") reintroduced
+ * through the clip on the majority of the lesson's nights.
+ *
+ * The arm is now bent instead of clipped: `bend * ln(1 + planSlope * over / bend)`.
+ * Two properties earn it. Its slope at `over = 0` is exactly `planSlope`, so the
+ * local tradeoff every earlier round tuned is preserved to first order and no
+ * market constant moved. And it keeps rising forever, so the 20-point limit is
+ * still reached — just out where the cash book has already collapsed, which is
+ * the only place a flat penalty is honest ("you have already lost everyone you
+ * were going to lose").
+ *
+ * Chosen by sweep over (bend 8-26) x (planSlope 3.6-9.0) against the existing
+ * R4 / R5 / B1 invariants plus two new ones: no card's cash optimum may sit on
+ * the floor, and the book must take at least five distinct values across the
+ * prices within 15% of the night's best net. `bend` 12 at the unchanged
+ * `planSlope` 3.6 passes all of them with the widest margin. Asserted by
+ * "R4-5" in the suite.
+ */
+export const RENEWAL_GOUGE_BEND = 12;
 
 export const isValidPrice = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v) && v >= PRICE_MIN && v <= PRICE_MAX && (v - PRICE_MIN) % PRICE_STEP === 0;
@@ -610,6 +641,15 @@ export function renewalDelta(market: Market, card: NightCard, price: number, spe
 }
 
 /** The rule's answer BEFORE the one-night clamp (W2 repair-4 R4-4b). */
+/**
+ * The gouging arm's diminishing bite (`RENEWAL_GOUGE_BEND`). Takes the straight
+ * arm's answer and bends it: unchanged in slope where the excess is small,
+ * still climbing without limit where it is large.
+ */
+function gougeBite(straight: number): number {
+  return straight <= 0 ? 0 : RENEWAL_GOUGE_BEND * Math.log(1 + straight / RENEWAL_GOUGE_BEND);
+}
+
 export function renewalDeltaRaw(market: Market, card: NightCard, price: number, spend: number): number {
   const reference = renewalReferencePrice(market, card);
   const span = reference - market.planPrice;
@@ -618,7 +658,7 @@ export function renewalDeltaRaw(market: Market, card: NightCard, price: number, 
     RENEWAL_TENT_PEAK +
     RENEWAL_BARGAIN_BONUS * ramp * ramp -
     RENEWAL_UNDERCUT_SLOPE * Math.max(0, market.planPrice - price) -
-    market.planSlope * Math.max(0, price - reference) +
+    gougeBite(market.planSlope * Math.max(0, price - reference)) +
     spend / market.eventRenewalDollars;
   return Math.round(value);
 }

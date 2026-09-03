@@ -22,6 +22,7 @@ import {
   PRICE_MIN,
   PRICE_STEP,
   RENEWALS_START,
+  RENEWAL_DELTA_FLOOR,
   REVEAL_STEPS,
   SIMPLIFICATIONS,
   TWO_PEAKS_CARD_ID,
@@ -532,6 +533,64 @@ test("B1: the renewals low arm binds inside the legal dial, in every market", ()
         Math.abs(worstBelow) >= Math.abs(worstAbove) / 3,
         `${market.id} ${card.id}: reachable penalty below (${worstBelow}) is under a third of the penalty above (${worstAbove})`,
       );
+    }
+  }
+});
+
+test("R4-5: the renewals book is still moving where the pair is actually deciding", () => {
+  // The shipped straight-then-clipped gouging arm hit its 20-point limit about
+  // $9 above the reference price, which on N1/N2/N5 is below the night's own
+  // cash optimum: 43 of the 56 legal prices on N2 returned the identical -20,
+  // so a pair playing the money book WELL scored exactly as badly on renewals
+  // as a pair pricing $120 to an empty building. Two things have to hold for
+  // the second book to be a book at all rather than a night-shaped tax.
+  for (const market of MARKETS) {
+    for (const card of CARDS) {
+      const curve = curveFor(market, card, RENEWALS_START, 0);
+      const net = (p: number) => settleNight(market, curve, p, 0, false, card.bowlOffer).net;
+      const cashOpt = PRICE_GRID.reduce((a, p) => (net(p) > net(a) ? p : a));
+      // (1) the night's own cash-best price is never on the floor
+      assert.ok(
+        renewalDelta(market, card, cashOpt, 0) > RENEWAL_DELTA_FLOOR,
+        `${market.id} ${card.id}: the cash-best price $${cashOpt} already sits on the renewals floor, so every price at or above it reads the same`,
+      );
+      // (2) across the prices a pair actually argues over, the book discriminates
+      const best = Math.max(...PRICE_GRID.map(net));
+      const band = PRICE_GRID.filter((p) => net(p) >= best - Math.abs(best) * 0.15);
+      const counts = new Map<number, number>();
+      for (const p of band) {
+        const v = renewalDelta(market, card, p, 0);
+        counts.set(v, (counts.get(v) ?? 0) + 1);
+      }
+      const longest = Math.max(...counts.values());
+      assert.ok(
+        longest <= Math.ceil(band.length / 3),
+        `${market.id} ${card.id}: ${longest} of the ${band.length} prices within 15% of the night's best net read the identical renewals number`,
+      );
+    }
+  }
+});
+
+test("R4-5: gouging always costs more than gouging less, and the 20-point limit is still real", () => {
+  for (const market of MARKETS) {
+    for (const card of CARDS) {
+      const reference = renewalReferencePrice(market, card);
+      const above = PRICE_GRID.filter((p) => p > reference);
+      // strictly monotone before the clamp: the bent arm never stops biting
+      for (let i = 1; i < above.length; i += 1) {
+        const lo = renewalDeltaRaw(market, card, above[i - 1]!, 0);
+        const hi = renewalDeltaRaw(market, card, above[i]!, 0);
+        assert.ok(hi <= lo, `${market.id} ${card.id}: $${above[i]} is not worse for renewals than $${above[i - 1]}`);
+      }
+      // and on a card the dial can genuinely gouge, the limit is still reached
+      if (reference < 40) {
+        assert.equal(
+          renewalDelta(market, card, PRICE_MAX, 0),
+          RENEWAL_DELTA_FLOOR,
+          `${market.id} ${card.id}: $${PRICE_MAX} no longer reaches the one-night limit`,
+        );
+        assert.ok(renewalDeltaRaw(market, card, PRICE_MAX, 0) < RENEWAL_DELTA_FLOOR);
+      }
     }
   }
 });
@@ -1226,16 +1285,22 @@ test("R4-4a: the settled night's cause is the FULL renewals rule, carrying the a
   }
 });
 
-test("R4-4b: the floor line fires only when the 20-point clamp bound — never on the book's 0 floor, never at exactly the clamp", () => {
-  assert.equal(renewalFloorBinds(-29, -20), true);
-  assert.equal(renewalFloorBinds(-20, -20), false, "the rule asked for exactly the clamp, not more");
-  assert.equal(renewalFloorBinds(-29, -10), false, "the book's own floor took the rest");
-  assert.equal(renewalFloorBinds(-29, 0), false);
+test("R4-4b: the floor line fires only when the one-night clamp bound — never on the book's 0 floor, never at exactly the clamp", () => {
+  // Every number here comes off RENEWAL_DELTA_FLOOR rather than a literal, so
+  // the property survives a retune of the clamp instead of failing as a stale
+  // transcript of one (W6 `econ-l1-renewals-dead-arm` moved it).
+  const F = RENEWAL_DELTA_FLOOR;
+  assert.equal(renewalFloorBinds(F - 9, F), true);
+  assert.equal(renewalFloorBinds(F, F), false, "the rule asked for exactly the clamp, not more");
+  assert.equal(renewalFloorBinds(F - 9, F + 10), false, "the book's own floor took the rest");
+  assert.equal(renewalFloorBinds(F - 9, 0), false);
   assert.equal(renewalFloorBinds(-5, -5), false);
   const ny = MARKETS.find((m) => m.id === "new-york")!;
-  assert.ok(renewalDeltaRaw(ny, CARDS[0]!, PRICE_MIN, 0) < -20, "the $10 New York night asks for more than the clamp");
-  assert.equal(renewalDelta(ny, CARDS[0]!, PRICE_MIN, 0), -20);
-  // three $10 nights in New York: 50 -> 30 (clamped), 30 -> 10 (clamped), 10 -> 0 (the book's floor)
+  assert.ok(renewalDeltaRaw(ny, CARDS[0]!, PRICE_MIN, 0) < F, "the $10 New York night asks for more than the clamp");
+  assert.equal(renewalDelta(ny, CARDS[0]!, PRICE_MIN, 0), F);
+  // Three $10 nights in New York. The first two clamp; the third finds a stock
+  // too small to absorb the whole clamp, so the book's own 0 floor takes the
+  // rest and the clamp line must go quiet.
   let state = seated(2);
   for (let i = 0; i < 3; i += 1) state = playNight(state, { "seat-1": PRICE_MIN, "seat-2": 24 });
   const history = (
@@ -1243,14 +1308,19 @@ test("R4-4b: the floor line fires only when the 20-point clamp bound — never o
       history: { renewalsBefore: number; renewalsAfter: number; renewalMove: number; renewalAtFloor: boolean }[];
     }
   ).history;
+  const walked: [number, number, number, boolean][] = [];
+  let stock = RENEWALS_START;
+  for (let i = 0; i < 3; i += 1) {
+    const after = Math.max(0, Math.min(100, stock + F));
+    walked.push([stock, after, after - stock, after - stock === F]);
+    stock = after;
+  }
   assert.deepEqual(
     history.map((h) => [h.renewalsBefore, h.renewalsAfter, h.renewalMove, h.renewalAtFloor]),
-    [
-      [50, 30, -20, true],
-      [30, 10, -20, true],
-      [10, 0, -10, false],
-    ],
+    walked,
   );
+  assert.equal(walked[0]![3], true, "the first $10 night must be a clamped night");
+  assert.equal(walked[walked.length - 1]![3], false, "the last night must be the book's floor, not the clamp");
 });
 
 test("R5-5: the carried-dial cue never names a night the pair did not price, and the dial resets to the plan price", () => {
