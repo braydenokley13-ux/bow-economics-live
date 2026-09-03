@@ -238,6 +238,35 @@ and the projector never sees it, because the room committing blind is what
 makes the staged reveal land. `roomRead()` in `fullHouse.ts`; browser proof
 `scripts/e2e-teach-room.cjs`.
 
+**While you were away.** A Chromebook sleeps through a bell; a tab is closed
+for five minutes; a pair goes to the nurse. The returning desk gets CURRENT
+AUTHORITATIVE STATE plus a compact recap card, and the class is never rewound.
+The runtime keeps a bounded class log; the lines in it come from the module's
+own `classEvents(prev, next, transition)` (`shared/lessonModule.ts`), because
+the runtime does not know a night from a week from a signing day and must not
+learn. Four rules the design turns on:
+
+- CLASS-LEVEL ONLY. The log is read back by whichever desk returns, so a line
+  naming one desk's price would print it on another desk's screen.
+- A recap survives the poll that discovers it. The seat's `seenSeq` stops
+  advancing the moment `awaySince` opens, so the card lives through following
+  polls, a refresh and a rejoin until the pair presses "Got it" — the whole
+  point is reaching a device that just came back.
+- `/api/me`'s ETag carries the recap. Seat bookkeeping deliberately does not
+  bump the session version (a desk coming back is not a change to the class),
+  so on version alone the poll that discovers the recap answers 304 with no
+  body and it never arrives.
+- A restore rewinds the log with the class. The checkpoint carries it;
+  otherwise an undone night is still in an append-only log and the next desk
+  back is told it closed twice.
+
+Threshold 30s, well clear of a dropped poll (1.2s) or a slow reconcile (6s) and
+of Chromium's ~1/minute throttle on a backgrounded tab — which is the point: a
+tab that was not on screen was not in the room. A long gap over which the class
+did nothing is not a recap. Unit proof `src/test/whileYouWereAway.test.ts`;
+browser proof `scripts/e2e-away.cjs`, which takes a desk genuinely offline for
+38 seconds through a bell.
+
 **The deck.** A live console runs to ~2800px and the night bell — the control
 a teacher presses five times in fifty minutes — sat in the middle of it, below
 a page of director script. `/teach` now carries a sticky bottom bar that HOSTS

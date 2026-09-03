@@ -813,6 +813,25 @@ export type RevealStage = {
   say: string;
 };
 
+/**
+ * What the class moving into a phase is called, out loud, in this lesson.
+ *
+ * The runtime's own fallback is the phase name — "The class moved on to
+ * CONSEQUENCE" — which is a word from the engine's vocabulary, not the room's.
+ * Nothing here is a spoiler: it says where the class IS, never what it found.
+ */
+const PHASE_EVENT: Partial<Record<CanonicalPhase, string>> = {
+  HOOK: "Your teacher set up the season.",
+  PLAY: "The doors opened \u2014 the room started pricing nights.",
+  REVEAL: "The season went up on the projector.",
+  CONSEQUENCE: "The class started reading what the season cost.",
+  ADAPT: "The class went looking for the price it should have charged.",
+  COUNTERFACTUAL: "The class started replaying the season at other prices.",
+  ARGUE: "The class started arguing from the board.",
+  SYNTHESIS: "Your teacher started naming the economics.",
+  COMPLETE: "The lesson finished.",
+};
+
 export const REVEAL_STAGES: readonly RevealStage[] = [
   {
     stage: 1,
@@ -2631,6 +2650,46 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       }
       return out;
     },
+  },
+
+  /**
+   * WHILE YOU WERE AWAY, in Full House's own nouns.
+   *
+   * A pair whose Chromebook slept through the Night 3 bell comes back to a
+   * settled book and no idea why. This is the "what did the ROOM do" half of
+   * that; their own numbers are already on their screen, because the runtime
+   * hands back current truth and never rewinds.
+   *
+   * Class-level only — no desk is ever named here. The log this feeds is read
+   * back by whichever desk returns, so a line about one pair's price would be
+   * printed on another pair's screen, and this lesson's whole reveal depends
+   * on the room not seeing each other's dials before the bell.
+   */
+  classEvents(prev, next, { fromPhase, toPhase }) {
+    const out: string[] = [];
+    // Nights only ever move forward here. Restore walks the index BACK, and a
+    // recap that announced Night 3 settling because the teacher undid it would
+    // be telling the room the opposite of what happened.
+    for (let n = prev.nightIndex; n < next.nightIndex; n += 1) {
+      const card = CARDS[n];
+      out.push(
+        card
+          ? `${card.label} closed. Every desk settled at once against the card that was printed before anybody touched a dial.`
+          : "A night closed and settled.",
+      );
+    }
+    if (!prev.twoPeaksReleased && next.twoPeaksReleased && next.nightIndex < NIGHT_COUNT) {
+      out.push("The Two Peaks went up on the projector.");
+    }
+    for (let i = prev.revealStage; i < next.revealStage; i += 1) {
+      const stage = REVEAL_STAGES[i];
+      if (stage) out.push(`On the projector: ${stage.name}.`);
+    }
+    if (fromPhase !== toPhase) {
+      const moved = PHASE_EVENT[toPhase];
+      if (moved) out.push(moved);
+    }
+    return out;
   },
 
   onPhaseExit(state, fromPhase) {

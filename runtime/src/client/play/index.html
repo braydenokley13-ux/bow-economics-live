@@ -24,6 +24,24 @@
   .pinbox { font-family: var(--font-number); font-size: 32px; letter-spacing: .2em; font-weight: 800; text-align: center; color: var(--accent-gold); }
   #err { color: var(--over-the-line); font-size: 13px; min-height: 16px; }
   #syncStatus { font-size: 11px; color: var(--ink-muted); }
+  /* WHILE YOU WERE AWAY — loud enough to be read before anything else on the
+     screen, quiet enough that it is obviously not the game. Gold rule, not a
+     gold fill: this is orientation, not an alarm, and the pair has already
+     missed enough without being shouted at. */
+  #awayCard { border: 1px solid var(--accent-gold); border-left-width: 3px; border-radius: 10px;
+    background: linear-gradient(180deg, rgba(244,185,66,0.10), rgba(244,185,66,0.03));
+    padding: 14px 16px; margin: 0 0 14px; }
+  #awayCard[hidden] { display: none; }
+  #awayCard .away-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  #awayCard .away-title { font-family: var(--font-display); font-size: 15px; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--accent-gold); }
+  #awayCard .away-gap { font-size: 12px; color: var(--ink-muted); }
+  #awayCard .away-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  #awayCard .away-list li { font-size: 14px; line-height: 1.45; color: var(--ink-primary);
+    padding-left: 16px; position: relative; }
+  #awayCard .away-list li::before { content: ""; position: absolute; left: 0; top: 8px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-gold); opacity: .75; }
+  #awayCard .btn { font-size: 13px; }
   .banner { padding: 14px; border-radius: 10px; background: var(--surface-panel); font-size: 14px; color: var(--ink-secondary); text-align: center; }
   section.card { padding: 20px; }
   /* FINAL CALL. Sticky, because the pair is usually looking at a dial halfway
@@ -106,6 +124,17 @@
     <div id="finalCall" hidden>
       <span id="fcClock"></span>
       <span id="fcText"></span>
+    </div>
+    <!-- WHILE YOU WERE AWAY. A card ON TOP of current truth, never a rewind:
+         the screen underneath it is the room as it stands right now. It says
+         what the CLASS did — this pair's own books are already below it. -->
+    <div id="awayCard" hidden>
+      <div class="away-head">
+        <span class="away-title">While you were away</span>
+        <span class="away-gap" id="awayGap"></span>
+      </div>
+      <ul class="away-list" id="awayList"></ul>
+      <button type="button" class="btn" id="btnAwaySeen">Got it — I'm back</button>
     </div>
     <div class="eyebrow" id="gameHeader" style="font-size:12px; margin-bottom:10px;"></div>
     <div id="gameBody"></div>

@@ -573,6 +573,19 @@ export type WriteRuleState = {
 export const SYNTH_CARDS_PER_PAGE = 1;
 export const synthPageCount = (cards: number): number => Math.max(1, Math.ceil(cards / SYNTH_CARDS_PER_PAGE));
 
+/** Where the class is, in this lesson's words rather than the engine's. Never what it found. */
+const PHASE_EVENT: Partial<Record<CanonicalPhase, string>> = {
+  HOOK: "Your teacher set up the league and the question.",
+  PLAY: "The rule rounds opened \u2014 the room started writing its own rule.",
+  REVEAL: "The season went up on the projector.",
+  CONSEQUENCE: "The class started reading what the rule cost and paid.",
+  ADAPT: "The class went back over the rule.",
+  COUNTERFACTUAL: "The class started replaying the season under other rules.",
+  ARGUE: "The class started arguing from the board.",
+  SYNTHESIS: "Your teacher started naming the economics.",
+  COMPLETE: "The lesson finished.",
+};
+
 export const REVEAL_STEPS = 5;
 
 export type RevealStage = { stage: number; name: string; headline: string; say: string };
@@ -3427,6 +3440,41 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       }
       return out;
     },
+  },
+
+  /**
+   * WHILE YOU WERE AWAY, in this lesson's nouns. Class-level only, and in this
+   * lesson that discipline bites hardest: the rule rounds are a live vote, and
+   * a recap that named a club's share would hand one desk another's position
+   * before the room has finished arguing. See `LessonModule.classEvents`.
+   */
+  classEvents(prev, next, { fromPhase, toPhase }) {
+    const out: string[] = [];
+    // Forward only. A restore rewinds the log with the state.
+    if (!prev.hookRevealed && next.hookRevealed) {
+      out.push("On the projector: what Boston actually did.");
+    }
+    for (let r = prev.closedRounds.length; r < next.closedRounds.length; r += 1) {
+      out.push(`Round ${r + 1} of the rule vote closed \u2014 every desk's number went in at once.`);
+    }
+    if (!prev.adopted && next.adopted) {
+      // The rule itself is the room's collective decision, not one desk's, and
+      // the projector is already carrying it.
+      out.push("The room's rule was adopted. It is on the projector.");
+    }
+    for (let w = prev.weekIndex; w < next.weekIndex; w += 1) {
+      out.push(`Week ${w + 1} of the season closed. Every building settled at once, under the room's own rule.`);
+    }
+    if (!prev.kingsRevealed && next.kingsRevealed) out.push("On the projector: what Sacramento did.");
+    for (let i = prev.revealStage; i < next.revealStage; i += 1) {
+      const stage = revealStagesFor(next)[i];
+      if (stage) out.push(`On the projector: ${stage.name}.`);
+    }
+    if (fromPhase !== toPhase) {
+      const moved = PHASE_EVENT[toPhase];
+      if (moved) out.push(moved);
+    }
+    return out;
   },
 
   onPhaseExit(state, fromPhase) {

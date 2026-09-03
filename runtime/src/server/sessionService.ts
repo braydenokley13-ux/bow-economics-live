@@ -27,7 +27,7 @@ import {
   verifyPin,
 } from "./crypto.js";
 import { RepositoryError, type Repository } from "./repository.js";
-import type { RoundState, SeatRow, SessionRow } from "./types.js";
+import type { RoundState, SeatPatch, SeatRow, SessionPatch, SessionRow } from "./types.js";
 
 /**
  * Every refusal this layer issues says, explicitly, whether trying again could
@@ -72,6 +72,26 @@ const REJOIN_LOCKOUT_THRESHOLD = 5;
  */
 const APPLIED_ACTION_MEMORY = 60;
 
+/**
+ * How long a desk has to be silent before coming back counts as coming BACK.
+ *
+ * /play polls every 1.2s and reconciles every 6s, and Chromium throttles a
+ * backgrounded tab's timers to about once a minute — which is the point: a
+ * tab that was not on screen was not in the room. Set well clear of a dropped
+ * poll or a slow reconcile so a network hiccup never produces a recap, and
+ * well under the length of anything a class actually does.
+ */
+const AWAY_MS = 30_000;
+
+/** How much of the class's history is kept. Five nights of beats, with room. */
+const CLASS_LOG_LIMIT = 60;
+
+/** Nothing one write does to a class is more than a handful of things. */
+const MAX_EVENTS_PER_WRITE = 6;
+
+/** A recap is a card on a student's screen, not a transcript. */
+const MAX_RECAP_LINES = 6;
+
 /** Default FINAL CALL length. The teacher can ask for a different one per call. */
 export const DEFAULT_FINAL_CALL_MS = 20_000;
 /** Bounds on a teacher-chosen FINAL CALL, so a mistyped number cannot strand the room. */
@@ -112,6 +132,15 @@ export type StudentPayload = {
   committed: boolean | null;
   /** What closing the round would do to THIS desk, said TO the pair, when it has committed nothing. */
   fallback: string | null;
+  /**
+   * WHILE YOU WERE AWAY.
+   *
+   * Present only when this desk went dark long enough to miss something and
+   * has not acknowledged it yet. It is a card ON TOP of current truth, never a
+   * rewind: `view` above is the room as it stands right now, unchanged by the
+   * fact that this pair was not watching it happen.
+   */
+  away: { since: string; awayMs: number; lines: readonly string[] } | null;
   view: unknown;
 };
 
@@ -303,8 +332,7 @@ export class SessionService {
     const found = await this.repo.getSessionById(seat.sessionId);
     if (!found) throw notFound("session");
     const session = await this.sweepRound(found);
-    await this.repo.updateSeat(seat.id, { lastSeenAt: new Date().toISOString() });
-    return this.studentPayload(session, seat);
+    return this.studentPayload(session, await this.markSeen(session, seat));
   }
 
   /**
@@ -334,13 +362,16 @@ export class SessionService {
     // Rotate the device token: the old browser's token is retired the moment
     // a rejoin succeeds, so a lost/duplicated laptop cannot keep writing.
     const deviceToken = generateDeviceToken();
-    const updated = await this.repo.updateSeat(seat.id, {
+    const rotated = await this.repo.updateSeat(seat.id, {
       deviceTokenHash: hashDeviceToken(deviceToken),
-      lastSeenAt: new Date().toISOString(),
       failedRejoinAttempts: 0,
     });
-    if (!updated) throw notFound("seat");
-    return this.studentPayload(session, updated, { deviceToken });
+    if (!rotated) throw notFound("seat");
+    // A rejoin is a return by definition — the browser lost its token, which
+    // means it was closed, reloaded, or replaced. Same seen/away bookkeeping
+    // as a poll, so a pair who came back the hard way is told what they missed
+    // rather than being the one case that is not.
+    return this.studentPayload(session, await this.markSeen(session, rotated), { deviceToken });
   }
 
   /** Teacher-only: clears a seat's rejoin lockout counter (R3's "until the teacher re-enables"). */
@@ -451,7 +482,11 @@ export class SessionService {
       throw new ServiceError(409, "rejected", result.reason, /* retryable */ false);
     }
 
-    const outcome = await this.repo.updateSession(session.id, { state: result.state }, session.version);
+    const outcome = await this.repo.updateSession(
+      session.id,
+      this.withClassLog(session, { state: result.state }),
+      session.version,
+    );
     if (!outcome.ok) {
       if (outcome.conflict) {
         throw new ServiceError(
@@ -467,11 +502,11 @@ export class SessionService {
     const applied = actionId
       ? [...seat.appliedActionIds, actionId].slice(-APPLIED_ACTION_MEMORY)
       : seat.appliedActionIds;
-    const updatedSeat =
-      (await this.repo.updateSeat(seat.id, {
-        lastSeenAt: new Date().toISOString(),
-        ...(actionId ? { appliedActionIds: applied } : {}),
-      })) ?? seat;
+    // An action is presence, and it is also the moment a desk that has been
+    // away is unambiguously back — so the same seen/away bookkeeping runs here
+    // as on a poll, against the session this write just produced.
+    const seen = await this.markSeen(outcome.session, seat);
+    const updatedSeat = actionId ? (await this.repo.updateSeat(seat.id, { appliedActionIds: applied })) ?? seen : seen;
     return { ...this.studentPayload(outcome.session, updatedSeat), disposition: "applied" };
   }
 
@@ -747,6 +782,11 @@ export class SessionService {
             // while the runtime still believed that night had settled — the
             // teacher's Restore would produce a room nobody could act in.
             round: cp.round ?? null,
+            // And the record of what the class did goes back with the class.
+            // An append-only log across an undo tells the next desk to come
+            // back from a dark Chromebook that a night the teacher took back
+            // closed twice.
+            log: cp.log ?? [],
           }, /* captureCheckpoint */ true, "the restore you just did"),
         );
       }
@@ -802,6 +842,10 @@ export class SessionService {
     captureCheckpoint = false,
     checkpointLabel = "the last teacher action",
   ): Promise<SessionRow> {
+    // Every teacher-side write funnels through here — phase changes, hooks,
+    // round closes, restore, end — so this is where the class log is kept for
+    // all of them.
+    patch = this.withClassLog(session, patch);
     const withCheckpoint = captureCheckpoint
       ? {
           ...patch,
@@ -812,6 +856,7 @@ export class SessionService {
             frozen: session.frozen,
             ended: session.ended,
             round: session.round,
+            log: session.log,
             capturedAt: new Date().toISOString(),
             label: checkpointLabel,
           },
@@ -875,6 +920,123 @@ export class SessionService {
     };
   }
 
+  /* --------------------------------------------------- while you were away -- */
+
+  /**
+   * Fold the class events this write produces into the patch that carries it.
+   *
+   * One place, so a beat cannot reach the room through a path that forgot to
+   * log it, and so the log lands in the SAME version bump as the change it
+   * describes — a log written separately could be read by a returning desk
+   * before, or without, the state it is talking about.
+   *
+   * The runtime asks the module what just happened and does not look at the
+   * answer beyond bounding it. With no `classEvents`, the only thing the
+   * runtime knows on its own is the phase, so that is all it claims.
+   */
+  private withClassLog(
+    session: SessionRow,
+    patch: SessionPatch,
+  ): SessionPatch {
+    // A caller that sets `log` itself is rewinding the record on purpose
+    // (restore). An undo announces nothing: it is the class un-happening.
+    if ("log" in patch) return patch;
+    const mod = this.moduleFor(session);
+    const nextState = "state" in patch ? patch.state : session.state;
+    const toPhase = patch.phase ?? session.phase;
+    const moved = toPhase !== session.phase;
+    let lines: readonly string[];
+    try {
+      lines = mod.classEvents
+        ? mod.classEvents(session.state, nextState, { fromPhase: session.phase, toPhase })
+        : moved
+          ? [`The class moved on to ${toPhase}.`]
+          : [];
+    } catch {
+      // A module that throws in here must not cost the class the write itself.
+      // The recap is the thing worth losing; the night is not.
+      lines = [];
+    }
+    const usable = lines.filter((l) => typeof l === "string" && l.trim().length > 0).slice(0, MAX_EVENTS_PER_WRITE);
+    if (usable.length === 0) return patch;
+    const at = new Date().toISOString();
+    let seq = session.log.at(-1)?.seq ?? 0;
+    const appended = usable.map((text) => ({ seq: (seq += 1), at, text: text.trim().slice(0, 240) }));
+    return { ...patch, log: [...session.log, ...appended].slice(-CLASS_LOG_LIMIT) };
+  }
+
+  /**
+   * Mark this desk seen, and work out whether it has just come back.
+   *
+   * Called on every student truth-read. Three outcomes:
+   *
+   *   present   — the gap is short. The desk has been in the room, so it has
+   *               seen whatever the room did: `seenSeq` advances to the head.
+   *   returning — the gap is long AND something happened. `awaySince` opens;
+   *               `seenSeq` deliberately does NOT advance, so the recap
+   *               survives a refresh, a rejoin, and the desk's own next poll.
+   *   pending   — a recap is already open and unacknowledged. Left alone, and
+   *               anything that happens meanwhile joins it.
+   *
+   * A long gap over which the class did nothing is not a recap. Being away
+   * while nothing happened is not something a pair needs told.
+   */
+  private async markSeen(session: SessionRow, seat: SeatRow): Promise<SeatRow> {
+    const now = Date.now();
+    const head = session.log.at(-1)?.seq ?? 0;
+    const patch: SeatPatch = { lastSeenAt: new Date(now).toISOString() };
+    if (seat.seenSeq > head) {
+      // The log was rewound under this seat by a restore. Level it with the
+      // record that now exists rather than leaving it waiting for sequence
+      // numbers that will be re-issued for different events.
+      return (await this.repo.updateSeat(seat.id, { ...patch, seenSeq: head, awaySince: null })) ?? seat;
+    }
+    if (seat.awaySince === null) {
+      const gap = now - Date.parse(seat.lastSeenAt);
+      if (Number.isFinite(gap) && gap >= AWAY_MS && head > seat.seenSeq) {
+        patch.awaySince = seat.lastSeenAt;
+      } else {
+        patch.seenSeq = head;
+      }
+    }
+    return (await this.repo.updateSeat(seat.id, patch)) ?? seat;
+  }
+
+  /** The recap card, or null when this desk has missed nothing it has not been shown. */
+  private awayFor(session: SessionRow, seat: SeatRow): StudentPayload["away"] {
+    if (seat.awaySince === null) return null;
+    const missed = session.log.filter((e) => e.seq > seat.seenSeq);
+    if (missed.length === 0) return null;
+    // Oldest first — the class did these in order, and a recap read backwards
+    // is a puzzle. Trimmed from the FRONT when it overflows, because the beats
+    // nearest to now are the ones the pair is about to act on.
+    const lines = missed.slice(-MAX_RECAP_LINES).map((e) => e.text);
+    return {
+      since: seat.awaySince,
+      awayMs: Math.max(0, Date.now() - Date.parse(seat.awaySince)),
+      lines,
+    };
+  }
+
+  /**
+   * The pair has read it. Everything up to the head is now seen, and the card
+   * goes away — for good, not until the next poll.
+   */
+  async acknowledgeRecap(deviceToken: string): Promise<StudentPayload> {
+    const seat = await this.repo.getSeatByDeviceTokenHash(hashDeviceToken(deviceToken));
+    if (!seat) throw new ServiceError(401, "retired", "this device is not signed in to any seat");
+    const found = await this.repo.getSessionById(seat.sessionId);
+    if (!found) throw notFound("session");
+    const session = await this.sweepRound(found);
+    const updated =
+      (await this.repo.updateSeat(seat.id, {
+        awaySince: null,
+        seenSeq: session.log.at(-1)?.seq ?? 0,
+        lastSeenAt: new Date().toISOString(),
+      })) ?? seat;
+    return this.studentPayload(session, updated);
+  }
+
   private studentPayload(
     session: SessionRow,
     seat: SeatRow,
@@ -898,6 +1060,7 @@ export class SessionService {
         version: session.version,
       },
       seat: { id: seat.id, displayName: seat.displayName },
+      away: this.awayFor(session, seat),
       ...credentials,
       view: mod.studentView(session.state, seat.id, session.phase),
     };

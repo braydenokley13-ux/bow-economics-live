@@ -149,8 +149,20 @@ export class SnapshotRepository implements Repository {
       // here rather than guarded at every use: a snapshot is the state of a
       // class that may be mid-period, and "the runtime was upgraded between
       // periods" must not be a way to lose a room.
-      for (const session of parsed.sessions) this.putSession({ ...session, round: session.round ?? null });
-      for (const seat of parsed.seats) this.putSeat({ ...seat, appliedActionIds: seat.appliedActionIds ?? [] });
+      for (const session of parsed.sessions) {
+        this.putSession({ ...session, round: session.round ?? null, log: session.log ?? [] });
+      }
+      for (const seat of parsed.seats) {
+        this.putSeat({
+          ...seat,
+          appliedActionIds: seat.appliedActionIds ?? [],
+          // A pre-upgrade snapshot has no log, so there is nothing anyone can
+          // have missed: every seat starts level with the empty log rather
+          // than being told it missed events that were never recorded.
+          seenSeq: seat.seenSeq ?? 0,
+          awaySince: seat.awaySince ?? null,
+        });
+      }
     } catch (parseError) {
       // eslint-disable-next-line no-console
       console.error("[snapshot] FAILED TO PARSE snapshot file — quarantining it and starting fresh:", parseError);
@@ -258,6 +270,7 @@ export class SnapshotRepository implements Repository {
       version: 1,
       checkpoint: null,
       round: null,
+      log: [],
       teacherKeyHash: input.teacherKeyHash,
       createdAt: at,
       updatedAt: at,
@@ -319,6 +332,10 @@ export class SnapshotRepository implements Repository {
       lastSeenAt: at,
       failedRejoinAttempts: 0,
       appliedActionIds: [],
+      // A seat joining mid-class is level with the room as it stands: what it
+      // missed before it existed is the lesson, not a recap.
+      seenSeq: this.sessions.get(input.sessionId)?.log.at(-1)?.seq ?? 0,
+      awaySince: null,
     };
     this.putSeat(row);
     this.persist();
@@ -384,7 +401,14 @@ export class SnapshotRepository implements Repository {
  * Fields whose only job is to record that a device is still breathing. A write
  * touching nothing else changes no surface anyone is looking at.
  */
-const PRESENCE_ONLY_FIELDS: ReadonlySet<string> = new Set(["lastSeenAt", "failedRejoinAttempts"]);
+const PRESENCE_ONLY_FIELDS: ReadonlySet<string> = new Set([
+  "lastSeenAt",
+  "failedRejoinAttempts",
+  // Written on the same poll as `lastSeenAt` — every poll, from every desk.
+  // If this announced, the storm the presence rule exists to stop would be
+  // back with a different field name on it.
+  "seenSeq",
+]);
 
 function announcesSeatChange(patch: SeatPatch): boolean {
   return Object.keys(patch).some((k) => !PRESENCE_ONLY_FIELDS.has(k));

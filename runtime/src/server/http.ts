@@ -256,11 +256,26 @@ async function handle(
       const payload = await service.resumeByToken(token);
       // Every session mutation — the student's own action or a teacher
       // control — bumps session.version, and a seat's view only ever
-      // derives from session state/phase, so version alone is a correct
-      // change fingerprint here.
-      const etag = `"${payload.session.version}"`;
+      // derives from session state/phase, so version alone would be a correct
+      // change fingerprint for the view.
+      //
+      // It is NOT a correct fingerprint for the whole payload. WHILE YOU WERE
+      // AWAY turns on seat bookkeeping that deliberately does not bump the
+      // session version — a desk coming back is not a change to the class —
+      // so on version alone the poll that discovers the recap answers 304 with
+      // no body and the recap never reaches the pair who missed the class. It
+      // is part of the fingerprint.
+      const etag = `"${payload.session.version}${payload.away ? `:away${payload.away.lines.length}` : ""}"`;
       if (maybeNotModified(req, res, etag)) return;
       sendJson(res, 200, payload, { ETag: etag });
+      return;
+    }
+
+    // POST /api/me/recap/seen  (the pair has read what they missed)
+    if (method === "POST" && parts[1] === "me" && parts[2] === "recap" && parts[3] === "seen" && parts.length === 4) {
+      const token = bearerToken(req);
+      if (!token) throw new ServiceError(401, "no_token", "missing device token");
+      sendJson(res, 200, await service.acknowledgeRecap(token));
       return;
     }
 

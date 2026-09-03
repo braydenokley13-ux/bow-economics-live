@@ -614,6 +614,19 @@ export const REVEAL_STEPS = 5;
 
 export type RevealStage = { stage: number; name: string; headline: string; say: string };
 
+/** Where the class is, in this lesson's words rather than the engine's. Never what it found. */
+const PHASE_EVENT: Partial<Record<CanonicalPhase, string>> = {
+  HOOK: "Your teacher set up the league.",
+  PLAY: "The league opened \u2014 clubs started pricing weeks and setting reinvest.",
+  REVEAL: "The season went up on the projector.",
+  CONSEQUENCE: "The class started reading what the season cost.",
+  ADAPT: "The class went back over the reinvest decision.",
+  COUNTERFACTUAL: "The class started replaying the season under other rules.",
+  ARGUE: "The class started arguing from the board.",
+  SYNTHESIS: "Your teacher started naming the economics.",
+  COMPLETE: "The lesson finished.",
+};
+
 export const REVEAL_STAGES: readonly RevealStage[] = [
   {
     stage: 1,
@@ -2922,6 +2935,32 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       }
       return out;
     },
+  },
+
+  /**
+   * WHILE YOU WERE AWAY, in this lesson's nouns. Class-level only — the log is
+   * read back by whichever desk returns, so nothing about one club's books can
+   * be written into it. See `LessonModule.classEvents`.
+   */
+  classEvents(prev, next, { fromPhase, toPhase }) {
+    const out: string[] = [];
+    // Forward only. A restore rewinds the log with the state, and a differ that
+    // fired on the way back would announce a week the teacher took back.
+    for (let w = prev.weekIndex; w < next.weekIndex; w += 1) {
+      out.push(`Week ${w + 1} closed. Every building in the league settled at once against the Draws that were already printed.`);
+    }
+    if (!prev.barReleased && next.barReleased) {
+      out.push("The Handed-To-You bar went up on the projector \u2014 who actually filled each building.");
+    }
+    for (let i = prev.revealStage; i < next.revealStage; i += 1) {
+      const stage = REVEAL_STAGES[i];
+      if (stage) out.push(`On the projector: ${stage.name}.`);
+    }
+    if (fromPhase !== toPhase) {
+      const moved = PHASE_EVENT[toPhase];
+      if (moved) out.push(moved);
+    }
+    return out;
   },
 
   onPhaseExit(state, fromPhase) {

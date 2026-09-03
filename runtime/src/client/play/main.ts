@@ -26,6 +26,8 @@ type StudentPayload = {
   committed: boolean | null;
   /** What closing would do to THIS desk, in the lesson's own words, when it has committed nothing. */
   fallback: string | null;
+  /** Set only when this desk went dark long enough to miss something and has not said it is back. */
+  away: { since: string; awayMs: number; lines: string[] } | null;
   view: Record<string, unknown>;
 };
 
@@ -208,6 +210,10 @@ function resetSeatRenderState(): void {
   // the device — handing the Chromebook to the next pair must not leave the
   // previous pair's final call ticking over their screen.
   stopFinalCallClock();
+  // Same rule for the recap: what the PREVIOUS pair missed is not this pair's
+  // card. The server decides whether the new seat has anything to be shown.
+  awayShowing = "";
+  $("awayCard").hidden = true;
 
   fhSeatRequested = false;
   fhMountKey = null;
@@ -334,6 +340,7 @@ function startGame(): void {
       showError("");
       setSyncLabel(outbox && outbox.pendingCount > 0 ? `syncing… (${outbox.pendingCount} pending)` : "synced");
       outbox?.retryNow();
+      renderAway(payload);
       renderGame(payload);
     },
     {
@@ -431,6 +438,66 @@ function renderFinalCall(payload: StudentPayload): void {
     ),
   );
 }
+
+/* ------------------------------------------------------ while you were away --
+ * A Chromebook sleeps through a bell. A tab is closed for five minutes. The
+ * pair comes back to a settled book and no idea what moved.
+ *
+ * The founder's rule for this is: current authoritative state PLUS a compact
+ * recap, and do not rewind the class. So this is a card that sits ON TOP of
+ * the live screen — everything under it is the room exactly as it stands now,
+ * and dismissing it changes nothing but the card. It carries what the CLASS
+ * did; this desk's own numbers are already below it.
+ * ------------------------------------------------------------------------- */
+let awayShowing = "";
+
+function humanGap(ms: number): string {
+  const s = Math.round(ms / 1000);
+  if (s < 90) return `about ${Math.max(1, Math.round(s / 10) * 10)} seconds`;
+  const m = Math.round(s / 60);
+  return m < 60 ? `about ${m} minute${m === 1 ? "" : "s"}` : "a while";
+}
+
+function renderAway(payload: StudentPayload): void {
+  const card = $("awayCard");
+  const away = payload.away;
+  if (!away || away.lines.length === 0) {
+    card.hidden = true;
+    awayShowing = "";
+    return;
+  }
+  // Only redraw when the content actually changes: this runs on every poll,
+  // and rebuilding the list under a pair who is reading it moves the button
+  // they are aiming at.
+  const key = `${away.since}|${away.lines.join("|")}`;
+  if (key !== awayShowing) {
+    awayShowing = key;
+    $("awayGap").textContent = `off for ${humanGap(away.awayMs)}`;
+    const list = $("awayList");
+    list.innerHTML = "";
+    for (const line of away.lines) {
+      const li = document.createElement("li");
+      li.textContent = line;
+      list.appendChild(li);
+    }
+  }
+  card.hidden = false;
+}
+
+$("btnAwaySeen").addEventListener("click", () => {
+  const card = $("awayCard");
+  // Hide first. The acknowledgement is a network call and the pair has already
+  // waited long enough; if it fails the next poll simply puts the card back.
+  card.hidden = true;
+  awayShowing = "";
+  if (!creds) return;
+  void fetch("/api/me/recap/seen", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${creds.deviceToken}` },
+  }).catch(() => {
+    /* the poll owns the truth; a failed acknowledgement just means it comes back */
+  });
+});
 
 function renderGame(payload: StudentPayload): void {
   lastRoundKey = payload.round?.key ?? null;

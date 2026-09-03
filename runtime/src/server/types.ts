@@ -19,6 +19,15 @@ export type Checkpoint = {
   ended: boolean;
   /** The round lifecycle as it stood before the change being undone. */
   round: RoundState | null;
+  /**
+   * The class log as it stood before the change being undone.
+   *
+   * Restore rewinds the class; the record of what the class did has to rewind
+   * with it. Without this the log is append-only across an undo, so a night
+   * the teacher took back is still in it — and the next desk to come back
+   * from a dark Chromebook is told the same night closed twice.
+   */
+  log: ClassEvent[];
   capturedAt: string;
   /**
    * Why this checkpoint was taken, in words a teacher can read on the restore
@@ -63,6 +72,27 @@ export type RoundState = {
   closedBy: "final_call_expired" | "close_now" | "module" | null;
 };
 
+/**
+ * One thing the CLASS did, in the lesson's own words.
+ *
+ * The founder's rule for a student who comes back — a slept Chromebook, a
+ * closed tab, a trip to the nurse — is "current authoritative state plus a
+ * compact recap; do NOT rewind the class." That needs a record of what
+ * happened while they were gone, and the runtime cannot write one itself: it
+ * does not know a night from a week from a signing day, and must not learn
+ * (§12). So the module names the events and the runtime keeps the log.
+ *
+ * Class-level only. Nothing seat-private is ever written here — the log is
+ * read back by whichever desk returns, and a line naming one desk's decision
+ * would be handed to another desk's screen.
+ */
+export type ClassEvent = {
+  /** Monotonic within a session. A seat remembers the last one it has been shown. */
+  seq: number;
+  at: string;
+  text: string;
+};
+
 export type SessionRow = {
   id: SessionId;
   code: string;
@@ -79,6 +109,8 @@ export type SessionRow = {
   checkpoint: Checkpoint | null;
   /** TIME CUT state for the round currently in play. Null outside PLAY, or before the first round opens. */
   round: RoundState | null;
+  /** What the class has done, newest last, bounded. See `ClassEvent`. */
+  log: ClassEvent[];
   /**
    * R1 repair: SHA-256 digest of the per-session teacher credential issued
    * once at `createSession` and required (as a bearer token) on every
@@ -114,6 +146,20 @@ export type SeatRow = {
    * restart does not reopen the window.
    */
   appliedActionIds: string[];
+  /**
+   * The last class event this desk has been shown.
+   *
+   * Advanced silently on every poll while the desk is present — being in the
+   * room IS having seen it. It stops advancing the moment `awaySince` is set,
+   * so the recap a returning pair has not read yet cannot be erased by their
+   * own next poll.
+   */
+  seenSeq: number;
+  /**
+   * When this desk went dark, if it has come back and not yet acknowledged
+   * what it missed. Null the rest of the time.
+   */
+  awaySince: string | null;
 };
 
 export type NewSession = {
@@ -126,7 +172,7 @@ export type NewSession = {
 };
 
 export type SessionPatch = Partial<
-  Pick<SessionRow, "phase" | "paused" | "frozen" | "ended" | "state" | "checkpoint" | "round">
+  Pick<SessionRow, "phase" | "paused" | "frozen" | "ended" | "state" | "checkpoint" | "round" | "log">
 >;
 
 export type NewSeat = {
@@ -137,7 +183,9 @@ export type NewSeat = {
   rejoinPinHash: string;
 };
 
-export type SeatPatch = Partial<Pick<SeatRow, "deviceTokenHash" | "lastSeenAt" | "failedRejoinAttempts" | "appliedActionIds">>;
+export type SeatPatch = Partial<
+  Pick<SeatRow, "deviceTokenHash" | "lastSeenAt" | "failedRejoinAttempts" | "appliedActionIds" | "seenSeq" | "awaySince">
+>;
 
 /** A version-conflict result is a normal outcome, not an exception. */
 export type SessionUpdateResult =

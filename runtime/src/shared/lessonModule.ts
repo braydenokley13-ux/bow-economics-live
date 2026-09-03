@@ -116,6 +116,40 @@ export interface LessonModule<TState = unknown> {
    * never "asked to re-enter X."
    */
   onPhaseExit?(state: TState, fromPhase: CanonicalPhase, toPhase: CanonicalPhase): TState;
+
+  /**
+   * WHILE YOU WERE AWAY — what the class just did, in the lesson's own words.
+   *
+   * A Chromebook sleeps, a tab closes, a pair goes to the nurse. The founder's
+   * rule for the return is: current authoritative state plus a compact recap,
+   * and do NOT rewind the class. That needs a record of what happened, and the
+   * runtime cannot write one — it does not know a night from a week from a
+   * signing day, and §12 says it must not learn. So the module names the
+   * events and the runtime keeps the log and decides who has missed what.
+   *
+   * Called after every write that changes state or phase, with the state
+   * before and after and the transition (`fromPhase === toPhase` when only
+   * state moved). Must be PURE and cheap: it runs on every action from every
+   * desk, so the honest answer for "a pair moved their dial" is `[]`.
+   *
+   * Two rules on the lines themselves:
+   *
+   * - CLASS-LEVEL ONLY. The log is read back by whichever desk returns, so a
+   *   line naming one desk's decision would hand it to another desk's screen.
+   *   A returning pair's own books are already on their screen — that is what
+   *   "authoritative state" means — and this says what the ROOM did.
+   * - Past tense, settled facts, no grading. "Night 2 settled" is a recap;
+   *   "the room over-priced Night 2" is a verdict, and this is not the surface
+   *   that gets to deliver one.
+   *
+   * Omit entirely if a lesson has no class beats worth returning to; the
+   * runtime falls back to naming the phase the class moved into.
+   */
+  classEvents?(
+    prev: TState,
+    next: TState,
+    transition: { fromPhase: CanonicalPhase; toPhase: CanonicalPhase },
+  ): readonly string[];
 }
 
 /** One desk that has not committed, and what closing the round will do about it. */
