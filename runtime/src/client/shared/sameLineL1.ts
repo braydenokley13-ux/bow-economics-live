@@ -32,11 +32,22 @@ let selected: string | null = null;
 let tool: string | null = null;
 let annual: number | null = null;
 let mountKey = "";
+/**
+ * The signing day the local selection belongs to.
+ *
+ * When the bell goes, the board is a different board: the player this pair was
+ * looking at may be somebody else's now, and the money they had in mind may not
+ * reach anybody left. Carrying a selection across that boundary left the pair
+ * pointing at a name that no longer existed, and left the composer holding a
+ * price for a decision that was over. A new day is a new decision.
+ */
+let selectionDay = -1;
 let error: string | null = null;
 let seatRequested = false;
 
 /** Forget everything when a new session or a new desk arrives. */
 export function resetSameLineL1(): void {
+  selectionDay = -1;
   selected = null;
   tool = null;
   annual = null;
@@ -229,7 +240,7 @@ function composer(card: V, band: string): string {
                 aria-pressed="${str(t["tool"]) === str(chosen["tool"]) ? "true" : "false"}">
           ${esc(str(t["label"]))}<small>up to ${esc(str(t["maxText"]))} · ${num(t["years"])} yr${
             num(t["years"]) === 1 ? "" : "s"
-          }</small>
+          }${t["terminal"] === true ? " · ENDS YOUR WINDOW" : str(t["wallAtText"]) ? ` · wall at ${esc(str(t["wallAtText"]))}` : ""}</small>
         </button>`,
           )
           .join("")}</div>`
@@ -262,9 +273,29 @@ function composer(card: V, band: string): string {
         : `<p class="sl-ceiling">That meets what he asked for. It does not mean you win him.</p>`
     }
     ${
-      drawsWall && band === "5-6"
-        ? `<p class="sl-wallwarn">Paying him this way draws a wall. For the rest of the year you may not cross it — not for anybody, no matter what happens.</p>`
-        : ""
+      /*
+       * The warning that outranks every other sentence on this screen: after
+       * this signing there is nothing left you can legally do. It is shown to
+       * BOTH bands — the old wall note was 5-6 only, and 7-8 walking into a
+       * dead window unwarned is not "more responsibility", it is a trap — and
+       * it replaces the generic wall line rather than stacking with it,
+       * because two warnings is one warning.
+       */
+      str(chosen["lastSigningWarning"], str(best["lastSigningWarning"]))
+        ? `<p class="sl-lastsign"><b>THIS IS YOUR LAST SIGNING</b>${esc(
+            str(chosen["lastSigningWarning"], str(best["lastSigningWarning"])).replace(/^This is your last signing of the window\.\s*/, " "),
+          )}</p>`
+        : chosen["terminal"] === true
+          ? `<p class="sl-lastsign"><b>THIS IS YOUR LAST SIGNING</b> After it there is nobody left you could legally pay.</p>`
+          : drawsWall
+            ? `<p class="sl-wallwarn">This draws a wall at ${esc(
+                str(chosen["wallAtText"], str(best["wallAtText"])),
+              )}. For the rest of the year you may not cross it — not for anybody, no matter what happens.${
+                num(chosen["movesLeft"], num(best["movesLeft"], -1)) >= 0
+                  ? ` You would still be able to sign ${num(chosen["movesLeft"], num(best["movesLeft"]))} of the people left.`
+                  : ""
+              }</p>`
+            : ""
     }
     <button type="button" class="sl-commit" id="slCommit">PUT THE OFFER IN</button>
     ${error ? `<p class="sl-err">${esc(error)}</p>` : ""}
@@ -338,7 +369,20 @@ function shellFor(view: V, main: string, side: string): string {
   ];
   const triad: HqTriadCell[] = [];
   if (typeof view["day"] === "number") {
-    triad.push({ label: "SIGNING DAY", value: `${num(view["day"])} / ${num(view["ofDays"], 3)}`, live: true });
+    /*
+     * The window has three signing days, and after the third one settles the
+     * module's day counter is 4. The console read "SIGNING DAY 4 / 3" — a
+     * number outside its own denominator, on the projector-facing triad, at the
+     * exact moment the room is looking hardest. The counter is right; what it
+     * needed was to stop counting and say what had happened instead.
+     */
+    const dayNow = num(view["day"]);
+    const ofDays = num(view["ofDays"], 3);
+    triad.push(
+      dayNow > ofDays
+        ? { label: "SIGNING DAY", value: "WINDOW CLOSED", live: true }
+        : { label: "SIGNING DAY", value: `${dayNow} / ${ofDays}`, live: true },
+    );
   }
   triad.push({ label: "JOBS OPEN", value: String(openJobs), live: openJobs > 0 });
   triad.push({ label: "SPOTS LEFT", value: String(num(rec(hq["slots"])["open"])) });
@@ -360,6 +404,116 @@ function shellFor(view: V, main: string, side: string): string {
 
 /* ------------------------------------------------------------ phases -- */
 
+/**
+ * THE WIRE — the bell, said to this desk.
+ *
+ * This is the loudest recurring moment in the lesson and it used to happen
+ * entirely off-screen: the offer cleared, the row vanished from the board, and
+ * the pair worked out from an absence that somebody else had signed the player
+ * they wanted. The founder's whole social test is answered here or nowhere.
+ *
+ * It sits ABOVE the board, before anything else, because it is the reason
+ * today's board looks different from yesterday's. LOST is the loud one — gold
+ * rule, name in full caps — because that is the sentence the pair will still be
+ * arguing about at the end of the lesson.
+ */
+function wirePanel(view: V): string {
+  const wire = view["wire"] ? rec(view["wire"]) : null;
+  if (!wire) return "";
+  const items = arr(wire["items"]);
+  if (items.length === 0) return "";
+  return `
+  <div class="sl-wire" id="slWire" data-lead="${esc(str(items[0]?.["kind"], "gone"))}">
+    <div class="sl-wire-head">
+      <span class="sl-wire-tag">THE WIRE</span>
+      <span class="sl-wire-day">DAY ${num(wire["day"])} IS SETTLED</span>
+    </div>
+    ${items
+      .map(
+        (i) => `
+      <div class="sl-wire-item" data-kind="${esc(str(i["kind"]))}">
+        <p class="sl-wire-line">${esc(str(i["headline"]))}</p>
+        <p class="sl-wire-detail">${esc(str(i["detail"]))}</p>
+      </div>`,
+      )
+      .join("")}
+    <button type="button" class="sl-wire-seen" id="slWireSeen">GOT IT</button>
+  </div>`;
+}
+
+/**
+ * THE FLOOR — the bodies nobody competes for.
+ *
+ * Deliberately not board rows. A board row is scarce and can be taken from you;
+ * these three cannot be, they cost the same for every club in the room, and
+ * there is no bidding. They are why nobody in this lesson is ever completely
+ * stuck, and they were modelled in the engine and rendered nowhere, which meant
+ * a desk with no move genuinely had no move.
+ */
+/**
+ * THE FORK — give up the room, take the exception.
+ *
+ * Offered only to the two seats that have it, and only while it is still
+ * theirs. It is the sharpest choice in the lesson and the one that most
+ * reliably breaks "cap space is the good outcome": Brooklyn's room is
+ * $2,180,704, which reaches nobody, and the exception it can trade the room for
+ * is worth six times that.
+ *
+ * Deliberately not a button among buttons. It is irreversible, it is the only
+ * decision on the screen that is not about a person, and it is confirmed —
+ * because a ten-year-old fat-fingering it away would be the one mistake in this
+ * lesson that is genuinely unrecoverable.
+ */
+function forkPanel(view: V): string {
+  const fork = view["fork"] ? rec(view["fork"]) : null;
+  if (!fork) return "";
+  return `
+  <div class="sl-fork">
+    <p class="sl-fork-lab">A CHOICE ABOUT WHAT KIND OF CLUB YOU ARE</p>
+    <div class="sl-fork-scale">
+      <div class="sl-fork-side" data-have="yes">
+        <span class="sl-fork-tag">WHAT YOU HAVE</span>
+        <b>${esc(str(fork["roomText"]))}</b>
+        <span class="sl-fork-note">of cap room</span>
+      </div>
+      <span class="sl-fork-or">OR</span>
+      <div class="sl-fork-side">
+        <span class="sl-fork-tag">WHAT YOU COULD HAVE</span>
+        <b>${esc(str(fork["exceptionText"]))}</b>
+        <span class="sl-fork-note">the big exception</span>
+      </div>
+    </div>
+    <p class="sl-fork-line">${esc(str(fork["line"]))}</p>
+    <p class="sl-fork-warn">${esc(str(fork["warning"]))}</p>
+    <button type="button" class="sl-fork-go" id="slFork" data-armed="no">GIVE UP MY CAP ROOM</button>
+  </div>`;
+}
+
+function floorStrip(view: V): string {
+  const floor = arr(view["floor"]);
+  if (floor.length === 0) return "";
+  const usable = floor.filter((f) => f["reachable"] === true);
+  return panel(
+    {
+      title: "ALWAYS AVAILABLE",
+      note: usable.length === 0 ? "out of reach" : `${esc(str(floor[0]?.["askText"]))} each`,
+      flush: true,
+    },
+    `<p class="sl-floor-say">Nobody can take these from you and nobody is bidding against you. They fill a hole; they do not win you anything.</p>
+     <div class="sl-floor">${floor
+       .map(
+         (f) => `
+       <button type="button" class="sl-floor-row" data-floor="${esc(str(f["id"]))}"
+               ${f["reachable"] === true ? "" : "disabled"}>
+         <span class="sl-floor-role">${esc(str(f["role"]))}</span>
+         <span class="sl-floor-name">A veteran on a minimum deal${f["fillsAJob"] === true ? " · FILLS A HOLE" : ""}</span>
+         <span class="sl-floor-ask">${esc(str(f["askText"]))}</span>
+       </button>`,
+       )
+       .join("")}</div>`,
+  );
+}
+
 function playMain(view: V): string {
   const board = arr(view["board"]);
   const pending = view["pending"] ? rec(view["pending"]) : null;
@@ -367,17 +521,22 @@ function playMain(view: V): string {
   const card = selected ? board.find((c) => str(c["id"]) === selected) : undefined;
 
   const right = pending
-    ? committedCard(pending, board)
+    ? committedCard(pending, [...board, ...arr(view["floor"])])
     : card
       ? playerCard(card, band)
       : `<div class="sl-note"><strong>Pick a player.</strong> Everyone on this board is really a free agent this summer, and every other club in this room can see the same names you can. The ones you cannot reach are greyed out, and it says why.</div>`;
 
   return `
+  ${wirePanel(view)}
   <div class="sl-play">
-    ${panel(
-      { title: "THE BOARD", note: `${board.length} still unsigned`, live: str(view["roomLine"]), flush: true },
-      `<div class="sl-board">${board.map(boardRow).join("")}</div>`,
-    )}
+    <div class="sl-left">
+      ${panel(
+        { title: "THE BOARD", note: `${board.length} still unsigned`, live: str(view["roomLine"]), flush: true },
+        `<div class="sl-board">${board.map(boardRow).join("")}</div>`,
+      )}
+      ${forkPanel(view)}
+      ${floorStrip(view)}
+    </div>
     <div>${right}</div>
   </div>
   ${leaguePanel(view)}`;
@@ -539,6 +698,25 @@ export function renderSameLineL1(
     return;
   }
 
+  /*
+   * A NEW DAY IS A NEW DECISION.
+   *
+   * When the bell goes the board is a different board: the player this pair was
+   * looking at may belong to somebody else now, and the price they had in mind
+   * may not reach anybody left. Carrying the selection across that boundary
+   * left the composer holding a decision that was already over, and left a
+   * click landing on a row that the very next patch replaced. Cleared before
+   * anything is rendered, so the render key and the markup agree.
+   */
+  const day = num(v["day"], -1);
+  if (day !== selectionDay) {
+    selectionDay = day;
+    selected = null;
+    tool = null;
+    annual = null;
+    error = null;
+  }
+
   let main: string;
   switch (phase) {
     case "PLAY":
@@ -565,6 +743,8 @@ export function renderSameLineL1(
     board.map((c) => str(c["id"])).join(","),
     v["pending"] ? str(rec(v["pending"])["playerId"]) : "-",
     num(v["beat"], -1),
+    v["wire"] ? String(num(rec(v["wire"])["day"])) : "-",
+    v["fork"] ? "fork" : "-",
     selected ?? "-",
     tool ?? "-",
     error ?? "-",
@@ -650,6 +830,39 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
     const value = annual === null ? Math.min(num(card["ask"]), max) : annual;
     error = null;
     submit({ type: "offer", playerId: selected, tool: str(chosen["tool"]), annual: value });
+  });
+
+  /* The floor. One click signs a minimum body: there is no price to set and
+     nobody to outbid, which is the whole point of it. */
+  for (const el of Array.from(host.querySelectorAll<HTMLButtonElement>(".sl-floor-row:not([disabled])"))) {
+    el.addEventListener("click", () => {
+      const id = el.dataset["floor"];
+      const row = arr(v["floor"]).find((f) => str(f["id"]) === id);
+      if (!id || !row) return;
+      error = null;
+      submit({ type: "offer", playerId: id, tool: "minimum", annual: num(row["ask"]) });
+    });
+  }
+
+  /* Two presses, because it cannot be undone. The first press changes the
+     button into the sentence it is actually asking. */
+  const forkBtn = host.querySelector<HTMLButtonElement>("#slFork");
+  forkBtn?.addEventListener("click", () => {
+    if (forkBtn.dataset["armed"] !== "yes") {
+      forkBtn.dataset["armed"] = "yes";
+      forkBtn.textContent = "YES — GIVE IT UP. I CANNOT TAKE THIS BACK.";
+      return;
+    }
+    error = null;
+    submit({ type: "declareOverCap" });
+  });
+
+  /* The wire is dismissed locally: it is news, not state, and asking the server
+     to remember that a pair has read a sentence would put a round trip between
+     them and their next decision. It comes back on the next bell because the
+     next bell is different news. */
+  host.querySelector("#slWireSeen")?.addEventListener("click", () => {
+    host.querySelector("#slWire")?.remove();
   });
 
   host.querySelector("#slChange")?.addEventListener("click", () => {

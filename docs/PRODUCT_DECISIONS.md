@@ -958,3 +958,74 @@ dated free agents) shrinks the board below BC-13's frontier requirement and cost
 - **Owner:** CEO / lead integrator (all three revisable by the founder, and by classroom evidence)
 - **Evidence:** `ARCHITECTURE_SELECTION.md` §7; `NBA_FINANCIAL_TRUTH.md` §6.4 rules 1, 6 and 12 and
   §7.11; CLAUDE.md §3, §8; founder brief §17.
+
+## D50. Module 1 is a bounded living NBA league — the social architecture, locked by the founder
+
+The founder ruled the whole social layer in one pass. It supersedes any conflicting agent selection,
+including the "no counter" ruling in `TRADE_MECHANIC_FROTH.md` §4.
+
+**The shape: C — hybrid economic ecosystem.** Not sixteen independent simulations with a
+leaderboard, not an unrestricted NBA sandbox. L1 emphasises **competitive scarcity** ("your choice
+can reduce my options"); L3 emphasises **cooperative exchange / gains from trade** ("your assets may
+solve my problem while mine solve yours"). The product test: *does something another student does
+meaningfully change what I can do next?*
+
+**The fantasy is the franchise; the cap is invisible physics.** M1 is not a salary-cap simulator.
+The student thinks about players, needs, talent, assets, contention, flexibility, offers, and what
+other franchises are doing. Emotional loop: WANT → CHOOSE → LOSE SOMETHING → WORLD CHANGES → ADAPT →
+NEGOTIATE → DEFEND.
+
+The eleven locked rulings:
+
+1. **Information — meaningful but incomplete.** Public: roster, broad financial position, obvious
+   roster construction, broad needs, league activity, modeled market intelligence ("THREE FRANCHISES
+   ACTIVE IN THE CENTER MARKET"). Never public: exact acceptance thresholds, private objectives,
+   predetermined winning moves, or invented private preferences of real people presented as fact.
+   Information itself becomes economically useful.
+2. **Tradeable assets — same engine, different freedom.** 5–6: curated players plus draft picks
+   ("the better player now, but one of my future picks"). 7–8: a richer bounded pool that may
+   include contract/flexibility implications where truthfully modeled. More GM power, not harder
+   arithmetic.
+3. **Trade construction — guided at 5–6, freer at 7–8.** 5–6 gets a guided builder (choose franchise
+   → what do you want → what will you give → see the tradeoff → send) and still authors the trade;
+   three preset answers is not compliance. 7–8 constructs packages inside a bounded eligible pool.
+4. **Proposal budget: ~two active outgoing proposals, one counter per negotiation.** Negotiating
+   attention is itself scarce. No spam, no floods, no endless trade chats.
+5. **Negotiation depth: one counter.** OFFER → ACCEPT/DECLINE/COUNTER → FINAL ACCEPT/DECLINE. This
+   overturns the earlier no-counter selection.
+6. **The server blocks illegality; it does not block bad strategy.** Canonical server truth owns
+   ownership, validity, timing, modeled legality, availability, executability. Illegal: block and
+   explain. Legal but lopsided: a bounded advisory ("UNUSUAL VALUE — far from current modeled market
+   value") with SEND ANYWAY. A student may value an asset differently, knowingly overpay, or make a
+   mistake; those choices are the evidence. The machine is never the authoritative GM.
+7. **A completed trade is a league event.** The transaction belongs to the two franchises; the
+   moment belongs to the class. The projector makes the room look up, with broadcast restraint —
+   never a transaction table.
+8. **`/teach` is director + commissioner, not an approvals queue.** No teacher sign-off on normal
+   legal transactions. Powers: open/close trade window, final call, spotlight deal, call boardroom,
+   trigger authored shock, compare strategies. More importantly it surfaces classroom intelligence
+   the teacher should not have to find by hand — DISCUSSION OPPORTUNITY, MARKET COLLISION, CONTRAST.
+   Software runs normality; the teacher directs meaning.
+9. **L2 is a shared event with franchise-specific consequences.** Not sixteen unrelated RNG cards,
+   not a reset. Your earlier strategy collides with new information; the same development lands
+   differently because each franchise inherited a different position. And: a different outcome does
+   not retroactively prove a different decision quality.
+10. **Final evaluation is evidence, not a machine verdict.** Truthful descriptive outcomes are fine
+    (roster profile, flexibility, future assets, exposure, adaptation). `DECISION QUALITY = 87/100`
+    and "team 6 made the best decisions" are forbidden. The Boardroom reconstructs the student's
+    actual history and makes them defend STRATEGY / ALTERNATIVE / RISK / ADAPTATION / DECISION
+    QUALITY-given-what-they-knew-then.
+11. **Both bands are designed from birth**, never 5–6 first with complexity bolted on. Same world,
+    engine, franchise identity, consequences, and social league; different cognition.
+
+Standing constraints restated as part of this ruling: the phone lights up only when the kid should
+care; social uncertainty is bounded and real, never invented private NBA intentions; HQ is the
+stage and the moving league is the product; the projector shows only what is worth looking up for
+(~75% restraint, ~25% earned spectacle); "living league" does not license all 30 franchises, a full
+CBA sandbox, unlimited trades, unrestricted chat, or a notification centre. Boundaries are a
+feature.
+
+- **Status:** ACTIVE — supersedes `TRADE_MECHANIC_FROTH.md` §4 on counters and on the L3 builder.
+- **Date:** 2026-09-03
+- **Owner:** Founder
+- **Evidence:** founder ruling, this session, verbatim in the run transcript.

@@ -17,8 +17,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { sameLineL1Module as mod, DAYS, SAME_LINE_L1_ID, forgoneBy, type SameLineL1State } from "../modules/sameLine/l1.js";
-import { BOARD, CLUBS, LINE, MARKET, TOOL } from "../modules/sameLine/world.js";
-import { openingPosition } from "../modules/sameLine/engine.js";
+import { BOARD, CLUBS, LINE, MARKET, MINIMUM_MARKET, TOOL } from "../modules/sameLine/world.js";
+import { applySigning, ceilingOf, checkOffer, legalOffers, openingPosition, outlookAfter } from "../modules/sameLine/engine.js";
 import { isOrderedSubsequence } from "../shared/phases.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 import type { GradeBand } from "../shared/gradeBand.js";
@@ -442,5 +442,367 @@ test("the module id is the one the client and the picker will look for", () => {
 test("openingPosition is the club's own published figure, not a rounded one", () => {
   for (const club of CLUBS) {
     assert.equal(openingPosition(club.id).committed, club.committed.value);
+  }
+});
+
+/* ------------------------------------------------------ the wall, and the -- *
+ *                                                          brick it caused    */
+
+/*
+ * These seven cover the highest-severity defect found in the L1 prosecution:
+ * at Boston and Sacramento, ten of the eleven reachable named players, signed
+ * on day one with the tool the product pre-selected at the price the product
+ * pre-filled, left the desk with zero legal moves for the remaining two days —
+ * a quarter of a sixteen-desk room eliminated in minute three by making the
+ * obvious move. Six hundred and seventy-four tests passed while it shipped, so
+ * the point of these is coverage, not ceremony: each one fails on the code as
+ * it was.
+ */
+
+test("a tool may not be used at all when the club is already past the line it walls at", () => {
+  // The apron limitations bind on the club's position AFTER the transaction, so
+  // a first-apron-restricted move by a club already over the first apron is
+  // prohibited outright — not merely terminal.
+  // cbaguide.com/thresholds/apron, read 2026-09-03.
+  for (const club of CLUBS) {
+    const p = openingPosition(club.id);
+    for (const toolId of Object.keys(TOOL) as (keyof typeof TOOL)[]) {
+      const line = TOOL[toolId].drawsWallAt;
+      if (line === null) continue;
+      if (p.committed < LINE[line]) continue;
+      assert.equal(
+        ceilingOf(toolId, p, undefined),
+        null,
+        `${club.id} is at ${p.committed}, past ${line} (${LINE[line]}), and ${toolId} is still offered to it`,
+      );
+    }
+  }
+});
+
+test("no signing ever draws a wall behind the club that drew it", () => {
+  const taken = new Set<string>();
+  for (const club of CLUBS) {
+    const p = openingPosition(club.id);
+    for (const player of MARKET) {
+      for (const offer of legalOffers(p, [player], taken)) {
+        const after = applySigning(p, player, offer);
+        if (after.wall === null) continue;
+        assert.ok(
+          after.committed <= after.wall,
+          `${club.id} signing ${player.name} with ${offer.tool} at ${offer.annual} lands at ${after.committed}, past its own new wall at ${after.wall}`,
+        );
+      }
+    }
+  }
+});
+
+test("a signing that ends the window says so before the click, on every band", () => {
+  // The constraint is real and stays real: a club a few million under a hard cap
+  // genuinely gets one signing and then stops. What is not allowed is silence.
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = fresh(band);
+    for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+    for (const seatId of Object.keys(s.desks)) {
+      const view = mod.studentView(s, seatId, "PLAY") as { board: readonly Record<string, any>[] };
+      for (const card of view.board) {
+        if (!card["best"]) continue;
+        if (card["best"].terminal !== true) continue;
+        assert.ok(
+          typeof card["best"].lastSigningWarning === "string" && card["best"].lastSigningWarning.length > 0,
+          `${band} ${seatId}: signing ${card["name"]} ends the window and the composer says nothing`,
+        );
+      }
+    }
+  }
+});
+
+test("the auto-chosen tool never ends the window when another tool reaches the same player and does not", () => {
+  // Grades 5-6 never pick a tool; the product picks for them. Picking the one
+  // that terminates their lesson, to reach $91,628 further, is indefensible.
+  const pool = [...BOARD, ...MINIMUM_MARKET];
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = fresh(band);
+    for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+    for (const [seatId, desk] of Object.entries(s.desks)) {
+      const view = mod.studentView(s, seatId, "PLAY") as { board: readonly Record<string, any>[] };
+      for (const card of view.board) {
+        const best = card["best"];
+        if (!best || best.terminal !== true) continue;
+        const player = MARKET.find((p) => p.id === card["id"])!;
+        const survivor = legalOffers(desk.position, [player], new Set(s.taken)).find((o) => {
+          const atAsk = { ...o, annual: o.tool === "minimum" ? o.annual : Math.min(o.annual, player.ask.value) };
+          return !outlookAfter(desk.position, player, atAsk, pool, new Set(s.taken)).terminal;
+        });
+        assert.equal(
+          survivor,
+          undefined,
+          `${band} ${seatId}: chose ${best.tool} for ${card["name"]}, which ends the window, when ${survivor?.tool} would not have`,
+        );
+      }
+    }
+  }
+});
+
+test("the small exception draws its wall at the second apron", () => {
+  // Corrected 2026-09-03: this was recorded as drawing no wall at all, which is
+  // false. Using the taxpayer mid-level exception hard-caps a club at the
+  // SECOND apron for the remainder of the year (hoopsrumors 2026-27 hard-cap
+  // tracker; overtheapron.com/terms/hard-cap). The lesson turns on where each
+  // wall lands, so an absent wall was not a harmless omission.
+  assert.equal(TOOL.taxMle.drawsWallAt, "apron2");
+  assert.equal(TOOL.ntmle.drawsWallAt, "apron1");
+  assert.equal(TOOL.bae.drawsWallAt, "apron1");
+});
+
+test("the minimum is offered to every club, on every screen", () => {
+  // It is the tool no line can take away, and the reason no club is ever
+  // completely stuck. `pocketsFor` asked about it without naming a player and
+  // was told null, so every desk in the room was shown its one guaranteed move
+  // as unavailable.
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = fresh(band);
+    for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+    for (const seatId of Object.keys(s.desks)) {
+      const view = mod.studentView(s, seatId, "PLAY") as { pockets: readonly Record<string, any>[]; floor: readonly Record<string, any>[] };
+      const min = view.pockets.find((p) => p["id"] === "minimum");
+      assert.ok(min, `${band} ${seatId}: no minimum pocket`);
+      assert.equal(min!["available"], true, `${band} ${seatId}: the minimum is shown as unavailable`);
+      assert.equal(view.floor.length, 3, `${band} ${seatId}: the floor of the market is not rendered`);
+    }
+  }
+});
+
+test("an unreachable player names the choice that closed the door, not the seat's opening facts", () => {
+  // The old whyNot took the first refusal in key order, which begins with
+  // `room`, so every greyed card on every board said "you are over the cap".
+  // The reason, once a desk has actually spent something, is the thing it spent.
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seatId = Object.keys(s.desks)[0]!;
+  const desk = s.desks[seatId]!;
+  const spendable = legalOffers(desk.position, [...BOARD], new Set())[0];
+  assert.ok(spendable, "the first desk cannot sign anybody, so this test proves nothing");
+  const player = BOARD.find((p) => p.id === spendable!.playerId)!;
+  const after = applySigning(desk.position, player, spendable!);
+  const withSpend: SameLineL1State = {
+    ...s,
+    day: 1,
+    taken: [player.id],
+    desks: { ...s.desks, [seatId]: { ...desk, position: after } },
+  };
+  const view = mod.studentView(withSpend, seatId, "PLAY") as { board: readonly Record<string, any>[] };
+  const blocked = view.board.filter((c) => c["reachable"] === false);
+  for (const card of blocked) {
+    const reason = String(card["unreachableReason"]);
+    // Whatever it says, it may not be a bare restatement of the opening
+    // position while a spent tool is the real answer.
+    const spentToolWouldReach = after.spent.some((t) => {
+      const hypothetical = { ...after, spent: after.spent.filter((x) => x !== t) };
+      const q = MARKET.find((p) => p.id === card["id"])!;
+      return checkOffer(hypothetical, { playerId: q.id, tool: t, annual: q.ask.value }, q).ok;
+    });
+    if (!spentToolWouldReach) continue;
+    assert.ok(
+      /spent it on|already used it/.test(reason),
+      `${card["name"]} is blocked by a tool this desk spent, and the card says: ${reason}`,
+    );
+  }
+});
+
+/* ---------------------------------------------------------------- the wire -- */
+
+test("a desk that loses a contested player is told, by name, who got him", () => {
+  // The loudest recurring moment in the lesson used to be silent on the student
+  // device: `pending` cleared, the row vanished, and the pair inferred from an
+  // absence.
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  // Find a player two different desks can both legally reach.
+  let contested: { player: (typeof BOARD)[number]; a: string; b: string } | null = null;
+  for (const player of BOARD) {
+    const able = seats.filter((id) => legalOffers(s.desks[id]!.position, [player], new Set()).length > 0);
+    if (able.length >= 2) {
+      contested = { player, a: able[0]!, b: able[1]! };
+      break;
+    }
+  }
+  assert.ok(contested, "no player in this world is reachable by two desks at once");
+  for (const id of [contested!.a, contested!.b]) {
+    const o = legalOffers(s.desks[id]!.position, [contested!.player], new Set())[0]!;
+    const r = mod.reduce(s, { type: "offer", playerId: o.playerId, tool: o.tool, annual: o.annual }, ctx("PLAY", id, seats));
+    assert.ok(r.ok, r.ok ? "" : r.reason);
+    s = r.state;
+  }
+  const closed = mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher", seats));
+  assert.ok(closed.ok, closed.ok ? "" : closed.reason);
+
+  const winner = closed.state.history[0]!.awards.find((a) => a.playerId === contested!.player.id);
+  assert.ok(winner, "a contested player settled with no winner");
+  const loser = (winner!.winner as unknown as string) === contested!.a ? contested!.b : contested!.a;
+  const view = mod.studentView(closed.state, loser, "PLAY") as { wire: { items: readonly Record<string, any>[] } | null };
+  assert.ok(view.wire, "the losing desk got no wire at all");
+  const lost = view.wire!.items.find((i) => i["kind"] === "lost");
+  assert.ok(lost, `the losing desk was not told it lost: ${JSON.stringify(view.wire)}`);
+  assert.match(String(lost!["headline"]), new RegExp(contested!.player.name.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+});
+
+test("the wire never carries what another desk offered", () => {
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  const amounts: number[] = [];
+  for (const id of seats) {
+    const o = legalOffers(s.desks[id]!.position, [...BOARD], new Set())[0];
+    if (!o) continue;
+    const r = mod.reduce(s, { type: "offer", playerId: o.playerId, tool: o.tool, annual: o.annual }, ctx("PLAY", id, seats));
+    if (!r.ok) continue;
+    s = r.state;
+    amounts.push(o.annual);
+  }
+  const closed = mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher", seats));
+  assert.ok(closed.ok, closed.ok ? "" : closed.reason);
+  const won = new Set(closed.state.history[0]!.awards.map((a) => a.annual));
+  for (const id of seats) {
+    const view = mod.studentView(closed.state, id, "PLAY") as { wire: { items: readonly Record<string, any>[] } | null };
+    if (!view.wire) continue;
+    const text = JSON.stringify(view.wire);
+    for (const amount of amounts) {
+      // A settled contract is public; a losing bid never is.
+      if (won.has(amount)) continue;
+      assert.ok(
+        !text.includes(String(amount)) && !text.includes(amount.toLocaleString("en-US")),
+        `${id}'s wire carries ${amount}, which nobody signed for — that is somebody's losing bid`,
+      );
+    }
+  }
+});
+
+test("the console's class intelligence never ranks one desk above another", () => {
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  for (const id of seats) {
+    const o = legalOffers(s.desks[id]!.position, [...BOARD], new Set())[0];
+    if (!o) continue;
+    const r = mod.reduce(s, { type: "offer", playerId: o.playerId, tool: o.tool, annual: o.annual }, ctx("PLAY", id, seats));
+    if (r.ok) s = r.state;
+  }
+  const view = mod.teacherView(s, "PLAY") as { intel: readonly Record<string, any>[] };
+  assert.ok(Array.isArray(view.intel));
+  for (const item of view.intel) {
+    const text = `${item["text"]} ${item["ask"]}`.toLowerCase();
+    for (const banned of ["winning", "best decision", "leading", "in first", "ahead of", "worst", "losing to"]) {
+      assert.ok(!text.includes(banned), `class intelligence ranks the room: "${text}"`);
+    }
+    assert.ok(String(item["ask"]).length > 0, "an intelligence item with no question to ask is a dashboard tile");
+  }
+});
+
+/* ---------------------------------------------------------------- the fork -- */
+
+test("giving up cap room is offered only to the seats that have room, and only once", () => {
+  // `canDeclareOverCap`/`declareOverCap` were modelled in the engine, enumerated
+  // by the sweep, and reachable from no action in the product, so the two
+  // under-cap seats had a one-path lesson where the design says they have a
+  // fork — and the sweep was proving a game that did not ship.
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+
+  const withRoom = seats.filter((id) => s.desks[id]!.position.committed < LINE.cap);
+  const overCap = seats.filter((id) => s.desks[id]!.position.committed >= LINE.cap);
+  assert.ok(withRoom.length > 0 && overCap.length > 0, "this world has no fork to test");
+
+  for (const id of overCap) {
+    const view = mod.studentView(s, id, "PLAY") as { fork: unknown };
+    assert.equal(view.fork, null, `${id} is over the cap and was offered the fork anyway`);
+    const r = mod.reduce(s, { type: "declareOverCap" }, ctx("PLAY", id, seats));
+    assert.equal(r.ok, false, `${id} is over the cap and was allowed to give up room it does not have`);
+  }
+
+  const id = withRoom[0]!;
+  const before = mod.studentView(s, id, "PLAY") as { fork: Record<string, unknown> | null };
+  assert.ok(before.fork, `${id} is under the cap and was not offered the fork`);
+  assert.match(String(before.fork!["warning"]), /cannot take this back/i);
+
+  const taken = mod.reduce(s, { type: "declareOverCap" }, ctx("PLAY", id, seats));
+  assert.ok(taken.ok, taken.ok ? "" : taken.reason);
+  const after = mod.studentView(taken.state, id, "PLAY") as { fork: unknown };
+  assert.equal(after.fork, null, "the fork is still on offer after it has been taken");
+  const again = mod.reduce(taken.state, { type: "declareOverCap" }, ctx("PLAY", id, seats));
+  assert.equal(again.ok, false, "the fork can be taken twice");
+});
+
+test("giving up cap room takes back an offer that was being paid with it", () => {
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  const id = seats.find((x) => s.desks[x]!.position.committed < LINE.cap)!;
+  const roomOffer = legalOffers(s.desks[id]!.position, [...BOARD], new Set()).find((o) => o.tool === "room");
+  if (!roomOffer) return; // this seat's room reaches nobody, which is its own lesson
+  const put = mod.reduce(s, { type: "offer", ...roomOffer }, ctx("PLAY", id, seats));
+  assert.ok(put.ok, put.ok ? "" : put.reason);
+  assert.ok(put.state.pending[id], "the offer did not land");
+  const gone = mod.reduce(put.state, { type: "declareOverCap" }, ctx("PLAY", id, seats));
+  assert.ok(gone.ok, gone.ok ? "" : gone.reason);
+  assert.equal(
+    gone.state.pending[id],
+    undefined,
+    "a committed offer paid with cap room survived the club giving up the cap room",
+  );
+});
+
+/* ------------------------------------------------------------- the beats -- */
+
+test("the reveal beats carry the room's own numbers, not just their titles", () => {
+  // Beats 1 and 2 shipped as hero titles over empty space — the module's thesis
+  // rendered as a slogan at the peak of the lesson. Both are computable from
+  // state that has existed since the first day the reducer ran.
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  // Drive two desks onto the same player so beat 1 has something to show.
+  let contestedName: string | null = null;
+  for (const player of BOARD) {
+    const able = seats.filter((id) => legalOffers(s.desks[id]!.position, [player], new Set()).length > 0);
+    if (able.length < 2) continue;
+    for (const id of able.slice(0, 2)) {
+      const o = legalOffers(s.desks[id]!.position, [player], new Set())[0]!;
+      const r = mod.reduce(s, { type: "offer", ...o }, ctx("PLAY", id, seats));
+      if (r.ok) s = r.state;
+    }
+    contestedName = player.name;
+    break;
+  }
+  assert.ok(contestedName, "no player in this world is reachable by two desks at once");
+  const closed = mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher", seats));
+  assert.ok(closed.ok, closed.ok ? "" : closed.reason);
+
+  const bv = mod.boardView(closed.state, "REVEAL") as { samePlayer: Record<string, unknown> | null };
+  assert.ok(bv.samePlayer, "beat 1 has nothing under its title after a contested day");
+  assert.equal(bv.samePlayer!["player"], contestedName);
+  const chasers = bv.samePlayer!["chasers"] as Record<string, unknown>[];
+  assert.ok(chasers.length >= 2, "beat 1 shows fewer clubs than were in on him");
+  assert.equal(chasers.filter((c) => c["won"] === true).length, 1, "beat 1 shows something other than exactly one winner");
+});
+
+test("the projector's beats never carry a student name", () => {
+  let s = fresh("5-6");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  for (const id of seats) {
+    const o = legalOffers(s.desks[id]!.position, [...BOARD], new Set())[0];
+    if (!o) continue;
+    const r = mod.reduce(s, { type: "offer", ...o }, ctx("PLAY", id, seats));
+    if (r.ok) s = r.state;
+  }
+  const closed = mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher", seats));
+  assert.ok(closed.ok, closed.ok ? "" : closed.reason);
+  for (let beat = 0; beat < 4; beat += 1) {
+    const json = JSON.stringify(mod.boardView({ ...closed.state, beat }, "REVEAL"));
+    for (const id of seats) {
+      assert.ok(!json.includes(`"${id}"`), `beat ${beat} carries a seat id (${id})`);
+    }
   }
 });

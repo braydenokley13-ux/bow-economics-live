@@ -596,6 +596,49 @@ function initProjectorPreview(): void {
 let deskFilterOn = false;
 let deskLastPayload: TeacherPayload | null = null;
 
+/**
+ * CLASS INTELLIGENCE — the patterns the teacher would otherwise have to find by
+ * reading sixteen cap sheets from the front of the room.
+ *
+ * Each item is computed from live state by the module and arrives with the
+ * question already written, because "four franchises are chasing a centre" is
+ * an observation and "if everybody needs the same thing, what happens to its
+ * price?" is a lesson. An intelligence item with no question attached is a
+ * dashboard tile, and the module's own tests reject one.
+ *
+ * MARKET COLLISION is the live one — it is true only while the room is still
+ * deciding, and it is the single most useful thing a teacher can know in that
+ * window, because it names the argument that is about to happen.
+ */
+type IntelItem = { kind: string; label: string; text: string; ask: string };
+
+function renderIntel(payload: TeacherPayload): void {
+  const el = document.getElementById("intel");
+  if (!el) return;
+  const items = (payload.view["intel"] as IntelItem[] | undefined) ?? null;
+  if (!Array.isArray(items) || items.length === 0 || payload.session.ended) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  const count = document.getElementById("intelCount");
+  if (count) {
+    count.textContent =
+      items.length === 1 ? "one thing worth saying out loud" : `${items.length} things worth saying out loud`;
+  }
+  const list = document.getElementById("intelList");
+  if (!list) return;
+  list.innerHTML = items
+    .map(
+      (i) => `<div class="intel-item" data-kind="${escapeHtml(i.kind)}">
+        <span class="intel-label">${escapeHtml(i.label)}</span>
+        <p class="intel-text">${escapeHtml(i.text)}</p>
+        <p class="intel-ask">${escapeHtml(i.ask)}</p>
+      </div>`,
+    )
+    .join("");
+}
+
 function renderDesks(payload: TeacherPayload): void {
   const strip = (payload.view["deskStrip"] as DeskStrip | null | undefined) ?? null;
   const ended = payload.session.ended;
@@ -838,6 +881,7 @@ function render(payload: TeacherPayload): void {
   $("seatCount").textContent = `${payload.seats.length} joined`;
   renderTimeCut(payload);
   renderLiveRoom(payload);
+  renderIntel(payload);
   renderDesks(payload);
   // The preview lives for the whole session, not just PLAY — REVEAL through
   // SYNTHESIS is exactly when the projector IS the lesson. It goes away when

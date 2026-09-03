@@ -75,6 +75,17 @@
      must not push the closing controls the teacher is reaching for down the
      page — the same rule the TIME CUT unresolved list already follows. */
   .desk-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:8px; margin-top:10px; max-height:300px; overflow-y:auto; }
+  /* Class intelligence. The label is quiet, the observation is the reading
+     size, and the question is the thing the teacher's eye should land on last
+     and remember — so it gets the gold. */
+  .intel-item { border:1px solid var(--hairline, rgba(255,255,255,0.14)); border-left:3px solid rgba(124,92,255,0.7);
+    border-radius:9px; padding:10px 12px; background:rgba(255,255,255,0.02); margin-bottom:8px; }
+  .intel-item[data-kind="collision"] { border-left-color:var(--accent-gold,#f4b942); }
+  .intel-item[data-kind="watch"] { border-left-color:rgba(224,87,79,0.75); }
+  .intel-label { font-family:var(--font-display); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-muted); }
+  .intel-text { margin:4px 0 6px; font-size:14px; line-height:1.45; color:var(--ink-primary); }
+  .intel-ask { margin:0; font-size:13px; line-height:1.45; color:var(--accent-gold,#f4b942); }
   .desk-chip { border:1px solid var(--hairline, rgba(255,255,255,0.14)); border-radius:9px; padding:9px 10px; background:rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:4px; min-width:0; }
   .desk-chip.attn { border-color:rgba(244,185,66,0.55); background:rgba(244,185,66,0.07); }
   .desk-chip.quiet { border-color:rgba(226,94,80,0.55); background:rgba(226,94,80,0.07); }
@@ -315,6 +326,20 @@
        This is the other half: which desk, run by whom, and what is wrong with it
        — the walk-to list. Teacher-only, like the join list; it never goes near
        /board. -->
+  <!-- CLASS INTELLIGENCE. The console's job is not to report the room back to
+       the teacher as a dashboard; it is to notice the things a person standing
+       in front of sixteen desks cannot notice, and hand each one over with the
+       question already attached. Software runs normality, the teacher directs
+       meaning (D50 s8). Nothing here ranks a desk against another — the ban on
+       a class champion binds the console exactly as it binds the projector. -->
+  <section id="intel" class="card" hidden>
+    <div class="tc-head">
+      <h2 style="margin:0;">What the room is doing</h2>
+      <span id="intelCount" class="tc-state"></span>
+    </div>
+    <div id="intelList"></div>
+  </section>
+
   <section id="desks" class="card" hidden>
     <div class="tc-head">
       <h2 style="margin:0;">The desks</h2>

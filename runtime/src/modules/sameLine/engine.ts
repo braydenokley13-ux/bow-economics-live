@@ -104,8 +104,54 @@ export type Offer = {
   readonly annual: number;
 };
 
+/**
+ * How far past the wall this tool would leave the club, or 0 when it would not.
+ *
+ * THE RULE THIS ENCODES, AND WHY IT IS NOT A DESIGN CHOICE. A hard cap is not a
+ * penalty a club takes on and then lives above. The apron limitations bind on
+ * the club's position AFTER the transaction: a first-apron-restricted move is
+ * prohibited outright "if the Team's Apron Team Salary exceeds the applicable
+ * Apron Threshold after executing the transaction"
+ * (cbaguide.com/thresholds/apron, read 2026-09-03; the same post-transaction
+ * test the trade-matching rule uses, corrected in `world.ts` S1).
+ *
+ * We shipped this wrong. `applySigning` drew the wall at the line regardless of
+ * where the signing landed the club, so a club already past the apron could use
+ * the big exception, draw a wall BEHIND itself, and be unable to sign anybody —
+ * not even a minimum — for the rest of the window. At Boston and Sacramento
+ * that was ten of the eleven reachable players at the price the product
+ * pre-filled: a quarter of a sixteen-desk room eliminated in minute three by
+ * making the obvious move. It was also, simply, an illegal transaction being
+ * offered to a child as the recommended one.
+ *
+ * Making it a ceiling rather than a rejection is deliberate. The student does
+ * not discover the wall by being refused; they see the tool's reach shortened
+ * by the wall before they choose, which is what a real front office sees.
+ */
+function wallHeadroom(tool: ToolId, p: Position): number | null {
+  const line = TOOL[tool].drawsWallAt;
+  if (line === null) return null;
+  return LINE[line] - p.committed;
+}
+
 /** What one tool can pay this club right now, or null when the tool is unavailable. */
 export function ceilingOf(tool: ToolId, p: Position, player?: FreeAgent): number | null {
+  const raw = rawCeilingOf(tool, p, player);
+  if (raw === null) return null;
+  const headroom = wallHeadroom(tool, p);
+  if (headroom === null) return raw;
+  // The tool cannot be used at all if the club is already at or past the line
+  // it would convert into a wall.
+  if (headroom <= 0) return null;
+  const capped = Math.min(raw, headroom);
+  // A minimum deal is a fixed charge, not a number the club sets, so it cannot
+  // be shaved to fit under a wall — it either fits or the tool is unavailable.
+  // (No minimum-scale tool draws a wall today; this keeps that true if one does.)
+  if (tool === "minimum") return raw <= headroom ? raw : null;
+  return capped > 0 ? capped : null;
+}
+
+function rawCeilingOf(tool: ToolId, p: Position, player?: FreeAgent): number | null {
   if (p.slots >= ROSTER.windowMax) return null;
   if (p.spent.includes(tool)) return null;
   // A minimum-market body is a minimum contract and nothing else. Spending an
@@ -150,7 +196,14 @@ export function ceilingOf(tool: ToolId, p: Position, player?: FreeAgent): number
       // league covers the difference. So a minimum-scale player is reachable by
       // every club past every line, for less than he is paid — which is exactly
       // why no club in this lesson is ever completely stuck.
-      return player && player.minimumScale ? TOOL.minimum.ceiling : null;
+      // Asked about a specific player, this is an eligibility question: only a
+      // player whose real deal was a stated veteran minimum can be signed this
+      // way. Asked in general — `pocketsFor`, the panel that tells a desk what
+      // it still holds — it is a question about the TOOL, and the answer is
+      // that the minimum is always there. Returning null to the general
+      // question told every club, on every screen, that the one tool no line
+      // can take away from it was unavailable.
+      return player === undefined ? TOOL.minimum.ceiling : player.minimumScale ? TOOL.minimum.ceiling : null;
     case "bird":
       // The one thing the second apron does not take: you may keep your own.
       // Available only for a player whose rights this club already holds.
@@ -191,6 +244,16 @@ export function checkOffer(p: Position, offer: Offer, player: FreeAgent): Legali
     };
   }
   if (offer.annual > ceiling) {
+    const line = TOOL[offer.tool].drawsWallAt;
+    const headroom = wallHeadroom(offer.tool, p);
+    // When the wall is what shortened the tool, say so. "The most you can offer
+    // is $5.4M" is a number; "the wall this draws is $5.4M away" is the lesson.
+    if (line !== null && headroom !== null && headroom === ceiling) {
+      return {
+        ok: false,
+        reason: `${TOOL[offer.tool].label} draws a wall at ${money(LINE[line])}. You are ${money(headroom)} short of it, so that is the most this tool can pay anybody — one more dollar and the signing would put you past a line you would not be allowed to cross.`,
+      };
+    }
     return {
       ok: false,
       reason: `The most you can offer with ${TOOL[offer.tool].label} is ${money(ceiling)}.`,
@@ -207,6 +270,13 @@ export function checkOffer(p: Position, offer: Offer, player: FreeAgent): Legali
 
 function unavailableReason(tool: ToolId, p: Position): string {
   const band = bandOf(p.committed);
+  // Checked before the per-tool reasons: when a club is already past the line a
+  // tool would wall it at, that is the binding constraint and nothing else is.
+  const headroom = wallHeadroom(tool, p);
+  const line = TOOL[tool].drawsWallAt;
+  if (headroom !== null && headroom <= 0 && line !== null && !p.spent.includes(tool)) {
+    return `${TOOL[tool].label} draws a wall at ${money(LINE[line])}, and you are already past it. You cannot use it at all.`;
+  }
   switch (tool) {
     case "room":
       return `You are over ${money(LINE.cap)}, so you have no cap room. Over the cap you may only sign people the rules give you special permission to sign.`;
@@ -443,6 +513,55 @@ export function offerValue(offer: Offer, player: FreeAgent, incumbent: boolean):
 }
 
 /** Apply a won signing to a position. Pure; returns a new Position. */
+/**
+ * What this club could still do AFTER making this signing.
+ *
+ * The lesson's sharpest seats — Sacramento against the first apron, New York
+ * and Minnesota against the second — can make exactly one signing and then are
+ * finished for the window. That is not a bug and it is not unfair: it is what
+ * a club a few million under a hard cap actually faces, and it is the single
+ * best piece of economics in the module.
+ *
+ * What was unfair was that it happened in silence. The pair clicked the tool
+ * the product had chosen for them, at the price the product had filled in, and
+ * discovered two days later that every row was grey. So the product now
+ * computes the consequence BEFORE the click, says it in the composer, and
+ * refuses to auto-select a terminating tool when a non-terminating one reaches
+ * the same player.
+ *
+ * `terminal` means: after this, there is no legal signing of anyone left.
+ */
+export type Outlook = {
+  readonly movesLeft: number;
+  readonly terminal: boolean;
+  readonly wallAt: number | null;
+  /** Distance from the post-signing position to the wall, when one is drawn. */
+  readonly roomToWall: number | null;
+};
+
+export function outlookAfter(
+  p: Position,
+  player: FreeAgent,
+  offer: Offer,
+  board: readonly FreeAgent[],
+  taken: ReadonlySet<string>,
+): Outlook {
+  const after = applySigning(p, player, offer);
+  const gone = new Set(taken);
+  gone.add(player.id);
+  let movesLeft = 0;
+  for (const q of board) {
+    if (!q.generic && gone.has(q.id)) continue;
+    if (legalOffers(after, [q], gone).length > 0) movesLeft++;
+  }
+  return {
+    movesLeft,
+    terminal: movesLeft === 0,
+    wallAt: after.wall,
+    roomToWall: after.wall === null ? null : after.wall - after.committed,
+  };
+}
+
 export function applySigning(p: Position, player: FreeAgent, offer: Offer): Position {
   const tool = TOOL[offer.tool];
   const spent: ToolId[] = [...p.spent];

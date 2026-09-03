@@ -310,12 +310,23 @@ async function runBand(browser, band, label) {
     for (let i = 0; i < DESKS; i += 1) {
       const p = desks[i];
       await p.waitForSelector(".sl-board .sl-row", { timeout: 20000 });
+      // The bell rebuilds the board. Wait for the day this desk is actually
+      // looking at to be the day we are playing before choosing a row.
+      await p.waitForFunction(
+        (d) => document.querySelector('.hq-triad-cell[data-cell="signing-day"] .hq-cell-value')?.textContent?.trim().startsWith(String(d)) === true,
+        day,
+        { timeout: 20000 },
+      );
       // Deliberately different targets across desks so the market genuinely
       // contends on some players and not on others.
       const rows = await p.$$(".sl-row[data-reach='yes']");
       if (rows.length === 0) continue;
       const pick = rows[(i + day) % rows.length];
-      await pick.click();
+      const pickId = await pick.getAttribute("data-player");
+      // Re-query rather than reusing the handle: a settled day rebuilds the
+      // board, and a handle taken before the rebuild points at a node that is
+      // no longer in the document.
+      await p.click(`.sl-row[data-player="${pickId}"]`);
       await p.waitForSelector("#slCommit", { timeout: 10000 });
 
       // Move the dial off its default so the committed figure is this pair's,

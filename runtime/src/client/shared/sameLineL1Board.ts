@@ -125,16 +125,121 @@ function disagreeFrame(v: V): string {
   </div>`;
 }
 
-function beatFrame(v: V): string {
-  const title = str(v["beatTitle"]);
-  const beat = num(v["beat"]);
-  if (beat === 0) return signedFrame(v, "WHO SIGNED WHERE");
-  if (beat === 3) return disagreeFrame(v);
+/**
+ * BEAT 1. One player, the clubs that chased him, and what each of them actually
+ * paid — where "paid" includes the people the winner can no longer have.
+ *
+ * This shipped as its own title over an empty wall, which is the worst thing a
+ * projector can do at the peak of a lesson: it made the module's thesis look
+ * like a slogan. The frozen forgone list is the evidence, it has always been in
+ * state, and it belongs on the wall next to the man it was spent on.
+ */
+function samePlayerFrame(v: V, beat: number, of: number): string {
+  const sp = v["samePlayer"] as V | null | undefined;
+  if (!sp) {
+    return `<div class="slb slb--hero">
+      <p class="slb-eyebrow">REVEAL · ${beat + 1} OF ${of}</p>
+      <h1 class="slb-hero slb-hero--beat">NOBODY IN THIS ROOM WANTED THE SAME MAN.</h1>
+      <p class="slb-hero-sub">Every club shopped in a different aisle. That is a result too — ask them why.</p>
+    </div>`;
+  }
+  const chasers = arr(sp["chasers"]);
   return `
-  <div class="slb slb--hero">
-    <p class="slb-eyebrow">REVEAL · ${beat + 1} OF ${arr(v["beats"]).length}</p>
-    <h1 class="slb-hero slb-hero--beat">${esc(title)}</h1>
+  <div class="slb">
+    <div class="slb-top">
+      <div>
+        <p class="slb-eyebrow">REVEAL · ${beat + 1} OF ${of} · ${chasers.length} CLUBS WERE IN ON HIM</p>
+        <h1 class="slb-title">${esc(str(sp["player"]))}</h1>
+      </div>
+      <p class="slb-top-note">${esc(str(sp["role"]))} · ASKING ${esc(str(sp["askText"]))}</p>
+    </div>
+    <div class="slb-cost">
+      ${chasers
+        .map(
+          (c) => `
+        <div class="slb-cost-col" data-won="${c["won"] === true ? "yes" : "no"}">
+          <p class="slb-cost-club">${esc(str(c["club"]))}</p>
+          <p class="slb-cost-out">${esc(str(c["outcome"]))}</p>
+          ${
+            arr(c["lost"]).length === 0 && c["won"] !== true
+              ? `<p class="slb-cost-none">Kept its money. Lost the day.</p>`
+              : `<p class="slb-cost-lab">AND GAVE UP</p>
+                 <ul class="slb-cost-list">${(c["lost"] as string[] | undefined ?? [])
+                   .map((n) => `<li>${esc(String(n))}</li>`)
+                   .join("")}</ul>${
+                   num(c["lostMore"]) > 0
+                     ? `<p class="slb-cost-more">and ${num(c["lostMore"])} more</p>`
+                     : ""
+                 }`
+          }
+        </div>`,
+        )
+        .join("")}
+    </div>
+    <p class="slb-foot">${esc(str(sp["foot"]))}</p>
   </div>`;
+}
+
+/**
+ * BEAT 2. The two desks that hold the same club, opened side by side.
+ *
+ * The only controlled experiment in the module: identical opening books,
+ * identical board, identical morning. Every difference below the first line was
+ * put there by somebody in this room.
+ */
+function twoBooksFrame(v: V, beat: number, of: number): string {
+  const tb = v["twoBooks"] as V | null | undefined;
+  if (!tb) {
+    return `<div class="slb slb--hero">
+      <p class="slb-eyebrow">REVEAL · ${beat + 1} OF ${of}</p>
+      <h1 class="slb-hero slb-hero--beat">THE TWIN DESKS DID THE SAME THING.</h1>
+      <p class="slb-hero-sub">Same club, same board, same answer. Ask them whether that was the only answer.</p>
+    </div>`;
+  }
+  const col = (side: V, tag: string): string => `
+    <div class="slb-book">
+      <p class="slb-book-tag">${esc(tag)}</p>
+      ${
+        arr(side["signings"]).length === 0
+          ? `<p class="slb-book-none">SIGNED NOBODY</p>`
+          : `<ul class="slb-book-list">${arr(side["signings"])
+              .map(
+                (sg) =>
+                  `<li><span>${esc(str(sg["name"]))}</span><b>${esc(str(sg["priceText"]))}</b></li>`,
+              )
+              .join("")}</ul>`
+      }
+      <dl class="slb-book-foot">
+        <div><dt>COMMITTED</dt><dd>${esc(str(side["committedText"]))}</dd></div>
+        <div><dt>HOLES</dt><dd>${esc(str(side["openText"]))}</dd></div>
+        <div><dt>WALL</dt><dd>${esc(str(side["wallText"]))}</dd></div>
+      </dl>
+    </div>`;
+  return `
+  <div class="slb">
+    <div class="slb-top">
+      <div>
+        <p class="slb-eyebrow">REVEAL · ${beat + 1} OF ${of} · BOTH DESKS OPENED AT ${esc(str(tb["openingText"]))}</p>
+        <h1 class="slb-title">${esc(str(tb["club"]))}, TWICE</h1>
+      </div>
+    </div>
+    <div class="slb-books">
+      ${col(v0(tb["a"]), "DESK A")}
+      ${col(v0(tb["b"]), "DESK B")}
+    </div>
+    <p class="slb-foot">${esc(str(tb["foot"]))}</p>
+  </div>`;
+}
+
+const v0 = (x: unknown): V => (x && typeof x === "object" ? (x as V) : {});
+
+function beatFrame(v: V): string {
+  const beat = num(v["beat"]);
+  const of = arr(v["beats"]).length;
+  if (beat === 0) return signedFrame(v, "WHO SIGNED WHERE");
+  if (beat === 1) return samePlayerFrame(v, beat, of);
+  if (beat === 2) return twoBooksFrame(v, beat, of);
+  return disagreeFrame(v);
 }
 
 /* ------------------------------------------------------------- render -- */

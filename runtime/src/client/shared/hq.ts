@@ -98,8 +98,10 @@ const navItem = (n: HqNavItem): string => `
   </div>`;
 
 const triadCell = (c: HqTriadCell): string => `
-  <div class="hq-triad-cell" data-live="${c.live ? "yes" : "no"}">
-    <dt>${esc(c.label)}</dt><dd>${esc(c.value)}</dd>
+  <div class="hq-triad-cell" data-live="${c.live ? "yes" : "no"}" data-cell="${esc(
+    c.label.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+  )}">
+    <dt>${esc(c.label)}</dt><dd class="hq-cell-value">${esc(c.value)}</dd>
   </div>`;
 
 const act = (label: string, i: number, now: number): string => {

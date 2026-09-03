@@ -146,3 +146,72 @@
 .slb-disagree li:nth-child(2) { border-left-color: var(--accent-gold); }
 .slb-disagree li:nth-child(3) { border-left-color: var(--cap-safe); }
 .slb-disagree li:nth-child(4) { border-left-color: var(--accent-blue); }
+
+/* --------------------------------------------- beat 1 · what he cost them -- */
+/* Sized in vh/vw like everything else on this surface: a projector cannot
+   scroll, so the frame either fits the room it is in or it is broken. */
+.slb-cost {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 1.4vw;
+  margin-top: 2.2vh;
+  /* A projector cannot scroll, so the evidence gets a hard ceiling rather than
+     a hope: whatever the room did, this frame fits the wall it is thrown on. */
+  min-height: 0;
+  max-height: 62vh;
+  overflow: hidden;
+}
+.slb-cost-col {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 3px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.8vh;
+  padding: 1.6vh 1.2vw;
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+.slb-cost-col[data-won="yes"] {
+  border-top-color: var(--accent-gold, #f4b942);
+  background: linear-gradient(180deg, rgba(244, 185, 66, 0.10), rgba(244, 185, 66, 0.01));
+}
+.slb-cost-club {
+  font-family: var(--font-display); font-size: 2.6vh; line-height: 1.05; margin: 0 0 0.5vh;
+  letter-spacing: .01em; color: var(--ink-primary);
+}
+.slb-cost-col[data-won="yes"] .slb-cost-club { color: var(--accent-gold, #f4b942); }
+.slb-cost-out { margin: 0 0 1.2vh; font-size: 1.55vh; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); }
+.slb-cost-lab { margin: 0 0 0.5vh; font-family: var(--font-display); font-size: 1.4vh; letter-spacing: .16em; color: var(--ink-muted); }
+.slb-cost-none { margin: 0; font-size: 1.9vh; color: var(--ink-secondary); }
+.slb-cost-list { list-style: none; margin: 0; padding: 0; }
+.slb-cost-list li {
+  font-size: 2.1vh; line-height: 1.35; color: var(--ink-secondary); padding-left: 1.6vh; position: relative;
+}
+.slb-cost-list li::before {
+  content: "✕"; position: absolute; left: 0; color: var(--over-the-line); font-size: 1.5vh; top: 0.35vh;
+}
+
+/* -------------------------------------------------- beat 2 · two books -- */
+.slb-books { display: grid; grid-template-columns: 1fr 1fr; gap: 2vw; margin-top: 2.2vh; }
+.slb-book {
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 0.8vh;
+  padding: 1.6vh 1.4vw; background: rgba(255, 255, 255, 0.02); min-width: 0;
+}
+.slb-book-tag {
+  margin: 0 0 1vh; font-family: var(--font-display); font-size: 1.5vh; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-muted);
+}
+.slb-book-none { margin: 0 0 1.4vh; font-family: var(--font-display); font-size: 3vh; color: var(--ink-muted); }
+.slb-book-list { list-style: none; margin: 0 0 1.4vh; padding: 0; }
+.slb-book-list li {
+  display: flex; justify-content: space-between; gap: 1vw; align-items: baseline;
+  font-size: 2.2vh; line-height: 1.5; color: var(--ink-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding: 0.4vh 0;
+}
+.slb-book-list b { font-family: var(--font-number); font-variant-numeric: tabular-nums; color: var(--accent-gold, #f4b942); font-weight: 700; }
+.slb-book-foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8vw; margin: 0; }
+.slb-book-foot dt { font-family: var(--font-display); font-size: 1.25vh; letter-spacing: .14em; color: var(--ink-muted); }
+.slb-book-foot dd { margin: 0.3vh 0 0; font-size: 1.7vh; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+
+.slb-cost-more { margin: 0.4vh 0 0; font-size: 1.6vh; color: var(--ink-muted); }

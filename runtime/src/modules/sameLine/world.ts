@@ -239,10 +239,25 @@ export const TOOLS: readonly Tool[] = [
     label: "THE SMALL EXCEPTION",
     ceiling: 6_064_000,
     maxYears: 2,
-    drawsWallAt: null,
-    does: "Smaller than the big one, but it draws no wall — and that is sometimes worth more than the extra money.",
+    // CORRECTED 2026-09-03. This said `null` — that the small exception draws
+    // no wall at all — and that is false. Using the taxpayer mid-level
+    // exception hard-caps a club at the SECOND apron for the rest of the year.
+    // Two independent sources say so plainly
+    // (hoopsrumors.com/2026/07/nba-teams-with-hard-caps-for-2026-27.html lists
+    // it under the second-apron triggers; overtheapron.com/terms/hard-cap says
+    // the same), and the first names Golden State and Houston as clubs walled
+    // there this way.
+    //
+    // The correction makes the lesson BETTER, not fussier. "One exception draws
+    // a wall and the other does not" was a false and rather boring choice. The
+    // truth is that both draw one, at different lines — so the real question a
+    // club asks is not "will I be walled?" but "where, and am I anywhere near
+    // it?" A wall $18M above you costs you nothing today; the same wall drawn
+    // at your own feet ends your window.
+    drawsWallAt: "apron2",
+    does: "Smaller than the big one, and it draws its wall much further away — which is sometimes worth more than the extra money.",
     asOf: "2026-06-30",
-    source: "pr.nba.com 2026-27 salary cap release (taxpayer mid-level exception)",
+    source: "pr.nba.com 2026-27 salary cap release (taxpayer mid-level exception); hard-cap trigger per hoopsrumors.com 2026-27 hard-cap tracker and overtheapron.com/terms/hard-cap, both read 2026-09-03",
   },
   {
     id: "bae",
@@ -395,8 +410,13 @@ export const CLUBS: readonly Club[] = [
     deadMoney: fact(0, "2026-09-03", "salaryswish.com/teams/nets", "cap-database"),
     contracts: fact(12, "2026-09-03", "salaryswish.com/teams/nets", "cap-database"),
     jobs: ["BIG", "GUARD"],
+    // CORRECTED 2026-09-03. This said "you have real money under the cap", and
+    // the money is $2,180,704 — less than the minimum charge of $2,449,421, so
+    // it cannot sign one single human being. The seat's whole lesson is that
+    // cap space sounds like the good outcome and frequently is not; telling the
+    // pair they were rich made the lesson unlearnable and the copy false.
     situation:
-      "You have real money under the cap and almost nothing already promised. Every choice from here is yours, and so is the blame.",
+      "You are under the cap — by $2,180,704, which is not enough to sign anybody at all. Cap room only helps a club that has a lot of it, and you may be better off giving yours up.",
     colour: fact(
       "The youngest roster in the league, average age 23.7, holding four future first-round picks with no protections on them.",
       "2026-09-03",
@@ -465,7 +485,14 @@ export const CLUBS: readonly Club[] = [
     deadMoney: fact(10_000_000, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
     contracts: fact(16, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
     jobs: ["WING", "BIG"],
-    situation: "You are past the tax line and you have already spent most of your big exception on somebody else.",
+    // CORRECTED 2026-09-03. This said the club had "already spent most of your
+    // big exception", and `openingPosition` hands every club `spent: []` — it
+    // has the whole thing. What is true, and better, is that the wall clips it:
+    // Sacramento sits $6,155,628 under the first apron, so the moment it
+    // reaches for a $14,104,000 exception the apron cuts the reach down to what
+    // fits underneath.
+    situation:
+      "You are past the tax line and $6,155,628 under the first apron. Your big exception is worth $14,104,000 to clubs with room to use it, and using it draws a wall you are almost touching — so you can only reach for the part that fits underneath.",
     colour: fact(
       "Two Sacramento players are paid roughly $94M between them.",
       "2026-09-03",
