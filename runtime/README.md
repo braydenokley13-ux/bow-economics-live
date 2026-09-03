@@ -224,6 +224,31 @@ and the simplifications ledger. Ported from `DESIGN_C_FIRSTPRINCIPLES.md`'s
 "TEACHER FLOW"; see `teacherDirector()` in `fullHouse.ts`. It is intelligence,
 not a script to read aloud.
 
+**The room read.** While a night is open `/teach` carries THE ROOM: the
+spread of the committed dials as a sentence a teacher can say standing up, a
+histogram that stacks decisions (solid) against undecided dial positions
+(ghosted) so the two are never confused, and movement chips. Two rules it
+keeps. The spread describes COMMITTED decisions only — measured over every
+dial it read "the room is between $16 and $24" at nought-of-six locked, which
+is the two season plan defaults, not a spread anybody chose. And movement is
+only claimed for a desk whose previous night was its own decision: a night
+the bell auto-committed is not a price anyone picked, so moving off it is not
+adaptation. It is teacher-private by construction — it comes off `teacherView`
+and the projector never sees it, because the room committing blind is what
+makes the staged reveal land. `roomRead()` in `fullHouse.ts`; browser proof
+`scripts/e2e-teach-room.cjs`.
+
+**The deck.** A live console runs to ~2800px and the night bell — the control
+a teacher presses five times in fifty minutes — sat in the middle of it, below
+a page of director script. `/teach` now carries a sticky bottom bar that HOSTS
+the phase's live controls: each button is MOVED into the deck and moved home
+again against a comment-node marker, so there is exactly one of each in the
+document — one node, one listener, one disabled state, and no way to ring the
+bell twice off two copies that disagree. It also says where the class is and
+whether the room is held. Browser proof `scripts/e2e-teach-deck.cjs`, which
+asserts the strip is on screen unscrolled, that the bell is moved and not
+copied, and that a bell fired from the deck really closes the night.
+
 **Board privacy.** Desks appear as `Desk 4 · Memphis Grizzlies` with a
 crest — never a student name, never a seat id. Markets are assigned
 deterministically and visibly (odd desks New York, even desks Memphis) and

@@ -36,6 +36,7 @@ const rosterEl = $("roster");
 const aggregateEl = $("aggregate");
 const directorEl = $("director");
 const timeCutEl = $("timecut");
+const liveRoomEl = $("liveroom");
 
 let currentCode: string | null = null;
 // B1 repair (VERIFY_L2.md): what the Advance button's confirm() warning needs to know, refreshed every render()
@@ -256,6 +257,8 @@ function openSession(code: string): void {
           rosterEl.hidden = true;
           aggregateEl.hidden = true;
           timeCutEl.hidden = true;
+          liveRoomEl.hidden = true;
+          clearDeck();
           stopTimeCutClock();
           $("director").hidden = true;
           setupEl.hidden = false;
@@ -346,6 +349,104 @@ function paintTimeCutClock(): void {
   clock.classList.toggle("late", left <= 5000);
 }
 
+/** What roomRead() hands over. Mirrored, not shared — the module owns the shape. */
+type RoomRead = {
+  deskCount: number;
+  lockedCount: number;
+  decidingCount: number;
+  spread: { min: number; max: number; median: number; range: number } | null;
+  bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[];
+  movement: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number; deciding: number };
+  firstNight: boolean;
+  movementLine: string;
+  spreadLine: string;
+  privacyNote: string;
+};
+/**
+ * Dollars, with the minus sign where a reader expects it.
+ *
+ * The console was printing a desk in the red as `$-38,800`. It is the one
+ * number on the tile a teacher scans for, and it read like a typo at exactly
+ * the moment it mattered — the sign belongs in front of the currency, the way
+ * every other surface in this product already writes it.
+ */
+function money(n: number): string {
+  return `${n < 0 ? "-" : ""}$${Math.abs(Math.round(n)).toLocaleString()}`;
+}
+
+/**
+ * THE ROOM, on the console.
+ *
+ * The teacher's job during an open night is to read the room and pick the
+ * question that opens the argument. Until now the console gave them sixteen
+ * tiles and left the reading to them, which is the difference between a console
+ * that administrates a lesson and one that directs it. Three facts, in the order
+ * a teacher says them: how far apart the room is, what shape it is in, and who
+ * moved.
+ *
+ * Everything here is teacher-private by construction — it comes from
+ * `teacherView`, which the projector never sees.
+ */
+function renderLiveRoom(payload: TeacherPayload): void {
+  const room = (payload.view["room"] as RoomRead | null | undefined) ?? null;
+  const live = !payload.session.ended && payload.session.phase === "PLAY";
+  if (!room || !live || room.deskCount === 0) {
+    liveRoomEl.hidden = true;
+    return;
+  }
+  liveRoomEl.hidden = false;
+  $("roomCount").textContent = `${room.lockedCount} of ${room.deskCount} locked in`;
+
+  // The spread sentence, with the numbers pulled out so they read at a glance
+  // from a standing teacher's distance rather than being buried in prose.
+  $("roomSpread").innerHTML = room.spreadLine.replace(/\$(\d+)/g, (m) => `<b>${escapeHtml(m)}</b>`);
+
+  const peak = Math.max(1, ...room.bins.map((b) => b.count));
+  $("roomHist").innerHTML = room.bins
+    .map((b) => {
+      const deciding = b.count - b.lockedCount;
+      const unit = 100 / peak;
+      // A locked desk and a desk sitting on a dial it has not committed are
+      // different facts. Stacked rather than merged: the solid part of a bar is
+      // decisions, the ghosted part is where the undecided dials happen to be.
+      const title =
+        b.count === 0
+          ? `${b.label}: nobody`
+          : `${b.label}: ${b.handles.join(", ")}${deciding > 0 ? ` (${b.lockedCount} locked, ${deciding} still deciding)` : ""}`;
+      return `<span class="room-bar${b.count === 0 ? " empty" : ""}" title="${escapeHtml(title)}">
+        <u>${b.count === 0 ? "" : b.count}</u>
+        <i class="ghost" style="height:${deciding === 0 ? 0 : Math.max(3, deciding * unit)}%;"></i>
+        <i style="height:${b.lockedCount === 0 ? (b.count === 0 ? 2 : 0) : Math.max(3, b.lockedCount * unit)}%;"></i>
+      </span>`;
+    })
+    .join("");
+  $("roomAxis").innerHTML = room.bins.map((b) => `<span>${escapeHtml(b.label)}</span>`).join("");
+
+  const chips: string[] = [];
+  if (room.movement.basis > 0) {
+    chips.push(`<span class="room-chip"><b>${room.movement.raised}</b> raised \u25b2</span>`);
+    chips.push(`<span class="room-chip"><b>${room.movement.held}</b> held =</span>`);
+    chips.push(`<span class="room-chip"><b>${room.movement.lowered}</b> lowered \u25bc</span>`);
+  }
+  // Locked, but against a night the bell committed for them. Kept out of the
+  // three counts on purpose — see roomRead() — and named so a teacher does not
+  // wonder why the numbers do not add up to the room.
+  if (room.movement.noOwnPrior > 0) {
+    chips.push(`<span class="room-chip"><b>${room.movement.noOwnPrior}</b> off a bell-committed night</span>`);
+  }
+  // Only when it is not the whole story. On night one every locked desk is in
+  // this bucket, the line already says so, and a chip counting it would be a
+  // statistic about nothing.
+  if (room.movement.noPrior > 0 && !room.firstNight) {
+    chips.push(`<span class="room-chip"><b>${room.movement.noPrior}</b> on their first night</span>`);
+  }
+  if (room.decidingCount > 0) {
+    chips.push(`<span class="room-chip deciding"><b>${room.decidingCount}</b> still deciding</span>`);
+  }
+  $("roomMove").innerHTML = chips.join("");
+  $("roomNote").textContent = `${room.movementLine} ${room.privacyNote}`;
+}
+
 function renderTimeCut(payload: TeacherPayload): void {
   const round = payload.round;
   const cut = payload.timeCut;
@@ -431,6 +532,7 @@ function render(payload: TeacherPayload): void {
   pill.textContent = pillText;
   $("seatCount").textContent = `${payload.seats.length} joined`;
   renderTimeCut(payload);
+  renderLiveRoom(payload);
 
   const phaseRow = $("phaseRow");
   phaseRow.innerHTML = "";
@@ -794,6 +896,123 @@ function render(payload: TeacherPayload): void {
   } else {
     directorEl.hidden = true;
   }
+
+  // Last, deliberately: the deck picks up whichever controls this render just
+  // decided are live, so it has to run after every button's state is settled.
+  renderDeck(payload);
+}
+
+/* ----------------------------------------------------------------- the deck -- */
+
+/**
+ * THE DECK — the sticky live bar.
+ *
+ * The bell is the beat these lessons turn on and the teacher presses it five
+ * times in fifty minutes. It was sitting halfway down a 2800px console, below
+ * a thousand pixels of director script: a teacher running a room does not
+ * scroll to find that.
+ *
+ * The deck HOSTS its controls, it does not copy them. Each button is MOVED out
+ * of its home row and moved back, leaving a comment node behind to mark the
+ * spot, so there is exactly one of each button in the document at all times —
+ * one node, one listener, one disabled state, and no way to fire the night bell
+ * twice because two copies of it disagreed about whether it was still enabled.
+ */
+const DECK_PRIMARY: readonly string[] = [
+  "btnRuleStep", // M2 L3 — close the round, run the two-thirds test, open the season
+  "btnCommitReveal", // M2 L3 — the commit-then-reveal beat in HOOK and ARGUE
+  "btnCloseNight", // M2 L1 — the night bell
+  "btnCloseWeek", // M2 L2 and L3 — the week and season bells
+  "btnCloseDay", // M1 L3 — the signing-day bell
+  "btnRevealNext", // the staged class reveal
+  "btnBarPage", // paged class evidence
+  "btnCfPage",
+  "btnSynthPage",
+];
+
+const PHASE_LABEL: Record<string, string> = {
+  LOBBY: "Waiting on the room",
+  HOOK: "The hook",
+  PLAY: "The window is open",
+  REVEAL: "The reveal",
+  CONSEQUENCE: "What it cost",
+  ADAPT: "Second look",
+  COUNTERFACTUAL: "What if",
+  ARGUE: "The argument",
+  SYNTHESIS: "Naming it",
+  COMPLETE: "Class over",
+};
+
+const deckEl = $("deck");
+const deckSlotEl = $("deckSlot");
+/** Where each hosted button came from, so it can be put back exactly. */
+const deckHomes = new Map<string, Comment>();
+let deckHosting = "";
+
+function hostInDeck(id: string): void {
+  const btn = $(id);
+  if (deckHomes.has(id)) return;
+  const mark = document.createComment(`deck:${id}`);
+  btn.parentNode?.insertBefore(mark, btn);
+  deckHomes.set(id, mark);
+  deckSlotEl.appendChild(btn);
+}
+
+function sendHome(id: string): void {
+  const mark = deckHomes.get(id);
+  if (!mark) return;
+  deckHomes.delete(id);
+  mark.parentNode?.insertBefore($(id), mark);
+  mark.remove();
+}
+
+/** Empty the deck and put every button back where the markup had it. */
+function clearDeck(): void {
+  for (const id of [...deckHomes.keys()]) sendHome(id);
+  deckHosting = "";
+  deckEl.classList.remove("on", "held");
+}
+
+function renderDeck(payload: TeacherPayload): void {
+  const s = payload.session;
+  if (controlsEl.hidden || s.ended) {
+    clearDeck();
+    return;
+  }
+
+  // Only controls this render left both visible and pressable are worth a
+  // teacher's thumb. Two at most: a deck that lists everything is the console
+  // we are trying to get out of.
+  const live = DECK_PRIMARY.filter((id) => {
+    const btn = $<HTMLButtonElement>(id);
+    return !btn.hidden && !btn.disabled;
+  }).slice(0, 2);
+  const wanted = [...live, "btnAdvance"];
+
+  const key = wanted.join(",");
+  if (key !== deckHosting) {
+    // Move only on a real change. This render runs on every poll, and
+    // re-appending a button the teacher is mid-press on would take the click.
+    for (const id of [...deckHomes.keys()]) if (!wanted.includes(id)) sendHome(id);
+    for (const id of wanted) hostInDeck(id);
+    for (const id of wanted) deckSlotEl.appendChild($(id)); // keep deck order stable
+    deckHosting = key;
+  }
+
+  deckEl.classList.add("on");
+  deckEl.classList.toggle("held", s.paused || s.frozen);
+  $("deckWhere").textContent = PHASE_LABEL[s.phase] ?? s.phase;
+
+  const locked = payload.view["lockedCount"];
+  const desks = payload.view["deskCount"];
+  const sub = s.frozen
+    ? "Frozen — every desk is held"
+    : s.paused
+      ? "Paused — every desk is held"
+      : typeof locked === "number" && typeof desks === "number" && s.phase === "PLAY"
+        ? `${locked} of ${desks} locked in`
+        : `${payload.seats.length} joined`;
+  $("deckSub").textContent = sub;
 }
 
 /* ------------------------------------------------------ full house director -- */
@@ -1368,7 +1587,7 @@ function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherS
       <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : d.seatId}</span><span>${
         windowClosed ? `finished · ${d.nightsPlayed} nights in the books` : d.locked ? `LOCKED $${d.price}` : `<span class="dir-stalled">still dialling $${d.price}</span>`
       }</span></div>
-      <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">$${d.cash.toLocaleString()}</span><span>${d.renewals}% renewals</span></div>
+      <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">${money(d.cash)}</span><span>${d.renewals}% renewals</span></div>
       <div class="statline"><span>${d.nightsPlayed} night${d.nightsPlayed === 1 ? "" : "s"}${d.joinedAtNight > 1 ? ` · joined N${d.joinedAtNight}` : ""}</span><span>${d.lastFillPct !== null ? `${d.lastFillPct}% full` : ""}</span></div>
       ${d.spend > 0 ? `<div class="statline"><span>$${d.spend.toLocaleString()} on the night</span><span>${d.openBowl ? "extra seats" : ""}</span></div>` : ""}
       ${d.heldSamePriceRun >= 3 ? `<div class="statline"><span style="color:var(--cap-tight);">held one price ${d.heldSamePriceRun} nights</span><span></span></div>` : ""}`;
@@ -1531,7 +1750,7 @@ function renderHostLeagueAggregate(view: Record<string, unknown>, seats: Teacher
       <div class="statline"><span>${seat ? escapeHtml(seat.displayName) : d.seatId}</span><span>${
         windowClosed ? `finished · ${d.weeksPlayed} weeks` : d.locked ? `LOCKED $${d.price} · ${d.share}%` : `<span class="dir-stalled">still dialling $${d.price} · ${d.share}%</span>`
       }</span></div>
-      <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">$${d.cash.toLocaleString()}</span><span>Draw ${d.draw}</span></div>
+      <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">${money(d.cash)}</span><span>Draw ${d.draw}</span></div>
       <div class="statline"><span>${escapeHtml(d.sizeLabel)}</span><span>${d.lastFillPct !== null ? `${d.lastFillPct}% full` : ""}</span></div>
       ${d.hostingThisWeek ? `<div class="statline"><span>hosting ${escapeHtml(d.hostingThisWeek)}</span><span>${d.joinedAtWeek > 1 ? `joined W${d.joinedAtWeek}` : ""}</span></div>` : ""}
       ${

@@ -1357,3 +1357,167 @@ test("R4-4c / R4-5: the ledger says a quarter, and the renderer's former sentenc
   assert.ok(peaks.length > 0);
   for (const p of peaks) assert.equal(p.note, twoPeaksNoteFor(p.gapDollars, p.gapSteps));
 });
+
+/* -------------------------------------------------- THE ROOM (W6) -- */
+
+type RoomRead = {
+  deskCount: number;
+  lockedCount: number;
+  spread: { min: number; max: number; median: number; range: number };
+  decidingCount: number;
+  bins: { from: number; to: number; count: number; lockedCount: number; handles: string[] }[];
+  movement: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; deciding: number };
+  firstNight: boolean;
+  movementLine: string;
+  spreadLine: string;
+};
+const roomOf = (state: FullHouseState): RoomRead | null =>
+  (fullHouseModule.teacherView(state, "PLAY") as Record<string, unknown>)["room"] as RoomRead | null;
+
+test("the room read never reaches the projector while a night is open", () => {
+  // R13 is the reason this lesson's reveal lands at all: the class commits
+  // blind. A live histogram of everyone's dial on the projector would end that
+  // in one press, so the read exists on the teacher's console and nowhere else.
+  let state = seated(4);
+  for (const [i, price] of [24, 30, 36, 42].entries()) {
+    state = ok(act(state, { type: "setPrice", price }, "PLAY", `seat-${i + 1}`));
+  }
+  assert.ok(roomOf(state), "the teacher must have the read");
+  const board = JSON.stringify(fullHouseModule.boardView(state, "PLAY"));
+  for (const price of [24, 30, 36, 42]) {
+    assert.ok(
+      !board.includes(`"price":${price}`),
+      `the projector is carrying a live dial (${price}) while the night is open`,
+    );
+  }
+  assert.ok(!board.includes("movement"), "the projector is carrying the class movement read");
+  assert.ok(!board.includes("spreadLine"), "the projector is carrying the class spread read");
+});
+
+test("the room read counts the spread and the shape of the live dials", () => {
+  let state = seated(4);
+  for (const [i, price] of [20, 24, 24, 40].entries()) {
+    state = ok(act(state, { type: "setPrice", price }, "PLAY", `seat-${i + 1}`));
+    state = ok(act(state, { type: "lock" }, "PLAY", `seat-${i + 1}`));
+  }
+  const room = roomOf(state)!;
+  assert.deepEqual(room.spread, { min: 20, max: 40, median: 24, range: 20 });
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 4, "every desk lands in exactly one bin");
+  assert.ok(room.bins.every((b) => b.from % 2 === 0), "a bar edge must be a price a desk could have chosen");
+  assert.match(room.spreadLine, /\$20 and \$40/);
+  assert.equal(room.deskCount, 4);
+});
+
+test("the spread is a fact about decisions — an untouched room has no spread to read out", () => {
+  // Rendered on the console at nought-of-six locked, this sentence said "The
+  // room is between $16 and $24, middle $20" — which was not the room, it was
+  // the two season plan prices the dials open on. A teacher reading it out has
+  // told the class a spread nobody chose.
+  const untouched = roomOf(seated(4))!;
+  assert.equal(untouched.spread, null, "no decisions, no spread");
+  assert.doesNotMatch(untouched.spreadLine, /between/, `invented a spread: "${untouched.spreadLine}"`);
+  assert.match(untouched.spreadLine, /Nothing is committed yet/);
+  assert.equal(untouched.bins.reduce((n, b) => n + b.count, 0), 4, "the dials are still drawn — as positions");
+  assert.equal(untouched.bins.reduce((n, b) => n + b.lockedCount, 0), 0, "and none of them is a decision");
+
+  // Part-way through a night the sentence says how many it speaks for, and
+  // speaks only for them.
+  let state = seated(4);
+  state = ok(act(state, { type: "setPrice", price: 20 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "setPrice", price: 40 }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  // seat-3 has moved its dial a long way and NOT committed: it must not widen
+  // the spread the teacher is about to say out loud.
+  state = ok(act(state, { type: "setPrice", price: 90 }, "PLAY", "seat-3"));
+  const part = roomOf(state)!;
+  assert.deepEqual(part.spread, { min: 20, max: 40, median: 30, range: 20 });
+  assert.match(part.spreadLine, /The 2 in so far are between \$20 and \$40/, part.spreadLine as string);
+  assert.equal(part.bins.reduce((n, b) => n + b.count, 0), 4, "the uncommitted dial is still on the histogram");
+  assert.ok(
+    part.bins.some((b) => b.from <= 90 && 90 <= b.to && b.lockedCount === 0),
+    "and it is drawn where it actually is, as an undecided position",
+  );
+
+  const one = roomOf(ok(act(ok(act(seated(4), { type: "setPrice", price: 20 }, "PLAY", "seat-1")), { type: "lock" }, "PLAY", "seat-1")))!;
+  assert.match(one.spreadLine, /One desk is in, at \$20\./, one.spreadLine as string);
+});
+
+test("movement is counted over committed decisions, not over open dials", () => {
+  // The obvious version reports moves nobody made: the dial reopens each night
+  // at the desk's season plan price, so a pair who has not touched anything yet
+  // looks like it cut its price. A lock is the only thing here that means "we
+  // decided".
+  let state = seated(3);
+  // seat-1 and seat-2 price night 1 themselves; seat-3 never locks and is
+  // auto-committed by the bell.
+  state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+
+  // Night two. seat-1 raises and locks; seat-2 lowers and locks; seat-3, whose
+  // night one the bell committed, also locks.
+  state = ok(act(state, { type: "setPrice", price: 40 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "setPrice", price: 20 }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const midNight = roomOf(state)!;
+  assert.equal(midNight.movement.deciding, 1, "seat-3 has not committed, so it is deciding — not moving");
+  assert.equal(midNight.movement.basis, 2);
+
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-3"));
+  const room = roomOf(state)!;
+  assert.equal(room.movement.raised, 1);
+  assert.equal(room.movement.lowered, 1);
+  assert.equal(room.movement.held, 0);
+  assert.equal(room.movement.basis, 2, "only the two desks that priced their own night count");
+  assert.equal(room.movement.noOwnPrior, 1, "the bell-committed desk is reported, not counted as adaptation");
+  assert.equal(room.movement.deciding, 0);
+  assert.match(room.movementLine, /1 raised, 0 held, 1 lowered/);
+});
+
+test("an untouched dial is never reported as a price cut", () => {
+  // The defect this exists for: night two reopens every dial at the season plan
+  // price. A desk that has done nothing at all was being counted as "lowered".
+  let state = seated(2);
+  state = playNight(state, { "seat-1": 48, "seat-2": 48 });
+  const room = roomOf(state)!;
+  assert.equal(room.movement.lowered, 0, "nobody has decided anything on this night yet");
+  assert.equal(room.movement.basis, 0);
+  assert.equal(room.decidingCount, 2);
+  assert.match(room.movementLine, /Nobody is in yet/);
+});
+
+test("the room read goes away once the five-night window is closed", () => {
+  // After the last bell there is no live dial to read, and the staged REVEAL
+  // owns the numbers. A stale histogram beside it would compete with it.
+  let state = seated(2);
+  for (let n = 0; n < 5; n += 1) {
+    state = playNight(state, { "seat-1": 30, "seat-2": 34 });
+  }
+  assert.equal(roomOf(state), null);
+});
+
+test("a first night reports no movement rather than inventing some", () => {
+  let state = seated(2);
+  state = ok(act(state, { type: "setPrice", price: 26 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  const room = roomOf(state)!;
+  assert.equal(room.movement.basis, 0);
+  assert.equal(room.firstNight, true);
+  assert.match(room.movementLine, /First night/);
+});
+
+test("every desk lands in exactly one bar, locked and deciding kept apart", () => {
+  let state = seated(4);
+  for (const [i, price] of [20, 24, 24, 40].entries()) {
+    state = ok(act(state, { type: "setPrice", price }, "PLAY", `seat-${i + 1}`));
+  }
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const room = roomOf(state)!;
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 4);
+  assert.equal(room.bins.reduce((n, b) => n + b.lockedCount, 0), 1);
+  assert.ok(room.bins.every((b) => b.lockedCount <= b.count), "a bar cannot hold more decisions than desks");
+});

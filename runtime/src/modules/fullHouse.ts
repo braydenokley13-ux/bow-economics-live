@@ -3061,6 +3061,16 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         joinedAtNight: desk.joinedAtNight,
         lastFillPct: desk.nights[desk.nights.length - 1]?.settlement.fillPct ?? null,
         heldSamePriceRun: sameRun(desk),
+        // W6: where this desk moved from, so the teacher can see adaptation
+        // rather than reconstruct it from sixteen tiles. `ownLastPrice` is null
+        // when the previous night was not the pair's own decision (the bell
+        // auto-committed it, or the desk manager covered it before they
+        // joined) — moving off a number you never chose is not adaptation, and
+        // calling it that would be a story about desks that did not decide.
+        ownLastPrice: ((): number | null => {
+          const last = desk.nights[desk.nights.length - 1];
+          return last && !last.auto && !last.stock ? last.price : null;
+        })(),
       }));
     return tag({
       phase,
@@ -3071,6 +3081,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       card: card ? cardView(card, state.nightIndex) : null,
       lockedCount: desks.filter((d) => d.locked).length,
       deskCount: desks.length,
+      // THE ROOM: spread, shape and movement of the live dials. Teacher-only —
+      // see roomRead(). Null once the window is closed: after the last bell
+      // there is no live dial to read, and the reveal owns the numbers.
+      room: state.nightIndex >= NIGHT_COUNT ? null : roomRead(desks),
       twoPeaksReleased: state.twoPeaksReleased,
       twoPeaksAvailable: state.nightIndex >= 3 && !state.twoPeaksReleased,
       twoPeaksReason:
@@ -3373,6 +3387,149 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
 /* --------------------------------------------------------- teacher aids -- */
 
 /** Longest run of identical prices — the design's "WATCH FOR" voice at ADAPT. */
+/** One desk as the live-room read sees it: what it is dialling and where it came from. */
+type RoomDesk = { handle: string; price: number; locked: boolean; nightsPlayed: number; ownLastPrice: number | null };
+
+/**
+ * THE ROOM — the live class read on /teach, and nowhere else.
+ *
+ * A teacher directing sixteen desks was being handed sixteen tiles and asked to
+ * do the arithmetic in their head while a night ran. The three facts they
+ * actually need out loud are the spread (how far apart is this room?), the shape
+ * (is it one cluster or two camps?), and the movement (who adapted, and which
+ * way?) — and all three are already sitting in state, uncomputed.
+ *
+ * Two disciplines this must keep:
+ *
+ * - It is TEACHER-PRIVATE. Nothing here may reach `boardView` while a night is
+ *   open: the room committing blind is what makes the reveal land (R13), and a
+ *   live histogram on the projector would end that in one press.
+ * - Movement is only claimed for a desk whose previous night was its OWN
+ *   decision. A bell-committed AUTO night is not a price anybody chose, so
+ *   "moved off it" is not adaptation, and counting it as such would tell the
+ *   room a story about desks that never decided.
+ */
+function roomRead(desks: readonly RoomDesk[]): Record<string, unknown> | null {
+  if (desks.length === 0) return null;
+
+  // THE SPREAD IS A FACT ABOUT DECISIONS, NOT ABOUT DIALS.
+  //
+  // Measured over every desk, this sentence read "The room is between $16 and
+  // $24, middle $20" at nought-of-six locked — which is not the room at all,
+  // it is the two season plan prices the dials open on. A teacher reading that
+  // out has told the class a spread that nobody chose. Committed decisions
+  // only; where the undecided dials are sitting stays visible as the ghosted
+  // half of each bar, which is a position and is drawn as one.
+  const committed = desks.filter((d) => d.locked);
+  const prices = committed.map((d) => d.price).sort((a, b) => a - b);
+  const min = prices.length > 0 ? prices[0]! : null;
+  const max = prices.length > 0 ? prices[prices.length - 1]! : null;
+  const mid = prices.length === 0
+    ? null
+    : prices.length % 2 === 1
+      ? prices[(prices.length - 1) / 2]!
+      : Math.round((prices[prices.length / 2 - 1]! + prices[prices.length / 2]!) / 2);
+
+  // The histogram still bins EVERY desk — the teacher needs to see where the
+  // undecided dials are sitting — so its grid is set by the whole room.
+  const allPrices = desks.map((d) => d.price).sort((a, b) => a - b);
+  const binMin = allPrices[0]!;
+  const binMax = allPrices[allPrices.length - 1]!;
+
+  // Bin width on the dial's own grid, so a bar edge is always a price a desk
+  // could actually have chosen. Capped at a dozen bars: past that a histogram
+  // stops being a shape and becomes a comb.
+  const span = Math.max(PRICE_STEP, binMax - binMin);
+  const width = Math.max(PRICE_STEP, Math.ceil(span / 12 / PRICE_STEP) * PRICE_STEP);
+  const start = binMin - ((binMin - PRICE_MIN) % width);
+  const bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[] = [];
+  for (let from = start; from <= binMax; from += width) {
+    const to = from + width - PRICE_STEP;
+    const inBin = desks.filter((d) => d.price >= from && d.price <= to);
+    bins.push({
+      from,
+      to,
+      label: width === PRICE_STEP ? `$${from}` : `$${from}\u2013${to}`,
+      count: inBin.length,
+      // Split so the teacher can see decisions and dials apart at a glance: a
+      // desk that has not locked is sitting wherever its dial opened, which is
+      // a position, not a choice.
+      lockedCount: inBin.filter((d) => d.locked).length,
+      handles: inBin.map((d) => d.handle),
+    });
+  }
+
+  // MOVEMENT IS COUNTED OVER COMMITTED DECISIONS ONLY.
+  //
+  // The obvious version — compare every desk's current dial to its last night —
+  // reports moves nobody made. The dial reopens each night at the desk's season
+  // plan price, so a pair who has not touched anything yet appears to have cut
+  // their price, and a console that says "3 lowered" when two desks lowered is
+  // worse than one that says nothing. A lock is the only thing in this lesson
+  // that means "we decided".
+  let raised = 0;
+  let held = 0;
+  let lowered = 0;
+  let noOwnPrior = 0;
+  let noPrior = 0;
+  let deciding = 0;
+  for (const d of desks) {
+    if (!d.locked) {
+      deciding += 1;
+    } else if (d.nightsPlayed === 0) {
+      // Night one. There is nothing behind this desk to have moved off, which
+      // is a fact about the night, not about the desk.
+      noPrior += 1;
+    } else if (d.ownLastPrice === null) {
+      // Locked, but the night it is being compared to was not its own decision
+      // (the bell auto-committed it, or the desk manager covered it before this
+      // pair joined). Moving off a number you never chose is not adaptation.
+      noOwnPrior += 1;
+    } else if (d.price > d.ownLastPrice) {
+      raised += 1;
+    } else if (d.price < d.ownLastPrice) {
+      lowered += 1;
+    } else {
+      held += 1;
+    }
+  }
+  const moved = raised + held + lowered;
+  const inSoFar = moved + noOwnPrior + noPrior;
+
+  return {
+    deskCount: desks.length,
+    lockedCount: desks.filter((d) => d.locked).length,
+    decidingCount: deciding,
+    spread: min === null || max === null || mid === null ? null : { min, max, median: mid, range: max - min },
+    bins,
+    movement: { raised, held, lowered, basis: moved, noOwnPrior, noPrior, deciding },
+    firstNight: noPrior > 0 && moved === 0 && noOwnPrior === 0,
+    // The sentence a teacher can say without doing arithmetic on a projector.
+    movementLine:
+      inSoFar === 0
+        ? "Nobody is in yet — movement shows up as desks lock."
+        : noPrior === inSoFar
+          ? "First night — there is nothing behind these desks to have moved off yet."
+          : moved === 0
+            ? "Nobody in so far has a night of their own to have moved off."
+            : `Of the ${inSoFar} in so far: ${raised} raised, ${held} held, ${lowered} lowered${
+                noOwnPrior > 0 ? ` \u00b7 ${noOwnPrior} moving off a night the bell committed for them` : ""
+              }${noPrior > 0 ? ` \u00b7 ${noPrior} on their first night` : ""}.`,
+    spreadLine:
+      min === null || max === null
+        ? "Nothing is committed yet \u2014 every dial is still sitting where the night opened."
+        : prices.length === 1
+          ? `One desk is in, at $${min}.`
+          : min === max
+            ? `${prices.length === desks.length ? "Every desk is in" : `All ${prices.length} in so far are`} on $${min}.`
+            : prices.length === desks.length
+              ? `The room is between $${min} and $${max}, middle $${mid}.`
+              : `The ${prices.length} in so far are between $${min} and $${max}, middle $${mid}.`,
+    // The guard that keeps this panel from destroying the thing it serves.
+    privacyNote: "Yours only \u2014 the projector never shows this while the night is open. Reading it out before the bell tells the room what to copy.",
+  };
+}
+
 function sameRun(desk: Desk): number {
   let best = 0;
   let run = 0;

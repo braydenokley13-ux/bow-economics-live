@@ -230,7 +230,8 @@ async function main() {
 
     await teach.click("#btnCloseNow");
     await teach.waitForFunction(
-      () => (document.querySelector("#controls")?.textContent || "").includes("Night 2"),
+      // the bell is hosted by the deck while a night is live, so read the button itself
+      () => (document.getElementById("btnCloseNight")?.textContent || "").includes("Night 2"),
       null,
       { timeout: 12000 },
     );
@@ -280,7 +281,7 @@ async function main() {
     await setPrice(deskB, 62);
     await teach.click("#btnCloseNow");
     await teach.waitForFunction(
-      () => (document.querySelector("#controls")?.textContent || "").includes("Night 3"),
+      () => (document.getElementById("btnCloseNight")?.textContent || "").includes("Night 3"),
       null,
       { timeout: 12000 },
     );
