@@ -1,5 +1,5 @@
 import { ApiError, apiFetch } from "../shared/api.js";
-import { arenaSvg } from "../shared/arena.js";
+import { arenaSvg, type ArenaBand } from "../shared/arena.js";
 import { crestStyle } from "../shared/crest.js";
 import { brandMark, dotChart } from "../shared/m2ui.js";
 import { ActionOutbox } from "../shared/outbox.js";
@@ -2680,6 +2680,8 @@ function fhArenaFrame(o: {
   /** Lane A's third state: the top deck as a shuttered deck, or in the pool. */
   bowlSeats?: number;
   bowlOpen?: boolean;
+  /** Attribution bands inside the crowd (M2 L2). See `ArenaBand`. */
+  bands?: readonly ArenaBand[];
 }): string {
   const svg = arenaSvg({
     view: o.view,
@@ -2695,6 +2697,7 @@ function fhArenaFrame(o: {
     label: o.label,
     bowlSeats: o.bowlSeats,
     bowlOpen: o.bowlOpen,
+    bands: o.bands,
   });
   // Lane A's redraw fits the silhouette inside a panoramic viewBox and emits
   // `preserveAspectRatio="xMidYMid meet"`, so the frame can be any shape and
@@ -4210,6 +4213,66 @@ function hlPriceCfHtml(w: HLWeek): string {
     </div>`;
 }
 
+/**
+ * THE HOME NIGHT, DRAWN — and coloured by who brought the people.
+ *
+ * L1 gives a pair a building to look at; L2 used to give them a 10px progress
+ * strip and a stacked bar, which is the same night rendered as a spreadsheet.
+ * That is RC3, "L2 has no world", and it costs the lesson more than looks: the
+ * thing L2 exists to teach is that the biggest block of people in YOUR building
+ * is usually somebody else's doing, and a legend under a bar is a weak way to
+ * say it next to a picture of the actual crowd with that block in a different
+ * colour.
+ *
+ * The bands are shares of the seats open tonight and are drawn by equal AREA,
+ * the same law the arena's single seam has always obeyed — so the picture
+ * cannot overstate the visitor's block, and a half-full building looks half
+ * full with all three colours in the front rows rather than a full bowl of
+ * three colours. The hues are the legend's own three swatches, so the rows
+ * underneath ARE the key and a pair can point from one to the other.
+ */
+/**
+ * The three wedges, in the legend's own colours. Shares of the crowd, computed
+ * from the same three fan counts the rows print, so the picture and the numbers
+ * beside it cannot disagree. A week with nobody in the building has no wedges.
+ */
+function hlCrowdBands(w: HLWeek): ArenaBand[] {
+  const people = w.bareFans + w.ownFans + w.visitorFans;
+  if (people <= 0) return [];
+  return [
+    { share: w.bareFans / people, hue: 209, sat: 42 },
+    { share: w.ownFans / people, hue: 206, sat: 70 },
+    { share: w.visitorFans / people, hue: 41, sat: 80 },
+  ];
+}
+
+function hlArenaHtml(w: HLWeek): string {
+  const cap = Math.max(1, w.capacity);
+  const tight = fhTight();
+  return fhArenaFrame({
+    view: "outcome",
+    turnout: w.turnout,
+    seatsOpen: cap,
+    soldOut: w.soldOut,
+    turnedAway: w.turnedAway,
+    w: 620,
+    h: 300,
+    motion: false,
+    label: `${w.turnout.toLocaleString()} in the building, ${w.visitorFans.toLocaleString()} of them brought by ${w.visitor}`,
+    // The outcome drawing composes itself into a 4.6:1 box. Give the frame any
+    // other shape and `meet` fits the building to the narrow dimension and
+    // letterboxes the rest — which is why an apparently taller panel drew a
+    // SMALLER building with dark bands above and below it. The frame takes the
+    // drawing's own aspect, so every pixel of it is building.
+    maxHeight: Math.round((tight ? 300 : 340) / 4.6),
+    cls: "hl-arena",
+    // Wedges of the house, in the order the rows below name them: your building
+    // at your price, your own Draw, then the club visiting you. Shares of the
+    // CROWD, so they sum to the whole house however full it is.
+    bands: hlCrowdBands(w),
+  });
+}
+
 function hlWeekResultHtml(w: HLWeek, title: string): string {
   const sellout = w.soldOut
     ? `<div class="fh-sellout">
@@ -4226,7 +4289,8 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
         <span class="numeric">$${w.price}${w.share > 0 ? ` · ${w.share}% back in` : ""}</span>
       </div>
       ${sellout}
-      <div class="fh-fill-track"><div class="fh-fill-bar ${w.soldOut ? "soldout" : ""}" style="width:${Math.min(100, w.fillPct)}%"></div></div>
+      <div class="hl-crowd">
+        ${hlArenaHtml(w)}
       <div class="hl-split" id="hlSplit">
         <div class="hl-split-title">Who filled your building</div>
         <div class="hl-split-bar">
@@ -4239,6 +4303,7 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
           <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw (${w.hostDrawBefore})</span><span class="numeric">${w.ownFans.toLocaleString()} · ${money(w.ownDollars)}</span></div>
           <div class="hl-split-row"><span class="hl-key visitor"></span><span>${escapeHtml(w.visitor)} visiting (Draw ${w.visitorDraw})</span><span class="numeric">${w.visitorFans.toLocaleString()} · ${money(w.visitorDollars)}</span></div>
         </div>
+      </div>
       </div>
       <div class="fh-kept ${w.net < 0 ? "neg" : ""}" data-hl-kept="1">
         <span class="fh-kept-label">Kept</span>

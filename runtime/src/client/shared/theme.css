@@ -2068,6 +2068,14 @@ html:not([data-module="m2"]) .fh-replay {
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--ink-muted);
   border-radius: 999px;
+  /* It is a pill, and it has to look like one wherever it lands. Its parent is
+     a stretch-aligned column, so without these it rendered as a full-width
+     bordered bar reading REJOIN PIN — which on a student device reads as a
+     stat whose number failed to load. It only ever looked right during PLAY,
+     where `fh-compact-play` takes it out of flow entirely. */
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
   padding: 3px 12px;
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -2811,6 +2819,19 @@ html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding:
 .fh-slate-row.hl-open-week { color: var(--ink-primary); background: rgba(244,185,66,0.10); }
 
 /* ---- /play: the decomposition split ---- */
+/* THE CROWD AND ITS KEY, side by side. The drawing costs the settlement card
+   almost no height this way, which matters: the whole settlement has to land
+   above the fold on a 1024x600 Chromebook with no scrolling of any kind, and
+   the picture is only worth having if a pair can point from a colour in the
+   bowl to the row that names it without moving their eyes far. Below 620px the
+   column is too narrow for two, and it stacks. */
+.hl-crowd { display: flex; gap: 10px; align-items: stretch; margin-top: 10px; }
+.hl-crowd > .hl-arena { flex: 1 1 50%; min-width: 0; align-self: center; }
+.hl-crowd > .hl-split { flex: 1 1 50%; min-width: 0; margin-top: 0; }
+@media (max-width: 620px) {
+  .hl-crowd { flex-direction: column; gap: 8px; }
+  .hl-crowd > .hl-arena, .hl-crowd > .hl-split { flex: none; }
+}
 .hl-split { margin-top: 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.04); }
 .hl-split-title { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); margin-bottom: 6px; }
 .hl-split-bar { display: flex; height: 18px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.35); }
