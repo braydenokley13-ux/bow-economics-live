@@ -257,8 +257,17 @@ export const BID_STEP = 250_000;
  * and the money is gone. That is the whole decision, and it is why the number
  * the student types is the game rather than a formality.
  */
-export function legalOffers(p: Position, board: readonly FreeAgent[] = BOARD): readonly Offer[] {
-  return offersAtPrices(p, board, null);
+export function legalOffers(
+  p: Position,
+  board: readonly FreeAgent[] = BOARD,
+  taken: ReadonlySet<string> = new Set(),
+): readonly Offer[] {
+  return offersAtPrices(p, board, null, taken);
+}
+
+/** Everyone this club has already signed. A club never signs the same man twice. */
+export function signedBy(p: Position): ReadonlySet<string> {
+  return new Set(p.signings.filter((sg) => !sg.playerId.startsWith("min-")).map((sg) => sg.playerId));
 }
 
 /**
@@ -285,9 +294,20 @@ export function offersAtPrices(
   p: Position,
   board: readonly FreeAgent[],
   rivalBids: ReadonlyMap<string, { value: number; annual: number }> | null,
+  taken: ReadonlySet<string> = new Set(),
 ): readonly Offer[] {
   const out: Offer[] = [];
   for (const player of board) {
+    // A SIGNED PLAYER IS GONE, FOR EVERYONE, FOR GOOD.
+    //
+    // Not a nicety — its absence was making the whole lesson degenerate. With
+    // nothing removing a signed man from the board, the best plan at a club
+    // past the first apron was to sign the single cheapest player on it three
+    // times over and close three different holes with three copies of one
+    // person. The sweep reported that seat's entire Pareto frontier as one
+    // point and it took a plan dump to see why. The minimum market is the sole
+    // exception, because its whole premise is that there is always somebody.
+    if (!player.generic && taken.has(player.id)) continue;
     const reserve = player.ask.value;
     for (const tool of Object.keys(TOOL) as ToolId[]) {
       const ceiling = ceilingOf(tool, p, player);
@@ -519,7 +539,8 @@ export function resolveDay(
   positions: ReadonlyMap<ClubId, Position>,
   offers: readonly DayOffer[],
   board: readonly FreeAgent[] = BOARD,
-): { awards: readonly Award[]; positions: ReadonlyMap<ClubId, Position> } {
+  taken: ReadonlySet<string> = new Set(),
+): { awards: readonly Award[]; positions: ReadonlyMap<ClubId, Position>; taken: ReadonlySet<string> } {
   const byPlayer = new Map<string, DayOffer[]>();
   for (const d of offers) {
     const list = byPlayer.get(d.offer.playerId) ?? [];
@@ -529,9 +550,11 @@ export function resolveDay(
 
   const awards: Award[] = [];
   const next = new Map(positions);
+  const gone = new Set(taken);
 
   // Players are resolved in board order so the whole day is reproducible.
   for (const player of board) {
+    if (!player.generic && gone.has(player.id)) continue;
     if (player.generic) {
       // The minimum market has depth: every desk that reached for one gets one,
       // because in the real league there is always somebody at the minimum.
@@ -571,6 +594,7 @@ export function resolveDay(
     const winnerPos = next.get(best.clubId);
     if (!winnerPos) continue;
     next.set(best.clubId, applySigning(winnerPos, player, best.offer));
+    gone.add(player.id);
     awards.push({
       playerId: player.id,
       name: player.name,
@@ -581,7 +605,7 @@ export function resolveDay(
       contested: bids.length,
     });
   }
-  return { awards, positions: next };
+  return { awards, positions: next, taken: gone };
 }
 
 function compareBids(

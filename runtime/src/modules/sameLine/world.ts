@@ -484,7 +484,7 @@ export const CLUBS: readonly Club[] = [
     // the sweep found a single plan dominating everything, because there was
     // nothing to leave undone. With three, which hole you live with is the
     // decision.
-    jobs: ["BIG", "GUARD", "WING"],
+    jobs: ["BIG", "GUARD", "WING", "BIG"],
     situation: "You are past the first apron. The league has already taken your biggest tool away, and you are in the biggest market in the sport.",
     colour: fact(
       "Four New York players are paid roughly $171M between them, and every one of those four contracts contains a player option.",
@@ -500,7 +500,7 @@ export const CLUBS: readonly Club[] = [
     committed: fact(214_930_955, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
     deadMoney: fact(2_055_000, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
     contracts: fact(13, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
-    jobs: ["WING", "GUARD", "BIG"],
+    jobs: ["WING", "GUARD", "BIG", "WING"],
     situation:
       "You are past the first apron too — a small market carrying a big-market payroll, with the same tools taken away.",
     colour: fact(

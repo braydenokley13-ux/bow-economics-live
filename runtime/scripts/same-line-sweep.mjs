@@ -61,6 +61,8 @@ const arg = (name, fallback) => {
 const VERBOSE = process.argv.includes("--verbose");
 const DAYS = 3;
 const CLUB_ORDER = [];
+/** Every club is held by two desks (THE TWIN DESK), so an 8-club room is 16 desks. */
+const DESKS_PER_CLUB = 2;
 
 const failures = [];
 const notes = [];
@@ -90,7 +92,7 @@ function sweepSeat(clubId, board, rivalPlans) {
   const results = [];
   const seen = new Set();
 
-  const walk = (day, position, rivalPositions, planSoFar, awardsSoFar) => {
+  const walk = (day, position, rivalPositions, planSoFar, awardsSoFar, taken) => {
     if (day === DAYS) {
       const settlement = engine.settle(position);
       const readings = engine.readingsFor(opening, position, awardsSoFar);
@@ -105,11 +107,11 @@ function sweepSeat(clubId, board, rivalPlans) {
     // enumerating boundaries exhaustive rather than a sample. The focal desk
     // never sees these; they are the harness's knowledge, not the student's.
     const rivalOffers = [];
-    for (const [rivalId, plan] of rivalPlans) {
-      const rp = rivalPositions.get(rivalId);
+    for (const [deskId, plan] of rivalPlans) {
+      const rp = rivalPositions.get(deskId);
       if (!rp) continue;
-      const rivalOffer = plan(rp, day, board);
-      if (rivalOffer) rivalOffers.push({ clubId: rivalId, offer: rivalOffer });
+      const rivalOffer = plan(rp, day, board, taken);
+      if (rivalOffer) rivalOffers.push({ clubId: deskId, offer: rivalOffer });
     }
     // The threshold to beat is expressed in ANNUAL dollars, because that is
     // what a club sets — but what it has to beat is the rival's total
@@ -129,11 +131,11 @@ function sweepSeat(clubId, board, rivalPlans) {
     // (where it is still available) giving up cap room for the over-the-cap
     // tool rack. That last one is not a signing, so it costs the day but
     // changes what every later day can reach — which is why it is a decision.
-    const options = [null, ...engine.offersAtPrices(position, board, rivalBids)];
+    const options = [null, ...engine.offersAtPrices(position, board, rivalBids, taken)];
     if (engine.canDeclareOverCap(position)) options.push("DECLARE");
     for (const offer of options) {
       if (offer === "DECLARE") {
-        walk(day + 1, engine.declareOverCap(position), rivalPositions, [...planSoFar, "DECLARE"], awardsSoFar);
+        walk(day + 1, engine.declareOverCap(position), rivalPositions, [...planSoFar, "DECLARE"], awardsSoFar, taken);
         continue;
       }
       // Every desk in the room acts on the same day; resolve them together.
@@ -142,19 +144,23 @@ function sweepSeat(clubId, board, rivalPlans) {
       for (const r of rivalOffers) dayOffers.push(r);
       const all = new Map(rivalPositions);
       all.set(clubId, position);
-      const { awards, positions } = engine.resolveDay(all, dayOffers, board);
-      const nextSelf = positions.get(clubId);
-      const nextRivals = new Map(positions);
+      const resolved = engine.resolveDay(all, dayOffers, board, taken);
+      const nextSelf = resolved.positions.get(clubId);
+      const nextRivals = new Map(resolved.positions);
       nextRivals.delete(clubId);
-      walk(day + 1, nextSelf, nextRivals, [...planSoFar, offer], [...awardsSoFar, ...awards]);
+      walk(day + 1, nextSelf, nextRivals, [...planSoFar, offer], [...awardsSoFar, ...awards_(resolved)], resolved.taken);
     }
   };
 
   const rivalPositions = new Map();
-  for (const [rivalId] of rivalPlans) rivalPositions.set(rivalId, engine.openingPosition(rivalId));
-  walk(0, opening, rivalPositions, [], []);
+  for (const [deskId, , heldClub] of rivalPlans) {
+    rivalPositions.set(deskId, { ...engine.openingPosition(heldClub), clubId: deskId });
+  }
+  walk(0, opening, rivalPositions, [], [], new Set());
   return { opening, results, distinct: seen.size };
 }
+
+const awards_ = (r) => r.awards;
 
 const vectorKey = (r, s) =>
   [r.jobsClosed, r.jobYears, r.cheapestJobClosed === Infinity ? "-" : r.cheapestJobClosed, r.contestedWon, r.drewWall ? 1 : 0, s.floorShortfall].join("|");
@@ -199,8 +205,8 @@ function dominates(a, b) {
  * club's own position in the league and bid what a player asks rather than
  * everything they have.
  */
-const spreadPick = (p, day, board, prefer) => {
-  const offers = engine.legalOffers(p, board).filter((o) => {
+const spreadPick = (p, day, board, prefer, taken) => {
+  const offers = engine.legalOffers(p, board, taken).filter((o) => {
     const player = board.find((b) => b.id === o.playerId);
     if (!player) return false;
     // Bid what he asks, not the ceiling: nobody overpays on principle.
@@ -217,12 +223,12 @@ const spreadPick = (p, day, board, prefer) => {
   const ranked = [...shortlist].sort((a, b) => (prefer === "dear" ? b.annual - a.annual : a.annual - b.annual));
   // Deterministic spread: clubs later in the league order reach past the
   // player the club before them is taking.
-  const offset = (CLUB_ORDER.indexOf(p.clubId) + day) % ranked.length;
+  const offset = (CLUB_ORDER.indexOf(String(p.clubId).split("#")[0]) + (String(p.clubId).endsWith("#1") ? 1 : 0) + day) % ranked.length;
   return ranked[offset];
 };
 
-const fillCheapest = (p, day, board) => spreadPick(p, day, board, "cheap");
-const spendMost = (p, day, board) => spreadPick(p, day, board, "dear");
+const fillCheapest = (p, day, board, taken) => spreadPick(p, day, board, "cheap", taken);
+const spendMost = (p, day, board, taken) => spreadPick(p, day, board, "dear", taken);
 const holdAll = () => null;
 
 const ENVIRONMENTS = [
@@ -241,7 +247,27 @@ function runAll(board, { label }) {
 
   for (const env of ENVIRONMENTS) {
     for (const club of world.CLUBS) {
-      const rivals = world.CLUBS.filter((c) => c.id !== club.id).map((c) => [c.id, env.plan]);
+      // REAL CLASS SIZE, not one desk per club.
+      //
+      // BC-14 and BC-15 both say the sweep runs at 12-16 desks, and the reason
+      // showed up the moment it did not. Against seven rivals the focal desk
+      // could front-run every cheap player it wanted and close every hole it
+      // had: the constraint did not bind at all at the two seats past the first
+      // apron, which is precisely the defect the economic review found in one
+      // of the losing candidates. Sixteen desks share one board of nine named
+      // people. That is the room the lesson is actually played in, and the
+      // scarcity is the lesson.
+      //
+      // THE TWIN DESK (grafted from candidate B): every club is held by two
+      // desks, so a desk's rival is not only another club but the same club
+      // played differently -- which is what makes P-TWIN answerable at all.
+      const rivals = [];
+      for (const c of world.CLUBS) {
+        for (let twin = 0; twin < DESKS_PER_CLUB; twin += 1) {
+          if (c.id === club.id && twin === 0) continue; // the focal desk itself
+          rivals.push([`${c.id}#${twin}`, env.plan, c.id]);
+        }
+      }
       const swept = sweepSeat(club.id, board, rivals);
       const key = `${club.id}`;
       const bucket = perSeat.get(key) ?? { club, byEnv: new Map(), opening: swept.opening };
