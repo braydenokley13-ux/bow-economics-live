@@ -318,7 +318,7 @@ function assertUnoccluded(results, label) {
  * Asserted with NO manual scroll of any kind: whatever the page does on its own
  * after the bell is what a grade-5 pair gets.
  */
-async function assertSettlementAboveFold(desk, label) {
+async function assertSettlementAboveFold(desk, label, opts = {}) {
   // play N-7 (BLOCKING): the price counterfactual is the element the N-5 repair
   // ADDED, and the instrument was pointed at the three older selectors, so it
   // passed a card whose verdict line — "$62 would have kept $522,856 more than
@@ -385,11 +385,21 @@ async function assertSettlementAboveFold(desk, label) {
   // without ever seeing a dial. The settlement and the decision are not rivals
   // for the band; they are the two columns of it. The dial must be IN it.
   const bandBottom = m.bar ? m.bar.top : m.vh;
-  assert.ok(
-    m.dial !== null && m.dial.top >= 0 && m.dial.bottom <= bandBottom + 1,
-    `${label}: the decision is not on the screen the bell landed — next week's price dial is at ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}, content band is 0..${bandBottom}`,
-  );
-  assert.ok(m.lock && m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is not reachable — box ${m.lock && m.lock.top}..${m.lock && m.lock.bottom}`);
+  // After the LAST bell there is no next week, so there is no dial and no lock
+  // bar to hold the settlement against — but every part of the settlement
+  // itself is still probed above, by the same hit test. The caller says which
+  // bell this is; the check is not skipped, only the half of it that would be
+  // asserting the presence of a decision the lesson has stopped offering.
+  if (opts.noNextWeek) {
+    assert.equal(m.dial, null, `${label}: a price dial for a week that does not exist is on the screen`);
+    assert.equal(m.bar, null, `${label}: the commit bar is still pinned after the season ended`);
+  } else {
+    assert.ok(
+      m.dial !== null && m.dial.top >= 0 && m.dial.bottom <= bandBottom + 1,
+      `${label}: the decision is not on the screen the bell landed — next week's price dial is at ${m.dial && m.dial.top}..${m.dial && m.dial.bottom}, content band is 0..${bandBottom}`,
+    );
+    assert.ok(m.lock && m.lock.bottom <= m.vh + 1, `${label}: LOCK IT IN is not reachable — box ${m.lock && m.lock.top}..${m.lock && m.lock.bottom}`);
+  }
   foldChecks.push(`${label}${m.soldOut ? " [SOLD OUT week]" : ""}`);
   if (m.soldOut) soldOutSettlements.push(label);
   return m;
@@ -812,6 +822,10 @@ async function main() {
     // play R1/N-1: the consequence, staged AND legible. Asserted on every desk,
     // immediately after the bell, with no manual scroll of any kind.
     for (let i = 0; i < DESKS; i += 1) await assertSettlementAboveFold(desks[i], `after the week 1 bell, desk ${i + 1}`);
+    const bellWidth = await desks[0].evaluate(() => ({
+      main: Math.round(document.querySelector("main").getBoundingClientRect().width),
+      col: Math.round(document.querySelector(".hl-col-context")?.getBoundingClientRect().width ?? 0),
+    }));
     // play N-6: the same frame carries WEEK 2's decision, and it is asserted
     // with the same standard week 1 met — no manual scroll, every desk.
     for (let i = 0; i < DESKS; i += 1) await assertPrelockFold(desks[i], `week 2 first contact, desk ${i + 1}`, 2);
@@ -967,11 +981,47 @@ async function main() {
       await lockWeek(desks[i]);
     }
     await teach.click("#btnCloseWeek");
-    for (const p of desks) await p.waitForFunction(() => document.body.innerText.includes("in the books"), null, { timeout: 40000 });
+    // Wait on the thing under test, not on a sentence: the last week's own
+    // settlement block appearing on the desk. (The previous wait keyed off the
+    // words "in the books" in the season-over banner, which made an ordinary
+    // copy edit look like a 40-second hang.)
+    for (const p of desks) await p.waitForFunction(() => !!document.querySelector("#hlSplit") && !document.querySelector("#hlLockBar"), null, { timeout: 40000 });
     // `.fh-flag` is CSS-uppercased, so innerText comes back shouting.
     const autoFlags = await desks[NEVER_LOCK_IDX].evaluate(() => (document.body.innerText.match(/\bauto\b/gi) || []).length);
     assert.ok(autoFlags >= WEEK_COUNT_E2E, `the desk that never locked must have all ${WEEK_COUNT_E2E} weeks settled and marked AUTO, never skipped — found ${autoFlags}`);
-    console.log("[e2e-m2l2] three weeks settled");
+
+    // THE LAST WEEK SETTLES LIKE EVERY OTHER WEEK.
+    //
+    // Weeks 1 and 2 reach the desk because the NEXT week's pre-lock payload
+    // carries `lastSettled` and the client draws it first. There is no week 4,
+    // so week 3 — the highest-stakes call of the lesson, made with the reinvest
+    // dial retired — used to land as a three-row summary table and "look up at
+    // the board". The pair's own final decision produced the least feedback of
+    // the three on the device they were looking at. Every element the earlier
+    // bells are held to is held to here too, at the same fold.
+    for (let i = 0; i < DESKS; i += 1) await assertSettlementAboveFold(desks[i], `after the LAST week's bell, desk ${i + 1}`, { noNextWeek: true });
+    // The finale is not allowed to be a narrower page than the weeks that led
+    // to it. The two-column decision band's width used to be bundled into the
+    // lock-bar rule, so the one screen with nothing left to commit rendered at
+    // 640px instead of 1000px: the evidence column collapsed 608px -> 248px and
+    // the price counterfactual grew to 380px and fell off the bottom. Coupling
+    // a page's width to the presence of a button is the kind of thing that only
+    // shows up on the last screen of the lesson, in front of the class.
+    const finaleWidth = await desks[0].evaluate(() => ({
+      main: Math.round(document.querySelector("main").getBoundingClientRect().width),
+      col: Math.round(document.querySelector(".hl-col-context")?.getBoundingClientRect().width ?? 0),
+    }));
+    assert.ok(
+      finaleWidth.main >= bellWidth.main && finaleWidth.col >= bellWidth.col - 1,
+      `the season-over screen is narrower than a played week — main ${finaleWidth.main}px vs ${bellWidth.main}px, evidence column ${finaleWidth.col}px vs ${bellWidth.col}px`,
+    );
+    const lastWeekOnDesk = await desks[0].evaluate(() => ({
+      title: document.querySelector(".fh-result .fh-result-head")?.textContent?.trim() ?? "",
+      arena: !!document.querySelector(".fh-result .hl-arena svg"),
+    }));
+    assert.match(lastWeekOnDesk.title, /Week 3/, `the desk's own final week did not settle on the device — read "${lastWeekOnDesk.title}"`);
+    assert.ok(lastWeekOnDesk.arena, "the last week settled without drawing the building it was played in");
+    console.log("[e2e-m2l2] three weeks settled — the last one lands on the desk in full, not only on the board");
 
     // ---- REVEAL ---------------------------------------------------------
     await advanceTo(teach, "REVEAL");

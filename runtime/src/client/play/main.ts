@@ -4348,15 +4348,43 @@ function hlHistoryHtml(history: HLWeek[]): string {
 
 function renderHLPlay(view: Record<string, unknown>): void {
   const body = $("gameBody");
-  document.body.classList.toggle("fh-compact-play", !view["allWeeksDone"]);
+  // The season-over screen used to be the one PLAY screen with room to spare, so
+  // it ran uncompacted and left the rejoin-PIN card in the hero slot. It now
+  // carries a full settlement, and is held to the same fold as every other bell:
+  // compact spacing, and the PIN collapsed to its reopen strip.
+  document.body.classList.add("fh-compact-play");
   if (view["allWeeksDone"]) {
     hlMountKey = null;
+    hidePin();
     document.body.classList.remove("hl-has-lockbar");
+    document.body.classList.add("hl-wide");
+    // The last week settles like every other week: its own result first, in
+    // full — building, crowd, what was kept, what the road cost — and only then
+    // the season summary. Sending the pair to the projector before their own
+    // final call has landed on their own screen throws away the one moment the
+    // whole three weeks were building to.
+    const done = view["lastSettled"] as HLWeek | null;
+    // Two columns, for the same reason every settled week has two: stacked
+    // full-width, the last week's own result ran the price counterfactual — the
+    // largest teaching number the lesson prints — past 600px on desks whose
+    // settlement carried a sell-out banner. The result keeps the wide column it
+    // has every other week; the season's books and the three-week table take
+    // the rail beside it, where they are a summary rather than a queue.
     body.innerHTML = `
-      ${hlDeskHeader(view)}
-      ${hlBooksHtml(view["books"] as HLBooks)}
-      <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-      ${hlHistoryHtml((view["history"] as HLWeek[]) ?? [])}`;
+      <div class="hl-decide" id="hlPlayRoot">
+        <div class="hl-span">${hlTopStrip(view)}</div>
+        <div class="hl-col-context">
+          <div class="hl-bell-head">THE SEASON IS IN THE BOOKS</div>
+          ${done ? hlWeekResultHtml(done, `Week ${done.week} — how it went`) : ""}
+          <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your three weeks</div>
+          ${hlHistoryHtml((view["history"] as HLWeek[]) ?? [])}
+        </div>
+        <div class="hl-col-decide">
+          ${hlBooksHtml(view["books"] as HLBooks)}
+          <div class="banner" style="margin-top:10px;">${escapeHtml(String(view["message"] ?? ""))}</div>
+        </div>
+      </div>`;
+    window.scrollTo(0, 0);
     return;
   }
 
@@ -4508,6 +4536,7 @@ function renderHLPlay(view: Record<string, unknown>): void {
            </div>`
     }`;
   document.body.classList.toggle("hl-has-lockbar", !locked);
+  document.body.classList.add("hl-wide");
 
   // play N-1/N-2: the shell reserves the lock bar's band as body padding, so
   // the bar's real rendered height has to be the number the CSS reserves. Read
@@ -4999,7 +5028,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
   }
   if (s.phase !== "PLAY") {
     wrMountKey = null;
-    document.body.classList.remove("hl-has-lockbar", "fh-compact-play");
+    document.body.classList.remove("hl-has-lockbar", "fh-compact-play", "hl-wide");
   }
   switch (s.phase) {
     case "LOBBY":
@@ -5243,7 +5272,7 @@ function renderWRPlay(view: Record<string, unknown>): void {
   }
   if (mode === "adopted") {
     wrMountKey = null;
-    document.body.classList.remove("hl-has-lockbar", "fh-compact-play");
+    document.body.classList.remove("hl-has-lockbar", "fh-compact-play", "hl-wide");
     $("gameBody").innerHTML = `
       ${wrDeskHeader(view)}
       ${wrRuleStrip(view["rule"] as WRRule)}
@@ -5351,6 +5380,7 @@ function renderWRRounds(view: Record<string, unknown>): void {
       <button class="btn btn-primary" id="wrPropose" disabled data-wr-armed="${sealed ? "1" : "0"}">${sealed ? "VOTE SEALED" : "PUT IT IN"}</button>
     </div>`;
   document.body.classList.add("hl-has-lockbar");
+  document.body.classList.add("hl-wide");
   const bar = document.getElementById("wrLockBar");
   if (bar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(bar.getBoundingClientRect().height)}px`);
 
@@ -5431,7 +5461,7 @@ function renderWRSeason(view: Record<string, unknown>): void {
   const weeks = (view["weeks"] as WRWeek[]) ?? [];
   if (done) {
     wrMountKey = null;
-    document.body.classList.remove("hl-has-lockbar");
+    document.body.classList.remove("hl-has-lockbar", "hl-wide");
     body.innerHTML = `
       ${wrDeskHeader(view)}
       ${wrRuleStrip(view["rule"] as WRRule)}
@@ -5527,6 +5557,7 @@ function renderWRSeason(view: Record<string, unknown>): void {
            </div>`
     }`;
   document.body.classList.toggle("hl-has-lockbar", !locked);
+  document.body.classList.add("hl-wide");
   const lockBar = document.getElementById("wrLockBar");
   if (lockBar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(lockBar.getBoundingClientRect().height)}px`);
   else document.body.style.removeProperty("--hl-lockbar-h");

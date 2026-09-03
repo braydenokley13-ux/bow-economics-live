@@ -3210,7 +3210,16 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
               allWeeksDone: true,
               books: booksFor(club),
               history,
-              message: "All three weeks are in the books. Look up at the board.",
+              // WEEK 3'S SETTLEMENT. Every other week's result reaches the desk
+              // because the NEXT week's pre-lock payload carries `lastSettled`
+              // and the client draws it first. There is no week 4, so the last
+              // week — the one with the retired reinvest dial, the highest
+              // stakes and the whole lesson riding on it — was the only one that
+              // settled into a three-row summary table and "look up at the
+              // board". The biggest week produced the least feedback on the
+              // device the pair is actually looking at.
+              lastSettled: history[history.length - 1] ?? null,
+              message: "That is week 3, and the season. Read what your last call did, then look up at the board.",
             };
           }
           const weekNumber = openWeekNumber(state);

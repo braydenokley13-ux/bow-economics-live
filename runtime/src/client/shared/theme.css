@@ -2702,8 +2702,17 @@ body.hl-has-lockbar main {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-bottom: 10px;
-  /* The decision surface needs a second column; one 640px column cannot hold
-     the week card, the schedule strip and both dials above a 600px fold. */
+}
+
+/* THE WIDE SURFACE. One 640px column cannot hold a two-column decision band, so
+   `main` widens for it. This used to be bundled into the lock-bar rule above,
+   which coupled the width of the page to the presence of a commit button: the
+   season-over screen renders the SAME two-column band with nothing left to
+   commit, so it rendered at 640px — 36% narrower than every week that preceded
+   it, with the settlement's evidence column squeezed to 248px and the price
+   counterfactual 380px tall and off the bottom of the screen. The width belongs
+   to the layout, not to the button. */
+body.hl-wide main {
   max-width: 1000px;
 }
 
