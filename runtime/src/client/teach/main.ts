@@ -1,5 +1,6 @@
 import { ApiError, apiFetch } from "../shared/api.js";
 import { crestStyle } from "../shared/crest.js";
+import { createFreshness } from "../shared/freshness.js";
 import { startPolling } from "../shared/poll.js";
 import { loadTeachSessionCode, loadTeachSessionKey, saveTeachSessionCode, saveTeachSessionKey } from "../shared/storage.js";
 
@@ -37,8 +38,10 @@ const aggregateEl = $("aggregate");
 const directorEl = $("director");
 const timeCutEl = $("timecut");
 const liveRoomEl = $("liveroom");
+const projPreviewEl = $("projpreview"); // claim-ok: an element id, not a rendered word
 
 let currentCode: string | null = null;
+const freshness = createFreshness<TeacherPayload>((p) => ({ code: p.session?.code ?? null, version: p.session?.version ?? NaN }));
 // B1 repair (VERIFY_L2.md): what the Advance button's confirm() warning needs to know, refreshed every render()
 // so the click handler (which fires later, async from render) always checks the latest known state. Extended
 // for L3: leaving PLAY early doesn't just skip a staged reveal theater (L2's case) — it permanently ends the
@@ -268,11 +271,20 @@ function openSession(code: string): void {
   }
   // gate-l2-teacher B1: the projector URL, printed, with its code already in it.
   $("boardUrl").textContent = `${location.origin}/board?code=${code}`;
+  mountProjectorPreview(code);
   poller?.stop();
+  // W2: the console fires the controls, so it is the surface most likely to
+  // have a poll in flight when the room moves. A response older than one
+  // already rendered would put a phase chip, a reveal stage or a lock count
+  // back where it was — under a teacher's hand, mid-press.
+  freshness.reset();
   poller = startPolling<TeacherPayload>(
     `/api/sessions/${code}/teacher`,
     1500,
-    render,
+    (payload) => {
+      if (!freshness.accept(payload)) return;
+      render(payload);
+    },
     {
       streamUrl: `/api/sessions/${code}/stream`,
       onPushState: (connected) => {
@@ -295,6 +307,7 @@ function openSession(code: string): void {
           aggregateEl.hidden = true;
           timeCutEl.hidden = true;
           liveRoomEl.hidden = true;
+          mountProjectorPreview(null);
           clearDeck();
           stopTimeCutClock();
           $("director").hidden = true;
@@ -425,6 +438,87 @@ function money(n: number): string {
  * Everything here is teacher-private by construction — it comes from
  * `teacherView`, which the projector never sees.
  */
+/* ------------------------------------------------- the projector preview -- */
+
+/**
+ * THE PROJECTOR, on the console.
+ *
+ * A teacher running this lesson spends most of it facing the room, which means
+ * facing away from the board. The director panel can SAY what is on the
+ * projector; it cannot show whether the reveal actually landed, whether the
+ * board is still on the previous stage, or whether the thing at the front of
+ * the room is the frozen single word rather than the lesson. So this is the
+ * board itself — same page, same session, same poll — scaled down and made
+ * completely inert. A mirror built by re-rendering board data in a second
+ * renderer could drift from the board and quietly lie about the room's own
+ * evidence; an iframe of `/board` structurally cannot.
+ *
+ * It carries nothing private for the same structural reason: it is exactly what
+ * the class can already see.
+ */
+const PP_COLLAPSE_KEY = "bow.teach.projectorPreview.collapsed"; // claim-ok: a localStorage key, never rendered
+let ppMountedCode: string | null = null;
+let ppObserver: ResizeObserver | null = null;
+
+function ppRescale(): void {
+  const frame = $("ppFrame");
+  const width = frame.getBoundingClientRect().width;
+  if (width <= 0) return;
+  // The board is authored at 1280x720 and is NOT reflowed to fit this box:
+  // a preview that re-laid itself out would stop being a preview.
+  frame.style.setProperty("--pp-scale", String(width / 1280));
+}
+
+function mountProjectorPreview(code: string | null): void {
+  if (!code) {
+    projPreviewEl.hidden = true;
+    ppMountedCode = null;
+    ($("ppBoard") as HTMLIFrameElement).removeAttribute("src");
+    return;
+  }
+  projPreviewEl.hidden = false;
+  if (ppMountedCode !== code) {
+    ppMountedCode = code;
+    // Set once per session. Re-assigning `src` on every poll would reload the
+    // board four hundred times a class and guarantee it is showing a blank
+    // frame at the exact moment a teacher looks at it.
+    ($("ppBoard") as HTMLIFrameElement).src = `/board?code=${encodeURIComponent(code)}`;
+    ($("ppOpen") as HTMLAnchorElement).href = `/board?code=${encodeURIComponent(code)}`;
+  }
+  if (!ppObserver && typeof ResizeObserver !== "undefined") {
+    ppObserver = new ResizeObserver(ppRescale);
+    ppObserver.observe($("ppFrame"));
+  }
+  ppRescale();
+}
+
+function initProjectorPreview(): void {
+  const toggle = $<HTMLButtonElement>("ppToggle");
+  const apply = (collapsed: boolean): void => {
+    projPreviewEl.classList.toggle("collapsed", collapsed);
+    toggle.textContent = collapsed ? "Show" : "Hide";
+    toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    if (!collapsed) ppRescale();
+  };
+  let collapsed = false;
+  try {
+    collapsed = localStorage.getItem(PP_COLLAPSE_KEY) === "1";
+  } catch {
+    /* a console in a locked-down profile still runs the class */
+  }
+  apply(collapsed);
+  toggle.addEventListener("click", () => {
+    collapsed = !projPreviewEl.classList.contains("collapsed");
+    apply(collapsed);
+    try {
+      localStorage.setItem(PP_COLLAPSE_KEY, collapsed ? "1" : "0");
+    } catch {
+      /* nothing here is worth failing a live class over */
+    }
+  });
+  window.addEventListener("resize", ppRescale);
+}
+
 function renderLiveRoom(payload: TeacherPayload): void {
   const room = (payload.view["room"] as RoomRead | null | undefined) ?? null;
   const live = !payload.session.ended && payload.session.phase === "PLAY";
@@ -574,6 +668,11 @@ function render(payload: TeacherPayload): void {
   $("seatCount").textContent = `${payload.seats.length} joined`;
   renderTimeCut(payload);
   renderLiveRoom(payload);
+  // The preview lives for the whole session, not just PLAY — REVEAL through
+  // SYNTHESIS is exactly when the projector IS the lesson. It goes away when
+  // the session does, so an ended room cannot leave a stale board on the
+  // console next to controls that no longer do anything.
+  if (s.ended) mountProjectorPreview(null);
 
   const phaseRow = $("phaseRow");
   phaseRow.innerHTML = "";
@@ -1829,6 +1928,10 @@ async function sendControl(body: Record<string, unknown>): Promise<void> {
       headers: authHeaders(),
       body: JSON.stringify(body),
     });
+    // Same gate as the poll. This is the frame that moves the room, so it also
+    // sets the floor: a poll issued before this press can answer after it, and
+    // without recording this version that older frame is not recognisably old.
+    if (!freshness.accept(payload)) return;
     render(payload);
   } catch (error) {
     statusEl.textContent = error instanceof ApiError ? error.message : "control action failed";
@@ -2037,6 +2140,8 @@ $("btnReopen").addEventListener("click", () => {
     statusEl.textContent = message;
   });
 });
+
+initProjectorPreview();
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();

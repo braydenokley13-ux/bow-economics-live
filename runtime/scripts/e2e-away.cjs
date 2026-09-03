@@ -225,6 +225,46 @@ async function main() {
     await gone.waitForSelector(".fh-locked-recap", { timeout: 15000 });
     console.log("[away] and it priced the night it came back to");
 
+    /* -- 3b. And so does the way back to this seat. -------------------------
+     * The rejoin PIN is what moves a pair to another device when this one dies.
+     * In the M2 design layer the banner and its reopen strip are deliberately
+     * suppressed and the desk rail carries the four digits instead — so on a
+     * reloaded desk the rail chip is the ONLY way back, and it has to be there
+     * and be right. It is drawn from stored credentials, not from a payload
+     * field that is only sent once at join, and this is the frame that proves
+     * it.
+     *
+     * Last, deliberately: a PIN rejoin from a second device rotates this seat's
+     * device token on purpose, which signs THIS page out. That is the documented
+     * "my Chromebook died" path, not a defect, and it ends this desk's run. */
+    const chip = await gone.evaluate(() => {
+      const el = document.querySelector(".fh-pin-chip");
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { text: el.textContent.replace(/\s+/g, " ").trim(), w: Math.round(r.width), h: Math.round(r.height) };
+    });
+    assert.ok(chip, "a reloaded desk has no way back to its own rejoin PIN");
+    assert.ok(chip.w > 0 && chip.h > 0, "the rejoin PIN chip is drawn at zero size");
+    const digits = (chip.text.match(/\d{4}/) || [])[0];
+    assert.ok(digits, `the rejoin PIN chip carries no PIN: "${chip.text}"`);
+    // It must be THIS seat's PIN, not a placeholder: rejoin with it, from a
+    // second page, and land on the same desk.
+    const second = await browser.newPage({ viewport: { width: 1024, height: 600 } });
+    second.on("dialog", (d) => d.accept());
+    await second.goto(`${BASE}/play`);
+    await second.click("#btnShowRejoin");
+    await second.fill("#rejoinCode", code);
+    await second.fill("#rejoinName", "Rae & Ben");
+    await second.fill("#rejoinPin", digits);
+    await second.click("#btnRejoin");
+    await second.waitForSelector("#gameCard:not([hidden])", { timeout: 20000 });
+    const landed = await second.evaluate(() => (document.querySelector(".fh-desk-name")?.textContent || "").trim());
+    assert.ok(landed.length > 0, "the PIN carried across the reload did not open a seat");
+    await second.close();
+    console.log(`[away] the rejoin PIN survived the reload on the desk rail and still opened this seat from a second device (${landed})`);
+
+
+
     assert.deepEqual(consoleErrors, [], `console errors during the run:\n${consoleErrors.join("\n")}`);
     console.log("[away] PASS — screens in docs/gauntlet/module-2/screens-away/");
   } catch (err) {

@@ -1,7 +1,7 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (458 passing, see below), `npm run build` and `npm test` are
+real tests (580 passing, see below), `npm run build` and `npm test` are
 green, and `m1l1-draft-day`, `m1l2-trade-deadline`, and `m1l3-free-agency`
 have all been driven end-to-end with Playwright against the real compiled
 server (L1: create → join → advance → build → lock → reveal → shock → adapt
@@ -237,6 +237,41 @@ adaptation. It is teacher-private by construction — it comes off `teacherView`
 and the projector never sees it, because the room committing blind is what
 makes the staged reveal land. `roomRead()` in `fullHouse.ts`; browser proof
 `scripts/e2e-teach-room.cjs`.
+
+Every M2 lesson with a live decision window now has one, and each reads its own
+economics rather than reusing one panel: L2 bins the reinvest dial and names the
+free riders; L3 reads two different rooms inside one PLAY phase — the rule
+rounds as a BARGAINING spread (converging or dug in, movement against a desk's
+own previous proposal, an abstention reported separately) and the season as a
+COMPLIANCE spread (who is about to be bitten by the rule this room voted in).
+The panel heading is authored by the module, because "locked in" is wrong in a
+stage where desks propose a number at the league. Browser proofs in
+`scripts/e2e-m2l2.cjs` and `scripts/e2e-m2l3.cjs` assert the read is on the
+console and on neither the projector nor a desk (D30).
+
+**The projector, on the console.** `/teach` carries a live mirror of `/board`
+for the room it is driving: an iframe of the board itself, scaled by transform,
+inert (`pointer-events: none`), collapsible, gone when the session ends. A
+teacher directing a class faces the room, which means facing away from the
+board — the director panel can say what is on the projector, only the projector
+can show whether the reveal landed. It is an iframe rather than a second
+renderer so it cannot drift from what the class is looking at, and it carries
+nothing private for the same structural reason. Browser proof: the
+projector-preview assertions in `scripts/e2e-m2l1.cjs`, at HOOK and again at
+REVEAL stage 5 (D31).
+
+**A surface never moves backwards.** Polls are serialised against each other,
+but an action is a different request on a different socket: a poll issued before
+a lock can answer after it and draw the pair's own committed decision back into
+an unlocked dial. Every surface now refuses a frame older than one it has
+already drawn, compared on the session version the server never lowers, scoped
+to the room and reset when pointed at another one; equal versions pass, and the
+frame returned by an action or a teacher control goes through the same gate
+because it is the frame that sets the floor. `client/shared/freshness.ts`; unit
+proof `src/test/freshness.test.ts`; browser reproduction and regression
+`scripts/e2e-stale-poll.cjs`, which holds one `/api/me` response at the
+transport, locks underneath it, releases the stale body and watches the DOM with
+a MutationObserver rather than sampling it (D32).
 
 **While you were away.** A Chromebook sleeps through a bell; a tab is closed
 for five minutes; a pair goes to the nurse. The returning desk gets CURRENT
@@ -645,15 +680,17 @@ src/
                 boxOffice.ts                 — Module 2 prototype, "The Box Office"
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
-                shared/ (api, poll, storage, outbox, crest)
-  test/         313 tests over crypto, every reducer, the service layer
-                (incl. the L1->L2 and L2/L1->L3 seeds), and snapshot persistence
+                shared/ (api, poll, storage, outbox, crest, freshness)
+  test/         580 tests over crypto, every reducer, the service layer
+                (incl. the L1->L2 and L2/L1->L3 seeds), snapshot persistence,
+                the client claim audit and the surface freshness gate
 scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)
                 e2e-l2-early-advance.cjs     — focused probe: advancing out of REVEAL early
                 e2e-l3.cjs                   — rerunnable Playwright L3 proof (full L1->L2->L3 arc)
                 e2e-l3-early-advance.cjs     — focused probe: advancing out of PLAY early
                 e2e-m2l2.cjs                 — rerunnable 12-desk M2 L2 proof (every board frame fits, both shapes)
                 e2e-m2l3.cjs                 — rerunnable 12-desk M2 L3 proof (full arc incl. capstone + finale)
+                e2e-stale-poll.cjs           — focused probe: a poll held at the transport must not undo a lock
 ```
 
 **Teacher authentication (R1).** `POST /api/sessions` issues a per-session

@@ -460,3 +460,127 @@ the founder must not be a hidden runtime dependency for either band.
 - **Owner:** Lead integrator
 - **Evidence:** `e2e-m2l2.cjs` "the finale is not allowed to be a narrower page than the
   weeks that led to it".
+
+## D28. Dead air inside a decision phase is a design defect, and the fix is a free commitment
+
+- **Decision:** Where a lesson leaves a committed pair with nothing to do while the rest of
+  the room finishes, it owes them a stake rather than a waiting message. The standing
+  answer for M2 is THE GATE CALL: before the bell, the pair calls how full the building
+  gets — packed / busy / quiet — for no money, changeable until the bell, and the
+  settlement answers the call they actually made. A pair that never called is handed
+  nothing. Its bands are measured against the lesson's own outcome distribution, never
+  guessed, and its answer stays forecasting language: "you read it" or "the night did not
+  go the way you read it", never a verdict on the price. The same screen carries an
+  aggregate room line (N of M desks in) so the wait is finite and legible without ever
+  naming a seat.
+- **Grounds:** L1 and L2 both told a locked pair, three to five times a lesson, that there
+  was nothing to do but find out. That is several minutes of dead air inside the phase the
+  lesson is named after, at the exact moment the pair is most invested. A free prediction
+  costs the economics nothing, is honest about what is knowable, and converts the wait
+  into the second-cheapest kind of engagement there is: having said it out loud first.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts` / `hostTheLeague.test.ts` W6 gate-call tests (bands,
+  aggregate-only room line, all four semantic rejections, changeability, no carry across
+  the bell, forecasting-only language); `e2e-m2l1.cjs` and `e2e-m2l2.cjs` above-fold and
+  answer-names-the-call-actually-made assertions plus a DOM-poison non-vacuity check.
+
+## D29. A second book that returns one number over most of its dial is not a second book
+
+- **Decision:** Where a lesson claims a decision trades two objectives off against each
+  other, both objectives must respond across the range the pair is actually deciding in.
+  A clipped arm that reads the same value at the cash-best price and at a price nobody
+  would ever choose is informationless, and the claim it supports is false however good
+  the settlement arithmetic is. Curves are bent, not clipped, and the property is
+  asserted where the decision lives — near the optimum — not merely at the extremes.
+- **Grounds:** L1's renewals book returned the identical -20 at 43 of 56 legal prices,
+  including the cash optimum. Worse, the season-scale two-book property (harness P14) had
+  been passing *because of* that clip. Deepening the floor changed nothing; the near-field
+  slope is what carries the trade-off.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts` R4-5 (the band is not flat at the cash optimum; no
+  single value occupies more than a third of the prices near the best net; gouging always
+  costs more than gouging less); harness P14 limbs (i)-(v.f).
+
+## D30. THE ROOM belongs to every lesson with a live decision window, and reads that lesson's own economics
+
+- **Decision:** Every lesson with an open decision window gives the teacher a private live
+  read of spread, shape and movement, on `/teach` and nowhere else. It is not one panel
+  reused: each lesson bins the dial its own economics turn on (L1 price, L2 the reinvest
+  dial, L3 the proposed share while the rule is being written and the reinvest dial once
+  the season opens), and each authors its own heading, spread sentence and movement
+  sentence. Movement is claimed only against a number that desk chose itself — never a
+  bell-committed round, an auto-settled week, or a round the desk sat out.
+- **Grounds:** A teacher standing up cannot count twelve dials, and the arithmetic they
+  cannot do is exactly the arithmetic that picks the next question. The renderer is
+  generic; the words are not, because "locked in" is wrong in a stage where desks propose
+  a number at the league rather than committing a dial.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts`, `hostTheLeague.test.ts`, `writeTheRule.test.ts` THE
+  ROOM tests, including a poisoned instrument (counting AUTO weeks as decisions, and
+  letting uncommitted dials into the spread, both fail); `e2e-m2l2.cjs` / `e2e-m2l3.cjs`
+  browser assertions that the read is on the console and on neither the projector nor a
+  desk.
+
+## D31. The console shows the projector, it does not describe it
+
+- **Decision:** `/teach` carries a live mirror of `/board` for the room it is driving. It
+  is an iframe of the board itself — same page, same session, same poll — scaled by
+  transform and made completely inert (`pointer-events: none`), never a second renderer
+  fed board data. It is capped to a monitor-sized box, collapsible, and disappears with
+  the session.
+- **Grounds:** A teacher directing a class faces the room, which means facing away from
+  the board. The director panel can say what is on the projector; only the projector can
+  show whether the reveal actually landed. A mirror built from a second renderer can drift
+  from the board and quietly misreport the room's own evidence; an iframe structurally
+  cannot, and it carries nothing private for the same structural reason — it is exactly
+  what the class can already see.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-m2l1.cjs` projector-preview assertions at HOOK and at REVEAL stage 5
+  (pointed at this room, inert at its centre point, the projector's own shape, not
+  reflowed, showing the board's own words, and tracking the room from one to the other).
+
+## D32. A surface never moves backwards
+
+- **Decision:** Every polled surface refuses a frame older than one it has already drawn,
+  compared on the session version the server never lowers, scoped to the room and reset
+  when the surface is pointed at another one. Equal versions pass — the same version
+  legitimately carries a countdown tick or a recap arriving. The frame returned by an
+  ACTION or a teacher CONTROL goes through the same gate, because that is the frame that
+  moves the surface forward and therefore the one that sets the floor.
+- **Grounds:** The transport serialises its own fetches, so two polls cannot land out of
+  order; an action is a different request on a different socket. Reproduced in the
+  browser: a poll held at the transport, a lock submitted underneath it, and the released
+  body drew the pair's own committed decision back into an unlocked dial. Nothing was lost
+  on the server — which is why no state test had ever seen it — but a fifth-grader
+  watching their decision come undone presses it again.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `freshness.test.ts` (monotonicity, equal-version acceptance, room change,
+  reset, unreadable payloads passed through); `scripts/e2e-stale-poll.cjs`, which drives
+  the window deterministically and includes an over-blocking limb — the desk must still
+  follow the room to the next night.
+
+## D33. The way back to a seat survives a refresh
+
+- **Decision:** A pair's rejoin PIN must be reachable on their own device for the whole
+  lesson, not only in the twenty seconds after they join. Where the PIN banner collapses,
+  the affordance that reopens it is restored from stored credentials on every load.
+- **Grounds:** The PIN is the one thing that moves a pair to another device when this one
+  dies, and a refresh is not an unusual event on a classroom Chromebook. Full House was
+  already safe — its desk rail carries the digits permanently — which is exactly why the
+  gap in the other two lessons went unnoticed.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-m2l2.cjs` mid-week refresh (strip restored, drawn, opens this seat's
+  own PIN, decision intact) — proven to fail without the repair; `e2e-away.cjs` reloads a
+  Full House desk and rejoins from a second device on the PIN its rail still carries.

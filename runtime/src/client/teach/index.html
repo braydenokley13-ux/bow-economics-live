@@ -53,6 +53,33 @@
      night runs, and it was previously sixteen tiles of mental arithmetic. */
   #liveroom .room-spread { font-family: var(--font-display); font-size: 20px; line-height: 1.25; color: var(--ink-primary); margin: 2px 0 12px; }
   #liveroom .room-spread b { color: var(--accent-gold); font-variant-numeric: tabular-nums; }
+  /* THE PROJECTOR PREVIEW. The board renders at its own 1280x720 and is scaled
+     down by transform rather than by making the board responsive to a 300px
+     box: a mirror that reflowed would stop being a mirror. */
+  #projpreview .pp-tools { display: flex; align-items: center; gap: 12px; }
+  #projpreview .pp-link { font-size: 12px; color: var(--accent-gold); text-decoration: none; letter-spacing: .04em; text-transform: uppercase; }
+  #projpreview .pp-link:hover { text-decoration: underline; }
+  #projpreview .pp-btn { font: inherit; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-secondary);
+    background: transparent; border: 1px solid var(--rule, rgba(255,255,255,.16)); border-radius: 999px; padding: 3px 12px; cursor: pointer; }
+  #projpreview .pp-btn:hover { color: var(--ink-primary); border-color: var(--accent-gold); }
+  #projpreview .pp-btn:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+  /* Capped: this is a monitor, not a second board. Full-width it swallowed the
+     console and pushed the phase controls a screen and a half down. */
+  .pp-frame { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1280 / 720; overflow: hidden; border-radius: 10px;
+    border: 1px solid var(--rule, rgba(255,255,255,.16)); background: #05070c; }
+  /* The room sees a lit rectangle at the front of the room, not a flat card. */
+  .pp-frame::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), inset 0 18px 40px rgba(0,0,0,.35); }
+  .pp-frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0;
+    transform-origin: 0 0; transform: scale(var(--pp-scale, .25));
+    /* A mirror is not a control. Nothing in here can be clicked, dragged,
+       focused or scrolled, so no press a teacher makes can land in the wrong
+       surface. */
+    pointer-events: none; }
+  #projpreview .pp-body { display: flex; gap: 18px; align-items: flex-start; }
+  #projpreview.collapsed .pp-body { display: none; }
+  #projpreview .pp-note { margin: 0; flex: 1 1 180px; min-width: 0; font-size: 12px; line-height: 1.5; color: var(--ink-muted); }
+  @media (max-width: 720px) { #projpreview .pp-body { flex-direction: column; } }
   .room-hist { display: flex; align-items: flex-end; gap: 3px; height: 96px; margin: 0 0 6px; }
   .room-bar { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; height: 100%; }
   .room-bar i { display: block; width: 100%; background: linear-gradient(180deg, rgba(244,185,66,0.95), rgba(244,185,66,0.4)); }
@@ -233,6 +260,28 @@
     <div class="room-axis" id="roomAxis"></div>
     <div class="room-move" id="roomMove"></div>
     <p class="room-note" id="roomNote"></p>
+  </section>
+
+  <!-- THE PROJECTOR, live, on the console. A teacher directing a class stands
+       with their back to the board more often than not: the director panel can
+       SAY what is on the projector, but only the projector can show it. This is
+       the board itself, same code, same poll, scaled down and made
+       un-clickable — a mirror can never contradict what it mirrors, which is
+       the whole reason it is an iframe of /board and not a second renderer. -->
+  <section id="projpreview" class="card" hidden>
+    <div class="tc-head">
+      <h2 style="margin:0;">Projector</h2>
+      <span class="pp-tools">
+        <a id="ppOpen" class="pp-link" href="#" target="_blank" rel="noopener">Open full &#8599;</a>
+        <button id="ppToggle" class="pp-btn" type="button" aria-expanded="true">Hide</button>
+      </span>
+    </div>
+    <div class="pp-body">
+      <div class="pp-frame" id="ppFrame">
+        <iframe id="ppBoard" title="Live mirror of the projector" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>
+      </div>
+      <p class="pp-note" id="ppNote">This is the board itself, live &mdash; the same page the room is looking at, not a description of it. Nothing in it is a control: press it on the console and watch it land here. Use it to check that a reveal actually arrived before you say &ldquo;look at the board&rdquo;.</p>
+    </div>
   </section>
 
   <!-- gate-l1-teacher TT-B1 (BLOCKING): the per-phase director panel. The design

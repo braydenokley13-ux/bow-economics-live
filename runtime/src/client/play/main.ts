@@ -2,6 +2,7 @@ import { ApiError, apiFetch } from "../shared/api.js";
 import { arenaSvg, type ArenaBand } from "../shared/arena.js";
 import { crestStyle } from "../shared/crest.js";
 import { brandMark, dotChart } from "../shared/m2ui.js";
+import { createFreshness } from "../shared/freshness.js";
 import { ActionOutbox } from "../shared/outbox.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
@@ -315,6 +316,12 @@ function startGame(): void {
         // own response right away instead of waiting for the next poll tick,
         // so the wall, meter, and Foregone Panel feel live, not laggy.
         showError("");
+        // Through the same gate as a poll, and for the same reason. This is the
+        // frame that MOVES the desk forward, so it is also the one that sets the
+        // floor: a poll issued before this action answers after it, and without
+        // recording this version here that older frame is not recognisably old.
+        // That is the exact reproduction in `scripts/e2e-stale-poll.cjs`.
+        if (!freshness.accept(response as StudentPayload)) return;
         renderGame(response as StudentPayload);
       },
       onHolding: (_action, error) => {
@@ -333,6 +340,10 @@ function startGame(): void {
     new Set(["takeSeat"]),
   );
 
+  // W2: a poll issued before this desk's own action can answer after it. The
+  // fetch still counts as proof the transport is alive — it just never draws a
+  // frame from before the decision the pair has already made.
+  freshness.reset();
   poll = startPolling<StudentPayload>(
     "/api/me",
     1200,
@@ -340,6 +351,7 @@ function startGame(): void {
       showError("");
       setSyncLabel(outbox && outbox.pendingCount > 0 ? `syncing… (${outbox.pendingCount} pending)` : "synced");
       outbox?.retryNow();
+      if (!freshness.accept(payload)) return;
       renderAway(payload);
       renderGame(payload);
     },
@@ -406,6 +418,7 @@ function paintFinalCallClock(): void {
 
 /** The round this desk is currently looking at. Stamped onto every decision it submits. */
 let lastRoundKey: string | null = null;
+const freshness = createFreshness<StudentPayload>((p) => ({ code: p.session?.code ?? null, version: p.session?.version ?? NaN }));
 
 function renderFinalCall(payload: StudentPayload): void {
   const bar = $("finalCall");
@@ -3892,7 +3905,21 @@ function renderFullHouse(s: SessionInfo, view: Record<string, unknown>): void {
       fhSeatRequested = true;
       outbox?.submit({ type: "takeSeat" });
     }
-    body.innerHTML = `<p style="font-size:14px; color:${FH_INK_BODY};">You're in — finding your desk…</p>`;
+    // A pair who arrived after the fifth bell cannot be given a desk without
+    // rewriting numbers this room has already been shown. What they must never
+    // get is what they used to: "finding your desk…" for the rest of the period
+    // while the request 409'd behind them and nobody was told. The module
+    // records them and says so; this renders its words, not the client's.
+    if (view["observer"]) {
+      body.innerHTML = `
+        <div class="panel" style="padding:18px;">
+          <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">${escapeHtml(String(view["observerEyebrow"] ?? ""))}</div>
+          <p style="margin:0 0 10px; font-size:16px; line-height:1.5; color:${FH_INK};">${escapeHtml(String(view["message"] ?? ""))}</p>
+          <p style="margin:0; font-size:14px; line-height:1.5; color:${FH_INK_BODY};">${escapeHtml(String(view["observerAction"] ?? ""))}</p>
+        </div>`;
+      return;
+    }
+    body.innerHTML = `<p style="font-size:14px; color:${FH_INK_BODY};">${escapeHtml(String(view["message"] ?? "You're in — finding your desk…"))}</p>`;
     return;
   }
   if (s.phase !== "PLAY") fhMountKey = null;
@@ -5970,6 +5997,20 @@ function escapeHtml(s: string): string {
 if (creds) {
   joinCard.hidden = true;
   gameCard.hidden = false;
+  // The rejoin PIN survives a refresh, and so must the way to read it.
+  //
+  // The PIN is handed over once, on join, and auto-collapses after 20 seconds
+  // so the decision surface gets its first viewport back. Nothing restored it
+  // afterwards: a pair who refreshed — a dropped Chromebook, a browser update,
+  // a stray Ctrl+R, or simply the next morning — came back seated and playing
+  // with their own PIN permanently unreachable, which is the one thing that
+  // moves them to another device when this one dies. It is in storage; this
+  // puts the strip that opens it back on the screen, collapsed, so it costs the
+  // decision nothing.
+  if (creds.rejoinPin) {
+    $("pinDisplay").textContent = creds.rejoinPin;
+    $("btnShowPin").hidden = false;
+  }
   startGame();
 } else {
   // F1: a pair that was signed out and then refreshed still gets told why.

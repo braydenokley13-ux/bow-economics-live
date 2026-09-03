@@ -12,6 +12,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  OBSERVER_ACTION,
+  OBSERVER_MESSAGE,
+  observersOf,
   CARDS,
   FULL_HOUSE_UI_COPY,
   MARKETS,
@@ -1691,4 +1694,74 @@ test("W6: the bell answers the call it was actually given, and calls nothing els
     null,
     "night 1's call carried into night 2",
   );
+});
+
+/* ------------------------------------------- the late arrival (W6) -- */
+
+test("a pair who arrives after the fifth bell is landed honestly, not left finding a desk", () => {
+  // Every figure this room has already been shown — the class curve, the two
+  // peaks, the repeat rows, the synthesis cards — is computed over the desks
+  // that played. Seating a new desk during REVEAL would silently re-derive
+  // numbers the teacher has read out loud. So it is not seated; what it must
+  // never get is what it used to get, which was "finding your desk…" for the
+  // rest of the period behind a refusal nobody was told about.
+  let state = seated(3);
+  for (let night = 0; night < NIGHT_COUNT; night += 1) {
+    for (const seat of ["seat-1", "seat-2", "seat-3"]) {
+      state = ok(act(state, { type: "setPrice", price: 30 }, "PLAY", seat));
+      state = ok(act(state, { type: "lock" }, "PLAY", seat));
+    }
+    state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+  }
+
+  // The action is ACCEPTED — a definitive refusal is what stranded the device.
+  assert.ok(
+    (fullHouseModule.allowedActions("REVEAL") as readonly string[]).includes("takeSeat"),
+    "takeSeat must stay offered after the nights close, or the runtime refuses it before the module can answer",
+  );
+  const before = Object.keys(state.desks).length;
+  state = ok(act(state, { type: "takeSeat" }, "REVEAL", "seat-late"));
+  assert.equal(Object.keys(state.desks).length, before, "a late pair was given a desk and rewrote the room's evidence");
+  assert.deepEqual([...observersOf(state)], ["seat-late"], "the late pair was not recorded anywhere");
+
+  // Its own screen is told the truth, in the module's words.
+  const view = fullHouseModule.studentView(state, "seat-late", "REVEAL") as Record<string, unknown>;
+  assert.equal(view["seated"], false);
+  assert.equal(view["observer"], true);
+  assert.equal(view["message"], OBSERVER_MESSAGE);
+  assert.equal(view["observerAction"], OBSERVER_ACTION);
+  assert.doesNotMatch(String(view["message"]), /finding your desk/i);
+  // ...and it says what to DO, not only what went wrong.
+  assert.match(String(view["observerAction"]), /nearest desk/i);
+
+  // The teacher is told, because this is a pair standing in the room.
+  const teacher = fullHouseModule.teacherView(state, "REVEAL") as Record<string, unknown>;
+  const flags = teacher["watchFor"] as { id: string; label: string; desks: string[]; urgency: string }[];
+  const flag = flags.find((f) => f.id === "late-observers");
+  assert.ok(flag, "the console said nothing about a pair that cannot join");
+  assert.equal(flag.urgency, "now");
+  assert.match(flag.label, /1 pair arrived after the last night closed/);
+  assert.equal(/seat-/.test(JSON.stringify(flag)), false, "the console flag carries a seat identity");
+
+  // Repeating it is idempotent, and a second late pair is counted.
+  state = ok(act(state, { type: "takeSeat" }, "REVEAL", "seat-late"));
+  assert.equal(observersOf(state).length, 1, "the same device was recorded twice");
+  state = ok(act(state, { type: "takeSeat" }, "SYNTHESIS", "seat-later"));
+  assert.equal(observersOf(state).length, 2);
+
+  // And the projector never carries any of it.
+  const board = JSON.stringify(fullHouseModule.boardView(state, "REVEAL"));
+  assert.equal(/seat-late|observerSeats/.test(board), false, "the projector is carrying the observer list");
+});
+
+test("a late pair during PLAY still gets a real desk — the observer path is only for a closed room", () => {
+  // The path that matters is unchanged: a pair arriving at Night 3 gets a desk
+  // with the nights it missed played at its own plan price and labelled.
+  let state = seated(2);
+  state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+  state = ok(act(state, { type: "takeSeat" }, "PLAY", "seat-late"));
+  assert.ok(state.desks["seat-late"], "a late pair was refused a desk while nights were still open");
+  assert.equal(observersOf(state).length, 0, "a pair that CAN be seated must never be recorded as an observer");
+  const view = fullHouseModule.studentView(state, "seat-late", "PLAY") as Record<string, unknown>;
+  assert.equal(view["seated"], true);
 });

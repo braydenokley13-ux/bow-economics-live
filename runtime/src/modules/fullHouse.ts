@@ -789,6 +789,11 @@ export type FullHouseState = {
    * the reveal beats and the repeat-card groups.
    */
   synthPage: number;
+  /**
+   * Pairs who arrived after the fifth bell and could not be given a desk.
+   * Optional so a snapshot written before this field existed still loads.
+   */
+  observerSeats?: string[];
 };
 
 /**
@@ -1129,6 +1134,42 @@ function seatDesk(state: FullHouseState, seatId: SeatId): FullHouseState {
   }
   return { ...state, desks: { ...state.desks, [seatId]: desk }, deskOrder: [...state.deskOrder, seatId] };
 }
+
+/** Pairs recorded as observers, tolerant of a snapshot written before the field existed. */
+export const observersOf = (state: FullHouseState): readonly string[] => state.observerSeats ?? [];
+
+/**
+ * THE LATE ARRIVAL, AFTER THE NIGHTS.
+ *
+ * During LOBBY, HOOK and PLAY a late pair gets a REAL desk, with the nights it
+ * missed played at its own season plan price and labelled as such — that path is
+ * unchanged and it is the one that matters. From REVEAL onwards it cannot have
+ * one, and not because a 409 is convenient: every figure the room has already
+ * been shown — the class curve, the two peaks, the repeat-card rows, every
+ * synthesis card — is computed over the desks that played. Seating a new desk
+ * during REVEAL would silently re-derive numbers the teacher has already read
+ * out loud and put a point on the projector for a desk nobody in the room
+ * played. Rewriting the class's own evidence to avoid a refusal is worse than
+ * the refusal.
+ *
+ * What was actually broken is what happened instead: the refusal was definitive,
+ * the outbox correctly dropped it, and the device sat on "You're in — finding
+ * your desk…" for the rest of the lesson with nothing said to anybody. So the
+ * pair is now RECORDED, their own screen is told the truth and told what to do,
+ * and `/teach` gets a WATCH FOR entry that names them. Nothing is silent.
+ */
+function seatLate(state: FullHouseState, seatId: SeatId): FullHouseState {
+  if (state.desks[seatId]) return state;
+  const observers = observersOf(state);
+  if (observers.includes(seatId)) return state;
+  return { ...state, observerSeats: [...observers, seatId] };
+}
+
+export const OBSERVER_EYEBROW = "You arrived after the last night closed";
+export const OBSERVER_MESSAGE =
+  "You got here after the last night closed, so there is no desk left to hand you \u2014 all five nights are already in the books.";
+export const OBSERVER_ACTION =
+  "Pull your chair up to the nearest desk and read their screen with them. Everything from here is the whole room's: the board, the argument, and the questions. You are not missing a turn, because nobody is taking one.";
 
 const withDesk = (state: FullHouseState, seatId: SeatId, desk: Desk): FullHouseState => ({
   ...state,
@@ -2887,7 +2928,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
     if (action.type === "takeSeat") {
       if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair can take a desk" };
       if (ctx.phase !== "LOBBY" && ctx.phase !== "HOOK" && ctx.phase !== "PLAY") {
-        return { ok: false, reason: `desks are handed out in LOBBY, HOOK or PLAY (session is in ${ctx.phase})` };
+        // Not a refusal: an honest landing. See `seatLate`.
+        return { ok: true, state: seatLate(state, ctx.seatId) };
       }
       return { ok: true, state: seatDesk(state, ctx.seatId) };
     }
@@ -2978,14 +3020,28 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
     if (phase === "PLAY") return ["takeSeat", "setPrice", "setSpend", "setBowl", "lock", "gateCall"];
-    return [];
+    // Still offered after the nights close, so a late device gets an answer
+    // instead of a silent 409 loop behind "finding your desk…" (see `seatLate`).
+    return ["takeSeat"];
   },
 
   studentView(state, seatId, phase) {
     const desk = state.desks[seatId];
     const view = ((): Record<string, unknown> => {
       if (!desk) {
-        return { phase, seated: false, uiCopy: uiCopyFor(null, 0), message: "You're in! Taking a desk…" };
+        // "Taking a desk…" is true in LOBBY and a lie afterwards.
+        if (observersOf(state).includes(seatId)) {
+          return {
+            phase,
+            seated: false,
+            observer: true,
+            uiCopy: uiCopyFor(null, 0),
+            observerEyebrow: OBSERVER_EYEBROW,
+            message: OBSERVER_MESSAGE,
+            observerAction: OBSERVER_ACTION,
+          };
+        }
+        return { phase, seated: false, observer: false, uiCopy: uiCopyFor(null, 0), message: "You're in! Taking a desk…" };
       }
       const market = marketOf(desk);
       const identity = deskIdentity(desk);
@@ -3819,6 +3875,20 @@ function teacherWatchFor(state: FullHouseState, phase: CanonicalPhase): WatchFla
   const out: WatchFlag[] = [];
   const desks = Object.values(state.desks);
   const windowOpen = phase === "PLAY" && state.nightIndex < NIGHT_COUNT;
+
+  // A pair standing in the room with a device that cannot join the lesson is
+  // the teacher's problem to solve in the next ten seconds, so it goes first.
+  const observers = observersOf(state);
+  if (observers.length > 0) {
+    out.push({
+      id: "late-observers",
+      label: `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the last night closed and could not be given a desk`,
+      desks: observers.map((_, i) => `Late pair ${i + 1}`),
+      action:
+        "There is no desk left to hand them \u2014 the nights are in the books and seating them now would change numbers this room has already been shown. Their screen says so and tells them to pull up to the nearest desk; say the same out loud and pair them with a desk near the door. Everything from here \u2014 the board, the argument, the synthesis \u2014 is the whole room's, so they lose nothing but the five nights.",
+      urgency: "now",
+    });
+  }
 
   if (windowOpen && desks.length > 0) {
     const stalled = desks.filter((d) => !d.locked).map((d) => deskHandle(d));

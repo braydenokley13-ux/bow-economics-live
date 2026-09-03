@@ -1,5 +1,6 @@
 import { ApiError } from "../shared/api.js";
 import { crestStyle } from "../shared/crest.js";
+import { createFreshness } from "../shared/freshness.js";
 import { startPolling } from "../shared/poll.js";
 
 type BoardPayload = {
@@ -1991,21 +1992,33 @@ function boot(): void {
     askForCode("This projector is not pointed at a room yet. Type your class code — the same one your students join with.");
     return;
   }
-  startPolling<BoardPayload>(`/api/sessions/${code}/board`, 1000, render, {
-    // W4: the projector is the surface a teacher watches while they press the
-    // button, so it is the one where a poll interval reads as lag. The stream
-    // only says "ask again"; the frame still comes from /board.
-    streamUrl: `/api/sessions/${code}/stream`,
-    onError: (error) => {
-      if (error instanceof ApiError && error.status === 404) {
-        // Never roam to another room. A 404 means THIS code is gone, and the
-        // only safe next frame is a prompt, not somebody else's class.
-        askForCode(`There is no live session with the code ${code}. Check the code on your teacher console and type it here.`);
-        return;
-      }
-      setHud("reconnecting…");
+  // W2: a frame from before the press the room just watched must never reach
+  // the projector. `version` never goes backwards on the server, so a lower one
+  // is a response that was already in flight when the teacher pressed.
+  const freshness = createFreshness<BoardPayload>((p) => ({ code, version: p.version }));
+  startPolling<BoardPayload>(
+    `/api/sessions/${code}/board`,
+    1000,
+    (payload) => {
+      if (!freshness.accept(payload)) return;
+      render(payload);
     },
-  });
+    {
+      // W4: the projector is the surface a teacher watches while they press the
+      // button, so it is the one where a poll interval reads as lag. The stream
+      // only says "ask again"; the frame still comes from /board.
+      streamUrl: `/api/sessions/${code}/stream`,
+      onError: (error) => {
+        if (error instanceof ApiError && error.status === 404) {
+          // Never roam to another room. A 404 means THIS code is gone, and the
+          // only safe next frame is a prompt, not somebody else's class.
+          askForCode(`There is no live session with the code ${code}. Check the code on your teacher console and type it here.`);
+          return;
+        }
+        setHud("reconnecting…");
+      },
+    },
+  );
 }
 
 boot();

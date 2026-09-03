@@ -880,6 +880,45 @@ async function main() {
     // The call is changeable while the week is open: a fifth-grader's misclick
     // must not cost a whole week. The LAST one standing is what gets frozen.
     await callTheGate(desks[4], "busy", "week 1, desk 5 changing its mind");
+    // The way back to this seat has to survive a refresh.
+    //
+    // The rejoin PIN is handed over once, on join, and its banner auto-collapses
+    // after twenty seconds so the decision surface gets its first viewport back.
+    // Nothing restored the strip that reopens it, so a pair who refreshed — a
+    // dropped Chromebook, a browser update, a stray Ctrl+R — came back seated
+    // and playing with their own PIN permanently unreachable, which is the one
+    // thing that moves them to another device when this one dies. (Full House
+    // is unaffected: its desk rail carries the digits as a permanent chip. This
+    // lesson has no such rail, so the strip IS the way back.)
+    {
+      const before = await desks[1].evaluate(() => (document.getElementById("pinDisplay")?.textContent || "").trim());
+      assert.match(before, /^\d{4}$/, `this desk never received a rejoin PIN: "${before}"`);
+      await desks[1].reload();
+      await desks[1].waitForSelector("#gameCard:not([hidden])", { timeout: 25000 });
+      const after = await desks[1].evaluate(() => {
+        const strip = document.getElementById("btnShowPin");
+        const r = strip?.getBoundingClientRect();
+        return {
+          stripHidden: strip?.hidden ?? true,
+          drawn: !!r && r.width > 0 && r.height > 0,
+          cardHidden: document.getElementById("pinCard")?.hidden ?? true,
+        };
+      });
+      assert.equal(after.stripHidden, false, "a refreshed desk has no way back to its own rejoin PIN");
+      assert.equal(after.drawn, true, "the reopen strip is in the DOM but drawn at zero size");
+      assert.equal(after.cardHidden, true, "the PIN banner reopened itself over the decision surface on a refresh");
+      await desks[1].click("#btnShowPin");
+      const reopened = await desks[1].evaluate(() => ({
+        cardHidden: document.getElementById("pinCard")?.hidden ?? true,
+        pin: (document.getElementById("pinDisplay")?.textContent || "").trim(),
+      }));
+      assert.equal(reopened.cardHidden, false, "the strip did not reopen the PIN");
+      assert.equal(reopened.pin, before, `the reopened PIN is not this seat's: "${reopened.pin}" vs "${before}"`);
+      await desks[1].click("#btnHidePin");
+      // The refresh must not have cost the week's decision either.
+      await desks[1].waitForSelector(".hl-gate-band", { timeout: 20000 });
+      console.log(`[e2e-m2l2] the rejoin PIN survived a mid-week refresh and the desk came back still locked`);
+    }
     await desks[0].screenshot({ path: path.join(SCREEN_DIR, "05-play-week1-locked.png") });
 
     // THE ROOM (W6) — this lesson's give-and-take happens on the reinvest dial,
