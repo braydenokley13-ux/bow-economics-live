@@ -460,3 +460,28 @@
   .hq-band-foot .hq-sub { display: none; }
   .sl-card-line b { width: 52px; }
 }
+
+/* --------------------------------------------------------------- reveal -- */
+
+.sl-beat { padding: 4px 0 2px; }
+.sl-beat-step { font-size: 9.5px; letter-spacing: 0.26em; font-weight: 700; color: var(--hq-club); margin: 0 0 6px; }
+.sl-beat-title {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 0.92;
+  margin: 0;
+  letter-spacing: 0.012em;
+}
+
+.sl-readings { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--hq-hair); }
+.sl-reading { padding: 11px 13px; background: rgba(13, 17, 25, 0.94); }
+.sl-reading dt { font-size: 8.5px; letter-spacing: 0.18em; font-weight: 700; color: var(--ink-muted); }
+.sl-reading dd {
+  margin: 5px 0 0;
+  font-family: var(--font-number);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-gold);
+  line-height: 1;
+}
+.sl-reading p { margin: 6px 0 0; font-size: 10.5px; color: var(--ink-muted); line-height: 1.4; }

@@ -419,6 +419,98 @@ function forgonePanel(view: V): string {
   return panel({ title: "WHAT IT COST YOU", note: "frozen the moment you committed" }, `<div class="sl-forgone">${items}</div>`);
 }
 
+
+/* ------------------------------------------------------------- reveal -- */
+
+/**
+ * The student's own reveal, one beat at a time.
+ *
+ * Per-beat gating happens in the MODULE, not here: a beat the teacher has not
+ * pressed to was never sent, so this renders what arrived rather than deciding
+ * what to hide. That ordering is the whole reason a desk cannot read ahead by
+ * opening dev tools.
+ *
+ * The projector carries the class picture; this carries the one thing the
+ * projector must never carry — what it cost THIS desk, by name.
+ */
+function revealMain(v: V): string {
+  const beat = num(v["beat"]);
+  const parts: string[] = [];
+
+  parts.push(`
+    <div class="sl-beat">
+      <p class="sl-beat-step">BEAT ${beat + 1} OF 4</p>
+      <h2 class="sl-beat-title">${esc(str(v["beatTitle"]))}</h2>
+    </div>`);
+
+  const signings = arr(v["yourSignings"]);
+  if (v["yourSignings"] !== undefined) {
+    parts.push(
+      panel(
+        { title: "WHAT YOU SIGNED", note: signings.length === 0 ? "nothing" : `${signings.length} deal${signings.length === 1 ? "" : "s"}` },
+        signings.length === 0
+          ? `<p class="sl-forgone-lead">You did not sign anybody. That is a real answer, and it is the only one that keeps every dollar you started with.</p>`
+          : `<div class="sl-forgone">${signings
+              .map(
+                (sg) => `
+              <div class="sl-forgone-item">
+                <span class="sl-forgone-name">${esc(str(sg["name"]))}</span>
+                <span class="sl-forgone-why">${esc(str(sg["role"]))} · ${num(sg["years"])} yr${num(sg["years"]) === 1 ? "" : "s"}</span>
+                <span style="font-family:var(--font-number);color:var(--accent-gold);margin-left:12px;">${dollars(num(sg["annual"]))}</span>
+              </div>`,
+              )
+              .join("")}</div>`,
+      ),
+    );
+  }
+
+  if (v["yourForgone"] !== undefined) parts.push(forgonePanel({ forgone: v["yourForgone"] }));
+
+  if (v["yourRoomLeft"] !== undefined) {
+    parts.push(
+      panel(
+        { title: "WHAT YOU HAVE LEFT", note: "after three days" },
+        `<p class="sl-money-read" style="font-size:34px">${dollars(num(v["yourRoomLeft"]))}</p>
+         <p class="sl-forgone-lead" style="margin-top:8px">This is the part of the summer you did not spend. It is not left over — it is the next problem you can still solve.</p>`,
+      ),
+    );
+  }
+
+  if (v["yourReadings"] !== undefined) {
+    const r = rec(v["yourReadings"]);
+    const cheapest = num(r["cheapestJobClosed"]);
+    const rows: [string, string, string][] = [
+      ["HOLES YOU CLOSED", String(num(r["jobsClosed"])), "of the jobs this club started with open"],
+      ["YEARS OF COVER", String(num(r["jobYears"])), "how long those holes stay closed"],
+      [
+        "CHEAPEST HOLE CLOSED",
+        Number.isFinite(cheapest) && cheapest > 0 ? dollars(cheapest) : "—",
+        "the least you paid to fix something real",
+      ],
+      ["LONGEST COMMITMENT", `${num(r["longestCommitment"])} yr`, "how far into the future you are promised"],
+      ["ROOM LEFT", dollars(num(r["roomLeft"])), "what you can still do"],
+    ];
+    parts.push(
+      panel(
+        { title: "FIVE WAYS TO READ YOUR SUMMER", note: "no total, on purpose" },
+        `<div class="sl-readings">${rows
+          .map(
+            ([k, val, why]) => `
+          <div class="sl-reading">
+            <dt>${esc(k)}</dt>
+            <dd>${esc(val)}</dd>
+            <p>${esc(why)}</p>
+          </div>`,
+          )
+          .join("")}</div>
+         <p class="sl-forgone-lead" style="margin-top:12px">These do not add up to a score, and that is not a missing feature. A club that is best on one of them is usually worst on another — which is the argument the room is about to have.</p>`,
+      ),
+    );
+  }
+
+  return parts.join("");
+}
+
 /* ------------------------------------------------------------ render -- */
 
 export function renderSameLineL1(
@@ -452,6 +544,10 @@ export function renderSameLineL1(
     case "PLAY":
       main = playMain(v);
       break;
+    case "REVEAL":
+    case "CONSEQUENCE":
+      main = revealMain(v);
+      break;
     case "SYNTHESIS":
     case "COMPLETE":
       main = forgonePanel(v) || `<div class="sl-note">${esc(str(v["message"], "Look up — this part is the whole room's."))}</div>`;
@@ -468,6 +564,7 @@ export function renderSameLineL1(
     num(v["day"]),
     board.map((c) => str(c["id"])).join(","),
     v["pending"] ? str(rec(v["pending"])["playerId"]) : "-",
+    num(v["beat"], -1),
     selected ?? "-",
     tool ?? "-",
     error ?? "-",

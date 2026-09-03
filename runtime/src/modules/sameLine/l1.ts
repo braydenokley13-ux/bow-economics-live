@@ -64,6 +64,7 @@ import {
   type Readings,
 } from "./engine.js";
 import { profileFor, type GradeBand, type GradeProfile } from "../../shared/gradeBand.js";
+import { claim, onBoard, type Claimed } from "../../shared/claims.js";
 import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../../shared/lessonModule.js";
 import type { CanonicalPhase } from "../../shared/phases.js";
 
@@ -827,6 +828,106 @@ function teacherView(state: SameLineL1State, phase: CanonicalPhase): unknown {
   };
 }
 
+/* ------------------------------------------------- the room disagrees -- */
+
+/**
+ * What the projector shows instead of a leaderboard.
+ *
+ * The founder's mockup put a live ranked "WHO'S WINNING RIGHT NOW" in this
+ * slot, and the same brief forbids a universal class champion two sections
+ * later. Both instincts are right: the room must feel alive, and no desk may be
+ * told it is losing while it still has moves.
+ *
+ * The resolution is DISAGREEMENT. Every line below is a computed fact about the
+ * class, no desk sits above another, and each one is an argument the teacher can
+ * open in the next breath. It makes a room look up harder than a ranking does,
+ * because the question is unresolved.
+ *
+ * Every line is a claim atom (BC-20), never a bare template literal, so the
+ * audit recomputes what each sentence asserts rather than proof-reading it.
+ */
+function roomDisagrees(state: SameLineL1State, phase: CanonicalPhase): readonly Claimed[] {
+  const desks = Object.values(state.desks);
+  const out: Claimed[] = [];
+  if (desks.length === 0) return out;
+
+  /* 1. The same player, wanted by many. During an open day this is the live
+     count; afterwards it is what the settled day recorded. Either way it is a
+     count of desks and never a name or a price. */
+  const interest =
+    phase === "PLAY"
+      ? liveInterest(state)
+      : (state.history[state.history.length - 1]?.interest ?? {});
+  let hottest: { id: string; n: number } | null = null;
+  for (const [id, n] of Object.entries(interest)) {
+    if (!hottest || n > hottest.n) hottest = { id, n };
+  }
+  if (hottest && hottest.n >= 2) {
+    const player = playerById(hottest.id);
+    const n = claim("rd-contested", hottest.n, "int", { assertsSign: "positive", bounds: { min: 2 } });
+    const role = player?.role ?? "player";
+    out.push({
+      text: `${n.rendered} desks want the same ${role.toLowerCase()}. Only one of them can have him, and the others will spend the rest of this window on their second choice.`,
+      board: `${n.rendered} DESKS WANT THE SAME ${role}`,
+      claims: [n],
+    });
+  }
+
+  /* 2. Spent against unspent. The single widest split in the room and the one
+     a teacher can always turn into an argument: is holding your money patience
+     or paralysis? The lesson must not answer it. */
+  const spent = desks.filter((d) => d.position.signings.length > 0).length;
+  const held = desks.length - spent;
+  if (spent > 0 && held > 0) {
+    const a = claim("rd-spent", spent, "int", { assertsSign: "positive" });
+    const b = claim("rd-held", held, "int", { assertsSign: "positive" });
+    out.push({
+      text: `${a.rendered} desks have committed money. ${b.rendered} have not spent a dollar. Neither group is ahead — they have bought different things, and one of them bought the ability to change its mind.`,
+      board: `${a.rendered} HAVE SPENT · ${b.rendered} HAVE NOT`,
+      claims: [a, b],
+    });
+  }
+
+  /* 3. Which side of which line the room sits on. The module's whole subject,
+     rendered as a split rather than a ranking. */
+  const overApron = desks.filter((d) => d.position.committed >= LINE["apron1"]).length;
+  const underCap = desks.filter((d) => d.position.committed < LINE["cap"]).length;
+  if (overApron > 0 && underCap > 0) {
+    const a = claim("rd-over-apron", overApron, "int", { assertsSign: "positive" });
+    const b = claim("rd-under-cap", underCap, "int", { assertsSign: "positive" });
+    out.push({
+      text: `${a.rendered} desks are past the first apron and ${b.rendered} are still under the cap. They are playing the same three days under different rules, and none of them chose which.`,
+      board: `${a.rendered} PAST THE APRON · ${b.rendered} UNDER THE CAP`,
+      claims: [a, b],
+    });
+  }
+
+  /* 4. Same money, different result. The reading that breaks "spend more, get
+     more" without ever printing a score. */
+  const byJobs = desks
+    .map((d) => ({
+      closed: d.position.signings.filter((sg) => CLUB[d.clubId].jobs.includes(sg.role)).length,
+      spend: d.position.signings.reduce((t, sg) => t + sg.annual, 0),
+    }))
+    .filter((x) => x.spend > 0);
+  if (byJobs.length >= 2) {
+    const most = byJobs.reduce((m, x) => (x.closed > m.closed ? x : m), byJobs[0]!);
+    const dearest = byJobs.reduce((m, x) => (x.spend > m.spend ? x : m), byJobs[0]!);
+    if (most.closed > dearest.closed) {
+      const a = claim("rd-cheap-jobs", most.closed, "int", { assertsSign: "positive" });
+      const b = claim("rd-dear-spend", dearest.spend, "money", { assertsSign: "positive" });
+      const c = claim("rd-dear-jobs", dearest.closed, "int", { assertsSign: "nonNegative" });
+      out.push({
+        text: `The desk that closed the most holes closed ${a.rendered} of them. The desk that spent the most spent ${b.rendered} a year and closed ${c.rendered}. Spending more did not buy more here.`,
+        board: `MOST HOLES CLOSED: ${a.rendered} · BIGGEST SPENDER CLOSED: ${c.rendered}`,
+        claims: [a, b, c],
+      });
+    }
+  }
+
+  return out;
+}
+
 function boardView(state: SameLineL1State, phase: CanonicalPhase): unknown {
   // Structurally never handed a seat identity. Everything here is class-level.
   const named = state.history.flatMap((h) => h.awards).filter((a) => !playerById(a.playerId)?.generic);
@@ -840,7 +941,26 @@ function boardView(state: SameLineL1State, phase: CanonicalPhase): unknown {
     signed: named.map((a) => ({ player: a.name, club: CLUB[deskClubOf(state, a.winner as unknown as string) ?? "brooklyn"].name, priceText: money(a.annual) })),
     beat: state.beat,
     beatTitle: REVEAL_BEATS[state.beat]?.title ?? "",
+    beats: REVEAL_BEATS,
     remaining: BOARD.filter((p) => !state.taken.includes(p.id)).length,
+    desks: Object.keys(state.desks).length,
+    offersIn: Object.keys(state.pending).length,
+    windowClosed: state.windowClosed,
+    /* The market as the room can see it: who is still there, and how many desks
+       want each of them. A count, never a club and never a price — the board is
+       structurally never handed a seat identity and this keeps it that way even
+       though the information is genuinely about the seats. */
+    market: (() => {
+      const interest = phase === "PLAY" ? liveInterest(state) : {};
+      const taken = new Set(state.taken);
+      return BOARD.filter((p) => !taken.has(p.id)).map((p) => ({
+        name: p.name,
+        role: p.role,
+        askText: money(p.ask.value),
+        interest: interest[p.id] ?? 0,
+      }));
+    })(),
+    disagreements: roomDisagrees(state, phase).map((c) => ({ text: c.text, board: onBoard(c) })),
   };
 }
 

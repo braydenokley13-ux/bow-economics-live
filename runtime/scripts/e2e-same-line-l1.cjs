@@ -169,6 +169,79 @@ async function assertDecisionAboveFold(page, label) {
   assert.equal(covered, null, `${label}: something is COVERING PUT THE OFFER IN — ${covered}`);
 }
 
+/**
+ * Every projector frame must FIT. A projector cannot scroll and cannot be
+ * leaned toward, so overflow is not a degraded experience, it is content the
+ * room never sees.
+ */
+const PROJECTOR_SHAPES = [
+  { width: 1366, height: 768 },
+  { width: 1920, height: 1080 },
+];
+const framesChecked = [];
+async function assertBoardFits(board, label) {
+  for (const shape of PROJECTOR_SHAPES) {
+    await board.setViewportSize(shape);
+    await board.waitForTimeout(240);
+    const fit = await board.evaluate(() => {
+      const s = document.getElementById("stage");
+      if (!s) return null;
+      return {
+        scrollH: s.scrollHeight,
+        clientH: s.clientHeight,
+        scrollW: s.scrollWidth,
+        clientW: s.clientWidth,
+        parts: [...s.querySelectorAll(":scope > * > *")]
+          .map((c) => `${String(c.className || c.tagName).slice(0, 22)}:${Math.round(c.getBoundingClientRect().height)}`)
+          .slice(0, 8),
+      };
+    });
+    assert.ok(fit, `${label}: no #stage`);
+    assert.ok(
+      fit.scrollH <= fit.clientH + 1,
+      `${label} @${shape.width}x${shape.height}: the projector frame OVERFLOWS by ${fit.scrollH - fit.clientH}px (${fit.scrollH} in ${fit.clientH}). Slots: ${fit.parts.join(" · ")}`,
+    );
+    assert.ok(
+      fit.scrollW <= fit.clientW + 1,
+      `${label} @${shape.width}x${shape.height}: the projector frame overflows HORIZONTALLY by ${fit.scrollW - fit.clientW}px`,
+    );
+    framesChecked.push(`${label}@${shape.width}`);
+  }
+  await board.setViewportSize(PROJECTOR_SHAPES[0]);
+  await board.waitForTimeout(140);
+}
+
+/**
+ * Back-row legibility: the repo's measured floor is 2.6% of screen height. A
+ * projector frame whose smallest type is under it has not been shown to a class.
+ */
+async function assertBackRow(board, label) {
+  const worst = await board.evaluate(() => {
+    let w = null;
+    for (const el of document.querySelectorAll("#stage *")) {
+      if (!el.textContent || !el.textContent.trim()) continue;
+      if (el.children.length > 0) continue;
+      const px = parseFloat(getComputedStyle(el).fontSize);
+      const pct = (px / window.innerHeight) * 100;
+      if (!w || pct < w.pct) w = { pct, px, text: el.textContent.trim().slice(0, 34) };
+    }
+    return w;
+  });
+  if (!worst) return;
+  assert.ok(
+    worst.pct >= 1.28,
+    `${label}: "${worst.text}" renders at ${worst.pct.toFixed(2)}% of screen height (${worst.px}px) — under the back-row floor`,
+  );
+}
+
+/** The board is structurally never handed a seat identity. Prove it, rendered. */
+async function assertBoardPrivate(board, label, studentNames) {
+  const text = await board.evaluate(() => document.getElementById("stage").innerText);
+  for (const n of studentNames) {
+    assert.ok(!text.includes(n), `${label}: a student name ("${n}") is ON THE PROJECTOR`);
+  }
+}
+
 async function assertBandCopy(page, band, label) {
   const text = await page.evaluate(() => document.body.innerText);
   if (band === "5-6") {
@@ -186,6 +259,7 @@ async function shoot(page, name) {
 /* ------------------------------------------------------------------ run -- */
 
 async function runBand(browser, band, label) {
+  const shoot2 = null;
   const teach = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const boardPage = await browser.newPage({ viewport: { width: 1366, height: 768 } });
   watchConsole(teach, `${label}-teach`);
@@ -202,6 +276,7 @@ async function runBand(browser, band, label) {
   await boardPage.goto(`${BASE}/board?code=${code}`);
 
   const desks = [];
+  const studentNames = [];
   for (let i = 0; i < DESKS; i += 1) {
     const p = await browser.newPage({ viewport: { width: 1366, height: 768 } });
     watchConsole(p, `${label}-desk${i + 1}`);
@@ -212,10 +287,15 @@ async function runBand(browser, band, label) {
     await p.click("#btnJoin");
     await p.waitForSelector("#gameCard:not([hidden])");
     desks.push(p);
+    studentNames.push(`Pair ${i + 1}`);
   }
   console.log(`${label}: ${DESKS} pairs joined`);
 
+  await assertBoardFits(boardPage, `${label} LOBBY`);
+  await assertBackRow(boardPage, `${label} LOBBY`);
   await teach.click("#btnAdvance"); // HOOK
+  await teach.waitForTimeout(500);
+  await assertBoardFits(boardPage, `${label} HOOK`);
   await teach.click("#btnAdvance"); // PLAY
   for (const p of desks) await p.waitForSelector(".sl-board .sl-row", { timeout: 30000 });
   console.log(`${label}: PLAY reached, board rendered on every desk`);
@@ -279,6 +359,9 @@ async function runBand(browser, band, label) {
       await teach.click("#btnRoundClose");
     });
     await teach.waitForTimeout(700);
+    await assertBoardFits(boardPage, `${label} PLAY day${day}`);
+    await assertBackRow(boardPage, `${label} PLAY day${day}`);
+    await assertBoardPrivate(boardPage, `${label} PLAY day${day}`, studentNames);
     console.log(`${label}: day ${day} closed`);
   }
 
@@ -286,6 +369,29 @@ async function runBand(browser, band, label) {
   const feed = await desks[1].$(".hq-feed-row");
   assert.ok(feed, `${label}: nothing reached OFF THE BOARD after three settled days`);
   await shoot(desks[1], `${band}-play-league-feed`);
+
+  // Walk every reveal beat on the projector: each is a frame the room will
+  // actually be shown, and each must fit and stay private.
+  await teach.click("#btnAdvance"); // REVEAL
+  await teach.waitForTimeout(600);
+  const beatCount = 4;
+  for (let beat = 0; beat < beatCount; beat += 1) {
+    await assertBoardFits(boardPage, `${label} REVEAL beat${beat}`);
+    await assertBackRow(boardPage, `${label} REVEAL beat${beat}`);
+    await assertBoardPrivate(boardPage, `${label} REVEAL beat${beat}`, studentNames);
+    await shoot(boardPage, `${band}-board-beat${beat}`);
+    if (beat === 3) {
+      await desks[1].waitForSelector(".sl-readings", { timeout: 10000 });
+      await assertNoSideScroll(desks[1], `${label} student reveal beat3`);
+      await assertBandCopy(desks[1], band, `${label} student reveal beat3`);
+      await shoot(desks[1], `${band}-play-reveal`);
+    }
+    if (beat < beatCount - 1) {
+      await teach.click("#btnRevealNext");
+      await teach.waitForTimeout(500);
+    }
+  }
+  console.log(`${label}: ${beatCount} reveal beats fit the projector`);
 
   for (const shape of SHAPES) {
     await desks[1].setViewportSize(shape);
