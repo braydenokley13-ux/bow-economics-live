@@ -3867,6 +3867,7 @@ type HLProfile = { id: string; sizeLabel: string; plainLine: string; bill: numbe
 type HLBooks = { cash: number; draw: number; inDebt: boolean };
 type HLSlateRow = { week: number; settled: boolean; open: boolean; hosting: HLClub; visiting: HLClub };
 type HLWeek = {
+  call: { called: string; actual: string; right: boolean; line: string } | null;
   week: number;
   price: number;
   share: number;
@@ -4327,6 +4328,11 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
         <span class="fh-kept-label">Kept</span>
         <span class="fh-kept-num numeric">${money(w.net)}</span>
       </div>
+      ${
+        w.call
+          ? `<div class="hl-gate-result ${w.call.right ? "right" : "wrong"}" id="hlGateResult">${escapeHtml(w.call.line)}</div>`
+          : ""
+      }
       <div class="hl-road" id="hlRoad">${escapeHtml(w.road.line)}</div>
       ${hlPriceCfHtml(w)}
       <div class="hl-ledger-block">
@@ -4361,6 +4367,84 @@ function hlHistoryHtml(history: HLWeek[]): string {
         </div>`,
         )
         .join("")}
+    </div>`;
+}
+
+type HLGateBand = { id: string; label: string; blurb: string };
+type HLGateCall = {
+  prompt: string;
+  bands: HLGateBand[];
+  called: string | null;
+  building: string;
+  capacity: number;
+  room: { locked: number; seated: number; line: string };
+};
+
+/**
+ * THE GATE CALL — what a pair does while the rest of the room commits.
+ *
+ * The locked screen used to be a banner saying there was nothing to do, over
+ * an empty half-screen, three times a lesson. This is the same wait, spent on
+ * the one thing the pair cannot look up: the crowd. Every word here comes off
+ * the module's payload; the client picks no band and writes no verdict.
+ */
+function hlGateCallHtml(gate: HLGateCall | undefined): string {
+  if (!gate) return "";
+  const called = gate.called;
+  return `<div class="hl-gate" id="hlGate">
+      <div class="hl-gate-head">
+        <span class="eyebrow" style="font-size:11px;">While the rest of the league commits</span>
+        <span class="hl-gate-room">${escapeHtml(gate.room.line)}</span>
+      </div>
+      <p class="hl-gate-prompt">${escapeHtml(gate.prompt)}</p>
+      <div class="hl-gate-bands">
+        ${gate.bands
+          .map(
+            (b) => `<button type="button" class="hl-gate-band${called === b.id ? " is-called" : ""}" data-band="${escapeHtml(b.id)}" ${
+              called === b.id ? 'aria-pressed="true"' : 'aria-pressed="false"'
+            }>
+              <span class="hl-gate-band-label">${escapeHtml(b.label)}</span>
+              <span class="hl-gate-band-blurb">${escapeHtml(b.blurb)}</span>
+            </button>`,
+          )
+          .join("")}
+      </div>
+      <p class="hl-gate-foot">${
+        called
+          ? `Your call is in — ${escapeHtml(gate.building)} answers when the week closes. You can change it until then.`
+          : "No money rides on this. It is only worth something if you say it out loud before you know."
+      }</p>
+    </div>`;
+}
+
+/**
+ * The building before the doors open: full house drawn dark, nobody in it.
+ *
+ * H1 in L1's `fhLockedWaiting` and the same beat here — no timer, no spinner,
+ * no fake activity. The pair is looking at the room it just priced, which is
+ * exactly what the gate call beside it asks about.
+ */
+function hlDarkBuildingHtml(view: Record<string, unknown>): string {
+  const capacity = Number(view["capacity"] ?? 0);
+  const gate = view["gateCall"] as HLGateCall | undefined;
+  const building = gate?.building ?? "";
+  return `<div class="hl-dark-house" id="hlDarkHouse">
+      ${fhArenaFrame({
+        view: "hero",
+        turnout: 0,
+        seatsOpen: Math.max(1, capacity),
+        soldOut: false,
+        w: 620,
+        h: 300,
+        motion: false,
+        label: "",
+        cls: "hl-arena fh-dark-building",
+        maxHeight: Math.round((fhTight() ? 430 : 500) / 4.6),
+      })}
+      <div class="hl-dark-house-foot">
+        <span class="hl-dark-house-name">${escapeHtml(building)}</span>
+        <span class="hl-dark-house-cap numeric">${capacity.toLocaleString()} seats, doors shut</span>
+      </div>
     </div>`;
 }
 
@@ -4490,8 +4574,8 @@ function renderHLPlay(view: Record<string, unknown>): void {
         ${shock ? `<div class="hl-shock ${shock.hostingThem ? "mine" : ""}" id="hlShock">${escapeHtml(shock.line)}</div>` : ""}
       </div>`;
   const dialsHtml = locked
-    ? `<div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-       <div class="fh-locked-recap"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>`
+    ? `<div class="fh-locked-recap" style="margin-top:12px;"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>
+       ${hlGateCallHtml(view["gateCall"] as HLGateCall | undefined)}`
     : `
         <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
@@ -4530,7 +4614,13 @@ function renderHLPlay(view: Record<string, unknown>): void {
     ? `<div class="hl-bell-head" id="hlBellHead">THE WEEK IS IN THE BOOKS</div>${settlementHtml}`
     : last
       ? hlWeekResultHtml(last, `Week ${last.week} — how it went`)
-      : "";
+      : locked
+        ? // Week 1 has no evidence yet, so a locked pair used to sit beside an
+          // empty half-screen. It gets the thing the gate call is a call ABOUT:
+          // its own building, doors shut, nobody in it. Same treatment L1 gives
+          // the same moment (`fhLockedWaiting`).
+          hlDarkBuildingHtml(view)
+        : "";
   body.innerHTML = `
     <div id="hlPlayRoot" class="hl-decide">
       <div class="hl-span">${hlTopStrip(view)}</div>
@@ -4575,7 +4665,22 @@ function renderHLPlay(view: Record<string, unknown>): void {
     if (scroller) scroller.scrollTop = 0;
   }
 
-  if (locked) return;
+  if (locked) {
+    // The gate call is the only live control on a locked desk. It changes no
+    // economics, so it never needs the lock bar's arming guard.
+    for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("#hlGate .hl-gate-band"))) {
+      btn.onclick = () => {
+        const band = btn.dataset["band"];
+        if (!band) return;
+        for (const other of Array.from(document.querySelectorAll<HTMLButtonElement>("#hlGate .hl-gate-band"))) {
+          other.classList.toggle("is-called", other === btn);
+          other.setAttribute("aria-pressed", other === btn ? "true" : "false");
+        }
+        outbox?.submit({ type: "gateCall", band });
+      };
+    }
+    return;
+  }
 
   const dial = $<HTMLInputElement>("hlPriceDial");
   const readout = $("hlPriceReadout");

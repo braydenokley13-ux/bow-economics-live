@@ -514,6 +514,13 @@ export type SettledWeek = {
   roadHostDrawBefore: number;
   roadDollars: number;
   roadTurnoutLift: number;
+  /**
+   * The gate call that stood when the week bell rang, or null on a desk that
+   * did not make one (and on any week rehydrated from a snapshot written before
+   * the call existed). Frozen here so the settlement resolves against what the
+   * pair actually said, not against a later state.
+   */
+  gateCall: GateCall | null;
 };
 
 export type Club = {
@@ -537,6 +544,12 @@ export type Club = {
    * rehydrated from a snapshot written before this field existed.
    */
   ledgerPrediction: "gave" | "took" | null;
+  /**
+   * The pair's call on THIS week's crowd, made while locked and waiting for the
+   * room. Cleared when the week settles (it moves onto the settled week), and
+   * null on any club rehydrated from a snapshot written before it existed.
+   */
+  gateCall: GateCall | null;
 };
 
 export type HostLeagueState = {
@@ -619,6 +632,97 @@ export const synthPageCount = (cards: number): number => Math.max(1, Math.ceil(c
 
 export const REVEAL_STEPS = 5;
 
+/* ------------------------------------------------------ the gate call -- */
+
+/**
+ * THE GATE CALL (W6 repair `play-l2-locked-dead-time`).
+ *
+ * A pair that commits early used to sit on a screen that said, in the product's
+ * own words, "Locked. Nothing to do but find out" — with the bottom half of the
+ * device blank — until the slowest desk in the room finished. Three weeks of
+ * that is three stretches of dead air in a fifty-minute class, and dead air is
+ * where a room stops being in the lesson.
+ *
+ * The wait is real and should stay teacher-paced, so the repair does not remove
+ * it. It gives the wait the one thing the pair genuinely does not know and
+ * cannot look up: the crowd. The call is free, changeable while the week is
+ * open, and carries no money — its whole job is to make the pair COMMIT to a
+ * reading before the building answers, so that the settlement is an answer to
+ * something they said rather than a number that merely arrives.
+ *
+ * The three bands are honestly uncertain at the prices pairs actually choose:
+ * measured across the sixteen real clubs, the six league Draws and the $16-$60
+ * band, they come out 26% / 28% / 46%. A call nobody can get wrong teaches
+ * nothing, and neither does one nobody can get right.
+ */
+export type GateCall = "packed" | "busy" | "quiet";
+
+/** The fill fraction at or above which the building reads PACKED. */
+export const GATE_PACKED_FLOOR = 0.85;
+/** The fill fraction at or above which the building reads BUSY. */
+export const GATE_BUSY_FLOOR = 0.7;
+
+export const GATE_BANDS: readonly { id: GateCall; label: string; blurb: string }[] = [
+  { id: "packed", label: "PACKED", blurb: "nearly every seat sold" },
+  { id: "busy", label: "BUSY", blurb: "a good crowd, real gaps in it" },
+  { id: "quiet", label: "QUIET", blurb: "a lot of empty seats" },
+];
+
+export const GATE_CALL_PROMPT = "Your price is in. Nobody knows the crowd yet — not even you. Call it: how full does your building get?";
+
+/**
+ * How much of the room has committed, as an aggregate. Never a seat identity —
+ * `/play` is private and stays private (D14/CLAUDE.md 11); this is the same
+ * class-level fact the projector already carries, and it is what turns "wait"
+ * into a finite, legible thing the pair can see the end of.
+ */
+export function roomLockLine(state: HostLeagueState): { locked: number; seated: number; line: string } {
+  const seatedClubs = state.clubs.slice(0, state.leagueSize).filter((c) => c.seatId !== null);
+  const locked = seatedClubs.filter((c) => c.locked).length;
+  const seated = seatedClubs.length;
+  const waiting = seated - locked;
+  return {
+    locked,
+    seated,
+    line:
+      waiting <= 0
+        ? `All ${seated} desks are in. Your teacher closes the week.`
+        : `${locked} of ${seated} desks are in. ${waiting === 1 ? "One desk is" : `${waiting} desks are`} still deciding.`,
+  };
+}
+
+/** Which band a settled home night actually landed in. */
+export function gateBandOf(home: HomeSettlement): GateCall {
+  const fill = home.capacity > 0 ? home.turnout / home.capacity : 0;
+  return fill >= GATE_PACKED_FLOOR ? "packed" : fill >= GATE_BUSY_FLOOR ? "busy" : "quiet";
+}
+
+const gateLabel = (band: GateCall): string => GATE_BANDS.find((b) => b.id === band)!.label;
+
+/**
+ * How the settled week answers the pair's call.
+ *
+ * Deliberately forecasting language, never a verdict on the price: reading a
+ * crowd right and pricing well are different skills, and the product must not
+ * let one stand in for the other. `null` on a week nobody called.
+ */
+export function gateCallResolvedFor(week: SettledWeek): { called: GateCall; actual: GateCall; right: boolean; line: string } | null {
+  const called = week.gateCall;
+  if (called === null) return null;
+  const actual = gateBandOf(week.home);
+  const fill = Math.round((week.home.turnout / Math.max(1, week.home.capacity)) * 100);
+  const crowd = `${week.home.turnout.toLocaleString()} came — ${fill}% of the building`;
+  return {
+    called,
+    actual,
+    right: called === actual,
+    line:
+      called === actual
+        ? `You called ${gateLabel(called)}. ${crowd}. You read it.`
+        : `You called ${gateLabel(called)}. ${crowd}, which is ${gateLabel(actual)}. The building did not go the way you read it.`,
+  };
+}
+
 /**
  * The horizon rule, in the shortest true form that still teaches it, for the
  * projector's standing chip on REVEAL stage 5. Every desk was shown this rule
@@ -697,6 +801,7 @@ function makeClub(slot: number): Club {
     starGone: false,
     weeks: [],
     ledgerPrediction: null,
+    gateCall: null,
   };
 }
 
@@ -854,6 +959,7 @@ function settleWeek(state: HostLeagueState, honorPendingDials: boolean): HostLea
       roadHostDrawBefore: drawBefore[roadHostSlot]!,
       roadDollars: roadHome.visitorDollars,
       roadTurnoutLift: roadHome.visitorFans,
+      gateCall: club.gateCall ?? null,
     };
     clubs[i] = {
       ...club,
@@ -862,6 +968,7 @@ function settleWeek(state: HostLeagueState, honorPendingDials: boolean): HostLea
       price: profile.housePrice,
       share: 0,
       locked: false,
+      gateCall: null,
       weeks: [...club.weeks, settled],
     };
   }
@@ -2750,6 +2857,10 @@ function viewWeek(state: HostLeagueState, club: Club, w: SettledWeek) {
   const priceCf = priceCounterfactualFor(state, club, w);
   return {
     priceCf,
+    // How the pair's locked-and-waiting call came out. The SENTENCE is authored
+    // here, never in the client: the desk renders words, it does not write
+    // verdicts (R-1).
+    call: gateCallResolvedFor(w),
     week: w.week + 1,
     price: w.price,
     share: w.share,
@@ -3121,6 +3232,27 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       return { ok: true, state: { ...state, barReleased: true, barReleasedAtWeek: state.weekIndex, lockedAtBarRelease: lockedNow(state) } };
     }
 
+    if (action.type === "gateCall") {
+      // The locked-and-waiting beat. Free, carries no money, changes no settled
+      // number — its whole job is to have the pair COMMIT to a reading of the
+      // crowd before the building answers. Changeable while the week is open on
+      // purpose: a fifth-grader's misclick must not lock a wrong call in for a
+      // whole week, and the commitment that matters is the one standing when
+      // the bell rings, which is what the settlement freezes.
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the gate" };
+      if (ctx.phase !== "PLAY") return { ok: false, reason: `the gate is called during PLAY (session is in ${ctx.phase})` };
+      const slot = state.seatToSlot[ctx.seatId];
+      if (slot === undefined) return { ok: false, reason: "this seat has no club" };
+      const club = state.clubs[slot]!;
+      if (state.weekIndex >= WEEK_COUNT) return { ok: false, reason: "the season is in the books" };
+      if (!club.locked) return { ok: false, reason: "commit your price first — the call is what you do while the room finishes" };
+      const band = action["band"];
+      if (band !== "packed" && band !== "busy" && band !== "quiet") return { ok: false, reason: "call it packed, busy or quiet" };
+      const clubs = state.clubs.slice();
+      clubs[slot] = { ...club, gateCall: band };
+      return { ok: true, state: { ...state, clubs } };
+    }
+
     if (action.type === "ledgerPredict") {
       // ONE CALL, before beat 2 answers it. This changes no economics and no
       // settled number: it is the difference between a reveal happening TO the
@@ -3186,7 +3318,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
 
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
-    if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock"];
+    if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock", "gateCall"];
     if (phase === "REVEAL") return ["takeSeat", "ledgerPredict"];
     // W5 N-3: still offered, so a late device gets an answer instead of a 409 loop.
     return ["takeSeat"];
@@ -3306,8 +3438,23 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             modeledDollarsLine: MODELED_DOLLARS_SHORT,
             history,
             lastSettled: history[history.length - 1] ?? null,
+            // The locked-and-waiting beat (W6 `play-l2-locked-dead-time`). The
+            // room line is an aggregate, never a seat: /play still never learns
+            // which desk is which.
+            ...(club.locked
+              ? {
+                  gateCall: {
+                    prompt: GATE_CALL_PROMPT,
+                    bands: GATE_BANDS,
+                    called: club.gateCall ?? null,
+                    building: defOf(club).building,
+                    capacity: defOf(club).capacity,
+                    room: roomLockLine(state),
+                  },
+                }
+              : {}),
             message: club.locked
-              ? "Locked. Nothing to do but find out — the week closes when your teacher says so."
+              ? "Your price is in. The week closes when your teacher says so."
               : "No preview. Read the card, read the Draws, and commit.",
           };
         }
