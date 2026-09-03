@@ -221,6 +221,46 @@ async function main() {
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best effort */ }
   }
   console.log(JSON.stringify(report, null, 2));
+
+  /* ------------------------------------------------------------ the gate --
+   * The founder's instruction was to measure first and not invent a number,
+   * so these are derived from the measurement rather than chosen. Measured on
+   * this machine, one Node process, with push connected:
+   *
+   *          teacher -> projector p99      teacher -> every desk p99
+   *    1 desk            10 ms                        41 ms (cold start)
+   *   16 desks           14 ms                        14 ms
+   *   32 desks           14 ms                        21 ms
+   *
+   * Doubling the room costs about seven milliseconds, which is the founder's
+   * "16 must not be the cliff edge" answered with numbers. With the stream
+   * blocked entirely, the same p99s are 955 ms and 1054 ms — the poll interval,
+   * which is what the fallback is supposed to cost and nothing more.
+   *
+   * The gates sit an order of magnitude above the push measurements and about
+   * 1.4x above the fallback ones: high enough that ordinary variance on a
+   * slower machine never trips them, low enough that any of the failures this
+   * transport has actually had (a poll storm, a lost stream that nothing
+   * reconciles, a per-desk cost that grows with the room) fails here.
+   */
+  const GATE = USE_STREAM
+    ? { teacherToProjector: 250, teacherToStudent: 250, studentLockToTeacher: 400 }
+    : { teacherToProjector: 2000, teacherToStudent: 2000, studentLockToTeacher: 2500 };
+  const failures = [];
+  for (const [name, limit] of Object.entries(GATE)) {
+    const got = report[name]?.p99;
+    if (got === null || got === undefined) failures.push(`${name}: never measured`);
+    else if (got > limit) failures.push(`${name}: p99 ${got}ms over the ${limit}ms gate (max ${report[name].max}ms)`);
+  }
+  if (USE_STREAM && report.pushConnected.desks < DESKS) {
+    failures.push(`push reached ${report.pushConnected.desks} of ${DESKS} desks — the primary transport is not primary`);
+  }
+  if (failures.length > 0) {
+    console.error(`[latency] FAIL at ${DESKS} desks:\n  ${failures.join("\n  ")}`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`[latency] PASS at ${DESKS} desks (${report.transport})`);
 }
 
 main().catch((e) => { console.error("latency harness failed:", e); process.exit(2); });
