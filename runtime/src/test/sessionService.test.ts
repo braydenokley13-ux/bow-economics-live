@@ -135,13 +135,23 @@ test("rejoin with a wrong PIN is rejected", async () => {
 
 /* --------------------------------------------------------- R3: rejoin lockout -- */
 
+/**
+ * A PIN that is guaranteed not to be this seat's. `generatePin` is uniform over
+ * all 10,000 values, so a hard-coded "0000" is the seat's real PIN once every
+ * ten thousand runs and the test then fails for a reason that has nothing to do
+ * with what it is checking. A rare flake is worse than a frequent one: it is
+ * the kind that gets re-run and waved through.
+ */
+const notThePin = (pin: string): string => (pin === "0000" ? "1111" : "0000");
+
 test("R3: a seat locks out after 5 wrong PINs, even against the correct PIN, until the teacher clears it", async () => {
   const service = freshService();
   const { session, teacherKey } = await newSession(service);
   const joined = await service.join(session.code, "Alex");
 
+  const wrong = notThePin(joined.rejoinPin!);
   for (let i = 0; i < 5; i += 1) {
-    await expectServiceError(service.rejoin(session.code, "Alex", "0000"), 401, "bad_rejoin");
+    await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
   }
   // The 6th attempt is locked out — rejected even with the CORRECT PIN, before it's ever checked.
   await expectServiceError(service.rejoin(session.code, "Alex", joined.rejoinPin!), 423, "rejoin_locked");
@@ -156,13 +166,14 @@ test("R3: a correct rejoin resets the failure counter (occasional typos don't ac
   const service = freshService();
   const { session } = await newSession(service);
   const joined = await service.join(session.code, "Alex");
-  await expectServiceError(service.rejoin(session.code, "Alex", "0000"), 401, "bad_rejoin");
-  await expectServiceError(service.rejoin(session.code, "Alex", "0000"), 401, "bad_rejoin");
+  const wrong = notThePin(joined.rejoinPin!);
+  await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
+  await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
   const rejoined = await service.rejoin(session.code, "Alex", joined.rejoinPin!); // succeeds, resets counter
   assert.ok(rejoined.deviceToken);
   // Now four more wrong guesses shouldn't lock it out yet (counter was reset, not accumulated to 6).
   for (let i = 0; i < 4; i += 1) {
-    await expectServiceError(service.rejoin(session.code, "Alex", "9999"), 401, "bad_rejoin");
+    await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
   }
 });
 
