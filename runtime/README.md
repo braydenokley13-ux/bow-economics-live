@@ -249,6 +249,13 @@ stage where desks propose a number at the league. Browser proofs in
 `scripts/e2e-m2l2.cjs` and `scripts/e2e-m2l3.cjs` assert the read is on the
 console and on neither the projector nor a desk (D30).
 
+**Linking a session that has not finished.** The link picker lists live
+sessions beside finished ones and the seed is read at creation time, so a
+mis-click used to carry a half-played league into the next lesson silently. It
+is still allowed — a period that ran long, a class split over two days — but the
+picker now says what it means before the room is created and stands down for a
+finished session. Browser proof in `scripts/e2e-l2.cjs` (D39).
+
 **The desks, named.** Beside THE ROOM, `/teach` carries THE DESKS: one chip per
 live desk with the module's own handle, the pair actually sitting there, what
 that desk is doing right now, and at most one note. THE ROOM answers *what shape
@@ -1012,11 +1019,18 @@ three static pages), not a general-purpose framework being reinvented.
   JSON-dump fallback for anything else).
   Adding another real lesson module means writing its render functions too;
   the *server* contract is fully generic today, the client shell is not yet.
-- `GET /api/sessions` (the session list) is still unauthenticated — it
-  returns code/title/phase for every session ever created on the box, not
-  seat- or team-identifying data. Lower severity than the R1 gap it was
-  found alongside (that one is closed); worth gating in a future round if
-  this ever runs somewhere less trusted than one teacher's own laptop.
+- **Module 1 defects found during the M2 gauntlet, deliberately NOT fixed here**
+  (M1 is outside this run's scope; both are recorded so they are not lost).
+  (a) `freeAgency.ts` breaks a tie between two identical sealed bids on
+  `submittedAt` — the server's record of when the HTTP request arrived. Two
+  pairs who bid the same number are separated by whose Chromebook was faster,
+  which is the one thing a sealed bid is supposed to rule out. A deterministic
+  seat-id fallback sits behind it, so the outcome is at least reproducible from
+  a snapshot, but the lesson has no economically honest tie-break (cap room, or
+  the agent choosing, would be one). (b) `tradeDeadline.ts` writes
+  `claimedBy[idx]` when a pair claims a carried franchise and never deletes it:
+  there is no release path, so a pair that claims the wrong franchise cannot be
+  unstuck by anyone, including the teacher.
 - `SnapshotRepository` keeps every session/seat ever created in memory for
   the process lifetime — there is no archive/prune path. Not a problem at
   classroom scale (one class, a handful of sessions per day), worth
