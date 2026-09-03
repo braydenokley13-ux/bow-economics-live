@@ -530,6 +530,13 @@ export type Club = {
   joinedAtWeek: number;
   starGone: boolean;
   weeks: SettledWeek[];
+  /**
+   * The pair's one call during REVEAL: did their Draw put MORE money on other
+   * clubs' books than the visiting clubs put on theirs? Taken before beat 2
+   * answers it. `null` on a desk that never called it, and on any club
+   * rehydrated from a snapshot written before this field existed.
+   */
+  ledgerPrediction: "gave" | "took" | null;
 };
 
 export type HostLeagueState = {
@@ -689,6 +696,7 @@ function makeClub(slot: number): Club {
     joinedAtWeek: 1,
     starGone: false,
     weeks: [],
+    ledgerPrediction: null,
   };
 }
 
@@ -3098,6 +3106,23 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       return { ok: true, state: { ...state, barReleased: true, barReleasedAtWeek: state.weekIndex, lockedAtBarRelease: lockedNow(state) } };
     }
 
+    if (action.type === "ledgerPredict") {
+      // ONE CALL, before beat 2 answers it. This changes no economics and no
+      // settled number: it is the difference between a reveal happening TO the
+      // room and WITH it. The desk was otherwise byte-identical across all six
+      // presses of the teacher's advance button.
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the ledger" };
+      if (ctx.phase !== "REVEAL") return { ok: false, reason: `the call is taken during REVEAL (session is in ${ctx.phase})` };
+      if (state.revealStage >= 2) return { ok: false, reason: "the ledger is already on the projector" };
+      const choice = action["choice"];
+      if (choice !== "gave" && choice !== "took") return { ok: false, reason: "call it gave or took" };
+      const slot = state.seatToSlot[ctx.seatId];
+      if (slot === undefined) return { ok: false, reason: "this seat has no club" };
+      const clubs = state.clubs.slice();
+      clubs[slot] = { ...clubs[slot]!, ledgerPrediction: choice };
+      return { ok: true, state: { ...state, clubs } };
+    }
+
     if (action.type === "teacher:revealNext") {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher advances the reveal" };
       if (ctx.phase !== "REVEAL") return { ok: false, reason: `the reveal advances during REVEAL (session is in ${ctx.phase})` };
@@ -3147,6 +3172,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
     if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock"];
+    if (phase === "REVEAL") return ["takeSeat", "ledgerPredict"];
     // W5 N-3: still offered, so a late device gets an answer instead of a 409 loop.
     return ["takeSeat"];
   },
@@ -3276,25 +3302,102 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
           const agg = computeAggregate(state);
           const mine = agg.homeRevenueDecomposition.find((d) => d.slot === slot) ?? null;
           const give = agg.giveAndTake.find((g) => g.slot === slot) ?? null;
+          const beat = phase === "ADAPT" ? REVEAL_STEPS : state.revealStage;
+          // Beat 4's version of this desk: the home week that took the most at
+          // the door, and who was in the building for it.
+          const bestSettled =
+            club.weeks.length > 0 ? club.weeks.reduce((a, b) => (b.home.doorMoney > a.home.doorMoney ? b : a)) : null;
+          const bestHomeWeek = bestSettled
+            ? {
+                week: bestSettled.week,
+                price: bestSettled.price,
+                visitor: defOf(state.clubs[bestSettled.visitorSlot]!).short,
+                visitorDraw: bestSettled.visitorDrawBefore,
+                turnout: bestSettled.home.turnout,
+                doorMoney: Math.round(bestSettled.home.doorMoney),
+                visitorDollars: Math.round(bestSettled.home.visitorDollars),
+              }
+            : null;
           return {
             phase,
             seated: true,
             ...identity,
             books: booksFor(club),
             history,
-            mine,
-            give,
+            // ONE BEAT AT A TIME, IN THE PAYLOAD — not only in the renderer.
+            // Gating this on the client would leave every beat's numbers sitting
+            // in the desk's payload from beat 0, one devtools panel away, and
+            // would put the choreography in a place no unit test can reach. The
+            // beat a number belongs to is a property of the lesson, so the
+            // lesson decides it.
+            ...(beat >= 1 && mine
+              ? {
+                  doorBlocks: {
+                    fromBuilding: mine.fromBuilding,
+                    fromOwnDraw: mine.fromOwnDraw,
+                    fromVisitorDraw: mine.fromVisitorDraw,
+                    visitors: mine.visitors,
+                  },
+                }
+              : {}),
+            ...(beat >= 2 && give ? { give } : {}),
+            ...(beat >= 3 && mine ? { mine } : {}),
+            ...(beat >= 4 && bestHomeWeek ? { bestNight: bestHomeWeek } : {}),
+            ...(beat >= 5 ? { ownReinvest: club.weeks.map((w) => ({ week: w.week, share: w.share, auto: w.auto })) } : {}),
             // play N-4: the free-riding desk's block is three zeroes, and the
             // sentence under it has to be about ITS decision, not about a
             // counterfactual identical to what it did.
-            giveLine: give ? deskChoiceLineClaimed(give).text : "",
+            giveLine: beat >= 2 && give ? deskChoiceLineClaimed(give).text : "",
             // W5 B-1: the heading was the last hand-written branch on `spend`,
             // and it sat directly above the repaired sentence contradicting it.
-            giveHeading: give ? deskChoiceHeadingClaimed(give).text : "",
+            giveHeading: beat >= 2 && give ? deskChoiceHeadingClaimed(give).text : "",
             // econ FL-K: the "most of it was DEALT" sub-label is computed, not asserted.
-            dealtLine: give ? dealtLineClaimed(give).text : "",
+            dealtLine: beat >= 2 && give ? dealtLineClaimed(give).text : "",
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
+            /**
+             * THE BEAT THE DESK IS ON.
+             *
+             * The reveal is five teacher-paced beats on the projector, and the
+             * desk used to print EVERY number all five of them are about from
+             * beat 0 — the season decomposition, the full give-and-take ledger,
+             * the four pipes — before the teacher had revealed anything. The
+             * student device was spoiling the projector: a pair that looked down
+             * had already read the answer to every question the room was about
+             * to be asked, and the choreography the whole lesson is built around
+             * was defeated by the screen in front of them.
+             *
+             * The desk now unfolds WITH the board, one beat at a time, showing
+             * this club's own version of the beat that is up:
+             *   1  the three door blocks — who filled THIS building
+             *   2  this desk's give-and-take ledger (and the call resolves)
+             *   3  all five pipes, including the two nobody in the room can move
+             *   4  this desk's biggest night and what made it
+             *   5  this desk's own reinvest, week by week
+             * ADAPT is after the reveal, so ADAPT shows everything.
+             */
+            deskBeat: beat,
+            // ONE CALL, taken before beat 2 answers it, on this pair's own club.
+            predictOpen: phase === "REVEAL" && state.revealStage < 2 && (club.ledgerPrediction ?? null) === null,
+            predictPrompt:
+              "Across your three home weeks: did YOUR drawing power put more money on other clubs' books than the clubs who visited you put on yours?",
+            prediction: club.ledgerPrediction ?? null,
+            // The verdict sentence is computed HERE, off the settled ledger,
+            // rather than assembled on the client: it is a statement about what
+            // this desk's own season did, and the claim audit is right that the
+            // client is not the place to author one.
+            predictionResolved: (() => {
+              if (state.revealStage < 2 || (club.ledgerPrediction ?? null) === null || !give) return null;
+              const actual: "gave" | "took" = give.gave > give.received ? "gave" : "took";
+              const right = actual === club.ledgerPrediction;
+              const said = club.ledgerPrediction === "gave" ? "you put more on theirs" : "they put more on yours";
+              const was = actual === "gave" ? "You put more on theirs." : "They put more on yours.";
+              return {
+                actual,
+                right,
+                line: `You called ${said}. ${was} ${right ? "You had it." : "That is the one worth arguing about."}`,
+              };
+            })(),
             questions: phase === "ADAPT" ? ADAPT_QUESTIONS : [],
             message:
               phase === "ADAPT"

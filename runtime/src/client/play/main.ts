@@ -4653,68 +4653,182 @@ function renderHLPlay(view: Record<string, unknown>): void {
   });
 }
 
+/**
+ * THE REVEAL, ON THE DESK.
+ *
+ * Five teacher-paced beats go up on the projector. This screen used to print
+ * every number all five of them are about from beat 0 and then never change
+ * again — a diff of the desk's DOM across all six presses came back
+ * byte-identical. Two things were wrong with that at once: the pair had nothing
+ * to do for the longest stretch of the lesson, and, worse, they had already
+ * read the answer to every question the room was about to be asked. The device
+ * was spoiling the room's own reveal.
+ *
+ * The desk now unfolds with the board. Each beat adds THIS club's version of
+ * what the projector is showing, and nothing further. The one interaction is a
+ * call taken before beat 2 answers it — did your drawing power put more money
+ * on other clubs' books than they put on yours — which is a real coin-flip for
+ * a pair that has not seen the ledger, and is settled by their own numbers.
+ */
 function renderHLReveal(view: Record<string, unknown>): void {
   const history = (view["history"] as HLWeek[]) ?? [];
   const mine = view["mine"] as HLMine | null;
   const give = view["give"] as HLGive | null;
   const questions = (view["questions"] as string[]) ?? [];
   const total = Math.max(1, mine?.total ?? 1);
+  const beat = Number(view["deskBeat"] ?? 0);
+  const steps = Number(view["totalRevealSteps"] ?? 5);
+  const predictOpen = Boolean(view["predictOpen"]);
+  const prediction = view["prediction"] as string | null;
+  const resolved = view["predictionResolved"] as { actual: string; right: boolean; line: string } | null;
+  const door = view["doorBlocks"] as
+    | { fromBuilding: number; fromOwnDraw: number; fromVisitorDraw: number; visitors: HLMine["visitors"] }
+    | undefined;
+  const doorTotal = door ? Math.max(1, door.fromBuilding + door.fromOwnDraw + door.fromVisitorDraw) : 1;
+  const bestWeek = view["bestNight"] as
+    | { week: number; price: number; visitor: string; visitorDraw: number; turnout: number; doorMoney: number; visitorDollars: number }
+    | undefined;
+  const ownReinvest = (view["ownReinvest"] as { week: number; share: number; auto: boolean }[] | undefined) ?? [];
+
+  const waiting = `<div class="panel hl-beat-wait" id="hlBeatWait" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">Beat ${beat || "—"} of ${steps}</div>
+      <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-secondary);">Your teacher has not put the first beat up yet. As each one lands, your club's own version of it appears here — the room's is on the board.</p>
+    </div>`;
+
+  const callCard = `
+    <div class="panel hl-call" id="hlLedgerCall" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">Your call, before the ledger goes up</div>
+      <p style="margin:8px 0 0; font-size:14.5px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["predictPrompt"] ?? ""))}</p>
+      ${
+        predictOpen
+          ? `<div class="wr-choice" style="margin-top:10px;">
+               <button type="button" class="btn" id="hlCallGave">I PUT MORE ON THEIRS</button>
+               <button type="button" class="btn" id="hlCallTook">THEY PUT MORE ON MINE</button>
+             </div>`
+          : ""
+      }
+      ${
+        prediction && !resolved
+          ? `<div class="hl-give-note" id="hlCallLocked">You called it: ${prediction === "gave" ? "you put more on theirs" : "they put more on yours"}. Beat 2 settles it.</div>`
+          : ""
+      }
+      ${
+        resolved
+          ? `<div class="hl-give-note ${resolved.right ? "hl-call-right" : ""}" id="hlCallResult">${escapeHtml(resolved.line)}</div>`
+          : ""
+      }
+    </div>`;
+
+  const doorBlocks = door
+      ? `<div class="hl-split" id="hlSeasonDoor">
+           <div class="hl-split-title">Beat 1 · Who filled YOUR building, all three weeks</div>
+           <div class="hl-split-bar">
+             <span class="hl-seg bare" style="width:${(door.fromBuilding / doorTotal) * 100}%"></span>
+             <span class="hl-seg own" style="width:${(door.fromOwnDraw / doorTotal) * 100}%"></span>
+             <span class="hl-seg visitor" style="width:${(door.fromVisitorDraw / doorTotal) * 100}%"></span>
+           </div>
+           <div class="hl-split-rows">
+             <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at your prices</span><span class="numeric">${money(door.fromBuilding)}</span></div>
+             <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw</span><span class="numeric">${money(door.fromOwnDraw)}</span></div>
+             <div class="hl-split-row"><span class="hl-key visitor"></span><span>The clubs who visited you</span><span class="numeric">${money(door.fromVisitorDraw)}</span></div>
+           </div>
+           <div class="hl-split-visitors">${door.visitors
+             .map((v) => `<span>W${v.week}: ${escapeHtml(v.short)} (Draw ${v.draw}) brought ${money(v.dollars)}</span>`)
+             .join("")}</div>
+         </div>`
+      : "";
+
+  const ledger = give
+      ? `<div class="hl-give" id="hlGive">
+           <div class="hl-split-title">Beat 2 · What you gave, what you got</div>
+           <div class="hl-give-sub" id="hlDealtLine">${escapeHtml(String(view["dealtLine"] ?? ""))}</div>
+           <div class="hl-give-row"><span>Your Draw put this on OTHER clubs' books</span><span class="numeric">${money(give.gave)}</span></div>
+           <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
+           <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
+           <div class="hl-give-note">This is not money you kept or lost. It is money that moved because of drawing power — yours and theirs.</div>
+           <div class="hl-give-sub" id="hlGiveChoice">${escapeHtml(String(view["giveHeading"] ?? ""))}</div>
+           <div class="hl-give-row"><span>Of the above, what YOUR spending put in other buildings</span><span class="numeric">${money(give.gaveByChoice)}</span></div>
+           <div class="hl-give-row"><span>What OTHER desks' spending put in yours</span><span class="numeric">${money(give.receivedByChoice)}</span></div>
+           <div class="hl-give-row net"><span>What your spending was worth to YOUR OWN cash</span><span class="numeric ${give.ownGain < 0 ? "neg" : ""}">${money(give.ownGain)}</span></div>
+           <div class="hl-give-note" id="hlGiveLine">${escapeHtml(String(view["giveLine"] ?? ""))} Your Draw went from ${give.drawStart} to ${give.drawEnd}; ${
+             // W5 B-1: the same distinction, one clause later. "you put an
+             // average of 0% back in" is a decision sentence too, and the
+             // abstaining desk never made it.
+             give.neverLocked
+               ? `the house default put an average of ${give.meanShare}% of your door money back in.`
+               : `you put an average of ${give.meanShare}% of your door money back in.`
+           }</div>
+         </div>`
+      : "";
+
+  const pipes = mine
+      ? `<div class="hl-split" id="hlSeasonSplit">
+           <div class="hl-split-title">Beat 3 · All four pipes, plus the national check</div>
+           <div class="hl-split-bar">
+             <span class="hl-seg bare" style="width:${(mine.fromBuilding / total) * 100}%"></span>
+             <span class="hl-seg own" style="width:${(mine.fromOwnDraw / total) * 100}%"></span>
+             <span class="hl-seg visitor" style="width:${(mine.fromVisitorDraw / total) * 100}%"></span>
+             <span class="hl-seg local" style="width:${(mine.localMedia / total) * 100}%"></span>
+             <span class="hl-seg national" style="width:${(mine.national / total) * 100}%"></span>
+           </div>
+           <div class="hl-split-rows">
+             <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at your prices</span><span class="numeric">${money(mine.fromBuilding)}</span></div>
+             <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw</span><span class="numeric">${money(mine.fromOwnDraw)}</span></div>
+             <div class="hl-split-row"><span class="hl-key visitor"></span><span>The clubs who visited you</span><span class="numeric">${money(mine.fromVisitorDraw)}</span></div>
+             <div class="hl-split-row"><span class="hl-key local"></span><span>Local media and sponsors</span><span class="numeric">${money(mine.localMedia)}</span></div>
+             <div class="hl-split-row"><span class="hl-key national"></span><span>National television check</span><span class="numeric">${money(mine.national)}</span></div>
+           </div>
+         </div>`
+      : "";
+
+  const bigNight = bestWeek
+      ? `<div class="hl-give" id="hlBigNight">
+           <div class="hl-split-title">Beat 4 · Your biggest night</div>
+           <div class="hl-give-row"><span>Week ${bestWeek.week} vs ${escapeHtml(bestWeek.visitor)} (Draw ${bestWeek.visitorDraw})</span><span class="numeric">${money(bestWeek.doorMoney)}</span></div>
+           <div class="hl-give-row"><span>Of that, what the visiting club brought</span><span class="numeric">${money(bestWeek.visitorDollars)}</span></div>
+           <div class="hl-give-row"><span>At $${bestWeek.price} a seat</span><span class="numeric">${bestWeek.turnout.toLocaleString()} in</span></div>
+           <div class="hl-give-note">The board is asking which the room would rather have: a big market, or a big visitor. This was your best night — say which one made it.</div>
+         </div>`
+      : "";
+
+  const reinvest =
+    ownReinvest.length > 0
+      ? `<div class="hl-give" id="hlOwnReinvest">
+           <div class="hl-split-title">Beat 5 · What YOU put back, week by week</div>
+           ${ownReinvest
+             .map(
+               (w) =>
+                 `<div class="hl-give-row"><span>Week ${w.week}${w.auto ? " · auto" : ""}</span><span class="numeric">${w.share}%</span></div>`,
+             )
+             .join("")}
+           <div class="hl-give-note">The board has the room's three numbers beside the last-week rule. Yours are here. They are not the same question — the room's is about what a room does when tomorrow runs out.</div>
+         </div>`
+      : "";
+
+  const anyBeat = doorBlocks || ledger || pipes || bigNight || reinvest;
+
   $("gameBody").innerHTML = `
     ${hlDeskHeader(view)}
     ${hlBooksHtml(view["books"] as HLBooks)}
     <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["message"] ?? ""))}</div>
-    ${
-      mine
-        ? `<div class="hl-split" id="hlSeasonSplit">
-             <div class="hl-split-title">Your three weeks, where the money came from</div>
-             <div class="hl-split-bar">
-               <span class="hl-seg bare" style="width:${(mine.fromBuilding / total) * 100}%"></span>
-               <span class="hl-seg own" style="width:${(mine.fromOwnDraw / total) * 100}%"></span>
-               <span class="hl-seg visitor" style="width:${(mine.fromVisitorDraw / total) * 100}%"></span>
-               <span class="hl-seg local" style="width:${(mine.localMedia / total) * 100}%"></span>
-               <span class="hl-seg national" style="width:${(mine.national / total) * 100}%"></span>
-             </div>
-             <div class="hl-split-rows">
-               <div class="hl-split-row"><span class="hl-key bare"></span><span>Your building at your prices</span><span class="numeric">${money(mine.fromBuilding)}</span></div>
-               <div class="hl-split-row"><span class="hl-key own"></span><span>Your own Draw</span><span class="numeric">${money(mine.fromOwnDraw)}</span></div>
-               <div class="hl-split-row"><span class="hl-key visitor"></span><span>The clubs who visited you</span><span class="numeric">${money(mine.fromVisitorDraw)}</span></div>
-               <div class="hl-split-row"><span class="hl-key local"></span><span>Local media and sponsors</span><span class="numeric">${money(mine.localMedia)}</span></div>
-               <div class="hl-split-row"><span class="hl-key national"></span><span>National television check</span><span class="numeric">${money(mine.national)}</span></div>
-             </div>
-             <div class="hl-split-visitors">${mine.visitors
-               .map((v) => `<span>W${v.week}: ${escapeHtml(v.short)} (Draw ${v.draw}) brought ${money(v.dollars)}</span>`)
-               .join("")}</div>
-           </div>`
-        : ""
-    }
-    ${
-      give
-        ? `<div class="hl-give" id="hlGive">
-             <div class="hl-split-title">What you gave, what you got</div>
-             <div class="hl-give-sub" id="hlDealtLine">${escapeHtml(String(view["dealtLine"] ?? ""))}</div>
-             <div class="hl-give-row"><span>Your Draw put this on OTHER clubs' books</span><span class="numeric">${money(give.gave)}</span></div>
-             <div class="hl-give-row"><span>Visiting clubs put this on YOURS</span><span class="numeric">${money(give.received)}</span></div>
-             <div class="hl-give-row net"><span>Net</span><span class="numeric">${money(give.net)}</span></div>
-             <div class="hl-give-note">This is not money you kept or lost. It is money that moved because of drawing power — yours and theirs.</div>
-             <div class="hl-give-sub" id="hlGiveChoice">${escapeHtml(String(view["giveHeading"] ?? ""))}</div>
-             <div class="hl-give-row"><span>Of the above, what YOUR spending put in other buildings</span><span class="numeric">${money(give.gaveByChoice)}</span></div>
-             <div class="hl-give-row"><span>What OTHER desks' spending put in yours</span><span class="numeric">${money(give.receivedByChoice)}</span></div>
-             <div class="hl-give-row net"><span>What your spending was worth to YOUR OWN cash</span><span class="numeric ${give.ownGain < 0 ? "neg" : ""}">${money(give.ownGain)}</span></div>
-             <div class="hl-give-note" id="hlGiveLine">${escapeHtml(String(view["giveLine"] ?? ""))} Your Draw went from ${give.drawStart} to ${give.drawEnd}; ${
-               // W5 B-1: the same distinction, one clause later. "you put an
-               // average of 0% back in" is a decision sentence too, and the
-               // abstaining desk never made it.
-               give.neverLocked
-                 ? `the house default put an average of ${give.meanShare}% of your door money back in.`
-                 : `you put an average of ${give.meanShare}% of your door money back in.`
-             }</div>
-           </div>`
-        : ""
-    }
+    ${beat < 2 || prediction ? callCard : ""}
+    ${anyBeat ? "" : waiting}
+    ${doorBlocks}
+    ${ledger}
+    ${pipes}
+    ${bigNight}
+    ${reinvest}
     ${questions.length > 0 ? `<div class="panel" style="padding:16px; margin-top:12px;"><div class="eyebrow" style="font-size:12px;">Talk to your partner</div><ol class="fh-questions">${questions.map((q) => `<li>${escapeHtml(q)}</li>`).join("")}</ol></div>` : ""}
     <div class="eyebrow" style="font-size:12px; margin:16px 0 6px;">Your weeks</div>
     ${history.map((w) => hlWeekResultHtml(w, `Week ${w.week}`)).join("")}`;
+
+  if (predictOpen) {
+    const send = (choice: string) => outbox?.submit({ type: "ledgerPredict", choice });
+    document.getElementById("hlCallGave")?.addEventListener("click", () => send("gave"));
+    document.getElementById("hlCallTook")?.addEventListener("click", () => send("took"));
+  }
 }
+
 
 /* ================= M2 L3 "Writing the Rule" — student device =================
    Same architecture as L2, deliberately: the pinned commit bar, the two-column
@@ -5102,7 +5216,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
       const myLens = view["myLens"] as WRLens | null;
       const predictOpen = Boolean(view["predictOpen"]);
       const prediction = view["prediction"] as string | null;
-      const resolved = view["predictionResolved"] as { actual: string; right: boolean } | null;
+      const resolved = view["predictionResolved"] as { actual: string; right: boolean; line: string } | null;
       const key = `reveal|${stageNo}|${prediction ?? "none"}|${resolved ? String(resolved.right) : "no"}`;
       if (wrMountKey === key && document.getElementById("wrLens")) return;
       wrMountKey = key;

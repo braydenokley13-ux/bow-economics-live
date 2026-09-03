@@ -1034,6 +1034,54 @@ async function main() {
     // defect is worse than no guard. The board publishes which beat it is
     // holding; that is what is waited on.
     await board.waitForSelector('#stage[data-reveal-stage="0"]', { timeout: 30000 });
+
+    // THE DESK MUST NOT SPOIL THE BOARD.
+    //
+    // At beat 0 the desk used to print every number all five beats are about —
+    // the season decomposition, the whole give-and-take ledger, the four pipes.
+    // A pair that looked down had already read the answer to every question the
+    // room was about to be asked, and a DOM diff across all six presses of the
+    // teacher's advance came back byte-identical. Both halves are checked here:
+    // nothing is on the desk before its beat, and the desk changes when the
+    // board does.
+    const beatMarks = [
+      { stage: 1, sel: "#hlSeasonDoor", what: "who filled your building" },
+      { stage: 2, sel: "#hlGive", what: "the give-and-take ledger" },
+      { stage: 3, sel: "#hlSeasonSplit", what: "the four pipes" },
+      { stage: 4, sel: "#hlBigNight", what: "your biggest night" },
+      { stage: 5, sel: "#hlOwnReinvest", what: "your own reinvest per week" },
+    ];
+    const deskHasBeats = async (page) => page.evaluate((sels) => sels.filter((x) => !!document.querySelector(x)), beatMarks.map((b) => b.sel));
+    await desks[0].waitForSelector("#hlLedgerCall", { timeout: 30000 });
+    const spoiled = await deskHasBeats(desks[0]);
+    assert.deepEqual(
+      spoiled,
+      [],
+      `at beat 0 the desk is already showing ${spoiled.join(", ")} — the student device is spoiling the room's reveal`,
+    );
+
+    // NON-VACUITY. The spoiler check is only worth anything if it rejects a
+    // spoiled desk, so it is shown one.
+    await desks[0].evaluate(() => {
+      const d = document.createElement("div");
+      d.id = "hlGive";
+      d.dataset.poison = "1";
+      document.getElementById("gameBody").appendChild(d);
+    });
+    const poisonSeen = await deskHasBeats(desks[0]);
+    assert.deepEqual(poisonSeen, ["#hlGive"], "the spoiler check did not see a planted ledger — it proves nothing");
+    await desks[0].evaluate(() => document.querySelector('[data-poison="1"]')?.remove());
+    assert.deepEqual(await deskHasBeats(desks[0]), [], "the planted ledger did not come back out");
+    console.log("[e2e-m2l2] NON-VACUITY — a desk showing beat 2's ledger at beat 0 is rejected");
+
+    // The call: taken before the ledger goes up, on this pair's own club.
+    await desks[0].click("#hlCallGave");
+    await desks[1].click("#hlCallTook");
+    await desks[0].waitForSelector("#hlCallLocked", { timeout: 20000 });
+    const lateCall = await desks[2].evaluate(() => !!document.querySelector("#hlCallGave"));
+    assert.ok(lateCall, "a desk that has not called yet must still have the buttons");
+
+    let deskDom = await desks[0].evaluate(() => document.getElementById("gameBody").innerHTML);
     for (let stage = 1; stage <= 5; stage += 1) {
       await teach.click("#btnRevealNext");
       await board.waitForSelector(`#stage[data-reveal-stage="${stage}"]`, { timeout: 30000 });
@@ -1041,6 +1089,26 @@ async function main() {
       assert.ok(headline.length > 0, `reveal stage ${stage} rendered no headline`);
       assert.notEqual(headline, "Waiting", `reveal stage ${stage} is still showing the pre-press frame`);
       headlines.push(headline);
+      // The desk carries THIS club's version of the beat that is up — and
+      // nothing that belongs to a beat the teacher has not pressed yet.
+      const want = beatMarks.filter((b) => b.stage <= stage).map((b) => b.sel);
+      await desks[0].waitForSelector(want[want.length - 1], { timeout: 20000 });
+      const shown = await deskHasBeats(desks[0]);
+      assert.deepEqual(
+        shown.slice().sort(),
+        want.slice().sort(),
+        `at beat ${stage} the desk shows ${shown.join(", ") || "nothing"}, expected exactly ${want.join(", ")}`,
+      );
+      const nextDom = await desks[0].evaluate(() => document.getElementById("gameBody").innerHTML);
+      assert.notEqual(nextDom, deskDom, `the desk did not change when the board moved to beat ${stage}`);
+      deskDom = nextDom;
+      if (stage === 2) {
+        const verdict = await desks[0].evaluate(() => document.querySelector("#hlCallResult")?.textContent?.trim() ?? "");
+        assert.match(verdict, /You called/, "beat 2 did not settle the pair's call");
+        assert.ok(/You had it\.|worth arguing about/.test(verdict), `the call's verdict says nothing either way: "${verdict}"`);
+        const uncalled = await desks[2].evaluate(() => !!document.querySelector("#hlCallResult") || !!document.querySelector("#hlCallGave"));
+        assert.equal(uncalled, false, "a desk that never called is being shown a verdict on a call it did not make");
+      }
       if (stage === 1) {
         await assertPagedBars(board, teach, "REVEAL stage 1", "09");
       } else {

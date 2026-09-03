@@ -2935,3 +2935,9 @@ html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding:
 .wr-league.compact .wr-club-cash { display: none; }
 .wr-league.compact .wr-club-name { height: 72px; }
 .wr-league.compact .wr-club-name > span { font-size: 9.5px; }
+/* The REVEAL call: one tap, before beat 2 settles it. */
+.hl-call { border-left: 3px solid var(--accent-blue); }
+.hl-call .wr-choice { display: flex; gap: 8px; flex-wrap: wrap; }
+.hl-call .wr-choice .btn { flex: 1 1 180px; min-height: 44px; font-size: 13px; }
+.hl-call-right { color: var(--accent-gold); }
+.hl-beat-wait { border-left: 3px solid rgba(255,255,255,0.12); }

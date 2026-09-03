@@ -1925,3 +1925,84 @@ test("W6/RC2: the reinvest chart carries the comparison its sentence makes", () 
     assert.match(reinvestChangeLineBoard(agg, state), new RegExp(`${expected}%`.replace(".", "\\.")));
   }
 });
+
+/* ------------------------------------------------------- the desk's reveal -- */
+
+/**
+ * W6 — THE DESK MUST NOT SPOIL THE BOARD.
+ *
+ * The reveal is five teacher-paced beats on the projector. The desk used to
+ * carry every number all five of them are about from beat 0: the season
+ * decomposition, the whole give-and-take ledger, the four pipes. A pair that
+ * looked down had already read the answer to every question the room was about
+ * to be asked, and a DOM diff of the desk across all six presses came back
+ * byte-identical.
+ *
+ * Gating that in the renderer alone would have left the numbers sitting in the
+ * payload one devtools panel away, and put the choreography somewhere no unit
+ * test can reach. The beat a number belongs to is a property of the lesson, so
+ * this asserts it on the payload the lesson emits.
+ */
+test("W6: no reveal beat's numbers reach the desk before the teacher presses it", () => {
+  let state = fullSession(6);
+  const KEY_BEAT: [string, number][] = [
+    ["doorBlocks", 1],
+    ["give", 2],
+    ["mine", 3],
+    ["bestNight", 4],
+    ["ownReinvest", 5],
+  ];
+  for (let beat = 0; beat <= REVEAL_STEPS; beat += 1) {
+    const view = hostTheLeagueModule.studentView({ ...state, revealStage: beat }, "seat-1", "REVEAL") as Record<string, unknown>;
+    assert.equal(view["deskBeat"], beat, `the desk does not know which beat it is on at stage ${beat}`);
+    for (const [key, itsBeat] of KEY_BEAT) {
+      if (beat >= itsBeat) {
+        assert.ok(view[key] !== undefined, `beat ${itsBeat} is up but the desk was not given "${key}"`);
+      } else {
+        assert.equal(view[key], undefined, `at beat ${beat} the desk already holds "${key}", which belongs to beat ${itsBeat}`);
+      }
+    }
+    // The three ledger sentences belong to beat 2 with the ledger they describe.
+    for (const key of ["giveLine", "giveHeading", "dealtLine"]) {
+      if (beat < 2) assert.equal(view[key], "", `at beat ${beat} the desk is already printing "${key}"`);
+      else assert.ok(String(view[key] ?? "").length > 0, `beat 2 is up but "${key}" is empty`);
+    }
+  }
+  // ADAPT is after the reveal: everything is on the table.
+  const adapt = hostTheLeagueModule.studentView(state, "seat-1", "ADAPT") as Record<string, unknown>;
+  assert.equal(adapt["deskBeat"], REVEAL_STEPS, "ADAPT must show the whole reveal, not beat 0");
+  for (const [key] of KEY_BEAT) assert.ok(adapt[key] !== undefined, `ADAPT is missing "${key}"`);
+});
+
+test("W6: the pair's one reveal call is taken before the beat that answers it, and only from a seat", () => {
+  const state = fullSession(6);
+  const atStage = (n: number): HostLeagueState => ({ ...state, revealStage: n });
+
+  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "gave" }, "PLAY", "seat-1")), /during REVEAL/);
+  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "teacher")), /seated pair/);
+  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "maybe" }, "REVEAL", "seat-1")), /gave or took/);
+  assert.match(bad(act(atStage(2), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "seat-1")), /already on the projector/);
+
+  const called = ok(act(atStage(1), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "seat-1"));
+  const before = hostTheLeagueModule.studentView(called, "seat-1", "REVEAL") as Record<string, unknown>;
+  assert.equal(before["prediction"], "gave");
+  assert.equal(before["predictOpen"], false, "a pair that has called must not be asked again");
+  assert.equal(before["predictionResolved"], null, "the call may not be settled before the ledger goes up");
+
+  const after = hostTheLeagueModule.studentView({ ...called, revealStage: 2 }, "seat-1", "REVEAL") as Record<string, unknown>;
+  const resolved = after["predictionResolved"] as { actual: string; right: boolean; line: string };
+  assert.ok(resolved, "beat 2 did not settle the call");
+  assert.ok(resolved.actual === "gave" || resolved.actual === "took");
+  // The verdict is the room's own arithmetic, not a hand-written branch: it has
+  // to agree with the ledger the same payload prints.
+  const give = after["give"] as { gave: number; received: number };
+  assert.equal(resolved.actual, give.gave > give.received ? "gave" : "took", "the verdict disagrees with the ledger beside it");
+  assert.equal(resolved.right, resolved.actual === "gave");
+  assert.match(resolved.line, /You called/);
+
+  // A desk that never called is never shown a verdict on a call it did not make.
+  const silent = hostTheLeagueModule.studentView({ ...called, revealStage: 2 }, "seat-2", "REVEAL") as Record<string, unknown>;
+  assert.equal(silent["prediction"], null);
+  assert.equal(silent["predictionResolved"], null);
+  assert.equal(silent["predictOpen"], false, "the call closes for everyone once the ledger is up");
+});
