@@ -702,12 +702,53 @@ export type Readings = {
   readonly jobYears: number;
   /** The cheapest annual salary at which this desk closed a job. Infinity if none. */
   readonly cheapestJobClosed: number;
-  /** Contested players won — players another desk also bid on. */
+  /**
+   * Contested players won. COMPUTED, and deliberately NOT one of the five
+   * class-facing readings.
+   *
+   * It was, and the sweep showed why it could not be. A club past the first
+   * apron can offer two guaranteed years where an under-cap club can offer
+   * four, so it loses every bidding war it enters — Minnesota scored zero on
+   * this across all 359 of its reachable plans. A reading a seat can never
+   * move is not a reading of what that desk DID; it is its inherited position
+   * wearing an activity label, which is the exact defect BC-1 exists to
+   * prevent. It stays in the model because the reveal has real things to say
+   * about who lost what to whom, and it stays off the board.
+   */
   readonly contestedWon: number;
+  /**
+   * THE LONGEST COMMITMENT — the term of the longest deal this desk signed.
+   *
+   * The fifth class-facing reading, and the win-now-versus-later axis in its
+   * purest form. Every seat can move it, because the term comes from the tool
+   * and every seat has at least two tools with different terms: one year at
+   * the minimum, two with the small exception, four with the big one, five to
+   * keep your own. And it pulls directly against room left, which is what makes
+   * the pair of them an argument rather than a scoreboard.
+   */
+  readonly longestCommitment: number;
   /** Did this desk end the window with a wall it drew itself? */
   readonly drewWall: boolean;
   /** What the window cost, above what the club already owed. */
   readonly spent: number;
+  /**
+   * ROOM LEFT — the dollars between where this club finished and the next line
+   * above it, or its own wall if it drew one lower.
+   *
+   * The reading the frontier was missing, and its absence was teaching the
+   * exact false lesson this module exists to break. With jobs, years, contests
+   * and walls on the board but nothing measuring what a signing COSTS, the best
+   * plan at every constrained seat was to sign everybody at the highest price
+   * available: money was free, so more of it was never worse. Every one of
+   * those seats reported a Pareto frontier of one point.
+   *
+   * Spending does not cost you an abstract number. It costs you the distance to
+   * the next line, and the distance to the next line is what your February
+   * looks like. So this is the true opposite of closing another job, it is a
+   * function of what the desk DID rather than what it was dealt (BC-1), and it
+   * is the quantity a student can be asked to defend giving up.
+   */
+  readonly roomLeft: number;
 };
 
 export function readingsFor(opening: Position, closing: Position, awards: readonly Award[]): Readings {
@@ -727,19 +768,27 @@ export function readingsFor(opening: Position, closing: Position, awards: readon
     if (s.annual < cheapest) cheapest = s.annual;
   }
   const mine = new Set(closing.signings.map((s) => s.playerId));
+  // The next line above where this club finished — the one its next move would
+  // have to clear — or its own wall, if it drew one lower than that.
+  const above = [LINE.cap, LINE.tax, LINE.apron1, LINE.apron2].find((l) => l > closing.committed) ?? LINE.apron2;
+  const ceiling = closing.wall !== null ? Math.min(closing.wall, above) : above;
+  const roomLeft = Math.max(0, ceiling - closing.committed);
   const contestedWon = awards.filter((a) => a.winner === closing.clubId && a.contested > 1 && mine.has(a.playerId)).length;
+  const longestCommitment = closing.signings.reduce((m, sg) => Math.max(m, sg.years), 0);
   return {
     jobsClosed,
     jobYears,
     cheapestJobClosed: cheapest,
     contestedWon,
+    longestCommitment,
     drewWall: closing.wall !== null,
     spent: closing.committed - opening.committed,
+    roomLeft,
   };
 }
 
 /** The five class-facing readings, in the order the projector shows them. */
-export const READING_IDS = ["jobsClosed", "jobYears", "cheapestJobClosed", "contestedWon", "drewWall"] as const;
+export const READING_IDS = ["jobsClosed", "jobYears", "cheapestJobClosed", "longestCommitment", "roomLeft"] as const;
 export type ReadingId = (typeof READING_IDS)[number];
 
 /* ----------------------------------------------------------------- format -- */

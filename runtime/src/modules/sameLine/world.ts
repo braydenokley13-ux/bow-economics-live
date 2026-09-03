@@ -720,6 +720,79 @@ export const BOARD: readonly FreeAgent[] = [
     incumbent: null,
   },
   {
+    id: "robinson",
+    name: "Mitchell Robinson",
+    role: "BIG",
+    ask: fact(
+      15_044_000,
+      "2026-07-06",
+      "reported 3 years, $47,388,600 signing with Boston; first-year salary $15,044,000, which is Boston's entire non-taxpayer mid-level exception to the dollar",
+      "reporting",
+    ),
+    signedOn: "2026-07-06",
+    reallySignedWith: "Boston",
+    years: 3,
+    minimumScale: false,
+    strength: "One of the best rebounders and rim protectors who changed teams this summer.",
+    risk: "He has missed large parts of several seasons, and the deal runs three years.",
+    // NEW YORK'S OWN FREE AGENT, AND THE SHARPEST CARD ON THE BOARD.
+    //
+    // What makes it sharp is NOT the thing it is easy to say about it. The
+    // first apron did not stop New York keeping him: they held full Bird
+    // rights and could legally have paid anything at all. What stopped them
+    // was the SECOND apron, a little over three million dollars away. So the
+    // honest sentence is not "the rules would not let them" -- it is "the
+    // rules let them keep him, and they still could not afford to", which is
+    // both true and the better lesson. Said the other way it would be a
+    // factual fantasy about how the apron system works, printed as NBA truth.
+    incumbent: "new-york",
+  },
+  {
+    id: "kuminga",
+    name: "Jonathan Kuminga",
+    role: "WING",
+    ask: fact(
+      6_064_000,
+      "2026-07-06",
+      "reported 2 years, $12,431,200 signing with Minnesota; $6,064,000 in year one, which is the taxpayer mid-level exception exactly",
+      "reporting",
+    ),
+    signedOn: "2026-07-06",
+    reallySignedWith: "Minnesota",
+    years: 2,
+    minimumScale: false,
+    strength: "A young forward who can score, at the most a capped-out club is allowed to offer an outsider.",
+    risk: "He has not yet done it as a starter for a whole season.",
+    incumbent: null,
+  },
+  {
+    id: "dosunmu",
+    name: "Ayo Dosunmu",
+    role: "GUARD",
+    ask: fact(
+      19_310_345,
+      "2026-07-10",
+      "reported 5 years, $112,000,000 re-signing with Minnesota; first-year salary $19,310,345, on Bird rights",
+      "reporting",
+    ),
+    signedOn: "2026-07-10",
+    reallySignedWith: "Minnesota",
+    years: 5,
+    minimumScale: false,
+    strength: "A starting guard entering his prime, and the longest commitment available here.",
+    risk: "Five years is a long time, and the money grows every one of them.",
+    // MINNESOTA'S OWN, AND THE PAIR THAT PROVES THE WHOLE APRON SYSTEM.
+    //
+    // One club, one summer, past the same line: Minnesota paid its own player
+    // $19,310,345 and an outsider $6,064,000 -- and the second number is the
+    // taxpayer mid-level exception to the dollar, because that is the most the
+    // rules let a club past the first apron offer somebody who is not already
+    // theirs. Same buyer, same line, three times the price, and the only
+    // difference is whose player he was. Nothing else in the dossier makes the
+    // asymmetry that undeniable, and it is real, dated and sourced.
+    incumbent: "minnesota",
+  },
+  {
     id: "grimes",
     name: "Quentin Grimes",
     role: "GUARD",

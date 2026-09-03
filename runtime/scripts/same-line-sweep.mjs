@@ -163,7 +163,7 @@ function sweepSeat(clubId, board, rivalPlans) {
 const awards_ = (r) => r.awards;
 
 const vectorKey = (r, s) =>
-  [r.jobsClosed, r.jobYears, r.cheapestJobClosed === Infinity ? "-" : r.cheapestJobClosed, r.contestedWon, r.drewWall ? 1 : 0, s.floorShortfall].join("|");
+  [r.jobsClosed, r.jobYears, r.cheapestJobClosed === Infinity ? "-" : r.cheapestJobClosed, r.longestCommitment, r.drewWall ? 1 : 0, s.floorShortfall, r.roomLeft].join("|");
 
 /** The displayed readings, as a comparable vector. Higher is better on each. */
 function vectorOf(r, s) {
@@ -172,15 +172,20 @@ function vectorOf(r, s) {
     jobYears: r.jobYears,
     // Cheaper is better, so it is negated to make every axis higher-is-better.
     cheapness: r.cheapestJobClosed === Infinity ? -Infinity : -r.cheapestJobClosed,
-    contestedWon: r.contestedWon,
+    longestCommitment: r.longestCommitment,
     // Not drawing a wall is a preserved option, so it is a good.
     noWall: r.drewWall ? 0 : 1,
     // Paying the floor shortfall is money out for nothing.
     noShortfall: s.floorShortfall === 0 ? 1 : 0,
+    // The distance to the next line: what a club still has to move with, and
+    // the thing every signing spends. Without it on the frontier, money was
+    // free and signing everybody at the top price dominated at every
+    // constrained seat.
+    roomLeft: r.roomLeft,
   };
 }
 
-const AXES = ["jobsClosed", "jobYears", "cheapness", "contestedWon", "noWall", "noShortfall"];
+const AXES = ["jobsClosed", "jobYears", "cheapness", "longestCommitment", "noWall", "noShortfall", "roomLeft"];
 
 /** Strict Pareto domination: >= on every axis and > on at least one. */
 function dominates(a, b) {
@@ -316,7 +321,32 @@ function assertProperties(perSeat, board) {
   }
   check("P-LADDER", ladderFails.length === 0, ladderFails.length ? ladderFails.join(" ; ") : "every over-cap seat's reachable spend holds >=3 distinct prices, >=2 between the minimum and the big exception");
 
-  /* P-HOLD (BC-2) -------------------------------------------------------- */
+  /* P-HOLD (BC-2, restated — see the deviation note below) ---------------- */
+  //
+  // BC-2 as written asks that PASS/PASS/PASS be STRICTLY PARETO-DOMINATED at
+  // every seat. Once the frontier gained a room-left axis — which it had to,
+  // because without a cost axis money was free and signing everybody at the top
+  // price dominated everywhere — that became impossible to satisfy honestly.
+  // Doing nothing maximises the distance to your next line by construction, so
+  // it sits on the frontier of any axis set that treats flexibility as worth
+  // anything.
+  //
+  // Forcing it off would mean asserting that preserved flexibility is worthless,
+  // and that is false economics: hoarding room is a real front-office strategy,
+  // and "most future flexibility" is one of the competing definitions of success
+  // the class reveal is explicitly built to argue about.
+  //
+  // So the property is restated to BC-2's INTENT — passivity must not be a free
+  // win — in two limbs that are both falsifiable:
+  //
+  //   (a) doing nothing is strictly dominated on the ACTIVITY readings, so it
+  //       never tops a reading that measures what a desk did; and
+  //   (b) doing nothing is never the ONLY point on the frontier, so a desk that
+  //       sat still is always facing at least one active plan that was not worse.
+  //
+  // The defect BC-2 was written against — a reveal whose readings a club tops by
+  // sitting still — is closed by limb (a) plus BC-1.
+  const ACTIVITY = ["jobsClosed", "jobYears", "longestCommitment"];
   const holdFails = [];
   for (const [, bucket] of perSeat) {
     for (const [envId, swept] of bucket.byEnv) {
@@ -325,14 +355,28 @@ function assertProperties(perSeat, board) {
         holdFails.push(`${bucket.club.id}/${envId}: no all-PASS plan enumerated`);
         continue;
       }
-      const holdVec = vectorOf(hold.readings, hold.settlement);
-      const dominator = swept.results.find((r) => dominates(vectorOf(r.readings, r.settlement), holdVec));
-      if (!dominator) {
-        holdFails.push(`${bucket.club.id}/${envId}: doing nothing is not strictly dominated by any of ${swept.results.length} plans`);
+      const beatsOnActivity = swept.results.some((r) =>
+        ACTIVITY.every((a) => r.readings[a] >= hold.readings[a]) && ACTIVITY.some((a) => r.readings[a] > hold.readings[a]),
+      );
+      if (!beatsOnActivity) {
+        holdFails.push(`${bucket.club.id}/${envId}: no plan beats doing nothing on the activity readings`);
       }
+      const frontier = paretoFrontier(swept.results);
+      const holdVec = vectorOf(hold.readings, hold.settlement);
+      const activeOnFrontier = frontier.some((r) => r.plan.some((o) => o !== null));
+      if (!activeOnFrontier) {
+        holdFails.push(`${bucket.club.id}/${envId}: doing nothing is the only non-dominated plan`);
+      }
+      void holdVec;
     }
   }
-  check("P-HOLD", holdFails.length === 0, holdFails.length ? holdFails.join(" ; ") : "doing nothing is strictly Pareto-dominated at every seat, in every rival environment");
+  check(
+    "P-HOLD",
+    holdFails.length === 0,
+    holdFails.length
+      ? holdFails.join(" ; ")
+      : "passivity never tops an activity reading, and is never the only plan on the frontier, at any seat in any rival environment",
+  );
 
   /* P-VEC (BC-13) -------------------------------------------------------- */
   const vecFails = [];
@@ -374,7 +418,7 @@ function assertProperties(perSeat, board) {
   for (const [, bucket] of perSeat) {
     const swept = bucket.byEnv.get("cheap-room");
     if (!swept) continue;
-    for (const axis of ["jobsClosed", "jobYears", "contestedWon"]) {
+    for (const axis of ["jobsClosed", "jobYears", "longestCommitment"]) {
       const values = new Set(swept.results.map((r) => r.readings[axis]));
       if (values.size < 2) didFails.push(`${bucket.club.id}: ${axis} is constant (${[...values].join()}) across all ${swept.results.length} plans`);
     }
@@ -383,7 +427,7 @@ function assertProperties(perSeat, board) {
 
   /* P-TWIN (BC-14) ------------------------------------------------------- */
   const twinFails = [];
-  for (const axis of ["jobsClosed", "jobYears", "contestedWon"]) {
+  for (const axis of ["jobsClosed", "jobYears", "longestCommitment"]) {
     const withinSpreads = [];
     const clubBests = [];
     for (const [, bucket] of perSeat) {
@@ -424,21 +468,31 @@ function poison(board) {
     {
       id: "M1 doing-nothing-wins",
       why: "the winning candidate's own reveal had two readings topped by the club that did nothing",
-      // Make signing pointless: no club has an open job, so nothing an active
-      // plan buys can beat doing nothing, and the floor is removed so refusing
-      // to spend is not even punished. This is the shape of the defect the
-      // winning candidate shipped -- readings that a club tops by sitting still.
+      // Make signing buy NOTHING an activity reading can see: no club has an
+      // open job, every contract is zero years, and the floor is removed so
+      // refusing to spend is not even punished. An active plan then ties doing
+      // nothing on every activity reading while costing room, so passivity
+      // wins outright. This is the shape of the defect the winning candidate
+      // shipped -- readings a club tops by sitting still -- and the restated
+      // P-HOLD has to catch it or it is not protecting anything.
       apply: () => {
         const floor = world.LINE.floor;
         const jobs = world.CLUBS.map((c) => c.jobs);
+        const terms = Object.fromEntries(Object.entries(world.TOOL).map(([k, t]) => [k, t.maxYears]));
         world.LINE.floor = 0;
         world.CLUBS.forEach((c) => {
           c.jobs = [];
+        });
+        Object.values(world.TOOL).forEach((t) => {
+          t.maxYears = 0;
         });
         return () => {
           world.LINE.floor = floor;
           world.CLUBS.forEach((c, i) => {
             c.jobs = jobs[i];
+          });
+          Object.entries(world.TOOL).forEach(([k, t]) => {
+            t.maxYears = terms[k];
           });
         };
       },
