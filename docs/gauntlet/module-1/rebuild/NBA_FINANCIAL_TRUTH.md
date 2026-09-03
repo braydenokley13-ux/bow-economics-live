@@ -738,3 +738,50 @@ These are official-NBA-sourced or multiply-corroborated, and no researcher disse
 20. **GM tenure and compensation figures** — weakly sourced, rated low.
 21. **Any numeric probability, percentage, ratio, or negative number as a load-bearing quantity in a grade-5-inclusive lesson** — grade 5 has no percent, ratio, or negative-number standard, and grades 5-6 have no probability standard at all. This is a pedagogy constraint, not a truth constraint, but it fails the product just as hard. §6.2.
 22. **Any team logo, mark, arena image, or player photograph.** Names, salaries, dates and transaction terms are public facts and safe. Visual assets are a separate rights question requiring a founder call per CLAUDE.md §3, and were not assessed by any researcher.
+---
+
+## 9. LEAD-INTEGRATOR RESOLUTIONS (added 2026-09-03, after the dossier was merged)
+
+### 9.1 §7.1 trade salary matching — RESOLVED IN SHAPE, STILL FORBIDDEN AS A NUMBER
+
+The three "incompatible accounts" are not three readings of one rule. They are **different rows of
+one table, plus one transitional year**, which is exactly why three careful researchers produced
+three answers:
+
+- **Below the first apron** the rule is a **three-bracket ladder**, not a single percentage:
+  200% of outgoing + $250K on the first ~$7.5M out; outgoing + $7.5M in the middle band;
+  125% + $250K above roughly $29M out (the breakpoints are cap-indexed, so the 2023-24 dollar
+  figures quoted in most write-ups are not 2026-27 figures).
+  ([Hoops Rumors, 2023-09](https://www.hoopsrumors.com/2023/09/salary-matching-rules-for-trades-during-2023-24-season.html))
+- **Over the first apron**, the widely-quoted **110% was explicitly a 2023-24-only** transitional
+  figure. R2's primary-CBA read — the $250,000 allowance drops to zero, leaving effective
+  dollar-for-dollar matching — is the reading consistent with that source's own framing. R1's
+  flat "125%" was the sub-apron top bracket quoted without its ladder.
+- **Over the second apron**: may not take back more salary than it sends out, and may not
+  aggregate two or more players in one trade.
+
+**RULING.** The dossier's §8.2 item 1 STANDS as written — no matching percentage is rendered to a
+student as NBA law. But the *shape* is verified, teachable, and safe to teach:
+
+> Once you are over the cap, a trade has to be roughly even — you send out about as much salary as
+> you take back. The more you have spent, the tighter "roughly" gets. At the very top, you cannot
+> take back a single dollar more than you send out, and you cannot even combine two players into
+> one trade to make the numbers work.
+
+That sentence contains no number, is true under every one of the three accounts, and is the part a
+grade 5-8 student can act on. Any lesson mechanic must be built on the SHAPE, and any exact
+bracket that reaches a screen requires a direct read of CBA Article VII first.
+
+**Misconception risk of the simplification:** a student may infer matching is a single fixed
+percentage. Mitigate by never printing one, and by making the *tightening with spend* visible —
+that tightening is the economics, and the brackets are the paperwork.
+
+### 9.2 The four headline thresholds — independently re-verified by the lead
+
+Confirmed a second time, outside the research swarm, against
+[pr.nba.com](https://pr.nba.com/2026-27-salary-cap/) via
+[Hoops Rumors' figures page](https://www.hoopsrumors.com/2026/06/salary-cap-tax-line-set-for-2026-27-nba-season.html):
+cap **$164,961,000**, tax **$200,428,000**, first apron **$209,015,000**, second apron
+**$221,686,000**, floor **$148,465,000**, effective 2026-06-30, +6.7% on 2025-26's $154,647,000.
+Max tiers $41,240,250 / $49,488,300 / $57,736,350; NTMLE $15,044,000, taxpayer MLE $6,064,000,
+room exception $9,366,000, bi-annual $5,477,000. These are the numbers the product may print.
