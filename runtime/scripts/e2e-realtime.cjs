@@ -24,6 +24,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = Number(process.env.E2E_PORT || 4313);
 const BASE = `http://localhost:${PORT}`;
@@ -40,8 +41,19 @@ async function waitForServer() {
   throw new Error("server never came up");
 }
 
-/** Milliseconds from a teacher control returning to a surface showing it. */
-async function timeToShow(control, page, predicate) {
+/**
+ * Milliseconds from a teacher control returning to a surface showing it.
+ *
+ * `bringToFront` on the console first, and it is not cosmetic. Chromium
+ * throttles requestAnimationFrame in a page that is not the foreground tab, and
+ * Playwright's actionability check for a click waits on rAF — so with a
+ * projector and a desk open beside it, clicking the teacher's own button was
+ * taking ~1.9 SECONDS before the request was even sent, and that dead time was
+ * being charged to the push transport it was measuring. A teacher pressing a
+ * button is by definition looking at the console; measure it that way.
+ */
+async function timeToShow(control, page, predicate, focus) {
+  if (focus) await focus.bringToFront();
   const t0 = Date.now();
   await control();
   await page.waitForFunction(predicate, null, { timeout: 20000, polling: 20 });
@@ -50,6 +62,7 @@ async function timeToShow(control, page, predicate) {
 
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
+  await assertPortFree(PORT, require("path").basename(__filename));
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
@@ -93,11 +106,12 @@ async function main() {
 
     /* -- 1. Push: the room repaints inside a fraction of a poll interval. --- */
     const pause = () => teach.click("#btnPause");
-    const boardMs = await timeToShow(pause, board, () => /Paused/i.test(document.getElementById("stage")?.textContent || ""));
+    const boardMs = await timeToShow(pause, board, () => /Paused/i.test(document.getElementById("stage")?.textContent || ""), teach);
     const playMs = await timeToShow(
       () => teach.click("#btnPause"), // unpause
       play,
       () => !/paused/i.test(document.getElementById("gameBody")?.textContent || ""),
+      teach,
     );
     console.log(`[e2e-realtime] push: teacher -> projector ${boardMs}ms, teacher -> desk ${playMs}ms`);
     assert.ok(boardMs < POLL_MS.board / 2, `projector took ${boardMs}ms — the push path is not carrying it`);

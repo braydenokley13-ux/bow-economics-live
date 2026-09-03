@@ -1610,7 +1610,9 @@ function confirmSkippingContent(via: "advance" | "reveal"): boolean {
         unlocked > 0
           ? ` ${unlocked} desk${unlocked === 1 ? "" : "s"} ${unlocked === 1 ? "has" : "have"} not locked; ${
               unlocked === 1 ? "it settles" : "they settle"
-            } at whatever price is on ${unlocked === 1 ? "its" : "their"} dial right now.`
+            } at ${unlocked === 1 ? "its" : "their"} season plan price with nothing spent, marked AUTO — NOT the number on ${
+              unlocked === 1 ? "its dial" : "their dials"
+            }.`
           : ""
       } Continue?`,
     );
@@ -1626,7 +1628,9 @@ function confirmSkippingContent(via: "advance" | "reveal"): boolean {
         unlocked > 0
           ? ` ${unlocked} desk${unlocked === 1 ? "" : "s"} ${unlocked === 1 ? "has" : "have"} not locked; ${
               unlocked === 1 ? "it settles" : "they settle"
-            } on whatever is on ${unlocked === 1 ? "its" : "their"} dials right now.`
+            } at ${unlocked === 1 ? "its" : "their"} club's house price with nothing reinvested, marked AUTO — NOT the number on ${
+              unlocked === 1 ? "its dial" : "their dials"
+            }.`
           : ""
       } Continue?`,
     );

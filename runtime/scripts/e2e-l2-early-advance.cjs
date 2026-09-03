@@ -29,6 +29,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = 4304;
 const BASE = `http://localhost:${PORT}`;
@@ -66,6 +67,7 @@ async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
 
   console.log("[early-advance] starting server...");
+  await assertPortFree(PORT, require("path").basename(__filename));
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },

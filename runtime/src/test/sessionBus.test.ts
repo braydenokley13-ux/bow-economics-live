@@ -91,3 +91,55 @@ test("a repository with no bus behaves exactly as before — push is additive", 
   const after = await service.control(created.session.code, { type: "advance" }, created.teacherKey!);
   assert.equal(after.session.phase, "HOOK");
 });
+
+test("a student poll does not nudge the room — presence is not a class event", async () => {
+  // The loop this closes: /api/me stamps `lastSeenAt`, the stamp nudges every
+  // surface, every nudged desk polls, every poll stamps again. Measured in
+  // Chromium with two desks before the repair: ~230 requests per second from a
+  // single teacher page, and the amplification grows with the class. A room
+  // that drives itself harder the fuller it gets is the opposite of what 16
+  // desks are supposed to feel like.
+  const bus = new SessionBus();
+  const repo = new SnapshotRepository(null, { bus });
+  const service = new SessionService(repo);
+  service.registerModule(fullHouseModule);
+  const created = await service.createSession({ lessonModuleId: fullHouseModule.id, title: "" });
+  const session = (await repo.getSessionByCode(created.session.code))!;
+  const joined = await service.join(created.session.code, "Pair One");
+
+  let nudges = 0;
+  bus.subscribe(session.id, () => {
+    nudges += 1;
+  });
+  for (let i = 0; i < 10; i += 1) await service.resumeByToken(joined.deviceToken!);
+  assert.equal(nudges, 0, "ten polls by one desk must wake nobody");
+
+  // ...and the seat is still being kept fresh, so a teacher's roster is not
+  // paying for the quiet with stale presence — it just reads it on the next
+  // reconciliation instead of being shouted at.
+  const seat = (await repo.listSeatsForSession(session.id))[0]!;
+  assert.ok(Date.parse(seat.lastSeenAt) > 0, "presence must still be recorded, just not announced");
+});
+
+test("a real seat change still nudges, even alongside a presence stamp", async () => {
+  // The silence is scoped to presence-only writes. An action landing writes
+  // `appliedActionIds` in the same patch as `lastSeenAt`, and that is a genuine
+  // change the room must hear about.
+  const bus = new SessionBus();
+  const repo = new SnapshotRepository(null, { bus });
+  const service = new SessionService(repo);
+  service.registerModule(fullHouseModule);
+  const created = await service.createSession({ lessonModuleId: fullHouseModule.id, title: "" });
+  const session = (await repo.getSessionByCode(created.session.code))!;
+  const seat = (await repo.listSeatsForSession(session.id))[0] ?? null;
+  const joined = seat ? null : await service.join(created.session.code, "Pair One");
+  const seatId = seat?.id ?? (await repo.listSeatsForSession(session.id))[0]!.id;
+  void joined;
+
+  let nudges = 0;
+  bus.subscribe(session.id, () => {
+    nudges += 1;
+  });
+  await repo.updateSeat(seatId, { lastSeenAt: new Date().toISOString(), appliedActionIds: ["a1"] });
+  assert.equal(nudges, 1, "a write that carries a real change must still announce it");
+});

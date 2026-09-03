@@ -19,6 +19,7 @@ const { mkdtempSync, rmSync } = require("node:fs");
 const { tmpdir } = require("node:os");
 const path = require("node:path");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
@@ -59,6 +60,7 @@ async function waitForServer() {
 async function main() {
   const dir = mkdtempSync(path.join(tmpdir(), "bow-conc-"));
   const snapshot = path.join(dir, "snapshot.json");
+  await assertPortFree(PORT, require("path").basename(__filename));
   const child = spawn(process.execPath, ["dist/server/index.js"], {
     cwd: path.join(__dirname, ".."),
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: snapshot },

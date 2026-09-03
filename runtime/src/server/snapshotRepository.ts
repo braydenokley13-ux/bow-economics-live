@@ -363,7 +363,29 @@ export class SnapshotRepository implements Repository {
     this.persist();
     // A seat change moves no session state, so nothing else here would announce
     // it — and the teacher's live join list is built out of exactly this.
-    this.bus?.publishSeatChange(next.sessionId, this.sessions.get(next.sessionId)?.version ?? 0);
+    //
+    // But a PRESENCE-ONLY write must stay silent, and that is not a nicety. Every
+    // /play poll stamps `lastSeenAt`; when that stamp nudged the room, the nudge
+    // woke every desk, every woken desk polled, every poll stamped again, and the
+    // room drove itself. Measured in Chromium with two desks: ~230 requests per
+    // second, sustained, from one teacher page — a self-inflicted denial of
+    // service that gets worse with every desk added, which is the opposite of
+    // what 16 desks are supposed to feel like. Presence is not a class event; it
+    // rides the next reconciliation poll, seconds later, which is soon enough for
+    // a roster dot and quiet enough to leave the room alone.
+    if (announcesSeatChange(patch)) {
+      this.bus?.publishSeatChange(next.sessionId, this.sessions.get(next.sessionId)?.version ?? 0);
+    }
     return clone(next);
   }
+}
+
+/**
+ * Fields whose only job is to record that a device is still breathing. A write
+ * touching nothing else changes no surface anyone is looking at.
+ */
+const PRESENCE_ONLY_FIELDS: ReadonlySet<string> = new Set(["lastSeenAt", "failedRejoinAttempts"]);
+
+function announcesSeatChange(patch: SeatPatch): boolean {
+  return Object.keys(patch).some((k) => !PRESENCE_ONLY_FIELDS.has(k));
 }

@@ -44,6 +44,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = 4309;
 const BASE = `http://localhost:${PORT}`;
@@ -657,6 +658,23 @@ async function driveDial(page, selector, readoutSel, target, renderReadout) {
       await page.waitForSelector(selector);
       const handle = await page.$(selector);
       await handle.scrollIntoViewIfNeeded();
+      // A re-mount between the selector resolving and the box being read hands back
+      // a 0x0 rectangle for a control that is reachable again a frame later — twice,
+      // that flaked this whole proof. Wait for a real box before judging. A dial
+      // that is genuinely hidden, collapsed, or stripped of its styling never grows
+      // one, so the assertion keeps its teeth.
+      await page
+        .waitForFunction(
+          (sel) => {
+            const node = document.querySelector(sel);
+            if (!node) return false;
+            const box = node.getBoundingClientRect();
+            return box.width > 40 && box.height > 8;
+          },
+          selector,
+          { timeout: 5000 },
+        )
+        .catch(() => { /* still degenerate: the assertion below says so */ });
       const dial = await page.$eval(selector, (el) => {
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, w: r.width, h: r.height, min: Number(el.min), max: Number(el.max) };
@@ -751,6 +769,8 @@ async function advanceTo(teach, phase) {
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
+
+  await assertPortFree(PORT, require("path").basename(__filename));
 
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },

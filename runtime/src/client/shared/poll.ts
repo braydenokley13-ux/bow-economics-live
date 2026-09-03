@@ -73,6 +73,29 @@ export function startPolling<T>(
    */
   let missedNudge = false;
   const reconcileMs = options.reconcileMs ?? Math.max(intervalMs * 5, 6000);
+  /**
+   * Nudges are spent from a small token bucket: a few may fire a tick
+   * immediately, and after that the rate is capped.
+   *
+   * The cap exists because a write caused by a read is a feedback loop, and a
+   * feedback loop with no ceiling is a classroom taking itself down. One did:
+   * a presence stamp on every /play poll nudged the room, the nudge woke every
+   * desk, and two desks produced ~230 requests per second. That cause is
+   * repaired at its source; this is what keeps the next one an annoyance
+   * instead of an outage.
+   *
+   * The bucket rather than a flat interval, because a flat one taxes the thing
+   * the push transport exists for. A teacher's reveal is usually two or three
+   * writes in quick succession, so a leading-edge-only gate charged the desk
+   * ~120ms for the nudge that actually mattered — measured at 148ms to a desk
+   * against 53ms to the projector. Three tokens covers a normal reveal at full
+   * speed; a storm still cannot exceed one tick per REFILL.
+   */
+  const NUDGE_REFILL_MS = 120;
+  const NUDGE_BURST = 3;
+  let nudgeTokens = NUDGE_BURST;
+  let tokensAt = Date.now();
+  let coalesceTimer: ReturnType<typeof setTimeout> | null = null;
 
   const currentInterval = (): number => (pushing ? reconcileMs : intervalMs);
 
@@ -88,6 +111,28 @@ export function startPolling<T>(
     } catch {
       /* no document (a harness): nothing to mark */
     }
+  }
+
+  /** Ask for a tick on a nudge's behalf, spending a token or waiting for one. */
+  function nudge(): void {
+    if (stopped || coalesceTimer !== null) return;
+    const now = Date.now();
+    nudgeTokens = Math.min(NUDGE_BURST, nudgeTokens + (now - tokensAt) / NUDGE_REFILL_MS);
+    tokensAt = now;
+    if (nudgeTokens >= 1) {
+      nudgeTokens -= 1;
+      void tick();
+      return;
+    }
+    coalesceTimer = setTimeout(
+      () => {
+        coalesceTimer = null;
+        nudgeTokens = 0;
+        tokensAt = Date.now();
+        void tick();
+      },
+      Math.ceil((1 - nudgeTokens) * NUDGE_REFILL_MS),
+    );
   }
 
   function reschedule(): void {
@@ -141,7 +186,7 @@ export function startPolling<T>(
       inFlight = false;
       if (missedNudge && !stopped) {
         missedNudge = false;
-        void tick();
+        nudge();
       } else {
         reschedule();
       }
@@ -160,7 +205,7 @@ export function startPolling<T>(
       };
       source.onmessage = () => {
         // The nudge says nothing except "ask again", which is the point.
-        void tick();
+        nudge();
       };
       source.onerror = () => {
         // EventSource reconnects on its own; what matters here is that the
@@ -182,6 +227,8 @@ export function startPolling<T>(
     stop: () => {
       stopped = true;
       if (timer) clearTimeout(timer);
+      if (coalesceTimer) clearTimeout(coalesceTimer);
+      coalesceTimer = null;
       source?.close();
       source = null;
       pushing = false;

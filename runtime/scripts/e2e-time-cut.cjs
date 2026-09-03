@@ -31,6 +31,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
+const { assertPortFree } = require("./lib/port.cjs");
 const ROOT = path.join(__dirname, "..");
 const PORT = Number(process.env.E2E_PORT || 4312);
 const BASE = `http://localhost:${PORT}`;
@@ -86,6 +87,7 @@ async function setPrice(page, price) {
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
+  await assertPortFree(PORT, require("path").basename(__filename));
   const server = spawn(process.execPath, [path.join(ROOT, "dist", "server", "index.js")], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(PORT), RUNTIME_SNAPSHOT_FILE: SNAPSHOT_FILE },
@@ -106,8 +108,19 @@ async function main() {
     watchConsole(board, "board");
     teach.on("dialog", (d) => d.accept());
 
-    teach.on("requestfailed", (r) => consoleErrors.push(`[teach] request failed: ${r.url()}`));
+    // Chromium reports a bodyless 304 as `net::ERR_ABORTED`, so a poll doing
+    // exactly what it should looks like a network failure. Remember which
+    // requests were answered 304 and let those through.
+    const notModified = new WeakSet();
+    let teachPolls = 0;
+    const rateT0 = Date.now();
+    teach.on("requestfailed", (r) => {
+      if (notModified.has(r)) return;
+      consoleErrors.push(`[teach] request failed: ${r.url()} :: ${r.failure()?.errorText}`);
+    });
     teach.on("response", (r) => {
+      if (r.status() === 304) notModified.add(r.request());
+      if (/\/teacher$/.test(new URL(r.url()).pathname)) teachPolls += 1;
       if (r.status() === 404) consoleErrors.push(`[teach] 404: ${r.url()}`);
     });
     await teach.goto(`${BASE}/teach`);
@@ -144,8 +157,16 @@ async function main() {
     await deskA.waitForSelector(".fh-locked-recap", { timeout: 15000 });
     await setPrice(deskB, 56);
 
+    // Wait for the WHOLE fact, not just the count. "1 in" lands the moment desk
+    // A locks; desk B's dialled $56 is a separate write travelling a separate
+    // channel, and asserting on it the instant the count flips was racing the
+    // teacher's own refresh — the test failed on a product that was correct one
+    // beat later.
     await teach.waitForFunction(
-      () => (document.getElementById("tcUnresolved")?.textContent || "").includes("1 in"),
+      () => {
+        const t = document.getElementById("tcUnresolved")?.textContent || "";
+        return t.includes("1 in") && t.includes("$56");
+      },
       null,
       { timeout: 12000 },
     );
@@ -215,10 +236,24 @@ async function main() {
     );
 
     /* -- 4. Paused: the decision is held on screen, not destroyed. ---------- */
+    // Constructing this honestly matters. A pause blanks the student cockpit to
+    // a banner (deliberate: it pulls eyes up to the teacher), so a pair can only
+    // collide with a pause if the tap was already in their hand BEFORE their
+    // screen caught up. That used to happen here by accident, because the desk
+    // learned about the pause a poll late; the W4 push transport closes that
+    // window to ~30ms and the accident stopped happening. So stall this one
+    // desk's truth channel instead: it still shows the open night while the
+    // teacher pauses, which is exactly the real case, and it is deterministic.
     await toNextNight(deskA);
+    await deskA.route("**/api/sessions/*/stream", (r) => r.abort());
+    let deskADeaf = true;
+    await deskA.route("**/api/me", async (r) => {
+      if (deskADeaf) await new Promise((res) => setTimeout(res, 6000));
+      await r.continue();
+    });
+    await setPrice(deskA, 48);
     await teach.click("#btnPause");
     await teach.waitForFunction(() => document.getElementById("btnPause")?.textContent === "Unpause", null, { timeout: 8000 });
-    await setPrice(deskA, 48);
     await deskA.click("#fhLock");
     // The pair must be TOLD their choice is being held. "syncing…" through a
     // teacher pause reads as a broken screen and invites them to change it.
@@ -232,6 +267,7 @@ async function main() {
     await deskA.screenshot({ path: path.join(SCREEN_DIR, "05-play-held-through-pause.png") });
 
     await teach.click("#btnPause"); // unpause
+    deskADeaf = false; // the desk's channel opens again; nobody touches the desk
     // ...and it lands by itself, with nobody pressing anything again.
     await deskA.waitForSelector(".fh-locked-recap", { timeout: 20000 });
     const landed = await deskA.textContent(".fh-locked-recap");
@@ -263,6 +299,19 @@ async function main() {
       );
     });
     await deskB.screenshot({ path: path.join(SCREEN_DIR, "06-play-crossed-the-cut.png") });
+
+    // The room must not drive itself. Every /play poll used to stamp a presence
+    // field, every stamp nudged the room, every nudge woke every desk, and every
+    // woken desk polled: measured in Chromium at ~230 requests per second from
+    // this one page, worsening with each desk added. With presence made silent
+    // it is 0.6/s. Rate, not total, because the run's length varies — and a
+    // ceiling low enough that the loop cannot come back unnoticed.
+    const rate = teachPolls / ((Date.now() - rateT0) / 1000);
+    assert.ok(
+      rate < 3,
+      `the teacher surface polled ${teachPolls} times at ${rate.toFixed(1)}/s — the transport is being driven by its own traffic`,
+    );
+    console.log(`[e2e-time-cut] teacher transport steady: ${teachPolls} polls, ${rate.toFixed(2)}/s`);
 
     assert.deepEqual(consoleErrors, [], `console errors during the run:\n${consoleErrors.join("\n")}`);
     console.log("[e2e-time-cut] PASS — screens in docs/gauntlet/module-2/screens-timecut/");

@@ -634,7 +634,9 @@ it.** All three surfaces poll a versioned state endpoint (1.2s `/play`, 1.5s
 renders. A nudge fires an immediate poll tick and stretches the timer out to a
 slow reconciliation interval; when the stream drops, the timer snaps back to
 the short interval and every surface behaves exactly as it did before push
-existed.
+existed. Nudges are spent from a small token bucket (3 immediate, then one per
+120 ms), so no amount of server chatter can drive a surface faster than that
+ceiling.
 
 Why this shape rather than either extreme:
 
@@ -652,8 +654,16 @@ Why this shape rather than either extreme:
   (`scripts/latency-harness.cjs`): teacher action → every desk p99 **1065 ms**
   poll-only vs **32 ms** with the stream; teacher → projector 946 ms vs 28 ms;
   a student's lock → the teacher's own desk panel 1385 ms vs 22 ms. In
-  Chromium end to end (`scripts/e2e-realtime.cjs`): projector 60 ms, desk
-  73 ms.
+  Chromium end to end (`scripts/e2e-realtime.cjs`): projector ~150 ms, desk
+  ~130 ms, against ~3.9 s for the same repaint with the stream blocked.
+- **Presence is not a class event.** Every `/play` poll stamps the seat's
+  `lastSeenAt`, and while that stamp went on the bus the room drove itself: the
+  nudge woke every desk, every woken desk polled, every poll stamped again.
+  Measured in Chromium with two desks, one teacher console was issuing **~230
+  requests per second**, and the amplification grows with the class — the exact
+  opposite of what 16 desks are supposed to feel like. Presence-only seat
+  writes are now silent and ride the next reconciliation; the same page now
+  polls **0.6/s**, asserted in `scripts/e2e-time-cut.cjs`.
 - **SSE rather than WebSockets** because it needs no dependency (D12 — zero
   runtime packages), reconnects natively in the browser, and is one-way, which
   is all a nudge needs. Actions still travel by `POST`.
