@@ -166,6 +166,10 @@ export type TeacherPayload = {
     lessonModuleId: string;
     phase: CanonicalPhase;
     phases: readonly CanonicalPhase[];
+    /** When this room was created — the anchor for the console's class clock. */
+    createdAt: string;
+    /** The server's clock at the moment this body was built; the console reads the offset once. */
+    serverNow: string;
     paused: boolean;
     frozen: boolean;
     ended: boolean;
@@ -1174,6 +1178,15 @@ export class SessionService {
         lessonModuleId: session.lessonModuleId,
         phase: session.phase,
         phases: mod.phases,
+        // Every time-cut instruction in every lesson is written as "past minute
+        // 45?" — and the console had no clock, so the most-repeated pacing
+        // instruction in the product was unactionable. `createdAt` is constant
+        // (safe inside a conditionally-cached body); `serverNow` lets the
+        // console measure the offset between this laptop's clock and the one
+        // that stamped it, once, so a drifting Chromebook does not invent a
+        // period that started twenty minutes ago.
+        createdAt: session.createdAt,
+        serverNow: new Date().toISOString(),
         paused: session.paused,
         frozen: session.frozen,
         ended: session.ended,

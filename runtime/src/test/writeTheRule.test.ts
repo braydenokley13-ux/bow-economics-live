@@ -1118,3 +1118,32 @@ test("the desk strip reads the round it is actually in, and stays teacher-only",
   }
   assert.equal(JSON.stringify(writeTheRuleModule.studentView(season, "seat-1", "PLAY")).includes("deskStrip"), false);
 });
+
+test("a cold walk marks every finale card, and a played room never sees a mark", () => {
+  // `gate-l2-teacher` B5, third limb. This deck never collapsed on a zero-desk
+  // rehearsal — it rendered the real cards against an empty room, so the walk
+  // the console prescribes put "Nobody in this room ended down on the pot this
+  // time" on the projector as a fact about a class that does not exist.
+  const cold = synthesisCards(fresh(), computeAggregate(fresh()));
+  const played = playSeason(toSeason(toAdopted(withDesks(12), [30])));
+  const live = synthesisCards(played, computeAggregate(played));
+
+  assert.equal(cold.length, live.length, "the rehearsal deck is a different length from the live deck");
+  assert.deepEqual(
+    cold.map((c) => c.title.replace(/^REHEARSAL — /, "")),
+    live.map((c) => c.title),
+    "the rehearsal deck teaches card titles the live deck does not have",
+  );
+  for (const card of cold) {
+    assert.match(card.title, /^REHEARSAL — /, `${card.id} could be read as this room's own card`);
+    assert.match(card.rails.ourClass, /STAND-IN/, `${card.id}: the computed rail does not say it is imaginary`);
+    assert.match(card.rails.rememberWhen, /STAND-IN/, `${card.id}: the remembered moment does not say it is imaginary`);
+    // The dated real-world rails are the same sentence tomorrow, so they are
+    // left exactly alone — marking them would be a lie in the other direction.
+    assert.equal(/STAND-IN/.test(card.rails.inSports), false, `${card.id}: a dated real-world fact was marked as a stand-in`);
+  }
+  for (const card of live) {
+    assert.equal(/REHEARSAL/.test(card.title), false, `${card.id} leaked the rehearsal deck into a played room`);
+    assert.equal(/STAND-IN/.test(card.rails.ourClass), false, `${card.id} leaked a stand-in warning into a played room`);
+  }
+});

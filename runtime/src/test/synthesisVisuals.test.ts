@@ -294,9 +294,12 @@ test("R-5 / D2: the /play mirror carries the pair's own dot and its own market o
   assert.ok(seen.size > 1, "guard: the fixture must give desks different books");
 });
 
-test("R-5: an unplayed room produces the one placeholder card and no half-drawn visual", () => {
+test("R-5: an unplayed room draws no half-drawn visual on any card", () => {
+  // The deck itself is now the full REHEARSAL walk-through (`gate-l2-teacher`
+  // B5), so the count is no longer 1. What R-5 is actually about still holds:
+  // a computed picture needs a played curve, and a room with no curves gets no
+  // picture rather than an empty pair of axes.
   const state = seated(4);
   const cards = synthesisCards(state, computeAggregate(state));
-  assert.equal(cards.length, 1);
-  assert.equal(cards[0]!.visual, undefined);
+  for (const card of cards) assert.equal(card.visual, undefined, `${card.id} drew a visual with nothing to draw`);
 });

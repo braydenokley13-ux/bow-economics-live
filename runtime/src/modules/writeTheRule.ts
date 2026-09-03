@@ -2150,6 +2150,14 @@ export type SynthesisCard = {
  */
 export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): SynthesisCard[] {
   const cards: SynthesisCard[] = [];
+  // `gate-l2-teacher` B5, third limb. Unlike its siblings this deck never
+  // collapsed on a cold walk — every card still rendered. What it rendered was
+  // worse: the real cards computed against an empty room, so the prescribed
+  // rehearsal put sentences like "Nobody in this room ended down on the pot
+  // this time" on the projector as statements of fact about a class that does
+  // not exist, and a teacher had no way to tell which of them would still be
+  // true tomorrow. `rehearsing` marks them, at the bottom of this function.
+  const rehearsing = state.clubs.every((c) => c.seatId === null);
   /* --- C6 revenue sharing: both halves --- */
   {
     const pot = potLineClaimed(agg);
@@ -2352,6 +2360,22 @@ export function synthesisCards(state: WriteRuleState, agg: WriteRuleAggregate): 
     // without an atom is a detectable hole rather than an invisible one.
   });
 
+  // The cold walk. Every card is kept — a rehearsal that shows five of eight is
+  // the defect, not the fix — but the title says what it is and the one rail
+  // that is computed from the room says the room is imaginary. IN SPORTS,
+  // ECONOMISTS CALL THIS and OUTSIDE SPORTS are dated real-world content and
+  // are identical tomorrow, so they are left exactly as they are.
+  if (rehearsing) {
+    return cards.map((c) => ({
+      ...c,
+      title: `REHEARSAL — ${c.title}`,
+      rails: {
+        ...c.rails,
+        rememberWhen: `${c.rails.rememberWhen} (A STAND-IN: with a class this names a moment your room actually had.)`,
+        ourClass: `${c.rails.ourClass}\n\nEvery figure above is a STAND-IN — no desks have played. With a real class this rail is computed from your room's own three weeks and its own vote.`,
+      },
+    }));
+  }
   return cards;
 }
 
@@ -3075,7 +3099,7 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
                 })(),
             state.roundIndex >= ROUND_COUNT
               ? "The vote is SEALED. Nothing a desk touches now can change the rule — the two-thirds test runs on the numbers that were in when the round closed."
-              : "If the room stalls or you are short of time, `Operate the league office's rule` beside this control ends the vote and puts a real 30% rule in force. It cannot be undone.",
+              : "If the room stalls or you are short of time, the \u201cOperate the league office's rule\u201d button beside this control ends the vote and puts a real 30% rule in force. It cannot be undone.",
           ],
           ask: [
             { q: "Somebody at the low end — why?", answer: "Never editorialise. Collect it and move to the next voice." },

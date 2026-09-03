@@ -14,7 +14,7 @@
   main { max-width: 1080px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
   .card { background: var(--surface-panel); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  label { font-size: 13px; color: var(--ink-muted); display: block; margin-bottom: 4px; }
+  label { font-size: 13px; color: var(--ink-secondary); display: block; margin-bottom: 4px; }
   input, select { font-size: 15px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; width: 100%;
     background: var(--surface-inset); color: var(--ink-primary); }
   .code { font-family: var(--font-number); font-size: 44px; font-weight: 800; letter-spacing: .06em; color: var(--accent-gold); }
@@ -25,7 +25,7 @@
   ul.roster { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; }
   ul.roster li { padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; display: flex; justify-content: space-between; color: var(--ink-secondary); }
   .bar { background: var(--accent-blue); height: 14px; border-radius: 4px; transition: width 300ms var(--ease-decel); }
-  #status { font-size: 12px; color: var(--ink-muted); }
+  #status { font-size: 12px; color: var(--ink-secondary); }
   h2 { font-family: var(--font-display); font-size: 13px; margin: 0 0 8px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .06em; }
   .teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
   .teamtile { background: var(--surface-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; font-size: 12px; }
@@ -78,7 +78,14 @@
   .desk-chip .dk-state { font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:2px 7px; border-radius:999px; border:1px solid rgba(255,255,255,0.16); color:var(--ink-secondary); }
   .desk-chip.attn .dk-state { border-color:rgba(244,185,66,0.6); color:var(--accent-gold, #f4b942); }
   .desk-chip .dk-quiet { font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:2px 7px; border-radius:999px; border:1px solid rgba(226,94,80,0.6); color:#e8907f; }
-  .desk-chip .dk-note { font-size:12px; line-height:1.45; color:var(--ink-muted); }
+  /* The note is the reason to walk over — the most important sentence on the
+     chip after the name. --ink-muted put it at 3.3:1 on the flagged tint, under
+     AA for 12px text, which is exactly the wrong place to be quiet.
+     VISUAL_IDENTITY.md rates ink-muted for "labels/eyebrows at >=14px only";
+     every SENTENCE on this console under 14px is now ink-secondary for that
+     reason. The uppercase micro-labels (phase chips, KPI labels, axis ticks)
+     still use it and are the open question, recorded in README known gaps. */
+  .desk-chip .dk-note { font-size:12px; line-height:1.45; color:var(--ink-secondary); }
   #deskFilter[aria-pressed="true"] { border-color:rgba(244,185,66,0.6); color:var(--accent-gold, #f4b942); }
   .pp-frame { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1280 / 720; overflow: hidden; border-radius: 10px;
     border: 1px solid var(--rule, rgba(255,255,255,.16)); background: #05070c; }
@@ -93,7 +100,7 @@
     pointer-events: none; }
   #projpreview .pp-body { display: flex; gap: 18px; align-items: flex-start; }
   #projpreview.collapsed .pp-body { display: none; }
-  #projpreview .pp-note { margin: 0; flex: 1 1 180px; min-width: 0; font-size: 12px; line-height: 1.5; color: var(--ink-muted); }
+  #projpreview .pp-note { margin: 0; flex: 1 1 180px; min-width: 0; font-size: 12px; line-height: 1.5; color: var(--ink-secondary); }
   @media (max-width: 720px) { #projpreview .pp-body { flex-direction: column; } }
   .room-hist { display: flex; align-items: flex-end; gap: 3px; height: 96px; margin: 0 0 6px; }
   .room-bar { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; height: 100%; }
@@ -129,10 +136,13 @@
   #deck.held .deck-sub { color: var(--accent-red, #e0574f); }
   #deck .deck-read { display: flex; flex-direction: column; gap: 2px; min-width: 140px; }
   #deck .deck-where { font-family: var(--font-display); font-size: 15px; color: var(--ink-primary); letter-spacing: .02em; }
-  #deck .deck-sub { font-size: 11px; color: var(--ink-muted); }
+  #deck .deck-sub { font-size: 11px; color: var(--ink-secondary); }
+  /* The class clock. Every "past minute 45?" instruction in every lesson needs
+     it, and the deck is the one strip a teacher is guaranteed to be looking at. */
+  #deck .deck-min { font-family: var(--font-display); font-size: 12px; letter-spacing: .08em; color: var(--accent-gold, #f4b942); margin-left: 10px; }
   #deck .deck-slot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1 1 auto; }
   #deck .deck-slot .btn { margin: 0; }
-  .room-note { font-size: 12px; line-height: 1.5; color: var(--ink-muted); margin: 0; max-width: 68ch; }
+  .room-note { font-size: 12px; line-height: 1.5; color: var(--ink-secondary); margin: 0; max-width: 68ch; }
   ul.tc-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 200px; overflow: auto; }
   ul.tc-list li { padding: 6px 8px; border-radius: 6px; background: var(--surface-card); margin-bottom: 4px; font-size: 13px; color: var(--ink-secondary); }
   ul.tc-list li b { color: var(--ink-primary); font-weight: 700; }
@@ -200,13 +210,13 @@
         </div>
         <button id="btnReopen" class="btn" style="align-self:flex-end;">Reopen</button>
       </div>
-      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-muted);">The key is per-session and is what stops anyone else driving your room. It is shown once, on the console that created the session.</p>
+      <p style="margin:8px 0 0; font-size:12px; color:var(--ink-secondary);">The key is per-session and is what stops anyone else driving your room. It is shown once, on the console that created the session.</p>
     </details>
     <div class="row" id="sourceSessionRow" hidden style="margin-top:10px;">
       <div style="flex:1; min-width:260px;">
         <label for="sourceSession" id="sourceSessionLabel">Link to a completed Draft Day (L1) session — carries each locked roster forward</label>
         <select id="sourceSession"></select>
-        <p id="sourceSessionHint" hidden style="margin:6px 0 0; font-size:12px; color:var(--ink-muted);"></p>
+        <p id="sourceSessionHint" hidden style="margin:6px 0 0; font-size:12px; color:var(--ink-secondary);"></p>
         <p id="sourceLiveWarn" hidden style="margin:6px 0 0; font-size:12px; line-height:1.5; color:var(--accent-gold, #f4b942);"></p>
       </div>
     </div>
@@ -234,7 +244,7 @@
             <code id="teacherKeyValue" style="flex:1; min-width:0; overflow-wrap:anywhere; font-size:12px; color:var(--ink-primary);"></code>
             <button id="btnCopyKey" class="btn" type="button" style="flex:0 0 auto;">Copy</button>
           </div>
-          <p style="margin:6px 0 0; font-size:12px; color:var(--ink-muted);">Anyone with this key can drive your room. Do not put it on the projector.</p>
+          <p style="margin:6px 0 0; font-size:12px; color:var(--ink-secondary);">Anyone with this key can drive your room. Do not put it on the projector.</p>
         </details>
       </div>
       <div style="text-align:right;">
@@ -379,6 +389,7 @@
   <div id="deck">
     <div class="deck-read">
       <span class="deck-where" id="deckWhere"></span>
+      <span class="deck-min" id="deckMin"></span>
       <span class="deck-sub" id="deckSub"></span>
     </div>
     <div class="deck-slot" id="deckSlot"></div>

@@ -20,6 +20,7 @@ type TeacherPayload = {
     id: string; code: string; title: string; lessonModuleId: string; phase: string; phases: string[];
     paused: boolean; frozen: boolean; ended: boolean; version: number; hasCheckpoint: boolean;
     checkpointLabel: string | null;
+    createdAt?: string; serverNow?: string;
   };
   teacherKey?: string;
   seats: TeacherSeat[];
@@ -85,6 +86,7 @@ const FREE_AGENCY_ID = "m1l3-free-agency";
 const FULL_HOUSE_ID = "m2l1-full-house";
 const HOST_LEAGUE_ID = "m2l2-host-league";
 const WRITE_RULE_ID = "m2l3-write-rule";
+const LOBBY_DEMO_ID = "lobby-demo";
 
 /**
  * gate-l1-visual P8 (reported repaired at round 4, and was not — the bell was
@@ -106,7 +108,20 @@ const GLYPH_WARN = `<span class="btn-glyph" aria-hidden="true">!</span>`;
  * is the list of interior controls, which is the whole point of the paragraph.
  */
 const REHEARSE_COMMON =
-  "Never run this lesson before? Create a session now with nobody in it and walk the console. The directing panel — what to say, what to ask, what to hold back, and the line for each reveal — is all there with zero students.";
+  "Never run this lesson before? Create a session now with nobody in it and walk the console. The directing panel — what to say, what to ask, what to hold back, and the line for each reveal — is all there with zero students, and WATCH FOR and the synthesis cards show you the real shapes with stand-in desks, every one of them marked REHEARSAL.";
+
+/**
+ * `gate-l2-teacher` (BLOCKING). The sentence above is a promise about a panel
+ * that only three of the seven registered lessons ship. Told to a teacher
+ * preparing Draft Day, it sent them looking for a director that does not exist
+ * and let them believe the walk-through had done its job. The console must
+ * never claim a surface it does not have.
+ */
+const REHEARSE_UNDIRECTED =
+  "Never run this lesson before? Create a session now with nobody in it and walk the console. Be warned: <strong>this lesson does not ship a directing panel.</strong> The console gives you the phase controls, the roster and the class aggregate, and nothing that tells you what to say. Prepare it from its own lesson plan, not from this screen.";
+
+/** The three lessons whose modules author a director, WATCH FOR and a rehearsal deck. */
+const DIRECTED_LESSONS: ReadonlySet<string> = new Set([FULL_HOUSE_ID, HOST_LEAGUE_ID, WRITE_RULE_ID]);
 
 function rehearseNoteFor(lessonId: string): string {
   const advanceWarning =
@@ -119,9 +134,11 @@ function rehearseNoteFor(lessonId: string): string {
     case FULL_HOUSE_ID:
       return `${REHEARSE_COMMON} ${advanceWarning} Rehearse PLAY with the <strong>night bell</strong> (once per night) and the staged <strong>reveal presses</strong>, and use Advance ▸ only to leave a phase that is finished.`;
     case FREE_AGENCY_ID:
-      return `${REHEARSE_COMMON} ${advanceWarning} Rehearse PLAY with the <strong>signing-day close</strong> (once per day) — leaving PLAY early permanently ends the signing window, and a day that was never opened is never played. Use Advance ▸ only to leave a phase that is finished.`;
+      return `${REHEARSE_UNDIRECTED} ${advanceWarning} Rehearse PLAY with the <strong>signing-day close</strong> (once per day) — leaving PLAY early permanently ends the signing window, and a day that was never opened is never played. Use Advance ▸ only to leave a phase that is finished.`;
+    case LOBBY_DEMO_ID:
+      return "This is not a lesson. It is the two-minute connection test: make a session, put one device on the join code, press a colour, and check that the board moves. Use it to prove the room's wifi and the projector before a class, then create the real session.";
     default:
-      return `${REHEARSE_COMMON} ${advanceWarning} Walk every phase and press each of that phase's own controls at least once before the room is in front of you, and use Advance ▸ only to leave a phase that is finished.`;
+      return `${REHEARSE_UNDIRECTED} ${advanceWarning} Walk every phase and press each of that phase's own controls at least once before the room is in front of you, and use Advance ▸ only to leave a phase that is finished.`;
   }
 }
 
@@ -134,12 +151,19 @@ async function loadLessons(): Promise<void> {
   const { lessons } = await apiFetch<{ lessons: Lesson[] }>("/api/lessons");
   const select = $<HTMLSelectElement>("lesson");
   select.innerHTML = "";
-  // Draft Day first — this is the module the teacher actually runs class with.
-  const ordered = [...lessons].sort((a, b) => (a.id === DRAFT_DAY_ID ? -1 : b.id === DRAFT_DAY_ID ? 1 : 0));
+  // `gate-l2-teacher` (BLOCKING). The picker used to open on Draft Day, under a
+  // comment claiming it was "the module the teacher actually runs class with" —
+  // and Draft Day is one of the four lessons with no directing panel, so the
+  // console's own default contradicted the rehearsal note directly beneath it.
+  // The directed lessons come first now, the connection test comes last, and
+  // the option itself says which kind of thing each one is.
+  const rank = (id: string): number => (id === LOBBY_DEMO_ID ? 2 : DIRECTED_LESSONS.has(id) ? 0 : 1);
+  const ordered = [...lessons].sort((a, b) => rank(a.id) - rank(b.id));
   for (const lesson of ordered) {
     const option = document.createElement("option");
     option.value = lesson.id;
-    option.textContent = `${lesson.title} (${lesson.phases.join(" → ")})`;
+    const kind = lesson.id === LOBBY_DEMO_ID ? " — connection test, not a lesson" : DIRECTED_LESSONS.has(lesson.id) ? " — directed" : " — no directing panel";
+    option.textContent = `${lesson.title}${kind}`;
     select.appendChild(option);
   }
   select.addEventListener("change", () => {
@@ -1134,7 +1158,7 @@ function render(payload: TeacherPayload): void {
   $("aggregateBody").appendChild(renderAggregate(payload.view, payload.seats));
 
   // TT-B1/B2/B3: the director layer, only for the lesson that ships one.
-  if (payload.view["module"] === FULL_HOUSE_ID || payload.view["module"] === HOST_LEAGUE_ID || payload.view["module"] === WRITE_RULE_ID) {
+  if (DIRECTED_LESSONS.has(String(payload.view["module"]))) {
     directorEl.hidden = false;
     $("directorHeading").textContent = `Directing ${s.phase}`;
     $("directorBody").innerHTML = "";
@@ -1248,6 +1272,8 @@ function renderDeck(payload: TeacherPayload): void {
   deckEl.classList.add("on");
   deckEl.classList.toggle("held", s.paused || s.frozen);
   $("deckWhere").textContent = PHASE_LABEL[s.phase] ?? s.phase;
+  clockSession = s;
+  paintClassMinute();
 
   const locked = payload.view["lockedCount"];
   const desks = payload.view["deskCount"];
@@ -1259,6 +1285,50 @@ function renderDeck(payload: TeacherPayload): void {
         ? `${locked} of ${desks} locked in`
         : `${payload.seats.length} joined`;
   $("deckSub").textContent = sub;
+}
+
+/**
+ * The class clock.
+ *
+ * Every lesson's TIME CUT line is written as "past minute 45?", and the console
+ * had no clock at all — so the most-repeated pacing instruction in the product
+ * was one the teacher had to answer from memory while running seven reveals.
+ *
+ * Measured against the server's clock, not this laptop's: the offset is read
+ * ONCE from the first body that carries `serverNow` and then held, because a
+ * conditionally-cached payload cannot keep a live timestamp honest and a
+ * Chromebook whose clock is twenty minutes out would otherwise invent a period
+ * that started before the teacher arrived.
+ */
+let clockSkewMs: number | null = null;
+/**
+ * The clock ticks on its own timer, not on the poll.
+ *
+ * A conditional poll answers 304 while nothing in the room changes, and during
+ * a quiet stretch of PLAY that can be minutes — long enough for a clock that
+ * only redraws on a fresh body to sit still at exactly the moment the teacher
+ * looks down to answer "past minute 45?".
+ */
+let clockSession: TeacherPayload["session"] | null = null;
+function paintClassMinute(): void {
+  const el = document.getElementById("deckMin");
+  if (!el) return;
+  const minute = clockSession ? classMinute(clockSession) : null;
+  el.textContent = minute === null ? "" : `MIN ${minute}`;
+}
+window.setInterval(paintClassMinute, 15_000);
+
+function classMinute(s: TeacherPayload["session"]): number | null {
+  if (!s.createdAt) return null;
+  if (clockSkewMs === null && s.serverNow) {
+    const server = Date.parse(s.serverNow);
+    if (Number.isFinite(server)) clockSkewMs = server - Date.now();
+  }
+  const started = Date.parse(s.createdAt);
+  if (!Number.isFinite(started)) return null;
+  const elapsed = Date.now() + (clockSkewMs ?? 0) - started;
+  if (!Number.isFinite(elapsed) || elapsed < 0) return null;
+  return Math.floor(elapsed / 60_000);
 }
 
 /* ------------------------------------------------------ full house director -- */

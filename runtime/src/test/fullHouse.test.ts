@@ -34,6 +34,7 @@ import {
   CF_ROWS_PER_PAGE,
   bestFoundSeason,
   computeAggregate,
+  synthesisCards,
   orderRepeatRows,
   pathDependenceCardBody,
   repeatSummary,
@@ -97,6 +98,17 @@ function playNight(state: FullHouseState, prices: Record<SeatId, number>, spends
     next = ok(act(next, { type: "lock" }, "PLAY", seatId));
   }
   return ok(act(next, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+}
+
+/** Four desks that played all five nights at prices that move — a live deck. */
+function playedOut(): FullHouseState {
+  let state = seated(4);
+  const prices = [34, 58, 70, 46, 34];
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const p = prices[i]!;
+    state = playNight(state, { "seat-1": p, "seat-2": p + 6, "seat-3": p - 6, "seat-4": p });
+  }
+  return state;
 }
 
 /** Every number appearing anywhere in a view payload, with its key path. */
@@ -872,10 +884,22 @@ test("locked-at-time: the Two Peaks numbers do not move when a desk's later stat
   assert.deepEqual(computeAggregate(moved).twoPeaks, before);
 });
 
-test("the empty-room synthesis card is honest rather than fabricated", () => {
-  const board = fullHouseModule.boardView(empty(), "SYNTHESIS") as { cards: { id: string; body: string }[] };
-  assert.equal(board.cards.length, 1);
-  assert.match(board.cards[0]!.body, /No nights are in the books yet/);
+test("the empty-room synthesis deck is honest rather than fabricated", () => {
+  // It is the full rehearsal deck now, not one apology card — but nothing the
+  // projector prints may be readable as this room's own arithmetic. The board
+  // stages one card per frame, so walk every frame.
+  type Frame = { cards: { id: string; title: string; body: string }[]; cardCount: number; synthPageCount: number };
+  let state = empty();
+  const first = fullHouseModule.boardView(state, "SYNTHESIS") as Frame;
+  assert.ok(first.cardCount > 1, "the empty-room deck is still one apology card");
+  for (let i = 0; i < first.synthPageCount; i += 1) {
+    const frame = fullHouseModule.boardView(state, "SYNTHESIS") as Frame;
+    for (const card of frame.cards) {
+      assert.match(card.title, /^REHEARSAL — /, `${card.id} could be read as a played card`);
+      if (/\$[\d,]|\d+%/.test(card.body)) assert.match(card.body, /Every figure above is a STAND-IN/);
+    }
+    state = ok(act(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher"));
+  }
 });
 
 test("aggregate curve points always carry their market and their card (R9)", () => {
@@ -1850,4 +1874,56 @@ test("a late desk is annotated but is not a reason to walk over", () => {
   const stranded = stripOf(playNight(state, { "seat-1": 40, "seat-2": 30 }))!.entries.find((e) => e.seatId === "seat-9")!;
   assert.match(String(stranded.note), /never once locked a night of its own/i);
   assert.equal(stranded.flag, true);
+});
+
+test("a zero-desk rehearsal walks the whole synthesis deck, marked REHEARSAL, never as the room's own arithmetic", () => {
+  // `gate-l2-teacher` B5, the L1 regression. /teach tells a first-time teacher
+  // to open an empty session and advance through every phase. This deck used to
+  // collapse to one placeholder, so the rehearsal that the product prescribes
+  // taught the teacher one sixth of the phase where they talk the most.
+  const cold = empty();
+  const rehearsal = synthesisCards(cold, computeAggregate(cold));
+  const played = playedOut();
+  const live = synthesisCards(played, computeAggregate(played));
+  assert.equal(rehearsal.length, live.length, "the rehearsal deck is a different length from the live deck");
+  assert.deepEqual(
+    rehearsal.map((c) => c.title.replace(/^REHEARSAL — /, "")),
+    live.map((c) => c.title),
+    "the rehearsal deck teaches card titles the live deck does not have",
+  );
+  for (const card of rehearsal) {
+    assert.match(card.title, /^REHEARSAL — /, `${card.id} could be mistaken for a live card`);
+    assert.ok(card.body.trim().length > 40, `${card.id} is a stub`);
+  }
+  // Every card carrying a made-up figure says so; the one card with no figures
+  // in it is the same sentence live and in rehearsal, and does not need to.
+  for (const card of rehearsal) {
+    if (/\$[\d,]|\d+%/.test(card.body)) {
+      assert.match(card.body, /Every figure above is a STAND-IN/, `${card.id} prints figures with no stand-in warning`);
+    }
+  }
+});
+
+test("a live room never sees a REHEARSAL card or a REHEARSAL watch flag", () => {
+  const state = playedOut();
+  for (const card of synthesisCards(state, computeAggregate(state))) {
+    assert.equal(/REHEARSAL/.test(card.title), false, `${card.id} leaked the rehearsal deck into a played room`);
+    assert.equal(/STAND-IN/.test(card.body), false, `${card.id} leaked a stand-in warning into a played room`);
+  }
+  const teach = JSON.stringify(fullHouseModule.teacherView(state, "PLAY"));
+  assert.equal(teach.includes("REHEARSAL"), false, "a live room's WATCH FOR carried a rehearsal flag");
+});
+
+test("a zero-desk rehearsal shows WATCH FOR in every phase it exists in, always marked", () => {
+  const cold = empty();
+  for (const phase of ["PLAY", "REVEAL", "ADAPT", "COUNTERFACTUAL", "SYNTHESIS"] as const) {
+    const view = fullHouseModule.teacherView(cold, phase) as Record<string, unknown>;
+    const flags = view["watchFor"] as { label: string; desks: string[]; action: string }[];
+    assert.ok(flags.length > 0, `WATCH FOR was empty in ${phase} — the prescribed rehearsal teaches nothing there`);
+    for (const f of flags) {
+      assert.match(f.label, /^REHEARSAL — /, `an unmarked flag rendered in a rehearsal ${phase}`);
+      assert.ok(f.desks.length > 0, "a flag rendered with no desks named");
+      assert.ok(f.action.trim().length > 30, "a flag rendered with no instruction");
+    }
+  }
 });

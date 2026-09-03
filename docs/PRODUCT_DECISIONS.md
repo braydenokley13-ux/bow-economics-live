@@ -688,3 +688,65 @@ the founder must not be a hidden runtime dependency for either band.
 - **Owner:** Lead integrator
 - **Evidence:** `e2e-l2.cjs` — a still-running L1 raises the warning, a finished one clears
   it.
+
+## D40. The rehearsal the console prescribes is the whole lesson, marked
+
+- **Decision:** Every lesson that ships a directing panel must be fully walkable with zero
+  desks in the session, because that is what `/teach` tells a first-time teacher to do. A
+  cold walk shows the real WATCH FOR flag shapes with stand-in desks, and the complete
+  synthesis deck — every card the live room gets, none dropped. Every stand-in title is
+  prefixed `REHEARSAL — ` and every stand-in figure carries a STAND-IN sentence, so nothing
+  a rehearsing teacher sees can be mistaken for a room's own arithmetic. Dated real-world
+  content is left unmarked: it is the same sentence tomorrow, and marking it would be a lie
+  in the other direction.
+- **Grounds:** M2 L2 was repaired for this under `gate-l2-teacher` B5 and its two siblings
+  were not. M2 L1 rendered NO watch flags at all with zero desks and collapsed a six-card
+  synthesis deck to one placeholder; M2 L3 kept all its cards but computed them against an
+  empty room, so the prescribed rehearsal put sentences like "Nobody in this room ended
+  down on the pot this time" on the projector as statements of fact. In both cases a teacher
+  who did exactly what the product instructed met the room's only diagnostic panel, and most
+  of the phase where they talk the most, for the first time in front of students.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — all three directed lessons walked cold: L1 6 cards /
+  4 flags, L2 5 cards / 4 flags, L3 7 cards / 5 flags, every one marked on the projector,
+  with an unmarked-flag poison frame caught in each lesson. Unit: `fullHouse.test.ts`,
+  `writeTheRule.test.ts` (deck length and titles must match the live deck exactly).
+
+## D41. The console never claims a surface the selected lesson does not have
+
+- **Decision:** The pre-session note promises a directing panel only for lessons whose
+  module authors one; the other lessons are told plainly that they ship none and must be
+  prepared from their own lesson plan. The lesson picker says which kind each option is,
+  lists the directed lessons first, and never opens on an undirected one. The connection
+  test is labelled as a connection test, not offered as a lesson.
+- **Grounds:** One sentence promised "the directing panel — what to say, what to ask, what
+  to hold back, and the line for each reveal" for all seven registered lessons, while three
+  ship it. The picker then opened on Draft Day, one of the four without it, under a comment
+  claiming it was the module teachers actually run class with — so the console's own default
+  contradicted the paragraph directly beneath it, and a teacher who rehearsed Draft Day was
+  left hunting for a panel that does not exist.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — the picker opens on a directed lesson, the connection
+  test is labelled, and the note under Draft Day says no directing panel and does not carry
+  the director promise.
+
+## D42. The console carries a class clock, on the server's clock
+
+- **Decision:** THE DECK shows minutes elapsed since the session was created, painted from
+  the session's `createdAt` corrected once by the server/console skew read at first paint,
+  and repainted on its own 15-second beat rather than by polling. `createdAt` is constant,
+  so it is ETag-safe; the live minute is never sent in a cacheable body (D35).
+- **Grounds:** Every director panel is written in minute budgets ("Now — 6 min") and the
+  teacher had no way to know where they were against them. A console that budgets a period
+  and does not say the time makes the teacher do the one piece of arithmetic they cannot do
+  while directing a room.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — the strip reads MIN 0 at creation and repaints to
+  MIN 7 on its own beat when the console's wall clock is pushed forward, with no poll and no
+  press.

@@ -3952,6 +3952,76 @@ export type WatchFlag = {
   urgency: "now" | "later";
 };
 
+/**
+ * `gate-l2-teacher` B5 (BLOCKING) — the same repair the sibling module already
+ * carries, missing here. The /teach landing page tells a first-time teacher to
+ * open an empty session and press Advance through every phase, and promises the
+ * whole period is rehearsable that way. It was not: with zero desks WATCH FOR
+ * rendered nothing at all, because every flag is computed off live desks. A
+ * teacher who rehearsed exactly as instructed met the room's only diagnostic
+ * panel for the first time in front of a class.
+ *
+ * These are the real flags with stand-in desks, every label prefixed REHEARSAL
+ * so they can never be mistaken for a live room, and they render ONLY when the
+ * session has no desks in it at all.
+ */
+function rehearsalWatchFor(phase: CanonicalPhase): WatchFlag[] {
+  const sample = (label: string, desks: string[], action: string, urgency: "now" | "later"): WatchFlag => ({
+    id: `rehearsal-${label.toLowerCase().replace(/[^a-z]+/g, "-").slice(0, 24)}`,
+    label: `REHEARSAL — ${label}`,
+    desks,
+    action,
+    urgency,
+  });
+  const flags: WatchFlag[] = [
+    sample(
+      "this panel is a sample, because nobody has joined",
+      ["Desk 1 · New York Knicks", "Desk 2 · Memphis Grizzlies"],
+      "With a real class this panel is computed live and names your actual desks. You are seeing the shapes now so none of them is new to you in front of the room.",
+      "now",
+    ),
+  ];
+  if (phase === "PLAY") {
+    flags.push(
+      sample(
+        "3 of 8 desks have not locked tonight",
+        ["Desk 4 · Memphis Grizzlies", "Desk 6 · New York Knicks", "Desk 7 · Memphis Grizzlies"],
+        "Ring the bell when you are ready — an unlocked desk settles at its own season-plan price and is marked AUTO on its own screen. Nobody is skipped and nobody gets a zero.",
+        "now",
+      ),
+      sample(
+        "Held the same price 3+ nights",
+        ["Desk 3 · New York Knicks"],
+        "Call on this desk when you reach the ADAPT questions — a desk that never moved the dial is the clearest contrast in the room.",
+        "later",
+      ),
+      sample(
+        "Paid to open more of the building on Night 4",
+        ["Desk 5 · New York Knicks", "Desk 8 · Memphis Grizzlies"],
+        "Keep this for the Night 4 reveal. Opening seats never beat pricing the night right — it only ever refunds part of a price that was already too low.",
+        "later",
+      ),
+    );
+  }
+  if (phase === "REVEAL" || phase === "ADAPT" || phase === "COUNTERFACTUAL" || phase === "SYNTHESIS") {
+    flags.push(
+      sample(
+        "Turned away 500+ fans on some night",
+        ["Desk 5 · New York Knicks", "Desk 2 · Memphis Grizzlies"],
+        "Ask what on the card should have told them, before you say anything about the answer.",
+        "later",
+      ),
+      sample(
+        "In the red — their night-spend dial is locked at $0 until the books clear",
+        ["Desk 7 · Memphis Grizzlies"],
+        "This is recoverable and usually recovers on its own; one good night clears it. Say so if the pair looks sunk.",
+        "now",
+      ),
+    );
+  }
+  return flags;
+}
+
 function teacherWatchFor(state: FullHouseState, phase: CanonicalPhase): WatchFlag[] {
   const out: WatchFlag[] = [];
   const desks = Object.values(state.desks);
@@ -3970,6 +4040,10 @@ function teacherWatchFor(state: FullHouseState, phase: CanonicalPhase): WatchFla
       urgency: "now",
     });
   }
+
+  // Comes after the doorway flag and before everything else: a pair standing in
+  // the room outranks a rehearsal, and a rehearsal session has no desks at all.
+  if (desks.length === 0) return [...out, ...rehearsalWatchFor(phase)];
 
   if (windowOpen && desks.length > 0) {
     const stalled = desks.filter((d) => !d.locked).map((d) => deskHandle(d));
@@ -4861,18 +4935,74 @@ export function frontierVisualForDesk(visual: SynthesisVisual | undefined, desk:
 }
 
 /**
+ * The season-long half of TWO BOOKS, NO EXCHANGE RATE. It is read off the
+ * model's own exact frontier for one market and depends on nothing the class
+ * played, which is why the rehearsal deck can print it verbatim: it is the one
+ * sentence on that card that is already true before a single desk joins.
+ */
+function seasonTradeoffLine(): string {
+  const market = MARKETS[0]!;
+  const strong = bestFoundSeason(market);
+  const corner = renewalsCornerSeason(market);
+  const marginal = renewalMarginalCost(market);
+  const gap = corner.renewals - strong.renewals;
+  if (gap <= 0) {
+    return "On this model, over five nights, the two books did not pull against each other as hard as they do night by night — the choice is sharpest inside one night.";
+  }
+  const perPoint = Math.round((strong.cash - corner.cash) / gap);
+  return `Over the whole five nights at the ${market.club}: the most cash we could find was $${strong.cash.toLocaleString()}, ending at ${strong.renewals}% renewals. The most season-ticket holders we could find was ${corner.renewals}%, and the best that line could make was $${corner.cash.toLocaleString()}. So ${gap} renewal points cost $${(strong.cash - corner.cash).toLocaleString()} — about $${perPoint.toLocaleString()} a point on average. But they do not cost the same: the cheapest points go for about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.`;
+}
+
+/**
  * Every card is computed from THIS class's locked-at-time numbers (D15) —
  * never scripted, never recomputed against a curve the room did not play.
  */
 export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): SynthesisCard[] {
   const cards: SynthesisCard[] = [];
+  // `gate-l2-teacher` B5 (BLOCKING), the L1 regression. The rehearsal this
+  // product prescribes runs with zero desks, and this deck collapsed to ONE
+  // placeholder card. A teacher who rehearsed exactly as instructed then met
+  // six unseen cards in the last seven minutes of a real period — the phase
+  // where the economics is finally named out loud and the teacher is doing the
+  // most talking. These are the six real card TEMPLATES with stand-in figures,
+  // every one marked REHEARSAL in the title so no live room could ever read
+  // them as its own arithmetic.
   if (agg.curves.length === 0) {
+    const stand = (id: string, title: string, body: string): SynthesisCard => ({
+      id: `rehearsal-${id}`,
+      title: `REHEARSAL — ${title}`,
+      body: `${body}\n\nEvery figure above is a STAND-IN. With a real class this card is computed from your room's own five nights and names your own desks.`,
+    });
     return [
-      {
-        id: "revenue",
-        title: "REVENUE = PRICE × PEOPLE",
-        body: "No nights are in the books yet. Once the room plays, this card fills in with the class's own numbers.",
-      },
+      stand(
+        "revenue",
+        "REVENUE = PRICE × PEOPLE",
+        "Night 2 at the Memphis Grizzlies, the same Saturday card for every desk in that market. One desk charged $34 and 14,904 people came — $506,736. Another charged $58 and 9,120 came — $528,960. The higher price took more money that night. Night 3 in the same building, the desk that charged $71 took $1,015,300 and the desk that charged $92 took $846,400: there the higher price took LESS. The number on the dial is not the revenue. Price times people is.",
+      ),
+      stand(
+        "shifters",
+        "THE CARD MOVED THE CROWD",
+        "The best price this room found on the quiet Tuesday card was $31. On the Saturday card, in the same building, with the same dial, it was $49. Nothing about the arena changed. What changed was the night: the day of the week, who was visiting, and whether it was on TV. The card moves the whole crowd, and the best price moves with it.",
+      ),
+      stand(
+        "loss-leader",
+        "THE TICKET IS NOT THE PRODUCT",
+        "On Night 3 in New York, tickets alone made the most money at $84. Add what those same people spent inside the building and the best price drops to $66 — $18 lower, 6 clicks of the dial. The cheaper ticket made more money, because a cheaper ticket brings more people and every one of them buys something. Stores call that a loss leader.",
+      ),
+      stand(
+        "path-dependence",
+        "NIGHT 5 WAS NIGHT 1",
+        "Night 5 was Night 1's card again — the same Tuesday, the same visiting club, no TV. 6 desks charged the exact same price both nights. Every one of them drew a different crowd the second time. The desks that had filled their building over the middle three nights drew MORE on Night 5 than they did on Night 1; the desks that had priced people out drew fewer. Nothing on the card changed. What changed was what those five nights had already done to the building's habit of showing up.",
+      ),
+      stand(
+        "two-books",
+        "TWO BOOKS, NO EXCHANGE RATE",
+        `Best full house each market managed: New York Knicks 99% · Memphis Grizzlies 100%. Median renewals: New York Knicks 61% · Memphis Grizzlies 58%. You cannot add a dollar to a renewal, and no price is best on both. ${seasonTradeoffLine()}`,
+      ),
+      // The one card with no stand-in figures in it at all: it is the same
+      // sentence in a rehearsal and in a live room, because it is about the
+      // world rather than about this class.
+      { id: "rehearsal-real-world", title: "REHEARSAL — YOUR JOB IS REAL", body: DYNAMIC_PRICING_COPY },
     ];
   }
 
@@ -4917,18 +5047,7 @@ export function synthesisCards(state: FullHouseState, agg: FullHouseAggregate): 
   // room infers is the model's true average marginal cost over exactly that
   // range — and the card says the thing that makes it economics rather than a
   // pair of numbers: the points are not all the same price.
-  const seasonTradeoff = ((): string => {
-    const market = MARKETS[0]!;
-    const strong = bestFoundSeason(market);
-    const corner = renewalsCornerSeason(market);
-    const marginal = renewalMarginalCost(market);
-    const gap = corner.renewals - strong.renewals;
-    if (gap <= 0) {
-      return "On this model, over five nights, the two books did not pull against each other as hard as they do night by night — the choice is sharpest inside one night.";
-    }
-    const perPoint = Math.round((strong.cash - corner.cash) / gap);
-    return `Over the whole five nights at the ${market.club}: the most cash we could find was $${strong.cash.toLocaleString()}, ending at ${strong.renewals}% renewals. The most season-ticket holders we could find was ${corner.renewals}%, and the best that line could make was $${corner.cash.toLocaleString()}. So ${gap} renewal points cost $${(strong.cash - corner.cash).toLocaleString()} — about $${perPoint.toLocaleString()} a point on average. But they do not cost the same: the cheapest points go for about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. That rising price is what a real season-ticket book feels like — and it is still not an exchange rate, because a renewal is not a dollar.`;
-  })();
+  const seasonTradeoff = seasonTradeoffLine();
   cards.push({
     id: "two-books",
     title: "TWO BOOKS, NO EXCHANGE RATE",

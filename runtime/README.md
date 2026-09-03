@@ -1,7 +1,7 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (591 passing, see below), `npm run build` and `npm test` are
+real tests (595 passing, see below), `npm run build` and `npm test` are
 green, and `m1l1-draft-day`, `m1l2-trade-deadline`, and `m1l3-free-agency`
 have all been driven end-to-end with Playwright against the real compiled
 server (L1: create → join → advance → build → lock → reveal → shock → adapt
@@ -341,6 +341,29 @@ bell twice off two copies that disagree. It also says where the class is and
 whether the room is held. Browser proof `scripts/e2e-teach-deck.cjs`, which
 asserts the strip is on screen unscrolled, that the bell is moved and not
 copied, and that a bell fired from the deck really closes the night.
+
+It also carries the class clock — minutes since the session was created, read
+off the session's `createdAt` corrected once by the server/console skew and
+repainted on its own 15-second beat, not by polling. Every director panel is
+written in minute budgets ("Now — 6 min"); a console that budgets a period and
+does not say the time makes the teacher do the one piece of arithmetic they
+cannot do while running a room. `createdAt` is constant, so it is ETag-safe —
+the live minute is never sent in a cacheable body (D35).
+
+**The prescribed rehearsal.** `/teach` tells a first-time teacher to create a
+session with nobody in it and walk the console, so that walk has to be the
+whole lesson. With zero desks all three directed lessons now show the real
+WATCH FOR flag shapes against stand-in desks and the complete synthesis deck —
+the same number of cards, with the same titles, as a played room gets. Every
+stand-in title is prefixed `REHEARSAL — ` and every stand-in figure carries a
+STAND-IN sentence; dated real-world content is left unmarked because it is the
+same sentence tomorrow. Before this, M2 L1 rendered no watch flags at all cold
+and collapsed six synthesis cards to one placeholder, and M2 L3 computed its
+real cards against an empty room and put them on the projector as fact
+(D40). The setup screen also no longer promises a directing panel for the four
+lessons that ship none, and the picker no longer opens on one of them (D41).
+Browser proof `scripts/e2e-rehearsal.cjs`, which walks all three lessons cold
+and reads the cards off the projector the teacher is rehearsing in front of.
 
 **Board privacy.** Desks appear as `Desk 4 · Memphis Grizzlies` with a
 crest — never a student name, never a seat id. Markets are assigned
@@ -710,7 +733,7 @@ src/
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
                 shared/ (api, poll, storage, outbox, crest, freshness)
-  test/         591 tests over crypto, every reducer, the service layer
+  test/         595 tests over crypto, every reducer, the service layer
                 (incl. the L1->L2 and L2/L1->L3 seeds), snapshot persistence,
                 the client claim audit and the surface freshness gate
 scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)
