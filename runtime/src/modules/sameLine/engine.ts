@@ -102,7 +102,33 @@ export type Offer = {
   readonly playerId: string;
   readonly tool: ToolId;
   readonly annual: number;
+  /**
+   * HOW MANY YEARS THE CLUB IS OFFERING.
+   *
+   * The term used to be a property of the tool: reach for the big exception and
+   * you got four years whether you wanted them or not. That made years free —
+   * a longer tool outvalued a shorter one at every price, so the tool decided
+   * every contest and the price a student typed decided almost nothing.
+   *
+   * Years are negotiated. What the rules fix is the MAXIMUM a tool may offer;
+   * inside that, the club chooses, and the choice is a real one in both
+   * directions. More years is worth more to the player, so it wins contests
+   * a bigger number could not. More years is also a hole you do not have to
+   * fill again — and a commitment you cannot get out of when the season turns.
+   * That last half is the whole of Lesson 2.
+   *
+   * Omitted means "as long as this tool allows", which is what every caller
+   * that predates the choice meant.
+   */
+  readonly years?: number;
 };
+
+/** The term this offer actually carries: the club's choice, or the tool's max. */
+export function termOf(offer: Offer, player: FreeAgent): number {
+  const max = yearsFor(offer.tool, player);
+  if (offer.years === undefined) return max;
+  return Math.max(1, Math.min(max, Math.round(offer.years)));
+}
 
 /**
  * How far past the wall this tool would leave the club, or 0 when it would not.
@@ -259,6 +285,18 @@ export function checkOffer(p: Position, offer: Offer, player: FreeAgent): Legali
       reason: `The most you can offer with ${TOOL[offer.tool].label} is ${money(ceiling)}.`,
     };
   }
+  if (offer.years !== undefined) {
+    const max = yearsFor(offer.tool, player);
+    if (!Number.isFinite(offer.years) || offer.years < 1 || offer.years > max) {
+      return {
+        ok: false,
+        reason:
+          max === 1
+            ? `${TOOL[offer.tool].label} can only buy one year.`
+            : `${TOOL[offer.tool].label} can buy one to ${max} years. ${offer.years} is not one of them.`,
+      };
+    }
+  }
   if (p.wall !== null && p.committed + offer.annual > p.wall) {
     return {
       ok: false,
@@ -406,9 +444,21 @@ export function offersAtPrices(
           }
         }
       }
+      /*
+       * THE TERM IS PART OF THE OUTCOME, so the enumeration has to walk it.
+       *
+       * Price is a step function against a known rival bid, which is why two
+       * prices per (player, tool) are exhaustive over outcomes. Years are not:
+       * every term is its own outcome on two of the displayed readings —
+       * `jobYears` and `longestCommitment` — and on what the player is willing
+       * to take. So every legal term is enumerated, not sampled.
+       */
+      const maxTerm = yearsFor(tool, player);
       for (const annual of prices) {
-        const candidate: Offer = { playerId: player.id, tool, annual };
-        if (checkOffer(p, candidate, player).ok) out.push(candidate);
+        for (let years = 1; years <= maxTerm; years += 1) {
+          const candidate: Offer = { playerId: player.id, tool, annual, years };
+          if (checkOffer(p, candidate, player).ok) out.push(candidate);
+        }
       }
     }
   }
@@ -501,7 +551,7 @@ export function yearsFor(tool: ToolId, player: FreeAgent): number {
  * rather than a formality.
  */
 export function offerValue(offer: Offer, player: FreeAgent, incumbent: boolean): number {
-  const years = yearsFor(offer.tool, player);
+  const years = termOf(offer, player);
   const raise = incumbent ? RAISES.incumbent.value : RAISES.rival.value;
   let total = 0;
   let annual = offer.annual;
@@ -575,7 +625,7 @@ export function applySigning(p: Position, player: FreeAgent, offer: Offer): Posi
   const wallLine = tool.drawsWallAt ? LINE[tool.drawsWallAt] : null;
   const wall = wallLine === null ? p.wall : p.wall === null ? wallLine : Math.min(p.wall, wallLine);
 
-  const years = yearsFor(offer.tool, player);
+  const years = termOf(offer, player);
   const openJobs = [...p.openJobs];
   // A MINIMUM BODY FILLS A ROSTER SPOT AND DOES NOT CLOSE A JOB.
   //

@@ -588,3 +588,24 @@
 .sl-fork-go[data-armed="yes"] {
   background: rgba(224, 87, 79, 0.16); color: var(--ink-primary); border-color: var(--over-the-line);
 }
+
+/* -------------------------------------------------------------- the term -- */
+/* Years, as a lever the club pulls rather than a property of the tool. */
+.sl-term { margin: 10px 0 0; }
+.sl-term-lab {
+  font-family: var(--font-display); font-size: 10px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink-muted);
+}
+.sl-term-row { display: flex; gap: 6px; margin-top: 5px; }
+.sl-term-btn {
+  flex: 1; min-width: 0; padding: 7px 4px; border-radius: 8px; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.02);
+  color: var(--ink-secondary); font-family: var(--font-number); font-weight: 700;
+  font-size: 17px; line-height: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.sl-term-btn small { font-family: var(--font-body, inherit); font-weight: 400; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
+.sl-term-btn[aria-pressed="true"] {
+  border-color: var(--accent-gold); background: rgba(244,185,66,0.12); color: var(--ink-primary);
+}
+.sl-term-btn[aria-pressed="true"] small { color: var(--accent-gold); }
+.sl-term-say { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--ink-muted); }

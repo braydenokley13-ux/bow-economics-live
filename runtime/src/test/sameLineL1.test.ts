@@ -18,7 +18,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { sameLineL1Module as mod, DAYS, SAME_LINE_L1_ID, forgoneBy, type SameLineL1State } from "../modules/sameLine/l1.js";
 import { BOARD, CLUBS, LINE, MARKET, MINIMUM_MARKET, TOOL } from "../modules/sameLine/world.js";
-import { applySigning, ceilingOf, checkOffer, legalOffers, openingPosition, outlookAfter } from "../modules/sameLine/engine.js";
+import { applySigning, ceilingOf, checkOffer, legalOffers, offerValue, openingPosition, outlookAfter, yearsFor } from "../modules/sameLine/engine.js";
 import { isOrderedSubsequence } from "../shared/phases.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 import type { GradeBand } from "../shared/gradeBand.js";
@@ -805,4 +805,69 @@ test("the projector's beats never carry a student name", () => {
       assert.ok(!json.includes(`"${id}"`), `beat ${beat} carries a seat id (${id})`);
     }
   }
+});
+
+/* --------------------------------------------------------------- the term -- */
+
+test("the term is the club's choice, up to the tool's real maximum", () => {
+  // Years used to come with the tool, which made them free: a longer tool
+  // outvalued a shorter one at every price, so the tool decided every contest
+  // and the number a student typed decided almost nothing.
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  const id = seats[0]!;
+  const o = legalOffers(s.desks[id]!.position, [...BOARD], new Set()).find((x) => x.tool !== "minimum");
+  assert.ok(o, "the first desk cannot sign anybody with a term to choose");
+  const player = MARKET.find((p) => p.id === o!.playerId)!;
+  const max = yearsFor(o!.tool, player);
+
+  for (let years = 1; years <= max; years += 1) {
+    const r = mod.reduce(s, { type: "offer", ...o, years }, ctx("PLAY", id, seats));
+    assert.ok(r.ok, `${years} years is legal with ${o!.tool} and was refused: ${r.ok ? "" : r.reason}`);
+    assert.equal(r.state.pending[id]!.years, years);
+  }
+  const tooLong = mod.reduce(s, { type: "offer", ...o, years: max + 1 }, ctx("PLAY", id, seats));
+  assert.equal(tooLong.ok, false, `${max + 1} years is longer than ${o!.tool} allows and was accepted`);
+  const tooShort = mod.reduce(s, { type: "offer", ...o, years: 0 }, ctx("PLAY", id, seats));
+  assert.equal(tooShort.ok, false, "a zero-year contract was accepted");
+});
+
+test("a longer offer is worth more to the player than a shorter one at the same price", () => {
+  // The mechanic only teaches anything if the term genuinely buys something.
+  const player = BOARD.find((p) => !p.minimumScale)!;
+  const short = offerValue({ playerId: player.id, tool: "ntmle", annual: player.ask.value, years: 1 }, player, false);
+  const long = offerValue({ playerId: player.id, tool: "ntmle", annual: player.ask.value, years: 4 }, player, false);
+  assert.ok(long > short, `four years (${long}) is not worth more than one (${short}) at the same annual`);
+});
+
+test("the term a desk chose is the term its signing carries", () => {
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seats = Object.keys(s.desks);
+  const id = seats[0]!;
+  const o = legalOffers(s.desks[id]!.position, [...BOARD], new Set()).find(
+    (x) => yearsFor(x.tool, MARKET.find((p) => p.id === x.playerId)!) > 1,
+  );
+  assert.ok(o, "no multi-year tool is reachable at the first desk");
+  const put = mod.reduce(s, { type: "offer", ...o, years: 1 }, ctx("PLAY", id, seats));
+  assert.ok(put.ok, put.ok ? "" : put.reason);
+  const closed = mod.reduce(put.state, { type: "teacher:closeDay" }, ctx("PLAY", "teacher", seats));
+  assert.ok(closed.ok, closed.ok ? "" : closed.reason);
+  const signing = closed.state.desks[id]!.position.signings.find((sg) => sg.playerId === o!.playerId);
+  if (!signing) return; // somebody outbid this desk, which is its own lesson
+  assert.equal(signing.years, 1, "a desk asked for one year and the signing carries a different term");
+});
+
+test("grades 5-6 are never asked to choose a term", () => {
+  let s = fresh("5-6");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  for (const seatId of Object.keys(s.desks)) {
+    const view = mod.studentView(s, seatId, "PLAY") as { choosesTerm: unknown };
+    assert.equal(view.choosesTerm, false, `${seatId}: the 5-6 band was offered the term control`);
+  }
+  let o = fresh("7-8");
+  for (const [i] of CLUBS.entries()) o = seat(o, `d${i}`);
+  const anyOlder = mod.studentView(o, Object.keys(o.desks)[0]!, "PLAY") as { choosesTerm: unknown };
+  assert.equal(anyOlder.choosesTerm, true, "the 7-8 band was not offered the term control");
 });

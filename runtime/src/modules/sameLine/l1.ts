@@ -111,6 +111,8 @@ export type PendingOffer = {
   readonly playerId: string;
   readonly tool: ToolId;
   readonly annual: number;
+  /** The term this desk chose, when its band chooses one. */
+  readonly years?: number;
 };
 
 export type DayRecord = {
@@ -273,7 +275,16 @@ function reduce(state: SameLineL1State, action: { type: string; [k: string]: unk
       const annual = Number(action["annual"]);
       if (!Number.isFinite(annual)) return fail("an offer needs a number");
 
-      const offer: Offer = { playerId, tool, annual: Math.round(annual) };
+      /*
+       * THE TERM. 7-8 chooses it; 5-6 does not send one and gets the tool's
+       * maximum, which is what the composer shows them. Validated in
+       * `checkOffer` against the tool's real limit, so a hand-rolled action
+       * cannot buy a six-year small exception.
+       */
+      const yearsRaw = action["years"];
+      const years = typeof yearsRaw === "number" && Number.isFinite(yearsRaw) ? Math.round(yearsRaw) : undefined;
+
+      const offer: Offer = { playerId, tool, annual: Math.round(annual), ...(years === undefined ? {} : { years }) };
       const legality = checkOffer(desk.position, offer, player);
       if (!legality.ok) return fail(legality.reason);
 
@@ -383,7 +394,7 @@ function closeDay(state: SameLineL1State): SameLineL1State {
   }
   const offers: DayOffer[] = Object.values(state.pending).map((p) => ({
     clubId: p.seatId as unknown as ClubId,
-    offer: { playerId: p.playerId, tool: p.tool, annual: p.annual },
+    offer: { playerId: p.playerId, tool: p.tool, annual: p.annual, ...(p.years === undefined ? {} : { years: p.years }) },
   }));
 
   const interest: Record<string, number> = {};
@@ -410,7 +421,12 @@ function closeDay(state: SameLineL1State): SameLineL1State {
         day: state.day,
         signed: won.name,
         atPrice: won.annual,
-        lost: forgoneBy(state, desk, { playerId: pending.playerId, tool: pending.tool, annual: pending.annual }),
+        lost: forgoneBy(state, desk, {
+          playerId: pending.playerId,
+          tool: pending.tool,
+          annual: pending.annual,
+          ...(pending.years === undefined ? {} : { years: pending.years }),
+        }),
       });
     }
     desks[seatId] = { ...desk, position: after, forgoneAtCommit: forgone };
@@ -588,6 +604,11 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
         pending: state.pending[seatId] ?? null,
         board: boardCardsFor(state, desk, profile),
         pockets: pocketsFor(desk.position, profile),
+        /* 7-8 negotiates the term; 5-6 is given the tool's maximum. This is
+           the founder's "more responsibility, not harder arithmetic": the
+           number of years is a real GM lever with a real cost on both sides,
+           not another sum to do. */
+        choosesTerm: profile.maxVariables >= 3,
         // The room line: how many desks are in, never who and never how much.
         roomLine: `${Object.keys(state.pending).length} of ${Object.keys(state.desks).length} desks have an offer in.`,
         league: leagueFeed(state),
@@ -859,6 +880,7 @@ function boardCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile
                 max: ceilingOf(o.tool, desk.position, p),
                 maxText: money(ceilingOf(o.tool, desk.position, p) ?? 0),
                 years: yearsFor(o.tool, p),
+                maxYears: yearsFor(o.tool, p),
                 drawsWall: TOOL[o.tool].drawsWallAt !== null,
                 /* Where the wall would land, and whether it lands on top of
                    you. 7-8 chooses the tool, so 7-8 gets the consequence of
@@ -885,6 +907,7 @@ function boardCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile
               max: ceilingOf(best.tool, desk.position, p) ?? best.annual,
               maxText: money(ceilingOf(best.tool, desk.position, p) ?? best.annual),
               years: yearsFor(best.tool, p),
+              maxYears: yearsFor(best.tool, p),
               floor: Math.min(p.ask.value, ceilingOf(best.tool, desk.position, p) ?? best.annual),
               drawsWall: TOOL[best.tool].drawsWallAt !== null,
               wallAtText: TOOL[best.tool].drawsWallAt ? money(LINE[TOOL[best.tool].drawsWallAt!]) : null,

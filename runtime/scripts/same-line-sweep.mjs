@@ -30,6 +30,8 @@
  *   P-HOLD  (BC-2)   PASS/PASS/PASS is STRICTLY PARETO-DOMINATED at every seat
  *   P-VEC   (BC-13)  every seat's Pareto frontier holds >= 4 distinct outcome
  *                    vectors, so the choice is not a three-position menu
+ *   P-ALIVE (repair)  every seat has a day-1 signing that leaves it able to
+ *                    sign again — no seat where every move is terminal
  *   P-MONEY (BC-4)   at every seat there is a reachable plan that beats a
  *                    dearer plan on a displayed reading
  *   P-DID   (BC-1)   no class-facing reading is computable from the opening
@@ -384,10 +386,55 @@ function assertProperties(perSeat, board) {
     for (const [envId, swept] of bucket.byEnv) {
       const frontier = paretoFrontier(swept.results);
       const distinct = new Set(frontier.map((r) => r.key)).size;
-      if (distinct < 4) vecFails.push(`${bucket.club.id}/${envId}: frontier holds ${distinct} distinct outcome vectors`);
+      if (distinct < 4) {
+        vecFails.push(`${bucket.club.id}/${envId}: frontier holds ${distinct} distinct outcome vectors`);
+        if (VERBOSE) {
+          console.log(`\n--- ${bucket.club.id}/${envId} frontier (${swept.results.length} plans swept) ---`);
+          for (const r of frontier) console.log("   ", r.key, "|", JSON.stringify(r.readings));
+        }
+      }
     }
   }
   check("P-VEC", vecFails.length === 0, vecFails.length ? vecFails.join(" ; ") : "every seat's Pareto frontier holds >=4 distinct outcome vectors");
+
+  /* P-ALIVE --------------------------------------------------------------- *
+   *
+   * ADDED after the L1 prosecution. Ten of the eleven reachable players at
+   * Boston, signed on day one with the tool the product pre-selected at the
+   * price it pre-filled, left the desk with no legal move for two days — and
+   * this harness, which enumerates every legal triple at every seat, reported
+   * no property violated, because no property was looking.
+   *
+   * The property: on every day that is not the last, at every seat, there is at
+   * least one legal SIGNING that leaves the desk still able to sign somebody
+   * afterwards. A seat whose every move is terminal has two options — finish
+   * now, or pass — and neither of those is the lesson.
+   *
+   * Note what this does NOT forbid: a terminal move existing. Sacramento
+   * genuinely can spend its way to a standstill and that is the best economics
+   * on the board. What it forbids is a seat where terminal is the only kind of
+   * move there is. */
+  const aliveFails = [];
+  for (const [, bucket] of perSeat) {
+    const swept = bucket.byEnv.get("cheap-room");
+    if (!swept) continue;
+    const p0 = bucket.opening;
+    const alive = [];
+    for (const player of board) {
+      for (const offer of engine.legalOffers(p0, [player], new Set())) {
+        const look = engine.outlookAfter(p0, player, offer, board, new Set());
+        if (!look.terminal) alive.push(`${player.id}/${offer.tool}`);
+      }
+    }
+    if (alive.length === 0) {
+      aliveFails.push(`${bucket.club.id}: every legal day-one signing ends its window`);
+    }
+  }
+  check(
+    "P-ALIVE",
+    aliveFails.length === 0,
+    aliveFails.length ? aliveFails.join(" ; ") : "every seat has a day-one signing that leaves it able to sign again",
+  );
 
   /* P-MONEY (BC-4) ------------------------------------------------------- */
   const moneyFails = [];

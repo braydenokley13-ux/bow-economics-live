@@ -31,6 +31,7 @@ export type Submit = (action: { type: string; [key: string]: unknown }) => void;
 let selected: string | null = null;
 let tool: string | null = null;
 let annual: number | null = null;
+let term: number | null = null;
 let mountKey = "";
 /**
  * The signing day the local selection belongs to.
@@ -48,6 +49,7 @@ let seatRequested = false;
 /** Forget everything when a new session or a new desk arrives. */
 export function resetSameLineL1(): void {
   selectionDay = -1;
+  term = null;
   selected = null;
   tool = null;
   annual = null;
@@ -226,7 +228,9 @@ function composer(card: V, band: string): string {
   const floor = Math.min(ask, max);
   const lo = Math.min(floor, max);
   const value = annual === null ? Math.min(ask, max) : Math.max(lo, Math.min(max, annual));
-  const years = num(chosen["years"], num(best["years"], 1));
+  const maxYears = num(chosen["maxYears"], num(chosen["years"], num(best["years"], 1)));
+  const choosesTerm = card["choosesTerm"] === true && maxYears > 1;
+  const years = choosesTerm ? Math.max(1, Math.min(maxYears, term ?? maxYears)) : num(chosen["years"], num(best["years"], 1));
   const fill = max > lo ? Math.round(((value - lo) / (max - lo)) * 100) : 100;
   const drawsWall = chosen["drawsWall"] === true;
 
@@ -253,6 +257,42 @@ function composer(card: V, band: string): string {
       <span class="sl-compose-ask">He is asking ${esc(str(card["askText"]))} a year</span>
     </div>
     ${toolButtons}
+    ${
+      /*
+       * THE TERM, as a control rather than a fact about the tool.
+       *
+       * Years used to come with the tool, which made them free: a longer tool
+       * outvalued a shorter one at every price, so the tool decided every
+       * contest and the number the pair typed decided almost nothing. Handing
+       * the term to the club puts a second real lever in their hands and prices
+       * it honestly in both directions — more years is worth more to the player
+       * and wins contests money cannot, and more years is a commitment that is
+       * still on the books when the season turns.
+       *
+       * 7-8 only. This is the founder's extra responsibility for the older
+       * band: a GM decision, not another sum.
+       */
+      choosesTerm
+        ? `<div class="sl-term" role="group" aria-label="How many years you offer">
+             <span class="sl-term-lab">FOR HOW LONG</span>
+             <div class="sl-term-row">${Array.from({ length: maxYears }, (_, i) => i + 1)
+               .map(
+                 (y) =>
+                   `<button type="button" class="sl-term-btn" data-years="${y}" aria-pressed="${
+                     y === years ? "true" : "false"
+                   }">${y}<small>yr${y === 1 ? "" : "s"}</small></button>`,
+               )
+               .join("")}</div>
+             <p class="sl-term-say">${
+               years === maxYears
+                 ? "The longest this way of paying allows. He will like that — and you own the hole either way."
+                 : years === 1
+                   ? "One year. You are back here next summer, and so is he."
+                   : `${years} years. Long enough to matter, short enough to get out of.`
+             }</p>
+           </div>`
+        : ""
+    }
     <div class="sl-money">
       <span class="sl-money-read" id="slRead">${dollars(value)}</span>
       <span class="sl-money-per">A YEAR</span>
@@ -523,7 +563,7 @@ function playMain(view: V): string {
   const right = pending
     ? committedCard(pending, [...board, ...arr(view["floor"])])
     : card
-      ? playerCard(card, band)
+      ? playerCard({ ...card, choosesTerm: view["choosesTerm"] === true }, band)
       : `<div class="sl-note"><strong>Pick a player.</strong> Everyone on this board is really a free agent this summer, and every other club in this room can see the same names you can. The ones you cannot reach are greyed out, and it says why.</div>`;
 
   return `
@@ -714,6 +754,7 @@ export function renderSameLineL1(
     selected = null;
     tool = null;
     annual = null;
+    term = null;
     error = null;
   }
 
@@ -747,6 +788,7 @@ export function renderSameLineL1(
     v["fork"] ? "fork" : "-",
     selected ?? "-",
     tool ?? "-",
+    term === null ? "-" : String(term),
     error ?? "-",
   ].join("|");
 
@@ -799,6 +841,14 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
     });
   }
 
+  for (const el of Array.from(host.querySelectorAll<HTMLButtonElement>(".sl-term-btn"))) {
+    el.addEventListener("click", () => {
+      term = Number(el.dataset["years"]);
+      mountKey = "";
+      renderSameLineL1("PLAY", v, host, submit);
+    });
+  }
+
   const dial = host.querySelector<HTMLInputElement>("#slDial");
   const read = host.querySelector<HTMLElement>("#slRead");
   const total = host.querySelector<HTMLElement>("#slTotal");
@@ -828,8 +878,15 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
     const chosen = tools.find((t) => str(t["tool"]) === tool) ?? best;
     const max = num(chosen["max"]);
     const value = annual === null ? Math.min(num(card["ask"]), max) : annual;
+    const maxY = num(chosen["maxYears"], num(chosen["years"], 1));
     error = null;
-    submit({ type: "offer", playerId: selected, tool: str(chosen["tool"]), annual: value });
+    submit({
+      type: "offer",
+      playerId: selected,
+      tool: str(chosen["tool"]),
+      annual: value,
+      ...(v["choosesTerm"] === true && term !== null ? { years: Math.max(1, Math.min(maxY, term)) } : {}),
+    });
   });
 
   /* The floor. One click signs a minimum body: there is no price to set and
