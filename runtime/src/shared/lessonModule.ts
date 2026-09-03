@@ -5,10 +5,22 @@
  * list (drawn from the canonical vocabulary in phases.ts), owns its own
  * state shape, and provides a pure reducer plus three view functions (one
  * per surface). The runtime never inspects lesson state — it stores
- * whatever the module hands back, gates actions by phase before the
- * reducer ever sees them, and calls the module's view functions to render
- * each surface. Nothing about /teach, /play, or /board changes when a new
- * lesson module is registered.
+ * whatever the module hands back and calls the module's view functions to
+ * render each surface. Nothing about /teach, /play, or /board changes when a
+ * new lesson module is registered.
+ *
+ * THE RUNTIME DOES NOT GATE ACTIONS BY PHASE. THE REDUCER IS THE ONLY GATE.
+ *
+ * This paragraph used to say the opposite, in two places, and it was wrong in
+ * both. `submitAction` reads no phase field off an action and performs no
+ * phase comparison; the runtime's only pre-reducer check is the class-wide
+ * hard stop a module cannot see for itself — ended, frozen, paused. So a
+ * module that accepts `lock` without asking what phase it is in accepts a
+ * `lock` in SYNTHESIS. The current phase arrives on `ReduceContext.phase` for
+ * exactly this reason, and refusing a well-formed action that is wrong for the
+ * phase is the module's own job, every time. A false claim in this comment is
+ * more dangerous than no claim: it is read by the author of the next lesson,
+ * at the moment they are deciding whether to write the check.
  */
 import type { CanonicalPhase } from "./phases.js";
 
@@ -41,21 +53,36 @@ export interface LessonModule<TState = unknown> {
 
   /**
    * `seed` is the runtime's one hook for cross-lesson continuity (e.g. M1
-   * L2 carrying forward L1's franchise state): an opaque
-   * `{ lessonModuleId, state }` blob resolved from another session by the
-   * server at createSession time, or `undefined` when no source session was
-   * requested. The runtime never inspects it — only the receiving module
+   * L2 carrying forward L1's franchise state): an opaque blob resolved from
+   * another session by the server at createSession time, or `undefined` when
+   * no source session was requested. It carries the source's `state` plus
+   * PROVENANCE — `lessonModuleId`, `sourceSessionId`, `sourcePhase`,
+   * `sourceEnded` — so a module can decide not merely what shape the carry is
+   * but whether to trust it: D39 permits linking a room that has not finished,
+   * and the books that walk in are whatever that room held at this instant.
+   * The runtime never inspects `state` itself — only the receiving module
    * knows what shape to expect from which source module id, and must treat
-   * everything about it (including its own presence) as untrusted input to
-   * validate, never assume.
+   * everything about the envelope (including its own presence, and every
+   * provenance field) as untrusted input to validate, never assume.
+   *
+   * Called EXACTLY ONCE, at createSession, with an EMPTY `seatIds`. No seat
+   * exists yet and none will be announced: `join` creates a seat row without
+   * ever entering the module. A lesson that gives each desk a different
+   * starting position therefore cannot allocate one here — it allocates
+   * lazily, on the seat's own first action, which is what the built lessons
+   * do with a `takeSeat` action against a `seated: false` view.
    */
   initialState(input: { sessionId: string; seatIds: readonly SeatId[]; seed?: unknown }): TState;
 
   /**
-   * The single source of truth. Must reject (ok:false) anything malformed or
-   * not valid for the given phase — the server trusts nothing else, and the
-   * runtime calls this only after confirming the action's declared phase
-   * matches the session's current phase.
+   * The single source of truth, and THE ONLY PHASE GATE THERE IS.
+   *
+   * Must reject (ok:false) anything malformed or not valid for the given
+   * phase. The server trusts nothing else and checks nothing else: it does not
+   * compare the action against `ctx.phase` before calling this, and it does
+   * not consult `allowedActions`. If this function accepts an action without
+   * asking what phase it is in, that action is accepted in every phase of the
+   * lesson.
    */
   reduce(state: TState, action: LessonAction, ctx: ReduceContext): ReduceResult<TState>;
 
