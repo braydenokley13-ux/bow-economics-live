@@ -2836,10 +2836,10 @@ html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding:
    column is too narrow for two, and it stacks. */
 .hl-crowd { display: flex; gap: 10px; align-items: stretch; margin-top: 10px; }
 .hl-crowd > .hl-arena { flex: 1 1 50%; min-width: 0; align-self: center; }
-.hl-crowd > .hl-split { flex: 1 1 50%; min-width: 0; margin-top: 0; }
+.hl-crowd > .hl-split { flex: 1 1 44%; min-width: 0; margin-top: 0; }
 @media (max-width: 620px) {
   .hl-crowd { flex-direction: column; gap: 8px; }
-  .hl-crowd > .hl-arena, .hl-crowd > .hl-split { flex: none; }
+  .hl-crowd > .hl-arena, .hl-crowd > .hl-split, .hl-crowd > .hl-stage { flex: none; }
 }
 .hl-split { margin-top: 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.04); }
 .hl-split-title { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); margin-bottom: 6px; }
@@ -2941,3 +2941,11 @@ html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding:
 .hl-call .wr-choice .btn { flex: 1 1 180px; min-height: 44px; font-size: 13px; }
 .hl-call-right { color: var(--accent-gold); }
 .hl-beat-wait { border-left: 3px solid rgba(255,255,255,0.12); }
+/* The settlement's stage: the building, and the line that rides with it. */
+.hl-crowd > .hl-stage { flex: 1 1 56%; min-width: 0; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+.hl-crowd > .hl-stage > .hl-arena { flex: none; }
+.hl-gates { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.hl-gates-tag { font-size: 9.5px; letter-spacing: .12em; color: var(--surface-void); background: var(--accent-gold); border-radius: 3px; padding: 1px 5px; }
+.hl-gates-num { font-size: 22px; line-height: 24px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink-primary); }
+.hl-gates.turned .hl-gates-num { color: var(--accent-gold); }
+.hl-gates-lbl { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }

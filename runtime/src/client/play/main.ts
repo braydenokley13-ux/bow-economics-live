@@ -4264,7 +4264,14 @@ function hlArenaHtml(w: HLWeek): string {
     // letterboxes the rest — which is why an apparently taller panel drew a
     // SMALLER building with dark bands above and below it. The frame takes the
     // drawing's own aspect, so every pixel of it is building.
-    maxHeight: Math.round((tight ? 300 : 340) / 4.6),
+    // The drawing composes into a 4.6:1 box; give the frame any other shape and
+    // `meet` fits the building to the narrow dimension and letterboxes the rest,
+    // which is why an apparently taller panel once drew a SMALLER building. The
+    // frame takes the drawing's own aspect, so every pixel of it is building —
+    // and the width it is given is therefore what sets its height. This column
+    // is now the wider half of the crowd row, which is where the extra height
+    // comes from: it is not spent, it is the aspect ratio doing its job.
+    maxHeight: Math.round((tight ? 430 : 500) / 4.6),
     cls: "hl-arena",
     // Wedges of the house, in the order the rows below name them: your building
     // at your price, your own Draw, then the club visiting you. Shares of the
@@ -4274,13 +4281,11 @@ function hlArenaHtml(w: HLWeek): string {
 }
 
 function hlWeekResultHtml(w: HLWeek, title: string): string {
-  const sellout = w.soldOut
-    ? `<div class="fh-sellout">
-         <div class="fh-sellout-title">FULL HOUSE</div>
-         <div class="fh-sellout-sub">${w.turnout.toLocaleString()} of ${w.capacity.toLocaleString()} seats · every one sold</div>
-         ${w.turnedAway > 0 ? `<div class="fh-sellout-turned"><span class="numeric">${w.turnedAway.toLocaleString()}</span><span>could not get in</span></div>` : ""}
-       </div>`
-    : "";
+  // The sell-out used to be a separate banner ABOVE the drawing, which said in
+  // words the thing the picture underneath it was already drawing — a full bowl
+  // and a crowd on the pavement outside the gates. It now rides with the
+  // building, so the consequence and the picture of the consequence are one
+  // object, and the height the banner was spending goes into the building.
   const door = Math.max(1, w.doorMoney);
   return `
     <div class="fh-result ${w.soldOut ? "soldout" : ""}">
@@ -4288,9 +4293,22 @@ function hlWeekResultHtml(w: HLWeek, title: string): string {
         <span>${escapeHtml(title)} <span class="fh-history-sub">vs ${escapeHtml(w.visitor)} · Draw ${w.visitorDraw}</span>${w.auto ? ' <span class="fh-flag">auto</span>' : ""}${w.stock ? ' <span class="fh-flag">covered</span>' : ""}</span>
         <span class="numeric">$${w.price}${w.share > 0 ? ` · ${w.share}% back in` : ""}</span>
       </div>
-      ${sellout}
       <div class="hl-crowd">
-        ${hlArenaHtml(w)}
+        <div class="hl-stage">
+          ${hlArenaHtml(w)}
+          ${
+            w.soldOut
+              ? `<div class="hl-gates ${w.turnedAway > 0 ? "turned" : ""}" id="hlGates">
+                   <span class="hl-gates-tag">FULL HOUSE</span>
+                   ${
+                     w.turnedAway > 0
+                       ? `<span class="hl-gates-num numeric">${w.turnedAway.toLocaleString()}</span><span class="hl-gates-lbl">outside the gates</span>`
+                       : `<span class="hl-gates-lbl">${w.capacity.toLocaleString()} seats, every one sold</span>`
+                   }
+                 </div>`
+              : `<div class="hl-gates" id="hlGates"><span class="hl-gates-num numeric">${Math.max(0, w.capacity - w.turnout).toLocaleString()}</span><span class="hl-gates-lbl">seats nobody sat in</span></div>`
+          }
+        </div>
       <div class="hl-split" id="hlSplit">
         <div class="hl-split-title">Who filled your building</div>
         <div class="hl-split-bar">

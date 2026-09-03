@@ -369,7 +369,9 @@ async function assertSettlementAboveFold(desk, label, opts = {}) {
       vh: window.innerHeight,
       scrollY: Math.round(window.scrollY),
       mainScroll: Math.round(document.querySelector("main")?.scrollTop ?? 0),
-      soldOut: !!document.querySelector(".fh-sellout"),
+      // The sell-out is now marked on the stage beside the building rather
+      // than in a banner above it; `.turned` is the arm with a crowd outside.
+      soldOut: !!document.querySelector("#hlGates.turned") || /FULL HOUSE/.test(document.querySelector("#hlGates")?.textContent ?? ""),
       dial: box("#hlPriceDial"),
       lock: box("#hlLock"),
       bar: box("#hlLockBar"),
