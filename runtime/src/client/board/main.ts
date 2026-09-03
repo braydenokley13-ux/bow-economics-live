@@ -1367,6 +1367,13 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
   // existing fit discipline applied one frame further: spacing gives way, type
   // never does, so the 2.6%-of-screen-height back-row floor is untouched.
   if (mode === "reveal" && Number(view["revealStage"] ?? 0) === 2) stage.classList.add("hl-ledger-frame");
+  // Which beat is ACTUALLY on the projector, readable from outside the page.
+  // A harness that identifies the beat by its headline can sample the previous
+  // frame during the poll that carries the press — the e2e's reveal-stage log
+  // shifted by one the first time a beat's render time changed — and a guard
+  // that silently checks stage N-1 for stage N's defect is worse than no guard.
+  if (mode === "reveal") stage.dataset["revealStage"] = String(Number(view["revealStage"] ?? 0));
+  else delete stage.dataset["revealStage"];
   switch (mode) {
     case "lobby": {
       const league = (view["league"] as HLClubB[]) ?? [];
@@ -1519,11 +1526,28 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
       } else if (stageNo >= 5) {
         const shown = (means ?? []).map((m, i) => ({ week: i + 1, m }));
         const maxM = Math.max(1, ...shown.map((x) => x.m ?? 0));
+        // The bars are drawn from zero, so a 1.9-point move looks like a
+        // 1.9-point move — which is the truth, and which is also why the three
+        // columns alone carry almost none of the claim under them. The
+        // reference line is the comparison the sentence actually makes: the
+        // weeks-1-2 mean, so the eye can see week 3 sitting under it without
+        // the axis being zoomed to manufacture a cliff.
+        const baseline = view["meanBaseline"];
+        const baseAt = typeof baseline === "number" ? (baseline / maxM) * 100 : null;
+        const chip = view["ruleChip"];
         bodyHtml = `
+          ${typeof chip === "string" && chip ? `<div class="wr-board-rule hl-rule-chip" id="hlRule">${escapeHtml(chip)}</div>` : ""}
           <div class="hl-means" id="hlMeans">${shown
             .map(
-              (x) =>
-                `<div class="hl-mean-col"><div class="hl-mean-num">${x.m === null ? "—" : `${x.m}%`}</div><div class="hl-mean-bar" style="height:${x.m === null ? 2 : Math.max(4, ((x.m ?? 0) / maxM) * 100)}%"></div><div class="hl-mean-lbl">WEEK ${x.week}</div></div>`,
+              (x, i) =>
+                `<div class="hl-mean-col">
+                   <div class="hl-mean-num">${x.m === null ? "—" : `${x.m}%`}</div>
+                   <div class="hl-mean-track">
+                     <div class="hl-mean-bar" style="height:${x.m === null ? 2 : Math.max(4, ((x.m ?? 0) / maxM) * 100)}%"></div>
+                     ${baseAt === null ? "" : `<div class="hl-mean-base" style="bottom:${baseAt}%">${i === shown.length - 1 ? `<span>weeks 1–2 · ${baseline}%</span>` : ""}</div>`}
+                   </div>
+                   <div class="hl-mean-lbl">WEEK ${x.week}</div>
+                 </div>`,
             )
             .join("")}</div>
           <div class="synthesis-note hl-summary" id="hlChange">${escapeHtml(String(view["changeLine"] ?? ""))}</div>`;

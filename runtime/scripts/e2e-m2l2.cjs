@@ -976,21 +976,20 @@ async function main() {
     // ---- REVEAL ---------------------------------------------------------
     await advanceTo(teach, "REVEAL");
     const headlines = [];
-    // Wait for the PROJECTOR to actually change beat, not for the POST to
-    // return. A fixed sleep here samples the previous stage twice and reports
-    // five presses as three beats — exactly the blind spot this guard exists
-    // to close.
-    let prevHeadline = (await board.textContent("#stage .label")).trim();
+    // Wait for the PROJECTOR to actually reach the beat that was just pressed,
+    // not for the POST to return and not merely for the headline to change.
+    // Waiting on the headline sampled the intermediate revealStage-0 frame the
+    // first time a beat's render cost shifted, and logged five presses as
+    // "Waiting" plus four beats — a guard checking stage N-1 for stage N's
+    // defect is worse than no guard. The board publishes which beat it is
+    // holding; that is what is waited on.
+    await board.waitForSelector('#stage[data-reveal-stage="0"]', { timeout: 30000 });
     for (let stage = 1; stage <= 5; stage += 1) {
       await teach.click("#btnRevealNext");
-      await board.waitForFunction(
-        (prev) => ((document.querySelector("#stage .label") || {}).textContent || "").trim() !== prev,
-        prevHeadline,
-        { timeout: 30000 },
-      );
+      await board.waitForSelector(`#stage[data-reveal-stage="${stage}"]`, { timeout: 30000 });
       const headline = (await board.textContent("#stage .label")).trim();
-      prevHeadline = headline;
       assert.ok(headline.length > 0, `reveal stage ${stage} rendered no headline`);
+      assert.notEqual(headline, "Waiting", `reveal stage ${stage} is still showing the pre-press frame`);
       headlines.push(headline);
       if (stage === 1) {
         await assertPagedBars(board, teach, "REVEAL stage 1", "09");
@@ -1057,11 +1056,17 @@ async function main() {
         assert.equal(headroom.rows, BARS_PER_PAGE, `W5 N-2: the measurement must be taken on a full ${BARS_PER_PAGE}-row page, got ${headroom.rows}`);
         const reclaimed = headroom.withoutClass - headroom.withClass;
         const spare = headroom.clientH - headroom.withClass;
-        // The frame this run renders must overflow WITHOUT the repair, or the
-        // repair is being credited for a frame that never had the defect.
+        // W6/RC2 supersedes the original form of this guard. It used to demand
+        // that the frame OVERFLOW without its compression class, proving the
+        // class was load-bearing. It no longer is: the 190-word computed
+        // paragraph that made stage 2 overflow by 2px is now a 200-character
+        // finding, with the argument moved to the teacher's mirror, and the
+        // class carries no compression at all. So the assertion inverts —
+        // stage 2 must clear 1366x768 on its OWN metrics, with no squeeze
+        // helping it, or the paragraph has crept back.
         assert.ok(
-          headroom.withoutClass > headroom.clientH,
-          `W5 N-2: this room's stage 2 fits at 1366x768 even without the fit class (${headroom.withoutClass}px in ${headroom.clientH}px), so the measurement below proves nothing about the defect`,
+          headroom.withoutClass <= headroom.clientH,
+          `W5 N-2 / W6/RC2: stage 2 needs a squeeze to fit at 1366x768 again — ${headroom.withoutClass}px of content in ${headroom.clientH}px. Something put a paragraph back on the projector.`,
         );
         assert.ok(
           headroom.withClass <= headroom.clientH,
@@ -1074,10 +1079,10 @@ async function main() {
         // which is why the guard could not be discharged by testing more desks.
         assert.ok(
           spare >= 24,
-          `W5 N-2: stage 2 fits by only ${spare}px at 1366x768. The summary sentence is computed and wraps to a different number of lines in different rooms, so a frame with less than one spare line is still a frame that overflows in somebody's class (content ${headroom.withClass}px, projector ${headroom.clientH}px, reclaimed ${reclaimed}px)`,
+          `W5 N-2: stage 2 fits by only ${spare}px at 1366x768. The summary sentence is computed and wraps to a different number of lines in different rooms, so a frame with less than one spare line is still a frame that overflows in somebody's class (content ${headroom.withClass}px, projector ${headroom.clientH}px)`,
         );
         console.log(
-          `[e2e-m2l2] W5 N-2: REVEAL stage 2 at 1366x768 — ${headroom.withoutClass}px WITHOUT the fit class (overflow), ${headroom.withClass}px with it in a ${headroom.clientH}px projector: ${reclaimed}px reclaimed, ${spare}px spare, room for another wrapped line of the computed summary`,
+          `[e2e-m2l2] W5 N-2 / W6/RC2: REVEAL stage 2 at 1366x768 — ${headroom.withoutClass}px of content in a ${headroom.clientH}px projector with no compression applied, ${spare}px spare (${reclaimed}px of squeeze left in the class: it is now a hook, not a repair)`,
         );
 
         // ...and every PAGE of the beat fits, not only the one the press opened
@@ -1109,22 +1114,48 @@ async function main() {
       if (stage === 5) {
         const changeText = await board.textContent("#hlChange");
         assert.equal(/[Nn]obody told this room to move/.test(changeText), false, "reveal 5 must not claim spontaneity it cannot see");
-        assert.match(changeText, /earns nothing else in this lesson/, "reveal 5 must teach the last-week horizon rule");
-        await assertBackRowType(board, ".hl-mean-lbl", "REVEAL stage 5: the week labels");
-        // projector W4-1: this run releases the bar right after the week-2 bell
-        // with no desk locked into week 3 — the arm /teach prescribes, and the
-        // arm on which the board asserted "some desks had already locked" to a
-        // room in which none had.
+        // W6/RC2: the rule is still on the frame and still teaches the horizon
+        // — it has moved out of the summary paragraph and into the standing
+        // chip above the chart, where a class arguing under it can read it.
+        const ruleText = await board.textContent("#hlRule");
+        assert.match(ruleText, /earns nothing else in this lesson/, "reveal 5 must teach the last-week horizon rule");
         assert.equal(
-          /desks had already locked/.test(changeText),
+          /earns nothing else in this lesson/.test(changeText),
           false,
-          `the prescribed release printed a lock count to a room where no desk had locked: ${changeText}`,
+          "the horizon rule belongs to the chip now — printing it twice on one frame is the paragraph coming back",
         );
-        assert.match(changeText, /before a single desk had locked week 3 in/, "the prescribed release must say every desk saw the bar before it priced");
+        await assertBackRowType(board, ".hl-mean-lbl", "REVEAL stage 5: the week labels");
+        const teachStage5 = await teach.evaluate(() => document.body.innerText);
+        // projector W4-1, retargeted by W6/RC2. This run releases the bar right
+        // after the week-2 bell with no desk locked into week 3 — the arm
+        // /teach prescribes, and the arm on which the ORIGINAL defect asserted
+        // "some desks had already locked" to a room in which none had. That
+        // clause is a provenance qualifier on the argument, not a finding the
+        // back row reads off a wall, so it now lives in the teacher's hand —
+        // and the false-lock-count guard follows it there rather than being
+        // discharged by its absence from the projector.
+        assert.equal(
+          /desks had already locked/.test(teachStage5),
+          false,
+          `the prescribed release told the teacher a lock count for a room where no desk had locked: ${teachStage5.slice(0, 400)}`,
+        );
+        assert.match(
+          teachStage5,
+          /before a single desk had locked week 3 in/,
+          "the prescribed release must tell the teacher every desk saw the bar before it priced",
+        );
+        assert.equal(
+          /had already locked|before a single desk had locked/.test(changeText),
+          false,
+          `the bar-release arm belongs to the teacher's mirror now, not the projector: ${changeText}`,
+        );
         // projector W4-2: /teach's ON-THE-PROJECTOR mirror must describe the arm
         // the board is actually in, not a fixed script.
-        const teachStage5 = await teach.evaluate(() => document.body.innerText);
         assert.match(teachStage5, /NOT ONE desk had locked week 3 yet/, "the /teach stage-5 mirror does not describe the arm the board printed");
+        // W6/RC2: nothing was deleted. Every word the wall gave up is on the
+        // teacher's screen, verbatim, labelled as theirs to say.
+        assert.match(teachStage5, /YOURS TO SAY, not on the wall/, "the teacher was not handed the reasoning the projector stopped carrying");
+        assert.match(teachStage5, /investment dies when there is no tomorrow to collect in/, "the horizon argument reached neither surface");
         await teach.screenshot({ path: path.join(SCREEN_DIR, "15b-teach-reveal5-mirror.png"), fullPage: true });
       }
     }

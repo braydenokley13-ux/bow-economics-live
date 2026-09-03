@@ -612,6 +612,14 @@ export const synthPageCount = (cards: number): number => Math.max(1, Math.ceil(c
 
 export const REVEAL_STEPS = 5;
 
+/**
+ * The horizon rule, in the shortest true form that still teaches it, for the
+ * projector's standing chip on REVEAL stage 5. Every desk was shown this rule
+ * before it priced week 3 (`reinvestRuleFor`), which is exactly why the class
+ * has to be able to see it while it argues about what the room did.
+ */
+export const LAST_WEEK_RULE_CHIP = "LAST-WEEK RULE — week 3 was the end. Draw bought in week 3 earns nothing else in this lesson.";
+
 export type RevealStage = { stage: number; name: string; headline: string; say: string };
 
 /** Where the class is, in this lesson's words rather than the engine's. Never what it found. */
@@ -1217,7 +1225,31 @@ export type ClaimAtom = {
   absent?: string;
 };
 
-export type Claimed = { text: string; claims: readonly ClaimAtom[] };
+/**
+ * A computed finding, in two renderings.
+ *
+ * `text` is the authoritative one: every clause the economics needs, and the
+ * string the claim audit recomputes against. `board` is what the PROJECTOR is
+ * allowed to hold — the finding itself, short enough to read from the back row
+ * of a classroom in one breath.
+ *
+ * They exist separately because of a defect this repair is named for. REVEAL
+ * stages 2 and 5 accreted a clause per econ finding — each one individually
+ * necessary, each one correct — until the projector was holding 190 and 150
+ * words of body copy in front of a room of ten-year-olds. That is not a reveal,
+ * it is a lecture nobody can read, and it fails `<spectacle_budget>`'s
+ * consequence beat and the projector's own legibility rule at once.
+ *
+ * Nothing is deleted: `board` never says anything `text` does not, every figure
+ * it renders is still an atom in `claims`, and the full text goes to `/teach`'s
+ * projector mirror where the teacher — who is standing three feet from their
+ * own screen — reads it and says it. The wall gets the finding; the teacher
+ * gets the reasoning. A surface with no `board` rendering keeps using `text`.
+ */
+export type Claimed = { text: string; board?: string; claims: readonly ClaimAtom[] };
+
+/** What the projector shows for a finding: its short rendering, or its only one. */
+export const onBoard = (c: Claimed): string => c.board ?? c.text;
 
 const renderClaim = (value: number, format: ClaimAtom["format"]): string =>
   format === "money"
@@ -2037,6 +2069,7 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
     const word = "Nobody in this room put a single dollar back";
     return {
       text: `${word} into their club, so nobody here gave anything they CHOSE to give.`,
+      board: `${word}.`,
       claims: [claimWord("spillover.nobodySpent", word, !ct.anySpend)],
     };
   }
@@ -2151,7 +2184,18 @@ export function spilloverClaim(ct: ChoiceTotals): Claimed {
       : `Counted as one room instead of desk by desk — because a dollar that lands on another desk's books is still a dollar in this room — reinvesting left this room ${joint.rendered} ${direction}.`;
   claims.push(claimWord("spillover.jointDirection", direction, true));
 
-  return { text: `${privateLine} ${externalLine} ${jointLine} ${levelLine}`, claims };
+  // The projector's share of this. The private column, the level band and the
+  // "no share to print" clause are all reasoning ABOUT the two figures below;
+  // the figures are the finding. Both are atoms already pushed on every arm.
+  const boardJoint =
+    ct.roomJointGain === 0
+      ? `counted as one room, reinvesting left it exactly level`
+      : `counted as one room, reinvesting left it ${joint.rendered} ${direction}`;
+  return {
+    text: `${privateLine} ${externalLine} ${jointLine} ${levelLine}`,
+    board: `${gave.rendered} of this room's own spending landed on OTHER clubs' books \u2014 and ${boardJoint}.`,
+    claims,
+  };
 }
 
 export function giveAndTakeSummaryClaimed(agg: HostLeagueAggregate): Claimed {
@@ -2160,18 +2204,26 @@ export function giveAndTakeSummaryClaimed(agg: HostLeagueAggregate): Claimed {
     const core = spilloverClaim(ct);
     return {
       text: `Every bar here is EMPTY, and that is the finding. ${core.text} All the money that moved between these buildings came from the Draw each desk was dealt. Ask them what it would have taken to make a bar appear.`,
+      board: `Every bar here is EMPTY, and that is the finding. ${onBoard(core)}`,
       claims: core.claims,
     };
   }
   const core = spilloverClaim(ct);
   return {
     text: `These bars are what the DESKS CHOSE, not what they were dealt. ${core.text} The dealt totals — every dollar drawing power moved, most of it Draw nobody bought — are printed under each row.`,
+    board: `These bars are what the DESKS CHOSE, not what they were dealt. ${onBoard(core)}`,
     claims: core.claims,
   };
 }
 
+/** The full finding — the teacher's mirror and the claim audit. */
 export function giveAndTakeSummary(agg: HostLeagueAggregate): string {
   return giveAndTakeSummaryClaimed(agg).text;
+}
+
+/** What the projector holds for it. */
+export function giveAndTakeSummaryBoard(agg: HostLeagueAggregate): string {
+  return onBoard(giveAndTakeSummaryClaimed(agg));
 }
 
 export function barSummaryFromClaimed(rows: readonly HomeDecomposition[], visitorLed: number): Claimed {
@@ -3487,14 +3539,27 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             // lesson — but they are no longer what the beat's question is
             // answered with.
             ledgerAnySpend: state.revealStage === 2 ? agg.choiceTotals.anySpend : false,
-            ledgerSummary: state.revealStage === 2 ? giveAndTakeSummary(agg) : "",
+            ledgerSummary: state.revealStage === 2 ? giveAndTakeSummaryBoard(agg) : "",
             shockCopy: state.revealStage === 2 ? SHOCK_REVEAL_COPY : null,
             pipes: state.revealStage === 3 ? agg.pipes : [],
             pipesCopy: state.revealStage === 3 ? PIPES_REVEAL_COPY : null,
             warriorsLine: state.revealStage === 3 ? WARRIORS_LINE : null,
             smallMarketPath: state.revealStage === 4 ? agg.smallMarketPath : null,
             meanShareByWeek: state.revealStage === 5 ? agg.meanShareByWeek : null,
-            changeLine: state.revealStage === 5 ? reinvestChangeLine(agg, state) : null,
+            changeLine: state.revealStage === 5 ? reinvestChangeLineBoard(agg, state) : null,
+            // W6/RC2. The horizon rule used to be sentence two of a 150-word
+            // paragraph on the projector, which is where a rule goes to die.
+            // It is the controlling variable of this whole beat, so it gets the
+            // frame's standing chip — the same treatment L3 gives the rule in
+            // force — and stays legible for as long as the class argues under
+            // it. `REVEAL_STAGES[4].say` promises the teacher it is "printed
+            // beside" the chart; this is that promise, discharged.
+            ruleChip: state.revealStage === 5 ? LAST_WEEK_RULE_CHIP : null,
+            // The honest comparison the sentence beside it makes: week 3 read
+            // against the weeks-1-2 mean. Without it the three near-equal bars
+            // carry none of the claim — and zooming the axis to manufacture a
+            // visible drop would misrepresent a 1.9-point move as a collapse.
+            meanBaseline: state.revealStage === 5 ? reinvestBaseline(agg) : null,
             honestyLine: BOARD_HONESTY_LINE,
           };
         }
@@ -3649,15 +3714,38 @@ export function barReleaseArm(state: HostLeagueState): BarReleaseArm {
   return n > 0 ? "lastWeekSomeLocked" : "lastWeekNoneLocked";
 }
 
+/**
+ * The weeks-1-2 mean, or null when there is no before to compare against.
+ * Same arithmetic `reinvestChangeLineClaimed` prints, so the reference line on
+ * the projector and the sentence under it cannot disagree.
+ */
+export function reinvestBaseline(agg: HostLeagueAggregate): number | null {
+  const [w1, w2, w3] = agg.meanShareByWeek;
+  if (w3 === null || w3 === undefined) return null;
+  const before = [w1, w2].filter((x): x is number => typeof x === "number");
+  if (before.length === 0) return null;
+  return Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
+}
+
 export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostLeagueState): Claimed {
   const [w1, w2, w3] = agg.meanShareByWeek;
   const HORIZON =
     "Read that with the last-week rule in your hand: week 3 was the end. Every desk's screen said so before it priced — Draw bought in week 3 earns nothing else in this lesson. A desk doing the arithmetic had a reason to put the dial DOWN in week 3 whatever it thought of the bar. That is not cynicism, it is the horizon: investment dies when there is no tomorrow to collect in.";
   if (w3 === null || w3 === undefined) {
-    return { text: `Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth. ${HORIZON}`, claims: [] };
+    return {
+      text: `Week 3 was not played, so there is no after to compare. What the room did in weeks 1 and 2 is still its own: nobody was told what the dial was worth. ${HORIZON}`,
+      board: "Week 3 was not played, so there is no after to compare.",
+      claims: [],
+    };
   }
   const before = [w1, w2].filter((x): x is number => typeof x === "number");
-  if (before.length === 0) return { text: `Only one week is in the books, so there is no before and after to compare. ${HORIZON}`, claims: [] };
+  if (before.length === 0) {
+    return {
+      text: `Only one week is in the books, so there is no before and after to compare. ${HORIZON}`,
+      board: "Only one week is in the books, so there is no before and after to compare.",
+      claims: [],
+    };
+  }
   const mean = Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
   const delta = Math.round((w3 - mean) * 10) / 10;
 
@@ -3709,9 +3797,9 @@ export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostL
   // play N-3, second residual: the DOWN sentence used to name the bar
   // unconditionally, four sentences after asserting nothing on the frame could
   // be about it. It may name the bar exactly when the room saw it.
-  const downLine = saw
-    ? "The room went DOWN. At least two things could have done that and this board will not choose between them: the last-week rule, which every desk was shown, and whatever they made of the bar. Ask them which one it was — and believe them."
-    : "The room went DOWN. This room never saw the bar in time, so the bar is not on the table: the last-week rule, which every desk was shown, is the cause this board can see. Ask them whether that is really why — and believe them.";
+  const downRest = saw
+    ? "At least two things could have done that and this board will not choose between them: the last-week rule, which every desk was shown, and whatever they made of the bar. Ask them which one it was — and believe them."
+    : "This room never saw the bar in time, so the bar is not on the table: the last-week rule, which every desk was shown, is the cause this board can see. Ask them whether that is really why — and believe them.";
   if (Math.abs(delta) >= 1 && delta < 0) {
     claims.push(
       saw
@@ -3720,18 +3808,40 @@ export function reinvestChangeLineClaimed(agg: HostLeagueAggregate, state: HostL
     );
   }
 
-  const direction =
+  // The direction splits at its first sentence. The head IS the finding and goes
+  // on the wall with the numbers; the rest is the argument the teacher runs, and
+  // goes to the mirror.
+  const [directionHead, directionRest] =
     Math.abs(delta) < 1
-      ? "The room held its dial where it was. Under the last-week rule that is itself a move: holding steady in a week the arithmetic told them to cut is a choice about something other than this week's cash. Ask them what."
+      ? [
+          "The room held its dial where it was.",
+          "Under the last-week rule that is itself a move: holding steady in a week the arithmetic told them to cut is a choice about something other than this week's cash. Ask them what.",
+        ]
       : delta > 0
-        ? "The room went UP — against the last-week rule, which pushed the other way. Whatever moved these desks, it was not the arithmetic of this lesson. Ask them."
-        : downLine;
+        ? [
+            "The room went UP — against the last-week rule, which pushed the other way.",
+            "Whatever moved these desks, it was not the arithmetic of this lesson. Ask them.",
+          ]
+        : ["The room went DOWN.", downRest];
 
-  return { text: `${numbers} ${HORIZON} ${barClause} ${direction}`, claims };
+  return {
+    text: `${numbers} ${HORIZON} ${barClause} ${directionHead} ${directionRest}`,
+    // The wall holds the room's own three numbers and which way it moved. The
+    // horizon rule, the bar-release arm and the "do not resolve it" instruction
+    // are the teacher's beat, not the projector's paragraph.
+    board: `${numbers} ${directionHead}`,
+    claims,
+  };
 }
 
+/** The full finding — the teacher's mirror and the claim audit. */
 export function reinvestChangeLine(agg: HostLeagueAggregate, state: HostLeagueState): string {
   return reinvestChangeLineClaimed(agg, state).text;
+}
+
+/** What the projector holds for it. */
+export function reinvestChangeLineBoard(agg: HostLeagueAggregate, state: HostLeagueState): string {
+  return onBoard(reinvestChangeLineClaimed(agg, state));
 }
 
 /**
@@ -4174,9 +4284,38 @@ function projectorMirror(state: HostLeagueState, phase: CanonicalPhase): { title
     case "REVEAL": {
       // projector W4-2: `say` is resolved against this room's release arm.
       const stage = revealStagesFor(state)[state.revealStage - 1] ?? null;
+      if (!stage) {
+        return {
+          title: "Waiting for the first press",
+          lines: ['An empty frame and "Waiting for your teacher to put up the first beat."'],
+        };
+      }
+      // The full computed finding for the stages whose projector rendering is
+      // deliberately short. The wall holds the finding; these are the clauses
+      // the teacher says out loud, and they are here BECAUSE they are not up
+      // there — a mirror that repeats the wall verbatim tells the teacher
+      // nothing they cannot already see from where they are standing.
+      const agg = computeAggregate(state);
+      const full =
+        stage.stage === 2
+          ? giveAndTakeSummary(agg)
+          : stage.stage === 5
+            ? reinvestChangeLine(agg, state)
+            : null;
+      const board =
+        stage.stage === 2
+          ? giveAndTakeSummaryBoard(agg)
+          : stage.stage === 5
+            ? reinvestChangeLineBoard(agg, state)
+            : null;
+      const lines = [stage.headline, stage.say];
+      if (full !== null && board !== null && full !== board) {
+        lines.push(`On the frame, word for word: "${board}" — that is the whole of it up there.`);
+        lines.push(`YOURS TO SAY, not on the wall: ${full}`);
+      }
       return {
-        title: stage ? `Stage ${stage.stage} of ${REVEAL_STEPS} — ${stage.name}` : "Waiting for the first press",
-        lines: stage ? [stage.headline, stage.say] : ['An empty frame and "Waiting for your teacher to put up the first beat."'],
+        title: `Stage ${stage.stage} of ${REVEAL_STEPS} — ${stage.name}`,
+        lines,
       };
     }
     case "ADAPT":

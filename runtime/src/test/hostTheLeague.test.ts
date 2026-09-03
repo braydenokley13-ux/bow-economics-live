@@ -38,6 +38,10 @@ import {
   barReleaseArm,
   botShareFor,
   computeAggregate,
+  giveAndTakeSummary,
+  giveAndTakeSummaryBoard,
+  reinvestBaseline,
+  reinvestChangeLineBoard,
   dealtLineClaimed,
   deskChoiceHeadingClaimed,
   deskChoiceLineClaimed,
@@ -1816,4 +1820,108 @@ test("teacher B3: a desk that never locked is never presented as a free-rider", 
   const d6 = desks.find((d) => d.handle.includes("Desk 6"))!;
   assert.equal(d6.neverLocked, true);
   assert.equal(d6.autoWeeks, WEEK_COUNT);
+});
+
+/* ---------------------------------------- the projector is not a lecture -- */
+
+/**
+ * W6/RC2. The projector's REVEAL summaries had accreted a clause per econ
+ * finding — every one correct, every one necessary — until stages 2 and 5 were
+ * holding 190 and 150 words of body copy at 1.5vw in front of a room of
+ * ten-year-olds. A wall of text is not a consequence beat; it is a paragraph
+ * nobody in the back row reads and no teacher can narrate.
+ *
+ * The repair splits WHERE each sentence renders, not WHETHER it exists. So this
+ * test has two halves and neither is optional: the wall stays short, AND every
+ * word it no longer holds is in the teacher's hand instead.
+ */
+const WORDS = (s: string): number => s.trim().split(/\s+/).filter(Boolean).length;
+
+/**
+ * The budget is in CHARACTERS, not words, because characters are what decide
+ * lines. `.hl-summary` is 1.5vw on an 88vw box: at 1366x768 that is a 20.5px
+ * face in a 1202px column, about 118 characters a line at this font's average
+ * advance. Three lines is what a projector frame can spare under a chart
+ * without the reader losing the chart. 340 is those three lines.
+ *
+ * The real guard is `e2e-m2l2.cjs`, which measures actual overflow of `#stage`
+ * at both projector shapes. This one fails first, in milliseconds, and says why.
+ */
+const PROJECTOR_SUMMARY_CHARS = 340;
+
+/** Rooms whose findings take different branches, so the budget holds on all of them. */
+function summaryRooms(): { label: string; state: HostLeagueState }[] {
+  let noSpend = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) noSpend = playWeek(noSpend, (i) => 20 + i * 8, () => 0);
+  let heavy = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) heavy = playWeek(heavy, (i) => 30 + i * 6, () => 40);
+  let flat = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) flat = playWeek(flat, () => 50, () => 20);
+  let rising = seated(6);
+  for (let w = 0; w < WEEK_COUNT; w += 1) rising = playWeek(rising, () => 44, () => 5 + w * 15);
+  const mixed = fullSession(9);
+  return [
+    { label: "nobody reinvested", state: noSpend },
+    { label: "everybody reinvested hard", state: heavy },
+    { label: "the room held flat", state: flat },
+    { label: "the room went up", state: rising },
+    { label: "mixed, twelve desks", state: fullSession(12) },
+    { label: "mixed, nine desks", state: mixed },
+    { label: "mixed, saw the bar early", state: { ...mixed, barReleased: true, barReleasedAtWeek: 1 } },
+  ];
+}
+
+test("W6/RC2: no REVEAL summary puts a paragraph on the projector", () => {
+  for (const { label, state } of summaryRooms()) {
+    const agg = computeAggregate(state);
+    for (const [stage, text] of [
+      ["2 — what you gave, what you got", giveAndTakeSummaryBoard(agg)],
+      ["5 — what you did in the last week", reinvestChangeLineBoard(agg, state)],
+      ["1 — the Handed-To-You bar", agg.barSummary],
+    ] as const) {
+      assert.ok(
+        text.length <= PROJECTOR_SUMMARY_CHARS,
+        `${label}: reveal stage ${stage} puts ${text.length} characters (${WORDS(text)} words) on the projector — budget ${PROJECTOR_SUMMARY_CHARS}, about three readable lines: "${text}"`,
+      );
+      assert.ok(text.trim().length > 0, `${label}: reveal stage ${stage} left the projector with no finding at all`);
+    }
+  }
+});
+
+test("W6/RC2: every word the projector gave up is in the teacher's hand", () => {
+  for (const { label, state } of summaryRooms()) {
+    const agg = computeAggregate(state);
+    const mirrorFor = (stage: number): string[] => {
+      const view = hostTheLeagueModule.teacherView({ ...state, revealStage: stage }, "REVEAL") as Record<string, unknown>;
+      const p = view["projectorNow"] as { title: string; lines: string[] };
+      return p.lines;
+    };
+    for (const [stage, full, board] of [
+      [2, giveAndTakeSummary(agg), giveAndTakeSummaryBoard(agg)],
+      [5, reinvestChangeLine(agg, state), reinvestChangeLineBoard(agg, state)],
+    ] as const) {
+      const lines = mirrorFor(stage).join("\n");
+      assert.ok(lines.includes(full), `${label}: stage ${stage}'s full finding is on neither surface — the reasoning was deleted, not moved`);
+      assert.ok(lines.includes(board), `${label}: the mirror does not tell the teacher what is literally on the frame at stage ${stage}`);
+      // The short rendering may never assert something the long one does not.
+      assert.ok(WORDS(board) < WORDS(full), `${label}: stage ${stage}'s board rendering is not shorter than the full finding`);
+    }
+  }
+});
+
+test("W6/RC2: the reinvest chart carries the comparison its sentence makes", () => {
+  for (const { label, state } of summaryRooms()) {
+    const agg = computeAggregate(state);
+    const base = reinvestBaseline(agg);
+    const [w1, w2, w3] = agg.meanShareByWeek;
+    if (w3 === null || (w1 === null && w2 === null)) {
+      assert.equal(base, null, `${label}: a room with no before must draw no reference line`);
+      continue;
+    }
+    const before = [w1, w2].filter((x): x is number => typeof x === "number");
+    const expected = Math.round((before.reduce((a, b) => a + b, 0) / before.length) * 10) / 10;
+    assert.equal(base, expected, `${label}: the line on the chart and the mean in the sentence must be the same number`);
+    // The sentence prints the same figure, so the two can never disagree.
+    assert.match(reinvestChangeLineBoard(agg, state), new RegExp(`${expected}%`.replace(".", "\\.")));
+  }
 });

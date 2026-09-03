@@ -415,15 +415,13 @@
      floor — and together they reclaim roughly 11px at 768, so another wrapped
      line of the summary still lands inside the frame. Declared AFTER .hl-tight
      because the two selectors have identical specificity. */
-  #stage.hl-ledger-frame { padding-top: 1vh; padding-bottom: 1vh; }
-  #stage.hl-ledger-frame .label { margin-bottom: .2vh; }
-  #stage.hl-ledger-frame .hl-bar-pager { margin-top: .4vh; }
-  #stage.hl-ledger-frame .hl-ledger { gap: .45vh; margin-top: .5vh; }
-  #stage.hl-ledger-frame .hl-ledger-bars { gap: .18vh; }
-  #stage.hl-ledger-frame .hl-legend { margin-top: .5vh; }
-  #stage.hl-ledger-frame .hl-summary { margin-top: .45vh; }
-  #stage.hl-ledger-frame .hl-foot { margin-top: .45vh; }
-  #stage.hl-ledger-frame .exit-prompt { margin-top: .4vh; }
+  /* REVEAL stage 2 used to need a whole-frame squeeze to survive a 190-word
+     computed summary at 1366x768. The summary is now the finding rather than
+     the argument (see `Claimed.board` in hostTheLeague.ts), the frame clears
+     the projector with room to spare, and squeezing it further would only make
+     a frame that fits look like a frame that barely fits. `hl-ledger-frame` is
+     kept as a hook with no compression in it, so the guard in e2e-m2l2 can
+     still identify the beat. */
 
   .hl-club-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .7vw; max-width: 88vw; margin-top: 1.4vh; }
   .hl-club-grid.tight { grid-template-columns: repeat(7, 1fr); gap: .5vw; margin-top: 1vh; }
@@ -519,7 +517,19 @@
   .hl-means { display: flex; align-items: flex-end; gap: 3vw; height: 30vh; margin-top: 1.6vh; }
   .hl-mean-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: .6vh; height: 100%; width: 9vw; }
   .hl-mean-num { font-family: var(--font-number); font-size: 2.6vw; font-weight: 800; color: var(--accent-gold); }
+  /* The standing rule chip on REVEAL stage 5, sharing L3's rule-in-force
+     treatment: this is the same kind of object — the rule the room is arguing
+     under — so it should look like one. */
+  .hl-rule-chip { font-size: 1.4vw; letter-spacing: .06em; margin-bottom: 1.2vh; }
+  .hl-mean-track { position: relative; width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: flex-end; }
   .hl-mean-bar { width: 100%; background: linear-gradient(180deg, var(--accent-gold), rgba(244,185,66,0.35)); border-radius: 6px 6px 0 0; }
+  /* The comparison the sentence under the chart makes, drawn. Spills a little
+     past each column so three segments read as one rule across the chart. */
+  .hl-mean-base { position: absolute; left: -1.6vw; right: -1.6vw; height: 0; border-top: 2px dashed rgba(232,236,244,0.55); }
+  /* Beside the line, clear of the chart: sitting it above the line put it
+     through the last column's own percentage. */
+  .hl-mean-base span { position: absolute; left: calc(100% + .9vw); bottom: -.85vh; font-size: 1.15vw;
+    color: var(--ink-secondary); letter-spacing: .05em; white-space: nowrap; }
   .hl-mean-lbl { font-size: 1.5vw; color: var(--ink-secondary); letter-spacing: .08em; }
 </style>
 </head>

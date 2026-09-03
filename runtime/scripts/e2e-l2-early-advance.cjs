@@ -99,7 +99,14 @@ async function main() {
     await api(`/api/sessions/${l1.session.code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l1.teacherKey}` }, body: JSON.stringify({ type: "end" }) });
 
     // --- L2: linked creation, claim, and the deadline commit via API (fast setup; the UI parts under test are below) ---
-    const l2 = await api("/api/sessions", { method: "POST", body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "early-advance L2", sourceSessionId: l1.session.id }) });
+    // Seeding from a source session needs proof of teacher-hood — the same
+    // header a real console already sends, and the gate that stops one class
+    // from reading another's stored state.
+    const l2 = await api("/api/sessions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${l1.teacherKey}` },
+      body: JSON.stringify({ lessonModuleId: "m1l2-trade-deadline", title: "early-advance L2", sourceSessionId: l1.session.id }),
+    });
     const l2seat = await api(`/api/sessions/${l2.session.code}/join`, { method: "POST", body: JSON.stringify({ displayName: "Team X" }) });
     await api(`/api/sessions/${l2.session.code}/control`, { method: "POST", headers: { Authorization: `Bearer ${l2.teacherKey}` }, body: JSON.stringify({ type: "advance" }) }); // LOBBY -> HOOK
     await api(`/api/sessions/${l2.session.code}/actions`, { method: "POST", headers: { Authorization: `Bearer ${l2seat.deviceToken}` }, body: JSON.stringify({ type: "claim", carriedIndex: 0 }) });
