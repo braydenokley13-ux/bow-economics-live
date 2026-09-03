@@ -977,6 +977,63 @@ async function main() {
       await assertNoRenderedClaim(d1, `${night.label} · desk1 · dials set at $${night.d1}`);
       await lockNight(d1);
 
+      // THE DESKS, on the one frame where the room is genuinely split: Desk 1 is
+      // committed and the other two are still dialling. THE ROOM says the shape;
+      // this has to say WHO, by name, or the teacher does that join standing up.
+      if (i === 0) {
+        await teach.waitForFunction(
+          () => /1 of 3 locked/.test(document.getElementById("deskCount")?.textContent ?? ""),
+          null,
+          { timeout: 20000 },
+        );
+        const strip = await teach.evaluate(() => {
+          const sec = document.getElementById("desks");
+          return {
+            hidden: sec?.hidden ?? true,
+            count: document.getElementById("deskCount")?.textContent ?? "",
+            note: document.getElementById("deskNote")?.textContent ?? "",
+            filter: document.getElementById("deskFilter")?.textContent ?? "",
+            chips: [...document.querySelectorAll("#deskGrid .desk-chip")].map((c) => ({
+              cls: c.className,
+              handle: c.querySelector(".dk-handle")?.textContent ?? "",
+              who: c.querySelector(".dk-who")?.textContent ?? "",
+              state: c.querySelector(".dk-state")?.textContent ?? "",
+            })),
+          };
+        });
+        assert.equal(strip.hidden, false, "the walk-to list is not on the console while the night is open");
+        assert.match(strip.count, /1 of 3 locked · night 1 of 5/);
+        assert.equal(strip.chips.length, 3, `the walk-to list drew ${strip.chips.length} chips for 3 desks`);
+        const byWho = Object.fromEntries(strip.chips.map((c) => [c.who, c]));
+        // The join the console used to make the teacher do in their head.
+        assert.ok(byWho["Rae & Ben"], "the pair running Desk 1 is not named on their own chip");
+        assert.match(byWho["Rae & Ben"].handle, /Desk 1 · New York Knicks/);
+        assert.match(byWho["Rae & Ben"].state, /Locked Night 1/);
+        assert.match(byWho["Nour & Ivy"].state, /Still dialling/);
+        assert.match(byWho["Nour & Ivy"].cls, /attn/, "a desk that has not committed is not marked as needing the teacher");
+        assert.equal(/attn|quiet/.test(byWho["Rae & Ben"].cls), false, "a committed desk is marked as needing the teacher");
+        assert.match(strip.note, /2 of 3 desks could use you/);
+        assert.match(strip.note, /real names never reach the projector/i);
+
+        // Filter down to the ones that need walking to, then back.
+        assert.match(strip.filter, /Only the 2 that need me/);
+        await teach.click("#deskFilter");
+        await teach.waitForFunction(() => document.querySelectorAll("#deskGrid .desk-chip").length === 2, null, { timeout: 10000 });
+        const filtered = await teach.evaluate(() =>
+          [...document.querySelectorAll("#deskGrid .desk-chip")].map((c) => c.querySelector(".dk-who")?.textContent ?? ""),
+        );
+        assert.deepEqual(filtered.sort(), ["Ari & Tal", "Nour & Ivy"]);
+        await teach.click("#deskFilter");
+        await teach.waitForFunction(() => document.querySelectorAll("#deskGrid .desk-chip").length === 3, null, { timeout: 10000 });
+
+        // Real names are the whole point of this panel and the whole reason it
+        // may never exist on the projector.
+        const boardNow = await board.evaluate(() => document.body.innerText);
+        assert.equal(/Rae|Ben|Nour|Ivy|Ari|Tal/.test(boardNow), false, "a student name reached the projector while the walk-to list was up");
+        await teach.screenshot({ path: path.join(SCREEN_DIR, "05c-teach-desks-night1.png") });
+        console.log("[e2e-m2l1] THE DESKS: 3 chips, the split named, the filter working, nothing of it on the projector");
+      }
+
       await setPrice(d2, night.d2);
       await assertNoRenderedClaim(d2, `${night.label} · desk2 · dials set at $${night.d2}`);
       await lockNight(d2);

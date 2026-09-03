@@ -367,7 +367,14 @@ async function handle(
         // returning 304 while an unconditional GET showed rejoinLocked: true.
         // The lock count is now part of the room's fingerprint.
         const locked = payload.seats.reduce((n, s) => n + (s.rejoinLocked ? 1 : 0), 0);
-        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}-L${locked}"`;
+        // Same failure mode as the lockout above, for a signal that changes with
+        // nothing but the passage of time: a desk whose device goes silent bumps
+        // no version, so the teacher's conditional poll answered 304 and the
+        // console could not show the one thing it cannot see from the front of
+        // the room. Buckets, not milliseconds — see quietBucketOf() — so this
+        // fingerprint moves when the fact changes, not on every tick.
+        const quiet = payload.seats.map((s) => s.quietBucket).join("");
+        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}-L${locked}-Q${quiet}"`;
         if (maybeNotModified(req, res, etag)) return;
         sendJson(res, 200, payload, { ETag: etag });
         return;

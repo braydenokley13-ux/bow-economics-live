@@ -746,3 +746,31 @@ test("seeding a new session from another one needs a teacher key, not just its i
   const fresh = await svc.createSession({ lessonModuleId: "lobby-demo", title: "first ever" });
   assert.ok(fresh.teacherKey);
 });
+
+test("a session built by a lesson this build no longer registers does not take the whole picker down", async () => {
+  // One stale row — a renamed module, a snapshot carried over from an older
+  // build — used to throw out of listSessions (moduleFor 500s on it), so the
+  // "link to a previous session" picker returned nothing for EVERY lesson and
+  // /teach swallowed the error. A teacher would have concluded yesterday's
+  // session was gone and started an unlinked room, silently breaking the
+  // L1 -> L2 -> L3 chain the whole module rests on.
+  const repo = new SnapshotRepository(null);
+  const service = new SessionService(repo);
+  service.registerModule(lobbyDemoModule);
+  const live = await service.createSession({ lessonModuleId: "lobby-demo", title: "Period 1" });
+
+  // A row naming a module nobody registered, exactly as a stale snapshot would.
+  const ghost = await service.createSession({ lessonModuleId: "lobby-demo", title: "Period 2" });
+  const ghostRow = (await repo.listSessions()).find((r) => r.code === ghost.session.code)!;
+  const wrote = await repo.updateSession(ghostRow.id, { lessonModuleId: "a-lesson-this-build-does-not-have" } as never, null);
+  assert.equal(wrote.ok, true);
+
+  const listed = await service.listSessions(live.teacherKey!);
+  assert.equal(listed.length, 1, "the stale row took the listing down with it");
+  assert.equal(listed[0]!.code, live.session.code);
+  assert.equal(
+    listed.some((s) => s.lessonModuleId === "a-lesson-this-build-does-not-have"),
+    false,
+    "the picker offered a session this build cannot open",
+  );
+});

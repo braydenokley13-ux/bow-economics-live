@@ -1,7 +1,7 @@
 # BOW Economics — Track 101 Live-Session Runtime
 
 **Status: candidate.** Technically verified — the server logic is covered by
-real tests (580 passing, see below), `npm run build` and `npm test` are
+real tests (591 passing, see below), `npm run build` and `npm test` are
 green, and `m1l1-draft-day`, `m1l2-trade-deadline`, and `m1l3-free-agency`
 have all been driven end-to-end with Playwright against the real compiled
 server (L1: create → join → advance → build → lock → reveal → shock → adapt
@@ -248,6 +248,28 @@ The panel heading is authored by the module, because "locked in" is wrong in a
 stage where desks propose a number at the league. Browser proofs in
 `scripts/e2e-m2l2.cjs` and `scripts/e2e-m2l3.cjs` assert the read is on the
 console and on neither the projector nor a desk (D30).
+
+**The desks, named.** Beside THE ROOM, `/teach` carries THE DESKS: one chip per
+live desk with the module's own handle, the pair actually sitting there, what
+that desk is doing right now, and at most one note. THE ROOM answers *what shape
+is the room in* and deliberately names nobody, because shape is what a teacher
+says out loud; THE DESKS answers *who do I walk to*, which the console used to
+leave as a join a teacher made in their head, standing up, from a name list with
+no desks and a WATCH FOR list with no names. Modules own the vocabulary — a desk
+in L3's offer rounds has a NUMBER IN, it has not "locked" anything — and own
+which of their notes is a reason to walk over rather than context for reading
+that desk's books, so a pair who joined at Night 2 is annotated but never
+reported as having "never once locked a night of its own". A desk whose device
+has stopped talking is marked from the SERVER's reading of the gap, in buckets
+(30s+ / 1m+ / 5m+ / 15m+) that are part of the teacher payload's ETag: a
+millisecond count would have frozen inside a conditionally-cached body and then
+lied about how long, and this laptop's own clock would have read the whole room
+as gone on a Chromebook that had drifted. It grows with the class, so it scrolls
+inside its own card — proven at 32 desks — and a filter collapses it to the
+desks that need the teacher. Teacher-only by construction: `boardView` is never
+handed it. Unit proof in the three module test files, browser proof at Night 1
+in `scripts/e2e-m2l1.cjs`, at 32 desks in `scripts/e2e-full-room.cjs`, and the
+quiet marker in `scripts/e2e-away.cjs` (D34, D35, D36).
 
 **The projector, on the console.** `/teach` carries a live mirror of `/board`
 for the room it is driving: an iframe of the board itself, scaled by transform,
@@ -681,7 +703,7 @@ src/
                 lobbyDemo.ts                 — the proof-of-loop lesson
   client/       teach/, play/, board/,
                 shared/ (api, poll, storage, outbox, crest, freshness)
-  test/         580 tests over crypto, every reducer, the service layer
+  test/         591 tests over crypto, every reducer, the service layer
                 (incl. the L1->L2 and L2/L1->L3 seeds), snapshot persistence,
                 the client claim audit and the surface freshness gate
 scripts/        e2e-l2.cjs                   — rerunnable Playwright L2 proof (full happy-path arc)

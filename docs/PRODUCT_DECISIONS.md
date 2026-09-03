@@ -584,3 +584,91 @@ the founder must not be a hidden runtime dependency for either band.
 - **Evidence:** `e2e-m2l2.cjs` mid-week refresh (strip restored, drawn, opens this seat's
   own PIN, decision intact) — proven to fail without the repair; `e2e-away.cjs` reloads a
   Full House desk and rejoins from a second device on the PIN its rail still carries.
+
+## D34. THE DESKS — the room, named
+
+- **Decision:** Every M2 lesson exposes a teacher-only walk-to list beside THE ROOM: the
+  module's own desk handle, the pair actually sitting there, what that desk is doing right
+  now, and at most one note. THE ROOM keeps its job of describing shape and naming nobody;
+  THE DESKS does the join a teacher was otherwise making in their head, standing up,
+  mid-class. Modules own the vocabulary (a desk in L3's offer rounds has a *number in*, it
+  has not *locked* anything) and own which of their notes is a reason to walk over
+  (`flag`) rather than context for reading that desk's books.
+- **Grounds:** The console had a join list of student names with no desks and a WATCH FOR
+  list of desk handles with no names. The one question a teacher asks during a live window
+  — *who do I walk to* — was the one question neither list answered.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts`, `hostTheLeague.test.ts`, `writeTheRule.test.ts` (state
+  vocabulary per lesson; never in `boardView`, never in a student view); `e2e-m2l1.cjs`
+  Night 1 (three chips, the split named, the filter, nothing of it on the projector).
+
+## D35. A signal that changes with nothing but time must be part of what re-sends the body
+
+- **Decision:** The console shows when a desk's device has gone silent, measured on the
+  server's clock and reported in buckets (30s+ / 1m+ / 5m+ / 15m+), with the bucket in the
+  teacher payload's ETag fingerprint.
+- **Grounds:** Three separate ways to get this wrong, all of them shipped somewhere first.
+  Subtracting a server timestamp from the console's own `Date.now()` reads every desk in
+  the room as gone on a laptop whose clock has drifted. A live millisecond count inside a
+  conditionally-cached payload freezes at whatever it was when the body was last sent and
+  then lies about how long. And a fact that bumps no session version answers 304 forever —
+  the same failure already recorded for the rejoin lockout pill. The threshold is the same
+  AWAY_MS that opens a student's own "while you were away" recap, so the console and the
+  returning pair never disagree about who was gone.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-away.cjs` — the console marks exactly the one offline desk, in bucket
+  language, while it is still dark; the assertion timed out against the pre-repair ETag.
+
+## D36. A pair is never blamed for a night they were not in the room for
+
+- **Decision:** Teacher-facing flags about a desk that "has never committed" count only the
+  rounds that pair was actually present for. Nights covered by the desk manager before a
+  late pair arrived, and weeks a league-office club was run before a handover, are context
+  on the chip and never a reason to walk over.
+- **Grounds:** Caught by its own test: a pair who joined at Night 2 was being reported to
+  the teacher as having "never once locked a night of its own" before they had taken a
+  single turn. A console that sends a teacher across the room to scold a pair for a night
+  they were not there for is worse than a console with no flags at all.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `fullHouse.test.ts` "a late desk is annotated but is not a reason to walk
+  over".
+
+## D37. The link picker skips what this build cannot open, and says so when it fails
+
+- **Decision:** `listSessions` skips rows naming a lesson module this build does not
+  register instead of throwing, and /teach distinguishes "nothing to link to" from "could
+  not read the list".
+- **Grounds:** One stale snapshot — a renamed module, a session carried over from an older
+  build — threw out of the whole listing, so the "link to a previous session" picker
+  returned nothing for every lesson and the console swallowed the error. A teacher would
+  have concluded yesterday's session was gone and started an unlinked room, silently
+  breaking the L1 -> L2 -> L3 chain the module rests on. A session whose module is gone is
+  exactly the one thing the picker cannot offer anyway.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `sessionService.test.ts` "a session built by a lesson this build no longer
+  registers does not take the whole picker down" — proven to fail without the repair.
+
+## D38. No grade-band seam is built until a second band exists to switch on
+
+- **Decision:** No `gradeBand` field, context, or switch is added to the session, the
+  module contract, or any lesson. Recorded instead: if a 7-8 band is ever built, it
+  attaches at exactly two places — `createSession` input carried onto the session row, and
+  the `initialState` context each module already receives — and nothing else in the runtime
+  needs to know.
+- **Grounds:** Track 101 is grades 5-6 only (D6), and no 7-8 content exists to select. A
+  field with no consumer cannot be tested, cannot be proven, and invites content forks
+  nobody has designed — the same premature-generality trap CLAUDE.md section 12 forbids for
+  the lesson engine. Naming the attachment point costs nothing and keeps the future change
+  small; shipping an unused switch does not.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** None required — this decision is not to build.

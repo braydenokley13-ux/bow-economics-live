@@ -204,6 +204,15 @@ async function main() {
         unresolvedRows: document.querySelectorAll("#timecut ul.tc-list li").length,
         tcScrolls: tcList ? tcList.scrollHeight > tcList.clientHeight + 1 : false,
         tcHeight: tcBox ? Math.round(tcBox.height) : null,
+        deskChips: document.querySelectorAll("#deskGrid .desk-chip").length,
+        deskGridHeight: (() => {
+          const g = document.getElementById("deskGrid");
+          return g ? Math.round(g.getBoundingClientRect().height) : null;
+        })(),
+        deskScrolls: (() => {
+          const g = document.getElementById("deskGrid");
+          return g ? g.scrollHeight > g.clientHeight + 1 : false;
+        })(),
       };
     });
     assert.equal(room.counted, DESKS, `every desk must land in exactly one bar — counted ${room.counted} of ${DESKS}`);
@@ -220,8 +229,14 @@ async function main() {
       assert.ok(room.tcScrolls, "the unresolved list is not scrolling inside its card — it is growing the page instead");
     }
     assert.ok(room.tcHeight !== null && room.tcHeight <= 260, `the unresolved list is ${room.tcHeight}px tall at ${DESKS} desks`);
+    // THE DESKS grows with the room too, and it is one chip per desk rather than
+    // one row, so it is the biggest thing on the console at 32 desks. Same rule:
+    // it scrolls inside its card or it pushes the controls off the page.
+    assert.equal(room.deskChips, DESKS, `the walk-to list drew ${room.deskChips} chips for ${DESKS} desks`);
+    assert.ok(room.deskGridHeight !== null && room.deskGridHeight <= 320, `the walk-to list is ${room.deskGridHeight}px tall at ${DESKS} desks`);
+    assert.ok(room.deskScrolls, "the walk-to list is not scrolling inside its card — it is growing the page instead");
     await teach.screenshot({ path: path.join(SCREEN_DIR, "01-teach-32-desks.png") });
-    console.log(`[full-room] console at ${DESKS} desks: ${room.bars} bars, all ${room.counted} counted, ${room.unresolvedRows} unresolved in a ${room.tcHeight}px scroller, deck at y=${room.deckTop} of ${room.page}px`);
+    console.log(`[full-room] console at ${DESKS} desks: ${room.bars} bars, all ${room.counted} counted, ${room.unresolvedRows} unresolved in a ${room.tcHeight}px scroller, ${room.deskChips} desk chips in a ${room.deskGridHeight}px scroller, deck at y=${room.deckTop} of ${room.page}px`);
 
     /* -- 4. A real desk in that room can still act. ------------------------- */
     const t0 = Date.now();

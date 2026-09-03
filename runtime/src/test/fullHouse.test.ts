@@ -1765,3 +1765,89 @@ test("a late pair during PLAY still gets a real desk — the observer path is on
   const view = fullHouseModule.studentView(state, "seat-late", "PLAY") as Record<string, unknown>;
   assert.equal(view["seated"], true);
 });
+
+/* ------------------------------------------------------------------------ */
+/* THE DESKS — the walk-to list                                             */
+/* ------------------------------------------------------------------------ */
+
+type Strip = {
+  countLine: string;
+  entries: { seatId: string; label: string; state: string; stateLabel: string; note: string | null; flag: boolean }[];
+};
+const stripOf = (state: FullHouseState, phase: CanonicalPhase = "PLAY"): Strip | null =>
+  ((fullHouseModule.teacherView(state, phase) as Record<string, unknown>)["deskStrip"] as Strip | null) ?? null;
+
+test("the desk strip names every live desk, and says which ones have not committed", () => {
+  assert.equal(stripOf(empty()), null, "an empty room has no walk-to list");
+
+  const state = seated(3);
+  const strip = stripOf(state)!;
+  assert.ok(strip);
+  assert.equal(strip.entries.length, 3);
+  assert.match(strip.countLine, /0 of 3 locked · night 1 of 5/);
+  for (const e of strip.entries) {
+    assert.equal(e.state, "deciding");
+    assert.equal(e.stateLabel, "Still dialling");
+    assert.match(e.label, /^Desk \d+ · /);
+    assert.ok(e.seatId, "a chip with no seat id cannot be paired with the pair sitting there");
+  }
+
+  // One desk commits: the strip must move with it, and only it.
+  const one = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const after = stripOf(one)!;
+  assert.match(after.countLine, /1 of 3 locked/);
+  const locked = after.entries.filter((e) => e.state === "in");
+  assert.equal(locked.length, 1);
+  assert.equal(locked[0]!.seatId, "seat-2");
+  assert.equal(locked[0]!.stateLabel, "Locked Night 1");
+});
+
+test("a desk the bell has been deciding for is named as such, and a settled room stops asking", () => {
+  // Two desks play; the third never locks and the bell settles it, twice.
+  let state = seated(3);
+  state = playNight(state, { "seat-1": 40, "seat-2": 30 });
+  state = playNight(state, { "seat-1": 44, "seat-2": 32 });
+  const strip = stripOf(state)!;
+  const stranded = strip.entries.find((e) => e.seatId === "seat-3")!;
+  assert.match(String(stranded.note), /never once locked a night of its own/i);
+  const decided = strip.entries.find((e) => e.seatId === "seat-1")!;
+  assert.equal(decided.note, null, "a desk that has been deciding for itself was flagged anyway");
+
+  // After the fifth bell there is nothing left to walk over about tonight.
+  let done = state;
+  for (let i = 0; i < 3; i += 1) done = playNight(done, { "seat-1": 40, "seat-2": 30, "seat-3": 50 });
+  const closed = stripOf(done)!;
+  assert.match(closed.countLine, /all five nights settled/);
+  for (const e of closed.entries) assert.equal(e.state, "closed");
+});
+
+test("the walk-to list is teacher-only — no seat id and no desk strip ever reaches the projector", () => {
+  const state = ok(act(seated(3), { type: "lock" }, "PLAY", "seat-1"));
+  for (const phase of ["LOBBY", "HOOK", "PLAY", "REVEAL", "COUNTERFACTUAL", "SYNTHESIS"] as const) {
+    const board = JSON.stringify(fullHouseModule.boardView(state, phase));
+    assert.equal(board.includes("deskStrip"), false, `the projector carries the walk-to list in ${phase}`);
+    assert.equal(/seat-\d/.test(board), false, `a seat id reached the projector in ${phase}`);
+  }
+  // And a student never gets one either — it is a list of other people's desks.
+  const student = JSON.stringify(fullHouseModule.studentView(state, "seat-1", "PLAY"));
+  assert.equal(student.includes("deskStrip"), false, "a student device carries the teacher's walk-to list");
+});
+
+test("a late desk is annotated but is not a reason to walk over", () => {
+  // Two desks play a night, then a third pair arrives. Their books carry a night
+  // they did not play, which the teacher needs to know when reading them — but
+  // it is not a malfunction, and the console must not send the teacher across
+  // the room for it.
+  let state = seated(2);
+  state = playNight(state, { "seat-1": 40, "seat-2": 30 });
+  state = ok(act(state, { type: "takeSeat" }, "PLAY", "seat-9"));
+  const late = stripOf(state)!.entries.find((e) => e.seatId === "seat-9")!;
+  assert.match(String(late.note), /Joined at Night 2; the first 1 night was covered for them\./);
+  assert.equal(late.flag, false, "a late desk was marked as a reason to walk over");
+
+  // But once that same pair has sat through a night they COULD have locked and
+  // let the bell take it, they are.
+  const stranded = stripOf(playNight(state, { "seat-1": 40, "seat-2": 30 }))!.entries.find((e) => e.seatId === "seat-9")!;
+  assert.match(String(stranded.note), /never once locked a night of its own/i);
+  assert.equal(stranded.flag, true);
+});

@@ -82,6 +82,20 @@ const APPLIED_ACTION_MEMORY = 60;
  * well under the length of anything a class actually does.
  */
 const AWAY_MS = 30_000;
+/**
+ * Silence, in buckets a stale payload cannot lie about.
+ *
+ * Bucket 0 is a device still talking to the room; 1 opens at the same AWAY_MS
+ * that opens a student's own "while you were away" recap, so the console and
+ * the returning pair never disagree about who was gone.
+ */
+export function quietBucketOf(quietMs: number): 0 | 1 | 2 | 3 | 4 {
+  if (quietMs >= 900_000) return 4;
+  if (quietMs >= 300_000) return 3;
+  if (quietMs >= 60_000) return 2;
+  if (quietMs >= AWAY_MS) return 1;
+  return 0;
+}
 
 /** How much of the class's history is kept. Five nights of beats, with room. */
 const CLASS_LOG_LIMIT = 60;
@@ -162,7 +176,22 @@ export type TeacherPayload = {
   };
   /** Only ever populated on the createSession response — the one moment this credential is issued (R1). */
   teacherKey?: string;
-  seats: Array<{ id: string; displayName: string; joinedAt: string; lastSeenAt: string; rejoinLocked: boolean }>;
+  seats: Array<{
+    id: string;
+    displayName: string;
+    joinedAt: string;
+    lastSeenAt: string;
+    /**
+     * How long this seat's device has been silent, as a coarse bucket rather
+     * than a live number. See quietBucketOf(): a millisecond count inside an
+     * ETagged payload freezes at whatever it was when the body was last sent,
+     * and a frozen "quiet 31s" that is really four minutes old is worse than no
+     * number at all. The bucket is part of the teacher payload's fingerprint, so
+     * crossing one is what re-sends the body.
+     */
+    quietBucket: 0 | 1 | 2 | 3 | 4;
+    rejoinLocked: boolean;
+  }>;
   round: RoundPublic | null;
   /**
    * The TIME CUT panel: what closing the round right now would do, and to whom.
@@ -342,7 +371,18 @@ export class SessionService {
   async listSessions(teacherKey: string | null): Promise<TeacherPayload["session"][]> {
     if (!(await this.isTeacherHere(teacherKey))) return [];
     const rows = await this.repo.listSessions();
-    return rows.map((row) => this.teacherPayload(row).session);
+    // One row naming a lesson this build does not register used to throw out of
+    // the whole listing (moduleFor 500s), so a single stale snapshot — a renamed
+    // module, a session carried over from an older build — took down the "link
+    // to a previous session" picker for every lesson, and /teach swallowed the
+    // error and showed an empty list. A session whose module is gone is exactly
+    // the one thing this list cannot offer anyway, so it is skipped, not fatal.
+    const out: TeacherPayload["session"][] = [];
+    for (const row of rows) {
+      if (!this.modules.has(row.lessonModuleId)) continue;
+      out.push(this.teacherPayload(row).session);
+    }
+    return out;
   }
 
   /* ------------------------------------------------------------------ join -- */
@@ -1152,13 +1192,24 @@ export class SessionService {
   private async buildTeacherPayload(session: SessionRow): Promise<TeacherPayload> {
     const payload = this.teacherPayload(session);
     const seats = await this.repo.listSeatsForSession(session.id);
-    payload.seats = seats.map((s) => ({
-      id: s.id,
-      displayName: s.displayName,
-      joinedAt: s.joinedAt,
-      lastSeenAt: s.lastSeenAt,
-      rejoinLocked: s.failedRejoinAttempts >= REJOIN_LOCKOUT_THRESHOLD,
-    }));
+    // `quietMs` is measured HERE, on the one clock that also stamps `lastSeenAt`.
+    // The console used to subtract a server timestamp from its own Date.now(),
+    // which on a school laptop with a drifting clock reads every desk in the
+    // room as gone (or none of them). `away` uses the same AWAY_MS the student's
+    // own "while you were away" recap uses, so the two never disagree.
+    const seenAt = Date.now();
+    payload.seats = seats.map((s) => {
+      const gap = seenAt - Date.parse(s.lastSeenAt);
+      const quietMs = Number.isFinite(gap) ? Math.max(0, gap) : 0;
+      return {
+        id: s.id,
+        displayName: s.displayName,
+        joinedAt: s.joinedAt,
+        lastSeenAt: s.lastSeenAt,
+        quietBucket: quietBucketOf(quietMs),
+        rejoinLocked: s.failedRejoinAttempts >= REJOIN_LOCKOUT_THRESHOLD,
+      };
+    });
 
     // The founder's rule: before the teacher closes the round, /teach makes
     // clear who is unresolved and what fallback will happen to them. A close

@@ -5,7 +5,7 @@ import { startPolling } from "../shared/poll.js";
 import { loadTeachSessionCode, loadTeachSessionKey, saveTeachSessionCode, saveTeachSessionKey } from "../shared/storage.js";
 
 type Lesson = { id: string; title: string; phases: string[] };
-type TeacherSeat = { id: string; displayName: string; joinedAt: string; lastSeenAt: string; rejoinLocked: boolean };
+type TeacherSeat = { id: string; displayName: string; joinedAt: string; lastSeenAt: string; quietBucket?: 0 | 1 | 2 | 3 | 4; rejoinLocked: boolean };
 /** Mirrors `RoundPublic` on the server. `serverNow` is what lets a Chromebook with a wrong clock draw the same countdown as the projector. */
 type RoundPublic = {
   status: "OPEN" | "FINAL_CALL" | "CLOSED";
@@ -38,6 +38,7 @@ const aggregateEl = $("aggregate");
 const directorEl = $("director");
 const timeCutEl = $("timecut");
 const liveRoomEl = $("liveroom");
+const desksEl = $("desks");
 const projPreviewEl = $("projpreview"); // claim-ok: an element id, not a rendered word
 
 let currentCode: string | null = null;
@@ -201,7 +202,14 @@ async function syncSourceSessionRow(): Promise<void> {
       hint.hidden = true;
     }
   } catch {
-    /* if the listing fails, the teacher can still create an unlinked session — degrade quietly */
+    // Degrading quietly here is what hid a server-side failure behind an empty
+    // picker: the teacher saw "nothing to link to", believed yesterday's session
+    // was gone, and started an unlinked room. Creating an unlinked session still
+    // works — but say that this is a failure, not an absence.
+    const hint = $("sourceSessionHint");
+    hint.hidden = false;
+    hint.textContent =
+      "Could not read the list of earlier sessions from this server. You can still start an unlinked session — today's league opens on a stock spread — or try again in a moment.";
   }
 }
 
@@ -413,6 +421,11 @@ type RoomRead = {
   spreadLine: string;
   privacyNote: string;
 };
+/** Mirrors `DeskStrip` in each M2 module. Teacher-only; /board is never handed it. */
+type DeskStrip = {
+  countLine: string;
+  entries: { seatId: string; label: string; state: "in" | "deciding" | "auto" | "closed"; stateLabel: string; note: string | null; flag: boolean }[];
+};
 /**
  * Dollars, with the minus sign where a reader expects it.
  *
@@ -517,6 +530,81 @@ function initProjectorPreview(): void {
     }
   });
   window.addEventListener("resize", ppRescale);
+}
+
+/**
+ * THE DESKS — the room, named.
+ *
+ * The console had a join list of student names with no desks, and a WATCH FOR
+ * list of desk handles with no names. A teacher who decided to walk over had to
+ * do that join in their head, standing up, mid-class. This is the join done for
+ * them: the module's own desk handle, the pair actually sitting there, what the
+ * desk is doing right now, and the one thing worth walking over for.
+ *
+ * The quiet marker is the SERVER's own reading, in buckets: the gap is measured
+ * on the clock that stamps `lastSeenAt`, against the same threshold that opens a
+ * student's "while you were away" recap. Subtracting a server timestamp from
+ * this laptop's Date.now() would read every desk in the room as gone on a
+ * Chromebook whose clock had drifted, and a live millisecond count inside an
+ * ETagged payload would freeze mid-count and then lie about how long.
+ */
+let deskFilterOn = false;
+let deskLastPayload: TeacherPayload | null = null;
+
+function renderDesks(payload: TeacherPayload): void {
+  const strip = (payload.view["deskStrip"] as DeskStrip | null | undefined) ?? null;
+  const live = !payload.session.ended && payload.session.phase === "PLAY";
+  if (!strip || !live || strip.entries.length === 0) {
+    desksEl.hidden = true;
+    deskLastPayload = null;
+    return;
+  }
+  desksEl.hidden = false;
+  deskLastPayload = payload;
+  $("deskCount").textContent = strip.countLine;
+
+  const seatById = new Map(payload.seats.map((s) => [s.id, s]));
+  const QUIET_WORDS = ["", "Device quiet 30s+", "Device quiet 1m+", "Device quiet 5m+", "Device quiet 15m+"] as const;
+  const quietOf = (seatId: string): string | null => {
+    const bucket = seatById.get(seatId)?.quietBucket ?? 0;
+    return bucket > 0 ? QUIET_WORDS[bucket]! : null;
+  };
+
+  const rows = strip.entries.map((e) => {
+    const quiet = quietOf(e.seatId);
+    // A note is not automatically a reason to walk over — the module says which
+    // of its notes are (`flag`). Context on a chip is for reading the desk's
+    // books, not for pulling the teacher out of the front of the room.
+    const needsMe = e.state === "deciding" || e.state === "auto" || quiet !== null || e.flag;
+    return { ...e, quiet, needsMe, who: seatById.get(e.seatId)?.displayName ?? null };
+  });
+  const attention = rows.filter((r) => r.needsMe).length;
+  const shown = deskFilterOn ? rows.filter((r) => r.needsMe) : rows;
+
+  $("deskGrid").innerHTML = shown
+    .map((r) => {
+      const cls = r.quiet !== null ? "desk-chip quiet" : r.needsMe ? "desk-chip attn" : "desk-chip";
+      const quiet = r.quiet !== null ? `<span class="dk-quiet">${escapeHtml(r.quiet)}</span>` : "";
+      // A seat with no name is a device that joined without one, not an error.
+      const who = r.who ? escapeHtml(r.who) : "\u2014";
+      return `<div class="${cls}">
+        <span class="dk-handle">${escapeHtml(r.label)}</span>
+        <span class="dk-who">${who}</span>
+        <span class="dk-row"><span class="dk-state">${escapeHtml(r.stateLabel)}</span>${quiet}</span>
+        ${r.note ? `<span class="dk-note">${escapeHtml(r.note)}</span>` : ""}
+      </div>`;
+    })
+    .join("");
+
+  const filterBtn = $<HTMLButtonElement>("deskFilter");
+  filterBtn.hidden = attention === 0;
+  filterBtn.setAttribute("aria-pressed", deskFilterOn ? "true" : "false");
+  filterBtn.textContent = deskFilterOn ? `Show all ${rows.length}` : `Only the ${attention} that need me`;
+
+  $("deskNote").textContent =
+    attention === 0
+      ? "Every desk is committed and every device is still talking to the room. Nothing here needs you."
+      : `${attention} of ${rows.length} desk${rows.length === 1 ? "" : "s"} could use you. This list is yours alone \u2014 real names never reach the projector.`;
 }
 
 function renderLiveRoom(payload: TeacherPayload): void {
@@ -668,6 +756,7 @@ function render(payload: TeacherPayload): void {
   $("seatCount").textContent = `${payload.seats.length} joined`;
   renderTimeCut(payload);
   renderLiveRoom(payload);
+  renderDesks(payload);
   // The preview lives for the whole session, not just PLAY — REVEAL through
   // SYNTHESIS is exactly when the projector IS the lesson. It goes away when
   // the session does, so an ended room cannot leave a stale board on the
@@ -2142,6 +2231,12 @@ $("btnReopen").addEventListener("click", () => {
 });
 
 initProjectorPreview();
+$("deskFilter").addEventListener("click", () => {
+  deskFilterOn = !deskFilterOn;
+  // Redraw off the payload already in hand: a teacher pressing this is looking
+  // for a desk NOW, not on the next poll tick.
+  if (deskLastPayload) renderDesks(deskLastPayload);
+});
 
 void loadLessons().then(() => {
   const remembered = loadTeachSessionCode();

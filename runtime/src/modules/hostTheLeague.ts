@@ -1117,6 +1117,61 @@ function roomRead(desks: readonly L2RoomDesk[], weekIndex: number): Record<strin
 }
 
 export const deskHandleFor = (club: Club): string => `Desk ${club.deskNumber} · ${CLUBS[club.slot]!.short}`;
+
+/**
+ * THE DESKS — the teacher's walk-to list. THE ROOM gives the shape of the room
+ * and deliberately names nobody; this names the desks so the console can pair a
+ * handle with the pair actually sitting there. Teacher-only, never `boardView`.
+ */
+export type DeskStripEntry = {
+  seatId: SeatId;
+  label: string;
+  state: "in" | "deciding" | "auto" | "closed";
+  stateLabel: string;
+  note: string | null;
+  /** True when the note is a reason to walk over, not merely context. */
+  flag: boolean;
+};
+export type DeskStrip = { countLine: string; entries: DeskStripEntry[] };
+
+function deskStripOf(state: HostLeagueState): DeskStrip | null {
+  const live = state.clubs
+    .filter((c) => c.seatId !== null)
+    .sort((a, b) => (a.deskNumber ?? 0) - (b.deskNumber ?? 0));
+  if (live.length === 0) return null;
+  const windowOpen = state.weekIndex < WEEK_COUNT;
+  const weekNo = Math.min(state.weekIndex + 1, WEEK_COUNT);
+
+  const entries: DeskStripEntry[] = live.map((c) => {
+    const autos = c.weeks.filter((w) => w.auto).length;
+    const own = c.weeks.filter((w) => !w.auto && !w.stock);
+    const label = deskHandleFor(c);
+    // `joinedAtWeek` is 1-based: a pair seated in the lobby joined at week 1.
+    const covered = c.joinedAtWeek - 1;
+    // Only weeks this pair was actually at count against them — see the same
+    // guard in fullHouse: a covered week is not a week they failed to commit.
+    const theirs = c.weeks.filter((w) => !w.stock);
+    const [note, flag]: [string | null, boolean] =
+      theirs.length >= 1 && own.length === 0
+        ? ["Has never once locked a week of its own — every week so far was settled by the bell or covered before they arrived.", true]
+        : autos >= 2
+          ? [`The bell has settled ${autos} of this desk's weeks.`, true]
+          : covered > 0
+            ? [`Joined at Week ${c.joinedAtWeek}; the first ${covered} week${covered === 1 ? " was" : "s were"} covered for them.`, false]
+            : c.cash < 0
+              ? ["Books are in the red.", false]
+              : [null, false];
+    if (!windowOpen) return { seatId: c.seatId!, label, state: "closed", stateLabel: "Three weeks in", note, flag };
+    if (c.locked) return { seatId: c.seatId!, label, state: "in", stateLabel: `Locked Week ${weekNo}`, note, flag };
+    return { seatId: c.seatId!, label, state: "deciding", stateLabel: "Still deciding", note, flag };
+  });
+
+  const deciding = entries.filter((e) => e.state === "deciding").length;
+  const countLine = windowOpen
+    ? `${entries.length - deciding} of ${entries.length} locked · week ${weekNo} of ${WEEK_COUNT}`
+    : `${entries.length} desk${entries.length === 1 ? "" : "s"} · all three weeks settled`;
+  return { countLine, entries };
+}
 export const clubHandleFor = (club: Club): string =>
   club.seatId === null ? `${CLUBS[club.slot]!.short} · league office` : deskHandleFor(club);
 
@@ -3773,6 +3828,8 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
     return tag({
       phase,
       room,
+      // THE DESKS: the same room, named. Teacher-only — see deskStripOf().
+      deskStrip: deskStripOf(state),
       weekIndex: state.weekIndex,
       weekNumber: openWeekNumber(state),
       weekCount: WEEK_COUNT,

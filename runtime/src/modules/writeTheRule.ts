@@ -1294,6 +1294,76 @@ export function runnerUpShare(proposals: readonly number[], adoptedShare: number
 
 export const deskHandleFor = (club: Club): string => `Desk ${club.deskNumber} · ${CLUBS[club.slot]!.short}`;
 
+/**
+ * THE DESKS — the teacher's walk-to list. THE ROOM gives the shape and names
+ * nobody; this names the desks so the console can pair a handle with the pair
+ * sitting there. Teacher-only, never `boardView`.
+ *
+ * This lesson has two different live windows and they ask for different words:
+ * during the offer rounds a desk is IN when it has a number at the league, and
+ * during the season it is IN when it has locked the week.
+ */
+export type DeskStripEntry = {
+  seatId: SeatId;
+  label: string;
+  state: "in" | "deciding" | "auto" | "closed";
+  stateLabel: string;
+  note: string | null;
+  /** True when the note is a reason to walk over, not merely context. */
+  flag: boolean;
+};
+export type DeskStrip = { countLine: string; entries: DeskStripEntry[] };
+
+function deskStripOf(state: WriteRuleState): DeskStrip | null {
+  const live = state.clubs
+    .slice(0, state.leagueSize)
+    .filter((c) => c.seatId !== null)
+    .sort((a, b) => (a.deskNumber ?? 0) - (b.deskNumber ?? 0));
+  if (live.length === 0) return null;
+
+  const inRounds = state.stage === "rounds" && state.roundIndex < ROUND_COUNT;
+  const inSeason = state.stage === "season" && state.weekIndex < WEEK_COUNT;
+
+  const entries: DeskStripEntry[] = live.map((c) => {
+    const label = deskHandleFor(c);
+    const autos = c.weeks.filter((w) => w.auto).length;
+    const own = c.weeks.filter((w) => !w.auto);
+    // A handed-over club carries weeks the league office played. Those are not
+    // weeks this pair failed to commit, so they are never counted against them —
+    // but a pair that has held the club for a week and still not locked one is.
+    const [note, flag]: [string | null, boolean] =
+      c.weeks.length >= 1 && own.length === 0 && !c.handedOver
+        ? ["Has never once locked a week of its own — every week so far was settled by the bell.", true]
+        : autos >= 2
+          ? [`The bell has settled ${autos} of this desk's weeks.`, true]
+          : c.handedOver
+            ? ["Took this club over from the league office after the vote had started.", false]
+            : c.cash < 0
+              ? ["Books are in the red.", false]
+              : [null, false];
+
+    if (inRounds) {
+      return c.proposal
+        ? { seatId: c.seatId!, label, state: "in", stateLabel: `Number in · round ${state.roundIndex + 1}`, note, flag }
+        : { seatId: c.seatId!, label, state: "deciding", stateLabel: "No number yet", note, flag };
+    }
+    if (inSeason) {
+      return c.locked
+        ? { seatId: c.seatId!, label, state: "in", stateLabel: `Locked Week ${state.weekIndex + 1}`, note, flag }
+        : { seatId: c.seatId!, label, state: "deciding", stateLabel: "Still deciding", note, flag };
+    }
+    return { seatId: c.seatId!, label, state: "closed", stateLabel: state.stage === "season" ? "Three weeks in" : "Vote sealed", note, flag };
+  });
+
+  const waiting = entries.filter((e) => e.state === "deciding").length;
+  const countLine = inRounds
+    ? `${entries.length - waiting} of ${entries.length} numbers in · round ${state.roundIndex + 1} of ${ROUND_COUNT}`
+    : inSeason
+      ? `${entries.length - waiting} of ${entries.length} locked · week ${state.weekIndex + 1} of ${WEEK_COUNT}`
+      : `${entries.length} desk${entries.length === 1 ? "" : "s"} in this league`;
+  return { countLine, entries };
+}
+
 export type HistogramBin = { share: number; count: number };
 
 export type RoundSummary = {
@@ -4211,6 +4281,8 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     return tag({
       phase,
       room,
+      // THE DESKS: the same room, named. Teacher-only — see deskStripOf().
+      deskStrip: deskStripOf(state),
       leagueSize: state.leagueSize,
       deskCount: live,
       lockedCount: state.clubs.filter((c) => c.seatId !== null && c.locked).length,

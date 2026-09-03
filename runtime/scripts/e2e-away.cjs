@@ -143,6 +143,28 @@ async function main() {
     await stayed.click("#fhNextNight");
     // Stay dark past the server's away threshold.
     await teach.waitForFunction((until) => Date.now() >= until, darkFrom + DARK_MS, { timeout: DARK_MS + 15000 });
+
+    /* -- THE DESKS: the console can see the dark desk before the pair says so - */
+    // The one thing a teacher cannot see from the front of the room is a device
+    // that has stopped talking. The marker is the SERVER's reading of the gap,
+    // not this laptop's clock minus a server timestamp.
+    await teach.waitForFunction(
+      () => document.querySelector("#deskGrid .desk-chip.quiet") !== null,
+      null,
+      { timeout: 30000 },
+    );
+    const quiet = await teach.evaluate(() =>
+      [...document.querySelectorAll("#deskGrid .desk-chip")].map((c) => ({
+        who: c.querySelector(".dk-who")?.textContent ?? "",
+        quiet: c.querySelector(".dk-quiet")?.textContent ?? null,
+      })),
+    );
+    const dark = quiet.filter((c) => c.quiet !== null);
+    assert.equal(dark.length, 1, `the console marked ${dark.length} desks quiet while exactly one device was offline`);
+    assert.match(dark[0].quiet, /^Device quiet (30s|1m|5m|15m)\+$/, `the quiet marker printed a live count that a cached payload cannot keep honest: "${dark[0].quiet}"`);
+    await teach.screenshot({ path: path.join(SCREEN_DIR, "02-teach-desk-gone-quiet.png") });
+    console.log(`[away] the console saw the dark desk on its own: ${dark[0].who} — ${dark[0].quiet}`);
+
     await gone.context().setOffline(false);
 
     /* -- 1/2. It comes back with a recap, and the room is not rewound. ------ */

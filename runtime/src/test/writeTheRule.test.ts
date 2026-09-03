@@ -1081,3 +1081,40 @@ test("a full league during PLAY still says the league is full, not that the seas
   assert.ok(flag);
   assert.match(flag.label, /after the league closed/i);
 });
+
+/* ------------------------------------------------------------------------ */
+/* THE DESKS — the walk-to list                                             */
+/* ------------------------------------------------------------------------ */
+
+test("the desk strip reads the round it is actually in, and stays teacher-only", () => {
+  type Strip = { countLine: string; entries: { seatId: string; label: string; state: string; stateLabel: string; note: string | null }[] };
+  const stripOf = (s: WriteRuleState, phase: CanonicalPhase = "PLAY"): Strip | null =>
+    ((writeTheRuleModule.teacherView(s, phase) as Record<string, unknown>)["deskStrip"] as Strip | null) ?? null;
+
+  assert.equal(stripOf(fresh()), null);
+  const state = withDesks(4);
+  const rounds = stripOf(state)!;
+  assert.equal(rounds.entries.length, 4);
+  // A desk in the offer rounds has not "locked" anything — it either has a
+  // number at the league or it does not.
+  assert.match(rounds.countLine, /0 of 4 numbers in · round 1 of 3/);
+  for (const e of rounds.entries) assert.equal(e.stateLabel, "No number yet");
+
+  const proposed = apply(state, { type: "propose", share: 30, condition: false }, "PLAY", "seat-1");
+  const after = stripOf(proposed)!;
+  assert.match(after.countLine, /1 of 4 numbers in/);
+  assert.match(after.entries.find((e) => e.seatId === "seat-1")!.stateLabel, /Number in · round 1/);
+
+  // The season is a different window and says so.
+  const season = toSeason(toAdopted(state, [30], [false]));
+  const week = stripOf(season)!;
+  assert.match(week.countLine, /locked · week 1 of 3/);
+  assert.equal(week.entries[0]!.stateLabel, "Still deciding");
+
+  for (const phase of writeTheRuleModule.phases) {
+    const board = JSON.stringify(writeTheRuleModule.boardView(season, phase));
+    assert.equal(board.includes("deskStrip"), false, `the projector carries the walk-to list in ${phase}`);
+    assert.equal(/seat-\d/.test(board), false, `a seat id reached the projector in ${phase}`);
+  }
+  assert.equal(JSON.stringify(writeTheRuleModule.studentView(season, "seat-1", "PLAY")).includes("deskStrip"), false);
+});

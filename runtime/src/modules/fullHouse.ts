@@ -1415,6 +1415,85 @@ export type FullHouseAggregate = {
 
 export const deskHandle = (desk: Desk): string => `Desk ${desk.deskNumber} · ${marketOf(desk).club}`;
 
+/* --------------------------------------------------------------- desks -- */
+
+/**
+ * THE DESKS — the teacher's walk-to list.
+ *
+ * THE ROOM says the shape of the room ("nine desks between $28 and $70, three
+ * still deciding"). It deliberately never names a desk, because shape is what
+ * you read out loud. But the moment a teacher decides to DO something about it
+ * they need the other half: which desk, run by whom, and what is actually wrong
+ * with it. That cross-reference used to be manual — the console showed a join
+ * list of names with no desks, and a WATCH FOR list of desks with no names.
+ *
+ * Teacher-only, like THE ROOM: this pairs desk handles with seat ids so the
+ * console can put the pair's real names on the chip. `boardView` is never
+ * handed it.
+ */
+export type DeskStripEntry = {
+  seatId: SeatId;
+  label: string;
+  /** A small closed vocabulary the console styles against; the words come from `stateLabel`. */
+  state: "in" | "deciding" | "auto" | "closed";
+  stateLabel: string;
+  note: string | null;
+  /**
+   * True when the note is a reason to WALK OVER, not merely context. A desk that
+   * has never committed a night is a reason; a desk that joined late and carries
+   * covered nights in its books is something to know when you read them.
+   */
+  flag: boolean;
+};
+export type DeskStrip = { countLine: string; entries: DeskStripEntry[] };
+
+function deskStripOf(state: FullHouseState): DeskStrip | null {
+  const seatIds = state.deskOrder.filter((id) => state.desks[id] !== undefined);
+  if (seatIds.length === 0) return null;
+  const windowOpen = state.nightIndex < NIGHT_COUNT;
+  const nightNo = Math.min(state.nightIndex + 1, NIGHT_COUNT);
+
+  const entries: DeskStripEntry[] = seatIds.map((seatId) => {
+    const desk = state.desks[seatId]!;
+    const own = desk.nights.filter((n) => !n.auto && !n.stock);
+    const autos = desk.nights.filter((n) => n.auto).length;
+    const label = deskHandle(desk);
+
+    // The note is the reason to walk over, and only one thing is worth saying.
+    // Ordered by what a teacher can still act on tonight: a pair that has never
+    // decided anything outranks a pair that is merely in the red.
+    // `joinedAtNight` is 1-based: a pair seated in the lobby joined at night 1.
+    const covered = desk.joinedAtNight - 1;
+    // Only nights this pair was actually AT count against them. A pair who
+    // joined at Night 4 has one night in its books it never saw; calling that
+    // "never once locked a night of its own" would send a teacher across the
+    // room to scold a pair that has not had a turn yet.
+    const theirs = desk.nights.filter((n) => !n.stock);
+    const [note, flag]: [string | null, boolean] =
+      theirs.length >= 1 && own.length === 0
+        ? ["Has never once locked a night of its own — every night so far was settled by the bell or covered before they arrived.", true]
+        : autos >= 2
+          ? [`The bell has settled ${autos} of this desk's nights.`, true]
+          : covered > 0
+            ? [`Joined at Night ${desk.joinedAtNight}; the first ${covered} night${covered === 1 ? " was" : "s were"} covered for them.`, false]
+            : desk.cash < 0
+              ? ["Books are in the red.", false]
+              : [null, false];
+
+    if (!windowOpen) {
+      return { seatId, label, state: "closed", stateLabel: "Five nights in", note, flag };
+    }
+    if (desk.locked) return { seatId, label, state: "in", stateLabel: `Locked Night ${nightNo}`, note, flag };
+    return { seatId, label, state: "deciding", stateLabel: "Still dialling", note, flag };
+  });
+
+  const deciding = entries.filter((e) => e.state === "deciding").length;
+  const countLine = windowOpen
+    ? `${entries.length - deciding} of ${entries.length} locked · night ${nightNo} of ${NIGHT_COUNT}`
+    : `${entries.length} desk${entries.length === 1 ? "" : "s"} · all five nights settled`;
+  return { countLine, entries };
+}
+
 function median(values: number[]): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -3387,6 +3466,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       // see roomRead(). Null once the window is closed: after the last bell
       // there is no live dial to read, and the reveal owns the numbers.
       room: state.nightIndex >= NIGHT_COUNT ? null : roomRead(desks, state.nightIndex),
+      // THE DESKS: the same room, named. Teacher-only — see deskStripOf().
+      deskStrip: deskStripOf(state),
       twoPeaksReleased: state.twoPeaksReleased,
       twoPeaksAvailable: state.nightIndex >= 3 && !state.twoPeaksReleased,
       twoPeaksReason:

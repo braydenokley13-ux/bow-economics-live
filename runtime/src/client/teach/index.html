@@ -65,6 +65,21 @@
   #projpreview .pp-btn:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
   /* Capped: this is a monitor, not a second board. Full-width it swallowed the
      console and pushed the phase controls a screen and a half down. */
+  /* Grows with the room, so it scrolls inside its own card. A 32-desk class
+     must not push the closing controls the teacher is reaching for down the
+     page — the same rule the TIME CUT unresolved list already follows. */
+  .desk-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:8px; margin-top:10px; max-height:300px; overflow-y:auto; }
+  .desk-chip { border:1px solid var(--hairline, rgba(255,255,255,0.14)); border-radius:9px; padding:9px 10px; background:rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .desk-chip.attn { border-color:rgba(244,185,66,0.55); background:rgba(244,185,66,0.07); }
+  .desk-chip.quiet { border-color:rgba(226,94,80,0.55); background:rgba(226,94,80,0.07); }
+  .desk-chip .dk-handle { font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-secondary); overflow-wrap:anywhere; }
+  .desk-chip .dk-who { font-size:15px; font-weight:600; color:var(--ink-primary); overflow-wrap:anywhere; }
+  .desk-chip .dk-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .desk-chip .dk-state { font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:2px 7px; border-radius:999px; border:1px solid rgba(255,255,255,0.16); color:var(--ink-secondary); }
+  .desk-chip.attn .dk-state { border-color:rgba(244,185,66,0.6); color:var(--accent-gold, #f4b942); }
+  .desk-chip .dk-quiet { font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:2px 7px; border-radius:999px; border:1px solid rgba(226,94,80,0.6); color:#e8907f; }
+  .desk-chip .dk-note { font-size:12px; line-height:1.45; color:var(--ink-muted); }
+  #deskFilter[aria-pressed="true"] { border-color:rgba(244,185,66,0.6); color:var(--accent-gold, #f4b942); }
   .pp-frame { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1280 / 720; overflow: hidden; border-radius: 10px;
     border: 1px solid var(--rule, rgba(255,255,255,.16)); background: #05070c; }
   /* The room sees a lit rectangle at the front of the room, not a flat card. */
@@ -260,6 +275,21 @@
     <div class="room-axis" id="roomAxis"></div>
     <div class="room-move" id="roomMove"></div>
     <p class="room-note" id="roomNote"></p>
+  </section>
+
+  <!-- THE DESKS. The room, named. THE ROOM above says the shape of the room and
+       deliberately names nobody, because shape is what a teacher reads out loud.
+       This is the other half: which desk, run by whom, and what is wrong with it
+       — the walk-to list. Teacher-only, like the join list; it never goes near
+       /board. -->
+  <section id="desks" class="card" hidden>
+    <div class="tc-head">
+      <h2 style="margin:0;">The desks</h2>
+      <span id="deskCount" class="tc-state"></span>
+      <button id="deskFilter" class="pp-btn" type="button" aria-pressed="false">Only the ones that need me</button>
+    </div>
+    <div class="desk-grid" id="deskGrid"></div>
+    <p class="room-note" id="deskNote"></p>
   </section>
 
   <!-- THE PROJECTOR, live, on the console. A teacher directing a class stands

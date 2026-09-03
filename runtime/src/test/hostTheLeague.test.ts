@@ -2111,3 +2111,33 @@ test("W6: the settled week answers the call it was actually given, and calls not
     "week 1's call carried into week 2",
   );
 });
+
+/* ------------------------------------------------------------------------ */
+/* THE DESKS — the walk-to list                                             */
+/* ------------------------------------------------------------------------ */
+
+test("the desk strip names every live club and stays teacher-only", () => {
+  type Strip = { countLine: string; entries: { seatId: string; label: string; state: string; stateLabel: string; note: string | null }[] };
+  const stripOf = (s: HostLeagueState, phase: CanonicalPhase = "PLAY"): Strip | null =>
+    ((hostTheLeagueModule.teacherView(s, phase) as Record<string, unknown>)["deskStrip"] as Strip | null) ?? null;
+
+  assert.equal(stripOf(empty()), null);
+  const state = seated(4);
+  const strip = stripOf(state)!;
+  assert.equal(strip.entries.length, 4);
+  assert.match(strip.countLine, /0 of 4 locked · week 1 of 3/);
+  for (const e of strip.entries) assert.equal(e.state, "deciding");
+
+  const one = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  const after = stripOf(one)!;
+  assert.match(after.countLine, /1 of 4 locked/);
+  assert.equal(after.entries.find((e) => e.seatId === "seat-2")!.stateLabel, "Locked Week 1");
+
+  // Never on the projector, never on a student device.
+  for (const phase of ALL_PHASES) {
+    const board = JSON.stringify(hostTheLeagueModule.boardView(one, phase));
+    assert.equal(board.includes("deskStrip"), false, `the projector carries the walk-to list in ${phase}`);
+    assert.equal(/seat-\d/.test(board), false, `a seat id reached the projector in ${phase}`);
+  }
+  assert.equal(JSON.stringify(hostTheLeagueModule.studentView(one, "seat-1", "PLAY")).includes("deskStrip"), false);
+});
