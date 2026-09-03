@@ -4785,21 +4785,81 @@ function wrBooks(view: Record<string, unknown>): string {
     </div>`;
 }
 
-function wrLeagueTable(view: Record<string, unknown>): string {
-  const league = (view["league"] as { deskNumber: number; short: string; sizeLabel: string; draw: number; live: boolean }[]) ?? [];
+/** Money at a glance: $2.4M, $540K — the bar carries the magnitude, this labels it. */
+function wrShortMoney(n: number): string {
+  const v = Math.abs(n);
+  if (v >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${Math.round(n)}`;
+}
+
+type WRLeagueClub = {
+  deskNumber: number;
+  short: string;
+  code: string;
+  building: string;
+  capacity: number;
+  sizeLabel: string;
+  draw: number;
+  cash: number;
+  live: boolean;
+  you: boolean;
+};
+
+/**
+ * THE LEAGUE FLOOR — the room this desk is legislating for, drawn.
+ *
+ * This replaced a collapsed `<details>` list of club names. A student about to
+ * vote on how much of every club's money goes into a shared pot was being asked
+ * to do it while looking at four paragraphs of text and a slider; the twelve
+ * unequal franchises the rule is ABOUT were one click away and, in a live class,
+ * therefore invisible. ADOPT_COPY tells the room "the pot is the big markets'
+ * money" — this is that sentence as a picture, from the room's own opening books.
+ *
+ * Two encodings, both labelled in the header, both straight off state:
+ *   - column height = cash in the bank, on a shared baseline and a shared max,
+ *     so the 5x gap between a big market and a small one is drawn at 5x;
+ *   - the numeral under each name = Draw.
+ * Nothing here is scaled, curved, or dramatised. The gap on screen is the gap
+ * in the model.
+ *
+ * Order is desk order, never wealth order: this lesson deliberately refuses to
+ * rank its clubs (see `applyRookie` — "determined by the model, never shown as a
+ * ranking"), and a sorted floor would hand the room a league table it never
+ * earned.
+ */
+function wrLeagueFloor(view: Record<string, unknown>, opts?: { compact?: boolean }): string {
+  const league = (view["league"] as WRLeagueClub[]) ?? [];
   if (league.length === 0) return "";
+  const max = Math.max(1, ...league.map((c) => c.cash));
+  const compact = opts?.compact === true;
   return `
-    <details class="fa-rules" style="margin-top:12px;">
-      <summary>Every club in the league</summary>
-      <div class="fh-slate">
+    <div class="wr-league${compact ? " compact" : ""}" id="wrLeague">
+      <div class="wr-league-head">
+        <span class="eyebrow">THE LEAGUE — ${league.length} clubs, and what each one has in the bank right now</span>
+        <span class="wr-league-legend">bar = money in the bank · tallest = ${wrShortMoney(max)} · number = Draw</span>
+      </div>
+      <div class="wr-league-floor">
         ${league
-          .map(
-            (c) =>
-              `<div class="fh-slate-row"><span>${escapeHtml(c.short)}</span><span>${escapeHtml(c.sizeLabel)}</span><span>${c.live ? `Desk ${c.deskNumber}` : "league office"}</span><span class="numeric">Draw ${c.draw}</span></div>`,
-          )
+          .map((c) => {
+            const h = Math.max(3, Math.round((c.cash / max) * 100));
+            const title = `${c.short} (${c.code}) · ${c.building} · ${c.capacity.toLocaleString()} seats · ${c.sizeLabel} · ${wrShortMoney(c.cash)} in the bank · Draw ${c.draw}`;
+            // Every column carries the SAME four rows in the same order, so every
+            // bar sits on one baseline and the drawn heights are comparable. The
+            // first version made the YOU badge a fifth row on one column only:
+            // with the floor bottom-aligned, that lifted this desk's own club
+            // clear of everyone else's baseline and drew $2.4M taller than the
+            // $2.6M beside it. A marker may never move the thing it marks.
+            return `<div class="wr-club${c.you ? " is-you" : ""}${c.live ? "" : " is-office"}" data-wr-club="${c.deskNumber}" data-cash="${c.cash}" title="${escapeHtml(title)}">
+              <div class="wr-club-cash numeric">${wrShortMoney(c.cash)}</div>
+              <div class="wr-club-track"><div class="wr-club-bar" style="height:${h}%"></div>${c.you ? `<div class="wr-club-you">YOU</div>` : ""}</div>
+              <div class="wr-club-name" data-code="${escapeHtml(c.code)}"><span>${escapeHtml(c.short)}</span></div>
+              <div class="wr-club-draw numeric">${c.draw}</div>
+            </div>`;
+          })
           .join("")}
       </div>
-    </details>`;
+    </div>`;
 }
 
 function wrHistogramHtml(h: WRHistogram | null, held: boolean, heldCopy: string, band: number): string {
@@ -4961,7 +5021,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
           <summary>How today works</summary>
           <ul>${((view["houseRules"] as string[]) ?? []).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
         </details>
-        ${wrLeagueTable(view)}
+        ${wrLeagueFloor(view)}
         <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>`;
       return;
 
@@ -5216,11 +5276,18 @@ function renderWRRounds(view: Record<string, unknown>): void {
   $("gameBody").innerHTML = `
     <div id="wrRoundsRoot" class="hl-decide">
       <div class="hl-span">${wrDeskHeader(view)}</div>
+      <!-- The veil reads as a league announcement rather than a card: a gold-
+           ruled band, not a padded panel. That is ~50px cheaper, which is what
+           buys the league floor its place above a 1024x600 fold on the same
+           screen. It stays inside the left column on purpose — spanning both
+           columns pushed the CONDITION control under the commit bar, which the
+           occlusion probe caught. -->
       <div class="hl-col-context">
-        <div class="panel" id="wrVeil" style="padding:14px;">
-          <div class="eyebrow" style="font-size:12px;">Before you write anything</div>
-          <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["veil"] ?? ""))}</p>
+        <div class="wr-veil-band" id="wrVeil">
+          <span class="eyebrow">Before you write anything</span>
+          <p>${escapeHtml(String(view["veil"] ?? ""))}</p>
         </div>
+        ${wrLeagueFloor(view, { compact: true })}
         <div class="panel" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">Your club, while you vote</div>
           <div class="fh-market-facts">
@@ -5231,6 +5298,7 @@ function renderWRRounds(view: Record<string, unknown>): void {
             <div><span>Cash</span><span class="numeric">${money(Number(view["cash"] ?? 0))}</span></div>
           </div>
           <div class="hl-give-note">${escapeHtml(String(view["plainLine"] ?? ""))}</div>
+          ${view["identityLine"] ? `<p class="hl-identity">${escapeHtml(String(view["identityLine"]))}</p>` : ""}
         </div>
         ${
           !sealed && view["abstainNote"]

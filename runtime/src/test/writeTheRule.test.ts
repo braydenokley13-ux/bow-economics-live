@@ -784,3 +784,58 @@ test("ADOPT_BAND, the dial and the two-thirds rule are the numbers the copy prom
   assert.equal(ROUND_COUNT, 3);
   assert.equal(WEEK_COUNT, 3);
 });
+
+/* ------------------------------------------------------- the league floor -- */
+
+/**
+ * W6/RC3 — the room is asked to tax itself while looking at how unequal it is.
+ *
+ * The league strip on the vote screen draws every club's opening bank on one
+ * baseline. That is only safe because every place it is sent is PRE-SEASON: no
+ * week has settled, so no figure in it can carry another desk's decision. The
+ * season view must never ask for it, and this test is what stops a later arm
+ * from adding `league:` to a settled-week payload without noticing that it has
+ * just published eleven other desks' outcomes to a private screen.
+ */
+test("W6/RC3: the league floor carries what it draws, and never survives into the season", () => {
+  const desks = 9;
+  const seated = withDesks(desks);
+
+  for (const phase of ["LOBBY", "HOOK"] as const) {
+    const v = writeTheRuleModule.studentView(seated, "seat-3", phase) as Record<string, unknown>;
+    assert.ok(Array.isArray(v["league"]), `${phase} must carry the league`);
+  }
+
+  const rounds = writeTheRuleModule.studentView(seated, "seat-3", "PLAY") as Record<string, unknown>;
+  const league = rounds["league"] as { short: string; code: string; cash: number; capacity: number; draw: number; you: boolean }[];
+  assert.ok(Array.isArray(league) && league.length === seated.leagueSize, "the vote screen must carry every club in the league");
+  assert.equal(league.filter((c) => c.you).length, 1, "exactly one club on the floor is this desk's own");
+  for (const c of league) {
+    assert.equal(typeof c.cash, "number", `${c.short} has no bank to draw`);
+    assert.ok(c.cash > 0 && Number.isFinite(c.cash), `${c.short} drew a bar off a nonsense number`);
+    assert.ok(c.code.length >= 2 && c.code.length <= 4, `${c.short} has no usable league code`);
+    assert.ok(c.capacity > 1000, `${c.short} has no building`);
+  }
+  // The gap is worth drawing: if every club opened with the same money the strip
+  // would be twelve identical bars saying nothing, and this lesson's whole
+  // argument ("the pot is the big markets' money") would have no picture.
+  const cashes = league.map((c) => c.cash);
+  assert.ok(Math.max(...cashes) / Math.min(...cashes) >= 2, "the league floor is drawing an equality this lesson does not have");
+
+  // Codes must be unique or two columns are indistinguishable.
+  const codes = new Set(league.map((c) => c.code));
+  assert.equal(codes.size, league.length, "two clubs share a league code");
+
+  // PRE-SEASON ONLY. Once a week settles, cash is a decision outcome.
+  const adopted = toAdopted(seated, [20, 25, 30]);
+  const adoptedView = writeTheRuleModule.studentView(adopted, "seat-3", "PLAY") as Record<string, unknown>;
+  assert.ok(Array.isArray(adoptedView["league"]), "the adoption screen is still pre-season");
+
+  const season = playSeason(toSeason(adopted));
+  const settled = writeTheRuleModule.studentView(season, "seat-3", "PLAY") as Record<string, unknown>;
+  assert.equal(
+    settled["league"],
+    undefined,
+    "a settled-week view carried the league table — that publishes every other desk's cash outcome to a private screen",
+  );
+});

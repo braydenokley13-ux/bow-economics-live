@@ -766,6 +766,83 @@ async function advanceTo(teach, phase) {
 
 /* ------------------------------------------------------------- the run -- */
 
+/**
+ * Read the league floor out of the live DOM and check that bar height is a
+ * straight linear function of cash through the origin, on ONE baseline.
+ *
+ * Two separate failures are in scope and both have happened:
+ *   - a bar drawn out of proportion to its club's money, and
+ *   - bars drawn correctly but on different baselines, so the comparison the
+ *     strip invites is between two different rulers.
+ * Tolerance is 2 device pixels on the baseline and 4% of the tallest bar on the
+ * proportion, which is tighter than the 3% min-height floor the renderer applies
+ * to the smallest club — so that floor is measured too, not exempted.
+ */
+async function assertLeagueFloorHonest(page, where) {
+  const rows = await page.evaluate(() => {
+    const out = [];
+    for (const el of document.querySelectorAll("#wrLeague .wr-club")) {
+      const bar = el.querySelector(".wr-club-bar");
+      if (!bar) continue;
+      const b = bar.getBoundingClientRect();
+      // The MODEL's number, not the abbreviated label: "$2.4M" and "$2.6M" are
+      // both one significant figure apart, and a check that rounds before it
+      // compares cannot see an 8% error between them.
+      const n = Number(el.dataset.cash);
+      out.push({ name: el.querySelector(".wr-club-name")?.textContent?.trim() ?? "?", cash: n, h: b.height, bottom: b.bottom, you: el.classList.contains("is-you") });
+    }
+    return out;
+  });
+  assert.ok(rows.length >= 4, `${where}: the league floor drew ${rows.length} clubs — nothing to compare`);
+
+  const baseline = rows[0].bottom;
+  for (const r of rows) {
+    assert.ok(
+      Math.abs(r.bottom - baseline) <= 2,
+      `${where}: ${r.name}'s bar sits on a different baseline (${r.bottom.toFixed(1)} vs ${baseline.toFixed(1)}) — twelve bars on twelve rulers is not a comparison`,
+    );
+  }
+  const maxH = Math.max(...rows.map((r) => r.h));
+  const maxCash = Math.max(...rows.map((r) => r.cash));
+  let worst = { name: "-", off: 0 };
+  for (const r of rows) {
+    const want = (r.cash / maxCash) * maxH;
+    const off = Math.abs(r.h - want) / maxH;
+    if (off > worst.off) worst = { name: r.name, off };
+    assert.ok(
+      off <= 0.04,
+      `${where}: ${r.name} holds ${r.cash.toLocaleString()} of a ${maxCash.toLocaleString()} maximum but drew ${r.h.toFixed(1)}px where ${want.toFixed(1)}px is proportional (${(off * 100).toFixed(1)}% of the tallest bar off)`,
+    );
+  }
+  assert.equal(rows.filter((r) => r.you).length, 1, `${where}: exactly one club on the floor is this desk's own`);
+  console.log(`[e2e-m2l3] league floor honest at ${where} — ${rows.length} bars on one baseline, worst is ${worst.name} at ${(worst.off * 100).toFixed(1)}% of the tallest (tolerance 4%)`);
+}
+
+/** The instrument must reject a floor it should reject. */
+async function proveLeagueInstrumentBites(page) {
+  const poisoned = await page.evaluate(() => {
+    const bar = document.querySelector("#wrLeague .wr-club:not(.is-you) .wr-club-bar");
+    if (!bar) return false;
+    bar.dataset.prevH = bar.style.height;
+    bar.style.height = "100%";
+    return true;
+  });
+  assert.ok(poisoned, "could not stage a poisoned league floor");
+  let caught = false;
+  try {
+    await assertLeagueFloorHonest(page, "POISONED");
+  } catch {
+    caught = true;
+  }
+  await page.evaluate(() => {
+    const bar = document.querySelector("#wrLeague .wr-club:not(.is-you) .wr-club-bar");
+    if (bar) bar.style.height = bar.dataset.prevH ?? "";
+  });
+  assert.ok(caught, "the league-floor instrument passed a bar stretched to full height — it proves nothing");
+  await assertLeagueFloorHonest(page, "restored after poison");
+  console.log("[e2e-m2l3] NON-VACUITY — a club's bar stretched to the tallest in the league is rejected");
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
@@ -875,6 +952,19 @@ async function main() {
     // First contact on the rule-writing screen, every desk, no manual scroll.
     for (let i = 0; i < DESKS; i += 1) await assertRoundsFirstContact(desks[i], `round 1 first contact, desk ${i + 1}`);
     await proveOcclusionInstrumentBites(desks[0], "#wrShareDial", "the SHARE dial at first contact");
+
+    // THE LEAGUE FLOOR — the drawn gap must be the modeled gap.
+    //
+    // This strip exists to show a room about to tax itself how unequal it is,
+    // and its whole claim rests on twelve bars being comparable. The first build
+    // was not: the YOU badge was an extra row on one column only, and with the
+    // floor bottom-aligned that lifted the student's own club clear of everyone
+    // else's baseline. It drew $2.4M taller than the $2.6M beside it — the
+    // exact thing `<economic_truth>` forbids, visual drama misrepresenting
+    // magnitude, and on the student's OWN club. So it is measured, not eyeballed:
+    // every bar's rendered height in device pixels against its club's cash.
+    await assertLeagueFloorHonest(desks[0], "round 1");
+    await proveLeagueInstrumentBites(desks[0]);
 
     // A room that trades: big markets low, small markets high, converging.
     const ROUND_SHARES = [

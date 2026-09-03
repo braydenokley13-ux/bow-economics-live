@@ -2879,3 +2879,50 @@ html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding:
 .wr-rail { margin-top: 8px; }
 .wr-rail > span { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-gold); }
 .wr-rail > p { margin: 2px 0 0; font-size: 13px; line-height: 1.45; color: var(--ink-primary); }
+
+/* ---------------------------------------------------------------- L3 · THE LEAGUE FLOOR ---
+   The twelve unequal franchises the rule is about, on one baseline. Column
+   height is cash and nothing else, so the drawn gap is the modeled gap; the
+   track is a fixed height and the bar a percentage of it, which is what keeps
+   that true when the strip is compacted for the vote screen's fold budget. */
+.wr-league { border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px 8px; background: var(--surface-card); }
+.wr-league-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.wr-league-legend { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; }
+.wr-league-floor { display: flex; align-items: flex-end; gap: 6px; }
+.wr-club { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; }
+.wr-club-cash { font-size: 10.5px; color: var(--ink-muted); white-space: nowrap; }
+.wr-club-track { width: 100%; height: 74px; display: flex; align-items: flex-end; position: relative; }
+.wr-league.compact .wr-club-track { height: 46px; }
+.wr-club-bar { width: 100%; border-radius: 3px 3px 0 0; background: linear-gradient(180deg, rgba(122,162,214,0.95), rgba(122,162,214,0.42)); }
+/* Twelve clubs share the width of one column of a Chromebook screen: about
+   44px each. Horizontal names truncated so hard that New York and New Orleans
+   both read "New …", which is worse than no label in a room that has to tell
+   them apart. Rotated, every name is printed in full and none of them collide.
+   Three-letter league codes were the other candidate and were rejected: a
+   student who does not follow the league cannot read NOP, and knowing the
+   league may never be a prerequisite for the economics. */
+.wr-club-name { height: 80px; display: flex; align-items: flex-start; justify-content: center; }
+.wr-club-name > span { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; letter-spacing: .02em; color: var(--ink-secondary); white-space: nowrap; }
+.wr-club-draw { font-size: 11px; color: var(--ink-primary); }
+.wr-club.is-office .wr-club-bar { background: linear-gradient(180deg, rgba(148,158,176,0.6), rgba(148,158,176,0.22)); }
+.wr-club.is-office .wr-club-name { color: var(--ink-muted); }
+.wr-club.is-you .wr-club-bar { background: linear-gradient(180deg, var(--accent-gold), rgba(244,185,66,0.45)); }
+.wr-club.is-you .wr-club-name, .wr-club.is-you .wr-club-cash { color: var(--accent-gold); }
+.wr-club-you { position: absolute; left: 50%; transform: translateX(-50%); bottom: 1px; font-size: 8.5px; letter-spacing: .1em; color: var(--surface-void); background: var(--accent-gold); border-radius: 3px; padding: 0 3px; line-height: 12px; }
+@media (max-width: 620px) {
+  .wr-league-floor { gap: 3px; }
+  .wr-club-track { height: 52px; }
+  .wr-league.compact .wr-club-track { height: 38px; }
+  .wr-club-cash { display: none; }
+  .wr-club-name { height: 72px; }
+  .wr-club-name > span { font-size: 9px; }
+}
+.wr-veil-band { display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; margin-bottom: 10px; border: 1px solid rgba(244,185,66,0.32); border-left: 3px solid var(--accent-gold); border-radius: 8px; background: rgba(244,185,66,0.05); }
+.wr-veil-band > .eyebrow { font-size: 11px; }
+.wr-veil-band > p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--ink-primary); }
+/* The vote screen's strip trades its per-club cash numerals for fold budget:
+   the bar carries the magnitude, the header names the units, and the numerals
+   are still there on the lobby floor where there is room for them. */
+.wr-league.compact .wr-club-cash { display: none; }
+.wr-league.compact .wr-club-name { height: 72px; }
+.wr-league.compact .wr-club-name > span { font-size: 9.5px; }

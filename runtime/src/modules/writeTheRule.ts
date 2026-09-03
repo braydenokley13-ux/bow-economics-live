@@ -213,6 +213,10 @@ export type ClubDef = {
   readonly capacity: number;
   /** BC-3: the season stamp travels with the seat count wherever it prints. */
   readonly capacityNote: string;
+  /** The league's own three-letter code. The league floor draws twelve clubs in
+   *  roughly 44px each; "New York" and "New Orleans" both truncate to "New …"
+   *  there, which is worse than useless in a room that has to tell them apart. */
+  readonly code: string;
   readonly profileId: MarketId;
   readonly startDraw: number;
   readonly startCash: number;
@@ -231,26 +235,26 @@ export type ClubDef = {
  * own numbers, which is the whole point of the seed.
  */
 export const CLUBS: readonly ClubDef[] = [
-  { name: "New York Knicks", short: "New York", building: "Madison Square Garden", capacity: 19_812, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 44, startCash: 2_400_000, identityLine: "The biggest market in American sports, and the league's biggest gate — about $193M in gate receipts in 2024-25, a franchise record and the largest in the NBA." },
-  { name: "Memphis Grizzlies", short: "Memphis", building: "FedExForum", capacity: 17_794, capacityNote: "modeled seat count · published figures range 16,667-18,119", profileId: "memphis", startDraw: 62, startCash: 700_000, identityLine: "One of the league's smallest markets. In the leaked 2016-17 league year its local media deal was worth under $10M a year, against about $149M for the Lakers — and it received about $32M in revenue sharing, the most in the league." },
-  { name: "Golden State Warriors", short: "Golden State", building: "Chase Center", capacity: 18_064, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 30, startCash: 2_600_000, identityLine: "Paid for Chase Center itself — about $1.4B, privately financed, opened 2019 — and owns it, so it keeps the concert money and the real estate too. $833M of revenue in 2024-25, the highest in the NBA." },
-  { name: "Oklahoma City Thunder", short: "Oklahoma City", building: "Paycom Center", capacity: 18_203, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 71, startCash: 900_000, identityLine: "One of the league's smallest markets — and the 2025 champions, 4-3 over Indiana." },
-  { name: "Milwaukee Bucks", short: "Milwaukee", building: "Fiserv Forum", capacity: 17_341, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 38, startCash: 620_000, identityLine: "In 2015 Wisconsin approved about $250M of public money toward Fiserv Forum under an explicit relocation threat. The Bucks stayed, and won the 2021 title." },
-  { name: "Boston Celtics", short: "Boston", building: "TD Garden", capacity: 19_156, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 55, startCash: 2_100_000, identityLine: "In June 2025, a year after the 2024 title, Boston faced a projected salary-and-tax bill reported north of $500M under the second-apron rules — and traded two starters inside 24 hours." },
-  { name: "Indiana Pacers", short: "Indiana", building: "Gainbridge Fieldhouse", capacity: 17_274, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 26, startCash: 540_000 },
-  { name: "Los Angeles Lakers", short: "L.A. Lakers", building: "Crypto.com Arena", capacity: 18_997, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 68, startCash: 2_500_000, identityLine: "One of the biggest markets in the league — and it does NOT own its building: AEG owns and operates Crypto.com Arena, and the Lakers are tenants on a lease running to 2041." },
-  { name: "Denver Nuggets", short: "Denver", building: "Ball Arena", capacity: 19_520, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 34, startCash: 810_000 },
-  { name: "Philadelphia 76ers", short: "Philadelphia", building: "Xfinity Mobile Arena", capacity: 20_478, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 49, startCash: 1_950_000 },
-  { name: "New Orleans Pelicans", short: "New Orleans", building: "Smoothie King Center", capacity: 16_867, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 72, startCash: 660_000 },
-  { name: "Chicago Bulls", short: "Chicago", building: "United Center", capacity: 20_917, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 28, startCash: 2_050_000 },
-  { name: "Sacramento Kings", short: "Sacramento", building: "Golden 1 Center", capacity: 17_608, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 58, startCash: 870_000, identityLine: "On May 15, 2013 the league's owners voted 22-8 to deny a sale that would have moved this club to Seattle. Golden 1 Center opened downtown in 2016." },
-  { name: "Toronto Raptors", short: "Toronto", building: "Scotiabank Arena", capacity: 19_800, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 40, startCash: 2_200_000 },
-  { name: "Utah Jazz", short: "Utah", building: "Delta Center", capacity: 18_206, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 65, startCash: 840_000 },
-  { name: "Miami Heat", short: "Miami", building: "Kaseya Center", capacity: 19_600, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 33, startCash: 2_150_000 },
-  { name: "Cleveland Cavaliers", short: "Cleveland", building: "Rocket Arena", capacity: 19_432, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 51, startCash: 700_000, identityLine: "LeBron James left in 2010 and this club's ticket demand and franchise value cratered; his July 2014 return sold out the season-ticket base within hours." },
-  { name: "Portland Trail Blazers", short: "Portland", building: "Moda Center", capacity: 19_393, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 36, startCash: 790_000 },
-  { name: "Orlando Magic", short: "Orlando", building: "Kia Center", capacity: 18_846, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 60, startCash: 680_000 },
-  { name: "Detroit Pistons", short: "Detroit", building: "Little Caesars Arena", capacity: 20_332, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 31, startCash: 1_900_000 },
+  { name: "New York Knicks", code: "NYK", short: "New York", building: "Madison Square Garden", capacity: 19_812, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 44, startCash: 2_400_000, identityLine: "The biggest market in American sports, and the league's biggest gate — about $193M in gate receipts in 2024-25, a franchise record and the largest in the NBA." },
+  { name: "Memphis Grizzlies", code: "MEM", short: "Memphis", building: "FedExForum", capacity: 17_794, capacityNote: "modeled seat count · published figures range 16,667-18,119", profileId: "memphis", startDraw: 62, startCash: 700_000, identityLine: "One of the league's smallest markets. In the leaked 2016-17 league year its local media deal was worth under $10M a year, against about $149M for the Lakers — and it received about $32M in revenue sharing, the most in the league." },
+  { name: "Golden State Warriors", code: "GSW", short: "Golden State", building: "Chase Center", capacity: 18_064, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 30, startCash: 2_600_000, identityLine: "Paid for Chase Center itself — about $1.4B, privately financed, opened 2019 — and owns it, so it keeps the concert money and the real estate too. $833M of revenue in 2024-25, the highest in the NBA." },
+  { name: "Oklahoma City Thunder", code: "OKC", short: "Oklahoma City", building: "Paycom Center", capacity: 18_203, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 71, startCash: 900_000, identityLine: "One of the league's smallest markets — and the 2025 champions, 4-3 over Indiana." },
+  { name: "Milwaukee Bucks", code: "MIL", short: "Milwaukee", building: "Fiserv Forum", capacity: 17_341, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 38, startCash: 620_000, identityLine: "In 2015 Wisconsin approved about $250M of public money toward Fiserv Forum under an explicit relocation threat. The Bucks stayed, and won the 2021 title." },
+  { name: "Boston Celtics", code: "BOS", short: "Boston", building: "TD Garden", capacity: 19_156, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 55, startCash: 2_100_000, identityLine: "In June 2025, a year after the 2024 title, Boston faced a projected salary-and-tax bill reported north of $500M under the second-apron rules — and traded two starters inside 24 hours." },
+  { name: "Indiana Pacers", code: "IND", short: "Indiana", building: "Gainbridge Fieldhouse", capacity: 17_274, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 26, startCash: 540_000 },
+  { name: "Los Angeles Lakers", code: "LAL", short: "L.A. Lakers", building: "Crypto.com Arena", capacity: 18_997, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 68, startCash: 2_500_000, identityLine: "One of the biggest markets in the league — and it does NOT own its building: AEG owns and operates Crypto.com Arena, and the Lakers are tenants on a lease running to 2041." },
+  { name: "Denver Nuggets", code: "DEN", short: "Denver", building: "Ball Arena", capacity: 19_520, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 34, startCash: 810_000 },
+  { name: "Philadelphia 76ers", code: "PHI", short: "Philadelphia", building: "Xfinity Mobile Arena", capacity: 20_478, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 49, startCash: 1_950_000 },
+  { name: "New Orleans Pelicans", code: "NOP", short: "New Orleans", building: "Smoothie King Center", capacity: 16_867, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 72, startCash: 660_000 },
+  { name: "Chicago Bulls", code: "CHI", short: "Chicago", building: "United Center", capacity: 20_917, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 28, startCash: 2_050_000 },
+  { name: "Sacramento Kings", code: "SAC", short: "Sacramento", building: "Golden 1 Center", capacity: 17_608, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 58, startCash: 870_000, identityLine: "On May 15, 2013 the league's owners voted 22-8 to deny a sale that would have moved this club to Seattle. Golden 1 Center opened downtown in 2016." },
+  { name: "Toronto Raptors", code: "TOR", short: "Toronto", building: "Scotiabank Arena", capacity: 19_800, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 40, startCash: 2_200_000 },
+  { name: "Utah Jazz", code: "UTA", short: "Utah", building: "Delta Center", capacity: 18_206, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 65, startCash: 840_000 },
+  { name: "Miami Heat", code: "MIA", short: "Miami", building: "Kaseya Center", capacity: 19_600, capacityNote: "listed basketball capacity · 2025-26", profileId: "golden-state", startDraw: 33, startCash: 2_150_000 },
+  { name: "Cleveland Cavaliers", code: "CLE", short: "Cleveland", building: "Rocket Arena", capacity: 19_432, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 51, startCash: 700_000, identityLine: "LeBron James left in 2010 and this club's ticket demand and franchise value cratered; his July 2014 return sold out the season-ticket base within hours." },
+  { name: "Portland Trail Blazers", code: "POR", short: "Portland", building: "Moda Center", capacity: 19_393, capacityNote: "listed basketball capacity · 2025-26", profileId: "oklahoma-city", startDraw: 36, startCash: 790_000 },
+  { name: "Orlando Magic", code: "ORL", short: "Orlando", building: "Kia Center", capacity: 18_846, capacityNote: "listed basketball capacity · 2025-26", profileId: "memphis", startDraw: 60, startCash: 680_000 },
+  { name: "Detroit Pistons", code: "DET", short: "Detroit", building: "Little Caesars Arena", capacity: 20_332, capacityNote: "listed basketball capacity · 2025-26", profileId: "new-york", startDraw: 31, startCash: 1_900_000 },
 ];
 
 /** The most desks this league can seat. Always leaves at least two league-office clubs. */
@@ -3187,13 +3191,36 @@ function clubCard(state: WriteRuleState, slot: number) {
   };
 }
 
-const leagueTable = (state: WriteRuleState) =>
+/**
+ * THE LEAGUE, as a thing the room can see.
+ *
+ * Every call site of this is PRE-SEASON — lobby, hook, the three voting rounds,
+ * and the adoption screen. Nothing has settled yet at any of them, so every
+ * figure here is opening state: it cannot carry another desk's decision, and
+ * there is no leak to weigh. The moment a week settles, `cash` and `draw` become
+ * decision-derived and this table stops being sent (the season view never asks
+ * for it). If a future arm wants the league DURING the season it needs its own
+ * function and its own privacy argument, not this one.
+ *
+ * Why cash and not seats: the buildings are 16,867 to 20,917 seats — a 24%
+ * spread that would draw as twelve near-identical shapes and say nothing true.
+ * The inequality this room is legislating about is MONEY (ADOPT_COPY: "the pot
+ * is the big markets' money"), and the opening banks run 540k to 2.6M. Drawing
+ * the real 5x gap is the honest picture; drawing the seat counts would be
+ * decoration pretending to be evidence.
+ */
+const leagueTable = (state: WriteRuleState, viewerSlot: number) =>
   state.clubs.slice(0, state.leagueSize).map((c) => ({
     deskNumber: c.deskNumber,
     short: defOf(c).short,
+    code: defOf(c).code,
+    building: defOf(c).building,
+    capacity: defOf(c).capacity,
     sizeLabel: profileOf(c).sizeLabel,
     draw: c.draw,
+    cash: c.cash,
     live: c.seatId !== null,
+    you: c.slot === viewerSlot,
   }));
 
 function slateFor(state: WriteRuleState, slot: number) {
@@ -3724,7 +3751,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     };
     switch (phase) {
       case "LOBBY":
-        return tag({ ...base, message: LOBBY_COPY, houseRules: HOUSE_RULES, league: leagueTable(state) });
+        return tag({ ...base, message: LOBBY_COPY, houseRules: HOUSE_RULES, league: leagueTable(state, slot) });
       case "HOOK":
         return tag({
           ...base,
@@ -3733,7 +3760,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           pick: club.hookPick,
           revealed: state.hookRevealed,
           ...(state.hookRevealed ? { revealCopy: HOOK_REVEAL_COPY, split: agg.hookSplit } : {}),
-          league: leagueTable(state),
+          league: leagueTable(state, slot),
         });
       case "PLAY": {
         if (state.stage === "rounds") {
@@ -3766,7 +3793,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
               club.proposal === null
                 ? "You have not put a number in this round. A desk with no number in has ABSTAINED: it is not counted in the room's middle number, and it cannot be inside the ten-point band — so the two-thirds test counts it as a desk that did not back the rule."
                 : null,
-            league: leagueTable(state),
+            league: leagueTable(state, slot),
           });
         }
         if (state.stage === "adopted") {
@@ -3775,7 +3802,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             mode: "adopted",
             adoption: adoptionLineClaimed(agg).text,
             seasonCopy: seasonCopyFor(state.adopted?.how),
-            league: leagueTable(state),
+            league: leagueTable(state, slot),
           });
         }
         const week = Math.min(state.weekIndex, WEEK_COUNT - 1);
