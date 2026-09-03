@@ -13,7 +13,7 @@ async function tempFile(): Promise<{ dir: string; file: string }> {
 test("writes are atomic: the snapshot file is always valid JSON, never a partial write", async () => {
   const { dir, file } = await tempFile();
   try {
-    const repo = new SnapshotRepository(file);
+    const repo = new SnapshotRepository(file, { flushDelayMs: 0 });
     await repo.whenReady();
     for (let i = 0; i < 10; i += 1) {
       await repo.createSession({
@@ -37,7 +37,7 @@ test("writes are atomic: the snapshot file is always valid JSON, never a partial
 test("a fresh repository pointed at an existing snapshot restores full state after a simulated restart", async () => {
   const { dir, file } = await tempFile();
   try {
-    const first = new SnapshotRepository(file);
+    const first = new SnapshotRepository(file, { flushDelayMs: 0 });
     await first.whenReady();
     const session = await first.createSession({
       code: "BOWXYZ",
@@ -58,7 +58,7 @@ test("a fresh repository pointed at an existing snapshot restores full state aft
     await first.flushToDisk();
 
     // Simulate a process restart: a brand new repository instance, same file.
-    const second = new SnapshotRepository(file);
+    const second = new SnapshotRepository(file, { flushDelayMs: 0 });
     await second.whenReady();
     const restoredSession = await second.getSessionByCode("BOWXYZ");
     const restoredSeat = await second.getSeatById(seat.id);
@@ -76,7 +76,7 @@ test("a fresh repository pointed at an existing snapshot restores full state aft
 test("a repository with no snapshot file yet starts empty rather than throwing", async () => {
   const { dir, file } = await tempFile();
   try {
-    const repo = new SnapshotRepository(path.join(dir, "does-not-exist.json"));
+    const repo = new SnapshotRepository(path.join(dir, "does-not-exist.json"), { flushDelayMs: 0 });
     await repo.whenReady();
     assert.deepEqual(await repo.listSessions(), []);
     void file;
@@ -88,7 +88,7 @@ test("a repository with no snapshot file yet starts empty rather than throwing",
 test("updateSession enforces optimistic concurrency via expectedVersion", async () => {
   const { dir, file } = await tempFile();
   try {
-    const repo = new SnapshotRepository(file);
+    const repo = new SnapshotRepository(file, { flushDelayMs: 0 });
     await repo.whenReady();
     const session = await repo.createSession({
       code: "BOWCC1",
@@ -116,7 +116,7 @@ test("R4: a corrupted snapshot file is quarantined (renamed aside) and the repos
   const { dir, file } = await tempFile();
   try {
     await writeFile(file, "{ this is not valid json !!!", "utf8");
-    const repo = new SnapshotRepository(file);
+    const repo = new SnapshotRepository(file, { flushDelayMs: 0 });
     await repo.whenReady(); // must NOT throw — this is the whole point of the repair
     assert.deepEqual(await repo.listSessions(), [], "a corrupted file must boot to a fresh, empty store");
 
@@ -153,7 +153,7 @@ test("R4: a genuine filesystem read error (not ENOENT, not a parse failure) stil
     // fs error other than ENOENT/EISDIR-on-read, distinct from "corrupt
     // JSON" — this must still surface, not be silently swallowed as if it
     // were a parse failure.
-    const repo = new SnapshotRepository(dir);
+    const repo = new SnapshotRepository(dir, { flushDelayMs: 0 });
     await assert.rejects(() => repo.whenReady());
   } finally {
     await rm(dir, { recursive: true, force: true });

@@ -14,6 +14,18 @@ type StudentPayload = {
   seat: { id: string; displayName: string };
   deviceToken?: string;
   rejoinPin?: string;
+  /** Mirrors `RoundPublic` on the server; `serverNow` makes the countdown a duration, not a clock comparison. */
+  round: {
+    status: "OPEN" | "FINAL_CALL" | "CLOSED";
+    key: string;
+    endsAt: string | null;
+    serverNow: string;
+    closedBy: "final_call_expired" | "close_now" | "module" | null;
+  } | null;
+  /** Has THIS desk committed for the round now open? Null when no round is open. */
+  committed: boolean | null;
+  /** What closing would do to THIS desk, in the lesson's own words, when it has committed nothing. */
+  fallback: string | null;
   view: Record<string, unknown>;
 };
 
@@ -61,6 +73,16 @@ const SIGNED_OUT_LINE = "This desk was opened on another device. Rejoin with you
  * strings are the module's own (`fullHouse.ts` `reduce`); matching them here
  * keeps the error slot for things a pair can act on.
  */
+/**
+ * What a held action looks like to the pair holding it. Keyed by the server's
+ * own reason code so the screen never guesses.
+ */
+const HOLD_LABELS: Record<string, string> = {
+  paused: "your teacher paused the room — your choice is saved and goes when they resume",
+  frozen: "screens are frozen — your choice is saved and goes when they unfreeze",
+  version_conflict: "busy room — resending your choice",
+};
+
 const NIGHT_CLOSED_REJECTIONS = new Set([
   "all five nights are done",
   "all five nights are already in the books",
@@ -80,6 +102,9 @@ const SIGNED_OUT_FLAG = "bow-signed-out";
 
 /** Sign this device out in place: no reload, no blank body, a control to come back with. */
 function signedOut(): void {
+  outbox?.stop();
+  stopFinalCallClock();
+  $("finalCall").hidden = true;
   try {
     window.sessionStorage.setItem(SIGNED_OUT_FLAG, "1");
   } catch {
@@ -178,6 +203,12 @@ $("btnRejoin").addEventListener("click", () => {
  * module-level render cache means adding it here in the same change.
  */
 function resetSeatRenderState(): void {
+  lastRoundKey = null;
+  // The closing countdown belongs to the seat that was in the round, not to
+  // the device — handing the Chromebook to the next pair must not leave the
+  // previous pair's final call ticking over their screen.
+  stopFinalCallClock();
+
   fhSeatRequested = false;
   fhMountKey = null;
   fhLocalPrice = null;
@@ -243,8 +274,18 @@ $("btnShowPin").addEventListener("click", () => {
   $("btnShowPin").hidden = true;
 });
 
+/** Registered once, not once per join — a rejoin used to stack another listener on every seat. */
+let onlineListenerBound = false;
+
 function startGame(): void {
   if (!creds) return;
+  // A rejoin (or a seat replacement) calls this again. Without tearing the old
+  // pair down first, the previous poller kept running against a dead token and
+  // a second `online` listener stacked on top of the first, so every reconnect
+  // fired N retries and two render loops fought over the screen.
+  poll?.stop();
+  poll = null;
+  outbox?.stop();
   gameCard.hidden = false;
   outbox = new ActionOutbox(
     () => `/api/sessions/${creds!.sessionCode}/actions`,
@@ -270,9 +311,20 @@ function startGame(): void {
         showError("");
         renderGame(response as StudentPayload);
       },
+      onHolding: (_action, error) => {
+        // W2: the decision is NOT lost — it is queued against a room that is
+        // paused, frozen, or mid-advance, and it will go the moment the room
+        // moves. Say that, because "syncing…" during a two-minute freeze reads
+        // as a broken screen and invites the pair to change their answer.
+        setSyncLabel(HOLD_LABELS[error.code] ?? "holding your choice — sending when the room moves");
+      },
       onPending: (count) => setSyncLabel(count > 0 ? `syncing… (${count} pending)` : "synced"),
     },
     creds.seatId,
+    () => lastRoundKey,
+    // Taking a desk is not a decision about a night — a late joiner whose
+    // takeSeat crosses a close must still get a franchise, not a refusal.
+    new Set(["takeSeat"]),
   );
 
   poll = startPolling<StudentPayload>(
@@ -293,7 +345,8 @@ function startGame(): void {
         setSyncLabel(outbox && outbox.pendingCount > 0 ? `syncing… (${outbox.pendingCount} pending)` : "synced");
       },
       onError: (error) => {
-        // F1: `poll.ts` passes the parsed body, so match on the code, not the class.
+        // W0: `poll.ts` now hands over a real ApiError; `errorCode` still reads
+        // the older shape too, so an out-of-step build cannot strand a seat.
         const code = errorCode(error);
         if (code !== null && SIGNED_OUT_CODES.has(code)) {
           signedOut();
@@ -304,12 +357,79 @@ function startGame(): void {
     },
   );
 
-  window.addEventListener("online", () => outbox?.retryNow());
+  if (!onlineListenerBound) {
+    onlineListenerBound = true;
+    window.addEventListener("online", () => outbox?.retryNow());
+  }
 }
 
 /* ---------------------------------------------------------------- render -- */
 
+/* ---------------------------------------------------------------- FINAL CALL --
+ * Same conversion as /teach and /board: the server hands over `endsAt` and its
+ * own `serverNow`, the difference is a DURATION, and the countdown runs off a
+ * local deadline derived from it. A Chromebook an hour out of sync therefore
+ * shows exactly the projector's number — and none of these clocks decide
+ * anything. Whether an action was in time is ruled on by the server alone.
+ * ------------------------------------------------------------------------- */
+let fcDeadline: number | null = null;
+let fcTimer: ReturnType<typeof setInterval> | null = null;
+
+function stopFinalCallClock(): void {
+  if (fcTimer !== null) {
+    clearInterval(fcTimer);
+    fcTimer = null;
+  }
+  fcDeadline = null;
+}
+
+function paintFinalCallClock(): void {
+  const el = $("fcClock");
+  if (fcDeadline === null) {
+    el.textContent = "";
+    return;
+  }
+  el.textContent = `${(Math.max(0, fcDeadline - Date.now()) / 1000).toFixed(1)}s`;
+}
+
+/** The round this desk is currently looking at. Stamped onto every decision it submits. */
+let lastRoundKey: string | null = null;
+
+function renderFinalCall(payload: StudentPayload): void {
+  const bar = $("finalCall");
+  const round = payload.round;
+  if (!round || round.status !== "FINAL_CALL" || !round.endsAt || payload.session.ended) {
+    bar.hidden = true;
+    stopFinalCallClock();
+    return;
+  }
+  bar.hidden = false;
+  fcDeadline = Date.now() + Math.max(0, Date.parse(round.endsAt) - Date.parse(round.serverNow));
+  if (fcTimer === null) fcTimer = setInterval(paintFinalCallClock, 250);
+  paintFinalCallClock();
+
+  const unlocked = payload.committed === false;
+  bar.classList.toggle("unlocked", unlocked);
+  const text = $("fcText");
+  text.innerHTML = "";
+  const head = document.createElement("b");
+  head.textContent = unlocked ? "Final call — you have not locked in" : "Final call";
+  text.appendChild(head);
+  // The fallback is the lesson's own sentence, not a generic one. A pair that
+  // knows exactly what "nothing" settles as can decide whether to accept it —
+  // which is a decision, where "time's up" is only a scare.
+  text.appendChild(
+    document.createTextNode(
+      unlocked
+        ? payload.fallback ?? "Lock in now or this round closes without your choice."
+        : "You're in. Nothing more to do — the room is finishing up.",
+    ),
+  );
+}
+
 function renderGame(payload: StudentPayload): void {
+  lastRoundKey = payload.round?.key ?? null;
+  renderFinalCall(payload);
   const s = payload.session;
   const header = $("gameHeader");
   const franchise = payload.view["franchise"] as Franchise | null | undefined;

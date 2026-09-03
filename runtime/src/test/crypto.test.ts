@@ -1,21 +1,30 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { generateDeviceToken, generateJoinCode, generatePin, hashDeviceToken, hashPin, verifyPin } from "../server/crypto.js";
+import { generateDeviceToken, generateJoinCode, generatePin, hashDeviceToken, hashPin, hashPinSync, verifyPin } from "../server/crypto.js";
 
-test("hashPin/verifyPin round-trips correctly", () => {
+test("hashPin/verifyPin round-trips correctly", async () => {
   const pin = "4821";
-  const hashed = hashPin(pin);
-  assert.equal(verifyPin(pin, hashed), true);
+  const hashed = await hashPin(pin);
+  assert.equal(await verifyPin(pin, hashed), true);
 });
 
-test("verifyPin rejects a wrong PIN", () => {
-  const hashed = hashPin("1234");
-  assert.equal(verifyPin("9999", hashed), false);
+test("verifyPin rejects a wrong PIN", async () => {
+  const hashed = await hashPin("1234");
+  assert.equal(await verifyPin("9999", hashed), false);
 });
 
-test("verifyPin rejects garbage stored digests without throwing", () => {
-  assert.equal(verifyPin("1234", "not-a-real-digest"), false);
-  assert.equal(verifyPin("1234", ""), false);
+test("verifyPin rejects garbage stored digests without throwing", async () => {
+  assert.equal(await verifyPin("1234", "not-a-real-digest"), false);
+  assert.equal(await verifyPin("1234", ""), false);
+});
+
+test("the sync form and the async form produce interchangeable digests", async () => {
+  // The request path must never call the sync form (it blocks the event loop
+  // for ~38ms per call, and a 30-device join burst blocked the whole server for
+  // over a second before this split). The sync form exists for tests and
+  // tooling, and this guards that the two cannot drift apart.
+  assert.equal(await verifyPin("7788", hashPinSync("7788")), true);
+  assert.equal(await verifyPin("0000", hashPinSync("7788")), false);
 });
 
 test("generatePin always returns four digits, zero-padded", () => {

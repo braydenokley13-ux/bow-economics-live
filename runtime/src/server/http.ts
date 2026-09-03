@@ -37,12 +37,19 @@ function sendJson(res: http.ServerResponse, status: number, body: unknown, heade
 
 function sendError(res: http.ServerResponse, error: unknown): void {
   if (error instanceof ServiceError) {
-    sendJson(res, error.status, { error: { code: error.code, message: error.message } });
+    // `retryable` is the field the student's durable outbox reads to decide
+    // whether to hold an action or discard it. It is on the wire explicitly
+    // rather than inferred from the status code, because the same 409 covers
+    // both a semantic ruling ("price must be $10-$120") and a transient write
+    // race, and a client guessing between them is how a decision gets lost.
+    sendJson(res, error.status, { error: { code: error.code, message: error.message, retryable: error.retryable } });
     return;
   }
   // eslint-disable-next-line no-console
   console.error("[http] unexpected error:", error);
-  sendJson(res, 500, { error: { code: "internal", message: "something went wrong" } });
+  // An unexpected server fault says nothing about the action's validity, so the
+  // action is worth trying again.
+  sendJson(res, 500, { error: { code: "internal", message: "something went wrong", retryable: true } });
 }
 
 async function readJson(req: http.IncomingMessage): Promise<Json> {
@@ -227,9 +234,18 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
         const teacherKey = bearerToken(req);
         const body = await readJson(req);
         const type = String(body["type"] ?? "");
-        const allowed = new Set(["advance", "reveal", "pause", "unpause", "freeze", "unfreeze", "hook", "end", "restore"]);
+        const allowed = new Set([
+          "advance", "reveal", "pause", "unpause", "freeze", "unfreeze", "hook", "end", "restore",
+          // TIME CUT
+          "finalCall", "closeNow", "cancelFinalCall",
+        ]);
         if (!allowed.has(type)) throw new ServiceError(400, "bad_control", `unknown control action "${type}"`);
-        const action = type === "hook" ? { type: "hook" as const, hook: String(body["hook"] ?? "") } : { type: type as Exclude<typeof type, "hook"> };
+        const action =
+          type === "hook"
+            ? { type: "hook" as const, hook: String(body["hook"] ?? "") }
+            : type === "finalCall"
+              ? { type: "finalCall" as const, ...(body["durationMs"] === undefined ? {} : { durationMs: Number(body["durationMs"]) }) }
+              : { type: type as Exclude<typeof type, "hook"> };
         const payload = await service.control(code, action as Parameters<SessionService["control"]>[1], teacherKey);
         sendJson(res, 200, payload);
         return;
@@ -255,7 +271,16 @@ async function handle(service: SessionService, req: http.IncomingMessage, res: h
         // live join list has to update on its own, not piggyback on a
         // phase change.
         const lastJoin = payload.seats.at(-1)?.joinedAt ?? "";
-        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}"`;
+        // A seat crossing the rejoin-lockout threshold changes none of
+        // version/count/lastJoin, so the teacher's conditional poll answered 304
+        // and the "PIN LOCKED" pill and its Unlock button never rendered — the
+        // one control that can free that student was unreachable, and in LOBBY
+        // or right after a restart nothing else was bumping the version to
+        // shake it loose. Reproduced: five wrong PINs, then a conditional GET
+        // returning 304 while an unconditional GET showed rejoinLocked: true.
+        // The lock count is now part of the room's fingerprint.
+        const locked = payload.seats.reduce((n, s) => n + (s.rejoinLocked ? 1 : 0), 0);
+        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}-L${locked}"`;
         if (maybeNotModified(req, res, etag)) return;
         sendJson(res, 200, payload, { ETag: etag });
         return;

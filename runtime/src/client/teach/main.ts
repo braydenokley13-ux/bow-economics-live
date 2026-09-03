@@ -5,13 +5,25 @@ import { loadTeachSessionCode, loadTeachSessionKey, saveTeachSessionCode, saveTe
 
 type Lesson = { id: string; title: string; phases: string[] };
 type TeacherSeat = { id: string; displayName: string; joinedAt: string; lastSeenAt: string; rejoinLocked: boolean };
+/** Mirrors `RoundPublic` on the server. `serverNow` is what lets a Chromebook with a wrong clock draw the same countdown as the projector. */
+type RoundPublic = {
+  status: "OPEN" | "FINAL_CALL" | "CLOSED";
+  key: string;
+  endsAt: string | null;
+  serverNow: string;
+  closedBy: "final_call_expired" | "close_now" | "module" | null;
+};
+type UnresolvedSeat = { seatId: string; label: string; fallback: string };
 type TeacherPayload = {
   session: {
     id: string; code: string; title: string; lessonModuleId: string; phase: string; phases: string[];
     paused: boolean; frozen: boolean; ended: boolean; version: number; hasCheckpoint: boolean;
+    checkpointLabel: string | null;
   };
   teacherKey?: string;
   seats: TeacherSeat[];
+  round: RoundPublic | null;
+  timeCut: { policy: string; unresolved: UnresolvedSeat[]; resolvedCount: number } | null;
   view: Record<string, unknown>;
 };
 
@@ -23,6 +35,7 @@ const controlsEl = $("controls");
 const rosterEl = $("roster");
 const aggregateEl = $("aggregate");
 const directorEl = $("director");
+const timeCutEl = $("timecut");
 
 let currentCode: string | null = null;
 // B1 repair (VERIFY_L2.md): what the Advance button's confirm() warning needs to know, refreshed every render()
@@ -203,8 +216,18 @@ function openSession(code: string): void {
   controlsEl.hidden = false;
   rosterEl.hidden = false;
   aggregateEl.hidden = false;
+  timeCutEl.hidden = true; // shown by render(), only once the lesson actually has a round open
   $("joinUrl").textContent = `${location.origin}/play`;
   $("code").textContent = code;
+  // The key this console is actually holding, made readable so the reopen form
+  // on the setup screen is usable at all.
+  const keyBox = $<HTMLDetailsElement>("teacherKeyBox");
+  if (teacherKey) {
+    keyBox.hidden = false;
+    $("teacherKeyValue").textContent = teacherKey;
+  } else {
+    keyBox.hidden = true;
+  }
   // gate-l2-teacher B1: the projector URL, printed, with its code already in it.
   $("boardUrl").textContent = `${location.origin}/board?code=${code}`;
   poller?.stop();
@@ -216,8 +239,23 @@ function openSession(code: string): void {
       headers: authHeaders,
       onError: (err) => {
         if (err instanceof ApiError && err.status === 401) {
-          statusEl.textContent = "teacher key rejected — this room can no longer be controlled from here";
+          // This branch was dead code until `poll.ts` started passing a typed
+          // error. Now that it fires, it must not fire into a dead end: the
+          // console had hidden #setup and offered no way back, so a rejected
+          // key left the teacher looking at controls that did nothing.
           poller?.stop();
+          poller = null;
+          statusEl.textContent =
+            "This teacher key no longer controls this room. Reopen with the key, or start a new session.";
+          roomEl.hidden = true;
+          controlsEl.hidden = true;
+          rosterEl.hidden = true;
+          aggregateEl.hidden = true;
+          timeCutEl.hidden = true;
+          stopTimeCutClock();
+          $("director").hidden = true;
+          setupEl.hidden = false;
+          $<HTMLInputElement>("reopenCode").value = currentCode ?? "";
           return;
         }
         statusEl.textContent = describeError(err);
@@ -225,6 +263,31 @@ function openSession(code: string): void {
     },
   );
 }
+
+$("btnCopyKey").addEventListener("click", () => {
+  const key = teacherKey;
+  if (!key) return;
+  const done = (msg: string): void => {
+    const btn = $("btnCopyKey");
+    btn.textContent = msg;
+    window.setTimeout(() => (btn.textContent = "Copy"), 1600);
+  };
+  // The clipboard API needs a secure context, and this server is deliberately
+  // plain HTTP on the classroom LAN. Selecting the text is the fallback that
+  // always works, so the key is never unreachable.
+  void navigator.clipboard
+    ?.writeText(key)
+    .then(() => done("Copied"))
+    .catch(() => {
+      const el = $("teacherKeyValue");
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      done("Selected — press Ctrl+C");
+    });
+});
 
 function describeError(err: unknown): string {
   if (err && typeof err === "object" && "error" in (err as Record<string, unknown>)) {
@@ -234,8 +297,126 @@ function describeError(err: unknown): string {
   return "connection trouble — retrying";
 }
 
+/** What Restore would currently undo — read by the confirm dialog. */
+let lastCheckpointLabel: string | null = null;
+
+/* ------------------------------------------------------------------ TIME CUT --
+ * The founder's two closing controls, and the thing that makes either safe to
+ * press. The order matters: a teacher must be able to see WHO has committed
+ * nothing and WHAT closing does to them BEFORE they close, not afterwards in a
+ * settlement they cannot undo without a restore.
+ *
+ * The countdown is drawn from `endsAt - serverNow`, converted once into a local
+ * deadline, and ticked locally at 4Hz. Every surface does this the same way, so
+ * a Chromebook whose clock is an hour out still shows the projector's twenty
+ * seconds — no client clock is ever compared against a server timestamp
+ * directly, and none of them decide anything: the server alone rules on whether
+ * an action was in time.
+ * ---------------------------------------------------------------------------- */
+
+/** Local performance-clock deadline for the running final call, or null. */
+let timeCutDeadline: number | null = null;
+let timeCutTimer: ReturnType<typeof setInterval> | null = null;
+/** What the close would do, kept fresh for the CLOSE NOW confirm dialog. */
+let timeCutConfirm: { unresolvedCount: number; policy: string } | null = null;
+
+function stopTimeCutClock(): void {
+  if (timeCutTimer !== null) {
+    clearInterval(timeCutTimer);
+    timeCutTimer = null;
+  }
+  timeCutDeadline = null;
+}
+
+function paintTimeCutClock(): void {
+  const clock = $("tcClock");
+  if (timeCutDeadline === null) {
+    clock.hidden = true;
+    return;
+  }
+  const left = Math.max(0, timeCutDeadline - Date.now());
+  clock.hidden = false;
+  clock.textContent = `${(left / 1000).toFixed(1)}s`;
+  clock.classList.toggle("late", left <= 5000);
+}
+
+function renderTimeCut(payload: TeacherPayload): void {
+  const round = payload.round;
+  const cut = payload.timeCut;
+  // No round contract, or no round open (the lesson is between rounds, or out
+  // of PLAY entirely): the panel is not applicable and is not shown. An empty
+  // "time cut" card in SYNTHESIS is noise a teacher has to learn to ignore.
+  if (!round || payload.session.ended) {
+    timeCutEl.hidden = true;
+    stopTimeCutClock();
+    timeCutConfirm = null;
+    return;
+  }
+  timeCutEl.hidden = false;
+
+  const calling = round.status === "FINAL_CALL";
+  timeCutEl.classList.toggle("calling", calling);
+  $("tcState").textContent =
+    round.status === "CLOSED"
+      ? "closed — waiting for the next round"
+      : calling
+        ? "final call running — decisions are still being taken"
+        : "open — the room is deciding";
+
+  if (calling && round.endsAt) {
+    // One conversion, from a server-measured duration to a local deadline.
+    const remaining = Date.parse(round.endsAt) - Date.parse(round.serverNow);
+    timeCutDeadline = Date.now() + Math.max(0, remaining);
+    if (timeCutTimer === null) timeCutTimer = setInterval(paintTimeCutClock, 250);
+    paintTimeCutClock();
+  } else {
+    stopTimeCutClock();
+    paintTimeCutClock();
+  }
+
+  const open = round.status !== "CLOSED";
+  $<HTMLButtonElement>("btnFinalCall").disabled = !open || calling;
+  $<HTMLButtonElement>("btnCloseNow").disabled = !open;
+  $<HTMLButtonElement>("btnCancelFinalCall").disabled = !calling;
+  $<HTMLButtonElement>("btnCancelFinalCall").hidden = !calling;
+
+  const policyEl = $("tcPolicy");
+  const listEl = $("tcUnresolved");
+  listEl.innerHTML = "";
+  if (!cut) {
+    policyEl.textContent = "";
+    timeCutConfirm = null;
+    return;
+  }
+  timeCutConfirm = { unresolvedCount: cut.unresolved.length, policy: cut.policy };
+  policyEl.textContent = cut.policy;
+  if (cut.unresolved.length === 0) {
+    const ok = document.createElement("p");
+    ok.className = "tc-ok";
+    ok.textContent = `Every desk is in — ${cut.resolvedCount} of ${cut.resolvedCount}. Closing now takes nothing away from anybody.`;
+    listEl.appendChild(ok);
+    return;
+  }
+  const head = document.createElement("p");
+  head.className = "tc-ok";
+  head.textContent = `${cut.resolvedCount} in · ${cut.unresolved.length} still deciding. Close now and this is what happens to them:`;
+  listEl.appendChild(head);
+  const ul = document.createElement("ul");
+  ul.className = "tc-list";
+  for (const seat of cut.unresolved) {
+    const li = document.createElement("li");
+    const b = document.createElement("b");
+    b.textContent = seat.label;
+    li.appendChild(b);
+    li.appendChild(document.createTextNode(` — ${seat.fallback}`));
+    ul.appendChild(li);
+  }
+  listEl.appendChild(ul);
+}
+
 function render(payload: TeacherPayload): void {
   statusEl.textContent = `live · v${payload.session.version}`;
+  lastCheckpointLabel = payload.session.checkpointLabel;
   const s = payload.session;
   const pillClass = s.ended ? "ended" : s.frozen ? "frozen" : s.paused ? "paused" : "live";
   const pillText = s.ended ? "ENDED" : s.frozen ? "FROZEN" : s.paused ? "PAUSED" : "LIVE";
@@ -243,6 +424,7 @@ function render(payload: TeacherPayload): void {
   pill.className = `pill pill-${pillClass === "live" ? "comfortable" : pillClass === "paused" ? "tight" : "at-cap"}`;
   pill.textContent = pillText;
   $("seatCount").textContent = `${payload.seats.length} joined`;
+  renderTimeCut(payload);
 
   const phaseRow = $("phaseRow");
   phaseRow.innerHTML = "";
@@ -261,11 +443,23 @@ function render(payload: TeacherPayload): void {
   // guarantees onPhaseExit never fires on a same-phase transition, independent of this UI guard — see
   // applyPhaseChange — but removing the pointless affordance is the cheaper, clearer fix for a human.)
   $<HTMLButtonElement>("btnReveal").disabled = s.ended || !s.phases.includes("REVEAL") || s.phase === "REVEAL";
-  $<HTMLButtonElement>("btnPause").disabled = s.ended;
-  $<HTMLButtonElement>("btnPause").textContent = s.paused ? "Unpause" : "Pause";
+  // Freeze sets BOTH `frozen` and `paused`, so while the room is frozen this
+  // button read "Unpause" — and pressing it cleared only `paused`, flipping the
+  // label to "Pause" (which reads as "the room is live") while every student
+  // device still said FROZEN and the board still said FROZEN. The same failure
+  // shape as the unfreeze defect already repaired in sessionService; this is
+  // its pause arm. Freeze owns the room while it holds it: pause is inert until
+  // the teacher unfreezes, and says which control to use.
+  $<HTMLButtonElement>("btnPause").disabled = s.ended || s.frozen;
+  $<HTMLButtonElement>("btnPause").textContent = s.frozen ? "Frozen — use Unfreeze" : s.paused ? "Unpause" : "Pause";
   $<HTMLButtonElement>("btnFreeze").disabled = s.ended;
   $<HTMLButtonElement>("btnFreeze").textContent = s.frozen ? "Unfreeze" : "Freeze";
-  $<HTMLButtonElement>("btnRestore").disabled = !s.hasCheckpoint;
+  // "Restore last good state" told the teacher nothing about WHICH state, and
+  // undo with no idea what it undoes is not a recovery mechanism. The server
+  // now labels every checkpoint with the action it precedes.
+  const restoreBtn = $<HTMLButtonElement>("btnRestore");
+  restoreBtn.disabled = !s.hasCheckpoint;
+  restoreBtn.textContent = s.checkpointLabel ? `Undo: ${s.checkpointLabel}` : "Restore last good state";
   $<HTMLButtonElement>("btnEnd").disabled = s.ended;
   // The shock is Draft Day's own consequence hook and only ever makes sense in CONSEQUENCE.
   // The Box Office needs neither manual hook — its CONSEQUENCE and COUNTERFACTUAL states are
@@ -1477,7 +1671,14 @@ $("btnFreeze").addEventListener("click", () => {
   const frozen = $("btnFreeze").textContent === "Unfreeze";
   void sendControl({ type: frozen ? "unfreeze" : "freeze" });
 });
-$("btnRestore").addEventListener("click", () => void sendControl({ type: "restore" }));
+$("btnRestore").addEventListener("click", () => {
+  // The most destructive control in the room was the one unguarded button,
+  // sitting beside a guarded End. It discards everything since the checkpoint.
+  const what = lastCheckpointLabel ? `Undo "${lastCheckpointLabel}"?` : "Restore the last saved state?";
+  if (confirm(`${what}\n\nAnything the class has done since then is rolled back. Pressing Restore again puts it back.`)) {
+    void sendControl({ type: "restore" });
+  }
+});
 $("btnEnd").addEventListener("click", () => {
   if (confirm("End this session? Students will no longer be able to act.")) void sendControl({ type: "end" });
 });
@@ -1507,6 +1708,19 @@ $("btnRealRule").addEventListener("click", () => {
 $("btnCommitReveal").addEventListener("click", () => {
   if (commitRevealWarn && !confirm(commitRevealWarn)) return;
   void sendControl({ type: "hook", hook: "commitReveal" });
+});
+$("btnFinalCall").addEventListener("click", () => void sendControl({ type: "finalCall", durationMs: 20000 }));
+$("btnCancelFinalCall").addEventListener("click", () => void sendControl({ type: "cancelFinalCall" }));
+$("btnCloseNow").addEventListener("click", () => {
+  // The only control in the room that takes a decision away from a student who
+  // has not made one. It names how many and what happens to them, because the
+  // settlement it triggers is not undoable without a restore.
+  const c = timeCutConfirm;
+  if (c && c.unresolvedCount > 0) {
+    const desks = c.unresolvedCount === 1 ? "1 desk has" : `${c.unresolvedCount} desks have`;
+    if (!confirm(`Close now? ${desks} committed nothing.\n\n${c.policy}`)) return;
+  }
+  void sendControl({ type: "closeNow" });
 });
 $("btnBarPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPage" }));
 $("btnBarPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPageBack" }));

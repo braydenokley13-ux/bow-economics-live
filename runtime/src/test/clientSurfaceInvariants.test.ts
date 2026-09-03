@@ -88,7 +88,26 @@ test("every module-level /play render cache is cleared on a seat change", () => 
   // Enumerate the module-level `let` render caches and require each be reset.
   // Deliberately narrow: transport singletons (creds/outbox/poll) are owned by
   // the join and sign-out paths themselves, not by this function.
-  const TRANSPORT = new Set(["creds", "outbox", "poll", "fhResizeBound", "fhResizeTimer"]);
+  // `onlineListenerBound` is deliberately page-global: the `online` listener is
+  // registered once per page, not once per seat, and resetting it is exactly the
+  // bug it exists to prevent (a rejoin stacking a second listener). `fcDeadline`
+  // and `fcTimer` ARE per-seat and are cleared, but via `stopFinalCallClock()`
+  // rather than by name, so they are matched through the call below.
+  const TRANSPORT = new Set(["creds", "outbox", "poll", "fhResizeBound", "fhResizeTimer", "onlineListenerBound", "fcDeadline", "fcTimer"]);
+  assert.match(
+    /function resetSeatRenderState\(\): void \{[\s\S]*?\n\}/.exec(PLAY)?.[0] ?? "",
+    /stopFinalCallClock\(\);/,
+    "the final-call countdown is not stopped on a seat change — the next pair inherits the previous pair's clock",
+  );
+  assert.match(
+    PLAY,
+    /function stopFinalCallClock\(\): void \{[\s\S]*?fcTimer = null;[\s\S]*?fcDeadline = null;[\s\S]*?\n\}/,
+    "stopFinalCallClock() no longer clears both fcTimer and fcDeadline",
+  );
+  assert.ok(
+    /let onlineListenerBound = false;/.test(PLAY) && /if \(!onlineListenerBound\) \{/.test(PLAY),
+    "the `online` listener is registered per join again — a rejoin stacks another one on every seat",
+  );
   const declared = [...PLAY.matchAll(/^let ([a-zA-Z0-9_]+)\s*[:=]/gm)].map((m) => m[1]!);
   const caches = declared.filter((n) => !TRANSPORT.has(n));
   assert.ok(caches.length >= 15, `expected the per-seat cache set to be substantial, found ${caches.length}`);
@@ -119,4 +138,25 @@ test("the settled arena is handed the real turned-away count", () => {
     "the settled (outcome) arena frame is not passed the night's own turned-away count",
   );
   assert.match(PLAY, /turnedAway: o\.turnedAway \?\? 0,/, "fhArenaFrame no longer forwards its caller's count");
+});
+
+/* ------------------------------------------------------------------------ *
+ * 4. The round stamp is taken when the pair DECIDES, not when the request goes.
+ *
+ * Stamping at send time would defeat the check entirely: a held action would
+ * pick up whatever round happened to be open when it finally left the queue,
+ * which is precisely the round it must not be applied to.
+ * ------------------------------------------------------------------------ */
+test("the outbox stamps the round key at submit time, and /play feeds it the round it last rendered", () => {
+  const OUTBOX = fs.readFileSync(path.join(RUNTIME, "src", "client", "shared", "outbox.ts"), "utf8");
+  const submit = /submit\(action: \{ type: string; \[key: string\]: unknown \}\): void \{([\s\S]*?)\n  \}/.exec(OUTBOX);
+  assert.ok(submit, "outbox.submit() is gone");
+  assert.match(submit[1]!, /roundKeyGetter\(\)/, "the round stamp is no longer taken at submit time");
+  assert.ok(
+    !/roundKeyGetter\(\)/.test(/private async pump\(\)[\s\S]*$/.exec(OUTBOX)?.[0] ?? ""),
+    "the round stamp is being taken in pump() — a held action would pick up the round it must NOT be applied to",
+  );
+  assert.match(PLAY, /lastRoundKey = payload\.round\?\.key \?\? null;/, "/play no longer tracks the round it rendered");
+  assert.match(PLAY, /\(\) => lastRoundKey,/, "the outbox is not being given the round key");
+  assert.match(PLAY, /new Set\(\["takeSeat"\]\)/, "takeSeat lost its exemption — a late joiner crossing a close would be refused a franchise");
 });

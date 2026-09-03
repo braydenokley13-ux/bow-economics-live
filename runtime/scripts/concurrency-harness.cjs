@@ -114,7 +114,9 @@ async function main() {
 
     // The main event: every desk sets a price and locks, all at once, every round.
     for (let round = 1; round <= ROUNDS; round += 1) {
-      const intents = seats.map((s) => ({ seat: s, price: 20 + ((s.index * 3) % 40) }));
+      // On the lesson's own grid ($10-$120 in $2 steps) — an off-grid price is a
+      // harness bug that reads as 16 product rejections.
+      const intents = seats.map((s) => ({ seat: s, price: 20 + ((s.index * 3) % 40) * 2 }));
       const results = await Promise.all(
         intents.map(async (it) => {
           const set = await req("POST", `/api/sessions/${code}/actions`, {
@@ -167,6 +169,163 @@ async function main() {
 
       // Advance the night so the next round has an open card.
       await req("POST", `/api/sessions/${code}/control`, { body: { type: "hook", hook: "closeNight" }, token: teacherKey });
+    }
+
+    /* ------------------------------------------------------------------ *
+     * The loss scenarios.
+     *
+     * The version race the program brief hypothesised does not reproduce on
+     * this storage (see the counts above — zero conflicts at 16 and at 32).
+     * These three are the races that DO destroy decisions in a live class, and
+     * each is run through a model of the real client outbox: a refusal marked
+     * `retryable` is held and re-sent with backoff, anything else is dropped.
+     * A scenario passes only when every desk's decision ends up applied exactly
+     * once, or refused for a reason a student can be told.
+     * ------------------------------------------------------------------ */
+
+    /** The client outbox, modelled: hold and re-send a retryable refusal, drop a definitive one. */
+    async function outboxSend(seat, body, attempts = 8) {
+      const held = [];
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        const r = await req("POST", `/api/sessions/${code}/actions`, { body, token: seat.token });
+        if (r.status === 200) return { outcome: "applied", attempts: attempt + 1, held, disposition: r.body?.disposition };
+        if (r.body?.error?.retryable === true) {
+          held.push(r.body.error.code);
+          await sleep(40 * (attempt + 1));
+          continue;
+        }
+        return { outcome: "refused", code: r.body?.error?.code, message: r.body?.error?.message, attempts: attempt + 1, held };
+      }
+      return { outcome: "GAVE_UP", held, attempts };
+    }
+
+    const lockedNow = async () => {
+      const t = await req("GET", `/api/sessions/${code}/teacher`, { token: teacherKey });
+      const v = t.body?.view ?? {};
+      return typeof v.lockedCount === "number" ? v.lockedCount : null;
+    };
+
+    // --- A. The teacher pauses at the exact moment the room locks in. -------
+    await req("POST", `/api/sessions/${code}/control`, { body: { type: "pause" }, token: teacherKey });
+    // Deliberately NOT awaited yet: these requests must still be in the outbox,
+    // being held and re-sent, when the room comes back.
+    const pauseRace = seats.map((s) => outboxSend(s, { id: `pause-${s.index}`, type: "lock" }));
+    // The room comes back a beat later, as it always does.
+    await sleep(120);
+    await req("POST", `/api/sessions/${code}/control`, { body: { type: "unpause" }, token: teacherKey });
+    const pauseSettled = await Promise.all(pauseRace);
+    const pauseLost = pauseSettled.filter((r) => r.outcome !== "applied");
+    report.pauseRace = {
+      applied: pauseSettled.filter((r) => r.outcome === "applied").length,
+      held_at_least_once: pauseSettled.filter((r) => r.held.length > 0).length,
+      lost: pauseLost,
+      serverLockedCount: await lockedNow(),
+    };
+    if (pauseLost.length > 0) {
+      report.findings.push({
+        severity: "correctness",
+        what: `pause race: ${pauseLost.length}/${DESKS} desks lost a lock the teacher's pause collided with`,
+        why: "the pause is the teacher holding the room, not a ruling on the student's decision",
+      });
+    }
+    if (report.pauseRace.serverLockedCount !== null && report.pauseRace.serverLockedCount !== DESKS) {
+      report.findings.push({
+        severity: "correctness",
+        what: `pause race: server recorded ${report.pauseRace.serverLockedCount} locks, expected ${DESKS}`,
+        why: "the desks believe they locked in; the room disagrees",
+      });
+    }
+    await req("POST", `/api/sessions/${code}/control`, { body: { type: "hook", hook: "closeNight" }, token: teacherKey });
+
+    // --- B. The same decision retried while it is still in flight. ---------
+    // A flaky AP re-sends a request whose response never arrived. This must
+    // buy exactly one ticket price, not two.
+    const dupRace = await Promise.all(
+      seats.flatMap((s) => {
+        const body = { id: `dup-${s.index}`, type: "setPrice", price: 30 + ((s.index % 10) * 2) };
+        return [outboxSend(s, body), outboxSend(s, body)];
+      }),
+    );
+    const dupApplied = dupRace.filter((r) => r.outcome === "applied");
+    const dupDuplicates = dupApplied.filter((r) => r.disposition === "duplicate").length;
+    report.duplicateRace = {
+      sent: dupRace.length,
+      applied: dupApplied.length,
+      reported_duplicate: dupDuplicates,
+      refused: dupRace.filter((r) => r.outcome !== "applied"),
+    };
+    if (dupApplied.length !== dupRace.length) {
+      report.findings.push({
+        severity: "correctness",
+        what: `duplicate race: ${dupRace.length - dupApplied.length} of ${dupRace.length} retries were refused instead of recognised`,
+        why: "a re-sent action whose first response was lost must be recognised, not rejected",
+      });
+    }
+    if (dupDuplicates < DESKS) {
+      report.findings.push({
+        severity: "correctness",
+        what: `duplicate race: only ${dupDuplicates} of ${DESKS} retries were reported as duplicates`,
+        why: "an unrecognised retry has been applied twice — the idempotency ring is not holding",
+      });
+    }
+
+    // --- C. TIME CUT: locks in flight when the window closes. --------------
+    // Stamped with the round the desk was looking at, exactly as the real
+    // outbox does — which is what makes "crossed the cut" distinguishable from
+    // "a fresh decision on the new round".
+    const openRound = (await req("GET", `/api/sessions/${code}/teacher`, { token: teacherKey })).body?.round?.key ?? null;
+    await req("POST", `/api/sessions/${code}/control`, { body: { type: "finalCall", durationMs: 5000 }, token: teacherKey });
+    const cutRace = Promise.all(
+      seats.map((s) => outboxSend(s, { id: `cut-${s.index}`, type: "lock", round: openRound }, 3)),
+    );
+    // The teacher cuts the window while those are in the air. No sleep: the
+    // close is dispatched into the same event-loop turn as the locks, which is
+    // as close as this process can get to a real simultaneous cut.
+    await sleep(0);
+    await req("POST", `/api/sessions/${code}/control`, { body: { type: "closeNow" }, token: teacherKey });
+    const cut = await cutRace;
+    const cutApplied = cut.filter((r) => r.outcome === "applied").length;
+    const cutRefused = cut.filter((r) => r.outcome === "refused");
+    const cutGaveUp = cut.filter((r) => r.outcome === "GAVE_UP");
+    report.timeCutRace = {
+      applied: cutApplied,
+      refused_with_a_reason: cutRefused.length,
+      refusal_codes: [...new Set(cutRefused.map((r) => r.code))],
+      gave_up: cutGaveUp.length,
+    };
+    // The contract: applied exactly once, OR an explicit authoritative refusal.
+    // Nothing may end in limbo, and no refusal may be reasonless.
+    if (cutGaveUp.length > 0) {
+      report.findings.push({
+        severity: "correctness",
+        what: `time cut: ${cutGaveUp.length} actions were still being retried when the harness gave up`,
+        why: "an action crossing the cut must reach a terminal answer, not spin",
+      });
+    }
+    for (const r of cutRefused) {
+      if (!r.code || !r.message) {
+        report.findings.push({
+          severity: "correctness",
+          what: `time cut: an action was refused with no reason (${JSON.stringify(r)})`,
+          why: "a student whose decision is refused must be told why",
+        });
+      }
+    }
+
+    // And a lock arriving strictly AFTER the cut: the one case that SHOULD be
+    // refused. It must be refused definitively and with a sentence, never held.
+    const afterCut = await Promise.all(
+      seats.slice(0, 4).map((s) => outboxSend(s, { id: `after-${s.index}`, type: "lock", round: openRound }, 2)),
+    );
+    report.afterCut = afterCut.map((r) => ({ outcome: r.outcome, code: r.code, message: r.message, held: r.held.length }));
+    for (const r of afterCut) {
+      if (r.outcome !== "refused" || r.code !== "stale_round" || !r.message) {
+        report.findings.push({
+          severity: "correctness",
+          what: `after the cut: a decision for the closed round was ${r.outcome} (${JSON.stringify(r)})`,
+          why: "applying it to the NEXT round substitutes a decision the pair never made, on a card they never saw",
+        });
+      }
     }
 
     report.serverLog = serverLog.join("").split("\n").filter((l) => l.includes("error") || l.includes("Error")).slice(0, 10);

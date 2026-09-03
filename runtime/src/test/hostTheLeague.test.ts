@@ -404,11 +404,49 @@ test("leaving PLAY settles every remaining week and releases the bar; leaving RE
   state = hostTheLeagueModule.onPhaseExit!(state, "PLAY", "REVEAL");
   assert.equal(state.weekIndex, WEEK_COUNT);
   assert.equal(state.barReleased, true);
-  // D17's honour-what-was-submitted precedent: the week that was open commits
-  // on the dial the pair actually moved, not on the house price.
-  assert.equal(state.clubs[state.seatToSlot["seat-1"]!]!.weeks[0]!.price, 50);
+  // ONE FALLBACK PER LESSON. This path used to honour the pair's pending dial
+  // ($50) while the teacher's own week bell settled the same club at its house
+  // price — two different economies for the same student action, decided by
+  // which control the teacher pressed. Both paths now apply the policy the
+  // product promises: a club that never locked did not choose.
+  const slot = state.seatToSlot["seat-1"]!;
+  assert.notEqual(state.clubs[slot]!.weeks[0]!.price, 50, "an unlocked dial must not commit itself");
+  assert.equal(state.clubs[slot]!.weeks[0]!.auto, true, "and the week must be flagged as one nobody locked");
   state = hostTheLeagueModule.onPhaseExit!(state, "REVEAL", "ADAPT");
   assert.equal(state.revealStage, REVEAL_STEPS);
+});
+
+test("the week bell and a teacher's early exit settle an unlocked club identically", () => {
+  const build = (): ReturnType<typeof seated> => {
+    let s2 = seated(4);
+    return ok(act(s2, { type: "setPrice", price: 50 }, "PLAY", "seat-1"));
+  };
+  const exited = hostTheLeagueModule.onPhaseExit!(build(), "PLAY", "REVEAL");
+  const belled = ok(act(build(), { type: "teacher:closeWeek" }, "PLAY", "teacher"));
+  const slot = exited.seatToSlot["seat-1"]!;
+  assert.equal(
+    exited.clubs[slot]!.weeks[0]!.price,
+    belled.clubs[slot]!.weeks[0]!.price,
+    "the two close paths settle an unlocked club at different prices",
+  );
+});
+
+test("You Don't Play Alone declares a round contract naming the fallback per club", () => {
+  const contract = hostTheLeagueModule.round!;
+  let state = seated(4);
+  assert.equal(contract.currentKey(state, "PLAY"), "W1");
+  assert.equal(contract.currentKey(state, "REVEAL"), null);
+
+  state = ok(act(state, { type: "setPrice", price: 50 }, "PLAY", "seat-1"));
+  const seatIds = ["seat-1", "seat-2", "seat-3", "seat-4"];
+  const dialled = contract.unresolved(state, "PLAY", seatIds).find((u) => u.seatId === "seat-1")!;
+  assert.match(dialled.fallback, /NOT the \$50/, "the teacher must see the number the club is about to lose");
+
+  // League-office clubs have no seat and are never listed as unresolved.
+  assert.ok(contract.unresolved(state, "PLAY", seatIds).every((u) => seatIds.includes(u.seatId)));
+
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  assert.ok(!contract.unresolved(state, "PLAY", seatIds).some((u) => u.seatId === "seat-1"));
 });
 
 test("teacher pacing hooks are gated and cannot be double-fired", () => {

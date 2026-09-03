@@ -75,7 +75,7 @@
  *
  * No random source exists anywhere in this file (R7).
  */
-import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId } from "../shared/lessonModule.js";
+import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 
 /* ------------------------------------------------------------- markets -- */
@@ -3388,6 +3388,43 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
    * leaving REVEAL plays out every stage; leaving COUNTERFACTUAL runs the replay;
    * leaving ARGUE reveals the Kings vote.
    */
+  /**
+   * TIME CUT for Writing the Rule. The round is a SEASON WEEK.
+   *
+   * Only the season stage has a closable round — the rule-writing rounds
+   * beforehand are a different beat with their own teacher controls, and the
+   * runtime must not offer to "close" one of those. Same fallback as the other
+   * two lessons, in this lesson's own words.
+   */
+  round: {
+    closeHook: "teacher:closeWeek",
+    noun: "week",
+    fallbackPolicy:
+      "A club that never locks plays this week at its own house price with nothing reinvested — the dial it is sitting on does not count as a decision.",
+    currentKey(state, phase) {
+      if (phase !== "PLAY" || state.stage !== "season") return null;
+      return state.weekIndex < WEEK_COUNT ? `W${state.weekIndex + 1}` : null;
+    },
+    unresolved(state, phase, seatIds) {
+      if (phase !== "PLAY" || state.stage !== "season" || state.weekIndex >= WEEK_COUNT) return [];
+      const seated = new Set(seatIds);
+      const out: UnresolvedSeat[] = [];
+      for (const club of state.clubs) {
+        if (club.seatId === null || !seated.has(club.seatId) || club.locked) continue;
+        const house = profileOf(club).housePrice;
+        out.push({
+          seatId: club.seatId,
+          label: deskHandleFor(club),
+          fallback:
+            club.price === house && club.reinvest === 0
+              ? `plays at its $${house} house price (their dial is already there)`
+              : `plays at its $${house} house price, NOT the $${club.price} on their dial`,
+        });
+      }
+      return out;
+    },
+  },
+
   onPhaseExit(state, fromPhase) {
     let next = state;
     if (fromPhase === "HOOK") next = { ...next, hookRevealed: true, leagueFrozen: true };
@@ -3395,11 +3432,26 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       while (next.stage === "rounds" && next.roundIndex < ROUND_COUNT) next = closeRound(next);
       if (next.stage === "rounds") next = adoptRule(next);
       if (next.stage === "adopted") next = { ...next, stage: "season" };
-      let first = true;
-      while (next.weekIndex < WEEK_COUNT) {
-        next = settleWeek(next, first);
-        first = false;
-      }
+      // ONE FALLBACK PER LESSON, ON EVERY PATH.
+      //
+      // This loop used to pass `first = true` on the open round, settling it on
+      // the pairs' pending dials while the teacher's own bell settled the same
+      // round at the house/plan price. Same room, same student action, two
+      // different economies depending on which control the teacher happened to
+      // press — reproduced directly against the module: a desk showing $56 on
+      // its dial settled at $56 through this path and at $16 through the bell.
+      //
+      // The bell's policy is the one the product PROMISES, in three places at
+      // once (the bell's own confirm line, the WATCH FOR flag, and the desk's
+      // AUTO badge): a desk that never committed did not choose, and is not
+      // credited with a choice. Honouring a dial nobody locked would also
+      // dissolve LOCK IT IN, which is the signature commitment beat of all
+      // three Module 2 lessons. So the exit path now settles exactly as the
+      // bell does, and the trap that made the divergence tempting is closed
+      // somewhere better: the FINAL CALL window tells a pair, in their own
+      // numbers, what an uncommitted dial is about to cost them, and tells the
+      // teacher the same thing per desk before they close.
+      while (next.weekIndex < WEEK_COUNT) next = settleWeek(next, false);
       next = { ...next, stage: "seasonDone" };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };

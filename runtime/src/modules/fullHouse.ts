@@ -63,7 +63,7 @@
  * See SOURCE_NOTES.
  */
 import { CREST_COUNT } from "./draftDay.js";
-import type { LessonModule, ReduceContext, ReduceResult, SeatId } from "../shared/lessonModule.js";
+import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 
 /* ------------------------------------------------------------- markets -- */
@@ -2589,17 +2589,72 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
    * (every desk settles with the same math the bell uses) and releases the
    * Two Peaks panel; leaving REVEAL plays out every remaining reveal stage.
    */
+  /**
+   * TIME CUT for Full House. The round is a NIGHT; the bell settles it.
+   *
+   * The fallback is the one the desk's own screen, the bell's confirm line and
+   * the WATCH FOR flag all already promise: a pair who never pressed LOCK IT IN
+   * did not choose, so the night settles on the season plan with nothing spent.
+   * Naming it per desk, with the desk's actual dialled number beside the number
+   * it would actually settle at, is what turns that from a trap into a stake.
+   */
+  round: {
+    closeHook: "teacher:closeNight",
+    noun: "night",
+    fallbackPolicy:
+      "A desk that never locks settles tonight at its season plan price with nothing spent — the dial it is sitting on does not count as a decision.",
+    currentKey(state, phase) {
+      if (phase !== "PLAY") return null;
+      const card = openCard(state);
+      return card ? card.id : null;
+    },
+    unresolved(state, phase, seatIds) {
+      if (phase !== "PLAY" || !openCard(state)) return [];
+      const out: UnresolvedSeat[] = [];
+      for (const seatId of seatIds) {
+        const desk = state.desks[seatId];
+        if (!desk || desk.locked) continue;
+        const market = marketOf(desk);
+        const dialled = desk.price;
+        out.push({
+          seatId,
+          label: deskHandle(desk),
+          fallback:
+            dialled === market.planPrice && desk.spend === 0 && !desk.openBowl
+              ? `settles at the $${market.planPrice} season plan (their dial is already there)`
+              : `settles at the $${market.planPrice} season plan, NOT the $${dialled} on their dial`,
+        });
+      }
+      return out;
+    },
+  },
+
   onPhaseExit(state, fromPhase) {
     let next = state;
     if (fromPhase === "PLAY") {
       // The night that is actually open settles on the pair's own dials (see
       // closeNight); nights nobody ever saw settle at the plan price, which is
       // where every dial rests after a night is applied anyway.
-      let first = true;
-      while (next.nightIndex < NIGHT_COUNT) {
-        next = closeNight(next, first);
-        first = false;
-      }
+      // ONE FALLBACK PER LESSON, ON EVERY PATH.
+      //
+      // This loop used to pass `first = true` on the open round, settling it on
+      // the pairs' pending dials while the teacher's own bell settled the same
+      // round at the house/plan price. Same room, same student action, two
+      // different economies depending on which control the teacher happened to
+      // press — reproduced directly against the module: a desk showing $56 on
+      // its dial settled at $56 through this path and at $16 through the bell.
+      //
+      // The bell's policy is the one the product PROMISES, in three places at
+      // once (the bell's own confirm line, the WATCH FOR flag, and the desk's
+      // AUTO badge): a desk that never committed did not choose, and is not
+      // credited with a choice. Honouring a dial nobody locked would also
+      // dissolve LOCK IT IN, which is the signature commitment beat of all
+      // three Module 2 lessons. So the exit path now settles exactly as the
+      // bell does, and the trap that made the divergence tempting is closed
+      // somewhere better: the FINAL CALL window tells a pair, in their own
+      // numbers, what an uncommitted dial is about to cost them, and tells the
+      // teacher the same thing per desk before they close.
+      while (next.nightIndex < NIGHT_COUNT) next = closeNight(next, false);
       if (!next.twoPeaksReleased) next = { ...next, twoPeaksReleased: true };
     }
     if (fromPhase === "REVEAL" && next.revealStage < REVEAL_STEPS) next = { ...next, revealStage: REVEAL_STEPS };

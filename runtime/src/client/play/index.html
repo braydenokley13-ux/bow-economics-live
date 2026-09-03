@@ -24,6 +24,24 @@
   #syncStatus { font-size: 11px; color: var(--ink-muted); }
   .banner { padding: 14px; border-radius: 10px; background: var(--surface-panel); font-size: 14px; color: var(--ink-secondary); text-align: center; }
   section.card { padding: 20px; }
+  /* FINAL CALL. Sticky, because the pair is usually looking at a dial halfway
+     down a scrolled page when the window starts closing, and a warning they
+     have to scroll up to find is not a warning. */
+  #finalCall { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 10px; margin-bottom: 2px;
+    background: var(--surface-elevated, #241c0c); border: 1px solid var(--accent-gold);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45); }
+  #finalCall.unlocked { border-color: var(--over-the-line); background: #2a1410; }
+  #fcClock { font-family: var(--font-number); font-weight: 800; font-size: 30px; line-height: 1;
+    color: var(--accent-gold); font-variant-numeric: tabular-nums; min-width: 74px; }
+  #finalCall.unlocked #fcClock { color: var(--over-the-line); }
+  #fcText { font-size: 13px; color: var(--ink-secondary); }
+  #fcText b { color: var(--ink-primary); display: block; font-family: var(--font-display); letter-spacing: .06em;
+    text-transform: uppercase; font-size: 12px; margin-bottom: 2px; }
+  @media (prefers-reduced-motion: no-preference) {
+    #finalCall.unlocked { animation: fcPulse 1.4s ease-in-out infinite; }
+    @keyframes fcPulse { 0%,100% { box-shadow: 0 6px 18px rgba(0,0,0,0.45); } 50% { box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 0 3px rgba(224,87,79,0.28); } }
+  }
 </style>
 </head>
 <body>
@@ -75,6 +93,14 @@
   <button type="button" class="pin-reopen" id="btnShowPin" hidden>Rejoin PIN</button>
 
   <section id="gameCard" hidden>
+    <!-- W3: the closing window, said to the pair in their own terms. Not a
+         generic "time's up" — when this desk has committed nothing it names the
+         lesson's own fallback, which is the only version of this warning that
+         changes what a student does next. -->
+    <div id="finalCall" hidden>
+      <span id="fcClock"></span>
+      <span id="fcText"></span>
+    </div>
     <div class="eyebrow" id="gameHeader" style="font-size:12px; margin-bottom:10px;"></div>
     <div id="gameBody"></div>
   </section>

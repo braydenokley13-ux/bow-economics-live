@@ -886,25 +886,75 @@ test("gate-l1-sr F4: every real figure that reaches a screen carries its stamp a
  * on now settles on the dials the pairs set, per D17's auto-resolve-on-exit
  * precedent, instead of throwing away a real price for the plan price.
  */
-test("teacher misclick: leaving PLAY settles the open night on the dials as they stand", () => {
-  let state = seated(2);
-  state = ok(act(state, { type: "setPrice", price: 56 }, "PLAY", "seat-1")); // set, deliberately NOT locked
-  state = ok(act(state, { type: "setSpend", spend: 20_000 }, "PLAY", "seat-1"));
-  const after = fullHouseModule.onPhaseExit!(state, "PLAY", "REVEAL");
-  const n1 = after.desks["seat-1"]!.nights[0]!;
-  assert.equal(n1.price, 56, "the price the pair had actually set was thrown away");
-  assert.equal(n1.spend, 20_000, "the night spend the pair had actually set was thrown away");
-  assert.equal(n1.auto, true, "the night must still be flagged as one nobody locked");
-  // a desk that touched nothing is unchanged: it still settles at the plan price
-  assert.equal(after.desks["seat-2"]!.nights[0]!.price, MARKETS.find((m) => m.id === "memphis")!.planPrice);
-  // and the nights nobody ever saw are still auto-played at the plan price
-  assert.equal(after.nightIndex, NIGHT_COUNT);
-  assert.equal(after.desks["seat-1"]!.nights[1]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
-  // the night bell itself is unchanged: an unlocked desk is the "did nothing" line
-  let belled = seated(1);
+test("one fallback per lesson: the bell and a teacher's early exit settle an unlocked desk identically", () => {
+  // The two paths used to disagree. Leaving PLAY honoured the pair's pending
+  // dials; the bell settled the same desk at the season plan. Same room, same
+  // student action, two different economies depending on which control the
+  // teacher happened to press — and the bell is the path a real class takes
+  // every night. The policy that survives is the one the product PROMISES in
+  // three places (the bell's confirm line, the WATCH FOR flag, the desk's AUTO
+  // badge): a desk that never locked did not choose. Honouring an unlocked dial
+  // would also dissolve LOCK IT IN, the lesson's signature commitment beat.
+  const plan = (id: string) => MARKETS.find((m) => m.id === id)!.planPrice;
+
+  let exited = seated(2);
+  exited = ok(act(exited, { type: "setPrice", price: 56 }, "PLAY", "seat-1")); // set, deliberately NOT locked
+  exited = ok(act(exited, { type: "setSpend", spend: 20_000 }, "PLAY", "seat-1"));
+  const afterExit = fullHouseModule.onPhaseExit!(exited, "PLAY", "REVEAL");
+  const exitNight = afterExit.desks["seat-1"]!.nights[0]!;
+
+  let belled = seated(2);
   belled = ok(act(belled, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
+  belled = ok(act(belled, { type: "setSpend", spend: 20_000 }, "PLAY", "seat-1"));
   belled = ok(act(belled, { type: "teacher:closeNight" }, "PLAY", "teacher"));
-  assert.equal(belled.desks["seat-1"]!.nights[0]!.price, MARKETS.find((m) => m.id === "new-york")!.planPrice);
+  const bellNight = belled.desks["seat-1"]!.nights[0]!;
+
+  assert.equal(exitNight.price, bellNight.price, "the two close paths settle an unlocked desk at different prices");
+  assert.equal(exitNight.spend, bellNight.spend, "the two close paths settle an unlocked desk at different spends");
+  assert.equal(exitNight.price, plan("new-york"), "an unlocked desk must settle at its season plan price");
+  assert.equal(exitNight.spend, 0, "an unlocked desk must settle having spent nothing");
+  assert.equal(exitNight.auto, true, "the night must still be flagged as one nobody locked");
+
+  // A locked desk is untouched by any of this: it settles at what it committed.
+  let locked = seated(2);
+  locked = ok(act(locked, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
+  locked = ok(act(locked, { type: "lock" }, "PLAY", "seat-1"));
+  const afterLock = fullHouseModule.onPhaseExit!(locked, "PLAY", "REVEAL");
+  assert.equal(afterLock.desks["seat-1"]!.nights[0]!.price, 56);
+  assert.equal(afterLock.desks["seat-1"]!.nights[0]!.auto, false);
+
+  // A desk that touched nothing is unchanged, and the nights nobody ever saw
+  // are still auto-played at the plan price.
+  assert.equal(afterExit.desks["seat-2"]!.nights[0]!.price, plan("memphis"));
+  assert.equal(afterExit.nightIndex, NIGHT_COUNT);
+  assert.equal(afterExit.desks["seat-1"]!.nights[1]!.price, plan("new-york"));
+});
+
+test("Full House declares a round contract naming the fallback per desk", () => {
+  const contract = fullHouseModule.round!;
+  let state = seated(2);
+  assert.equal(contract.currentKey(state, "PLAY"), "N1");
+  assert.equal(contract.currentKey(state, "REVEAL"), null, "no round is open outside PLAY");
+
+  // Both desks unresolved at the start of a night; each is named.
+  const before = contract.unresolved(state, "PLAY", ["seat-1", "seat-2"]);
+  assert.equal(before.length, 2);
+
+  // A desk sitting on a dial it never locked is told what the dial is NOT worth.
+  state = ok(act(state, { type: "setPrice", price: 56 }, "PLAY", "seat-1"));
+  const dialled = contract.unresolved(state, "PLAY", ["seat-1", "seat-2"]).find((u) => u.seatId === "seat-1")!;
+  assert.match(dialled.fallback, /NOT the \$56/, "the teacher must see the number the desk is about to lose");
+  assert.match(dialled.fallback, /\$24/, "and the number it will actually settle at");
+
+  // Locking removes the desk from the unresolved list entirely.
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  const after = contract.unresolved(state, "PLAY", ["seat-1", "seat-2"]);
+  assert.deepEqual(after.map((u) => u.seatId), ["seat-2"]);
+
+  // The declared policy and what the close actually does must agree.
+  assert.match(contract.fallbackPolicy, /season plan/);
+  const closed = ok(act(state, { type: contract.closeHook }, "PLAY", "teacher"));
+  assert.equal(closed.desks["seat-2"]!.nights[0]!.price, MARKETS.find((m) => m.id === "memphis")!.planPrice);
 });
 
 /* ------------------------------------- m2-visual-quality-war wave 2, Lane C -- */

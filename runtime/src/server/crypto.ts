@@ -17,22 +17,52 @@
  * `generateDeviceToken` (the /play resume credential), `generateClassCode`
  * -> `generateJoinCode`.
  */
-import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, scrypt, scryptSync, timingSafeEqual } from "node:crypto";
+import { promisify } from "node:util";
+
+/**
+ * scrypt on the THREAD POOL rather than the event loop.
+ *
+ * Measured on this machine: `scryptSync` at these parameters costs ~38ms per
+ * call, and a start-of-class burst of 30 devices joining at once blocked the
+ * single process for ~1.1 seconds — during which a `/board` poll issued in
+ * parallel took ~1.0s to answer. That is the projector visibly freezing at the
+ * exact moment a class begins, and it scales with the size of the room.
+ *
+ * The work itself is not the problem and the cost parameters are not lowered:
+ * a rejoin PIN is four digits and its digest is the only thing standing between
+ * a guesser and somebody else's seat. What changes is where it runs. Node's
+ * async scrypt hands the work to the libuv thread pool, so joins proceed in
+ * parallel with each other and, more importantly, with every poll the rest of
+ * the room is making.
+ */
+const scryptAsync = promisify(scrypt) as (
+  password: string,
+  salt: Buffer,
+  keylen: number,
+  options: { N: number; r: number; p: number },
+) => Promise<Buffer>;
 
 const SCRYPT_N = 16384;
 const SCRYPT_R = 8;
 const SCRYPT_P = 1;
 const SCRYPT_KEYLEN = 32;
 
-/** Hash a rejoin PIN. Format is self-describing so parameters can change without a migration. */
-export function hashPin(pin: string, salt: Buffer = randomBytes(16)): string {
-  const derived = scryptSync(pin, salt, SCRYPT_KEYLEN, { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P });
-  return ["scrypt", SCRYPT_N, SCRYPT_R, SCRYPT_P, salt.toString("base64"), derived.toString("base64")].join(
-    "$",
-  );
+const encode = (salt: Buffer, derived: Buffer): string =>
+  ["scrypt", SCRYPT_N, SCRYPT_R, SCRYPT_P, salt.toString("base64"), derived.toString("base64")].join("$");
+
+/** Hash a rejoin PIN off the event loop. Format is self-describing so parameters can change without a migration. */
+export async function hashPin(pin: string, salt: Buffer = randomBytes(16)): Promise<string> {
+  const derived = await scryptAsync(pin, salt, SCRYPT_KEYLEN, { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P });
+  return encode(salt, derived);
 }
 
-export function verifyPin(pin: string, stored: string): boolean {
+/** Synchronous form, for tests and tooling only — never on a request path. */
+export function hashPinSync(pin: string, salt: Buffer = randomBytes(16)): string {
+  return encode(salt, scryptSync(pin, salt, SCRYPT_KEYLEN, { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P }));
+}
+
+export async function verifyPin(pin: string, stored: string): Promise<boolean> {
   const parts = stored.split("$");
   if (parts.length !== 6 || parts[0] !== "scrypt") return false;
   const n = Number(parts[1]);
@@ -47,7 +77,7 @@ export function verifyPin(pin: string, stored: string): boolean {
   const expected = Buffer.from(digestRaw, "base64");
   let derived: Buffer;
   try {
-    derived = scryptSync(pin, salt, expected.length, { N: n, r, p });
+    derived = await scryptAsync(pin, salt, expected.length, { N: n, r, p });
   } catch {
     return false;
   }

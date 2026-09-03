@@ -9,6 +9,8 @@
  * re-establish, only a fetch to try again, which is what makes it robust on
  * a flaky school AP.
  */
+import { ApiError } from "./api.js";
+
 export type PollHandle = { stop: () => void };
 
 export function startPolling<T>(
@@ -45,10 +47,28 @@ export function startPolling<T>(
         etag = res.headers.get("ETag");
         onData((await res.json()) as T);
       } else {
-        const body = await res.json().catch(() => ({}));
-        options.onError?.(body);
+        // A TYPED error, not a parsed body.
+        //
+        // This handed `onError` the raw JSON body, while all three surfaces
+        // wrote their recovery branches as `error instanceof ApiError && ...`.
+        // Every one of those branches was therefore dead code: /play's was
+        // found and worked around locally (matching on the code string), and
+        // /board's "wrong or dead session code" and /teach's "this key no
+        // longer controls this room" were never found at all — a projector on a
+        // bad code sat on "reconnecting..." forever with no input to correct it,
+        // and a teacher whose key stopped working kept polling behind controls
+        // that did nothing. Fixing the contract here fixes all three at once
+        // and stops the next surface inheriting the same trap.
+        const body = (await res.json().catch(() => ({}))) as { error?: { code?: string; message?: string; retryable?: boolean } };
+        const err = body.error;
+        options.onError?.(
+          new ApiError(res.status, err?.code ?? "unknown", err?.message ?? res.statusText, err?.retryable === true),
+        );
       }
     } catch (error) {
+      // A genuine transport failure — no response at all. Deliberately NOT an
+      // ApiError: "the network is down" and "the server ruled against you" are
+      // different things and a caller must be able to tell them apart.
       options.onError?.(error);
     } finally {
       if (!stopped) timer = setTimeout(() => void tick(), intervalMs);

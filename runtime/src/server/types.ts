@@ -17,7 +17,50 @@ export type Checkpoint = {
   paused: boolean;
   frozen: boolean;
   ended: boolean;
+  /** The round lifecycle as it stood before the change being undone. */
+  round: RoundState | null;
   capturedAt: string;
+  /**
+   * Why this checkpoint was taken, in words a teacher can read on the restore
+   * control. "Undo" with no idea what it undoes is not a recovery mechanism.
+   */
+  label: string;
+};
+
+/**
+ * TIME CUT, as runtime state rather than teacher guidance.
+ *
+ * A "round" is the unit a lesson closes and settles — Full House's night,
+ * Host the League's week, Free Agency's day. It lives INSIDE the PLAY phase,
+ * not beside it: a lesson runs several rounds without ever leaving PLAY, so
+ * this is session state keyed to the module's own round id, not a new entry in
+ * the canonical phase vocabulary.
+ *
+ *   OPEN        decisions are being taken; nothing is announced
+ *   FINAL_CALL  the teacher has started the closing window. Decisions are
+ *               still accepted — that IS the drain, and it is what makes a
+ *               last-second change land instead of vanishing. What changes is
+ *               that the room is told, on all three surfaces, that the window
+ *               is closing, and that the close is now scheduled rather than a
+ *               separate thing the teacher has to remember to press.
+ *   CLOSED      the round has settled. A decision arriving now is refused with
+ *               a reason naming what happened, never dropped in silence.
+ *
+ * `finalCallEndsAt` is a SERVER timestamp. Clients render a countdown from it,
+ * but no client clock is ever consulted to decide whether an action was in
+ * time: the server compares its own `Date.now()` against this field, so a
+ * Chromebook with a wrong clock cannot buy itself extra seconds or lose any.
+ */
+export type RoundState = {
+  status: "OPEN" | "FINAL_CALL" | "CLOSED";
+  /** The module's own id for the round this record is about (e.g. a night id). */
+  key: string;
+  /** Server clock. Set only in FINAL_CALL. */
+  finalCallEndsAt: string | null;
+  /** Server clock, for "how long has the room had?" on /teach. */
+  finalCallStartedAt: string | null;
+  /** How the round ended, once it has. */
+  closedBy: "final_call_expired" | "close_now" | "module" | null;
 };
 
 export type SessionRow = {
@@ -34,6 +77,8 @@ export type SessionRow = {
   /** Bumped on every mutation. Doubles as the ETag for all three polling surfaces. */
   version: number;
   checkpoint: Checkpoint | null;
+  /** TIME CUT state for the round currently in play. Null outside PLAY, or before the first round opens. */
+  round: RoundState | null;
   /**
    * R1 repair: SHA-256 digest of the per-session teacher credential issued
    * once at `createSession` and required (as a bearer token) on every
@@ -58,6 +103,17 @@ export type SeatRow = {
   lastSeenAt: string;
   /** R3 repair: consecutive wrong-PIN rejoin attempts against this seat; locked out at 5 until the teacher clears it. */
   failedRejoinAttempts: number;
+  /**
+   * Ids of actions this seat has already had applied, newest last, bounded.
+   *
+   * This is what makes retrying an action SAFE, and retrying is what stops a
+   * transient refusal (paused, frozen, a version race) from destroying a
+   * student's decision. Without it, "keep it queued and try again" would
+   * double-apply every action whose response was lost in flight — a worse bug
+   * than the one it fixes. Persisted with the seat, so a mid-class server
+   * restart does not reopen the window.
+   */
+  appliedActionIds: string[];
 };
 
 export type NewSession = {
@@ -70,7 +126,7 @@ export type NewSession = {
 };
 
 export type SessionPatch = Partial<
-  Pick<SessionRow, "phase" | "paused" | "frozen" | "ended" | "state" | "checkpoint">
+  Pick<SessionRow, "phase" | "paused" | "frozen" | "ended" | "state" | "checkpoint" | "round">
 >;
 
 export type NewSeat = {
@@ -81,7 +137,7 @@ export type NewSeat = {
   rejoinPinHash: string;
 };
 
-export type SeatPatch = Partial<Pick<SeatRow, "deviceTokenHash" | "lastSeenAt" | "failedRejoinAttempts">>;
+export type SeatPatch = Partial<Pick<SeatRow, "deviceTokenHash" | "lastSeenAt" | "failedRejoinAttempts" | "appliedActionIds">>;
 
 /** A version-conflict result is a normal outcome, not an exception. */
 export type SessionUpdateResult =

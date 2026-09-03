@@ -8,6 +8,13 @@ type BoardPayload = {
   frozen: boolean;
   ended: boolean;
   version: number;
+  round: {
+    status: "OPEN" | "FINAL_CALL" | "CLOSED";
+    key: string;
+    endsAt: string | null;
+    serverNow: string;
+    closedBy: "final_call_expired" | "close_now" | "module" | null;
+  } | null;
   view: Record<string, unknown>;
 };
 
@@ -65,8 +72,43 @@ function askForCode(message: string): void {
 
 const PEAK_MODES = new Set(["reveal", "synthesis", "consequence"]);
 
+/* ---------------------------------------------------------------- FINAL CALL --
+ * The room's shared clock. Drawn from `endsAt - serverNow` as a duration and
+ * ticked locally, exactly as /play and /teach do it, so the projector and every
+ * desk in the room count down off the same number regardless of what any
+ * device's clock says. The board never rules on time — it only shows it.
+ * ------------------------------------------------------------------------- */
+const fcBand = document.getElementById("fcBand")!;
+let fcDeadline: number | null = null;
+let fcTimer: ReturnType<typeof setInterval> | null = null;
+
+function paintFcBand(): void {
+  if (fcDeadline === null) return;
+  const left = Math.max(0, fcDeadline - Date.now());
+  document.getElementById("fcBandClock")!.textContent = `${Math.ceil(left / 1000)}`;
+  fcBand.classList.toggle("late", left <= 5000);
+}
+
+function renderFinalCallBand(payload: BoardPayload): void {
+  const round = payload.round;
+  const on = !payload.ended && round?.status === "FINAL_CALL" && Boolean(round.endsAt);
+  fcBand.classList.toggle("on", on);
+  if (!on || !round?.endsAt) {
+    if (fcTimer !== null) {
+      clearInterval(fcTimer);
+      fcTimer = null;
+    }
+    fcDeadline = null;
+    return;
+  }
+  fcDeadline = Date.now() + Math.max(0, Date.parse(round.endsAt) - Date.parse(round.serverNow));
+  if (fcTimer === null) fcTimer = setInterval(paintFcBand, 200);
+  paintFcBand();
+}
+
 function render(payload: BoardPayload): void {
   setHud(`v${payload.version} · ${payload.phase}`);
+  renderFinalCallBand(payload);
 
   if (payload.ended) {
     backdrop.classList.remove("peak");
