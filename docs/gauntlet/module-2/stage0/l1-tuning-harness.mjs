@@ -948,7 +948,7 @@ console.log("");
           renewals = Math.min(100, Math.max(0, renewals + renewalDelta(market, card, price, 0)));
           carry = 0;
         }
-        if ((rawN1 < 0) !== (rawN5 < 0)) return price;
+        if ((rawN1 <= 0) !== (rawN5 <= 0)) return price;
       }
       return null;
     })();
@@ -986,8 +986,12 @@ console.log("");
           // three channels move a base nobody can see.
           const rawN1 = Math.round(n1.curve.base - n1.curve.sens * n1.price);
           const rawN5 = Math.round(n5.curve.base - n5.curve.sens * n5.price);
-          const isFloored = rawN1 < 0 || rawN5 < 0;
-          const isBothFloored = rawN1 < 0 && rawN5 < 0;
+          // W6: `<= 0`. A night whose raw demand lands on exactly zero drew
+          // nobody; under `< 0` the shipped row called that pair one-sided and
+          // printed "on one of the two nights" over a 0-then-0 crowd. The
+          // product's predicate moved to "did anybody come" and so does this.
+          const isFloored = rawN1 <= 0 || rawN5 <= 0;
+          const isBothFloored = rawN1 <= 0 && rawN5 <= 0;
 
           // The SHIPPED row for exactly these two nights — the thing the board
           // and the desk both print. Everything below judges the product, not a
@@ -1115,9 +1119,9 @@ console.log("");
     for (const price of PRICE_GRID) {
       for (const spend of [0, market.eventMax]) {
         const probe = flatSeason(market, price, spend);
-        const isOne = (probe.rawN1 < 0) !== (probe.rawN5 < 0);
+        const isOne = (probe.rawN1 <= 0) !== (probe.rawN5 <= 0);
         if (isOne && !oneSided) oneSided = { ...probe, price };
-        if (probe.rawN1 < 0 && probe.rawN5 < 0 && !bothSided) bothSided = { ...probe, price };
+        if (probe.rawN1 <= 0 && probe.rawN5 <= 0 && !bothSided) bothSided = { ...probe, price };
       }
     }
     if (!oneSided) {

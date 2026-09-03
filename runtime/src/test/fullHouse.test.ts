@@ -588,7 +588,7 @@ test("R4-5: the renewals book is still moving where the pair is actually decidin
   }
 });
 
-test("R4-5: gouging always costs more than gouging less, and the 20-point limit is still real", () => {
+test("R4-5: the gouging arm bites all the way up, and the one-night limit is live but never near a real price", () => {
   for (const market of MARKETS) {
     for (const card of CARDS) {
       const reference = renewalReferencePrice(market, card);
@@ -599,17 +599,41 @@ test("R4-5: gouging always costs more than gouging less, and the 20-point limit 
         const hi = renewalDeltaRaw(market, card, above[i]!, 0);
         assert.ok(hi <= lo, `${market.id} ${card.id}: $${above[i]} is not worse for renewals than $${above[i - 1]}`);
       }
-      // and on a card the dial can genuinely gouge, the limit is still reached
-      if (reference < 40) {
+      // W6 second pass. This used to assert the OPPOSITE of what the lesson
+      // wants: that $120 reaches the one-night limit on every gougeable card.
+      // It passed on constants where the limit was reached at 41 of 56 legal
+      // prices, so three quarters of the dial returned one number and a pair
+      // could not read its own choice out of the second book. What the arm owes
+      // the desk is a DISTINCT number wherever a price is worth considering; the
+      // limit is a backstop for prices that have already emptied the building.
+      const curve = curveFor(market, card, RENEWALS_START, 0);
+      const cashBest = PRICE_GRID.reduce((best, p) =>
+        settleNight(market, curve, p, 0, false, card.bowlOffer).net > settleNight(market, curve, best, 0, false, card.bowlOffer).net ? p : best,
+      );
+      // The LOW arm reaching the limit at the $10 floor is deliberate and is
+      // P12's business; this is about the gouging side.
+      const clipped = PRICE_GRID.filter((p) => p > reference && renewalDelta(market, card, p, 0) <= RENEWAL_DELTA_FLOOR);
+      for (const p of clipped) {
+        // "you have already lost everyone you were going to lose" has to be
+        // literally true where the arm goes flat, or it is just the old clip.
         assert.equal(
-          renewalDelta(market, card, PRICE_MAX, 0),
-          RENEWAL_DELTA_FLOOR,
-          `${market.id} ${card.id}: $${PRICE_MAX} no longer reaches the one-night limit`,
+          settleNight(market, curve, p, 0, false, card.bowlOffer).turnout,
+          0,
+          `${market.id} ${card.id}: the renewals limit binds at $${p}, where people are still walking in`,
         );
-        assert.ok(renewalDeltaRaw(market, card, PRICE_MAX, 0) < RENEWAL_DELTA_FLOOR);
+        assert.ok(
+          p >= cashBest * 2,
+          `${market.id} ${card.id}: the renewals limit binds at $${p}, under twice the night's cash-best $${cashBest}`,
+        );
       }
     }
   }
+  // The clamp is still live code, not a number nothing can reach: the cards
+  // whose reference IS the plan price still bottom out at the top of the dial.
+  const reachable = MARKETS.flatMap((market) =>
+    CARDS.filter((card) => renewalDelta(market, card, PRICE_MAX, 0) === RENEWAL_DELTA_FLOOR).map((card) => `${market.id}/${card.id}`),
+  );
+  assert.ok(reachable.length >= 4, `the one-night limit is unreachable at every market x card: ${reachable.join(", ") || "none"}`);
 });
 
 test("B1: the two-book frontier is not one-directional — some price above a night's cash optimum is undominated", () => {

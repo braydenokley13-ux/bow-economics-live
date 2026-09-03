@@ -1147,3 +1147,51 @@ test("a cold walk marks every finale card, and a played room never sees a mark",
     assert.equal(/STAND-IN/.test(card.rails.ourClass), false, `${card.id} leaked a stand-in warning into a played room`);
   }
 });
+
+test("the finale desk never reads ahead of the projector", () => {
+  // The desk used to carry the whole deck the instant SYNTHESIS opened, so at
+  // CARD 1 OF 7 on the projector every pair already had card 7's title on their
+  // own screen — the exact defect D26 was written to kill in Lesson 2's reveal,
+  // in the module finale, the one stretch where the room looks up together.
+  let state = playSeason(toSeason(toAdopted(withDesks(12), [30])));
+  const seat = state.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const all = synthesisCards(state, computeAggregate(state));
+  assert.ok(all.length > 2, "guard: the fixture must produce a multi-card finale");
+
+  for (let page = 0; page < all.length; page += 1) {
+    const student = writeTheRuleModule.studentView(state, seat, "SYNTHESIS") as Record<string, unknown>;
+    const shown = (student["cards"] as { title: string }[]) ?? [];
+    assert.equal(shown.length, page + 1, `the desk carried ${shown.length} cards while the board was on card ${page + 1}`);
+    assert.equal(shown[shown.length - 1]!.title, all[page]!.title, "the newest card on the desk is not the one on the board");
+    // Everything the room has already seen is still there to scroll back to.
+    for (let i = 0; i <= page; i += 1) assert.equal(shown[i]!.title, all[i]!.title);
+    // And nothing it has not.
+    const blob = JSON.stringify(shown);
+    for (let i = page + 1; i < all.length; i += 1) {
+      assert.equal(blob.includes(all[i]!.title), false, `the desk leaked "${all[i]!.title}" while the board was on card ${page + 1}`);
+    }
+    if (page < all.length - 1) state = apply(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher");
+  }
+});
+
+test("paging the finale backwards does not take cards off thirty desks", () => {
+  // The desk carries what the board has REACHED, which has to be a high-water
+  // mark. Read off `synthPage` alone, the teacher's own Back button — and the
+  // forward wrap past the last card — would delete cards the room had already
+  // discussed from every student device mid-discussion.
+  let state = playSeason(toSeason(toAdopted(withDesks(12), [30])));
+  const seat = state.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const all = synthesisCards(state, computeAggregate(state));
+  const held = (): number => (((writeTheRuleModule.studentView(state, seat, "SYNTHESIS") as Record<string, unknown>)["cards"] as unknown[]) ?? []).length;
+
+  for (let i = 1; i < all.length; i += 1) state = apply(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher");
+  assert.equal(held(), all.length, "the desk does not hold the whole deck once the board has walked it");
+
+  state = apply(state, { type: "teacher:synthPageBack" }, "SYNTHESIS", "teacher");
+  assert.equal(held(), all.length, "paging back stripped the deck the room had already seen");
+
+  // Forward from the last card wraps the projector to card 1. The desk keeps its deck.
+  for (let i = 0; i < 2; i += 1) state = apply(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher");
+  assert.equal((state as unknown as { synthPage: number }).synthPage, 0, "guard: the projector did not wrap");
+  assert.equal(held(), all.length, "the forward wrap emptied every desk's finale deck");
+});

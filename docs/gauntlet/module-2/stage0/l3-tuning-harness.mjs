@@ -94,6 +94,7 @@ const {
   runAdoption,
   settleHome,
   snapShare,
+  synthesisCards,
   writeTheRuleModule,
 } = mod;
 
@@ -701,7 +702,18 @@ function renderedBlobs(state) {
   // session passes through the ADOPTED stage on its way to the season, and the
   // end-of-session state no longer renders it. The harvest therefore covers the
   // stages a session passes through, not only the one it stopped on.
-  const variants = state.adopted && state.stage !== "adopted" ? [state, { ...state, stage: "adopted" }] : [state];
+  const stageVariants = state.adopted && state.stage !== "adopted" ? [state, { ...state, stage: "adopted" }] : [state];
+  // Same reasoning one line up, for the finale: SYNTHESIS stages ONE card at a
+  // time on the projector, and the desks now carry only the cards the board has
+  // reached (they used to carry the whole deck, which meant every pair read
+  // card 7 while the room was on card 1). A session passes through every page,
+  // so the harvest has to as well — otherwise the audit would be satisfied by a
+  // surface that spoils the room, and unsatisfiable by one that does not.
+  const pageCount = Math.max(1, synthesisCards(state, computeAggregate(state)).length);
+  const variants = [];
+  for (const v of stageVariants) {
+    for (let page = 0; page < pageCount; page += 1) variants.push({ ...v, synthPage: page });
+  }
   for (const variant of variants) {
     for (const phase of writeTheRuleModule.phases) {
       walk(writeTheRuleModule.boardView(variant, phase), bags.board);

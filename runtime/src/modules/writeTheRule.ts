@@ -567,6 +567,16 @@ export type WriteRuleState = {
   kingsSplitShown: boolean;
   kingsRevealed: boolean;
   synthPage: number;
+  /**
+   * The furthest finale card the projector has EVER turned to this session.
+   *
+   * The desk carries the cards the board has reached, so a pair can look back
+   * without reading ahead of the room. That has to be a high-water mark, not
+   * `synthPage`: the teacher's own Back button — and the forward wrap at the
+   * last card — would otherwise take cards off thirty students' screens that
+   * the room has already discussed.
+   */
+  synthSeen: number;
   finalePage: number;
   /** Pairs who arrived after the league closed and could not be given a club. */
   observerSeats: string[];
@@ -3755,6 +3765,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       kingsSplitShown: false,
       kingsRevealed: false,
       synthPage: 0,
+      synthSeen: 0,
       finalePage: 0,
       observerSeats: [],
     };
@@ -4029,7 +4040,8 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       if (ctx.phase !== "SYNTHESIS") return { ok: false, reason: `the cards are paged in SYNTHESIS (session is in ${ctx.phase})` };
       const total = synthPageCount(synthesisCards(state, computeAggregate(state)).length);
       const delta = action.type === "teacher:synthPage" ? 1 : -1;
-      return { ok: true, state: { ...state, synthPage: (state.synthPage + delta + total) % total } };
+      const synthPage = (state.synthPage + delta + total) % total;
+      return { ok: true, state: { ...state, synthPage, synthSeen: Math.max(state.synthSeen ?? 0, synthPage) } };
     }
 
     return { ok: false, reason: `unknown action ${action.type}` };
@@ -4259,15 +4271,30 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           ...(state.kingsSplitShown ? { split: agg.kingsSplit } : {}),
           ...(state.kingsRevealed ? { revealCopy: ARGUE_REVEAL_COPY } : {}),
         });
-      case "SYNTHESIS":
+      case "SYNTHESIS": {
+        // The desk used to carry the whole deck the moment SYNTHESIS opened, so
+        // at CARD 1 OF 7 on the projector every pair was already reading card
+        // 7's title off their own screen. That is the exact defect D26 was
+        // written to kill in Lesson 2's reveal, and this is the module finale —
+        // the one stretch of the course where the room is supposed to be
+        // looking up together.
+        //
+        // The desk now carries the cards the board has actually reached, newest
+        // last, so a pair can still scroll back through what has been said and
+        // cannot read ahead of the room.
+        const all = synthesisCards(state, agg);
+        const page = Math.min(Math.max(0, Math.max(state.synthPage, state.synthSeen ?? 0)), Math.max(0, all.length - 1));
         return tag({
           ...base,
-          message: "Look up at the board. Every card is here too — scroll back through them any time.",
+          message: "Look up at the board. Every card you have seen is here too — scroll back through them any time.",
           exitPrompt: EXIT_PROMPT,
-          cards: synthesisCards(state, agg),
+          cards: all.slice(0, page + 1),
+          synthPage: page + 1,
+          synthPageCount: all.length,
           simplifications: SIMPLIFICATIONS,
           sources: SOURCE_NOTES,
         });
+      }
       case "COMPLETE":
         return tag({ ...base, message: completeCopyFor(state.adopted?.how), ruleTitle: completeTitleFor(state.adopted?.how), rule: ruleView(state) });
       default:
@@ -4363,7 +4390,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       synthNextLabel: "Next card",
       synthPrevLabel: "Back a card",
       synthCurrentLabel: `Card ${state.synthPage + 1} of ${synthesisCards(state, agg).length}`,
-      synthPageNote: "One card at a time on the projector. The pairs have the whole set on their own screens.",
+      synthPageNote: "One card at a time on the projector. Each desk gets the cards you have already turned to, so a pair can look back without reading ahead of the room.",
       director: teacherDirector(state, phase),
       watchFor: teacherWatchFor(state, phase),
       // The shell's director layer reads `projectorNow`; the same key name L1

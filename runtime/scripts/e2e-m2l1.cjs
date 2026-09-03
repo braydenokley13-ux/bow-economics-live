@@ -754,7 +754,9 @@ async function assertProjectorPreview(teach, board, code, label) {
   });
   assert.equal(mount.hidden, false, `${label}: the projector preview is not on the console`);
   assert.equal(mount.collapsed, false, `${label}: this run needs the preview open`);
-  assert.equal(mount.src, `/board?code=${code}`, `${label}: the preview is pointed at "${mount.src}"`);
+  // `preview=1` marks this frame as the console's own mirror so the board
+  // liveness indicator does not count it as the projector being watched.
+  assert.equal(mount.src, `/board?code=${code}&preview=1`, `${label}: the preview is pointed at "${mount.src}"`);
   assert.equal(mount.pointerEvents, "none", `${label}: the preview is clickable — a mirror is not a control`);
   assert.ok(mount.width > 200, `${label}: the preview is ${mount.width}px wide, which is not a projector anybody can read`);
   assert.ok(

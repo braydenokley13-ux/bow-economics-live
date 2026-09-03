@@ -223,7 +223,7 @@ export const MARKETS: readonly Market[] = [
     ancillary: 18,
     eventFans: 0.01,
     eventRenewalDollars: 60_000,
-    planSlope: 9.0,
+    planSlope: 3.2,
     premiumSpan: 92,
     capacityNote: "listed basketball capacity 19,812 · 2025-26",
   },
@@ -250,7 +250,7 @@ export const MARKETS: readonly Market[] = [
     ancillary: 12,
     eventFans: 0.016,
     eventRenewalDollars: 30_000,
-    planSlope: 9.0,
+    planSlope: 4.1,
     premiumSpan: 90,
     capacityNote: "modeled seat count · published figures range 16,667-18,119",
   },
@@ -498,33 +498,55 @@ export const RENEWAL_BARGAIN_BONUS = 6;
  * How fast the gouging arm stops getting worse (W6 repair `econ-l1-renewals-dead-arm`).
  *
  * The arm used to be straight: `planSlope` renewal points per dollar over what
- * the night is worth, all the way up, and then a hard clip at the 20-point
- * one-night limit. `planSlope` is 3.6, so the clip arrived about $9 above the
- * reference price — which on three of the five cards is BELOW the night's own
- * cash optimum. Measured on the shipped tuning: on Night 2 in New York the
- * renewals number was the identical -20 at the cash-best $48, at $80, and at
- * $120, a price that draws nobody at all. Forty-three of the fifty-six legal
- * prices returned one number. A pair could not read its own choice out of the
- * second book, and worse, playing the money book WELL scored the same as
- * gouging an empty building — FL3 ("charging high is greedy") reintroduced
- * through the clip on the majority of the lesson's nights.
+ * the night is worth, all the way up, and then a hard clip at the one-night
+ * limit. The clip arrived a few dollars above the reference price — which on
+ * three of the five cards is BELOW the night's own cash optimum. On Night 2 in
+ * New York the renewals number was identical at the cash-best price, at $80 and
+ * at $120, a price that draws nobody at all. A pair could not read its own
+ * choice out of the second book, and worse, playing the money book WELL scored
+ * the same as gouging an empty building — FL3 ("charging high is greedy")
+ * reintroduced through the clip on the majority of the lesson's nights.
  *
- * The arm is now bent instead of clipped: `bend * ln(1 + planSlope * over / bend)`.
+ * The arm is bent instead of clipped: `bend * ln(1 + planSlope * over / bend)`.
  * Two properties earn it. Its slope at `over = 0` is exactly `planSlope`, so the
- * local tradeoff every earlier round tuned is preserved to first order and no
- * market constant moved. And it keeps rising forever, so the 20-point limit is
- * still reached — just out where the cash book has already collapsed, which is
- * the only place a flat penalty is honest ("you have already lost everyone you
- * were going to lose").
+ * local tradeoff every earlier round tuned is preserved to first order. And it
+ * keeps rising forever, so the one-night limit is still reached — just out where
+ * the cash book has already collapsed, which is the only place a flat penalty is
+ * honest ("you have already lost everyone you were going to lose").
  *
- * Chosen by sweep over (bend 8-26) x (planSlope 3.6-9.0) against the existing
- * R4 / R5 / B1 invariants plus two new ones: no card's cash optimum may sit on
- * the floor, and the book must take at least five distinct values across the
- * prices within 15% of the night's best net. `bend` 12 at the unchanged
- * `planSlope` 3.6 passes all of them with the widest margin. Asserted by
- * "R4-5" in the suite.
+ * W6 SECOND PASS — THE BEND DID NOT ACTUALLY CLEAR THE CLIP. The repair above
+ * shipped `bend` 12 with `planSlope` raised 3.6 -> 9.0 and the one-night limit
+ * deepened -20 -> -26, because at a cheap near-field slope the season
+ * cash-maximising policy kept its renewals too and P14 limb (i) — the flat line
+ * must end at least 15 renewal points ahead of the most-cash line — fell to a
+ * margin of 7. Bending the arm and then tripling its slope put the clip back
+ * where it started: measured on those constants, `renewalDelta` returned the
+ * -26 floor at 41 of the 56 legal prices on Nights 1 and 5 and on 50% of the
+ * whole grid. The board's own class line printed median renewals New York 2%,
+ * Memphis 0%. The defect the bend exists to kill was still shipping.
+ *
+ * What the sweep found is that limb (i) does not need a steep New York arm at
+ * all; it needs a steep MEMPHIS one. Memphis prices from a $16 plan against New
+ * York's $24, so a dollar of gouging is half again as large a share of the
+ * ticket there, and the season cash-max policy is the one that notices. Exact
+ * forward DP over (renewals x carry) at each candidate — the same DP P14 runs —
+ * gives, at `bend` 9:
+ *
+ *   New York  planSlope 3.2 : margin 17 (bar 15) · range 37 (bar 30) ·
+ *             renewals cost 7.2% of season cash (bar 4%) · 8 frontier points ·
+ *             floor binds on 4% of the grid
+ *   Memphis   planSlope 4.1 : margin 16 · range 36 · 4.6% · 6 frontier points ·
+ *             floor binds on 12% of the grid
+ *
+ * Both sit mid-plateau, not on a knife edge: New York holds margin >= 15 across
+ * 2.8-3.4 and Memphis across 3.9-4.2. Floor-binding falls from 50% of the grid
+ * to 8%, and every price a desk would reach while actually playing the money
+ * book now returns its own number. Asserted by P14 in
+ * `docs/gauntlet/module-2/stage0/l1-tuning-harness.mjs` and by "R4-5" in the
+ * suite; the deepened -26 one-night limit is kept, because it is what gives the
+ * bent arm somewhere to go.
  */
-export const RENEWAL_GOUGE_BEND = 12;
+export const RENEWAL_GOUGE_BEND = 9;
 
 export const isValidPrice = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v) && v >= PRICE_MIN && v <= PRICE_MAX && (v - PRICE_MIN) % PRICE_STEP === 0;
@@ -1531,8 +1553,15 @@ export function repeatRowFor(
   // see. Read off the same curve the night settled on (D15), never recomputed.
   const rawWantedN1 = Math.round(n1.hidden.base - n1.hidden.sens * n1.price);
   const rawWantedN5 = Math.round(n5.hidden.base - n5.hidden.sens * n5.price);
-  const floored = rawWantedN1 < 0 || rawWantedN5 < 0;
-  const bothFloored = rawWantedN1 < 0 && rawWantedN5 < 0;
+  // W6: the boundary is `<= 0`, not `< 0`. A night whose raw demand lands on
+  // EXACTLY zero drew nobody, same as one that landed below it, but under `< 0`
+  // it counted as readable — so a desk with 0 then 0 was told a crowd hit zero
+  // "on one of the two nights". The predicate is "did anybody come", and it has
+  // to match what the room saw.
+  const flooredN1 = rawWantedN1 <= 0;
+  const flooredN5 = rawWantedN5 <= 0;
+  const floored = flooredN1 || flooredN5;
+  const bothFloored = flooredN1 && flooredN5;
   const samePrice = n1.price === n5.price;
 
   const channels: { id: "renewals" | "spend" | "price"; size: number }[] = [

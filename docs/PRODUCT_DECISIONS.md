@@ -809,3 +809,51 @@ the founder must not be a hidden runtime dependency for either band.
 - **Owner:** Lead integrator
 - **Evidence:** `e2e-away.cjs` (a genuinely offline device is marked quiet on the console);
   the undo sentence is one shared constant, so the six branches cannot drift apart again.
+
+## D46. Lesson 1's second book reads differently at every price worth taking
+
+The W6 repair `econ-l1-renewals-dead-arm` bent the renewals gouging arm instead
+of clipping it, and then paid for the two-book season claim by tripling the
+near-field slope (`planSlope` 3.6 -> 9.0) and deepening the one-night limit
+(-20 -> -26). Measured at those shipped constants, `renewalDelta` returned the
+-26 floor at **41 of the 56 legal prices on Nights 1 and 5, and on 50% of the
+whole price grid**. Three quarters of the dial returned one number; the board's
+own class line printed median renewals New York 2%, Memphis 0%. The defect the
+bend existed to kill was still shipping — a pair could not read its own choice
+out of the second book, and gouging past about $48 was free.
+
+The season-scale claim (harness P14 limb i: the never-move-the-dial line must
+end at least 15 renewal points ahead of the most-cash line) does not need a
+steep New York arm. It needs a steep **Memphis** one: Memphis prices off a $16
+plan against New York's $24, so the same dollar of gouging is half again as
+large a share of the ticket, and the season cash-maximising policy is what
+notices. `planSlope` is now per-market — New York 3.2, Memphis 4.1 — at
+`RENEWAL_GOUGE_BEND` 9, chosen by exact forward DP over (renewals x carry), the
+same DP P14 runs. Both markets clear all four P14 bars with headroom (margin
+17/16 against 15; range 37/36 against 30; renewals cost 7.2%/4.6% of season cash
+against 4%), both sit mid-plateau rather than on a knife edge, and floor-binding
+falls from 50% of the grid to 8%. Where the limit still binds it binds only
+above three times the night's cash-best price, in a building that already draws
+nobody — which is the only place a flat penalty is honest.
+
+The suite property that guarded this was asserting the opposite of what the
+lesson wants ("$120 still reaches the one-night limit on every gougeable card")
+and passed happily on the broken constants. It now asserts what the desk is
+owed: the arm bites monotonically all the way up, the limit never binds at a
+price where people are still walking in, and the limit is still reachable
+somewhere so it is not dead code.
+
+Also repaired in the same pass: `repeatRowFor`'s floor predicate was `raw < 0`,
+so a night whose raw demand landed on exactly zero counted as readable. A desk
+that drew 0 then 0 was told a crowd hit zero "on one of the two nights". The
+predicate is "did anybody come" — `<= 0` — in the product and in the harness.
+
+## D47. The finale deck a desk holds is a high-water mark, not the current page
+
+D26's rule is that a desk never reads ahead of the projector, and Lesson 3's
+finale now hands each desk the cards the board has reached. That has to be the
+furthest card the projector has EVER turned to (`synthSeen`), not `synthPage`:
+the teacher's own Back button, and the forward wrap past the last card, would
+otherwise take cards off thirty screens in the middle of the discussion those
+cards are for. Reading ahead is the thing forbidden; looking back is the thing
+the desk copy promises.

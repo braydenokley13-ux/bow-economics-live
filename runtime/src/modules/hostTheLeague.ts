@@ -3753,8 +3753,29 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             message: "Nothing to click. Everything to argue about.",
           };
 
-        case "SYNTHESIS":
-          return { phase, seated: true, ...identity, books: booksFor(club), message: "Look up at the board.", exitPrompt: EXIT_PROMPT };
+        case "SYNTHESIS": {
+          // The desk used to be one frozen sentence — "Look up at the board." —
+          // byte-identical through every card the teacher turned, for the whole
+          // last stretch of the period. It now mirrors the card the projector is
+          // on, page for page, exactly as M2 L1 does: same registered title, same
+          // computed body, nothing seat-private (this is the public board card).
+          const cards = synthesisCards(state, computeAggregate(state));
+          const pages = synthPageCount(cards.length);
+          const page = Math.min(Math.max(0, state.synthPage ?? 0), pages - 1);
+          const card = cards[page] ?? null;
+          return {
+            phase,
+            seated: true,
+            ...identity,
+            books: booksFor(club),
+            message: "Look up at the board.",
+            exitPrompt: EXIT_PROMPT,
+            synthPage: page + 1,
+            synthPageCount: pages,
+            synthCardTitle: card?.title ?? "",
+            synthCardBody: card?.body ?? "",
+          };
+        }
 
         case "COMPLETE":
           return { phase, seated: true, ...identity, books: booksFor(club), message: COMPLETE_COPY, exitPrompt: EXIT_PROMPT };

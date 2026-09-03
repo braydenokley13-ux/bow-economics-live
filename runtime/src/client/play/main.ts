@@ -4115,15 +4115,34 @@ function renderHostLeague(s: SessionInfo, view: Record<string, unknown>): void {
           <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["prompt"] ?? ""))}</p>
         </div>`;
       return;
-    case "SYNTHESIS":
+    case "SYNTHESIS": {
+      // The desk used to be one frozen banner for the whole phase — the same
+      // pixels through every card the teacher turned. It now mirrors the card
+      // the projector is on, page for page, exactly as M2 L1 does.
+      const synthTitle = String(view["synthCardTitle"] ?? "");
+      const synthBody = String(view["synthCardBody"] ?? "");
+      const synthPage = Number(view["synthPage"] ?? 0);
+      const synthPages = Number(view["synthPageCount"] ?? 0);
       body.innerHTML = `
         ${hlDeskHeader(view)}
         <div class="banner">${escapeHtml(String(view["message"] ?? "Look up at the board."))}</div>
+        ${
+          synthTitle
+            ? `<div class="panel" style="padding:16px; margin-top:12px;">
+                 <div style="display:flex; align-items:baseline; gap:10px;">
+                   <span class="eyebrow" style="font-size:12px;">${escapeHtml(synthTitle)}</span>
+                   ${synthPages > 1 ? `<span style="margin-left:auto; font-size:11px; color:var(--ink-secondary);">${synthPage} / ${synthPages}</span>` : ""}
+                 </div>
+                 <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(synthBody)}</p>
+               </div>`
+            : ""
+        }
         <div class="panel" style="padding:16px; margin-top:12px;">
           <div class="eyebrow" style="font-size:12px;">Talk with your partner</div>
           <p style="margin:8px 0 0; font-size:15px; color:var(--ink-primary);">${escapeHtml(String(view["exitPrompt"] ?? ""))}</p>
         </div>`;
       return;
+    }
     case "COMPLETE":
       body.innerHTML = `${hlDeskHeader(view)}<div class="banner">${escapeHtml(String(view["message"] ?? ""))}</div>`;
       return;

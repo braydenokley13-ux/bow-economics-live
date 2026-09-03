@@ -2141,3 +2141,28 @@ test("the desk strip names every live club and stays teacher-only", () => {
   }
   assert.equal(JSON.stringify(hostTheLeagueModule.studentView(one, "seat-1", "PLAY")).includes("deskStrip"), false);
 });
+
+test("the desk mirrors the synthesis card the projector is on, and changes with every press", () => {
+  // The desk used to be one frozen sentence for the whole of SYNTHESIS —
+  // byte-identical through every card the teacher turned, in the stretch of the
+  // period where the economics is finally named out loud.
+  let state = fullSession(6);
+  const seat = state.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const seen = new Set<string>();
+  const total = synthesisCards(state, computeAggregate(state)).length;
+  assert.ok(total > 1, "guard: the fixture must produce a multi-card deck");
+  for (let i = 0; i < total; i += 1) {
+    const student = hostTheLeagueModule.studentView(state, seat, "SYNTHESIS") as Record<string, unknown>;
+    const board = hostTheLeagueModule.boardView(state, "SYNTHESIS") as Record<string, unknown>;
+    const title = String(student["synthCardTitle"] ?? "");
+    assert.ok(title.length > 0, `the desk showed no card at page ${i + 1}`);
+    const onBoard = JSON.stringify(board["cards"] ?? board["card"] ?? "");
+    assert.ok(onBoard.includes(title), `the desk showed "${title}" while the projector showed something else`);
+    assert.equal(String(student["synthPage"]), String(i + 1));
+    seen.add(title);
+    const next = hostTheLeagueModule.reduce(state, { type: "teacher:synthPage" }, { phase: "SYNTHESIS", seatId: "teacher", seatIds: [], now: 0 });
+    assert.ok(next.ok, next.ok ? "" : next.reason);
+    state = next.state;
+  }
+  assert.equal(seen.size, total, "the desk repeated a card instead of following the board");
+});
