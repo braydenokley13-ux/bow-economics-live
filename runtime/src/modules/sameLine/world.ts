@@ -283,7 +283,21 @@ export const TOOL = Object.fromEntries(TOOLS.map((t) => [t.id, t])) as Record<To
 
 /** The empty-roster backstop: you cannot manufacture room by fielding nobody. */
 export const ROSTER = {
+  /**
+   * The season limit on standard contracts. Enforced at settlement.
+   */
   max: 15,
+  /**
+   * The OFFSEASON limit, which is the one that binds during a signing window.
+   *
+   * This distinction is not pedantry, and getting it wrong froze a seat solid:
+   * a club carrying 16 filled roster spots in September is entirely normal and
+   * is not in breach of anything, because clubs may carry up to 21 until the
+   * season starts. Modelling the window against the 15-man season limit made
+   * that club unable to make a single legal signing, which the sweep caught as
+   * a seat with no game.
+   */
+  windowMax: 21,
   min: 14,
   /** Below this many players, each empty slot is charged against the cap. */
   backstopAt: 12,
@@ -310,7 +324,7 @@ export type ClubId =
   | "boston"
   | "sacramento"
   | "new-york"
-  | "denver";
+  | "minnesota";
 
 export type JobRole = "BIG" | "WING" | "GUARD";
 
@@ -462,7 +476,15 @@ export const CLUBS: readonly Club[] = [
     committed: fact(218_412_232, "2026-09-03", "salaryswish.com/teams/knicks", "cap-database"),
     deadMoney: fact(0, "2026-09-03", "salaryswish.com/teams/knicks", "cap-database"),
     contracts: fact(13, "2026-09-03", "salaryswish.com/teams/knicks", "cap-database"),
-    jobs: ["BIG", "GUARD"],
+    // THREE holes, and the tools to close two. That asymmetry is the seat.
+    // A club past the first apron is a capped-out contender with a thin bench,
+    // which is exactly why it has more openings than a rebuilding club — and
+    // the league has just taken away the one tool big enough to fix them. With
+    // two holes and an always-available minimum market the choice evaporated:
+    // the sweep found a single plan dominating everything, because there was
+    // nothing to leave undone. With three, which hole you live with is the
+    // decision.
+    jobs: ["BIG", "GUARD", "WING"],
     situation: "You are past the first apron. The league has already taken your biggest tool away, and you are in the biggest market in the sport.",
     colour: fact(
       "Four New York players are paid roughly $171M between them, and every one of those four contracts contains a player option.",
@@ -472,21 +494,46 @@ export const CLUBS: readonly Club[] = [
     ),
   },
   {
-    id: "denver",
-    name: "Denver",
-    city: "Denver",
-    committed: fact(227_422_947, "2026-09-03", "salaryswish.com/teams/nuggets", "cap-database"),
-    deadMoney: fact(2_000_000, "2026-09-03", "salaryswish.com/teams/nuggets", "cap-database"),
-    contracts: fact(14, "2026-09-03", "salaryswish.com/teams/nuggets", "cap-database"),
-    jobs: ["WING", "GUARD"],
+    id: "minnesota",
+    name: "Minnesota",
+    city: "Minnesota",
+    committed: fact(214_930_955, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
+    deadMoney: fact(2_055_000, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
+    contracts: fact(13, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
+    jobs: ["WING", "GUARD", "BIG"],
     situation:
-      "You are past the last line. Almost every way of adding a player is closed to you — except keeping the players you already have.",
+      "You are past the first apron too — a small market carrying a big-market payroll, with the same tools taken away.",
     colour: fact(
-      "Denver's best player holds a player option, which means he, not the club, decides whether the contract continues.",
+      "Minnesota combined salaries in a trade, and doing that drew its own wall for the rest of the year.",
       "2026-09-03",
-      "salaryswish.com/teams/nuggets",
+      "salaryswish.com/teams/timberwolves",
       "cap-database",
     ),
+  },
+] as const;
+
+/**
+ * DENVER — shown to the class, never handed to a desk.
+ *
+ * The sweep demoted this seat, and the demotion is the honest outcome rather
+ * than a retreat. Past the second apron a real club may sign minimum contracts
+ * and keep its own free agents, and nothing else — so with no free agent of its
+ * own in this window, Denver's entire reachable action space is one price. The
+ * harness measured exactly one distinct reachable price and one outcome vector,
+ * which is BC-14's definition of a seat with no game.
+ *
+ * BC-14 permits reshaping such a seat or demoting it to a projector case, and a
+ * projector case is strictly the better lesson: the room LOOKS at a club that
+ * cannot act, for one beat, instead of one pair spending twenty minutes being
+ * unable to act. The second apron is more legible from outside it than inside.
+ */
+export const PROJECTOR_CASES = [
+  {
+    id: "denver",
+    name: "Denver",
+    committed: fact(227_422_947, "2026-09-03", "salaryswish.com/teams/nuggets", "cap-database"),
+    line: "past the second apron",
+    what: "Minimum contracts, and keeping its own players. That is the whole list.",
   },
 ] as const;
 
@@ -517,8 +564,31 @@ export type FreeAgent = {
   readonly ask: Sourced<number>;
   /** The real date the contract was agreed, printed on the card. */
   readonly signedOn: string;
+  /**
+   * True when the real deal was a stated veteran minimum.
+   *
+   * It matters mechanically, not decoratively: a minimum contract charges the
+   * club the team-cost cap ($2,449,421) while the player is paid the full
+   * minimum for his service, because the league reimburses the difference. So a
+   * minimum-scale player is signable by ANY club, at ANY point past ANY line,
+   * for less than he is paid. That is the real rule, and it is why no club in
+   * this lesson is ever completely stuck.
+   */
+  readonly minimumScale: boolean;
   /** Who really signed it, printed on the card so the staging is never implied away. */
   readonly reallySignedWith: string;
+  /**
+   * A generic minimum-scale signing rather than a named person.
+   *
+   * The real minimum market is DEEP: there is always somebody available at the
+   * minimum, which is precisely why a club past the last line is constrained
+   * rather than paralysed. Modelling the board as seven named people and
+   * nothing else made the most constrained seat in the room unable to sign
+   * anyone at all, because every named minimum player was outbid by a club with
+   * an exception. These entries are the depth, and they are never contested:
+   * one desk taking one does not remove it from another.
+   */
+  readonly generic?: boolean;
   /** The real term of the deal, in years. Drives how long a job stays covered. */
   readonly years: number;
   /** One plain-language strength a person who has never watched a game can act on. */
@@ -544,7 +614,125 @@ export type FreeAgent = {
  * implying a free agency that never existed — which is the defect an
  * independent Sports Reality review found in all four architecture candidates.
  */
-export const BOARD: readonly FreeAgent[] = [];
+export const BOARD: readonly FreeAgent[] = [
+  {
+    id: "watford",
+    name: "Trendon Watford",
+    role: "WING",
+    ask: fact(2_900_000, "2026-08-17", "reported 1 year, $2,900,000 with New Orleans, a stated veteran minimum", "reporting"),
+    signedOn: "2026-08-17",
+    reallySignedWith: "New Orleans",
+    years: 1,
+    minimumScale: true,
+    strength: "Can play several positions, so he fits whatever hole you have.",
+    risk: "One year only. Next summer you are looking for this player again.",
+    incumbent: null,
+  },
+  {
+    id: "vucevic",
+    name: "Nikola Vucevic",
+    role: "BIG",
+    ask: fact(3_900_000, "2026-07-02", "reported 1 year, $3,900,000 with Orlando, a stated veteran minimum", "reporting"),
+    signedOn: "2026-07-02",
+    reallySignedWith: "Orlando",
+    years: 1,
+    minimumScale: true,
+    strength: "A big man who scores, available for the least money the rules allow.",
+    risk: "He is 36 in this season, and the deal is only one year.",
+    incumbent: "boston",
+  },
+  {
+    id: "payton",
+    name: "Gary Payton II",
+    role: "GUARD",
+    ask: fact(3_900_000, "2026-08-01", "reported 1 year, $3,900,000 re-signing with Golden State; stated veteran minimum of $3,876,529", "reporting"),
+    signedOn: "2026-08-01",
+    reallySignedWith: "Golden State",
+    years: 1,
+    minimumScale: true,
+    strength: "A guard who takes the other team's best guard, for the least money the rules allow.",
+    risk: "He does not score much, and the deal is one year.",
+    incumbent: null,
+  },
+  {
+    id: "horford",
+    name: "Al Horford",
+    role: "BIG",
+    ask: fact(7_000_000, "2026-07-06", "reported 2 years, $14,000,000 re-signing with Golden State", "reporting"),
+    signedOn: "2026-07-06",
+    reallySignedWith: "Golden State",
+    years: 2,
+    minimumScale: false,
+    strength: "A big man who has played in the biggest games there are, and the deal runs two years.",
+    risk: "He is 40 in this season, and two years is a long time to promise a 40-year-old.",
+    incumbent: null,
+  },
+  {
+    id: "nance",
+    name: "Larry Nance Jr.",
+    role: "BIG",
+    ask: fact(4_000_000, "2026-07-08", "reported 1 year, $4,000,000 with Indiana", "reporting"),
+    signedOn: "2026-07-08",
+    reallySignedWith: "Indiana",
+    years: 1,
+    minimumScale: false,
+    strength: "A big man who does the unglamorous work, cheap.",
+    risk: "He has missed long stretches with injuries before.",
+    incumbent: null,
+  },
+  {
+    id: "simons",
+    name: "Anfernee Simons",
+    role: "GUARD",
+    ask: fact(6_150_000, "2026-07-06", "reported 2 years, $12,300,000 with Philadelphia", "reporting"),
+    signedOn: "2026-07-06",
+    reallySignedWith: "Philadelphia",
+    years: 2,
+    minimumScale: false,
+    strength: "A guard who can score in a hurry when the offence stalls.",
+    risk: "His teams have not defended well with him on the floor.",
+    incumbent: "boston",
+  },
+  {
+    id: "oubre",
+    name: "Kelly Oubre Jr.",
+    role: "WING",
+    ask: fact(8_500_000, "2026-07-07", "reported 2 years, $17,000,000 with Indiana", "reporting"),
+    signedOn: "2026-07-07",
+    reallySignedWith: "Indiana",
+    years: 2,
+    minimumScale: false,
+    strength: "A starting wing at a price well below what starting wings usually cost.",
+    risk: "He takes hard shots, and some nights they do not go in.",
+    incumbent: null,
+  },
+  {
+    id: "nurkic",
+    name: "Jusuf Nurkic",
+    role: "BIG",
+    ask: fact(11_000_000, "2026-07-09", "reported 2 years, $22,000,000 re-signing with Utah", "reporting"),
+    signedOn: "2026-07-09",
+    reallySignedWith: "Utah",
+    years: 2,
+    minimumScale: false,
+    strength: "A large, experienced centre who rebounds and passes.",
+    risk: "He is slow, and quick teams can play him off the floor.",
+    incumbent: null,
+  },
+  {
+    id: "grimes",
+    name: "Quentin Grimes",
+    role: "GUARD",
+    ask: fact(15_000_000, "2026-07-15", "reported 4 years, $60,000,000 with the LA Lakers", "reporting"),
+    signedOn: "2026-07-15",
+    reallySignedWith: "LA Lakers",
+    years: 4,
+    minimumScale: false,
+    strength: "A young starting guard, and the deal runs four years — the job stays shut.",
+    risk: "The most expensive player here. Reaching him takes your biggest tool, and that draws a wall.",
+    incumbent: null,
+  },
+] as const;
 
 /* ------------------------------------------------ registered simplifications -- */
 
@@ -607,6 +795,33 @@ export const SIMPLIFICATIONS: readonly Simplification[] = [
     preserves: "Every price is a real price a real club really paid. Nothing about what a player costs is invented.",
   },
   {
+    id: "S6-term-from-tool",
+    real:
+      "The length of a contract is negotiated between the club and the player, inside a maximum the " +
+      "signing tool sets: one year at the minimum, two with the taxpayer mid-level, four with the " +
+      "non-taxpayer mid-level, five to re-sign your own player.",
+    bow: "A signing always runs for the tool's maximum. The club picks the tool and the price; the term follows the tool.",
+    why:
+      "One fewer control on a screen a ten-year-old has to read, and the economics is not in the negotiation — " +
+      "it is in the fact that a longer commitment costs a bigger tool. Letting a student also pick a term " +
+      "would add a third variable to a decision the pedagogy budget allows two.",
+    misconceptionRisk:
+      "A student may believe contract length is fixed by rule rather than agreed. Mitigated in synthesis, " +
+      "where the teacher names it: the rules set the ceiling, the people set the number.",
+    preserves:
+      "That covering a job for longer costs a bigger tool, and that the bigger tool is exactly what the lines take away.",
+  },
+  {
+    id: "S7-real-term-not-quoted",
+    real: "Each player on the board really signed a deal of a particular length, printed on his card.",
+    bow: "The term he signs for HERE is whatever the club's tool allows, which may be longer or shorter than his real deal.",
+    why: "See S6: the term has to be the tool's for the tool to be a decision.",
+    misconceptionRisk:
+      "A student may believe the real player really signed for the years shown in this room. Mitigated by printing " +
+      "the real deal's own length and date on the card, beside the term this room is offering.",
+    preserves: "Every PRICE on the board is a real price a real club really paid.",
+  },
+  {
     id: "S5-future-lines",
     real: "The NBA has not announced cap or apron figures for seasons beyond 2026-27.",
     bow: "Where a later season's line is needed, the class works it out from the real rule — the cap may never fall, and may never rise by more than one tenth in a year — and the result is labelled as the room's own arithmetic.",
@@ -616,3 +831,39 @@ export const SIMPLIFICATIONS: readonly Simplification[] = [
     preserves: "That the line moves, that its movement is itself governed by a rule, and that the rule is knowable.",
   },
 ];
+
+/**
+ * THE MINIMUM MARKET — the depth behind the seven named cards.
+ *
+ * Not decoration and not filler. A club past the second apron may sign nobody
+ * except at the minimum, and if the only minimum-scale players in the world
+ * were two named men that a richer club could outbid, that club would have no
+ * game at all — which is exactly what the sweep found before this existed.
+ * In the real league there is always someone at the minimum, so there is here.
+ *
+ * They carry no names, because inventing a person would be the one thing this
+ * module refuses to do, and no risk/strength copy that pretends to scouting.
+ * What they are is honest: a body, at a role, at the price the rules set.
+ */
+export const MINIMUM_MARKET: readonly FreeAgent[] = (["BIG", "WING", "GUARD"] as const).map((role) => ({
+  id: `min-${role.toLowerCase()}`,
+  name: `A veteran ${role.toLowerCase()} on a minimum deal`,
+  role,
+  ask: fact(
+    2_449_421,
+    "2026-07-01",
+    "hoopsrumors.com 2026-27 minimum salaries — the team-cost cap on a 3+ year veteran minimum",
+    "cap-database",
+  ),
+  signedOn: "",
+  reallySignedWith: "",
+  years: 1,
+  minimumScale: true,
+  generic: true,
+  strength: "Available to every club, however much it has already spent.",
+  risk: "One year, and he is the same player every other club could have had.",
+  incumbent: null,
+}));
+
+/** The whole market: the seven real, dated contracts plus the minimum depth behind them. */
+export const MARKET: readonly FreeAgent[] = [...BOARD, ...MINIMUM_MARKET];

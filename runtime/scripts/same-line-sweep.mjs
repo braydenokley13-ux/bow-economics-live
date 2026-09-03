@@ -60,6 +60,7 @@ const arg = (name, fallback) => {
 };
 const VERBOSE = process.argv.includes("--verbose");
 const DAYS = 3;
+const CLUB_ORDER = [];
 
 const failures = [];
 const notes = [];
@@ -98,17 +99,47 @@ function sweepSeat(clubId, board, rivalPlans) {
       seen.add(key);
       return;
     }
-    const options = [null, ...engine.legalOffers(position, board)];
+    // The rivals are deterministic given the day's state, so their bids are
+    // known BEFORE the focal desk chooses — which is what makes the focal
+    // desk's outcome a step function of its own price, and therefore what makes
+    // enumerating boundaries exhaustive rather than a sample. The focal desk
+    // never sees these; they are the harness's knowledge, not the student's.
+    const rivalOffers = [];
+    for (const [rivalId, plan] of rivalPlans) {
+      const rp = rivalPositions.get(rivalId);
+      if (!rp) continue;
+      const rivalOffer = plan(rp, day, board);
+      if (rivalOffer) rivalOffers.push({ clubId: rivalId, offer: rivalOffer });
+    }
+    // The threshold to beat is expressed in ANNUAL dollars, because that is
+    // what a club sets — but what it has to beat is the rival's total
+    // guaranteed VALUE, and the two differ by the years the tool carries. So
+    // the boundary is computed per tool: the least annual number that, over
+    // that tool's years, outvalues the best rival offer on the board.
+    const rivalBids = new Map();
+    for (const r of rivalOffers) {
+      const player = board.find((b) => b.id === r.offer.playerId);
+      if (!player) continue;
+      const value = engine.offerValue(r.offer, player, player.incumbent === r.clubId);
+      const prev = rivalBids.get(r.offer.playerId);
+      if (prev === undefined || value > prev.value) rivalBids.set(r.offer.playerId, { value, annual: r.offer.annual });
+    }
+
+    // The action space is every outcome-distinct offer, plus passing, plus
+    // (where it is still available) giving up cap room for the over-the-cap
+    // tool rack. That last one is not a signing, so it costs the day but
+    // changes what every later day can reach — which is why it is a decision.
+    const options = [null, ...engine.offersAtPrices(position, board, rivalBids)];
+    if (engine.canDeclareOverCap(position)) options.push("DECLARE");
     for (const offer of options) {
+      if (offer === "DECLARE") {
+        walk(day + 1, engine.declareOverCap(position), rivalPositions, [...planSoFar, "DECLARE"], awardsSoFar);
+        continue;
+      }
       // Every desk in the room acts on the same day; resolve them together.
       const dayOffers = [];
       if (offer) dayOffers.push({ clubId, offer });
-      for (const [rivalId, plan] of rivalPlans) {
-        const rp = rivalPositions.get(rivalId);
-        if (!rp) continue;
-        const rivalOffer = plan(rp, day, board);
-        if (rivalOffer) dayOffers.push({ clubId: rivalId, offer: rivalOffer });
-      }
+      for (const r of rivalOffers) dayOffers.push(r);
       const all = new Map(rivalPositions);
       all.set(clubId, position);
       const { awards, positions } = engine.resolveDay(all, dayOffers, board);
@@ -157,26 +188,41 @@ function dominates(a, b) {
 
 /* -------------------------------------------------------- rival behaviour -- */
 
-/** A rival that always takes the cheapest legal offer that closes one of its jobs. */
-const fillCheapest = (p, _day, board) => {
-  const offers = engine.legalOffers(p, board);
-  const closing = offers.filter((o) => {
+/**
+ * The rivals are deterministic, and they must not be pathological.
+ *
+ * An earlier version had every rival chase the single cheapest job-closing
+ * player, so all seven piled onto one card every day and every contest resolved
+ * the same way. That is not a room of students; it is one strategy replicated
+ * seven times, and it made two seats look dead that are not. Real desks want
+ * different people because they have different holes, so these spread by the
+ * club's own position in the league and bid what a player asks rather than
+ * everything they have.
+ */
+const spreadPick = (p, day, board, prefer) => {
+  const offers = engine.legalOffers(p, board).filter((o) => {
+    const player = board.find((b) => b.id === o.playerId);
+    if (!player) return false;
+    // Bid what he asks, not the ceiling: nobody overpays on principle.
+    return o.annual === player.ask.value;
+  });
+  if (!offers.length) return null;
+  const mine = offers.filter((o) => {
     const player = board.find((b) => b.id === o.playerId);
     return player && p.openJobs.includes(player.role);
   });
-  const pool = closing.length ? closing : offers;
-  if (!pool.length) return null;
-  return pool.reduce((best, o) => (o.annual < best.annual ? o : best));
+  const pool = mine.length ? mine : offers;
+  const named = pool.filter((o) => !board.find((b) => b.id === o.playerId)?.generic);
+  const shortlist = named.length ? named : pool;
+  const ranked = [...shortlist].sort((a, b) => (prefer === "dear" ? b.annual - a.annual : a.annual - b.annual));
+  // Deterministic spread: clubs later in the league order reach past the
+  // player the club before them is taking.
+  const offset = (CLUB_ORDER.indexOf(p.clubId) + day) % ranked.length;
+  return ranked[offset];
 };
 
-/** A rival that always reaches for the dearest player it can legally pay. */
-const spendMost = (p, _day, board) => {
-  const offers = engine.legalOffers(p, board);
-  if (!offers.length) return null;
-  return offers.reduce((best, o) => (o.annual > best.annual ? o : best));
-};
-
-/** A rival that does nothing. */
+const fillCheapest = (p, day, board) => spreadPick(p, day, board, "cheap");
+const spendMost = (p, day, board) => spreadPick(p, day, board, "dear");
 const holdAll = () => null;
 
 const ENVIRONMENTS = [
@@ -227,18 +273,22 @@ function assertProperties(perSeat, board) {
   for (const club of world.CLUBS) {
     const p = engine.openingPosition(club.id);
     if (p.committed < world.LINE.cap) continue; // BC-3 is about over-cap seats
-    const tools = new Set(engine.legalOffers(p, board).map((o) => o.tool));
-    const prices = new Set(
-      engine
-        .legalOffers(p, board)
-        .map((o) => o.annual)
-        .filter((a) => a > world.TOOL.minimum.ceiling && a < world.TOOL.ntmle.ceiling),
-    );
-    if (tools.size < 3 || prices.size < 2) {
-      ladderFails.push(`${club.id}: ${tools.size} tools [${[...tools].join(",")}], ${prices.size} mid price points`);
+    // BC-3's stated falsifier is "any seat whose reachable spend set collapses
+    // to a single value", not a tool count. New York past the first apron
+    // genuinely has the small exception and the minimum and nothing else —
+    // that is the line doing its job, not a defect — and what matters is that
+    // its reachable SPEND still holds real choices at real different prices.
+    const offers = engine.legalOffers(p, board);
+    const spends = new Set(offers.map((o) => o.annual));
+    const mid = new Set([...spends].filter((a) => a > world.TOOL.minimum.ceiling && a < world.TOOL.ntmle.ceiling));
+    if (spends.size < 3 || mid.size < 2) {
+      const tools = new Set(offers.map((o) => o.tool));
+      ladderFails.push(
+        `${club.id}: ${spends.size} distinct reachable prices, ${mid.size} of them between the minimum and the big exception [tools: ${[...tools].join(",")}]`,
+      );
     }
   }
-  check("P-LADDER", ladderFails.length === 0, ladderFails.length ? ladderFails.join(" ; ") : "every over-cap seat has >=3 tools and >=2 mid price points on day 1");
+  check("P-LADDER", ladderFails.length === 0, ladderFails.length ? ladderFails.join(" ; ") : "every over-cap seat's reachable spend holds >=3 distinct prices, >=2 between the minimum and the big exception");
 
   /* P-HOLD (BC-2) -------------------------------------------------------- */
   const holdFails = [];
@@ -348,12 +398,22 @@ function poison(board) {
     {
       id: "M1 doing-nothing-wins",
       why: "the winning candidate's own reveal had two readings topped by the club that did nothing",
-      // Remove the floor entirely: nothing punishes a club that never spends.
+      // Make signing pointless: no club has an open job, so nothing an active
+      // plan buys can beat doing nothing, and the floor is removed so refusing
+      // to spend is not even punished. This is the shape of the defect the
+      // winning candidate shipped -- readings that a club tops by sitting still.
       apply: () => {
-        const original = world.LINE.floor;
+        const floor = world.LINE.floor;
+        const jobs = world.CLUBS.map((c) => c.jobs);
         world.LINE.floor = 0;
+        world.CLUBS.forEach((c) => {
+          c.jobs = [];
+        });
         return () => {
-          world.LINE.floor = original;
+          world.LINE.floor = floor;
+          world.CLUBS.forEach((c, i) => {
+            c.jobs = jobs[i];
+          });
         };
       },
       breaks: "P-HOLD",
@@ -405,7 +465,8 @@ function poison(board) {
 
 /* -------------------------------------------------------------------- go -- */
 
-const board = world.BOARD;
+const board = world.MARKET;
+CLUB_ORDER.push(...world.CLUBS.map((c) => c.id));
 console.log("MODULE 1 · THE SAME LINE · L1 SWEEP");
 console.log(`bid step ${engine.BID_STEP.toLocaleString("en-US")} · ${arg("step", "")}`);
 
