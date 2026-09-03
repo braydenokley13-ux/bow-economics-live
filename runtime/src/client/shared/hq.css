@@ -1,0 +1,649 @@
+/*
+ * THE FRONT OFFICE — the persistent chrome a desk returns to every lesson.
+ *
+ * This file styles the FRAME only: the rail, the franchise band, the act rail,
+ * the attention triad, the cap sheet, and the panel grammar every lesson's own
+ * panels sit inside. It knows nothing about any lesson's state, which is what
+ * lets one shell carry three lessons without extracting a shared engine from
+ * the economics (CLAUDE.md §12).
+ *
+ * Register per design/VISUAL_IDENTITY.md and the reading in
+ * docs/gauntlet/module-1/rebuild/VISUAL_TARGET_2.md: near-black ground, panels
+ * lifted by a hairline rather than a shadow, violet for the live and the
+ * primary, gold reserved for the COMMITTED and the climactic, tabular numerals
+ * on every dollar figure.
+ */
+
+.hq {
+  --hq-rail: 208px;
+  --hq-side: 296px;
+  --hq-hair: rgba(246, 244, 236, 0.09);
+  --hq-hair-strong: rgba(246, 244, 236, 0.16);
+  --hq-lift: rgba(246, 244, 236, 0.028);
+  --hq-club: var(--accent-violet);
+  --hq-club-dim: rgba(139, 124, 240, 0.16);
+
+  display: grid;
+  grid-template-columns: var(--hq-rail) minmax(0, 1fr) var(--hq-side);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "rail band  band"
+    "rail main  side";
+  min-height: 100vh;
+  background: var(--surface-void);
+  color: var(--ink-primary);
+  position: relative;
+  isolation: isolate;
+}
+
+/* The environment: one dim original arena wash behind everything, never a
+   photograph and never content. It exists so the screen has a floor and a
+   horizon rather than being a flat sheet of panels. */
+.hq::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(1200px 620px at 14% 108%, rgba(244, 185, 66, 0.10), transparent 62%),
+    radial-gradient(980px 540px at 88% -8%, var(--hq-club-dim), transparent 66%),
+    linear-gradient(180deg, #0b0e15 0%, var(--surface-void) 44%, #07090e 100%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ rail -- */
+
+.hq-rail {
+  grid-area: rail;
+  border-right: 1px solid var(--hq-hair);
+  background: linear-gradient(180deg, rgba(19, 24, 34, 0.86), rgba(10, 13, 18, 0.94));
+  display: flex;
+  flex-direction: column;
+  padding: 18px 0 14px;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.hq-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px 18px;
+}
+.hq-brand-word {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.10em;
+  line-height: 0.94;
+}
+.hq-brand-word small {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 8px;
+  letter-spacing: 0.30em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.hq-rail-label {
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  font-weight: 700;
+  color: var(--ink-muted);
+  padding: 12px 16px 8px;
+}
+
+.hq-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.hq-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 16px;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--ink-secondary);
+  border-left: 2px solid transparent;
+  background: none;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-ui);
+}
+.hq-nav-item .hq-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+  opacity: 0.45;
+  flex: none;
+}
+.hq-nav-item[data-state="live"] {
+  color: var(--ink-primary);
+  border-left-color: var(--hq-club);
+  background: linear-gradient(90deg, var(--hq-club-dim), transparent 78%);
+}
+.hq-nav-item[data-state="live"] .hq-dot {
+  background: var(--hq-club);
+  opacity: 1;
+  box-shadow: 0 0 0 3px rgba(139, 124, 240, 0.18);
+}
+.hq-nav-item[data-state="locked"] {
+  color: var(--ink-muted);
+  opacity: 0.5;
+}
+.hq-nav-count {
+  margin-left: auto;
+  font-family: var(--font-number);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+.hq-rail-foot {
+  margin-top: auto;
+  padding: 14px 16px 0;
+  border-top: 1px solid var(--hq-hair);
+}
+
+/* ----------------------------------------------------------- club crest -- */
+/* Original BOW geometry, never a league or club mark. The shape is one
+   rounded shield; the identity is carried by a palette derived from the club
+   id, so eight clubs read apart at a glance without borrowing any branding. */
+
+.hq-crest {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 8px 8px 12px 12px;
+  font-family: var(--font-display);
+  color: #fff;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* ------------------------------------------------------------ club band -- */
+
+.hq-band {
+  /*
+   * `display:block` is not decoration. This region was a <header>, and all
+   * three surfaces carry a page-level `header { ... }` rule; on /play it laid
+   * the band's three children out in a ROW, so the situation line and the act
+   * rail sat beside the club name and the rail ran off the right edge. The
+   * shell now uses neutral <div>s and states its own display, so no host page's
+   * element selector can reshape it.
+   */
+  display: block;
+  grid-area: band;
+  border-bottom: 1px solid var(--hq-hair);
+  padding: 16px 22px 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent);
+}
+.hq-band-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.hq-eyebrow {
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+  font-weight: 700;
+  color: var(--hq-club);
+  margin-bottom: 5px;
+}
+.hq-title {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4.4vw, 58px);
+  line-height: 0.86;
+  letter-spacing: 0.012em;
+  margin: 0;
+}
+.hq-sub {
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  margin-top: 7px;
+  max-width: 62ch;
+  line-height: 1.45;
+}
+.hq-band-id {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* the attention triad — phone / inbox / scouting, or whatever a lesson needs */
+.hq-triad {
+  margin-left: auto;
+  display: flex;
+  gap: 1px;
+  border: 1px solid var(--hq-hair);
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--hq-hair);
+}
+.hq-triad-cell {
+  background: rgba(13, 17, 25, 0.9);
+  padding: 9px 15px;
+  min-width: 88px;
+  text-align: left;
+}
+.hq-triad-cell dt {
+  font-size: 8.5px;
+  letter-spacing: 0.20em;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+.hq-triad-cell dd {
+  margin: 3px 0 0;
+  font-family: var(--font-number);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.hq-triad-cell[data-live="yes"] dd { color: var(--accent-gold); }
+
+/* the four-act rail — the module arc, visible in every lesson */
+.hq-acts {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 15px 0 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.hq-acts::-webkit-scrollbar { display: none; }
+.hq-act {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 10px 0;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  position: relative;
+}
+.hq-act::after {
+  content: "";
+  width: 26px;
+  height: 1px;
+  background: var(--hq-hair-strong);
+  margin-left: 2px;
+}
+.hq-act:last-child::after { display: none; }
+.hq-act .hq-act-node {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--hq-hair-strong);
+  flex: none;
+}
+.hq-act[data-state="done"] { color: var(--ink-secondary); }
+.hq-act[data-state="done"] .hq-act-node { background: var(--cap-safe); border-color: var(--cap-safe); }
+.hq-act[data-state="now"] { color: var(--ink-primary); }
+.hq-act[data-state="now"] .hq-act-node {
+  background: var(--hq-club);
+  border-color: var(--hq-club);
+  box-shadow: 0 0 0 4px rgba(139, 124, 240, 0.2);
+}
+
+/* ------------------------------------------------------- main / side -- */
+
+.hq-main {
+  grid-area: main;
+  padding: 18px 22px 30px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hq-side {
+  grid-area: side;
+  border-left: 1px solid var(--hq-hair);
+  padding: 18px 18px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  background: rgba(10, 13, 18, 0.5);
+}
+
+/* --------------------------------------------------------------- panel -- */
+
+.hq-panel {
+  border: 1px solid var(--hq-hair);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--hq-lift), transparent 60%), rgba(13, 17, 25, 0.72);
+  min-width: 0;
+}
+.hq-panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 15px 10px;
+  border-bottom: 1px solid var(--hq-hair);
+  flex-wrap: wrap;
+}
+.hq-panel-head h2,
+.hq-panel-head h3 {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  letter-spacing: 0.20em;
+  font-weight: 700;
+  color: var(--ink-primary);
+}
+.hq-panel-note {
+  font-size: 10.5px;
+  color: var(--ink-muted);
+  letter-spacing: 0.02em;
+}
+.hq-panel-note--live {
+  margin-left: auto;
+  color: var(--hq-club);
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  font-size: 9.5px;
+}
+.hq-panel-body { padding: 13px 15px 15px; }
+.hq-panel-body--flush { padding: 0; }
+
+/* --------------------------------------------------------- cap sheet -- */
+
+.hq-lines { display: flex; flex-direction: column; gap: 1px; background: var(--hq-hair); }
+.hq-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  padding: 9px 15px;
+  background: rgba(13, 17, 25, 0.94);
+  align-items: baseline;
+}
+.hq-line-name {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+.hq-line-amount {
+  font-family: var(--font-number);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-primary);
+  text-align: right;
+}
+.hq-line-does {
+  grid-column: 1 / -1;
+  font-size: 10.5px;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+.hq-line-space {
+  grid-column: 1 / -1;
+  font-size: 10.5px;
+  font-family: var(--font-number);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+/* Tone, not side. THE FLOOR is a compulsion: being past it is the good case. */
+.hq-line[data-tone="good"] .hq-line-space { color: var(--cap-safe); }
+.hq-line[data-tone="bad"] .hq-line-space { color: var(--over-the-line); }
+.hq-line[data-live="no"] { opacity: 0.42; }
+.hq-line[data-live="no"] .hq-line-does { display: none; }
+
+/* the payroll headline */
+.hq-payroll {
+  padding: 14px 15px;
+  border-bottom: 1px solid var(--hq-hair);
+}
+.hq-payroll dt {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+.hq-payroll dd {
+  margin: 4px 0 0;
+  font-family: var(--font-number);
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+.hq-payroll p {
+  margin: 7px 0 0;
+  font-size: 10.5px;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------- needs -- */
+
+.hq-needs { display: flex; flex-direction: column; gap: 7px; }
+.hq-need {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.hq-need-rank {
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  border: 1px solid var(--hq-hair-strong);
+  font-family: var(--font-number);
+  font-size: 10px;
+  color: var(--ink-muted);
+  flex: none;
+}
+.hq-need-role { font-weight: 650; letter-spacing: 0.10em; font-size: 11px; }
+.hq-need-tag { margin-left: auto; font-size: 9.5px; letter-spacing: 0.14em; color: var(--accent-gold); font-weight: 700; }
+.hq-needs-empty { font-size: 11.5px; color: var(--cap-safe); line-height: 1.5; }
+
+/* --------------------------------------------------------- roster strip -- */
+
+.hq-slots { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 9px; }
+.hq-slot {
+  width: 15px;
+  height: 21px;
+  border-radius: 3px;
+  border: 1px solid var(--hq-hair-strong);
+  background: var(--surface-inset);
+}
+.hq-slot[data-state="filled"] { background: var(--ink-muted); border-color: transparent; opacity: 0.62; }
+.hq-slot[data-state="signed"] { background: var(--accent-gold); border-color: var(--accent-gold); opacity: 1; }
+.hq-slot-note { font-size: 10.5px; color: var(--ink-muted); }
+
+/* ---------------------------------------------------------- league feed -- */
+
+.hq-feed { display: flex; flex-direction: column; gap: 1px; background: var(--hq-hair); }
+.hq-feed-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 3px 11px;
+  align-items: baseline;
+  padding: 9px 15px;
+  background: rgba(13, 17, 25, 0.94);
+}
+.hq-feed-day {
+  font-family: var(--font-number);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--ink-muted);
+  border: 1px solid var(--hq-hair-strong);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.hq-feed-name { font-weight: 650; font-size: 12.5px; }
+.hq-feed-terms {
+  font-family: var(--font-number);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-gold);
+  text-align: right;
+}
+.hq-feed-to {
+  grid-column: 2 / -1;
+  font-size: 10.5px;
+  color: var(--ink-muted);
+}
+.hq-feed-to b { color: var(--ink-secondary); font-weight: 650; }
+.hq-feed-empty { padding: 15px; font-size: 11.5px; color: var(--ink-muted); line-height: 1.5; }
+
+/* ------------------------------------------------------------ responsive -- */
+
+@media (max-width: 1240px) {
+  .hq { --hq-side: 258px; --hq-rail: 60px; }
+  .hq-rail { align-items: center; }
+  .hq-nav-item { justify-content: center; padding: 11px 0; gap: 0; }
+  .hq-nav-item span:not(.hq-dot):not(.hq-nav-count) { display: none; }
+  .hq-nav-item .hq-dot { width: 7px; height: 7px; }
+  .hq-nav-count { display: none; }
+  .hq-rail-label, .hq-brand-word { display: none; }
+  .hq-brand { padding: 0 0 14px; justify-content: center; }
+  .hq-rail-foot { padding: 14px 0 0; display: grid; place-items: center; }
+}
+
+@media (max-width: 1000px) {
+  .hq {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "rail" "band" "main" "side";
+  }
+  .hq-rail {
+    flex-direction: row;
+    align-items: center;
+    height: auto;
+    position: static;
+    padding: 8px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--hq-hair);
+    overflow-x: auto;
+  }
+  .hq-nav { flex-direction: row; gap: 2px; }
+  .hq-nav-item { border-left: 0; border-bottom: 2px solid transparent; padding: 8px 10px; }
+  .hq-nav-item[data-state="live"] { border-left-color: transparent; border-bottom-color: var(--hq-club); }
+  .hq-rail-foot { margin: 0 0 0 auto; padding: 0; border-top: 0; }
+  .hq-side { border-left: 0; border-top: 1px solid var(--hq-hair); }
+  .hq-title { font-size: clamp(30px, 8vw, 44px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hq * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------------------------------------------------- full-bleed mount -- */
+/*
+ * The front office is the whole screen.
+ *
+ * Measured before this rule existed: 191px of legacy page chrome sat above the
+ * shell on a 768px Chromebook — the page header (44px), the error slot, and the
+ * rejoin-PIN card (103px) — a quarter of the viewport, before the student saw
+ * their club. The PIN still matters for recovery, so it is not deleted; it is
+ * lifted out of the flow into a corner card the pair can dismiss, exactly as it
+ * already could.
+ */
+[data-module="hq"] body,
+[data-module="hq"] main {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+[data-module="hq"] > body > header { display: none; }
+[data-module="hq"] #gameCard { padding: 0; border: 0; background: none; }
+[data-module="hq"] #gameHeader,
+[data-module="hq"] #setup,
+[data-module="hq"] #joinCard { display: none; }
+[data-module="hq"] #gameBody { margin: 0; }
+[data-module="hq"] #err:empty { display: none; }
+
+/* Bottom-LEFT, clear of the rail and clear of the decision. Measured
+   bottom-right, it sat on top of PUT THE OFFER IN — a recovery affordance
+   covering the primary control is worse than the 103px of flow it replaced. */
+[data-module="hq"] #pinCard,
+[data-module="hq"] #btnShowPin {
+  position: fixed;
+  left: calc(var(--hq-rail, 208px) + 14px);
+  right: auto;
+  bottom: 14px;
+  z-index: 60;
+  max-width: 300px;
+  margin: 0;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.62);
+}
+@media (max-width: 1240px) {
+  [data-module="hq"] #pinCard,
+  [data-module="hq"] #btnShowPin { left: 74px; }
+}
+@media (max-width: 1000px) {
+  [data-module="hq"] #pinCard,
+  [data-module="hq"] #btnShowPin { left: 14px; right: 14px; max-width: none; }
+}
+
+/* The TIME CUT warning and the rejoin card stay above a lesson that has taken
+   over the viewport — both are the runtime speaking, and neither may be
+   scrolled away from. */
+[data-module="hq"] #finalCall,
+[data-module="hq"] #awayCard {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* -------------------------------------------------- band foot (one row) -- */
+
+.hq-band-foot {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-bottom: 2px;
+}
+.hq-band-foot .hq-sub { margin-top: 0; flex: 1 1 320px; min-width: 0; }
+.hq-band-foot .hq-acts { margin: 0; flex: 0 1 auto; }
+
+/* ----------------------------------------------- Chromebook compaction -- */
+/*
+ * A classroom Chromebook is 768px tall, and many are 600. Measured at 768 the
+ * band alone took 188px and the decision landed at 964. Compaction is not a
+ * downgrade of the design — the full scale is right on a teacher's laptop and a
+ * projector — it is the same design at the density the room's hardware has.
+ */
+@media (max-height: 820px) {
+  .hq-band { padding: 10px 22px 0; }
+  .hq-title { font-size: clamp(26px, 3vw, 34px); }
+  .hq-eyebrow { margin-bottom: 3px; font-size: 9px; }
+  .hq-sub { font-size: 11.5px; margin-top: 0; }
+  .hq-band-top { gap: 14px; }
+  .hq-triad-cell { padding: 6px 12px; min-width: 76px; }
+  .hq-triad-cell dd { font-size: 16px; }
+  .hq-acts { margin-top: 8px; }
+  .hq-act { padding: 5px 12px 6px 0; font-size: 9px; }
+  .hq-main { padding: 12px 22px 24px; gap: 12px; }
+  .hq-side { padding: 12px 16px 24px; gap: 10px; }
+  .hq-panel-head { padding: 9px 14px 8px; }
+  .hq-panel-body { padding: 10px 14px 12px; }
+  .hq-payroll { padding: 10px 14px; }
+  .hq-payroll dd { font-size: 24px; }
+}

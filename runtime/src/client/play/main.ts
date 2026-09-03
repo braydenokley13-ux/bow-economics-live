@@ -4,6 +4,7 @@ import { crestStyle } from "../shared/crest.js";
 import { brandMark, dotChart } from "../shared/m2ui.js";
 import { createFreshness } from "../shared/freshness.js";
 import { ActionOutbox } from "../shared/outbox.js";
+import { renderSameLineL1, resetSameLineL1, sameLineL1Error } from "../shared/sameLineL1.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
 
@@ -564,6 +565,15 @@ function renderGame(payload: StudentPayload): void {
   const moduleId = String(view["module"] ?? "");
   if (M2_DESIGN_LAYER_MODULES.has(moduleId)) document.documentElement.dataset.module = "m2";
   else delete document.documentElement.dataset.module;
+  if (view["module"] === "m1l1-the-window") {
+    // The front-office shell owns the whole viewport for this lesson, so it
+    // mounts on the body host rather than inside the legacy game frame.
+    document.documentElement.dataset.module = "hq";
+    renderSameLineL1(s.phase, view, body, (action) => {
+      void outbox?.submit(action);
+    });
+    return;
+  }
   if (view["module"] === "m1l1-draft-day") {
     renderDraftDay(s, view);
     return;

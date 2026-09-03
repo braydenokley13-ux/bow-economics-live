@@ -290,11 +290,11 @@ function reduce(state: SameLineL1State, action: { type: string; [k: string]: unk
     /* ---- the reveal, one beat at a time. The gate is here rather than in a
        renderer, so a beat the teacher has not pressed is not merely unrendered
        on a desk — it was never sent (D26). ---- */
-    case "teacher:nextBeat": {
+    case "teacher:revealNext": {
       if (ctx.phase !== "REVEAL" && ctx.phase !== "CONSEQUENCE") return fail("there is no reveal running");
       return { ok: true, state: { ...state, beat: Math.min(state.beat + 1, REVEAL_BEATS.length - 1) } };
     }
-    case "teacher:backBeat": {
+    case "teacher:revealBack": {
       if (ctx.phase !== "REVEAL" && ctx.phase !== "CONSEQUENCE") return fail("there is no reveal running");
       return { ok: true, state: { ...state, beat: Math.max(0, state.beat - 1) } };
     }
@@ -462,13 +462,32 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
   const profile = bandProfile(state);
   const desk = state.desks[seatId];
   if (!desk) {
+    /*
+     * Two different people land here and they must not be told the same thing.
+     *
+     * A pair who has only just opened the page has not asked for a desk yet;
+     * telling them the window has closed is simply false, and it is the kind of
+     * false that makes a child stop trying. Only a seat the module actually
+     * turned away — recorded in `observers` because every club was taken — gets
+     * the closed-window copy.
+     */
+    const turnedAway = state.observers.includes(seatId);
+    if (!turnedAway) {
+      return {
+        module: SAME_LINE_L1_ID,
+        seated: false,
+        observer: false,
+        message: "You're in. Finding your club…",
+        band: state.gradeBand,
+      };
+    }
     return {
       module: SAME_LINE_L1_ID,
       seated: false,
-      observer: state.observers.includes(seatId),
-      observerEyebrow: "THE WINDOW HAS CLOSED",
+      observer: true,
+      observerEyebrow: "EVERY CLUB IS TAKEN",
       message:
-        "You arrived after the last signing day closed, so there is no club left to hand you without changing numbers this room has already seen.",
+        "Every club in this room already has a front office, so there is none left to hand you without changing numbers this room has already seen.",
       observerAction: "Stay with us — the next part is the whole room's, and you are in it.",
       band: state.gradeBand,
     };
@@ -488,6 +507,7 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
     openJobs: desk.position.openJobs,
     ladder: ladderFor(desk.position, profile),
     signings: desk.position.signings,
+    hq: hqFor(state, desk, profile),
   };
 
   switch (phase) {
@@ -505,6 +525,7 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
         pockets: pocketsFor(desk.position, profile),
         // The room line: how many desks are in, never who and never how much.
         roomLine: `${Object.keys(state.pending).length} of ${Object.keys(state.desks).length} desks have an offer in.`,
+        league: leagueFeed(state),
       };
     case "REVEAL":
     case "CONSEQUENCE":
@@ -540,8 +561,128 @@ function hookLine(desk: Desk, profile: GradeProfile): string {
   return `${short} ${club.colour.value}`;
 }
 
+/**
+ * How many desks currently hold an offer on each named player.
+ *
+ * The shared-league window, and the only thing a desk learns about the rest of
+ * the room while a day is open: a count, never a name and never an amount. That
+ * boundary is the whole design. A count is a true computed fact about the room
+ * and it creates the tension the module is for — four other desks want him too.
+ * A name or an amount would leak a seat's private position mid-play and would
+ * turn a sealed simultaneous market into an open outcry auction won by whoever
+ * types fastest, which is a race, not an economy.
+ */
+function liveInterest(state: SameLineL1State): Readonly<Record<string, number>> {
+  const out: Record<string, number> = {};
+  for (const pending of Object.values(state.pending)) {
+    if (playerById(pending.playerId)?.generic) continue;
+    out[pending.playerId] = (out[pending.playerId] ?? 0) + 1;
+  }
+  return out;
+}
+
+/** The four-act rail. One lesson does not own it; the module does. */
+const ACT_RAIL = ["THE OFFSEASON", "THE SEASON", "THE DEADLINE", "THE BOARDROOM"] as const;
+
+/**
+ * The front office itself — the persistent frame the desk returns to.
+ *
+ * Every field is recomputed from this desk's own position. Nothing here is a
+ * rating, a grade, or a composite: a single number standing for how good a team
+ * is would reinstate the exact intuition this module exists to break.
+ */
+function hqFor(state: SameLineL1State, desk: Desk, profile: GradeProfile) {
+  const p = desk.position;
+  const club = CLUB[desk.clubId];
+  return {
+    club: club.name,
+    city: club.city,
+    situation: club.situation,
+    colour: club.colour.value,
+    act: { index: 0, of: ACT_RAIL.length, rail: ACT_RAIL, label: ACT_RAIL[0] },
+    payroll: p.committed,
+    payrollText: money(p.committed),
+    slots: {
+      filled: p.slots,
+      max: ROSTER.windowMax,
+      min: ROSTER.min,
+      open: Math.max(0, ROSTER.windowMax - p.slots),
+    },
+    needs: p.openJobs.map((role, i) => ({ rank: i + 1, role })),
+    /*
+     * Distance to each line, as a MAGNITUDE plus a side.
+     *
+     * Never a signed number. The grades 5-6 profile does not have negatives
+     * (`allowsNegatives: false`), and a payload carrying -4200000 hands a
+     * renderer a minus sign to print — which is exactly how a band boundary
+     * gets crossed by accident rather than by decision. The sign lives in
+     * `side`, which is a word, and the word is what the copy is written from.
+     */
+    lines: ladderFor(p, profile).map((l) => ({
+      ...l,
+      space: Math.abs(l.amount - p.committed),
+      spaceText: money(Math.abs(l.amount - p.committed)),
+      side: p.committed >= l.amount ? ("over" as const) : ("under" as const),
+    })),
+    wall: p.wall,
+    wallText: p.wall === null ? null : money(p.wall),
+    overCapDeclared: p.overCapDeclared,
+    signings: p.signings.map((sg) => ({ ...sg, annualText: money(sg.annual) })),
+  };
+}
+
+/**
+ * Every player the room has taken off the board, newest first.
+ *
+ * Settled days only. This is public knowledge the moment a day closes — it is
+ * what the class watched happen — so it is not a leak, and it is the single
+ * thing that makes sixteen desks feel like one league rather than sixteen
+ * simulations that happen to share a room.
+ */
+function leagueFeed(state: SameLineL1State) {
+  const out: {
+    day: number;
+    name: string;
+    role: string;
+    club: string;
+    annual: number;
+    annualText: string;
+    contested: number;
+    decidedBy: Award["decidedBy"];
+  }[] = [];
+  for (const rec of state.history) {
+    for (const a of rec.awards) {
+      const won = state.desks[a.winner as unknown as SeatId];
+      const player = playerById(a.playerId);
+      if (player?.generic) continue;
+      out.push({
+        day: rec.day + 1,
+        name: a.name,
+        role: player?.role ?? "",
+        club: won ? won.label : "another club",
+        annual: a.annual,
+        annualText: money(a.annual),
+        contested: a.contested,
+        decidedBy: a.decidedBy,
+      });
+    }
+  }
+  return out.reverse();
+}
+
+/** One entry per tool, keeping the offer that reaches furthest with it. */
+function dedupeByTool(offers: readonly Offer[]): readonly Offer[] {
+  const best = new Map<ToolId, Offer>();
+  for (const o of offers) {
+    const held = best.get(o.tool);
+    if (!held || o.annual > held.annual) best.set(o.tool, o);
+  }
+  return [...best.values()];
+}
+
 function boardCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile) {
   const taken = new Set(state.taken);
+  const interest = liveInterest(state);
   return BOARD.filter((p) => !taken.has(p.id)).map((p) => {
     const offers = legalOffers(desk.position, [p], taken);
     const best = offers.reduce<Offer | null>((b, o) => (b === null || o.annual > b.annual ? o : b), null);
@@ -556,12 +697,53 @@ function boardCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile
       risk: p.risk,
       reachable: best !== null,
       unreachableReason: reason,
+      /** Desks with an offer in on him right now. A count only (see liveInterest). */
+      interest: interest[p.id] ?? 0,
       /** The staging, said out loud rather than implied away (D49 Q3). */
       reallySignedWith: p.reallySignedWith,
       signedOn: p.signedOn,
       yours: p.incumbent === desk.clubId,
       // 5-6 gets the tool chosen for them; 7-8 chooses (profile.maxVariables).
-      tools: profile.maxVariables >= 3 ? offers.map((o) => ({ tool: o.tool, label: TOOL[o.tool].label, max: ceilingOf(o.tool, desk.position, p) })) : [],
+      /*
+       * One button per TOOL, not per legal offer.
+       *
+       * `legalOffers` enumerates offers, and a single tool legally reaches a
+       * player at more than one price, so mapping offers straight to buttons
+       * rendered "CAP ROOM · up to $3,926,207" twice side by side. The student
+       * chooses a WAY OF PAYING and then a price; those are two controls, and
+       * conflating them put the same choice on screen twice.
+       */
+      tools:
+        profile.maxVariables >= 3
+          ? dedupeByTool(offers).map((o) => ({
+              tool: o.tool,
+              label: TOOL[o.tool].label,
+              does: TOOL[o.tool].does,
+              max: ceilingOf(o.tool, desk.position, p),
+              maxText: money(ceilingOf(o.tool, desk.position, p) ?? 0),
+              years: yearsFor(o.tool, p),
+              drawsWall: TOOL[o.tool].drawsWallAt !== null,
+            }))
+          : [],
+      /**
+       * The strongest legal way this desk could pay this player.
+       *
+       * 5-6 never picks a tool, so the composer needs one chosen — and the
+       * choice must be the desk's best, never a quiet downgrade. 7-8 gets this
+       * as the default selection and may move off it.
+       */
+      best:
+        best === null
+          ? null
+          : {
+              tool: best.tool,
+              label: TOOL[best.tool].label,
+              max: ceilingOf(best.tool, desk.position, p) ?? best.annual,
+              maxText: money(ceilingOf(best.tool, desk.position, p) ?? best.annual),
+              years: yearsFor(best.tool, p),
+              floor: Math.min(p.ask.value, ceilingOf(best.tool, desk.position, p) ?? best.annual),
+              drawsWall: TOOL[best.tool].drawsWallAt !== null,
+            },
     };
   });
 }
@@ -619,6 +801,15 @@ function teacherView(state: SameLineL1State, phase: CanonicalPhase): unknown {
     day: state.day + 1,
     ofDays: DAYS,
     windowClosed: state.windowClosed,
+    /*
+     * The counts the bell is labelled with. A teacher deciding whether to close
+     * a day needs to know how much of the room is still deciding — closing on
+     * eleven of sixteen is a different act from closing on fifteen, and the
+     * console must not make them look the same.
+     */
+    pendingCount: Object.keys(state.pending).length,
+    actedCount: Object.keys(state.pending).length,
+    claimedCount: desks.length,
     payrollDefinition: PAYROLL_DEFINITION,
     projectorCases: PROJECTOR_CASES,
     simplifications: SIMPLIFICATIONS,

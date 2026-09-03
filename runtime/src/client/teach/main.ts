@@ -84,6 +84,7 @@ let poller: { stop: () => void } | null = null;
 const TRADE_DEADLINE_ID = "m1l2-trade-deadline";
 const DRAFT_DAY_ID = "m1l1-draft-day";
 const FREE_AGENCY_ID = "m1l3-free-agency";
+const THE_WINDOW_ID = "m1l1-the-window";
 const FULL_HOUSE_ID = "m2l1-full-house";
 const HOST_LEAGUE_ID = "m2l2-host-league";
 const WRITE_RULE_ID = "m2l3-write-rule";
@@ -265,7 +266,7 @@ async function createSession(): Promise<void> {
   const payload = await apiFetch<TeacherPayload>("/api/sessions", {
     method: "POST",
     headers: setupAuthHeaders(),
-    body: JSON.stringify({ lessonModuleId, title, sourceSessionId }),
+    body: JSON.stringify({ lessonModuleId, title, sourceSessionId, gradeBand: $<HTMLSelectElement>("gradeBand").value }),
   });
   if (!payload.teacherKey) {
     statusEl.textContent = "server did not issue a teacher key — cannot continue safely";
@@ -885,6 +886,7 @@ function render(payload: TeacherPayload): void {
   const isDraftDay = s.lessonModuleId === DRAFT_DAY_ID;
   const isTradeDeadline = s.lessonModuleId === TRADE_DEADLINE_ID;
   const isFreeAgency = s.lessonModuleId === FREE_AGENCY_ID;
+  const isTheWindow = s.lessonModuleId === THE_WINDOW_ID;
   const isFullHouse = s.lessonModuleId === FULL_HOUSE_ID;
   const isHostLeague = s.lessonModuleId === HOST_LEAGUE_ID;
   const isWriteRule = s.lessonModuleId === WRITE_RULE_ID;
@@ -903,8 +905,10 @@ function render(payload: TeacherPayload): void {
   // The staged per-target auction theater (charter point 6, and L3's own staged finale): one click reveals
   // exactly the next not-yet-revealed step, so the teacher paces the reveal instead of dumping every result
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
-  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule;
-  $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
+  $<HTMLButtonElement>("btnRevealNext").hidden =
+    !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule && !isTheWindow;
+  $<HTMLButtonElement>("btnRevealNext").disabled =
+    s.ended || (s.phase !== "REVEAL" && !(isTheWindow && s.phase === "CONSEQUENCE"));
   {
     // gate-l1-teacher TT-B2 / gate-l1-projector repair 5: "Reveal next" was a
     // blind press seven times running. Name what the press will put up, with
@@ -1093,15 +1097,16 @@ function render(payload: TeacherPayload): void {
   }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
   // simultaneously and deterministically, then advances the day counter. A close with zero offers is legal.
-  $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency;
+  $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency && !isTheWindow;
   $<HTMLButtonElement>("btnCloseDay").disabled = s.ended || s.phase !== "PLAY" || Boolean(payload.view["windowClosed"]);
   {
     const pendingCount = Number(payload.view["pendingCount"] ?? 0);
     const actedCount = Number(payload.view["actedCount"] ?? 0);
     const claimedCount = Number(payload.view["claimedCount"] ?? 0);
-    $<HTMLButtonElement>("btnCloseDay").innerHTML = isFreeAgency
-      ? `${BELL_GLYPH}Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)`
-      : `${BELL_GLYPH}Close signing day`;
+    $<HTMLButtonElement>("btnCloseDay").innerHTML =
+      isFreeAgency || isTheWindow
+        ? `${BELL_GLYPH}Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)`
+        : `${BELL_GLYPH}Close signing day`;
   }
   // B1 repair (VERIFY_L2.md BLOCKER): the runtime now auto-resolves any unrevealed target the instant the
   // teacher advances out of REVEAL (see tradeDeadline.ts's onPhaseExit), so the numbers can no longer go wrong

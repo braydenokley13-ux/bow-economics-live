@@ -458,7 +458,11 @@ export const CLUBS: readonly Club[] = [
     name: "Sacramento",
     city: "Sacramento",
     committed: fact(202_859_372, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
-    deadMoney: fact(0, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
+    // Corrected 2026-09-03 from 0: SalarySwish carries $10,000,000 of dead money
+    // for DeMar DeRozan, waived. A club with the module's second-largest dead
+    // money was being shown as carrying none, which is precisely the fact this
+    // seat exists to teach.
+    deadMoney: fact(10_000_000, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
     contracts: fact(16, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
     jobs: ["WING", "BIG"],
     situation: "You are past the tax line and you have already spent most of your big exception on somebody else.",
@@ -503,11 +507,25 @@ export const CLUBS: readonly Club[] = [
     jobs: ["WING", "GUARD", "BIG", "WING"],
     situation:
       "You are past the first apron too — a small market carrying a big-market payroll, with the same tools taken away.",
+    /*
+     * WITHDRAWN 2026-09-03: this line asserted that Minnesota had drawn a hard
+     * cap by aggregating salaries. Published hard-cap status is not reliable —
+     * SalarySwish's own tracker lists Minnesota hard-capped at the first apron
+     * while showing its apron salary $7,665,955 ABOVE that same line, which
+     * cannot both be true, and the same contradiction appears for Miami,
+     * Cleveland and Indiana. No club colour may assert hard-cap status until a
+     * source resolves it.
+     *
+     * Replaced with a consequence that follows from the club's position by
+     * rule rather than from a status claim, and that is the seat's whole
+     * lesson: past the first apron, the one thing NOT taken away is your own
+     * players.
+     */
     colour: fact(
-      "Minnesota combined salaries in a trade, and doing that drew its own wall for the rest of the year.",
+      "Past the first apron the only outside player Minnesota may sign is a small-exception or minimum one — but it may still pay its own free agents whatever it takes to keep them.",
       "2026-09-03",
-      "salaryswish.com/teams/timberwolves",
-      "cap-database",
+      "2023 CBA Art. VII s6(j); pr.nba.com 2026-27 cap release",
+      "cba",
     ),
   },
 ] as const;
@@ -828,11 +846,15 @@ export const SIMPLIFICATIONS: readonly Simplification[] = [
     id: "S1-trade-matching",
     real:
       "Salary matching in a trade is a bracketed ladder that depends on how much salary is going out and " +
-      "which side of which apron the club is on; over the second apron a club may not take back more than it sends.",
+      "which side of which apron the club LANDS ON AFTER the trade. A club that finishes above the FIRST apron " +
+      "must go dollar-for-dollar: it may not take back more salary than it sends. Above the SECOND apron it " +
+      "additionally may not combine two players' salaries into one incoming contract, and may not send cash.",
     bow: "No percentage is ever printed. The module teaches only the shape: once you are over the cap a trade has to be roughly even, and the further past the lines you are, the tighter 'roughly' gets.",
     why:
-      "The dossier records three incompatible published accounts of the exact brackets (§7.1), and the real rule is " +
-      "administrative detail a grade 5-8 student cannot act on. The shape is the economics; the brackets are the paperwork.",
+      "The brackets are administrative detail a grade 5-8 student cannot act on, and the widest band needs a percentage " +
+      "the grade band does not have. The shape is the economics; the brackets are the paperwork. Corrected 2026-09-03: " +
+      "an earlier draft of this field placed the dollar-for-dollar restriction at the second apron. It is the FIRST " +
+      "(CBA Art. VII s6(j)(3); see NBA_TRADE_TRUTH.md), and the test is the club's position AFTER the trade, not before.",
     misconceptionRisk:
       "A student may infer matching is a single fixed percentage. Mitigated by never printing one, and by making the tightening-with-spend visible instead.",
     preserves: "That spending removes your freedom to transact, not merely your money.",

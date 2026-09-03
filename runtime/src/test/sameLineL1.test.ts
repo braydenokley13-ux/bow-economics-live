@@ -109,7 +109,7 @@ test("THE GATE: passing, closing the day and moving a reveal beat are each refus
       assert.equal(mod.reduce(s, { type: "teacher:closeDay" }, ctx(phase, "teacher")).ok, false, `close accepted in ${phase}`);
     }
     if (phase !== "REVEAL" && phase !== "CONSEQUENCE") {
-      assert.equal(mod.reduce(s, { type: "teacher:nextBeat" }, ctx(phase, "teacher")).ok, false, `beat accepted in ${phase}`);
+      assert.equal(mod.reduce(s, { type: "teacher:revealNext" }, ctx(phase, "teacher")).ok, false, `beat accepted in ${phase}`);
     }
   }
 });
