@@ -17,6 +17,13 @@ type StudentPayload = {
   view: Record<string, unknown>;
 };
 
+/**
+ * Lesson renderers that have been ported to the M2 design layer (shared/m2.css)
+ * and may therefore have the legacy sheet switched off under them. Add a
+ * lesson here in the same change that ports its renderer, never before.
+ */
+const M2_DESIGN_LAYER_MODULES = new Set(["m2l1-full-house"]);
+
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 const joinCard = $("joinCard");
 const rejoinCard = $("rejoinCard");
@@ -83,6 +90,7 @@ function signedOut(): void {
   outbox = null;
   clearPlayCredentials();
   creds = null;
+  resetSeatRenderState();
   gameCard.hidden = true;
   pinCard.hidden = true;
   rejoinCard.hidden = true;
@@ -152,6 +160,54 @@ $("btnRejoin").addEventListener("click", () => {
   })();
 });
 
+/**
+ * Every piece of per-seat render state this page keeps outside the DOM.
+ *
+ * The renderers memoise aggressively — a mount key so a poll tick does not
+ * rebuild the desk under a pair's finger, a local dial value so dragging is
+ * smooth, a "have I already asked for a seat" latch, an acknowledged-result
+ * marker. All of it is scoped to ONE seat in ONE session, and all of it lives
+ * in module-level `let`s that outlive a credential change: this page never
+ * reloads when a pair signs out and rejoins, or rejoins as a different seat on
+ * a shared Chromebook. Left alone, the next seat inherits the previous seat's
+ * mount key (so the desk never re-renders), its dial number (so the readout
+ * shows a price this pair never chose), and its seat-requested latch (so the
+ * new seat never asks for a franchise and sits on "finding your desk…").
+ *
+ * Called on every transition into a seat and out of one. Adding a new
+ * module-level render cache means adding it here in the same change.
+ */
+function resetSeatRenderState(): void {
+  fhSeatRequested = false;
+  fhMountKey = null;
+  fhLocalPrice = null;
+  fhLocalPriceCard = null;
+  fhLastSession = null;
+  fhLastView = null;
+  hlSeatRequested = false;
+  hlMountKey = null;
+  hlLocalPrice = null;
+  hlLastSettledSeen = null;
+  wrSeatRequested = false;
+  wrMountKey = null;
+  wrLocalPrice = null;
+  wrLocalShare = null;
+  wrLocalCondition = null;
+  wrLastSettledSeen = null;
+  boxDialMounted = null;
+  boxDragging = false;
+  boxLatestPrice = null;
+  if (boxThrottleTimer !== null) {
+    window.clearTimeout(boxThrottleTimer);
+    boxThrottleTimer = null;
+  }
+  tdPlayMounted = null;
+  faPlayMounted = null;
+  faComposerSlot = null;
+  faComposerAmount = 0;
+  document.body.classList.remove("fh-compact-play");
+}
+
 function onSeated(payload: StudentPayload, code: string): void {
   if (!payload.deviceToken) return showError("Server did not issue a device token.");
   try {
@@ -161,6 +217,9 @@ function onSeated(payload: StudentPayload, code: string): void {
   }
   creds = { deviceToken: payload.deviceToken, sessionCode: code, seatId: payload.seat.id, displayName: payload.seat.displayName, rejoinPin: payload.rejoinPin };
   savePlayCredentials(creds);
+  // A seat is being (re)claimed on this page without a reload — drop every
+  // render cache belonging to whichever seat was here before.
+  resetSeatRenderState();
   joinCard.hidden = true;
   rejoinCard.hidden = true;
   if (payload.rejoinPin) {
@@ -285,8 +344,20 @@ function renderGame(payload: StudentPayload): void {
   const view = payload.view;
   // The Module-2 token/component layer is scoped to this attribute; Module 1
   // renders unchanged because nothing under it is ever set for an m1 view.
+  //
+  // The membership test is the renderer, not the lesson number. `theme.css`
+  // switches OFF every legacy `.fh-*` / `.price-dial-input` rule whenever this
+  // attribute is present, on the understanding that `m2.css` re-provides that
+  // look. That trade is only true for a renderer that was actually ported to
+  // the M2 design layer. Gating on the `m2l` id prefix swept in L2 and L3,
+  // whose renderers still speak the legacy class vocabulary: measured in
+  // Chromium, their price dial fell back to the browser's default range input
+  // (`appearance: auto`, the one blue object on a dark violet screen) and the
+  // price readout — the headline number of the whole decision — dropped from
+  // 22px to 15px. A lesson joins this set when its renderer is ported, not
+  // when its id is assigned.
   const moduleId = String(view["module"] ?? "");
-  if (moduleId.startsWith("m2l")) document.documentElement.dataset.module = "m2";
+  if (M2_DESIGN_LAYER_MODULES.has(moduleId)) document.documentElement.dataset.module = "m2";
   else delete document.documentElement.dataset.module;
   if (view["module"] === "m1l1-draft-day") {
     renderDraftDay(s, view);
@@ -2406,6 +2477,14 @@ function fhArenaFrame(o: {
   label: string;
   maxHeight?: number;
   cls?: string;
+  /**
+   * Settled count of people who wanted in and could not get a seat. Lane A
+   * draws them as a crowd outside the gates — the consequence of pricing a
+   * night below what the room would bear is a picture of people left on the
+   * pavement, not only a number on the slate. The hero (pre-lock) frame has no
+   * settlement yet and passes nothing.
+   */
+  turnedAway?: number;
   /** Lane A's third state: the top deck as a shuttered deck, or in the pool. */
   bowlSeats?: number;
   bowlOpen?: boolean;
@@ -2417,7 +2496,7 @@ function fhArenaFrame(o: {
     capacity: Math.max(1, o.seatsOpen),
     turnout: o.turnout,
     soldOut: o.soldOut,
-    turnedAway: 0,
+    turnedAway: o.turnedAway ?? 0,
     lit: o.view === "hero" ? "idle" : o.soldOut ? "sellout" : "night",
     seed: Math.max(1, o.seatsOpen % 97),
     motion: o.motion,
@@ -2449,7 +2528,7 @@ function fhArenaPanel(n: FHNight, ui: FHUiCopy, opts: { height: number; loud: bo
   // them the same amber and none of them matching the drawing, was worse than
   // no key. The picture is labelled directly, in the module's own words.
   return `<div class="m2-card m2-arena fh-arena" style="${FH_CARD} padding:12px 14px; display:flex; flex-direction:column; gap:7px;">
-      ${fhArenaFrame({ view: "outcome", turnout: n.turnout, seatsOpen: n.seatsOpen, soldOut: n.soldOut, w: 620, h: 300, motion: opts.loud, label: String(n.turnout), maxHeight: opts.height, bowlSeats: bowlOffered ? opts.bowlSeats : 0, bowlOpen: n.openBowl })}
+      ${fhArenaFrame({ view: "outcome", turnout: n.turnout, seatsOpen: n.seatsOpen, soldOut: n.soldOut, turnedAway: n.turnedAway, w: 620, h: 300, motion: opts.loud, label: String(n.turnout), maxHeight: opts.height, bowlSeats: bowlOffered ? opts.bowlSeats : 0, bowlOpen: n.openBowl })}
       <div class="fh-arena-labels" style="display:flex; flex-direction:column; gap:2px;">
         ${marker(n.turnout.toLocaleString(), ui.cameLabel, false)}
         ${marker(open.toLocaleString(), ui.openSeatsLabel, true)}
