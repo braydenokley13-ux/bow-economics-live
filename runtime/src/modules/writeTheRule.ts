@@ -3365,6 +3365,234 @@ export function adoptLeagueOfficeRule(state: WriteRuleState): WriteRuleState {
   };
 }
 
+/* ----------------------------------------------------------------- room -- */
+
+/**
+ * THE ROOM — the teacher-private live read of what the desks are doing while
+ * they are still doing it. This lesson runs two different rooms inside one PLAY
+ * phase and they get two different reads, because they are two different
+ * economics: the rule rounds are a BARGAINING spread, where every desk is
+ * proposing a number at the whole league and the thing a teacher needs to see
+ * is whether the room is converging or dug in; the season is a COMPLIANCE
+ * spread, where each club sets its own price and dial alone under a rule the
+ * room itself wrote, and the thing a teacher needs to see is who is about to be
+ * bitten by it.
+ *
+ * Aggregate only, and teacher-only. Nothing here reaches /board or /play while
+ * the round or the week is open — reading the shape out early tells the room
+ * what to copy, and both reveals in this lesson are built on them not knowing.
+ */
+type L3RoomDesk = {
+  handle: string;
+  proposal: RuleProposal | null;
+  ownLastProposal: RuleProposal | null;
+  roundsPlayed: number;
+  price: number;
+  reinvest: number;
+  locked: boolean;
+  weeksPlayed: number;
+  ownLastReinvest: number | null;
+};
+
+type L3RoomBin = { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] };
+
+function roomSpreadOf(values: readonly number[]): { min: number; max: number; median: number; range: number } | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const min = sorted[0]!;
+  const max = sorted[sorted.length - 1]!;
+  return { min, max, median: Math.round(medianOf(sorted)), range: max - min };
+}
+
+function roomBinsOn(
+  grid: readonly number[],
+  label: (v: number) => string,
+  rows: readonly { handle: string; value: number; committed: boolean }[],
+): L3RoomBin[] {
+  return grid.map((from) => {
+    const inBin = rows.filter((r) => r.value === from);
+    return {
+      from,
+      to: from,
+      label: label(from),
+      count: inBin.length,
+      lockedCount: inBin.filter((r) => r.committed).length,
+      handles: inBin.map((r) => r.handle),
+    };
+  });
+}
+
+/** raised / held / lowered against a desk's OWN previous committed number. */
+function roomMovement(
+  rows: readonly { value: number | null; own: number | null; hasPrior: boolean }[],
+): { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number; deciding: number } {
+  let raised = 0;
+  let held = 0;
+  let lowered = 0;
+  let noOwnPrior = 0;
+  let noPrior = 0;
+  let deciding = 0;
+  for (const r of rows) {
+    if (r.value === null) deciding += 1;
+    else if (!r.hasPrior) noPrior += 1;
+    else if (r.own === null) noOwnPrior += 1;
+    else if (r.value > r.own) raised += 1;
+    else if (r.value < r.own) lowered += 1;
+    else held += 1;
+  }
+  return { raised, held, lowered, basis: raised + held + lowered, noOwnPrior, noPrior, deciding };
+}
+
+function movementSentence(
+  m: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number },
+  dial: string,
+  unit: string,
+  words: { up: string; same: string; down: string },
+  firstLabel: string,
+  bellLabel: string,
+): string {
+  const inSoFar = m.basis + m.noOwnPrior + m.noPrior;
+  if (inSoFar === 0) return `Nobody is in yet — movement shows up as ${unit}.`;
+  if (m.noPrior === inSoFar) return `${firstLabel} — there is nothing behind these desks to have moved off yet.`;
+  if (m.basis === 0) return `Nobody in so far has a ${dial} of their own to have moved off.`;
+  return `Of the ${inSoFar} in so far: ${m.raised} ${words.up}, ${m.held} ${words.same}, ${m.lowered} ${words.down}${
+    m.noOwnPrior > 0 ? ` · ${m.noOwnPrior} moving off ${bellLabel}` : ""
+  }${m.noPrior > 0 ? ` · ${m.noPrior} on their first one` : ""}.`;
+}
+
+function roomRead(state: WriteRuleState, desks: readonly L3RoomDesk[]): Record<string, unknown> | null {
+  if (desks.length === 0) return null;
+
+  /* ---- the rule rounds: a bargaining spread ---- */
+  if (state.stage === "rounds" && state.roundIndex < ROUND_COUNT) {
+    const inRound = desks.filter((d) => d.proposal !== null);
+    const shares = inRound.map((d) => d.proposal!.share);
+    const spread = roomSpreadOf(shares);
+    // Only desks that have actually put a number in appear on the grid. This
+    // lesson holds no uncommitted proposal — a desk that has not proposed has
+    // no number anywhere in state — so there is no ghosted half to draw here,
+    // and inventing one out of a client dial would be a fabricated fact.
+    const bins = roomBinsOn(
+      SHARE_GRID,
+      (v) => `${v}%`,
+      inRound.map((d) => ({ handle: d.handle, value: d.proposal!.share, committed: true })),
+    );
+    const movement = roomMovement(
+      desks.map((d) => ({
+        value: d.proposal === null ? null : d.proposal.share,
+        own: d.ownLastProposal === null ? null : d.ownLastProposal.share,
+        hasPrior: d.roundsPlayed > 0,
+      })),
+    );
+    const conditionOn = inRound.filter((d) => d.proposal!.condition).length;
+    return {
+      deskCount: desks.length,
+      lockedCount: inRound.length,
+      decidingCount: desks.length - inRound.length,
+      spread,
+      bins,
+      movement,
+      firstRound: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      firstNight: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      countLine: `${inRound.length} of ${desks.length} numbers in · round ${state.roundIndex + 1} of ${ROUND_COUNT}`,
+      movementSubject: "the share they are asking the league to take",
+      movementLine: movementSentence(
+        movement,
+        "round",
+        "desks put numbers in",
+        { up: "asked for more", same: "held their number", down: "asked for less" },
+        "First round",
+        "a round they sat out",
+      ),
+      spreadLine:
+        spread === null
+          ? "Nothing is in yet — no desk has proposed a number this round."
+          : `${inRound.length === desks.length ? "The room" : `The ${inRound.length} in so far`} ${
+              spread.min === spread.max
+                ? `all proposed ${spread.min}%`
+                : `proposed between ${spread.min}% and ${spread.max}%, middle ${spread.median}%`
+            } — and ${
+              conditionOn === 0
+                ? "not one of them wants the CONDITION on"
+                : conditionOn === inRound.length
+                  ? "every one of them wants the CONDITION on"
+                  : `${conditionOn} of them want the CONDITION on`
+            }.`,
+      privacyNote:
+        "Yours only — the projector never shows this while the round is open. A room that can see the middle number stops proposing and starts copying, and the two-thirds test is only worth running on numbers the desks actually chose.",
+    };
+  }
+
+  /* ---- the season: a compliance spread under the room's own rule ---- */
+  if (state.stage === "season" && state.weekIndex < WEEK_COUNT) {
+    const committed = desks.filter((d) => d.locked);
+    const spread = roomSpreadOf(committed.map((d) => d.price));
+    // Every desk is binned on the reinvest dial, undecided ones included: where
+    // an uncommitted dial is sitting is exactly what a teacher is walking the
+    // room to see. Price is the sentence, reinvest is the shape, because the
+    // rule the room wrote taxes and conditions on the second one.
+    const bins = roomBinsOn(
+      REINVEST_GRID,
+      (v) => `${v}%`,
+      desks.map((d) => ({ handle: d.handle, value: d.reinvest, committed: d.locked })),
+    );
+    const movement = roomMovement(
+      desks.map((d) => ({
+        value: d.locked ? d.reinvest : null,
+        own: d.ownLastReinvest,
+        hasPrior: d.weeksPlayed > 0,
+      })),
+    );
+    const rule = state.adopted;
+    const under = committed.filter((d) => d.reinvest < CONDITION_MIN_REINVEST).length;
+    const nothing = committed.filter((d) => d.reinvest === 0).length;
+    const tail =
+      rule && rule.condition
+        ? under === 0
+          ? `not one of them is under the ${CONDITION_MIN_REINVEST}% condition this room voted in`
+          : under === committed.length
+            ? `every one of them is under the ${CONDITION_MIN_REINVEST}% condition this room voted in`
+            : `${under} of them are under the ${CONDITION_MIN_REINVEST}% condition this room voted in`
+        : nothing === 0
+          ? "not one of them is putting nothing back"
+          : nothing === committed.length
+            ? "every one of them is putting NOTHING back"
+            : `${nothing} of them are putting NOTHING back`;
+    return {
+      deskCount: desks.length,
+      lockedCount: committed.length,
+      decidingCount: desks.length - committed.length,
+      spread,
+      bins,
+      movement,
+      firstRound: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      firstNight: movement.noPrior > 0 && movement.basis === 0 && movement.noOwnPrior === 0,
+      countLine: `${committed.length} of ${desks.length} locked in · week ${state.weekIndex + 1} of ${WEEK_COUNT}`,
+      movementSubject: "the reinvest dial",
+      movementLine: movementSentence(
+        movement,
+        "week",
+        "desks lock",
+        { up: "put back more", same: "held", down: "put back less" },
+        "First week",
+        "a week the bell committed for them",
+      ),
+      spreadLine:
+        spread === null
+          ? "Nothing is committed yet — every dial is still sitting where the week opened."
+          : `${committed.length === desks.length ? "The room" : `The ${committed.length} in so far`} ${
+              spread.min === spread.max
+                ? `all priced $${spread.min}`
+                : `priced between $${spread.min} and $${spread.max}, middle $${spread.median}`
+            } — and ${tail}.`,
+      privacyNote:
+        "Yours only — the projector never shows this while the week is open. Naming who is under the condition before the bell is the one thing that would stop the rule from biting, and the bite is the lesson.",
+    };
+  }
+
+  return null;
+}
+
 export const writeTheRuleModule: LessonModule<WriteRuleState> = {
   id: MODULE_ID,
   title: "Module 2 · Lesson 3 — Writing the Rule",
@@ -3930,8 +4158,33 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     const agg = computeAggregate(state);
     const live = state.clubs.filter((c) => c.seatId !== null).length;
     const nextStage = state.revealStage < REVEAL_STEPS ? revealStagesFor(state)[state.revealStage] ?? null : null;
+    const room = roomRead(
+      state,
+      state.clubs
+        .slice(0, state.leagueSize)
+        .filter((c) => c.seatId !== null)
+        .map((c) => {
+          // Movement is only ever claimed against a number this desk chose
+          // itself. A week the bell settled for them is not a decision they
+          // moved off, and a round they sat out is not a position they changed.
+          const ownWeek = [...c.weeks].reverse().find((w) => !w.auto) ?? null;
+          const ownRound = [...c.proposals].reverse().find((p) => p !== null) ?? null;
+          return {
+            handle: deskHandleFor(c),
+            proposal: c.proposal,
+            ownLastProposal: ownRound ?? null,
+            roundsPlayed: c.proposals.length,
+            price: c.price,
+            reinvest: c.reinvest,
+            locked: c.locked,
+            weeksPlayed: c.weeks.length,
+            ownLastReinvest: ownWeek ? ownWeek.reinvest : null,
+          };
+        }),
+    );
     return tag({
       phase,
+      room,
       leagueSize: state.leagueSize,
       deskCount: live,
       lockedCount: state.clubs.filter((c) => c.seatId !== null && c.locked).length,

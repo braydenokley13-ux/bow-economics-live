@@ -728,6 +728,12 @@ export type SettledNight = {
   renewalMove: number;
   cashAfter: number;
   settlement: NightSettlement;
+  /**
+   * The gate call that stood when the bell rang, or null on a desk that made
+   * none (and on any night rehydrated from a snapshot written before the call
+   * existed). Frozen here so the bell answers what the pair actually said.
+   */
+  gateCall: GateCall | null;
   /** Frozen at lock (D15). NEVER serialized — see viewNight(). */
   hidden: Curve;
 };
@@ -743,6 +749,12 @@ export type Desk = {
   spend: number;
   openBowl: boolean;
   locked: boolean;
+  /**
+   * The pair's call on TONIGHT's crowd, made while locked and waiting for the
+   * room. Cleared when the night settles (it moves onto the settled night), and
+   * null on any desk rehydrated from a snapshot written before it existed.
+   */
+  gateCall: GateCall | null;
   nights: SettledNight[];
 };
 
@@ -917,6 +929,106 @@ export const REVEAL_STAGES: readonly RevealStage[] = [
   },
 ];
 
+/* ------------------------------------------------------ the gate call -- */
+
+/**
+ * THE GATE CALL (W6 repair `play-l1-locked-dead-time`).
+ *
+ * A pair that commits early sits in front of a dark building until the slowest
+ * desk in the room finishes, five times in a fifty-minute class. The screen was
+ * already the right picture — H1's dark house, no timer, no spinner — and it
+ * still said, in the product's own words, "Nothing to do but find out".
+ *
+ * The wait stays teacher-paced. It gets the one thing the pair cannot look up:
+ * the crowd in the building they are looking at. Free, carries no money,
+ * changes no settled number; its whole job is to make the pair COMMIT to a
+ * reading before the doors open, so the bell answers something they said.
+ *
+ * The bands are the same three names L2 uses -- one ritual across the module --
+ * but the FLOORS are tuned per lesson, because two lessons with different
+ * demand models and different buildings do not become uncertain at the same
+ * numbers. Measured over both markets, all five cards, renewals 20-80 and the
+ * $16-$70 band, these land 32% / 30% / 39%. L2's own floors give this lesson a
+ * 14% middle band, which is a call nobody makes.
+ */
+export type GateCall = "packed" | "busy" | "quiet";
+
+/** The fill fraction at or above which the house reads PACKED. */
+export const GATE_PACKED_FLOOR = 0.85;
+/** The fill fraction at or above which the house reads BUSY. */
+export const GATE_BUSY_FLOOR = 0.55;
+
+export const GATE_BANDS: readonly { id: GateCall; label: string; blurb: string }[] = [
+  { id: "packed", label: "PACKED", blurb: "nearly every seat sold" },
+  { id: "busy", label: "BUSY", blurb: "a good crowd, real gaps in it" },
+  { id: "quiet", label: "QUIET", blurb: "a lot of empty seats" },
+];
+
+export const GATE_CALL_PROMPT = "Your price is in. Nobody knows tonight's crowd yet — not even you. Call it: how full does this building get?";
+export const GATE_CALL_HEADING = "While the rest of the room commits";
+/** What the card says before the pair has called, and after. Both authored here (R-H/E4). */
+export const GATE_CALL_FOOT_OPEN = "No money rides on this. It is only worth something if you say it out loud before you know.";
+export const gateCallFootCalledFor = (building: string): string =>
+  `Your call is in — ${building} answers when the bell rings. You can change it until then.`;
+
+/**
+ * How much of the room has committed, as an aggregate. Never a seat identity —
+ * `/play` is private and stays private (CLAUDE.md 11); this is the class-level
+ * fact the projector already carries, and it is what turns "wait" into a finite
+ * thing the pair can see the end of.
+ */
+export function roomLockLine(state: FullHouseState): { locked: number; seated: number; line: string } {
+  const desks = state.deskOrder.map((id) => state.desks[id]!).filter(Boolean);
+  const locked = desks.filter((d) => d.locked).length;
+  const seated = desks.length;
+  const waiting = seated - locked;
+  return {
+    locked,
+    seated,
+    line:
+      waiting <= 0
+        ? `All ${seated} desks are in. Your teacher rings the bell.`
+        : `${locked} of ${seated} desks are in. ${waiting === 1 ? "One desk is" : `${waiting} desks are`} still deciding.`,
+  };
+}
+
+/**
+ * Which band a settled night actually landed in.
+ *
+ * Fill is of the seats the desk OPENED, never of capacity — on Night 4 those
+ * are different numbers and `fillQualifier` already says so everywhere else on
+ * this surface (R-2).
+ */
+export function gateBandOf(settlement: NightSettlement): GateCall {
+  const fill = settlement.seatsOpen > 0 ? settlement.turnout / settlement.seatsOpen : 0;
+  return fill >= GATE_PACKED_FLOOR ? "packed" : fill >= GATE_BUSY_FLOOR ? "busy" : "quiet";
+}
+
+const gateLabel = (band: GateCall): string => GATE_BANDS.find((b) => b.id === band)!.label;
+
+/**
+ * How the settled night answers the pair's call.
+ *
+ * Forecasting language, never a verdict on the price: reading a crowd and
+ * pricing well are different skills and the product must not let one stand in
+ * for the other. `null` on a night nobody called.
+ */
+export function gateCallResolvedFor(night: SettledNight): { called: GateCall; actual: GateCall; right: boolean; line: string } | null {
+  const called = night.gateCall;
+  if (called === null || called === undefined) return null;
+  const actual = gateBandOf(night.settlement);
+  const crowd = `${night.settlement.turnout.toLocaleString()} came — ${night.settlement.fillPct}% of the seats you opened`;
+  return {
+    called,
+    actual,
+    right: called === actual,
+    line:
+      called === actual
+        ? `You called ${gateLabel(called)}. ${crowd}. You read it.`
+        : `You called ${gateLabel(called)}. ${crowd}, which is ${gateLabel(actual)}. The night did not go the way you read it.`,
+  };
+}
+
 /** The renewals rule lands on the projector with Night 5, where the room can see it caused something. */
 export const RENEWALS_REVEAL_STAGE = 5;
 
@@ -967,6 +1079,7 @@ function applyNight(
     renewalMove: renewalsAfter - desk.renewals,
     cashAfter,
     settlement,
+    gateCall: desk.gateCall ?? null,
     hidden: curve,
   };
   return {
@@ -978,6 +1091,7 @@ function applyNight(
     spend: 0,
     openBowl: false,
     locked: false,
+    gateCall: null,
   };
 }
 
@@ -1006,6 +1120,7 @@ function seatDesk(state: FullHouseState, seatId: SeatId): FullHouseState {
     spend: 0,
     openBowl: false,
     locked: false,
+    gateCall: null,
     nights: [],
   };
   for (let i = 0; i < state.nightIndex; i += 1) {
@@ -2327,6 +2442,10 @@ function resultHeadlineFor(night: SettledNight): string {
 function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
   const nightCard = CARD_BY_ID.get(night.cardId) ?? null;
   return {
+    // How the pair's locked-and-waiting call came out. The SENTENCE is authored
+    // here, never in the client: the desk renders words, it does not write
+    // verdicts (R-1).
+    call: gateCallResolvedFor(night),
     cardId: night.cardId,
     label: CARD_BY_ID.get(night.cardId)?.label ?? night.cardId,
     day: CARD_BY_ID.get(night.cardId)?.day ?? "",
@@ -2780,6 +2899,21 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       if (action.type === "setBowl") return doSetBowl(state, action["open"], ctx.seatId);
       return doLock(state, ctx.seatId);
     }
+    if (action.type === "gateCall") {
+      // The locked-and-waiting beat. Free, carries no money, changes no settled
+      // number. Changeable while the night is open on purpose: a fifth-grader's
+      // misclick must not cost a whole night, and what the bell freezes is the
+      // call standing when it rings.
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the gate" };
+      if (ctx.phase !== "PLAY") return { ok: false, reason: `the gate is called during PLAY (session is in ${ctx.phase})` };
+      const desk = state.desks[ctx.seatId];
+      if (!desk) return { ok: false, reason: "this seat has no desk" };
+      if (state.nightIndex >= NIGHT_COUNT) return { ok: false, reason: "all five nights are already in the books" };
+      if (!desk.locked) return { ok: false, reason: "commit your price first — the call is what you do while the room finishes" };
+      const band = action["band"];
+      if (band !== "packed" && band !== "busy" && band !== "quiet") return { ok: false, reason: "call it packed, busy or quiet" };
+      return { ok: true, state: { ...state, desks: { ...state.desks, [ctx.seatId]: { ...desk, gateCall: band } } } };
+    }
     if (action.type === "teacher:closeNight") {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher rings the night bell" };
       if (ctx.phase !== "PLAY") return { ok: false, reason: `nights close during PLAY (session is in ${ctx.phase})` };
@@ -2843,7 +2977,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
 
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
-    if (phase === "PLAY") return ["takeSeat", "setPrice", "setSpend", "setBowl", "lock"];
+    if (phase === "PLAY") return ["takeSeat", "setPrice", "setSpend", "setBowl", "lock", "gateCall"];
     return [];
   },
 
@@ -2993,8 +3127,21 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // renders comes from the module. `nextNightLabel` names the night the
             // desk is about to play (the open card), from its printed facts only.
             uiCopy: uiCopyFor(card, state.nightIndex),
+            // The locked-and-waiting beat (W6 `play-l1-locked-dead-time`).
+            ...(desk.locked
+              ? {
+                  gateCall: {
+                    prompt: GATE_CALL_PROMPT,
+                    heading: GATE_CALL_HEADING,
+                    bands: GATE_BANDS,
+                    called: desk.gateCall ?? null,
+                    foot: desk.gateCall ? gateCallFootCalledFor(market.building) : GATE_CALL_FOOT_OPEN,
+                    room: roomLockLine(state),
+                  },
+                }
+              : {}),
             message: desk.locked
-              ? "Locked. Nothing to do but find out — the doors open when your teacher rings the bell."
+              ? "Your price is in. The doors open when your teacher rings the bell."
               : "No preview. Read the card, read your own nights, and commit.",
           };
         }
@@ -3183,7 +3330,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       // THE ROOM: spread, shape and movement of the live dials. Teacher-only —
       // see roomRead(). Null once the window is closed: after the last bell
       // there is no live dial to read, and the reveal owns the numbers.
-      room: state.nightIndex >= NIGHT_COUNT ? null : roomRead(desks),
+      room: state.nightIndex >= NIGHT_COUNT ? null : roomRead(desks, state.nightIndex),
       twoPeaksReleased: state.twoPeaksReleased,
       twoPeaksAvailable: state.nightIndex >= 3 && !state.twoPeaksReleased,
       twoPeaksReason:
@@ -3508,7 +3655,7 @@ type RoomDesk = { handle: string; price: number; locked: boolean; nightsPlayed: 
  *   "moved off it" is not adaptation, and counting it as such would tell the
  *   room a story about desks that never decided.
  */
-function roomRead(desks: readonly RoomDesk[]): Record<string, unknown> | null {
+function roomRead(desks: readonly RoomDesk[], nightIndex: number): Record<string, unknown> | null {
   if (desks.length === 0) return null;
 
   // THE SPREAD IS A FACT ABOUT DECISIONS, NOT ABOUT DIALS.
@@ -3599,6 +3746,9 @@ function roomRead(desks: readonly RoomDesk[]): Record<string, unknown> | null {
     deskCount: desks.length,
     lockedCount: desks.filter((d) => d.locked).length,
     decidingCount: deciding,
+    // The panel's own heading. Authored here rather than in the renderer so a
+    // lesson whose desks do not "lock" can say what its desks actually do.
+    countLine: `${desks.filter((d) => d.locked).length} of ${desks.length} locked in \u00b7 night ${nightIndex + 1} of ${NIGHT_COUNT}`,
     spread: min === null || max === null || mid === null ? null : { min, max, median: mid, range: max - min },
     bins,
     movement: { raised, held, lowered, basis: moved, noOwnPrior, noPrior, deciding },

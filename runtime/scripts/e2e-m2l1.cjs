@@ -204,9 +204,54 @@ async function bumpSpend(page, clicks) {
   for (let i = 0; i < clicks; i += 1) await page.click("#fhSpendUp");
 }
 
+const gateCalls = [];
+
 async function lockNight(page) {
   await page.click("#fhLock");
   await page.waitForSelector(".fh-locked-recap", { timeout: 15000 });
+}
+
+
+/**
+ * THE GATE CALL — the locked-and-waiting beat (W6 `play-l1-locked-dead-time`).
+ *
+ * A pair that commits early sits in front of a dark building until the slowest
+ * desk finishes, five times in a fifty-minute class, and the screen used to say
+ * so in as many words. Three things have to be true of the repair and none is
+ * provable from the module alone: the card is ON the locked screen and reachable
+ * without a scroll at Chromebook height, a real press registers the call, and
+ * the room line never carries a seat identity onto a private surface.
+ */
+async function callTheGate(page, band, label) {
+  const seen = await page.evaluate(() => {
+    const gate = document.getElementById("fhGate");
+    if (!gate) return null;
+    const r = gate.getBoundingClientRect();
+    const first = gate.querySelector(".hl-gate-band").getBoundingClientRect();
+    const probe = document.elementFromPoint(Math.round(first.left + first.width / 2), Math.round(first.top + first.height / 2));
+    return {
+      bottom: Math.round(r.bottom),
+      top: Math.round(r.top),
+      vh: window.innerHeight,
+      bands: [...gate.querySelectorAll(".hl-gate-band")].map((b) => b.dataset.band),
+      room: gate.querySelector(".hl-gate-room")?.textContent?.trim() ?? "",
+      text: gate.textContent,
+      reachable: Boolean(probe && probe.closest(".hl-gate-band")),
+    };
+  });
+  assert.ok(seen, `${label}: the locked desk has no gate call — it is back to having nothing to do`);
+  assert.deepEqual(seen.bands, ["packed", "busy", "quiet"], `${label}: the gate call's bands are wrong`);
+  assert.ok(seen.bottom <= seen.vh + 1, `${label}: the gate call is below the fold — box ${seen.top}..${seen.bottom} in ${seen.vh}px`);
+  assert.ok(seen.reachable, `${label}: the gate call's first band is occluded and cannot be pressed`);
+  assert.match(seen.room, /\d+ of \d+ desks|All \d+ desks/, `${label}: the room line does not say how much of the room is in: "${seen.room}"`);
+  assert.ok(!/seat-\d/.test(seen.text), `${label}: the gate call leaked a seat identity onto a private surface`);
+  await page.click(`#fhGate .hl-gate-band[data-band="${band}"]`);
+  await page.waitForFunction(
+    (b) => document.querySelector(`#fhGate .hl-gate-band[data-band="${b}"]`)?.getAttribute("aria-pressed") === "true",
+    band,
+    { timeout: 20000 },
+  );
+  gateCalls.push(`${label}:${band}`);
 }
 
 async function waitForNight(page, label) {
@@ -851,6 +896,12 @@ async function main() {
       }
 
       if (i === 0) {
+        await callTheGate(d1, "packed", "Night 1, desk 1");
+        await callTheGate(d2, "quiet", "Night 1, desk 2");
+        // A misclick must not cost a fifth-grader a whole night: the call is
+        // changeable while the night is open, and the LAST one is what freezes.
+        await callTheGate(d2, "busy", "Night 1, desk 2 changing its mind");
+        await d1.screenshot({ path: path.join(SCREEN_DIR, "05b-play-night1-locked-gatecall.png") });
         // Nothing about an open night may reach the projector.
         const openBoard = await board.evaluate(() => document.body.innerText);
         assert.equal(openBoard.includes("$34"), false, "a locked price for the still-open night reached the projector");
@@ -860,8 +911,59 @@ async function main() {
         await d1.screenshot({ path: path.join(SCREEN_DIR, "05-play-night1-dials.png"), fullPage: true });
       }
 
+      // The gate call is private to the desk that made it. A pair's reading of
+      // its own crowd is not the room's business until the room's own reveal.
+      if (i === 0) {
+        const boardText = await board.evaluate(() => document.body.innerText);
+        assert.ok(
+          !/PACKED|BUSY|QUIET/.test(boardText),
+          "a desk's private gate call reached the projector while the night was still open",
+        );
+      }
+
       // The teacher rings the bell. Every desk settles at once.
       await teach.click("#btnCloseNight");
+      if (i === 0) {
+        const answered = await Promise.all(
+          [d1, d2, d3].map((p) =>
+            p
+              .waitForSelector("#fhResult", { timeout: 20000 })
+              .then(() =>
+                p.evaluate(() => {
+                  const el = document.getElementById("fhGateResult");
+                  return el ? { line: el.textContent.trim(), right: el.classList.contains("right") } : null;
+                }),
+              ),
+          ),
+        );
+        assert.ok(answered[0], "desk 1 called the gate and the bell said nothing about it");
+        assert.match(answered[0].line, /^You called PACKED\./, `desk 1's answer does not name its own call: "${answered[0].line}"`);
+        assert.ok(answered[1], "desk 2 called the gate and the bell said nothing about it");
+        assert.match(
+          answered[1].line,
+          /^You called BUSY\./,
+          `desk 2's answer resolved the call it CHANGED AWAY from: "${answered[1].line}"`,
+        );
+        for (const a of [answered[0], answered[1]]) {
+          assert.ok(
+            !/good|bad|mistake|should have|wrong price/i.test(a.line),
+            `the gate call's answer judged the DECISION instead of the reading: "${a.line}"`,
+          );
+        }
+        assert.equal(answered[2], null, "desk 3 never called the gate and was handed a verdict on one anyway");
+        // NON-VACUITY: an answer naming a call the desk never made must be caught.
+        const poisonCaught = await d1.evaluate(() => {
+          const el = document.getElementById("fhGateResult");
+          const before = el.textContent;
+          el.textContent = "You called QUIET. 100 came — 1% of the seats you opened. You read it.";
+          const bad = /^You called PACKED\./.test(el.textContent.trim());
+          el.textContent = before;
+          return !bad;
+        });
+        assert.ok(poisonCaught, "the gate-call answer check does not bite");
+        console.log(`[e2e-m2l1] the gate call: ${gateCalls.join(" · ")} — answered on the desk that made it, silent on the desk that did not, absent from the projector`);
+        console.log("[e2e-m2l1] NON-VACUITY — an answer resolving a call the desk never made is rejected");
+      }
       // The settled night owns the desk until the pair presses NEXT (contract C).
       if (i === 3) {
         // Desk 1's Night-4 results state must rule on the $40,000 it put into Night 3.

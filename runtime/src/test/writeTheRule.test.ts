@@ -839,3 +839,183 @@ test("W6/RC3: the league floor carries what it draws, and never survives into th
     "a settled-week view carried the league table — that publishes every other desk's cash outcome to a private screen",
   );
 });
+
+/* -------------------------------------------------- THE ROOM (W6) -- */
+
+type L3Room = {
+  deskCount: number;
+  lockedCount: number;
+  decidingCount: number;
+  spread: { min: number; max: number; median: number; range: number } | null;
+  bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[];
+  movement: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number; deciding: number };
+  countLine: string;
+  movementLine: string;
+  spreadLine: string;
+  privacyNote: string;
+};
+const roomOf = (state: WriteRuleState): L3Room | null =>
+  (writeTheRuleModule.teacherView(state, "PLAY") as Record<string, unknown>)["room"] as L3Room | null;
+
+test("THE ROOM reads the rule rounds as a bargaining spread, and never reaches the projector", () => {
+  // The two-thirds test is only worth running on numbers the desks chose. A
+  // live median on the projector ends that in one press, so this read exists on
+  // the teacher's console and nowhere else.
+  let state = withDesks(6);
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  const shares = [0, 10, 10, 20, 40];
+  live.slice(0, 5).forEach((club, i) => {
+    state = apply(state, { type: "propose", share: shares[i]!, condition: i >= 3 }, "PLAY", club.seatId!);
+  });
+
+  const room = roomOf(state)!;
+  assert.equal(room.deskCount, 6);
+  assert.equal(room.lockedCount, 5, "five numbers are in");
+  assert.equal(room.decidingCount, 1, "and one desk has proposed nothing");
+  assert.deepEqual(room.spread, { min: 0, max: 40, median: 10, range: 40 });
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 5, "only proposals are on the grid");
+  assert.equal(
+    room.bins.reduce((n, b) => n + b.lockedCount, 0),
+    5,
+    "a proposal IS the commitment in this stage — there is no ghosted half to draw",
+  );
+  assert.deepEqual(
+    room.bins.map((b) => b.from),
+    [...SHARE_GRID],
+    "the bars stand on the dial the room was actually given",
+  );
+  assert.match(room.countLine, /5 of 6 numbers in .* round 1 of 3/);
+  assert.doesNotMatch(room.countLine, /locked/i, "desks propose in this stage, they do not lock");
+  assert.match(room.spreadLine, /between 0% and 40%, middle 10%/, room.spreadLine);
+  assert.match(room.spreadLine, /2 of them want the CONDITION on/, room.spreadLine);
+  assert.match(room.privacyNote, /never shows this while the round is open/);
+
+  // The projector must not be carrying any of it.
+  const board = JSON.stringify(writeTheRuleModule.boardView(state, "PLAY"));
+  assert.ok(!board.includes("spreadLine"), "the projector is carrying the class spread read");
+  assert.ok(!board.includes("movementLine"), "the projector is carrying the class movement read");
+  assert.ok(!/seat-\d/.test(board), "the projector is carrying a seat identity");
+
+  // First round: nothing behind these desks to have moved off.
+  assert.equal(room.movement.basis, 0);
+  assert.equal(room.movement.noPrior, 5);
+  assert.match(room.movementLine, /First round/, room.movementLine);
+});
+
+test("THE ROOM counts round movement against a desk's OWN previous number, not against an abstention", () => {
+  let state = withDesks(4);
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  // Round 1: three desks propose, the fourth abstains.
+  state = apply(state, { type: "propose", share: 10, condition: false }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "propose", share: 20, condition: false }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "propose", share: 30, condition: false }, "PLAY", live[2]!.seatId!);
+  state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
+
+  // Round 2: one moves up, one holds, one moves down, and the abstainer joins.
+  state = apply(state, { type: "propose", share: 25, condition: false }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "propose", share: 20, condition: false }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "propose", share: 15, condition: false }, "PLAY", live[2]!.seatId!);
+  state = apply(state, { type: "propose", share: 20, condition: false }, "PLAY", live[3]!.seatId!);
+
+  const room = roomOf(state)!;
+  assert.equal(room.movement.raised, 1, "one desk asked for more than it asked for last round");
+  assert.equal(room.movement.held, 1);
+  assert.equal(room.movement.lowered, 1);
+  assert.equal(room.movement.basis, 3);
+  assert.equal(
+    room.movement.noOwnPrior,
+    1,
+    "the desk that sat round 1 out has no number of its own to have moved off — it is not a 'held'",
+  );
+  assert.equal(room.movement.noPrior, 0, "round 2 is not anybody's first round");
+  assert.match(room.movementLine, /1 asked for more, 1 held their number, 1 asked for less/, room.movementLine);
+  assert.match(room.movementLine, /1 moving off a round they sat out/, room.movementLine);
+  assert.match(room.countLine, /round 2 of 3/);
+});
+
+test("THE ROOM switches to a compliance spread once the season opens under the room's own rule", () => {
+  // The rule the room voted in taxes and conditions on the reinvest dial, so
+  // that is the shape; price is the sentence. The teacher needs to see who is
+  // about to be bitten by a rule this room wrote.
+  let state = withDesks(5);
+  state = toAdopted(state, [20], [true]);
+  assert.equal(state.adopted!.condition, true, "this fixture needs the condition ON to test the compliance read");
+  state = toSeason(state);
+
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  // Four commit; the fifth leaves its dial parked without locking.
+  const set = [
+    { price: 30, reinvest: 0 },
+    { price: 40, reinvest: 5 },
+    { price: 50, reinvest: 20 },
+    { price: 60, reinvest: 40 },
+  ];
+  set.forEach((row, i) => {
+    state = apply(state, { type: "setPrice", price: row.price }, "PLAY", live[i]!.seatId!);
+    state = apply(state, { type: "setReinvest", reinvest: row.reinvest }, "PLAY", live[i]!.seatId!);
+    state = apply(state, { type: "lock" }, "PLAY", live[i]!.seatId!);
+  });
+  state = apply(state, { type: "setPrice", price: 120 }, "PLAY", live[4]!.seatId!);
+  state = apply(state, { type: "setReinvest", reinvest: 35 }, "PLAY", live[4]!.seatId!);
+
+  const room = roomOf(state)!;
+  assert.equal(room.lockedCount, 4);
+  assert.equal(room.decidingCount, 1);
+  assert.deepEqual(room.spread, { min: 30, max: 60, median: 45, range: 30 }, "the uncommitted $120 dial must not widen the spread");
+  assert.match(room.countLine, /4 of 5 locked in .* week 1 of 3/);
+  assert.match(room.spreadLine, /between \$30 and \$60, middle \$45/, room.spreadLine);
+  assert.match(
+    room.spreadLine,
+    new RegExp(`2 of them are under the ${CONDITION_MIN_REINVEST}% condition this room voted in`),
+    room.spreadLine,
+  );
+  assert.deepEqual(room.bins.map((b) => b.from), [...REINVEST_GRID], "the bars stand on the reinvest dial's own grid");
+  assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 5, "an undecided dial is still drawn where it actually is");
+  assert.equal(room.bins.reduce((n, b) => n + b.lockedCount, 0), 4, "and it is not drawn as a decision");
+  const parked = room.bins.find((b) => b.from === 35)!;
+  assert.equal(parked.count - parked.lockedCount, 1, "the parked dial sits in its own bar as an undecided position");
+  assert.match(room.privacyNote, /never shows this while the week is open/);
+
+  const board = JSON.stringify(writeTheRuleModule.boardView(state, "PLAY"));
+  assert.ok(!board.includes("spreadLine") && !board.includes("movementLine"), "the projector is carrying the live read");
+});
+
+test("THE ROOM claims season movement only off a week the desk decided itself", () => {
+  let state = withDesks(3);
+  state = toSeason(toAdopted(state, [10], [false]));
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  // Week 1: two desks decide, the third is committed by the bell (AUTO).
+  for (const i of [0, 1]) {
+    state = apply(state, { type: "setReinvest", reinvest: 20 }, "PLAY", live[i]!.seatId!);
+    state = apply(state, { type: "lock" }, "PLAY", live[i]!.seatId!);
+  }
+  state = apply(state, { type: "teacher:closeWeek" }, "PLAY", "teacher");
+
+  // Week 2: one raises, one holds, and the AUTO desk locks for the first time.
+  state = apply(state, { type: "setReinvest", reinvest: 30 }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "lock" }, "PLAY", live[0]!.seatId!);
+  state = apply(state, { type: "setReinvest", reinvest: 20 }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "lock" }, "PLAY", live[1]!.seatId!);
+  state = apply(state, { type: "setReinvest", reinvest: 5 }, "PLAY", live[2]!.seatId!);
+  state = apply(state, { type: "lock" }, "PLAY", live[2]!.seatId!);
+
+  const room = roomOf(state)!;
+  assert.equal(room.movement.raised, 1);
+  assert.equal(room.movement.held, 1);
+  assert.equal(room.movement.lowered, 0);
+  assert.equal(room.movement.basis, 2);
+  assert.equal(room.movement.noOwnPrior, 1, "an AUTO week is not a decision the desk moved off");
+  assert.match(room.movementLine, /1 moving off a week the bell committed for them/, room.movementLine);
+});
+
+test("THE ROOM is silent where there is no live decision to read", () => {
+  // Between the last round and the season, and after the final bell, there is
+  // no open window — a panel reporting a stale shape would be reporting a room
+  // that no longer exists.
+  assert.equal(roomOf(fresh()), null, "no desks, no read");
+  const adopted = toAdopted(withDesks(4), [15], [false]);
+  assert.equal(adopted.stage, "adopted");
+  assert.equal(roomOf(adopted), null, "the rule is written and the season has not opened");
+  const done = playSeason(toSeason(adopted));
+  assert.equal(roomOf(done), null, "the season is over");
+});

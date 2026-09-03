@@ -395,6 +395,7 @@ type RoomRead = {
   bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[];
   movement: { raised: number; held: number; lowered: number; basis: number; noOwnPrior: number; noPrior: number; deciding: number };
   firstNight: boolean;
+  countLine: string;
   movementLine: string;
   spreadLine: string;
   privacyNote: string;
@@ -432,11 +433,14 @@ function renderLiveRoom(payload: TeacherPayload): void {
     return;
   }
   liveRoomEl.hidden = false;
-  $("roomCount").textContent = `${room.lockedCount} of ${room.deskCount} locked in`;
+  // The heading is the module's own sentence. "Locked in" is not universal —
+  // one lesson's desks propose a number at the league rather than committing a
+  // dial — and the renderer is not the place that decides what a desk did.
+  $("roomCount").textContent = room.countLine;
 
   // The spread sentence, with the numbers pulled out so they read at a glance
   // from a standing teacher's distance rather than being buried in prose.
-  $("roomSpread").innerHTML = room.spreadLine.replace(/\$(\d+)/g, (m) => `<b>${escapeHtml(m)}</b>`);
+  $("roomSpread").innerHTML = escapeHtml(room.spreadLine).replace(/\$\d+|\d+%/g, (m) => `<b>${m}</b>`);
 
   const peak = Math.max(1, ...room.bins.map((b) => b.count));
   $("roomHist").innerHTML = room.bins

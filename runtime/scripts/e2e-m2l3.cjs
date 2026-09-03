@@ -843,6 +843,32 @@ async function proveLeagueInstrumentBites(page) {
   console.log("[e2e-m2l3] NON-VACUITY — a club's bar stretched to the tallest in the league is rejected");
 }
 
+/** THE ROOM, as the teacher's console has actually rendered it (W6). */
+async function readRoom(teach) {
+  return teach.evaluate(() => ({
+    hidden: document.getElementById("liveroom")?.hidden ?? true,
+    count: document.getElementById("roomCount")?.textContent || "",
+    spread: (document.getElementById("roomSpread")?.textContent || "").replace(/\s+/g, " ").trim(),
+    note: (document.getElementById("roomNote")?.textContent || "").replace(/\s+/g, " ").trim(),
+    chips: [...document.querySelectorAll("#roomMove .room-chip")].map((c) => c.textContent.replace(/\s+/g, " ").trim()),
+    bars: [...document.querySelectorAll("#roomHist .room-bar")].map((b) => Number(b.querySelector("u")?.textContent || 0)),
+    axis: [...document.querySelectorAll("#roomAxis span")].map((x) => x.textContent),
+  }));
+}
+
+/** The live read is teacher-private, in the browser, on the frame it is up. */
+async function assertRoomIsTeacherOnly(board, desk, label) {
+  const boardText = await board.evaluate(() => document.body.innerText);
+  const deskText = await desk.evaluate(() => document.body.innerText);
+  for (const [name, text] of [["projector", boardText], ["a desk", deskText]]) {
+    assert.equal(
+      /middle \d+%|middle \$\d+|under the \d+% condition this room voted in/.test(text),
+      false,
+      `${label}: ${name} is carrying the teacher's live room read`,
+    );
+  }
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
@@ -980,6 +1006,39 @@ async function main() {
         await desks[i].click("#wrPropose");
       }
       if (round === 0) await desks[0].screenshot({ path: path.join(SCREEN_DIR, "07-play-round1.png") });
+
+      // THE ROOM (W6) — the rule rounds are a BARGAINING spread, and the read
+      // that lets a teacher see whether the room is converging or dug in lives
+      // on the console and nowhere else. Round 1 opens 0%..60% and closes at a
+      // 10-point band; a teacher who can see that is the one who can ask the
+      // right question before the two-thirds test runs.
+      {
+        await teach.waitForFunction(
+          () => (document.getElementById("roomCount")?.textContent || "").startsWith("12 of 12 numbers in"),
+          null,
+          { timeout: 25000 },
+        );
+        const room = await readRoom(teach);
+        assert.equal(room.hidden, false, `round ${round + 1}: the live read must be on the console`);
+        assert.match(room.count, new RegExp(`round ${round + 1} of 3`), `round ${round + 1}: ${room.count}`);
+        assert.equal(/locked/i.test(room.count), false, `desks propose in the rule rounds, they do not lock: "${room.count}"`);
+        const shares = ROUND_SHARES[round];
+        const lo = Math.min(...shares);
+        const hi = Math.max(...shares);
+        assert.match(room.spread, new RegExp(`between ${lo}% and ${hi}%`), `round ${round + 1} spread: ${room.spread}`);
+        assert.match(room.spread, /CONDITION on/, room.spread);
+        assert.equal(room.bars.reduce((n, v) => n + v, 0), DESKS, "every proposal lands in exactly one bar");
+        assert.deepEqual(room.axis, ["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%", "55%", "60%"], "the bars stand on the dial the room was given");
+        assert.equal(/Desk \d|seat-\d/.test(room.spread + room.note), false, "the read named a desk in a sentence a teacher reads out");
+        if (round === 0) {
+          assert.match(room.note, /First round/, room.note);
+          assert.equal(room.chips.length, 0, "round 1 must claim no movement rather than invent some");
+        } else {
+          const moved = room.chips.join(" ");
+          assert.match(moved, /asked for (more|less)|held/, `round ${round + 1} movement chips: ${moved}`);
+        }
+        await assertRoomIsTeacherOnly(board, desks[0], `round ${round + 1}`);
+      }
       // The pacing control names what the NEXT press does, so it is the honest
       // thing to wait on: after round 3 there is no "round 4" frame to look for.
       const want = round < 2 ? `Close round ${round + 2} of 3` : "Run the two-thirds test";
@@ -1169,6 +1228,35 @@ async function main() {
       await desks[i].waitForSelector(".fh-locked-recap", { timeout: 20000 });
     }
     await desks[0].screenshot({ path: path.join(SCREEN_DIR, "12-play-week1-locked.png") });
+
+    // THE ROOM (W6) — the season is a COMPLIANCE spread. Same panel, different
+    // economics: the room wrote a rule with a condition in it, and the thing a
+    // teacher needs before the bell is who is about to be bitten by it.
+    {
+      await teach.waitForFunction(
+        () => (document.getElementById("roomCount")?.textContent || "").startsWith("11 of 12 locked in"),
+        null,
+        { timeout: 25000 },
+      );
+      const room = await readRoom(teach);
+      assert.match(room.count, /week 1 of 3/, room.count);
+      const locked = PRICES.slice(0, DESKS - 1);
+      assert.match(
+        room.spread,
+        new RegExp(`between \\$${Math.min(...locked)} and \\$${Math.max(...locked)}`),
+        `the spread must speak only for the desks that committed: ${room.spread}`,
+      );
+      assert.equal(
+        room.spread.includes(`$${PRICES[DESKS - 1]}`),
+        false,
+        `the uncommitted desk widened a spread the teacher is about to say out loud: ${room.spread}`,
+      );
+      assert.deepEqual(room.axis, ["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%"], "week bars stand on the reinvest dial");
+      assert.equal(room.bars.reduce((n, v) => n + v, 0), DESKS, "an undecided dial is still drawn, where it actually is");
+      assert.match(room.chips.join(" "), /still deciding/, `one desk has not locked: ${room.chips.join(" ")}`);
+      await assertRoomIsTeacherOnly(board, desks[0], "season week 1");
+      await teach.screenshot({ path: path.join(SCREEN_DIR, "11b-teach-room-week1.png") });
+    }
     await teach.click("#btnCloseWeek");
     for (const p of desks) await p.waitForFunction(() => /Week 2 of/.test(document.querySelector(".hl-week-num")?.textContent ?? ""), null, { timeout: 30000 });
     console.log("[e2e-m2l3] week 1 settled");

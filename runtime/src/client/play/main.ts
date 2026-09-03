@@ -2145,6 +2145,7 @@ type FHCard = {
   repeatOf: string | null;
 };
 type FHNight = {
+  call: { called: string; actual: string; right: boolean; line: string } | null;
   cardId: string;
   label: string;
   day: string;
@@ -3068,6 +3069,12 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
           : ""
       }
       ${
+        // The bell answering the gate call, directly under the fill figure the
+        // call was a call about. Forecasting language only: the module writes
+        // the sentence.
+        n.call ? `<div class="fh-gate-result ${n.call.right ? "right" : "wrong"}" id="fhGateResult">${escapeHtml(n.call.line)}</div>` : ""
+      }
+      ${
         tight && n.turnedAway > 0
           ? `<div class="fh-turned" style="display:flex; align-items:baseline; gap:9px; margin-top:6px; padding-top:6px; border-top:1px solid ${FH_HAIR};">
                <b class="${n.soldOut ? "m2-turnedaway" : ""}" style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:34px; line-height:36px; font-weight:700; letter-spacing:-0.03em; color:${FH_INK};">${n.turnedAway.toLocaleString()}</b>
@@ -3147,6 +3154,48 @@ function fhResultState(view: Record<string, unknown>, n: FHNight, opts: { closin
 
 /* ------------------------------------------------------- locked-waiting -- */
 
+type FHGateCall = {
+  prompt: string;
+  heading: string;
+  foot: string;
+  bands: { id: string; label: string; blurb: string }[];
+  called: string | null;
+  building: string;
+  room: { locked: number; seated: number; line: string };
+};
+
+/**
+ * THE GATE CALL — what a pair does while the rest of the room commits.
+ *
+ * The dark house above it was already the right picture; the screen just had
+ * nothing on it to do, five times a lesson. Every word here comes off the
+ * module's payload; the client picks no band and writes no verdict.
+ */
+function fhGateCallHtml(gate: FHGateCall | undefined): string {
+  if (!gate) return "";
+  const called = gate.called;
+  return `<div class="hl-gate" id="fhGate">
+      <div class="hl-gate-head">
+        <span class="eyebrow" style="font-size:11px;">${escapeHtml(gate.heading)}</span>
+        <span class="hl-gate-room">${escapeHtml(gate.room.line)}</span>
+      </div>
+      <p class="hl-gate-prompt">${escapeHtml(gate.prompt)}</p>
+      <div class="hl-gate-bands">
+        ${gate.bands
+          .map(
+            (b) => `<button type="button" class="hl-gate-band${called === b.id ? " is-called" : ""}" data-band="${escapeHtml(b.id)}" aria-pressed="${
+              called === b.id ? "true" : "false"
+            }">
+              <span class="hl-gate-band-label">${escapeHtml(b.label)}</span>
+              <span class="hl-gate-band-blurb">${escapeHtml(b.blurb)}</span>
+            </button>`,
+          )
+          .join("")}
+      </div>
+      <p class="hl-gate-foot">${escapeHtml(gate.foot)}</p>
+    </div>`;
+}
+
 /** H1: the desk recedes, the building comes up dark, no timer and no spinner. */
 function fhLockedWaiting(view: Record<string, unknown>): string {
   const ui = fhUi(view);
@@ -3154,21 +3203,36 @@ function fhLockedWaiting(view: Record<string, unknown>): string {
   const price = Number(view["price"] ?? 0);
   const spend = Number(view["spend"] ?? 0);
   const card = view["card"] as FHCard;
+  // The gate call gave this screen something to do and, at 1024x600, one column
+  // too many things to stack: the card measured 538..699 in a 600px viewport.
+  // The building and the call sit side by side instead — the drawing is a fixed
+  // 4.6:1, so halving its width halves its height, and the two together now cost
+  // less than the building alone did.
   const main = `
     <div style="display:flex; flex-direction:column; gap:${tight ? 10 : 14}px;">
-      ${fhHeader(view, { subtitle: String(view["message"] ?? ""), goal: false, h1: "Doors in a minute" })}
+      ${
+        // No subtitle here: the building's own overlay already says the doors
+        // open on the teacher's bell, and printing it twice on one screen reads
+        // as a stall rather than a beat.
+        fhHeader(view, { subtitle: "", goal: false, h1: "Doors in a minute" })
+      }
+      <div class="fh-locked-grid">
       <div class="m2-card m2-doors fh-doors" style="${FH_CARD} padding:0; overflow:hidden; position:relative;">
-        ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: tight ? 300 : 340, motion: false, label: "", cls: "fh-dark-building", maxHeight: tight ? 190 : 300 })}
+        ${fhArenaFrame({ view: "hero", turnout: 0, seatsOpen: 1, soldOut: false, w: 1200, h: tight ? 300 : 340, motion: false, label: "", cls: "fh-dark-building", maxHeight: tight ? 150 : 230 })}
         <div style="position:absolute; inset:auto 0 0 0; padding:14px 18px; background:linear-gradient(0deg, rgba(8,8,15,0.92) 40%, rgba(8,8,15,0));">
           <span style="${FH_LABEL} font-size:11px;">${escapeHtml(card?.label ?? "")} · locked</span>
           <p style="margin:4px 0 0; font-size:${tight ? 15 : 18}px; line-height:24px; color:${FH_INK};">${escapeHtml(ui.doorsLine)}</p>
         </div>
       </div>
-      <div class="fh-locked-recap" style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:11px 14px; border-radius:12px; background:${FH_PANEL_2}; border:1px solid ${FH_HAIR};">
-        <span style="${FH_LABEL} font-size:10.5px;">Locked at</span>
-        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">$${price}</b>
-        ${spend > 0 ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· ${money(spend)} on the night</span>` : ""}
-        ${view["openBowl"] ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· upper bowl open</span>` : ""}
+      <div class="fh-locked-side">
+        <div class="fh-locked-recap" style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:11px 14px; border-radius:12px; background:${FH_PANEL_2}; border:1px solid ${FH_HAIR};">
+          <span style="${FH_LABEL} font-size:10.5px;">Locked at</span>
+          <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">$${price}</b>
+          ${spend > 0 ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· ${money(spend)} on the night</span>` : ""}
+          ${view["openBowl"] ? `<span style="font-size:12.5px; color:${FH_INK_BODY};">· upper bowl open</span>` : ""}
+        </div>
+        ${fhGateCallHtml(view["gateCall"] as FHGateCall | undefined)}
+      </div>
       </div>
     </div>`;
   return fhShell(view, main, { books: true, nightIndex: Math.max(0, (card?.index ?? 1) - 1), settled: ((view["history"] as FHNight[]) ?? []).length });
@@ -3632,7 +3696,11 @@ function renderFHPlay(view: Record<string, unknown>): void {
   const unread = settled > ack ? history[settled - 1]! : null;
   const kind = unread ? "result" : allDone ? "closed" : locked ? "waiting" : "desk";
 
-  const key = `${kind}|${card?.id ?? "-"}|${settled}|${ack}|${Number(view["spendCap"] ?? 0)}|${tight ? "t" : "w"}`;
+  // The gate call and the room's lock count both move while the frame is up, so
+  // they belong in the mount key: without them the waiting screen keeps a stale
+  // "3 of 12 desks are in" for the whole wait, which is worse than not saying it.
+  const gate = view["gateCall"] as FHGateCall | undefined;
+  const key = `${kind}|${card?.id ?? "-"}|${settled}|${ack}|${Number(view["spendCap"] ?? 0)}|${tight ? "t" : "w"}|${gate?.called ?? "-"}|${gate?.room.locked ?? "-"}/${gate?.room.seated ?? "-"}`;
   if (fhMountKey === key && document.getElementById("fhPlayRoot")) return;
   fhMountKey = key;
 
@@ -3667,6 +3735,19 @@ function renderFHPlay(view: Record<string, unknown>): void {
   if (locked) {
     body.innerHTML = `<div id="fhPlayRoot">${fhLockedWaiting(view)}</div>`;
     fhAnimate(document.querySelector(".fh-doors"), [{ opacity: 0 }, { opacity: 1 }], 220);
+    // The gate call is the only live control on a locked desk. It changes no
+    // economics, so it needs none of the commit path's guards.
+    for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("#fhGate .hl-gate-band"))) {
+      btn.onclick = () => {
+        const band = btn.dataset["band"];
+        if (!band) return;
+        for (const other of Array.from(document.querySelectorAll<HTMLButtonElement>("#fhGate .hl-gate-band"))) {
+          other.classList.toggle("is-called", other === btn);
+          other.setAttribute("aria-pressed", other === btn ? "true" : "false");
+        }
+        outbox?.submit({ type: "gateCall", band });
+      };
+    }
     return;
   }
 
@@ -4373,6 +4454,8 @@ function hlHistoryHtml(history: HLWeek[]): string {
 type HLGateBand = { id: string; label: string; blurb: string };
 type HLGateCall = {
   prompt: string;
+  heading: string;
+  foot: string;
   bands: HLGateBand[];
   called: string | null;
   building: string;
@@ -4393,7 +4476,7 @@ function hlGateCallHtml(gate: HLGateCall | undefined): string {
   const called = gate.called;
   return `<div class="hl-gate" id="hlGate">
       <div class="hl-gate-head">
-        <span class="eyebrow" style="font-size:11px;">While the rest of the league commits</span>
+        <span class="eyebrow" style="font-size:11px;">${escapeHtml(gate.heading)}</span>
         <span class="hl-gate-room">${escapeHtml(gate.room.line)}</span>
       </div>
       <p class="hl-gate-prompt">${escapeHtml(gate.prompt)}</p>
@@ -4409,11 +4492,7 @@ function hlGateCallHtml(gate: HLGateCall | undefined): string {
           )
           .join("")}
       </div>
-      <p class="hl-gate-foot">${
-        called
-          ? `Your call is in — ${escapeHtml(gate.building)} answers when the week closes. You can change it until then.`
-          : "No money rides on this. It is only worth something if you say it out loud before you know."
-      }</p>
+      <p class="hl-gate-foot">${escapeHtml(gate.foot)}</p>
     </div>`;
 }
 

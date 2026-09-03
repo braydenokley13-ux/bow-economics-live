@@ -669,6 +669,11 @@ export const GATE_BANDS: readonly { id: GateCall; label: string; blurb: string }
 ];
 
 export const GATE_CALL_PROMPT = "Your price is in. Nobody knows the crowd yet — not even you. Call it: how full does your building get?";
+export const GATE_CALL_HEADING = "While the rest of the league commits";
+/** What the card says before the pair has called, and after. Both authored here, never in the client. */
+export const GATE_CALL_FOOT_OPEN = "No money rides on this. It is only worth something if you say it out loud before you know.";
+export const gateCallFootCalledFor = (building: string): string =>
+  `Your call is in — ${building} answers when the week closes. You can change it until then.`;
 
 /**
  * How much of the room has committed, as an aggregate. Never a seat identity —
@@ -998,6 +1003,118 @@ function applyStarDeparture(state: HostLeagueState): HostLeagueState {
 }
 
 /* ---------------------------------------------------------- aggregates -- */
+
+/**
+ * THE ROOM — the live class read on /teach, and nowhere else. L2's own.
+ *
+ * The console shape is L1's (`fullHouse.roomRead`), because a teacher who
+ * learned to read it on Monday must not have to learn a second console on
+ * Tuesday. What it is a read OF is this lesson's, and it is not the price.
+ *
+ * L2's economics is the give and take: what a club puts back into itself is
+ * what moves its Draw, and its Draw is what it hands the clubs it visits. So
+ * the SHAPE the teacher needs during an open week is the reinvest dial — is
+ * this a room of free riders, a room of investors, or two camps? — and the
+ * histogram bins that. Price is still the loudest number on a desk, so it is
+ * carried as the spread sentence rather than dropped.
+ *
+ * Two disciplines, both inherited and both load-bearing:
+ *
+ * - TEACHER-PRIVATE. Nothing here may reach `boardView` while a week is open.
+ *   The room committing blind is what makes the ledger reveal land; a live
+ *   histogram on the projector ends that in one press.
+ * - Movement is claimed only for a desk whose previous week was its OWN
+ *   decision. A bell-committed week is not a share anybody chose, and a week
+ *   the league office covered before the pair arrived is not theirs at all.
+ */
+type L2RoomDesk = { handle: string; price: number; share: number; locked: boolean; weeksPlayed: number; ownLastShare: number | null };
+
+function roomRead(desks: readonly L2RoomDesk[], weekIndex: number): Record<string, unknown> | null {
+  if (desks.length === 0) return null;
+
+  // Committed decisions only. Measured over every desk, the sentence reports
+  // the house price the dial opens on, which is a number nobody chose.
+  const committed = desks.filter((d) => d.locked);
+  const prices = committed.map((d) => d.price).sort((a, b) => a - b);
+  const min = prices.length > 0 ? prices[0]! : null;
+  const max = prices.length > 0 ? prices[prices.length - 1]! : null;
+  const mid =
+    prices.length === 0
+      ? null
+      : prices.length % 2 === 1
+        ? prices[(prices.length - 1) / 2]!
+        : Math.round((prices[prices.length / 2 - 1]! + prices[prices.length / 2]!) / 2);
+
+  // The histogram bins EVERY desk on the reinvest dial's own grid — a teacher
+  // needs to see where the undecided dials are sitting too — and the dial is
+  // short enough (0-40 in fives) that every step is its own bar.
+  const bins: { from: number; to: number; label: string; count: number; lockedCount: number; handles: string[] }[] = [];
+  for (let from = SHARE_MIN; from <= SHARE_MAX; from += SHARE_STEP) {
+    const inBin = desks.filter((d) => d.share === from);
+    bins.push({
+      from,
+      to: from,
+      label: `${from}%`,
+      count: inBin.length,
+      lockedCount: inBin.filter((d) => d.locked).length,
+      handles: inBin.map((d) => d.handle),
+    });
+  }
+
+  let raised = 0;
+  let held = 0;
+  let lowered = 0;
+  let noOwnPrior = 0;
+  let noPrior = 0;
+  let deciding = 0;
+  for (const d of desks) {
+    if (!d.locked) deciding += 1;
+    else if (d.weeksPlayed === 0) noPrior += 1;
+    else if (d.ownLastShare === null) noOwnPrior += 1;
+    else if (d.share > d.ownLastShare) raised += 1;
+    else if (d.share < d.ownLastShare) lowered += 1;
+    else held += 1;
+  }
+  const moved = raised + held + lowered;
+  const inSoFar = moved + noOwnPrior + noPrior;
+  const lockedShares = committed.map((d) => d.share);
+  const freeRiders = lockedShares.filter((v) => v === 0).length;
+
+  return {
+    deskCount: desks.length,
+    lockedCount: committed.length,
+    decidingCount: deciding,
+    countLine: `${committed.length} of ${desks.length} locked in \u00b7 week ${weekIndex + 1} of ${WEEK_COUNT}`,
+    spread: min === null || max === null || mid === null ? null : { min, max, median: mid, range: max - min },
+    bins,
+    movement: { raised, held, lowered, basis: moved, noOwnPrior, noPrior, deciding },
+    firstNight: noPrior > 0 && moved === 0 && noOwnPrior === 0,
+    movementLine:
+      inSoFar === 0
+        ? "Nobody is in yet — movement shows up as desks lock."
+        : noPrior === inSoFar
+          ? "First week — there is nothing behind these desks to have moved off yet."
+          : moved === 0
+            ? "Nobody in so far has a week of their own to have moved off."
+            : `Of the ${inSoFar} in so far, on the reinvest dial: ${raised} put back more, ${held} held, ${lowered} put back less${
+                noOwnPrior > 0 ? ` \u00b7 ${noOwnPrior} moving off a week the bell committed for them` : ""
+              }${noPrior > 0 ? ` \u00b7 ${noPrior} on their first week` : ""}.`,
+    spreadLine:
+      min === null || max === null || mid === null
+        ? "Nothing is committed yet \u2014 every dial is still sitting where the week opened."
+        : `${
+            prices.length === desks.length ? "The room" : `The ${prices.length} in so far`
+          } ${min === max ? `all priced $${min}` : `priced between $${min} and $${max}, middle $${mid}`}\u2014 and ${
+            freeRiders === 0
+              ? "not one of them is putting nothing back"
+              : freeRiders === prices.length
+                ? `every one of them is putting NOTHING back`
+                : `${freeRiders} of them are putting NOTHING back`
+          }.`,
+    privacyNote:
+      "Yours only \u2014 the projector never shows this while the week is open. Reading the reinvest shape out before the bell tells the room what to copy, and the ledger reveal is built on them not knowing.",
+  };
+}
 
 export const deskHandleFor = (club: Club): string => `Desk ${club.deskNumber} · ${CLUBS[club.slot]!.short}`;
 export const clubHandleFor = (club: Club): string =>
@@ -3445,8 +3562,10 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
               ? {
                   gateCall: {
                     prompt: GATE_CALL_PROMPT,
+                    heading: GATE_CALL_HEADING,
                     bands: GATE_BANDS,
                     called: club.gateCall ?? null,
+                    foot: club.gateCall ? gateCallFootCalledFor(defOf(club).building) : GATE_CALL_FOOT_OPEN,
                     building: defOf(club).building,
                     capacity: defOf(club).capacity,
                     room: roomLockLine(state),
@@ -3629,8 +3748,31 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
     const synthPage = Math.min(Math.max(0, state.synthPage ?? 0), synthPages - 1);
     const synthTitle = (i: number): string => cards[i * SYNTH_CARDS_PER_PAGE]?.title ?? "";
     const stagesNow = revealStagesFor(state);
+    // THE ROOM: the shape of the reinvest dial while the week is open.
+    // Teacher-only — never handed to `boardView` (see roomRead).
+    const room =
+      state.weekIndex >= WEEK_COUNT
+        ? null
+        : roomRead(
+            state.clubs
+              .slice(0, state.leagueSize)
+              .filter((c) => c.seatId !== null)
+              .map((c) => {
+                const own = [...c.weeks].reverse().find((w) => !w.auto && !w.stock) ?? null;
+                return {
+                  handle: deskHandleFor(c),
+                  price: c.price,
+                  share: c.share,
+                  locked: c.locked,
+                  weeksPlayed: c.weeks.length,
+                  ownLastShare: own ? own.share : null,
+                };
+              }),
+            state.weekIndex,
+          );
     return tag({
       phase,
+      room,
       weekIndex: state.weekIndex,
       weekNumber: openWeekNumber(state),
       weekCount: WEEK_COUNT,

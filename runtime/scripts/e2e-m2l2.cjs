@@ -709,6 +709,19 @@ async function advanceTo(teach, phase) {
 
 /* ------------------------------------------------------------- the run -- */
 
+/** THE ROOM, as the teacher's console has actually rendered it (W6). */
+async function readRoom(teach) {
+  return teach.evaluate(() => ({
+    hidden: document.getElementById("liveroom")?.hidden ?? true,
+    count: document.getElementById("roomCount")?.textContent || "",
+    spread: (document.getElementById("roomSpread")?.textContent || "").replace(/\s+/g, " ").trim(),
+    note: (document.getElementById("roomNote")?.textContent || "").replace(/\s+/g, " ").trim(),
+    chips: [...document.querySelectorAll("#roomMove .room-chip")].map((c) => c.textContent.replace(/\s+/g, " ").trim()),
+    bars: [...document.querySelectorAll("#roomHist .room-bar")].map((b) => Number(b.querySelector("u")?.textContent || 0)),
+    axis: [...document.querySelectorAll("#roomAxis span")].map((x) => x.textContent),
+  }));
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(SNAPSHOT_FILE), { recursive: true });
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
@@ -868,6 +881,55 @@ async function main() {
     // must not cost a whole week. The LAST one standing is what gets frozen.
     await callTheGate(desks[4], "busy", "week 1, desk 5 changing its mind");
     await desks[0].screenshot({ path: path.join(SCREEN_DIR, "05-play-week1-locked.png") });
+
+    // THE ROOM (W6) — this lesson's give-and-take happens on the reinvest dial,
+    // so that is the shape the console draws; price is the sentence. A teacher
+    // standing up cannot count eleven dials, and the free riders are the whole
+    // argument the ledger reveal is about to have.
+    {
+      await teach.waitForFunction(
+        () => (document.getElementById("roomCount")?.textContent || "").startsWith("11 of 12 locked in"),
+        null,
+        { timeout: 25000 },
+      );
+      const room = await readRoom(teach);
+      assert.equal(room.hidden, false, "the live read must be on the console while the week is open");
+      assert.match(room.count, /week 1 of 3/, room.count);
+      const locked = PRICES.filter((_, i) => i !== NEVER_LOCK_IDX);
+      assert.match(
+        room.spread,
+        new RegExp(`between \\$${Math.min(...locked)} and \\$${Math.max(...locked)}`),
+        `the spread must speak only for the desks that committed: ${room.spread}`,
+      );
+      assert.equal(
+        room.spread.includes(`$${PRICES[NEVER_LOCK_IDX]}`),
+        false,
+        `the desk that never touched the console widened the spread: ${room.spread}`,
+      );
+      // Two desks are locked at 0% reinvest (the free rider and desk 10), and
+      // the sentence a teacher reads out has to carry that, because it is the
+      // fact the ledger reveal turns on.
+      assert.match(room.spread, /2 of them are putting NOTHING back/, room.spread);
+      assert.deepEqual(room.axis, ["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%"], "the bars stand on the reinvest dial's own grid");
+      assert.equal(room.bars.reduce((n, v) => n + v, 0), DESKS, "every desk lands in exactly one bar, undecided ones included");
+      assert.match(room.chips.join(" "), /still deciding/, `the unlocked desk must be named as undecided: ${room.chips.join(" ")}`);
+      assert.match(room.note, /First week/, room.note);
+      assert.equal(/Desk \d|seat-\d/.test(room.spread + room.note), false, "the read named a desk in a sentence a teacher reads out");
+      // Teacher-private, in the browser, on the frame it is up.
+      const boardText = await board.evaluate(() => document.body.innerText);
+      const deskText = await desks[0].evaluate(() => document.body.innerText);
+      for (const [name, text] of [["projector", boardText], ["a desk", deskText]]) {
+        assert.equal(
+          // "N desks are still deciding" is a line the gate call gives the
+          // STUDENTS on purpose. The teacher-only facts are the spread's middle
+          // and the free-rider count.
+          /middle \$\d+|putting NOTHING back/.test(text),
+          false,
+          `${name} is carrying the teacher's live room read while the week is open`,
+        );
+      }
+      await teach.screenshot({ path: path.join(SCREEN_DIR, "04b-teach-room-week1.png") });
+    }
     await teach.click("#btnCloseWeek");
     for (const p of desks) await waitForWeek(p, 2);
     console.log("[e2e-m2l2] week 1 settled");

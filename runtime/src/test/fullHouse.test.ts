@@ -23,6 +23,8 @@ import {
   PRICE_STEP,
   RENEWALS_START,
   RENEWAL_DELTA_FLOOR,
+  GATE_PACKED_FLOOR,
+  GATE_BUSY_FLOOR,
   REVEAL_STEPS,
   SIMPLIFICATIONS,
   TWO_PEAKS_CARD_ID,
@@ -1590,4 +1592,103 @@ test("every desk lands in exactly one bar, locked and deciding kept apart", () =
   assert.equal(room.bins.reduce((n, b) => n + b.count, 0), 4);
   assert.equal(room.bins.reduce((n, b) => n + b.lockedCount, 0), 1);
   assert.ok(room.bins.every((b) => b.lockedCount <= b.count), "a bar cannot hold more decisions than desks");
+});
+
+test("W6: the locked pair gets the gate call, and only a locked pair does", () => {
+  let state = seated(4);
+  const bad = (r: ReturnType<typeof fullHouseModule.reduce>): string => {
+    assert.equal(r.ok, false, "expected a refusal");
+    return (r as { ok: false; reason: string }).reason;
+  };
+
+  // Before the lock there is no call to make: the dials are still the work.
+  assert.equal(
+    (fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"],
+    undefined,
+    "an undecided desk was offered the waiting beat",
+  );
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1")), /commit your price first/);
+
+  state = ok(act(state, { type: "setPrice", price: 34 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+
+  const gate = (fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"] as {
+    bands: { id: string }[];
+    called: string | null;
+    heading: string;
+    foot: string;
+    room: { locked: number; seated: number; line: string };
+  };
+  assert.ok(gate, "the locked desk was left with nothing to do");
+  assert.deepEqual(
+    gate.bands.map((b) => b.id),
+    ["packed", "busy", "quiet"],
+  );
+  assert.equal(gate.called, null);
+  // The room line is an AGGREGATE. /play must never learn which desk is which.
+  assert.equal(gate.room.locked, 1);
+  assert.equal(gate.room.seated, 4);
+  assert.match(gate.room.line, /1 of 4/);
+  assert.ok(!/seat-/.test(JSON.stringify(gate)), "the room line leaked a seat identity onto a private surface");
+
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "teacher")), /seated pair/);
+  assert.match(bad(act(state, { type: "gateCall", band: "sold" }, "PLAY", "seat-1")), /packed, busy or quiet/);
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "REVEAL", "seat-1")), /during PLAY/);
+
+  // Changeable while the night is open; the last one standing is what freezes.
+  state = ok(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "gateCall", band: "quiet" }, "PLAY", "seat-1"));
+  assert.equal(
+    ((fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"] as { called: string }).called,
+    "quiet",
+  );
+  assert.equal(
+    (fullHouseModule.studentView(state, "seat-2", "PLAY") as Record<string, unknown>)["gateCall"],
+    undefined,
+    "an unlocked desk was shown the waiting beat",
+  );
+});
+
+test("W6: the bell answers the call it was actually given, and calls nothing else", () => {
+  let state = seated(4);
+  for (const seatId of ["seat-1", "seat-2", "seat-3", "seat-4"]) {
+    state = ok(act(state, { type: "setPrice", price: 24 }, "PLAY", seatId));
+    state = ok(act(state, { type: "lock" }, "PLAY", seatId));
+  }
+  state = ok(act(state, { type: "gateCall", band: "packed" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "gateCall", band: "quiet" }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+
+  const nightOf = (seatId: SeatId) => {
+    const v = fullHouseModule.studentView(state, seatId, "PLAY") as {
+      history: { call: { called: string; actual: string; right: boolean; line: string } | null; turnout: number; seatsOpen: number; fillPct: number }[];
+    };
+    return v.history[0]!;
+  };
+
+  const one = nightOf("seat-1");
+  assert.ok(one.call, "the call the pair made never came back");
+  assert.equal(one.call!.called, "packed");
+  // Recomputed from the numbers printed beside it, never trusted. Fill is of the
+  // seats OPENED, which on the bowl night is not capacity (R-2).
+  const fill = one.turnout / one.seatsOpen;
+  assert.equal(one.call!.actual, fill >= GATE_PACKED_FLOOR ? "packed" : fill >= GATE_BUSY_FLOOR ? "busy" : "quiet");
+  assert.equal(one.call!.right, one.call!.called === one.call!.actual);
+  assert.match(one.call!.line, /^You called PACKED\./);
+  assert.match(one.call!.line, new RegExp(`${one.turnout.toLocaleString()} came`));
+  // Forecasting language only. Reading a crowd and pricing well are different
+  // skills, and the product must never let one stand in for the other.
+  assert.ok(!/good|bad|wrong price|mistake|should have/i.test(one.call!.line), `the call's answer judged the decision: ${one.call!.line}`);
+
+  assert.equal(nightOf("seat-2").call!.called, "quiet");
+  assert.equal(nightOf("seat-3").call, null, "a desk that made no call was handed a verdict on one");
+
+  // The pending call does not survive its own night.
+  state = ok(act(state, { type: "setPrice", price: 24 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  assert.equal(
+    ((fullHouseModule.studentView(state, "seat-1", "PLAY") as Record<string, unknown>)["gateCall"] as { called: string | null }).called,
+    null,
+    "night 1's call carried into night 2",
+  );
 });
