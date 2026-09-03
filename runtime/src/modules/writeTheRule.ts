@@ -3049,6 +3049,7 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
             ? "Read one 'how you got here' card out loud — a desk's own Draw and bank balance from last lesson, with its name on it."
             : "No Lesson 2 session is linked. Say so plainly: today's league is a stock spread, and it is still this room's league by the end of the hour.",
           `${live} desk${live === 1 ? "" : "s"} in so far, in a ${state.leagueSize}-club league.`,
+          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts the pair straight back in their own desk. If they lost it, press Reseat beside their name and read them a new one.",
         ],
         ask: [{ q: "Whose building are you running, and is it a big market or a small one?", answer: "Both answers are on their own screen. You are only making sure every pair has found theirs before the vote." }],
         dontExplainYet: [

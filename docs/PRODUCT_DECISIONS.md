@@ -750,3 +750,62 @@ the founder must not be a hidden runtime dependency for either band.
 - **Evidence:** `e2e-rehearsal.cjs` — the strip reads MIN 0 at creation and repaints to
   MIN 7 on its own beat when the console's wall clock is pushed forward, with no poll and no
   press.
+
+## D43. A pair whose device died can be put back in their own desk
+
+- **Decision:** The console can reseat any seat: it mints a fresh 4-digit rejoin PIN, shows it
+  to the teacher to read aloud, and retires the old device token in the same write. The desk,
+  its books, its history and its identity in the room's evidence are untouched — the pair
+  rejoins under the same name on a spare device and lands in the seat they already held.
+  Minting a credential for someone else's seat requires the teacher key and never crosses
+  sessions. Every M2 lesson's LOBBY script now tells the room to write the PIN down somewhere
+  that is not the screen showing it.
+- **Grounds:** Rejoin assumes the pair still holds something the seat will accept — the device
+  token, or the PIN their device showed once at join. A dead Chromebook takes both in the same
+  instant, and such a pair is not locked out (so `unlockRejoin` does nothing for them); they
+  are simply outside. In a fifty-minute period the only moves left were to rejoin as a NEW seat
+  — a fresh desk and a blank book in the middle of the evidence the class is about to be shown
+  — or to lose the pair for the rest of the lesson.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-away.cjs` — a genuinely offline device is reseated from the console and
+  the pair rejoins on a second laptop keeping `Desk 1 · New York Knicks`. Unit:
+  `sessionService.test.ts` (old token and old PIN both dead; teacher key required; no
+  cross-session reach).
+
+## D44. The console says whether a projector is really watching
+
+- **Decision:** The Projector card carries BOARD LIVE / BOARD QUIET / BOARD NOT SEEN, from a
+  coarse bucket of when a `/board` poll last arrived (in memory, never on the session row, so
+  a projector poll neither bumps the version nor writes to disk). The console's own embedded
+  mirror polls with `preview=1` and is deliberately NOT counted; the bucket is in the teacher
+  ETag fingerprint (D35).
+- **Grounds:** A teacher says "look at the board" with their back to it. A dead HDMI cable, a
+  sleeping projector, or a `/board` tab left on yesterday's code are all silent from the
+  console — and the console's own preview iframe looks perfect throughout, because it is this
+  laptop's copy of the page rather than the one on the wall.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-rehearsal.cjs` — BOARD NOT SEEN while only the console's own mirror is
+  polling, BOARD LIVE once a real projector opens the room, and back to BOARD QUIET after it
+  closes.
+
+## D45. Device health outlives the decision window; undo depth is stated everywhere
+
+- **Decision:** THE DESKS no longer stands down when PLAY ends. Outside PLAY it becomes a
+  device-health strip: it appears only when a device has gone quiet, shows only those desks,
+  and says plainly that nothing on it is about a decision. And every skip-content confirm, plus
+  Restore itself, carries one shared sentence saying the undo is ONE step deep.
+- **Grounds:** A Chromebook that dies in REVEAL leaves a pair watching the class's whole
+  payoff on a black screen, and the console said nothing because the panel keyed off PLAY. On
+  undo, two of six confirm branches claimed "Restore last good state is the only way back" and
+  four said nothing, so the same click read as recoverable in one lesson and unqualified in the
+  next — and "the only way back" was never the whole truth, because there is exactly one
+  checkpoint and no second step backwards.
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** Lead integrator
+- **Evidence:** `e2e-away.cjs` (a genuinely offline device is marked quiet on the console);
+  the undo sentence is one shared constant, so the six branches cannot drift apart again.

@@ -153,6 +153,7 @@ async function main() {
       await teach.fill("#title", `Cold walk ${lesson.short}`);
       await teach.click("#create");
       await teach.waitForSelector("#room:not([hidden])");
+      const code = (await teach.textContent("#code")).trim();
 
       // NOBODY JOINS. This is the whole point.
       await teach.waitForFunction(() => !document.getElementById("director").hidden, null, { timeout: 15000 })
@@ -200,6 +201,26 @@ async function main() {
         await teach.evaluate(() => { Date.now = window.__realNow; });
       }
       console.log(`[rehearsal] ${lesson.short} deck clock reads "${min}"`);
+
+      if (lesson.short === "L1") {
+        /* -- BOARD LIVE: is a projector actually watching? ---------------- */
+        // The console has its own /board mirror open at all times, so the
+        // indicator is worthless unless that mirror is excluded. Cold: no
+        // projector, and the console must say so even though its own preview
+        // is polling happily.
+        const cold = await teach.textContent("#ppLive");
+        assert.equal(cold, "BOARD NOT SEEN", `the console's own preview was counted as a projector: "${cold}"`);
+        const projector = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+        await projector.goto(`${BASE}/board?code=${code}`);
+        await teach.waitForFunction(() => document.getElementById("ppLive")?.textContent === "BOARD LIVE", null, { timeout: 20000 })
+          .catch(async (e) => { throw new Error(`a real projector did not register — still "${await teach.textContent("#ppLive")}" (${e.message})`); });
+        console.log("[rehearsal] BOARD LIVE lit only once a real projector opened the room, not for the console's own mirror");
+        await projector.close();
+        // And it goes back: a projector that stops polling stops counting.
+        await teach.waitForFunction(() => document.getElementById("ppLive")?.textContent !== "BOARD LIVE", null, { timeout: 120000 })
+          .catch(async (e) => { throw new Error(`a closed projector still read as live — "${await teach.textContent("#ppLive")}" (${e.message})`); });
+        console.log(`[rehearsal] a closed projector stopped counting: "${await teach.textContent("#ppLive")}"`);
+      }
 
       /* -- 2. The whole synthesis deck, on the console and the board. ----- */
       // Walk to SYNTHESIS the way a rehearsing teacher does: Advance when it is

@@ -1996,8 +1996,12 @@ function boot(): void {
   // the projector. `version` never goes backwards on the server, so a lower one
   // is a response that was already in flight when the teacher pressed.
   const freshness = createFreshness<BoardPayload>((p) => ({ code, version: p.version }));
+  // Carried through from the page URL: the teacher console embeds this page as
+  // its own mirror, and that mirror must not be counted as a projector watching
+  // the room, or BOARD LIVE would be true in an empty gym.
+  const preview = new URLSearchParams(window.location.search).get("preview") === "1"; // claim-ok: a URL flag naming the console's own mirror, never rendered
   startPolling<BoardPayload>(
-    `/api/sessions/${code}/board`,
+    `/api/sessions/${code}/board${preview ? "?preview=1" : ""}`, // claim-ok: a query flag, never rendered
     1000,
     (payload) => {
       if (!freshness.accept(payload)) return;

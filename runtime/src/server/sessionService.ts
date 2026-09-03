@@ -97,6 +97,17 @@ export function quietBucketOf(quietMs: number): 0 | 1 | 2 | 3 | 4 {
   return 0;
 }
 
+/**
+ * How recently a projector polled, coarsely. 15s is comfortably longer than the
+ * board's own poll interval and short enough that a teacher who unplugs the
+ * cable is told before they finish the sentence.
+ */
+export function boardSeenBucketOf(sinceMs: number | null): 0 | 1 | 2 {
+  if (sinceMs === null || sinceMs >= 90_000) return 2;
+  if (sinceMs >= 15_000) return 1;
+  return 0;
+}
+
 /** How much of the class's history is kept. Five nights of beats, with room. */
 const CLASS_LOG_LIMIT = 60;
 
@@ -177,6 +188,19 @@ export type TeacherPayload = {
     hasCheckpoint: boolean;
     /** What pressing Restore would undo, in words. Null when there is nothing to restore. */
     checkpointLabel: string | null;
+    /**
+     * Whether a projector is actually watching this room, as a coarse bucket:
+     * 0 = a board polled within the last 15s, 1 = 15-90s, 2 = longer ago or
+     * never on this server.
+     *
+     * A teacher says "look at the board" with their back to it. A dead HDMI
+     * cable, a sleeping projector or a /board tab on the wrong session are all
+     * silent from the console, and the class stares at a blank wall while the
+     * teacher narrates a reveal. Bucketed and in the ETag fingerprint for the
+     * same reason `quietBucket` is (D35): a live millisecond count inside a
+     * cacheable body freezes and then lies.
+     */
+    boardSeenBucket: 0 | 1 | 2;
   };
   /** Only ever populated on the createSession response — the one moment this credential is issued (R1). */
   teacherKey?: string;
@@ -235,6 +259,8 @@ export type ActionOutcome = StudentPayload & { disposition: "applied" | "duplica
 
 export class SessionService {
   private readonly modules = new Map<string, AnyLessonModule>();
+  /** sessionId -> the last time a projector polled this room. In memory only; see `boardView`. */
+  private readonly boardSeenAt = new Map<string, number>();
 
   constructor(private readonly repo: Repository) {}
 
@@ -483,6 +509,47 @@ export class SessionService {
     const seat = await this.repo.getSeatById(seatId);
     if (!seat || seat.sessionId !== session.id) throw notFound("seat");
     await this.repo.updateSeat(seat.id, { failedRejoinAttempts: 0 });
+  }
+
+  /**
+   * Teacher-only: put a pair back in their own seat on a different device.
+   *
+   * `gate-l2-teacher` (BLOCKING). The rejoin path assumes the pair still has
+   * something the seat will accept: their device token, or the PIN their
+   * device showed them once at join. A Chromebook that dies, sleeps into a
+   * wiped profile, or gets carried off by the pair before it took the last
+   * charge leaves BOTH gone at the same moment, and there was no teacher-side
+   * move at all: `unlockRejoin` clears a lockout counter, and a pair who never
+   * knew the PIN is not locked out, they are simply outside. In a fifty-minute
+   * period the alternatives were to rejoin as a NEW seat — a fresh desk, a
+   * blank book, the room's evidence quietly changed — or to lose the pair.
+   *
+   * This mints a NEW rejoin PIN and hands it to the teacher, who reads it to
+   * the pair. It rotates the device token in the same write, so the dead
+   * device is retired the instant the recovery is offered rather than when it
+   * is used: nothing that comes back to life later can write to this seat with
+   * the old credential. The desk, its books, its history and its identity in
+   * the room's evidence are untouched — the pair walks back into the same
+   * seat, which is the whole point.
+   *
+   * It is deliberately NOT reachable by a student: a valid teacher key is the
+   * only thing that mints a credential for someone else's seat.
+   */
+  async reseatSeat(code: string, seatId: string, teacherKey: string | null): Promise<{ seatId: string; displayName: string; pin: string }> {
+    const session = await this.requireSession(code);
+    this.assertTeacher(session, teacherKey);
+    const seat = await this.repo.getSeatById(seatId);
+    if (!seat || seat.sessionId !== session.id) throw notFound("seat");
+    const pin = generatePin();
+    const updated = await this.repo.updateSeat(seat.id, {
+      rejoinPinHash: await hashPin(pin),
+      // Retire whatever the old device held. A reseat is only ever asked for
+      // because that device is gone; if it is not, it must not keep writing.
+      deviceTokenHash: hashDeviceToken(generateDeviceToken()),
+      failedRejoinAttempts: 0,
+    });
+    if (!updated) throw notFound("seat");
+    return { seatId: seat.id, displayName: seat.displayName, pin };
   }
 
   /* ---------------------------------------------------------------- action -- */
@@ -992,8 +1059,27 @@ export class SessionService {
     return session ? { id: session.id, version: session.version } : null;
   }
 
-  async boardView(code: string): Promise<BoardPayload> {
+  /** Milliseconds since a projector last polled this room, or null if none has on this server. */
+  private boardSeenSince(sessionId: string): number | null {
+    const at = this.boardSeenAt.get(sessionId);
+    return at === undefined ? null : Date.now() - at;
+  }
+
+  /**
+   * @param preview  True when the caller is the teacher console's own embedded
+   *   mirror rather than a projector. It must NOT count as a board being
+   *   watched: the console always has one open, so counting it would make
+   *   BOARD LIVE permanently true and the indicator worthless — the exact
+   *   failure it exists to catch is a console that looks right to the teacher
+   *   while the room stares at a dark wall.
+   */
+  async boardView(code: string, preview = false): Promise<BoardPayload> {
     const session = await this.sweepRound(await this.requireSession(code));
+    // Deliberately in memory and NOT on the session row: a projector poll must
+    // not bump the session version or write to disk twice a second. Losing it
+    // across a restart is honest — this process has not been watched yet, and
+    // a live board says so again within its next poll.
+    if (!preview) this.boardSeenAt.set(session.id, Date.now());
     const mod = this.moduleFor(session);
     return {
       phase: session.phase,
@@ -1193,6 +1279,7 @@ export class SessionService {
         version: session.version,
         hasCheckpoint: session.checkpoint !== null,
         checkpointLabel: session.checkpoint?.label ?? null,
+        boardSeenBucket: boardSeenBucketOf(this.boardSeenSince(session.id)),
       },
       seats: [],
       round: this.roundPublic(session),

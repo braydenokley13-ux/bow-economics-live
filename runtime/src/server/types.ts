@@ -184,7 +184,10 @@ export type NewSeat = {
 };
 
 export type SeatPatch = Partial<
-  Pick<SeatRow, "deviceTokenHash" | "lastSeenAt" | "failedRejoinAttempts" | "appliedActionIds" | "seenSeq" | "awaySince">
+  // `rejoinPinHash` is writable for exactly one reason: a teacher reseating a
+  // pair whose device died mints a new PIN for the seat they already hold.
+  // Nothing student-facing can reach that path.
+  Pick<SeatRow, "deviceTokenHash" | "rejoinPinHash" | "lastSeenAt" | "failedRejoinAttempts" | "appliedActionIds" | "seenSeq" | "awaySince">
 >;
 
 /** A version-conflict result is a normal outcome, not an exception. */

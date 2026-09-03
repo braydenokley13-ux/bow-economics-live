@@ -347,6 +347,18 @@ async function handle(
         return;
       }
 
+      // POST /api/sessions/:code/seats/:seatId/reseat
+      // Teacher-only: mint a fresh rejoin PIN for a pair whose device died, and
+      // retire the old one in the same write. Returns the PIN to the TEACHER —
+      // it is read aloud to the pair, never sent to a student surface.
+      if (method === "POST" && sub === "seats" && parts[5] === "reseat" && parts.length === 6) {
+        const teacherKey = bearerToken(req);
+        const seatId = decodeURIComponent(parts[4]!);
+        const out = await service.reseatSeat(code, seatId, teacherKey);
+        sendJson(res, 200, out);
+        return;
+      }
+
       // GET /api/sessions/:code/teacher  (R1: requires the teacher key)
       if (method === "GET" && sub === "teacher" && parts.length === 4) {
         const teacherKey = bearerToken(req);
@@ -374,7 +386,10 @@ async function handle(
         // the room. Buckets, not milliseconds — see quietBucketOf() — so this
         // fingerprint moves when the fact changes, not on every tick.
         const quiet = payload.seats.map((s) => s.quietBucket).join("");
-        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}-L${locked}-Q${quiet}"`;
+        // The projector-liveness bucket varies with time alone, so it must be
+        // in the fingerprint or the conditional poll answers 304 forever and
+        // the console goes on saying BOARD LIVE at a dead HDMI cable (D35).
+        const etag = `"${payload.session.version}-${payload.seats.length}-${lastJoin}-L${locked}-Q${quiet}-B${payload.session.boardSeenBucket}"`;
         if (maybeNotModified(req, res, etag)) return;
         sendJson(res, 200, payload, { ETag: etag });
         return;
@@ -395,7 +410,9 @@ async function handle(
 
       // GET /api/sessions/:code/board
       if (method === "GET" && sub === "board" && parts.length === 4) {
-        const payload = await service.boardView(code);
+        // `preview=1` is the teacher console's own embedded mirror. It reads
+        // the same frame but must not count as a projector watching the room.
+        const payload = await service.boardView(code, url.searchParams.get("preview") === "1");
         const etag = `"${payload.version}"`;
         if (maybeNotModified(req, res, etag)) return;
         sendJson(res, 200, payload, { ETag: etag });

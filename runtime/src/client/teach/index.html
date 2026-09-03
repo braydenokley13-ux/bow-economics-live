@@ -56,6 +56,10 @@
   /* THE PROJECTOR PREVIEW. The board renders at its own 1280x720 and is scaled
      down by transform rather than by making the board responsive to a 300px
      box: a mirror that reflowed would stop being a mirror. */
+  #projpreview .pp-live { font-family: var(--font-display); font-size: 11px; letter-spacing: .1em; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  #projpreview .pp-live.on { color: var(--accent-gold, #f4b942); }
+  #projpreview .pp-live.stale { color: var(--ink-secondary); }
+  #projpreview .pp-live.off { color: #ff8a7a; }
   #projpreview .pp-tools { display: flex; align-items: center; gap: 12px; }
   #projpreview .pp-link { font-size: 12px; color: var(--accent-gold); text-decoration: none; letter-spacing: .04em; text-transform: uppercase; }
   #projpreview .pp-link:hover { text-decoration: underline; }
@@ -139,6 +143,10 @@
   #deck .deck-sub { font-size: 11px; color: var(--ink-secondary); }
   /* The class clock. Every "past minute 45?" instruction in every lesson needs
      it, and the deck is the one strip a teacher is guaranteed to be looking at. */
+  #reseatBox { border:1px solid var(--accent-gold, #f4b942); border-radius:8px; padding:14px 16px; margin-bottom:14px; background:rgba(244,185,66,.06); }
+  #reseatBox .reseat-head { font-family: var(--font-display); font-size:12px; letter-spacing:.1em; color: var(--accent-gold, #f4b942); }
+  #reseatBox .reseat-pin { font-family: var(--font-numeral, monospace); font-size:44px; letter-spacing:.16em; line-height:1.1; margin:4px 0 8px; }
+  #reseatBox .reseat-note { color: var(--ink-secondary); font-size:13px; margin:0 0 10px; max-width:60ch; }
   #deck .deck-min { font-family: var(--font-display); font-size: 12px; letter-spacing: .08em; color: var(--accent-gold, #f4b942); margin-left: 10px; }
   #deck .deck-slot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1 1 auto; }
   #deck .deck-slot .btn { margin: 0; }
@@ -313,6 +321,10 @@
     <div class="tc-head">
       <h2 style="margin:0;">Projector</h2>
       <span class="pp-tools">
+        <!-- Is a projector actually watching? A teacher says "look at the board"
+             with their back to it; a dead cable or a sleeping projector is
+             silent from here. -->
+        <span id="ppLive" class="pp-live"></span>
         <a id="ppOpen" class="pp-link" href="#" target="_blank" rel="noopener">Open full &#8599;</a>
         <button id="ppToggle" class="pp-btn" type="button" aria-expanded="true">Hide</button>
       </span>
@@ -376,6 +388,10 @@
 
   <section id="roster" class="card" hidden>
     <h2>Live join list</h2>
+    <!-- The reseat PIN. Sticky, not a toast: a teacher who presses Reseat then
+         walks a spare laptop across the room has to be able to read it when
+         they get there. -->
+    <div id="reseatBox" hidden></div>
     <ul class="roster" id="rosterList"></ul>
   </section>
 

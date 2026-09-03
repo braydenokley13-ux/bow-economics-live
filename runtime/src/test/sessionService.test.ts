@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { draftDayModule } from "../modules/draftDay.js";
 import { lobbyDemoModule } from "../modules/lobbyDemo.js";
 import { tradeDeadlineModule } from "../modules/tradeDeadline.js";
-import { ServiceError, SessionService } from "../server/sessionService.js";
+import { ServiceError, SessionService, boardSeenBucketOf } from "../server/sessionService.js";
 import { SnapshotRepository } from "../server/snapshotRepository.js";
 
 function freshService(): SessionService {
@@ -773,4 +773,94 @@ test("a session built by a lesson this build no longer registers does not take t
     false,
     "the picker offered a session this build cannot open",
   );
+});
+
+/* ------------------------------------------------- dead-device reseat -- */
+
+test("a teacher can reseat a pair whose device died: same seat, new PIN, old credentials dead", async () => {
+  // The case the rejoin path could not reach. A Chromebook that dies takes the
+  // device token AND the screen that showed the PIN with it, in the same
+  // instant, and the pair is not "locked out" — they are simply outside, with
+  // nothing the seat will accept. Rejoining under a new name means a new desk
+  // and a blank book in the middle of the class's own evidence.
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+  const joined = await service.join(session.code, "Alex");
+
+  const out = await service.reseatSeat(session.code, joined.seat.id, teacherKey);
+  assert.equal(out.seatId, joined.seat.id);
+  assert.equal(out.displayName, "Alex");
+  assert.match(out.pin, /^\d{4}$/);
+  assert.notEqual(out.pin, joined.rejoinPin);
+
+  // The dead device is retired the moment the recovery is OFFERED, not when it
+  // is used: nothing that comes back to life later can write to this seat.
+  await expectServiceError(service.resumeByToken(joined.deviceToken!), 401, "retired");
+  // And the PIN that device once showed is dead with it.
+  await expectServiceError(service.rejoin(session.code, "Alex", joined.rejoinPin!), 401, "bad_rejoin");
+
+  // The pair walks back into the SAME seat on the spare laptop.
+  const back = await service.rejoin(session.code, "Alex", out.pin);
+  assert.equal(back.seat.id, joined.seat.id, "a reseated pair must land in their own desk, not a new one");
+});
+
+test("a reseat clears a lockout, so a pair who forgot the PIN is recoverable in one move", async () => {
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+  const joined = await service.join(session.code, "Alex");
+  const wrong = notThePin(joined.rejoinPin!);
+  for (let i = 0; i < 5; i += 1) {
+    await expectServiceError(service.rejoin(session.code, "Alex", wrong), 401, "bad_rejoin");
+  }
+  await expectServiceError(service.rejoin(session.code, "Alex", joined.rejoinPin!), 423, "rejoin_locked");
+  const out = await service.reseatSeat(session.code, joined.seat.id, teacherKey);
+  const back = await service.rejoin(session.code, "Alex", out.pin);
+  assert.equal(back.seat.id, joined.seat.id);
+});
+
+test("minting a credential for someone else's seat needs the teacher key, and cannot cross sessions", async () => {
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+  const other = await newSession(service);
+  const joined = await service.join(session.code, "Alex");
+
+  await expectServiceError(service.reseatSeat(session.code, joined.seat.id, null), 401, "bad_teacher_key");
+  await expectServiceError(service.reseatSeat(session.code, joined.seat.id, "not-the-key"), 401, "bad_teacher_key");
+  // Another room's teacher key does not open this seat either...
+  await expectServiceError(service.reseatSeat(session.code, joined.seat.id, other.teacherKey), 401, "bad_teacher_key");
+  // ...and a real key does not reach a seat that is not in its own session.
+  await expectServiceError(service.reseatSeat(other.session.code, joined.seat.id, other.teacherKey), 404, "not_found");
+
+  // None of that touched the seat: the original credentials still work.
+  const resumed = await service.resumeByToken(joined.deviceToken!);
+  assert.equal(resumed.seat.id, joined.seat.id);
+  const _ = teacherKey;
+});
+
+test("the console can tell whether a projector is actually watching", async () => {
+  // A teacher says "look at the board" with their back to it. The console's own
+  // preview iframe is THIS laptop's copy of /board, so it looks perfect while
+  // the room stares at a dark wall.
+  const service = freshService();
+  const { session, teacherKey } = await newSession(service);
+
+  const cold = await service.teacherView(session.code, teacherKey);
+  assert.equal(cold.session.boardSeenBucket, 2, "a room no projector has ever opened must not read as live");
+
+  await service.boardView(session.code);
+  const warm = await service.teacherView(session.code, teacherKey);
+  assert.equal(warm.session.boardSeenBucket, 0, "a board that just polled must read as live");
+});
+
+test("projector liveness is bucketed, not a live millisecond count", async () => {
+  // Same rule as the desk quiet marker (D35): a time-varying number inside a
+  // cacheable body freezes at whatever it was when the body was last sent, and
+  // a frozen "seen 3s ago" that is really four minutes old is worse than
+  // nothing. Buckets change rarely enough to ride in an ETagged payload.
+  assert.equal(boardSeenBucketOf(null), 2);
+  assert.equal(boardSeenBucketOf(0), 0);
+  assert.equal(boardSeenBucketOf(14_999), 0);
+  assert.equal(boardSeenBucketOf(15_000), 1);
+  assert.equal(boardSeenBucketOf(89_999), 1);
+  assert.equal(boardSeenBucketOf(90_000), 2);
 });

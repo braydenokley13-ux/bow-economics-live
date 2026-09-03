@@ -4988,6 +4988,7 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
           "Pairs join at /play on one device. Clubs are handed out by desk number, visibly, and the board shows the whole league as it fills.",
           'Read the board line out loud: "This room is the league."',
           `${live} desk${live === 1 ? "" : "s"} in so far, in a ${state.leagueSize}-club league.`,
+          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts the pair straight back in their own desk. If they lost it, press Reseat beside their name and read them a new one.",
         ],
         ask: [{ q: "Whose building are you running? Say the club and the city.", answer: null }],
         dontExplainYet: [

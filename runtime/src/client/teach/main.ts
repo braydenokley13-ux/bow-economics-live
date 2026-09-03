@@ -20,6 +20,7 @@ type TeacherPayload = {
     id: string; code: string; title: string; lessonModuleId: string; phase: string; phases: string[];
     paused: boolean; frozen: boolean; ended: boolean; version: number; hasCheckpoint: boolean;
     checkpointLabel: string | null;
+    boardSeenBucket?: 0 | 1 | 2;
     createdAt?: string; serverNow?: string;
   };
   teacherKey?: string;
@@ -536,7 +537,9 @@ function mountProjectorPreview(code: string | null): void {
     // Set once per session. Re-assigning `src` on every poll would reload the
     // board four hundred times a class and guarantee it is showing a blank
     // frame at the exact moment a teacher looks at it.
-    ($("ppBoard") as HTMLIFrameElement).src = `/board?code=${encodeURIComponent(code)}`;
+    // `preview=1` marks this mirror as the console's own, so it is not counted
+    // as a projector watching the room — see BOARD LIVE above.
+    ($("ppBoard") as HTMLIFrameElement).src = `/board?code=${encodeURIComponent(code)}&preview=1`; // claim-ok: a query flag, never rendered
     ($("ppOpen") as HTMLAnchorElement).href = `/board?code=${encodeURIComponent(code)}`;
   }
   if (!ppObserver && typeof ResizeObserver !== "undefined") {
@@ -594,15 +597,19 @@ let deskLastPayload: TeacherPayload | null = null;
 
 function renderDesks(payload: TeacherPayload): void {
   const strip = (payload.view["deskStrip"] as DeskStrip | null | undefined) ?? null;
-  const live = !payload.session.ended && payload.session.phase === "PLAY";
-  if (!strip || !live || strip.entries.length === 0) {
+  const ended = payload.session.ended;
+  // `gate-l2-teacher` (REQUIRED). This whole panel used to stand down the
+  // instant PLAY ended, which is exactly when a device dying stops being
+  // visible: a pair whose Chromebook goes dark in REVEAL sits through the
+  // reveal, the argument and the synthesis with a black screen, and the console
+  // said nothing. Decision state IS stale once the window closes — nobody is
+  // "still dialling" during REVEAL — but device health is not.
+  const playing = payload.session.phase === "PLAY";
+  if (!strip || ended || strip.entries.length === 0) {
     desksEl.hidden = true;
     deskLastPayload = null;
     return;
   }
-  desksEl.hidden = false;
-  deskLastPayload = payload;
-  $("deskCount").textContent = strip.countLine;
 
   const seatById = new Map(payload.seats.map((s) => [s.id, s]));
   const QUIET_WORDS = ["", "Device quiet 30s+", "Device quiet 1m+", "Device quiet 5m+", "Device quiet 15m+"] as const;
@@ -611,16 +618,32 @@ function renderDesks(payload: TeacherPayload): void {
     return bucket > 0 ? QUIET_WORDS[bucket]! : null;
   };
 
-  const rows = strip.entries.map((e) => {
+  const all = strip.entries.map((e) => {
     const quiet = quietOf(e.seatId);
     // A note is not automatically a reason to walk over — the module says which
     // of its notes are (`flag`). Context on a chip is for reading the desk's
     // books, not for pulling the teacher out of the front of the room.
-    const needsMe = e.state === "deciding" || e.state === "auto" || quiet !== null || e.flag;
+    // Outside PLAY only the device matters: the decision states below are the
+    // last closed round's, and chasing a desk about them would be wrong.
+    const needsMe = quiet !== null || (playing && (e.state === "deciding" || e.state === "auto" || e.flag));
     return { ...e, quiet, needsMe, who: seatById.get(e.seatId)?.displayName ?? null };
   });
+  // Outside PLAY this is a device-health strip, not a walk-to list: it appears
+  // only when something is actually dark, and shows only what is dark.
+  const rows = playing ? all : all.filter((r) => r.quiet !== null);
+  if (rows.length === 0) {
+    desksEl.hidden = true;
+    deskLastPayload = null;
+    return;
+  }
+  desksEl.hidden = false;
+  deskLastPayload = payload;
+  $("deskCount").textContent = playing
+    ? strip.countLine
+    : `${rows.length} device${rows.length === 1 ? "" : "s"} has gone quiet since the window closed`;
+
   const attention = rows.filter((r) => r.needsMe).length;
-  const shown = deskFilterOn ? rows.filter((r) => r.needsMe) : rows;
+  const shown = deskFilterOn && playing ? rows.filter((r) => r.needsMe) : rows;
 
   $("deskGrid").innerHTML = shown
     .map((r) => {
@@ -638,12 +661,13 @@ function renderDesks(payload: TeacherPayload): void {
     .join("");
 
   const filterBtn = $<HTMLButtonElement>("deskFilter");
-  filterBtn.hidden = attention === 0;
+  filterBtn.hidden = attention === 0 || !playing;
   filterBtn.setAttribute("aria-pressed", deskFilterOn ? "true" : "false");
   filterBtn.textContent = deskFilterOn ? `Show all ${rows.length}` : `Only the ${attention} that need me`;
 
-  $("deskNote").textContent =
-    attention === 0
+  $("deskNote").textContent = !playing
+    ? "The window is closed, so nothing here is about a decision \u2014 these are devices that have stopped talking to the room. Their screens may be dark for the reveal. This list is yours alone \u2014 real names never reach the projector."
+    : attention === 0
       ? "Every desk is committed and every device is still talking to the room. Nothing here needs you."
       : `${attention} of ${rows.length} desk${rows.length === 1 ? "" : "s"} could use you. This list is yours alone \u2014 real names never reach the projector.`;
 }
@@ -788,6 +812,22 @@ function renderTimeCut(payload: TeacherPayload): void {
 function render(payload: TeacherPayload): void {
   statusEl.textContent = `live · v${payload.session.version}${pushLive ? "" : " · polling"}`;
   lastCheckpointLabel = payload.session.checkpointLabel;
+
+  // Is a projector actually watching this room? The console can see every
+  // reveal land in its own preview iframe and still be talking to a dark wall:
+  // the preview is THIS laptop's copy of /board, not the one on the projector.
+  const ppLive = document.getElementById("ppLive");
+  if (ppLive) {
+    const bucket = payload.session.boardSeenBucket ?? 2;
+    ppLive.className = `pp-live ${bucket === 0 ? "on" : bucket === 1 ? "stale" : "off"}`;
+    ppLive.textContent = bucket === 0 ? "BOARD LIVE" : bucket === 1 ? "BOARD QUIET" : "BOARD NOT SEEN";
+    ppLive.title =
+      bucket === 0
+        ? "A projector polled this room in the last few seconds."
+        : bucket === 1
+          ? "No projector has polled for a while. It may be asleep or on a different session."
+          : "No projector is polling this room. Check the cable, the display, and that /board is open on this session's code before you say \u201clook at the board\u201d.";
+  }
   const s = payload.session;
   const pillClass = s.ended ? "ended" : s.frozen ? "frozen" : s.paused ? "paused" : "live";
   const pillText = s.ended ? "ENDED" : s.frozen ? "FROZEN" : s.paused ? "PAUSED" : "LIVE";
@@ -1128,6 +1168,16 @@ function render(payload: TeacherPayload): void {
     right.style.display = "flex";
     right.style.alignItems = "center";
     right.style.gap = "8px";
+    // Every seat gets this, in every phase: a device dies when it dies, and the
+    // pair whose Chromebook went dark in REVEAL needs it as much as one in PLAY.
+    const reseatBtn = document.createElement("button");
+    reseatBtn.className = "btn";
+    reseatBtn.style.fontSize = "11px";
+    reseatBtn.style.padding = "3px 8px";
+    reseatBtn.textContent = "Reseat";
+    reseatBtn.title = "Their device died — put this pair back in the same desk on another device";
+    reseatBtn.addEventListener("click", () => void reseatPair(seat.id, seat.displayName));
+    right.appendChild(reseatBtn);
     if (seat.rejoinLocked) {
       // R3: a visible, one-click way for the teacher to clear a seat's rejoin lockout.
       const warn = document.createElement("span");
@@ -1521,6 +1571,43 @@ async function unlockSeat(seatId: string): Promise<void> {
   } catch (error) {
     statusEl.textContent = error instanceof ApiError ? error.message : "could not unlock that seat";
   }
+}
+
+/**
+ * Put a pair back in their own seat on a different device — `gate-l2-teacher`
+ * (BLOCKING). A dead Chromebook takes the device token and the PIN screen with
+ * it in the same instant, and until now the console had no move: rejoining as a
+ * new name means a new desk and a blank book, in the middle of the evidence the
+ * class is about to be shown. This mints a fresh PIN for the seat they already
+ * hold, retires the dead device, and keeps the desk, the books and the history.
+ *
+ * The PIN is shown to the TEACHER, who reads it to the pair. It is deliberately
+ * sticky rather than a toast: a teacher crossing a room to a spare laptop must
+ * still be able to read it when they get there.
+ */
+async function reseatPair(seatId: string, displayName: string): Promise<void> {
+  if (!currentCode) return;
+  if (!confirm(`Reseat ${displayName} on a different device?\n\nTheir old device stops working straight away. You will get a new 4-digit PIN to read to them; they rejoin with the SAME name and keep their desk and everything in its books.`)) return;
+  try {
+    const out = await apiFetch<{ seatId: string; displayName: string; pin: string }>(
+      `/api/sessions/${currentCode}/seats/${seatId}/reseat`,
+      { method: "POST", headers: authHeaders() },
+    );
+    showReseatPin(out.displayName, out.pin);
+  } catch (error) {
+    statusEl.textContent = error instanceof ApiError ? error.message : "could not reseat that pair";
+  }
+}
+
+function showReseatPin(displayName: string, pin: string): void {
+  const box = document.getElementById("reseatBox");
+  if (!box) return;
+  box.hidden = false;
+  box.innerHTML = `<div class="reseat-head">READ THIS TO ${escapeHtml(displayName.toUpperCase())}</div>
+    <div class="reseat-pin">${escapeHtml(pin)}</div>
+    <p class="reseat-note">On the spare device: open the join page, type the SAME name — <strong>${escapeHtml(displayName)}</strong> — and this PIN. Their desk, their money and their history are exactly where they left them. Their old device no longer works.</p>
+    <button class="btn" id="reseatDone" type="button">Done</button>`;
+  document.getElementById("reseatDone")?.addEventListener("click", () => { box.hidden = true; });
 }
 
 /** The shell renders whatever shape a lesson module's teacherView returns: Draft Day gets a
@@ -2125,6 +2212,17 @@ $("create").addEventListener("click", () => void createSession().catch((e) => (s
  * dialog, no tooltip and no warning. It consumes exactly what advancing out of
  * PLAY consumes, so it asks exactly what advancing asks.
  */
+/**
+ * What "Restore" actually gives you, said the same way everywhere it matters.
+ * The runtime keeps ONE checkpoint: restoring swaps the room with the state it
+ * is about to replace, so a wrong restore is itself undoable — and there is no
+ * second step backwards. A teacher who believes this is a history stack will
+ * press it twice looking for the night before last and get the night they just
+ * undid instead.
+ */
+const UNDO_DEPTH_NOTE =
+  "Undo goes ONE step back \u2014 Restore returns the room to the last saved boundary, and pressing Restore again puts it back the way it is now. There is no second step backwards.";
+
 function confirmSkippingContent(via: "advance" | "reveal"): boolean {
   // B1 repair (VERIFY_L2.md BLOCKER): same confirm() idiom btnEnd already uses below — no new dialog
   // framework. The economics stay correct either way (the runtime auto-resolves whatever's pending), this is
@@ -2132,15 +2230,21 @@ function confirmSkippingContent(via: "advance" | "reveal"): boolean {
   // unplayed signing days for L3.
   const w = advanceWarnState;
   const lead = via === "reveal" ? "Jump to REVEAL. " : "";
+  // `gate-l2-teacher` (REQUIRED). Two of these branches said "Restore last good
+  // state is the only way back" and the other four said nothing, so the same
+  // click was described as recoverable in one lesson and unqualified in the
+  // next. And "the only way back" was never the whole truth: the undo is ONE
+  // checkpoint deep. Every branch now says the same thing, in the same words.
+  const ask = (message: string): boolean => confirm(`${message}\n\n${UNDO_DEPTH_NOTE}`);
   if (w?.kind === "td-reveal" && w.revealedCount < w.totalTargets) {
     const remaining = w.totalTargets - w.revealedCount;
-    return confirm(
+    return ask(
       `${lead}${remaining} of ${w.totalTargets} target${w.totalTargets === 1 ? "" : "s"} unrevealed — ${via === "reveal" ? "this" : "advancing"} resolves ${remaining === 1 ? "it" : "them"} automatically, without the staged reveal. Continue?`,
     );
   } else if (w?.kind === "fh-play") {
     const remaining = w.nightCount - w.nightNumber;
     const unlocked = Math.max(0, w.deskCount - w.lockedCount);
-    return confirm(
+    return ask(
       `${lead}Night ${w.nightNumber} of ${w.nightCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the night bell — ${
         via === "reveal" ? "this button" : "advancing now"
       } settles tonight for every desk AND ends the five-night window early, so ${
@@ -2158,7 +2262,7 @@ function confirmSkippingContent(via: "advance" | "reveal"): boolean {
   } else if (w?.kind === "hl-play") {
     const remaining = w.weekCount - w.weekNumber;
     const unlocked = Math.max(0, w.deskCount - w.lockedCount);
-    return confirm(
+    return ask(
       `${lead}Week ${w.weekNumber} of ${w.weekCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the week bell — ${
         via === "reveal" ? "this button" : "advancing now"
       } settles this week for every club AND ends the season early, so ${
@@ -2175,30 +2279,30 @@ function confirmSkippingContent(via: "advance" | "reveal"): boolean {
     );
   } else if (w?.kind === "wr-vote") {
     const missing = Math.max(0, w.deskCount - w.submitted);
-    return confirm(
+    return ask(
       `${lead}${
         w.sealed
           ? "The rule is printed but the season has not opened."
           : `Round ${w.round} of ${w.roundCount} is still open (${w.submitted}/${w.deskCount} desks have a number in${missing > 0 ? `, ${missing} abstaining so far` : ""}).`
       } This is NOT the round step and it is NOT the week bell — ${
         via === "reveal" ? "this button" : "advancing now"
-      } abandons the rest of the vote AND the whole three-week season: every round still open closes at once, the two-thirds test runs, and all three weeks settle without anybody playing them. Restore last good state is the only way back. Continue?`,
+      } abandons the rest of the vote AND the whole three-week season: every round still open closes at once, the two-thirds test runs, and all three weeks settle without anybody playing them. Continue?`,
     );
   } else if (w?.kind === "wr-season") {
     const remaining = w.weekCount - w.weekNumber;
     const unlocked = Math.max(0, w.deskCount - w.lockedCount);
-    return confirm(
+    return ask(
       `${lead}Week ${w.weekNumber} of ${w.weekCount} is still open (${w.lockedCount}/${w.deskCount} desks locked in). This is not the week bell — ${
         via === "reveal" ? "this button" : "advancing now"
       } settles this week for every club AND ends the season early, so ${remaining === 1 ? "1 week" : `${remaining} weeks`} will never be played.${
         unlocked > 0
           ? ` ${unlocked} desk${unlocked === 1 ? "" : "s"} ${unlocked === 1 ? "has" : "have"} not locked; ${unlocked === 1 ? "it settles" : "they settle"} at ${unlocked === 1 ? "its" : "their"} club's house price with nothing put back, marked AUTO.`
           : ""
-      } Restore last good state is the only way back. Continue?`,
+      } Continue?`,
     );
   } else if (w?.kind === "fa-play") {
     const remainingDays = w.windowDays - w.day;
-    return confirm(
+    return ask(
       `${lead}Day ${w.day} of ${w.windowDays} is still open (${w.actedCount}/${w.claimedCount} teams have acted). ${
         via === "reveal" ? "This button" : "Advancing now"
       } closes today's day automatically AND ends the signing window early — ${remainingDays} day${remainingDays === 1 ? "" : "s"} will never happen. Continue?`,
@@ -2227,7 +2331,7 @@ $("btnRestore").addEventListener("click", () => {
   // The most destructive control in the room was the one unguarded button,
   // sitting beside a guarded End. It discards everything since the checkpoint.
   const what = lastCheckpointLabel ? `Undo "${lastCheckpointLabel}"?` : "Restore the last saved state?";
-  if (confirm(`${what}\n\nAnything the class has done since then is rolled back. Pressing Restore again puts it back.`)) {
+  if (confirm(`${what}\n\nAnything the class has done since then is rolled back. ${UNDO_DEPTH_NOTE}`)) {
     void sendControl({ type: "restore" });
   }
 });

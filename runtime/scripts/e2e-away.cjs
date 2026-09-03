@@ -288,6 +288,50 @@ async function main() {
 
 
     assert.deepEqual(consoleErrors, [], `console errors during the run:\n${consoleErrors.join("\n")}`);
+    /* -- The dead device: a teacher can put the pair back in their own desk -- */
+    // The rejoin path assumes the pair still holds something the seat accepts.
+    // A Chromebook that dies takes the device token AND the screen that showed
+    // the PIN in the same instant, and until this there was no teacher-side
+    // move at all. This proves the console mints a new PIN, retires the old
+    // device, and lands the pair back in the SAME desk with its books intact.
+    const deadWho = dark[0].who;
+    const before = await teach.evaluate((who) => {
+      const chip = [...document.querySelectorAll("#deskGrid .desk-chip")].find((c) => c.querySelector(".dk-who")?.textContent === who);
+      return { handle: chip?.querySelector(".dk-handle")?.textContent ?? "", state: chip?.querySelector(".dk-state")?.textContent ?? "" };
+    }, deadWho);
+    await teach.evaluate((who) => {
+      const li = [...document.querySelectorAll("#rosterList li")].find((x) => x.textContent.includes(who));
+      [...li.querySelectorAll("button")].find((b) => b.textContent === "Reseat").click();
+    }, deadWho);
+    await teach.waitForSelector("#reseatBox:not([hidden])", { timeout: 15000 });
+    const reseat = await teach.evaluate(() => ({
+      head: document.querySelector("#reseatBox .reseat-head")?.textContent ?? "",
+      pin: document.querySelector("#reseatBox .reseat-pin")?.textContent ?? "",
+    }));
+    assert.match(reseat.pin, /^\d{4}$/, `the console did not show a readable PIN: "${reseat.pin}"`);
+    assert.ok(reseat.head.includes(deadWho.toUpperCase()), `the PIN card does not say who to read it to: "${reseat.head}"`);
+
+    // The spare laptop. Same name, the teacher's new PIN, same desk.
+    const spare = await browser.newPage({ viewport: { width: 1024, height: 700 } });
+    spare.on("pageerror", (e) => consoleErrors.push(`[spare] pageerror: ${e.message}`));
+    await spare.goto(`${BASE}/play`);
+    await spare.click("#btnShowRejoin");
+    await spare.fill("#rejoinCode", code);
+    await spare.fill("#rejoinName", deadWho);
+    await spare.fill("#rejoinPin", reseat.pin);
+    await spare.click("#btnRejoin");
+    await spare.waitForSelector("#fhPlayRoot", { timeout: 20000 });
+    await teach.waitForFunction(
+      (args) => {
+        const chip = [...document.querySelectorAll("#deskGrid .desk-chip")].find((c) => c.querySelector(".dk-who")?.textContent === args.who);
+        return chip !== undefined && chip.querySelector(".dk-quiet") === null && chip.querySelector(".dk-handle")?.textContent === args.handle;
+      },
+      { who: deadWho, handle: before.handle },
+      { timeout: 25000 },
+    );
+    console.log(`[away] a dead device was reseated onto a spare laptop: ${deadWho} kept ${before.handle}`);
+    await spare.close();
+
     console.log("[away] PASS — screens in docs/gauntlet/module-2/screens-away/");
   } catch (err) {
     console.error(`[away] FAIL: ${err.message}`);

@@ -4297,6 +4297,7 @@ export function teacherDirector(state: FullHouseState, phase: CanonicalPhase): D
           "Pairs join at /play on one device. Markets are handed out by desk number — odd desks run New York, even desks run Memphis — and the board shows the assignment as it happens.",
           "Read the board line out loud: \"You are not the GM today. You run the building.\"",
           `${deskCount} desk${deskCount === 1 ? "" : "s"} in so far.`,
+          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts the pair straight back in their own desk. If they lost it, press Reseat beside their name and read them a new one.",
         ],
         ask: [{ q: "Who has ever bought a ticket to anything? Who decided what it cost?", answer: null }],
         dontExplainYet: ["Do not explain the two books yet — the board does it in HOOK.", "Say nothing about price yet."],
