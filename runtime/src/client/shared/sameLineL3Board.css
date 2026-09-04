@@ -1,0 +1,13 @@
+/*
+ * THE SAME LINE — L3 "THE DEADLINE" projector panels.
+ *
+ * `renderSameLineL3Board.ts` reuses `sameLineL1Board.css`'s `.slb-*` frame
+ * vocabulary on purpose (hero title, market table, signed list, naming
+ * frame) — every surface that ships this lesson already links that sheet.
+ * This file holds only what is genuinely new to this lesson's own frames.
+ */
+
+/* The market frame's three-column table (name / held by / desks talking)
+   reuses `.slb-market`/`.slb-name`/`.slb-int` — no new row shape needed,
+   only the extra middle column's alignment. */
+.slb-market td:nth-child(2) { color: var(--ink-secondary); font-size: 0.92em; }

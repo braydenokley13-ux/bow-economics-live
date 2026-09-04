@@ -1,0 +1,10 @@
+/*
+ * THE DEADLINE (`m1l3-the-deadline`) — teacher console aggregate panel.
+ *
+ * `.slt-*` chrome (`.slt-wrap`, `.slt-instruction`, `.slt-note`, `.dir-*`,
+ * `.slt-desktable`) is already provided by `sameLineL1Teach.css` and
+ * `sameLineL2Teach.css`, which every surface that ships this lesson also
+ * links. This lesson's aggregate needs no new rule of its own — the desk
+ * table and the press-candidate list both fit the existing vocabulary
+ * exactly, which is the point of reusing it rather than forking it.
+ */

@@ -1,6 +1,7 @@
 import { ApiError } from "../shared/api.js";
 import { renderSameLineL1Board } from "../shared/sameLineL1Board.js";
 import { renderSameLineL2Board } from "../shared/sameLineL2Board.js";
+import { renderSameLineL3Board } from "../shared/sameLineL3Board.js";
 import { crestStyle } from "../shared/crest.js";
 import { createFreshness } from "../shared/freshness.js";
 import { startPolling } from "../shared/poll.js";
@@ -149,6 +150,12 @@ function render(payload: BoardPayload): void {
   }
   if (view["module"] === "m1l2-the-season") {
     const frame = renderSameLineL2Board(view, payload.phase);
+    backdrop.classList.toggle("peak", frame.peak);
+    stage.innerHTML = frame.html;
+    return;
+  }
+  if (view["module"] === "m1l3-the-deadline") {
+    const frame = renderSameLineL3Board(view, payload.phase);
     backdrop.classList.toggle("peak", frame.peak);
     stage.innerHTML = frame.html;
     return;

@@ -5,6 +5,7 @@ import { startPolling } from "../shared/poll.js";
 import { loadTeachSessionCode, loadTeachSessionKey, saveTeachSessionCode, saveTeachSessionKey } from "../shared/storage.js";
 import { renderSameLineL1Aggregate } from "../shared/sameLineL1Teach.js";
 import { renderSameLineL2Aggregate } from "../shared/sameLineL2Teach.js";
+import { renderSameLineL3Aggregate } from "../shared/sameLineL3Teach.js";
 
 type Lesson = { id: string; title: string; phases: string[] };
 type TeacherSeat = { id: string; displayName: string; joinedAt: string; lastSeenAt: string; quietBucket?: 0 | 1 | 2 | 3 | 4; rejoinLocked: boolean };
@@ -1836,6 +1837,7 @@ function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): H
   if (view["module"] === WRITE_RULE_ID) return renderWriteRuleAggregate(view, seats);
   if (view["module"] === THE_WINDOW_ID) return renderSameLineL1Aggregate(view, seats);
   if (view["module"] === "m1l2-the-season") return renderSameLineL2Aggregate(view, seats);
+  if (view["module"] === "m1l3-the-deadline") return renderSameLineL3Aggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
