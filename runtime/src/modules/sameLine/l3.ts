@@ -391,6 +391,15 @@ function isEscrowed(offers: Readonly<Record<string, Offer>>, id: ObjectId): bool
   return Object.values(offers).some((o) => isEscrowingState(o.state) && (o.send.includes(id) || o.want.includes(id)));
 }
 
+/** The public, non-seat-identifying key for a desk — "clubId-twin" — the only way a market card or a myOffers entry may point at a counterparty. */
+function holderIdOf(d: Desk): string {
+  return `${d.clubId}-${d.twin}`;
+}
+function seatByHolderId(state: SameLineL3State, holderId: string): SeatId | null {
+  for (const d of Object.values(state.desks)) if (holderIdOf(d) === holderId) return d.seatId;
+  return null;
+}
+
 function labelFor(objects: readonly TradeObject[]): string {
   return objects.map((o) => (isContract(o) ? o.name : o.label)).join(" and ");
 }
@@ -446,11 +455,16 @@ function reduce(state: SameLineL3State, action: { type: string; [k: string]: unk
       if (state.marketClosed) return fail("the market is closed. The deadline has passed.");
       const fromDesk = state.desks[ctx.seatId];
       if (!fromDesk) return fail("you do not hold a desk");
-      const toSeat = action["toSeat"];
+      const toSeatRaw = action["toSeat"];
+      const toDeskId = action["toDesk"];
       const send = action["send"];
       const want = action["want"];
       const chip = action["chip"];
       const line = action["line"];
+      // `toDesk` is the public club-facing key (`holderId`, "clubId-twin") the
+      // composer reads off a market card — never a seat id. `toSeat` keeps
+      // working directly for any caller that already resolved one.
+      const toSeat = typeof toSeatRaw === "string" ? toSeatRaw : typeof toDeskId === "string" ? seatByHolderId(state, toDeskId) : null;
       if (typeof toSeat !== "string" || !Array.isArray(send) || !Array.isArray(want)) return fail("a trade needs a desk, what you send and what you want");
       const toDesk = state.desks[toSeat];
       if (!toDesk) return fail("no such desk");
@@ -586,8 +600,15 @@ function reduce(state: SameLineL3State, action: { type: string; [k: string]: unk
       }
       const profile = profileFor(state.gradeBand);
       if (profile.band === "5-6") {
-        const alreadyHasAccept = Object.values(state.offers).some((o) => o.acceptedBy === ctx.seatId && o.state === "ACCEPTED");
-        if (alreadyHasAccept) return fail("You already have a deal on the table this hour.");
+        // At 5-6 a desk may only be inside ONE accepted deal at a time — as
+        // the acceptor OR as the desk on the other end of it — so a fast
+        // click cannot double-commit a desk across two negotiations while
+        // the room is still deciding. Checked on BOTH desks in this offer,
+        // not only the one calling accept.
+        const involvedInAccepted = (seatId: SeatId): boolean => Object.values(state.offers).some((o) => o.state === "ACCEPTED" && (o.fromSeat === seatId || o.toSeat === seatId));
+        if (involvedInAccepted(offer.fromSeat) || involvedInAccepted(offer.toSeat)) {
+          return fail("One of these desks already has a deal on the table this hour.");
+        }
       }
       const accepted: Offer = { ...offer, state: "ACCEPTED", acceptedBy: ctx.seatId };
       return { ok: true, state: { ...state, offers: { ...state.offers, [id]: accepted } } };
@@ -602,6 +623,9 @@ function reduce(state: SameLineL3State, action: { type: string; [k: string]: unk
      */
     case "withdrawAccept": {
       if (ctx.phase !== "PLAY") return fail("cannot withdraw an accept outside the deadline room");
+      // D61 ruling 3: reversible at 5-6 only, so a quick click there is not
+      // rewarded for speed. At 7-8 an accept is final the moment it lands.
+      if (profileFor(state.gradeBand).band !== "5-6") return fail("an accept is final in this room");
       const id = action["offerId"];
       if (typeof id !== "string") return fail("no offer named");
       const offer = state.offers[id];

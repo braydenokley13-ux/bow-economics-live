@@ -354,10 +354,12 @@ export const POOL_CHIPS: readonly PoolChip[] = ["nothing", "a little", "a lot"];
 
 /**
  * One club's pool line for one settled week. `assessedLocalRevenue` is
- * doorMoney + localMedia for that club that week — the club's OWN money, not
- * the equal national check, which is already shared and would double the
- * lesson. Computed in `settleWeek`, alongside the settlement it is assessed
- * against, so it can never drift from the numbers the desk actually saw.
+ * `gate + localMedia` for that club that week — deliberately NOT `doorMoney`
+ * (which also carries in-arena spend) and never the equal national check,
+ * which is already shared and would double the lesson. This is the SAME base
+ * Week 6 taxes (`writeTheRule.ts` `taxedLocal`), on purpose. Computed in
+ * `settleWeek`, alongside the settlement it is assessed against, so it can
+ * never drift from the numbers the desk actually saw.
  *
  * Restricted to LIVE desks only (`club.seatId !== null`): the ritual is about
  * the room's own franchises, and a league-office bot has no student behind it

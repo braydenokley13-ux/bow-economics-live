@@ -106,29 +106,36 @@ test("room-absorption rule — a desk already over the cap cannot absorb more th
 });
 
 test("D61 — apron tests run on committed-holds, never raw committed", () => {
-  // Detroit: raw committed sits ABOVE the first apron, but holds are large
-  // enough that committed-holds sits BELOW it. A wall drawn at the first
-  // apron must therefore treat this desk as still under that line.
-  const rawCommitted = LINE.apron1 + 1_000_000;
-  const holds = 2_000_000; // apron salary = apron1 - 1,000,000: below the line
-  assert.ok(apronSalaryOf(rawCommitted, holds) < LINE.apron1);
+  // Detroit: raw committed sits ABOVE a wall drawn at $150,000,000, but holds
+  // are large enough that committed-holds sits BELOW it. Committed is kept
+  // under LINE.cap so R1 (room-absorption, keyed on RAW committed) has ample
+  // room and cannot mask what this test is actually about — R2/R3, which key
+  // on APRON TEAM SALARY (committed - holds).
+  const wall = 150_000_000;
+  const rawCommitted = 152_000_000; // over the wall on a raw reading
+  const holds = 5_000_000; // apron salary = 147,000,000: under the wall
+  assert.ok(apronSalaryOf(rawCommitted, holds) < wall);
+  assert.ok(rawCommitted > wall);
+  assert.ok(rawCommitted < LINE.cap);
   // Detroit sends only a $0 pick (roster untouched, 14 filler contracts so
   // R6 does not fire on the +1 it takes back). Other sends one contract off a
   // 15-player roster so it also lands back in [14,15] after the trade.
-  const detroit = desk("det", "detroit", 0, rawCommitted, paddedRoster([], 14, "det"), [pick("det-p1"), pick("det-p2")], holds, LINE.apron1);
-  const other = desk("other", "boston", 0, LINE.cap - 10_000_000, paddedRoster([contract("small", 500_000)], 15, "other"));
-  // Detroit sends a $0 pick, receives a small contract. Post-trade apron
-  // salary is still under the apron1 wall, so this must be legal even though
-  // post-trade RAW committed ($LINE.apron1 + 1,500,000) sits past it.
+  const detroit = desk("det", "detroit", 0, rawCommitted, paddedRoster([], 14, "det"), [pick("det-p1"), pick("det-p2")], holds, wall);
+  const other = desk("other", "boston", 0, LINE.cap - 10_000_000, paddedRoster([contract("small", 2_000_000)], 15, "other"));
+  // Detroit sends a $0 pick, receives a $2,000,000 contract. Post-trade apron
+  // salary (147M + 2M = 149M) is still under the wall, so this must be legal
+  // even though post-trade RAW committed (154M) sits past it.
   const r = checkTrade(detroit, other, ["det-p1"], ["small"], P78);
   assert.equal(r.ok, true, r.ok ? "" : r.reason);
 });
 
 test("R3 — a wall tested on apron salary still refuses a trade that would cross it", () => {
-  const committed = LINE.apron1 - 100_000;
-  const holds = 0; // apron salary == committed here
-  const detroit = desk("det", "detroit", 0, committed, paddedRoster([], 14, "det"), [pick("det-p1"), pick("det-p2")], holds, LINE.apron1);
-  const other = desk("other", "boston", 0, LINE.cap - 10_000_000, paddedRoster([contract("big", 500_000)], 15, "other"));
+  const wall = 150_000_000;
+  const rawCommitted = 152_000_000;
+  const holds = 5_000_000; // apron salary before the trade: 147,000,000
+  const detroit = desk("det", "detroit", 0, rawCommitted, paddedRoster([], 14, "det"), [pick("det-p1"), pick("det-p2")], holds, wall);
+  const other = desk("other", "boston", 0, LINE.cap - 10_000_000, paddedRoster([contract("big", 5_000_000)], 15, "other"));
+  // Post-trade apron salary: 147M + 5M = 152M > the 150M wall.
   const r = checkTrade(detroit, other, ["det-p1"], ["big"], P78);
   assert.equal(r.ok, false);
   if (!r.ok) assert.match(r.reason, /wall/);
@@ -153,12 +160,15 @@ test("R6 — roster slots must stay within ROSTER.min..ROSTER.max", () => {
 });
 
 test("R4 — aggregating two outgoing contracts is refused past the second apron, allowed under it", () => {
+  // Aggregating two heavy outgoing contracts for one light one back is a net
+  // DECREASE in committed salary — so to still land OVER the second apron
+  // after that decrease, this desk has to start well past it.
   const send1 = contract("s1", 5_000_000);
   const send2 = contract("s2", 5_000_000);
-  const nearApron2 = desk("agg", "memphis", 0, LINE.apron2 - 8_000_000, paddedRoster([send1, send2], 15, "agg"));
+  const nearApron2 = desk("agg", "memphis", 0, LINE.apron2 + 15_000_000, paddedRoster([send1, send2], 15, "agg"));
   const rich = desk("rich", "detroit", 0, LINE.cap - 20_000_000, paddedRoster([contract("get", 1_000_000)], 14, "rich"));
   const overLimit = checkTrade(nearApron2, rich, ["s1", "s2"], ["get"], P78);
-  assert.equal(overLimit.ok, false);
+  assert.equal(overLimit.ok, false, overLimit.ok ? "unexpectedly legal" : "");
   if (!overLimit.ok) assert.match(overLimit.reason, /second apron/);
 
   const roomy = desk("agg2", "memphis", 0, LINE.apron2 - 20_000_000, paddedRoster([contract("s3", 1_000_000), contract("s4", 1_000_000)], 15, "agg2"));

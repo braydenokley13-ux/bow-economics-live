@@ -71,6 +71,13 @@ export class ServiceError extends Error {
 const notFound = (what: string) => new ServiceError(404, "not_found", `${what} not found`);
 const REJOIN_LOCKOUT_THRESHOLD = 5;
 
+/** THE FIRST QUESTION (§12.2), trimmed to a real string or `null` — never an empty string on the wire. */
+const normalizeQuestion = (raw: string | undefined): string | null => {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
 /**
  * How many applied action ids a seat remembers.
  *
@@ -177,6 +184,15 @@ export type StudentPayload = {
   /** What closing the round would do to THIS desk, said TO the pair, when it has committed nothing. */
   fallback: string | null;
   /**
+   * §12.2's INVITE FIRST, as this seat's own payload sees it. Present ONLY on
+   * the invited seat's own payload — every other seat's `pressInvite` is
+   * `null`, and no payload on any surface ever carries the invited seat's id.
+   * `canDecline` is false once this seat has already used its one decline
+   * this session; the client drops the DECLINE button and says so plainly
+   * rather than silently disabling it.
+   */
+  pressInvite: { question: string | null; canDecline: boolean } | null;
+  /**
    * WHILE YOU WERE AWAY.
    *
    * Present only when this desk went dark long enough to miss something and
@@ -196,7 +212,18 @@ export type StudentPayload = {
  * is not spotlighted must never be able to work out, from its own poll
  * response, which seat is.
  */
-export type StudentSpotlight = { label: string; mine: boolean };
+export type StudentSpotlight = {
+  label: string;
+  mine: boolean;
+  /**
+   * THE FIRST QUESTION (§12.2: "the instructor takes the first question to
+   * model tone"), on the one payload allowed to carry it besides the board —
+   * the podium seat's own. Every other seat's `spotlight.question` is `null`,
+   * exactly like `mine` is `false` for them: the fact that a question was set
+   * is podium-and-board content, not something a locked-out desk is told.
+   */
+  question: string | null;
+};
 
 export type TeacherPayload = {
   session: {
@@ -274,9 +301,21 @@ export type TeacherPayload = {
     resolvedCount: number;
   } | null;
   /** Who is at the podium right now, teacher-private (this is the one payload allowed to name the seat). Null outside a press conference. */
-  spotlight: { seatId: string; label: string; since: string } | null;
-  /** The console's shortlist for who to call up next — the module's own ranking, or `[]` for a lesson that declares none. */
-  pressCandidates: readonly { seatId: string; label: string; why: string }[];
+  spotlight: { seatId: string; label: string; since: string; question: string | null } | null;
+  /**
+   * §12.2 INVITE FIRST, teacher-private: the seat currently invited and
+   * awaiting an answer, or null. The one payload (besides the invited seat's
+   * own) allowed to name it — the console needs the seat id to offer Cancel.
+   */
+  pressInvite: { seatId: string; label: string; question: string | null; since: string } | null;
+  /**
+   * The console's shortlist for who to call up next — the module's own
+   * ranking, or `[]` for a lesson that declares none. `declined` is folded in
+   * by the runtime (the module has no seat-level memory of this) so the
+   * console can mark a desk that has already used its one decline, without
+   * ever putting that fact on a shared surface.
+   */
+  pressCandidates: readonly { seatId: string; label: string; why: string; declined: boolean }[];
   view: unknown;
 };
 
@@ -293,7 +332,7 @@ export type BoardPayload = {
    * such view (the board must be able to tell "nothing to show yet" apart from
    * "no press conference"), and NEVER the seat id: the projector is public.
    */
-  spotlight: { label: string; view: unknown } | null;
+  spotlight: { label: string; view: unknown; question: string | null } | null;
   view: unknown;
 };
 
@@ -694,6 +733,51 @@ export class SessionService {
 
     this.assertActionable(session);
 
+    // §12.2 INVITE FIRST — the seat's own half of the invite exchange.
+    // Neither branch touches `mod.reduce`: accepting or declining a podium
+    // invitation is not lesson content, it is this runtime's own primitive,
+    // exactly like `pressConference`/`endPressConference` are on the teacher
+    // side. Both branches still go through the ordinary idempotency check
+    // above and the ordinary seen/appliedActionIds tail below, so a lost
+    // response retries safely like any other student action.
+    if (action.type === "acceptPress" || action.type === "declinePress") {
+      const invite = session.pressInvite;
+      if (!invite || invite.seatId !== seat.id) {
+        // Never says WHO is invited, or that anyone is — a seat with no
+        // invite of its own must not learn from this refusal that a podium
+        // exchange is happening elsewhere in the room.
+        throw new ServiceError(409, "no_invite", "there is no press conference invitation to respond to", false);
+      }
+      if (action.type === "declinePress" && seat.pressDeclined) {
+        // §12.2: "A desk may decline once per course" — once, not once per
+        // invitation. A second decline from the same seat is a semantic
+        // refusal, not a transient one: no retry ever makes it succeed.
+        throw new ServiceError(400, "decline_used", "you've already used your one decline this session", false);
+      }
+      const patch: Parameters<Repository["updateSession"]>[1] =
+        action.type === "acceptPress"
+          ? {
+              paused: true,
+              pausedAt: this.pauseAnchor(session),
+              spotlight: { seatId: seat.id, label: invite.label, since: new Date().toISOString(), question: invite.question },
+              pressInvite: null,
+            }
+          : { pressInvite: null };
+      const outcome = await this.repo.updateSession(session.id, patch, session.version);
+      if (!outcome.ok) {
+        if (outcome.conflict) {
+          throw new ServiceError(409, "version_conflict", "another desk wrote first — this will be retried automatically", true);
+        }
+        throw notFound("session");
+      }
+      const seatPatch: SeatPatch = {};
+      if (action.type === "declinePress") seatPatch.pressDeclined = true;
+      if (actionId) seatPatch.appliedActionIds = [...seat.appliedActionIds, actionId].slice(-APPLIED_ACTION_MEMORY);
+      const seen = await this.markSeen(outcome.session, seat);
+      const updatedSeat = Object.keys(seatPatch).length > 0 ? (await this.repo.updateSeat(seat.id, seatPatch)) ?? seen : seen;
+      return { ...this.studentPayload(outcome.session, updatedSeat), disposition: "applied" };
+    }
+
     // (2) Did this decision cross a TIME CUT?
     //
     // The founder's list of things the architecture must tell apart ends with
@@ -970,11 +1054,17 @@ export class SessionService {
       | { type: "finalCall"; durationMs?: number }
       | { type: "closeNow" }
       | { type: "cancelFinalCall" }
-      // THE PRESS CONFERENCE. Calling one is a pause with a podium attached;
+      // THE PRESS CONFERENCE. Calling one directly is a pause with a podium
+      // attached (the manual fallback — a desk that volunteered out loud);
       // ending one is the ordinary resume, on the same clock-honesty path as
-      // `unpause`/`unfreeze` — see `clockShiftForResume`.
-      | { type: "pressConference"; seatId: string }
-      | { type: "endPressConference" },
+      // `unpause`/`unfreeze` — see `clockShiftForResume`. `question` is the
+      // optional first question (§12.2) shown on the board and the podium.
+      | { type: "pressConference"; seatId: string; question?: string }
+      | { type: "endPressConference" }
+      // §12.2 INVITE FIRST: propose the podium to a seat without pausing
+      // anything. The podium only goes live if that seat accepts.
+      | { type: "invitePress"; seatId: string; question?: string }
+      | { type: "cancelInvite" },
     teacherKey: string | null,
   ): Promise<TeacherPayload> {
     let session = await this.requireSession(code);
@@ -1073,11 +1163,16 @@ export class SessionService {
         }
         const seat = await this.repo.getSeatById(seatId);
         if (!seat || seat.sessionId !== session.id) throw notFound("seat");
+        const question = normalizeQuestion(action.question);
         return this.buildTeacherPayload(
           await this.patch(session, {
             paused: true,
             pausedAt: this.pauseAnchor(session),
-            spotlight: { seatId, label: this.spotlightLabelFor(session, seatId), since: new Date().toISOString() },
+            spotlight: { seatId, label: this.spotlightLabelFor(session, seatId), since: new Date().toISOString(), question },
+            // The direct call-up is the manual fallback and always wins over
+            // whatever the invite flow was doing — a teacher who calls a desk
+            // up directly is not waiting on an answer to anything.
+            pressInvite: null,
           }),
         );
       }
@@ -1087,9 +1182,34 @@ export class SessionService {
             paused: false,
             pausedAt: null,
             spotlight: null,
+            pressInvite: null,
             round: this.clockShiftForResume(session, session.round),
           }),
         );
+      /* ---------------------------------------------------------- INVITE FIRST --
+       * §12.2 FOUNDER LOCKED: "A desk's first Press Conference of the course
+       * is invited, never cold-called." An invite proposes the podium to a
+       * seat WITHOUT pausing the room — the pause with a podium attached only
+       * begins if and when that seat accepts (`acceptPress`, in
+       * `submitAction`). A decline (`declinePress`) or a teacher `cancelInvite`
+       * both clear it with no pause ever having happened.
+       * ------------------------------------------------------------------------- */
+      case "invitePress": {
+        const seatId = action.seatId;
+        if (typeof seatId !== "string" || seatId.length === 0) {
+          throw new ServiceError(400, "bad_seat", "invitePress requires a seatId");
+        }
+        const seat = await this.repo.getSeatById(seatId);
+        if (!seat || seat.sessionId !== session.id) throw notFound("seat");
+        const question = normalizeQuestion(action.question);
+        return this.buildTeacherPayload(
+          await this.patch(session, {
+            pressInvite: { seatId, label: this.spotlightLabelFor(session, seatId), question, since: new Date().toISOString() },
+          }),
+        );
+      }
+      case "cancelInvite":
+        return this.buildTeacherPayload(await this.patch(session, { pressInvite: null }));
       case "hook": {
         const result = mod.reduce(
           session.state,
@@ -1171,8 +1291,9 @@ export class SessionService {
         // other risky transition — previously "end" was the one control
         // action that never snapshotted first, so `restore` structurally
         // could not undo it (see the "restore" case and Checkpoint.ended).
-        // Nobody stays at a podium in a session that no longer exists.
-        return this.buildTeacherPayload(await this.patch(session, { ended: true, spotlight: null }, true));
+        // Nobody stays at a podium — or waits on an invite — in a session that
+        // no longer exists.
+        return this.buildTeacherPayload(await this.patch(session, { ended: true, spotlight: null, pressInvite: null }, true));
       case "restore": {
         if (!session.checkpoint) throw new ServiceError(400, "no_checkpoint", "no checkpoint to restore");
         const cp = session.checkpoint;
@@ -1221,8 +1342,10 @@ export class SessionService {
             // Nobody stays at a podium across an undo — the room being restored
             // to a moment before (or after) the press conference never asked for
             // it, and the seat id must not survive a control path that skips
-            // `endPressConference` entirely.
+            // `endPressConference` entirely. Same logic for a pending invite:
+            // the room being restored to never asked that question either.
             spotlight: null,
+            pressInvite: null,
             // And the record of what the class did goes back with the class.
             // An append-only log across an undo tells the next desk to come
             // back from a dark Chromebook that a night the teacher took back
@@ -1366,7 +1489,14 @@ export class SessionService {
       // from `spotlight: null` (no podium at all). Never the seat id: this is
       // the one payload the room's projector actually renders.
       spotlight: session.spotlight
-        ? { label: session.spotlight.label, view: mod.spotlightView?.(session.state, session.spotlight.seatId, session.phase) ?? null }
+        ? {
+            label: session.spotlight.label,
+            view: mod.spotlightView?.(session.state, session.spotlight.seatId, session.phase) ?? null,
+            // THE FIRST QUESTION (§12.2), public: it is asked in front of the
+            // whole room, so the board gets it in full — never the reason a
+            // decline happened, which never reaches this surface at all.
+            question: session.spotlight.question,
+          }
         : null,
       view: mod.boardView(session.state, session.phase),
     };
@@ -1515,6 +1645,7 @@ export class SessionService {
     const roundOpen = Boolean(contract && contract.currentKey(session.state, session.phase) !== null);
     const mine = contract && roundOpen ? contract.unresolved(session.state, session.phase, [seat.id])[0] ?? null : null;
     const atPodium = session.spotlight?.seatId === seat.id;
+    const invitedHere = session.pressInvite?.seatId === seat.id;
     return {
       round: this.roundPublic(session),
       committed: roundOpen ? mine === null : null,
@@ -1529,10 +1660,18 @@ export class SessionService {
         version: session.version,
         // NO SEAT ID TRAVELS HERE, on this seat's own payload or any other
         // seat's — `mine` is the only fact a desk that is not spotlighted is
-        // ever told about who is.
-        spotlight: session.spotlight ? { label: session.spotlight.label, mine: atPodium } : null,
+        // ever told about who is. `question` is likewise only ever true
+        // content for the podium seat itself — every other seat reads null,
+        // the same way every other seat reads `mine: false`.
+        spotlight: session.spotlight
+          ? { label: session.spotlight.label, mine: atPodium, question: atPodium ? session.spotlight.question : null }
+          : null,
       },
       seat: { id: seat.id, displayName: seat.displayName },
+      // §12.2 INVITE FIRST: present only on the invited seat's OWN payload —
+      // every other seat's `pressInvite` is null, and the invited seat's id
+      // never travels on any payload but this one (it already knows who it is).
+      pressInvite: invitedHere ? { question: session.pressInvite!.question, canDecline: !seat.pressDeclined } : null,
       away: this.awayFor(session, seat),
       ...credentials,
       // THE PODIUM SEES WHAT THE ROOM SEES. While this desk is spotlighted, its
@@ -1581,7 +1720,11 @@ export class SessionService {
       round: this.roundPublic(session),
       timeCut: null,
       spotlight: session.spotlight ? { ...session.spotlight } : null,
-      pressCandidates: mod.pressCandidates?.(session.state, session.phase) ?? [],
+      pressInvite: session.pressInvite ? { ...session.pressInvite } : null,
+      // `declined` is filled in by `buildTeacherPayload`, which has the seat
+      // roster this method does not; defaulted false here so the shape is
+      // complete for any caller of the bare (roster-less) payload.
+      pressCandidates: (mod.pressCandidates?.(session.state, session.phase) ?? []).map((c) => ({ ...c, declined: false })),
       view: mod.teacherView(session.state, session.phase),
     };
   }
@@ -1608,6 +1751,13 @@ export class SessionService {
         rejoinLocked: s.failedRejoinAttempts >= REJOIN_LOCKOUT_THRESHOLD,
       };
     });
+
+    // §12.2: mark, on the console's own shortlist, a desk that has already
+    // used its one decline — never on a shared surface, only here. The
+    // module's `pressCandidates()` has no seat-level memory of this; the
+    // runtime is the only layer that does.
+    const declinedSeats = new Set(seats.filter((s) => s.pressDeclined).map((s) => s.id));
+    payload.pressCandidates = payload.pressCandidates.map((c) => ({ ...c, declined: declinedSeats.has(c.seatId) }));
 
     // The founder's rule: before the teacher closes the round, /teach makes
     // clear who is unresolved and what fallback will happen to them. A close

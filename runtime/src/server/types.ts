@@ -122,14 +122,29 @@ export type SessionRow = {
   frozen: boolean;
   ended: boolean;
   /**
-   * THE PODIUM. Set by the `pressConference` control action, cleared by
+   * THE PODIUM. Set by the `pressConference` control action (direct/manual
+   * call-up) or by a seat accepting a `pressInvite` below, cleared by
    * `endPressConference`, `restore`, and `end`. Never patched to include a
    * display name — `label` is what the module (or, absent one, the fallback
    * "A FRONT OFFICE") calls this desk, because the projector and every other
    * seat's lock screen are handed this record and must never be handed a
    * fictional name that could be triangulated back to a real student.
+   * `question` is THE FIRST QUESTION (Bible §12.2: "the instructor takes the
+   * first question to model tone") — teacher-authored, optional, shown on the
+   * board takeover and the podium seat's own screen only.
    */
-  spotlight: { seatId: SeatId; label: string; since: string } | null;
+  spotlight: { seatId: SeatId; label: string; since: string; question: string | null } | null;
+  /**
+   * THE INVITE. Bible §12.2: "A desk's first Press Conference of the course
+   * is invited, never cold-called." Set by `invitePress`, cleared by
+   * `cancelInvite`, promoted into `spotlight` (podium goes live) the instant
+   * the invited seat accepts, or cleared outright when it declines. Never
+   * pauses the room by itself — only an accepted invite (or the direct
+   * `pressConference` fallback) does that. Cleared alongside `spotlight` by
+   * `endPressConference`, `restore`, and `end` so an invite never survives
+   * past the moment it was answered or the room moved on.
+   */
+  pressInvite: { seatId: SeatId; label: string; question: string | null; since: string } | null;
   /** Opaque lesson state, owned entirely by the LessonModule. */
   state: unknown;
   /** Bumped on every mutation. Doubles as the ETag for all three polling surfaces. */
@@ -188,6 +203,14 @@ export type SeatRow = {
    * what it missed. Null the rest of the time.
    */
   awaySince: string | null;
+  /**
+   * Bible §12.2: "A desk may decline once per course, silently, at no
+   * cost" — but only once. Set the instant this seat declines a Press
+   * Conference invitation; once true, that seat's invite card never offers
+   * DECLINE again (it must accept). Per-seat, not per-session, because the
+   * one-decline allowance belongs to the desk, not the room.
+   */
+  pressDeclined: boolean;
 };
 
 export type NewSession = {
@@ -201,7 +224,10 @@ export type NewSession = {
 };
 
 export type SessionPatch = Partial<
-  Pick<SessionRow, "phase" | "paused" | "pausedAt" | "frozen" | "ended" | "state" | "checkpoint" | "round" | "log" | "spotlight">
+  Pick<
+    SessionRow,
+    "phase" | "paused" | "pausedAt" | "frozen" | "ended" | "state" | "checkpoint" | "round" | "log" | "spotlight" | "pressInvite"
+  >
 >;
 
 export type NewSeat = {
@@ -216,7 +242,10 @@ export type SeatPatch = Partial<
   // `rejoinPinHash` is writable for exactly one reason: a teacher reseating a
   // pair whose device died mints a new PIN for the seat they already hold.
   // Nothing student-facing can reach that path.
-  Pick<SeatRow, "deviceTokenHash" | "rejoinPinHash" | "lastSeenAt" | "failedRejoinAttempts" | "appliedActionIds" | "seenSeq" | "awaySince">
+  Pick<
+    SeatRow,
+    "deviceTokenHash" | "rejoinPinHash" | "lastSeenAt" | "failedRejoinAttempts" | "appliedActionIds" | "seenSeq" | "awaySince" | "pressDeclined"
+  >
 >;
 
 /** A version-conflict result is a normal outcome, not an exception. */

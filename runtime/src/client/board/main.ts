@@ -1549,8 +1549,11 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
       const pipes = (view["pipes"] as HLPipe[]) ?? [];
       const path = view["smallMarketPath"] as HLPath | null;
       const means = (view["meanShareByWeek"] as (number | null)[] | null) ?? null;
+      const pool = view["pool"] as HLPoolBoard | null;
       let bodyHtml = "";
-      if (stageNo === 1) {
+      if (pool) {
+        bodyHtml = hlPoolRitualHtml(pool);
+      } else if (stageNo === 1) {
         bodyHtml = `
           <div class="hl-bar-pager">${escapeHtml(String(view["barPageLabel"] ?? ""))}</div>
           ${hlBarHtml(bars)}
@@ -1636,9 +1639,9 @@ function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): voi
           <div class="synthesis-note hl-summary" id="hlChange">${escapeHtml(String(view["changeLine"] ?? ""))}</div>`;
       }
       stage.innerHTML = `
-        <div class="label">${escapeHtml(String(view["stageHeadline"] ?? "Waiting"))}</div>
+        <div class="label">${escapeHtml(pool ? `THE POOL — ${pool.stageName ?? ""}` : String(view["stageHeadline"] ?? "Waiting"))}</div>
         ${bodyHtml || `<div class="banner">Waiting for your teacher to put up the first beat.</div>`}
-        <div class="exit-prompt hl-foot">${escapeHtml(honesty)}</div>`;
+        ${pool && pool.levyLine ? `<div class="exit-prompt hl-foot">${escapeHtml(pool.levyLine)}</div>` : `<div class="exit-prompt hl-foot">${escapeHtml(honesty)}</div>`}`;
       return;
     }
 

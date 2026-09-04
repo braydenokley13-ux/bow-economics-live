@@ -1,12 +1,11 @@
 /**
  * THE SAME LINE — L2 "THE SEASON" (`m1l2-the-season`), the projector.
  *
- * Built against `docs/gauntlet/module-1/rebuild/W2_THE_SEASON_SPEC.md` §7
- * before `runtime/src/modules/sameLine/l2.ts` existed — see the header note
- * in `sameLineL2.ts` for the same caveat: field names here are the spec's
- * (`openJobsByRole`, `commitsIn`, `deskCount`, `wallsDrawn`, `ticker`,
- * `naming`), read through defensive accessors, and this file conforms to the
- * real module the day it lands.
+ * RECONCILED against the real `l2.ts` `boardView` (2026-09-04): `deskCount`
+ * replaces the inferred `desks`; `openJobsByRole` is a plain
+ * `{ BIG, WING, GUARD }` object, not an array of rows; `ticker` entries carry
+ * `{ round, name, priceText }` only — no club or desk label, so the board
+ * never names who signed whom, only what moved and for how much.
  *
  * `boardView` is never handed a seat identity (spec §7, BOW test #9); nothing
  * in this file reads or renders a seat id, a chip, or the typed reasoning
@@ -33,7 +32,7 @@ const rec = (v: unknown): V => (v !== null && typeof v === "object" ? (v as V) :
 /* ------------------------------------------------------------- frames -- */
 
 function lobbyFrame(v: V): string {
-  const n = num(v["desks"]);
+  const n = num(v["deskCount"]);
   return `
   <div class="slb slb--hero">
     <p class="slb-eyebrow">MODULE 1 · THE SEASON</p>
@@ -42,14 +41,15 @@ function lobbyFrame(v: V): string {
   </div>`;
 }
 
-/** Counts by role only — the room's own demand evidence, never a seat's position (spec §3 "What the board shows mid-play"). */
+/** Counts by role only — the room's own demand evidence, never a seat's position (spec §3 "What the board shows mid-play"). Real shape: `{ BIG, WING, GUARD }`, not an array of rows. */
 function openJobsFrame(v: V): string {
-  const rows = arr(v["openJobsByRole"]);
-  if (rows.length === 0) {
+  const byRole = rec(v["openJobsByRole"]);
+  const rows = Object.entries(byRole);
+  if (rows.length === 0 || rows.every(([, n]) => num(n) === 0)) {
     return `<div class="slb slb--hero"><h1 class="slb-hero">EVERY JOB IN THE ROOM IS FILLED.</h1><p class="slb-hero-sub">Depth still costs the same room.</p></div>`;
   }
   return `<table class="slb-market"><thead><tr><th>JOB</th><th>OPEN ACROSS THE ROOM</th></tr></thead><tbody>${rows
-    .map((r) => `<tr><td class="slb-name">${esc(str(r["role"]))}</td><td class="slb-int"><b>${num(r["count"])}</b></td></tr>`)
+    .map(([role, n]) => `<tr><td class="slb-name">${esc(role)}</td><td class="slb-int"><b>${num(n)}</b></td></tr>`)
     .join("")}</tbody></table>`;
 }
 
@@ -71,7 +71,7 @@ function playFrame(v: V, title: string): string {
   </div>`;
 }
 
-/** Who moved where, once a window settles. Club/desk labels, never students (mirrors sameLineL1Board's `signedFrame`). */
+/** Who signed, for how much, in which window — never a desk, a club, or a seat (real `ticker` shape: `{ round, name, priceText }`, no identity field exists to render). */
 function tickerFrame(v: V, title: string): string {
   const ticker = arr(v["ticker"]);
   if (ticker.length === 0) {
@@ -84,8 +84,8 @@ function tickerFrame(v: V, title: string): string {
       .map(
         (t) => `
       <li class="slb-signed">
-        <span class="slb-signed-name">${esc(str(t["name"], str(t["headline"])))}</span>
-        <span class="slb-signed-to">${esc(str(t["club"], str(t["label"])))}</span>
+        <span class="slb-signed-name">${esc(str(t["name"]))}</span>
+        <span class="slb-signed-to">${esc(str(t["round"]))}</span>
         ${t["priceText"] ? `<span class="slb-signed-price">${esc(str(t["priceText"]))}</span>` : ""}
       </li>`,
       )

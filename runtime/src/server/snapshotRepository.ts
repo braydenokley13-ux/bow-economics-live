@@ -160,7 +160,14 @@ export class SnapshotRepository implements Repository {
           // paused and nobody is at the podium, which is exactly the state a
           // fresh room starts in.
           pausedAt: session.pausedAt ?? null,
-          spotlight: session.spotlight ?? null,
+          // A snapshot written before the first-question field existed has a
+          // spotlight (if any) with no `question` at all, not a `null` one —
+          // normalized here so a room upgraded mid-podium boots as "no
+          // question set", never `undefined` leaking onto a wire payload.
+          spotlight: session.spotlight ? { ...session.spotlight, question: session.spotlight.question ?? null } : null,
+          // A snapshot written before invites existed has no pending invite —
+          // exactly the state a fresh room starts in.
+          pressInvite: session.pressInvite ?? null,
           // A room created before the band existed is a grades 5-6 room, which
           // is the only band that existed when it was written.
           gradeBand: bandOrDefault(session.gradeBand),
@@ -175,6 +182,10 @@ export class SnapshotRepository implements Repository {
           // than being told it missed events that were never recorded.
           seenSeq: seat.seenSeq ?? 0,
           awaySince: seat.awaySince ?? null,
+          // A seat that joined before the decline allowance existed has not
+          // used it — it starts with its one decline still available, same as
+          // any seat created today.
+          pressDeclined: seat.pressDeclined ?? false,
         });
       }
     } catch (parseError) {
@@ -283,6 +294,7 @@ export class SnapshotRepository implements Repository {
       frozen: false,
       ended: false,
       spotlight: null,
+      pressInvite: null,
       state: input.state,
       version: 1,
       checkpoint: null,
@@ -373,6 +385,7 @@ export class SnapshotRepository implements Repository {
       // missed before it existed is the lesson, not a recap.
       seenSeq: this.sessions.get(input.sessionId)?.log.at(-1)?.seq ?? 0,
       awaySince: null,
+      pressDeclined: false,
     };
     this.putSeat(row);
     this.persist();

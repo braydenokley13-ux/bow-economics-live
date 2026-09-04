@@ -4492,8 +4492,40 @@ function renderHLHook(view: Record<string, unknown>): void {
       <ul>${rules.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
     </details>
     ${hlLeagueTable((view["league"] as HLClub[]) ?? [])}
+    ${hlHowYouGotHereHtml(view)}
+    <div class="hl-levy" id="hlLevyLine"><span class="hl-levy-tag">THE LEAGUE'S POOL</span><span>${escapeHtml(String(view["levyLine"] ?? ""))}</span></div>
     <div class="banner" style="margin-top:12px;">${escapeHtml(String(view["horizonLine"] ?? ""))}</div>
     <div class="banner" style="margin-top:8px;">${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</div>`;
+}
+
+/**
+ * THE HOW-YOU-GOT-HERE CARD — Week 5's own seed-in receipt. `weekFourNote` is
+ * the room's own carry-in summary and can stand alone; `howYouGotHere` is
+ * this desk's own line and renders only for a franchise that actually
+ * carried in. Every figure comes straight off the payload; nothing here is
+ * computed, and a fresh league with neither field renders nothing.
+ */
+function hlHowYouGotHereHtml(view: Record<string, unknown>): string {
+  const weekFourNote = view["weekFourNote"] as string | null;
+  const carry = view["howYouGotHere"] as
+    | { cashOpening: number; penalty: number; billCleared: boolean | null; clamped: boolean; line: string }
+    | null;
+  if (!carry && !weekFourNote) return "";
+  return `
+    <div class="panel hl-carry" id="hlHowYouGotHere" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px; margin-bottom:6px;">How you got here</div>
+      ${carry ? `<p style="margin:0 0 8px; font-size:14.5px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(carry.line)}</p>` : ""}
+      ${
+        carry
+          ? `<div class="fh-market-facts">
+        <div><span>Opening cash</span><span class="numeric">${money(carry.cashOpening)}</span></div>
+        ${carry.penalty > 0 ? `<div><span>Penalty applied</span><span class="numeric">${money(carry.penalty)}</span></div>` : ""}
+        ${carry.clamped ? `<div><span>Floored for playability</span><span>yes</span></div>` : ""}
+      </div>`
+          : ""
+      }
+      ${weekFourNote ? `<p style="margin:8px 0 0; font-size:13px; color:var(--ink-secondary);">${escapeHtml(weekFourNote)}</p>` : ""}
+    </div>`;
 }
 
 /**
@@ -4761,6 +4793,41 @@ function hlDarkBuildingHtml(view: Record<string, unknown>): string {
     </div>`;
 }
 
+type HLPoolChip = "nothing" | "a little" | "a lot";
+type HLPoolPosition = {
+  prompt: string;
+  chips: HLPoolChip[];
+  current: { chip: HLPoolChip; line: string } | null;
+  levyLine: string;
+};
+
+/**
+ * W5 POOL POSITION — captured beside the gate call, while a locked desk waits
+ * for the room. Two inputs only (a chip and a short line), both echoed back
+ * from `current` once submitted; nothing here computes a dollar figure.
+ */
+function hlPoolPositionHtml(pool: HLPoolPosition | undefined): string {
+  if (!pool) return "";
+  const current = pool.current;
+  return `<div class="hl-pool-position" id="hlPoolPosition">
+      <div class="eyebrow" style="font-size:11px;">Your pool position</div>
+      <p class="hl-pool-prompt">${escapeHtml(pool.prompt)}</p>
+      <div class="hl-pool-chips">
+        ${pool.chips
+          .map(
+            (c) => `<button type="button" class="hl-pool-chip${current?.chip === c ? " is-called" : ""}" data-chip="${escapeHtml(c)}" ${
+              current?.chip === c ? 'aria-pressed="true"' : 'aria-pressed="false"'
+            }>${escapeHtml(c)}</button>`,
+          )
+          .join("")}
+      </div>
+      <input type="text" class="hl-pool-line" id="hlPoolLine" maxlength="140" placeholder="Say why, in one line" value="${escapeHtml(current?.line ?? "")}" />
+      <button type="button" class="btn" id="hlPoolSubmit">SAVE MY POSITION</button>
+      <p class="hl-pool-levy">${escapeHtml(pool.levyLine)}</p>
+      ${current ? `<div class="hl-give-note" id="hlPoolCurrent">Saved: "${escapeHtml(current.chip)}" — ${escapeHtml(current.line)}</div>` : ""}
+    </div>`;
+}
+
 function renderHLPlay(view: Record<string, unknown>): void {
   const body = $("gameBody");
   // The season-over screen used to be the one PLAY screen with room to spare, so
@@ -4888,7 +4955,8 @@ function renderHLPlay(view: Record<string, unknown>): void {
       </div>`;
   const dialsHtml = locked
     ? `<div class="fh-locked-recap" style="margin-top:12px;"><span>Locked at</span><span class="numeric">$${price}</span><span>· ${share}% back into the club</span></div>
-       ${hlGateCallHtml(view["gateCall"] as HLGateCall | undefined)}`
+       ${hlGateCallHtml(view["gateCall"] as HLGateCall | undefined)}
+       ${hlPoolPositionHtml(view["poolPosition"] as HLPoolPosition | undefined)}`
     : `
         <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
           <div class="eyebrow" style="font-size:12px;">Price of a seat</div>
@@ -4990,6 +5058,24 @@ function renderHLPlay(view: Record<string, unknown>): void {
           other.setAttribute("aria-pressed", other === btn ? "true" : "false");
         }
         outbox?.submit({ type: "gateCall", band });
+      };
+    }
+    const poolBtn = document.getElementById("hlPoolSubmit") as HTMLButtonElement | null;
+    const poolLine = document.getElementById("hlPoolLine") as HTMLInputElement | null;
+    let poolChip: HLPoolChip | null = (view["poolPosition"] as HLPoolPosition | undefined)?.current?.chip ?? null;
+    if (poolBtn) {
+      for (const chipBtn of Array.from(document.querySelectorAll<HTMLButtonElement>("#hlPoolPosition .hl-pool-chip"))) {
+        chipBtn.onclick = () => {
+          poolChip = chipBtn.dataset["chip"] as HLPoolChip;
+          for (const other of Array.from(document.querySelectorAll<HTMLButtonElement>("#hlPoolPosition .hl-pool-chip"))) {
+            other.classList.toggle("is-called", other === chipBtn);
+            other.setAttribute("aria-pressed", other === chipBtn ? "true" : "false");
+          }
+        };
+      }
+      poolBtn.onclick = () => {
+        if (!poolChip) return;
+        outbox?.submit({ type: "poolPosition", chip: poolChip, line: poolLine?.value ?? "" });
       };
     }
     return;
