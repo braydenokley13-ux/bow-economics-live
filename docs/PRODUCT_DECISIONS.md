@@ -1603,3 +1603,128 @@ review, not something this decision settles.
 frontier dump. `runtime/src/test/sameLineL1.test.ts` — "a pair with no club is
 on the teacher's console, not only on its own dead screen". 706 unit tests and
 the two-band browser e2e pass, run 2026-09-04.
+
+## D59. The October 1 recharter — founder amendments of 2026-09-04, reconciled against the repo as it stands
+
+The founder's master run instruction of 2026-09-04 ("BOW_FABLE_5_1_MASTER_RUN_PROMPT")
+issued a set of rulings that outrank every earlier decision here and every section of the
+attached Bible compilation. This decision records each ruling, what it supersedes in this
+log, and what the repo actually held at HEAD `671b288` when it arrived — so the next
+context executes the amended product and not the old one. Nothing below is deleted from
+history; superseded decisions stay in place with this pointer.
+
+**The student's sentence is "I ran an NBA franchise."** Authority progression RUN THE
+TEAM → RUN THE BUSINESS → RUN THE LEAGUE. Teaching progression WORLD → DECISION →
+CONSEQUENCE → ADAPTATION → CLASS EVIDENCE → ARGUMENT → EXPLICIT ECONOMICS, then retrieval.
+
+### The rulings, and what each supersedes
+
+1. **ONE STUDENT = ONE FRANCHISE, both bands.** Twelve to sixteen students are twelve to
+   sixteen independently controlled franchises. Advice and collaboration never transfer
+   ownership; co-GM is an optional accommodation. *Supersedes* the pairs-on-one-device
+   default in CLAUDE.md §11 and every "pair" in D20–D58 copy. *Repo truth:* every built
+   module is already one runtime seat = one desk (`fullHouse.ts:784`, `hostTheLeague.ts:557`,
+   `writeTheRule.ts:542`, `sameLine/l1.ts:139-149`); "pair" is copy, not mechanics. The one
+   place club IDENTITY is shared is THE SAME LINE's twin desk (two desks per club, D48
+   graft 4, BC-14). Ruled here: **a twin is two franchises that started from the same real
+   club's books on the same date, run independently from that day on.** They are labelled
+   so on every surface, they never transact with each other by any route, and no incumbent
+   NBA player is ever a trade object in Track 101 — only contracts the room itself signed
+   (unique by construction: `taken` is room-wide) and each franchise's own draft picks
+   (`$0` salary, labelled by franchise). That keeps the asset ledger honest without
+   sourcing sixteen unique clubs before October 1. Moving to unique clubs stays open:
+   `FRANCHISE_STATES.md` §1–§2 sources twelve usable real seats; a room that exceeds the
+   sourced count would still twin.
+2. **ALL SIX WEEKS FOR BOTH BANDS by October 1.** *Supersedes* the D22 program sequence
+   (5–6 first, then 7–8 adapted) and the Bible §37 note "not a second band across all six
+   weeks before the first band is premium." Every wave designs both bands; the 7–8 lens is
+   mandatory on every substantial week.
+3. **WEEK 2 = CHANGED CONDITIONS AND ADAPTATION; WEEK 3 = THE ONLINE TRADE DEADLINE WAR
+   ROOM + FRONT OFFICE REVIEW.** *Supersedes* D17/D18's chronology (trade deadline as L2,
+   free agency as L3) and the Bible §4 map wherever it keeps that order. *Repo truth:* the
+   Module 1 rebuild (D48) already designed this order — `ARC_DESIGN.md` Act 1 THE OFFSEASON
+   (built: `m1l1-the-window`), Act 2 THE SEASON CHANGES (not built), Act 3 THE DEADLINE then
+   THE BOARDROOM (not built). The first M1 chain (`m1l1-draft-day`, `m1l2-trade-deadline`,
+   `m1l3-free-agency`) is therefore **retired from the live picker** in this decision, the
+   D20 way: deregistered in `server/index.ts`, files and tests kept as history, e2e scripts
+   left in place and no longer part of any claim. Its three recorded defects — the
+   arrival-time sealed-bid tie-break (`freeAgency.ts:850`, `tradeDeadline.ts:791`), the
+   no-release claim path (`tradeDeadline.ts:898`), the `faPlayMounted` composer race — leave
+   the product with it and are not reproduced in THE SAME LINE (in-model tie-break
+   `engine.ts:824-852`; no claim step; own renderer). `TRACK_101_MAP.md` and
+   `RAMAZ_READINESS.md` rows for the old chain are struck to "superseded".
+4. **WEEK 6 HAS MULTIPLE CONSEQUENTIAL INSTITUTIONAL DECISIONS, both bands.** One slider,
+   one poll, or two cosmetic controls do not satisfy it. *Repo truth:* `writeTheRule.ts`
+   holds one negotiated decision (share 0–60%) with the reinvestment condition as a boolean
+   rider on the same ballot (`:461`, `:3916-3932`); the condition's floor (15%) and dock
+   (half) are authored constants (`:293-294`). The starting point for the second decision
+   is to make that condition's terms a negotiated institution of its own, with its own
+   stakes, threshold and lived consequence — investigated first, before any new engine.
+5. **A SHARING RULE MAY RATIONALLY HURT SOME FRANCHISES.** *Supersedes* any reading of
+   D20/GATE_L3 that the summit must be "sharing pays the payer." The Bible §36.5 finding
+   (big markets' own best share is 0% at league equilibrium) is a lesson, not a bug: the
+   conflict is preserved and taught, and the constants are never retuned to manufacture
+   unanimity.
+6. **EXPERIENCE FIRST, THEN EXPLICIT NAMING, NON-EXAMPLES AND LATER RETRIEVAL.** No
+   permanent vocabulary ban; prior named concepts return. D56's naming stage is the model.
+7. **SIXTY MINUTES, PROTECTED ENDING.** *Supersedes* the 90-minute finale wherever the
+   Bible §16 assumes it. Phase budgets total 60 including transitions, naming and transfer;
+   a compressed path always keeps a choice, a consequence, an argument, the economics and a
+   transfer.
+8. **HONEST DOLLARS.** Internal dollars are never presented as NBA dollars without a
+   visible translation. *Repo truth:* THE SAME LINE runs at real 2026–27 scale (cap
+   $164,961,000; `world.ts` LINES) with a stated payroll definition (BC-7); Module 2 runs
+   modeled per-night dollars at real capacity (`fullHouse.ts:2389-2392`). The Week 3→4 seam
+   is therefore a UNITS seam and is designed as one (D60 when built), never a silent
+   rescale. Grades 7–8 receive substantially more real-contract context, not longer copy.
+9. **BUILDERS NEVER CERTIFY THEIR OWN SIGNIFICANT WORK; fresh critics where consequential,
+   not for every button.** Unchanged from CLAUDE.md §5; restated because the Bible's prior
+   master prompt over-specified councils.
+
+### The six-week mapping this decision selects
+
+| Week | Student name | Module | Anchor economics | Status at 671b288 |
+|---|---|---|---|---|
+| 1 | THE WINDOW — the offseason | `m1l1-the-window` | scarcity, opportunity cost (7–8 adds institution, competition sets price) | built; sweep gate open at `sacramento/cheap-room` (D58) |
+| 2 | THE SEASON — the contract is fixed, the value is not | `m1l2-the-season` (new, Act 2 of `ARC_DESIGN.md`) | revision cost vs sunk cost; decision quality vs outcome; first Press Conference + Tape | not built |
+| 3 | THE DEADLINE — the war room, then the boardroom | `m1l3-the-deadline` (new, Act 3) | gains from trade, market pricing under salary matching, scarce attention; Front Office Review | not built |
+| 4 | THE BILL COMES DUE | `m2l1-full-house` extended with an M1 seed | revenue and cost coverage over one stated horizon; two books | built without any carry or payroll (`fullHouse.ts:2909`) |
+| 5 | YOU DON'T PLAY ALONE — the pool | `m2l2-host-league` extended with a W4 seed and a binding in-session distribution | externality (visitor draw), shared resource, unequal contribution | built; no seed by earlier decision (`hostTheLeague.ts:3205`); pool lives only in W6 today |
+| 6 | THE BOARD OF GOVERNORS | `m2l3-write-rule` extended to two negotiated institutions | institutions and incentives; decision vs outcome capstone | built with one decision |
+
+Market-price learning now lives in Week 1 (hidden simultaneous offers, demand-moved asks,
+interest counts) and Week 3 (what a contract fetches in a room of sixteen valuations).
+
+### What is KEPT, EXTENDED, REPLACED
+
+- KEEP: the `LessonModule` contract; THE SAME LINE world, engine, sweep and naming stage;
+  Full House's blind commitment, GATE CALL, two books, repeat-night path dependence; Host
+  the League's Draw and DEALT vs BY-CHOICE; Writing the Rule's sealed vote, not-adopted
+  arm, counterfactual and Kings capstone; the runtime's TIME CUT, rejoin, quarantine,
+  presence and push/refetch.
+- EXTEND: L1 gains franchise choice and a seed export; Full House gains an M1 seed and the
+  bill; Host the League gains a W4 seed and the pool ritual; Writing the Rule gains the
+  second institution; `/teach` gains a director for Module 1; the runtime gains a
+  server-honest pause for the Press Conference.
+- REPLACE: the first M1 chain (retired); "pair" as the unit of the room (copy sweep, module
+  by module, as each is touched — never a blind global rename).
+
+### Not claimed
+
+No image-to-product comparison was possible: the five founder mockups arrived as images
+in the run prompt and were read; the Bible's "docs/design" directory does not exist in the
+repo and no repository copy of `BOW_ECONOMICS_PRODUCT_BIBLE.md`, `BOW_FABLE_GAP_MAP.md`,
+`BOW_FABLE_BUILD_PLAN.md`, `BOW_FABLE_ACCEPTANCE_MATRIX.md` or `BOW_VISUAL_NORTH_STARS.md`
+exists — the uploaded PDF (`Bow Sports Capital Economics Bible.pdf`, 302 pages) is the
+only copy, and its §36 "current implementation truth" predates the M1 rebuild (it is
+grounded at `eadc041`). This log, not the PDF, is the canonical decision record; the PDF
+is consulted by section.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Founder (rulings 1–9, verbatim in the run instruction); lead (the mapping,
+  the retirement, and the twin ruling under ruling 1 — revisable by the founder)
+- **Evidence:** `npm test` 706/706 at 671b288 before any change this session;
+  `npm run boss:doctor` PASS; three read-only reconnaissance reports this session (M1
+  seats/arc, M2 carry/institutions, runtime/client extension points) — findings cited
+  inline above by file:line.

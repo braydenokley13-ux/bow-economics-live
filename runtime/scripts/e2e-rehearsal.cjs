@@ -47,7 +47,9 @@ const DIRECTED = [
   { id: "m2l2-host-league", short: "L2", cards: 5 },
   { id: "m2l3-write-rule", short: "L3", cards: null },
 ];
-const UNDIRECTED_ID = "m1l1-draft-day";
+// The Window has no directing panel yet (D59 names that as open work), so it is
+// the honest undirected lesson now that the first M1 chain is retired.
+const UNDIRECTED_ID = "m1l1-the-window";
 
 const consoleErrors = [];
 const notModified = new WeakSet();

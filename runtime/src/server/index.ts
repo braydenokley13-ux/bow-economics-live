@@ -25,9 +25,13 @@ async function main(): Promise<void> {
 
   const service = new SessionService(repo);
   service.registerModule(lobbyDemoModule);
-  service.registerModule(draftDayModule);
-  service.registerModule(tradeDeadlineModule);
-  service.registerModule(freeAgencyModule);
+  // The first Module 1 chain (m1l1-draft-day, m1l2-trade-deadline,
+  // m1l3-free-agency) is superseded by THE SAME LINE (D48, D59) and is no
+  // longer offered to a teacher. The modules, their tests and their e2e
+  // scripts stay in the tree as history, exactly as boxOffice did (D20).
+  void draftDayModule;
+  void tradeDeadlineModule;
+  void freeAgencyModule;
   service.registerModule(fullHouseModule);
   service.registerModule(hostTheLeagueModule);
   service.registerModule(writeTheRuleModule);
