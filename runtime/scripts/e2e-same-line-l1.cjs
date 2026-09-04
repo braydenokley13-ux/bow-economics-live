@@ -152,6 +152,37 @@ async function assertDecisionAboveFold(page, label) {
     m.bottom <= m.vh,
     `${label}: PUT THE OFFER IN is BELOW THE FOLD — its box ends at ${m.bottom}px in a ${m.vh}px viewport`,
   );
+
+  /*
+   * THE BUTTON IS NOT THE DECISION. The amount it commits, and the dial that
+   * sets that amount, are the decision — and this assertion used to check only
+   * the button. Measured at 1024x600 while it was passing: the composer was
+   * 661px inside a 445px nested scroller, so a pair saw the ask, one payment
+   * tool, and a gold button pinned across the bottom, with the price, the
+   * dial, and the total all below the fold. They could commit an amount they
+   * had never seen. Whatever else is off-screen, these three are not.
+   */
+  const offscreen = await page.evaluate(() => {
+    const out = [];
+    for (const [what, sel] of [
+      ["the amount", "#slRead"],
+      ["the dial", "#slDial"],
+      ["the total", "#slTotal"],
+    ]) {
+      const e = document.querySelector(sel);
+      if (!e) { out.push(`${what} (${sel}) is not rendered`); continue; }
+      const r = e.getBoundingClientRect();
+      if (r.bottom > window.innerHeight || r.top < 0) {
+        out.push(`${what} sits at ${Math.round(r.top)}-${Math.round(r.bottom)} in a ${window.innerHeight}px viewport`);
+      }
+    }
+    return out;
+  });
+  assert.deepEqual(
+    offscreen,
+    [],
+    `${label}: the offer is OFF SCREEN from the button that commits it — ${offscreen.join("; ")}`,
+  );
   // ...and nothing may sit ON it. The rejoin-PIN card, pulled out of the flow
   // to win back the fold, landed on top of the commit button at both shapes.
   // Above the fold and covered is the same failure as below the fold.

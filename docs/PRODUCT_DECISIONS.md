@@ -1369,3 +1369,76 @@ the back-row type floor, and carries no student name.
   `runtime/scripts/e2e-same-line-l1.cjs` walks every earned concept on the wall
   in both bands and screenshots each;
   `docs/gauntlet/module-1/rebuild/screens-l1/*-board-naming*.png`.
+
+## D57. The pair could commit an amount they had never seen
+
+**Found by looking at the screen, not by a test.** Every assertion in the suite
+was green — 705 unit tests, a two-band browser e2e that explicitly checks
+"PUT THE OFFER IN is not below the fold" at 1024×600 and 1366×768 — and the
+product was still broken at the resolution `PLATFORM_REALITY.md` §34 names as
+first contact.
+
+Measured at 1024×600 on the committed build:
+
+- The player card was clamped to the viewport (`max-height: calc(100vh − band
+  − 44px)` = 447px) with its contents in a nested `overflow-y: auto` scroller.
+- The composer inside that scroller was **661px tall**. The pair saw **125px of
+  it**: the ask line and one payment tool.
+- `PUT THE OFFER IN` was `position: sticky` — transparent to layout — so it
+  floated across the bottom, over whatever text was beneath it.
+- The price (`$4,300,000`), the dial that sets it, and the total were at
+  y752, y873 and y863, in a 600px viewport.
+
+So the loudest control on a student's screen committed a number that was not on
+that screen. That is not a decision; it is a dare. It also breaks the founder's
+third emotional beat — *"signing him changes what else I can do"* — which
+cannot land on a figure the pair never saw.
+
+**The repair.** The three things the pair is deciding leave the scroller and
+become the card's floor:
+
+1. `offerMath(card)` extracts the arithmetic once, so the bar and the composer
+   can never disagree about what is being offered.
+2. `offerBar(card)` renders the money, the dial and the button as a sibling of
+   the card body, `position: sticky; bottom: 0`.
+3. The nested scroller is gone. The card is the height it needs and the **page**
+   scrolls, once. `.sl-card-scroll` is renamed `.sl-card-body` because it no
+   longer scrolls.
+4. `.sl-card` lost `overflow: hidden`. Clipping makes an element the sticky
+   containing block for its subtree, so with it the bar silently stopped
+   pinning — the corners are now rounded by the two children that touch them.
+5. The bar's background is two layers over an **opaque** base; a single
+   translucent gradient let THE RISK and the payment tools read straight
+   through the money. A 22px fade above it says "there is more up there"
+   rather than leaving a sentence that looks broken.
+
+**Two smaller repairs found in the same pass:**
+
+- **The dial's total used the tool's default term, not the pair's.** The input
+  handler read `num(chosen["years"], 1)` while the composer rendered
+  `term ?? maxYears`. A 7-8 desk that set four years on a two-year tool and
+  then dragged the money watched the total silently revert to the two-year
+  figure — a wrong number, on the decision surface, only while they were
+  moving it. Both now read `offerMath`.
+- **The rejoin PIN covered the lesson.** The expanded card is fixed at
+  x74–374 y468–586 at 1024×600, squarely over the forgone panel — the one
+  place on the screen that says what a signing cost. It auto-collapsed on a
+  20-second timer, which is right for a pair who joins in the lobby and wrong
+  for one who joins late. It now collapses on the first frame of any phase past
+  LOBBY, and the reopen chip is parked inside the rail at every width (measured
+  at 1366×768 it had been printing across "$2,180,704 of cap room").
+
+**Evidence.** `runtime/scripts/e2e-same-line-l1.cjs` —
+`assertDecisionAboveFold` now checks the amount, the dial and the total, not
+only the button; mutation-checked by putting the money and dial back inside the
+composer, which fails with *"the dial sits at 576-602 in a 600px viewport"*.
+705 unit tests pass; the e2e passes both bands. Screens:
+`docs/gauntlet/module-1/rebuild/screens-l1/*-play-composer-1024.png`.
+
+**Recorded, not repaired.** At 1024×600 the three-column shell leaves the board
+309px, so its name column is ~54px and most real NBA names wrap to two or three
+lines ("Gary Payton II" takes three). Every number is present and legible; the
+rhythm is poor. Fixing it means either dropping the cap sheet below the fold —
+which removes the money panel and makes things worse — or reflowing that panel
+into a horizontal strip, which is a design change, not a tweak. Left as a known
+gap rather than half-solved.

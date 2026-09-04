@@ -588,9 +588,28 @@
   margin: 0;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.62);
 }
+/* The reopen chip lives INSIDE the rail, at every width. Measured at 1366x768
+   it sat 14px to the right of the rail, printed across "$2,180,704 of cap
+   room" in the forgone panel — the sentence that says what the last signing
+   cost. The rail is the only column with nothing under it. */
+[data-module="hq"] #btnShowPin {
+  left: 14px;
+  max-width: calc(var(--hq-rail, 208px) - 28px);
+}
 @media (max-width: 1240px) {
-  [data-module="hq"] #pinCard,
-  [data-module="hq"] #btnShowPin { left: 74px; }
+  [data-module="hq"] #pinCard { left: 74px; }
+  /* The reopen chip parks INSIDE the 60px icon rail rather than 14px to the
+     right of it, where it sat across the bottom line of the forgone panel —
+     the one panel on the screen that says what a signing cost. */
+  [data-module="hq"] #btnShowPin {
+    left: 6px;
+    width: 48px;
+    white-space: normal;
+    line-height: 1.05;
+    font-size: 8.5px;
+    padding: 5px 3px;
+    text-align: center;
+  }
 }
 @media (max-width: 1000px) {
   [data-module="hq"] #pinCard,

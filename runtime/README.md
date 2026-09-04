@@ -1258,7 +1258,9 @@ beats. All three surfaces render it.
 - `node scripts/e2e-same-line-l1.cjs` — browser truth, both grade bands, eight
   desks, three settled days, every reveal beat and every earned naming walked
   on the projector, no side scroll at 1366×768 or 1024×600, no interest leak,
-  zero console errors. Run and passing on 2026-09-04. Writes
+  zero console errors. `assertDecisionAboveFold` covers the amount, the dial
+  and the total as well as the button (D57), and is mutation-checked. Run and
+  passing on 2026-09-04. Writes
   `docs/gauntlet/module-1/rebuild/screens-l1/`.
 - `node scripts/same-line-sweep.mjs` — exhaustive economic sweep over every
   legal (player, tool, price, term) offer at every seat against three rival
@@ -1269,6 +1271,11 @@ beats. All three surfaces render it.
   diagnosis; a filtered run prints PARTIAL and is **not** a gate result.
 
 **Known gaps.**
+
+- **The board's name column is ~54px at 1024×600**, so most real NBA names wrap
+  to two or three lines. Every number is present and legible; the rhythm is
+  poor. Fixing it means reflowing the cap-sheet column, which is a design
+  change, not a tweak — recorded in D57 rather than half-solved.
 
 - **The P-VEC failure was an engine defect, not board thinness** — the earlier
   diagnosis in this file was wrong, and so was D52's. Two bugs in `readingsFor`

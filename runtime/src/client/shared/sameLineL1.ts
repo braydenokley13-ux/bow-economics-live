@@ -229,20 +229,34 @@ function boardRow(c: V): string {
 
 /* --------------------------------------------------------- the composer -- */
 
-function composer(card: V, band: string): string {
+/**
+ * THE NUMBERS THE OFFER IS MADE OF.
+ *
+ * Extracted because the same arithmetic now feeds two places that no longer
+ * sit together: the machinery that scrolls (which tool, how many years) and
+ * the bar that never scrolls (the money, the dial, the button). Two copies of
+ * this would be two chances for the bar to disagree with the composer about
+ * what is being offered, and the bar is what the pair presses.
+ */
+function offerMath(card: V) {
   const best = rec(card["best"]);
   const tools = arr(card["tools"]);
   const chosen = tools.find((t) => str(t["tool"]) === tool) ?? best;
   const max = num(chosen["max"], num(best["max"]));
   const ask = num(card["ask"]);
-  const floor = Math.min(ask, max);
-  const lo = Math.min(floor, max);
+  const lo = Math.min(ask, max);
   const value = annual === null ? Math.min(ask, max) : Math.max(lo, Math.min(max, annual));
   const maxYears = num(chosen["maxYears"], num(chosen["years"], num(best["years"], 1)));
   const choosesTerm = card["choosesTerm"] === true && maxYears > 1;
-  const years = choosesTerm ? Math.max(1, Math.min(maxYears, term ?? maxYears)) : num(chosen["years"], num(best["years"], 1));
+  const years = choosesTerm
+    ? Math.max(1, Math.min(maxYears, term ?? maxYears))
+    : num(chosen["years"], num(best["years"], 1));
   const fill = max > lo ? Math.round(((value - lo) / (max - lo)) * 100) : 100;
-  const drawsWall = chosen["drawsWall"] === true;
+  return { best, tools, chosen, max, ask, lo, value, maxYears, choosesTerm, years, fill, drawsWall: chosen["drawsWall"] === true };
+}
+
+function composer(card: V, band: string): string {
+  const { best, tools, chosen, ask, value, maxYears, choosesTerm, years, drawsWall } = offerMath(card);
 
   const toolButtons =
     tools.length > 1
@@ -336,20 +350,6 @@ function composer(card: V, band: string): string {
            </div>`
         : ""
     }
-    <div class="sl-money">
-      <span class="sl-money-read" id="slRead">${dollars(value)}</span>
-      <span class="sl-money-per">A YEAR</span>
-      <dl class="sl-money-total">
-        <dt>${years} YEAR${years === 1 ? "" : "S"}, ALL GUARANTEED</dt>
-        <dd id="slTotal">${dollars(value * years)}</dd>
-      </dl>
-    </div>
-    <div class="sl-dial" style="--sl-fill:${fill}%">
-      <input type="range" id="slDial" min="${lo}" max="${max}" step="100000" value="${value}"
-             aria-label="How much you offer each year"
-             aria-valuetext="${dollars(value)} a year for ${years} years">
-      <div class="sl-dial-ends"><span>${millions(lo)}</span><span>most you can pay ${millions(max)}</span></div>
-    </div>
     ${
       value < ask
         ? `<p class="sl-ceiling">That is <b>${dollars(ask - value)}</b> under what he asked for. Another club may not be under.</p>`
@@ -380,6 +380,44 @@ function composer(card: V, band: string): string {
               }</p>`
             : ""
     }
+  </div>`;
+}
+
+/**
+ * THE OFFER BAR — the money, the dial that moves it, and the button.
+ *
+ * Measured at 1024x600, the school Chromebook this product promises to run on
+ * (PLATFORM_REALITY §34): the composer was 661px tall inside a 445px scroller,
+ * so a pair saw 125px of it. What they saw was the ask, one payment tool, and
+ * PUT THE OFFER IN pinned across the bottom — and the amount that button was
+ * about to commit, the dial that sets it, and the total were all below the
+ * fold. A student could press the loudest control on the screen without ever
+ * having seen the number it commits, which is not a decision; it is a dare.
+ *
+ * So the three things the pair is actually deciding leave the scroller and
+ * become the floor of the card. The machinery scrolls above them — which tool,
+ * how many years, what the deal does to the books. The money never moves off
+ * the screen, because "signing him changes what else I can do" is the whole
+ * beat and it cannot land on a number you cannot see.
+ */
+function offerBar(card: V): string {
+  const { max, ask, lo, value, years, fill } = offerMath(card);
+  return `
+  <div class="sl-offerbar">
+    <div class="sl-money">
+      <span class="sl-money-read" id="slRead">${dollars(value)}</span>
+      <span class="sl-money-per">A YEAR</span>
+      <dl class="sl-money-total">
+        <dt>${years} YEAR${years === 1 ? "" : "S"}, ALL GUARANTEED</dt>
+        <dd id="slTotal">${dollars(value * years)}</dd>
+      </dl>
+    </div>
+    <div class="sl-dial" style="--sl-fill:${fill}%">
+      <input type="range" id="slDial" min="${lo}" max="${max}" step="100000" value="${value}"
+             aria-label="How much you offer each year"
+             aria-valuetext="${dollars(value)} a year for ${years} years">
+      <div class="sl-dial-ends"><span>${millions(lo)}</span><span>most you can pay ${millions(max)}</span></div>
+    </div>
     <button type="button" class="sl-commit" id="slCommit">PUT THE OFFER IN</button>
     ${error ? `<p class="sl-err">${esc(error)}</p>` : ""}
   </div>`;
@@ -420,7 +458,7 @@ function statBlock(card: V): string {
 function playerCard(card: V, band: string): string {
   return `
   <div class="sl-card">
-   <div class="sl-card-scroll">
+   <div class="sl-card-body">
     <div class="sl-card-head">
       <p class="sl-card-role">${esc(str(card["role"]))}${
         card["yours"] === true ? " · YOUR OWN PLAYER" : ""
@@ -450,6 +488,7 @@ function playerCard(card: V, band: string): string {
         : ""
     }
    </div>
+   ${offerBar(card)}
   </div>`;
 }
 
@@ -971,10 +1010,16 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
   const total = host.querySelector<HTMLElement>("#slTotal");
   if (dial) {
     const card = board.find((c) => str(c["id"]) === selected);
-    const best = rec(card?.["best"]);
-    const tools = arr(card?.["tools"]);
-    const chosen = tools.find((t) => str(t["tool"]) === tool) ?? best;
-    const years = num(chosen["years"], 1);
+    /*
+     * The term the PAIR chose, not the one the tool defaults to.
+     *
+     * This read `num(chosen["years"], 1)`. For a 7-8 desk that had set the
+     * term to four years on a two-year tool, dragging the dial rewrote the
+     * total as annual x 2 — the contract's own size, wrong, on the surface
+     * they are deciding from, and only while they are moving the number.
+     * `offerMath` is now the single place that answers "how many years".
+     */
+    const years = card === undefined ? 1 : offerMath(card).years;
     dial.addEventListener("input", () => {
       annual = Number(dial.value);
       if (read) read.textContent = dollars(annual);
