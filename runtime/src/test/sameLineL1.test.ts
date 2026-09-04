@@ -18,7 +18,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { sameLineL1Module as mod, DAYS, SAME_LINE_L1_ID, forgoneBy, type SameLineL1State } from "../modules/sameLine/l1.js";
 import { BOARD, CLUBS, LINE, MARKET, MINIMUM_MARKET, TOOL } from "../modules/sameLine/world.js";
-import { applySigning, ceilingOf, checkOffer, legalOffers, offerValue, openingPosition, outlookAfter, yearsFor } from "../modules/sameLine/engine.js";
+import { applySigning, jobClosingSignings, readingsFor, ceilingOf, checkOffer, legalOffers, offerValue, openingPosition, outlookAfter, yearsFor } from "../modules/sameLine/engine.js";
 import { isOrderedSubsequence } from "../shared/phases.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 import type { GradeBand } from "../shared/gradeBand.js";
@@ -382,6 +382,10 @@ test("no percentage or minus sign reaches a grades 5-6 screen", () => {
     for (const seatId of seats) {
       const json = JSON.stringify(mod.studentView(s, seatId, phase));
       assert.ok(!/\d%/.test(json), `a percentage reached a 5-6 screen in ${phase}`);
+      // A shooting percentage written `.439` under a label reading `3P%` clears
+      // the line above on a technicality and is still a percentage. The band
+      // gate is about what a ten-year-old can read, not about the glyph.
+      assert.ok(!/"(3P|FG)%"/.test(json), `a shooting percentage reached a 5-6 screen in ${phase}`);
       assert.ok(!/[:,]\s*-\d/.test(json), `a negative number reached a 5-6 screen in ${phase}`);
     }
   }
@@ -962,11 +966,22 @@ test("every player card a student can open shows four numbers and the season", (
         // The fourth number is the one that separates him from the next card in
         // his role. Without it Dosunmu and Grimes are the same card.
         const fourth = c.stat!.big[3]!.label;
+        const shootingLabel =
+          band === "7-8"
+            ? p.production!.value.three === null
+              ? "FG%"
+              : "3P%"
+            : p.production!.value.three === null
+              ? "FROM THE FLOOR"
+              : "FROM THREE";
         assert.equal(
           fourth,
-          p.role === "BIG" ? "BLK" : p.production!.value.three === null ? "FG%" : "3P%",
+          p.role === "BIG" ? "BLK" : shootingLabel,
           `${band}/${c.id}: the fourth number does not separate him from his role`,
         );
+        if (band === "5-6" && p.role !== "BIG") {
+          assert.match(c.stat!.big[3]!.value, /^\d+ OF 10$/, `${band}/${c.id}: 5-6 got a decimal shooting rate`);
+        }
         for (const b of c.stat!.big) assert.match(b.value, /^[.\d]/, `${band}/${c.id}/${b.label}: unrenderable`);
       }
     }
@@ -997,5 +1012,171 @@ test("the projector shows the room both ladders at once", () => {
   for (const m of market) {
     assert.match(m.statText, /^\d+\.\d$/, `${m.name}: no production on the wall beside the price`);
     assert.ok(m.age > 0, `${m.name}: no age on the wall`);
+  }
+});
+
+test("a veteran-minimum signing never prints a number the room cannot explain", () => {
+  /*
+   * FOUND ON A PROJECTOR SCREENSHOT, not by any assertion in this file.
+   *
+   * The board told the room "Nikola Vucevic — HE IS ASKING $3,900,000". Four
+   * minutes later the reveal printed "Nikola Vucevic · Sacramento ·
+   * $2,449,421". Nothing on the student card, the projector or the teacher
+   * console connected them. Both numbers are correct — a veteran-minimum deal
+   * pays the player his full service-based minimum and charges the club only
+   * the two-year amount, with the league covering the difference — but the room
+   * was never told that, and the only inference left to a ten-year-old is that
+   * a desk talked him down or that the board lied.
+   *
+   * So: every minimum-scale player whose ask exceeds the charge must carry the
+   * explanation on the card BEFORE the choice, and any settled signing that
+   * lands on the charge must carry it on the wall.
+   */
+  const charge = TOOL.minimum.ceiling!;
+  const subsidised = BOARD.filter((p) => p.minimumScale && !p.generic && p.ask.value > charge);
+  assert.ok(subsidised.length > 0, "no minimum-scale player on the board — this test has stopped testing anything");
+
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = fresh(band);
+    for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+    const v = mod.studentView(s, "d0" as never, "PLAY") as { board?: Record<string, unknown>[] };
+    const cards = v.board ?? [];
+    assert.ok(cards.length > 0, `${band}: no cards to check`);
+    for (const p of subsidised) {
+      const card = cards.find((c) => c["id"] === p.id);
+      if (!card) continue; // unreachable for this desk is a different question
+      const note = String(card["minimumNote"] ?? "");
+      assert.ok(note.length > 0, `${band}/${p.id}: the card shows an ask of ${p.ask.value} and no word about the charge`);
+      assert.ok(
+        note.includes(charge.toLocaleString("en-US")),
+        `${band}/${p.id}: the note never names the ${charge} actually charged`,
+      );
+      // 7-8 names both figures; 5-6 reads the ask off the line the note hangs
+      // from, so requiring it twice in one sentence would only make it longer.
+      if (band === "7-8") {
+        assert.ok(
+          note.includes(p.ask.value.toLocaleString("en-US")),
+          `${band}/${p.id}: the note never names the ${p.ask.value} he is paid`,
+        );
+      }
+      // 5-6 gate: the explanation is the likeliest place for a stray percent.
+      if (band === "5-6") assert.ok(!/[%−-]\d/.test(note), `${band}/${p.id}: the note leaks a percent or a minus`);
+    }
+    // And a card that is NOT a minimum-scale deal must not claim to be one.
+    for (const card of cards) {
+      const p = BOARD.find((x) => x.id === card["id"]);
+      if (p && !p.minimumScale) {
+        assert.equal(card["minimumNote"], null, `${band}/${p.id}: a full-price contract is described as a minimum deal`);
+      }
+    }
+  }
+});
+
+test("a card never tells a desk it has one way to pay when it has four", () => {
+  /*
+   * The 5-6 composer renders no tool buttons by design, and it read that
+   * emptiness as "there is only one tool", printing "It is the only way you
+   * have that reaches him" under EVERY card in the younger band. At Memphis on
+   * day one that sentence was false on every reachable card: four legal tools.
+   * The count is now sent to both bands and the copy branches on it.
+   */
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = fresh(band);
+    for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+    for (const seatId of ["d0", "d4", "d6"]) {
+      const v = mod.studentView(s, seatId as never, "PLAY") as { board?: Record<string, unknown>[] };
+      for (const card of v.board ?? []) {
+        if (card["reachable"] !== true) continue;
+        const n = card["toolCount"];
+        assert.equal(typeof n, "number", `${band}/${seatId}/${card["id"]}: no tool count on a reachable card`);
+        assert.ok((n as number) >= 1, `${band}/${seatId}/${card["id"]}: reachable with zero tools`);
+        // The count must agree with the engine, not merely exist.
+        const desk = (s.desks as Record<string, { position: Parameters<typeof legalOffers>[0] }>)[seatId]!;
+        const player = BOARD.find((p) => p.id === card["id"])!;
+        const tools = new Set(legalOffers(desk.position, [player], new Set()).map((o) => o.tool));
+        assert.equal(n, tools.size, `${band}/${seatId}/${card["id"]}: card says ${n} ways, the engine allows ${tools.size}`);
+      }
+    }
+  }
+});
+
+test("a minimum body never closes a hole, on any surface", () => {
+  /*
+   * THE MODULE WAS COMPUTING ITS OWN NAMED FALSE LESSON.
+   *
+   * `applySigning` refuses to close a job for a generic minimum body, and says
+   * why in seventeen lines: a roster hole and a roster spot are not the same
+   * thing, and "fill both your holes with bodies" collapsed every constrained
+   * seat's Pareto frontier when they were. `readingsFor` then counted the body
+   * anyway. Measured at Boston before the repair: sign one generic body,
+   * `openJobs` stays [BIG, WING] and `readings.jobsClosed` says 1. Sign three,
+   * it says 2 — $7.3M of bodies, zero holes filled, and two of the five class
+   * readings topped. The projector then argued FROM that number.
+   *
+   * There is one predicate now. This test asserts all three views agree with
+   * it, and that a club with one BIG job open cannot close two of them.
+   */
+  const club = CLUBS.find((c) => c.id === "boston")!;
+  const open = openingPosition("boston");
+  const bodies = MINIMUM_MARKET.filter((p) => p.generic);
+  assert.ok(bodies.length > 0, "no generic bodies in the minimum market");
+
+  let p = open;
+  for (const b of bodies) {
+    p = applySigning(p, b, { playerId: b.id, tool: "minimum", annual: TOOL.minimum.ceiling!, years: 1 });
+  }
+  assert.deepEqual([...p.openJobs].sort(), [...open.openJobs].sort(), "a body closed a hole in the position");
+  const r = readingsFor(open, p, []);
+  assert.equal(r.jobsClosed, 0, `${bodies.length} minimum bodies were counted as ${r.jobsClosed} holes closed`);
+  assert.equal(r.jobYears, 0, "bodies bought years of cover for holes they did not fill");
+  assert.equal(jobClosingSignings(club.jobs, p.signings).length, 0, "the shared predicate disagrees with the reading");
+
+  // ...and two real signings in one role cannot close two jobs when one is open.
+  const bigs = BOARD.filter((x) => x.role === "BIG" && !x.generic).slice(0, 2);
+  assert.equal(bigs.length, 2, "not enough real bigs on the board to test the cap");
+  const oneBigJob = { ...open, openJobs: ["BIG"] as const };
+  let q = oneBigJob as typeof open;
+  for (const b of bigs) q = applySigning(q, b, { playerId: b.id, tool: "minimum", annual: TOOL.minimum.ceiling!, years: 1 });
+  assert.equal(
+    jobClosingSignings(oneBigJob.openJobs, q.signings).length,
+    1,
+    "two bigs signed against one open BIG job read as two holes closed",
+  );
+});
+
+test("room left never rises because you spent money", () => {
+  /*
+   * It used to. The reference was "the next line above where you finished",
+   * which moves when you cross one. Measured at Boston: committed
+   * $209,014,999 printed ROOM LEFT $1; one more dollar printed $12,671,000 —
+   * a twelve-million-dollar jump in the direction that rewards crossing the
+   * first apron, at the exact moment the club loses the big exception and the
+   * small one. Across that entire range the club's real reach never moved.
+   *
+   * The reading is now measured to the line the club started the window under,
+   * so it falls monotonically as the club commits money, and going past that
+   * line is a real outcome rather than a reset.
+   */
+  const open = openingPosition("boston");
+  let previous = Infinity;
+  for (const extra of [0, 1_000_000, 5_391_951, 5_391_952, 5_391_953, 6_349_421, 12_000_000]) {
+    const closing = { ...open, committed: open.committed + extra };
+    const r = readingsFor(open, closing, []);
+    assert.ok(
+      r.roomLeft <= previous,
+      `spending ${extra} RAISED room left to ${r.roomLeft} from ${previous} — the reading rewards crossing a line`,
+    );
+    assert.equal(r.roomLeft, open.committed + 5_391_952 - closing.committed, `room left is not the distance to the opening line at +${extra}`);
+    previous = r.roomLeft;
+  }
+  // Every seat, not just the one the defect was found at.
+  for (const c of CLUBS) {
+    const o = openingPosition(c.id);
+    let last = Infinity;
+    for (const extra of [0, 1, 2_449_421, 6_064_000, 15_044_000, 30_000_000]) {
+      const r = readingsFor(o, { ...o, committed: o.committed + extra }, []);
+      assert.ok(r.roomLeft <= last, `${c.id}: room left rose from ${last} to ${r.roomLeft} after spending ${extra}`);
+      last = r.roomLeft;
+    }
   }
 });

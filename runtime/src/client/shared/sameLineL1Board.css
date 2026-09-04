@@ -253,3 +253,14 @@
 .slb-book-foot dd { margin: 0.3vh 0 0; font-size: 1.7vh; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
 
 .slb-cost-more { margin: 0.4vh 0 0; font-size: 1.6vh; color: var(--ink-muted); }
+
+/* The veteran-minimum charge, named on the wall. Quiet enough that it does not
+   compete with the signing itself, legible enough to read from the back row. */
+.slb-signed-note {
+  grid-column: 1 / -1;
+  font-size: 1.55vh;
+  letter-spacing: 0.02em;
+  color: #8b96a5;
+  text-transform: none;
+  margin-top: 0.2vh;
+}

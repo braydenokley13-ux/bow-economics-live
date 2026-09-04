@@ -1113,3 +1113,111 @@ re-signing.
 
 12. **Rights.** As above — names, salaries, dates and terms only. **No photograph, logo, mark,
     jersey image or likeness is proposed here.**
+
+---
+
+# ADDENDUM — board depth, 2026-09-04
+
+Five players added to `BOARD`, taking it from twelve named contracts to
+seventeen. **Every source below was opened first-hand on 2026-09-04**, not
+carried over from the sections above. Written by the lead after an earlier
+research pass declined, correctly, to propose contracts it could not open the
+sources for.
+
+## Why the board needed depth, stated as a measurement not an opinion
+
+`scripts/same-line-sweep.mjs` failed **P-VEC** at `boston/cheap-room`,
+`boston/aggressive-room` and `new-york/cheap-room` — those seats' Pareto
+frontiers held two or three distinct outcome vectors against a charter minimum
+of four. A per-seat probe of the opening reachable sets showed exactly why:
+
+| seat | reachable named players | distinct prices |
+|---|---:|---|
+| memphis / brooklyn / boston / sacramento | 6 | the same 6 at all four |
+| new-york | 4 | $2,449,421 and $15,044,000, **and nothing between** |
+| detroit / milwaukee | 11 | fine |
+
+Three of the six "different" players at four seats were **minimum-scale**, which
+all cost the same $2,449,421, so those seats really had four price points
+between them. New York had two. That is board thinness, not an engine defect,
+and it is what P-VEC is for.
+
+## The five, and the source for each
+
+**1. Precious Achiuwa — BIG — $5,477,000 — Sacramento**
+2 years, $11,230,000, both guaranteed. Agreed **2026-06-30**, official
+2026-07-07. First-year salary is the **full bi-annual exception**, $5,477,000.
+- [Kings, Precious Achiuwa Agree To Two-Year Deal](https://www.hoopsrumors.com/2026/06/kings-precious-achiuwa-agree-to-two-year-deal.html) — dates, the two-year agreement, and the rights position
+- [Contract Details: Hartenstein, Ellis, Young, Achiuwa, THJ, More](https://www.hoopsrumors.com/2026/07/contract-details-hartenstein-ellis-young-achiuwa-thj-more.html) — "The Kings used their full bi-annual exception… his two-year total is $11.23MM… Both years of the contract are guaranteed"
+- [2026-27 bi-annual exception tracker](https://www.hoopsrumors.com/2026/07/how-teams-are-using-2026-27-bi-annual-exceptions.html) — "Sacramento Kings — Used: $5,477,000 (Precious Achiuwa)", and the BAE's own value and its first-apron hard cap
+- production: bbref `achiupr01`, SAC, 73 g / 57 gs / 23.9 mp / 10.1 / 6.7 / 1.4 / 0.7 blk / .528 / .278
+
+**`incumbent: null`, and this is the best rules detail added in this pass.** He
+played all season for Sacramento, which IS a desk in this room, and Sacramento
+still could not simply keep him: *"The Kings only had Achiuwa's **Non-Bird
+rights** and the terms of his agreement suggest they'll pay him more than those
+rights allow."* A club that has a player and cannot re-sign him with rights is
+the whole apron lesson in one sentence, and it is why he is contested here.
+
+**2. Jaxson Hayes — BIG — $6,000,000 — Utah**
+2 years, $12,000,000, second-year team option. Agreed **2026-07-01**, press
+release 2026-07-10. Non-taxpayer MLE; first-year $6,000,000.
+- [Jazz, Jaxson Hayes Agree To Two-Year Deal](https://www.hoopsrumors.com/2026/07/jazz-jaxson-hayes-agree-to-two-year-deal.html)
+- [2026-27 mid-level tracker](https://www.hoopsrumors.com/2026/07/how-teams-are-using-2026-07-mid-level-exceptions.html) — Utah's first-year use (see the MLE tracker URL in §4 of `PLAYER_PRODUCTION_RESEARCH.md`)
+- production: bbref `hayesja02`, LAL, 66 / 9 / 18.3 / 7.5 / 4.1 / 0.9 / 0.8 blk / **.756** / no threes
+
+**3. Josh Okogie — WING — $6,000,000 — Utah**
+2 years, $12,000,000, second-year team option. Agreed **2026-07-03**, press
+release 2026-07-10. Non-taxpayer MLE; first-year $6,000,000.
+- [Josh Okogie To Sign Two-Year Deal With Jazz](https://www.hoopsrumors.com/2026/07/josh-okogie-to-sign-two-year-deal-with-jazz.html) — also independently corroborates the module's own wall mechanic: *"using more than the taxpayer portion of the MLE will hard-cap the Jazz at the first tax apron"*
+- production: bbref `okogijo01`, HOU, 78 / 32 / 17.4 / 4.5 / 2.6 / 0.9 / 0.2 blk / .425 / .385 (a career best; career rate .312)
+
+**4. Tim Hardaway Jr. — WING — $6,065,000 — Miami**
+1 year. Agreed **2026-06-30**, official 2026-07-06.
+- [Heat Sign Tim Hardaway Jr. To One-Year Contract](https://www.hoopsrumors.com/2026/06/heat-to-sign-tim-hardaway-jr-to-one-year-contract.html) — reported at $6.5MM
+- [Contract Details](https://www.hoopsrumors.com/2026/07/contract-details-hartenstein-ellis-young-achiuwa-thj-more.html) — corrected: *"actually comes in at $6.065MM"*. The MLE tracker lists Miami's use at $6,065,000. **The corrected figure is the one shipped**; the first report is recorded here so nobody "fixes" it back.
+- production: bbref `hardati02`, DEN, 80 / 6 / 26.6 / 13.5 / 2.6 / 1.4 / 0.1 blk / .447 / .407; third in Sixth Man voting
+
+**The reason he is on the board at all: $6,065,000 against a $6,064,000
+taxpayer mid-level.** Four of the eight clubs in this room miss the best shooter
+available to them **by one thousand dollars**. Nobody invented that to make a
+point — it is what the two real numbers are.
+
+**5. José Alvarado — GUARD — $4,439,656 — New York — `incumbent: "new-york"`**
+3 years, $14,384,484, third year partially guaranteed. Agreed **2026-06-26**,
+official 2026-07-06. **Re-signed on full Bird rights.**
+- [NBA 2026 Offseason Check-In: New York Knicks](https://www.hoopsrumors.com/2026/08/nba-2026-offseason-check-in-new-york-knicks.html) — **re-read 2026-09-04**: "Jose Alvarado: Three years, $14,384,484… Re-signed using Bird rights." The same page confirms New York is "Operating over the first apron ($209MM) and below the second tax apron ($221.7MM). No hard cap," which is what `world.ts` says.
+- [salaryswish.com/players/jose-alvarado](https://www.salaryswish.com/players/jose-alvarado) — read 2026-09-04: Salary $4,439,656, Cap Hit $4,439,656, born 1998-04-12, **undrafted**, born in **Brooklyn, New York**
+- production: bbref `alvarjo01`, 2TM (NOP 41, NYK 28), 69 / 3 / 19.9 / 7.4 / 2.5 / 3.4 / 0.1 blk / .416 / .352
+
+He is what gives New York a middle. He is also unrestricted, so every other
+desk can bid on him too — New York's advantage is the rights, not exclusivity,
+which is the correct shape.
+
+## Deliberately NOT added, and why
+
+- **Landry Shamet** (NY, $5,490,967, 4 years). Real, sourced, and would have
+  been a second New York option. Excluded because the Knicks check-in says he
+  was re-signed on **Early Bird rights**, and the module has exactly one
+  own-player tool with **no ceiling**. Modelling an Early Bird player with an
+  unlimited tool would let a desk offer him $30,000,000, which the real rule
+  forbids. Add him only alongside a per-player cap on the own-player tool.
+- **Quinten Post** (MEM). Two hoopsrumors pages disagree on his first-year
+  salary ($9,000,000 vs $10,350,000), and he arrived on a **restricted free
+  agent offer sheet** the Warriors declined to match — a different economic
+  event the module does not model.
+- **Ariel Hukporti** (PHI, $3,400,000). Real and cheap, but 2.2 points a game
+  at $3,400,000 is a dominated card: nobody would ever take it, and a dominated
+  card adds noise rather than choice.
+- **Tarik Biberovic** (DAL, $3,000,000). No 2025-26 NBA box score to print.
+- **Kenrich Williams** (OKC, $5,000,000). Already in §BAND (b) above at MEDIUM
+  confidence — the figure traces to a single reporter. Left where it is.
+
+## What this pass did not do
+
+- **No conduct or classroom-suitability screen** was run on any of the five,
+  and none has ever been run on the original twelve
+  (`PLAYER_PRODUCTION_RESEARCH.md` §8). Still a classroom-release blocker.
+- Horford, Nurkić and Grimes still charge an **average** rather than a
+  first-year salary (`askBasis: "average"`, simplification S8). No source read
+  in either pass stated their first year.

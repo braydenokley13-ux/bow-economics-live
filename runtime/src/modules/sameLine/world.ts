@@ -1105,6 +1105,160 @@ export const BOARD: readonly FreeAgent[] = [
       "stats-database",
     ),
   },
+  {
+    id: "achiuwa",
+    name: "Precious Achiuwa",
+    role: "BIG",
+    ask: fact(
+      5_477_000,
+      "2026-06-30",
+      "reported 2 years, $11,230,000 re-signing with Sacramento, agreed 2026-06-30 and official 2026-07-07; hoopsrumors.com confirmed the Kings used their FULL bi-annual exception, so the first-year salary is $5,477,000 — the exception to the dollar. Both years guaranteed",
+      "reporting",
+    ),
+    askBasis: "first-year",
+    signedOn: "2026-06-30",
+    reallySignedWith: "Sacramento",
+    years: 2,
+    ageAtSigning: 26,
+    minimumScale: false,
+    strength: "Started 57 games and set career highs in points, rebounds and assists.",
+    risk: "He has never shot from outside — under three of every ten for his career.",
+    // HE PLAYED FOR SACRAMENTO AND SACRAMENTO STILL COULD NOT SIMPLY KEEP HIM.
+    //
+    // `incumbent` is null on purpose, and the reason is the best rules lesson
+    // on this board. Hoops Rumors, reporting the agreement: "The Kings only had
+    // Achiuwa's NON-BIRD rights and the terms of his agreement suggest they'll
+    // pay him more than those rights allow." So the club that had him all
+    // season had to spend an exception to keep him -- which is exactly why he
+    // is contested here rather than quietly theirs.
+    incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 73, started: 57, minutes: 23.9, points: 10.1, rebounds: 6.7, assists: 1.4, blocks: 0.7, fg: 0.528, three: 0.278 },
+      "2026-09-04",
+      "basketball-reference.com/players/a/achiupr01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
+  },
+  {
+    id: "hayes",
+    name: "Jaxson Hayes",
+    role: "BIG",
+    ask: fact(
+      6_000_000,
+      "2026-07-01",
+      "reported 2 years, $12,000,000 with Utah with a second-year team option, agreed 2026-07-01 and announced 2026-07-10, on the non-taxpayer mid-level exception; hoopsrumors.com's 2026-27 mid-level tracker lists Utah's first-year use at $6,000,000",
+      "reporting",
+    ),
+    askBasis: "first-year",
+    signedOn: "2026-07-01",
+    reallySignedWith: "Utah",
+    years: 2,
+    ageAtSigning: 26,
+    minimumScale: false,
+    strength: "Three of every four shots he takes go in. Nobody else here is close.",
+    risk: "Almost every one of them is right at the rim, and he started nine games all season.",
+    incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 66, started: 9, minutes: 18.3, points: 7.5, rebounds: 4.1, assists: 0.9, blocks: 0.8, fg: 0.756, three: null },
+      "2026-09-04",
+      "basketball-reference.com/players/h/hayesja02.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
+  },
+  {
+    id: "okogie",
+    name: "Josh Okogie",
+    role: "WING",
+    ask: fact(
+      6_000_000,
+      "2026-07-03",
+      "reported 2 years, $12,000,000 with Utah with a second-year team option, agreed 2026-07-03 and announced 2026-07-10, on the non-taxpayer mid-level exception; hoopsrumors.com's 2026-27 mid-level tracker lists Utah's second first-year use at $6,000,000",
+      "reporting",
+    ),
+    askBasis: "first-year",
+    signedOn: "2026-07-03",
+    reallySignedWith: "Utah",
+    years: 2,
+    ageAtSigning: 27,
+    minimumScale: false,
+    strength: "Played 78 games — more than anyone here — and shot a career-best .385 from three.",
+    risk: "He scored 4.5 points a game. Whatever this money is buying, it is not scoring.",
+    incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 78, started: 32, minutes: 17.4, points: 4.5, rebounds: 2.6, assists: 0.9, blocks: 0.2, fg: 0.425, three: 0.385 },
+      "2026-09-04",
+      "basketball-reference.com/players/o/okogijo01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
+  },
+  {
+    id: "hardaway",
+    name: "Tim Hardaway Jr.",
+    role: "WING",
+    ask: fact(
+      6_065_000,
+      "2026-06-30",
+      "reported 1 year with Miami, agreed 2026-06-30 and official 2026-07-06. First reported at $6,500,000; hoopsrumors.com's contract-details round-up corrected it to $6,065,000, which its 2026-27 mid-level tracker also lists",
+      "reporting",
+    ),
+    askBasis: "first-year",
+    signedOn: "2026-06-30",
+    reallySignedWith: "Miami",
+    years: 1,
+    ageAtSigning: 34,
+    minimumScale: false,
+    strength: "Scored 13.5 a game off the bench and made .407 of his threes — third in the voting for best sixth man.",
+    risk: "He is 34, and the deal is one year.",
+    // A THOUSAND DOLLARS. THAT IS THE WHOLE LESSON.
+    //
+    // His real first-year salary is $6,065,000. The taxpayer mid-level -- the
+    // only exception a club past the first apron gets -- tops out at
+    // $6,064,000. So four of the eight clubs in this room cannot reach the best
+    // shooter available to them, and they miss him by ONE THOUSAND DOLLARS.
+    // Nobody made that up to teach a point; it is what the two numbers are.
+    incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 80, started: 6, minutes: 26.6, points: 13.5, rebounds: 2.6, assists: 1.4, blocks: 0.1, fg: 0.447, three: 0.407 },
+      "2026-09-04",
+      "basketball-reference.com/players/h/hardati02.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
+  },
+  {
+    id: "alvarado",
+    name: "Jose Alvarado",
+    role: "GUARD",
+    ask: fact(
+      4_439_656,
+      "2026-06-26",
+      "reported 3 years, $14,384,484 re-signing with New York on BIRD RIGHTS, agreed 2026-06-26 and official 2026-07-06 (hoopsrumors.com's Knicks offseason check-in, re-read 2026-09-04); salaryswish.com gives the 2026-27 cap hit as $4,439,656",
+      "reporting",
+    ),
+    askBasis: "first-year",
+    signedOn: "2026-06-26",
+    reallySignedWith: "New York",
+    years: 3,
+    ageAtSigning: 28,
+    minimumScale: false,
+    strength: "Undrafted out of college, and he still takes the ball off somebody about once a night.",
+    risk: "He came off the bench in 66 of his 69 games. His own club's price is what they think that is worth.",
+    // NEW YORK'S SECOND OWN PLAYER, AND THE ONE THAT GIVES IT A CHOICE.
+    //
+    // Before this row New York had nothing at all between the minimum charge
+    // ($2,449,421) and Mitchell Robinson ($15,044,000): its taxpayer exception
+    // is clipped to $3,273,768 by the second apron and no named player lived in
+    // that gap. One seat in the room therefore had two moves and no middle,
+    // which the sweep found as a collapsed frontier. He is not filler -- he is
+    // a real man New York really kept on real Bird rights, and keeping him
+    // takes them past the second apron, which is the choice.
+    incumbent: "new-york",
+    production: fact(
+      { season: "2025-26", games: 69, started: 3, minutes: 19.9, points: 7.4, rebounds: 2.5, assists: 3.4, blocks: 0.1, fg: 0.416, three: 0.352 },
+      "2026-09-04",
+      "basketball-reference.com/players/a/alvarjo01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
+  },
 ] as const;
 
 /* ------------------------------------------------ registered simplifications -- */

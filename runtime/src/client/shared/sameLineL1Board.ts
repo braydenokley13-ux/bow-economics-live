@@ -45,15 +45,18 @@ function playFrame(v: V): string {
   const market = arr(v["market"]);
   const hot = market.filter((m) => num(m["interest"]) > 0).length;
   /*
-   * ALL TWELVE, never a top ten.
+   * TWELVE FIT ON A WALL, AND THE REST GET COUNTED OUT LOUD.
    *
-   * A market frame that silently drops the last two rows is a frame that hides
-   * the two players nobody has bid on, which on a scarcity board are exactly
-   * the rows a teacher wants to point at. The type is sized so twelve fit at
-   * 1366x768; `assertBoardFits` in the e2e is what holds that.
+   * A market frame that silently drops rows hides the players nobody has bid
+   * on, which on a scarcity board are exactly the rows a teacher wants to point
+   * at. Twelve is what fits at 1366x768 with type a back row can read
+   * (`assertBoardFits` holds that); anything past twelve is named in a line
+   * under the table rather than disappearing.
    */
+  const SHOWN = 12;
+  const hidden = Math.max(0, market.length - SHOWN);
   const rows = market
-    .slice(0, 12)
+    .slice(0, SHOWN)
     .map((m) => {
       const n = num(m["interest"]);
       const bar = Array.from({ length: Math.min(n, 8) }, () => `<i></i>`).join("");
@@ -87,7 +90,9 @@ function playFrame(v: V): string {
       <tbody>${rows}</tbody>
     </table>
     </div>
-    <p class="slb-foot">Nobody can see anybody else's offer. Every club's is opened at the same moment. <b>Points are last completed season, per game.</b></p>
+    <p class="slb-foot">${
+      hidden > 0 ? `<b>${hidden} more ${hidden === 1 ? "player is" : "players are"} still on the board below these.</b> ` : ""
+    }Nobody can see anybody else's offer. Every club's is opened at the same moment. Points are last completed season, per game.</p>
   </div>`;
 }
 
@@ -104,6 +109,12 @@ function signedFrame(v: V, title: string): string {
       <span class="slb-signed-name">${esc(str(sg["player"]))}</span>
       <span class="slb-signed-to">${esc(str(sg["club"]))}</span>
       <span class="slb-signed-price">${esc(str(sg["priceText"]))}</span>
+      ${
+        /* A veteran-minimum deal settles at the CHARGE, which is smaller than
+           the ask this room read off the board. Unlabelled it looks like a desk
+           talked him down, or like the board lied. */
+        str(sg["chargeNote"]) ? `<span class="slb-signed-note">${esc(str(sg["chargeNote"]))}</span>` : ""
+      }
     </li>`,
     )
     .join("");

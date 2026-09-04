@@ -258,13 +258,44 @@ function composer(card: V, band: string): string {
         </button>`,
           )
           .join("")}</div>`
-      : `<p class="sl-ceiling">You are paying him with <b>${esc(str(chosen["label"], str(best["label"])))}</b>. It is the only way you have that reaches him.</p>`;
+      : (() => {
+          /*
+           * "The only way you have that reaches him" is TRUE only when it is.
+           * At 5-6 no tool buttons are rendered at all, so this branch ran on
+           * every card in the band and asserted single-option where there were
+           * four. The module now sends the real count.
+           */
+          const label = esc(str(chosen["label"], str(best["label"])));
+          const others = Math.max(0, num(card["toolCount"], 1) - 1);
+          return others === 0
+            ? `<p class="sl-ceiling">You are paying him with <b>${label}</b>. It is the only way you have that reaches him.</p>`
+            : `<p class="sl-ceiling">You are paying him with <b>${label}</b> — the biggest offer you can make him. You have ${others} other way${
+                others === 1 ? "" : "s"
+              } to pay him, and ${others === 1 ? "it is" : "they are all"} smaller.</p>`;
+        })();
 
   return `
   <div class="sl-compose">
     <div class="sl-compose-top">
       <h3>YOUR OFFER</h3>
       <span class="sl-compose-ask">He is asking ${esc(str(card["askText"]))} a year${
+        /*
+         * Both notes hang off the ask because both explain THAT number: one
+         * says the figure is an average of a real multi-year deal, the other
+         * says only part of it will be charged to you.
+         *
+         * THE MINIMUM NOTE IS GATED ON THE SELECTED TOOL, and it has to be.
+         * Ungated it printed "only $2,449,421 of that counts against your
+         * money" directly above an offer of $4,300,000 made with the small
+         * exception — two contradictory numbers a hand's width apart, which is
+         * worse than the silence it was written to fix. The charge is a fact
+         * about the MINIMUM DEAL, not about the player, so it appears exactly
+         * when that is the deal on the table.
+         */
+        str(chosen["tool"], str(best["tool"])) === "minimum" && str(card["minimumNote"])
+          ? ` <em class="sl-compose-note">${esc(str(card["minimumNote"]))}</em>`
+          : ""
+      }${
         str(card["askNote"]) ? ` <em class="sl-compose-note">${esc(str(card["askNote"]))}</em>` : ""
       }</span>
     </div>
@@ -714,8 +745,14 @@ function revealMain(v: V): string {
     parts.push(
       panel(
         { title: "WHAT YOU HAVE LEFT", note: "after three days" },
-        `<p class="sl-money-read" style="font-size:34px">${dollars(num(v["yourRoomLeft"]))}</p>
-         <p class="sl-forgone-lead" style="margin-top:8px">This is the part of the summer you did not spend. It is not left over — it is the next problem you can still solve.</p>`,
+        /* The copy has to be derived from the number, not asserted beside it:
+           "the next problem you can still solve" is false for a club that went
+           past its line, and that club is exactly the one this beat is for. */
+        v["yourPastLine"] !== true
+          ? `<p class="sl-money-read" style="font-size:34px">${esc(str(v["yourRoomLeftText"], dollars(num(v["yourRoomLeft"]))))}</p>
+         <p class="sl-forgone-lead" style="margin-top:8px">This is the part of the summer you did not spend, measured to the line you started under. It is not left over — it is the next problem you can still solve.</p>`
+          : `<p class="sl-money-read" style="font-size:34px">${esc(str(v["yourRoomLeftText"], dollars(num(v["yourRoomLeft"]))))}</p>
+         <p class="sl-forgone-lead" style="margin-top:8px">You went past the line you started the summer under. That was a choice, and it bought you something — but from here on, the rules give you less to work with than they gave you in June.</p>`,
       ),
     );
   }
@@ -732,7 +769,13 @@ function revealMain(v: V): string {
         "the least you paid to fix something real",
       ],
       ["LONGEST COMMITMENT", `${num(r["longestCommitment"])} yr`, "how far into the future you are promised"],
-      ["ROOM LEFT", dollars(num(r["roomLeft"])), "what you can still do"],
+      [
+        "ROOM LEFT",
+        // Rendered by the module, so the sign never has to survive a trip
+        // through the client. `roomLeft` here is a magnitude.
+        str(r["roomLeftText"], dollars(num(r["roomLeft"]))),
+        r["pastLine"] === true ? "you crossed the line you started under" : "before the line you started under",
+      ],
     ];
     parts.push(
       panel(

@@ -61,6 +61,34 @@ const arg = (name, fallback) => {
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 };
 const VERBOSE = process.argv.includes("--verbose");
+/*
+ * `--seat boston,new-york` narrows the sweep to named clubs.
+ *
+ * The full sweep walks a three-day tree at every seat in every rival
+ * environment, so its cost is roughly cubic in board size: about four minutes
+ * at fifteen market entries and thirty-plus at twenty. That is fine as a gate
+ * and useless as a diagnostic — you cannot chase one seat's Pareto frontier in
+ * half-hour increments. This filter is for the diagnostic loop ONLY: a run that
+ * skipped seats has not tested the world, so it prints as PARTIAL and its
+ * verdict is never evidence for a property passing.
+ */
+const SEAT_FILTER = (() => {
+  const i = process.argv.indexOf("--seat");
+  return i >= 0 && process.argv[i + 1] ? new Set(process.argv[i + 1].split(",")) : null;
+})();
+const seatsUnderTest = () => (SEAT_FILTER ? world.CLUBS.filter((c) => SEAT_FILTER.has(c.id)) : world.CLUBS);
+
+/*
+ * THE READINGS, THROUGH A SWAPPABLE BINDING.
+ *
+ * Two defects shipped straight through this harness while it reported ALL
+ * PROPERTIES HOLD: a generic minimum body counted as a hole filled, and room
+ * left ROSE when a club crossed a line. Both lived in `readingsFor`, and every
+ * mutant here poisoned `world` data, so the poison limb could not reach the
+ * layer where either one lived. An instrument whose mutants cannot touch half
+ * the model is not testing that half.
+ */
+let READINGS = engine.readingsFor;
 const DAYS = 3;
 const CLUB_ORDER = [];
 /** Every club is held by two desks (THE TWIN DESK), so an 8-club room is 16 desks. */
@@ -97,9 +125,11 @@ function sweepSeat(clubId, board, rivalPlans) {
   const walk = (day, position, rivalPositions, planSoFar, awardsSoFar, taken) => {
     if (day === DAYS) {
       const settlement = engine.settle(position);
-      const readings = engine.readingsFor(opening, position, awardsSoFar);
+      const readings = READINGS(opening, position, awardsSoFar);
       const key = vectorKey(readings, settlement);
-      results.push({ plan: planSoFar, readings, settlement, key });
+      // `closing` is kept so P-AGREE can cross-check the reading against the
+      // position it claims to describe.
+      results.push({ plan: planSoFar, readings, settlement, closing: position, key });
       seen.add(key);
       return;
     }
@@ -253,7 +283,7 @@ function runAll(board, { label }) {
   let resolutionCount = 0;
 
   for (const env of ENVIRONMENTS) {
-    for (const club of world.CLUBS) {
+    for (const club of seatsUnderTest()) {
       // REAL CLASS SIZE, not one desk per club.
       //
       // BC-14 and BC-15 both say the sweep runs at 12-16 desks, and the reason
@@ -396,6 +426,43 @@ function assertProperties(perSeat, board) {
     }
   }
   check("P-VEC", vecFails.length === 0, vecFails.length ? vecFails.join(" ; ") : "every seat's Pareto frontier holds >=4 distinct outcome vectors");
+
+  /* P-AGREE (added after two defects shipped through this harness) --------- *
+   *
+   * THE READING MUST AGREE WITH THE POSITION.
+   *
+   * `applySigning` and `readingsFor` each decided, separately, what counts as a
+   * hole filled — and they disagreed for a year. The engine kept a generic
+   * minimum body's job OPEN, with a seventeen-line comment saying a roster hole
+   * and a roster spot are not the same thing, while the reading the class
+   * argues from counted that body as a hole closed. A third copy in the reveal
+   * was uncapped and read two bigs against one big job as two.
+   *
+   * Every property here was a property of the FRONTIER's shape, so none of them
+   * could see it: the numbers were internally consistent, they were just about
+   * a different world than the one the desk was playing in. This one is not
+   * about shape. Over every plan at every seat, the count the class is shown
+   * must equal the number of holes the position actually lost.
+   */
+  const agreeFails = [];
+  outer: for (const [, bucket] of perSeat) {
+    for (const [envId, swept] of bucket.byEnv) {
+      for (const r of swept.results) {
+        const actually = bucket.opening.openJobs.length - r.closing.openJobs.length;
+        if (r.readings.jobsClosed !== actually) {
+          agreeFails.push(
+            `${bucket.club.id}/${envId}: a plan reads ${r.readings.jobsClosed} holes closed and the position lost ${actually}`,
+          );
+          break outer;
+        }
+      }
+    }
+  }
+  check(
+    "P-AGREE",
+    agreeFails.length === 0,
+    agreeFails.length ? agreeFails.join(" ; ") : "the holes-closed reading equals the holes the position actually lost, on every plan at every seat",
+  );
 
   /* P-ALIVE --------------------------------------------------------------- *
    *
@@ -560,6 +627,54 @@ function poison(board) {
       },
       breaks: "P-LADDER",
     },
+    {
+      id: "M3 a-body-fills-a-hole",
+      why: "it shipped: readingsFor counted generic minimum bodies as jobs closed while applySigning refused to, and three $2.4M bodies topped two of the five class readings without filling anything",
+      apply: () => {
+        const real = READINGS;
+        READINGS = (opening, closing, awards) => {
+          const r = real(opening, closing, awards);
+          // The defect exactly: count every signing in an open role, generic
+          // bodies included, capped only by how many of that role were open.
+          const left = new Map();
+          for (const role of opening.openJobs) left.set(role, (left.get(role) ?? 0) + 1);
+          let jobsClosed = 0;
+          let jobYears = 0;
+          let cheapest = Infinity;
+          for (const sg of closing.signings) {
+            const n = left.get(sg.role) ?? 0;
+            if (n <= 0) continue;
+            left.set(sg.role, n - 1);
+            jobsClosed += 1;
+            jobYears += sg.years;
+            if (sg.annual < cheapest) cheapest = sg.annual;
+          }
+          return { ...r, jobsClosed, jobYears, cheapestJobClosed: cheapest };
+        };
+        return () => {
+          READINGS = real;
+        };
+      },
+      breaks: "P-AGREE",
+    },
+    {
+      id: "M4 spending-buys-room",
+      why: "it shipped: room left was measured to the next line ABOVE where the club finished, so one dollar of payroll at $209,014,999 took the displayed figure from $1 to $12,671,000",
+      apply: () => {
+        const real = READINGS;
+        const LINES = [world.LINE.cap, world.LINE.tax, world.LINE.apron1, world.LINE.apron2];
+        READINGS = (opening, closing, awards) => {
+          const r = real(opening, closing, awards);
+          const above = LINES.find((l) => l > closing.committed) ?? world.LINE.apron2;
+          const ceiling = closing.wall !== null ? Math.min(closing.wall, above) : above;
+          return { ...r, roomLeft: Math.max(0, ceiling - closing.committed) };
+        };
+        return () => {
+          READINGS = real;
+        };
+      },
+      breaks: "P-VEC",
+    },
   ];
 
   let allCaught = true;
@@ -613,10 +728,18 @@ poison(board);
 if (VERBOSE) for (const n of notes) console.log(`  note ${n}`);
 
 console.log("");
+// A filtered run is a magnifying glass, never a gate. Say so where the verdict
+// is read, not only where the flag is parsed, so a partial result pasted into a
+// document cannot be mistaken for the world having been tested.
+const partial = SEAT_FILTER ? ` (PARTIAL — only ${[...SEAT_FILTER].join(", ")} were swept; NOT a gate result)` : "";
 if (failures.length) {
-  console.log(`VERDICT: ${failures.length} PROPERTIES FAILED`);
+  console.log(`VERDICT: ${failures.length} PROPERTIES FAILED${partial}`);
   for (const f of failures) console.log(`  - ${f}`);
   process.exit(1);
+}
+if (SEAT_FILTER) {
+  console.log(`VERDICT: no property failed AT THE SWEPT SEATS${partial}`);
+  process.exit(0);
 }
 console.log(`VERDICT: ALL PROPERTIES HOLD`);
 assert.ok(true);

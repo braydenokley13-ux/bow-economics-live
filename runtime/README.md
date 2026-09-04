@@ -1247,35 +1247,40 @@ is the honest state.
 with a source and an `asOf`, plus `REFRESH` cadences for thresholds, clubs and
 the board. `engine.ts` is the pure cap engine (five lines, six signing tools,
 hard-cap walls, terms). `l1.ts` is the `LessonModule` — three simultaneous
-sealed signing days across eight real clubs at up to sixteen desks, a
-per-desk wire, class intelligence for `/teach`, and four projector reveal
+sealed signing days across eight real clubs at up to sixteen desks, against a
+board of seventeen real dated contracts plus three generic minimum bodies, with
+a per-desk wire, class intelligence for `/teach`, and four projector reveal
 beats. All three surfaces render it.
 
 **What is verified, and how.**
 
-- `npm test` — 699 tests, run and passing on 2026-09-04.
+- `npm test` — 703 tests, run and passing on 2026-09-04.
 - `node scripts/e2e-same-line-l1.cjs` — browser truth, both grade bands, eight
   desks, three settled days, no side scroll at 1366×768 or 1024×600, no
   interest leak, zero console errors. Run and passing on 2026-09-04. Writes
   `docs/gauntlet/module-1/rebuild/screens-l1/`.
 - `node scripts/same-line-sweep.mjs` — exhaustive economic sweep over every
   legal (player, tool, price, term) offer at every seat against three rival
-  environments, with a poison limb that must fail. **One property currently
-  fails: P-VEC**, at three seat/environment pairs. See below.
+  environments, with a poison limb that must fail. It walks a full three-day
+  tree, so its cost is roughly cubic in the board size: **budget 20-40 minutes**
+  at twenty market entries, against about four at fifteen. Run it in the
+  background, not in a tight edit loop. `--seat boston,new-york` narrows it for
+  diagnosis; a filtered run prints PARTIAL and is **not** a gate result.
 
 **Known gaps.**
 
-- **P-VEC fails** at `boston/cheap-room`, `boston/aggressive-room` and
-  `new-york/cheap-room`: those seats' Pareto frontiers hold fewer distinct
-  outcome vectors than the charter's minimum of four. Diagnosed as board
-  thinness — twelve named players against sixteen desks — not an engine
-  defect. The repair is more researched contracts in the $2.5M–$9M band,
-  especially at BIG, plus New York incumbents reachable on Bird rights. It got
-  one pair worse when D51 removed a false Bird-rights claim; the truth stays
-  and the board gets deeper.
-- `/teach` renders the L1 class-intelligence panel, but the rest of that
-  surface is still the legacy visual system.
-- No conduct or classroom-suitability screen has been run across all twelve
-  named players (`PLAYER_PRODUCTION_RESEARCH.md` §8). Classroom-release blocker.
+- **The P-VEC failure was an engine defect, not board thinness** — the earlier
+  diagnosis in this file was wrong, and so was D52's. Two bugs in `readingsFor`
+  (a minimum body counting as a hole filled; room left RISING when a club
+  crossed a line) were the cause. Both are fixed and pinned by mutation-checked
+  tests; see D53. The full eight-seat sweep verifying it is a 30-minute run —
+  **check the current status line below before citing it.**
+- `/teach` is on the front-office visual system for the panels this lesson
+  drives — class intelligence, the desk strip, the live-room histogram and the
+  projector mirror — and two frames are captured every browser run. The
+  surrounding console chrome is still the legacy system.
+- No conduct or classroom-suitability screen has been run across any of the
+  seventeen named players (`PLAYER_PRODUCTION_RESEARCH.md` §8). Classroom-release
+  blocker.
 - L2, L3 and the Boardroom are unbuilt.
 - Nothing here is classroom-proven (D10). No class has played it.

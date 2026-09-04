@@ -1078,3 +1078,224 @@ Consequences accepted:
 - **Owner:** Lead, on a blocking Sports Reality finding
 - **Evidence:** `docs/gauntlet/module-1/rebuild/PLAYER_PRODUCTION_RESEARCH.md`; the tripwire test
   "the price ordering on this board really is upside down" in `runtime/src/test/sameLineL1.test.ts`.
+
+## D52. The board is seventeen contracts, because four seats had no middle
+
+D51 said board thinness was the reason P-VEC failed, and that the repair was
+more researched contracts. This is that repair. A per-seat probe of the opening
+reachable sets made the shape of the problem exact rather than suspected:
+
+| seat | reachable named players | what they cost |
+|---|---:|---|
+| memphis / brooklyn / boston / sacramento | 6 | three of the six are minimum-scale and all cost the same $2,449,421, so really four prices |
+| new-york | 4 | $2,449,421 and $15,044,000, **and nothing in between** |
+| detroit / milwaukee | 11 | healthy |
+| minnesota | 7 | healthy |
+
+Five real contracts added, every source opened first-hand on 2026-09-04 and
+listed in the addendum to `FREE_AGENT_BOARD_RESEARCH.md`: **Precious Achiuwa**
+(BIG, $5,477,000), **Jaxson Hayes** (BIG, $6,000,000), **Josh Okogie** (WING,
+$6,000,000), **Tim Hardaway Jr.** (WING, $6,065,000) and **José Alvarado**
+(GUARD, $4,439,656, New York's own on Bird rights). Twelve named contracts
+became seventeen.
+
+Three of them earn their place on truth rather than arithmetic:
+
+- **Achiuwa played all season for Sacramento, which is a desk in this room, and
+  Sacramento still could not simply keep him.** The reporting is explicit: the
+  Kings held only his *Non-Bird* rights and the deal exceeded what those rights
+  allow, so they had to spend their entire bi-annual exception. A club that has
+  a player and cannot re-sign him with rights is the apron lesson in one line.
+- **Hardaway's real first-year salary is $6,065,000 and the taxpayer mid-level
+  is $6,064,000.** Four of the eight clubs in this room miss the best shooter
+  available to them by one thousand dollars. Nobody invented that.
+- **Alvarado is what gives New York a middle**, and he is unrestricted, so every
+  other desk may bid. New York's advantage is the rights, not exclusivity.
+
+Four candidates were rejected and the reasons are recorded, because a rejection
+nobody wrote down gets re-proposed: **Landry Shamet** (Early Bird is a *capped*
+tool and the module's own-player tool has no ceiling — shipping him would let a
+desk offer him thirty million), **Quinten Post** (two pages of the same
+publisher disagree on his salary, and he arrived on a restricted-free-agent
+offer sheet the module does not model), **Ariel Hukporti** (2.2 points a game at
+$3,400,000 is a dominated card — noise, not choice), and **Tarik Biberovic** (no
+NBA box score to print).
+
+One consequence in the product: the projector market table fits twelve rows of
+back-row-readable type at 1366×768, and there are now seventeen players. It
+shows twelve and **counts the rest out loud** under the table. A wall that
+silently drops rows hides the players nobody has bid on, which on a scarcity
+board are exactly the rows a teacher wants to point at.
+
+**Amended 2026-09-04 by D53: the diagnosis in the first paragraph was wrong.**
+Board thinness was real and the five contracts are worth keeping on their own
+merits, but it was not why P-VEC failed. The sweep against the deeper board
+still failed at three seat/environment pairs, and the actual cause turned out to
+be two defects in `readingsFor`. D53 records them. This entry stands as written
+because the decision log is not rewritten — but the causal claim it opens with
+is superseded, and nobody should cite it as evidence that board depth fixes a
+Pareto frontier.
+
+- **Status:** ACTIVE (causal claim superseded by D53)
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** the addendum to `docs/gauntlet/module-1/rebuild/FREE_AGENT_BOARD_RESEARCH.md`;
+  `runtime/scripts/same-line-sweep.mjs`.
+
+
+## D53. The module was computing its own named false lesson, and its flexibility reading rewarded crossing a line
+
+Two defects in `readingsFor`, both in the five numbers the class argues from,
+both confirmed first-hand against the built engine before anything was changed.
+An independent economic-truth prosecution found them while being asked a
+narrower question, and refuted the question's own premise on the way.
+
+**V1 — a minimum body counted as a hole filled.** `applySigning` refuses to
+close a job for a generic minimum body and says why in seventeen lines: a roster
+hole and a roster spot are not the same thing, and treating them as the same
+collapsed every constrained seat's frontier when it last shipped. `readingsFor`
+then counted the body anyway. Measured at Boston: sign one generic body,
+`openJobs` stays `[BIG, WING]` and `readings.jobsClosed` says **1**. Sign three
+— $7,348,263 of bodies, zero holes actually filled — and it says **2**, topping
+two of the five class readings. The projector's `rd-cheap-jobs` claim then
+argued *from* that number: "the desk that closed the most holes closed two…
+spending more did not buy more here." The module was manufacturing the exact
+false lesson it exists to break, on the surface the room reasons from.
+
+There were **three** job-closing definitions and they disagreed: the engine's
+(generic excluded, capped), the reading's (generic included, capped), and a
+third in the reveal (generic included, **uncapped** — two bigs against one open
+big job read as two holes closed). There is one now, `jobClosingSignings`, and
+all three call it.
+
+**V2 — room left rose when you spent.** The reading was measured to "the next
+line above where the club finished", and that reference moves when you cross it.
+Measured at Boston:
+
+| committed | ROOM LEFT printed | what the club could actually sign |
+|---:|---:|---:|
+| $203,623,048 | $5,391,952 | $6,064,000 |
+| $209,014,999 | **$1** | $6,064,000 |
+| $209,015,000 | **$12,671,000** | $6,064,000 |
+
+One dollar of payroll multiplied the displayed figure by 12.67 million, in the
+direction that rewards crossing the first apron, at the exact moment the club
+loses the big exception and the small one. The label on that number is "what you
+can still do", and across the whole range what the club could do never moved.
+
+Room left is now measured to **the line the club started the window under** —
+its own line, the one this lesson is named for — so it falls monotonically as
+money is committed, and going past it is an outcome rather than a reset. The
+value may be negative; it is **never rendered** with a minus sign. Surfaces
+print `PAST IT BY $4,510,000`, and the module hands every student payload a
+pre-rendered string plus a magnitude, so no client can leak a sign onto a grade
+5-6 screen. Simplify the interface before simplifying the economics.
+
+Both repairs together clear P-VEC at all eight seats in all three rival
+environments. Neither alone does. That is the correction to D52: board depth was
+never the binding constraint.
+
+Two prosecution findings were **rejected** and the reasons matter:
+
+- Adding `contestedWon` as a sixth class-facing reading. It is identically zero
+  across all 6,730 Boston plans and all 1,672 New York plans in the quiet room —
+  a reading of what the room did, not what the desk did — and the founder's
+  "outcome is not decision quality" bars a success number a desk tops because
+  rivals happened not to bid.
+- Weakening P-VEC for hard-capped seats on the grounds that an apron team really
+  has no choices. It is false in this model — corrected, Boston's quiet-room
+  frontier holds **eight** distinct outcomes, not three — and false about the
+  league, where a club $5.4M under the first apron has five genuinely different
+  postures. It would also have retired the instrument that detects four students
+  spending a lesson watching.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/src/test/sameLineL1.test.ts` — "a minimum body never
+  closes a hole, on any surface" and "room left never rises because you spent
+  money", both mutation-checked (each fails when its defect is reintroduced into
+  the built engine); `runtime/scripts/same-line-sweep.mjs` mutants M3 and M4.
+
+## D54. The harness gets a property that is not about the frontier's shape, and mutants that can reach the readings
+
+Both D53 defects shipped straight through an exhaustive sweep that reported
+ALL PROPERTIES HOLD. That is the failure this harness exists to prevent, so the
+instrument is repaired alongside the product.
+
+Why it was blind. Every property was a property of the **Pareto frontier's
+shape**, and the defects did not deform the frontier — they described a
+different world than the one the desk was playing in, internally consistently.
+And every poison mutant patched `world` *data*, so the poison limb could not
+reach `readingsFor` at all. Half the model had no mutant that could touch it.
+
+Three changes:
+
+- **P-AGREE**, a consistency invariant rather than a shape property: over every
+  plan at every seat, the holes-closed reading must equal the number of holes
+  the position actually lost. V1 violated it on the cheapest plan available to
+  every desk in the room.
+- **The readings go through a swappable binding**, so a mutant can poison the
+  reading layer. This is the change that makes the next V1 findable.
+- **M3 `a-body-fills-a-hole`** (breaks P-AGREE) and **M4 `spending-buys-room`**
+  (breaks P-VEC), each reintroducing a defect that genuinely shipped. Both are
+  caught.
+
+Also added, and explicitly **not** a gate: `--seat boston,new-york` narrows the
+sweep for diagnosis. The full sweep is roughly cubic in board size and costs
+30-plus minutes at twenty market entries, which is fine for a gate and useless
+for chasing one seat's frontier. A filtered run prints `PARTIAL` on its verdict
+line and says it is not a gate result, because a partial pasted into a document
+is otherwise indistinguishable from a pass.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/scripts/same-line-sweep.mjs` — the poison limb prints
+  each mutant and the property it was required to break.
+
+## D55. The board prints what a veteran-minimum deal actually charges
+
+Found on a projector screenshot, not by any assertion. The board told the room
+"Nikola Vučević — HE IS ASKING $3,900,000"; four minutes later the reveal
+printed "Nikola Vučević · Sacramento · $2,449,421". Nothing on any of the three
+surfaces connected them.
+
+Both figures are correct and the gap is real NBA law, not a simplification: a
+veteran-minimum contract pays the player his full service-based minimum while
+charging the club only the two-year-veteran amount, with the league reimbursing
+the difference. It is the reason no club in this room is ever completely stuck —
+which makes it one of the better facts in the lesson, and it was being delivered
+as an unexplained contradiction. The only inference available to a ten-year-old
+is that a desk talked him down or that the board lied, and the second costs you
+every other number in the lesson.
+
+Now said in three places, and **only where it applies**: on the composer's ask
+line when the minimum is the selected tool, in the wire the moment the deal
+settles, and on the projector beside any signing that landed on the charge. The
+gating is not incidental — shipped ungated for one build, the note printed "only
+$2,449,421 of that counts against your money" directly above a $4,300,000 offer
+made with the small exception. Two contradictory numbers a hand's width apart is
+worse than the silence it was written to fix.
+
+Two smaller repairs shipped alongside, both found the same way:
+
+- **Every card in the 5-6 band claimed the chosen tool was the only way to pay
+  the player.** The composer branched on whether tool BUTTONS were rendered, and
+  5-6 renders none by design, so "It is the only way you have that reaches him"
+  printed under cards where the desk had four legal tools. The module now sends
+  the real count to both bands and the copy is derived from it.
+- **The `/teach` surface had never been screenshotted** in this lesson's browser
+  run, the same blind spot that let the projector ship with its stylesheet
+  unlinked. Two frames are now captured every run, guarded by a computed-style
+  check that an unstyled console cannot pass.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/src/test/sameLineL1.test.ts` — "a veteran-minimum
+  signing never prints a number the room cannot explain" (mutation-checked) and
+  "a card never tells a desk it has one way to pay when it has four", which
+  checks the count against the engine rather than against itself;
+  `runtime/scripts/e2e-same-line-l1.cjs` asserts the note rendered on the desk
+  whose only route is the minimum and absent on the desk paying full freight.

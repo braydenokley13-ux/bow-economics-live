@@ -58,6 +58,8 @@ import {
   openingPosition,
   outlookAfter,
   readingsFor,
+  jobClosingSignings,
+  roomLeftText,
   resolveDay,
   settle,
   yearsFor,
@@ -649,7 +651,7 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
       return { ...base, ...revealForDesk(state, desk, profile) };
     case "SYNTHESIS":
     case "COMPLETE":
-      return { ...base, readings: readingsOf(state, desk), forgone: desk.forgoneAtCommit };
+      return { ...base, readings: shownReadings(state, desk), forgone: desk.forgoneAtCommit };
     default:
       return base;
   }
@@ -862,12 +864,24 @@ const pct = (v: number): string => v.toFixed(3).replace(/^0/, "");
 function statLineFor(p: FreeAgent, profile: GradeProfile) {
   if (p.production === null) return null;
   const s: Production = p.production.value;
+  /*
+   * THE FOURTH NUMBER IS NOT THE SAME NUMBER IN BOTH BANDS.
+   *
+   * Grade 5 has no percent standard, and a shooting percentage written as
+   * `.439` is a percentage wearing a disguise -- it clears the band gate on a
+   * technicality and is still unreadable to the child it is aimed at. So the
+   * younger band gets the same fact as a count out of ten, which is exactly how
+   * a ten-year-old already thinks about making shots, and which still separates
+   * every pair the decimal separates: Dosunmu's .439 is 4 of 10 where Grimes'
+   * .334 is 3 of 10.
+   */
+  const shooting = s.three === null ? { v: s.fg, of: "FROM THE FLOOR", tag: "FG%" } : { v: s.three, of: "FROM THREE", tag: "3P%" };
   const fourth =
     p.role === "BIG"
       ? { label: "BLK", value: s.blocks.toFixed(1) }
-      : s.three === null
-        ? { label: "FG%", value: pct(s.fg) }
-        : { label: "3P%", value: pct(s.three) };
+      : profile.allowsPercentages
+        ? { label: shooting.tag, value: pct(shooting.v) }
+        : { label: shooting.of, value: `${Math.round(shooting.v * 10)} OF 10` };
   const detail =
     profile.maxVariables >= 3
       ? `${s.games} GAMES · ${s.started} STARTS · ${s.minutes.toFixed(1)} MIN A NIGHT · ${pct(s.fg)} FROM THE FIELD`
@@ -887,6 +901,37 @@ function statLineFor(p: FreeAgent, profile: GradeProfile) {
 }
 
 /** The one number that fits in a list row beside a price. */
+/**
+ * THE NUMBER THAT LOOKED LIKE A LIE.
+ *
+ * Found on a projector screenshot: the board told the room "Nikola Vucevic —
+ * HE IS ASKING $3,900,000", and four minutes later the reveal printed
+ * "Nikola Vucevic · Sacramento · $2,449,421". Nothing on any of the three
+ * surfaces connected those numbers. The only inference available to a
+ * ten-year-old is that a desk talked him down, or that the board lied — and the
+ * second one costs you every other number in the lesson.
+ *
+ * Both numbers are right, and the gap between them is real NBA law, not a
+ * simplification: a veteran-minimum contract pays the player the full minimum
+ * for his years of service while charging the club only the two-year-veteran
+ * amount, and the league reimburses the difference. It is the single reason no
+ * club in this room is ever completely stuck, so it is worth a sentence rather
+ * than a footnote.
+ *
+ * Said on the card, before the choice, because a pair that reads it at the
+ * reveal has already made the decision it was supposed to inform.
+ */
+function minimumNote(p: FreeAgent, profile: GradeProfile): string | null {
+  if (!p.minimumScale || p.generic) return null;
+  const paid = money(p.ask.value);
+  const charged = money(TOOL.minimum.ceiling ?? 0);
+  // Kept to one line. Measured: as a third card fact it pushed PUT THE OFFER IN
+  // to 622px in a 600px viewport, and a decision below the fold is not shipped.
+  return profile.maxVariables >= 3
+    ? `— a veteran minimum. He is paid ${paid}; only ${charged} is charged to you, and the league pays the rest.`
+    : `— but only ${charged} of that counts against your money. The league pays the rest.`;
+}
+
 const rowStat = (p: FreeAgent): string | null =>
   p.production === null ? null : `${p.production.value.points.toFixed(1)} PTS`;
 
@@ -932,11 +977,24 @@ function boardCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile
       stat: statLineFor(p, profile),
       rowStat: rowStat(p),
       askNote: askNote(p),
+      /* Why the reveal will print a smaller number than this card's ask. */
+      minimumNote: minimumNote(p, profile),
+      minimumScale: p.minimumScale && !p.generic,
       /* The two facts that make the price honest rather than a lesson in front
          office incompetence: the money is buying youth and years. */
       age: p.ageAtSigning,
       realYears: p.years,
       yours: p.incumbent === desk.clubId,
+      /*
+       * HOW MANY WAYS THIS DESK COULD PAY HIM — sent to BOTH bands.
+       *
+       * `tools` is empty at 5-6 by design, and the composer read that emptiness
+       * as "there is only one way", printing "It is the only way you have that
+       * reaches him" under every card in the younger band. Measured at Memphis
+       * on day one: four legal tools, and the screen said one. A pair told a
+       * false thing about its own options cannot be reasoning about options.
+       */
+      toolCount: dedupeByTool(offers).length,
       // 5-6 gets the tool chosen for them; 7-8 chooses (profile.maxVariables).
       /*
        * One button per TOOL, not per legal offer.
@@ -1164,6 +1222,21 @@ function readingsOf(state: SameLineL1State, desk: Desk): Readings {
   return readingsFor(opening, desk.position, awards);
 }
 
+/**
+ * The readings as a SCREEN may hold them: no signed integer anywhere.
+ *
+ * `roomLeft` is negative for a club that went past the line it started under,
+ * and that is the right model — but a raw `-268717` in a student payload is one
+ * careless render away from a minus sign on a fifth-grader's screen, which is a
+ * hard band gate. So every path that hands readings to a surface goes through
+ * here: magnitude, pre-rendered words, and the fact as a boolean for anything
+ * that needs to branch.
+ */
+function shownReadings(state: SameLineL1State, desk: Desk) {
+  const r = readingsOf(state, desk);
+  return { ...r, roomLeft: Math.abs(r.roomLeft), roomLeftText: roomLeftText(r.roomLeft), pastLine: r.roomLeft < 0 };
+}
+
 function revealForDesk(state: SameLineL1State, desk: Desk, profile: GradeProfile) {
   const beat = state.beat;
   const out: Record<string, unknown> = { beat, beatTitle: REVEAL_BEATS[beat]?.title ?? "" };
@@ -1171,8 +1244,23 @@ function revealForDesk(state: SameLineL1State, desk: Desk, profile: GradeProfile
   // is not sent, not merely not drawn.
   if (beat >= 0) out["yourSignings"] = desk.position.signings;
   if (beat >= 1) out["yourForgone"] = desk.forgoneAtCommit;
-  if (beat >= 2) out["yourRoomLeft"] = readingsOf(state, desk).roomLeft;
-  if (beat >= 3) out["yourReadings"] = readingsOf(state, desk);
+  /*
+   * ROOM LEFT GOES OUT AS WORDS, NOT AS A SIGNED INTEGER.
+   *
+   * The reading is negative for a club that went past the line it started
+   * under, and a raw `-4510000` in the payload is one careless render away from
+   * a minus sign on a fifth-grader's screen — which is a hard band gate, not a
+   * preference. So the module does the rendering, once, and the client is never
+   * handed a number it has to remember to be careful with. `pastLine` carries
+   * the fact separately for anything that needs to branch on it.
+   */
+  if (beat >= 2) {
+    const rl = readingsOf(state, desk).roomLeft;
+    out["yourRoomLeft"] = Math.abs(rl);
+    out["yourRoomLeftText"] = roomLeftText(rl);
+    out["yourPastLine"] = rl < 0;
+  }
+  if (beat >= 3) out["yourReadings"] = shownReadings(state, desk);
   void profile;
   return out;
 }
@@ -1258,6 +1346,17 @@ function wireFor(state: SameLineL1State, desk: Desk): { day: number; items: read
   const items: WireItem[] = [];
   const chasedId = rec.chased[desk.seatId];
   const club = CLUB[desk.clubId].name;
+  /* The wire prints the settled figure, and on a veteran-minimum deal that
+     figure is the CHARGE, not the salary — smaller than the ask the pair read
+     on the card. Say which it is here too, because this is the sentence the
+     desk remembers. */
+  const priceOf = (pid: string, annual: number): string => {
+    const pl = playerById(pid);
+    const charged = TOOL.minimum.ceiling ?? 0;
+    return pl !== undefined && pl.minimumScale && annual === charged && pl.ask.value > charged
+      ? `${money(annual)} against your books — he is paid ${money(pl.ask.value)} and the league covers the rest`
+      : `${money(annual)} a year`;
+  };
 
   if (chasedId) {
     const player = playerById(chasedId);
@@ -1271,10 +1370,10 @@ function wireFor(state: SameLineL1State, desk: Desk): { day: number; items: read
         headline: `${player.name.toUpperCase()} SIGNS WITH ${club.toUpperCase()}`,
         detail:
           lost.length === 0
-            ? `${money(award.annual)} a year. He is yours.`
+            ? `${priceOf(chasedId, award.annual)}. He is yours.`
             : lost.length === 1
-              ? `${money(award.annual)} a year. Making that signing put ${lost[0]} out of your reach — for good, not for today.`
-              : `${money(award.annual)} a year. Making that signing put these out of your reach, for good: ${lost.join(", ")}.`,
+              ? `${priceOf(chasedId, award.annual)}. Making that signing put ${lost[0]} out of your reach — for good, not for today.`
+              : `${priceOf(chasedId, award.annual)}. Making that signing put these out of your reach, for good: ${lost.join(", ")}.`,
       });
     } else if (player && award) {
       const rival = state.desks[award.winner as unknown as SeatId];
@@ -1282,7 +1381,7 @@ function wireFor(state: SameLineL1State, desk: Desk): { day: number; items: read
       items.push({
         kind: "lost",
         headline: `${player.name.toUpperCase()} SIGNS WITH ${rivalName.toUpperCase()}`,
-        detail: `${money(award.annual)} a year. You were in on him. He is gone — not off your board for today, out of this window entirely. Your money is still yours.`,
+        detail: `${priceOf(chasedId, award.annual)}. You were in on him. He is gone — not off your board for today, out of this window entirely. Your money is still yours.`,
       });
     }
   } else if (Object.keys(state.desks).length > 0) {
@@ -1553,7 +1652,10 @@ function roomDisagrees(state: SameLineL1State, phase: CanonicalPhase): readonly 
      more" without ever printing a score. */
   const byJobs = desks
     .map((d) => ({
-      closed: d.position.signings.filter((sg) => CLUB[d.clubId].jobs.includes(sg.role)).length,
+      /* The shared predicate, not a third private copy of the rule. This one
+         was both generic-blind AND uncapped: two BIGs against one BIG job read
+         as two holes closed, and three minimum bodies read as two. */
+      closed: jobClosingSignings(CLUB[d.clubId].jobs, d.position.signings).length,
       spend: d.position.signings.reduce((t, sg) => t + sg.annual, 0),
     }))
     .filter((x) => x.spend > 0);
@@ -1701,7 +1803,20 @@ function boardView(state: SameLineL1State, phase: CanonicalPhase): unknown {
     day: state.day + 1,
     ofDays: DAYS,
     lines: LINES.map((l) => ({ label: l.label, amountText: money(l.amount), kind: l.kind, does: l.does })),
-    signed: named.map((a) => ({ player: a.name, club: CLUB[deskClubOf(state, a.winner as unknown as string) ?? "brooklyn"].name, priceText: money(a.annual) })),
+    /* A minimum-scale signing settles at the CHARGE, which is smaller than the
+       ask this same room read off the board an hour ago. Unlabelled, that gap
+       reads as a broken number; labelled, it is the best fact on the frame. */
+    signed: named.map((a) => {
+      const pl = playerById(a.playerId);
+      const charged = TOOL.minimum.ceiling ?? 0;
+      const subsidised = pl !== undefined && pl.minimumScale && a.annual === charged && pl.ask.value > charged;
+      return {
+        player: a.name,
+        club: CLUB[deskClubOf(state, a.winner as unknown as string) ?? "brooklyn"].name,
+        priceText: money(a.annual),
+        chargeNote: subsidised ? `charged — he is paid ${money(pl.ask.value)}, the league covers the rest` : null,
+      };
+    }),
     beat: state.beat,
     beatTitle: REVEAL_BEATS[state.beat]?.title ?? "",
     beats: REVEAL_BEATS,

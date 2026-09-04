@@ -24,6 +24,7 @@
 import {
   BOARD,
   CLUB,
+  MINIMUM_MARKET,
   LINE,
   RAISES,
   ROSTER,
@@ -372,6 +373,49 @@ export function legalOffers(
 ): readonly Offer[] {
   return offersAtPrices(p, board, null, taken);
 }
+
+/**
+ * THE ONE JOB-CLOSING PREDICATE.
+ *
+ * There were three, and they disagreed. `applySigning` refused to close a job
+ * for a generic minimum body — with a 17-line comment naming that as the whole
+ * lesson. `readingsFor` then counted the body anyway, so the reading the CLASS
+ * argues from said a hole was filled that the engine said was still open. A
+ * third copy in the reveal was uncapped as well, and read two BIGs signed
+ * against one BIG job as two holes closed.
+ *
+ * Measured before the repair, at Boston: sign one generic body, `openJobs`
+ * stays [BIG, WING], `readings.jobsClosed` says 1. Sign three, it says 2. The
+ * cheapest possible plan in the room — $7.3M of bodies, zero holes actually
+ * filled — topped two of the five class readings, and the projector then used
+ * it as the room's evidence that spending more does not buy more. The module
+ * was computing and displaying the exact false lesson it exists to break.
+ *
+ * So there is now one function, and everything that reports a closed job calls
+ * it: a generic body never closes one, and a club with one BIG job open cannot
+ * close two of them.
+ */
+export function jobClosingSignings(
+  openJobs: readonly JobRole[],
+  signings: readonly Signing[],
+): readonly Signing[] {
+  const left = new Map<JobRole, number>();
+  for (const role of openJobs) left.set(role, (left.get(role) ?? 0) + 1);
+  const out: Signing[] = [];
+  for (const sg of signings) {
+    if (isGenericSigning(sg)) continue;
+    const n = left.get(sg.role) ?? 0;
+    if (n <= 0) continue;
+    left.set(sg.role, n - 1);
+    out.push(sg);
+  }
+  return out;
+}
+
+const GENERIC_IDS: ReadonlySet<string> = new Set(MINIMUM_MARKET.filter((p) => p.generic).map((p) => p.id));
+
+/** A minimum-market body, by the world's own flag rather than by a name prefix. */
+export const isGenericSigning = (sg: { readonly playerId: string }): boolean => GENERIC_IDS.has(sg.playerId);
 
 /** Everyone this club has already signed. A club never signs the same man twice. */
 export function signedBy(p: Position): ReadonlySet<string> {
@@ -901,8 +945,11 @@ export type Readings = {
   /** What the window cost, above what the club already owed. */
   readonly spent: number;
   /**
-   * ROOM LEFT — the dollars between where this club finished and the next line
-   * above it, or its own wall if it drew one lower.
+   * ROOM LEFT — the dollars between where this club finished and the line it
+   * started the window under, or its own wall if it drew one lower.
+   *
+   * NEGATIVE when the club went past that line. Never rendered with a minus
+   * sign: use `roomLeftText`.
    *
    * The reading the frontier was missing, and its absence was teaching the
    * exact false lesson this module exists to break. With jobs, years, contests
@@ -921,27 +968,42 @@ export type Readings = {
 };
 
 export function readingsFor(opening: Position, closing: Position, awards: readonly Award[]): Readings {
-  const jobsClosedList = closing.signings.filter((s) => opening.openJobs.includes(s.role));
-  // A club with two open BIG jobs cannot close three of them; count distinct.
-  const openCounts = new Map<JobRole, number>();
-  for (const role of opening.openJobs) openCounts.set(role, (openCounts.get(role) ?? 0) + 1);
+  const closed = jobClosingSignings(opening.openJobs, closing.signings);
   let jobsClosed = 0;
   let jobYears = 0;
   let cheapest = Infinity;
-  for (const s of jobsClosedList) {
-    const left = openCounts.get(s.role) ?? 0;
-    if (left <= 0) continue;
-    openCounts.set(s.role, left - 1);
+  for (const s of closed) {
     jobsClosed += 1;
     jobYears += s.years;
     if (s.annual < cheapest) cheapest = s.annual;
   }
   const mine = new Set(closing.signings.map((s) => s.playerId));
-  // The next line above where this club finished — the one its next move would
-  // have to clear — or its own wall, if it drew one lower than that.
-  const above = [LINE.cap, LINE.tax, LINE.apron1, LINE.apron2].find((l) => l > closing.committed) ?? LINE.apron2;
-  const ceiling = closing.wall !== null ? Math.min(closing.wall, above) : above;
-  const roomLeft = Math.max(0, ceiling - closing.committed);
+  /*
+   * ROOM LEFT IS MEASURED AGAINST THE LINE YOU STARTED UNDER.
+   *
+   * It used to be measured against "the next line above where you finished",
+   * which moves when you cross one — so the reading went UP when you spent.
+   * Measured at Boston: committed $209,014,999 printed ROOM LEFT $1; one more
+   * dollar of payroll printed $12,671,000. A twelve-million-dollar jump, in the
+   * direction that rewards crossing the first apron, at the exact moment the
+   * club loses the big exception and the small one. The label on that number is
+   * "what you can still do", and across that whole range what the club could
+   * actually do never moved: its reach was $6,064,000 throughout.
+   *
+   * The lesson is not "there is always another line". It is that ONE line was
+   * going to bind on you this summer, and every signing spends the distance to
+   * it. So the reference is fixed at the window's open — the club's own line,
+   * the one this lesson is named for — and it does not move because you crossed
+   * it. Going past it is a real outcome and it reads as one.
+   *
+   * The value may now be negative. It is never RENDERED as a negative: the
+   * surfaces print "PAST IT BY $4,510,000" (see roomLeftText). Simplify the
+   * interface before simplifying the economics.
+   */
+  const openingLine =
+    [LINE.cap, LINE.tax, LINE.apron1, LINE.apron2].find((l) => l > opening.committed) ?? LINE.apron2;
+  const ceiling = closing.wall !== null ? Math.min(closing.wall, openingLine) : openingLine;
+  const roomLeft = ceiling - closing.committed;
   const contestedWon = awards.filter((a) => a.winner === closing.clubId && a.contested > 1 && mine.has(a.playerId)).length;
   const longestCommitment = closing.signings.reduce((m, sg) => Math.max(m, sg.years), 0);
   return {
@@ -966,6 +1028,17 @@ export type ReadingId = (typeof READING_IDS)[number];
 export function money(n: number): string {
   const rounded = Math.round(n);
   return "$" + Math.abs(rounded).toLocaleString("en-US");
+}
+
+/**
+ * ROOM LEFT, in words, never with a minus sign.
+ *
+ * `money()` refuses negatives and the grade 5-6 band bars a load-bearing minus
+ * outright, so a club that went past its line says so in words instead of in
+ * punctuation — which is also how a front office says it.
+ */
+export function roomLeftText(n: number): string {
+  return n >= 0 ? money(n) : `PAST IT BY ${money(-n)}`;
 }
 
 /** Dollars in millions to one decimal, for a bar label where the full figure will not fit. */

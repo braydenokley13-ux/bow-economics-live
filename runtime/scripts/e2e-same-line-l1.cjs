@@ -36,6 +36,11 @@ const SNAPSHOT_FILE = path.join(ROOT, ".e2e-scratch", `snapshot-sl1-${Date.now()
 const SCREEN_DIR = path.join(ROOT, "..", "docs", "gauntlet", "module-1", "rebuild", "screens-l1");
 
 const LESSON = "m1l1-the-window";
+/* Seats are dealt in CLUBS order. New York can reach Vucevic ONLY on the
+   minimum; Detroit can pay him with a full exception. The pair of them is what
+   makes the charge note falsifiable in both directions. */
+const NEW_YORK_DESK = 6;
+const DETROIT_DESK = 2;
 const DESKS = 8;
 const SHAPES = [
   { width: 1366, height: 768, tag: "1366" },
@@ -251,6 +256,24 @@ async function assertBandCopy(page, band, label) {
   }
 }
 
+/**
+ * A teacher console rendering in the browser's default font is a console whose
+ * stylesheet never loaded. That failure is invisible to every functional
+ * assertion in this file — the buttons still click — so it gets its own check,
+ * the same one that now guards the projector: read a computed style that only
+ * the product's own sheet can produce.
+ */
+async function assertTeachStyled(page, label) {
+  const bg = await page.evaluate(() => {
+    const el = document.getElementById("room") || document.body;
+    return getComputedStyle(el).backgroundColor;
+  });
+  assert.ok(
+    bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent" && bg !== "rgb(255, 255, 255)",
+    `${label}: the teacher console is unstyled (computed background ${bg}) — a stylesheet did not load`,
+  );
+}
+
 async function shoot(page, name) {
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
   await page.screenshot({ path: path.join(SCREEN_DIR, `${name}.png`), fullPage: false });
@@ -350,8 +373,55 @@ async function runBand(browser, band, label) {
     );
     const pts = await boardPage.$$eval(".slb-market .slb-stat", (td) => td.map((x) => x.textContent.trim()));
     assert.ok(pts.length > 0 && pts.every((v) => /^\d+\.\d$/.test(v)), `${label}: production missing from the wall (${pts})`);
+    // Rows past what fits are counted out loud rather than disappearing.
+    const shown = pts.length;
+    const unsigned = Number(await boardPage.textContent(".slb-stats div:first-child dd"));
+    const foot = await boardPage.textContent(".slb-foot");
+    if (unsigned > shown) {
+      assert.ok(
+        foot.includes(`${unsigned - shown} more`),
+        `${label}: ${unsigned - shown} players vanished off the bottom of the wall silently (foot: "${foot}")`,
+      );
+    }
   }
   await shoot(boardPage, `${band}-board-market`);
+
+  /*
+   * THE TWO NUMBERS THAT LOOKED LIKE A CONTRADICTION.
+   *
+   * A veteran-minimum deal pays the player his full service minimum and charges
+   * the club only the two-year amount. So the board says Vucevic is asking
+   * $3,900,000 and the reveal prints $2,449,421, and for three months nothing
+   * on any surface said why. Rendered proof, on the desk whose ONLY way to him
+   * is the minimum: the explanation is on screen at the moment of the choice,
+   * and it names both figures.
+   */
+  {
+    const ny = desks[NEW_YORK_DESK];
+    await ny.waitForSelector(".sl-row[data-player='vucevic'][data-reach='yes']", { timeout: 20000 });
+    await ny.click(".sl-row[data-player='vucevic']");
+    await ny.waitForSelector("#slCommit", { timeout: 10000 });
+    const ask = (await ny.textContent(".sl-compose-ask")) || "";
+    assert.ok(
+      ask.includes("$2,449,421"),
+      `${label}: New York's only route to Vucevic is the minimum, and the composer never says what it charges — got "${ask.replace(/\s+/g, " ").trim()}"`,
+    );
+    assert.ok(
+      ask.includes("$3,900,000"),
+      `${label}: the composer names the charge without naming the ask it contradicts — got "${ask.replace(/\s+/g, " ").trim()}"`,
+    );
+    // ...and the desk that is NOT paying him that way must not be told it is.
+    const rich = desks[DETROIT_DESK];
+    await rich.waitForSelector(".sl-row[data-player='vucevic'][data-reach='yes']", { timeout: 20000 });
+    await rich.click(".sl-row[data-player='vucevic']");
+    await rich.waitForSelector("#slCommit", { timeout: 10000 });
+    const richAsk = (await rich.textContent(".sl-compose-ask")) || "";
+    assert.ok(
+      !richAsk.includes("$2,449,421"),
+      `${label}: a desk paying Vucevic with a full exception is shown the MINIMUM charge — two contradictory numbers a hand's width apart`,
+    );
+    console.log(`${label}: the veteran-minimum charge is explained where it applies and nowhere else`);
+  }
 
   for (let day = 1; day <= 3; day += 1) {
     const committedText = [];
@@ -413,6 +483,16 @@ async function runBand(browser, band, label) {
     await desks[0].waitForSelector(".sl-board .sl-row", { timeout: 10000 });
     await assertNoLeak(desks[0], `${label} day${day}`, others);
 
+    // THE CONSOLE, LIVE. Nobody had ever looked at /teach in this lesson: the
+    // projector's whole stylesheet was once unlinked and every fits-on-a-wall
+    // assertion still passed, because unstyled text always fits. So the teacher
+    // surface gets the same treatment the board now gets — a real frame, at the
+    // moment the room is fullest, kept in the evidence folder.
+    if (day === 1) {
+      await assertTeachStyled(teach, `${label} PLAY day1`);
+      await shoot(teach, `${band}-teach-play`);
+    }
+
     await teach.click("#btnCloseDay").catch(async () => {
       // The day-close control may be the round contract's generic bell.
       await teach.click("#btnRoundClose");
@@ -439,6 +519,7 @@ async function runBand(browser, band, label) {
     await assertBackRow(boardPage, `${label} REVEAL beat${beat}`);
     await assertBoardPrivate(boardPage, `${label} REVEAL beat${beat}`, studentNames);
     await shoot(boardPage, `${band}-board-beat${beat}`);
+    if (beat === 0) await shoot(teach, `${band}-teach-reveal`);
     if (beat === 3) {
       await desks[1].waitForSelector(".sl-readings", { timeout: 10000 });
       await assertNoSideScroll(desks[1], `${label} student reveal beat3`);
