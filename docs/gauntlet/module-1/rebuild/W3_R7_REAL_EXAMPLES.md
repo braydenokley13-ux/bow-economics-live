@@ -1,0 +1,57 @@
+# W3 R-7 — real examples for GAINS FROM TRADE and SUBJECTIVE VALUE (Sports Reality, 2026-09-04)
+
+**Blocking finding.** The two real examples printed in `W3_THE_DEADLINE_SPEC.md` §9 do not
+demonstrate their terms. Phoenix/Kennard/Bridges is a hard-cap *sequencing* story (no second
+party made better off). The Kawhi item is an R7 *trade-call* story (persistence of agreement,
+not divergent valuation). Read aloud, the room hears the term and then a story that does not
+contain it. Replacements below; both checked against the D61 mechanic (room-absorption OUT
+bar, picks at $0, settle on jobs, `expiringNextSeason`, one aggregated blocked-reach integer,
+twins). Both carry their core in three sentences and at most three numbers — no fandom test.
+
+## Chain 1 — GAINS FROM TRADE (both bands)
+
+**Moment:** you were holding a contract doing a job you did not need, and the desk across the room was holding the job you could not fill; you asked, and a person who did not have to say yes said yes. **Class result:** the executed-deal cards on the board (`boardView.executedBroadcast`) beside the settle (`boardView.seasonSettle`) — *"N deals cleared today. In M of them, BOTH desks ended the season with a job covered that was open this morning."* Then the twin line: *"Same books on day one — different rooms answered them."* **Real:** on February 5, 2026 Boston and Chicago swapped two players whose contracts both ended that summer. Boston sent Anfernee Simons (about $27.7 million) and got Nikola Vučević (about $21.5 million); Chicago sent Vučević and got Simons plus the better of the two draft picks in the deal. Boston had lost every centre it had the summer before and was chasing a top seed — it needed a big man now, and the swap also cut its projected luxury-tax bill from about $39.5 million to about $17 million. Chicago was 35 games under water and not chasing anything — it turned a 35-year-old on an expiring deal into a 26-year-old on an expiring deal plus an extra 2026 second-round pick. Neither team got the same thing; both got the thing it was actually short of. (Hoops Rumors, published 2026-02-05, agreement reported 2026-02-03 by ESPN's Shams Charania; tax figures ESPN's Bobby Marks; pick detail Keith Smith of Spotrac. Read in full and verified 2026-09-04.) **Term:** **gains from trade** — a swap can leave both sides better off, because the two sides wanted different things; nothing new was built and nobody had to lose. **Outside:** two families swap houses for a week in the summer. Nobody built a house. Both got a holiday.
+
+**7–8 DEPTH LAYER (do not read at 5–6).** Boston's salary went *down* by about $6.2 million and its tax bill by about $22.5 million, because above the tax line a dollar of salary costs a club more than a dollar. The same trade dropped Boston below the **first apron**, a rights line, not a money line: the test is payroll *after* the trade (spec R2). Optional: Boston also held a $22.5 million trade exception from the earlier Porziņģis deal and could absorb Vučević into it — the exception mechanism BOW deliberately does not model.
+
+**WATCH FOR (teacher).** The room will score it: *"Boston won — they got the player AND saved money."* Do not settle it. Ask: *"What was Chicago trying to do in February?"* — the answer is on the board's own settle. Second misreading (D61): *"the money wasn't even, so somebody got cheated."* Even is not the test. Both desks' books got better by each desk's own goal; that is the whole term.
+
+**Fit / suppression.** 5–6 composer shape exactly: one object out, one in, both contracts. Suppress the term if zero deals executed (l1.ts:512 rule) — on a no-trade room run THE STANDING OFFER and name **opportunity cost** instead.
+
+**Late beat, optional (ranks as the UNLUCKY GOOD DECISION card, §5).** Vučević broke a finger in March and played 16 regular-season games for Boston; both players were free agents four months later — Vučević signed a one-year, $3.9 million deal with Orlando on July 1, 2026 (Hoops Rumors 2026-07-01, verified 2026-09-04); Simons signed with Philadelphia in July 2026 (`world.ts` `simons`, repo-sourced, not opened this session). The gain was real on February 5 by both sets of books; the outcome then went one way. Decision quality vs outcome in one real trade — the same thing the settle does to a desk that bought a rental: `expiringNextSeason` prints the job open again.
+
+## Chain 2 — SUBJECTIVE VALUE (both bands)
+
+**Moment:** the contract you were desperate to move was greyed out on three desks and reachable on one — the desk that still had room under the cap; and the desk that could take it made you pay something extra to do it. **Class result:** the one blocked-reach integer on the board (`boardView.reachBlocked`) beside the interest counts and the executed card that shows *who* took it: *"The room could not reach K times today. This contract was out of reach for four desks and absorbed by one."* Then the twin line: two desks that started from the same books priced the same listed contract differently, because of what each had done since. **Real:** in the summer of 2025 Denver was paying Michael Porter Jr. a little over $79 million across the next two seasons and wanted out from under it; Brooklyn was paying Cameron Johnson $44 million across the same two years. Denver did not just swap them — Denver added an **unprotected 2032 first-round draft pick** to get Brooklyn to take Porter. Same player, same contract: to Denver something worth paying a draft pick to be rid of; to Brooklyn something worth being paid a draft pick to accept, and Brooklyn said publicly it wanted to keep him. The reason is not who is the better player. It is that Brooklyn had cap room and Denver did not. (Hoops Rumors, agreement 2025-06-30 reported by ESPN's Shams Charania, official 2025-07-08 per the Nets' release; cap-room and apron figures ESPN's Bobby Marks and Keith Smith of Spotrac; "not a salary dump" ESPN's Ramona Shelburne. Read in full and verified 2026-09-04.) **Term:** **subjective value** — the same contract is worth different amounts to different clubs, because what it costs you depends on what else you were trying to do. **Outside:** the old sofa in your grandmother's flat. She pays someone to take it away. The family moving into an empty apartment would pay *her* for it. Same sofa, opposite price.
+
+**7–8 DEPTH LAYER (do not read at 5–6).** This is the exact rule your OUT bar draws. Had Brooklyn been over the cap it *could not* have swapped Johnson straight up for Porter's $38.3 million cap hit — over the cap you can only match salary; with room you can absorb it. Brooklyn's room *was* the asset it sold, and it charged an unprotected first for it, keeping about $17 million of room. Denver's payoff was not cash: the trade put Denver more than $13 million below the **first apron**, which put the non-taxpayer mid-level exception back in its hands. And the pick was addable at all because **picks count $0 in the salary math** (spec R5) — which is why a pick is how clubs pay each other to solve a books problem.
+
+**WATCH FOR (teacher).** Near-guaranteed: *"Denver gave away a first-round pick for nothing — they got robbed,"* or *"Porter must be bad."* Neither. Porter averaged 18.2 points a game the season before and Brooklyn kept him. What Denver bought was $35 million of payroll it no longer owed and a spending tool it had lost. Say it plainly: **a contract can be a burden to one club and a bargain to another on the same afternoon, and neither club is wrong.** Also watch for *"so the team with room always wins"* — room is not free; Brooklyn spent room it could have spent on a free agent: Week 1's opportunity cost arriving inside Week 3.
+
+**Fit / suppression.** "Contract + pick out" is **7–8 only** (two send objects). The 5–6 composer produces the same economics in the mirror: a room-rich desk sends a **pick** ($0) and receives a contract — legal only where the receiver's room can absorb it (`market.ts` `outBar`). Suppress the term if `reachBlocked` is 0 for the whole session and no listed object drew interest from more than one desk.
+
+**Optional teacher line, INFERRED.** The pick is for 2032; whoever Brooklyn drafts with it is in middle school right now. Label it as an inference; no source says it.
+
+## Findings
+
+1. **BLOCKING** — §9's existing GAINS FROM TRADE and SUBJECTIVE VALUE examples do not instantiate their terms (above). Replace; move the Kawhi item beside R7 in §3; the Phoenix/Kennard item survives inside the TRANSACTION COST chain.
+2. **The naming card has no slot for the real example.** `Naming` is `{id, term, moment, means, outside}` (`l1.ts:525-530`, `l2.ts:684`); the client renders those four. L2 already smuggles the real example into `outside` (`l2.ts:699`, Lillard), breaking `l1.ts:518` ("every naming ends outside sport"). Add `real: string` to the L3 naming shape (and back-fill L1/L2) before these chains are built, or the most fact-sensitive link is improvised aloud by a random teacher.
+3. W3 has no naming data yet (`l3.ts` has only the `teacher:nextName` guard) — these chains are a build input.
+4. Anchor A's known $27.7MM/$27.8MM inconsistency: §15.3 rules "about $27.7 million"; complied.
+5. The class number "In M of them, BOTH desks ended with a job covered" is a derivation over `seasonSettle` and `executedBroadcast`; `boardView` exposes the inputs, not the count — a build ask.
+6. `world.ts` `vucevic.signedOn` is 2026-07-02; the Hoops Rumors report is dated July 1, 2026 (agreement morning, official same day per NBA.com log). One-day discrepancy, immaterial.
+7. NOT VERIFIED, excluded from the chains: Simons' post-deadline Chicago stint; his Philadelphia terms (repo-sourced only); Denver's actual use of the mid-level; Porter's status beyond headline level.
+
+## Staleness
+
+- §3 R1 (`:75`) still reads "incoming ≤ outgoing"; D61 replaced it with the room-absorption OUT bar and `market.ts:131-165` implements it (`outBar = sent + max(0, CAP − (committed − sent))`). §13 test 3 (`:249`) is stale the same way. The doc, not the code, is behind.
+- §9's chains predate D61 (same root cause). §15.4 stands: CONSTRAINED EXCHANGE and TRANSACTION COST chains remain NOT RE-VERIFIED.
+- Recheck cadence: the two article URLs and any "still a Net / still a Sixer" sentence, before each school year. The economics does not decay; the biography does.
+
+## Rights / source
+
+Public facts only (athlete and club names, transaction dates, figures reported by named journalists — Charania, Marks, Shelburne at ESPN; Keith Smith at Spotrac; Scotto at HoopsHype — aggregated by Hoops Rumors, NBA.com transaction log as the officiality marker). No photography, likeness, logo, video or proprietary dataset needed. Hoops Rumors pages were read; Spotrac/Salary Swish tables were not (§15.5 posture). Restate facts in the Cap Room register; do not reproduce article prose on student surfaces. Escalation trigger unchanged: any headshot, logo, jersey or clip on `/board` becomes a founder rights call. This is a sourcing note, not a clearance. No Boss evidence id exists (no M1 run open).
+
+## Recommendation
+
+Replace §9's two chains verbatim; reuse of the Boston/Chicago trade (already the HOOK story, Boston's half) at SYNTHESIS is a feature — the room hears Chicago's half at minute 55. Add `real` to the naming shape. Fix the stale §3 R1 / §13 test 3 text. Attach no "who won" verdict to either chain on any surface.

@@ -1823,3 +1823,43 @@ the floor ballot and the pool ritual landed. Adopted:
 - **Owner:** lead-integrator; Economic Truth critic (findings)
 - **Evidence:** critic report in session transcript; computations against
   `runtime/dist/modules/{hostTheLeague,writeTheRule}.js` shipped constants.
+
+## D62. A collective rule must be obeyable; W5/W6 chain repairs; R-7 examples adopted
+
+Fresh-context Economic Truth review of the W5/W6 synthesis chains
+(`docs/gauntlet/module-2/W5_W6_ECON_TRUTH_REVIEW.md`, formal dissent recorded) and the
+Sports Reality R-7 pass (`docs/gauntlet/module-1/rebuild/W3_R7_REAL_EXAMPLES.md`). Adopted:
+
+- **A collective rule must be obeyable.** No adopted institution in Track 101 may impose an
+  obligation a franchise cannot discharge at any legal setting from any reachable state. D59
+  ruling 5 permits a rule that rationally hurts a franchise; it does not permit a rule no action
+  can satisfy — that converts an incentive into a lump-sum penalty on being small and teaches
+  the opposite of the term it is named for. Every institution ships with a printed feasibility
+  sweep: per adopted level, who is bound, at what cost, and who cannot comply. Recorded against
+  THE FLOOR at $300,000/week, measured infeasible at the 40% dial for Memphis, Milwaukee,
+  Indiana, Denver and New Orleans; the $300,000 working value is withdrawn and the sweep sets
+  the working value and the three 7–8 lines. The units defect (percent dial compared to a
+  dollar line — the floor never moved a dollar) is repaired in the same wave.
+- **W6 INCENTIVE chain is killed as written** and re-derived only after the sweep. W6
+  FREE RIDING loses the luxury-tax example (that is THE FLOOR's logic, not free riding); W5
+  SHARED RESOURCE says plainly that the real pot is not split evenly (confidential formula) and
+  the equal split is a recorded simplification; W5 SPILLOVER pairs THE VISITOR LINE with THE
+  ROAD LINE (what your own Draw put on someone else's books) — the received line alone is a
+  gift, not a spillover; W6 EXTERNALITY stops claiming a free 5–6 slot; W6 INSTITUTION adds
+  "under the league's own threshold, not ours". 5–6 pool surfaces print reinvest in dollars,
+  never the percent dial.
+- **R-13 (provisional for the founder):** EXTERNALITY is named at 7–8 in Week 5, where the
+  experience is; "spillover" is the plain-word gloss inside that chain, not a second 7–8 term.
+  At 5–6 the two-step stays: spillover (W5) → externality (W6).
+- **R-14 (provisional for the founder):** W5 INCENTIVE's class number is the computed no-bowl
+  counterfactual (the same three weeks with no levy), exposed as a teacher press at 7–8 — an
+  exception to the spec's `showsCounterfactual=false` at 7–8 — rather than a "before" week the
+  room never played.
+- **R-7 adopted:** the Boston–Chicago Simons/Vučević swap (2026-02-05) carries GAINS FROM
+  TRADE and the Denver–Brooklyn Porter/Johnson-plus-2032-first (2025-07-08) carries SUBJECTIVE
+  VALUE, replacing two examples that did not instantiate their terms. The naming shape gains a
+  `real` line (L3 first; L1/L2 back-fill owed) so the dated fact is never improvised aloud. The
+  spec's R1 text is updated to the D61 room-absorption rule the code already implements.
+
+- **Status:** ACTIVE (provisional for the founder on R-13 and R-14)
+- **Date:** 2026-09-04

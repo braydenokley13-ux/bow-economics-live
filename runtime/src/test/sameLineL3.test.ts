@@ -18,6 +18,7 @@ import {
   pressCandidatesFor,
   SAME_LINE_L3_ID,
   SEND_CHIPS_56,
+  SEND_CHIPS_78,
   DECLINE_CHIPS,
   type SameLineL3State,
   type Desk,
@@ -114,8 +115,10 @@ test("phases omit ADAPT per spec", () => {
 /* ---------------------------------------------------------------- offer -- */
 
 function twoDeskState(gradeBand: "5-6" | "7-8" = "5-6"): SameLineL3State {
-  const a = desk("A", "memphis", 0, 100_000_000, [contract("a-1", 5_000_000)]);
-  const b = desk("B", "detroit", 0, 100_000_000, [contract("b-1", 5_000_000)]);
+  // Two contracts each (beyond the 14-filler pad) so a 5-6 counter can swap
+  // one object for another without exceeding the one-object-per-side cap.
+  const a = desk("A", "memphis", 0, 100_000_000, [contract("a-1", 5_000_000), contract("a-2", 4_500_000)]);
+  const b = desk("B", "detroit", 0, 100_000_000, [contract("b-1", 5_000_000), contract("b-2", 4_500_000)]);
   return baseState({ A: a, B: b }, { gradeBand });
 }
 
@@ -135,7 +138,7 @@ test("propose requires a chip before the offer can go out", () => {
   const state = twoDeskState();
   const result = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"] }, ctx("A"));
   assert.equal(result.ok, false);
-  if (!result.ok) assert.match(result.reason, /give up/);
+  if (!result.ok) assert.match(result.reason, /giving up/);
 });
 
 test("propose creates a LIVE offer, escrowing both sides", () => {
@@ -181,15 +184,20 @@ test("propose enforces the two-live-outgoing cap with distinct objects", () => {
 });
 
 test("propose enforces the inbox cap of three", () => {
+  // Each sender asks for a DIFFERENT object B owns (B's own filler pad),
+  // so the inbox fills to three without any offer colliding on escrow —
+  // isolating the inbox-cap rule from the escrow rule.
   const b = desk("B", "detroit", 0, 100_000_000, [contract("b-1", 5_000_000)]);
+  const wants = ["B-fill-0", "B-fill-1", "B-fill-2", "B-fill-3"];
   const senders = ["A", "C", "D", "E"].map((id, i) => desk(id, "memphis", 0, 100_000_000, [contract(`${id.toLowerCase()}-x`, 4_000_000 + i)]));
   let state = baseState({ B: b, ...Object.fromEntries(senders.map((d) => [d.seatId, d])) });
-  for (const s of senders.slice(0, 3)) {
-    const r = reduce(state, { type: "propose", toSeat: "B", send: [`${s.seatId.toLowerCase()}-x`], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx(s.seatId));
-    assert.equal(r.ok, true);
+  for (let i = 0; i < 3; i += 1) {
+    const s = senders[i]!;
+    const r = reduce(state, { type: "propose", toSeat: "B", send: [`${s.seatId.toLowerCase()}-x`], want: [wants[i]!], chip: SEND_CHIPS_56[0] }, ctx(s.seatId));
+    assert.equal(r.ok, true, r.ok ? "" : r.reason);
     if (r.ok) state = r.state;
   }
-  const r4 = reduce(state, { type: "propose", toSeat: "B", send: ["e-x"], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx("E"));
+  const r4 = reduce(state, { type: "propose", toSeat: "B", send: ["e-x"], want: [wants[3]!], chip: SEND_CHIPS_56[0] }, ctx("E"));
   assert.equal(r4.ok, false);
   if (!r4.ok) assert.match(r4.reason, /full/);
 });
@@ -200,9 +208,10 @@ test("counter allows exactly one change and flips proposedBy", () => {
   assert.equal(r1.ok, true);
   if (!r1.ok) return;
   const offerId = Object.keys(r1.state.offers)[0]!;
-  // add one pick to what B wants back — exactly one change.
-  const r2 = reduce(r1.state, { type: "counter", offerId, send: ["a-1", "A-first"], want: ["b-1"] }, ctx("B"));
-  assert.equal(r2.ok, true);
+  // swap what B wants back for its OTHER contract — exactly one change, and
+  // still one object per side (5-6's cap).
+  const r2 = reduce(r1.state, { type: "counter", offerId, send: ["a-1"], want: ["b-2"] }, ctx("B"));
+  assert.equal(r2.ok, true, r2.ok ? "" : r2.reason);
   if (!r2.ok) return;
   const offer = r2.state.offers[offerId]!;
   assert.equal(offer.state, "COUNTERED");
@@ -215,22 +224,32 @@ test("counter refuses a second counter on the same negotiation", () => {
   const r1 = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx("A"));
   if (!r1.ok) return assert.fail();
   const offerId = Object.keys(r1.state.offers)[0]!;
-  const r2 = reduce(r1.state, { type: "counter", offerId, send: ["a-1", "A-first"], want: ["b-1"] }, ctx("B"));
-  if (!r2.ok) return assert.fail();
-  // B counters again — not the recipient any more (A is), and it already used its one counter.
-  const r3 = reduce(r2.state, { type: "counter", offerId, send: ["a-1"], want: ["b-1"] }, ctx("A"));
+  const r2 = reduce(r1.state, { type: "counter", offerId, send: ["a-1"], want: ["b-2"] }, ctx("B"));
+  if (!r2.ok) return assert.fail(r2.reason);
+  // The negotiation is now COUNTERED, not LIVE — only a LIVE offer can be
+  // countered, so a second counter (from either side) is refused outright
+  // rather than re-litigated. A accepts or declines B's counter from here.
+  const r3 = reduce(r2.state, { type: "counter", offerId, send: ["a-2"], want: ["b-2"] }, ctx("A"));
   assert.equal(r3.ok, false);
-  if (!r3.ok) assert.match(r3.reason, /one counter/);
+  if (!r3.ok) assert.match(r3.reason, /not open to a counter/);
 });
 
 test("counter refuses more than one change at once", () => {
-  const state = twoDeskState();
-  const r1 = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx("A"));
-  if (!r1.ok) return assert.fail();
+  const state = twoDeskState("7-8");
+  const r1 = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_78[0] }, ctx("A"));
+  if (!r1.ok) return assert.fail(r1.reason);
   const offerId = Object.keys(r1.state.offers)[0]!;
   const r2 = reduce(r1.state, { type: "counter", offerId, send: ["a-1", "A-first", "A-second"], want: ["b-1"] }, ctx("B"));
   assert.equal(r2.ok, false);
   if (!r2.ok) assert.match(r2.reason, /exactly one/);
+});
+
+test("at 7-8 the propose chip must come from the 7-8 list, not the 5-6 list", () => {
+  const state = twoDeskState("7-8");
+  const wrongList = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx("A"));
+  assert.equal(wrongList.ok, false);
+  const rightList = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_78[0] }, ctx("A"));
+  assert.equal(rightList.ok, true, rightList.ok ? "" : rightList.reason);
 });
 
 test("accept voids on stale bookVersion (VOID_STALE) rather than executing", () => {
@@ -264,7 +283,7 @@ test("accept at 5-6 refuses a second simultaneous accept for the same desk", () 
   state = r3.state;
   const r4 = reduce(state, { type: "accept", offerId: offerIds[1]! }, ctx("C"));
   assert.equal(r4.ok, false);
-  if (!r4.ok) assert.match(r4.reason, /already have a deal/);
+  if (!r4.ok) assert.match(r4.reason, /already has a deal/);
 });
 
 test("withdrawAccept reverts an ACCEPTED offer back to LIVE before the hour closes", () => {
@@ -287,8 +306,8 @@ test("withdrawAccept reverts to COUNTERED (not LIVE) when the offer was countere
   const r1 = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx("A"));
   if (!r1.ok) return assert.fail();
   const offerId = Object.keys(r1.state.offers)[0]!;
-  const r2 = reduce(r1.state, { type: "counter", offerId, send: ["a-1", "A-first"], want: ["b-1"] }, ctx("B"));
-  if (!r2.ok) return assert.fail();
+  const r2 = reduce(r1.state, { type: "counter", offerId, send: ["a-1"], want: ["b-2"] }, ctx("B"));
+  if (!r2.ok) return assert.fail(r2.reason);
   // A accepts B's counter.
   const r3 = reduce(r2.state, { type: "accept", offerId }, ctx("A"));
   if (!r3.ok) return assert.fail();
