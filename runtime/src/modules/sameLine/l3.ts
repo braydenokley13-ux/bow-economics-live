@@ -404,6 +404,10 @@ function labelFor(objects: readonly TradeObject[]): string {
   return objects.map((o) => (isContract(o) ? o.name : o.label)).join(" and ");
 }
 
+function labelOf(o: TradeObject): string {
+  return isContract(o) ? o.name : o.label;
+}
+
 function reduce(state: SameLineL3State, action: { type: string; [k: string]: unknown }, ctx: ReduceContext): ReduceResult<SameLineL3State> {
   switch (action.type) {
     case "takeSeat": {
@@ -881,6 +885,9 @@ export const sameLineL3Module: LessonModule<SameLineL3State> = {
   boardView: (state, phase) => boardView(state, phase),
   aggregate: (state) => ({ desks: Object.keys(state.desks).length, hour: state.hour, marketClosed: state.marketClosed, executed: state.executed.length }),
 
+  spotlightView: (state, seatId, phase) => spotlightViewFor(state, seatId, phase),
+  pressCandidates: (state, phase) => pressCandidatesFor(state, phase),
+
   round: {
     closeHook: "teacher:closeHour",
     noun: "hour",
@@ -985,6 +992,74 @@ export function pressCandidatesFor(state: SameLineL3State, _phase: CanonicalPhas
   return scored
     .sort((a, b) => b.score - a.score || order.get(state.desks[a.seatId]!.clubId)! - order.get(state.desks[b.seatId]!.clubId)! || state.desks[a.seatId]!.twin - state.desks[b.seatId]!.twin)
     .map(({ seatId, label, why }) => ({ seatId, label, why }));
+}
+
+/* ----------------------------------------------------------------- naming -- */
+
+/**
+ * The four D61 naming chains for THE DEADLINE. `means` is the economics —
+ * written now. `outside`'s real sports line is a Sports Reality product,
+ * researched and dated separately (D2 discipline) — marked REAL EXAMPLE
+ * PENDING as a placeholder so it is unmistakable and easy to find and splice
+ * in, never invented here.
+ */
+type Naming = { readonly id: string; readonly term: string; readonly moment: string; readonly means: string; readonly outside: string };
+
+function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming[] {
+  const out: Naming[] = [];
+  const executed = state.executed;
+
+  if (executed.length > 0) {
+    out.push({
+      id: "gains-from-trade",
+      term: "GAINS FROM TRADE",
+      moment: `${executed.length} trade${executed.length === 1 ? "" : "s"} cleared in this room. Both desks had to say yes before either one happened.`,
+      means: "A trade only happens when both sides believe they come out ahead of where they started — nobody is forced to click accept. Voluntary exchange can create value even though nothing new was built; it just moved to where it was worth more.",
+      outside: "REAL EXAMPLE PENDING — a real trade-deadline deal both front offices defended publicly as a win for their own side.",
+    });
+  }
+
+  const declines = Object.values(state.desks).flatMap((d) => d.captures.filter((c) => c.kind === "decline"));
+  if (declines.length > 0) {
+    out.push({
+      id: "subjective-value",
+      term: "SUBJECTIVE VALUE",
+      moment: `At least one desk declined an offer here — "${declines[0]!.chip}." The same package that got turned down by one desk might have been accepted instantly by another.`,
+      means: "The same contract is not worth the same amount to every desk — it depends on what job that desk still needs done and what it already has too much of. Price is not a fact stamped on the object; it is what a particular room needs right now.",
+      outside: "REAL EXAMPLE PENDING — a real player one team gave up on for almost nothing who filled an exact need somewhere else.",
+    });
+  }
+
+  out.push({
+    id: "rationing",
+    term: "RATIONING",
+    moment: "Every desk's inbox could hold three live offers, never more. When a fourth arrived, it had nowhere to land until one of the first three was answered.",
+    means: "When something people want is limited — an answer, a roster spot, a seat — something has to decide who gets it first. This room used a rule (a cap of three) instead of a price. Rationing is not the exception; every scarce thing gets rationed by something.",
+    outside: "REAL EXAMPLE PENDING — a real front office that has publicly described how many live trade conversations it can actually run at once near a deadline.",
+  });
+
+  if (profile.maxVariables >= 3) {
+    const walled = Object.values(state.desks).filter((d) => d.books.wall !== null);
+    if (walled.length > 0) {
+      out.push({
+        id: "room-constraint",
+        term: "ROOM (CONSTRAINT)",
+        moment: `${walled.length} desk${walled.length === 1 ? "" : "s"} in this room carried a wall it drew for itself back in July. Today's trade had to fit inside a line decided months earlier.`,
+        means: "A constraint set in the past can silently decide what you are allowed to do today, even in a moment that feels completely unrelated to when you set it. The rule did not change between then and now — your room under it did.",
+        outside: "REAL EXAMPLE PENDING — a real team whose earlier cap decision is publicly reported to have blocked a specific trade-deadline move.",
+      });
+    }
+  }
+
+  return out;
+}
+
+function namingFrame(state: SameLineL3State, profile: GradeProfile): { index: number; count: number; term: string; moment: string; means: string; outside: string } | null {
+  const all = namings(state, profile);
+  if (all.length === 0) return null;
+  const i = Math.max(0, Math.min(state.beat, all.length - 1));
+  const n = all[i]!;
+  return { index: i, count: all.length, term: n.term, moment: n.moment, means: n.means, outside: n.outside };
 }
 
 /* ------------------------------------------------------------------ views -- */
@@ -1228,6 +1303,7 @@ function boardView(state: SameLineL3State, phase: CanonicalPhase): unknown {
     seasonSettle: state.settled
       ? Object.values(state.settled.perSeat).map((s) => ({ label: state.desks[s.seatId]?.label ?? s.seatId, coveredJobs: s.coveredJobs, openJobs: s.openJobs, expiringNextSeason: s.expiringNextSeason.map((c) => c.name) }))
       : null,
+    naming: phase === "SYNTHESIS" || phase === "COMPLETE" ? namingFrame(state, profile) : null,
     phase,
   };
 }

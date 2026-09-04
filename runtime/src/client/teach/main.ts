@@ -19,9 +19,11 @@ type RoundPublic = {
 };
 type UnresolvedSeat = { seatId: string; label: string; fallback: string };
 /** Who is at the podium, teacher-private — the one payload allowed to name the seat. */
-type TeacherSpotlight = { seatId: string; label: string; since: string };
-/** The console's shortlist for who to call up next — the module's own ranking, never the runtime's. */
-type PressCandidate = { seatId: string; label: string; why: string };
+type TeacherSpotlight = { seatId: string; label: string; since: string; question: string | null };
+/** §12.2 INVITE FIRST: who is invited and awaiting an answer, teacher-private. */
+type TeacherInvite = { seatId: string; label: string; question: string | null; since: string };
+/** The console's shortlist for who to call up next — the module's own ranking, never the runtime's. `declined` is the runtime's own seat-level fact, folded in server-side. */
+type PressCandidate = { seatId: string; label: string; why: string; declined: boolean };
 type TeacherPayload = {
   session: {
     id: string; code: string; title: string; lessonModuleId: string; phase: string; phases: string[];
@@ -35,6 +37,7 @@ type TeacherPayload = {
   round: RoundPublic | null;
   timeCut: { policy: string; unresolved: UnresolvedSeat[]; resolvedCount: number } | null;
   spotlight: TeacherSpotlight | null;
+  pressInvite: TeacherInvite | null;
   pressCandidates: PressCandidate[];
   view: Record<string, unknown>;
 };
@@ -917,10 +920,13 @@ function renderPressConference(payload: TeacherPayload): void {
   }
   pressConfEl.hidden = false;
   const spotlight = payload.spotlight;
+  const invite = payload.pressInvite;
   const state = $("pcState");
   const clockNote = $("pcClockNote");
   const endBtn = $<HTMLButtonElement>("btnEndPressConference");
+  const cancelBtn = $<HTMLButtonElement>("btnCancelInvite");
   endBtn.disabled = !spotlight;
+  cancelBtn.disabled = !invite;
 
   if (spotlight) {
     state.textContent = `at the podium: ${spotlight.label}`;
@@ -936,6 +942,12 @@ function renderPressConference(payload: TeacherPayload): void {
     } else {
       clockNote.hidden = true;
     }
+  } else if (invite) {
+    // §12.2 INVITE FIRST: the podium has not gone live yet — the room keeps
+    // running while this desk decides. Nothing is paused, so the clock note
+    // never applies here.
+    state.textContent = `invited — waiting: ${invite.label}`;
+    clockNote.hidden = true;
   } else {
     state.textContent = "not running";
     clockNote.hidden = true;
@@ -959,17 +971,29 @@ function renderPressConference(payload: TeacherPayload): void {
       b.textContent = c.label;
       text.appendChild(b);
       text.appendChild(document.createTextNode(` — `));
+      // The candidate's own `why` seeds the suggested first question — the
+      // console never invents reasoning of its own.
       const why = document.createElement("span");
       why.className = "pc-cand-why";
       why.textContent = c.why;
       text.appendChild(why);
+      if (c.declined) {
+        const d = document.createElement("span");
+        d.className = "pc-cand-declined";
+        d.textContent = " — has used its one decline";
+        text.appendChild(d);
+      }
       li.appendChild(text);
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "btn btn-primary";
-      btn.textContent = spotlight?.seatId === c.seatId ? "At the podium" : "Call to the podium";
-      btn.disabled = spotlight?.seatId === c.seatId;
-      btn.addEventListener("click", () => void sendControl({ type: "pressConference", seatId: c.seatId }));
+      const isHere = spotlight?.seatId === c.seatId;
+      const isInvited = invite?.seatId === c.seatId;
+      btn.textContent = isHere ? "At the podium" : isInvited ? "Invited — waiting" : "Invite to podium";
+      btn.disabled = isHere || isInvited || Boolean(spotlight) || Boolean(invite);
+      btn.addEventListener("click", () =>
+        void sendControl({ type: "invitePress", seatId: c.seatId, question: $<HTMLInputElement>("pcQuestion").value.trim() || c.why }),
+      );
       li.appendChild(btn);
       ul.appendChild(li);
     }
@@ -992,6 +1016,10 @@ function renderPressConference(payload: TeacherPayload): void {
   if (prior && payload.seats.some((s) => s.id === prior)) picker.value = prior;
   const pickerRow = $("pcPickerRow");
   pickerRow.hidden = payload.seats.length === 0;
+  const invitePickedBtn = $<HTMLButtonElement>("btnPcInvitePicked");
+  const callPickedBtn = $<HTMLButtonElement>("btnPcCallPicked");
+  invitePickedBtn.disabled = Boolean(spotlight) || Boolean(invite);
+  callPickedBtn.disabled = Boolean(spotlight);
 }
 
 function render(payload: TeacherPayload): void {
@@ -2590,10 +2618,19 @@ $("btnCommitReveal").addEventListener("click", () => {
   if (commitRevealWarn && !confirm(commitRevealWarn)) return;
   void sendControl({ type: "hook", hook: "commitReveal" });
 });
+$("btnPcInvitePicked").addEventListener("click", () => {
+  const seatId = $<HTMLSelectElement>("pcSeatPicker").value;
+  const question = $<HTMLInputElement>("pcQuestion").value.trim();
+  if (seatId) void sendControl({ type: "invitePress", seatId, ...(question ? { question } : {}) });
+});
+// The manual fallback (§12.2): a desk that volunteered out loud, called
+// straight to the podium with no invite step at all.
 $("btnPcCallPicked").addEventListener("click", () => {
   const seatId = $<HTMLSelectElement>("pcSeatPicker").value;
-  if (seatId) void sendControl({ type: "pressConference", seatId });
+  const question = $<HTMLInputElement>("pcQuestion").value.trim();
+  if (seatId) void sendControl({ type: "pressConference", seatId, ...(question ? { question } : {}) });
 });
+$("btnCancelInvite").addEventListener("click", () => void sendControl({ type: "cancelInvite" }));
 $("btnEndPressConference").addEventListener("click", () => void sendControl({ type: "endPressConference" }));
 $("btnFinalCall").addEventListener("click", () => void sendControl({ type: "finalCall", durationMs: 20000 }));
 $("btnCancelFinalCall").addEventListener("click", () => void sendControl({ type: "cancelFinalCall" }));

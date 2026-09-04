@@ -9,7 +9,7 @@ import { renderSameLineL2, resetSameLineL2, invalidateSameLineL2Mount } from "..
 import { renderSameLineL3, resetSameLineL3, invalidateSameLineL3Mount } from "../shared/sameLineL3.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
-import { renderPlayLock, renderPlayPodium } from "../shared/pressConference.js";
+import { renderPlayInvite, renderPlayLock, renderPlayPodium } from "../shared/pressConference.js";
 
 type Franchise = { name: string; crestIndex: number };
 
@@ -21,8 +21,8 @@ type SessionInfo = {
   frozen: boolean;
   ended: boolean;
   version: number;
-  /** Set only while a press conference is running. `mine` never reaches a screen it is not true or false for THIS seat. */
-  spotlight: { label: string; mine: boolean } | null;
+  /** Set only while a press conference is running. `mine` never reaches a screen it is not true or false for THIS seat. `question` is only ever non-null on the podium seat's own copy. */
+  spotlight: { label: string; mine: boolean; question: string | null } | null;
 };
 type StudentPayload = {
   session: SessionInfo;
@@ -41,6 +41,12 @@ type StudentPayload = {
   committed: boolean | null;
   /** What closing would do to THIS desk, in the lesson's own words, when it has committed nothing. */
   fallback: string | null;
+  /**
+   * §12.2 INVITE FIRST: present only when THIS desk is the one being asked to
+   * the podium and has not answered yet. `canDecline` is false once this
+   * desk has already used its one decline this session.
+   */
+  pressInvite: { question: string | null; canDecline: boolean } | null;
   /** Set only when this desk went dark long enough to miss something and has not said it is back. */
   away: { since: string; awayMs: number; lines: string[] } | null;
   view: Record<string, unknown>;
@@ -536,6 +542,24 @@ $("btnAwaySeen").addEventListener("click", () => {
   });
 });
 
+/**
+ * §12.2 INVITE FIRST — this seat's half of the accept/decline exchange. A
+ * bare `fetch`, same idiom as the recap-seen acknowledgement above: this is
+ * not a graded decision the durable outbox needs to protect, and the poll
+ * loop underneath owns the truth regardless — a failed attempt just means
+ * the card is still there to tap again.
+ */
+function respondToPressInvite(code: string, accept: boolean): void {
+  if (!creds) return;
+  void fetch(`/api/sessions/${encodeURIComponent(code)}/actions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${creds.deviceToken}` },
+    body: JSON.stringify({ type: accept ? "acceptPress" : "declinePress" }),
+  }).catch(() => {
+    /* the poll owns the truth; a failed attempt is retried by tapping again */
+  });
+}
+
 /** True while a whole-body screen (ended / frozen / podium / lock / paused) owns the body. */
 let takeoverShowing = false;
 const takeover = (): void => {
@@ -573,6 +597,19 @@ function renderGame(payload: StudentPayload): void {
     body.innerHTML = `<div class="banner">Your teacher has frozen the session. Hang tight.</div>`;
     return;
   }
+  // §12.2 INVITE FIRST: checked before the spotlight/paused banners below —
+  // an invite never pauses the room (only an ACCEPT does, by turning it into
+  // a spotlight), so this desk can be mid-invite while everyone else keeps
+  // working normally.
+  if (payload.pressInvite) {
+    takeover();
+    body.innerHTML = renderPlayInvite(payload.pressInvite.question, payload.pressInvite.canDecline);
+    const acceptBtn = body.querySelector<HTMLButtonElement>('[data-pc-invite="accept"]');
+    const declineBtn = body.querySelector<HTMLButtonElement>('[data-pc-invite="decline"]');
+    acceptBtn?.addEventListener("click", () => respondToPressInvite(s.code, true));
+    declineBtn?.addEventListener("click", () => respondToPressInvite(s.code, false));
+    return;
+  }
   // THE PRESS CONFERENCE. A press conference always pauses the room too (it
   // is a pause with a podium attached), so this must be checked before the
   // generic paused banner below, or the podium desk and every other desk
@@ -580,7 +617,7 @@ function renderGame(payload: StudentPayload): void {
   if (s.spotlight) {
     takeover();
     body.innerHTML = s.spotlight.mine
-      ? renderPlayPodium(s.spotlight.label, payload.view)
+      ? renderPlayPodium(s.spotlight.label, payload.view, s.spotlight.question)
       : renderPlayLock(s.spotlight.label);
     return;
   }

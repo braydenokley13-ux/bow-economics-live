@@ -20,8 +20,8 @@ type BoardPayload = {
     serverNow: string;
     closedBy: "final_call_expired" | "close_now" | "module" | null;
   } | null;
-  /** The full-dark press-conference takeover. Never carries a seat id — see pressConference.ts. */
-  spotlight: { label: string; view: unknown } | null;
+  /** The full-dark press-conference takeover. Never carries a seat id — see pressConference.ts. `question` is §12.2's first question, public. */
+  spotlight: { label: string; view: unknown; question: string | null } | null;
   view: Record<string, unknown>;
 };
 
