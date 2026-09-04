@@ -48,14 +48,22 @@ function pick(id: string, label = id): PickObject {
   return { kind: "pick", pickId: id, year: 2029, round: 1, label };
 }
 
+/**
+ * R6 (roster count, ROSTER.min..ROSTER.max = 14..15) gates every legality
+ * check in the reducer, same as in `sameLineMarket.test.ts` — pad every
+ * fixture roster to 14 with filler contracts that never move, so a 1-for-1
+ * propose/counter/accept exercises the rule actually under test rather than
+ * failing on roster count first.
+ */
 function desk(seatId: string, clubId: "memphis" | "detroit" | "boston", twin: 0 | 1, committed: number, roster: ContractObject[], picksOwned: PickObject[] = [pick(`${seatId}-first`), pick(`${seatId}-second`)]): Desk {
+  const padded = roster.length >= 14 ? roster : [...roster, ...Array.from({ length: 14 - roster.length }, (_, i) => contract(`${seatId}-fill-${i}`, 3_000_000))];
   return {
     seatId,
     clubId,
     twin,
     label: `${clubId} ${twin === 0 ? "A" : "B"}`,
     books: { committed, taxSalary: committed, deadMoney: 0, holds: 0, wall: null, band: "under-cap" },
-    roster,
+    roster: padded,
     picksOwned,
     ownPickIds: picksOwned.map((p) => p.pickId),
     picksOwed: [],

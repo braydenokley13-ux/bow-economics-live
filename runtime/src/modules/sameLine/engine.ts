@@ -49,6 +49,14 @@ import {
 export type Position = {
   readonly clubId: ClubId;
   readonly committed: number;
+  /**
+   * Free-agent cap holds INSIDE `committed` (BC-7; world.ts `Club.holds`).
+   * Constant for the whole window: this engine has no per-player linkage that
+   * would let a signing made here release one of the club's own pre-existing
+   * holds, so `applySigning` never touches this field — see the note on
+   * `apronSalaryOf` for what that does and does not mean for the apron tests.
+   */
+  readonly holds: number;
   readonly slots: number;
   /** Tools already spent this window. A tool is a one-shot object, not a budget. */
   readonly spent: readonly ToolId[];
@@ -88,6 +96,7 @@ export function openingPosition(clubId: ClubId): Position {
   return {
     clubId,
     committed: club.committed.value,
+    holds: club.holds.value,
     slots: club.contracts.value,
     spent: [],
     overCapDeclared: false,
@@ -155,10 +164,26 @@ export function termOf(offer: Offer, player: FreeAgent): number {
  * not discover the wall by being refused; they see the tool's reach shortened
  * by the wall before they choose, which is what a real front office sees.
  */
+/**
+ * APRON TEAM SALARY — Team Salary minus free-agent cap holds.
+ *
+ * The figure the first- and second-apron tests actually compare against the
+ * line (2023 CBA; cbaguide.com/thresholds/apron, read 2026-09-04;
+ * W2_SEASON_RESEARCH.md §3). `drawsWallAt` is only ever `"apron1"` or
+ * `"apron2"` on today's TOOLS table, so every caller of `wallHeadroom` and
+ * every direct over-apron test below needs this figure, never raw
+ * `p.committed` — that was the defect: Detroit's $28,834,548 of holds are
+ * counted for the cap and tax bands (`p.committed` is correct there, and
+ * un-changed) but must not count against either apron.
+ */
+function apronSalaryOf(p: Position): number {
+  return p.committed - p.holds;
+}
+
 function wallHeadroom(tool: ToolId, p: Position): number | null {
   const line = TOOL[tool].drawsWallAt;
   if (line === null) return null;
-  return LINE[line] - p.committed;
+  return LINE[line] - apronSalaryOf(p);
 }
 
 /** What one tool can pay this club right now, or null when the tool is unavailable. */
@@ -187,8 +212,10 @@ function rawCeilingOf(tool: ToolId, p: Position, player?: FreeAgent): number | n
   // call that a decision, and it put the generic bodies on the ladder the
   // ladder property measures.
   if (player?.generic && tool !== "minimum") return null;
-  const overApron1 = p.committed >= LINE.apron1;
-  const overApron2 = p.committed >= LINE.apron2;
+  // Apron Team Salary, not Team Salary (see `apronSalaryOf`): holds count for
+  // the cap/tax bands but not for either apron test.
+  const overApron1 = apronSalaryOf(p) >= LINE.apron1;
+  const overApron2 = apronSalaryOf(p) >= LINE.apron2;
 
   switch (tool) {
     case "room": {
@@ -298,7 +325,7 @@ export function checkOffer(p: Position, offer: Offer, player: FreeAgent): Legali
       };
     }
   }
-  if (p.wall !== null && p.committed + offer.annual > p.wall) {
+  if (p.wall !== null && apronSalaryOf(p) + offer.annual > p.wall) {
     return {
       ok: false,
       reason: `You drew a wall at ${money(p.wall)} earlier in this window. This signing would take you past it, and you may not cross it for any reason.`,
@@ -308,7 +335,7 @@ export function checkOffer(p: Position, offer: Offer, player: FreeAgent): Legali
 }
 
 function unavailableReason(tool: ToolId, p: Position): string {
-  const band = bandOf(p.committed);
+  const band = bandOf(p.committed, p.holds);
   // Checked before the per-tool reasons: when a club is already past the line a
   // tool would wall it at, that is the binding constraint and nothing else is.
   const headroom = wallHeadroom(tool, p);
@@ -652,7 +679,7 @@ export function outlookAfter(
     movesLeft,
     terminal: movesLeft === 0,
     wallAt: after.wall,
-    roomToWall: after.wall === null ? null : after.wall - after.committed,
+    roomToWall: after.wall === null ? null : after.wall - apronSalaryOf(after),
   };
 }
 
@@ -840,7 +867,10 @@ function compareBids(
   const roomAfter = (d: DayOffer): number => {
     const p = positions.get(d.clubId);
     if (!p) return -Infinity;
-    const after = p.committed + d.offer.annual;
+    // Compared against apron2 (or the club's own drawn wall, itself an apron
+    // line) by default, so the figure on the near side of that comparison has
+    // to be Apron Team Salary too — see `apronSalaryOf`.
+    const after = apronSalaryOf(p) + d.offer.annual;
     const ceiling = p.wall ?? LINE.apron2;
     return ceiling - after;
   };
@@ -888,7 +918,7 @@ export function settle(p: Position): Settlement {
     autoSigningCost,
     committedAfter,
     floorShortfall,
-    band: bandOf(committedAfter),
+    band: bandOf(committedAfter, p.holds),
   };
 }
 
@@ -999,6 +1029,17 @@ export function readingsFor(opening: Position, closing: Position, awards: readon
    * The value may now be negative. It is never RENDERED as a negative: the
    * surfaces print "PAST IT BY $4,510,000" (see roomLeftText). Simplify the
    * interface before simplifying the economics.
+   *
+   * NOT CORRECTED FOR APRON TEAM SALARY, and left that way for this repair.
+   * This picks a club's own reference line from `opening.committed` (Team
+   * Salary, holds included) even for the apron1/apron2 candidates, so a club
+   * whose Team Salary reaches an apron before its Apron Team Salary does could
+   * in principle get the wrong reference line here — the same class of defect
+   * this repair fixed in the tool-blocking gates (`apronSalaryOf`). It is a
+   * scoring reading, not a legality gate, none of the eight seats reach it at
+   * today's figures (Detroit's own committed never nears an apron line either
+   * way), and touching it was outside this repair's owned scope. Flagged for
+   * the next repair rather than fixed here.
    */
   const openingLine =
     [LINE.cap, LINE.tax, LINE.apron1, LINE.apron2].find((l) => l > opening.committed) ?? LINE.apron2;

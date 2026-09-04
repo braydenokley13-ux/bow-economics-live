@@ -20,9 +20,12 @@ import test from "node:test";
 import {
   ADOPT_BAND,
   CLUBS,
+  CONDITION_COLLECT_FRACTION,
   CONDITION_MIN_REINVEST,
   DRAW_MAX,
   DRAW_MIN,
+  FLOOR_LINES_7_8,
+  FLOOR_ROUND_COUNT,
   MARKET_PROFILES,
   MAX_DESKS,
   MODULE_ID,
@@ -46,10 +49,12 @@ import {
   computeAggregate,
   counterfactualRows,
   extractCarriedClubs,
+  floorStakesFor,
   hypotheticalRule,
   keepFraction,
   medianOf,
   moduleClaims,
+  openFloorRounds,
   runAdoption,
   runnerUpShare,
   settleHome,
@@ -64,12 +69,12 @@ import { CANONICAL_PHASES, isOrderedSubsequence, type CanonicalPhase } from "../
 
 const ctx = (phase: CanonicalPhase, seatId: string) => ({ phase, seatId, seatIds: [], now: 0 });
 
-function fresh(seed?: unknown): WriteRuleState {
-  return writeTheRuleModule.initialState({ sessionId: "t", seatIds: [], seed, gradeBand: "7-8" });
+function fresh(seed?: unknown, band: "5-6" | "7-8" = "7-8"): WriteRuleState {
+  return writeTheRuleModule.initialState({ sessionId: "t", seatIds: [], seed, gradeBand: band });
 }
 
-function withDesks(count: number, seed?: unknown): WriteRuleState {
-  let state = fresh(seed);
+function withDesks(count: number, seed?: unknown, band: "5-6" | "7-8" = "7-8"): WriteRuleState {
+  let state = fresh(seed, band);
   for (let i = 0; i < count; i += 1) {
     const out = writeTheRuleModule.reduce(state, { type: "takeSeat" }, ctx("LOBBY", `seat-${i}`));
     assert.ok(out.ok, out.ok ? "" : out.reason);
@@ -111,7 +116,43 @@ function toAdopted(state: WriteRuleState, shares: number[], conditions: boolean[
   return next;
 }
 
-const toSeason = (state: WriteRuleState): WriteRuleState => apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
+/** Propose the floor for every seated desk, then close the round. */
+function proposeFloorAll(
+  state: WriteRuleState,
+  proposals: { on: boolean; level?: number; recipient?: "compliant" | "everyone" }[],
+): WriteRuleState {
+  let next = state;
+  const live = next.clubs.filter((c) => c.seatId !== null);
+  live.forEach((club, i) => {
+    const p = proposals[i % proposals.length]!;
+    next = apply(next, { type: "proposeFloor", on: p.on, level: p.level, recipient: p.recipient }, "PLAY", club.seatId!);
+  });
+  return next;
+}
+
+/**
+ * From a room with the SHARE sealed (`stage: "adopted"`), open institution
+ * 2's own rounds and run them to a floor decision (`stage: "floorAdopted"`),
+ * never touching the season stage. With no `proposals`, nobody votes and the
+ * floor fails to NO FLOOR — the shipped default for every legacy call site
+ * below that never meant to exercise institution 2 at all.
+ */
+function toFloorAdopted(
+  state: WriteRuleState,
+  proposals: { on: boolean; level?: number; recipient?: "compliant" | "everyone" }[] = [],
+): WriteRuleState {
+  let next = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher"); // opens floor rounds
+  for (let r = 0; r < FLOOR_ROUND_COUNT; r += 1) {
+    if (proposals.length > 0) next = proposeFloorAll(next, proposals);
+    next = apply(next, { type: "teacher:institutionStep" }, "PLAY", "teacher");
+  }
+  next = apply(next, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // adopt floor
+  return next;
+}
+
+/** Drive a room all the way from the sealed SHARE to the season, with NO FLOOR. */
+const toSeason = (state: WriteRuleState): WriteRuleState =>
+  apply(toFloorAdopted(state), { type: "teacher:institutionStep" }, "PLAY", "teacher");
 
 function playSeason(state: WriteRuleState, opts: { reinvest?: number } = {}): WriteRuleState {
   let next = state;
@@ -460,22 +501,154 @@ test("the pot identity closes exactly every week, with and without the condition
   }
 });
 
-test("the condition docks a non-compliant club and pays the forfeit to the compliant ones", () => {
-  let state = toSeason(toAdopted(withDesks(9), [30], [true]));
-  assert.equal(state.adopted!.condition, true);
+/**
+ * D61: the SHARE ballot's own rider no longer docks anything — only THE
+ * FLOOR's own, separately-sealed ballot does. This test used to adopt the
+ * share with `condition: true` and dock straight off it; it is rewritten to
+ * prove the rider is now cosmetic and the floor alone is load-bearing.
+ */
+test("the floor docks a non-compliant club and pays the forfeit to the compliant ones — the share's own rider is cosmetic", () => {
+  let state = toAdopted(withDesks(9), [30], [true]);
+  assert.equal(state.adopted!.condition, true, "the share's own rider can still be voted on and recorded");
+  state = toFloorAdopted(state, [{ on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" }]);
+  assert.equal(state.institutions.floor?.condition, true, "the floor itself must be the thing that adopted");
+  state = apply(state, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // -> season
+  assert.equal(state.stage, "season");
   for (const club of state.clubs.filter((c) => c.seatId !== null)) {
-    // Desk 1 goes under the floor; everybody else clears it.
-    const r = club.slot === 0 ? 0 : CONDITION_MIN_REINVEST + 5;
+    // Desk 0 goes under the floor line in dollars; everybody else clears it.
     state = apply(state, { type: "setPrice", price: 48 }, "PLAY", club.seatId!);
-    state = apply(state, { type: "setReinvest", reinvest: r }, "PLAY", club.seatId!);
+    state = apply(state, { type: "setReinvest", reinvest: club.slot === 0 ? 0 : REINVEST_MAX }, "PLAY", club.seatId!);
     state = apply(state, { type: "lock" }, "PLAY", club.seatId!);
   }
   state = apply(state, { type: "teacher:closeWeek" }, "PLAY", "teacher");
   const docked = state.clubs[0]!.weeks[0]!;
-  const compliant = state.clubs[1]!.weeks[0]!;
+  assert.equal(docked.pot.docked, true, "$0 put back is under any adopted dollar line");
+  assert.ok(docked.reinvestSpend < FLOOR_LINES_7_8[0]!, "the docked desk's own dollars must actually be under the line");
+});
+
+/** spec test 17. */
+test("proposeFloor is refused before the floor rounds open and after they are sealed", () => {
+  const rounds = withDesks(6);
+  const beforeShareSealed = writeTheRuleModule.reduce(
+    rounds,
+    { type: "proposeFloor", on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" },
+    { phase: "PLAY", seatId: "seat-0", seatIds: [], now: 0 },
+  );
+  assert.equal(beforeShareSealed.ok, false);
+
+  const shareSealed = toAdopted(rounds, [30]);
+  const stillBeforeFloorOpens = writeTheRuleModule.reduce(
+    shareSealed,
+    { type: "proposeFloor", on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" },
+    { phase: "PLAY", seatId: "seat-0", seatIds: [], now: 0 },
+  );
+  assert.equal(stillBeforeFloorOpens.ok, false);
+
+  const floorSealed = toFloorAdopted(shareSealed);
+  assert.equal(floorSealed.stage, "floorAdopted");
+  const afterFloorSealed = writeTheRuleModule.reduce(
+    floorSealed,
+    { type: "proposeFloor", on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" },
+    { phase: "PLAY", seatId: "seat-0", seatIds: [], now: 0 },
+  );
+  assert.equal(afterFloorSealed.ok, false);
+});
+
+/** spec test 18. */
+test("institution 1 failing sets 5%/OFF and institution 2 still runs", () => {
+  const state = toAdopted(withDesks(9), [0, 30, 60], [false]);
+  assert.equal(state.adopted!.how, "statusQuo");
+  assert.equal(state.adopted!.share, STATUS_QUO_SHARE);
+  const opened = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
+  assert.equal(opened.stage, "floorRounds");
+  const liveSeat = opened.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const proposeOk = writeTheRuleModule.reduce(
+    opened,
+    { type: "proposeFloor", on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" },
+    { phase: "PLAY", seatId: liveSeat, seatIds: [], now: 0 },
+  );
+  assert.equal(proposeOk.ok, true, "institution 2 must still be votable after institution 1 fell to the status quo");
+});
+
+/** spec test 19. */
+test("institution 2 failing sets NO FLOOR and the season still settles three weeks", () => {
+  const adopted = toAdopted(withDesks(9), [30], [true]);
+  // A hard three-way split: no bloc reaches two-thirds of 9.
+  const failed = toFloorAdopted(adopted, [
+    { on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" },
+    { on: true, level: FLOOR_LINES_7_8[1], recipient: "compliant" },
+    { on: true, level: FLOOR_LINES_7_8[2], recipient: "compliant" },
+  ]);
+  assert.equal(failed.institutions.floor?.how, "statusQuo");
+  assert.equal(failed.institutions.floor?.condition, false, "NO FLOOR");
+  const seasoned = apply(failed, { type: "teacher:institutionStep" }, "PLAY", "teacher");
+  assert.equal(seasoned.stage, "season");
+  const played = playSeason(seasoned);
+  assert.equal(played.weekIndex, WEEK_COUNT, "the season still settles all three weeks with NO FLOOR");
+  for (const club of played.clubs.slice(0, played.leagueSize)) {
+    assert.equal(club.weeks.some((w) => w.pot.docked), false, "with no floor adopted, nobody is ever docked");
+  }
+});
+
+/** spec test 20. */
+test("the floor's printed cost line is computed against the adopted share, not the round's raw median", () => {
+  const state = toAdopted(withDesks(9), [0, 30, 60], [false]);
+  assert.equal(state.adopted!.share, STATUS_QUO_SHARE, "the room's split vote must fail two-thirds and fall back to the status quo");
+  const lastRound = state.closedRounds[state.closedRounds.length - 1]!;
+  assert.notEqual(lastRound.median, state.adopted!.share, "the round's raw median must differ from what actually got adopted");
+
+  const opened = openFloorRounds(state);
+  const club = opened.clubs.find((c) => c.seatId !== null)!;
+  const atAdopted = floorStakesFor(opened, club);
+  const asIfMedianAdopted = floorStakesFor({ ...opened, adopted: { ...state.adopted!, share: lastRound.median } }, club);
+  assert.notEqual(atAdopted.costIfBound, asIfMedianAdopted.costIfBound, "the stakes card must read the adopted share, not the raw median");
+});
+
+/** Spec's "half the draw" language, made exact: half the desk's own even share of the pot, with zero residual. */
+test("a desk under the floor loses exactly half its pot share, and the compliant desks receive exactly that, zero residual", () => {
+  let state = toAdopted(withDesks(9), [30], [false]);
+  state = toFloorAdopted(state, [{ on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" }]);
+  assert.equal(state.institutions.floor?.condition, true);
+  assert.equal(state.institutions.floor?.share, FLOOR_LINES_7_8[0]);
+  state = apply(state, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // -> season
+  for (const club of state.clubs.filter((c) => c.seatId !== null)) {
+    state = apply(state, { type: "setPrice", price: 48 }, "PLAY", club.seatId!);
+    state = apply(state, { type: "setReinvest", reinvest: club.slot === 0 ? 0 : REINVEST_MAX }, "PLAY", club.seatId!);
+    state = apply(state, { type: "lock" }, "PLAY", club.seatId!);
+  }
+  state = apply(state, { type: "teacher:closeWeek" }, "PLAY", "teacher");
+
+  const week0 = state.clubs.slice(0, state.leagueSize).map((c) => c.weeks[0]!);
+  const pot = week0.reduce((a, w) => a + w.pot.paidIn, 0);
+  const evenShare = pot / state.leagueSize;
+  const docked = state.clubs[0]!.weeks[0]!;
   assert.equal(docked.pot.docked, true);
-  assert.equal(compliant.pot.docked, false);
-  assert.ok(docked.pot.tookOut < compliant.pot.tookOut, "the docked club must collect less than a compliant one");
+  assert.equal(docked.pot.tookOut, Math.round(evenShare * CONDITION_COLLECT_FRACTION), "a docked desk keeps exactly half its even share of the pot");
+
+  let totalPaid = 0;
+  let totalTook = 0;
+  for (const w of week0) {
+    totalPaid += w.pot.paidIn;
+    totalTook += w.pot.tookOut;
+  }
+  assert.ok(
+    Math.abs(totalPaid - totalTook) <= state.leagueSize,
+    `the pot must close with zero residual: ${totalPaid} paid in, ${totalTook} taken out`,
+  );
+});
+
+/** At band 5-6 the share ballot is a four-card slate, adopted by plurality — spec item 21's mechanism. */
+test("at band 5-6 the share ballot adopts by plurality of the four-card slate", () => {
+  const outcome = runAdoption(proposeAll(withDesks(9, undefined, "5-6"), [40, 40, 40, 40, 40, 40, 60, 60, 60], [false]));
+  assert.equal(outcome.adopted.how, "voted");
+  assert.equal(outcome.adopted.share, 40);
+  assert.equal(outcome.adopted.supporting, 6);
+});
+
+test("at band 5-6 a slate with no plurality bloc reaching two-thirds falls back to the status quo", () => {
+  const outcome = runAdoption(proposeAll(withDesks(9, undefined, "5-6"), [0, 20, 40], [false]));
+  assert.equal(outcome.adopted.how, "statusQuo");
+  assert.equal(outcome.adopted.share, STATUS_QUO_SHARE);
 });
 
 test("an unlocked desk settles at its club's house price with nothing reinvested, marked AUTO", () => {

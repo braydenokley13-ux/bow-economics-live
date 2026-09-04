@@ -23,6 +23,13 @@ import {
   DRAW_START,
   MARKET_PROFILES,
   MAX_DESKS,
+  MIN_LEAGUE,
+  MISSED_BILL_PENALTY,
+  MIN_CARRIED_CASH,
+  LEVY_FRACTION,
+  POOL_CHIPS,
+  POOL_RITUAL_STAGE_NAMES,
+  POOL_RITUAL_STEPS,
   NATIONAL,
   OFFSETS,
   OPTIMUM_BAND_TOLERANCE,
@@ -40,6 +47,8 @@ import {
   OBJECTIVE_COPY,
   barReleaseArm,
   botShareFor,
+  bowlTotalFor,
+  carriedClubsOf,
   computeAggregate,
   giveAndTakeSummary,
   giveAndTakeSummaryBoard,
@@ -58,16 +67,24 @@ import {
   localMediaFor,
   moduleClaims,
   nextDraw,
+  poolRitualBoardFor,
+  poolRoundingNoteFor,
+  poolRowsFor,
+  poolTotalsAll,
+  pressCandidatesFor,
   priceCounterfactualFor,
   reinvestChangeLine,
   reinvestRuleFor,
+  ritualStageOf,
   roomCashAtShiftedShares,
   roomCashAtUniformShare,
   sawBarBeforeWeek3,
   scheduleFor,
+  seedOutClubs,
   teachStage5MirrorClaimed,
   settleHome,
   spilloverClaim,
+  spotlightViewFor,
   synthesisCards,
   visitorSlotFor,
   type HostLeagueState,
@@ -2218,4 +2235,280 @@ test("D22 band seam: the reducer's economics is byte-identical between bands for
   };
   assert.deepEqual(strip(a), strip(b), "the room's own economics diverged between bands on an identical action sequence");
   assert.deepEqual(computeAggregate(a), computeAggregate(b), "the aggregate diverged between bands on an identical action sequence");
+});
+
+/* ------------------------------------------------ W5 the pool ritual -- */
+/**
+ * Builder addition, W5_W6_SPEC.md items 1-13 plus the extras named in the
+ * task brief. `readWeek4Seed` is being rewritten concurrently by another
+ * agent to read Full House's REAL envelope shape (`fullHouse.ts` `Desk` /
+ * `FullHouseState`: `desks: Record<SeatId, Desk>` + `deskOrder`) instead of
+ * the old flat `clubs` array it reads today. These tests are written
+ * against that real shape. A test that fails today because the reader has
+ * not been rewritten yet is noted inline as "expected to pass after the
+ * seed-reader fix" and is not evidence of a Builder-owned bug.
+ */
+
+/** One Full House `Desk`, shaped exactly as `fullHouse.ts` emits it (`:1115`, `:1183`). */
+function fhDesk(overrides: {
+  deskNumber?: number;
+  marketId?: string;
+  cash?: number;
+  clearedTheBill?: boolean;
+  label?: string;
+}): Record<string, unknown> {
+  return {
+    deskNumber: overrides.deskNumber ?? 1,
+    marketId: overrides.marketId ?? "oklahoma-city",
+    cash: overrides.cash ?? 500_000,
+    clearedTheBill: overrides.clearedTheBill ?? true,
+    nights: [],
+    ...(overrides.label !== undefined ? { label: overrides.label } : {}),
+  };
+}
+
+/** The real W4->W5 seed envelope: Full House's own state, untouched, under the runtime's own provenance fields. */
+function week4Seed(
+  desks: Record<string, Record<string, unknown>>,
+  opts: { lessonModuleId?: string; sourceGradeBand?: string; sourceSessionId?: string; sourcePhase?: string; sourceEnded?: boolean } = {},
+): unknown {
+  return {
+    lessonModuleId: opts.lessonModuleId ?? "m2l1-full-house",
+    sourceGradeBand: opts.sourceGradeBand ?? "5-6",
+    sourceSessionId: opts.sourceSessionId ?? "fh-session-1",
+    sourcePhase: opts.sourcePhase ?? "SYNTHESIS",
+    sourceEnded: opts.sourceEnded ?? true,
+    state: {
+      desks,
+      deskOrder: Object.keys(desks),
+      gradeBand: opts.sourceGradeBand ?? "5-6",
+    },
+  };
+}
+
+/** Seats `count` desks, locks every one at a fixed price/share, and closes no week — the locked-and-waiting beat where `poolPosition` lives. */
+function lockedAndWaiting(count: number): HostLeagueState {
+  let state = seated(count);
+  for (const seatId of Object.keys(state.seatToSlot)) {
+    state = ok(act(state, { type: "setPrice", price: 40 }, "PLAY", seatId));
+    state = ok(act(state, { type: "setShare", share: 10 }, "PLAY", seatId));
+    state = ok(act(state, { type: "lock" }, "PLAY", seatId));
+  }
+  return state;
+}
+
+// ---- item 1 --------------------------------------------------------------
+
+test("W5 item 1: initialState with no seed opens a stock league and says so", () => {
+  const state = hostTheLeagueModule.initialState({ sessionId: "s-noseed", seatIds: [], gradeBand: "5-6" });
+  assert.equal(carriedClubsOf(state).length, 0);
+  assert.ok(state.clubs.every((c) => c.cash === 0), "an unseeded room's clubs must all open at stock cash");
+  assert.match(state.seedNote ?? "", /no Week 4 link/i);
+});
+
+// ---- item 2 --------------------------------------------------------------
+
+test("W5 item 2: a W4 seed with the wrong lessonModuleId is ignored entirely", () => {
+  const seed = week4Seed({ "seat-1": fhDesk({ cash: 900_000 }) }, { lessonModuleId: "m2l1-something-else" });
+  const state = hostTheLeagueModule.initialState({ sessionId: "s-wrongmod", seatIds: [], gradeBand: "5-6", seed });
+  assert.equal(carriedClubsOf(state).length, 0);
+  assert.ok(state.clubs.every((c) => c.cash === 0));
+  assert.match(state.seedNote ?? "", /different lesson/i);
+});
+
+// ---- item 3 (expected to pass after the seed-reader fix) -----------------
+
+test("W5 item 3: a W4 seed missing a club leaves that club stock", () => {
+  const desks = {
+    "seat-1": fhDesk({ deskNumber: 1, marketId: "oklahoma-city", cash: 900_000, clearedTheBill: true }),
+    "seat-2": fhDesk({ deskNumber: 2, marketId: "golden-state", cash: 150_000, clearedTheBill: true }),
+  };
+  const seed = week4Seed(desks);
+  const state = hostTheLeagueModule.initialState({ sessionId: "s-missing", seatIds: [], gradeBand: "5-6", seed });
+  const carried = carriedClubsOf(state);
+  assert.equal(carried.length, 2, "exactly the two seeded desks should carry in");
+  const stockCount = state.clubs.filter((c) => c.cash === 0).length;
+  assert.equal(stockCount, MIN_LEAGUE - carried.length, "every club the seed did not name must open at its stock cash, and no other club may");
+});
+
+// ---- item 4 (expected to pass after the seed-reader fix) -----------------
+
+test("W5 item 4: a negative carried cash never opens a franchise unable to operate", () => {
+  const desks = { "seat-1": fhDesk({ cash: -5_000_000, clearedTheBill: false }) };
+  const seed = week4Seed(desks);
+  const state = hostTheLeagueModule.initialState({ sessionId: "s-negative", seatIds: [], gradeBand: "5-6", seed });
+  assert.ok(state.clubs.every((c) => c.cash >= MIN_CARRIED_CASH), "no club may open with less cash than the playability floor");
+  const carried = carriedClubsOf(state);
+  assert.equal(carried.length, 1, "the one named desk should carry in");
+  const record = carried[0]!;
+  assert.equal(record.billCleared, false);
+  assert.equal(record.penalty, MISSED_BILL_PENALTY, "a bill not cleared must add the named penalty");
+  assert.equal(record.clamped, true, "cash this negative must be clamped");
+  assert.equal(record.cashOpening, MIN_CARRIED_CASH, "the floor is the exact clamp value, not merely 'not below it'");
+});
+
+// ---- item 5 ----------------------------------------------------------------
+
+test("W5 item 5: poolPosition is refused before lock", () => {
+  const state = seated(2);
+  const reason = bad(act(state, { type: "poolPosition", chip: "a little", line: "" }, "PLAY", "seat-1"));
+  assert.match(reason, /lock your price in first/);
+});
+
+// ---- item 6 ----------------------------------------------------------------
+
+test("W5 item 6: poolPosition is refused outside PLAY", () => {
+  const state = lockedAndWaiting(2);
+  const reason = bad(act(state, { type: "poolPosition", chip: "a little", line: "" }, "REVEAL", "seat-1"));
+  assert.match(reason, /during PLAY/);
+});
+
+// ---- item 7 ----------------------------------------------------------------
+
+test("W5 item 7: pool contributions sum exactly to the bowl total, every week, zero residual", () => {
+  const state = fullSession(7);
+  for (let week = 0; week < WEEK_COUNT; week += 1) {
+    const rows = poolRowsFor(state, week);
+    const bowl = bowlTotalFor(state, week);
+    const paidSum = rows.reduce((s, r) => s + r.paidIn, 0);
+    assert.equal(paidSum, bowl, `week ${week + 1}: paid-in did not sum exactly to the bowl total`);
+  }
+});
+
+// ---- item 8 ----------------------------------------------------------------
+
+test("W5 item 8: equal split × live franchises = bowl total ± rounding, and the rounding is stated", () => {
+  for (const desks of [6, 11, 7, 9]) {
+    const state = fullSession(desks);
+    for (let week = 0; week < WEEK_COUNT; week += 1) {
+      const rows = poolRowsFor(state, week);
+      const bowl = bowlTotalFor(state, week);
+      const n = rows.length;
+      if (n === 0) continue;
+      const base = Math.floor(bowl / n);
+      const remainder = bowl - base * n;
+      const tookSum = rows.reduce((s, r) => s + r.tookOut, 0);
+      assert.equal(tookSum, bowl, `week ${week + 1}: the equal split must sum back to the bowl total exactly, with the remainder distributed`);
+      assert.ok(remainder >= 0 && remainder < n, "the remainder must be less than one dollar per club");
+      const note = poolRoundingNoteFor(state, week);
+      if (remainder === 0) {
+        assert.match(note, /Split evenly/);
+      } else {
+        assert.ok(note.includes(`$${remainder.toLocaleString()}`), `rounding note must state the exact leftover ($${remainder}): "${note}"`);
+      }
+    }
+  }
+});
+
+// ---- item 9 ----------------------------------------------------------------
+
+test("W5 item 9: boardView at every ritual stage carries no seat id and no private dial", () => {
+  const base = { ...fullSession(9), revealStage: REVEAL_STEPS };
+  const seatIds = Object.keys(base.seatToSlot);
+  const forbiddenKeys = ["seatId", "seatToSlot", "deskNumber", "price", "share"];
+  for (let stage = 1; stage <= POOL_RITUAL_STEPS; stage += 1) {
+    for (let page = 0; page < 3; page += 1) {
+      const s = { ...base, ritualStage: stage, poolPage: page };
+      const board = hostTheLeagueModule.boardView(s, "REVEAL") as Record<string, unknown>;
+      const raw = JSON.stringify(board);
+      for (const seatId of seatIds) {
+        assert.equal(raw.includes(seatId), false, `boardView leaked seat id "${seatId}" at ritual stage ${stage}, page ${page}`);
+      }
+      walk(board["pool"], "pool", () => {}, (key) => {
+        assert.equal(forbiddenKeys.includes(key), false, `pool ritual board leaked private key "${key}" at ritual stage ${stage}`);
+      });
+    }
+  }
+});
+
+// ---- item 10 ----------------------------------------------------------------
+
+test("W5 item 10: at band 5-6, no rendered pool string on board, teacher or student view contains a percent sign", () => {
+  const base = { ...fullSession(6), revealStage: REVEAL_STEPS };
+  for (let stage = 1; stage <= POOL_RITUAL_STEPS; stage += 1) {
+    const s = { ...base, ritualStage: stage };
+    const board = hostTheLeagueModule.boardView(s, "REVEAL") as Record<string, unknown>;
+    assert.equal(JSON.stringify(board["pool"]).includes("%"), false, `boardView pool payload has a % at stage ${stage}`);
+    const teacher = hostTheLeagueModule.teacherView(s, "REVEAL") as Record<string, unknown>;
+    assert.equal(JSON.stringify(teacher["poolRitual"]).includes("%"), false, `teacherView poolRitual payload has a % at stage ${stage}`);
+    assert.equal(String(teacher["levyLine"]).includes("%"), false, "teacherView levyLine has a % at 5-6");
+  }
+
+  const locked = lockedAndWaiting(4);
+  for (const seatId of Object.keys(locked.seatToSlot)) {
+    const view = hostTheLeagueModule.studentView(locked, seatId, "PLAY") as Record<string, unknown>;
+    assert.equal(JSON.stringify(view["poolPosition"]).includes("%"), false, `studentView poolPosition payload has a % for ${seatId}`);
+    assert.equal(JSON.stringify(view["weekFourNote"] ?? "").includes("%"), false, "weekFourNote has a %");
+    assert.equal(JSON.stringify(view["levyLine"] ?? "").includes("%"), false, "studentView levyLine has a %");
+  }
+});
+
+// ---- item 11 ----------------------------------------------------------------
+
+test("W5 item 11: at band 5-6, no rendered pool NET on board or teacher view is negative", () => {
+  const base = { ...fullSession(9), revealStage: REVEAL_STEPS };
+  const rowsCount = poolTotalsAll(base).length;
+  const pages = Math.max(1, Math.ceil(rowsCount / BARS_PER_PAGE));
+  const netLinePattern = /^(BROUGHT IN \$[\d,]+|SENT AWAY \$[\d,]+|BROKE EVEN — \$0)$/;
+  for (let page = 0; page < pages; page += 1) {
+    const s = { ...base, ritualStage: 5, poolPage: page };
+    const board = hostTheLeagueModule.boardView(s, "REVEAL") as { pool: { net: { netLine: string }[] | null } };
+    for (const row of board.pool?.net ?? []) {
+      assert.equal(row.netLine.includes("-$"), false, `boardView net line has a minus-dollar figure at page ${page}: "${row.netLine}"`);
+      assert.match(row.netLine, netLinePattern, `boardView net line is not in an approved non-negative form: "${row.netLine}"`);
+    }
+    const teacher = hostTheLeagueModule.teacherView(s, "REVEAL") as { poolRitual: { net: { netLine: string }[] | null } };
+    for (const row of teacher.poolRitual?.net ?? []) {
+      assert.equal(row.netLine.includes("-$"), false, `teacherView net line has a minus-dollar figure at page ${page}: "${row.netLine}"`);
+      assert.match(row.netLine, netLinePattern);
+    }
+  }
+});
+
+// ---- item 12 ----------------------------------------------------------------
+
+test("W5 item 12: teacher:poolStage is refused from a non-teacher seat", () => {
+  const state = { ...fullSession(6), revealStage: REVEAL_STEPS };
+  const reason = bad(act(state, { type: "teacher:poolStage" }, "REVEAL", "seat-1"));
+  assert.match(reason, /only the teacher/);
+});
+
+// ---- item 13 ----------------------------------------------------------------
+
+test("W5 item 13: seedOutClubs carries paidInTotal/tookOutTotal/poolNet for every seated franchise, and no other club", () => {
+  const state = fullSession(7);
+  const seatedSlots = new Set(state.clubs.filter((c) => c.seatId !== null).map((c) => c.slot));
+  const out = seedOutClubs(state);
+  assert.equal(out.length, seatedSlots.size, "seedOutClubs must list every seated franchise, no more, no fewer");
+  for (const row of out) {
+    assert.ok(seatedSlots.has(row.slot), `seedOutClubs named a slot (${row.slot}) that is not seated`);
+    assert.equal(typeof row.paidInTotal, "number");
+    assert.equal(typeof row.tookOutTotal, "number");
+    assert.equal(typeof row.poolNet, "number");
+    assert.equal(row.poolNet, row.tookOutTotal - row.paidInTotal, `poolNet must equal tookOutTotal - paidInTotal for slot ${row.slot}`);
+  }
+});
+
+// ---- extras beyond items 1-13 ----------------------------------------------
+
+test("W5 extra: hostTheLeagueModule.spotlightView/pressCandidates delegate to the exported spotlightViewFor/pressCandidatesFor", () => {
+  const state = fullSession(6);
+  const seatId = Object.keys(state.seatToSlot)[0]!;
+  assert.deepEqual(hostTheLeagueModule.spotlightView!(state, seatId, "REVEAL"), spotlightViewFor(state, seatId, "REVEAL"));
+  assert.deepEqual(hostTheLeagueModule.pressCandidates!(state, "REVEAL"), pressCandidatesFor(state, "REVEAL"));
+});
+
+test("W5 extra: onPhaseExit from REVEAL forces ritualStage to the last stage", () => {
+  const state = { ...fullSession(6), revealStage: REVEAL_STEPS, ritualStage: 2, poolPage: 1 };
+  assert.ok(ritualStageOf(state) < POOL_RITUAL_STEPS, "test setup must start short of the last stage");
+  const next = hostTheLeagueModule.onPhaseExit!(state, "REVEAL", "ADAPT");
+  assert.equal(ritualStageOf(next), POOL_RITUAL_STEPS, "leaving REVEAL must force the pool ritual to its last stage, same manual-fallback discipline as the season reveal");
+});
+
+test("W5 extra: POOL_CHIPS and LEVY_FRACTION are the module's own constants, and poolPosition rejects any other chip", () => {
+  assert.deepEqual([...POOL_CHIPS], ["nothing", "a little", "a lot"]);
+  assert.equal(LEVY_FRACTION, 0.2);
+  const state = lockedAndWaiting(1);
+  const reason = bad(act(state, { type: "poolPosition", chip: "everything", line: "" }, "PLAY", "seat-1"));
+  assert.match(reason, /nothing.*a little.*a lot/);
 });

@@ -191,12 +191,36 @@ export const LINE = Object.fromEntries(LINES.map((l) => [l.id, l.amount])) as Re
 /** Which band a committed salary sits in. The durable fact; the distance to a line is not. */
 export type Band = "under-floor" | "under-cap" | "under-tax" | "under-apron1" | "under-apron2" | "over-apron2";
 
-export function bandOf(committed: number): Band {
+/**
+ * THE APRON TEST IS NOT THE SAME TEST AS THE CAP/TAX TEST.
+ *
+ * 2023 CBA / cbaguide.com/thresholds/apron (read 2026-09-04); W2_SEASON_RESEARCH.md
+ * §3. Team Salary — which decides the floor, cap and tax bands — is `committed`
+ * as this module defines it (BC-7, cap hit INCLUDING free-agent cap holds).
+ * Apron Team Salary — which is what the first- and second-apron tests actually
+ * compare against the line — is Team Salary MINUS those same holds. So a club
+ * can be genuinely over the tax on its holds-inclusive figure and nowhere near
+ * either apron on the figure the apron rule tests, and the two facts are not in
+ * tension: they are two different aggregates, tested against two different
+ * things, on purpose.
+ *
+ * `holds` defaults to 0 so a caller with nothing to report does not have to say
+ * so, but it must never be omitted for a club whose holds are non-zero — at
+ * these real 2026-27 figures, only Detroit ($28,834,548). Before this fix every
+ * caller here passed one argument and this function tested apron1/apron2
+ * against `committed` too, which would refuse a signing the real rule allows
+ * once a club's cumulative committed figure — not its Apron Team Salary — ever
+ * crossed a line. `carry.ts` line 163 still calls this with one argument; that
+ * call site was out of this repair's owned scope and is reported, not fixed,
+ * in docs/RUN_INDEX.md.
+ */
+export function bandOf(committed: number, holds = 0): Band {
   if (committed < LINE.floor) return "under-floor";
   if (committed < LINE.cap) return "under-cap";
   if (committed < LINE.tax) return "under-tax";
-  if (committed < LINE.apron1) return "under-apron1";
-  if (committed < LINE.apron2) return "under-apron2";
+  const apronSalary = committed - holds;
+  if (apronSalary < LINE.apron1) return "under-apron1";
+  if (apronSalary < LINE.apron2) return "under-apron2";
   return "over-apron2";
 }
 

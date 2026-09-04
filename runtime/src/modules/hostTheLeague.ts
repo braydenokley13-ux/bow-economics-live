@@ -6164,15 +6164,27 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   const biggest = [...agg.visitorLedger].sort((a, b) => b.gateLift - a.gateLift)[0] ?? null;
 
   const pctClaim = claim("sharedProduct.visitorPct", pct, "percent", { bounds: { min: 0, max: 100 } });
+  // W5 THE POOL / THE VISITOR LINE (D61 R-12). This card already names the
+  // room's shared-product mechanism, so the pool's own visitor-money number
+  // lands here rather than as a separate card — a fixed synthesis deck length
+  // is asserted by test. EXTERNALITY is named ONLY at 7-8 (R-13, pending
+  // founder confirmation); at 5-6 the same fact is said plainly.
+  const poolVisitorTotal = poolOf(state).length > 0 ? visitorLineFor(state).reduce((s, v) => s + v.visitorDollars, 0) : null;
+  const poolVisitorClaim = poolVisitorTotal !== null ? claim("sharedProduct.poolVisitorTotal", poolVisitorTotal, "money", { assertsSign: "nonNegative", bounds: { min: 0 } }) : null;
+  const band = bandOfRoom(state);
   cards.push({
     id: "shared-product",
-    claims: [pctClaim],
+    claims: poolVisitorClaim ? [pctClaim, poolVisitorClaim] : [pctClaim],
     title: "SHARED PRODUCT",
     body: `${pctClaim.rendered} of every dollar that came through a door in this room was brought by a club somebody else was running.${
       biggest
         ? ` The single biggest example is ${biggest.hostHandle}'s week ${biggest.week}: ${biggest.visitorClub} visited at Draw ${biggest.visitorDraw} and put ${money(biggest.gateLift)} on ${biggest.hostHandle.split(" · ")[0]}'s books.`
         : ""
-    } You cannot play a basketball game on your own, so you cannot earn a basketball game's money on your own either. Economists call that a SHARED PRODUCT — one thing, made by two clubs, sold once.`,
+    } You cannot play a basketball game on your own, so you cannot earn a basketball game's money on your own either. Economists call that a SHARED PRODUCT — one thing, made by two clubs, sold once.${
+      poolVisitorClaim
+        ? ` Add up every building's season and it comes to ${poolVisitorClaim.rendered} that landed on this room's own books because of a visitor's own drawing power${band === "7-8" ? " — money that lands on somebody who did not choose it has a name: an EXTERNALITY" : ", not a decision the home building made"}.`
+        : ""
+    }`,
   });
 
   // `gate-l2-econ` N1 / N3 / B1 / B6 (BLOCKING x2). This card used to open
@@ -6266,29 +6278,6 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
       ? `${path.line} Market size is real and you did not choose it. It is also not the only thing in the arithmetic — and Oklahoma City, one of the league's smallest markets, won the 2025 title.`
       : `${path.line} Market size is real and you did not choose it — it is inherited, it is printed, and it is never a score. Oklahoma City is one of the league's smallest markets and won the 2025 title.`,
   });
-
-  // W5 THE POOL. Only once the league's own bowl has actually run (a room
-  // that never played a settled week has nothing here). Band-gated per D59
-  // ruling / R-13 (pending founder confirmation): EXTERNALITY is named ONLY
-  // at 7-8; at 5-6 the same fact is said plainly, in the room's own words,
-  // with no term attached to it yet.
-  if (poolOf(state).length > 0) {
-    const band = bandOfRoom(state);
-    const bowl = poolTotalsAll(state).reduce((s, t) => s + t.paidInTotal, 0);
-    const visitorTotal = visitorLineFor(state).reduce((s, v) => s + v.visitorDollars, 0);
-    const bowlClaim = claim("pool.bowlTotal", bowl, "money", { assertsSign: "nonNegative", bounds: { min: 0 } });
-    const visitorClaim = claim("pool.visitorTotal", visitorTotal, "money", { assertsSign: "nonNegative", bounds: { min: 0 } });
-    cards.push({
-      id: "the-pool",
-      claims: [bowlClaim, visitorClaim],
-      title: "THE POOL",
-      body: `This league's own bowl collected ${bowlClaim.rendered} off the buildings that played, and split it back evenly among them — nobody voted on that, the levy was printed and taken. Separately, and not the same money: ${visitorClaim.rendered} landed on this room's own buildings because of a VISITOR's own drawing power, not a decision the home building made.${
-        band === "7-8"
-          ? " Money that lands on somebody who did not choose it has a name: an EXTERNALITY."
-          : " That is the visitor's money, working for somebody else's building."
-      }`,
-    });
-  }
 
   cards.push({
     id: "beyond",
