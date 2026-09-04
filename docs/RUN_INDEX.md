@@ -43,11 +43,18 @@ files and converges in this file. Builders never certify their own work.
   reason); `world.ts` gains sourced `taxSalary` + `holds` for all eight clubs (W4_BILL_RESEARCH §8);
   L1 teacher strip in the console's shape + seat→club map on the roster. In flight: Full House
   reads the carry (builder); L1 teach console panel (builder); Press Conference runtime (builder).
-- **C2 THE SEASON** — spec in flight (`docs/gauntlet/module-1/rebuild/W2_THE_SEASON_SPEC.md`).
-- **C3 THE DEADLINE** — spec in flight (`docs/gauntlet/module-1/rebuild/W3_THE_DEADLINE_SPEC.md`).
-- **C4 THE BILL** — spec in flight (`docs/gauntlet/module-2/W4_THE_BILL_SPEC.md`).
-- **C5 W5/W6** — spec in flight (`docs/gauntlet/module-2/W5_W6_SPEC.md`); band plumbing +
-  one-student copy in `hostTheLeague.ts` / `writeTheRule.ts` (builder).
+- **C2 THE SEASON — BUILD WAVE LIVE.** Spec landed (`W2_THE_SEASON_SPEC.md`, rulings in D60).
+  Builders: server (`sameLine/l2.ts`, `seasonCarry.ts`, `seasonData.ts`, two tests) · client
+  (`client/shared/sameLineL2*.ts/.css` + dispatch lines) · Sports Reality research
+  (`W2_SEASON_RESEARCH.md`, job reports + February market).
+- **C3 THE DEADLINE — BUILD WAVE LIVE.** Spec landed (`W3_THE_DEADLINE_SPEC.md`, D60). Builder:
+  engine (`sameLine/l3.ts`, `market.ts`, `deadlineCarry.ts`, two tests, `same-line-l3-sweep.mjs`).
+  Client renderers follow once the engine's payloads are real.
+- **C4 THE BILL — BUILD WAVE LIVE.** Direction landed (`W4_THE_BILL_DIRECTION.md`, D60). Builder:
+  `fullHouse.ts` carry intake + the five direction items + tests.
+- **C5 W5/W6 — BUILD WAVE LIVE.** Spec landed (`W5_W6_SPEC.md`, D60). Builders: `hostTheLeague.ts`
+  band + one-student plumbing · `writeTheRule.ts` THE FLOOR institution + band + one-student copy.
+  Week 5 pool ritual build follows the plumbing.
 - C6 director/stage · C7 gauntlet + founder packet.
 
 ## Hot files (reserve before parallel writes)
@@ -70,7 +77,8 @@ under `docs/gauntlet/module-*/screens-*`).
 
 ## Exact next action
 
-Integrate the C1 wave as builders report: `npm test` (whole tree), the L1 e2e
-(`node scripts/e2e-same-line-l1.cjs`), a Full House carry e2e, then commit + push. Then turn each
-landed spec into sonnet build waves by file ownership (module file + its own client renderer +
-its own test file; the three `main.ts` dispatch lines are integrated by the orchestrator).
+Integrate as builders report (Press Conference runtime → L1 teach console → Full House → W2
+server → W2 client → W3 engine → W6 floor → hostTheLeague plumbing): fix tsc, wire
+`spotlightView`/`pressCandidates` onto each module, `npm test` (whole tree), the L1/L2 e2e
+scripts, commit + push after each green integration. Then: W3 client renderers, W5 pool ritual,
+critic passes (Economic Truth, Teacher Transfer, Player/Gameplay) per landed week.

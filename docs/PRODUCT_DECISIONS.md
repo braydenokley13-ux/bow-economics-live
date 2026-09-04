@@ -1728,3 +1728,49 @@ is consulted by section.
   `npm run boss:doctor` PASS; three read-only reconnaissance reports this session (M1
   seats/arc, M2 carry/institutions, runtime/client extension points) — findings cited
   inline above by file:line.
+
+## D60. Four specs landed with integrator rulings; the campaign fans out across builders
+
+Four implementation specs were written 2026-09-04 from experience-director deliveries and
+carry provisional integrator rulings in their headers, each for the founder to confirm or
+overturn. Recorded here so the rulings are decisions, not spec footnotes.
+
+- `docs/gauntlet/module-1/rebuild/W2_THE_SEASON_SPEC.md` — the typed reasoning line is
+  teacher-only; **stretch is dropped from Week 2** (a waive leaves this season's cap hit and
+  tax salary unchanged and carries as dead money; misconception risk recorded: "a waived
+  player is free next year" — Week 4's bill names the dead money); job reports are authored
+  per player, deterministic; a dealt-July desk may podium for its own February, never July;
+  the 90-second Front Office Review lives in Week 3.
+- `docs/gauntlet/module-1/rebuild/W3_THE_DEADLINE_SPEC.md` — **the build proceeds while
+  the sweep problem (TRADE_MECHANIC_FROTH §6.1) is open**: Week 3 ships on a conditional
+  property over a DECLARED family of modelled market environments, printed with every
+  sweep result ("proven for these environments, argued beyond them"); the director's
+  dissent is recorded, not absorbed. Collusion between friends is live economics with no
+  pair-transacts-twice rule; two market hours; the season settles before the Boardroom;
+  the Clippers cap-circumvention material stays out of Track 101.
+- `docs/gauntlet/module-2/W4_THE_BILL_DIRECTION.md` — the roster earns nothing at the gate
+  until a renewals term exists and the HOOK says so out loud; the counterfactual is cut to
+  one page; `clearedTheBill` becomes per-own-bill coverage (a bar at 5-6, a percent at 7-8);
+  Week 1 is untouched; a destination strip shows only sourced destinations.
+- `docs/gauntlet/module-2/W5_W6_SPEC.md` — one active franchise, one vote (no weighting);
+  **institution 2 is THE FLOOR** because it hurts the opposite coalition from THE SHARE;
+  two institutions, both bands; the Week 5 levy sits below the plausible Week 6 outcome
+  ("$2 of every $10" working value, tuning sweep before ship); a collective rule is never
+  softened for the franchise it breaks.
+
+**Carry record, final.** `CarriedFranchise` carries `committed` (cap hit), `deadMoney`,
+`holds`, `unattributed` and `taxSalary`; the provisional `holdsVerified` flag is gone
+because Sports Reality sourced all eight tax-salary figures (`W4_BILL_RESEARCH.md` §8).
+Every later week charges cash on `taxSalary` and shows position from `committed`.
+
+**Operating model (founder call, 2026-09-04).** The single-builder pace was rejected by
+the founder as incompatible with the scope. Fable orchestrates, integrates and judges;
+opus experience-director agents write specs; sonnet builders build under strict file
+ownership, many in parallel; Sports Reality and critic passes run as their own agents.
+Builders never certify their own work; the orchestrator runs the suite and the browser.
+
+- **Status:** ACTIVE (rulings provisional until the founder confirms)
+- **Date:** 2026-09-04
+- **Owner:** lead-integrator (rulings), founder (operating model)
+- **Evidence:** the four spec files above; `runtime/src/modules/sameLine/carry.ts`;
+  `runtime/src/test/sameLineCarry.test.ts` (every club reconciles: residual ≥ 0, < $6M).
