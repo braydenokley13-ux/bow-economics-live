@@ -4,8 +4,8 @@ import { crestStyle } from "../shared/crest.js";
 import { brandMark, dotChart } from "../shared/m2ui.js";
 import { createFreshness } from "../shared/freshness.js";
 import { ActionOutbox } from "../shared/outbox.js";
-import { renderSameLineL1, resetSameLineL1, sameLineL1Error } from "../shared/sameLineL1.js";
-import { renderSameLineL2, resetSameLineL2 } from "../shared/sameLineL2.js";
+import { renderSameLineL1, resetSameLineL1, sameLineL1Error, invalidateSameLineL1Mount } from "../shared/sameLineL1.js";
+import { renderSameLineL2, resetSameLineL2, invalidateSameLineL2Mount } from "../shared/sameLineL2.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
 import { renderPlayLock, renderPlayPodium } from "../shared/pressConference.js";
@@ -532,6 +532,12 @@ $("btnAwaySeen").addEventListener("click", () => {
   });
 });
 
+/** True while a whole-body screen (ended / frozen / podium / lock / paused) owns the body. */
+let takeoverShowing = false;
+const takeover = (): void => {
+  takeoverShowing = true;
+};
+
 function renderGame(payload: StudentPayload): void {
   lastRoundKey = payload.round?.key ?? null;
   renderFinalCall(payload);
@@ -554,10 +560,12 @@ function renderGame(payload: StudentPayload): void {
   const body = $("gameBody");
 
   if (s.ended) {
+    takeover();
     body.innerHTML = `<div class="banner">This session has ended. Thanks for playing!</div>`;
     return;
   }
   if (s.frozen) {
+    takeover();
     body.innerHTML = `<div class="banner">Your teacher has frozen the session. Hang tight.</div>`;
     return;
   }
@@ -566,14 +574,29 @@ function renderGame(payload: StudentPayload): void {
   // generic paused banner below, or the podium desk and every other desk
   // both read the same "Paused" line and the reveal never lands on a device.
   if (s.spotlight) {
+    takeover();
     body.innerHTML = s.spotlight.mine
       ? renderPlayPodium(s.spotlight.label, payload.view)
       : renderPlayLock(s.spotlight.label);
     return;
   }
   if (s.paused) {
+    takeover();
     body.innerHTML = `<div class="banner">Paused — everything you've done is saved. We'll pick back up shortly.</div>`;
     return;
+  }
+  // The first normal frame after a takeover must REMOUNT: every keyed
+  // renderer below (the window shell, the season, Full House, the league, the
+  // rule) compares its key against what it last drew, and what it last drew is
+  // gone. Browser truth 2026-09-04: both desks stayed on the podium/lock screen
+  // for good after the teacher ended a press conference.
+  if (takeoverShowing) {
+    takeoverShowing = false;
+    invalidateSameLineL1Mount();
+    invalidateSameLineL2Mount();
+    fhMountKey = null;
+    hlMountKey = null;
+    wrMountKey = null;
   }
 
   const view = payload.view;

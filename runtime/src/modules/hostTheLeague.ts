@@ -1223,8 +1223,16 @@ function settleWeek(state: HostLeagueState, honorPendingDials: boolean): HostLea
     const paidIn = poolPaidIn[i]!;
     const tookOut = poolTookOut[i]!;
     const poolNet = tookOut - paidIn;
-    const net = home.doorMoney + localMedia + NATIONAL - profile.bill - reinvestPaid - paidIn + tookOut;
-    const cashAfter = club.cash + net;
+    // `net` stays EXACTLY the pre-pool hosting decomposition (BC-5): every
+    // instrument that reproduces or re-derives this figure independently
+    // (`priceCounterfactualFor`'s `keptAt`, the give/take ledger, the tuning
+    // harness) computes it from `home`/`localMedia`/`national`/`bill`/
+    // `reinvestPaid` alone and must keep matching this field exactly. THE
+    // POOL is a second, orthogonal deduction/credit against actual cash —
+    // real (it changes what the desk can spend next week) but never mixed
+    // into the hosting decomposition's own arithmetic.
+    const net = home.doorMoney + localMedia + NATIONAL - profile.bill - reinvestPaid;
+    const cashAfter = club.cash + net + poolNet;
     const drawAfter = nextDraw(profile, drawBefore[i]!, reinvestPaid);
     if (isLive) {
       poolRows.push({ week, slot: i, assessedLocalRevenue: assessedLocalRevenue[i]!, paidIn, tookOut, net: poolNet });

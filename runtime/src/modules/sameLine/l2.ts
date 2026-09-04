@@ -234,17 +234,31 @@ function fromCarried(f: CarriedFranchise): UnclaimedSeasonFranchise {
 
 function buildUnclaimed(seed: unknown, gradeBand: GradeBand): { list: readonly UnclaimedSeasonFranchise[]; warnings: readonly string[] } {
   const carry = extractWindowCarry(seed, gradeBand);
+  const warnings: string[] = [];
+  const carried: UnclaimedSeasonFranchise[] = [];
   if (carry.ok) {
-    return { list: carry.franchises.map(fromCarried), warnings: carry.warnings };
+    carried.push(...carry.franchises.map(fromCarried));
+    warnings.push(...carry.warnings);
+  } else {
+    // ok:false — the reason is printed on /teach only (spec §7 seed IN),
+    // never on /board or a student's screen.
+    warnings.push(`This July was dealt to you, not played by you: ${carry.reason}`);
   }
-  // ok:false — the whole room falls to stock desks, and the reason is printed
-  // on /teach only (spec §7 seed IN), never on /board or a student's screen.
-  const stock: UnclaimedSeasonFranchise[] = [];
+  // The classroom needs a desk for every seat regardless of how many July
+  // franchises actually carried over — an empty or partial July (0 desks
+  // played, or fewer players than this room's roster) is not a carry
+  // failure, just a smaller carried set. Every club/twin slot that no real
+  // carried franchise already fills gets a stock (dealt:true) franchise, so
+  // a dealt-July desk can always podium for its own February (spec: never
+  // for a July it did not play) even when July was played by nobody at all.
+  const filled = new Set(carried.map((f) => `${f.clubId}:${f.twin}`));
+  const list: UnclaimedSeasonFranchise[] = [...carried];
   for (const club of CLUBS) {
-    stock.push(stockFranchise(club.id, 0));
-    stock.push(stockFranchise(club.id, 1));
+    for (const twin of [0, 1] as const) {
+      if (!filled.has(`${club.id}:${twin}`)) list.push(stockFranchise(club.id, twin));
+    }
   }
-  return { list: stock, warnings: [`This July was dealt to you, not played by you: ${carry.reason}`] };
+  return { list, warnings };
 }
 
 function seatFromUnclaimed(state: SameLineL2State, f: UnclaimedSeasonFranchise, seatId: SeatId): SameLineL2State {

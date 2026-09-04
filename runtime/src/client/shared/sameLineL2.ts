@@ -67,6 +67,11 @@ function clearDraft(): void {
   line = "";
 }
 
+/** Forget only the mount (a takeover screen replaced the DOM); the draft survives. */
+export function invalidateSameLineL2Mount(): void {
+  mountKey = "";
+}
+
 /** Forget everything when a new session or a new desk arrives. */
 export function resetSameLineL2(): void {
   mountKey = "";

@@ -7,6 +7,7 @@ import { hostTheLeagueModule } from "../modules/hostTheLeague.js";
 import { lobbyDemoModule } from "../modules/lobbyDemo.js";
 import { sameLineL1Module } from "../modules/sameLine/l1.js";
 import { sameLineL2Module } from "../modules/sameLine/l2.js";
+import { sameLineL3Module } from "../modules/sameLine/l3.js";
 import { tradeDeadlineModule } from "../modules/tradeDeadline.js";
 import { writeTheRuleModule } from "../modules/writeTheRule.js";
 import { createHttpServer } from "./http.js";
@@ -38,6 +39,7 @@ async function main(): Promise<void> {
   service.registerModule(writeTheRuleModule);
   service.registerModule(sameLineL1Module);
   service.registerModule(sameLineL2Module);
+  service.registerModule(sameLineL3Module);
   // Additional lesson modules register here as the gameplay team ships them.
 
   const server = createHttpServer(service, bus);

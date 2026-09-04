@@ -62,6 +62,16 @@ export function sameLineL1Error(message: string | null): void {
   error = message;
 }
 
+/**
+ * Forget only the MOUNT — the student's draft offer survives. Called after a
+ * whole-body takeover (press conference lock/podium, pause, freeze) replaced
+ * the DOM behind this renderer's back; without it the next frame compares an
+ * unchanged key against a screen that is no longer there and never repaints.
+ */
+export function invalidateSameLineL1Mount(): void {
+  mountKey = "";
+}
+
 /* -------------------------------------------------------------- money -- */
 
 /**

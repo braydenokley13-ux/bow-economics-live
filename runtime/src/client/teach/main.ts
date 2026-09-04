@@ -2211,6 +2211,11 @@ function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherS
       <div class="statline"><span class="pill pill-${d.inDebt ? "at-cap" : "comfortable"}" style="font-size:10px;">${money(d.cash)}</span><span>${d.renewals}% renewals</span></div>
       <div class="statline"><span>${d.nightsPlayed} night${d.nightsPlayed === 1 ? "" : "s"}${d.joinedAtNight > 1 ? ` · joined N${d.joinedAtNight}` : ""}</span><span>${d.lastFillPct !== null ? `${d.lastFillPct}% full` : ""}</span></div>
       ${d.spend > 0 ? `<div class="statline"><span>$${d.spend.toLocaleString()} on the night</span><span>${d.openBowl ? "extra seats" : ""}</span></div>` : ""}
+      ${
+        d.billCoverage
+          ? `<div class="statline"><span>Bill covered: ${Math.round(d.billCoverage.coveragePercent ?? 0)}%</span><span style="color:${(d.billCoverage.net ?? 0) < 0 ? "var(--cap-tight)" : "var(--ink-secondary)"};">${money(d.billCoverage.net ?? 0)}</span></div>`
+          : ""
+      }
       ${d.heldSamePriceRun >= 3 ? `<div class="statline"><span style="color:var(--cap-tight);">held one price ${d.heldSamePriceRun} nights</span><span></span></div>` : ""}`;
     grid.appendChild(tile);
   }
