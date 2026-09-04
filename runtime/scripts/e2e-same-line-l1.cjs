@@ -533,6 +533,58 @@ async function runBand(browser, band, label) {
   }
   console.log(`${label}: ${beatCount} reveal beats fit the projector`);
 
+  /*
+   * THE NAMING — the stage the founder's loop ends on, walked on the wall.
+   *
+   * Every concept the room earned gets a frame, and each has to survive the
+   * same three checks the reveal beats do: it fits a projector that cannot
+   * scroll, its smallest type clears the back row, and no student's name or
+   * private position is on it. The naming is the one frame carrying long prose,
+   * so overflow here is the likeliest failure in the lesson.
+   */
+  // REVEAL -> CONSEQUENCE -> SYNTHESIS. Two presses, because CONSEQUENCE is a
+  // phase of its own in this lesson and the naming is the one after it.
+  await teach.click("#btnAdvance"); // CONSEQUENCE
+  await teach.waitForTimeout(400);
+  await teach.click("#btnAdvance"); // SYNTHESIS
+  await teach.waitForTimeout(700);
+  {
+    const seen = [];
+    for (let i = 0; i < 6; i += 1) {
+      await assertBoardFits(boardPage, `${label} SYNTHESIS naming ${i}`);
+      await assertBackRow(boardPage, `${label} SYNTHESIS naming ${i}`);
+      await assertBoardPrivate(boardPage, `${label} SYNTHESIS naming ${i}`, studentNames);
+      const term = await boardPage.textContent(".slb-naming-term").catch(() => null);
+      if (term === null) break;
+      const t = term.trim();
+      if (seen.includes(t)) break;
+      seen.push(t);
+      await shoot(boardPage, `${band}-board-naming${i}`);
+      // The pair's own case of the concept, on their own screen and nowhere else.
+      const own = await desks[1].textContent(".sl-naming-yours").catch(() => null);
+      assert.ok(own && own.trim().length > 0, `${label}: "${t}" reached the wall with no case on the pair's own screen`);
+      // The console disables the control on the last name. That IS the test:
+      // a teacher must be able to tell the stage is over without guessing.
+      if (await teach.isDisabled("#btnRevealNext")) break;
+      await teach.click("#btnRevealNext");
+      await teach.waitForTimeout(400);
+    }
+    assert.ok(seen.includes("SCARCITY"), `${label}: the room was never told what scarcity is — got ${JSON.stringify(seen)}`);
+    assert.ok(seen.includes("OPPORTUNITY COST"), `${label}: the room was never told what opportunity cost is — got ${JSON.stringify(seen)}`);
+    if (band === "5-6") {
+      assert.equal(seen.length, 2, `${label}: 5-6 gets exactly two concepts, got ${JSON.stringify(seen)}`);
+    } else {
+      assert.ok(seen.length > 2, `${label}: 7-8 got the same list as 5-6 — ${JSON.stringify(seen)}`);
+    }
+    // The teacher is given the question before the term, every time.
+    const ask = await teach.textContent("#namingAsk");
+    const hold = await teach.textContent("#namingHold");
+    assert.ok(ask && ask.trim().length > 10, `${label}: the console gives the teacher no question to open with`);
+    assert.ok(hold && hold.trim().length > 10, `${label}: the console never says what not to explain yet`);
+    await shoot(teach, `${band}-teach-naming`);
+    console.log(`${label}: the naming walked ${seen.length} concepts on the wall — ${seen.join(", ")}`);
+  }
+
   for (const shape of SHAPES) {
     await desks[1].setViewportSize(shape);
     await desks[1].waitForTimeout(220);

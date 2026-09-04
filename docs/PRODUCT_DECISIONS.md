@@ -1299,3 +1299,73 @@ Two smaller repairs shipped alongside, both found the same way:
   checks the count against the engine rather than against itself;
   `runtime/scripts/e2e-same-line-l1.cjs` asserts the note rendered on the desk
   whose only route is the minimum and absent on the desk paying full freight.
+
+## D56. The lesson gets the stage it was missing: the naming
+
+CLAUDE.md §1 ends the loop on **explicit economics formalization** and calls
+that stage essential — "the simulation does not replace economics instruction,
+it makes it understandable." An economic-truth prosecution went looking for the
+map from the five class readings to named economic concepts and reported it
+could not verify the map because **there was no map**. `SYNTHESIS` shipped the
+readings, the forgone list, and a placeholder string reading "Look up — this
+part is the whole room's." The words *scarcity* and *opportunity cost* appeared
+nowhere in the product.
+
+So the room had an afternoon and not a lesson. This is the stage.
+
+**The name is earned, never asserted.** Every naming opens with what THIS room
+did, in this room's own numbers, computed from live state — and a concept whose
+evidence the room did not produce is **not shown at all**. A quiet window with
+no contested signing gets no COMPETITION SETS PRICE frame. A naming with an
+invented moment would be worse than no naming: it teaches the concept and
+teaches that the numbers on the wall are decoration.
+
+What that looks like on the wall, from a real eight-desk run:
+
+> **WHAT HAPPENED HERE** — Minnesota signed Jaxson Hayes. The same moment it
+> did, 10 other players went out of its reach: Trendon Watford, Nikola Vučević,
+> Gary Payton II, Larry Nance Jr., Anfernee Simons, Jonathan Kuminga, and 4
+> more. Nobody took them away. No rival outbid it for them. Its own signing did
+> that.
+>
+> **OPPORTUNITY COST**
+>
+> **OUTSIDE BASKETBALL** — The hour you spent on this lesson is an hour you did
+> not spend on anything else, and that hour is the real price of it.
+
+**The band decides the list.** 5-6 gets exactly two — scarcity and opportunity
+cost — and only here. 7-8 gets those plus the two that need them to stand on:
+*an institution* (the lines are a rule thirty clubs and a union agreed on, not a
+law of nature) and *competition sets price* (he never raised his price; the
+other desks in the room raised it). Both bands' lists are pinned by test.
+
+**Three surfaces, three jobs.** The wall carries the concept and the
+generalisation, and is structurally never handed a seat identity. The pair's own
+screen carries **their** case of it — their forgone list by name, their hole
+never filled, their own wall — because "opportunity cost" is a phrase and
+"signing Kelly Oubre Jr. is what put Mitchell Robinson out of your reach" is
+something that happened to you. Reading order on both is moment, then case, then
+the term: a pair that meets the word first stops reading.
+
+**The console leads with the question, and says what not to say.** The hard part
+of a naming is the order — a teacher who says "opportunity cost" before a
+student has said the idea has turned the best moment of the hour into
+vocabulary. So `/teach` prints ASK FIRST, then LISTEN FOR (what a right answer
+sounds like when a twelve-year-old says it badly), then NOT YET in red, and only
+then the term. No timer: the teacher advances one concept at a time and the
+control names how many are left.
+
+Teacher-paced with the same beat control as the reveal, which meant the control
+had to learn a third phase — it was REVEAL-only, so a teacher reaching the
+naming could not move it. Every concept is a projector frame that fits, clears
+the back-row type floor, and carries no student name.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/src/test/sameLineL1.test.ts` — "the naming is earned
+  from the room's own numbers, and both bands get their list" and "a naming is
+  never shown for something the room did not do";
+  `runtime/scripts/e2e-same-line-l1.cjs` walks every earned concept on the wall
+  in both bands and screenshots each;
+  `docs/gauntlet/module-1/rebuild/screens-l1/*-board-naming*.png`.

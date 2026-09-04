@@ -20,6 +20,7 @@ type V = Record<string, unknown>;
 const arr = (v: unknown): V[] => (Array.isArray(v) ? (v as V[]) : []);
 const str = (v: unknown, d = ""): string => (typeof v === "string" ? v : d);
 const num = (v: unknown, d = 0): number => (typeof v === "number" && Number.isFinite(v) ? v : d);
+const rec = (v: unknown): V => (v !== null && typeof v === "object" ? (v as V) : {});
 
 /* ------------------------------------------------------------- frames -- */
 
@@ -280,6 +281,46 @@ function beatFrame(v: V): string {
 
 /* ------------------------------------------------------------- render -- */
 
+/**
+ * THE NAMING, on the wall.
+ *
+ * The stage the founder's loop ends on and the runtime did not have: the room
+ * has experienced the mechanism, argued about the five readings, and now the
+ * thing gets its name. Three bands down the frame, in the order that makes the
+ * word land as a label rather than as vocabulary:
+ *
+ *   WHAT HAPPENED HERE — this room's own numbers, no definition yet.
+ *   ITS NAME           — the term, once, large.
+ *   OUTSIDE BASKETBALL — the generalisation, because a concept that only
+ *                        exists inside the simulation was never a concept.
+ *
+ * No desk's private case appears here. The moment is built from club names and
+ * counts only, and `boardView` is never handed a seat identity.
+ */
+function namingFrame(v: V): string {
+  const n = v["naming"];
+  if (n === null || n === undefined) return "";
+  const f = rec(n);
+  const count = num(f["count"]);
+  const dots = Array.from({ length: count }, (_, i) => `<i class="${i <= num(f["index"]) ? "on" : ""}"></i>`).join("");
+  return `
+  <div class="slb slb-naming">
+    <header class="slb-head">
+      <p class="slb-kicker">THE OFFSEASON</p>
+      <h1 class="slb-title">WHAT THAT WAS CALLED</h1>
+      <span class="slb-naming-dots">${dots}</span>
+    </header>
+    <section class="slb-naming-body">
+      <p class="slb-naming-lab">WHAT HAPPENED HERE</p>
+      <p class="slb-naming-moment">${esc(str(f["moment"]))}</p>
+      <p class="slb-naming-term">${esc(str(f["term"]))}</p>
+      <p class="slb-naming-means">${esc(str(f["means"]))}</p>
+      <p class="slb-naming-lab">OUTSIDE BASKETBALL</p>
+      <p class="slb-naming-outside">${esc(str(f["outside"]))}</p>
+    </section>
+  </div>`;
+}
+
 export function renderSameLineL1Board(view: Record<string, unknown>, phase: string): { html: string; peak: boolean } {
   const v = view as V;
   switch (phase) {
@@ -292,7 +333,12 @@ export function renderSameLineL1Board(view: Record<string, unknown>, phase: stri
     case "CONSEQUENCE":
       return { html: beatFrame(v), peak: true };
     case "SYNTHESIS":
-      return { html: disagreeFrame(v), peak: true };
+      /* The naming is the wall's job. `disagreeFrame` — the five columns and
+         the argument about which one matters — is what the room has just spent
+         the argument stage on; it stays as the fallback for a room whose
+         window produced no evidence for any concept, which is possible if
+         nobody signed anybody. */
+      return { html: namingFrame(v) || disagreeFrame(v), peak: true };
     case "COMPLETE":
       return { html: signedFrame(v, "THE SUMMER THIS ROOM RAN"), peak: true };
     default:

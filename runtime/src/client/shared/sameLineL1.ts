@@ -708,6 +708,33 @@ function forgonePanel(view: V): string {
  * The projector carries the class picture; this carries the one thing the
  * projector must never carry — what it cost THIS desk, by name.
  */
+/**
+ * THE NAMING, on the pair's own screen.
+ *
+ * The wall carries the concept and the generalisation, in front of everybody.
+ * This carries THEIR case of it — their own forgone list, their own hole never
+ * filled, their own wall — because "opportunity cost" is a phrase and "signing
+ * Kelly Oubre Jr. is what put Mitchell Robinson out of your reach" is a thing
+ * that happened to you.
+ *
+ * The term is deliberately last in the reading order on this surface: moment,
+ * then your case, then the name. A pair that reads the word first stops reading.
+ */
+function namingPanel(v: V): string {
+  const n = v["naming"];
+  if (n === null || n === undefined) return "";
+  const f = rec(n);
+  const yours = str(f["yours"]);
+  return panel(
+    { title: "WHAT THAT WAS CALLED", note: `${num(f["index"]) + 1} of ${num(f["count"])}` },
+    `<p class="sl-naming-moment">${esc(str(f["moment"]))}</p>
+     ${yours ? `<p class="sl-naming-yours">${esc(yours)}</p>` : ""}
+     <p class="sl-naming-term">${esc(str(f["term"]))}</p>
+     <p class="sl-naming-means">${esc(str(f["means"]))}</p>
+     <p class="sl-naming-outside"><b>OUTSIDE BASKETBALL</b> ${esc(str(f["outside"]))}</p>`,
+  );
+}
+
 function revealMain(v: V): string {
   const beat = num(v["beat"]);
   const parts: string[] = [];
@@ -857,7 +884,9 @@ export function renderSameLineL1(
       break;
     case "SYNTHESIS":
     case "COMPLETE":
-      main = forgonePanel(v) || `<div class="sl-note">${esc(str(v["message"], "Look up — this part is the whole room's."))}</div>`;
+      main =
+        namingPanel(v) +
+        (forgonePanel(v) || `<div class="sl-note">${esc(str(v["message"], "Look up — this part is the whole room's."))}</div>`);
       break;
     default:
       main = `<div class="sl-note">${esc(str(v["message"], "Look up — this part is the whole room's."))}</div>`;

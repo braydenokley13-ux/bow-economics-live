@@ -365,11 +365,12 @@ function reduce(state: SameLineL1State, action: { type: string; [k: string]: unk
        renderer, so a beat the teacher has not pressed is not merely unrendered
        on a desk — it was never sent (D26). ---- */
     case "teacher:revealNext": {
-      if (ctx.phase !== "REVEAL" && ctx.phase !== "CONSEQUENCE") return fail("there is no reveal running");
-      return { ok: true, state: { ...state, beat: Math.min(state.beat + 1, REVEAL_BEATS.length - 1) } };
+      const last = beatCountFor(state, ctx.phase);
+      if (last === null) return fail("there is no reveal running");
+      return { ok: true, state: { ...state, beat: Math.min(state.beat + 1, last - 1) } };
     }
     case "teacher:revealBack": {
-      if (ctx.phase !== "REVEAL" && ctx.phase !== "CONSEQUENCE") return fail("there is no reveal running");
+      if (beatCountFor(state, ctx.phase) === null) return fail("there is no reveal running");
       return { ok: true, state: { ...state, beat: Math.max(0, state.beat - 1) } };
     }
 
@@ -447,6 +448,162 @@ function closeDay(state: SameLineL1State): SameLineL1State {
   };
 }
 
+/* --------------------------------------------------------- the naming -- */
+
+/**
+ * THE STAGE THE SIMULATION DOES NOT REPLACE.
+ *
+ * CLAUDE.md §1: experience -> consequence -> adaptation -> class evidence ->
+ * argument -> **explicit economics formalization**. Students meet the mechanism
+ * first; then the teacher names it — "that thing you just experienced has a
+ * name: opportunity cost." That last stage is not polish. Without it the room
+ * has had an afternoon and not a lesson, and an economic-truth prosecution
+ * looking for the map from the five readings to named concepts found that no
+ * such map existed anywhere in the runtime: SYNTHESIS shipped the readings and
+ * a placeholder reading "Look up — this part is the whole room's."
+ *
+ * FOUR RULES, and the first is the one that makes this worth building.
+ *
+ * 1. THE NAME IS EARNED, NEVER ASSERTED. Every naming opens with what THIS
+ *    room did, in this room's own numbers, computed from live state. A slide
+ *    that says "scarcity means limited resources" teaches a definition. A wall
+ *    that says "six of your eight desks needed a big. There were four bigs any
+ *    of you could reach. Two of you went home without one" teaches the thing,
+ *    and the word arrives as a label for something already felt. When the room
+ *    did not produce the evidence for a concept, that concept is NOT SHOWN —
+ *    a naming with an invented moment is worse than no naming.
+ * 2. THE BAND DECIDES THE LIST. 5-6 gets exactly two, scarcity and opportunity
+ *    cost, and only here. 7-8 gets those two plus the pair that need the
+ *    younger band's two to stand on: that the lines are a rule people wrote,
+ *    and that competition, not the seller, set the price.
+ * 3. IT LEAVES BASKETBALL. Every naming ends outside sport, because a concept
+ *    that only exists inside the simulation was never a concept.
+ * 4. NO SCORE. The naming names what happened. It does not rank who did it
+ *    best (D50 s10).
+ */
+type Naming = {
+  readonly id: string;
+  readonly term: string;
+  /** What the ROOM did, in the room's numbers. Null when the room did not do it. */
+  readonly moment: string;
+  readonly means: string;
+  readonly outside: string;
+};
+
+function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming[] {
+  const desks = Object.values(state.desks);
+  const out: Naming[] = [];
+  if (desks.length === 0) return out;
+
+  const awards = state.history.flatMap((h) => h.awards);
+  const namedAwards = awards.filter((a) => !playerById(a.playerId)?.generic);
+
+  /* ---- SCARCITY. The room wanted more of something than the board held. ---- */
+  const roleCounts = new Map<string, number>();
+  for (const d of desks) for (const r of CLUB[d.clubId].jobs) roleCounts.set(r, (roleCounts.get(r) ?? 0) + 1);
+  let worst: { role: string; wanted: number; had: number } | null = null;
+  for (const [role, wanted] of roleCounts) {
+    const had = BOARD.filter((p) => p.role === role).length;
+    if (!worst || wanted - had > worst.wanted - worst.had) worst = { role, wanted, had };
+  }
+  const stillOpen = desks.filter((d) => d.position.openJobs.length > 0).length;
+  if (worst !== null && worst.wanted > worst.had) {
+    out.push({
+      id: "scarcity",
+      term: "SCARCITY",
+      moment:
+        `${worst.wanted} desks in this room needed a ${worst.role.toLowerCase()}. This board had ${worst.had} of them, and everybody could see everybody else's board. ` +
+        (stillOpen > 0
+          ? `${stillOpen} ${stillOpen === 1 ? "desk" : "desks"} finished the window with a hole still open.`
+          : `Every hole got filled, and the last ones cost more than the first ones.`),
+      means:
+        profile.maxVariables >= 3
+          ? "There was not enough of the thing everybody wanted to go round. That is not a mistake anybody made — it is the starting condition, and it is what makes every other decision today a real one."
+          : "There was not enough of what everybody wanted. Nobody did that on purpose. It is just how the summer started.",
+      outside:
+        profile.maxVariables >= 3
+          ? "It is why concert tickets sell out, why there is a queue for the good bagel place at 9am and none at 3pm, and why your school has to choose between a new gym floor and new laptops."
+          : "It is the same reason there is a line for the good swings at recess. There are three swings and eleven people who want one.",
+    });
+  }
+
+  /* ---- OPPORTUNITY COST. Somebody's own signing closed their own doors. ---- */
+  const withCost = desks
+    .map((d) => {
+      const rec = d.forgoneAtCommit.filter((f) => f.lost.length > 0).sort((a, b) => b.lost.length - a.lost.length)[0];
+      return rec ? { desk: d, rec } : null;
+    })
+    .filter((x): x is { desk: Desk; rec: Desk["forgoneAtCommit"][number] } => x !== null)
+    .sort((a, b) => b.rec.lost.length - a.rec.lost.length)[0];
+  if (withCost !== undefined) {
+    const n = withCost.rec.lost.length;
+    /* A projector cannot scroll and a wall of ten names stops being read. Six
+       is still a weight; the rest are counted so nothing is hidden. */
+    const SHOWN = 6;
+    const names =
+      n <= SHOWN
+        ? withCost.rec.lost.join(", ")
+        : `${withCost.rec.lost.slice(0, SHOWN).join(", ")}, and ${n - SHOWN} more`;
+    out.push({
+      id: "opportunity-cost",
+      term: "OPPORTUNITY COST",
+      moment:
+        `${CLUB[withCost.desk.clubId].name} signed ${withCost.rec.signed}. The same moment it did, ${n} other ${n === 1 ? "player" : "players"} went out of its reach: ${names}. ` +
+        `Nobody took them away. No rival outbid it for them. Its own signing did that.`,
+      means:
+        profile.maxVariables >= 3
+          ? "The real price of anything is not the money. It is the best thing you could no longer do once you had done it — and you pay that price whether or not you ever notice it."
+          : "What something really costs you is the next-best thing you gave up to get it. Not the money. The other thing.",
+      outside:
+        profile.maxVariables >= 3
+          ? "The hour you spent on this lesson is an hour you did not spend on anything else, and that hour is the real price of it — not the room, not the electricity."
+          : "If you spend your Saturday at a friend's house, the cost is not zero. It is the thing you would have done instead.",
+    });
+  }
+
+  if (profile.maxVariables < 3) return out;
+
+  /* ---- THE LINES ARE A RULE PEOPLE WROTE. 7-8 only. ---- */
+  const blocked = desks.filter((d) => d.position.wall !== null).length;
+  const overApron = desks.filter((d) => d.position.committed > LINE.apron1).length;
+  if (blocked > 0 || overApron > 0) {
+    out.push({
+      id: "institution",
+      term: "AN INSTITUTION",
+      moment:
+        `${overApron > 0 ? `${overApron} of these desks finished past the first apron. ` : ""}` +
+        `${blocked > 0 ? `${blocked} drew a wall they cannot cross for the rest of the year — not for anybody, whatever happens in January. ` : ""}` +
+        `Not one of those lines is a law of nature. Thirty clubs and the players' union sat in a room and agreed on where to draw them, and they will argue about where to draw them again.`,
+      means:
+        "An institution is a rule people made and then have to live inside. It shapes every choice made under it — and it can be changed, which is why the argument about it never stops.",
+      outside:
+        "Speed limits, the school day starting at 8:15, the offside rule, who is allowed to vote. Every one of them was decided by people, and every one of them changes what everybody else can do.",
+    });
+  }
+
+  /* ---- COMPETITION SET THE PRICE, NOT THE SELLER. 7-8 only. ---- */
+  const overAsk = namedAwards
+    .map((a) => ({ a, p: playerById(a.playerId) }))
+    .filter((x) => x.p !== undefined && x.a.contested > 1 && x.a.annual > x.p.ask.value)
+    .sort((x, y) => y.a.annual - y.p!.ask.value - (x.a.annual - x.p!.ask.value))[0];
+  if (overAsk !== undefined) {
+    const over = overAsk.a.annual - overAsk.p!.ask.value;
+    out.push({
+      id: "price-from-competition",
+      term: "COMPETITION SETS PRICE",
+      moment:
+        `${overAsk.p!.name} asked ${money(overAsk.p!.ask.value)}. ${overAsk.a.contested} desks went in on him and he signed for ${money(overAsk.a.annual)} — ${money(over)} more than he asked for. ` +
+        `He never raised his price. The other desks in this room raised it.`,
+      means:
+        "A price is not a number the seller decides. It is what the competition to buy the thing settles on — which is why the same player is cheap in a quiet market and dear in a crowded one.",
+      outside:
+        "It is why the same flight costs three times as much the week of a holiday, and why a house on a street everyone wants sells above what the owner asked.",
+    });
+  }
+
+  return out;
+}
+
 /* ----------------------------------------------------------- reveal beats -- */
 
 export const REVEAL_BEATS = [
@@ -479,6 +636,10 @@ export const sameLineL1Module: LessonModule<SameLineL1State> = {
   phases: PHASES,
   initialState,
   reduce,
+  /* The naming starts at its first name, not wherever the reveal left the
+     counter. Both stages walk `beat`, and a teacher arriving at SYNTHESIS on
+     beat 3 would open on the last concept and be unable to go forward. */
+  onPhaseExit: (state, _from, to) => (to === "SYNTHESIS" ? { ...state, beat: 0 } : state),
   allowedActions: (phase) =>
     phase === "PLAY" ? ["takeSeat", "offer", "pass", "declareOverCap"] : phase === "LOBBY" || phase === "HOOK" ? ["takeSeat"] : [],
 
@@ -651,10 +812,102 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
       return { ...base, ...revealForDesk(state, desk, profile) };
     case "SYNTHESIS":
     case "COMPLETE":
-      return { ...base, readings: shownReadings(state, desk), forgone: desk.forgoneAtCommit };
+      return {
+        ...base,
+        readings: shownReadings(state, desk),
+        forgone: desk.forgoneAtCommit,
+        /* The naming, gated one name at a time by the teacher, exactly as the
+           reveal is: a concept the teacher has not reached is not sent. */
+        naming: namingFrame(state, desk),
+      };
     default:
       return base;
   }
+}
+
+/**
+ * The naming as one surface sees it: the current name, plus THIS desk's own
+ * instance of it where the desk has one.
+ *
+ * The generalisation belongs on the wall, in front of everybody. What belongs
+ * on a pair's own screen is their own case of it — "your opportunity cost was
+ * these six people, by name" — because a concept a student can point at in
+ * their own summer is one they keep.
+ */
+function namingFrame(state: SameLineL1State, desk: Desk | null) {
+  const all = namings(state, profileFor(state.gradeBand));
+  if (all.length === 0) return null;
+  const i = Math.max(0, Math.min(state.beat, all.length - 1));
+  const now = all[i]!;
+  let yours: string | null = null;
+  if (desk !== null) {
+    if (now.id === "opportunity-cost") {
+      const rec = desk.forgoneAtCommit.filter((f) => f.lost.length > 0).sort((a, b) => b.lost.length - a.lost.length)[0];
+      yours = rec
+        ? `Yours: signing ${rec.signed} put ${rec.lost.join(", ")} out of your reach.`
+        : "You signed nobody, so you gave nothing up — and you also still have every hole you started with. That was a price too.";
+    } else if (now.id === "scarcity") {
+      const open = desk.position.openJobs;
+      yours =
+        open.length > 0
+          ? `Yours: you finished the window still needing a ${open.map((r) => r.toLowerCase()).join(" and a ")}.`
+          : "Yours: you filled every hole you started with. Look at what you paid for the last one.";
+    } else if (now.id === "institution") {
+      yours =
+        desk.position.wall !== null
+          ? `Yours: you drew a wall at ${money(desk.position.wall)}. You chose the signing. You did not choose that the rule existed.`
+          : "Yours: you never drew a wall. That was not luck — it is what your July left you room to avoid.";
+    }
+  }
+  return { index: i, count: all.length, term: now.term, moment: now.moment, means: now.means, outside: now.outside, yours };
+}
+
+/**
+ * WHAT THE TEACHER SAYS, AND WHAT THEY MUST NOT SAY YET.
+ *
+ * A random competent teacher has to be able to run this stage without founder
+ * knowledge (CLAUDE.md §4). The hard part of a naming is not the definition —
+ * it is the order: the room has to say the thing in its own words BEFORE the
+ * word arrives, or the word lands as vocabulary homework. So the console leads
+ * with the question, holds the term back, and says what a right answer sounds
+ * like so the teacher recognises it when a twelve-year-old says it badly.
+ */
+const NAMING_DIRECTION: Record<string, { ask: string; listenFor: string; hold: string }> = {
+  scarcity: {
+    ask: "Point at the board and ask: why did the last big cost more than the first one? Take three answers before you say anything.",
+    listenFor: "Somebody says a version of \u201Cbecause there weren\u2019t enough of them.\u201D That sentence IS the concept. Repeat it back in their words, then give it its name.",
+    hold: "Do not say the word scarcity until a student has said the idea. It is the whole design of this stage.",
+  },
+  "opportunity-cost": {
+    ask: "Ask the desk on the wall: nobody outbid you for those players. So who took them off your board?",
+    listenFor: "\u201CWe did.\u201D Let the room sit with that for a second before you name it \u2014 it is the moment the lesson turns.",
+    hold: "Do not let anyone say it was bad luck or a bad decision. It was neither. Every signing in this room did this.",
+  },
+  institution: {
+    ask: "Ask: who decided where that line goes? Keep asking until somebody says people did.",
+    listenFor: "A student arguing the line is in the wrong place. That argument is real and adults are having it right now \u2014 tell them so.",
+    hold: "Do not adjudicate whether the aprons are good policy. The point is that they are a choice, not that they are correct.",
+  },
+  "price-from-competition": {
+    ask: "Ask the desks that bid on him: did he ask you for more money? Then who raised the price?",
+    listenFor: "\u201CWe raised it on ourselves.\u201D It is uncomfortable and it is exactly right.",
+    hold: "Do not call it a bidding war until they have described one.",
+  },
+};
+
+function namingDirector(state: SameLineL1State) {
+  const frame = namingFrame(state, null);
+  if (frame === null) return null;
+  const all = namings(state, profileFor(state.gradeBand));
+  const d = NAMING_DIRECTION[all[frame.index]!.id];
+  return {
+    ...frame,
+    ask: d?.ask ?? "",
+    listenFor: d?.listenFor ?? "",
+    hold: d?.hold ?? "",
+    /* Nothing here is a timer. The teacher decides when the room is ready. */
+    remaining: frame.count - frame.index - 1,
+  };
 }
 
 /** The ladder, with only the lines this band treats as live (D49 Q1). */
@@ -1296,6 +1549,10 @@ function teacherView(state: SameLineL1State, phase: CanonicalPhase): unknown {
     })),
     beat: state.beat,
     beats: REVEAL_BEATS,
+    /* THE DIRECTOR CARD for the naming: what is on the wall right now, what to
+       say, what to ask, and what not to explain yet. The random-teacher standard
+       (CLAUDE.md §4) is the whole reason this is a payload and not a PDF. */
+    naming: phase === "SYNTHESIS" ? namingDirector(state) : null,
     /* What the console noticed so the teacher does not have to (D50 s8). */
     intel: intelligence(state, phase),
   };
@@ -1690,6 +1947,21 @@ function roomDisagrees(state: SameLineL1State, phase: CanonicalPhase): readonly 
  * one the room will remember arguing about. Clubs, never students — a settled
  * signing is public, a child's name is not.
  */
+/**
+ * How many beats the phase the teacher is standing in actually has.
+ *
+ * The reveal has four, fixed. The naming has as many as the room EARNED — a
+ * concept whose evidence this room did not produce is not shown at all, so a
+ * quiet window with no contested signing has no COMPETITION SETS PRICE beat and
+ * the teacher's Next button must stop one earlier. Returning null means this
+ * phase does not run beats, which is how the reducer refuses the action.
+ */
+function beatCountFor(state: SameLineL1State, phase: CanonicalPhase): number | null {
+  if (phase === "REVEAL" || phase === "CONSEQUENCE") return REVEAL_BEATS.length;
+  if (phase === "SYNTHESIS") return Math.max(1, namings(state, profileFor(state.gradeBand)).length);
+  return null;
+}
+
 function beatSamePlayer(state: SameLineL1State) {
   let pick: { id: string; n: number } | null = null;
   for (const rec of state.history) {
@@ -1820,6 +2092,10 @@ function boardView(state: SameLineL1State, phase: CanonicalPhase): unknown {
     beat: state.beat,
     beatTitle: REVEAL_BEATS[state.beat]?.title ?? "",
     beats: REVEAL_BEATS,
+    /* THE NAMING, on the wall, one at a time. Structurally never handed a seat
+       identity, like everything else here: the moment is the ROOM's, computed
+       from club names and counts, and no desk's own case reaches this surface. */
+    naming: phase === "SYNTHESIS" ? namingFrame(state, null) : null,
     remaining: BOARD.filter((p) => !state.taken.includes(p.id)).length,
     desks: Object.keys(state.desks).length,
     offersIn: Object.keys(state.pending).length,

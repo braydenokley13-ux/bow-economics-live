@@ -612,6 +612,45 @@ let deskLastPayload: TeacherPayload | null = null;
  */
 type IntelItem = { kind: string; label: string; text: string; ask: string };
 
+/**
+ * WHAT TO SAY NOW — the naming stage's director card.
+ *
+ * The random-teacher standard (CLAUDE.md §4) is load-bearing here in a way it
+ * is not anywhere else in this lesson: a teacher who says "opportunity cost"
+ * before a student has said the idea has turned the best moment in the hour
+ * into vocabulary. So the console prints the question FIRST, what a right
+ * answer sounds like coming out of a twelve-year-old, and what must not be
+ * explained yet — and only then the term, so the teacher's own eye meets it in
+ * the same order the room will.
+ */
+function renderNaming(payload: TeacherPayload): void {
+  const el = document.getElementById("naming");
+  if (!el) return;
+  const n = payload.view["naming"] as Record<string, unknown> | null | undefined;
+  if (!n || payload.session.ended) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  const s = (k: string): string => (typeof n[k] === "string" ? (n[k] as string) : "");
+  const i = typeof n["index"] === "number" ? (n["index"] as number) : 0;
+  const c = typeof n["count"] === "number" ? (n["count"] as number) : 1;
+  const left = Math.max(0, c - i - 1);
+  const set = (id: string, text: string): void => {
+    const t = document.getElementById(id);
+    if (t) t.textContent = text;
+  };
+  set("namingCount", left === 0 ? `last one \u2014 ${i + 1} of ${c}` : `${i + 1} of ${c} \u2014 ${left} still to come`);
+  set("namingMoment", s("moment"));
+  set("namingAsk", s("ask"));
+  set("namingListen", s("listenFor"));
+  set("namingHold", s("hold"));
+  const term = document.getElementById("namingTerm");
+  if (term) {
+    term.innerHTML = `${escapeHtml(s("term"))}<small>${escapeHtml(s("means"))}</small>`;
+  }
+}
+
 function renderIntel(payload: TeacherPayload): void {
   const el = document.getElementById("intel");
   if (!el) return;
@@ -881,6 +920,7 @@ function render(payload: TeacherPayload): void {
   $("seatCount").textContent = `${payload.seats.length} joined`;
   renderTimeCut(payload);
   renderLiveRoom(payload);
+  renderNaming(payload);
   renderIntel(payload);
   renderDesks(payload);
   // The preview lives for the whole session, not just PLAY — REVEAL through
@@ -951,8 +991,14 @@ function render(payload: TeacherPayload): void {
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
   $<HTMLButtonElement>("btnRevealNext").hidden =
     !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule && !isTheWindow;
+  /* THE SAME LINE walks beats in three phases, not one: the four reveal beats,
+     then CONSEQUENCE, then the naming — where the teacher advances one concept
+     at a time and the count is however many the room EARNED. Leaving this rule
+     at REVEAL-only disabled the only control that moves the naming forward, so
+     a teacher reached the stage and could not run it. */
   $<HTMLButtonElement>("btnRevealNext").disabled =
-    s.ended || (s.phase !== "REVEAL" && !(isTheWindow && s.phase === "CONSEQUENCE"));
+    s.ended ||
+    (s.phase !== "REVEAL" && !(isTheWindow && (s.phase === "CONSEQUENCE" || s.phase === "SYNTHESIS")));
   {
     // gate-l1-teacher TT-B2 / gate-l1-projector repair 5: "Reveal next" was a
     // blind press seven times running. Name what the press will put up, with
@@ -964,7 +1010,16 @@ function render(payload: TeacherPayload): void {
       ? next
         ? `Reveal ${next.stage} of ${total} — ${next.name}`
         : "Every reveal has played"
-      : "Reveal next";
+      : isTheWindow && s.phase === "SYNTHESIS"
+        ? (() => {
+            // At the naming the press is not "reveal next", it is "say the next
+            // one" — and a teacher pressing it needs to know how many are left
+            // before they decide the room is done arguing about this one.
+            const n = payload.view["naming"] as { index?: number; count?: number } | null | undefined;
+            const left = n ? Math.max(0, Number(n.count ?? 1) - Number(n.index ?? 0) - 1) : 0;
+            return left === 0 ? "That was the last one" : `Next name (${left} to go)`;
+          })()
+        : "Reveal next";
   }
   // M2 L1's own pacing controls: the night bell (every desk settles at once against the card that
   // was printed before anyone touched a dial) and the manual Two Peaks release. Both are teacher-

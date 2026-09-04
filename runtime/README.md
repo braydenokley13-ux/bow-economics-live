@@ -1254,10 +1254,11 @@ beats. All three surfaces render it.
 
 **What is verified, and how.**
 
-- `npm test` — 703 tests, run and passing on 2026-09-04.
+- `npm test` — 705 tests, run and passing on 2026-09-04.
 - `node scripts/e2e-same-line-l1.cjs` — browser truth, both grade bands, eight
-  desks, three settled days, no side scroll at 1366×768 or 1024×600, no
-  interest leak, zero console errors. Run and passing on 2026-09-04. Writes
+  desks, three settled days, every reveal beat and every earned naming walked
+  on the projector, no side scroll at 1366×768 or 1024×600, no interest leak,
+  zero console errors. Run and passing on 2026-09-04. Writes
   `docs/gauntlet/module-1/rebuild/screens-l1/`.
 - `node scripts/same-line-sweep.mjs` — exhaustive economic sweep over every
   legal (player, tool, price, term) offer at every seat against three rival

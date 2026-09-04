@@ -108,7 +108,11 @@ test("THE GATE: passing, closing the day and moving a reveal beat are each refus
       assert.equal(mod.reduce(s, { type: "pass" }, ctx(phase, "a")).ok, false, `pass accepted in ${phase}`);
       assert.equal(mod.reduce(s, { type: "teacher:closeDay" }, ctx(phase, "teacher")).ok, false, `close accepted in ${phase}`);
     }
-    if (phase !== "REVEAL" && phase !== "CONSEQUENCE") {
+    /* SYNTHESIS joined the beat-walking phases when the naming stage shipped:
+       the teacher advances one concept at a time with the same control, so the
+       gate is now three phases wide rather than two. Everywhere else the beat
+       action is still refused, which is what this line is protecting. */
+    if (phase !== "REVEAL" && phase !== "CONSEQUENCE" && phase !== "SYNTHESIS") {
       assert.equal(mod.reduce(s, { type: "teacher:revealNext" }, ctx(phase, "teacher")).ok, false, `beat accepted in ${phase}`);
     }
   }
@@ -1178,5 +1182,108 @@ test("room left never rises because you spent money", () => {
       assert.ok(r.roomLeft <= last, `${c.id}: room left rose from ${last} to ${r.roomLeft} after spending ${extra}`);
       last = r.roomLeft;
     }
+  }
+});
+
+test("the naming is earned from the room's own numbers, and both bands get their list", () => {
+  /*
+   * CLAUDE.md §1 ends the loop on explicit economics formalization, and calls
+   * that stage essential: "the simulation does not replace economics
+   * instruction, it makes it understandable." An economic-truth prosecution
+   * looking for the map from the five readings to named concepts found that no
+   * such map existed in the runtime — SYNTHESIS shipped the readings and a
+   * placeholder. This is the stage that was missing.
+   *
+   * The rule that makes it worth having rather than a slide: every naming opens
+   * with what THIS room did, in this room's numbers. So the test plays a real
+   * window and then insists the moment text carries the room's own figures.
+   */
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = seatMany(8, band);
+    const seats = Object.keys(s.desks);
+    // Three days of real signings, so the room actually produces evidence.
+    for (let day = 0; day < DAYS; day += 1) {
+      for (const [i, seatId] of seats.entries()) {
+        const view = mod.studentView(s, seatId as never, "PLAY") as { board?: Record<string, unknown>[] };
+        const pick = (view.board ?? []).filter((c) => c["reachable"] === true)[(i + day) % 3];
+        if (!pick) continue;
+        const best = pick["best"] as Record<string, unknown> | null;
+        if (!best) continue;
+        const r = mod.reduce(
+          s,
+          { type: "offer", playerId: String(pick["id"]), tool: String(best["tool"]), annual: Number(best["max"]) },
+          ctx("PLAY", seatId),
+        );
+        if (r.ok) s = r.state;
+      }
+      const closed = mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher"));
+      if (closed.ok) s = closed.state;
+    }
+
+    const board = mod.boardView(s, "SYNTHESIS") as { naming?: Record<string, unknown> | null };
+    const n = board.naming;
+    assert.ok(n, `${band}: SYNTHESIS reached the wall with no naming at all`);
+    assert.ok(String(n["term"]).length > 0, `${band}: a naming with no term`);
+    assert.ok(String(n["outside"]).length > 20, `${band}: the naming never leaves basketball`);
+    // EARNED: the moment must carry a number this room actually produced.
+    assert.match(String(n["moment"]), /\d/, `${band}: the naming's moment cites no number from this room`);
+
+    // The band decides the list. 5-6 gets exactly scarcity and opportunity cost.
+    const terms: string[] = [];
+    let walk = s;
+    for (let i = 0; i < 8; i += 1) {
+      const f = (mod.boardView(walk, "SYNTHESIS") as { naming?: Record<string, unknown> | null }).naming;
+      if (!f) break;
+      if (!terms.includes(String(f["term"]))) terms.push(String(f["term"]));
+      const nx = mod.reduce(walk, { type: "teacher:revealNext" }, ctx("SYNTHESIS", "teacher"));
+      if (!nx.ok) break;
+      if (nx.state === walk) break;
+      walk = nx.state;
+    }
+    assert.ok(terms.includes("SCARCITY"), `${band}: the room never gets told what scarcity is`);
+    assert.ok(terms.includes("OPPORTUNITY COST"), `${band}: the room never gets told what opportunity cost is`);
+    if (band === "5-6") {
+      assert.deepEqual(
+        terms.sort(),
+        ["OPPORTUNITY COST", "SCARCITY"],
+        "5-6 gets exactly two concepts and got a different list",
+      );
+    } else {
+      assert.ok(terms.length > 2, "7-8 got the same two concepts as 5-6");
+    }
+
+    // The teacher gets the direction, and the ORDER is the product: the
+    // question comes before the term, and what not to say is stated.
+    const t = mod.teacherView(s, "SYNTHESIS") as { naming?: Record<string, unknown> | null };
+    assert.ok(t.naming, `${band}: the console gives the teacher nothing at the naming`);
+    assert.ok(String(t.naming!["ask"]).length > 10, `${band}: no question for the teacher to open with`);
+    assert.ok(String(t.naming!["hold"]).length > 10, `${band}: nothing said about what not to explain yet`);
+
+    // The wall is structurally never handed a seat's own case.
+    assert.equal(n["yours"], null, `${band}: a desk's own case reached the projector`);
+    const own = (mod.studentView(s, seats[0]! as never, "SYNTHESIS") as { naming?: Record<string, unknown> | null }).naming;
+    assert.ok(own, `${band}: the pair's own screen shows no naming`);
+    assert.ok(String(own!["yours"] ?? "").length > 0, `${band}: the pair is shown the concept but not their own case of it`);
+  }
+});
+
+test("a naming is never shown for something the room did not do", () => {
+  /*
+   * A naming with an invented moment is worse than no naming: it teaches the
+   * concept AND teaches that the numbers on the wall are decoration. A room
+   * where nobody signed anybody has no opportunity cost to point at, and must
+   * not be told it does.
+   */
+  const s = seatMany(8, "7-8"); // seated, nothing played, no history
+  const board = mod.boardView(s, "SYNTHESIS") as { naming?: Record<string, unknown> | null };
+  if (board.naming) {
+    assert.ok(
+      board.naming["term"] !== "OPPORTUNITY COST",
+      "a room that signed nobody was told what its opportunity cost was",
+    );
+    assert.ok(
+      board.naming["term"] !== "COMPETITION SETS PRICE",
+      "a room with no contested signing was shown a bidding war",
+    );
   }
 });

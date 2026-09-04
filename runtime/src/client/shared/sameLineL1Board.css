@@ -264,3 +264,56 @@
   text-transform: none;
   margin-top: 0.2vh;
 }
+
+/* THE NAMING on the wall. Everything here is sized to the back row of a
+   classroom, not to a laptop: the term is the largest type in the module, and
+   the two label lines are the smallest thing that still clears the 1.28%
+   back-row floor the browser run enforces. */
+.slb-naming-body {
+  flex: 1 1 auto;
+  align-content: center;
+  display: grid;
+  gap: 0.6vh;
+  max-width: 76vw;
+  margin: 0 auto;
+}
+.slb-naming-lab {
+  margin: 1.4vh 0 0;
+  font-size: 1.6vh;
+  letter-spacing: 0.2em;
+  color: #7d8794;
+}
+.slb-naming-moment {
+  margin: 0;
+  font-size: 3.1vh;
+  line-height: 1.4;
+  color: var(--paper, #f6f4ec);
+}
+.slb-naming-term {
+  margin: 2.4vh 0 0;
+  font-family: var(--font-display, inherit);
+  font-size: 7.4vh;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--accent-gold, #f0b429);
+}
+.slb-naming-means {
+  margin: 0.8vh 0 0;
+  font-size: 2.7vh;
+  line-height: 1.45;
+  color: #c8cfd8;
+}
+.slb-naming-outside {
+  margin: 0;
+  font-size: 2.5vh;
+  line-height: 1.45;
+  color: #c8cfd8;
+}
+.slb-naming-dots { display: inline-flex; gap: 0.7vw; align-items: center; }
+.slb-naming-dots i {
+  width: 1.1vh;
+  height: 1.1vh;
+  border-radius: 50%;
+  background: rgba(246, 244, 236, 0.2);
+}
+.slb-naming-dots i.on { background: var(--accent-gold, #f0b429); }
