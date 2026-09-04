@@ -37,25 +37,13 @@ import {
   type TradeDeskLike,
   type TradeObject,
 } from "./market.js";
-import { extractWindowCarry, type CarriedFranchise, type WindowCarry } from "./carry.js";
+import { extractWindowCarry, type WindowCarry } from "./carry.js";
+import { extractSeasonCarry, type SeasonCarry } from "./seasonCarry.js";
 import { profileFor, type GradeBand, type GradeProfile } from "../../shared/gradeBand.js";
 import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../../shared/lessonModule.js";
 import type { CanonicalPhase } from "../../shared/phases.js";
 
 export const SAME_LINE_L3_ID = "m1l3-the-deadline";
-
-/**
- * The Week 2 module id this file would read a real season carry from.
- *
- * NOT VERIFIED: `W2_THE_SEASON_SPEC.md` does not exist as of 2026-09-04 (spec
- * §7's own words), so neither this id nor the shape below has ever shipped.
- * `extractSeasonLike` treats a seed stamped with anything else — including
- * this id, until it is confirmed — as "no season seed", which routes straight
- * to the Week 1 degradation path. When Week 2 lands for real, whoever builds
- * it should replace this guess and the parsing below with the real contract,
- * the same way a receiving module always does (`carry.ts`'s own docstring).
- */
-export const SAME_LINE_L2_ID_GUESS = "m1l2-the-season";
 
 /* ------------------------------------------------------------ objects -- */
 
@@ -215,86 +203,49 @@ export type PoolFranchise = {
   readonly seedWarning: string | null;
 };
 
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
-
 /**
- * Best-effort read of a real Week 2 carry. NOT VERIFIED against a real
- * `seasonCarry.ts` — see the docstring on `SAME_LINE_L2_ID_GUESS`. Any desk
- * that does not fit this guessed shape is dropped with a reason, exactly as
- * `carry.ts` drops a bad Week 1 desk; it never takes the whole room down.
+ * The real Week 2 carry has landed (`seasonCarry.ts`) — read via its own
+ * `extractSeasonCarry`, never re-parsed here. `SeasonCarriedFranchise` has no
+ * `holds` field (Week 2 does not model a hold changing over the season), so
+ * this falls back to the club's Week 1 opening `holds` figure, same as the
+ * stock pool does. That is an approximation, named as one: a real season
+ * would usually only convert holds into real contracts, never grow them, so
+ * this is a conservative (if anything, too generous to the desk's apron room)
+ * stand-in rather than a guess in the dangerous direction.
  */
-function readSeasonSeed(seed: unknown, receivingBand: GradeBand): { ok: true; franchises: readonly PoolFranchise[]; warnings: readonly string[] } | { ok: false; reason: string } {
-  if (!isRecord(seed) || seed["lessonModuleId"] !== SAME_LINE_L2_ID_GUESS) {
-    return { ok: false, reason: "no m1l2-the-season seed was linked" };
-  }
-  const state = seed["state"];
-  if (!isRecord(state)) return { ok: false, reason: "the linked Week 2 session carries no state" };
-  const desks = state["desks"];
-  if (!isRecord(desks)) return { ok: false, reason: "the linked Week 2 session has no desks" };
-  const warnings: string[] = ["Linked to a Week 2 room. NOT VERIFIED: no Week 2 spec exists yet, so this reading is a best-effort guess at its shape."];
-  const franchises: PoolFranchise[] = [];
-  for (const [seatId, v] of Object.entries(desks)) {
-    if (!isRecord(v)) {
-      warnings.push(`Dropped: ${seatId}: not a desk record. That desk gets a stock franchise here.`);
-      continue;
-    }
-    const clubId = v["clubId"];
-    if (typeof clubId !== "string" || !CLUBS.some((c) => c.id === clubId)) {
-      warnings.push(`Dropped: ${seatId}: unrecognised club. That desk gets a stock franchise here.`);
-      continue;
-    }
-    const twin = v["twin"] === 1 ? 1 : v["twin"] === 0 ? 0 : null;
-    const label = typeof v["label"] === "string" ? v["label"] : null;
-    const pos = v["position"];
-    if (twin === null || !label || !isRecord(pos)) {
-      warnings.push(`Dropped: ${label ?? seatId}: missing position, twin or label. That desk gets a stock franchise here.`);
-      continue;
-    }
-    const rosterRaw = Array.isArray(pos["roster"]) ? pos["roster"] : [];
-    const roster: ContractObject[] = [];
-    for (const r of rosterRaw) {
-      if (!isRecord(r)) continue;
-      const { contractId, playerId, name, role, annual, yearsRemaining, jobState } = r;
-      if (typeof contractId !== "string" || typeof playerId !== "string" || typeof name !== "string") continue;
-      if (role !== "BIG" && role !== "WING" && role !== "GUARD") continue;
-      if (typeof annual !== "number" || typeof yearsRemaining !== "number") continue;
-      const js = jobState === "DOES_JOB" || jobState === "MORE_THAN_JOB" || jobState === "DOES_NOT_DO_JOB" ? jobState : "DOES_JOB";
-      roster.push({ kind: "contract", contractId, playerId, name, role, annual, yearsRemaining, jobState: js, acquiredWeek: 1 });
-    }
-    const picksRaw = Array.isArray(pos["picks"]) ? pos["picks"] : [];
-    const picks: PickObject[] = [];
-    for (const p of picksRaw) {
-      if (!isRecord(p)) continue;
-      const { pickId, year, round, label: pl } = p;
-      if (typeof pickId !== "string" || typeof year !== "number" || (round !== 1 && round !== 2) || typeof pl !== "string") continue;
-      picks.push({ kind: "pick", pickId, year, round, label: pl });
-    }
-    const committed = typeof pos["committed"] === "number" ? pos["committed"] : CLUB[clubId as ClubId].committed.value;
-    const taxSalary = typeof pos["taxSalary"] === "number" ? pos["taxSalary"] : CLUB[clubId as ClubId].taxSalary.value;
-    const deadMoney = typeof pos["deadMoney"] === "number" ? pos["deadMoney"] : CLUB[clubId as ClubId].deadMoney.value;
-    const holds = typeof pos["holds"] === "number" ? pos["holds"] : CLUB[clubId as ClubId].holds.value;
-    const wall = typeof pos["wall"] === "number" ? pos["wall"] : null;
-    const openJobs = Array.isArray(pos["openJobs"]) ? pos["openJobs"].filter((j): j is JobRole => j === "BIG" || j === "WING" || j === "GUARD") : [];
-    franchises.push({
-      clubId: clubId as ClubId,
-      twin,
-      label,
-      committed,
-      taxSalary,
-      deadMoney,
-      holds,
-      wall,
-      openJobs,
+function fromSeasonCarry(sessionId: string, sc: SeasonCarry & { ok: true }): { franchises: readonly PoolFranchise[]; warnings: readonly string[] } {
+  void sessionId;
+  const franchises: PoolFranchise[] = sc.franchises.map((f) => {
+    const roster: ContractObject[] = f.roster.map((r) => ({
+      kind: "contract",
+      contractId: r.contractId,
+      playerId: r.playerId,
+      name: r.name,
+      role: r.role,
+      annual: r.annual,
+      yearsRemaining: r.yearsRemaining,
+      jobState: r.jobState === "DID_THE_JOB" ? "DOES_JOB" : r.jobState === "DID_NOT" ? "DOES_NOT_DO_JOB" : hashJobState(sessionId, r.contractId),
+      acquiredWeek: r.acquiredWeek,
+    }));
+    const picksOwned: PickObject[] = f.picks.length > 0 ? f.picks.map((p) => ({ kind: "pick", pickId: p.pickId, year: p.year, round: p.round, label: p.label })) : ownPicks(f.clubId, f.twin);
+    return {
+      clubId: f.clubId,
+      twin: f.twin,
+      label: f.label,
+      committed: f.committed,
+      taxSalary: f.taxSalary,
+      deadMoney: f.deadMoney,
+      holds: CLUB[f.clubId].holds.value,
+      wall: f.wall,
+      openJobs: f.openJobs,
       roster,
-      picksOwned: picks.length ? picks : ownPicks(clubId as ClubId, twin),
-      ownPickIds: ownPicks(clubId as ClubId, twin).map((p) => p.pickId),
-      band: bandOf(committed),
+      picksOwned,
+      ownPickIds: picksOwned.map((p) => p.pickId),
+      band: f.band,
       seedWarning: null,
-    });
-  }
-  const order = new Map(CLUBS.map((c, i) => [c.id, i]));
-  franchises.sort((a, b) => (order.get(a.clubId)! - order.get(b.clubId)!) || a.twin - b.twin);
-  return { ok: true, franchises, warnings };
+    };
+  });
+  return { franchises, warnings: sc.warnings };
 }
 
 /** Degrade to Week 1's own carry when no Week 2 seed is usable (spec §7 "degradation"). */
@@ -361,8 +312,11 @@ function stockPool(): readonly PoolFranchise[] {
 
 /** The one place a seed is turned into a pool of desks-to-be. See spec §7 "Seed IN". */
 function resolveSeed(sessionId: string, seed: unknown, gradeBand: GradeBand): { pool: readonly PoolFranchise[]; warnings: readonly string[] } {
-  const season = readSeasonSeed(seed, gradeBand);
-  if (season.ok) return { pool: season.franchises, warnings: season.warnings };
+  const season = extractSeasonCarry(seed, gradeBand);
+  if (season.ok) {
+    const real = fromSeasonCarry(sessionId, season);
+    return { pool: real.franchises, warnings: real.warnings };
+  }
 
   const window = extractWindowCarry(seed, gradeBand);
   if (window.ok) {

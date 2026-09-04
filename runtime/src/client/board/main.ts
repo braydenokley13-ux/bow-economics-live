@@ -969,6 +969,52 @@ function fhTwoPeaksPanel(peaks: FHTwoPeaksB[]): string {
     </div>`;
 }
 
+/** D59 W4 ruling 2: the ledger — the season's sourced destinations plus each carried desk's own-bill coverage, by label, never a seat id. */
+type FHLedgerB = {
+  destinations: { id: string; label: string; sentence: string; source: string }[];
+  coverage: { label: string; club: string; nightsSettled: number; filled?: number; coveragePercent?: number; net?: number }[];
+  moment: { headline: string; body: string };
+};
+
+/** THE LEDGER — the seventh REVEAL beat (D59 W4 ruling 2). Inline-styled and projector-scaled (vw) so it needs no new CSS class. */
+function fhLedgerBoardHtml(ledger: FHLedgerB | null): string {
+  if (!ledger) return "";
+  return `
+    <div class="fh-ledger-board" style="display:flex; flex-direction:column; gap:0.7vw; max-width:82vw;">
+      <div class="label" style="margin:0.4vw 0 0;">${escapeHtml(ledger.moment.headline)}</div>
+      <div class="synthesis-note" style="font-size:1.25vw; max-width:78vw;">${escapeHtml(ledger.moment.body)}</div>
+      <div style="display:flex; gap:1.4vw; flex-wrap:wrap;">
+        ${ledger.destinations
+          .map(
+            (d) => `<div style="flex:1 1 22vw; min-width:20vw;">
+              <div style="font-size:0.95vw; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-muted);">${escapeHtml(d.label)}</div>
+              <div style="font-size:1.1vw; line-height:1.4; margin-top:0.3vw;">${escapeHtml(d.sentence)}</div>
+            </div>`,
+          )
+          .join("")}
+      </div>
+      <div style="display:flex; gap:1.2vw; flex-wrap:wrap; margin-top:0.4vw;">
+        ${ledger.coverage
+          .map((c) => {
+            if (typeof c.filled === "number") {
+              const pct = Math.round(Math.max(0, Math.min(1, c.filled)) * 100);
+              return `<div style="min-width:13vw;">
+                  <div style="font-size:0.95vw; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-muted);">${escapeHtml(c.label)}</div>
+                  <div style="height:0.85vw; width:11vw; border-radius:999px; background:rgba(255,255,255,0.14); overflow:hidden; margin-top:0.35vw;"><div style="height:100%; width:${pct}%; background:var(--m2-violet, #7a5cff);"></div></div>
+                </div>`;
+            }
+            const net = Number(c.net ?? 0);
+            return `<div style="min-width:13vw;">
+                <div style="font-size:0.95vw; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-muted);">${escapeHtml(c.label)}</div>
+                <div style="font-size:1.4vw; font-weight:600; color:var(--ink-primary);">${Math.round(c.coveragePercent ?? 0)}%</div>
+                <div style="font-size:0.95vw; color:${net < 0 ? "#ef4444" : "#22c55e"};">${net < 0 ? "-" : ""}$${Math.abs(Math.round(net)).toLocaleString()}</div>
+              </div>`;
+          })
+          .join("")}
+      </div>
+    </div>`;
+}
+
 function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void {
   const honesty = String(view["honestyLine"] ?? "");
   // `gate-l1-projector` BLOCKING repair 2 ("`#stage` must fit its content at
@@ -1014,6 +1060,7 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
           .join("")}</div>
         <div class="synthesis-note" style="max-width:70vw;">${escapeHtml(String(view["objective"] ?? ""))}</div>
         ${fhSlateBoardHtml((view["slate"] as FHSlateB[]) ?? [])}
+        ${view["rosterNote"] ? `<div class="synthesis-note" style="max-width:74vw; font-size:1.15vw;">${escapeHtml(String(view["rosterNote"]))}</div>` : ""}
         <div class="exit-prompt" style="font-size:1.1vw; color:var(--ink-muted);">${escapeHtml(honesty)} ${escapeHtml(String(view["horizonLine"] ?? ""))} ${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</div>`;
       return;
     }
@@ -1122,6 +1169,7 @@ function renderFullHouseBoard(view: Record<string, unknown>, mode: string): void
                <div class="synthesis-note">${escapeHtml(String(view["capacityDefence"] ?? ""))}</div>`
             : ""
         }
+        ${fhLedgerBoardHtml(view["ledger"] as FHLedgerB | null)}
         <div class="exit-prompt" style="font-size:1.1vw; color:var(--ink-muted);">${escapeHtml(honesty)}</div>`;
       return;
     }

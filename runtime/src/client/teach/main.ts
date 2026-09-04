@@ -2165,6 +2165,9 @@ type FHDeskStat = {
   joinedAtNight: number;
   lastFillPct: number | null;
   heldSamePriceRun: number;
+  // D59 W4 ruling 3: the console always sees the 7-8 percent/net shape, never
+  // the 5-6 bar — independent of the room's own student-facing grade band.
+  billCoverage: { coveragePercent?: number; net?: number } | null;
 };
 
 function renderFullHouseAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): HTMLElement {
