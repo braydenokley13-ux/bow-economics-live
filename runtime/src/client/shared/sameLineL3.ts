@@ -647,6 +647,7 @@ function playMain(v: V): string {
       ${composerPanel(v)}
     </div>
     <div class="sl3-play-right">
+      ${rosterSection(v)}
       ${inboxSection(v)}
       ${outboxSection(v)}
     </div>
