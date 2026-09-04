@@ -233,8 +233,8 @@ name on the cover and one person who made the slides.
 the same number, so the sides had to buy each other rather than out-shout each other; then you lived
 three weeks inside it, including the desks that voted no. Class number: the sealed histogram, the
 median, INBAND / NEEDED / LIVEDESKS as three live integers, and the runner-up rule replayed. Real:
-on 15 May 2013 the NBA's owners voted 22–8 to deny the sale, under the league's own threshold, not
-ours, that would have moved Sacramento to Seattle; Golden 1 Center opened in 2016 (`writeTheRule.ts`
+on 15 May 2013 the NBA's owners voted 22–8 — under the league's own threshold, not ours — to deny
+the sale that would have moved Sacramento to Seattle; Golden 1 Center opened in 2016 (`writeTheRule.ts`
 CLUBS, Sacramento `identityLine`).
 Term: institution — a rule people wrote that binds them afterwards, including those who argued
 against it. Outside: a class that votes on its own phone rule and lives with it on the inconvenient day.
