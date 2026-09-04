@@ -27,6 +27,7 @@ import {
   FLOOR_LINE_5_6,
   FLOOR_LINES_7_8,
   FLOOR_ROUND_COUNT,
+  REINVEST_MIN,
   MARKET_PROFILES,
   MAX_DESKS,
   MODULE_ID,
@@ -1388,4 +1389,106 @@ test("paging the finale backwards does not take cards off thirty desks", () => {
   for (let i = 0; i < 2; i += 1) state = apply(state, { type: "teacher:synthPage" }, "SYNTHESIS", "teacher");
   assert.equal((state as unknown as { synthPage: number }).synthPage, 0, "guard: the projector did not wrap");
   assert.equal(held(), all.length, "the forward wrap emptied every desk's finale deck");
+});
+
+/* ------------------------------------------------- wave 3b: THE FLOOR views -- */
+
+test("wave 3b: THE FLOOR ballot menu is band-gated and dollar-only on the student device", () => {
+  const state56 = apply(toAdopted(withDesks(6, undefined, "5-6"), [40]), { type: "teacher:ruleStep" }, "PLAY", "teacher");
+  const seat56 = state56.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const view56 = writeTheRuleModule.studentView(state56, seat56, "PLAY") as Record<string, unknown>;
+  assert.equal(view56["mode"], "floorRounds");
+  const floor56 = view56["floor"] as { lines: { level: number }[] };
+  assert.equal(floor56.lines.length, 1, "5-6 must expose exactly one line");
+  assert.equal(floor56.lines[0]!.level, FLOOR_LINE_5_6);
+  const json56 = JSON.stringify(view56);
+  assert.equal(json56.includes("%"), false, "5-6 must never render a percent");
+  assert.equal(json56.includes("-$"), false, "5-6 must never render a negative dollar figure");
+
+  const state78 = apply(toAdopted(withDesks(6), [30]), { type: "teacher:ruleStep" }, "PLAY", "teacher");
+  const seat78 = state78.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const view78 = writeTheRuleModule.studentView(state78, seat78, "PLAY") as Record<string, unknown>;
+  const floor78 = view78["floor"] as { lines: { level: number }[] };
+  assert.equal(floor78.lines.length, FLOOR_LINES_7_8.length, "7-8 must expose all three lines");
+});
+
+test("wave 3b: boardView never carries a seat id across the floor's own stages", () => {
+  const withSeats = withDesks(6);
+  const seatIds = withSeats.clubs.filter((c) => c.seatId !== null).map((c) => c.seatId as string);
+  const rounds = apply(toAdopted(withDesks(6), [30]), { type: "teacher:ruleStep" }, "PLAY", "teacher"); // floorRounds
+  const adopted = toFloorAdopted(toAdopted(withDesks(6), [30]), [{ on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" }]);
+  const season = playSeason(toSeason(toAdopted(withDesks(6), [30])));
+  const cases: { state: WriteRuleState; phase: CanonicalPhase }[] = [
+    { state: rounds, phase: "PLAY" },
+    { state: adopted, phase: "PLAY" },
+    { state: season, phase: "PLAY" },
+    { state: season, phase: "REVEAL" },
+  ];
+  for (const { state, phase } of cases) {
+    const json = JSON.stringify(writeTheRuleModule.boardView(state, phase));
+    for (const seatId of seatIds) {
+      assert.equal(json.includes(seatId), false, `${phase}/${state.stage}: boardView leaked ${seatId}`);
+    }
+  }
+});
+
+test("wave 3b: the own-club floorLine sums agree with SettledWeek.pot.floorDocked", () => {
+  let state = toFloorAdopted(toAdopted(withDesks(9), [30]), [{ on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" }]);
+  assert.equal(state.institutions.floor?.condition, true, "the floor must actually be adopted for this test to mean anything");
+  state = apply(state, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // -> season
+  const live = state.clubs.filter((c) => c.seatId !== null);
+  live.forEach((club, i) => {
+    state = apply(state, { type: "setPrice", price: 46 }, "PLAY", club.seatId!);
+    state = apply(state, { type: "setReinvest", reinvest: i % 2 === 0 ? REINVEST_MAX : REINVEST_MIN }, "PLAY", club.seatId!);
+    state = apply(state, { type: "lock" }, "PLAY", club.seatId!);
+  });
+  state = apply(state, { type: "teacher:closeWeek" }, "PLAY", "teacher");
+
+  let sawBound = false;
+  for (const club of state.clubs.filter((c) => c.seatId !== null)) {
+    const view = writeTheRuleModule.studentView(state, club.seatId!, "PLAY") as Record<string, unknown>;
+    const weeks = view["weeks"] as { floorLine: { bound: boolean; dockedText: string; receivedText: string; line: number } | null }[];
+    assert.equal(weeks.length, club.weeks.length);
+    for (let i = 0; i < weeks.length; i += 1) {
+      const settled = club.weeks[i]!;
+      assert.ok(weeks[i]!.floorLine, `week ${i}: floorLine must be present once the floor is adopted`);
+      assert.equal(weeks[i]!.floorLine!.bound, settled.pot.floorDocked, `week ${i}: floorLine.bound must agree with pot.floorDocked`);
+      if (settled.pot.floorDocked) {
+        sawBound = true;
+        assert.equal(weeks[i]!.floorLine!.dockedText, `docked $${settled.pot.floorForfeitedDollars.toLocaleString()}`);
+      }
+    }
+  }
+  assert.ok(sawBound, "the mixed-reinvest split must produce at least one bound club to test the wiring against");
+});
+
+test("wave 3b: spotlightView and pressCandidates never leak another seat's data", () => {
+  let state = toFloorAdopted(toAdopted(withDesks(9), [30]), [{ on: true, level: FLOOR_LINES_7_8[0], recipient: "compliant" }]);
+  state = apply(state, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // -> season
+  state = playSeason(state);
+  const seatIds = state.clubs.filter((c) => c.seatId !== null).map((c) => c.seatId as string);
+
+  // An unseated id gets nothing, not a crash.
+  assert.equal(writeTheRuleModule.spotlightView!(state, "nobody-home", "PLAY"), null);
+
+  for (const seatId of seatIds) {
+    const spot = writeTheRuleModule.spotlightView!(state, seatId, "PLAY") as Record<string, unknown>;
+    assert.ok(spot, `spotlightView returned nothing for a real seated desk ${seatId}`);
+    assert.equal(typeof spot["club"], "string");
+    const json = JSON.stringify(spot);
+    for (const other of seatIds) {
+      if (other === seatId) continue;
+      assert.equal(json.includes(other), false, `spotlightView for ${seatId} leaked ${other}`);
+    }
+  }
+
+  const candidates = writeTheRuleModule.pressCandidates!(state, "PLAY");
+  assert.ok(Array.isArray(candidates));
+  for (const c of candidates) {
+    assert.ok(seatIds.includes(c.seatId), "a press candidate must be a real seated desk");
+    assert.equal(typeof c.label, "string");
+    assert.ok(c.why.length > 0);
+  }
+  // Purity: the same state must propose the same shortlist every time.
+  assert.deepEqual(writeTheRuleModule.pressCandidates!(state, "PLAY"), candidates);
 });
