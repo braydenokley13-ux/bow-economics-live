@@ -36,13 +36,13 @@ files and converges in this file. Builders never certify their own work.
 ## Campaigns
 
 - **C0 Orient/recharter — DONE 2026-09-04:** D59; old chain retired from the picker; state docs.
-- **C1 Ownership + first causal seam — ACTIVE.** Done in tree: `chooseClub` (student picks the
-  club; two front offices per club, the second labelled a twin; DEAL ME ONE fallback); the club
-  picker on `/play`; `sameLine/carry.ts` (`extractWindowCarry`: committed, taxSalary, holds,
-  unattributed, openJobs, signings, forgone, band; refuses the other band; drops a bad desk with a
-  reason); `world.ts` gains sourced `taxSalary` + `holds` for all eight clubs (W4_BILL_RESEARCH §8);
-  L1 teacher strip in the console's shape + seat→club map on the roster. In flight: Full House
-  reads the carry (builder); L1 teach console panel (builder); Press Conference runtime (builder).
+- **C1 Ownership + first causal seam — ACTIVE, nearly closed.** Landed: `chooseClub` + club picker (twins, DEAL
+  ME ONE); `sameLine/carry.ts` `extractWindowCarry` on the final record (committed · taxSalary · holds ·
+  unattributed); sourced `taxSalary`/`holds` for all eight clubs; L1 teach console panel
+  (`sameLineL1Teach.ts`, screens under `screens-l1/`); L1 implements the Press Conference contract
+  (`spotlightView`/`pressCandidates`); the refused-pick dead-picker regression (hunt on 0dffaf4) fixed at
+  `play/main.ts` onRejected. In flight: Press Conference runtime (board render + tests), Full House carry
+  intake's five W4 direction items. Owed: an e2e that races two seats for one desk; L1 apron-on-holds repair.
 - **C2 THE SEASON — BUILD WAVE LIVE.** Spec landed (`W2_THE_SEASON_SPEC.md`, rulings in D60).
   Builders: server (`sameLine/l2.ts`, `seasonCarry.ts`, `seasonData.ts`, two tests) · client
   (`client/shared/sameLineL2*.ts/.css` + dispatch lines) · Sports Reality research
