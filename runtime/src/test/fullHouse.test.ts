@@ -1164,7 +1164,9 @@ test("uiCopy reaches the desk in every student phase, with every registered key"
     "bowlPaidNote",
     "renewalsCaption",
   ];
-  const CHAIN = ["tickets", "inArena", "bill", "event", "bowl", "cash", "renewals"];
+  // D59: "players" joined the chain — the players line kept apart from the
+  // building bill (see `chainLabels.players`, `NightSettlement.payrollLine`).
+  const CHAIN = ["tickets", "inArena", "bill", "players", "event", "bowl", "cash", "renewals"];
 
   let state = seated(2);
   const check = (label: string, view: unknown) => {

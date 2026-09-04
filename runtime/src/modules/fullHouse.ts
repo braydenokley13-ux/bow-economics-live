@@ -65,7 +65,7 @@
 import { CREST_COUNT } from "./draftDay.js";
 import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
-import type { GradeBand } from "../shared/gradeBand.js";
+import { profileFor, type GradeBand } from "../shared/gradeBand.js";
 import { extractWindowCarry, type CarriedFranchise } from "./sameLine/carry.js";
 import { CLUB, type ClubId } from "./sameLine/world.js";
 
@@ -869,7 +869,13 @@ export type Obligation = {
   readonly capHit: number;
   readonly capHitText: string;
   readonly holds: number;
-  readonly holdsVerified: boolean;
+  /**
+   * The part of the cap hit not attributed to a signed contract, dead money
+   * or a hold (W4_BILL_RESEARCH §8 — SalarySwish does not label it). Cap
+   * POSITION only: it is never folded into `payroll` and never charged as a
+   * cash dollar anywhere on the bill.
+   */
+  readonly unattributed: number;
   readonly signings: readonly ObligationSigning[];
   readonly band: string;
   /** How far past the tax line the tax salary sits, as a magnitude (0 when under it). */
@@ -915,7 +921,7 @@ export function obligationFor(f: CarriedRecord, taxLine: number): Obligation {
     capHit: Math.round(f.committed),
     capHitText: millionsText(f.committed),
     holds: f.holds,
-    holdsVerified: f.holdsVerified,
+    unattributed: f.unattributed,
     signings: f.signings,
     band: f.band,
     overTaxBy: Math.max(0, payroll - taxLine),
@@ -945,7 +951,7 @@ function carriedRecordOf(f: CarriedFranchise): CarriedRecord {
     committed: f.committed,
     deadMoney: f.deadMoney,
     holds: f.holds,
-    holdsVerified: f.holdsVerified,
+    unattributed: f.unattributed,
     taxSalary: f.taxSalary,
     band: f.band,
     openJobs: [...f.openJobs],
@@ -1150,7 +1156,8 @@ export type CarriedRecord = {
   readonly committed: number;
   readonly deadMoney: number;
   readonly holds: number;
-  readonly holdsVerified: boolean;
+  /** See `Obligation.unattributed`: cap position only, never a cash input. */
+  readonly unattributed: number;
   /** Roster salary + dead money. Every dollar bill is computed from this. */
   readonly taxSalary: number;
   readonly band: string;
@@ -2877,7 +2884,9 @@ export const billLine56 = (payrollWholeMillions: string): string =>
 /** The approved 7-8 addition (W4_BILL_RESEARCH.md §6), verbatim, as the translation table's caption. */
 export const BILL_CAPTION_78 =
   "Players as a group are promised about half of all NBA money, so payroll is roughly half of revenue by design. Your TV check covers about Memphis ~95%, Boston ~75%, New York ~70% of payroll. Tax is charged on the end-of-season number — $1 per $1 in the first band, $3 if you were in the tax three of the last four years — and half of it goes to the teams that stayed under.";
-export const HOLDS_CAVEAT_78 = "Cap holds not separately verified for this club: the tax salary shown equals the cap hit, which may overstate it.";
+/** Shown only when `unattributed > 0` (W4_BILL_RESEARCH §8). Never says a cash figure is charged — it isn't. */
+export const UNATTRIBUTED_CAVEAT_78 = (amountText: string): string =>
+  `${amountText} of this club's cap figure is not a signed contract, dead money or a cap hold — SalarySwish does not label it, and it is never charged as a cash dollar.`;
 export const BILL_SEASON_LINE_78 = (payrollText: string, leagueText: string): string =>
   `National TV ≈ ${leagueText} against payroll ${payrollText}; the gap, plus tax, plus running the building, comes from local revenue, of which tonight's gate is one of 41.`;
 
@@ -3260,7 +3269,9 @@ export function billView(desk: Desk, band: GradeBand, payrollDefinition: string 
     capHitText: o.capHitText,
     capHitDefinition: payrollDefinition,
     holds: o.holds,
-    holdsCaveat: o.holdsVerified ? null : HOLDS_CAVEAT_78,
+    // D59: the residual is its own line, never folded into holds or tax salary.
+    unattributed: o.unattributed,
+    unattributedCaveat: o.unattributed > 0 ? UNATTRIBUTED_CAVEAT_78(millionsText(o.unattributed)) : null,
     bandName: o.band,
     overTaxBy: o.overTaxBy,
     taxLine: o.taxLine,

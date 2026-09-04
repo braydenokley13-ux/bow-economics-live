@@ -77,6 +77,7 @@
  */
 import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
+import { isGradeBand, profileFor, type GradeBand } from "../shared/gradeBand.js";
 
 /* ------------------------------------------------------------- markets -- */
 
@@ -460,6 +461,33 @@ export const hostSlotFor = (slot: number, week: number, leagueSize: number): num
 
 export type RuleProposal = { share: number; condition: boolean };
 
+/**
+ * WEEK 6 — THE BOARD OF GOVERNORS, second institution.
+ * ------------------------------------------------------------------------
+ * `InstitutionId` names the two things this room votes on. THE SHARE is
+ * institution 1 (above, unchanged). THE FLOOR is institution 2: its own
+ * ballot, its own two rounds, its own two-thirds seal, and its own printed
+ * cost line — never a boolean rider on institution 1's ballot.
+ *
+ * `AdoptedRule` is reused, not duplicated, for the floor's own adopted row
+ * (spec: `institutions: Record<InstitutionId, AdoptedRule | null>`): on a
+ * FLOOR row, `share` carries the adopted LEVEL (0 when the floor failed or
+ * the room voted it off) and `condition` carries whether the floor is ON.
+ * `recipient` is meaningful only on a floor row. `institution` defaults to
+ * "share" when absent, so an old snapshot's `adopted` object — written
+ * before this field existed — still reads as the share row it always was
+ * (the `lockedAtBarRelease()` tolerance pattern).
+ */
+export type InstitutionId = "share" | "floor";
+
+/** Who receives a floor-forfeited half, at 7-8 only (5-6 is always "compliant"). */
+export type FloorRecipient = "compliant" | "everyone";
+
+/** The floor's own ballot. `level`/`recipient` are read only when `on` and only at 7-8. */
+export type FloorProposal = { on: boolean; level: number; recipient: FloorRecipient };
+
+export const institutionOf = (row: { institution?: InstitutionId }): InstitutionId => row.institution ?? "share";
+
 export type AdoptedRule = {
   share: number;
   condition: boolean;
@@ -471,6 +499,11 @@ export type AdoptedRule = {
   median: number;
   /** The share that finished second — the counterfactual replay uses it. */
   runnerUp: number;
+  /** Which institution this row is. Absent on every pre-existing snapshot and
+   *  every pre-existing reader, and read as "share" wherever it matters. */
+  institution?: InstitutionId;
+  /** Meaningful only on a FLOOR row — who the forfeited half goes to. */
+  recipient?: FloorRecipient;
 };
 
 export type PotFlow = {

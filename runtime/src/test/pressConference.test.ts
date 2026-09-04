@@ -129,11 +129,40 @@ async function inPlay(names: string[], mod: string = pcTestModule.id) {
   return { svc, repo, code, key, seats };
 }
 
-/** Pushes a session's `pausedAt` back into the past by `ms`, without waiting for real time to pass. */
+/**
+ * Simulates `ms` of REAL wall-clock time passing while a session sits
+ * paused, without an actual `ms`-long test. `pausedAt` moves back by `ms` —
+ * so `Date.now() - pausedAt` (what `clockShiftForResume` reads) comes out to
+ * `ms`, exactly as if the pause had genuinely lasted that long — and, when a
+ * FINAL CALL is running, `finalCallEndsAt` moves back by the SAME `ms`, to
+ * preserve the one fact that actually matters: how much time was left on the
+ * clock at the true, unfaked moment the room paused. Moving `pausedAt` alone
+ * would silently invent extra remaining time (the deadline stays where it
+ * was while the anchor it's measured against walks backward), which is a bug
+ * in the simulation, not the feature — caught by this test file's own first
+ * run.
+ *
+ * A checkpoint (captured by `freeze`, taken independently of the live
+ * `round`) carries its OWN frozen copy of the round as of capture time, so a
+ * scenario that restores into that checkpoint needs it backdated by the same
+ * `ms` too, or the same off-by-the-anchor mistake reappears one field over.
+ */
 async function backdatePause(repo: SnapshotRepository, code: string, ms: number): Promise<void> {
   const row = (await repo.getSessionByCode(code))!;
   assert.ok(row.pausedAt, "backdatePause called on a session that is not paused");
-  const outcome = await repo.updateSession(row.id, { pausedAt: new Date(Date.parse(row.pausedAt!) - ms).toISOString() }, row.version);
+  const patch: { pausedAt: string; round?: NonNullable<typeof row.round>; checkpoint?: NonNullable<typeof row.checkpoint> } = {
+    pausedAt: new Date(Date.parse(row.pausedAt!) - ms).toISOString(),
+  };
+  if (row.round?.finalCallEndsAt) {
+    patch.round = { ...row.round, finalCallEndsAt: new Date(Date.parse(row.round.finalCallEndsAt) - ms).toISOString() };
+  }
+  if (row.checkpoint?.round?.finalCallEndsAt) {
+    patch.checkpoint = {
+      ...row.checkpoint,
+      round: { ...row.checkpoint.round, finalCallEndsAt: new Date(Date.parse(row.checkpoint.round.finalCallEndsAt) - ms).toISOString() },
+    };
+  }
+  const outcome = await repo.updateSession(row.id, patch, row.version);
   assert.ok(outcome.ok, "backdatePause failed to write");
 }
 
@@ -243,7 +272,10 @@ test("(c) pressConference against an unknown or foreign seat is refused, not sil
 /* ------------------------------------------- (d) board never receives the seat id -- */
 
 test("(d) the board payload carries the label and the module's public view, and never the seat id", async () => {
-  const { svc, code, key, seats } = await inPlay(["A", "B"]);
+  // Distinct, multi-character names — a single-letter fixture name ("A"/"B")
+  // can coincidentally appear inside an unrelated field (a hex-ish label, a
+  // round key) and turn a real leak-check into a false pass or a false fail.
+  const { svc, code, key, seats } = await inPlay(["Alex & Sam", "Blake & Rae"]);
   const seatId = seats[0]!.seat.id;
   await svc.submitAction(seats[0]!.deviceToken!, { type: "lock" });
   await svc.control(code, { type: "pressConference", seatId }, key);

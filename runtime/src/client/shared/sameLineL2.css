@@ -1,0 +1,154 @@
+/*
+ * THE SAME LINE — L2 "THE SEASON" student panels.
+ *
+ * Sits inside the front-office shell (hq.css) exactly as sameLineL1.css does;
+ * every selector here is scoped to this lesson's own objects (`.sl2-*`).
+ * Where a component is identical in spirit to L1's (the picker, the offer
+ * bar, the naming panel, the forgone list) this file reuses L1's `.sl-*`
+ * class names on purpose — those rules already live in `sameLineL1.css`,
+ * which every surface that ships this lesson also links, and duplicating
+ * them here would be two places for the same look to drift apart.
+ */
+
+/* ---------------------------------------------------------------- picker -- */
+.sl2-picker { padding: 24px; max-width: 980px; margin: 0 auto; }
+.sl2-picker-eyebrow { font-size: 11px; letter-spacing: 0.18em; color: var(--ink-muted); font-weight: 700; }
+.sl2-picker-title { font-family: var(--font-display); font-size: 26px; letter-spacing: 0.01em; margin: 6px 0 18px; }
+.sl2-pick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 900px) { .sl2-pick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sl2-pick {
+  display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 14px;
+  background: var(--surface-card); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;
+  color: inherit; font: inherit; cursor: pointer; transition: background 140ms var(--ease-decel);
+}
+.sl2-pick:hover { background: var(--surface-elevated); }
+.sl2-pick:disabled { opacity: 0.4; cursor: not-allowed; }
+.sl2-pick-name { font-weight: 700; font-size: 15px; }
+.sl2-pick-city { font-size: 12px; color: var(--ink-secondary); }
+.sl2-pick-dealt {
+  font-size: 9.5px; letter-spacing: 0.1em; font-weight: 800; color: var(--accent-gold);
+  border: 1px solid rgba(244, 185, 66, 0.4); border-radius: 3px; padding: 2px 5px; align-self: flex-start;
+}
+.sl2-pick-sit { font-size: 12px; color: var(--ink-secondary); }
+.sl2-pick-meta { font-size: 10px; letter-spacing: 0.08em; color: var(--ink-muted); }
+.sl2-pick-open { font-size: 11px; font-weight: 700; color: var(--accent-gold); }
+.sl2-picker-foot { margin-top: 16px; text-align: center; }
+
+/* -------------------------------------------------------------- job report -- */
+.sl2-hook { padding: 8px 4px 4px; }
+.sl2-hook-eyebrow { font-size: 11px; letter-spacing: 0.18em; color: var(--ink-muted); font-weight: 700; }
+.sl2-hook-title { font-family: var(--font-display); font-size: 22px; margin: 6px 0 16px; max-width: 62ch; }
+.sl2-hook-beat { font-size: 11px; color: var(--accent-blue); font-weight: 700; margin-bottom: 10px; }
+.sl2-report-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 900px) { .sl2-report-grid { grid-template-columns: minmax(0, 1fr); } }
+.sl2-report-card {
+  background: var(--surface-card); border-radius: 8px; padding: 14px; border-left: 3px solid var(--ink-muted);
+}
+.sl2-report-card[data-tone="good"] { border-left-color: var(--cap-safe); }
+.sl2-report-card[data-tone="ok"] { border-left-color: var(--accent-blue); }
+.sl2-report-card[data-tone="bad"] { border-left-color: var(--over-the-line); }
+.sl2-report-role { font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-muted); font-weight: 700; }
+.sl2-report-name { font-size: 16px; margin: 3px 0; }
+.sl2-report-verdict { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; }
+.sl2-report-card[data-tone="good"] .sl2-report-verdict { color: var(--cap-safe); }
+.sl2-report-card[data-tone="ok"] .sl2-report-verdict { color: var(--accent-blue); }
+.sl2-report-card[data-tone="bad"] .sl2-report-verdict { color: var(--over-the-line); }
+.sl2-report-why { font-size: 12.5px; color: var(--ink-secondary); margin-top: 6px; }
+.sl2-note { color: var(--ink-secondary); font-size: 13px; padding: 12px; }
+
+/* ---------------------------------------------------------------- board -- */
+.sl2-board {
+  display: flex; flex-direction: column; gap: 1px; background: var(--hq-hair);
+  max-height: min(50vh, 420px); overflow-y: auto; scrollbar-width: thin;
+}
+.sl2-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 2px 12px; align-items: center;
+  padding: 10px 14px; background: rgba(13, 17, 25, 0.94); width: 100%; text-align: left; border: 0;
+  border-left: 2px solid transparent; color: inherit; font: inherit; cursor: pointer;
+  transition: background 140ms var(--ease-decel), border-color 140ms var(--ease-decel);
+}
+.sl2-row:hover { background: rgba(28, 34, 46, 0.96); }
+.sl2-row[aria-pressed="true"] { background: linear-gradient(90deg, var(--hq-club-dim), rgba(13, 17, 25, 0.94) 60%); border-left-color: var(--hq-club); }
+.sl2-row[data-reach="no"] { opacity: 0.5; cursor: not-allowed; }
+.sl2-row-name { font-size: 14px; font-weight: 650; }
+.sl2-row-role { font-size: 9.5px; letter-spacing: 0.16em; font-weight: 700; color: var(--ink-muted); grid-row: 2; }
+.sl2-row-ask { font-family: var(--font-number); font-size: 13px; text-align: right; color: var(--ink-secondary); }
+.sl2-row-why { grid-column: 1 / -1; font-size: 11.5px; color: var(--over-the-line); }
+
+/* ------------------------------------------------------------- composer -- */
+.sl2-card { background: var(--surface-card); border-radius: 8px; padding: 16px; }
+.sl2-card-name { font-size: 18px; margin: 0 0 2px; }
+.sl2-card-role { font-size: 11px; letter-spacing: 0.1em; color: var(--ink-muted); margin-bottom: 12px; }
+.sl2-compose-ask { font-size: 13px; color: var(--ink-secondary); margin-bottom: 10px; }
+.sl2-tools { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.sl2-tool {
+  background: var(--surface-inset); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 8px 10px;
+  color: var(--ink-primary); font: inherit; cursor: pointer; text-align: left;
+}
+.sl2-tool[aria-pressed="true"] { border-color: var(--accent-blue); background: rgba(77, 162, 232, 0.12); }
+.sl2-tool small { display: block; font-size: 10px; color: var(--ink-muted); }
+.sl2-term-row { display: flex; gap: 6px; }
+.sl2-term-btn {
+  background: var(--surface-inset); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 6px 10px;
+  color: var(--ink-primary); font: inherit; cursor: pointer;
+}
+.sl2-term-btn[aria-pressed="true"] { border-color: var(--accent-gold); }
+.sl2-term-lab { font-size: 10px; letter-spacing: 0.14em; color: var(--ink-muted); display: block; margin: 8px 0 4px; }
+.sl2-dial { margin: 10px 0; }
+.sl2-dial input[type="range"] { width: 100%; }
+.sl2-money { display: flex; align-items: baseline; gap: 8px; margin: 10px 0; }
+.sl2-money span:first-child { font-family: var(--font-number); font-size: 22px; font-weight: 700; color: var(--accent-gold); }
+.sl2-money-per { font-size: 10px; color: var(--ink-muted); }
+
+/* -------------------------------------------------------------- pockets -- */
+.sl2-pockets { display: flex; flex-direction: column; gap: 1px; background: var(--hq-hair); }
+.sl2-pocket { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(13, 17, 25, 0.94); }
+.sl2-pocket-role { font-size: 12px; font-weight: 650; }
+.sl2-pocket-state { font-size: 10px; letter-spacing: 0.1em; color: var(--ink-muted); }
+.sl2-pocket[data-filled="no"] .sl2-pocket-state { color: var(--cap-tight); }
+.sl2-pocket-pass {
+  font-size: 10px; letter-spacing: 0.06em; font-weight: 700; color: var(--accent-blue); background: none;
+  border: 1px solid rgba(77, 162, 232, 0.4); border-radius: 4px; padding: 4px 8px; cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- wall -- */
+.sl2-wall-amount { font-family: var(--font-number); font-size: 20px; color: var(--accent-gold); margin: 4px 0; }
+.sl2-wall-attr { font-size: 12px; color: var(--ink-secondary); }
+.sl2-roleask { display: grid; gap: 6px; }
+.sl2-roleask div { display: flex; justify-content: space-between; font-size: 12px; }
+.sl2-roleask dt { color: var(--ink-muted); }
+.sl2-roleask dd { font-family: var(--font-number); color: var(--ink-primary); margin: 0; }
+
+/* ---------------------------------------------------------- consequence -- */
+.sl2-consequence { padding: 8px 4px; }
+.sl2-argue { padding: 8px 4px; }
+
+/* ---------------------------------------------------------- commit capture -- */
+.sl2-capture {
+  margin-top: 14px; background: var(--surface-inset); border: 1px solid rgba(244, 185, 66, 0.3); border-radius: 8px; padding: 14px;
+}
+.sl2-capture-eyebrow { font-size: 10.5px; letter-spacing: 0.14em; color: var(--accent-gold); font-weight: 800; margin-bottom: 8px; }
+.sl2-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.sl2-chip {
+  background: var(--surface-card); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px; padding: 6px 12px;
+  font-size: 12px; color: var(--ink-primary); cursor: pointer;
+}
+.sl2-chip[aria-pressed="true"] { border-color: var(--accent-gold); background: rgba(244, 185, 66, 0.14); }
+.sl2-line-lab { display: block; font-size: 12px; color: var(--ink-secondary); margin-bottom: 4px; }
+.sl2-line-input {
+  width: 100%; background: var(--surface-panel); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px;
+  color: var(--ink-primary); font: inherit; padding: 8px; resize: vertical;
+}
+.sl2-line-count { font-size: 10.5px; color: var(--ink-muted); margin: 4px 0 10px; }
+.sl2-capture-actions { display: flex; gap: 8px; }
+
+/* ---------------------------------------------------------------- tape -- */
+.sl2-tape { display: grid; gap: 10px; }
+.sl2-tape-card { background: var(--surface-card); border-radius: 8px; padding: 14px; }
+.sl2-tape-eyebrow { font-size: 10px; letter-spacing: 0.14em; color: var(--ink-muted); font-weight: 700; }
+.sl2-tape-chose { font-size: 14px; margin: 6px 0; }
+.sl2-tape-lab { font-size: 10px; letter-spacing: 0.1em; color: var(--ink-muted); margin: 6px 0 2px; }
+.sl2-tape-options ul { margin: 0; padding-left: 18px; font-size: 12px; color: var(--ink-secondary); }
+.sl2-tape-forgone { font-size: 12px; color: var(--over-the-line); margin-top: 6px; }
+.sl2-tape-result { font-size: 12px; font-weight: 700; margin-top: 6px; }
+.sl2-tape-known { font-size: 11px; color: var(--ink-muted); margin-top: 4px; }

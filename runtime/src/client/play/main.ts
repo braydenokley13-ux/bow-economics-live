@@ -321,6 +321,12 @@ function startGame(): void {
         // chrome over the closing frame. The module's own registered
         // all-nights-done line is already in the normal slot.
         if (NIGHT_CLOSED_REJECTIONS.has(error.message)) return;
+        // A refused club pick must land INSIDE the picker, which locked its
+        // own buttons on the click: two students racing for the last front
+        // office at one club is an ordinary LOBBY event, and the loser needs
+        // the reason and live buttons, not a page-level line and a dead grid.
+        // The next poll (≤1.2s) re-renders the picker with this message.
+        if (_action.type === "chooseClub" || _action.type === "takeSeat") sameLineL1Error(error.message);
         showError(error.message);
       },
       onSent: (_action, response) => {

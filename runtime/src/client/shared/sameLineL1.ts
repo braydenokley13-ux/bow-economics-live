@@ -876,7 +876,9 @@ function revealMain(v: V): string {
  * silently accepting a pick the server will refuse.
  */
 function renderPicker(v: V, choices: V[], host: HTMLElement, submit: Submit): void {
-  const key = "pick:" + choices.map((c) => `${str(c["clubId"])}=${num(c["open"])}`).join(",") + (error ? "!" : "");
+  // The refusal text is part of the key so a second, different refusal also
+  // rebuilds the grid with live buttons (see play/main.ts onRejected).
+  const key = "pick:" + choices.map((c) => `${str(c["clubId"])}=${num(c["open"])}`).join(",") + "|" + (error ?? "");
   if (mountKey === key) return;
   mountKey = key;
   const cards = choices
