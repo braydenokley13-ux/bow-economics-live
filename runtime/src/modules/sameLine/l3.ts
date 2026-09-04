@@ -997,13 +997,15 @@ export function pressCandidatesFor(state: SameLineL3State, _phase: CanonicalPhas
 /* ----------------------------------------------------------------- naming -- */
 
 /**
- * The four D61 naming chains for THE DEADLINE. `means` is the economics —
- * written now. `outside`'s real sports line is a Sports Reality product,
- * researched and dated separately (D2 discipline) — marked REAL EXAMPLE
- * PENDING as a placeholder so it is unmistakable and easy to find and splice
- * in, never invented here.
+ * The four D61 naming chains for THE DEADLINE. `means` is the economics.
+ * `real` is the dated, sourced real sports-business fact (D62) — GAINS FROM
+ * TRADE and SUBJECTIVE VALUE are filled from the R-7 pass
+ * (`docs/gauntlet/module-1/rebuild/W3_R7_REAL_EXAMPLES.md`); RATIONING and
+ * ROOM (CONSTRAINT) have no dated fact sourced yet and carry a teacher-card
+ * note instead — owed, not invented. `outside` always leaves basketball
+ * (l1.ts:518).
  */
-type Naming = { readonly id: string; readonly term: string; readonly moment: string; readonly means: string; readonly outside: string };
+type Naming = { readonly id: string; readonly term: string; readonly moment: string; readonly means: string; readonly real: string; readonly outside: string };
 
 function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming[] {
   const out: Naming[] = [];
@@ -1015,7 +1017,8 @@ function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming
       term: "GAINS FROM TRADE",
       moment: `${executed.length} trade${executed.length === 1 ? "" : "s"} cleared in this room. Both desks had to say yes before either one happened.`,
       means: "A trade only happens when both sides believe they come out ahead of where they started — nobody is forced to click accept. Voluntary exchange can create value even though nothing new was built; it just moved to where it was worth more.",
-      outside: "REAL EXAMPLE PENDING — a real trade-deadline deal both front offices defended publicly as a win for their own side.",
+      real: "On February 5, 2026, Boston sent Anfernee Simons (about $27.7 million a year) to Chicago and got back Nikola Vučević (about $21.5 million a year) plus a draft pick. Boston needed a big man to chase a top playoff seed; Chicago wasn't chasing anything and turned an older expiring contract into a younger one plus an extra pick. Neither team got the same thing back — both improved by their own goal, which is exactly what gains from trade means.",
+      outside: "Two families swap houses for a week in the summer. Nobody built a house. Both got a holiday.",
     });
   }
 
@@ -1026,7 +1029,8 @@ function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming
       term: "SUBJECTIVE VALUE",
       moment: `At least one desk declined an offer here — "${declines[0]!.chip}." The same package that got turned down by one desk might have been accepted instantly by another.`,
       means: "The same contract is not worth the same amount to every desk — it depends on what job that desk still needs done and what it already has too much of. Price is not a fact stamped on the object; it is what a particular room needs right now.",
-      outside: "REAL EXAMPLE PENDING — a real player one team gave up on for almost nothing who filled an exact need somewhere else.",
+      real: "On July 8, 2025, Denver traded Michael Porter Jr. (owed about $79 million over two years) to Brooklyn for Cameron Johnson (owed about $44 million) — plus an unprotected future first-round pick to make Brooklyn say yes. Denver wanted out from under the bigger contract; Brooklyn had room under the salary cap and was willing to take it on for a price. The same contract was a burden to one team and a bargain to the other, on the very same afternoon.",
+      outside: "The old sofa in your grandmother's flat. She pays someone to take it away. The family moving into an empty apartment would pay her for it. Same sofa, opposite price.",
     });
   }
 
@@ -1035,7 +1039,8 @@ function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming
     term: "RATIONING",
     moment: "Every desk's inbox could hold three live offers, never more. When a fourth arrived, it had nowhere to land until one of the first three was answered.",
     means: "When something people want is limited — an answer, a roster spot, a seat — something has to decide who gets it first. This room used a rule (a cap of three) instead of a price. Rationing is not the exception; every scarce thing gets rationed by something.",
-    outside: "REAL EXAMPLE PENDING — a real front office that has publicly described how many live trade conversations it can actually run at once near a deadline.",
+    real: "No dated real example is sourced for RATIONING yet — teacher card owed (Sports Reality).",
+    outside: "A doctor's waiting room can only see so many patients today. When more people show up than there are appointment slots, a rule — first come, first served, or triage — decides who gets seen now and who waits, whether or not anyone likes the rule.",
   });
 
   if (profile.maxVariables >= 3) {
@@ -1046,7 +1051,8 @@ function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming
         term: "ROOM (CONSTRAINT)",
         moment: `${walled.length} desk${walled.length === 1 ? "" : "s"} in this room carried a wall it drew for itself back in July. Today's trade had to fit inside a line decided months earlier.`,
         means: "A constraint set in the past can silently decide what you are allowed to do today, even in a moment that feels completely unrelated to when you set it. The rule did not change between then and now — your room under it did.",
-        outside: "REAL EXAMPLE PENDING — a real team whose earlier cap decision is publicly reported to have blocked a specific trade-deadline move.",
+        real: "No dated real example is sourced for ROOM (CONSTRAINT) yet — teacher card owed (Sports Reality).",
+        outside: "A gym membership you signed up for last year, with a contract that does not end until spring, decides whether you can join a friend's new gym today — even though the two decisions felt completely separate when you made them.",
       });
     }
   }
@@ -1054,12 +1060,12 @@ function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming
   return out;
 }
 
-function namingFrame(state: SameLineL3State, profile: GradeProfile): { index: number; count: number; term: string; moment: string; means: string; outside: string } | null {
+function namingFrame(state: SameLineL3State, profile: GradeProfile): { index: number; count: number; term: string; moment: string; means: string; real: string; outside: string } | null {
   const all = namings(state, profile);
   if (all.length === 0) return null;
   const i = Math.max(0, Math.min(state.beat, all.length - 1));
   const n = all[i]!;
-  return { index: i, count: all.length, term: n.term, moment: n.moment, means: n.means, outside: n.outside };
+  return { index: i, count: all.length, term: n.term, moment: n.moment, means: n.means, real: n.real, outside: n.outside };
 }
 
 /* ------------------------------------------------------------------ views -- */

@@ -588,16 +588,60 @@ test("studentView market entries carry a public holderId, never a seat id, plus 
   assert.equal(entry.label, "B-1");
 });
 
-test("naming appears only at SYNTHESIS/COMPLETE, with the {index,count,term,moment,means,outside} shape, on both studentView and boardView", () => {
+test("naming appears only at SYNTHESIS/COMPLETE, with the {index,count,term,moment,means,real,outside} shape, on both studentView and boardView", () => {
   const state: SameLineL3State = { ...twoDeskState(), marketClosed: true, executed: [{ id: "o1", hour: 1, fromSeat: "A", toSeat: "B", send: ["a-1"], want: ["b-1"] }] };
   const playView = sameLineL3Module.studentView(state, "A", "PLAY") as { naming: unknown };
   assert.equal(playView.naming, null);
-  const synthStudent = sameLineL3Module.studentView(state, "A", "SYNTHESIS") as { naming: { index: number; count: number; term: string; moment: string; means: string; outside: string } | null };
+  const synthStudent = sameLineL3Module.studentView(state, "A", "SYNTHESIS") as { naming: { index: number; count: number; term: string; moment: string; means: string; real: string; outside: string } | null };
   assert.ok(synthStudent.naming);
   assert.equal(typeof synthStudent.naming!.term, "string");
-  assert.match(synthStudent.naming!.outside, /REAL EXAMPLE PENDING/);
+  assert.match(synthStudent.naming!.real, /2026-02-05/);
+  assert.doesNotMatch(synthStudent.naming!.outside, /REAL EXAMPLE PENDING/);
   const synthBoard = sameLineL3Module.boardView(state, "SYNTHESIS") as { naming: { term: string } | null };
   assert.ok(synthBoard.naming);
+});
+
+test("D62: every L3 naming card carries a non-empty real line, and no REAL EXAMPLE PENDING placeholder survives", () => {
+  /*
+   * D62 (docs/PRODUCT_DECISIONS.md): the naming card gains a `real` line so
+   * the dated sports fact is never improvised aloud. GAINS FROM TRADE and
+   * SUBJECTIVE VALUE are filled from the R-7 pass; RATIONING and ROOM
+   * (CONSTRAINT) have no dated fact sourced yet and must say so plainly
+   * rather than leave the field empty or leave the PENDING placeholder in
+   * `outside` (l1.ts:518 — outside must leave basketball).
+   */
+  const walled = { ...desk("A", "memphis", 0, 100_000_000, []), books: { ...desk("A", "memphis", 0, 100_000_000, []).books, wall: 100_000_000 } };
+  const state: SameLineL3State = {
+    ...twoDeskState("7-8"),
+    desks: { A: walled, B: desk("B", "detroit", 0, 100_000_000, []) },
+    marketClosed: true,
+    executed: [{ id: "o1", hour: 1, fromSeat: "A", toSeat: "B", send: ["a-1"], want: ["b-1"] }],
+  };
+  const withDecline = {
+    ...walled,
+    captures: [...walled.captures, { id: "cap-x", seatId: "A" as const, kind: "decline" as const, chip: DECLINE_CHIPS[0], hour: 1 as const }],
+  };
+  const full: SameLineL3State = { ...state, desks: { A: withDecline, B: state.desks["B"]! } };
+
+  const seenTerms = new Set<string>();
+  let walk = full;
+  let guard = 0;
+  while (guard < 12) {
+    guard += 1;
+    const f = (sameLineL3Module.boardView(walk, "SYNTHESIS") as { naming: { term: string; real: string; outside: string; index: number; count: number } | null }).naming;
+    if (!f) break;
+    if (seenTerms.has(f.term)) break;
+    seenTerms.add(f.term);
+    assert.ok(f.real.length > 0, `${f.term}: empty real line`);
+    assert.doesNotMatch(f.real, /REAL EXAMPLE PENDING/, `${f.term}: PENDING placeholder survives in real`);
+    assert.doesNotMatch(f.outside, /REAL EXAMPLE PENDING/, `${f.term}: PENDING placeholder survives in outside`);
+    assert.ok(f.outside.length > 0, `${f.term}: empty outside line`);
+    const nx = sameLineL3Module.reduce(walk, { type: "teacher:revealNext" }, ctx("teacher", "SYNTHESIS", ["teacher"]));
+    if (!nx.ok || nx.state === walk) break;
+    walk = nx.state as SameLineL3State;
+  }
+  assert.ok(seenTerms.has("GAINS FROM TRADE"), "gains from trade never showed up in this walk");
+  assert.ok(seenTerms.has("SUBJECTIVE VALUE"), "subjective value never showed up in this walk");
 });
 
 test("studentView surfaces this desk's own season-settle result at REVEAL/CONSEQUENCE, never before", () => {

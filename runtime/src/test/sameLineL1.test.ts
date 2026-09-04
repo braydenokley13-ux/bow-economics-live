@@ -1345,6 +1345,62 @@ test("the naming is earned from the room's own numbers, and both bands get their
   }
 });
 
+test("D62: every L1 naming card carries a non-empty real line, and outside never leaks a club or player name", () => {
+  /*
+   * D62 (docs/PRODUCT_DECISIONS.md): the naming card gains a `real` line so
+   * the dated sports fact is never improvised aloud (L1/L2 back-fill owed).
+   * `outside` must leave basketball entirely (l1.ts:518) — it must not
+   * smuggle a real club or player name the way L2's sunk-cost card once did.
+   */
+  const clubNames = CLUBS.map((c) => c.name);
+  const playerNames = BOARD.map((p) => p.name);
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = seatMany(8, band);
+    const seats = Object.keys(s.desks);
+    for (let day = 0; day < DAYS; day += 1) {
+      for (const [i, seatId] of seats.entries()) {
+        const view = mod.studentView(s, seatId as never, "PLAY") as { board?: Record<string, unknown>[] };
+        const pick = (view.board ?? []).filter((c) => c["reachable"] === true)[(i + day) % 3];
+        if (!pick) continue;
+        const best = pick["best"] as Record<string, unknown> | null;
+        if (!best) continue;
+        const r = mod.reduce(
+          s,
+          { type: "offer", playerId: String(pick["id"]), tool: String(best["tool"]), annual: Number(best["max"]) },
+          ctx("PLAY", seatId),
+        );
+        if (r.ok) s = r.state;
+      }
+      const closed = mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher"));
+      if (closed.ok) s = closed.state;
+    }
+
+    const seenTerms = new Set<string>();
+    let walk = s;
+    for (let i = 0; i < 8; i += 1) {
+      const f = (mod.boardView(walk, "SYNTHESIS") as { naming?: Record<string, unknown> | null }).naming;
+      if (!f) break;
+      const term = String(f["term"]);
+      if (seenTerms.has(term)) break;
+      seenTerms.add(term);
+      const real = String(f["real"]);
+      const outside = String(f["outside"]);
+      assert.ok(real.length > 0, `${band}/${term}: empty real line`);
+      assert.ok(outside.length > 0, `${band}/${term}: empty outside line`);
+      for (const name of clubNames) {
+        assert.ok(!outside.includes(name), `${band}/${term}: outside line names a club (${name})`);
+      }
+      for (const name of playerNames) {
+        assert.ok(!outside.includes(name), `${band}/${term}: outside line names a player (${name})`);
+      }
+      const nx = mod.reduce(walk, { type: "teacher:revealNext" }, ctx("SYNTHESIS", "teacher"));
+      if (!nx.ok || nx.state === walk) break;
+      walk = nx.state;
+    }
+    assert.ok(seenTerms.size > 0, `${band}: no naming cards were reached to check`);
+  }
+});
+
 test("a naming is never shown for something the room did not do", () => {
   /*
    * A naming with an invented moment is worse than no naming: it teaches the

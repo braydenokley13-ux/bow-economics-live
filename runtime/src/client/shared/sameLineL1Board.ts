@@ -315,6 +315,7 @@ function namingFrame(v: V): string {
       <p class="slb-naming-moment">${esc(str(f["moment"]))}</p>
       <p class="slb-naming-term">${esc(str(f["term"]))}</p>
       <p class="slb-naming-means">${esc(str(f["means"]))}</p>
+      ${str(f["real"]) ? `<p class="slb-naming-means">${esc(str(f["real"]))}</p>` : ""}
       <p class="slb-naming-lab">OUTSIDE BASKETBALL</p>
       <p class="slb-naming-outside">${esc(str(f["outside"]))}</p>
     </section>

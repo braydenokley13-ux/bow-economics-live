@@ -748,6 +748,7 @@
   color: var(--accent-gold, #f0b429);
 }
 .sl-naming-means { margin: 0 0 12px; font-size: 14px; line-height: 1.5; color: var(--sl-ink-2, #b8c0cc); }
+.sl-naming-real { margin: 0 0 12px; font-size: 12.5px; line-height: 1.5; color: var(--sl-ink-3, #7d8794); }
 .sl-naming-outside { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sl-ink-2, #b8c0cc); }
 .sl-naming-outside b { display: block; margin-bottom: 3px; font-size: 10px; letter-spacing: 0.14em; color: var(--sl-ink-3, #7d8794); }
 

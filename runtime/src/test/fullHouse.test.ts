@@ -2097,7 +2097,10 @@ test("D59: per-own-bill coverage — a fraction with no percent sign at 5-6, a p
 
 /** Seats N desks in a room of the given band. Unlike `seated()`, does not fix the band to 5-6. */
 function seatedBand(count: number, band: "5-6" | "7-8"): FullHouseState {
-  let state = fullHouseModule.initialState({ sessionId: `sB-${band}`, seatIds: [], gradeBand: band });
+  // `initialState` only persists `gradeBand` on a seeded (carried) room — see
+  // its own no-seed early return — so an unlinked room is set directly here
+  // rather than depending on THE WINDOW's carry to exercise the band branch.
+  let state: FullHouseState = { ...fullHouseModule.initialState({ sessionId: `sB-${band}`, seatIds: [], gradeBand: band }), gradeBand: band };
   for (let i = 1; i <= count; i += 1) state = ok(act(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`));
   return state;
 }

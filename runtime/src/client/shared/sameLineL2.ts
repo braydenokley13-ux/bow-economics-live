@@ -528,6 +528,7 @@ function namingPanel(v: V): string {
     `<p class="sl-naming-moment">${esc(str(f["moment"]))}</p>
      <p class="sl-naming-term">${esc(str(f["term"]))}</p>
      <p class="sl-naming-means">${esc(str(f["means"]))}</p>
+     ${str(f["real"]) ? `<p class="sl-naming-real">${esc(str(f["real"]))}</p>` : ""}
      <p class="sl-naming-outside"><b>OUTSIDE BASKETBALL</b> ${esc(str(f["outside"]))}</p>`,
   );
 }

@@ -1858,7 +1858,14 @@ export function computeAggregate(state: WriteRuleState): WriteRuleAggregate {
       roomSize,
     };
   };
-  const rounds: RoundSummary[] = state.closedRounds.map((r) => summarise(r.round, r.shares, r.conditions, r.shares.length));
+  // THE SHARE's own bargaining spread only — institution 2's rounds are
+  // appended to the same `closedRounds` list after these, and every existing
+  // consumer of `agg.rounds` (the adoption line, the synthesis cards) is
+  // specifically about institution 1. An untagged round (an old snapshot,
+  // `institutionOf`'s default) is treated as a share round, same as always.
+  const rounds: RoundSummary[] = state.closedRounds
+    .filter((r) => institutionOf(r) === "share")
+    .map((r) => summarise(r.round, r.shares, r.conditions, r.shares.length));
   const liveRound: RoundSummary | null =
     state.stage === "rounds"
       ? summarise(
