@@ -979,7 +979,7 @@ function teacherView(state: SameLineL2State, phase: CanonicalPhase): unknown {
       // and the reason, or a room that only waived reads as a room that did nothing.
       waived: state.tape
         .filter((t) => t.seatId === d.seatId && t.kind === "waive")
-        .map((t) => ({ name: t.chose.waived ?? "", chip: t.forgone.chip, line: t.forgone.line })),
+        .map((t) => ({ name: "waived" in t.chose ? t.chose.waived ?? "" : "", chip: t.forgone.chip, line: t.forgone.line })),
       report: reportView(d),
     })),
     beat: state.beat,
