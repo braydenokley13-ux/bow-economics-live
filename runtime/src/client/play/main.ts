@@ -3340,10 +3340,101 @@ function fhBooksClosed(view: Record<string, unknown>): string {
         ${fhNightsList(history, ui)}
         ${fhDotsHtml(history, view, ui, { height: 150 })}
       </div>
+      ${view["billCoverage"] ? `<div class="m2-card" style="${FH_CARD} padding:12px 14px;">${fhBillCoverage(view["billCoverage"])}</div>` : ""}
     </div>`;
   return fhShell(view, main, { books: false, nightIndex: 4, settled: history.length });
 }
 
+
+/* --------------------------------------------------- W4 THE BILL (D59) ---- */
+
+/**
+ * D59 W4 ruling 1: the crowd tonight does not depend on the roster carried
+ * in — said out loud on the HOOK, never left silent (`CARRIED_ROSTER_HOOK_NOTE`).
+ */
+function fhRosterNote(note: unknown): string {
+  if (!note) return "";
+  return `<p class="fh-roster-note" style="margin:0; font-size:12.5px; line-height:18px; color:${FH_INK_CAPTION};">${escapeHtml(String(note))}</p>`;
+}
+
+/** D59 W4 ruling 5: the destination strip — where the money goes, quietly, on every settlement. Only sourced destinations ship. */
+function fhBillDestinations(destinations: unknown): string {
+  const list = (destinations as { id: string; label: string; sentence: string; source: string }[] | undefined) ?? [];
+  if (!list.length) return "";
+  return `<div class="fh-bill-destinations" style="display:flex; flex-direction:column; gap:8px;">
+      ${list
+        .map(
+          (d) => `<div class="fh-destination" style="padding:9px 11px; border-radius:8px; background:rgba(255,255,255,0.03);">
+              <span style="${FH_LABEL} font-size:10px;">${escapeHtml(d.label)}</span>
+              <p style="margin:3px 0 0; font-size:12px; line-height:16px; color:${FH_INK_BODY};">${escapeHtml(d.sentence)}</p>
+              <p style="margin:3px 0 0; font-size:10px; color:${FH_INK_CAPTION};">${escapeHtml(d.source)}</p>
+            </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+/** D59 W4 direction "Attribution is the whole reveal": each Week 1 signing beside the slice of the bill its own contract wrote tonight. */
+function fhBillSignings(signings: unknown): string {
+  const list = (signings as { name: string; nightShareText: string }[] | undefined) ?? [];
+  if (!list.length) return "";
+  return `<div class="fh-bill-signings" style="display:flex; flex-direction:column; gap:4px;">
+      ${list
+        .map(
+          (sg) => `<div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+              <span style="font-size:12.5px; color:${FH_INK_BODY};">${escapeHtml(sg.name)}</span>
+              <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:12.5px; color:${FH_INK};">${escapeHtml(sg.nightShareText)}</span>
+            </div>`,
+        )
+        .join("")}
+    </div>`;
+}
+
+/** The bill card: destinations, then the desk's own Week 1 signings beside their nightly share, then the roster HOOK truth. Renders nothing when there is no carried obligation. */
+function fhBillCard(view: Record<string, unknown>): string {
+  const bill = view["bill"] as
+    | { destinations?: unknown; signings?: unknown }
+    | null
+    | undefined;
+  const rosterNote = fhRosterNote(view["rosterNote"]);
+  if (!bill) return rosterNote;
+  const destinations = fhBillDestinations(bill.destinations);
+  const signings = fhBillSignings(bill.signings);
+  if (!destinations && !signings && !rosterNote) return "";
+  return `<div class="m2-card fh-bill-card" style="${FH_CARD} padding:14px 16px; display:flex; flex-direction:column; gap:12px;">
+      <span style="${FH_LABEL} margin-bottom:0;">The bill</span>
+      ${signings ? `<div><span style="${FH_LABEL} font-size:10px; margin-bottom:4px;">Your July, tonight's share</span>${signings}</div>` : ""}
+      ${destinations ? `<div><span style="${FH_LABEL} font-size:10px; margin-bottom:4px;">Where the money goes</span>${destinations}</div>` : ""}
+      ${rosterNote}
+    </div>`;
+}
+
+/**
+ * D59 W4 ruling 3: coverage of the desk's OWN bill, never a class ranking.
+ * 5-6 gets a filled bar (0..1, no percent, never negative); 7-8 gets the
+ * percentage and the signed net.
+ */
+function fhBillCoverage(coverage: unknown): string {
+  const c = coverage as
+    | { ownGateText?: string; ownBillText?: string; filled?: number; coveragePercent?: number; net?: number }
+    | null
+    | undefined;
+  if (!c) return "";
+  if (typeof c.filled === "number") {
+    const pct = Math.round(Math.max(0, Math.min(1, c.filled)) * 100);
+    return `<div class="fh-bill-coverage" style="display:flex; flex-direction:column; gap:6px;">
+        <span style="${FH_LABEL} font-size:10px;">Your bill, covered so far</span>
+        <span class="m2-bar" style="height:10px; border-radius:999px; background:rgba(255,255,255,0.07); overflow:hidden;"><i style="display:block; height:100%; width:${pct}%; border-radius:999px; background:${FH_VIOLET};"></i></span>
+        <span style="font-size:11.5px; color:${FH_INK_CAPTION};">${escapeHtml(c.ownGateText ?? "")} of ${escapeHtml(c.ownBillText ?? "")}</span>
+      </div>`;
+  }
+  const net = Number(c.net ?? 0);
+  return `<div class="fh-bill-coverage" style="display:flex; flex-direction:column; gap:4px;">
+      <span style="${FH_LABEL} font-size:10px;">Your bill, covered so far</span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:18px; font-weight:600; color:${FH_INK};">${Math.round(c.coveragePercent ?? 0)}%</span>
+      <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:12.5px; color:${net < 0 ? FH_RED : FH_MONEY};">${money(net)}</span>
+    </div>`;
+}
 
 /* ------------------------------------------------------------- lobby/hook -- */
 
@@ -3441,6 +3532,7 @@ function renderFHHook(view: Record<string, unknown>): void {
           )
           .join("")}
       </div>
+      ${fhBillCard(view)}
       <p style="margin:0; font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(String(view["horizonLine"] ?? ""))} ${escapeHtml(String(view["modeledDollarsLine"] ?? ""))}</p>
     </div>`;
   $("gameBody").innerHTML = fhShell(view, main, { books: false, nightIndex: 0, settled: 0 });
@@ -3509,6 +3601,7 @@ function renderFHReveal(view: Record<string, unknown>): void {
                  <span style="display:flex; align-items:baseline; gap:8px;"><span style="${FH_LABEL} font-size:10px;">${ui.chainLabels.renewals}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:${FH_INK};">${(view["books"] as FHBooks | undefined)?.renewals ?? 0}%</b></span>
                </div>
                <p style="margin:7px 0 0; font-size:12px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(ui.twoBooksLine)}</p>
+               ${view["billCoverage"] ? `<div style="margin-top:10px;">${fhBillCoverage(view["billCoverage"])}</div>` : ""}
              </div>`
           : ""
       }
@@ -3865,7 +3958,7 @@ function renderFHPlay(view: Record<string, unknown>): void {
     <div class="fh-evidence-row" style="display:grid; grid-template-columns:${tight ? "minmax(0,1.15fr) minmax(0,1fr) minmax(0,0.95fr)" : "minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.95fr)"}; gap:${tight ? 9 : 12}px; align-items:stretch;">
       ${fhDotsHtml(history, view, ui, { height: tight ? 96 : 116 })}
       ${fhBuildingCard(view)}
-      <div style="display:flex; flex-direction:column; gap:8px; min-width:0;">${card.bowlOffer && tight ? fhBowlPlate(view) : ""}${fhNextCardHtml((view["nextCard"] as FHCard | null) ?? null, ui)}${fhRuleSlot(view)}</div>
+      <div style="display:flex; flex-direction:column; gap:8px; min-width:0;">${card.bowlOffer && tight ? fhBowlPlate(view) : ""}${fhNextCardHtml((view["nextCard"] as FHCard | null) ?? null, ui)}${fhRuleSlot(view)}${view["billCoverage"] ? `<div class="m2-card" style="${FH_CARD} padding:12px 14px;">${fhBillCoverage(view["billCoverage"])}</div>` : ""}</div>
     </div>`;
   const main = `<div style="display:flex; flex-direction:column; gap:${tight ? 8 : 11}px;">
       ${tight ? "" : fhHeader(view)}

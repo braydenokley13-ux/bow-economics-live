@@ -614,7 +614,7 @@ function resolveFebruary(state: SameLineL2State): SameLineL2State {
   let desks = { ...state.desks };
   let tape = [...state.tape];
   const taken = new Set(state.taken);
-  const awards: RoundRecord["awards"] = [];
+  const awards: { seatId: SeatId; name: string; annual: number }[] = [];
 
   for (const [candidateId, claimants] of byCandidate) {
     if (taken.has(candidateId)) continue;
@@ -726,7 +726,10 @@ function tapeTwins(state: SameLineL2State): { a: { name: string; priceText: stri
   const signedIds = new Set(Object.values(state.desks).flatMap((d) => d.position.signings.map((s) => s.playerId)));
   for (const twin of PRICE_TWINS) {
     if (signedIds.has(twin.a.playerId) && signedIds.has(twin.b.playerId)) {
-      return { a: { name: twin.a.name, priceText: twin.a.priceText }, b: { name: twin.b.name, priceText: twin.b.approx ? twin.b.priceText : twin.b.priceText } };
+      // `twin.b.priceText` already reads "about $15,000,000" for the approximate
+      // pair (seasonData.ts) — never re-labelled here, so the sentence cannot
+      // drift from the source that also flags it non-exact.
+      return { a: { name: twin.a.name, priceText: twin.a.priceText }, b: { name: twin.b.name, priceText: twin.b.priceText } };
     }
   }
   return null;

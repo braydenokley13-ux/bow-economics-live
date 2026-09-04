@@ -197,21 +197,6 @@ export type SeasonSettle = { readonly perSeat: Readonly<Record<SeatId, SeasonSet
 
 /* ------------------------------------------------------------- seeds -- */
 
-/**
- * The shape a real Week 2 carry would need — matches the structural extension
- * the parallel builder is writing in `seasonCarry.ts` (`CarriedFranchise` plus
- * `roster`, `picks`, `deadMoneyIncurred`, `waived`, `tape`). Defined locally
- * because that file does not exist in this tree yet; if it lands, a future
- * pass should import the real type and delete this one (spec's own
- * instruction: "re-check for seasonCarry.ts before you finish").
- */
-export type SeasonLikeFranchise = CarriedFranchise & {
-  readonly roster: readonly { contractId: string; playerId: string; name: string; role: JobRole; annual: number; yearsRemaining: number; jobState: JobState; acquiredWeek: 1 | 2 }[];
-  readonly picks: readonly { pickId: string; year: number; round: 1 | 2; label: string }[];
-  readonly deadMoneyIncurred: number;
-  readonly waived: readonly string[];
-};
-
 export type PoolFranchise = {
   readonly clubId: ClubId;
   readonly twin: 0 | 1;
@@ -715,7 +700,7 @@ function reduce(state: SameLineL3State, action: { type: string; [k: string]: unk
       const settlement = settleHour(state, true);
       const next: SameLineL3State = { ...state, desks: settlement.desks, offers: settlement.offers, executed: settlement.executed };
       if (state.hour === 1) return { ok: true, state: { ...next, hour: 2 } };
-      return { ok: true, state: { ...next, marketClosed: true, settled: next.settled ?? computeSeasonSettle(next) } };
+      return { ok: true, state: applySettle({ ...next, marketClosed: true }) };
     }
 
     case "defend": {
@@ -875,6 +860,18 @@ function computeSeasonSettle(state: SameLineL3State): SeasonSettle {
   return { perSeat };
 }
 
+/** Compute the settle AND write each desk's `openJobs` forward to what the settle left open — what `deadlineCarry.ts` reads as "openJobs after the settle". */
+function applySettle(state: SameLineL3State): SameLineL3State {
+  if (state.settled) return state;
+  const settled = computeSeasonSettle(state);
+  const desks = { ...state.desks };
+  for (const [seatId, result] of Object.entries(settled.perSeat)) {
+    const desk = desks[seatId];
+    if (desk) desks[seatId] = { ...desk, openJobs: result.openJobs };
+  }
+  return { ...state, desks, settled };
+}
+
 /* ----------------------------------------------------------------- module -- */
 
 export const sameLineL3Module: LessonModule<SameLineL3State> = {
@@ -887,15 +884,14 @@ export const sameLineL3Module: LessonModule<SameLineL3State> = {
     let next = state;
     if (from === "PLAY") {
       const settlement = settleHour(next, true);
-      next = { ...next, desks: settlement.desks, offers: settlement.offers, executed: settlement.executed, marketClosed: true };
-      if (!next.settled) next = { ...next, settled: computeSeasonSettle(next) };
+      next = applySettle({ ...next, desks: settlement.desks, offers: settlement.offers, executed: settlement.executed, marketClosed: true });
     }
     if (to === "SYNTHESIS") next = { ...next, beat: 0 };
     return next;
   },
   allowedActions: (phase) =>
     phase === "PLAY"
-      ? ["takeSeat", "list", "unlist", "propose", "withdraw", "counter", "accept", "decline"]
+      ? ["takeSeat", "list", "unlist", "propose", "withdraw", "counter", "accept", "withdrawAccept", "decline"]
       : phase === "LOBBY" || phase === "HOOK"
         ? ["takeSeat"]
         : phase === "COUNTERFACTUAL" || phase === "ARGUE"
@@ -985,7 +981,10 @@ export function pressCandidatesFor(state: SameLineL3State, _phase: CanonicalPhas
       const theirs = state.executed.filter((deal) => deal.fromSeat === twin.seatId || deal.toSeat === twin.seatId).length;
       if (mine !== theirs) {
         score += 3;
-        why.push(`${mine} trades against ${theirs} from the same books as ${twin.label}`);
+        // Economic Truth ruling: same books on day one — different rooms
+        // answered them. The gap is never framed as one twin "beating" the
+        // other; it is who called whom, and who said yes.
+        why.push(`same books on day one as ${twin.label} — different rooms answered them (${mine} trades against ${theirs})`);
       }
     }
     const declined = Object.values(state.offers).filter((o) => o.declinedBy === d.seatId).length;
@@ -1029,6 +1028,34 @@ function offerFacingSeat(o: Offer, seatId: SeatId): { direction: "sent" | "recei
   const counterpartySeat = iAmFrom ? o.toSeat : o.fromSeat;
   const awaitingMe = isOpenOffer(o) && recipientOf(o) === seatId;
   return { direction: iAmFrom ? "sent" : "received", awaitingMe, counterpartySeat };
+}
+
+function ownerOfListing(state: SameLineL3State, id: ObjectId): Desk | null {
+  for (const d of Object.values(state.desks)) {
+    if (d.roster.some((c) => c.contractId === id) || d.picksOwned.some((p) => p.pickId === id)) return d;
+  }
+  return null;
+}
+
+/**
+ * Economic Truth ruling: a desk-private count of objects the composer would
+ * grey out because of the bars — never surfaced per desk on the board, only
+ * summed to one integer there. Bounded to what is actually `listings` (the
+ * "ON THE MARKET" set), and probed with this desk's own cheapest single
+ * sendable object, so this stays a fixed-size check per listing rather than an
+ * all-pairs scan of every object in the room.
+ */
+function reachBlockedFor(state: SameLineL3State, desk: Desk, profile: GradeProfile): number {
+  const mySend = desk.roster.length > 0 ? [...desk.roster].sort((a, b) => a.annual - b.annual)[0]!.contractId : desk.picksOwned[0]?.pickId ?? null;
+  if (!mySend) return 0;
+  let blocked = 0;
+  for (const id of state.listings) {
+    const owner = ownerOfListing(state, id);
+    if (!owner || owner.seatId === desk.seatId || owner.clubId === desk.clubId) continue;
+    if (isEscrowed(state.offers, id) || isEscrowed(state.offers, mySend)) continue;
+    if (!checkTrade(toTradeDesk(desk), toTradeDesk(owner), [mySend], [id], profile).ok) blocked += 1;
+  }
+  return blocked;
 }
 
 function studentView(state: SameLineL3State, seatId: SeatId, phase: CanonicalPhase): unknown {
@@ -1088,6 +1115,8 @@ function studentView(state: SameLineL3State, seatId: SeatId, phase: CanonicalPha
     })),
     capturePrompts: { send: profile.band === "5-6" ? SEND_CHIPS_56 : SEND_CHIPS_78, decline: DECLINE_CHIPS, lineWordLimit: profile.band === "5-6" ? 12 : 20 },
     maxObjectsPerSide: profile.maxVariables >= 3 ? 2 : 1,
+    /** Desk-private. Never aggregated per-desk on the board — see `boardView`. */
+    reachBlocked: reachBlockedFor(state, desk, profile),
     phase,
   };
 }
@@ -1141,7 +1170,7 @@ function teacherView(state: SameLineL3State, phase: CanonicalPhase): unknown {
     pressCandidates: pressCandidatesFor(state, phase),
     warnings: state.warnings,
     settled: state.settled
-      ? Object.values(state.settled.perSeat).map((s) => ({ label: state.desks[s.seatId]?.label ?? s.seatId, coveredJobs: s.coveredJobs, openJobs: s.openJobs }))
+      ? Object.values(state.settled.perSeat).map((s) => ({ label: state.desks[s.seatId]?.label ?? s.seatId, coveredJobs: s.coveredJobs, openJobs: s.openJobs, expiringNextSeason: s.expiringNextSeason.map((c) => c.name) }))
       : null,
   };
 }
@@ -1178,14 +1207,18 @@ function boardView(state: SameLineL3State, phase: CanonicalPhase): unknown {
       got: d.want.map((id) => labelById(id).name),
     };
   });
+  const profile = profileFor(state.gradeBand);
+  // Summed to ONE integer — never per desk (Economic Truth ruling).
+  const reachBlocked = Object.values(state.desks).reduce((n, d) => n + reachBlockedFor(state, d, profile), 0);
   return {
     module: SAME_LINE_L3_ID,
     hour: state.hour,
     marketClosed: state.marketClosed,
     market: { contractsOnMarket: contracts.size, picksOnMarket: picks.size, objects: market },
     executedBroadcast,
+    reachBlocked,
     seasonSettle: state.settled
-      ? Object.values(state.settled.perSeat).map((s) => ({ label: state.desks[s.seatId]?.label ?? s.seatId, coveredJobs: s.coveredJobs, openJobs: s.openJobs }))
+      ? Object.values(state.settled.perSeat).map((s) => ({ label: state.desks[s.seatId]?.label ?? s.seatId, coveredJobs: s.coveredJobs, openJobs: s.openJobs, expiringNextSeason: s.expiringNextSeason.map((c) => c.name) }))
       : null,
     phase,
   };

@@ -2977,6 +2977,16 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     why: "Every outcome has to be attributable to a decision somebody in this room made, or the debrief is a shrug.",
     risk: "Real front offices are guessing under genuine uncertainty. This room is not — it is reasoning under printed information, which is a different and easier thing.",
   },
+  {
+    what: "THE POOL only touches live desks — a league-office (bot) club neither pays the levy nor receives the equal split.",
+    why: "The ritual is about the room's own franchises feeling a rule together. A bot has no student behind it to feel either half of the reveal, so taxing or paying one would be arithmetic with nobody home.",
+    risk: "A partial room (fewer live desks than the league seats) sees a smaller bowl than a full room would at the same prices — the levy base scales with who is actually playing, not with the league's printed size. Say so if a room seats fewer than the schedule shows.",
+  },
+  {
+    what: "A franchise that did not clear its Week 4 bill opens Week 5 with a flat, modeled penalty — not the actual size of what it owed.",
+    why: "Full House's own bill shape is being extended concurrently; a flat, named, printed number is honest and legible on day one without hard-coding a linkage to a field this module does not own.",
+    risk: "Two franchises that missed their bill by very different amounts open Week 5 identically penalized. Say the number is modeled, not measured, if a student asks why.",
+  },
 ];
 
 export const SHOCK_REVEAL_COPY =
@@ -3693,6 +3703,77 @@ export function seedOutClubs(state: HostLeagueState): ClubSeedOut[] {
     });
 }
 
+/**
+ * THE RITUAL, PROJECTOR HALF. Season-aggregate (all weeks played so far
+ * summed per club), never a per-desk private figure, never a seat id — club
+ * wordmarks only (non-negotiable 12). One stage of `POOL_RITUAL_STAGE_NAMES`
+ * per press (`teacher:poolStage`), so every field below is null until the
+ * stage that reveals it has been pressed. No chip count or paid-in/took-out
+ * sign is asserted here as a market-size rule (Economic Truth ruling) — every
+ * number is read straight off `state.pool`.
+ */
+export type PoolRitualBoard = {
+  stage: number;
+  stageName: string | null;
+  levyLine: string;
+  billLine: { club: string; assessed: number }[] | null;
+  fill: { club: string; chips: number }[] | null;
+  fillGrandTotal: number | null;
+  bowlTotal: number | null;
+  draw: { club: string; tookOut: number }[] | null;
+  net: { club: string; paidIn: number; tookOut: number; netLine: string }[] | null;
+  netPage: number;
+  netPageCount: number;
+  netPageLabel: string;
+  freeRide: FreeRideRow[] | null;
+  roundingNote: string | null;
+};
+const POOL_CHIP_UNIT = 50_000;
+export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): PoolRitualBoard | null {
+  const stage = ritualStageOf(state);
+  if (stage === 0) return null;
+  const liveClubs = state.clubs.filter((c) => c.seatId !== null).sort((a, b) => a.slot - b.slot);
+  const totals = poolTotalsAll(state);
+  const totalFor = (slot: number): PoolTotals | undefined => totals.find((t) => t.slot === slot);
+  const assessedTotals = new Map<number, number>();
+  for (const p of poolOf(state)) assessedTotals.set(p.slot, (assessedTotals.get(p.slot) ?? 0) + p.assessedLocalRevenue);
+
+  const billLine = stage >= 1 ? liveClubs.map((c) => ({ club: CLUBS[c.slot]!.short, assessed: Math.round(assessedTotals.get(c.slot) ?? 0) })) : null;
+  const fill = stage >= 2 ? liveClubs.map((c) => ({ club: CLUBS[c.slot]!.short, chips: Math.max(0, Math.round((assessedTotals.get(c.slot) ?? 0) / POOL_CHIP_UNIT)) })) : null;
+  const bowlTotal = totals.reduce((s, t) => s + t.paidInTotal, 0);
+  const draw = stage >= 4 ? liveClubs.map((c) => ({ club: CLUBS[c.slot]!.short, tookOut: totalFor(c.slot)?.tookOutTotal ?? 0 })) : null;
+  const netRows =
+    stage >= 5
+      ? liveClubs.map((c) => {
+          const t = totalFor(c.slot);
+          return { club: CLUBS[c.slot]!.short, paidIn: t?.paidInTotal ?? 0, tookOut: t?.tookOutTotal ?? 0, netLine: netDirectionLine(band, t?.netTotal ?? 0) };
+        })
+      : null;
+  const netPageCount = netRows ? barPageCount(netRows.length) : 1;
+  const netPage = Math.min(poolPageOf(state), netPageCount - 1);
+  const netPaged = netRows ? netRows.slice(netPage * BARS_PER_PAGE, netPage * BARS_PER_PAGE + BARS_PER_PAGE) : null;
+
+  return {
+    stage,
+    stageName: POOL_RITUAL_STAGE_NAMES[stage - 1] ?? null,
+    levyLine: levyLineFor(band),
+    billLine,
+    fill,
+    fillGrandTotal: fill ? bowlTotal : null,
+    bowlTotal: stage >= 3 ? bowlTotal : null,
+    draw,
+    net: netPaged,
+    netPage: netPage + 1,
+    netPageCount,
+    netPageLabel: netRows && netPageCount > 1 ? `Group ${netPage + 1} of ${netPageCount}` : "",
+    freeRide: stage >= 6 ? freeRideRows(state) : null,
+    roundingNote:
+      stage >= 3
+        ? "Split evenly among the live franchises every week the bowl filled; any leftover dollar that week went to the first club in the schedule."
+        : null,
+  };
+}
+
 export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
   id: MODULE_ID,
   title: "Module 2 · Lesson 2 — You Don't Play Alone",
@@ -4103,6 +4184,23 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             modeledDollarsLine: MODELED_DOLLARS_SHORT,
             slate: slateFor(state, slot),
             league: state.clubs.slice(0, state.leagueSize).map((c) => clubCard(state, c.slot)),
+            // W5 seed-in from Week 4 — a franchise's own how-you-got-here card, never silent.
+            levyLine: levyLineFor(bandOfRoom(state)),
+            weekFourNote: state.seedNote ?? null,
+            howYouGotHere: (() => {
+              const carry = carriedClubsOf(state).find((c) => c.slot === slot) ?? null;
+              if (!carry) return null;
+              return {
+                cashOpening: carry.cashOpening,
+                penalty: carry.penalty,
+                billCleared: carry.billCleared,
+                clamped: carry.clamped,
+                line:
+                  carry.penalty > 0
+                    ? `You carried in from Week 4 having not cleared your own bill — a named $${carry.penalty.toLocaleString()} penalty, already taken off your opening books.`
+                    : "You carried in from Week 4 having cleared your own bill.",
+              };
+            })(),
           };
 
         case "PLAY": {
@@ -4183,6 +4281,16 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
                     building: defOf(club).building,
                     capacity: defOf(club).capacity,
                     room: roomLockLine(state),
+                  },
+                  // W5 pool position capture (Bible §13.2). Two inputs, taken
+                  // while locked and waiting for the room — this desk's own
+                  // raw material for the Week 6 stakes card. Never another
+                  // seat's chip or line.
+                  poolPosition: {
+                    prompt: "This week I'm putting back",
+                    chips: POOL_CHIPS,
+                    current: poolPositionOf(club),
+                    levyLine: levyLineFor(bandOfRoom(state)),
                   },
                 }
               : {}),
@@ -4479,6 +4587,18 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
         state.weekIndex >= WEEK_COUNT
           ? "All three weeks are in the books."
           : `Closing week ${openWeekNumber(state)} settles every building in the league at once, against the Draws that were printed before anybody touched a dial. A desk that has not locked settles at its club's house price with nothing reinvested, marked AUTO on its own screen — nobody is skipped and nobody gets a zero.`,
+      // W5 seed-in from Week 4 — teacher-readable, never silent.
+      seedNote: state.seedNote ?? null,
+      carried: carriedClubsOf(state),
+      // W5 THE POOL — teacher controls for the ritual, gated the same way the reducer gates the press.
+      levyLine: levyLineFor(bandOfRoom(state)),
+      ritualStage: ritualStageOf(state),
+      ritualStageName: POOL_RITUAL_STAGE_NAMES[ritualStageOf(state) - 1] ?? null,
+      ritualNextStageName: POOL_RITUAL_STAGE_NAMES[ritualStageOf(state)] ?? null,
+      ritualStageCount: POOL_RITUAL_STEPS,
+      ritualCanAdvance: phase === "REVEAL" && state.revealStage >= REVEAL_STEPS && ritualStageOf(state) < POOL_RITUAL_STEPS,
+      ritualReady: phase === "REVEAL" && state.revealStage < REVEAL_STEPS ? "Finish the season reveal first — press REVEAL through its five stages before THE BILL LINE." : "",
+      poolRitual: poolRitualBoardFor(state, bandOfRoom(state)),
     }, bandOfRoom(state));
   },
 
@@ -4614,6 +4734,12 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             // visible drop would misrepresent a 1.9-point move as a collapse.
             meanBaseline: state.revealStage === 5 ? reinvestBaseline(agg) : null,
             honestyLine: BOARD_HONESTY_LINE,
+            // W5 THE POOL — a second stage machine inside REVEAL (spec "Both
+            // weeks — implementation shape": "no new phase"). Null until the
+            // season reveal above has played all five of its own stages, so a
+            // room never sees the league's bowl before it has seen its own
+            // season. Club wordmarks and totals only — never a seat id.
+            pool: poolRitualBoardFor(state, bandOfRoom(state)),
           };
         }
 

@@ -158,9 +158,13 @@ test("13. a dealt (stock) desk is a normal candidate for its own February — ne
 
 test("14. ranking is unchanged when a desk closes an extra job", () => {
   const before = claimed();
-  const scoredBefore = pressCandidates(before, "CONSEQUENCE").find((c) => c.seatId === "a")!.score;
-  void scoredBefore;
-  // pressCandidates never reads openJobs at all; assert the shape carries no such signal.
+  const rankBefore = pressCandidates(before, "CONSEQUENCE").map((c) => c.seatId);
+  // Simulate "closed an extra job" by clearing this desk's open jobs directly
+  // in state — pressCandidates must never read `openJobs`/`report` verdicts as
+  // a ranking signal, so the order (and the `why` text) cannot move because of it.
+  const after: SameLineL2State = { ...before, desks: { ...before.desks, a: { ...before.desks["a"]!, position: { ...before.desks["a"]!.position, openJobs: [] } } } };
+  const rankAfter = pressCandidates(after, "CONSEQUENCE").map((c) => c.seatId);
+  assert.deepEqual(rankAfter, rankBefore);
   const why = pressCandidates(before, "CONSEQUENCE").find((c) => c.seatId === "a")!.why;
   assert.equal(/job/i.test(why) && /closed/i.test(why), false);
 });
