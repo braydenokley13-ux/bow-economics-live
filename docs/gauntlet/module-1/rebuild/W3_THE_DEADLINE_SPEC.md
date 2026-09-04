@@ -80,7 +80,7 @@ Every rule below is drawn as terrain before the click, never fired as a verdict 
 
 **R4 — Aggregation (7–8 only).** Two outgoing contracts may be combined **unless the trade leaves you above the second apron**. *Citation:* §1.6 / §2.2 row H / §2.4 item 6 (OBSERVED). *Misconception risk:* the common inversions — "first-apron teams can't aggregate" (false, #13) and "second-apron teams can only trade one-for-one" (false, #12). One director sentence corrects both.
 
-**R5 — Picks are `$0`.** *Citation:* §4 (cbaguide, **cba-explainer tier, NOT primary-verified** — record it as such). *Omitted:* Stepien, the seven-draft horizon, protections, swaps. *Misconception risk:* picks look unlimited. **Accepted at 5–6.** At 7–8, one debrief sentence: "in the real NBA you can only trade picks about seven years out — a team can't sell its whole future." Never printed as league law without the "not published by the league" label (do-not-render #2).
+**R5 — Picks are `$0`.** *Citation:* INFERRED from CBA Art. VII §6(j)(1) (every exception is defined over Player Contract Salaries), corroborated by cbaguide — see §15.1. *Omitted:* Stepien, the seven-draft horizon, protections, swaps. *Misconception risk:* picks look unlimited. **Accepted at 5–6.** At 7–8, one debrief sentence: "in the real NBA you can only trade picks about seven years out — a team can't sell its whole future." Never printed as league law without the "not published by the league" label (do-not-render #2).
 
 **R6 — Roster slots.** Take more than you send and you need an empty space. *Citation:* §5.1 (CBA Art. XXIX §§1–2 OBSERVED for the 14–15 limits; the open-spot-before-execution rule is **cbaguide only, NOT located in primary text**). *Representation:* slots as physical spaces, no rule text. *Misconception risk:* low.
 
@@ -280,3 +280,134 @@ Format per term: experienced moment → class result → real sports example (da
 *Nothing in this spec is classroom-proven (D10). No test named in §13 has been run — none of this exists yet.*
 
 ---
+
+## 15. W3 anchors verified — Sports Reality, 2026-09-04
+
+**Appended, not rewritten.** An independent verification pass over §2–§4 and §9 by the
+Sports Reality Director, 2026-09-04. Primary source: the 2023 NBA CBA PDF, downloaded by
+me this session from
+`https://ak-static.cms.nba.com/wp-content/uploads/sites/4/2023/06/2023-NBA-Collective-Bargaining-Agreement.pdf`
+(676 pages, 2,850,534 bytes — the same file `NBA_TRADE_TRUTH.md` used 2026-09-03) and read
+as text. **OBSERVED** = I read the cited sentence this session. Grades: HIGH / MEDIUM / LOW.
+Nothing here is a legal claim.
+
+### 15.1 §3 rule-by-rule, against the CBA text
+
+| Rule | Verdict | Primary text I read, 2026-09-04 | Grade |
+|---|---|---|---|
+| **R1** incoming ≤ outgoing above the first apron | **CORRECT** | Art. VII §6(j)(3): "if a Team's post-assignment Apron Team Salary would exceed the First Apron Level, then the $250,000 allowance referenced in each of Sections 6(j)(1)(i)-(v) above shall be reduced to $0." Combined with §2(e)(4) row E (Expanded TPE is a First-Apron-gated transaction), an over-first-apron team may take back **exactly 100%, no cushion**. | **HIGH** |
+| **R2** the test is post-trade | **CORRECT** | §6(j)(3) "post-assignment Apron Team Salary"; §2(e)(2)(i)(A) "if, **immediately following such transaction**, the Team's Apron Team Salary … would exceed the 'Applicable Apron Level'". | **HIGH** |
+| **R3** every wall is self-inflicted | **CORRECT** | §2(e)(2)(i)(B): "A Team that engages in a transaction set forth in the Transaction Restrictions Table may not, **for the remainder of such Salary Cap Year**, have an Apron Team Salary that exceeds the Applicable Apron Level that corresponds with such transaction." No provision assigns a hard cap to a team by payroll alone. | **HIGH** |
+| **R4** aggregation banned only if the trade **leaves** you above the **second** apron | **CORRECT** | §2(e)(4) **row H**: "Team acquires a player using an Aggregated Standard Traded Player Exception (as described in Section 6(j)(1)(ii)) — **Second Apron Level**." Rows E, F, G are First Apron; rows H, I, J, K are Second Apron. The spec's two named inversions (#12, #13) are indeed false. | **HIGH** |
+| **R5** picks count $0 | **UPGRADE THE LABEL** | The five Traded Player Exceptions in §6(j)(1)(i)–(v) are defined **entirely over the Salaries of Player Contracts**. Draft picks are never Salary and never enter the matching arithmetic. This is **INFERRED from primary text** (affirmative silence), not merely "cbaguide, NOT primary-verified" as §3 R5 currently says. Recommend upgrading the citation to "INFERRED from CBA Art. VII §6(j)(1), corroborated by cbaguide". | **HIGH (inferred)** |
+| **R6** roster slots | **NOT RE-VERIFIED** by me this session. §3's own honest split (Art. XXIX §§1–2 for the 14–15 limits, cbaguide-only for the open-spot-before-execution rule) stands unchallenged. | **LOW (not re-read)** |
+| **R7** the trade call | **CORRECT AND VERBATIM** | Art. VII §8(k): "A 'trade' of a player under this Agreement shall mean an assignment of a Player Contract pursuant to a negotiated exchange between two or more Teams **following a trade conference call with the NBA league office**. For clarity, the word 'trade' shall not include an assignment of a player via the NBA's waiver procedures." The spec's "the league checks the math," never "approved," is well founded. | **HIGH** |
+| **R8** twins never transact | Correctly labelled a BOW rule, not an NBA rule. No verification owed. | n/a |
+
+**Nothing in §2, §3 or §4 was found factually wrong or stale for 2026-27.**
+
+### 15.2 One stale figure to keep out of the build
+
+The Expanded TPE's middle band is **indexed to the cap and is not "+$7.5 million"** for
+2026-27. **OBSERVED — §6(j)(1)(iv)(y)(B):** incoming may be "one hundred percent (100%) of
+the aggregated pre-trade Salaries of the Traded Player(s), plus an amount equal to
+**$7.5 million multiplied by a fraction, the numerator of which is the Salary Cap for the
+then-current Salary Cap Year and the denominator of which is the Salary Cap for the
+2023-24 Salary Cap Year**."
+
+For 2026-27: $7,500,000 × $164,961,000 ÷ $136,021,000 = **$9,095,709**
+(cbaguide publishes $9,096,000; agreement to ~$300). $7.5M is the **2023-24** value.
+`NBA_TRADE_TRUTH.md` §1.3 already has this right; any brief or copy that says "+$7.5M" as
+a current band is quoting a three-year-old number. The other two branches are exact as
+written: **200% + $250,000** and **125% + $250,000** (§6(j)(1)(iv)(y)(A), (z)). **HIGH.**
+
+**Two aggregation restrictions §3 omits** (§6(j)(4), OBSERVED): a contract acquired via an
+Exception in the preceding **two months** may not be aggregated (with a December-16
+carve-out for deadline trades), and outside Dec 15–deadline a team aggregating **three or
+more** contracts while receiving back fewer players may include **no more than one**
+minimum-salary player. Both are correctly out of scope for a 60-minute lesson; recording
+them here as **stated simplifications** so the omission is deliberate, per CLAUDE.md §3.
+
+### 15.3 Two real, dated deadline trades for §9's "real sports example" slots
+
+Both from the **February 5, 2026** deadline — one week of real news, two opposite
+economics, and both legible to a student who knows no basketball. Source: Hoops Rumors
+(reporting tier), all three pages read **2026-09-04**.
+
+**(A) A contender buying a job — and getting paid to do it.**
+*Hoops Rumors, "Celtics, Bulls Swap Anfernee Simons, Nikola Vucevic", published 2026-02-05,*
+`https://www.hoopsrumors.com/2026/02/celtics-bulls-to-swap-anfernee-simons-nikola-vucevic.html`
+
+- Boston sends **Anfernee Simons** (expiring, **$27.7M**) and a 2026 second-round pick.
+- Boston receives **Nikola Vučević** (expiring, **$21.5M**) and Denver's 2027 second.
+- Hoops Rumors' own summary line in the deadline recap: *"The Celtics save some money and
+  fortify their frontcourt."*
+- Reported effect (ESPN's Bobby Marks, quoted in the article): Boston's projected luxury
+  tax bill falls **from $39.5M to $17M — more than $22M** — and Boston drops **below the
+  first apron**.
+- Vučević's line at the time of the trade, per the same article: 16.9 ppg, 9.0 rpg,
+  3.8 apg, 37.6% on threes.
+
+**Why this is the best available anchor for W3.** It is simultaneously (i) a job trade —
+Boston had a hole at centre and filled it; (ii) opportunity cost — Boston gave up its best
+tradeable contract; and (iii) the tax line doing exactly what `world.ts` says it does:
+**$6.2M of salary going out bought $22.5M of tax relief**, because past the tax line every
+dollar costs more than a dollar. One trade, three of the week's ideas. Vučević is
+**already in `world.ts`** with a verified 2025-26 stat line, so the class can meet him
+before the deadline and again inside the anchor. Grade **MEDIUM** (one reporting-tier
+outlet, quoting ESPN; salary figures are reported, not from a league document; the article
+itself says $27.7M in one sentence and $27.8M in another — print "about $27.7 million").
+
+**(B) A salary dump, priced in cash.**
+*Hoops Rumors, "Knicks Sending Guerschon Yabusele To Bulls For Dalen Terry", published
+2026-02-05,*
+`https://www.hoopsrumors.com/2026/02/knicks-sending-guerschon-yabusele-to-bulls-for-dalen-terry.html`
+
+- New York sends **Guerschon Yabusele** ($5.5M, with a **$5.7M player option for next
+  season**) **plus $500,000 in cash**; New York receives **Dalen Terry** ($5.4M, expiring).
+- Quoted: *"New York had reportedly been looking to unload Yabusele for several weeks, but
+  **couldn't find a taker** because of his $5.7MM player option for next season."*
+- Reported effect (Yossi Gozlan, The Third Apron, quoted in the article): the Knicks' room
+  below the **second apron** grew from **$148,359 to $249,241**, "allowing them to sign a
+  15th player on March 26 instead of waiting until April 2."
+
+**Why this one.** It is the whole of W3's §12-A/§4 economics in four numbers a fifth-grader
+can hold: a **$100,000** payroll saving, bought with a real player and **half a million
+dollars of cash**, purchased **one week** of a roster slot. It also shows the thing the
+composer is supposed to teach — *nobody wanted the contract* — and it connects R6 (roster
+slots) to the wall without a percentage anywhere. Grade **MEDIUM** (reporting tier; the
+$5.5M/$5.4M/$500K/$148,359/$249,241 figures are all reported in the linked article).
+
+**INFERRED, offered to the teacher card and not to a student surface:** paying cash in a
+trade is Transaction Restrictions Table **row I, Second Apron Level** (§2(e)(4), OBSERVED).
+The Knicks could send that $500K *only because* they were still under the second apron —
+the same line the trade was made to protect. Neither cited article says this; it is my
+inference from the rule text, and it should be labelled as such if used.
+
+**Fallback anchor, one year older, for a pure "paying a pick to shed salary" story:**
+Phoenix sent **Jusuf Nurkić** and a 2026 first-round pick to Charlotte for Cody Martin,
+Vasilije Micić and a 2026 second — Hoops Rumors' recap line: *"The Suns find a taker for a
+big man no longer in their plans."* (Hoops Rumors, "2025 NBA Trade Deadline Recap",
+published 2025-02-07, read 2026-09-04,
+`https://www.hoopsrumors.com/2025/02/2025-nba-trade-deadline-recap.html`.) Grade **MEDIUM**;
+contract figures for this one were **NOT VERIFIED** this session.
+
+### 15.4 §9's existing real examples
+
+The four §9 chains cite Hoops Rumors 2026-07-10, Hoops Rumors 2026-09-02, and a
+cbaguide-tier reading of §6(j)(6) for the Caruso/Giddey amendment. **I did not re-open any
+of those three sources this session — NOT RE-VERIFIED, not disputed.** The §6(j)(6) rule
+itself (a traded player's Salary is deemed reduced by unearned, unprotected Base
+Compensation) **is** in the primary text and I read it; the Caruso application is the
+reporting layer on top of it and remains cbaguide-tier as §9 already says.
+
+### 15.5 Rights / source note
+
+Every fact in this section is CBA text published by the NBA, or a dollar figure reported by
+Hoops Rumors and attributed to a named reporter. No photography, likeness, logo, mark,
+video, or proprietary dataset is required. Spotrac and Salary Swish were **not** used for
+anything in §15 — a deliberate choice, because their contract tables are the paywalled
+proprietary layer and §15's figures had to be quotable without them. This is a sourcing
+note; it is not a rights clearance and no such clearance is offered.
+
+*Verified 2026-09-04. Nothing in §15 is classroom-proven (D10).*

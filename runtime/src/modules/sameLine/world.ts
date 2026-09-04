@@ -144,7 +144,7 @@ export const LINES: readonly Line[] = [
     label: "THE FLOOR",
     amount: 148_465_000,
     kind: "compulsion",
-    does: "You have to spend at least this much. Fall short and you pay the difference anyway — to the players, not to your team.",
+    does: "You have to spend at least this much. Fall short and you pay the difference anyway — and the league splits it among all the other teams.",
     asOf: "2026-06-30",
     source: "pr.nba.com 2026-27 salary cap release; exactly 90% of the cap",
   },

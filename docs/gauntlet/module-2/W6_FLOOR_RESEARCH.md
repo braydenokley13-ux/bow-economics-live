@@ -194,3 +194,151 @@ legal clearance.
   web.archive.org unreachable on this network path). Currently MEDIUM via cbafaq.
 - Sections 8 and 9 below, appended after this file's first write.
 
+
+---
+
+## 8. Luxury-tax distribution — "half to the teams that stayed under"
+
+Answers `W5_W6_SPEC.md` §"Institution 2" second anchor and `W4_BILL_RESEARCH.md` §6's
+grade 7-8 sentence "half of it goes to the teams that stayed under."
+
+**OBSERVED — CBA Art. VII §2(d)(4), read 2026-09-04.** Verbatim:
+
+> "All amounts remitted to the NBA by NBA Teams pursuant to this Section 2(d) shall be the
+> exclusive property of the NBA, and such amounts shall be used and/or distributed as
+> follows: (i) Subject to Sections 2(c)(2)(ii) and 2(c)(7) above, the NBA **may elect to
+> distribute up to fifty percent (50%)** of such amounts to one (1) or more Teams based in
+> whole or in part on the fact that such Team(s) did not owe a tax for such Salary Cap Year
+> (e.g., … the NBA could elect to distribute fifty percent (50%) of such amounts in equal
+> shares to all non-taxpayers in such Salary Cap Year); and (ii) amounts not distributed
+> in accordance with Section 2(d)(4)(i) above shall be used for one (1) or more 'League
+> purposes' … selected by the NBA."
+
+**Three corrections to "half goes to non-taxpayers", all HIGH:**
+
+1. It is **"up to fifty percent," at the NBA's election** — a ceiling and a discretion, not
+   an entitlement. No surface may state it as a guarantee. In practice the league has used
+   the full 50%, and that practice is what the classroom sentence is describing.
+2. **A team below the Minimum Team Salary is excluded** (§2(c)(2)(ii), cross-referenced in
+   §2(d)(4)(i) itself). The floor and the tax pot are wired together in the real rule.
+3. The other half is **"League purposes,"** and the CBA expressly forbids distributing that
+   half in a way based "directly or indirectly, in whole or in part, on the amount of the
+   Team's Team Salary or on whether the Team is a taxpayer." The widely repeated
+   "the other half funds revenue sharing" is a *reported practice*, not a CBA guarantee,
+   and the CBA constrains how it may be done.
+
+**Change from the 2017 CBA: none, on the 50%.** Larry Coon's 2017-CBA FAQ Q20
+(`http://www.cbafaq.com/salarycap17.htm`, read 2026-09-04) states the identical rule:
+"Up to 50% of the tax money may be given to non-taxpaying teams. Note that there is no
+requirement that any of the tax money be distributed to teams in this manner. … Currently
+50% of the tax revenue is used as a funding source for the revenue sharing program, and
+the remaining 50% is distributed to non-taxpaying teams in equal shares." **The 50% ceiling
+is unchanged 2017 → 2023.** What the 2023 CBA added is the below-minimum forfeiture
+(§2(c)(2)(ii)) and the expired 2023-24 half-share transition (§2(c)(7)). Grade: **MEDIUM**
+on "unchanged" (2017 primary text not opened; one strong explainer).
+
+**A dated real dollar example of what one under-tax team received.**
+
+| Season | Total tax paid | Taxpayers | Distributed to non-taxpayers | Per non-taxpayer | Source, read 2026-09-04 | Grade |
+|---|---|---|---|---|---|---|
+| 2024-25 | $461.2M | 10 | 50% | **$11.5M each to 20 teams** | cbaguide.com/thresholds/luxurytax/, attributing Sports Business Classroom | **MEDIUM** — explainer quoting a third outlet; I did not open the underlying report |
+| 2025-26 | $223.1M | — | 50% | ~$4.9M each to 23 teams | `W4_BILL_RESEARCH.md` §3, citing Hoops Rumors 2026-04 | **LOW here** — I did not re-open it this session |
+
+**Recommended classroom example: 2024-25, $11.5M each to 20 non-taxpaying teams.** It is
+the most recent audited year with a published per-team number, it is a round memorable
+figure, and it lets the teacher say the true sentence: *"Twenty teams that stayed under
+each got $11.5 million of the ten taxpayers' money — unless they had failed to hit the
+floor, in which case they got none of it."* Both halves of that sentence are in the CBA.
+Print it as an estimate with its date; the league does not publish official tax totals.
+
+---
+
+## 9. Revenue sharing — the $400M and the Memphis $28M
+
+**The ~$400M: CONFIRMED, and it needs a date attached.** Two Sportico pieces, both opened
+by me 2026-09-04, carry the identical sentence:
+
+- Sportico, "How NBA Teams and Owners Make Money: Tickets, TV, Sponsors and More",
+  `datePublished 2025-10-21`,
+  `https://www.sportico.com/leagues/basketball/2025/how-nba-teams-owners-make-money-1234874170/`
+- Sportico, "NBA Revenue Projected to Hit $14.3 Billion During 2025-26 Season",
+  `datePublished 2025-11-12`,
+  `https://www.sportico.com/leagues/basketball/2025/nba-revenue-projected-2025-26-season-1234876505/`
+
+> "The 30 NBA teams generated $12.25 billion, or $408 million per club, in revenue during
+> the 2024-25 season … The tally is **net of revenue-sharing that transferred roughly $400
+> million to low-revenue teams last year, funded by high-revenue teams and 50% of luxury
+> tax proceeds**."
+
+**Grade MEDIUM.** One outlet, sourced to unnamed people familiar with league finances; the
+NBA declined to comment. **It is a 2024-25 figure, not a standing annual constant.** The
+spec's phrasing "moves roughly **$400M a year**" should become "moved roughly $400M in
+2024-25 (Sportico, 2025-10-21)". This is the newest public figure I located; no 2025-26
+revenue-sharing total is published as of 2026-09-04. **Note the causal link the sentence
+gives us for free and the classroom should use: the tax pot funds the sharing pot.**
+
+**The Memphis $28M in 2021-22: NOT VERIFIED by me this session.** `W4_BILL_RESEARCH.md` §5
+attributes it to Sportico 2025-10-21; I read that article in full this session and **the
+Memphis $28M figure is not in it.** The article's Memphis numbers are $301M in 2024-25
+revenue (lowest in the league) and a $4B franchise valuation. Either the citation points at
+the wrong article or the figure came from elsewhere. **Grade: LOW. Do not use the Memphis
+$28M on any surface until it is re-sourced.** Recommended replacement anchor with a source
+I did open: *"Memphis made the least money of any NBA team in 2024-25 — $301 million.
+Golden State made $833 million"* (Sportico 2025-10-21, MEDIUM) — which is a cleaner
+inequality hook for the bowl than a sharing receipt, and does not require a confidential
+number.
+
+**"The formula is confidential" — mostly right, and overstated as written.** The league's
+revenue-sharing plan is a separate document from the CBA and the NBA does not publish it or
+per-club receipts (**HIGH**: the plan does not appear anywhere in the 676-page 2023 CBA;
+I searched it). But a substantial amount of the plan's *structure* has been publicly
+reported for years. Larry Coon's FAQ Q21 (2017-CBA edition, read 2026-09-04) publishes:
+teams contribute an equal percentage of revenue (net of arena expenses) into a pool and
+draw a 1/30 share; market-size revenue benchmarks ranging 65% (New Orleans) to 160%
+(New York/Brooklyn) of league average; a 15%-of-revenue contribution cap for markets under
+1M TV households; no receipts at all for markets above 2.5M TV households, scaled receipts
+2.0–2.5M; receipts eliminated where they would push profit past $10M; payers capped at 30%
+of profits above $5M; a $15M discretionary fund; reconciliation each February. Whether the
+2023-CBA-era plan preserved those thresholds is **NOT VERIFIED**.
+
+**Product ruling this supports, unchanged:** `W5_W6_SPEC.md` non-negotiable 2 ("no surface
+prints a percentage of the real NBA revenue-sharing formula") should **stand**. It is a
+conservative choice, and the accuracy reason is now sharper: the numbers that *are* public
+are (a) explainer-reported, (b) at least 2017-CBA-vintage, and (c) not current-league
+official. Printing any of them as "the NBA's rule" would be the false-precision failure.
+What may be printed, dated and attributed: "roughly $400 million moved from high-revenue to
+low-revenue clubs in 2024-25, funded by big markets and half the luxury tax."
+
+---
+
+## 10. Recommendation
+
+- **Replace the spec's floor sentence.** The 2023 anchor is: *a team that opens the season
+  below 90% of the cap pays the shortfall to the league, the league splits it among all
+  the teams, and the team also forfeits its share of the luxury-tax pot.* Three teeth, one
+  of which (the forfeited pot share) is the exact economics of W6's Institution 2.
+- **Do not ship `world.ts`'s `floor.does` string as written.** It states the 2017 rule.
+  Escalated to the Lead Integrator; not edited by me.
+- **Say "up to half," never "half"**, of the tax pot, and pair it with the floor forfeiture.
+- **Date the $400M to 2024-25**; drop or re-source Memphis's $28M.
+- Keep non-negotiable 2. It survives verification and is now better justified.
+
+---
+
+## 11. Closing status (§7 resolved)
+
+Sections 8 and 9 were appended after this file's first write and are complete. The two
+items still open from §7 are unchanged and both are LOW-impact:
+
+- whether the paying team is itself inside the §2(c)(6) equal 30-way redistribution — the
+  CBA says "each Team" and states no carve-out; **LOW**, read literally;
+- the 2017 CBA rule from 2017 **primary text** — nba.com's 2017 PDF URL returns 403 and
+  `web.archive.org` is unreachable on this network path (TLS connection reset at the
+  proxy). Currently **MEDIUM** via Larry Coon's 2017-CBA FAQ, which is explicit and
+  unambiguous on both the snapshot date and the destination of the money.
+
+Newly opened and unresolved: the **Memphis $28M in 2021-22** figure cited by
+`W4_BILL_RESEARCH.md` §5 is **not present in the Sportico article that §5 cites**. Treat as
+**LOW / mis-cited** until re-sourced.
+
+*Verified 2026-09-04 by the Sports Reality Director. Nothing here is classroom-proven (D10).*
