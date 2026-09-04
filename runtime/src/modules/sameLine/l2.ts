@@ -66,7 +66,7 @@ import {
 import { SAME_LINE_L2_ID } from "./seasonCarry.js";
 import type { Signing } from "./engine.js";
 import { money, roomLeftText } from "./engine.js";
-import { CLUB, CLUBS, LINE, ROSTER, TOOL, bandOf, type Band, type ClubId, type JobRole } from "./world.js";
+import { BOARD, CLUB, CLUBS, LINE, ROSTER, TOOL, bandOf, type Band, type ClubId, type JobRole } from "./world.js";
 
 export { SAME_LINE_L2_ID };
 
@@ -193,7 +193,45 @@ const HOOK_BEATS = 3;
 
 /* -------------------------------------------------------------- setup -- */
 
-function stockFranchise(clubId: ClubId, twin: 0 | 1): UnclaimedSeasonFranchise {
+/**
+ * STOCK JULY (bug fix, no source-session room): a dealt desk's July was
+ * never played, so before this it carried NO named signings — only the room's
+ * own generic January ten-day (`min-*`) could ever appear on its books. That
+ * made ADAPT's `waivable` list structurally empty and SUNK COST unreachable
+ * for every desk in an unlinked room (a room with no Week 1 source session),
+ * the opposite of CLAUDE.md §9's promise that an absent student — or here, an
+ * absent SOURCE SESSION — gets a stock franchise, not a broken one.
+ *
+ * These two entries surface two real, dated, sourced one-year contracts
+ * already read into this lesson's own `world.ts` BOARD — Nikola Vucevic
+ * ($3,900,000, agreed 2026-07-02) and Larry Nance Jr. ($4,000,000, agreed
+ * 2026-07-08) — the exact PRICE_TWINS pair `seasonData.ts` already uses for
+ * DECISION QUALITY. No salary is invented.
+ *
+ * WHY THEY DO NOT MOVE THE CLUB'S DOLLAR FIGURES. `club.committed.value` /
+ * `club.taxSalary.value` are this club's own real, current totals — already
+ * inclusive of whatever it actually carries. Adding these two salaries to
+ * that total AGAIN would double-count real money the aggregate already
+ * contains. So a stock desk's `committed`/`taxSalary` are untouched; these
+ * two named entries are surfaced OUT of the aggregate for the waive/report
+ * path, not layered on top of it (`seatFromUnclaimed` correspondingly does
+ * not add their count a second time onto `slots`).
+ *
+ * MISCONCEPTION RISK (CLAUDE.md §3): a student who knows the NBA may notice
+ * neither man ever actually played for whichever club this desk is. The
+ * `dealt` desk already discloses "This July was dealt to you, not played by
+ * you" (`hqFor`'s `dealtNote`) before this screen is ever shown — the exact
+ * disclosure this risk needs, since a dealt July was never claimed to be this
+ * club's real one.
+ */
+const STOCK_JULY_A = BOARD.find((p) => p.id === "vucevic")!;
+const STOCK_JULY_B = BOARD.find((p) => p.id === "nance")!;
+const STOCK_JULY_SIGNINGS: readonly Signing[] = [
+  { playerId: STOCK_JULY_A.id, name: STOCK_JULY_A.name, role: STOCK_JULY_A.role, annual: STOCK_JULY_A.ask.value, tool: "minimum", years: STOCK_JULY_A.years, coveredThrough: "2026-27" },
+  { playerId: STOCK_JULY_B.id, name: STOCK_JULY_B.name, role: STOCK_JULY_B.role, annual: STOCK_JULY_B.ask.value, tool: "minimum", years: STOCK_JULY_B.years, coveredThrough: "2026-27" },
+];
+
+function stockFranchise(clubId: ClubId, twin: 0 | 1, gradeBand: GradeBand): UnclaimedSeasonFranchise {
   const club = CLUB[clubId];
   return {
     sourceSeatId: null,
@@ -206,9 +244,13 @@ function stockFranchise(clubId: ClubId, twin: 0 | 1): UnclaimedSeasonFranchise {
     deadMoney: club.deadMoney.value,
     holds: club.holds.value,
     openJobs: club.jobs,
-    wall: null,
+    // A plausible self-set July line, present only where the 7-8 profile
+    // reasons about it (`namings()` gates PATH DEPENDENCE/OPTION VALUE behind
+    // `profile.maxVariables >= 3`, true only at 7-8) — never at 5-6, which
+    // never reaches that reasoning regardless (see `namings()`'s own gate).
+    wall: gradeBand === "7-8" ? LINE.tax : null,
     toolsSpent: [],
-    signings: [],
+    signings: STOCK_JULY_SIGNINGS,
     forgone: [],
   };
 }
@@ -255,7 +297,7 @@ function buildUnclaimed(seed: unknown, gradeBand: GradeBand): { list: readonly U
   const list: UnclaimedSeasonFranchise[] = [...carried];
   for (const club of CLUBS) {
     for (const twin of [0, 1] as const) {
-      if (!filled.has(`${club.id}:${twin}`)) list.push(stockFranchise(club.id, twin));
+      if (!filled.has(`${club.id}:${twin}`)) list.push(stockFranchise(club.id, twin, gradeBand));
     }
   }
   return { list, warnings };
@@ -269,7 +311,15 @@ function seatFromUnclaimed(state: SameLineL2State, f: UnclaimedSeasonFranchise, 
     taxSalary: f.taxSalary,
     deadMoney: f.deadMoney,
     holds: f.holds,
-    slots: club.contracts.value + f.signings.length,
+    // A carried desk's `signings` are real July additions ON TOP of
+    // `club.contracts.value` (the base roster count L1 started from), so they
+    // add a slot each. A stock (`dealt`) desk's `signings` are STOCK_JULY —
+    // two names SURFACED OUT of `club.contracts.value`, not added on top of
+    // it (see `stockFranchise`'s own comment) — so they must not add a
+    // second slot each, or a dealt desk's roster count would overstate the
+    // club's real contract count and could push it past SEASON_ROSTER_MAX
+    // before this desk ever acts.
+    slots: club.contracts.value + (f.dealt ? 0 : f.signings.length),
     spent: f.toolsSpent,
     wall: f.wall,
     openJobs: f.openJobs,

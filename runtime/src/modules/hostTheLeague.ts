@@ -745,6 +745,16 @@ export type HostLeagueState = {
   ritualStage?: number;
   /** Paging within the NET ritual stage (stage 5), same idiom as `barPage`. */
   poolPage?: number;
+  /**
+   * D62 R-14 (7-8 only). THE NO-BOWL SEASON: the same three weeks, every
+   * live desk's own recorded price and reinvest held fixed, replayed with
+   * `levy = 0` — the "before" this room never played, computed rather than
+   * invented. Teacher-pressed once (`teacher:noBowl`), never a timer, never
+   * offered at 5-6. `null`/absent means the press has not run (or this is a
+   * snapshot from before this field existed) — every read goes through
+   * `noBowlOf()`, never a direct field access.
+   */
+  noBowl?: NoBowlResult | null;
 };
 
 /** Snapshot-safe band read: a state with no `gradeBand` reads as "5-6". */
@@ -762,6 +772,32 @@ export const poolPageOf = (state: HostLeagueState): number => state.poolPage ?? 
 /** Snapshot-safe read of a club or settled week's pool position — `undefined` and `null` both read as no call. */
 export const poolPositionOf = (o: { poolPosition?: { chip: PoolChip; line: string } | null }): { chip: PoolChip; line: string } | null =>
   o.poolPosition ?? null;
+
+/**
+ * D62 R-14. One live club's season, both ways: what actually happened (with
+ * the bowl) beside the computed replay at `levy = 0` (no bowl), same
+ * recorded price and reinvest every week. `reinvestWithBowl` and
+ * `reinvestNoBowl` are computed separately rather than assumed equal (see
+ * `computeNoBowl`) even though the shipped reinvest formula never reads the
+ * levy — a desk's dial, held fixed, cannot itself have changed.
+ */
+export type NoBowlRow = {
+  slot: number;
+  club: string;
+  cashWithBowl: number;
+  cashNoBowl: number;
+  reinvestWithBowl: number;
+  reinvestNoBowl: number;
+};
+export type NoBowlResult = {
+  rows: NoBowlRow[];
+  leagueReinvestWithBowl: number;
+  leagueReinvestNoBowl: number;
+  roomReinvestLineWithBowl: string;
+  roomReinvestLineNoBowl: string;
+};
+/** Snapshot-safe read: a state with no `noBowl` (never pressed, or pre-dates the field) reads as `null`. */
+export const noBowlOf = (state: HostLeagueState): NoBowlResult | null => state.noBowl ?? null;
 
 /**
  * Bars per projector frame on the Handed-To-You board.
@@ -1221,6 +1257,41 @@ export function botShareFor(slot: number, week: number, starGone: boolean): numb
 
 /* ------------------------------------------------------------- settling -- */
 
+/**
+ * THE POOL's own split arithmetic, one week: every live slot pays a fixed
+ * fraction of its own assessed local revenue in, and the bowl comes back out
+ * as an equal share with any leftover dollar going to the first live slots in
+ * slot order (rounding stated, never hidden — see `poolRoundingNoteFor`).
+ *
+ * Factored out of `settleWeek` so D62 R-14's no-bowl replay (`computeNoBowl`)
+ * calls this SAME formula at `levy = 0` rather than re-deriving or assuming
+ * the result — at `levy = 0` every `paidIn` and `tookOut` collapses to zero,
+ * but it collapses because the formula says so, not because the caller
+ * hard-coded it.
+ */
+function poolSplitFor(
+  size: number,
+  liveSlots: readonly number[],
+  assessedLocalRevenue: readonly number[],
+  levy: number,
+): { paidIn: number[]; tookOut: number[] } {
+  const paidIn: number[] = new Array(size).fill(0);
+  let bowlTotal = 0;
+  for (const i of liveSlots) {
+    const paid = Math.round(assessedLocalRevenue[i]! * levy);
+    paidIn[i] = paid;
+    bowlTotal += paid;
+  }
+  const liveCount = liveSlots.length;
+  const splitBase = liveCount > 0 ? Math.floor(bowlTotal / liveCount) : 0;
+  const splitRemainder = liveCount > 0 ? bowlTotal - splitBase * liveCount : 0;
+  const tookOut: number[] = new Array(size).fill(0);
+  liveSlots.forEach((slot, idx) => {
+    tookOut[slot] = splitBase + (idx < splitRemainder ? 1 : 0);
+  });
+  return { paidIn, tookOut };
+}
+
 function settleWeek(state: HostLeagueState, honorPendingDials: boolean): HostLeagueState {
   const week = state.weekIndex;
   if (week >= WEEK_COUNT) return state;
@@ -1273,26 +1344,10 @@ function settleWeek(state: HostLeagueState, honorPendingDials: boolean): HostLea
   for (let i = 0; i < size; i += 1) if (state.clubs[i]!.seatId !== null) liveSlots.push(i);
   const levy = levyOf(state);
   const assessedLocalRevenue: number[] = new Array(size).fill(0);
-  const poolPaidIn: number[] = new Array(size).fill(0);
-  let bowlTotal = 0;
-  for (const i of liveSlots) {
-    const taxedLocal = homes[i]!.gate + localMediaArr[i]!;
-    assessedLocalRevenue[i] = taxedLocal;
-    const paid = Math.round(taxedLocal * levy);
-    poolPaidIn[i] = paid;
-    bowlTotal += paid;
-  }
-  // Equal split, rounding stated rather than hidden: every live club gets the
-  // same floor share, and the bowl's own remainder — never more than one
-  // dollar per club — goes to the first clubs in slot order, so the split
-  // sums to the bowl total exactly, every week, with zero residual.
-  const liveCount = liveSlots.length;
-  const splitBase = liveCount > 0 ? Math.floor(bowlTotal / liveCount) : 0;
-  const splitRemainder = liveCount > 0 ? bowlTotal - splitBase * liveCount : 0;
-  const poolTookOut: number[] = new Array(size).fill(0);
-  liveSlots.forEach((slot, idx) => {
-    poolTookOut[slot] = splitBase + (idx < splitRemainder ? 1 : 0);
-  });
+  for (const i of liveSlots) assessedLocalRevenue[i] = homes[i]!.gate + localMediaArr[i]!;
+  // Extracted as `poolSplitFor` so D62 R-14's no-bowl replay can call the
+  // EXACT same split formula at `levy = 0` instead of re-deriving it.
+  const { paidIn: poolPaidIn, tookOut: poolTookOut } = poolSplitFor(size, liveSlots, assessedLocalRevenue, levy);
 
   const clubs = state.clubs.slice();
   const poolRows: PoolWeek[] = [];
@@ -3651,6 +3706,54 @@ export function poolTotalsAll(state: HostLeagueState): PoolTotals[] {
 }
 
 /**
+ * D62 R-14 — THE NO-BOWL SEASON. The same three weeks, every live desk's own
+ * recorded price and reinvest held fixed, replayed with `levy = 0`: the
+ * "before" this room never played, computed rather than invented.
+ *
+ * Reinvest (`reinvestPaid`) and every dollar figure that feeds it (`home`,
+ * `localMedia`, draw evolution) never reads the levy in `settleWeek` — held
+ * dials produce identical reinvest with or without the bowl, so
+ * `reinvestWithBowl === reinvestNoBowl` always. The only thing the bowl ever
+ * moves is cash, via the per-week pool net (`tookOut - paidIn`), computed
+ * here at `levy = 0` through the exact same `poolSplitFor` `settleWeek`
+ * calls — never a re-derived or assumed zero.
+ */
+export function computeNoBowl(state: HostLeagueState): NoBowlResult {
+  const size = state.leagueSize;
+  const totals = poolTotalsAll(state);
+  const noBowlNetTotal = new Map<number, number>();
+  for (let w = 0; w < WEEK_COUNT; w += 1) {
+    const weekRows = poolRowsFor(state, w);
+    if (weekRows.length === 0) continue;
+    const liveSlots = weekRows.map((p) => p.slot);
+    const assessedLocalRevenue: number[] = new Array(size).fill(0);
+    for (const p of weekRows) assessedLocalRevenue[p.slot] = p.assessedLocalRevenue;
+    const { paidIn, tookOut } = poolSplitFor(size, liveSlots, assessedLocalRevenue, 0);
+    for (const slot of liveSlots) {
+      noBowlNetTotal.set(slot, (noBowlNetTotal.get(slot) ?? 0) + (tookOut[slot]! - paidIn[slot]!));
+    }
+  }
+  const rows: NoBowlRow[] = totals
+    .map((t): NoBowlRow => {
+      const club = state.clubs.find((c) => c.slot === t.slot)!;
+      const cashWithBowl = club.cash;
+      const cashNoBowl = cashWithBowl - t.netTotal + (noBowlNetTotal.get(t.slot) ?? 0);
+      const reinvestTotal = club.weeks.filter((w) => !w.stock).reduce((s, w) => s + w.reinvestPaid, 0);
+      return { slot: t.slot, club: t.club, cashWithBowl, cashNoBowl, reinvestWithBowl: reinvestTotal, reinvestNoBowl: reinvestTotal };
+    })
+    .sort((a, b) => a.slot - b.slot);
+  const leagueReinvestWithBowl = Math.round(rows.reduce((s, r) => s + r.reinvestWithBowl, 0));
+  const leagueReinvestNoBowl = Math.round(rows.reduce((s, r) => s + r.reinvestNoBowl, 0));
+  return {
+    rows,
+    leagueReinvestWithBowl,
+    leagueReinvestNoBowl,
+    roomReinvestLineWithBowl: `With the bowl running, the room put back $${leagueReinvestWithBowl.toLocaleString()} of its own money across the whole season.`,
+    roomReinvestLineNoBowl: `Replayed with no bowl at all — same prices, same reinvest calls — the room still puts back $${leagueReinvestNoBowl.toLocaleString()}. Nobody's reinvest call changes; only whose books the cash ends up sitting on does.`,
+  };
+}
+
+/**
  * A 5-6 view of a pool net never prints a minus sign (`allowsNegatives:
  * false`) — direction words instead. At 7-8 it is signed.
  */
@@ -4316,13 +4419,26 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       return { ok: true, state: { ...state, poolPage: (poolPageOf(state) + step) % pages } };
     }
 
+    // D62 R-14 — THE NO-BOWL SEASON. 7-8 only, one press, after the room has
+    // seen its own season AND the whole pool ritual — never a "before" week
+    // the room plays, always a computed replay of the season it already did.
+    if (action.type === "teacher:noBowl") {
+      if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher runs the no-bowl comparison" };
+      if (bandOfRoom(state) !== "7-8") return { ok: false, reason: "the no-bowl comparison only exists at 7-8" };
+      if (ctx.phase !== "REVEAL") return { ok: false, reason: `the no-bowl comparison runs during REVEAL (session is in ${ctx.phase})` };
+      if (ritualStageOf(state) < POOL_RITUAL_STEPS) return { ok: false, reason: "finish THE RITUAL first — every pool-ritual stage must have played" };
+      if (state.weekIndex < WEEK_COUNT) return { ok: false, reason: "all three weeks must be settled first" };
+      if (noBowlOf(state) !== null) return { ok: false, reason: "the no-bowl comparison has already run" };
+      return { ok: true, state: { ...state, noBowl: computeNoBowl(state) } };
+    }
+
     return { ok: false, reason: `unknown action "${action.type}"` };
   },
 
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
     if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock", "gateCall", "poolPosition"];
-    if (phase === "REVEAL") return ["takeSeat", "ledgerPredict", "teacher:poolStage", "teacher:poolPage", "teacher:poolPageBack"];
+    if (phase === "REVEAL") return ["takeSeat", "ledgerPredict", "teacher:poolStage", "teacher:poolPage", "teacher:poolPageBack", "teacher:noBowl"];
     // W5 N-3: still offered, so a late device gets an answer instead of a 409 loop.
     return ["takeSeat"];
   },
