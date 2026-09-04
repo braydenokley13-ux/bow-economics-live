@@ -1047,7 +1047,7 @@ function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming
     term: "RATIONING",
     moment: "Every desk's inbox could hold three live offers, never more. When a fourth arrived, it had nowhere to land until one of the first three was answered.",
     means: "When something people want is limited — an answer, a roster spot, a seat — something has to decide who gets it first. This room used a rule (a cap of three) instead of a price. Rationing is not the exception; every scarce thing gets rationed by something.",
-    real: "No dated real example is sourced for RATIONING yet — teacher card owed (Sports Reality).",
+    real: "NBA rules let a club keep no more than 15 players once the season starts. On September 3, 2026 — three weeks before camp — Memphis had 19 players under contract, and three other clubs were also over the limit. No amount of money buys a sixteenth spot, so every one of them had to cut somebody who had done nothing wrong.",
     outside: "A doctor's waiting room can only see so many patients today. When more people show up than there are appointment slots, a rule — first come, first served, or triage — decides who gets seen now and who waits, whether or not anyone likes the rule.",
   });
 
@@ -1059,7 +1059,7 @@ function namings(state: SameLineL3State, profile: GradeProfile): readonly Naming
         term: "ROOM (CONSTRAINT)",
         moment: `${walled.length} desk${walled.length === 1 ? "" : "s"} in this room carried a wall it drew for itself back in July. Today's trade had to fit inside a line decided months earlier.`,
         means: "A constraint set in the past can silently decide what you are allowed to do today, even in a moment that feels completely unrelated to when you set it. The rule did not change between then and now — your room under it did.",
-        real: "No dated real example is sourced for ROOM (CONSTRAINT) yet — teacher card owed (Sports Reality).",
+        real: "On July 1 and July 3, 2026, Utah agreed two-year deals with Jaxson Hayes and Josh Okogie at $6 million a year each. Together those two signings spent more than the taxpayer part of Utah's mid-level exception, and the rule attached to that spending hard-caps a club at the first apron for the rest of the league year — the same wall is still standing at February's trade deadline. Nobody imposed that line on Utah. Utah drew it, in July, by signing.",
         outside: "A gym membership you signed up for last year, with a contract that does not end until spring, decides whether you can join a friend's new gym today — even though the two decisions felt completely separate when you made them.",
       });
     }

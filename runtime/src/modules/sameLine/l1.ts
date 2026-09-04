@@ -556,12 +556,12 @@ function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming
         `${worst.wanted} desks in this room needed a ${worst.role.toLowerCase()}. This board had ${worst.had} of them, and everybody could see everybody else's board. ` +
         (stillOpen > 0
           ? `${stillOpen} ${stillOpen === 1 ? "desk" : "desks"} finished the window with a hole still open.`
-          : `Every hole got filled, and the last ones cost more than the first ones.`),
+          : `Every hole got filled — and every desk fished from the same shrinking board to do it.`),
       means:
         profile.maxVariables >= 3
           ? "There was not enough of the thing everybody wanted to go round. That is not a mistake anybody made — it is the starting condition, and it is what makes every other decision today a real one."
           : "There was not enough of what everybody wanted. Nobody did that on purpose. It is just how the summer started.",
-      real: "No dated real example is sourced for SCARCITY yet — teacher card owed (Sports Reality).",
+      real: "In the summer of 2026 only three NBA teams — Brooklyn, Chicago and the Lakers — had spending room under the cap. Every other club in the league was shopping the same list of free agents, and the rules capped what most of them could offer a player who was not already theirs at about $15 million a year. Same board for thirty teams, and not enough of it to go round.",
       outside:
         profile.maxVariables >= 3
           ? "It is why concert tickets sell out, why there is a queue for the good bagel place at 9am and none at 3pm, and why your school has to choose between a new gym floor and new laptops."
@@ -596,7 +596,7 @@ function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming
         profile.maxVariables >= 3
           ? "The real price of anything is not the money. It is the best thing you could no longer do once you had done it — and you pay that price whether or not you ever notice it."
           : "What something really costs you is the next-best thing you gave up to get it. Not the money. The other thing.",
-      real: "No dated real example is sourced for OPPORTUNITY COST yet — teacher card owed (Sports Reality).",
+      real: "On July 4, 2016, Kevin Durant chose Golden State. To fit his contract under the cap, the Warriors traded Andrew Bogut to Dallas and let five of their own free agents go, Harrison Barnes among them. Nobody made them do it and nobody outbid them — signing one player is what made keeping the others impossible.",
       outside:
         profile.maxVariables >= 3
           ? "The hour you spent on this lesson is an hour you did not spend on anything else, and that hour is the real price of it — not the room, not the electricity."
@@ -641,7 +641,7 @@ function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming
         `He never raised his price. The other desks in this room raised it.`,
       means:
         "A price is not a number the seller decides. It is what the competition to buy the thing settles on — which is why the same player is cheap in a quiet market and dear in a crowded one.",
-      real: "No dated real example is sourced for COMPETITION SETS PRICE yet — teacher card owed (Sports Reality).",
+      real: "On July 7, 2025, Myles Turner signed with Milwaukee for four years and $108.9 million. He had spent his whole career in Indiana and Indiana did not keep him. The day before, Milwaukee had waived Damian Lillard and taken on the $103 million still owed to him — that is what a second interested club was willing to do, and a second interested club is what set Turner's price.",
       outside:
         "It is why the same flight costs three times as much the week of a holiday, and why a house on a street everyone wants sells above what the owner asked.",
     });
