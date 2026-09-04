@@ -974,15 +974,31 @@ function withLeagueSize(state: HostLeagueState, size: number): HostLeagueState {
 }
 
 /**
+ * Full House's real `marketId` values (`ClubId`, `sameLine/world.ts:366-374`)
+ * that this league also carries as a real club — matched by the same NBA
+ * club, never by string coincidence. A `marketId` not in this table (Full
+ * House currently carries "brooklyn" and "minnesota", neither of which is one
+ * of this league's twenty clubs) falls back to slot order, and the seed note
+ * says so — never a silent drop and never an invented match.
+ */
+const WEEK4_MARKET_TO_SLOT: Readonly<Record<string, number>> = {
+  memphis: 1,
+  detroit: 19,
+  milwaukee: 4,
+  boston: 5,
+  sacramento: 12,
+  "new-york": 0,
+};
+
+/**
  * W5 SEED-IN FROM WEEK 4 (`m2l1-full-house`).
  *
  * `seed` is untrusted input from the runtime (`lessonModule.ts`'s own
- * contract) and its `state` half is Full House's own state, which that
- * module is being extended concurrently to carry a bill outcome — this
- * reads the stated envelope shape defensively: every field checked with
- * `typeof`, nothing thrown, no assumption that a field present today stays
- * present. Validated PER CLUB, never per seed (a malformed club is skipped,
- * not a reason to reject every other club).
+ * contract) and its `state` half is Full House's own state
+ * (`fullHouse.ts:1115` `Desk`, `:1185` `deskOrder`) — read defensively: every
+ * field checked with `typeof`, nothing thrown, no assumption that a field
+ * present today stays present. Validated PER DESK, never per seed (one
+ * malformed desk is skipped, never a reason to reject every other one).
  *
  * Every non-ok or partial outcome is named in the returned `note` — a
  * teacher-readable how-you-got-here sentence, never a silent stock start.
@@ -1012,43 +1028,75 @@ function readWeek4Seed(seed: unknown, gradeBand: GradeBand): { clubs: CarriedClu
   if (typeof inner !== "object" || inner === null) {
     return { clubs: [], note: "The linked Week 4 room's books could not be read, so every building opened at its stock start." };
   }
-  const rawClubs = (inner as Record<string, unknown>)["clubs"];
-  if (!Array.isArray(rawClubs) || rawClubs.length === 0) {
-    return { clubs: [], note: "The linked Week 4 room named no clubs, so every building opened at its stock start." };
+  const innerRec = inner as Record<string, unknown>;
+  const deskOrder = innerRec["deskOrder"];
+  const desksById = innerRec["desks"];
+  if (!Array.isArray(deskOrder) || typeof desksById !== "object" || desksById === null) {
+    return { clubs: [], note: "The linked Week 4 room named no desks, so every building opened at its stock start." };
   }
+  const desksRec = desksById as Record<string, unknown>;
+
   const out: CarriedClub[] = [];
+  const usedSlots = new Set<number>();
+  const fallbackDesks: Record<string, unknown>[] = [];
   let penaltyCount = 0;
   let clampedCount = 0;
-  for (const raw of rawClubs) {
+  let unclearedNoted = 0;
+
+  for (const seatId of deskOrder) {
+    if (typeof seatId !== "string") continue;
+    const raw = desksRec[seatId];
     if (typeof raw !== "object" || raw === null) continue;
-    const r = raw as Record<string, unknown>;
-    const slot = r["slot"];
-    if (typeof slot !== "number" || !Number.isFinite(slot) || slot < 0 || slot >= CLUBS.length) continue;
-    const cashAfter = typeof r["cashAfter"] === "number" && Number.isFinite(r["cashAfter"]) ? (r["cashAfter"] as number) : 0;
-    const billCleared = typeof r["billCleared"] === "boolean" ? (r["billCleared"] as boolean) : null;
-    let cashOpening = cashAfter;
-    let penalty = 0;
-    if (billCleared === false) {
-      penalty = MISSED_BILL_PENALTY;
-      cashOpening -= penalty;
+    const d = raw as Record<string, unknown>;
+    const marketId = d["marketId"];
+    const slot = typeof marketId === "string" ? WEEK4_MARKET_TO_SLOT[marketId] : undefined;
+    if (slot === undefined || usedSlots.has(slot)) {
+      fallbackDesks.push(d);
+      continue;
+    }
+    usedSlots.add(slot);
+    out.push(carriedClubFrom(d, slot, () => {
       penaltyCount += 1;
-    }
-    let clamped = false;
-    if (cashOpening < MIN_CARRIED_CASH) {
-      cashOpening = MIN_CARRIED_CASH;
-      clamped = true;
+    }, () => {
       clampedCount += 1;
-    }
-    out.push({ slot: slot as number, cashOpening, penalty, billCleared, clamped });
+    }, () => {
+      unclearedNoted += 1;
+    }));
   }
+  // Fallback: a desk whose real club is not one of this league's twenty
+  // (Full House currently carries "brooklyn" and "minnesota") still carries
+  // its CASH in, by slot order, into whichever slot is not already spoken
+  // for — named, never a silent drop.
+  let nextFreeSlot = 0;
+  let unmatchedCount = 0;
+  for (const d of fallbackDesks) {
+    while (usedSlots.has(nextFreeSlot) && nextFreeSlot < CLUBS.length) nextFreeSlot += 1;
+    if (nextFreeSlot >= CLUBS.length) break;
+    usedSlots.add(nextFreeSlot);
+    unmatchedCount += 1;
+    out.push(carriedClubFrom(d, nextFreeSlot, () => {
+      penaltyCount += 1;
+    }, () => {
+      clampedCount += 1;
+    }, () => {
+      unclearedNoted += 1;
+    }));
+  }
+
   if (out.length === 0) {
-    return { clubs: [], note: "The linked Week 4 room named no readable clubs, so every building opened at its stock start." };
+    return { clubs: [], note: "The linked Week 4 room named no readable desks, so every building opened at its stock start." };
   }
   const notes: string[] = [`${out.length} building${out.length === 1 ? "" : "s"} carried in from Week 4.`];
+  if (unmatchedCount > 0) {
+    notes.push(`${unmatchedCount} carried a club this league does not seat, so ${unmatchedCount === 1 ? "it" : "they"} carried in by desk order instead of by club.`);
+  }
   if (penaltyCount > 0) {
     notes.push(
       `${penaltyCount} of them didn't cover their own Week 4 bill and opened here with a named $${MISSED_BILL_PENALTY.toLocaleString()} penalty on their how-you-got-here card.`,
     );
+  }
+  if (unclearedNoted > 0) {
+    notes.push(`${unclearedNoted} carried no record of whether their Week 4 bill cleared, so this room treated it as cleared.`);
   }
   if (clampedCount > 0) {
     notes.push(
@@ -1056,6 +1104,42 @@ function readWeek4Seed(seed: unknown, gradeBand: GradeBand): { clubs: CarriedClu
     );
   }
   return { clubs: out, note: notes.join(" ") };
+}
+
+/** One Full House `Desk`, validated and normalised into this league's `CarriedClub` for the given slot. */
+function carriedClubFrom(
+  d: Record<string, unknown>,
+  slot: number,
+  onPenalty: () => void,
+  onClamp: () => void,
+  onUnclearedRecord: () => void,
+): CarriedClub {
+  const cash = typeof d["cash"] === "number" && Number.isFinite(d["cash"]) ? (d["cash"] as number) : 0;
+  const clearedField = d["clearedTheBill"];
+  // Absent (still mid-season, or a snapshot older than the field) reads as
+  // cleared, and the seed note says so rather than inventing a penalty for a
+  // franchise that was never actually judged.
+  let billCleared: boolean | null;
+  if (typeof clearedField === "boolean") {
+    billCleared = clearedField;
+  } else {
+    billCleared = null;
+    onUnclearedRecord();
+  }
+  let cashOpening = cash;
+  let penalty = 0;
+  if (billCleared === false) {
+    penalty = MISSED_BILL_PENALTY;
+    cashOpening -= penalty;
+    onPenalty();
+  }
+  let clamped = false;
+  if (cashOpening < MIN_CARRIED_CASH) {
+    cashOpening = MIN_CARRIED_CASH;
+    clamped = true;
+    onClamp();
+  }
+  return { slot, cashOpening, penalty, billCleared, clamped };
 }
 
 /**
@@ -3735,8 +3819,19 @@ export type PoolRitualBoard = {
   netPageLabel: string;
   freeRide: FreeRideRow[] | null;
   roundingNote: string | null;
+  /** D61 R-12: the dollars other clubs' fans put on each live club's own books, summed across every week it played. Never a seat identity. */
+  visitorLine: { club: string; visitorDollars: number }[] | null;
 };
 const POOL_CHIP_UNIT = 50_000;
+
+/** D61 R-12 — THE VISITOR LINE. Season sum of `HomeSettlement.visitorDollars` per live club, slot order. */
+export function visitorLineFor(state: HostLeagueState): { slot: number; club: string; visitorDollars: number }[] {
+  return state.clubs
+    .filter((c) => c.seatId !== null)
+    .sort((a, b) => a.slot - b.slot)
+    .map((c) => ({ slot: c.slot, club: CLUBS[c.slot]!.short, visitorDollars: Math.round(c.weeks.reduce((s, w) => s + w.home.visitorDollars, 0)) }));
+}
+
 export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): PoolRitualBoard | null {
   const stage = ritualStageOf(state);
   if (stage === 0) return null;
@@ -3749,6 +3844,9 @@ export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): Poo
   const billLine = stage >= 1 ? liveClubs.map((c) => ({ club: CLUBS[c.slot]!.short, assessed: Math.round(assessedTotals.get(c.slot) ?? 0) })) : null;
   const fill = stage >= 2 ? liveClubs.map((c) => ({ club: CLUBS[c.slot]!.short, chips: Math.max(0, Math.round((assessedTotals.get(c.slot) ?? 0) / POOL_CHIP_UNIT)) })) : null;
   const bowlTotal = totals.reduce((s, t) => s + t.paidInTotal, 0);
+  // Beside THE BOWL STANDS (stage 3): the room's shared-product number, not
+  // the pool's — teacher-pressed together, never conflated as the same pipe.
+  const visitorLine = stage >= 3 ? visitorLineFor(state).map(({ club, visitorDollars }) => ({ club, visitorDollars })) : null;
   const draw = stage >= 4 ? liveClubs.map((c) => ({ club: CLUBS[c.slot]!.short, tookOut: totalFor(c.slot)?.tookOutTotal ?? 0 })) : null;
   const netRows =
     stage >= 5
@@ -3769,6 +3867,7 @@ export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): Poo
     fill,
     fillGrandTotal: fill ? bowlTotal : null,
     bowlTotal: stage >= 3 ? bowlTotal : null,
+    visitorLine,
     draw,
     net: netPaged,
     netPage: netPage + 1,
@@ -3780,6 +3879,57 @@ export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): Poo
         ? "Split evenly among the live franchises every week the bowl filled; any leftover dollar that week went to the first club in the schedule."
         : null,
   };
+}
+
+/** THE RITUAL, DIRECTOR HALF — one NOW / ASK / DON'T EXPLAIN YET / TRIGGER beat per stage, keyed to `ritualStage`. */
+function poolRitualDirectorBeat(
+  state: HostLeagueState,
+  ritual: number,
+): { now: string[]; ask: { q: string; answer: string | null }[]; dontExplainYet: string[]; trigger: string | null } {
+  if (ritual === 0) {
+    return {
+      now: ["The five-stage season reveal is done. Press THE BILL LINE to start the pool — a bowl every building in the league pays into, whether it locked every week or not."],
+      ask: [],
+      dontExplainYet: ["Do not say the levy's number as a percent. It is printed as \"$2 out of every $10\" and nothing else."],
+      trigger: "Next press: THE BILL LINE (1 of 6).",
+    };
+  }
+  const stageName = POOL_RITUAL_STAGE_NAMES[ritual - 1] ?? "the next stage";
+  const beats: Record<number, { now: string[]; ask: { q: string; answer: string | null }[]; dontExplainYet: string[] }> = {
+    1: {
+      now: ["One row per club, this week's — this season's — assessed money. Read one row out loud and stop. Say nothing about who is bigger or smaller."],
+      ask: [],
+      dontExplainYet: ["Do not say which building will pay the most into the bowl. Let FILL show them."],
+    },
+    2: {
+      now: ["Press FILL and say nothing while it fills. One chip per $50,000 assessed. Let the room count for itself.", "A desk that never locked a week still paid into this bowl — sitting a week out lowers nothing it owes."],
+      ask: [],
+      dontExplainYet: ["Do not predict which building drops the most chips. The room is about to see it, and a wrong guess from you costs the beat its whole tension."],
+    },
+    3: {
+      now: ["One number, large. Hold silence seven seconds before you say anything.", "THE VISITOR LINE is beside it — the money other clubs' fans put on each building's own books this season. Read it as a SEPARATE number from the bowl, never added to it."],
+      ask: [{ q: "That's what the league put in. What do you think comes back out — the same amounts, or something else?", answer: "Hold it. DRAW answers it in one press." }],
+      dontExplainYet: ["Not \"fair\" or \"unfair\" yet. Just the number."],
+    },
+    4: {
+      now: ["Press DRAW. Every outflow bar is identical while every inflow bar was not — that contrast is the whole lesson. No caption needed."],
+      ask: [{ q: "Every building just got the same amount back. Did every building put in the same amount?", answer: null }],
+      dontExplainYet: ["Still no \"fair\"."],
+    },
+    5: {
+      now: ["PAID IN / TOOK OUT / NET, one page at a time. Page through every club before you argue about any one of them."],
+      ask: [{ q: "Find a building that paid in more than it took out. Is that the same building whose own gate was the biggest in the league?", answer: "Sometimes, not always — market size does not decide this on its own. Read the actual row before answering for them." }],
+      dontExplainYet: ["Do not say \"sharing pays the payer.\" It usually doesn't, and the room's own numbers are about to show you which way it actually went."],
+    },
+    6: {
+      now: ["THE FREE RIDE — the two or three buildings that put back the LEAST into their own team, beside what they drew out of the bowl. This is about REINVEST, not about who paid the most into the pool."],
+      ask: [{ q: `${freeRideRows(state)[0]?.club ?? "One building"} put back the least of anyone and still drew the same split as everybody else. Is that a problem?`, answer: "Hold it — do not resolve it. This grievance is next lesson's fuel." }],
+      dontExplainYet: ["Do not say free-riding or externality. Not one of them, not yet — that is Week 6's word."],
+    },
+  };
+  const beat = beats[ritual] ?? { now: [], ask: [], dontExplainYet: [] };
+  const trigger = ritual < POOL_RITUAL_STEPS ? `Next press: ${POOL_RITUAL_STAGE_NAMES[ritual] ?? "the next stage"} (${ritual + 1} of ${POOL_RITUAL_STEPS}).` : `${stageName} was the last stage. Move on to ADAPT.`;
+  return { ...beat, trigger };
 }
 
 export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
@@ -5420,6 +5570,34 @@ function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFl
     });
   }
 
+  // W5 THE FREE RIDE, WATCH FOR half. A desk that never locked a week paid
+  // the levy and drew the split exactly like everyone else — sitting a week
+  // out is not an abstention that lowers what it owes or raises what anyone
+  // else gets, and this is the console's own reminder of that, not just the
+  // director card's.
+  if (phase === "REVEAL" && ritualStageOf(state) >= 6) {
+    const ride = freeRideRows(state);
+    if (ride.length > 0) {
+      out.push({
+        id: "free-ride",
+        label: "THE FREE RIDE is up — the low-reinvest desks are named on the board",
+        desks: ride.map((r) => r.club),
+        action: 'Do not say "free-riding" or "externality" — that is Week 6\'s word. Ask what each of these desks would say for itself before the room does.',
+        urgency: "now",
+      });
+    }
+  }
+  const neverLockedLive = live.filter((c) => c.weeks.length > 0 && c.weeks.every((w) => w.auto)).map(deskHandleFor);
+  if (phase === "REVEAL" && ritualStageOf(state) > 0 && neverLockedLive.length > 0) {
+    out.push({
+      id: "pool-abstain",
+      label: `${neverLockedLive.length} desk${neverLockedLive.length === 1 ? "" : "s"} never locked a single week and still paid the levy and drew the split`,
+      desks: neverLockedLive,
+      action: "Sitting a week out lowered nothing this desk owed and raised nothing anyone else got — say that if the room assumes otherwise.",
+      urgency: "later",
+    });
+  }
+
   return out.filter((f) => f.desks.length > 0);
 }
 
@@ -5796,14 +5974,25 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
       };
     }
 
-    case "REVEAL":
+    case "REVEAL": {
+      const ritual = ritualStageOf(state);
+      const ritualBeat =
+        state.revealStage < REVEAL_STEPS
+          ? {
+              now: [] as string[],
+              ask: [] as { q: string; answer: string | null }[],
+              dontExplainYet: [] as string[],
+              trigger: null as string | null,
+            }
+          : poolRitualDirectorBeat(state, ritual);
       return {
         phase,
-        minuteBudget: "8 min",
+        minuteBudget: "8 min · POOL RITUAL 9 min",
         now: [
           "Five presses, one beat each. The next one is named on the button — read it before you press it.",
           "Between presses, say one sentence and stop. The line for each stage is under the button.",
           "On the bar: give the instruction on screen and then be quiet. \"Point at the club that paid for your night.\" Let them point.",
+          ...ritualBeat.now,
         ],
         ask: [
           {
@@ -5816,14 +6005,16 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
             answer:
               "For almost every club in this room it is the national television check — identical for everybody, and nobody here can move it by a dollar. Read the printed percentages rather than asserting it: if a desk priced high into big visitors its own gate can beat the check, and that desk is worth asking. Then say the part that keeps it honest either way: it is not free money. The networks pay about $76 billion over eleven years and in exchange they get to say when your team plays.",
           },
+          ...ritualBeat.ask,
         ],
-        dontExplainYet: ["Hold REVENUE SHARING until the last card of SYNTHESIS, where it is named as the NEXT lesson, not this one."],
+        dontExplainYet: ["Hold REVENUE SHARING until the last card of SYNTHESIS, where it is named as the NEXT lesson, not this one.", ...ritualBeat.dontExplainYet],
         trigger:
           state.revealStage < REVEAL_STEPS
             ? `Next press: ${REVEAL_STAGES[state.revealStage]?.name ?? "the next stage"} (${state.revealStage + 1} of ${REVEAL_STEPS}).`
-            : "Every stage has played. Move on to ADAPT.",
+            : (ritualBeat.trigger ?? "Every reveal stage has played. Move on to ADAPT."),
         timeCut,
       };
+    }
 
     case "ADAPT":
       return {
@@ -6075,6 +6266,29 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
       ? `${path.line} Market size is real and you did not choose it. It is also not the only thing in the arithmetic — and Oklahoma City, one of the league's smallest markets, won the 2025 title.`
       : `${path.line} Market size is real and you did not choose it — it is inherited, it is printed, and it is never a score. Oklahoma City is one of the league's smallest markets and won the 2025 title.`,
   });
+
+  // W5 THE POOL. Only once the league's own bowl has actually run (a room
+  // that never played a settled week has nothing here). Band-gated per D59
+  // ruling / R-13 (pending founder confirmation): EXTERNALITY is named ONLY
+  // at 7-8; at 5-6 the same fact is said plainly, in the room's own words,
+  // with no term attached to it yet.
+  if (poolOf(state).length > 0) {
+    const band = bandOfRoom(state);
+    const bowl = poolTotalsAll(state).reduce((s, t) => s + t.paidInTotal, 0);
+    const visitorTotal = visitorLineFor(state).reduce((s, v) => s + v.visitorDollars, 0);
+    const bowlClaim = claim("pool.bowlTotal", bowl, "money", { assertsSign: "nonNegative", bounds: { min: 0 } });
+    const visitorClaim = claim("pool.visitorTotal", visitorTotal, "money", { assertsSign: "nonNegative", bounds: { min: 0 } });
+    cards.push({
+      id: "the-pool",
+      claims: [bowlClaim, visitorClaim],
+      title: "THE POOL",
+      body: `This league's own bowl collected ${bowlClaim.rendered} off the buildings that played, and split it back evenly among them — nobody voted on that, the levy was printed and taken. Separately, and not the same money: ${visitorClaim.rendered} landed on this room's own buildings because of a VISITOR's own drawing power, not a decision the home building made.${
+        band === "7-8"
+          ? " Money that lands on somebody who did not choose it has a name: an EXTERNALITY."
+          : " That is the visitor's money, working for somebody else's building."
+      }`,
+    });
+  }
 
   cards.push({
     id: "beyond",

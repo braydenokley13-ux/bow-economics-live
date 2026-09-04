@@ -1108,55 +1108,40 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
     rows.push({ slot, price, reinvest, auto, home, localMedia, taxedLocal, reinvestSpend, paidIn, visitorSlot: vSlot });
   }
 
-  // The pot: formed, then split. With the CONDITION on, a club under the
-  // reinvest floor collects half, and the forfeited half is redistributed among
-  // the clubs that did comply — a compliance pool, not a bonfire.
+  // The pot: formed from institution 1's own share percent, then split under
+  // institution 2's own adopted line alone. D61: the SHARE ballot funds the
+  // pot and no longer decides whether it is docked — `rule.condition` (the
+  // share's own rider) is read nowhere in this function. Only THE FLOOR's own
+  // ballot (`floorRuleFor`, dollars, sealed by `adoptFloor`) can dock a club,
+  // so a share vote with condition=true and a failed or never-run floor vote
+  // settles with NO FLOOR, lived — the second vote is never cosmetic.
   //
-  // econ B4: when NOBODY complies there is no compliance pool to pay, and the
-  // old code annihilated 50% of a transfer in silence (reachable in week 1 of a
-  // real class, where every unlocked desk settles at reinvest 0). A rule that
-  // destroys money teaches something false about redistribution. With no
-  // compliant club the docked half has nowhere to go, so it goes back to the
-  // league it came from and the pot closes at zero — printed in HOUSE_RULES.
+  // econ B4: when NOBODY clears the floor there is no compliance pool to pay,
+  // and annihilating half a transfer in silence would teach something false
+  // about redistribution. With no compliant club the forfeited half has
+  // nowhere to go, so it goes back to the league it came from and the pot
+  // closes exactly at what was paid in — printed in HOUSE_RULES.
   const pot = rows.reduce((sum, r) => sum + r.paidIn, 0);
-  const compliant = rows.map((r) => !rule || !rule.condition || r.reinvest >= CONDITION_MIN_REINVEST);
-  const compliantCount = compliant.filter(Boolean).length;
   const evenShare = size > 0 ? pot / size : 0;
+  const floor = floorRuleFor(state);
+  // Compliance is tested in DOLLARS put back this week (`reinvestSpend`)
+  // against the adopted flat-dollar line, never the percent dial against a
+  // dollar figure (the unit bug the flat-line conversion introduced and this
+  // pass removes).
+  const floorCompliant = rows.map((r) => !floor.on || r.reinvestSpend >= floor.level);
+  const floorCompliantCount = floorCompliant.filter(Boolean).length;
   let forfeited = 0;
   const base = rows.map((_, i) => {
-    if (compliant[i] || compliantCount === 0) return evenShare;
+    if (!floor.on || floorCompliant[i] || floorCompliantCount === 0) return evenShare;
     const collected = evenShare * CONDITION_COLLECT_FRACTION;
     forfeited += evenShare - collected;
     return collected;
   });
-  const bonus = compliantCount > 0 ? forfeited / compliantCount : 0;
-  const shareTookOut = rows.map((_, i) => Math.round(base[i]! + (compliant[i] ? bonus : 0)));
-
-  // INSTITUTION 2 — THE FLOOR. Additive, on top of institution 1's own
-  // CONDITION above, never in its place: a second forfeit-and-redistribute
-  // pass over what institution 1 already settled, gated on the room's own
-  // separately-adopted floor (`floorRuleFor`) rather than on `rule.condition`.
-  // A room with no floor adopted (or a snapshot from before this institution
-  // existed) reads `floor.on === false` and this pass is a no-op — the exact
-  // arithmetic institution 1 has always produced, byte for byte. Same
-  // no-bonfire rule as institution 1 (econ B4): with nobody clearing the
-  // floor there is nobody to redistribute to, so nothing is forfeited.
-  const floor = floorRuleFor(state);
-  const floorCompliant = rows.map((r) => !floor.on || r.reinvest >= floor.level);
-  const floorCompliantCount = floorCompliant.filter(Boolean).length;
-  let floorForfeited = 0;
-  const afterFloor = shareTookOut.map((amt, i) => {
-    if (!floor.on || floorCompliant[i] || floorCompliantCount === 0) return amt;
-    const kept = Math.round(amt * CONDITION_COLLECT_FRACTION);
-    floorForfeited += amt - kept;
-    return kept;
-  });
-  const floorBonusPool = !floor.on ? 0 : floor.recipient === "everyone" ? size : floorCompliantCount;
-  const floorBonus = floorBonusPool > 0 ? floorForfeited / floorBonusPool : 0;
-  const tookOut = afterFloor.map((amt, i) => {
-    if (!floor.on) return amt;
-    const gets = floor.recipient === "everyone" || floorCompliant[i];
-    return Math.round(amt + (gets ? floorBonus : 0));
+  const bonusPool = !floor.on ? 0 : floor.recipient === "everyone" ? size : floorCompliantCount;
+  const bonus = bonusPool > 0 ? forfeited / bonusPool : 0;
+  const tookOut = rows.map((_, i) => {
+    const gets = !floor.on || floor.recipient === "everyone" || floorCompliant[i];
+    return Math.round(base[i]! + (gets ? bonus : 0));
   });
 
   const clubs = state.clubs.slice();
@@ -1193,7 +1178,10 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
         paidIn: r.paidIn,
         tookOut: tookOut[r.slot]!,
         net: tookOut[r.slot]! - r.paidIn,
-        docked: compliantCount > 0 && !compliant[r.slot]!,
+        // `docked` is now driven entirely by THE FLOOR (D61); kept as the one
+        // field views/tests already read. `floorDocked` is the same value
+        // under its institution-specific name for the view turn.
+        docked: floor.on && floorCompliantCount > 0 && !floorCompliant[r.slot]!,
         floorDocked: floor.on && floorCompliantCount > 0 && !floorCompliant[r.slot]!,
       },
       bill: profile.bill,
@@ -1272,19 +1260,17 @@ export function weekTakeFor(
   const share = rule ? rule.share / 100 : 0;
   const paidIn = Math.round(share * taxedLocal);
   const backFromPot = paidIn / Math.max(1, state.leagueSize);
-  const docked = rule && rule.condition && reinvest < CONDITION_MIN_REINVEST;
-  const collected = docked ? backFromPot * CONDITION_COLLECT_FRACTION : backFromPot;
-  // Institution 2's own, separate dock (see `settleWeek`'s identical layer) —
-  // read off the room's own adopted floor, independent of whichever `rule`
-  // (institution 1's share) was passed in, because the two institutions no
-  // longer share a ballot. No bonus is modeled here either way: this is a
-  // single club's own hypothetical holding the rest of the league fixed, the
-  // same approximation the pre-existing `collected` line already makes.
+  // D61: docking is decided by THE FLOOR alone, in dollars put back this week
+  // (`spend`) against the adopted flat-dollar line — never by institution 1's
+  // `rule.condition`, and never the percent dial against a dollar line. No
+  // bonus is modeled here either way: this is a single club's own hypothetical
+  // holding the rest of the league fixed, the same approximation the
+  // pre-existing `collected` line already made.
   const floor = floorRuleFor(state);
-  const floorDocked = floor.on && reinvest < floor.level;
-  const afterFloor = floorDocked ? collected * CONDITION_COLLECT_FRACTION : collected;
+  const docked = floor.on && spend < floor.level;
+  const collected = docked ? backFromPot * CONDITION_COLLECT_FRACTION : backFromPot;
   return {
-    cash: home.gate + home.inArena + localMedia + NATIONAL - profile.bill - spend - paidIn + afterFloor,
+    cash: home.gate + home.inArena + localMedia + NATIONAL - profile.bill - spend - paidIn + collected,
     drawAfter: nextDraw(profile, hostDraw, spend),
     taxedLocal,
     localRevenue,
@@ -3904,7 +3890,11 @@ export function closeFloorRound(state: WriteRuleState): WriteRuleState {
     institution: "floor" as InstitutionId,
     shares,
     conditions,
-    median: votedShares.length > 0 ? snapShare(medianOf(votedShares)) : FLOOR_OFF,
+    // Dollar lines, not share points — never run through `snapShare` (a
+    // 0-60 share-grid clamp). The room's own printed number is the plain
+    // median of the dollar lines actually voted, one of $200,000/$300,000/
+    // $400,000 at 7-8 or $0/$300,000 at 5-6.
+    median: votedShares.length > 0 ? medianOf(votedShares) : FLOOR_OFF,
     slots: live.map((c) => c.slot),
   };
   const clubs = state.clubs.map((c) =>
@@ -4312,7 +4302,10 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     if (fromPhase === "PLAY") {
       while (next.stage === "rounds" && next.roundIndex < ROUND_COUNT) next = closeRound(next);
       if (next.stage === "rounds") next = adoptRule(next);
-      if (next.stage === "adopted") next = { ...next, stage: "season" };
+      if (next.stage === "adopted") next = openFloorRounds(next);
+      while (next.stage === "floorRounds" && next.floorRoundIndex < FLOOR_ROUND_COUNT) next = closeFloorRound(next);
+      if (next.stage === "floorRounds") next = adoptFloor(next);
+      if (next.stage === "floorAdopted") next = { ...next, stage: "season" };
       // ONE FALLBACK PER LESSON, ON EVERY PATH.
       //
       // This loop used to pass `first = true` on the open round, settling it on
@@ -4454,8 +4447,53 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
         if (state.roundIndex < ROUND_COUNT) return { ok: true, state: closeRound(state) };
         return { ok: true, state: adoptRule(state) };
       }
-      if (state.stage === "adopted") return { ok: true, state: { ...state, stage: "season" } };
+      // Institution 1 sealed — the floor rounds open next, never straight to
+      // the season: the second institution is a real second vote, not a rider.
+      if (state.stage === "adopted") return { ok: true, state: openFloorRounds(state) };
       return { ok: false, reason: "the season is already running" };
+    }
+
+    if (action.type === "proposeFloor") {
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated student proposes the floor" };
+      if (ctx.phase !== "PLAY") return { ok: false, reason: `the floor is written in PLAY (session is in ${ctx.phase})` };
+      if (state.stage === "rounds" || state.stage === "adopted") {
+        return { ok: false, reason: "the floor vote opens once the share vote is sealed" };
+      }
+      if (state.stage === "floorAdopted" || state.stage === "season" || state.stage === "seasonDone") {
+        return { ok: false, reason: "the floor vote is sealed — the two-thirds test already ran" };
+      }
+      if (state.stage !== "floorRounds") return { ok: false, reason: "the floor vote is not open right now" };
+      if (state.floorRoundIndex >= FLOOR_ROUND_COUNT) {
+        return { ok: false, reason: "the floor vote is sealed — round 2 closed and the two-thirds test runs on the numbers that were in" };
+      }
+      const raw = { on: action["on"], level: action["level"], recipient: action["recipient"] };
+      if (!isValidFloorProposal(state.band, raw)) return { ok: false, reason: "the floor proposal is not a valid shape for this room's band" };
+      const open = requireLiveClub(state, ctx.seatId);
+      if (!open.ok) return { ok: false, reason: open.reason };
+      const floorProposal = normalizeFloorProposal(state.band, raw as { on: boolean; level?: number; recipient?: FloorRecipient });
+      return { ok: true, state: withClub(state, { ...open.club, floorProposal }) };
+    }
+
+    if (action.type === "teacher:institutionStep") {
+      if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher paces the floor vote" };
+      if (ctx.phase !== "PLAY") return { ok: false, reason: `the floor is voted in PLAY (session is in ${ctx.phase})` };
+      if (state.stage === "floorRounds") {
+        if (state.floorRoundIndex < FLOOR_ROUND_COUNT) return { ok: true, state: closeFloorRound(state) };
+        return { ok: true, state: adoptFloor(state) };
+      }
+      if (state.stage === "floorAdopted") return { ok: true, state: { ...state, stage: "season" } };
+      return { ok: false, reason: "there is no floor vote running right now" };
+    }
+
+    if (action.type === "teacher:reviewStage") {
+      if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher pages the institution review" };
+      if (ctx.phase !== "ARGUE") return { ok: false, reason: `the institutions are reviewed in ARGUE (session is in ${ctx.phase})` };
+      // Placeholder total (SHARE, then FLOOR) — widens when the review card's
+      // own view ships; the paging mechanic itself is what this wave wires.
+      const total = 2;
+      const delta = action["direction"] === "back" ? -1 : 1;
+      const reviewStage = (state.reviewStage + delta + total) % total;
+      return { ok: true, state: { ...state, reviewStage } };
     }
 
     if (action.type === "teacher:realRule") {
@@ -4506,7 +4544,18 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       case "HOOK":
         return ["takeSeat", "hookPick", "teacher:commitReveal"];
       case "PLAY":
-        return ["takeSeat", "propose", "setPrice", "setReinvest", "lock", "teacher:ruleStep", "teacher:realRule", "teacher:closeWeek"];
+        return [
+          "takeSeat",
+          "propose",
+          "proposeFloor",
+          "setPrice",
+          "setReinvest",
+          "lock",
+          "teacher:ruleStep",
+          "teacher:institutionStep",
+          "teacher:realRule",
+          "teacher:closeWeek",
+        ];
       // takeSeat stays offered after the season closes: a device arriving now is
       // landed as an observer by `reduce`, and a runtime-level refusal here would
       // strand it on "Finding your club..." with nothing to retry into.
@@ -4515,7 +4564,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       case "COUNTERFACTUAL":
         return ["takeSeat", "teacher:counterfactual"];
       case "ARGUE":
-        return ["takeSeat", "kingsVote", "teacher:commitReveal"];
+        return ["takeSeat", "kingsVote", "teacher:commitReveal", "teacher:reviewStage"];
       case "SYNTHESIS":
         return ["takeSeat", "teacher:synthPage", "teacher:synthPageBack"];
       default:
