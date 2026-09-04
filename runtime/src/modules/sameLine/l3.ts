@@ -181,8 +181,16 @@ export type Deal = {
 export type SeasonSettleDesk = {
   readonly seatId: SeatId;
   readonly coveredJobs: number;
-  readonly openJobs: number;
+  /** Roles still open after the settle — a list, never a bare scalar (ARC_DESIGN §8.1). */
+  readonly openJobs: readonly JobRole[];
   readonly acquiredResults: readonly { readonly contractId: string; readonly name: string; readonly role: JobRole; readonly result: JobState }[];
+  /**
+   * Economic Truth ruling: a pick has an in-lesson cost. Any contract on the
+   * final roster — carried or acquired — with `yearsRemaining <= 1` reopens
+   * its job next season regardless of how it graded this year, so a rental
+   * bought with a pick visibly costs something even when it "does the job."
+   */
+  readonly expiringNextSeason: readonly { readonly contractId: string; readonly name: string; readonly role: JobRole }[];
 };
 
 export type SeasonSettle = { readonly perSeat: Readonly<Record<SeatId, SeasonSettleDesk>> };
@@ -861,7 +869,8 @@ function computeSeasonSettle(state: SameLineL3State): SeasonSettle {
         covered += 1;
       }
     }
-    perSeat[desk.seatId] = { seatId: desk.seatId, coveredJobs: covered, openJobs: remaining.length, acquiredResults };
+    const expiringNextSeason = desk.roster.filter((c) => c.yearsRemaining <= 1).map((c) => ({ contractId: c.contractId, name: c.name, role: c.role }));
+    perSeat[desk.seatId] = { seatId: desk.seatId, coveredJobs: covered, openJobs: remaining, acquiredResults, expiringNextSeason };
   }
   return { perSeat };
 }

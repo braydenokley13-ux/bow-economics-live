@@ -4046,11 +4046,14 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
 
   allowedActions(phase) {
     if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
-    if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock", "gateCall"];
-    if (phase === "REVEAL") return ["takeSeat", "ledgerPredict"];
+    if (phase === "PLAY") return ["takeSeat", "setPrice", "setShare", "lock", "gateCall", "poolPosition"];
+    if (phase === "REVEAL") return ["takeSeat", "ledgerPredict", "teacher:poolStage", "teacher:poolPage", "teacher:poolPageBack"];
     // W5 N-3: still offered, so a late device gets an answer instead of a 409 loop.
     return ["takeSeat"];
   },
+
+  spotlightView: spotlightViewFor,
+  pressCandidates: pressCandidatesFor,
 
   studentView(state, seatId, phase) {
     const slot = state.seatToSlot[seatId];
