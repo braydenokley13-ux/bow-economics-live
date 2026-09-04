@@ -1476,42 +1476,97 @@ in all three rival environments" was made while that run was still going. It is
 wrong, and D53 now carries the correction inline. The repairs are keepers; the
 claim was not evidence.
 
-**Why it fails, from `--seat sacramento --verbose` (10,852 plans swept).** Every
-plan on Sacramento's frontier in the cheap-room environment reads
-`jobsClosed: 0`. The whole three-day space collapses to:
+**Why it fails, from `--seat sacramento --verbose` (10,852 plans, 5,695
+Pareto-optimal rows, three distinct vectors).**
 
-| plan | spent | longest | room left | holes closed |
-|---|---|---|---|---|
-| sign nobody | $0 | 0 | $6,155,628 | **0** |
-| one minimum body | $2,449,421 | 1 | $3,706,207 | **0** |
-| (a third, same shape) | — | — | — | **0** |
+| plan | holes closed | job-years | cheapest hole closed | longest | room left |
+|---|---|---|---|---|---|
+| sign nobody | 0 | 0 | — | 0 | $6,155,628 |
+| one minimum body | 0 | 0 | — | 1 | $3,706,207 |
+| close one hole | **1** | 4 | $3,150,000 | 4 | $3,005,628 |
 
-Sacramento sits $6,155,628 under the first apron with two open jobs (WING,
-BIG). When the rival environment fills cheapest, the affordable real players
-come off the board, and the only thing left inside $6.16M is a generic minimum
-body — which by D53's own correction never closes a hole. So the seat's entire
-lesson is "spend nothing" versus "sign someone who fills nothing."
+*(An earlier draft of this decision read "every plan on Sacramento's frontier
+reads `jobsClosed: 0`". That was generalised from the first twelve rows of the
+dump before the whole frontier was counted, and it is wrong — the third vector
+closes a hole. Corrected here rather than quietly: the same discipline this
+decision applies to D53 applies to itself.)*
 
-**This is a dead seat in the founder's sense, and it is not the pair's fault.**
-Their outcome is fixed by the position they were dealt before they choose
-anything, which inverts "outcome is not decision quality" — here there is no
-decision to have quality. It is also the failure D28 and P-HOLD exist to
-prevent, arriving through a door neither of them watches.
+Sacramento is **not priced out of the board.** It sits $6,155,628 under the
+first apron and can legally reach eleven of the seventeen named players,
+including four wings and five bigs — its own two open jobs. It closes a hole
+in plenty of plans; it wins Watford at $3,150,000 by out-bidding the
+cheap-room rival's $2,900,000 by one bid step.
 
-**Not yet repaired, and the obvious repairs are all wrong:**
+What it can never do is **close both holes**, and that is arithmetic, not a
+bug: the cheapest wing asks $2,900,000 and the cheapest big asks $3,900,000,
+so any pair of real signings costs at least $6,800,000 against $6,155,628 of
+room. Every two-hole plan is illegal at this seat.
+
+That collapses the frontier to three points, because the class-facing readings
+cannot tell *which* hole a desk closed — only how many, how cheaply, and for
+how long. Filling the wing and filling the big are genuinely different
+decisions that produce the same vector shape, and the cheaper one dominates.
+So a pair here is choosing between "nothing", "a body who fills nothing", and
+"one hole, at a price" — real, but one short of the floor BC-13 sets for a seat
+to carry a decision worth arguing about.
+
+**Not yet repaired, and two of the three obvious repairs are wrong:**
 
 - Changing Sacramento's committed figure or dead money — it is cited
   (`salaryswish.com/teams/kings`, 2026-09-03) and the founder's rule is do not
   invent numbers to save mechanics.
-- Moving its open jobs — a club that cannot afford anyone at any position is
-  not helped by changing which position.
-- Calling it "the real NBA is like that" — true of a hard-capped club, and
-  still a fifty-minute lesson in which one desk of eight has nothing to decide.
+- Moving its open jobs — no pair of real players on this board fits inside
+  $6,155,628 at any position, so which two holes it has changes nothing.
+- Calling it "the real NBA is like that" — true of a club up against a hard
+  line, and still a seat one vector short of the bar.
 
-The direction worth testing is the **board's cheap end**: whether it holds
-enough real (non-generic) players inside a taxpayer-scale exception that eight
-clubs filling cheapest cannot strip it bare. That is a world change measured
-against the sweep, not a tuning knob, and it is the next piece of work.
+**What is actually going on, verified against the built engine.** Two holes are
+not merely legal at this seat — they are *comfortably* legal, and the thing
+that makes them legal is the veteran-minimum charge D55 modelled:
+
+```
+sign Watford  on a minimum deal — charged $2,449,421 -> committed $205,308,793, jobs left [BIG]
+sign Vucevic  on a minimum deal — charged $2,449,421 -> committed $207,758,214, jobs left []
+                                   both holes closed, $1,256,786 still under the apron
+```
+
+Sacramento's two-hole plan costs it $4,898,842 of cap charge against
+$6,155,628 of room, because both players' real 2026 deals were veteran
+minimums and the league pays the difference. It fails in cheap-room for one
+reason: **a rival bidding the ask ($2,900,000, $3,900,000) beats a $2,449,421
+minimum offer, and out-bidding forfeits the subsidy that made the second
+signing affordable.** Sacramento can win either player at $3,150,000 through
+the big exception — and the moment it does, the other hole is out of reach.
+
+That is not a bug. It is the sharpest piece of economics in the module: the
+cheapest way to fill two holes only works while nobody else wants those
+players, and the price of winning a contest is the mechanism that made your
+plan work. The defect is that the class-facing readings cannot see it — they
+count holes, years, price and room, so "won the wing at a price" and "won the
+big at a price" are the same vector, and the seat reports three outcomes where
+a pair experiences several.
+
+**Three admissible repairs, none taken yet:**
+
+1. **Widen the cheap end with sourced players.** A big asking at or under
+   $3,255,628 makes the two-hole plan winnable outright. But
+   `FREE_AGENT_BOARD_RESEARCH.md`'s twenty-seven sourced signings hold **no big
+   under $3,900,000** — Vučević is the floor — so this needs new research with
+   real sources, not a number chosen to clear a property. (The table does hold
+   one high-confidence player not on the board: **LeBron James**, WING,
+   2 yr / $7,946,884, AAV $3,973,442, year 1 $3,876,529, a veteran minimum with
+   a 5% raise. That widens the wing end and would not, on its own, fix this
+   seat.)
+2. **Soften the rival model.** Rejected on sight: weakening the adversary to
+   pass a property is how a harness stops being evidence.
+3. **Restate P-VEC to its intent**, as P-HOLD was already restated in this
+   harness when a literal reading became impossible to satisfy honestly. That
+   is only admissible with a falsifier at least as strong as the current one,
+   and with M1-M4 still failing. It is a real option, not an escape hatch, and
+   it needs its own argument.
+
+Left open deliberately. Forcing a fix today would mean inventing a contract or
+blunting the adversary, and both are worse than a recorded failing gate.
 
 **A filtered sweep is still not a gate result.** The Sacramento-only run
 reports `POISON: at least one mutant went unnoticed` — correctly, because a
