@@ -102,6 +102,48 @@ const FULL_HOUSE_ID = "m2l1-full-house";
 const HOST_LEAGUE_ID = "m2l2-host-league";
 const WRITE_RULE_ID = "m2l3-write-rule";
 const LOBBY_DEMO_ID = "lobby-demo";
+const THE_SEASON_ID = "m1l2-the-season";
+const THE_DEADLINE_ID = "m1l3-the-deadline";
+
+/**
+ * Which earlier lessons a room may be linked to, in order of preference, and
+ * what the link carries — the six-week chain (D59/D60) plus the legacy arc.
+ * A lesson absent here has no link row: its franchises open stock.
+ */
+const LINKABLE: Readonly<Record<string, { readonly sources: readonly string[]; readonly label: string }>> = {
+  [THE_SEASON_ID]: {
+    sources: [THE_WINDOW_ID],
+    label: "Link to a completed THE WINDOW (Week 1) session — every desk's July books open its own season",
+  },
+  [THE_DEADLINE_ID]: {
+    sources: [THE_SEASON_ID, THE_WINDOW_ID],
+    label: "Link to a completed THE SEASON (Week 2, preferred) or THE WINDOW (Week 1) session — carries each desk's books and roster to the deadline",
+  },
+  [FULL_HOUSE_ID]: {
+    sources: [THE_WINDOW_ID],
+    label: "Link to a completed THE WINDOW (Week 1) session — carries each desk's signed roster and its bill into the building",
+  },
+  [HOST_LEAGUE_ID]: {
+    sources: [FULL_HOUSE_ID],
+    label: "Link to a completed Full House (Week 4) session — carries each building's cash and whether it cleared the bill into the shared league",
+  },
+  [WRITE_RULE_ID]: {
+    sources: [HOST_LEAGUE_ID],
+    label: "Link to a completed You Don't Play Alone (M2 L2) session — carries every club's Draw, bank balance and reinvest history into the rule vote",
+  },
+  [TRADE_DEADLINE_ID]: {
+    sources: [DRAFT_DAY_ID],
+    label: "Link to a completed Draft Day (L1) session — carries each locked roster forward",
+  },
+  [FREE_AGENCY_ID]: {
+    sources: [TRADE_DEADLINE_ID, DRAFT_DAY_ID],
+    label: "Link to a completed Trade Deadline (L2, preferred) or Draft Day (L1) session — carries franchises into the signing window",
+  },
+};
+const MODULE_SHORT: Readonly<Record<string, string>> = {
+  [THE_WINDOW_ID]: "W1", [THE_SEASON_ID]: "W2", [THE_DEADLINE_ID]: "W3", [FULL_HOUSE_ID]: "W4",
+  [HOST_LEAGUE_ID]: "M2 L2", [TRADE_DEADLINE_ID]: "L2", [DRAFT_DAY_ID]: "L1",
+};
 
 /**
  * gate-l1-visual P8 (reported repaired at round 4, and was not — the bell was
@@ -198,17 +240,13 @@ async function syncSourceSessionRow(): Promise<void> {
   const row = $("sourceSessionRow");
   const label = $("sourceSessionLabel");
   const lessonId = $<HTMLSelectElement>("lesson").value;
-  if (lessonId !== TRADE_DEADLINE_ID && lessonId !== FREE_AGENCY_ID && lessonId !== WRITE_RULE_ID) {
+  const link = LINKABLE[lessonId];
+  if (!link) {
     row.hidden = true;
     return;
   }
   row.hidden = false;
-  label.textContent =
-    lessonId === WRITE_RULE_ID
-      ? "Link to a completed You Don't Play Alone (M2 L2) session — carries every club's Draw, bank balance and reinvest history into the rule vote"
-      : lessonId === FREE_AGENCY_ID
-        ? "Link to a completed Trade Deadline (L2, preferred) or Draft Day (L1) session — carries franchises into the signing window"
-        : "Link to a completed Draft Day (L1) session — carries each locked roster forward";
+  label.textContent = link.label;
   const select = $<HTMLSelectElement>("sourceSession");
   select.innerHTML = `<option value="">No link — stock/expansion franchises only</option>`;
   try {
@@ -216,15 +254,14 @@ async function syncSourceSessionRow(): Promise<void> {
       "/api/sessions",
       { headers: setupAuthHeaders() },
     );
-    const eligibleModuleIds =
-      lessonId === WRITE_RULE_ID ? [HOST_LEAGUE_ID] : lessonId === FREE_AGENCY_ID ? [TRADE_DEADLINE_ID, DRAFT_DAY_ID] : [DRAFT_DAY_ID];
+    const eligibleModuleIds = link.sources;
     const eligible = sessions.filter((s) => eligibleModuleIds.includes(s.lessonModuleId)).sort((a, b) => eligibleModuleIds.indexOf(a.lessonModuleId) - eligibleModuleIds.indexOf(b.lessonModuleId));
     const liveIds = new Set<string>();
     for (const s of eligible) {
       const option = document.createElement("option");
       option.value = s.id;
       if (!s.ended) liveIds.add(s.id);
-      const moduleLabel = s.lessonModuleId === HOST_LEAGUE_ID ? "M2 L2" : s.lessonModuleId === TRADE_DEADLINE_ID ? "L2" : "L1";
+      const moduleLabel = MODULE_SHORT[s.lessonModuleId] ?? s.lessonModuleId;
       option.textContent = `[${moduleLabel}] ${s.title || s.code} (${s.code}) — ${s.ended ? "ended" : `live, ${s.phase}`}`;
       select.appendChild(option);
     }
@@ -272,10 +309,7 @@ async function syncSourceSessionRow(): Promise<void> {
 async function createSession(): Promise<void> {
   const lessonModuleId = $<HTMLSelectElement>("lesson").value;
   const title = $<HTMLInputElement>("title").value.trim();
-  const sourceSessionId =
-    lessonModuleId === TRADE_DEADLINE_ID || lessonModuleId === FREE_AGENCY_ID || lessonModuleId === WRITE_RULE_ID
-      ? $<HTMLSelectElement>("sourceSession").value || undefined
-      : undefined;
+  const sourceSessionId = LINKABLE[lessonModuleId] ? $<HTMLSelectElement>("sourceSession").value || undefined : undefined;
   const payload = await apiFetch<TeacherPayload>("/api/sessions", {
     method: "POST",
     headers: setupAuthHeaders(),
@@ -1301,6 +1335,33 @@ function render(payload: TeacherPayload): void {
             : "";
     }
   }
+  // W5 THE POOL — six teacher presses inside REVEAL, after the season
+  // reveal's own five stages have played. Same discipline as the bell and the
+  // Handed-To-You release: the button names the next stage, and paging is
+  // gated to the one stage the reducer allows it on (NET).
+  {
+    const poolStage = $<HTMLButtonElement>("btnPoolStage");
+    const poolPage = $<HTMLButtonElement>("btnPoolPage");
+    const poolPageBack = $<HTMLButtonElement>("btnPoolPageBack");
+    poolStage.hidden = !isHostLeague || s.phase !== "REVEAL";
+    poolPage.hidden = !isHostLeague || s.phase !== "REVEAL" || Number(payload.view["ritualStage"] ?? 0) !== 5;
+    poolPageBack.hidden = poolPage.hidden;
+    if (isHostLeague && s.phase === "REVEAL") {
+      const canAdvance = Boolean(payload.view["ritualCanAdvance"]);
+      const nextName = payload.view["ritualNextStageName"] as string | null;
+      const stageCount = Number(payload.view["ritualStageCount"] ?? 6);
+      poolStage.disabled = s.ended || !canAdvance;
+      poolStage.textContent = nextName ? `${nextName} (${Number(payload.view["ritualStage"] ?? 0) + 1} of ${stageCount})` : "Every pool stage has played";
+      poolStage.title = String(payload.view["ritualReady"] ?? "");
+      if (!poolPage.hidden) {
+        poolPage.disabled = s.ended;
+        poolPageBack.disabled = s.ended;
+        const pageLabel = payload.view["poolRitual"] ? (payload.view["poolRitual"] as { netPageLabel?: string }).netPageLabel : "";
+        poolPage.title = pageLabel ? String(pageLabel) : "";
+        poolPageBack.title = poolPage.title;
+      }
+    }
+  }
   // M2 L3's own pacing controls. Three buttons, each with a module-supplied
   // consequence-stating confirm, because each of them is irreversible: closing
   // a round records every silent desk at the status quo; the two-thirds test
@@ -1490,6 +1551,7 @@ const DECK_PRIMARY: readonly string[] = [
   "btnBarPage", // paged class evidence
   "btnCfPage",
   "btnSynthPage",
+  "btnPoolStage", // M2 L2 W5 — THE POOL ritual, one press per stage
 ];
 
 const PHASE_LABEL: Record<string, string> = {
@@ -2647,6 +2709,9 @@ $("btnCloseNow").addEventListener("click", () => {
 });
 $("btnBarPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPage" }));
 $("btnBarPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "barPageBack" }));
+$("btnPoolStage").addEventListener("click", () => void sendControl({ type: "hook", hook: "poolStage" }));
+$("btnPoolPage").addEventListener("click", () => void sendControl({ type: "hook", hook: "poolPage" }));
+$("btnPoolPageBack").addEventListener("click", () => void sendControl({ type: "hook", hook: "poolPageBack" }));
 
 /**
  * `gate-l2-teacher` B2 (BLOCKING). The auto-reopen below already existed, but it
