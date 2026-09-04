@@ -142,3 +142,99 @@ Secondary, named not ranked: the W4→W5 seed shape is **inferred, not verified*
 5. **What happens when Week 6 adopts a rule that bankrupts a franchise in the season that follows?** "Bad decisions matter but stay generally recoverable" (CLAUDE.md §1) meets "a rule may rationally hurt some franchises" (D59 ruling 5). I believe the collective rule is the one case where the floor should *not* be softened — but that is a founder product decision, not mine.
 
 **Independence note:** this is advisory direction issued before build. I must not be the critic of what gets built from it.
+
+## synthesis chains (R-10, drafted 2026-09-04 by the Economic Truth critic; UNREVIEWED — a fresh Economic Truth pass must review before ship, the author is disqualified)
+
+Class numbers below come from the flat-dollar floor (D61, $300,000/week working value) and from no
+other version of the model. All 5–6 links are dollars-only. No chain prints a rate of the real
+revenue-sharing formula. Week 5 names no free-riding. Figures corrected against
+`W6_FLOOR_RESEARCH.md`: the Memphis "$28M in 2021-22" figure is withdrawn everywhere; the $400M is
+a 2024-25 figure.
+
+### Week 5
+
+**SHARED RESOURCE — "the bowl" (both bands).** Moment: you set your price, your building filled,
+and before you could spend a dollar a bowl took a slice off the top; then money came back that
+other buildings had made. Class number: THE BOWL STANDS, then your own NET row (PAID IN · TOOK OUT
+· SENT AWAY / BROUGHT IN) — every bar out the same height, not one bar in. Real: the NBA moved
+roughly $400,000,000 to its lower-revenue clubs in 2024-25; how each club's number is worked out is
+confidential (Sportico 2025-10-21, `W4_BILL_RESEARCH.md` §5). Term: shared resource — money a group
+puts into one pot and splits by a rule. Outside: the class trip fund; the argument is never really
+about the bus.
+
+**SPILLOVER — pre-name for externality (both bands).** Moment: on your home night the crowd was
+bigger than your own club could have filled because of who was visiting; on your road night you did
+that for somebody else's building, and none of that money reached you. Class number: THE VISITOR
+LINE (D61 R-12; sum of `HomeSettlement.visitorDollars`, teacher-pressed, no seat identity) beside
+the dollars your club put on other books. Real: New York's gate was about $193,000,000 in 2024-25,
+the league's largest, roughly $4,000,000 a night; who stands on the other bench moves that number,
+and New York keeps it (Sportico 2025-10-21, `W4_BILL_RESEARCH.md` §4; includes playoff dates).
+Term: spillover — something you did that landed on somebody else's books without anybody paying.
+Outside: you practise the trumpet; the neighbours hear it, nobody pays anybody. (Model check, not a
+class number: room-total visitor dollars in week 1 ≈ $5,766,776 against a $4,965,572 bowl at a 20%
+levy — the spillover is bigger than the whole bowl; if the ritual cannot show that it is under-built.)
+
+**EXTERNALITY (7–8 only; moves a term across a week boundary — founder call, R-13).** Moment: a
+dollar you put back arrived partly in a building you do not own, on a night you were the away team,
+and neither side could charge the other. Class number: THE VISITOR LINE beside your own REINVEST
+line, and the room's total visitor dollars against THE BOWL STANDS. Real: Cleveland's demand
+cratered when LeBron James left in 2010 and the season-ticket base sold out within hours of his
+July 2014 return — one player's draw, half of it in other people's buildings (`writeTheRule.ts`
+CLUBS, Cleveland `identityLine`). Term: externality — a cost or benefit that lands on someone who
+was not part of the decision and is not paid for it. Outside: a neighbour repaints and lifts every
+house price on the street; nobody sends a cheque.
+
+**INCENTIVE (7–8 only).** Moment: the bowl took a slice of every local dollar, so the next dollar
+you chased was worth less than last week; several desks moved their reinvest dial down without being
+told. Class number: your REINVEST line week by week and the room's mean reinvest before the bowl
+beside after (measured: mean week-1 optimum 20.6% at no levy → 15.6% at a 20% levy); THE FREE RIDE
+stage. Real: Golden State privately financed Chase Center (about $1,400,000,000, opened 2019), owns
+it, keeps what happens inside, and reported $833,000,000 of revenue in 2024-25 (Sportico 2025-10-21;
+`hostTheLeague.ts` CLUBS). Term: incentive — what the rules make worth doing. Outside: the same
+worker paid by the hour and then per delivery.
+
+**Week 5 convergence line (5–6):** "Your gate was never yours alone — and that is exactly why
+somebody wrote a rule about it."
+
+### Week 6
+
+**EXTERNALITY (retrieval, both bands; spends no new-term slot).** Moment: before you argued you
+read your own stakes card in dollars. Class number: the STAKES CARD beside the room's PAID IN /
+TOOK OUT / NET per club under both adopted rules. Real: the $400,000,000 moved in 2024-25 (dated);
+Memphis made the least of any club that season, $301M, against Golden State's $833M (Sportico
+2025-10-21). Term: externality, met last week as spillover; a rule now sits on top of it and you
+wrote it. Outside: a street that agrees to pay for the streetlight nobody could ever have charged for.
+
+**INCENTIVE (both bands; the one new 5–6 term).** Moment: the floor fined nobody and forbade
+nothing; it changed what your next reinvest dollar was worth, and desks that had planned to put
+nothing back moved their dial before a week ran. Class number: THE REINVEST LINE after the vote
+beside the same desks' Week 5 line, and the FLOOR COST line computed against the adopted share.
+Real: a club under the NBA's minimum team salary ($148,465,000 against a $164,961,000 cap in
+2026-27) pays the shortfall to the league, which splits it among the other teams, and is barred
+from that year's luxury-tax distribution (CBA Art. VII §2(c), `W6_FLOOR_RESEARCH.md` §1–2). Term:
+incentive — a rule that changes what an action is worth without ordering or banning it. Outside:
+a library fine does not forbid keeping the book.
+
+**FREE RIDING (7–8 only; defined on REINVEST, never on paid-in).** Moment: one desk put nothing
+back, its Draw slipped, it still filled on strong-visitor nights carried by Draw others paid for,
+and it collected from the bowl like everybody else. Class number: that desk's VISITOR LINE beside
+its REINVEST at zero and its TOOK OUT bar, and the FORFEITED / REDISTRIBUTED line once the floor is
+on (`writeTheRule.ts` `forfeited`/`bonus`). Real: in 2024-25 the NBA collected $461,200,000 in
+luxury tax and paid $11,500,000 to each of the twenty clubs under the line (cbaguide, MEDIUM,
+`W6_FLOOR_RESEARCH.md`). Term: free riding — taking the benefit of what others paid to create
+while paying nothing toward it. GUARD, spoken every time: "Putting in fewer dollars because you
+made fewer dollars is not free riding. Free riding is putting nothing back while the thing you are
+living off is still there." Oklahoma City, one of the smallest markets, won the 2025 title. Outside:
+the group project with one name on the cover and one person who made the slides.
+
+**INSTITUTION (7–8 only).** Moment: you wrote a rule; two-thirds of the live desks had to land on
+the same number, so the sides had to buy each other rather than out-shout each other; then you lived
+three weeks inside it, including the desks that voted no. Class number: the sealed histogram, the
+median, INBAND / NEEDED / LIVEDESKS as three live integers, and the runner-up rule replayed. Real:
+on 15 May 2013 the NBA's owners voted 22–8 to deny the sale that would have moved Sacramento to
+Seattle; Golden 1 Center opened in 2016 (`writeTheRule.ts` CLUBS, Sacramento `identityLine`).
+Term: institution — a rule people wrote that binds them afterwards, including those who argued
+against it. Outside: a class that votes on its own phone rule and lives with it on the inconvenient day.
+
+**Week 6 convergence line (5–6):** "We wrote a rule that helped somebody and cost somebody, we knew
+which was which before we voted, and we had to live inside it anyway."
