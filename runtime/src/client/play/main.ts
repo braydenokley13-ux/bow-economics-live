@@ -6,6 +6,7 @@ import { createFreshness } from "../shared/freshness.js";
 import { ActionOutbox } from "../shared/outbox.js";
 import { renderSameLineL1, resetSameLineL1, sameLineL1Error, invalidateSameLineL1Mount } from "../shared/sameLineL1.js";
 import { renderSameLineL2, resetSameLineL2, invalidateSameLineL2Mount } from "../shared/sameLineL2.js";
+import { renderSameLineL3, resetSameLineL3, invalidateSameLineL3Mount } from "../shared/sameLineL3.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
 import { renderPlayLock, renderPlayPodium } from "../shared/pressConference.js";
@@ -219,6 +220,7 @@ $("btnRejoin").addEventListener("click", () => {
  * module-level render cache means adding it here in the same change.
  */
 function resetSeatRenderState(): void {
+  resetSameLineL3();
   lastRoundKey = null;
   resetSameLineL2();
   // The closing countdown belongs to the seat that was in the round, not to
@@ -228,6 +230,8 @@ function resetSeatRenderState(): void {
   // Same rule for the recap: what the PREVIOUS pair missed is not this pair's
   // card. The server decides whether the new seat has anything to be shown.
   awayShowing = "";
+  // A takeover shown to the previous seat is no reason to remount for this one.
+  takeoverShowing = false;
   $("awayCard").hidden = true;
 
   fhSeatRequested = false;
@@ -594,6 +598,7 @@ function renderGame(payload: StudentPayload): void {
     takeoverShowing = false;
     invalidateSameLineL1Mount();
     invalidateSameLineL2Mount();
+    invalidateSameLineL3Mount();
     fhMountKey = null;
     hlMountKey = null;
     wrMountKey = null;
@@ -642,6 +647,14 @@ function renderGame(payload: StudentPayload): void {
     document.documentElement.dataset.module = "hq";
     if (s.phase !== "LOBBY") hidePin();
     renderSameLineL2(s.phase, view, body, (action) => {
+      void outbox?.submit(action);
+    });
+    return;
+  }
+  if (view["module"] === "m1l3-the-deadline") {
+    document.documentElement.dataset.module = "hq";
+    if (s.phase !== "LOBBY") hidePin();
+    renderSameLineL3(s.phase, view, body, (action) => {
       void outbox?.submit(action);
     });
     return;
@@ -3446,14 +3459,14 @@ function fhBillCoverage(coverage: unknown): string {
   if (typeof c.filled === "number") {
     const pct = Math.round(Math.max(0, Math.min(1, c.filled)) * 100);
     return `<div class="fh-bill-coverage" style="display:flex; flex-direction:column; gap:6px;">
-        <span style="${FH_LABEL} font-size:10px;">Your bill, covered so far</span>
+        <span style="${FH_LABEL} font-size:10px;">Bill, covered so far</span>
         <span class="m2-bar" style="height:10px; border-radius:999px; background:rgba(255,255,255,0.07); overflow:hidden;"><i style="display:block; height:100%; width:${pct}%; border-radius:999px; background:${FH_VIOLET};"></i></span>
         <span style="font-size:11.5px; color:${FH_INK_CAPTION};">${escapeHtml(c.ownGateText ?? "")} of ${escapeHtml(c.ownBillText ?? "")}</span>
       </div>`;
   }
   const net = Number(c.net ?? 0);
   return `<div class="fh-bill-coverage" style="display:flex; flex-direction:column; gap:4px;">
-      <span style="${FH_LABEL} font-size:10px;">Your bill, covered so far</span>
+      <span style="${FH_LABEL} font-size:10px;">Bill, covered so far</span>
       <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:18px; font-weight:600; color:${FH_INK};">${Math.round(c.coveragePercent ?? 0)}%</span>
       <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:12.5px; color:${net < 0 ? FH_RED : FH_MONEY};">${money(net)}</span>
     </div>`;

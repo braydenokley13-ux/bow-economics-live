@@ -65,7 +65,7 @@ import { CANONICAL_PHASES, isOrderedSubsequence, type CanonicalPhase } from "../
 const ctx = (phase: CanonicalPhase, seatId: string) => ({ phase, seatId, seatIds: [], now: 0 });
 
 function fresh(seed?: unknown): WriteRuleState {
-  return writeTheRuleModule.initialState({ sessionId: "t", seatIds: [], seed, gradeBand: "5-6" });
+  return writeTheRuleModule.initialState({ sessionId: "t", seatIds: [], seed, gradeBand: "7-8" });
 }
 
 function withDesks(count: number, seed?: unknown): WriteRuleState {

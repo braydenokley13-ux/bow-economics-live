@@ -34,6 +34,22 @@ function claimed(band: GradeBand = "5-6", sessionId = "s"): SameLineL2State {
 const CHIP = "I need the money";
 const LINE_TEXT = "the roster spot";
 
+/** Walks real JSON values — a negative number can only ever be a number-typed leaf, never a hyphen inside a string id/label/season. */
+function hasNegativeNumber(v: unknown): boolean {
+  if (typeof v === "number") return v < 0;
+  if (Array.isArray(v)) return v.some(hasNegativeNumber);
+  if (v && typeof v === "object") return Object.values(v as Record<string, unknown>).some(hasNegativeNumber);
+  return false;
+}
+
+/** A percent is copy text like "50%" in a string leaf, never a digit-percent pattern inside an id. */
+function hasPercentString(v: unknown): boolean {
+  if (typeof v === "string") return /\d%/.test(v);
+  if (Array.isArray(v)) return v.some(hasPercentString);
+  if (v && typeof v === "object") return Object.values(v as Record<string, unknown>).some(hasPercentString);
+  return false;
+}
+
 /* --------------------------------------------------------- 1. phases -- */
 
 test("1. phase list is an ordered subsequence of the canonical vocabulary", () => {
@@ -339,9 +355,14 @@ test("24. at 5-6 no view payload contains a negative number or a percent", () =>
   s = step(s, { type: "sign", role: "BIG", chip: CHIP, line: LINE_TEXT }, "PLAY", "a");
   for (const phase of mod.phases) {
     for (const payload of [mod.studentView(s, "a", phase), mod.teacherView(s, phase), mod.boardView(s, phase)]) {
-      const text = JSON.stringify(payload);
-      assert.equal(/-\d/.test(text), false, `${phase} payload has a negative number`);
-      assert.equal(/\d%/.test(text), false, `${phase} payload has a percent`);
+      // A blind regex over the serialized JSON false-positives on any
+      // hyphenated string value that happens to end in a digit — the grade
+      // band label ("5-6"), a season ("2026-27"), a generated id
+      // ("a-jan-0"). None of those are the numeric amount this test is
+      // actually about. Walk the real JSON values instead: only a
+      // number-typed leaf can be a negative dollar figure or a percent.
+      assert.equal(hasNegativeNumber(payload), false, `${phase} payload has a negative number`);
+      assert.equal(hasPercentString(payload), false, `${phase} payload has a percent`);
     }
   }
 });

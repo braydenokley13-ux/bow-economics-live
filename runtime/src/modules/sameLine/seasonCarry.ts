@@ -221,7 +221,17 @@ function buildRoster(sessionId: string, signings: readonly Signing[], acquiredWe
   });
 }
 
-function readDesk(sessionId: string, seatId: string, v: unknown): { franchise: SeasonCarriedFranchise } | { dropped: string } {
+/**
+ * `l2.ts`'s `SameLineL2State.tape` is ONE FLAT top-level array (each entry
+ * carries its own `seatId`), never a per-desk field — `SeasonDesk` itself has
+ * no `tape` property. This pulls just this seat's own entries out of that
+ * flat array; it is EVIDENCE only (never read by `readDesk`'s STATE fields).
+ */
+function readDeskTape(rawTape: readonly unknown[], seatId: string): unknown[] {
+  return rawTape.filter((e) => isRecord(e) && e["seatId"] === seatId);
+}
+
+function readDesk(sessionId: string, seatId: string, v: unknown, deskTape: readonly unknown[]): { franchise: SeasonCarriedFranchise } | { dropped: string } {
   if (!isRecord(v)) return { dropped: `${seatId}: not a desk record` };
   if (!isClubId(v["clubId"])) return { dropped: `${seatId}: club "${String(v["clubId"])}" is not one of this world's clubs` };
   const clubId = v["clubId"];
@@ -272,7 +282,7 @@ function readDesk(sessionId: string, seatId: string, v: unknown): { franchise: S
       picks: picks.length > 0 ? picks : defaultPicksFor(clubId, twin),
       waived: readWaived(v["waived"]),
       forgone: readForgone(v["forgone"]),
-      tape: readTape(v["tape"]),
+      tape: readTape(deskTape),
     },
   };
 }
@@ -320,9 +330,10 @@ export function extractSeasonCarry(seed: unknown, receivingBand: GradeBand): Sea
   }
 
   const sessionId = typeof seed["sourceSessionId"] === "string" ? seed["sourceSessionId"] : typeof state["sessionId"] === "string" ? state["sessionId"] : "";
+  const rawTape = Array.isArray(state["tape"]) ? state["tape"] : [];
   const franchises: SeasonCarriedFranchise[] = [];
   for (const [seatId, v] of Object.entries(desks)) {
-    const read = readDesk(sessionId, seatId, v);
+    const read = readDesk(sessionId, seatId, v, readDeskTape(rawTape, seatId));
     if ("dropped" in read) {
       warnings.push(`Dropped: ${read.dropped}. That desk gets a stock franchise here, and the console says so.`);
       continue;
