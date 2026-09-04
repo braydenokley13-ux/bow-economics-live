@@ -2516,3 +2516,138 @@ test("W5 extra: POOL_CHIPS and LEVY_FRACTION are the module's own constants, and
   const reason = bad(act(state, { type: "poolPosition", chip: "everything", line: "" }, "PLAY", "seat-1"));
   assert.match(reason, /nothing.*a little.*a lot/);
 });
+
+/* ------------------------------------------------- D62 R-14: no-bowl -- */
+
+function seated78(count: number): HostLeagueState {
+  let state = hostTheLeagueModule.initialState({ sessionId: "s78", seatIds: [], gradeBand: "7-8" });
+  for (let i = 1; i <= count; i += 1) state = ok(act(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`));
+  return state;
+}
+function fullSession78(desks = 6): HostLeagueState {
+  let state = seated78(desks);
+  const prices = [24, 44, 60, 36, 78, 52, 30, 66, 40, 56, 20, 90];
+  const shares = [0, 20, 40, 10, 30, 5, 15, 25, 35, 0, 40, 10];
+  for (let w = 0; w < WEEK_COUNT; w += 1) {
+    state = playWeek(
+      state,
+      (i) => prices[(i + w) % prices.length]!,
+      (i) => shares[(i + w * 3) % shares.length]!,
+    );
+  }
+  return state;
+}
+function runRitualToEnd(state: HostLeagueState): HostLeagueState {
+  let next = { ...state, revealStage: REVEAL_STEPS };
+  for (let i = 0; i < POOL_RITUAL_STEPS; i += 1) next = ok(act(next, { type: "teacher:poolStage" }, "REVEAL", "teacher"));
+  return next;
+}
+
+test("D62 R-14 item 1: teacher:noBowl is refused at 5-6, even with the ritual complete", () => {
+  const state = runRitualToEnd(fullSession(6));
+  const reason = bad(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  assert.match(reason, /7-8/);
+});
+
+test("D62 R-14 item 2: teacher:noBowl is refused at 7-8 before the ritual completes", () => {
+  const state = { ...fullSession78(6), revealStage: REVEAL_STEPS, ritualStage: 3 };
+  const reason = bad(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  assert.match(reason, /RITUAL/);
+});
+
+test("D62 R-14 item 3: teacher:noBowl is refused from a non-teacher seat, and outside REVEAL", () => {
+  const state = runRitualToEnd(fullSession78(6));
+  assert.match(bad(act(state, { type: "teacher:noBowl" }, "REVEAL", "seat-1")), /only the teacher/);
+  assert.match(bad(act(state, { type: "teacher:noBowl" }, "ADAPT", "teacher")), /REVEAL/);
+});
+
+test("D62 R-14 item 4: after a full 7-8 season and a complete ritual, the press runs and every row's cash delta equals levy paid minus pool received", () => {
+  const state = runRitualToEnd(fullSession78(6));
+  const next = ok(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  const nb = next.noBowl!;
+  assert.ok(nb.rows.length > 0, "must have at least one row");
+  const totals = poolTotalsAll(next);
+  for (const row of nb.rows) {
+    const t = totals.find((x) => x.slot === row.slot)!;
+    const delta = row.cashNoBowl - row.cashWithBowl;
+    const identity = t.paidInTotal - t.tookOutTotal;
+    assert.equal(delta, identity, `slot ${row.slot}: cashNoBowl - cashWithBowl (${delta}) must equal paidInTotal - tookOutTotal (${identity})`);
+    // Reinvest is a held dial — unaffected by the levy in the shipped settle formula.
+    assert.equal(row.reinvestWithBowl, row.reinvestNoBowl, `slot ${row.slot}: reinvest must be identical with or without the bowl`);
+  }
+  assert.equal(nb.leagueReinvestWithBowl, nb.leagueReinvestNoBowl, "league-wide reinvest must be identical with or without the bowl");
+});
+
+test("D62 R-14 item 5: teacher:noBowl is idempotent — a second press is refused, not re-run", () => {
+  const state = runRitualToEnd(fullSession78(6));
+  const once = ok(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  const reason = bad(act(once, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  assert.match(reason, /already run/);
+});
+
+test("D62 R-14 item 6: teacherView.noBowl reflects availability before and after the press", () => {
+  const before = runRitualToEnd(fullSession78(6));
+  const teacherBefore = hostTheLeagueModule.teacherView(before, "REVEAL") as { noBowl: { available: boolean; run: boolean; rows: unknown[] } };
+  assert.equal(teacherBefore.noBowl.available, true);
+  assert.equal(teacherBefore.noBowl.run, false);
+  assert.deepEqual(teacherBefore.noBowl.rows, []);
+
+  const after = ok(act(before, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  const teacherAfter = hostTheLeagueModule.teacherView(after, "REVEAL") as { noBowl: { available: boolean; run: boolean; rows: unknown[] } };
+  assert.equal(teacherAfter.noBowl.available, false, "must not offer a second press as available");
+  assert.equal(teacherAfter.noBowl.run, true);
+  assert.ok(teacherAfter.noBowl.rows.length > 0);
+
+  const teacher56 = hostTheLeagueModule.teacherView(runRitualToEnd(fullSession(6)), "REVEAL") as { noBowl: { available: boolean; reason: string } };
+  assert.equal(teacher56.noBowl.available, false);
+  assert.match(teacher56.noBowl.reason, /7-8/);
+});
+
+test("D62 R-14 item 7: boardView carries no seat id in noBowl, is null before the press, and null at 5-6", () => {
+  const before = runRitualToEnd(fullSession78(6));
+  const boardBefore = hostTheLeagueModule.boardView(before, "REVEAL") as { noBowl: unknown };
+  assert.equal(boardBefore.noBowl, null, "noBowl must be null before the press runs");
+
+  const after = ok(act(before, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  const boardAfter = hostTheLeagueModule.boardView(after, "REVEAL") as { noBowl: Record<string, unknown> };
+  assert.ok(boardAfter.noBowl, "noBowl must be present once run, at 7-8");
+  const seatIds = Object.keys(after.seatToSlot);
+  const raw = JSON.stringify(boardAfter.noBowl);
+  for (const seatId of seatIds) assert.equal(raw.includes(seatId), false, `boardView noBowl leaked seat id "${seatId}"`);
+  assert.equal(raw.includes("seatId"), false, "boardView noBowl must never carry a seatId key");
+
+  const board56 = hostTheLeagueModule.boardView(runRitualToEnd(fullSession(6)), "REVEAL") as { noBowl: unknown };
+  assert.equal(board56.noBowl, null, "noBowl must be null at 5-6 regardless of ritual state");
+});
+
+test("D62 R-14 item 8: studentView has no noBowl key at 5-6, and only the caller's own club's rows at 7-8 once run", () => {
+  const before56 = runRitualToEnd(fullSession(6));
+  for (const seatId of Object.keys(before56.seatToSlot)) {
+    const view = hostTheLeagueModule.studentView(before56, seatId, "REVEAL") as Record<string, unknown>;
+    assert.equal("noBowl" in view, false, `studentView must carry no noBowl key at 5-6 for ${seatId}`);
+  }
+
+  const before78 = runRitualToEnd(fullSession78(6));
+  for (const seatId of Object.keys(before78.seatToSlot)) {
+    const view = hostTheLeagueModule.studentView(before78, seatId, "REVEAL") as Record<string, unknown>;
+    assert.equal("noBowl" in view, false, `studentView must carry no noBowl key at 7-8 before the press for ${seatId}`);
+  }
+
+  const after78 = ok(act(before78, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  for (const seatId of Object.keys(after78.seatToSlot)) {
+    const slot = after78.seatToSlot[seatId]!;
+    const view = hostTheLeagueModule.studentView(after78, seatId, "REVEAL") as { noBowl: { club: string } | null };
+    const ownRow = after78.noBowl!.rows.find((r) => r.slot === slot)!;
+    assert.ok(view.noBowl, `studentView must carry noBowl for ${seatId} once the press has run`);
+    assert.equal(view.noBowl!.club, ownRow.club, "studentView noBowl must be this seat's own club");
+  }
+});
+
+test("D62 R-14 item 9: the existing 5-6 pool ritual is unaffected — ritualStage still ends on 'Move on to ADAPT' with no no-bowl mention", () => {
+  const state = { ...fullSession(6), revealStage: REVEAL_STEPS };
+  let next = state;
+  for (let i = 0; i < POOL_RITUAL_STEPS; i += 1) next = ok(act(next, { type: "teacher:poolStage" }, "REVEAL", "teacher"));
+  const teacher = hostTheLeagueModule.teacherView(next, "REVEAL") as { director: { trigger: string | null } };
+  assert.match(teacher.director.trigger ?? "", /Move on to ADAPT/);
+  assert.equal((teacher.director.trigger ?? "").includes("NO-BOWL"), false);
+});

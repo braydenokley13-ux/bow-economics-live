@@ -4067,6 +4067,21 @@ function poolRitualDirectorBeat(
     },
   };
   const beat = beats[ritual] ?? { now: [], ask: [], dontExplainYet: [] };
+  if (ritual >= POOL_RITUAL_STEPS && bandOfRoom(state) === "7-8") {
+    // D62 R-14. 7-8 only, and only after the room has seen its own season AND
+    // the whole pool ritual — the computed "before" this room never played.
+    const run = noBowlOf(state) !== null;
+    return {
+      now: run
+        ? [...beat.now, "THE NO-BOWL SEASON is up: same prices, same reinvest calls, levy at zero. Read the room's total reinvest line first — it did not move. Then read one club's cash both ways."]
+        : [...beat.now, "One more press, 7-8 only: THE NO-BOWL SEASON — the same three weeks replayed with no levy at all, computed from what this room actually did."],
+      ask: run
+        ? [...beat.ask, { q: "Did the room put back less into its own teams because of the bowl?", answer: "No — the reinvest total is identical either way. The bowl never touched what anybody chose to spend; it only moved cash between clubs after the fact." }]
+        : beat.ask,
+      dontExplainYet: run ? beat.dontExplainYet : [...beat.dontExplainYet, "Do not let the room call this \"the bowl cost us money\" before you press it — press first, then read the reinvest line out loud."],
+      trigger: run ? `${stageName} was the last stage. THE NO-BOWL SEASON has run. Move on to ADAPT.` : "Next press: THE NO-BOWL SEASON (7-8 only).",
+    };
+  }
   const trigger = ritual < POOL_RITUAL_STEPS ? `Next press: ${POOL_RITUAL_STAGE_NAMES[ritual] ?? "the next stage"} (${ritual + 1} of ${POOL_RITUAL_STEPS}).` : `${stageName} was the last stage. Move on to ADAPT.`;
   return { ...beat, trigger };
 }
@@ -4657,6 +4672,17 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             ...(beat >= 3 && mine ? { mine } : {}),
             ...(beat >= 4 && bestHomeWeek ? { bestNight: bestHomeWeek } : {}),
             ...(beat >= 5 ? { ownReinvest: club.weeks.map((w) => ({ week: w.week, share: w.share, auto: w.auto })) } : {}),
+            // D62 R-14 — THE NO-BOWL SEASON. This desk's own two rows only,
+            // and only once the teacher has pressed it. 7-8 only; absent (not
+            // null) at 5-6 and before the press.
+            ...(bandOfRoom(state) === "7-8" && noBowlOf(state)
+              ? {
+                  noBowl: (() => {
+                    const row = noBowlOf(state)!.rows.find((r) => r.slot === slot) ?? null;
+                    return row ? { club: row.club, cashWithBowl: row.cashWithBowl, cashNoBowl: row.cashNoBowl, reinvestWithBowl: row.reinvestWithBowl, reinvestNoBowl: row.reinvestNoBowl } : null;
+                  })(),
+                }
+              : {}),
             // play N-4: the free-riding desk's block is three zeroes, and the
             // sentence under it has to be about ITS decision, not about a
             // counterfactual identical to what it did.
@@ -4909,6 +4935,35 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       ritualCanAdvance: phase === "REVEAL" && state.revealStage >= REVEAL_STEPS && ritualStageOf(state) < POOL_RITUAL_STEPS,
       ritualReady: phase === "REVEAL" && state.revealStage < REVEAL_STEPS ? "Finish the season reveal first — press REVEAL through its five stages before THE BILL LINE." : "",
       poolRitual: poolRitualBoardFor(state, bandOfRoom(state)),
+      // D62 R-14 — THE NO-BOWL SEASON. 7-8 only, one press, after THE RITUAL
+      // and every week is settled. `available` reflects whether the press can
+      // fire NOW (false once it has already run — a second press is refused).
+      noBowl: ((): { available: boolean; reason: string; run: boolean; rows: NoBowlRow[]; leagueLine: string } => {
+        const band = bandOfRoom(state);
+        const nb = noBowlOf(state);
+        const run = nb !== null;
+        const ritualDone = ritualStageOf(state) >= POOL_RITUAL_STEPS;
+        const weeksDone = state.weekIndex >= WEEK_COUNT;
+        const reason =
+          band !== "7-8"
+            ? "The no-bowl comparison only exists at 7-8."
+            : phase !== "REVEAL"
+              ? "The no-bowl comparison runs during REVEAL."
+              : !weeksDone
+                ? "All three weeks must be settled first."
+                : !ritualDone
+                  ? "Finish THE RITUAL first — every pool-ritual stage must have played."
+                  : run
+                    ? "Already run."
+                    : "Ready to press.";
+        return {
+          available: band === "7-8" && phase === "REVEAL" && weeksDone && ritualDone && !run,
+          reason,
+          run,
+          rows: nb?.rows ?? [],
+          leagueLine: nb ? `${nb.roomReinvestLineWithBowl} ${nb.roomReinvestLineNoBowl}` : "",
+        };
+      })(),
     }, bandOfRoom(state));
   },
 
@@ -5050,6 +5105,24 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             // room never sees the league's bowl before it has seen its own
             // season. Club wordmarks and totals only — never a seat id.
             pool: poolRitualBoardFor(state, bandOfRoom(state)),
+            // D62 R-14 — THE NO-BOWL SEASON. 7-8 only, and only once the
+            // teacher has pressed it: league totals and per-club rows by club
+            // wordmark, never a seat identity. `%` allowed at 7-8 only.
+            noBowl:
+              bandOfRoom(state) === "7-8" && noBowlOf(state)
+                ? {
+                    leagueReinvestWithBowl: noBowlOf(state)!.leagueReinvestWithBowl,
+                    leagueReinvestNoBowl: noBowlOf(state)!.leagueReinvestNoBowl,
+                    leagueLine: `${noBowlOf(state)!.roomReinvestLineWithBowl} ${noBowlOf(state)!.roomReinvestLineNoBowl}`,
+                    rows: noBowlOf(state)!.rows.map(({ club, cashWithBowl, cashNoBowl, reinvestWithBowl, reinvestNoBowl }) => ({
+                      club,
+                      cashWithBowl,
+                      cashNoBowl,
+                      reinvestWithBowl,
+                      reinvestNoBowl,
+                    })),
+                  }
+                : null,
           };
         }
 
@@ -5747,6 +5820,21 @@ function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFl
       desks: neverLockedLive,
       action: "Sitting a week out lowered nothing this desk owed and raised nothing anyone else got — say that if the room assumes otherwise.",
       urgency: "later",
+    });
+  }
+
+  // D62 R-14. Once THE NO-BOWL SEASON has run, guard the obvious misreading:
+  // the room's total reinvest is identical with or without the bowl (held
+  // dials, never re-decided) — what changed is only whose books the cash
+  // sits on, not what anyone chose to spend.
+  if (phase === "REVEAL" && bandOfRoom(state) === "7-8" && noBowlOf(state) !== null) {
+    out.push({
+      id: "bowl-cost-us",
+      label: "THE NO-BOWL SEASON is up — watch for \"the bowl cost us money\"",
+      desks: live.map(deskHandleFor),
+      action:
+        "It didn't. The room's total reinvest is the same number with or without the bowl — the same prices, the same reinvest calls, replayed at zero levy still add up to it. What differs is only which club's cash the bowl moved, not what the room put back into itself.",
+      urgency: "now",
     });
   }
 
