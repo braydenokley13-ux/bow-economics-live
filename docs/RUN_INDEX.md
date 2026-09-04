@@ -63,8 +63,10 @@ files and converges in this file. Builders never certify their own work.
   session, teacher first question) — 30/30, browser harness being extended. Fidelity notes for
   the founder: the Bible says "first Press Conference of the course is invited" and "decline once
   per course"; the build gates every shortlist call through invite and counts the decline per
-  session (no cross-session seat memory exists yet). Suite: 876/877 (only the pre-D61 tuning
-  harness P6, being repointed). L1 e2e green both bands. L1 apron-on-holds repair in flight.
+  session (no cross-session seat memory exists yet). Suite: 876/877 at the last full run (P6 since repointed and green in isolation); a whole-tree
+  run is owed once the in-flight builders land. L1 e2e green both bands; L2 e2e green both bands
+  (unlinked, found the /teach gap now fixed and the modeled-July gap, D63); W5 e2e found three
+  board/play defects, fixed, rerun in flight. L1 apron-on-holds repair in flight.
 - C6 director/stage · C7 gauntlet + founder packet.
 
 ## Hot files (reserve before parallel writes)
@@ -92,8 +94,10 @@ under `docs/gauntlet/module-*/screens-*`).
 
 ## Exact next action
 
-Integrate as builders report (Press Conference runtime → L1 teach console → Full House → W2
-server → W2 client → W3 engine → W6 floor → hostTheLeague plumbing): fix tsc, wire
-`spotlightView`/`pressCandidates` onto each module, `npm test` (whole tree), the L1/L2 e2e
-scripts, commit + push after each green integration. Then: W3 client renderers, W5 pool ritual,
-critic passes (Economic Truth, Teacher Transfer, Player/Gameplay) per landed week.
+Integrate as builders report: W6 floor views (wave 3b, engine payload contract → client wiring
+on /play /teach /board → e2e), W4 5-6 percent/negative leaks + unlinked-room band, W2 unlinked
+room modeled July (D63), L3 browser harness, Sports Reality real lines for the five owed naming
+cards, L1 apron repair (sweep running). Then `npm test` (whole tree) + every `e2e-*.cjs` for a
+green checkpoint, commit + push. Then: critic passes per landed week (Teacher Transfer,
+Player/Gameplay, Classroom/Projector, Visual Experience on the W5 ritual), R-14 no-bowl
+counterfactual press at 7–8, RUN_INDEX/TRACK_101_MAP/RAMAZ_READINESS/runtime README.

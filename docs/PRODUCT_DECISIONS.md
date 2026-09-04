@@ -1863,3 +1863,45 @@ Sports Reality R-7 pass (`docs/gauntlet/module-1/rebuild/W3_R7_REAL_EXAMPLES.md`
 
 - **Status:** ACTIVE (provisional for the founder on R-13 and R-14)
 - **Date:** 2026-09-04
+
+## D63. Obeyable floor lines adopted; generic teacher presses route by name; an unlinked room is a modeled July
+
+- **Context:** D62 withdrew the $300,000 working value for W6 THE FLOOR pending a feasibility
+  sweep. The sweep (`runtime/scripts/write-the-rule-floor-sweep.mjs`, brute-forced over the
+  shipped `weekTakeFor`/`bestReinvestUnder`/`bestPriceUnder` on the shipped clubs) found the
+  binding ceiling is Indiana's own: at the maximum reinvest dial and its revenue-maximising
+  price it can put back at most about $155,758 a week, so any line at or above $200,000 is
+  structurally unreachable for at least one club. Separately, browser truth for W2 showed the
+  `/teach` console had no control that could move THE SEASON's beats or naming, and that an
+  unlinked W2 room (no Week 1 source) reached ADAPT with nothing waivable and SYNTHESIS with
+  zero namings.
+- **Decision 1 — floor lines.** 5–6 working value **$150,000 a week (ON/OFF)**; 7–8 lines
+  **$50,000 / $100,000 / $150,000 a week**. Every line is zero-UNREACHABLE across the whole
+  share grid (sweep verdict `EVERY CANDIDATE LINE OBEYABLE`, exit 0, 2026-09-04). At $150,000
+  and a 25–45% adopted share the floor binds Memphis, Milwaukee and New Orleans first and no big
+  market — the coalition inversion the spec wanted survives at a lower ceiling. The builder's
+  sweep and the Economic Truth reviewer's figures differ in magnitude (different visitor-draw
+  assumption) but agree on direction; the sweep is the instrument of record because it runs the
+  shipped code. Reconciling the two methodologies is owed before classroom release, not before
+  the views are built.
+- **Decision 2 — generic teacher presses.** The runtime routes a `/teach` hook name verbatim as
+  `teacher:<hook>` to the module's reducer. The two generic presses — "Reveal next"
+  (`teacher:revealNext`) and the bell (`teacher:closeDay`) — are part of the module contract in
+  practice: every lesson module aliases them onto its own vocabulary (W2 → `teacher:beat` /
+  `teacher:closeWindow`; W3 → `teacher:nextName` / `teacher:closeHour`) and exposes enough in
+  `teacherView` (`beat`, `beatCount`, `naming{index,count}`, `round`, `marketClosed`) for the
+  button to say what the press will do and refuse when there is nothing left. A lesson whose
+  beats only a script can advance is not runnable by a random teacher (§4).
+- **Decision 3 — the unlinked room.** A W2 (and later) room created without a source session
+  is a *modeled* July, not an empty one: stock desks carry real dated contracts that can be
+  waived, and at 7–8 a stock wall, so the waive path, the sunk-cost moment and the wall-gated
+  namings are reachable; and `namings()` never returns zero for a room that played (an
+  unconditional band-gated fallback names what every room did). The modeling is recorded in
+  code as a simplification with its misconception risk (§3).
+- **Also landed under this decision:** THE ROAD LINE renders beside THE VISITOR LINE on the W5
+  board (D62 repair 1 was engine-only); the 5–6 free-ride row speaks in dollars (a `NaN%` had
+  reached the projector); a saved pool position now confirms on the student's own device; the
+  L3 teacher settle table shows which jobs come open again next season; the W5 teacher panel
+  states what the Week 4 link did to the books.
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
