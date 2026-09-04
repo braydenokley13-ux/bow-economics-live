@@ -3034,7 +3034,7 @@ export function billCoverageFor(desk: Desk, band: GradeBand) {
  * never ranked against another desk's number.
  */
 function ledgerFor(state: FullHouseState): {
-  destinations: readonly Destination[];
+  destinations: readonly Omit<Destination, "sourceRef">[];
   coverage: { label: string; club: string; nightsSettled: number; filled?: number; coveragePercent?: number; net?: number }[];
   moment: { headline: string; body: string };
 } | null {

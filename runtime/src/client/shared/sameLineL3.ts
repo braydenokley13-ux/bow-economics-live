@@ -631,8 +631,8 @@ function hookMain(): string {
     <p class="sl3-hero-sub">
       February 5, 2026: Boston sent Anfernee Simons (about $27.7M, expiring) and a second-round
       pick to Chicago for Nikola Vučević (about $21.5M, expiring) and a future second. Boston's
-      own summary line: it filled a hole at centre AND dropped its projected tax bill by more
-      than $22M, from about $39.5M to $17M — below the first apron. One trade did all three
+      own summary line: it filled a hole at centre AND cut its tax bill by more than $22M —
+      from about $39.5M down to $17M — landing below the first apron. One trade did all three
       things this room is about to try to do. (Hoops Rumors, 2026-02-05.)
     </p>
     <p class="sl3-hero-ask">Who on your desk has something you don't need?</p>

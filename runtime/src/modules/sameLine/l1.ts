@@ -526,6 +526,8 @@ type Naming = {
   /** What the ROOM did, in the room's numbers. Null when the room did not do it. */
   readonly moment: string;
   readonly means: string;
+  /** The dated, sourced real sports-business fact (D62) — never improvised aloud. */
+  readonly real: string;
   readonly outside: string;
 };
 
@@ -559,6 +561,7 @@ function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming
         profile.maxVariables >= 3
           ? "There was not enough of the thing everybody wanted to go round. That is not a mistake anybody made — it is the starting condition, and it is what makes every other decision today a real one."
           : "There was not enough of what everybody wanted. Nobody did that on purpose. It is just how the summer started.",
+      real: "No dated real example is sourced for SCARCITY yet — teacher card owed (Sports Reality).",
       outside:
         profile.maxVariables >= 3
           ? "It is why concert tickets sell out, why there is a queue for the good bagel place at 9am and none at 3pm, and why your school has to choose between a new gym floor and new laptops."
@@ -593,6 +596,7 @@ function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming
         profile.maxVariables >= 3
           ? "The real price of anything is not the money. It is the best thing you could no longer do once you had done it — and you pay that price whether or not you ever notice it."
           : "What something really costs you is the next-best thing you gave up to get it. Not the money. The other thing.",
+      real: "No dated real example is sourced for OPPORTUNITY COST yet — teacher card owed (Sports Reality).",
       outside:
         profile.maxVariables >= 3
           ? "The hour you spent on this lesson is an hour you did not spend on anything else, and that hour is the real price of it — not the room, not the electricity."
@@ -615,6 +619,8 @@ function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming
         `Not one of those lines is a law of nature. Thirty clubs and the players' union sat in a room and agreed on where to draw them, and they will argue about where to draw them again.`,
       means:
         "An institution is a rule people made and then have to live inside. It shapes every choice made under it — and it can be changed, which is why the argument about it never stops.",
+      real:
+        "As of July 10, 2026, 22 of the NBA's 30 teams were hard-capped and could not cross an apron line for any reason the rest of the season. Nobody on one team decided where that line sits — the league and the players' union negotiated it into the rulebook years before. Almost three-quarters of the league was living inside a wall it did not get to redraw that day.",
       outside:
         "Speed limits, the school day starting at 8:15, the offside rule, who is allowed to vote. Every one of them was decided by people, and every one of them changes what everybody else can do.",
     });
@@ -635,6 +641,7 @@ function namings(state: SameLineL1State, profile: GradeProfile): readonly Naming
         `He never raised his price. The other desks in this room raised it.`,
       means:
         "A price is not a number the seller decides. It is what the competition to buy the thing settles on — which is why the same player is cheap in a quiet market and dear in a crowded one.",
+      real: "No dated real example is sourced for COMPETITION SETS PRICE yet — teacher card owed (Sports Reality).",
       outside:
         "It is why the same flight costs three times as much the week of a holiday, and why a house on a street everyone wants sells above what the owner asked.",
     });
@@ -1084,7 +1091,7 @@ function namingFrame(state: SameLineL1State, desk: Desk | null) {
           : "Yours: you never drew a wall. That was not luck — it is what your July left you room to avoid.";
     }
   }
-  return { index: i, count: all.length, term: now.term, moment: now.moment, means: now.means, outside: now.outside, yours };
+  return { index: i, count: all.length, term: now.term, moment: now.moment, means: now.means, real: now.real, outside: now.outside, yours };
 }
 
 /**

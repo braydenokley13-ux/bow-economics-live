@@ -681,7 +681,7 @@ function resolveFebruary(state: SameLineL2State): SameLineL2State {
 
 /* ------------------------------------------------------------ naming -- */
 
-type Naming = { readonly id: string; readonly term: string; readonly moment: string; readonly means: string; readonly outside: string };
+type Naming = { readonly id: string; readonly term: string; readonly moment: string; readonly means: string; readonly real: string; readonly outside: string };
 
 function namings(state: SameLineL2State, profile: GradeProfile): readonly Naming[] {
   const desks = Object.values(state.desks);
@@ -696,7 +696,8 @@ function namings(state: SameLineL2State, profile: GradeProfile): readonly Naming
       term: "SUNK COST",
       moment: `${waivers.length} ${waivers.length === 1 ? "desk" : "desks"} in this room cut a player this season. ${money(total)} a year stayed on the books anyway — cutting him did not make the money disappear.`,
       means: "Once money is spent, it is spent. Whether you keep the player or cut him, that dollar is already gone — so the decision to keep him or cut him should never be about getting that dollar back.",
-      outside: "Milwaukee pays Damian Lillard $21,311,053 a year through 2030-31 after waiving him. He plays for somebody else. The money never came back by cutting him.",
+      real: "Milwaukee waived Damian Lillard on July 1, 2025, but still pays him $21,311,053 a year through the 2030-31 season — he plays for another team now. Cutting him did not make that money disappear; it just spread it out over more years.",
+      outside: "A movie ticket you already paid for does not get refunded whether you stay for the rest of the film or walk out at the first scene you hate. The only real question left is what you want to do with the next two hours — not how to get that money back.",
     });
   }
 
@@ -707,6 +708,7 @@ function namings(state: SameLineL2State, profile: GradeProfile): readonly Naming
       term: "DECISION QUALITY IS NOT OUTCOME",
       moment: `${twinPair.a.name} and ${twinPair.b.name} signed for almost the exact same money — ${twinPair.a.priceText} and ${twinPair.b.priceText}, both this room's own July prices. One did more than the job. One did not.`,
       means: "A good decision can turn out badly, and a lucky decision can turn out well. The price you paid tells you what you risked. It does not tell you what happened next.",
+      real: "Nikola Vučević signed for $3.9 million with Orlando on July 2, 2026; Larry Nance Jr. signed for $4 million with Indiana six days later. Almost the same price — but Vučević went on to average 15.1 points a game that season and Nance averaged 3.7. The price the two men were paid barely differed. What they did once they signed did.",
       outside: "A good driver can still get in an accident, and a driver who ran a red light can still get home safe. The choice and the result are not the same thing.",
     });
   }
@@ -721,6 +723,7 @@ function namings(state: SameLineL2State, profile: GradeProfile): readonly Naming
       term: "PATH DEPENDENCE",
       moment: `${walled.length} ${walled.length === 1 ? "desk" : "desks"} drew a wall in July. ${refused.length > 0 ? `${refused.length} of them could not reach the top of the February market because of it.` : "None of them happened to need the top of the February market this time — but the wall was there whether they needed it or not."}`,
       means: "A choice you made earlier can close a door later, even when the two moments feel completely unrelated. The rule did not change between July and February. Your position under it did.",
+      real: "Phoenix went over the NBA's second apron for the 2024-25 season, and its own earlier roster decisions became a rulebook against future-Phoenix: no combining two contracts to match a bigger salary in a trade, no full mid-level exception, no signing bought-out players above a lower dollar line. The league even froze Phoenix's 2032 first-round pick until it got back under the line. The wall was not new — it was the direct result of decisions Phoenix had already made.",
       outside: "The elective you picked in September decides what you are allowed to take in March. Nobody changed the rules. You changed your own room to move in.",
     });
     out.push({
@@ -728,6 +731,7 @@ function namings(state: SameLineL2State, profile: GradeProfile): readonly Naming
       term: "OPTION VALUE",
       moment: `The ten-day contract cost almost nothing and bought a look before a real commitment. ${state.history.some((h) => h.round === "JANUARY") ? "Some desks used it that way." : "Every desk in this room had that option in January, whether or not it used it."}`,
       means: "Sometimes the smartest move is not to buy the thing — it is to buy the right to decide later, for less than the thing itself would have cost.",
+      real: "On February 17, 2026, San Antonio signed Mason Plumlee to a cheap 10-day contract — a short, low-cost look, not a real commitment. Ten days later, on February 27, satisfied with what it saw, San Antonio signed him for the rest of the season instead. The team paid to look before it had to decide.",
       outside: "Paying a small deposit to hold a seat, instead of buying the ticket outright, is buying the same thing: a little money now, to keep a bigger choice open.",
     });
   }
@@ -873,7 +877,7 @@ function namingFrame(state: SameLineL2State, desk: SeasonDesk | null) {
   const i = Math.max(0, Math.min(state.beat, all.length - 1));
   const n = all[i]!;
   void desk;
-  return { index: i, count: all.length, term: n.term, moment: n.moment, means: n.means, outside: n.outside };
+  return { index: i, count: all.length, term: n.term, moment: n.moment, means: n.means, real: n.real, outside: n.outside };
 }
 
 function teacherView(state: SameLineL2State, phase: CanonicalPhase): unknown {
