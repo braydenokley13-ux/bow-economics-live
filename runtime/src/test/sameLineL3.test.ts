@@ -113,10 +113,10 @@ test("phases omit ADAPT per spec", () => {
 
 /* ---------------------------------------------------------------- offer -- */
 
-function twoDeskState(): SameLineL3State {
+function twoDeskState(gradeBand: "5-6" | "7-8" = "5-6"): SameLineL3State {
   const a = desk("A", "memphis", 0, 100_000_000, [contract("a-1", 5_000_000)]);
   const b = desk("B", "detroit", 0, 100_000_000, [contract("b-1", 5_000_000)]);
-  return baseState({ A: a, B: b });
+  return baseState({ A: a, B: b }, { gradeBand });
 }
 
 test("propose refused outside PLAY", () => {

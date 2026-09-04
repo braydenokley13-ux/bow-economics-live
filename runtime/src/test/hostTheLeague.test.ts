@@ -2436,10 +2436,11 @@ test("W5 item 10: at band 5-6, no rendered pool string on board, teacher or stud
 
   const locked = lockedAndWaiting(4);
   for (const seatId of Object.keys(locked.seatToSlot)) {
-    const view = hostTheLeagueModule.studentView(locked, seatId, "PLAY") as Record<string, unknown>;
-    assert.equal(JSON.stringify(view["poolPosition"]).includes("%"), false, `studentView poolPosition payload has a % for ${seatId}`);
-    assert.equal(JSON.stringify(view["weekFourNote"] ?? "").includes("%"), false, "weekFourNote has a %");
-    assert.equal(JSON.stringify(view["levyLine"] ?? "").includes("%"), false, "studentView levyLine has a %");
+    const playView = hostTheLeagueModule.studentView(locked, seatId, "PLAY") as Record<string, unknown>;
+    assert.equal(JSON.stringify(playView["poolPosition"]).includes("%"), false, `studentView poolPosition payload has a % for ${seatId}`);
+    const hookView = hostTheLeagueModule.studentView(locked, seatId, "HOOK") as Record<string, unknown>;
+    assert.equal(String(hookView["levyLine"] ?? "").includes("%"), false, "studentView HOOK levyLine has a % at 5-6");
+    assert.equal(JSON.stringify(hookView["weekFourNote"] ?? "").includes("%"), false, "studentView HOOK weekFourNote has a %");
   }
 });
 

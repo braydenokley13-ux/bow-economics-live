@@ -17,7 +17,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { sameLineL1Module as mod, DAYS, SAME_LINE_L1_ID, forgoneBy, spotlightViewFor, pressCandidatesFor, type SameLineL1State } from "../modules/sameLine/l1.js";
-import { BOARD, CLUBS, LINE, MARKET, MINIMUM_MARKET, TOOL } from "../modules/sameLine/world.js";
+import { BOARD, CLUBS, LINE, MARKET, MINIMUM_MARKET, TOOL, bandOf } from "../modules/sameLine/world.js";
 import { applySigning, jobClosingSignings, readingsFor, ceilingOf, checkOffer, legalOffers, offerValue, openingPosition, outlookAfter, yearsFor } from "../modules/sameLine/engine.js";
 import { isOrderedSubsequence } from "../shared/phases.js";
 import type { CanonicalPhase } from "../shared/phases.js";
@@ -502,6 +502,84 @@ test("no signing ever draws a wall behind the club that drew it", () => {
       }
     }
   }
+});
+
+/* ------------------------------------------------ apron salary vs holds -- *
+ *                                          docs/RUN_INDEX.md open finding    */
+
+/*
+ * The apron limitations test Apron Team Salary (Team Salary minus free-agent
+ * cap holds), never Team Salary itself (2023 CBA; cbaguide.com/thresholds/apron,
+ * read 2026-09-04; W2_SEASON_RESEARCH.md §3). The cap and tax bands are the
+ * opposite: they test Team Salary, holds included, and that half was already
+ * right. Detroit carries $28,834,548 of holds and is the sourced example.
+ */
+
+test("Detroit's cap/tax band counts its holds; its apron band must not", () => {
+  const detroit = CLUBS.find((c) => c.id === "detroit")!;
+  const committed = detroit.committed.value;
+  const holds = detroit.holds.value;
+  assert.equal(holds, 28_834_548, "written against Detroit's dated holds figure (W2_SEASON_RESEARCH.md §3); re-date this test if it moved");
+
+  // At Detroit's own real committed figure the band does not move either way —
+  // its committed sits between the cap and the tax line regardless of holds.
+  // That is expected and is not what the defect was about.
+  assert.equal(bandOf(committed, holds), "under-tax");
+  assert.equal(bandOf(committed, 0), "under-tax");
+
+  // The defect's mechanism, stated as a band jump: a club whose raw committed
+  // (Team Salary) has reached the second apron is not over the second apron on
+  // Apron Team Salary once Detroit's own holds are correctly excluded from
+  // that figure — and the fact that its cap/tax band is unaffected by the same
+  // holds is the point, not a contradiction (two different aggregates, two
+  // different tests).
+  const overApron2Committed = LINE.apron2 + 5_000_000;
+  assert.equal(bandOf(overApron2Committed, 0), "over-apron2", "sanity: without holds excluded this committed figure is over the second apron");
+  assert.equal(
+    bandOf(overApron2Committed, holds),
+    "under-apron1",
+    "with Detroit's holds correctly excluded, Apron Team Salary here is " +
+      `${overApron2Committed - holds}, which is under the FIRST apron (${LINE.apron1}) — a two-band misclassification`,
+  );
+});
+
+test("a tool the second apron would refuse stays legal once holds are correctly excluded from Apron Team Salary", () => {
+  const opening = openingPosition("detroit");
+  const holds = opening.holds;
+  // Team Salary (committed) sits past the second apron; Apron Team Salary —
+  // committed minus Detroit's own holds — does not.
+  const p = { ...opening, committed: LINE.apron2 + 5_000_000, wall: null };
+  assert.ok(p.committed >= LINE.apron2, "fixture sanity: committed must sit past the second apron");
+  assert.ok(p.committed - holds < LINE.apron2, "fixture sanity: Apron Team Salary must sit under the second apron");
+  const ceiling = ceilingOf("taxMle", p, undefined);
+  assert.equal(
+    ceiling,
+    TOOL.taxMle.ceiling,
+    "the small exception draws its wall at the second apron on Apron Team Salary, which this position has not reached",
+  );
+});
+
+test("a tool that truly crosses the second apron on Apron Team Salary itself stays refused", () => {
+  const opening = openingPosition("detroit");
+  // holds: 0 here on purpose — committed and Apron Team Salary are the same
+  // number, and that number is past the second apron for real.
+  const p = { ...opening, committed: LINE.apron2 + 5_000_000, holds: 0, wall: null };
+  assert.equal(ceilingOf("taxMle", p, undefined), null, "a club genuinely past the second apron on Apron Team Salary must still be refused the small exception");
+});
+
+test("once a wall is drawn, the crossing test at the wall uses Apron Team Salary, not committed", () => {
+  const opening = openingPosition("detroit");
+  const holds = opening.holds;
+  const wall = LINE.apron1;
+  // committed alone would cross the wall by $4M; Apron Team Salary, correctly
+  // excluding Detroit's holds, has room to spare.
+  const p = { ...opening, committed: wall - 1_000_000, holds, wall, spent: [] as const };
+  const vucevic = BOARD.find((f) => f.id === "vucevic")!;
+  const offer = { playerId: vucevic.id, tool: "bae" as const, annual: 5_000_000 };
+  assert.ok(p.committed + offer.annual > wall, "fixture sanity: committed alone would cross the drawn wall");
+  assert.ok(p.committed - holds + offer.annual <= wall, "fixture sanity: Apron Team Salary would not cross the drawn wall");
+  const legality = checkOffer(p, offer, vucevic);
+  assert.deepEqual(legality, { ok: true }, `expected this offer to stay legal against the wall on Apron Team Salary: ${JSON.stringify(legality)}`);
 });
 
 test("a signing that ends the window says so before the click, on every band", () => {
