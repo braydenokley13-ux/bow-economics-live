@@ -1436,6 +1436,122 @@ function hlBarHtml(bars: HLBar[]): string {
     </div>`;
 }
 
+type HLPoolBoard = {
+  stage: number;
+  stageName: string | null;
+  levyLine: string;
+  billLine: { club: string; assessed: number }[] | null;
+  fill: { club: string; chips: number }[] | null;
+  fillGrandTotal: number | null;
+  bowlTotal: number | null;
+  visitorLine: { club: string; visitorDollars: number }[] | null;
+  draw: { club: string; tookOut: number }[] | null;
+  net: { club: string; paidIn: number; tookOut: number; netLine: string }[] | null;
+  netPage: number;
+  netPageCount: number;
+  netPageLabel: string;
+  freeRide: { slot: number; club: string; meanReinvestShare: number; tookOutTotal: number }[] | null;
+  roundingNote: string | null;
+};
+
+/**
+ * THE POOL, ON THE PROJECTOR — six teacher-paced stages, driven entirely by
+ * `pool.stage`: nothing prints before the stage the teacher has pressed, and
+ * every number is read straight off the payload (D61 R-12, non-negotiable 9).
+ * Never a seat identity — club wordmarks only.
+ */
+function hlPoolRitualHtml(pool: HLPoolBoard): string {
+  const parts: string[] = [];
+
+  if (pool.billLine) {
+    parts.push(
+      `<div class="hl-pool-billline" id="hlPoolBillLine">${pool.billLine
+        .map((r) => `<div class="hl-pool-billrow"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.assessed)}</span></div>`)
+        .join("")}</div>`,
+    );
+  }
+
+  if (pool.fill) {
+    const maxChips = Math.max(1, ...pool.fill.map((f) => f.chips));
+    parts.push(
+      `<div class="hl-pool-cols" id="hlPoolFill">${pool.fill
+        .map(
+          (f) => `<div class="hl-pool-col">
+              <div class="hl-pool-col-track"><div class="hl-pool-col-bar" style="height:${Math.max(4, (f.chips / maxChips) * 100)}%"></div></div>
+              <div class="hl-pool-col-num numeric">${f.chips}</div>
+              <div class="hl-pool-col-lbl">${escapeHtml(f.club)}</div>
+            </div>`,
+        )
+        .join("")}</div>
+      ${pool.fillGrandTotal !== null ? `<div class="synthesis-note hl-summary">Every chip is $50,000. Grand total so far: ${hlMoney(pool.fillGrandTotal)}.</div>` : ""}`,
+    );
+  }
+
+  if (pool.bowlTotal !== null) {
+    parts.push(
+      `<div class="hl-pool-bowl" id="hlPoolBowl">
+        <div class="hl-pool-bowl-num numeric">${hlMoney(pool.bowlTotal)}</div>
+        <div class="hl-pool-bowl-lbl">THE BOWL — every club's assessed money, together</div>
+      </div>`,
+    );
+    if (pool.visitorLine) {
+      parts.push(
+        `<div class="hl-pool-visitorline" id="hlPoolVisitorLine">
+          <div class="hl-split-title">THE VISITOR LINE — what other clubs' fans put on each building's own books</div>
+          ${pool.visitorLine.map((r) => `<div class="hl-pool-billrow"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.visitorDollars)}</span></div>`).join("")}
+        </div>`,
+      );
+    }
+  }
+
+  if (pool.draw) {
+    parts.push(
+      `<div class="hl-pool-cols" id="hlPoolDraw">${pool.draw
+        .map(
+          (d) => `<div class="hl-pool-col">
+              <div class="hl-pool-col-track"><div class="hl-pool-col-bar out" style="height:70%"></div></div>
+              <div class="hl-pool-col-num numeric">${hlMoney(d.tookOut)}</div>
+              <div class="hl-pool-col-lbl">${escapeHtml(d.club)}</div>
+            </div>`,
+        )
+        .join("")}</div>
+      <div class="synthesis-note hl-summary">Every bar is the same height — the pool splits evenly, whatever a club put in.</div>`,
+    );
+  }
+
+  if (pool.net) {
+    parts.push(
+      `<div class="hl-pool-net" id="hlPoolNet">
+        ${pool.netPageLabel ? `<div class="hl-bar-pager">${escapeHtml(pool.netPageLabel)}</div>` : ""}
+        ${pool.net
+          .map(
+            (r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)} — paid in ${hlMoney(r.paidIn)}, took out ${hlMoney(r.tookOut)}</span><span class="numeric">${escapeHtml(r.netLine)}</span></div>`,
+          )
+          .join("")}
+      </div>`,
+    );
+  }
+
+  if (pool.freeRide) {
+    parts.push(
+      `<div class="hl-pool-freeride" id="hlPoolFreeRide">
+        <div class="hl-split-title">THE FREE RIDE — put back the least, drew the same split as everyone</div>
+        ${pool.freeRide
+          .map(
+            (r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)} — put back ${Math.round(r.meanReinvestShare)}% on average</span><span class="numeric">${hlMoney(r.tookOutTotal)} drawn</span></div>`,
+          )
+          .join("")}
+      </div>`,
+    );
+  }
+
+  if (pool.roundingNote) {
+    parts.push(`<div class="synthesis-note hl-foot" id="hlPoolRounding">${escapeHtml(pool.roundingNote)}</div>`);
+  }
+
+  return parts.join("");
+}
+
 function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): void {
   const honesty = String(view["honestyLine"] ?? "");
   stage.classList.remove("fh-tight", "fh-synth", "hl-tight", "hl-ledger-frame");

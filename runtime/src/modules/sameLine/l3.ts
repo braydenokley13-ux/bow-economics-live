@@ -1036,6 +1036,17 @@ function reachBlockedFor(state: SameLineL3State, desk: Desk, profile: GradeProfi
   return blocked;
 }
 
+/** Resolve an object id to its owning desk and the object itself, for building market/offer summaries. */
+function findObject(state: SameLineL3State, id: ObjectId): { desk: Desk; object: TradeObject } | null {
+  for (const d of Object.values(state.desks)) {
+    const c = d.roster.find((x) => x.contractId === id);
+    if (c) return { desk: d, object: c };
+    const p = d.picksOwned.find((x) => x.pickId === id);
+    if (p) return { desk: d, object: p };
+  }
+  return null;
+}
+
 function studentView(state: SameLineL3State, seatId: SeatId, phase: CanonicalPhase): unknown {
   const desk = state.desks[seatId];
   const profile = profileFor(state.gradeBand);
@@ -1043,26 +1054,24 @@ function studentView(state: SameLineL3State, seatId: SeatId, phase: CanonicalPha
     return { module: SAME_LINE_L3_ID, seated: false, observer: state.observers.includes(seatId), hour: state.hour, marketClosed: state.marketClosed };
   }
   const labelById = (id: ObjectId): string => {
-    for (const d of Object.values(state.desks)) {
-      const c = d.roster.find((x) => x.contractId === id);
-      if (c) return c.name;
-      const p = d.picksOwned.find((x) => x.pickId === id);
-      if (p) return p.label;
-    }
-    return id;
+    const found = findObject(state, id);
+    return found ? labelOf(found.object) : id;
   };
   const myOffers = Object.values(state.offers)
     .filter((o) => o.fromSeat === seatId || o.toSeat === seatId)
     .map((o) => {
       const facing = offerFacingSeat(o, seatId);
       const isDecliner = o.declinedBy === seatId;
+      const counterpartyDesk = state.desks[facing.counterpartySeat];
       return {
         id: o.id,
         state: o.state,
         hour: o.hour,
         direction: facing.direction,
         awaitingMe: facing.awaitingMe,
-        counterpartyLabel: state.desks[facing.counterpartySeat]?.label ?? "a desk",
+        // Public, non-seat-identifying key for the counterparty desk — see `holderIdOf`.
+        counterpartyId: counterpartyDesk ? holderIdOf(counterpartyDesk) : null,
+        counterpartyLabel: counterpartyDesk?.label ?? "a desk",
         sendLabels: o.send.map(labelById),
         wantLabels: o.want.map(labelById),
         countered: o.countered,
@@ -1071,6 +1080,7 @@ function studentView(state: SameLineL3State, seatId: SeatId, phase: CanonicalPha
         declineReason: isDecliner ? o.declineReason : null,
       };
     });
+  const settleForMe = state.settled?.perSeat[seatId] ?? null;
   return {
     module: SAME_LINE_L3_ID,
     seated: true,
@@ -1079,22 +1089,42 @@ function studentView(state: SameLineL3State, seatId: SeatId, phase: CanonicalPha
     hour: state.hour,
     marketClosed: state.marketClosed,
     seedWarning: desk.seedWarning,
-    books: { committedText: money(desk.books.committed), wallText: desk.books.wall !== null ? money(desk.books.wall) : null, standing: standingOf(desk.books.committed, desk.books.band) },
+    books: {
+      committedText: money(desk.books.committed),
+      taxSalaryText: money(desk.books.taxSalary),
+      wallText: desk.books.wall !== null ? money(desk.books.wall) : null,
+      standing: standingOf(desk.books.committed, desk.books.band),
+    },
     roster: desk.roster.map(contractView),
     picksOwned: desk.picksOwned.map(pickView),
     picksOwed: desk.picksOwed.map((p) => ({ label: `OWED: your ${p.year} pick (to ${p.toLabel})` })),
     openJobs: desk.openJobs,
     myOffers,
-    market: state.listings.map((id) => ({
-      id,
-      label: labelById(id),
-      holderLabel: Object.values(state.desks).find((d) => d.roster.some((c) => c.contractId === id) || d.picksOwned.some((p) => p.pickId === id))?.label ?? "unknown",
-      interestCount: Object.values(state.offers).filter((o) => isOpenOffer(o) && (o.send.includes(id) || o.want.includes(id))).length,
-    })),
+    market: state.listings.map((id) => {
+      const found = findObject(state, id);
+      const obj = found?.object ?? null;
+      return {
+        id,
+        kind: obj ? obj.kind : "contract",
+        label: obj ? labelOf(obj) : id,
+        // The two bars a student needs to see BEFORE sending, so the
+        // composer can show them, not just the reducer after the fact
+        // (spec: the composer dims a card, the reducer is still the only
+        // legality authority — this is display data only).
+        annualText: obj && isContract(obj) ? money(obj.annual) : null,
+        // Public, non-seat-identifying key — never a seat id.
+        holderId: found ? holderIdOf(found.desk) : null,
+        holderLabel: found?.desk.label ?? "unknown",
+        interestCount: Object.values(state.offers).filter((o) => isOpenOffer(o) && (o.send.includes(id) || o.want.includes(id))).length,
+      };
+    }),
     capturePrompts: { send: profile.band === "5-6" ? SEND_CHIPS_56 : SEND_CHIPS_78, decline: DECLINE_CHIPS, lineWordLimit: profile.band === "5-6" ? 12 : 20 },
     maxObjectsPerSide: profile.maxVariables >= 3 ? 2 : 1,
     /** Desk-private. Never aggregated per-desk on the board — see `boardView`. */
     reachBlocked: reachBlockedFor(state, desk, profile),
+    // Own results only — REVEAL/CONSEQUENCE is when the room reads the tape.
+    settled: (phase === "REVEAL" || phase === "CONSEQUENCE") && settleForMe ? { coveredJobs: settleForMe.coveredJobs, openJobs: settleForMe.openJobs } : null,
+    naming: phase === "SYNTHESIS" || phase === "COMPLETE" ? namingFrame(state, profile) : null,
     phase,
   };
 }

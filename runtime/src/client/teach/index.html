@@ -336,10 +336,16 @@
       <h2 style="margin:0;">Press conference</h2>
       <span id="pcState" class="tc-state"></span>
     </div>
+    <!-- §12.2: "the instructor takes the first question to model tone." Typed
+         here before/at invite time; it travels with the invite to the board
+         takeover and the podium seat's own screen, never anywhere else. -->
+    <input type="text" id="pcQuestion" class="pc-question-input" placeholder="First question (shown on the board and at the podium)" aria-label="First question for the press conference">
     <div id="pcCandidates"></div>
     <div class="pc-picker-row" id="pcPickerRow">
-      <select id="pcSeatPicker" aria-label="Choose a desk to call to the podium"></select>
-      <button id="btnPcCallPicked" class="btn">Call to the podium</button>
+      <select id="pcSeatPicker" aria-label="Choose a desk for the press conference"></select>
+      <button id="btnPcInvitePicked" class="btn btn-primary">Invite to podium</button>
+      <button id="btnPcCallPicked" class="btn">Call to the podium (no invite)</button>
+      <button id="btnCancelInvite" class="btn btn-warn">Cancel invite</button>
       <button id="btnEndPressConference" class="btn btn-warn">End press conference</button>
     </div>
     <p id="pcClockNote" class="pc-clock-note" hidden></p>

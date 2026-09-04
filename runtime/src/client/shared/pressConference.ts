@@ -67,12 +67,17 @@ export function renderSpotlightValue(view: unknown): string {
  * any module branch — a press conference wins over every renderer, the same
  * way `ended`/`frozen`/`paused` already do, because it is a more specific
  * fact about the same state (a press conference always carries `paused` too).
+ *
+ * `question` is THE FIRST QUESTION (Bible §12.2: "the instructor takes the
+ * first question to model tone") — public, so it renders on the board in
+ * full when the teacher set one; omitted entirely when they didn't.
  */
-export function renderBoardSpotlight(spotlight: { label: string; view: unknown }): string {
+export function renderBoardSpotlight(spotlight: { label: string; view: unknown; question?: string | null }): string {
   return `
     <div class="pc-board">
       <div class="pc-board-line">LEAGUE PAUSED &mdash; PRESS CONFERENCE</div>
       <div class="pc-board-label">${escapeHtmlPc(spotlight.label)}</div>
+      ${spotlight.question ? `<div class="pc-board-question">&ldquo;${escapeHtmlPc(spotlight.question)}&rdquo;</div>` : ""}
       <div class="pc-board-view">${renderSpotlightValue(spotlight.view)}</div>
     </div>`;
 }
@@ -86,11 +91,41 @@ export function renderPlayLock(label: string): string {
     </div>`;
 }
 
-/** The podium desk's own /play screen: the identical public view the board and every lock screen are showing, on their own device. */
-export function renderPlayPodium(label: string, view: unknown): string {
+/**
+ * The podium desk's own /play screen: the identical public view the board and
+ * every lock screen are showing, on their own device, plus the first question
+ * (§12.2) when the teacher set one — the podium desk is the one other place
+ * besides the board that is allowed to see it.
+ */
+export function renderPlayPodium(label: string, view: unknown, question?: string | null): string {
   return `
     <div class="pc-podium">
       <div class="pc-podium-line">YOU&rsquo;RE AT THE PODIUM &mdash; ${escapeHtmlPc(label)}</div>
+      ${question ? `<div class="pc-podium-question">&ldquo;${escapeHtmlPc(question)}&rdquo;</div>` : ""}
       <div class="pc-podium-view">${renderSpotlightValue(view)}</div>
+    </div>`;
+}
+
+/**
+ * §12.2 INVITE FIRST — the private card the invited seat sees on /play
+ * BEFORE the podium goes live: "You're being asked to the podium" plus
+ * ACCEPT / NOT THIS TIME. `canDecline` is false once this seat has already
+ * used its one decline this session (§12.2: "a desk may decline once"); the
+ * card then drops the decline button entirely and says so plainly, rather
+ * than showing a disabled button with no explanation.
+ */
+export function renderPlayInvite(question: string | null, canDecline: boolean): string {
+  return `
+    <div class="pc-invite">
+      <div class="pc-invite-line">You&rsquo;re being asked to the podium</div>
+      ${question ? `<div class="pc-invite-question">&ldquo;${escapeHtmlPc(question)}&rdquo;</div>` : ""}
+      <div class="pc-invite-actions">
+        <button type="button" class="btn btn-primary" data-pc-invite="accept">Accept</button>
+        ${
+          canDecline
+            ? `<button type="button" class="btn" data-pc-invite="decline">Not this time</button>`
+            : `<p class="pc-invite-nodecline">You&rsquo;ve already used your one decline this session &mdash; this one you answer.</p>`
+        }
+      </div>
     </div>`;
 }
