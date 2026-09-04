@@ -346,7 +346,7 @@ function reduce(state: SameLineL1State, action: { type: string; [k: string]: unk
      *
      * Brooklyn is under the cap by $2,180,704 — less than the minimum charge,
      * so the room cannot sign one human being. Renouncing it buys the big
-     * exception, worth $14,104,000. "Cap space" sounds like the good outcome
+     * exception, worth $15,044,000. "Cap space" sounds like the good outcome
      * and here it is worth less than nothing, which is the false intuition this
      * seat exists to break.
      *
@@ -1013,7 +1013,7 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
                 reachableWithRoom: reachable,
                 /* Said as a count of people, not as a comparison of numbers:
                    "your room reaches nobody" is a fact a ten-year-old can act
-                   on, and "$2,180,704 < $14,104,000" is arithmetic homework. */
+                   on, and "$2,180,704 < $15,044,000" is arithmetic homework. */
                 line:
                   reachable === 0
                     ? `Your cap room reaches nobody on this board. Give it up and you get the big exception instead — ${money(exception)}, drawn against a wall you are nowhere near.`

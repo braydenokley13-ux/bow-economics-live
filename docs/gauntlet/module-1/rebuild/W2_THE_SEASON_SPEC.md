@@ -7,6 +7,14 @@
 > 4. A dealt-July desk **may** take the podium for its own February, never for July.
 > 5. The 90-second Front Office Review **lives in Week 3's boardroom** for the first build; Week 2's ARGUE keeps the optional second podium.
 >
+> **Post-research rulings (2026-09-04, from `W2_SEASON_RESEARCH.md`; binding over §1/§2/§5/§9 where they conflict):**
+> 6. A job-report verdict is a pure function of the authored player card — never of what the desk paid or for how many years. "At what price" is struck from §2's Shock A sentence; the research's dissent is adopted.
+> 7. DECISION QUALITY vs OUTCOME (§9) and the NEAR MISS tape pair (§5) run on **price twins** — same job, same price within $100k, different card, opposite verdict (Vucevic $3,900,000 MORE beside Nance $4,000,000 NOT; secondary Robinson beside Grimes, printed "about" because Grimes' figure is an average) — not on a repeated player, which authored resolution makes impossible.
+> 8. §1's three-verdict promise is withdrawn: a desk gets one verdict per signing it made ("every player you signed got a report").
+> 9. The apron/wall test runs on **Apron Team Salary = committed − holds**, evaluated after the transaction. (The same correction is owed to Week 1's `bandOf(committed)` — recorded as an L1 bounded repair, not made in this wave.)
+> 10. January ten-days and February rest-of-season signings are **prorated** on the research's dated constants, never charged as full-season minimums; March 1 is the February window's real deadline (post-March-1 waivers are playoff-ineligible elsewhere).
+> 11. February cards read "was cut in February 2026", never "is available"; Chris Paul is excluded (retired); Ben Simmons is dated February 2025 and is the Shock B card.
+>
 > **Contract note:** the runtime's Press Conference primitive (in build) owns the pause and the spotlight seat; a module contributes `spotlightView(state, seatId, phase)` (public podium payload) and `pressCandidates(state, phase)` (ranked, teacher-only). This spec's `podiumFrame`/`podiumCandidates` map onto those two names; the privacy rules in §6 bind the implementation and its tests.
 
 # W2 — THE SEASON (`m1l2-the-season`)

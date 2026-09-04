@@ -544,10 +544,10 @@ export const CLUBS: readonly Club[] = [
     // big exception", and `openingPosition` hands every club `spent: []` — it
     // has the whole thing. What is true, and better, is that the wall clips it:
     // Sacramento sits $6,155,628 under the first apron, so the moment it
-    // reaches for a $14,104,000 exception the apron cuts the reach down to what
+    // reaches for a $15,044,000 exception the apron cuts the reach down to what
     // fits underneath.
     situation:
-      "You are past the tax line and $6,155,628 under the first apron. Your big exception is worth $14,104,000 to clubs with room to use it, and using it draws a wall you are almost touching — so you can only reach for the part that fits underneath.",
+      "You are past the tax line and $6,155,628 under the first apron. Your big exception is worth $15,044,000 to clubs with room to use it, and using it draws a wall you are almost touching — so you can only reach for the part that fits underneath.",
     colour: fact(
       "Two Sacramento players are paid roughly $94M between them.",
       "2026-09-03",
@@ -1122,7 +1122,7 @@ export const BOARD: readonly FreeAgent[] = [
     // playoff games, and the reporting calls him the third guard in the
     // rotation. Paid like a starter, played as a third guard -- which is both
     // true and exactly the lesson.
-    strength: "Played 75 games, more than anyone here, and the deal runs four years — the job stays shut.",
+    strength: "Played 75 games, and the deal runs four years — the job stays shut.",
     risk: "Paid like a starter; started 19 games of 75. The most expensive tool you own barely reaches him, and it draws a wall.",
     incumbent: null,
     production: fact(
@@ -1208,7 +1208,7 @@ export const BOARD: readonly FreeAgent[] = [
     years: 2,
     ageAtSigning: 27,
     minimumScale: false,
-    strength: "Played 78 games — more than anyone here — and shot a career-best .385 from three.",
+    strength: "Played 78 games and shot a career-best .385 from three.",
     risk: "He scored 4.5 points a game. Whatever this money is buying, it is not scoring.",
     incumbent: null,
     production: fact(

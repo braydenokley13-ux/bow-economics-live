@@ -74,6 +74,11 @@ under `docs/gauntlet/module-*/screens-*`).
 - P-VEC fails at `sacramento/cheap-room` (D58): three admissible repairs, none taken.
 - Twin desks vs unique clubs (D59 ruling 1): twins kept for October 1; unique-club path recorded.
 - Week 6 economics: sharing hurts big markets at equilibrium (Bible §36.5) — taught, not tuned (D59 ruling 5).
+- L1 apron test: `bandOf(committed)` tests the wall on the cap hit including holds; the real test is Apron Team
+  Salary = committed − holds after the transaction (W2_SEASON_RESEARCH.md). Detroit is misclassified by
+  $28,834,548. Bounded repair owed to `engine.ts`/`world.ts` under the L1 sweep gate; W2/W3 build the correct rule.
+- W2 research dissent adopted (spec rulings 6–11): verdict never a function of price; price twins carry the
+  DECISION QUALITY vs OUTCOME moment; prorated ten-day/February charges.
 
 ## Exact next action
 
