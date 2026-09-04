@@ -2655,7 +2655,7 @@ function fhRail(view: Record<string, unknown>, opts: { anchors: boolean; books: 
     const dock = opts.books && books
       ? `<span style="display:inline-flex; align-items:baseline; gap:12px; padding:5px 10px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045)); white-space:nowrap; flex:none;">
            <span style="display:inline-flex; align-items:baseline; gap:6px;"><span style="${FH_LABEL} font-size:9.5px;">${ui.chainLabels.cash}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:15px; font-weight:600; color:${books.inDebt ? FH_RED : FH_MONEY};">${money(books.cash)}</b></span>
-           <span style="display:inline-flex; align-items:baseline; gap:6px;"><span style="${FH_LABEL} font-size:9.5px;">${ui.chainLabels.renewals}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; font-weight:500; color:${FH_INK};">${books.renewals}%</b></span>
+           <span style="display:inline-flex; align-items:baseline; gap:6px;"><span style="${FH_LABEL} font-size:9.5px;">${ui.chainLabels.renewals}</span><b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; font-weight:500; color:${FH_INK};">${escapeHtml(books.renewalsText ?? `${books.renewals}%`)}</b></span>
            <span style="font-size:9.5px; color:${FH_INK_CAPTION};">${escapeHtml(ui.seasonQualifier)}</span>
          </span>`
       : "";
