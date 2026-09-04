@@ -209,8 +209,18 @@ function boardRow(c: V): string {
     <span class="sl-row-name">${esc(str(c["name"]))}${
       c["yours"] === true ? `<span class="sl-row-yours">YOUR PLAYER</span>` : ""
     }</span>
-    <span class="sl-row-ask">${esc(str(c["askText"]))}</span>
     <span class="sl-row-role">${esc(str(c["role"]))}</span>
+    ${
+      /* PRODUCTION SITS LEFT OF PRICE, in the same row, unclicked.
+         Four of these rows are cheaper than a row above them and better than
+         it. That is the argument the whole board is for, and it is only an
+         argument if a student can see both numbers without opening anything. */
+      str(c["rowStat"])
+        ? `<span class="sl-row-stat">${esc(str(c["rowStat"]))}</span>
+           <span class="sl-row-statlab">A GAME</span>`
+        : ""
+    }
+    <span class="sl-row-ask">${esc(str(c["askText"]))}</span>
     <span class="sl-row-asklab">HE IS ASKING</span>
     ${interestCell(num(c["interest"]))}
     ${reach ? "" : `<span class="sl-row-why">${esc(str(c["unreachableReason"]))}</span>`}
@@ -254,7 +264,9 @@ function composer(card: V, band: string): string {
   <div class="sl-compose">
     <div class="sl-compose-top">
       <h3>YOUR OFFER</h3>
-      <span class="sl-compose-ask">He is asking ${esc(str(card["askText"]))} a year</span>
+      <span class="sl-compose-ask">He is asking ${esc(str(card["askText"]))} a year${
+        str(card["askNote"]) ? ` <em class="sl-compose-note">${esc(str(card["askNote"]))}</em>` : ""
+      }</span>
     </div>
     ${toolButtons}
     ${
@@ -342,6 +354,38 @@ function composer(card: V, band: string): string {
   </div>`;
 }
 
+/**
+ * WHAT HE DID, ABOVE WHAT HE SAYS ABOUT HIMSELF.
+ *
+ * Deliberately placed between the name and the two prose lines. A student who
+ * reads nothing else on this card reads four numbers, and those four numbers
+ * are the only thing here that a rival desk cannot spin. The age and the term
+ * sit in the same block because they are the answer to the question the numbers
+ * provoke: if he is the best scorer here, why is he the cheapest?
+ */
+function statBlock(card: V): string {
+  const st = card["stat"];
+  if (!st || typeof st !== "object") return "";
+  const s = st as V;
+  const age = num(card["age"]);
+  const yrs = num(card["realYears"]);
+  return `
+    <div class="sl-stat">
+      <p class="sl-stat-lab">${esc(str(s["label"]))}</p>
+      <dl class="sl-stat-grid">
+        ${arr(s["big"])
+          .map(
+            (b) =>
+              `<div><dt>${esc(str(b["label"]))}</dt><dd>${esc(str(b["value"]))}</dd></div>`,
+          )
+          .join("")}
+      </dl>
+      <p class="sl-stat-detail">${
+        age > 0 ? `<b>AGE ${age}</b> WHEN HE SIGNED · <b>${yrs} YEAR${yrs === 1 ? "" : "S"}</b> · ` : ""
+      }${esc(str(s["detail"]))}</p>
+    </div>`;
+}
+
 function playerCard(card: V, band: string): string {
   return `
   <div class="sl-card">
@@ -351,6 +395,7 @@ function playerCard(card: V, band: string): string {
         card["yours"] === true ? " · YOUR OWN PLAYER" : ""
       }</p>
       <h2 class="sl-card-name">${esc(str(card["name"]))}</h2>
+      ${statBlock(card)}
       <div class="sl-card-lines">
         <p class="sl-card-line"><b>HE GIVES</b><span>${esc(str(card["strength"]))}</span></p>
         <p class="sl-card-line sl-card-line--risk"><b>THE RISK</b><span>${esc(str(card["risk"]))}</span></p>

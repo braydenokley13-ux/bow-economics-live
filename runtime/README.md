@@ -1236,3 +1236,46 @@ three static pages), not a general-purpose framework being reinvented.
   the lockout/unlock UI) — worth deliberately exercising the "PIN LOCKED /
   Unlock" flow and a lost-teacher-key recovery scenario in the next
   fresh-context verification round.
+
+## Module 1 rebuild — "THE SAME LINE", Lesson 1 (`src/modules/sameLine/`)
+
+The in-flight rebuild of Module 1 as an NBA front-office world (D48–D51). Not
+in the four-module status list above because it is not finished; this section
+is the honest state.
+
+**What is real.** `world.ts` holds every NBA figure the module renders, each
+with a source and an `asOf`, plus `REFRESH` cadences for thresholds, clubs and
+the board. `engine.ts` is the pure cap engine (five lines, six signing tools,
+hard-cap walls, terms). `l1.ts` is the `LessonModule` — three simultaneous
+sealed signing days across eight real clubs at up to sixteen desks, a
+per-desk wire, class intelligence for `/teach`, and four projector reveal
+beats. All three surfaces render it.
+
+**What is verified, and how.**
+
+- `npm test` — 699 tests, run and passing on 2026-09-04.
+- `node scripts/e2e-same-line-l1.cjs` — browser truth, both grade bands, eight
+  desks, three settled days, no side scroll at 1366×768 or 1024×600, no
+  interest leak, zero console errors. Run and passing on 2026-09-04. Writes
+  `docs/gauntlet/module-1/rebuild/screens-l1/`.
+- `node scripts/same-line-sweep.mjs` — exhaustive economic sweep over every
+  legal (player, tool, price, term) offer at every seat against three rival
+  environments, with a poison limb that must fail. **One property currently
+  fails: P-VEC**, at three seat/environment pairs. See below.
+
+**Known gaps.**
+
+- **P-VEC fails** at `boston/cheap-room`, `boston/aggressive-room` and
+  `new-york/cheap-room`: those seats' Pareto frontiers hold fewer distinct
+  outcome vectors than the charter's minimum of four. Diagnosed as board
+  thinness — twelve named players against sixteen desks — not an engine
+  defect. The repair is more researched contracts in the $2.5M–$9M band,
+  especially at BIG, plus New York incumbents reachable on Bird rights. It got
+  one pair worse when D51 removed a false Bird-rights claim; the truth stays
+  and the board gets deeper.
+- `/teach` renders the L1 class-intelligence panel, but the rest of that
+  surface is still the legacy visual system.
+- No conduct or classroom-suitability screen has been run across all twelve
+  named players (`PLAYER_PRODUCTION_RESEARCH.md` §8). Classroom-release blocker.
+- L2, L3 and the Boardroom are unbuilt.
+- Nothing here is classroom-proven (D10). No class has played it.

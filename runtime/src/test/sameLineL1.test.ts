@@ -871,3 +871,131 @@ test("grades 5-6 are never asked to choose a term", () => {
   const anyOlder = mod.studentView(o, Object.keys(o.desks)[0]!, "PLAY") as { choosesTerm: unknown };
   assert.equal(anyOlder.choosesTerm, true, "the 7-8 band was not offered the term control");
 });
+
+/* ------------------------------------------------------------------------ */
+/* WHAT HE ACTUALLY DID.                                                     */
+/*                                                                          */
+/* The board printed a price and no production, which asserts a quality      */
+/* ordering the real numbers contradict — the cheapest big out-scored every  */
+/* expensive one. `PLAYER_PRODUCTION_RESEARCH.md` §0 raised that as a        */
+/* blocking economic-truth finding. These tests hold the repair in place and */
+/* trip if a refresh quietly walks it back.                                  */
+/* ------------------------------------------------------------------------ */
+
+test("every named player on the board carries a sourced production line", () => {
+  for (const p of BOARD) {
+    assert.ok(p.production, `${p.id}: a named player with a price and no production`);
+    const s = p.production!.value;
+    assert.match(p.production!.source, /basketball-reference/, `${p.id}: production not attributed`);
+    assert.equal(p.production!.tier, "stats-database", `${p.id}: production on the wrong source tier`);
+    assert.match(s.season, /^\d{4}-\d{2}$/, `${p.id}: the season is not printed, so "last season" can rot`);
+    assert.ok(s.games > 0 && s.games <= 82, `${p.id}: impossible games played`);
+    assert.ok(s.started >= 0 && s.started <= s.games, `${p.id}: more starts than games`);
+    assert.ok(s.fg > 0 && s.fg < 1, `${p.id}: field-goal percentage is not a percentage`);
+    assert.ok(s.three === null || (s.three > 0 && s.three < 1), `${p.id}: three-point percentage is not a percentage`);
+    assert.ok(p.ageAtSigning >= 18 && p.ageAtSigning <= 45, `${p.id}: implausible age at signing`);
+  }
+});
+
+test("a generic minimum body has no age and no box score", () => {
+  // Inventing production for a person who does not exist is inventing a
+  // person. The card reader keys off exactly these two.
+  for (const p of MINIMUM_MARKET) {
+    assert.equal(p.production, null, `${p.id}: a generic body was given a box score`);
+    assert.equal(p.ageAtSigning, 0, `${p.id}: a generic body was given an age`);
+  }
+});
+
+test("the price ordering on this board really is upside down — the tripwire", () => {
+  /*
+   * NOT a test of the code. A test of the DATA, and deliberately so.
+   *
+   * The whole card design — production, age at signing and the real term
+   * printed together — exists because on these twelve real contracts the
+   * cheapest big out-produced the dearest one. If a board refresh ever makes
+   * price and production agree, the design is solving a problem that no longer
+   * exists and somebody has to look at the cards again. That is what this test
+   * is for. It failing is a prompt, not a bug.
+   */
+  const bigs = BOARD.filter((p) => p.role === "BIG" && p.production);
+  const cheapest = bigs.reduce((a, b) => (a.ask.value <= b.ask.value ? a : b));
+  const dearest = bigs.reduce((a, b) => (a.ask.value >= b.ask.value ? a : b));
+  assert.ok(
+    cheapest.production!.value.points > dearest.production!.value.points,
+    "price and production now agree among the bigs — re-read PLAYER_PRODUCTION_RESEARCH.md §3 before shipping",
+  );
+});
+
+test("an ask that is an average says so, and one that is a salary does not", () => {
+  let s = fresh("7-8");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const seen = new Map<string, string | null>();
+  for (const seatId of Object.keys(s.desks)) {
+    const view = mod.studentView(s, seatId, "PLAY") as { board?: { id: string; askNote: string | null }[] };
+    for (const c of view.board ?? []) seen.set(c.id, c.askNote);
+  }
+  for (const p of BOARD) {
+    if (!seen.has(p.id)) continue;
+    const note = seen.get(p.id) ?? null;
+    if (p.askBasis === "average") {
+      assert.ok(note, `${p.id}: charges an average against a cap and never says so (S8)`);
+      assert.match(note!, /average/i, `${p.id}: the note does not name what the number is`);
+    } else {
+      assert.equal(note, null, `${p.id}: a real first-year salary was hedged as an average`);
+    }
+  }
+});
+
+test("every player card a student can open shows four numbers and the season", () => {
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = fresh(band);
+    for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+    for (const seatId of Object.keys(s.desks)) {
+      const view = mod.studentView(s, seatId, "PLAY") as {
+        board?: { id: string; stat: { label: string; big: { label: string; value: string }[] } | null }[];
+      };
+      for (const c of view.board ?? []) {
+        const p = BOARD.find((x) => x.id === c.id)!;
+        assert.ok(c.stat, `${band}/${c.id}: a card with a price and no production`);
+        assert.equal(c.stat!.big.length, 4, `${band}/${c.id}: not four numbers`);
+        assert.match(c.stat!.label, /\d{4}-\d{2}/, `${band}/${c.id}: the season is not on the card`);
+        // The fourth number is the one that separates him from the next card in
+        // his role. Without it Dosunmu and Grimes are the same card.
+        const fourth = c.stat!.big[3]!.label;
+        assert.equal(
+          fourth,
+          p.role === "BIG" ? "BLK" : p.production!.value.three === null ? "FG%" : "3P%",
+          `${band}/${c.id}: the fourth number does not separate him from his role`,
+        );
+        for (const b of c.stat!.big) assert.match(b.value, /^[.\d]/, `${band}/${c.id}/${b.label}: unrenderable`);
+      }
+    }
+  }
+});
+
+test("the three corrected board facts stay corrected", () => {
+  /*
+   * Each of these was WRONG in a shipped file and was caught only by opening
+   * the source. They are pinned here with the corrected value so a later edit
+   * has to argue with a test rather than with nobody. See
+   * PLAYER_PRODUCTION_RESEARCH.md §4.
+   */
+  const by = (id: string) => BOARD.find((p) => p.id === id)!;
+  assert.equal(by("simons").incumbent, null, "Chicago held Simons' rights, and Chicago is not a desk in this room");
+  assert.equal(by("kuminga").signedOn, "2026-08-26", "Kuminga's signing date was wrong by seven weeks");
+  assert.equal(by("grimes").signedOn, "2026-07-07", "no source supports Grimes signing on 2026-07-15");
+  assert.equal(by("simons").ask.value, 6_000_000, "Simons' ask was an average, not the first-year salary the cap charges");
+  assert.equal(by("oubre").ask.value, 8_050_000, "Oubre's ask was an average, not the first-year salary the cap charges");
+});
+
+test("the projector shows the room both ladders at once", () => {
+  let s = fresh("5-6");
+  for (const [i] of CLUBS.entries()) s = seat(s, `d${i}`);
+  const view = mod.boardView(s, "PLAY") as { market?: { name: string; statText: string; age: number }[] };
+  const market = view.market ?? [];
+  assert.ok(market.length > 0, "the projector market is empty during PLAY");
+  for (const m of market) {
+    assert.match(m.statText, /^\d+\.\d$/, `${m.name}: no production on the wall beside the price`);
+    assert.ok(m.age > 0, `${m.name}: no age on the wall`);
+  }
+});

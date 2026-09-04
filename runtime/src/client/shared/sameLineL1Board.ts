@@ -44,8 +44,16 @@ function lobbyFrame(v: V): string {
 function playFrame(v: V): string {
   const market = arr(v["market"]);
   const hot = market.filter((m) => num(m["interest"]) > 0).length;
+  /*
+   * ALL TWELVE, never a top ten.
+   *
+   * A market frame that silently drops the last two rows is a frame that hides
+   * the two players nobody has bid on, which on a scarcity board are exactly
+   * the rows a teacher wants to point at. The type is sized so twelve fit at
+   * 1366x768; `assertBoardFits` in the e2e is what holds that.
+   */
   const rows = market
-    .slice(0, 10)
+    .slice(0, 12)
     .map((m) => {
       const n = num(m["interest"]);
       const bar = Array.from({ length: Math.min(n, 8) }, () => `<i></i>`).join("");
@@ -53,6 +61,8 @@ function playFrame(v: V): string {
       <tr data-hot="${n >= 3 ? "yes" : n > 0 ? "some" : "no"}">
         <td class="slb-name">${esc(str(m["name"]))}</td>
         <td class="slb-role">${esc(str(m["role"]))}</td>
+        <td class="slb-age">${num(m["age"]) > 0 ? num(m["age"]) : "—"}</td>
+        <td class="slb-stat">${esc(str(m["statText"], "—"))}</td>
         <td class="slb-ask">${esc(str(m["askText"]))}</td>
         <td class="slb-int"><span class="slb-dots">${bar}</span><b>${n === 0 ? "—" : n}</b></td>
       </tr>`;
@@ -71,11 +81,13 @@ function playFrame(v: V): string {
         <div><dt>BEING CHASED</dt><dd>${hot}</dd></div>
       </dl>
     </div>
+    <div class="slb-market-wrap">
     <table class="slb-market">
-      <thead><tr><th>PLAYER</th><th>JOB</th><th>ASKING</th><th>DESKS ON HIM</th></tr></thead>
+      <thead><tr><th>PLAYER</th><th>JOB</th><th>AGE</th><th>PTS A GAME</th><th>ASKING</th><th>DESKS ON HIM</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <p class="slb-foot">Nobody can see anybody else's offer. Every club's is opened at the same moment.</p>
+    </div>
+    <p class="slb-foot">Nobody can see anybody else's offer. Every club's is opened at the same moment. <b>Points are last completed season, per game.</b></p>
   </div>`;
 }
 
@@ -161,9 +173,19 @@ function samePlayerFrame(v: V, beat: number, of: number): string {
           <p class="slb-cost-club">${esc(str(c["club"]))}</p>
           <p class="slb-cost-out">${esc(str(c["outcome"]))}</p>
           ${
-            arr(c["lost"]).length === 0 && c["won"] !== true
-              ? `<p class="slb-cost-none">Kept its money. Lost the day.</p>`
-              : `<p class="slb-cost-lab">AND GAVE UP</p>
+            /*
+             * Three cases, not two.
+             *
+             * The winner who forwent NOTHING was falling into the same branch
+             * as the winner who forwent five people, and rendering the words
+             * AND GAVE UP over an empty list — the peak frame of the lesson
+             * printing a label with no evidence under it. It is also the most
+             * interesting of the three: a club that got its man and gave up
+             * nothing is a club nobody else could outbid, and that is the
+             * question to put to the room.
+             */
+            arr(c["lost"]).length > 0
+              ? `<p class="slb-cost-lab">AND GAVE UP</p>
                  <ul class="slb-cost-list">${(c["lost"] as string[] | undefined ?? [])
                    .map((n) => `<li>${esc(String(n))}</li>`)
                    .join("")}</ul>${
@@ -171,6 +193,9 @@ function samePlayerFrame(v: V, beat: number, of: number): string {
                      ? `<p class="slb-cost-more">and ${num(c["lostMore"])} more</p>`
                      : ""
                  }`
+              : c["won"] === true
+                ? `<p class="slb-cost-none">Gave up nobody. Nothing else on the board was in reach that day.</p>`
+                : `<p class="slb-cost-none">Kept its money. Lost the day.</p>`
           }
         </div>`,
         )

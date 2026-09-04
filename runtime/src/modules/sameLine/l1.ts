@@ -44,6 +44,7 @@ import {
   type ClubId,
   type FreeAgent,
   type JobRole,
+  type Production,
   type ToolId,
 } from "./world.js";
 import {
@@ -834,6 +835,74 @@ function chooseTool(
   return pool.reduce((b, x) => (x.offer.annual > b.offer.annual ? x : b), pool[0]!).offer;
 }
 
+/* ------------------------------------------------------- what he did -- */
+
+/** ".439" — a shooting percentage the way a scoreboard writes one, no leading zero. */
+const pct = (v: number): string => v.toFixed(3).replace(/^0/, "");
+
+/**
+ * THE PRODUCTION LINE ON A CARD.
+ *
+ * The board used to print a price, a role and two sentences. That is a quality
+ * ordering asserted by price alone, and on this board the real numbers
+ * contradict it — the cheapest big out-scored every expensive one. So each card
+ * now carries what the man actually did, and the two facts that make the price
+ * honest: how old he was when he signed, and how long the real deal ran.
+ *
+ * FOUR NUMBERS BIG, NOT TEN. A ten-year-old reads a card in about three
+ * seconds. Points, rebounds and assists are the three every child already
+ * understands, and the fourth is the one that actually separates this player
+ * from the next card in his role — blocks for a big, three-point shooting for a
+ * guard or a wing. Without that fourth number Dosunmu and Grimes are the same
+ * card at a $4.3M price gap.
+ *
+ * The fine line underneath is availability, which is where the older band's
+ * extra reading budget goes: games, starts, minutes and shooting.
+ */
+function statLineFor(p: FreeAgent, profile: GradeProfile) {
+  if (p.production === null) return null;
+  const s: Production = p.production.value;
+  const fourth =
+    p.role === "BIG"
+      ? { label: "BLK", value: s.blocks.toFixed(1) }
+      : s.three === null
+        ? { label: "FG%", value: pct(s.fg) }
+        : { label: "3P%", value: pct(s.three) };
+  const detail =
+    profile.maxVariables >= 3
+      ? `${s.games} GAMES · ${s.started} STARTS · ${s.minutes.toFixed(1)} MIN A NIGHT · ${pct(s.fg)} FROM THE FIELD`
+      : `PLAYED ${s.games} GAMES`;
+  return {
+    season: s.season,
+    /** "Last season" is never said in words — the season is printed, so it cannot rot. */
+    label: `${s.season} · PER GAME`,
+    big: [
+      { label: "PTS", value: s.points.toFixed(1) },
+      { label: "REB", value: s.rebounds.toFixed(1) },
+      { label: "AST", value: s.assists.toFixed(1) },
+      fourth,
+    ],
+    detail,
+  };
+}
+
+/** The one number that fits in a list row beside a price. */
+const rowStat = (p: FreeAgent): string | null =>
+  p.production === null ? null : `${p.production.value.points.toFixed(1)} PTS`;
+
+/**
+ * What the price is, in the module's own words.
+ *
+ * Ten cards charge a real reported first-year salary. Two charge an average,
+ * because no source stated their first year and working one out from a raise
+ * ladder would be an invented dollar figure printed as an NBA fact (S8). A card
+ * that is an average says so.
+ */
+const askNote = (p: FreeAgent): string | null =>
+  p.askBasis === "average"
+    ? `That is the average of his real ${p.years}-year deal. His exact first-year salary was never reported.`
+    : null;
+
 function boardCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile) {
   const taken = new Set(state.taken);
   const interest = liveInterest(state);
@@ -857,6 +926,16 @@ function boardCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile
       /** The staging, said out loud rather than implied away (D49 Q3). */
       reallySignedWith: p.reallySignedWith,
       signedOn: p.signedOn,
+      /* WHAT HE ACTUALLY DID, beside what he costs. Without this the board
+         teaches that the expensive player is the better player, which on these
+         twelve real contracts is close to backwards. */
+      stat: statLineFor(p, profile),
+      rowStat: rowStat(p),
+      askNote: askNote(p),
+      /* The two facts that make the price honest rather than a lesson in front
+         office incompetence: the money is buying youth and years. */
+      age: p.ageAtSigning,
+      realYears: p.years,
       yours: p.incumbent === desk.clubId,
       // 5-6 gets the tool chosen for them; 7-8 chooses (profile.maxVariables).
       /*
@@ -1050,6 +1129,9 @@ function floorCardsFor(state: SameLineL1State, desk: Desk, profile: GradeProfile
       reachable: fits,
       unreachableReason: fits ? null : whyNot(desk.position, p),
       fillsAJob: desk.position.openJobs.includes(p.role as JobRole),
+      // No box score and no age. He is a body at a price, and inventing either
+      // would be inventing a person.
+      stat: null,
       // No interest count. Nobody can take him from you, so a count would be a
       // lie dressed as pressure.
     };
@@ -1638,6 +1720,13 @@ function boardView(state: SameLineL1State, phase: CanonicalPhase): unknown {
         name: p.name,
         role: p.role,
         askText: money(p.ask.value),
+        /* PRICE AND PRODUCTION IN THE SAME ROW, ON THE WALL.
+           The inversion this board rests on -- the cheapest big out-scoring
+           every expensive one -- is only an argument if the room can see both
+           columns at once. On a student's device it takes a click; here it is
+           the whole point of putting the market on a wall. */
+        statText: p.production === null ? "" : `${p.production.value.points.toFixed(1)}`,
+        age: p.ageAtSigning,
         interest: interest[p.id] ?? 0,
       }));
     })(),

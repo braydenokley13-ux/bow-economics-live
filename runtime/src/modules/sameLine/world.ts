@@ -33,7 +33,21 @@
 
 /* ------------------------------------------------------------ provenance -- */
 
-export type SourceTier = "official-nba" | "cba" | "team-official" | "cap-database" | "reporting";
+/**
+ * `stats-database` was added for the production lines. It is worth naming
+ * separately because it is the module's FIRST source that is not a cap tracker
+ * and not a reporter: nearly every 2026 dollar figure in this file traces back
+ * through one publisher to one reporter, so "two outlets" has never meant two
+ * sources. A completed season's box score is an independent public record, and
+ * it is the only thing in this file that cannot be revised by a later report.
+ */
+export type SourceTier =
+  | "official-nba"
+  | "cba"
+  | "team-official"
+  | "cap-database"
+  | "stats-database"
+  | "reporting";
 
 export type Sourced<T> = {
   readonly value: T;
@@ -70,6 +84,24 @@ export const REFRESH = {
       "salaryswish.com team pages for the cap hit, then spot-check one club against a second tracker; " +
       "if a club has moved into a different BAND (under cap / under tax / under first apron / under second " +
       "apron / over second apron), its row here is wrong and the seat must be re-cut",
+    lastDone: "2026-09-03",
+  },
+  /**
+   * THE BOARD, which ages in two completely different ways.
+   *
+   * A completed season's box score never changes: the twelve production lines
+   * below are the most durable facts in the module and need no cadence at all.
+   * What ages is the FRAMING around them — "last season" stops being last
+   * season in late October, and a contract date or a reported dollar figure can
+   * be corrected by a later report months after the fact. Three of the six rows
+   * re-checked on 2026-09-03 disagreed with what this file said.
+   */
+  board: {
+    cadence: "once per league year, before the new season starts (late October)",
+    check:
+      "basketball-reference.com player pages for the production lines (the season label, not the numbers, is " +
+      "what expires) and hoopsrumors.com for each contract's date, term and FIRST-YEAR salary; never " +
+      "basketball-reference's forward-season TEAM pages, which lag signings by months",
     lastDone: "2026-09-03",
   },
   /**
@@ -592,6 +624,53 @@ export const PAYROLL_DEFINITION =
 
 /* ---------------------------------------------------------- free agents -- */
 
+/**
+ * WHAT HE ACTUALLY DID, LAST COMPLETED SEASON.
+ *
+ * Added because a board that prints PRICE and no PRODUCTION asserts a quality
+ * ordering that the real numbers contradict. On this board the cheapest big
+ * out-scored every expensive one and the second-cheapest guard out-scored a
+ * guard costing two and a half times as much. A student reading price alone
+ * learns something false about how clubs value players; a student reading
+ * price beside production, age and term learns the true thing, which is that
+ * price on a free-agent board buys YEARS and YOUTH, not last season's points.
+ *
+ * These are hand-entered public box-score facts with attribution, one row per
+ * card — not an ingested dataset. If anyone proposes automated scraping of a
+ * statistics publisher into this repo, that is a different question and it
+ * gets escalated rather than answered here.
+ *
+ * Every field is per game and from the same source row, so no two numbers on a
+ * card can come from different seasons.
+ */
+export type Production = {
+  /** The season these are from, printed, so "last season" can never silently rot. */
+  readonly season: string;
+  readonly games: number;
+  readonly started: number;
+  readonly minutes: number;
+  readonly points: number;
+  readonly rebounds: number;
+  readonly assists: number;
+  readonly blocks: number;
+  /** Field-goal percentage, as a decimal. */
+  readonly fg: number;
+  /** Three-point percentage. `null` when he did not take enough to be worth printing. */
+  readonly three: number | null;
+};
+
+/**
+ * WHAT THE `ask` NUMBER ACTUALLY IS.
+ *
+ * The module charges `ask` against a cap, and a cap charges a club its
+ * FIRST-YEAR salary — an average annual value is not a cap hit. Most rows here
+ * are first-year salaries. Two are averages, because the first year was never
+ * separately reported in any source read, and a plausible first year worked
+ * out by dividing by the raise ladder would be an invented number printed as an
+ * NBA fact. So the basis is stored, printed on the card, and never guessed.
+ */
+export type AskBasis = "first-year" | "average";
+
 export type FreeAgent = {
   readonly id: string;
   readonly name: string;
@@ -642,6 +721,19 @@ export type FreeAgent = {
   readonly risk: string;
   /** The club that already holds his rights, if any — the incumbent advantage in the tie-break. */
   readonly incumbent: ClubId | null;
+  /** Whether `ask` is a first-year salary or an average. Printed, never guessed. */
+  readonly askBasis: AskBasis;
+  /**
+   * How old he was ON THE DAY HE SIGNED.
+   *
+   * Deliberately not "how old he is", which would be wrong for five of twelve
+   * cards by the following spring. Age at signing is a fixed historical fact
+   * that goes with the fixed historical price, and age is half of why the price
+   * ordering on this board looks upside down.
+   */
+  readonly ageAtSigning: number;
+  /** Last completed season, per game. `null` only for the generic minimum bodies. */
+  readonly production: Sourced<Production> | null;
 };
 
 /**
@@ -665,104 +757,209 @@ export const BOARD: readonly FreeAgent[] = [
     name: "Trendon Watford",
     role: "WING",
     ask: fact(2_900_000, "2026-08-17", "reported 1 year, $2,900,000 with New Orleans, a stated veteran minimum", "reporting"),
+    askBasis: "first-year",
     signedOn: "2026-08-17",
     reallySignedWith: "New Orleans",
     years: 1,
+    ageAtSigning: 25,
     minimumScale: true,
-    strength: "Can play several positions, so he fits whatever hole you have.",
+    // The only undrafted player on the board: nobody picked him at all, and he
+    // has played five seasons. Was "can play several positions" until a source
+    // check found basketball-reference lists him at two — power forward and
+    // small forward. Two is not several, and the card now says two.
+    strength: "Undrafted — nobody picked him — and he plays either forward spot, for the least the rules allow.",
     risk: "One year only. Next summer you are looking for this player again.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 53, started: 7, minutes: 16.3, points: 6.5, rebounds: 3.3, assists: 2.5, blocks: 0.4, fg: 0.515, three: null },
+      "2026-09-03",
+      "basketball-reference.com/players/w/watfotr01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "vucevic",
     name: "Nikola Vucevic",
     role: "BIG",
     ask: fact(3_900_000, "2026-07-02", "reported 1 year, $3,900,000 with Orlando, a stated veteran minimum", "reporting"),
+    askBasis: "first-year",
     signedOn: "2026-07-02",
     reallySignedWith: "Orlando",
     years: 1,
+    ageAtSigning: 35,
     minimumScale: true,
-    strength: "A big man who scores, available for the least money the rules allow.",
-    risk: "He is 36 in this season, and the deal is only one year.",
+    // THE LOUDEST TRUE THING ON THIS BOARD, and it is one glance wide.
+    //
+    // He is the fourth-cheapest card here and he out-scored every other big by
+    // five points a game -- including the one costing four times as much. The
+    // card directly beside his, Larry Nance Jr., costs $100,000 MORE for a
+    // quarter of the production. That is not a bug in the board and it is not
+    // an argument that NBA clubs are bad at their jobs: it is what happens when
+    // a 35-year-old takes one year at the minimum and a club pays real money
+    // for youth and term instead. Printing price without production would have
+    // taught the class the reverse, which is why production is on the card.
+    strength: "The biggest scorer on this whole board, for the least money the rules allow.",
+    risk: "He turns 36 in October, and the deal is only one year.",
     incumbent: "boston",
+    production: fact(
+      { season: "2025-26", games: 64, started: 49, minutes: 28.4, points: 15.1, rebounds: 8.4, assists: 3.3, blocks: 0.6, fg: 0.493, three: 0.369 },
+      "2026-09-03",
+      "basketball-reference.com/players/v/vucevni01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "payton",
     name: "Gary Payton II",
     role: "GUARD",
     ask: fact(3_900_000, "2026-08-01", "reported 1 year, $3,900,000 re-signing with Golden State; stated veteran minimum of $3,876,529", "reporting"),
+    askBasis: "first-year",
     signedOn: "2026-08-01",
     reallySignedWith: "Golden State",
     years: 1,
+    ageAtSigning: 33,
     minimumScale: true,
-    strength: "A guard who takes the other team's best guard, for the least money the rules allow.",
+    strength: "Played 73 games — nearly every night — and made more than half his shots.",
     risk: "He does not score much, and the deal is one year.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 73, started: 1, minutes: 15.6, points: 7.5, rebounds: 3.6, assists: 1.7, blocks: 0.3, fg: 0.583, three: 0.291 },
+      "2026-09-03",
+      "basketball-reference.com/players/p/paytoga02.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "horford",
     name: "Al Horford",
     role: "BIG",
-    ask: fact(7_000_000, "2026-07-06", "reported 2 years, $14,000,000 re-signing with Golden State", "reporting"),
+    ask: fact(7_000_000, "2026-07-06", "reported 2 years, $14,000,000 re-signing with Golden State; the first-year salary was not separately reported in the source read, so this is the average", "reporting"),
+    askBasis: "average",
     signedOn: "2026-07-06",
     reallySignedWith: "Golden State",
     years: 2,
+    ageAtSigning: 40,
     minimumScale: false,
     strength: "A big man who has played in the biggest games there are, and the deal runs two years.",
-    risk: "He is 40 in this season, and two years is a long time to promise a 40-year-old.",
+    risk: "He is 40, and two years is a long time to promise a 40-year-old.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 45, started: 13, minutes: 21.5, points: 8.3, rebounds: 4.9, assists: 2.6, blocks: 1.1, fg: 0.426, three: 0.361 },
+      "2026-09-03",
+      "basketball-reference.com/players/h/horfoal01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "nance",
     name: "Larry Nance Jr.",
     role: "BIG",
     ask: fact(4_000_000, "2026-07-08", "reported 1 year, $4,000,000 with Indiana", "reporting"),
+    askBasis: "first-year",
     signedOn: "2026-07-08",
     reallySignedWith: "Indiana",
     years: 1,
+    ageAtSigning: 33,
     minimumScale: false,
-    strength: "A big man who does the unglamorous work, cheap.",
-    risk: "He has missed long stretches with injuries before.",
+    strength: "A big man who does the unglamorous work.",
+    // Verified rather than asserted: 35, 24, 61, 65 and 46 games in the last
+    // five seasons. The old copy said the same thing without the number.
+    risk: "He played 35 games last season, and has missed long stretches before.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 35, started: 3, minutes: 12.8, points: 3.7, rebounds: 2.7, assists: 1.0, blocks: 0.2, fg: 0.419, three: 0.333 },
+      "2026-09-03",
+      "basketball-reference.com/players/n/nancela02.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "simons",
     name: "Anfernee Simons",
     role: "GUARD",
-    ask: fact(6_150_000, "2026-07-06", "reported 2 years, $12,300,000 with Philadelphia", "reporting"),
+    ask: fact(
+      6_000_000,
+      "2026-07-06",
+      "hoopsrumors.com 2026-27 mid-level exception tracker (published 2026-07-16) — Philadelphia used $6,000,000 on Simons; this is the first-year salary, not the 2-year average",
+      "reporting",
+    ),
+    askBasis: "first-year",
     signedOn: "2026-07-06",
     reallySignedWith: "Philadelphia",
     years: 2,
+    ageAtSigning: 27,
     minimumScale: false,
-    strength: "A guard who can score in a hurry when the offence stalls.",
-    risk: "His teams have not defended well with him on the floor.",
-    incumbent: "boston",
+    strength: "Scored 14.3 a game off the bench — nearly as much as the guard here costing two and a half times more.",
+    // Was "his teams have not defended well with him on the floor", which was a
+    // scouting claim nobody had sourced. Replaced with the fact that actually
+    // explains his price, which a source check does support: 70 starts and 19.3
+    // points a game for Portland in 2024-25, then zero starts in 49 games for
+    // Boston. That collapse is why a 27-year-old scorer is cheap.
+    risk: "He started 70 games two seasons ago and none at all last season. Somebody decided he should not start.",
+    // NOT A DESK IN THIS ROOM.
+    //
+    // This said `boston` until his 2026 game log was actually read: Boston
+    // through 2026-02-01, Chicago from 2026-02-05. Chicago held his rights on
+    // the day he signed, and Chicago is not one of the eight clubs in this
+    // room -- so no desk here has an incumbent claim on him, and the Boston
+    // seat was being handed a tie-break it never had.
+    incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 55, started: 5, minutes: 24.9, points: 14.3, rebounds: 2.5, assists: 2.4, blocks: 0.1, fg: 0.44, three: 0.385 },
+      "2026-09-03",
+      "basketball-reference.com/players/s/simonan01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "oubre",
     name: "Kelly Oubre Jr.",
     role: "WING",
-    ask: fact(8_500_000, "2026-07-07", "reported 2 years, $17,000,000 with Indiana", "reporting"),
+    ask: fact(
+      8_050_000,
+      "2026-07-07",
+      "hoopsrumors.com 2026-27 mid-level exception tracker (published 2026-07-16) — Indiana used $8,050,000 on Oubre; this is the first-year salary, not the 2-year average",
+      "reporting",
+    ),
+    askBasis: "first-year",
     signedOn: "2026-07-07",
     reallySignedWith: "Indiana",
     years: 2,
+    ageAtSigning: 30,
     minimumScale: false,
-    strength: "A starting wing at a price well below what starting wings usually cost.",
+    strength: "Played the most minutes a night of anyone on this board, and started 41 of his 50 games.",
     risk: "He takes hard shots, and some nights they do not go in.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 50, started: 41, minutes: 31.5, points: 14.1, rebounds: 5.0, assists: 1.6, blocks: 0.5, fg: 0.467, three: 0.36 },
+      "2026-09-03",
+      "basketball-reference.com/players/o/oubreke01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "nurkic",
     name: "Jusuf Nurkic",
     role: "BIG",
-    ask: fact(11_000_000, "2026-07-09", "reported 2 years, $22,000,000 re-signing with Utah", "reporting"),
+    ask: fact(11_000_000, "2026-07-09", "reported 2 years, $22,000,000 re-signing with Utah; the first-year salary was not separately reported in the source read, so this is the average", "reporting"),
+    askBasis: "average",
     signedOn: "2026-07-09",
     reallySignedWith: "Utah",
     years: 2,
+    ageAtSigning: 31,
     minimumScale: false,
-    strength: "A large, experienced centre who rebounds and passes.",
-    risk: "He is slow, and quick teams can play him off the floor.",
+    strength: "The only man here who averaged double-figure rebounds, and he passes better than any other big.",
+    // Was "he is slow, and quick teams can play him off the floor" -- a
+    // scouting judgment with no source behind it. Availability is measurable
+    // and was measured: 41, 51, 76, 52, 56 games in the last five seasons.
+    risk: "He has played more than 60 games once in five seasons.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 41, started: 36, minutes: 26.4, points: 10.9, rebounds: 10.4, assists: 4.8, blocks: 0.5, fg: 0.503, three: 0.352 },
+      "2026-09-03",
+      "basketball-reference.com/players/n/nurkiju01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "robinson",
@@ -771,15 +968,23 @@ export const BOARD: readonly FreeAgent[] = [
     ask: fact(
       15_044_000,
       "2026-07-06",
-      "reported 3 years, $47,388,600 signing with Boston; first-year salary $15,044,000, which is Boston's entire non-taxpayer mid-level exception to the dollar",
+      "reported 3 years, $47,388,600 signing with Boston; first-year salary $15,044,000, which is Boston's entire non-taxpayer mid-level exception to the dollar. Corroborated to the dollar by hoopsrumors.com's 2026-27 mid-level tracker (published 2026-07-16)",
       "reporting",
     ),
+    askBasis: "first-year",
     signedOn: "2026-07-06",
     reallySignedWith: "Boston",
     years: 3,
+    ageAtSigning: 28,
     minimumScale: false,
-    strength: "One of the best rebounders and rim protectors who changed teams this summer.",
-    risk: "He has missed large parts of several seasons, and the deal runs three years.",
+    // Was "one of the best rebounders and rim protectors who changed teams this
+    // summer" -- a ranking nobody had verified. These three facts are verified,
+    // and they are more useful to a ten-year-old than a superlative: he grabs
+    // 8.8 boards in 19.6 minutes, blocks 1.2 shots, and makes nearly three of
+    // every four shots he takes. (Do NOT upgrade that to "led the league in
+    // shooting" -- he did not qualify for the leaderboard.)
+    strength: "Almost three of every four shots he takes go in, and he rebounds and blocks shots.",
+    risk: "He scored 5.7 a game — the most expensive card here is not the biggest scorer. And he has missed large parts of several seasons.",
     // NEW YORK'S OWN FREE AGENT, AND THE SHARPEST CARD ON THE BOARD.
     //
     // What makes it sharp is NOT the thing it is easy to say about it. The
@@ -791,6 +996,12 @@ export const BOARD: readonly FreeAgent[] = [
     // both true and the better lesson. Said the other way it would be a
     // factual fantasy about how the apron system works, printed as NBA truth.
     incumbent: "new-york",
+    production: fact(
+      { season: "2025-26", games: 60, started: 16, minutes: 19.6, points: 5.7, rebounds: 8.8, assists: 0.9, blocks: 1.2, fg: 0.723, three: null },
+      "2026-09-03",
+      "basketball-reference.com/players/r/robinmi01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "kuminga",
@@ -798,17 +1009,29 @@ export const BOARD: readonly FreeAgent[] = [
     role: "WING",
     ask: fact(
       6_064_000,
-      "2026-07-06",
-      "reported 2 years, $12,431,200 signing with Minnesota; $6,064,000 in year one, which is the taxpayer mid-level exception exactly",
+      "2026-08-26",
+      "hoopsrumors.com, \"Jonathan Kuminga Agrees To Two-Year Deal With Timberwolves\" (published 2026-08-26) — reported 2 years, roughly $13,000,000 with a second-year player option, on Minnesota's taxpayer mid-level exception; $6,064,000 in year one, which is that exception exactly",
       "reporting",
     ),
-    signedOn: "2026-07-06",
+    askBasis: "first-year",
+    // Was 2026-07-06, which was wrong by seven weeks. The date matters to the
+    // Minnesota pair below: Dosunmu was July and Kuminga was late August,
+    // because Minnesota had to clear room under its own hard cap first. That is
+    // a better story than "one club, one week", and it is the true one.
+    signedOn: "2026-08-26",
     reallySignedWith: "Minnesota",
     years: 2,
+    ageAtSigning: 23,
     minimumScale: false,
-    strength: "A young forward who can score, at the most a capped-out club is allowed to offer an outsider.",
-    risk: "He has not yet done it as a starter for a whole season.",
+    strength: "The youngest player on this board by three years, and he won a championship at 19.",
+    risk: "He has never started more than 46 games in a season, and he played only 36 last year.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 36, started: 14, minutes: 23.1, points: 12.2, rebounds: 5.6, assists: 2.3, blocks: 0.3, fg: 0.463, three: 0.333 },
+      "2026-09-03",
+      "basketball-reference.com/players/k/kuminjo01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "dosunmu",
@@ -820,12 +1043,19 @@ export const BOARD: readonly FreeAgent[] = [
       "reported 5 years, $112,000,000 re-signing with Minnesota; first-year salary $19,310,345, on Bird rights",
       "reporting",
     ),
+    askBasis: "first-year",
     signedOn: "2026-07-10",
     reallySignedWith: "Minnesota",
     years: 5,
+    ageAtSigning: 26,
     minimumScale: false,
-    strength: "A starting guard entering his prime, and the longest commitment available here.",
-    risk: "Five years is a long time, and the money grows every one of them.",
+    // Was "a starting guard entering his prime", which a source check does not
+    // support: he started 19 of 69 games. "Paid like a starter, played as a
+    // third guard" is the true version and it is the more interesting one. The
+    // shooting number is what separates his card from Grimes' -- without it the
+    // two are the same card at a $4.3M price gap.
+    strength: "The best shooter on this board — .439 from three — and the longest commitment available here.",
+    risk: "He started 19 games of 69. Five years is a long time, and the money grows every one of them.",
     // MINNESOTA'S OWN, AND THE PAIR THAT PROVES THE WHOLE APRON SYSTEM.
     //
     // One club, one summer, past the same line: Minnesota paid its own player
@@ -836,19 +1066,44 @@ export const BOARD: readonly FreeAgent[] = [
     // difference is whose player he was. Nothing else in the dossier makes the
     // asymmetry that undeniable, and it is real, dated and sourced.
     incumbent: "minnesota",
+    production: fact(
+      { season: "2025-26", games: 69, started: 19, minutes: 27.3, points: 14.8, rebounds: 3.4, assists: 3.6, blocks: 0.3, fg: 0.517, three: 0.439 },
+      "2026-09-03",
+      "basketball-reference.com/players/d/dosunay01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
   {
     id: "grimes",
     name: "Quentin Grimes",
     role: "GUARD",
-    ask: fact(15_000_000, "2026-07-15", "reported 4 years, $60,000,000 with the LA Lakers", "reporting"),
-    signedOn: "2026-07-15",
+    ask: fact(
+      15_000_000,
+      "2026-07-07",
+      "reported 4 years, $60,000,000 with the LA Lakers, agreement reported 2026-07-01 and announced by the club 2026-07-07; the first-year salary was not separately reported in the source read, so this is the average",
+      "reporting",
+    ),
+    askBasis: "average",
+    // Was 2026-07-15. No source read supports that date; the agreement was
+    // reported 2026-07-01 and the club announced it 2026-07-07.
+    signedOn: "2026-07-07",
     reallySignedWith: "LA Lakers",
     years: 4,
+    ageAtSigning: 26,
     minimumScale: false,
-    strength: "A young starting guard, and the deal runs four years — the job stays shut.",
-    risk: "The most expensive player here. Reaching him takes your biggest tool, and that draws a wall.",
+    // Was "a young starting guard". He started 19 of 75 games and none of 11
+    // playoff games, and the reporting calls him the third guard in the
+    // rotation. Paid like a starter, played as a third guard -- which is both
+    // true and exactly the lesson.
+    strength: "Played 75 games, more than anyone here, and the deal runs four years — the job stays shut.",
+    risk: "Paid like a starter; started 19 games of 75. The most expensive tool you own barely reaches him, and it draws a wall.",
     incumbent: null,
+    production: fact(
+      { season: "2025-26", games: 75, started: 19, minutes: 29.4, points: 13.4, rebounds: 3.6, assists: 3.3, blocks: 0.4, fg: 0.45, three: 0.334 },
+      "2026-09-03",
+      "basketball-reference.com/players/g/grimequ01.html — per-game table, 2025-26 row; season complete, figures final",
+      "stats-database",
+    ),
   },
 ] as const;
 
@@ -944,6 +1199,45 @@ export const SIMPLIFICATIONS: readonly Simplification[] = [
     preserves: "Every PRICE on the board is a real price a real club really paid.",
   },
   {
+    id: "S8-ask-basis",
+    real:
+      "A club's cap is charged a contract's FIRST-YEAR salary. Reported deals are usually quoted as a total " +
+      "and a term, from which an average annual value is easy to compute and a first-year salary is not — " +
+      "the raise ladder inside a deal is negotiated and is often not reported at all.",
+    bow:
+      "Ten of the twelve named cards charge a first-year salary that a source states. Two — Al Horford and " +
+      "Jusuf Nurkic — charge the average, because no source read stated their first year. Every card prints " +
+      "which of the two its number is.",
+    why:
+      "The alternative was to divide the total by a raise ladder and print the result as the player's salary. " +
+      "That would be an invented dollar figure presented as an NBA fact, on a card a child is told is real.",
+    misconceptionRisk:
+      "A student may take an average for a salary. Mitigated by printing the basis on the card in the module's " +
+      "own words, and by the fact that on a two-year deal the two differ by under three percent.",
+    preserves: "That the number the cap charges you is a real reported number, not one this room worked out.",
+  },
+  {
+    id: "S9-production-is-last-season",
+    real:
+      "A free agent's price is set by what clubs expect him to do next, over the length of the deal, at the " +
+      "age he will be. Last season's box score is one input among many, and not the biggest one.",
+    bow:
+      "Each card prints one completed season, per game, beside the price, the player's age on the day he " +
+      "signed, and the real length of the real deal.",
+    why:
+      "Price alone asserts a quality ordering, and on this board the real production contradicts it: the " +
+      "cheapest big out-scored every expensive one. A student given price and no production learns something " +
+      "false. Age and term are on the card because they are what make the inversion honest — the money is " +
+      "buying years and youth, not last season's points.",
+    misconceptionRisk:
+      "A student may conclude the cheap high scorer is simply a better buy, or that clubs are bad at their " +
+      "jobs. Mitigated structurally: the two numbers that explain the price sit on the same card as the " +
+      "price, and the debrief asks the room what the expensive clubs were buying.",
+    preserves:
+      "That price is information about the future and production is information about the past, and that " +
+      "confusing the two is the most expensive mistake a front office makes.",
+  },
+  {
     id: "S5-future-lines",
     real: "The NBA has not announced cap or apron figures for seasons beyond 2026-27.",
     bow: "Where a later season's line is needed, the class works it out from the real rule — the cap may never fall, and may never rise by more than one tenth in a year — and the result is labelled as the room's own arithmetic.",
@@ -985,6 +1279,15 @@ export const MINIMUM_MARKET: readonly FreeAgent[] = (["BIG", "WING", "GUARD"] as
   strength: "Available to every club, however much it has already spent.",
   risk: "One year, and he is the same player every other club could have had.",
   incumbent: null,
+  askBasis: "first-year",
+  /*
+   * A generic body has no age and no box score, because inventing either would
+   * be inventing a person -- the one thing this module refuses to do. Zero is
+   * the sentinel the card reader checks; `production: null` is what makes it
+   * render as a body at a price and never as a scouting report.
+   */
+  ageAtSigning: 0,
+  production: null,
 }));
 
 /** The whole market: the seven real, dated contracts plus the minimum depth behind them. */

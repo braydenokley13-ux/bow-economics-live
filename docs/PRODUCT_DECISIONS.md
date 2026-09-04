@@ -1029,3 +1029,52 @@ feature.
 - **Date:** 2026-09-03
 - **Owner:** Founder
 - **Evidence:** founder ruling, this session, verbatim in the run transcript.
+
+## D51. The board prints what a player DID, not only what he costs
+
+A commissioned Sports Reality research pass pulled the 2025-26 box-score line for all twelve named
+free agents on the L1 board from basketball-reference and raised one finding as **blocking**:
+
+> The board's price ordering currently asserts a quality ordering that the real production
+> contradicts, and the module gives students no data with which to notice.
+
+It is true, and it is worse than it sounds. Ordered by price the bigs read Vučević → Nance →
+Horford → Nurkić → Robinson. Ordered by points last season they read almost exactly backwards.
+Nance costs **$100,000 more** than Vučević for 3.7 points a game against 15.1. The most expensive
+card on the board scored 5.7. A ten-year-old reading price alone learns that the expensive player
+is the better player, which on these twelve real contracts is false.
+
+**Ruling: price never ships alone.** Each named card carries four numbers — points, rebounds,
+assists, and the one that separates him from the next card in his role (blocks for a big, three-point
+percentage for a guard or a wing) — plus **his age on the day he signed** and **the real term of the
+real deal**. All six together or none: production without age and term teaches that NBA front
+offices are incompetent, which is a different false lesson. The money is buying years and youth, and
+with age and term on the card that becomes arguable rather than baffling. Registered as
+simplifications S8 and S9.
+
+The same two ladders go on the **projector market table**, right-aligned beside each other, because
+the disagreement between them is the point and a wall is where a room can see it at once. And the
+leading number goes on the **list row**, unclicked, so a student meets the inversion before opening
+anything.
+
+Consequences accepted:
+
+- **Ten data errors were found and fixed**, including one that had been handing the Boston seat a
+  Bird-rights tie-break it never had (Chicago held Simons' rights, and Chicago is not a desk in this
+  room), two wrong signing dates, and two asks that were averages being charged against a cap.
+  Detail and sources in `docs/gauntlet/module-1/rebuild/PLAYER_PRODUCTION_RESEARCH.md`.
+- **Three unsourced scouting lines were struck** rather than kept because they sounded right.
+- **Two asks stay averages and say so on the card.** Dividing a reported total by a raise ladder to
+  produce a plausible first-year salary would be an invented dollar figure printed as an NBA fact.
+- **Truth cost the harness something.** Removing Boston's phantom claim on Simons narrowed that
+  seat's frontier: P-VEC now fails at three seat/environment pairs rather than two. The board is
+  genuinely too thin — twelve named players against sixteen desks — and that is a board-depth
+  problem to fix with more researched contracts, never by restoring a false one.
+- A **classroom-suitability flag** was recorded and decided: Mitchell Robinson's hand injury is
+  printable, its cause is not, and nothing in the module references it.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead, on a blocking Sports Reality finding
+- **Evidence:** `docs/gauntlet/module-1/rebuild/PLAYER_PRODUCTION_RESEARCH.md`; the tripwire test
+  "the price ordering on this board really is upside down" in `runtime/src/test/sameLineL1.test.ts`.

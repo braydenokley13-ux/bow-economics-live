@@ -31,7 +31,7 @@
 
 .sl-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   gap: 2px 12px;
   align-items: center;
   padding: 11px 15px;
@@ -74,21 +74,34 @@
   padding: 1px 4px;
   vertical-align: 2px;
 }
+.sl-row-name { grid-row: 1; grid-column: 1; }
+/* Production, then price. Left to right in the order the argument runs:
+   this is what he did, and THIS is what he costs. */
+.sl-row-stat {
+  grid-row: 1;
+  grid-column: 2;
+  font-family: var(--font-number);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink-secondary);
+}
+.sl-row-statlab { grid-row: 2; grid-column: 2; font-size: 9px; letter-spacing: 0.16em; color: var(--ink-muted); text-align: right; }
 .sl-row-ask {
   font-family: var(--font-number);
   font-size: 14px;
   font-variant-numeric: tabular-nums;
   text-align: right;
   grid-row: 1;
-  grid-column: 2;
+  grid-column: 3;
 }
-.sl-row-asklab { grid-row: 2; grid-column: 2; font-size: 9px; letter-spacing: 0.16em; color: var(--ink-muted); text-align: right; }
-.sl-row-why { grid-column: 1 / 3; font-size: 10.5px; color: var(--over-the-line); line-height: 1.4; margin-top: 2px; }
+.sl-row-asklab { grid-row: 2; grid-column: 3; font-size: 9px; letter-spacing: 0.16em; color: var(--ink-muted); text-align: right; }
+.sl-row-why { grid-column: 1 / 4; font-size: 10.5px; color: var(--over-the-line); line-height: 1.4; margin-top: 2px; }
 
 /* live interest — a count, never a name and never an amount */
 .sl-interest {
   grid-row: 1 / 3;
-  grid-column: 3;
+  grid-column: 4;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -140,6 +153,44 @@
   margin: 5px 0 0;
   letter-spacing: 0.01em;
 }
+/* -------------------------------------------------- what he actually did -- */
+/* Numbers, in the number face, big enough to read across a shoulder. The four
+   cells are equal width so two cards compared side by side line up. */
+.sl-stat { margin: 12px 0 0; }
+.sl-stat-lab { font-size: 8.5px; letter-spacing: 0.2em; font-weight: 700; color: var(--ink-muted); margin: 0 0 6px; }
+.sl-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--hq-hair);
+  border: 1px solid var(--hq-hair);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.sl-stat-grid > div {
+  background: rgba(255, 255, 255, 0.028);
+  padding: 7px 4px 6px;
+  text-align: center;
+}
+.sl-stat-grid dt { font-size: 8px; letter-spacing: 0.16em; font-weight: 700; color: var(--ink-muted); }
+.sl-stat-grid dd {
+  margin: 2px 0 0;
+  font-family: var(--font-number);
+  font-size: 19px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-primary);
+}
+.sl-stat-detail {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+.sl-stat-detail b { color: var(--ink-secondary); font-weight: 700; }
+
 .sl-card-lines { margin: 11px 0 0; display: flex; flex-direction: column; gap: 6px; }
 .sl-card-line { display: flex; gap: 9px; font-size: 11.5px; line-height: 1.45; color: var(--ink-secondary); }
 .sl-card-line b {
@@ -174,6 +225,9 @@
 }
 .sl-compose-top h3 { margin: 0; font-size: 10px; letter-spacing: 0.22em; font-weight: 700; }
 .sl-compose-ask { font-size: 10.5px; color: var(--ink-muted); font-family: var(--font-number); font-variant-numeric: tabular-nums; }
+/* Two cards charge an average rather than a first-year salary, and say so
+   (S8). Small, adjacent to the number it qualifies, never a footnote. */
+.sl-compose-note { display: block; font-family: var(--font-body); font-style: normal; font-size: 9.5px; max-width: 26ch; text-align: right; line-height: 1.4; opacity: 0.85; }
 
 .sl-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .sl-tool {

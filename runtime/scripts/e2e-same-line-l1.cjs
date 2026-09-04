@@ -305,6 +305,54 @@ async function runBand(browser, band, label) {
   for (const p of desks) clubs.push((await p.textContent(".hq-title")).trim());
   assert.equal(new Set(clubs).size >= Math.min(DESKS, 8), true, `${label}: desks did not spread across clubs (${clubs})`);
 
+  /*
+   * THE OPEN MARKET ON THE WALL, before anybody has closed a day.
+   *
+   * Six columns now — player, job, age, points, asking, desks on him — because
+   * the price ladder and the production ladder do not run in the same order and
+   * that disagreement is the whole reason both are up there. Six columns is
+   * also exactly how a projector table starts scrolling sideways, which a
+   * projector cannot do, so this is asserted on the open frame and not only
+   * after the bell.
+   */
+  /*
+   * THE SHEET IS ACTUALLY LINKED.
+   *
+   * `sameLineL1Board.css` was written and then never referenced from
+   * board/index.html, so every `.slb-*` rule was dead and the whole projector
+   * surface rendered as centred default-font text. Nothing caught it: the
+   * fits-on-a-projector assertions PASS on unstyled text, because unstyled text
+   * always fits. So the check is a computed style only that file can produce.
+   */
+  {
+    const styled = await boardPage.evaluate(() => {
+      const el = document.querySelector(".slb-title");
+      if (!el) return { found: false };
+      const cs = getComputedStyle(el);
+      return { found: true, size: parseFloat(cs.fontSize), family: cs.fontFamily };
+    });
+    assert.ok(styled.found, `${label}: no .slb-title on the projector during PLAY`);
+    assert.ok(
+      styled.size > 40,
+      `${label}: the projector title computes to ${styled.size}px — sameLineL1Board.css is not applying`,
+    );
+  }
+
+  await assertBoardFits(boardPage, `${label} PLAY open market`);
+  await assertBackRow(boardPage, `${label} PLAY open market`);
+  await assertBoardPrivate(boardPage, `${label} PLAY open market`, studentNames);
+  {
+    const cols = await boardPage.$$eval(".slb-market thead th", (th) => th.map((x) => x.textContent.trim()));
+    assert.deepEqual(
+      cols,
+      ["PLAYER", "JOB", "AGE", "PTS A GAME", "ASKING", "DESKS ON HIM"],
+      `${label}: the projector market lost a column`,
+    );
+    const pts = await boardPage.$$eval(".slb-market .slb-stat", (td) => td.map((x) => x.textContent.trim()));
+    assert.ok(pts.length > 0 && pts.every((v) => /^\d+\.\d$/.test(v)), `${label}: production missing from the wall (${pts})`);
+  }
+  await shoot(boardPage, `${band}-board-market`);
+
   for (let day = 1; day <= 3; day += 1) {
     const committedText = [];
     for (let i = 0; i < DESKS; i += 1) {
