@@ -73,6 +73,7 @@ const {
   CONDITION_MIN_REINVEST,
   DRAW_MAX,
   DRAW_MIN,
+  FLOOR_ROUND_COUNT,
   MARKET_PROFILES,
   NATIONAL,
   PRICE_GRID,
@@ -140,7 +141,12 @@ function playSession(deskCount, proposalFor, policyFor, opts = {}) {
     state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher");
   }
   state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher"); // adoption
-  state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher"); // open the season
+  state = apply(state, { type: "teacher:ruleStep" }, "PLAY", "teacher"); // opens the floor rounds (institution 2)
+  for (let r = 0; r < FLOOR_ROUND_COUNT; r += 1) {
+    state = apply(state, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // closes a floor round — nobody proposed, so it fails to NO FLOOR
+  }
+  state = apply(state, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // adopts the floor (NO FLOOR)
+  state = apply(state, { type: "teacher:institutionStep" }, "PLAY", "teacher"); // opens the season
   for (let w = 0; w < WEEK_COUNT; w += 1) {
     for (let i = 0; i < deskCount; i += 1) {
       const slot = state.seatToSlot[`seat-${i}`];
@@ -477,23 +483,47 @@ console.log(`${MARKET_PROFILES.length} market profiles · ${WEEK_COUNT}-week sea
   const state = seated(12);
   const rows = [];
   const drops = [];
-  let conditionBites = 0;
+  let floorBites = 0;
+  // D61/D62: the CONDITION that can change a club's cash-best reinvest is no
+  // longer institution 1's own rider (`rule.condition`, now cosmetic) — it is
+  // institution 2's own adopted floor, read by the reducer off
+  // `state.institutions.floor` alone (`floorRuleFor`). This property is
+  // rewritten to install a REAL floor there — never `hypotheticalRule`'s inert
+  // `condition` flag — so it tests the mechanism that actually ships.
+  const FLOOR_TEST_LINE = 100_000; // one of the shipped, sweep-cleared 7-8 lines
+  const withFloorOn = {
+    ...state,
+    institutions: {
+      ...state.institutions,
+      floor: {
+        share: FLOOR_TEST_LINE,
+        condition: true,
+        how: "voted",
+        supporting: 0,
+        liveDesks: state.leagueSize,
+        median: FLOOR_TEST_LINE,
+        runnerUp: 0,
+        institution: "floor",
+        recipient: "compliant",
+      },
+    },
+  };
   for (const profile of MARKET_PROFILES) {
     const club = state.clubs.find((c) => c.profileId === profile.id);
     const off = SHARE_GRID.map((s) => bestReinvestUnder(state, club, s === 0 ? null : hypotheticalRule(s, false)));
-    const on = SHARE_GRID.map((s) => bestReinvestUnder(state, club, hypotheticalRule(s, true)));
+    const on = SHARE_GRID.map((s) => bestReinvestUnder(withFloorOn, club, s === 0 ? null : hypotheticalRule(s, false)));
     const differs = SHARE_GRID.filter((_, i) => off[i] !== on[i]).length;
-    conditionBites += differs;
+    floorBites += differs;
     drops.push((off[0] - off[off.length - 1]) / REINVEST_MAX);
-    rows.push(`${profile.id.padEnd(15)} condition OFF ${off.map((r) => String(r).padStart(2)).join(" ")} | ON ${on.map((r) => String(r).padStart(2)).join(" ")} | differs at ${differs} of ${SHARE_GRID.length} shares`);
+    rows.push(`${profile.id.padEnd(15)} floor OFF ${off.map((r) => String(r).padStart(2)).join(" ")} | floor ON ${on.map((r) => String(r).padStart(2)).join(" ")} | differs at ${differs} of ${SHARE_GRID.length} shares`);
   }
   const medianDrop = [...drops].sort((a, b) => a - b)[Math.floor(drops.length / 2)];
-  rows.push(`drop as a fraction of the whole dial, per profile: ${drops.map((d) => `${Math.round(d * 100)}%`).join(" ")} (median ${Math.round(medianDrop * 100)}%)`);
-  rows.push(`BC-6 fix 1: the CONDITION changed the cash-best reinvest at ${conditionBites} (profile × share) points. Stage-0 shipped a control that changed nothing in 0 of 14 configurations, and that was the one honesty defect the play review said it would block a selection on.`);
+  rows.push(`drop as a fraction of the whole dial, per profile (share alone, floor off): ${drops.map((d) => `${Math.round(d * 100)}%`).join(" ")} (median ${Math.round(medianDrop * 100)}%)`);
+  rows.push(`D61 fix: an ADOPTED FLOOR (state.institutions.floor, $${FLOOR_TEST_LINE.toLocaleString()}/week) changed the cash-best reinvest at ${floorBites} (profile × share) points. The share's own rider (\`rule.condition\`) is intentionally inert here — the floor ballot is what has to bite, and this is what the module actually ships.`);
   check(
     "P6",
-    "THE DIFFERENTIAL-RESPONSE SCALE is material (>=1/3 of the dial at the median profile) and the CONDITION is consequence-bearing",
-    medianDrop >= 1 / 3 && conditionBites > 0,
+    "THE DIFFERENTIAL-RESPONSE SCALE is material (>=1/3 of the dial at the median profile) and THE FLOOR is consequence-bearing",
+    medianDrop >= 1 / 3 && floorBites > 0,
     rows,
   );
 }
@@ -1042,8 +1072,10 @@ function truthFor(state) {
     },
     { label: "league office's rule, never voted", state: (() => {
         let s = seated(12, L2_SEED);
+        // D62 follow-through: the panic button now opens the season directly
+        // (see writeTheRule.ts `adoptLeagueOfficeRule`), skipping institution
+        // 2 entirely — no extra `teacher:ruleStep` needed after this call.
         s = apply(s, { type: "teacher:realRule" }, "PLAY", "teacher");
-        s = apply(s, { type: "teacher:ruleStep" }, "PLAY", "teacher");
         for (let w = 0; w < WEEK_COUNT; w += 1) s = apply(s, { type: "teacher:closeWeek" }, "PLAY", "teacher");
         return s;
       })() },

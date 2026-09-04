@@ -88,7 +88,7 @@ const state = seated(mod.MAX_DESKS);
 const clubs = state.clubs.slice(0, state.leagueSize);
 
 const CANDIDATE_LINES = [];
-for (let l = 100_000; l <= 400_000; l += 50_000) CANDIDATE_LINES.push(l);
+for (let l = 50_000; l <= 400_000; l += 50_000) CANDIDATE_LINES.push(l);
 
 /**
  * The club's own cash-best (price, reinvest) with NO floor pressure at all —

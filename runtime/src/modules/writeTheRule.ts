@@ -383,14 +383,27 @@ export const isValidShareForBand = (band: GradeBand, v: unknown): v is number =>
  * 1's own constants; the floor's dock-and-redistribute REUSES the collect
  * fraction (see `floorRuleFor` / `settleWeek`) but tests dollars, not percent.
  *
- * Working values, NOT VERIFIED by a tuning-harness sweep this session — flag
- * for Economic Truth before ship: does $300,000/week actually bind the
- * intended coalition across every adopted share, not only the modal one?
+ * D62 (obeyability): no adopted institution may impose an obligation a
+ * franchise cannot discharge at any legal setting from any reachable state.
+ * `runtime/scripts/write-the-rule-floor-sweep.mjs` is the printed feasibility
+ * sweep this line ships with. The $300,000 working value from the first
+ * tuning pass is WITHDRAWN — an independent review measured it infeasible at
+ * the 40% dial for several small markets, and the sweep confirms it: Indiana
+ * Pacers' own ceiling (revenue-maximising price, week-1 Draw, REINVEST_MAX)
+ * is $155,758/week, below every $50,000-stepped line from $200,000 up. The
+ * values below are the sweep's own highest-binding, zero-UNREACHABLE choice:
+ * every club (all 18 seatable markets) can legally clear $150,000/week, and
+ * at a plausible adopted share (25-45%) it still binds several small/mid
+ * markets first (Memphis, Milwaukee, New Orleans, Indiana, Cleveland) before
+ * any big market — the coalition inversion the two-institution design turns
+ * on. TODO before ship: widen `MAX_DESKS`/re-profile Indiana's market if the
+ * design ever wants a line above $150,000; do not raise the constant without
+ * re-running the sweep.
  */
 export const FLOOR_ROUND_COUNT = 2;
 export const FLOOR_OFF = 0;
-export const FLOOR_LINE_5_6 = 300_000;
-export const FLOOR_LINES_7_8: readonly number[] = [200_000, 300_000, 400_000];
+export const FLOOR_LINE_5_6 = 150_000;
+export const FLOOR_LINES_7_8: readonly number[] = [50_000, 100_000, 150_000];
 export const FLOOR_RECIPIENTS: readonly FloorRecipient[] = ["compliant", "everyone"];
 export const STATUS_QUO_FLOOR_ON = false;
 
@@ -3827,10 +3840,12 @@ export function adoptLeagueOfficeRule(state: WriteRuleState): WriteRuleState {
   };
   // The panic button skips institution 2 entirely (the room ran out of road
   // for one vote; it has none left for two) — THE FLOOR stays unadopted, and
-  // the season plays under institution 1 alone. Documented, not hidden: the
+  // the season plays under institution 1 alone. Jumps straight to "season",
+  // never "adopted" (which `teacher:ruleStep` would otherwise read as an
+  // invitation to open the floor rounds): documented, not hidden — the
   // league-office script says this room did not write ANY rule it is living
   // under, and that already covers the floor's absence honestly.
-  return { ...state, adopted: rule, institutions: { ...state.institutions, share: rule }, stage: "adopted" };
+  return { ...state, adopted: rule, institutions: { ...state.institutions, share: rule }, stage: "season" };
 }
 
 /**
@@ -4370,6 +4385,11 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       const share = action["share"];
       const condition = action["condition"];
       if (!isValidShare(share)) return { ok: false, reason: `share must be ${SHARE_MIN}-${SHARE_MAX}% in ${SHARE_STEP}-point steps` };
+      // Band-gated on top of the continuous grid: a 5-6 room's own ballot is
+      // the four-card slate ($0/$2/$4/$6 of every $10), never a raw percent.
+      if (!isValidShareForBand(state.band, share)) {
+        return { ok: false, reason: `this room's ballot is ${shareOptionsFor(state.band).join("/")} — not a raw percent` };
+      }
       if (typeof condition !== "boolean") return { ok: false, reason: "condition must be on or off" };
       const open = requireLiveClub(state, ctx.seatId);
       if (!open.ok) return { ok: false, reason: open.reason };
@@ -4506,7 +4526,9 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     if (action.type === "teacher:closeWeek") {
       if (ctx.seatId !== "teacher") return { ok: false, reason: "only the teacher closes the week" };
       if (ctx.phase !== "PLAY") return { ok: false, reason: `weeks close during PLAY (session is in ${ctx.phase})` };
-      if (state.stage === "rounds" || state.stage === "adopted") return { ok: false, reason: "the season has not opened yet — finish the rule first" };
+      if (state.stage === "rounds" || state.stage === "adopted" || state.stage === "floorRounds" || state.stage === "floorAdopted") {
+        return { ok: false, reason: "the season has not opened yet — finish the rule first" };
+      }
       if (state.weekIndex >= WEEK_COUNT) return { ok: false, reason: "all three weeks are already in the books" };
       return { ok: true, state: settleWeek({ ...state, leagueFrozen: true }, false) };
     }

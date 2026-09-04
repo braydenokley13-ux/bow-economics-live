@@ -469,8 +469,10 @@ test("the league office's rule is a real alternative path with its own provenanc
   assert.equal(state.adopted!.share, REAL_RULE_SHARE);
   assert.equal(state.adopted!.condition, REAL_RULE_CONDITION);
   assert.match(adoptionLineClaimed(computeAggregate(state)).text, /This room did not write it/);
+  // The panic button skips institution 2 entirely and opens the season directly.
+  assert.equal(state.stage, "season");
   // ...and it cannot be used to change the rule after the season has started.
-  reject(toSeason(state), { type: "teacher:realRule" }, "PLAY", "teacher");
+  reject(state, { type: "teacher:realRule" }, "PLAY", "teacher");
 });
 
 test("the runner-up share is a different number from the adopted one", () => {
@@ -635,6 +637,24 @@ test("a desk under the floor loses exactly half its pot share, and the compliant
     Math.abs(totalPaid - totalTook) <= state.leagueSize,
     `the pot must close with zero residual: ${totalPaid} paid in, ${totalTook} taken out`,
   );
+});
+
+test("at band 5-6 the ballot refuses a raw percent that is not on the four-card slate", () => {
+  const state = withDesks(6, undefined, "5-6");
+  const seat = state.clubs.find((c) => c.seatId !== null)!.seatId!;
+  const bad = writeTheRuleModule.reduce(
+    state,
+    { type: "propose", share: 25, condition: false },
+    { phase: "PLAY", seatId: seat, seatIds: [], now: 0 },
+  );
+  assert.equal(bad.ok, false);
+  assert.match(bad.ok ? "" : bad.reason, /not a raw percent/);
+  const good = writeTheRuleModule.reduce(
+    state,
+    { type: "propose", share: 40, condition: false },
+    { phase: "PLAY", seatId: seat, seatIds: [], now: 0 },
+  );
+  assert.equal(good.ok, true, "a slate value ($4 of every $10) must still be accepted");
 });
 
 /** At band 5-6 the share ballot is a four-card slate, adopted by plurality — spec item 21's mechanism. */
