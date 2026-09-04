@@ -2196,3 +2196,81 @@ html[data-module="m2"] .fh-sellout-title.m2-fullhouse {
     line-height: 40px;
   }
 }
+
+/* ================= W5 THE POOL — Host League, /play only ================
+   Everything below is scoped `html[data-module="m2"]` per this file's own
+   invariant (see header). /board and /teach reuse the existing hl-give /
+   hl-mean-* / hl-split-* vocabulary already styled in theme.css and need no
+   rules here — this block covers only the three /play-only additions: the
+   levy line (HOOK), the how-you-got-here card (HOOK) and the pool-position
+   capture (PLAY, locked). */
+html[data-module="m2"] .hl-levy {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--accent-violet);
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--ink-primary, #e7e9ee);
+}
+html[data-module="m2"] .hl-levy-tag {
+  flex: none;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--accent-violet);
+  font-weight: 700;
+}
+html[data-module="m2"] .hl-carry {
+  border-color: var(--accent-violet);
+}
+html[data-module="m2"] .hl-pool-position {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-elevated);
+}
+html[data-module="m2"] .hl-pool-prompt {
+  margin: 6px 0 10px;
+  font-size: 14.5px;
+  color: var(--ink-primary, #e7e9ee);
+}
+html[data-module="m2"] .hl-pool-chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+html[data-module="m2"] .hl-pool-chip {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-elevated);
+  background: var(--surface-panel);
+  color: var(--ink-primary, #e7e9ee);
+  font-size: 13px;
+  cursor: pointer;
+}
+html[data-module="m2"] .hl-pool-chip.is-called {
+  border-color: var(--accent-violet);
+  background: var(--surface-elevated);
+  color: var(--accent-violet);
+}
+html[data-module="m2"] .hl-pool-line {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-elevated);
+  background: var(--surface-panel);
+  color: var(--ink-primary, #e7e9ee);
+  font-size: 13.5px;
+}
+html[data-module="m2"] .hl-pool-levy {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ink-secondary, #9aa1af);
+}

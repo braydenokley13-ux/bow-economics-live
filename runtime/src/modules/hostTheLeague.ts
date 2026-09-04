@@ -3081,6 +3081,11 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     why: "Full House's own bill shape is being extended concurrently; a flat, named, printed number is honest and legible on day one without hard-coding a linkage to a field this module does not own.",
     risk: "Two franchises that missed their bill by very different amounts open Week 5 identically penalized. Say the number is modeled, not measured, if a student asks why.",
   },
+  {
+    what: "This classroom's pool splits the bowl equally — every live desk takes out the same share, regardless of market size.",
+    why: "An equal split is legible in one reveal and lets the room see 'the bars IN are different; the bars OUT are the same' without a second formula to explain.",
+    risk: "The real NBA's revenue sharing is a confidential, market-size-adjusted formula, not an equal split — some big-market clubs are net payers and some are net receivers, and the exact terms are not public. Say plainly: the real pot is not split evenly the way this room's is.",
+  },
 ];
 
 export const SHOCK_REVEAL_COPY =
@@ -3665,17 +3670,34 @@ export function netDirectionLine(band: GradeBand, net: number): string {
  * lowest mean reinvest share among live desks that have played at least one
  * week; ties broken by slot so the board is deterministic.
  */
-export type FreeRideRow = { slot: number; club: string; meanReinvestShare: number; tookOutTotal: number };
+export type FreeRideRow = { slot: number; club: string; meanReinvestShare: number; meanReinvestDollars: number; tookOutTotal: number };
+/** 5-6 board projection of a FreeRideRow: no percent-shaped field at all. */
+export type FreeRideRowBand56 = { slot: number; club: string; meanReinvestDollars: number; tookOutTotal: number };
 export function freeRideRows(state: HostLeagueState): FreeRideRow[] {
   const totals = new Map(poolTotalsAll(state).map((t) => [t.slot, t.tookOutTotal]));
   const rows: FreeRideRow[] = [];
   for (const club of state.clubs) {
     if (club.seatId === null || club.weeks.length === 0) continue;
     const meanReinvestShare = club.weeks.reduce((s, w) => s + w.share, 0) / club.weeks.length;
-    rows.push({ slot: club.slot, club: CLUBS[club.slot]!.short, meanReinvestShare, tookOutTotal: totals.get(club.slot) ?? 0 });
+    const meanReinvestDollars = club.weeks.reduce((s, w) => s + w.reinvestPaid, 0) / club.weeks.length;
+    rows.push({ slot: club.slot, club: CLUBS[club.slot]!.short, meanReinvestShare, meanReinvestDollars, tookOutTotal: totals.get(club.slot) ?? 0 });
   }
   rows.sort((a, b) => a.meanReinvestShare - b.meanReinvestShare || a.slot - b.slot);
   return rows.slice(0, Math.min(3, rows.length));
+}
+
+/**
+ * Band gate (D62 repair 4): 5-6 never sees a percent-shaped number. At 5-6
+ * every FreeRideRow the board prints drops `meanReinvestShare` (a 0-100
+ * share) and speaks only in dollars via `meanReinvestDollars`; 7-8 keeps
+ * both. Same rows either way — only the field visible to the client differs.
+ */
+function freeRideRowsForBand(state: HostLeagueState, band: GradeBand): FreeRideRow[] | FreeRideRowBand56[] {
+  const rows = freeRideRows(state);
+  if (band === "5-6") {
+    return rows.map(({ slot, club, meanReinvestDollars, tookOutTotal }) => ({ slot, club, meanReinvestDollars, tookOutTotal }));
+  }
+  return rows;
 }
 
 /**
@@ -3819,10 +3841,12 @@ export type PoolRitualBoard = {
   netPage: number;
   netPageCount: number;
   netPageLabel: string;
-  freeRide: FreeRideRow[] | null;
+  freeRide: FreeRideRow[] | FreeRideRowBand56[] | null;
   roundingNote: string | null;
   /** D61 R-12: the dollars other clubs' fans put on each live club's own books, summed across every week it played. Never a seat identity. */
   visitorLine: { club: string; visitorDollars: number }[] | null;
+  /** D62 repair 1: the dollars a club's own Draw put on OTHER clubs' books on its away nights, summed across every week it played. Same stage as visitorLine, no seat identity. */
+  roadLine: { club: string; roadDollars: number }[] | null;
 };
 const POOL_CHIP_UNIT = 50_000;
 
@@ -3832,6 +3856,14 @@ export function visitorLineFor(state: HostLeagueState): { slot: number; club: st
     .filter((c) => c.seatId !== null)
     .sort((a, b) => a.slot - b.slot)
     .map((c) => ({ slot: c.slot, club: CLUBS[c.slot]!.short, visitorDollars: Math.round(c.weeks.reduce((s, w) => s + w.home.visitorDollars, 0)) }));
+}
+
+/** D62 repair 1 — THE ROAD LINE. Season sum of `SettledWeek.roadDollars` per live club (what its own Draw put on someone else's books on its away nights), slot order. */
+export function roadLineFor(state: HostLeagueState): { slot: number; club: string; roadDollars: number }[] {
+  return state.clubs
+    .filter((c) => c.seatId !== null)
+    .sort((a, b) => a.slot - b.slot)
+    .map((c) => ({ slot: c.slot, club: CLUBS[c.slot]!.short, roadDollars: Math.round(c.weeks.reduce((s, w) => s + w.roadDollars, 0)) }));
 }
 
 export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): PoolRitualBoard | null {
@@ -3849,6 +3881,7 @@ export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): Poo
   // Beside THE BOWL STANDS (stage 3): the room's shared-product number, not
   // the pool's — teacher-pressed together, never conflated as the same pipe.
   const visitorLine = stage >= 3 ? visitorLineFor(state).map(({ club, visitorDollars }) => ({ club, visitorDollars })) : null;
+  const roadLine = stage >= 3 ? roadLineFor(state).map(({ club, roadDollars }) => ({ club, roadDollars })) : null;
   const draw = stage >= 4 ? liveClubs.map((c) => ({ club: CLUBS[c.slot]!.short, tookOut: totalFor(c.slot)?.tookOutTotal ?? 0 })) : null;
   const netRows =
     stage >= 5
@@ -3870,12 +3903,13 @@ export function poolRitualBoardFor(state: HostLeagueState, band: GradeBand): Poo
     fillGrandTotal: fill ? bowlTotal : null,
     bowlTotal: stage >= 3 ? bowlTotal : null,
     visitorLine,
+    roadLine,
     draw,
     net: netPaged,
     netPage: netPage + 1,
     netPageCount,
     netPageLabel: netRows && netPageCount > 1 ? `Group ${netPage + 1} of ${netPageCount}` : "",
-    freeRide: stage >= 6 ? freeRideRows(state) : null,
+    freeRide: stage >= 6 ? freeRideRowsForBand(state, band) : null,
     roundingNote:
       stage >= 3
         ? "Split evenly among the live franchises every week the bowl filled; any leftover dollar that week went to the first club in the schedule."
@@ -6184,7 +6218,7 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
         : ""
     } You cannot play a basketball game on your own, so you cannot earn a basketball game's money on your own either. Economists call that a SHARED PRODUCT — one thing, made by two clubs, sold once.${
       poolVisitorClaim
-        ? ` Add up every building's season and it comes to ${poolVisitorClaim.rendered} that landed on this room's own books because of a visitor's own drawing power${band === "7-8" ? " — money that lands on somebody who did not choose it has a name: an EXTERNALITY" : ", not a decision the home building made"}.`
+        ? ` Add up every building's season and it comes to ${poolVisitorClaim.rendered} that landed on this room's own books because of a visitor's own drawing power${band === "7-8" ? " — money that lands on somebody who did not choose it is a SPILLOVER, and the grown-up word for it is EXTERNALITY" : ", not a decision the home building made"}.`
         : ""
     }`,
   });
@@ -6226,9 +6260,15 @@ export function synthesisCards(state: HostLeagueState, agg: HostLeagueAggregate)
   cards.push({
     id: "spillover",
     title: "SPILLOVER",
+    // D62 repair 5: EXTERNALITY is named only at 7-8; 5-6 gets the same fact
+    // in plain words and never sees the term.
     body: ct.anySpend
-      ? `Putting money back into your club pays two sets of books at once. ${spill.text}${namedGiver}${namedTaker} A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER — the grown-up word is EXTERNALITY. Nobody here did anything wrong; the money simply does not land where the effort goes.`
-      : `${spill.text} Every dollar that filled your building came from the Draw you were dealt and from who the schedule sent you — and it still did not land where it was earned. That is the point, and it is sharper this way: a cost or a benefit that lands on somebody who did not choose it is a SPILLOVER, the grown-up word is EXTERNALITY, and it does not need anybody to be generous. It only needs the thing you sell to be made by two clubs.`,
+      ? `Putting money back into your club pays two sets of books at once. ${spill.text}${namedGiver}${namedTaker} A cost or a benefit that lands on somebody who did not choose it is a SPILLOVER${
+          band === "7-8" ? " — the grown-up word is EXTERNALITY" : " — it lands on a building that made no decision at all"
+        }. Nobody here did anything wrong; the money simply does not land where the effort goes.`
+      : `${spill.text} Every dollar that filled your building came from the Draw you were dealt and from who the schedule sent you — and it still did not land where it was earned. That is the point, and it is sharper this way: a cost or a benefit that lands on somebody who did not choose it is a SPILLOVER${
+          band === "7-8" ? ", the grown-up word is EXTERNALITY," : ", it lands on a building that made no decision at all,"
+        } and it does not need anybody to be generous. It only needs the thing you sell to be made by two clubs.`,
     claims: spillClaims,
   });
 

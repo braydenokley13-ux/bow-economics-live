@@ -560,6 +560,67 @@ test("teacher may never take a desk seat", () => {
   assert.equal(r.ok, false);
 });
 
+test("propose accepts a public toDesk (holderId) key and resolves it to the real seat, never requiring a seat id", () => {
+  const state = twoDeskState();
+  // studentView exposes each market entry's holderId as `${clubId}-${twin}` — never a seat id.
+  const view = sameLineL3Module.studentView(state, "A", "PLAY") as { books: { taxSalaryText: string } };
+  assert.equal(typeof view.books.taxSalaryText, "string");
+  const holderId = "detroit-0"; // B is desk("B","detroit",0,...)
+  const r = reduce(state, { type: "propose", toDesk: holderId, send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx("A"));
+  assert.equal(r.ok, true, r.ok ? "" : r.reason);
+  if (!r.ok) return;
+  const offer = Object.values(r.state.offers)[0]!;
+  assert.equal(offer.toSeat, "B");
+});
+
+test("studentView market entries carry a public holderId, never a seat id, plus annualText for a contract", () => {
+  const a = desk("A", "memphis", 0, 100_000_000, [contract("a-1", 5_000_000)]);
+  const b = desk("B", "detroit", 0, 100_000_000, [contract("b-1", 5_000_000)]);
+  let state = baseState({ A: a, B: b });
+  const list = reduce(state, { type: "list", objectId: "b-1" }, ctx("B"));
+  assert.equal(list.ok, true);
+  if (!list.ok) return;
+  state = list.state;
+  const view = sameLineL3Module.studentView(state, "A", "PLAY") as { market: { id: string; holderId: string | null; annualText: string | null; label: string }[] };
+  const entry = view.market.find((m) => m.id === "b-1")!;
+  assert.equal(entry.holderId, "detroit-0");
+  assert.equal(entry.annualText, "$5,000,000");
+  assert.equal(entry.label, "B-1");
+});
+
+test("naming appears only at SYNTHESIS/COMPLETE, with the {index,count,term,moment,means,outside} shape, on both studentView and boardView", () => {
+  const state: SameLineL3State = { ...twoDeskState(), marketClosed: true, executed: [{ id: "o1", hour: 1, fromSeat: "A", toSeat: "B", send: ["a-1"], want: ["b-1"] }] };
+  const playView = sameLineL3Module.studentView(state, "A", "PLAY") as { naming: unknown };
+  assert.equal(playView.naming, null);
+  const synthStudent = sameLineL3Module.studentView(state, "A", "SYNTHESIS") as { naming: { index: number; count: number; term: string; moment: string; means: string; outside: string } | null };
+  assert.ok(synthStudent.naming);
+  assert.equal(typeof synthStudent.naming!.term, "string");
+  assert.match(synthStudent.naming!.outside, /REAL EXAMPLE PENDING/);
+  const synthBoard = sameLineL3Module.boardView(state, "SYNTHESIS") as { naming: { term: string } | null };
+  assert.ok(synthBoard.naming);
+});
+
+test("studentView surfaces this desk's own season-settle result at REVEAL/CONSEQUENCE, never before", () => {
+  const a = desk("A", "memphis", 0, 100_000_000, []);
+  let state: SameLineL3State = { ...baseState({ A: a }), hour: 2 };
+  const closed = reduce(state, { type: "teacher:closeHour" }, ctx("teacher"));
+  if (!closed.ok) return assert.fail(closed.reason);
+  state = closed.state;
+  const playView = sameLineL3Module.studentView(state, "A", "PLAY") as { settled: unknown };
+  assert.equal(playView.settled, null);
+  const revealView = sameLineL3Module.studentView(state, "A", "REVEAL") as { settled: { coveredJobs: number; openJobs: readonly string[] } | null };
+  assert.ok(revealView.settled);
+  assert.equal(typeof revealView.settled!.coveredJobs, "number");
+});
+
+test("spotlightView and pressCandidates are wired onto the module object, not only exported loose", () => {
+  const state = twoDeskState();
+  assert.ok(sameLineL3Module.spotlightView);
+  assert.ok(sameLineL3Module.pressCandidates);
+  assert.deepEqual(sameLineL3Module.spotlightView!(state, "A", "REVEAL"), spotlightViewFor(state, "A", "REVEAL"));
+  assert.deepEqual(sameLineL3Module.pressCandidates!(state, "REVEAL"), pressCandidatesFor(state, "REVEAL"));
+});
+
 /* ---------------------------------------------------------- seed intake -- */
 
 test("initialState with an unusable seed falls back to the stock pool and warns, never crashing", () => {

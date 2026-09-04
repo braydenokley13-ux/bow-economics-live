@@ -231,7 +231,7 @@ test("(c) pressConference pauses the room and sets the spotlight; endPressConfer
   const called = await svc.control(code, { type: "pressConference", seatId }, key);
   assert.equal(called.session.paused, true);
   assert.ok(called.session.pausedAt, "pausedAt must be recorded the instant the podium opens");
-  assert.deepEqual(called.spotlight, { seatId, label: called.spotlight!.label, since: called.spotlight!.since });
+  assert.deepEqual(called.spotlight, { seatId, label: called.spotlight!.label, since: called.spotlight!.since, question: null });
   assert.ok(called.spotlight!.since.length > 0);
 
   const ended = await svc.control(code, { type: "endPressConference" }, key);
@@ -282,7 +282,7 @@ test("(d) the board payload carries the label and the module's public view, and 
 
   const board = await svc.boardView(code);
   assert.ok(board.spotlight, "the board must carry a spotlight while a press conference is running");
-  assert.deepEqual(board.spotlight, { label: board.spotlight!.label, view: { locked: true } });
+  assert.deepEqual(board.spotlight, { label: board.spotlight!.label, view: { locked: true }, question: null });
   const serialized = JSON.stringify(board);
   assert.doesNotMatch(serialized, new RegExp(seatId), "the board payload leaked the spotlighted seat's id");
   for (const s of seats) {
@@ -298,7 +298,7 @@ test("(e) a seat that is NOT at the podium sees mine:false and no seat id anywhe
   await svc.control(code, { type: "pressConference", seatId: podiumSeatId }, key);
 
   const other = await svc.resumeByToken(seats[1]!.deviceToken!);
-  assert.deepEqual(other.session.spotlight, { label: other.session.spotlight!.label, mine: false });
+  assert.deepEqual(other.session.spotlight, { label: other.session.spotlight!.label, mine: false, question: null });
   const serialized = JSON.stringify(other);
   assert.doesNotMatch(serialized, new RegExp(podiumSeatId), "a non-podium seat's own payload named the podium seat's id");
 
@@ -323,7 +323,7 @@ test("(f) a module with neither optional method yields spotlight.view === null o
   assert.equal(called.spotlight!.label, "A FRONT OFFICE");
 
   const board = await svc.boardView(code);
-  assert.deepEqual(board.spotlight, { label: "A FRONT OFFICE", view: null });
+  assert.deepEqual(board.spotlight, { label: "A FRONT OFFICE", view: null, question: null });
   void repo;
 });
 
@@ -355,6 +355,204 @@ test("(g) restore clears the spotlight and, reverting into a live room, shifts a
 
 /* --------------------------------------------------- (h) snapshot round-trip -- */
 
+/* ------------------------------------------------- (i) §12.2 INVITE FIRST -- */
+
+test("(i) invite -> accept -> live: the podium goes live only on accept, never on the invite alone", async () => {
+  const { svc, code, key, seats } = await inPlay(["A", "B"]);
+  const seatId = seats[0]!.seat.id;
+
+  const invited = await svc.control(code, { type: "invitePress", seatId, question: "Why that call?" }, key);
+  assert.equal(invited.session.paused, false, "an invite must never pause the room by itself");
+  assert.equal(invited.spotlight, null, "the podium is not live until the invite is accepted");
+  assert.deepEqual(invited.pressInvite, { seatId, label: invited.pressInvite!.label, question: "Why that call?", since: invited.pressInvite!.since });
+
+  // The invited seat's own payload carries the invite; the other seat's does not.
+  const mine = await svc.resumeByToken(seats[0]!.deviceToken!);
+  assert.deepEqual(mine.pressInvite, { question: "Why that call?", canDecline: true });
+  const other = await svc.resumeByToken(seats[1]!.deviceToken!);
+  assert.equal(other.pressInvite, null);
+
+  const accepted = await svc.submitAction(seats[0]!.deviceToken!, { type: "acceptPress" });
+  assert.equal(accepted.session.paused, true, "accepting turns the invite into the ordinary press-conference pause");
+  assert.equal(accepted.session.spotlight!.mine, true);
+  assert.equal(accepted.session.spotlight!.question, "Why that call?");
+  assert.equal(accepted.pressInvite, null, "the invite is consumed the instant it is accepted");
+
+  const teacher = await svc.teacherView(code, key);
+  assert.equal(teacher.pressInvite, null);
+  assert.deepEqual(teacher.spotlight, { seatId, label: teacher.spotlight!.label, since: teacher.spotlight!.since, question: "Why that call?" });
+});
+
+test("(i) invite -> decline -> no spotlight, and the decline is consumed", async () => {
+  const { svc, code, key, seats } = await inPlay(["A"]);
+  const seatId = seats[0]!.seat.id;
+
+  await svc.control(code, { type: "invitePress", seatId }, key);
+  const declined = await svc.submitAction(seats[0]!.deviceToken!, { type: "declinePress" });
+  assert.equal(declined.session.spotlight, null, "a decline must never open the podium");
+  assert.equal(declined.session.paused, false, "a decline must never pause the room");
+  assert.equal(declined.pressInvite, null);
+
+  const teacher = await svc.teacherView(code, key);
+  assert.equal(teacher.pressInvite, null);
+  assert.equal(teacher.spotlight, null);
+});
+
+test("(i) a second decline from the same seat is refused, not silently accepted", async () => {
+  const { svc, code, key, seats } = await inPlay(["A"]);
+  const seatId = seats[0]!.seat.id;
+
+  await svc.control(code, { type: "invitePress", seatId }, key);
+  await svc.submitAction(seats[0]!.deviceToken!, { type: "declinePress" });
+
+  await svc.control(code, { type: "invitePress", seatId }, key);
+  await assert.rejects(svc.submitAction(seats[0]!.deviceToken!, { type: "declinePress" }), (err: unknown) => {
+    const e = err as { status?: number; code?: string; retryable?: boolean };
+    return e.status === 400 && e.code === "decline_used" && e.retryable === false;
+  });
+
+  // The console's shortlist must mark the seat as having used its decline —
+  // never visible on a shared surface, only here.
+  const teacher = await svc.teacherView(code, key);
+  const board = await svc.boardView(code);
+  assert.doesNotMatch(JSON.stringify(board), /declin/i, "the board must never carry decline information");
+  void teacher;
+});
+
+test("(i) the console's shortlist marks a seat that has used its decline", async () => {
+  const { svc, code, key, seats } = await inPlay(["A", "B"]);
+  await svc.submitAction(seats[0]!.deviceToken!, { type: "lock" });
+  await svc.submitAction(seats[1]!.deviceToken!, { type: "lock" });
+
+  await svc.control(code, { type: "invitePress", seatId: seats[0]!.seat.id }, key);
+  await svc.submitAction(seats[0]!.deviceToken!, { type: "declinePress" });
+
+  const teacher = await svc.teacherView(code, key);
+  const a = teacher.pressCandidates.find((c) => c.seatId === seats[0]!.seat.id);
+  const b = teacher.pressCandidates.find((c) => c.seatId === seats[1]!.seat.id);
+  assert.equal(a?.declined, true);
+  assert.equal(b?.declined, false);
+});
+
+test("(i) cancelInvite clears a pending invite with no pause and no podium", async () => {
+  const { svc, code, key, seats } = await inPlay(["A"]);
+  const seatId = seats[0]!.seat.id;
+
+  await svc.control(code, { type: "invitePress", seatId }, key);
+  const cancelled = await svc.control(code, { type: "cancelInvite" }, key);
+  assert.equal(cancelled.pressInvite, null);
+  assert.equal(cancelled.spotlight, null);
+  assert.equal(cancelled.session.paused, false);
+
+  const mine = await svc.resumeByToken(seats[0]!.deviceToken!);
+  assert.equal(mine.pressInvite, null, "a cancelled invite must not still show on the invited seat's own payload");
+
+  // Responding to a cancelled invite is refused, not silently accepted.
+  await assert.rejects(svc.submitAction(seats[0]!.deviceToken!, { type: "acceptPress" }), (err: unknown) => {
+    return (err as { code?: string }).code === "no_invite";
+  });
+});
+
+test("(i) the first question lands on the board and podium payloads, and on no other seat's payload", async () => {
+  const { svc, code, key, seats } = await inPlay(["A", "B"]);
+  const seatId = seats[0]!.seat.id;
+  await svc.control(code, { type: "invitePress", seatId, question: "Why walk away from the room's most cap space?" }, key);
+  await svc.submitAction(seats[0]!.deviceToken!, { type: "acceptPress" });
+
+  const board = await svc.boardView(code);
+  assert.equal(board.spotlight!.question, "Why walk away from the room's most cap space?");
+
+  const podium = await svc.resumeByToken(seats[0]!.deviceToken!);
+  assert.equal(podium.session.spotlight!.question, "Why walk away from the room's most cap space?");
+
+  const other = await svc.resumeByToken(seats[1]!.deviceToken!);
+  assert.equal(other.session.spotlight!.question, null, "a locked-out seat must never receive the first question");
+
+  const serialized = JSON.stringify(other);
+  assert.doesNotMatch(serialized, /cap space/, "the first question leaked onto a non-podium seat's payload");
+});
+
+test("(i) the manual/direct pressConference control still works with no invite step (a desk that volunteered out loud)", async () => {
+  const { svc, code, key, seats } = await inPlay(["A"]);
+  const called = await svc.control(code, { type: "pressConference", seatId: seats[0]!.seat.id, question: "Talk us through it." }, key);
+  assert.equal(called.session.paused, true);
+  assert.equal(called.spotlight!.question, "Talk us through it.");
+  assert.equal(called.pressInvite, null);
+});
+
+test("(i) an old snapshot row lacking pressInvite/pressDeclined/spotlight.question boots cleanly", async () => {
+  const path = `/tmp/claude-0/-home-user-bow-economics-live/c38d3784-113a-52a9-9efb-c9b845006a27/scratchpad/pc-legacy-snapshot-${Date.now()}.json`;
+  const legacy = {
+    version: 1,
+    sessions: [
+      {
+        id: "s1",
+        code: "LEGACY1",
+        title: "Legacy Room",
+        lessonModuleId: pcTestModule.id,
+        gradeBand: "5-6",
+        phase: "PLAY",
+        paused: false,
+        pausedAt: null,
+        frozen: false,
+        ended: false,
+        // No `spotlight` key at all, and no `pressInvite` key at all — the shape
+        // of a session row written before either field existed.
+        state: { locked: {}, roundKey: "round-1", rounds: 0 },
+        version: 1,
+        checkpoint: null,
+        round: null,
+        log: [],
+        teacherKeyHash: "irrelevant-for-this-test",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    seats: [
+      {
+        id: "seat1",
+        sessionId: "s1",
+        displayName: "Legacy Seat",
+        displayNameNormalized: "legacy seat",
+        deviceTokenHash: "irrelevant",
+        rejoinPinHash: "irrelevant",
+        joinedAt: new Date().toISOString(),
+        lastSeenAt: new Date().toISOString(),
+        failedRejoinAttempts: 0,
+        appliedActionIds: [],
+        seenSeq: 0,
+        awaySince: null,
+        // No `pressDeclined` key at all.
+      },
+    ],
+  };
+  const fs = await import("node:fs/promises");
+  // The scratchpad directory already exists (test (h) above writes into it
+  // with no mkdir of its own) — no directory setup needed here either.
+  await fs.writeFile(path, JSON.stringify(legacy), "utf8");
+
+  const repo = new SnapshotRepository(path, { flushDelayMs: 0 });
+  await repo.whenReady();
+  const svc = new SessionService(repo);
+  svc.registerModule(pcTestModule);
+
+  const row = await repo.getSessionByCode("LEGACY1");
+  assert.ok(row, "the legacy room must still load");
+  assert.equal(row!.spotlight, null);
+  assert.equal(row!.pressInvite, null);
+
+  const teacher = await svc.teacherView("LEGACY1", "irrelevant-for-this-test").catch(() => null);
+  // The teacher key hash on this fixture is not a real hash of anything, so
+  // authentication is expected to fail — what this test actually proves is
+  // that LOADING the legacy row did not throw, which the assertions above
+  // already established. This call just confirms the service is otherwise
+  // usable against the loaded row.
+  void teacher;
+
+  const seat = await repo.getSeatById("seat1");
+  assert.equal(seat!.pressDeclined, false, "a seat from before the decline field existed must default to unused");
+});
+
 test("(h) a snapshot round-trip preserves pausedAt and spotlight", async () => {
   const path = `/tmp/claude-0/-home-user-bow-economics-live/c38d3784-113a-52a9-9efb-c9b845006a27/scratchpad/pc-snapshot-${Date.now()}.json`;
   const repoA = new SnapshotRepository(path, { flushDelayMs: 0 });
@@ -372,5 +570,5 @@ test("(h) a snapshot round-trip preserves pausedAt and spotlight", async () => {
   const row = await repoB.getSessionByCode(code);
   assert.ok(row);
   assert.ok(row!.pausedAt, "pausedAt did not survive the snapshot round-trip");
-  assert.deepEqual(row!.spotlight, { seatId: joined.seat.id, label: "A FRONT OFFICE", since: row!.spotlight!.since });
+  assert.deepEqual(row!.spotlight, { seatId: joined.seat.id, label: "A FRONT OFFICE", since: row!.spotlight!.since, question: null });
 });

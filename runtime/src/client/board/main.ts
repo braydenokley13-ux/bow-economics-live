@@ -1459,27 +1459,32 @@ type HLPoolBoard = {
  * `pool.stage`: nothing prints before the stage the teacher has pressed, and
  * every number is read straight off the payload (D61 R-12, non-negotiable 9).
  * Never a seat identity — club wordmarks only.
+ *
+ * Every class below is one the Host League board already draws with (the
+ * mean-bar columns from REVEAL stage 5, the give/split cards from stage 2)
+ * so this stage machine inherits the existing register rather than needing
+ * its own stylesheet — the concurrent edit window here is source-only.
  */
 function hlPoolRitualHtml(pool: HLPoolBoard): string {
   const parts: string[] = [];
 
   if (pool.billLine) {
     parts.push(
-      `<div class="hl-pool-billline" id="hlPoolBillLine">${pool.billLine
-        .map((r) => `<div class="hl-pool-billrow"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.assessed)}</span></div>`)
-        .join("")}</div>`,
+      `<div class="hl-give" id="hlPoolBillLine">
+        ${pool.billLine.map((r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.assessed)}</span></div>`).join("")}
+      </div>`,
     );
   }
 
   if (pool.fill) {
     const maxChips = Math.max(1, ...pool.fill.map((f) => f.chips));
     parts.push(
-      `<div class="hl-pool-cols" id="hlPoolFill">${pool.fill
+      `<div class="hl-means" id="hlPoolFill">${pool.fill
         .map(
-          (f) => `<div class="hl-pool-col">
-              <div class="hl-pool-col-track"><div class="hl-pool-col-bar" style="height:${Math.max(4, (f.chips / maxChips) * 100)}%"></div></div>
-              <div class="hl-pool-col-num numeric">${f.chips}</div>
-              <div class="hl-pool-col-lbl">${escapeHtml(f.club)}</div>
+          (f) => `<div class="hl-mean-col">
+              <div class="hl-mean-num">${f.chips}</div>
+              <div class="hl-mean-track"><div class="hl-mean-bar" style="height:${Math.max(4, (f.chips / maxChips) * 100)}%"></div></div>
+              <div class="hl-mean-lbl">${escapeHtml(f.club)}</div>
             </div>`,
         )
         .join("")}</div>
@@ -1489,16 +1494,16 @@ function hlPoolRitualHtml(pool: HLPoolBoard): string {
 
   if (pool.bowlTotal !== null) {
     parts.push(
-      `<div class="hl-pool-bowl" id="hlPoolBowl">
-        <div class="hl-pool-bowl-num numeric">${hlMoney(pool.bowlTotal)}</div>
-        <div class="hl-pool-bowl-lbl">THE BOWL — every club's assessed money, together</div>
+      `<div class="hl-give" id="hlPoolBowl">
+        <div class="hl-split-title">THE BOWL</div>
+        <div class="hl-give-row net"><span>Every club's assessed money, together</span><span class="numeric">${hlMoney(pool.bowlTotal)}</span></div>
       </div>`,
     );
     if (pool.visitorLine) {
       parts.push(
-        `<div class="hl-pool-visitorline" id="hlPoolVisitorLine">
-          <div class="hl-split-title">THE VISITOR LINE — what other clubs' fans put on each building's own books</div>
-          ${pool.visitorLine.map((r) => `<div class="hl-pool-billrow"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.visitorDollars)}</span></div>`).join("")}
+        `<div class="hl-give" id="hlPoolVisitorLine">
+          <div class="hl-split-title">THE VISITOR LINE</div>
+          ${pool.visitorLine.map((r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.visitorDollars)}</span></div>`).join("")}
         </div>`,
       );
     }
@@ -1506,12 +1511,12 @@ function hlPoolRitualHtml(pool: HLPoolBoard): string {
 
   if (pool.draw) {
     parts.push(
-      `<div class="hl-pool-cols" id="hlPoolDraw">${pool.draw
+      `<div class="hl-means" id="hlPoolDraw">${pool.draw
         .map(
-          (d) => `<div class="hl-pool-col">
-              <div class="hl-pool-col-track"><div class="hl-pool-col-bar out" style="height:70%"></div></div>
-              <div class="hl-pool-col-num numeric">${hlMoney(d.tookOut)}</div>
-              <div class="hl-pool-col-lbl">${escapeHtml(d.club)}</div>
+          (d) => `<div class="hl-mean-col">
+              <div class="hl-mean-num">${hlMoney(d.tookOut)}</div>
+              <div class="hl-mean-track"><div class="hl-mean-bar" style="height:70%"></div></div>
+              <div class="hl-mean-lbl">${escapeHtml(d.club)}</div>
             </div>`,
         )
         .join("")}</div>
@@ -1521,7 +1526,7 @@ function hlPoolRitualHtml(pool: HLPoolBoard): string {
 
   if (pool.net) {
     parts.push(
-      `<div class="hl-pool-net" id="hlPoolNet">
+      `<div class="hl-give" id="hlPoolNet">
         ${pool.netPageLabel ? `<div class="hl-bar-pager">${escapeHtml(pool.netPageLabel)}</div>` : ""}
         ${pool.net
           .map(
@@ -1534,8 +1539,8 @@ function hlPoolRitualHtml(pool: HLPoolBoard): string {
 
   if (pool.freeRide) {
     parts.push(
-      `<div class="hl-pool-freeride" id="hlPoolFreeRide">
-        <div class="hl-split-title">THE FREE RIDE — put back the least, drew the same split as everyone</div>
+      `<div class="hl-give" id="hlPoolFreeRide">
+        <div class="hl-split-title">THE FREE RIDE</div>
         ${pool.freeRide
           .map(
             (r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)} — put back ${Math.round(r.meanReinvestShare)}% on average</span><span class="numeric">${hlMoney(r.tookOutTotal)} drawn</span></div>`,
