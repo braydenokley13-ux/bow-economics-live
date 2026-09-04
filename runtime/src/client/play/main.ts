@@ -255,6 +255,9 @@ function resetSeatRenderState(): void {
   wrLocalPrice = null;
   wrLocalShare = null;
   wrLocalCondition = null;
+  wrLocalFloorOn = null;
+  wrLocalFloorLevel = null;
+  wrLocalFloorRecipient = null;
   wrLastSettledSeen = null;
   boxDialMounted = null;
   boxDragging = false;
@@ -5448,6 +5451,9 @@ let wrMountKey: string | null = null;
 let wrLocalPrice: number | null = null;
 let wrLocalShare: number | null = null;
 let wrLocalCondition: boolean | null = null;
+let wrLocalFloorOn: boolean | null = null;
+let wrLocalFloorLevel: number | null = null;
+let wrLocalFloorRecipient: "compliant" | "everyone" | null = null;
 let wrLastSettledSeen: string | null = null;
 
 type WRRule = { share: number; condition: boolean; how: string; supporting: number; liveDesks: number; conditionMin: number } | null;
@@ -5490,6 +5496,7 @@ type WRWeek = {
   drawAfter: number;
   roadDollarsGiven: number;
   transferLine: string;
+  floorLine: WRFloorLine | null;
 };
 type WRSlateRow = { week: number; open: boolean; settled: boolean; hosting: { short: string; draw: number }; visiting: { short: string; draw: number } };
 type WRCard = {
@@ -5498,6 +5505,24 @@ type WRCard = {
   body: string;
   rails: { rememberWhen: string; ourClass: string; inSports: string; economistsCall: string; outsideSports: string };
 };
+
+/* -------------------------------------------------- Wave 3b: THE FLOOR -- */
+type WRFloorLine = { bound: boolean; dockedText: string; receivedText: string; line: number };
+type WRFloorInstitution = { on: boolean; levelText: string; recipientLabel: string } | null;
+type WRInstitutions = { share: WRRule; floor: WRFloorInstitution } | null;
+type WRFloorLineChoice = { level: number; levelText: string; on: true };
+type WRFloorRecipientChoice = { id: "compliant" | "everyone"; label: string };
+type WRFloorMine = { on: boolean; level: number; levelText: string; recipient: "compliant" | "everyone" } | null;
+type WRFloorStakes = { atLevelText: string; ownReinvestText: string; wouldClear: boolean; costIfBoundText: string } | null;
+type WRFloorBallot = {
+  round: number;
+  roundCount: number;
+  lines: WRFloorLineChoice[];
+  recipientChoices: WRFloorRecipientChoice[];
+  mine: WRFloorMine;
+  stakes: WRFloorStakes;
+};
+type WRReview = { stage: number; stageCount: number; stageName: "The Share" | "The Floor"; showing: unknown };
 
 function wrDeskHeader(view: Record<string, unknown>): string {
   if (!view["club"]) return "";
@@ -5668,6 +5693,15 @@ function wrWeekResult(w: WRWeek): string {
           : ""
       }
       ${wrTransferHtml(w)}
+      ${
+        w.floorLine
+          ? `<div class="hl-give" id="wrFloorLine">
+               <div class="hl-split-title">The floor, at ${money(w.floorLine.line)}</div>
+               <div class="hl-give-row"><span>${w.floorLine.bound ? "You did not clear it" : "You cleared it"}</span><span class="numeric ${w.floorLine.bound ? "neg" : ""}">${escapeHtml(w.floorLine.dockedText)}</span></div>
+               <div class="hl-give-row"><span>From the floor pool</span><span class="numeric">${escapeHtml(w.floorLine.receivedText)}</span></div>
+             </div>`
+          : ""
+      }
       <div class="hl-give-row net"><span>Cash this week</span><span class="numeric ${w.cashDelta < 0 ? "neg" : ""}" data-wr-kept>${money(w.cashDelta)}</span></div>
       <details class="fa-rules" id="wrSplitBlock" style="margin-top:8px;">
         <summary>Where the money came from, line by line</summary>
@@ -5716,6 +5750,26 @@ function wrCardsHtml(cards: WRCard[]): string {
       </div>`,
     )
     .join("");
+}
+
+/** Wave 3b: the ARGUE-phase institution recap, paged by the teacher between
+ *  THE SHARE and THE FLOOR (`teacher:reviewStage`). Read-only on this desk. */
+function wrReviewHtml(review: WRReview | undefined): string {
+  if (!review) return "";
+  const isShare = review.stageName === "The Share";
+  const showing = review.showing as { share: number; condition: boolean; conditionMin: number } | { on: boolean; levelText: string; recipientLabel: string } | null;
+  const body = isShare
+    ? showing
+      ? `SHARE ${(showing as { share: number }).share}% · CONDITION ${(showing as { condition: boolean }).condition ? `${(showing as { conditionMin: number }).conditionMin}%+` : "OFF"}`
+      : "The room did not write a share."
+    : showing
+      ? `THE FLOOR is set at ${escapeHtml((showing as { levelText: string }).levelText)}. ${escapeHtml((showing as { recipientLabel: string }).recipientLabel)}.`
+      : "NO FLOOR — the room's own vote did not clear the two-thirds test.";
+  return `
+    <div class="panel" id="wrReview" style="padding:16px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">Institution review — ${review.stage + 1} of ${review.stageCount}: ${escapeHtml(review.stageName)}</div>
+      <p style="margin:8px 0 0; font-size:15px; line-height:1.5; color:var(--ink-primary);">${body}</p>
+    </div>`;
 }
 
 function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
@@ -5898,6 +5952,7 @@ function renderWriteRule(s: SessionInfo, view: Record<string, unknown>): void {
       const sheets = (view["termSheets"] as WRTermSheet[]) ?? [];
       body.innerHTML = `
         ${wrDeskHeader(view)}
+        ${wrReviewHtml(view["review"] as WRReview | undefined)}
         <div class="panel" style="padding:18px;">
           <div class="eyebrow" style="font-size:12px; margin-bottom:8px;">Sacramento, 2013 — the Board of Governors</div>
           <p style="margin:0; font-size:15px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["message"] ?? ""))}</p>

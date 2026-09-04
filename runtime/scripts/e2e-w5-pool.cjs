@@ -40,6 +40,30 @@ const FULL_HOUSE_ID = "m2l1-full-house";
 const DESKS = 6;
 const STAGE_NAMES = ["THE BILL LINE", "FILL", "THE BOWL STANDS", "DRAW", "NET", "THE FREE RIDE"];
 
+/* THE POOL must fit 100vh, scroll-free, on the projector at all three shapes
+ * a classroom actually runs (a 1920x1080 or 1366x768 short-throw projector,
+ * or a 1024x600 Chromebook mirrored to a TV). `hlPoolFitEvidence` reopens the
+ * board at each shape per stage rather than once for the whole run, since a
+ * frame's height is a function of ITS OWN content, not a property of the page. */
+const PROJECTOR_VIEWPORTS = [
+  { name: "1920x1080", width: 1920, height: 1080 },
+  { name: "1366x768", width: 1366, height: 768 },
+  { name: "1024x600", width: 1024, height: 600 },
+];
+const DEFAULT_BOARD_VIEWPORT = { width: 1920, height: 1080 };
+// The one element each exclusive stage frame guarantees is on screen — named
+// in the BUILD spec per stage (BILL LINE's sentence headline, FILL's chart,
+// THE BOWL's hero total, DRAW's shared hero, NET's always-visible page
+// eyebrow, THE FREE RIDE's hero draw figure).
+const STAGE_HERO_SELECTOR = {
+  1: "#hlPoolBillHeadline",
+  2: "#hlPoolFill",
+  3: "#hlPoolBowl",
+  4: "#hlPoolDrawHero",
+  5: "#hlPoolNetPager",
+  6: "#hlPoolFreeRideHero",
+};
+
 const consoleErrors = [];
 function watchConsole(page, label) {
   page.on("console", (m) => {
@@ -68,6 +92,48 @@ function slug(s) {
 async function shoot(page, name) {
   fs.mkdirSync(SCREEN_DIR, { recursive: true });
   await page.screenshot({ path: path.join(SCREEN_DIR, `${name}.png`) }).catch(() => {});
+}
+
+/**
+ * BUILD item 5, per stage: reopen the board at all three projector shapes,
+ * assert the stage fits `#stage` with zero scroll and that the stage's own
+ * hero element sits inside the viewport, and save one screenshot per shape.
+ * Restores `DEFAULT_BOARD_VIEWPORT` before returning so the rest of this
+ * band's run (paging, the next press) sees the viewport it expects.
+ */
+async function checkFitAcrossViewports(bucket, board, stageNo, stageName, shotPrefix) {
+  const heroSel = STAGE_HERO_SELECTOR[stageNo];
+  for (const vp of PROJECTOR_VIEWPORTS) {
+    await board.setViewportSize({ width: vp.width, height: vp.height });
+    // Let layout settle before measuring — a resize can land mid-reflow.
+    await board.waitForTimeout(120);
+    const measured = await board.evaluate((sel) => {
+      const stageEl = document.getElementById("stage");
+      const fit = stageEl ? stageEl.scrollHeight <= stageEl.clientHeight : false;
+      const heroEl = sel ? document.querySelector(sel) : null;
+      let heroInView = false;
+      if (heroEl) {
+        const r = heroEl.getBoundingClientRect();
+        heroInView = r.bottom > 0 && r.top < window.innerHeight && r.width > 0 && r.height > 0;
+      }
+      return { fit, scrollHeight: stageEl ? stageEl.scrollHeight : -1, clientHeight: stageEl ? stageEl.clientHeight : -1, heroPresent: !!heroEl, heroInView };
+    }, heroSel);
+    check(
+      bucket,
+      `pool stage ${stageNo}/6 (${stageName}) @ ${vp.name}: #stage fits with zero scroll`,
+      measured.fit,
+      `scrollHeight=${measured.scrollHeight} clientHeight=${measured.clientHeight}`,
+    );
+    check(
+      bucket,
+      `pool stage ${stageNo}/6 (${stageName}) @ ${vp.name}: the stage's own hero element (${heroSel}) is present and in the viewport`,
+      measured.heroPresent && measured.heroInView,
+      measured,
+    );
+    await shoot(board, `${shotPrefix}-${vp.name}`);
+  }
+  await board.setViewportSize(DEFAULT_BOARD_VIEWPORT);
+  await board.waitForTimeout(60);
 }
 
 /* -------------------------------------------------------- result ledger -- */
@@ -299,6 +365,7 @@ async function runUnlinkedBand(browser, band) {
   await shoot(teach, `w5-${band}-teach-pool-ready`);
 
   const seatIds = desks.map((d) => d.seatId).filter((x) => !!x);
+  let netFrameSnapshotForCompare = "";
 
   for (let i = 1; i <= 6; i += 1) {
     const stageName = STAGE_NAMES[i - 1];
@@ -329,12 +396,14 @@ async function runUnlinkedBand(browser, band) {
     }
 
     if (i === 1) {
-      const rows = await board.evaluate(() => [...document.querySelectorAll("#hlPoolBillLine .hl-give-row")].map((r) => r.textContent.trim()));
+      const rows = await board.evaluate(() => [...document.querySelectorAll("#hlPoolBillLine .hl-pool-row")].map((r) => r.textContent.trim()));
       check(bucket, "THE BILL LINE: one row per desk, each with a dollar figure", rows.length === DESKS && rows.every((r) => /\$/.test(r)), rows);
     }
     if (i === 2) {
       const heights = await board.evaluate(() => [...document.querySelectorAll("#hlPoolFill .hl-mean-bar")].map((el) => el.style.height));
       check(bucket, "FILL: bars IN differ in height across clubs", new Set(heights).size > 1, heights);
+      const grandTotalHit = boardText.match(/grand total.{0,40}/i);
+      check(bucket, "FILL: no grand total on this frame (D62 finding — that is stage 3's own reveal)", !grandTotalHit, grandTotalHit ? grandTotalHit[0] : undefined);
     }
     if (i === 3) {
       const bowlText = await board.evaluate(() => document.getElementById("hlPoolBowl")?.textContent ?? "");
@@ -350,33 +419,50 @@ async function runUnlinkedBand(browser, band) {
       );
     }
     if (i === 4) {
-      const heights = await board.evaluate(() => [...document.querySelectorAll("#hlPoolDraw .hl-mean-bar")].map((el) => el.style.height));
-      check(bucket, "DRAW: bars OUT are all the same height", heights.length > 0 && new Set(heights).size === 1, heights);
+      const heights = await board.evaluate(() => [...document.querySelectorAll("#hlPoolDraw .hl-pool-drawbar")].map((el) => el.style.height));
+      check(bucket, "DRAW: the six drawn bars are all the same height (equal out)", heights.length > 0 && new Set(heights).size === 1, heights);
+      const ghostCount = await board.evaluate(() => document.querySelectorAll("#hlPoolDraw .hl-pool-ghost").length);
+      check(bucket, "DRAW: FILL is ghosted behind the equal bars for contrast (unequal in, equal out)", ghostCount === heights.length && ghostCount > 0, ghostCount);
+      const heroText = await board.evaluate(() => document.getElementById("hlPoolDrawHero")?.textContent ?? "");
+      check(bucket, "DRAW: the shared draw figure is printed once, at hero scale, not six times", /\$/.test(heroText), heroText);
     }
     if (i === 5) {
-      const pagerBefore = await board.evaluate(() => document.querySelector("#hlPoolNet .hl-bar-pager")?.textContent?.trim() ?? "");
+      const pagerBefore = await board.evaluate(() => document.getElementById("hlPoolNetPager")?.textContent?.trim() ?? "");
       check(bucket, "NET stage 1: pager reads Group 1 of 2 (6 desks over a 5-per-page cap)", /Group 1 of 2/.test(pagerBefore), pagerBefore);
+      const netP1Text = await board.evaluate(() => document.getElementById("hlPoolNet")?.innerText ?? "");
       const pageBtnVisible = await teach.isVisible("#btnPoolPage").catch(() => false);
       check(bucket, "NET stage: the teacher's page control is visible", pageBtnVisible);
       if (pageBtnVisible) {
         await teach.click("#btnPoolPage");
         await board
-          .waitForFunction((prev) => (document.querySelector("#hlPoolNet .hl-bar-pager")?.textContent?.trim() ?? "") !== prev, pagerBefore, { timeout: 20000 })
+          .waitForFunction((prev) => (document.getElementById("hlPoolNetPager")?.textContent?.trim() ?? "") !== prev, pagerBefore, { timeout: 20000 })
           .catch(() => {});
-        const pagerAfter = await board.evaluate(() => document.querySelector("#hlPoolNet .hl-bar-pager")?.textContent?.trim() ?? "");
+        const pagerAfter = await board.evaluate(() => document.getElementById("hlPoolNetPager")?.textContent?.trim() ?? "");
+        const netP2Text = await board.evaluate(() => document.getElementById("hlPoolNet")?.innerText ?? "");
         check(bucket, "NET stage: pressing the page control advances to Group 2 of 2", /Group 2 of 2/.test(pagerAfter), pagerAfter);
+        check(bucket, "NET stage: page 2's frame text is visibly different from page 1's", netP2Text.length > 0 && netP2Text !== netP1Text, { p1: netP1Text.slice(0, 200), p2: netP2Text.slice(0, 200) });
         await shoot(board, `w5-${band}-board-net-page2`);
         await teach.click("#btnPoolPageBack");
         await board
-          .waitForFunction((prev) => (document.querySelector("#hlPoolNet .hl-bar-pager")?.textContent?.trim() ?? "") !== prev, pagerAfter, { timeout: 20000 })
+          .waitForFunction((prev) => (document.getElementById("hlPoolNetPager")?.textContent?.trim() ?? "") !== prev, pagerAfter, { timeout: 20000 })
           .catch(() => {});
       }
+      netFrameSnapshotForCompare = await board.evaluate(() => document.getElementById("hlPoolFrame")?.innerText ?? "");
     }
     if (i === 6) {
-      const rows = await board.evaluate(() => [...document.querySelectorAll("#hlPoolFreeRide .hl-give-row")].map((r) => r.textContent.trim()));
+      const rows = await board.evaluate(() => [...document.querySelectorAll("#hlPoolFreeRide .hl-pool-row")].map((r) => r.textContent.trim()));
       check(bucket, "THE FREE RIDE renders (2-3 rows) and is the last stage pressed", rows.length >= 2 && rows.length <= 3, rows);
+      const heroText = await board.evaluate(() => document.getElementById("hlPoolFreeRideHero")?.textContent ?? "");
+      check(bucket, "THE FREE RIDE has a headline (its top row's drawn total at hero scale)", /\$/.test(heroText), heroText);
+      const freeRideFrameText = await board.evaluate(() => document.getElementById("hlPoolFrame")?.innerText ?? "");
+      check(
+        bucket,
+        "THE FREE RIDE's frame is visibly different from NET's frame",
+        freeRideFrameText.length > 0 && freeRideFrameText !== netFrameSnapshotForCompare,
+        { net: netFrameSnapshotForCompare.slice(0, 200), freeRide: freeRideFrameText.slice(0, 200) },
+      );
     }
-    await shoot(board, `w5-${band}-board-${slug(stageName)}`);
+    await checkFitAcrossViewports(bucket, board, i, stageName, `w5-${band}-board-${slug(stageName)}`);
   }
 
   const btnTextEnd = (await teach.textContent("#btnPoolStage").catch(() => "")).trim();

@@ -553,6 +553,89 @@
   .hl-mean-base span { position: absolute; left: calc(100% + .9vw); bottom: -.85vh; font-size: 1.15vw;
     color: var(--ink-secondary); letter-spacing: .05em; white-space: nowrap; }
   .hl-mean-lbl { font-size: 1.5vw; color: var(--ink-secondary); letter-spacing: .08em; }
+
+  /* ================= W5 THE POOL — projector =================
+     THE POOL's six stages get their own board-scoped classes (`hl-pool-*`)
+     rather than `.hl-give`/`.hl-give-row` (13px /play rail furniture with no
+     board override — that is what collided labels into figures). Staging is
+     EXCLUSIVE in `hlPoolRitualHtml` (one stage = one frame); everything below
+     is sized in vh/vw so every frame fits 100vh at 1920x1080, 1366x768 and
+     1024x600 with zero scroll, the same discipline as `.hl-tight` above. */
+  .hl-pool-frame { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6vh; width: 100%; }
+  .hl-pool-headline { max-width: 84vw; font-size: 3.2vh; line-height: 1.32; color: var(--ink-primary); }
+  .hl-pool-eyebrow { font-family: var(--font-display); font-size: 2vh; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-secondary); }
+  .hl-pool-hero { font-family: var(--font-number); font-weight: 800; font-variant-numeric: tabular-nums; font-size: 10vh; line-height: 1; color: var(--accent-gold); }
+  .hl-pool-hero-sub { font-size: 2vh; color: var(--ink-secondary); max-width: 80vw; line-height: 1.3; }
+
+  /* Two-column ledger: `1fr max-content` keeps every figure in one right-
+     aligned column no matter how long the club name is — the exact collision
+     ("Oklahoma City$4.38M") `.hl-give-row`'s shrink-wrapped box produced.
+     `.hl-pool-row` is `display:contents` so its two spans join the parent
+     grid directly instead of nesting a second flex row inside it. */
+  .hl-pool-ledger { display: grid; grid-template-columns: 1fr max-content; column-gap: 4vw; row-gap: .3vh; grid-auto-rows: minmax(2.4vh, auto); width: 60vw; max-width: 76vw; align-items: center; }
+  .hl-pool-row { display: contents; }
+  .hl-pool-club { text-align: left; font-size: 1.9vh; color: var(--ink-primary); }
+  .hl-pool-amt { text-align: right; font-family: var(--font-number); font-variant-numeric: tabular-nums; font-size: 1.9vh; color: var(--ink-primary); white-space: nowrap; }
+
+  /* THE BOWL STANDS: the bowl hero, then the paired VISITOR/ROAD ledgers
+     side by side — one press, one frame, two small ledgers under one hero
+     (D62 repair 1's pairing, kept together rather than split by a stage). */
+  .hl-pool-pair { display: flex; gap: 3vw; justify-content: center; width: 100%; margin-top: .6vh; }
+  .hl-pool-panel { display: flex; flex-direction: column; align-items: center; gap: .5vh; min-width: 30vw; }
+  .hl-pool-frame .hl-split-title { font-size: 1.8vh; margin-bottom: .4vh; }
+  .hl-pool-panel .hl-pool-ledger { width: 26vw; max-width: 30vw; column-gap: 1.6vw; }
+
+  /* DRAW: the six equal bars ghosted over FILL — unequal in, equal out is
+     the frame's own shape, not a sentence under it. */
+  .hl-pool-draws { display: flex; align-items: flex-end; gap: 2.4vw; height: 22vh; margin-top: .6vh; }
+  .hl-pool-draw-col { display: flex; flex-direction: column; align-items: center; gap: .5vh; height: 100%; width: 8vw; }
+  .hl-pool-draw-track { position: relative; width: 100%; flex: 1 1 auto; min-height: 0; }
+  .hl-pool-ghost { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(244,185,66,0.28); border-radius: 6px 6px 0 0; }
+  .hl-pool-drawbar { position: absolute; left: 0; right: 0; bottom: 0; height: 70%; background: linear-gradient(180deg, var(--accent-gold), rgba(244,185,66,0.55)); border-radius: 6px 6px 0 0; }
+  .hl-pool-draw-lbl { font-size: 1.5vh; color: var(--ink-secondary); letter-spacing: .06em; }
+
+  /* NET: a zero-axis per club — a bar left (paid in more than it took) or
+     right (took out more than it paid), never a signed text row. */
+  .hl-pool-net-list { display: flex; flex-direction: column; gap: .5vh; width: 76vw; margin-top: .6vh; }
+  .hl-pool-net-row { display: grid; grid-template-columns: 13vw 1fr 17vw; column-gap: 1vw; align-items: center; min-height: 2.6vh; }
+  .hl-pool-net-club { text-align: left; font-size: 1.7vh; color: var(--ink-primary); }
+  .hl-pool-net-axis { position: relative; height: 1.6vh; background: rgba(255,255,255,0.06); border-radius: 4px; }
+  .hl-pool-net-zero { position: absolute; top: -.4vh; bottom: -.4vh; left: 50%; width: 2px; background: rgba(232,236,244,0.55); }
+  .hl-pool-net-bar { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+  .hl-pool-net-bar.left { right: 50%; background: var(--accent-violet); }
+  .hl-pool-net-bar.right { left: 50%; background: var(--accent-gold); }
+  .hl-pool-net-amt { text-align: right; font-family: var(--font-number); font-variant-numeric: tabular-nums; font-size: 1.7vh; color: var(--ink-primary); white-space: nowrap; }
+
+  /* Motion: a 500ms hold then a 500ms unveil with 40ms stagger across rows
+     and bars (inline `animation-delay` per row overrides this base value).
+     Reduced motion collapses everything below to a single <=120ms fade. */
+  @keyframes hlPoolUnveil { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes hlPoolFade { from { opacity: 0; } to { opacity: 1; } }
+  .hl-pool-frame .hl-pool-hero,
+  .hl-pool-frame .hl-pool-headline,
+  .hl-pool-frame .hl-pool-hero-sub,
+  .hl-pool-frame .hl-pool-eyebrow,
+  .hl-pool-frame .hl-pool-pair,
+  .hl-pool-row,
+  .hl-pool-draw-col,
+  .hl-pool-net-row {
+    animation: hlPoolUnveil 500ms var(--ease-decel) both;
+    animation-delay: 500ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hl-pool-frame .hl-pool-hero,
+    .hl-pool-frame .hl-pool-headline,
+    .hl-pool-frame .hl-pool-hero-sub,
+    .hl-pool-frame .hl-pool-eyebrow,
+    .hl-pool-frame .hl-pool-pair,
+    .hl-pool-row,
+    .hl-pool-draw-col,
+    .hl-pool-net-row {
+      animation-duration: 120ms !important;
+      animation-delay: 0ms !important;
+      animation-name: hlPoolFade !important;
+    }
+  }
 </style>
 </head>
 <body>

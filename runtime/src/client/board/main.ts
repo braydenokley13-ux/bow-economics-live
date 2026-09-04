@@ -1457,130 +1457,171 @@ type HLPoolBoard = {
 };
 
 /**
+ * The mode (most frequent value) across a set of draws that are SUPPOSED to
+ * be identical (the pool splits evenly every week). A leftover-dollar
+ * remainder can put one club a cent or two off the rest (see `roundingNote`)
+ * — printing six near-identical seven-digit numbers reads as "unequal" to a
+ * grade-5 room, which is backwards: this is the ONE shared figure, found by
+ * majority, so DRAW can say it once at hero scale instead.
+ */
+function hlPoolModeDraw(rows: { tookOut: number }[]): number {
+  const counts = new Map<number, number>();
+  let best = rows[0]?.tookOut ?? 0;
+  let bestCount = 0;
+  for (const r of rows) {
+    const c = (counts.get(r.tookOut) ?? 0) + 1;
+    counts.set(r.tookOut, c);
+    if (c > bestCount) {
+      bestCount = c;
+      best = r.tookOut;
+    }
+  }
+  return best;
+}
+
+/** One ledger row: club name left, a pre-formatted (already-safe) amount
+ * right, two-column grid via `display:contents` on `.hl-pool-row` so the
+ * parent `.hl-pool-ledger` grid aligns every row's figures in one column
+ * regardless of name length — the collision the old `.hl-give-row` had. */
+function hlPoolLedgerRow(club: string, amountHtml: string, delayMs: number): string {
+  return `<div class="hl-pool-row" style="animation-delay:${delayMs}ms"><span class="hl-pool-club">${escapeHtml(club)}</span><span class="hl-pool-amt numeric">${amountHtml}</span></div>`;
+}
+
+/**
  * THE POOL, ON THE PROJECTOR — six teacher-paced stages, driven entirely by
- * `pool.stage`: nothing prints before the stage the teacher has pressed, and
- * every number is read straight off the payload (D61 R-12, non-negotiable 9).
- * Never a seat identity — club wordmarks only.
+ * `pool.stage`. EXCLUSIVE staging: exactly one stage is the frame (the prior
+ * version APPENDED every stage forever behind an `overflow-y:auto` #stage,
+ * so NET and THE FREE RIDE rendered below the fold and pressing 5/6 changed
+ * nothing the room could see). Nothing prints before the stage the teacher
+ * has pressed, and every number is read straight off the payload (D61 R-12,
+ * non-negotiable 9). Never a seat identity — club wordmarks only.
  *
- * Every class below is one the Host League board already draws with (the
- * mean-bar columns from REVEAL stage 5, the give/split cards from stage 2)
- * so this stage machine inherits the existing register rather than needing
- * its own stylesheet — the concurrent edit window here is source-only.
+ * Own board-scoped classes throughout (`hl-pool-*`), never `.hl-give` /
+ * `.hl-give-row` — that pair is 13px `/play` rail furniture (theme.css) with
+ * no board-scoped override, which is what collided labels into figures.
  */
 function hlPoolRitualHtml(pool: HLPoolBoard): string {
-  const parts: string[] = [];
-
-  if (pool.billLine) {
-    parts.push(
-      `<div class="hl-give" id="hlPoolBillLine">
-        ${pool.billLine.map((r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.assessed)}</span></div>`).join("")}
-      </div>`,
-    );
-  }
-
-  if (pool.fill) {
-    const maxChips = Math.max(1, ...pool.fill.map((f) => f.chips));
-    parts.push(
-      `<div class="hl-means" id="hlPoolFill">${pool.fill
-        .map(
-          (f) => `<div class="hl-mean-col">
+  switch (pool.stage) {
+    case 1: {
+      const rows = pool.billLine ?? [];
+      return `<div class="hl-pool-frame" id="hlPoolFrame">
+        <div class="hl-pool-headline" id="hlPoolBillHeadline">${escapeHtml(pool.levyLine)}</div>
+        <div class="hl-pool-ledger" id="hlPoolBillLine">${rows.map((r, i) => hlPoolLedgerRow(r.club, hlMoney(r.assessed), 500 + i * 40)).join("")}</div>
+      </div>`;
+    }
+    case 2: {
+      const fill = pool.fill ?? [];
+      const maxChips = Math.max(1, ...fill.map((f) => f.chips));
+      // No grand total here (D62 finding: FILL already printed it one press
+      // before THE BOWL's own reveal) — the total is stage 3's beat.
+      return `<div class="hl-pool-frame" id="hlPoolFrame">
+        <div class="hl-pool-eyebrow">Every chip is $50,000.</div>
+        <div class="hl-means" id="hlPoolFill">${fill
+          .map(
+            (f, i) => `<div class="hl-mean-col" style="animation-delay:${500 + i * 40}ms">
               <div class="hl-mean-num">${f.chips}</div>
               <div class="hl-mean-track"><div class="hl-mean-bar" style="height:${Math.max(4, (f.chips / maxChips) * 100)}%"></div></div>
               <div class="hl-mean-lbl">${escapeHtml(f.club)}</div>
             </div>`,
-        )
-        .join("")}</div>
-      ${pool.fillGrandTotal !== null ? `<div class="synthesis-note hl-summary">Every chip is $50,000. Grand total so far: ${hlMoney(pool.fillGrandTotal)}.</div>` : ""}`,
-    );
-  }
-
-  if (pool.bowlTotal !== null) {
-    parts.push(
-      `<div class="hl-give" id="hlPoolBowl">
-        <div class="hl-split-title">THE BOWL</div>
-        <div class="hl-give-row net"><span>Every club's assessed money, together</span><span class="numeric">${hlMoney(pool.bowlTotal)}</span></div>
-      </div>`,
-    );
-    if (pool.visitorLine) {
-      parts.push(
-        `<div class="hl-give" id="hlPoolVisitorLine">
-          <div class="hl-split-title">THE VISITOR LINE</div>
-          ${pool.visitorLine.map((r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.visitorDollars)}</span></div>`).join("")}
-        </div>`,
-      );
-    }
-    // D62 repair 1: the given side beside the received side — what each club's
-    // own Draw put on somebody else's books on its away nights.
-    if (pool.roadLine) {
-      parts.push(
-        `<div class="hl-give" id="hlPoolRoadLine">
-          <div class="hl-split-title">THE ROAD LINE</div>
-          ${pool.roadLine.map((r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.roadDollars)}</span></div>`).join("")}
-        </div>`,
-      );
-    }
-  }
-
-  if (pool.draw) {
-    parts.push(
-      `<div class="hl-means" id="hlPoolDraw">${pool.draw
-        .map(
-          (d) => `<div class="hl-mean-col">
-              <div class="hl-mean-num">${hlMoney(d.tookOut)}</div>
-              <div class="hl-mean-track"><div class="hl-mean-bar" style="height:70%"></div></div>
-              <div class="hl-mean-lbl">${escapeHtml(d.club)}</div>
-            </div>`,
-        )
-        .join("")}</div>
-      <div class="synthesis-note hl-summary">Every bar is the same height — the pool splits evenly, whatever a club put in.</div>`,
-    );
-  }
-
-  if (pool.net) {
-    parts.push(
-      `<div class="hl-give" id="hlPoolNet">
-        ${pool.netPageLabel ? `<div class="hl-bar-pager">${escapeHtml(pool.netPageLabel)}</div>` : ""}
-        ${pool.net
-          .map(
-            (r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)} — paid in ${hlMoney(r.paidIn)}, took out ${hlMoney(r.tookOut)}</span><span class="numeric">${escapeHtml(r.netLine)}</span></div>`,
           )
-          .join("")}
-      </div>`,
-    );
+          .join("")}</div>
+      </div>`;
+    }
+    case 3: {
+      const visitor = pool.visitorLine ?? [];
+      const road = pool.roadLine ?? [];
+      return `<div class="hl-pool-frame" id="hlPoolFrame">
+        <div class="hl-pool-eyebrow">THE BOWL</div>
+        <div class="hl-pool-hero" id="hlPoolBowl">${hlMoney(pool.bowlTotal ?? 0)}</div>
+        <div class="hl-pool-hero-sub">Every club's assessed money, together.</div>
+        <div class="hl-pool-pair">
+          <div class="hl-pool-panel" id="hlPoolVisitorLine">
+            <div class="hl-split-title">THE VISITOR LINE</div>
+            <div class="hl-pool-ledger">${visitor.map((r, i) => hlPoolLedgerRow(r.club, hlMoney(r.visitorDollars), 500 + i * 40)).join("")}</div>
+          </div>
+          <div class="hl-pool-panel" id="hlPoolRoadLine">
+            <div class="hl-split-title">THE ROAD LINE</div>
+            <div class="hl-pool-ledger">${road.map((r, i) => hlPoolLedgerRow(r.club, hlMoney(r.roadDollars), 500 + i * 40)).join("")}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+    case 4: {
+      const draw = pool.draw ?? [];
+      const fill = pool.fill ?? [];
+      const maxChips = Math.max(1, ...fill.map((f) => f.chips));
+      const fillByClub = new Map(fill.map((f) => [f.club, f.chips]));
+      const shared = hlPoolModeDraw(draw);
+      return `<div class="hl-pool-frame" id="hlPoolFrame">
+        <div class="hl-pool-hero" id="hlPoolDrawHero">${hlMoney(shared)}</div>
+        <div class="hl-pool-hero-sub">Every club drew the same share back out.</div>
+        ${pool.roundingNote ? `<div class="hl-pool-eyebrow" id="hlPoolRounding">${escapeHtml(pool.roundingNote)}</div>` : ""}
+        <div class="hl-pool-draws" id="hlPoolDraw">${draw
+          .map((d, i) => {
+            const ghostPct = Math.max(4, ((fillByClub.get(d.club) ?? 0) / maxChips) * 100);
+            return `<div class="hl-pool-draw-col" style="animation-delay:${500 + i * 40}ms">
+              <div class="hl-pool-draw-track">
+                <div class="hl-pool-ghost" style="height:${ghostPct}%"></div>
+                <div class="hl-pool-drawbar" style="height:70%"></div>
+              </div>
+              <div class="hl-pool-draw-lbl">${escapeHtml(d.club)}</div>
+            </div>`;
+          })
+          .join("")}</div>
+      </div>`;
+    }
+    case 5: {
+      const net = pool.net ?? [];
+      const maxDiff = Math.max(1, ...net.map((r) => Math.abs(r.tookOut - r.paidIn)));
+      return `<div class="hl-pool-frame" id="hlPoolFrame">
+        ${pool.netPageLabel ? `<div class="hl-pool-eyebrow" id="hlPoolNetPager">${escapeHtml(pool.netPageLabel)}</div>` : ""}
+        <div class="hl-pool-net-list" id="hlPoolNet">${net
+          .map((r, i) => {
+            const diff = r.tookOut - r.paidIn;
+            const pct = Math.min(50, (Math.abs(diff) / maxDiff) * 50);
+            const side = diff > 0 ? "right" : diff < 0 ? "left" : null;
+            return `<div class="hl-pool-net-row" style="animation-delay:${500 + i * 40}ms">
+              <span class="hl-pool-net-club">${escapeHtml(r.club)}</span>
+              <span class="hl-pool-net-axis"><span class="hl-pool-net-zero"></span>${side ? `<span class="hl-pool-net-bar ${side}" style="width:${pct}%"></span>` : ""}</span>
+              <span class="hl-pool-net-amt numeric">${escapeHtml(r.netLine)}</span>
+            </div>`;
+          })
+          .join("")}</div>
+      </div>`;
+    }
+    case 6: {
+      const rows = pool.freeRide ?? [];
+      const top = rows[0] ?? null;
+      return `<div class="hl-pool-frame" id="hlPoolFrame">
+        ${
+          top
+            ? `<div class="hl-pool-eyebrow">${escapeHtml(top.club)}</div>
+          <div class="hl-pool-hero" id="hlPoolFreeRideHero">${hlMoney(top.tookOutTotal)}</div>
+          <div class="hl-pool-hero-sub">drawn from the pool this season.</div>`
+            : ""
+        }
+        <div class="hl-pool-ledger" id="hlPoolFreeRide">${rows
+          .map((r, i) => {
+            // 5-6 never sees a percent-shaped number (D62 repair 4): the row
+            // speaks in dollars unless the module sent the share.
+            const share = typeof r.meanReinvestShare === "number" && Number.isFinite(r.meanReinvestShare) ? r.meanReinvestShare : null;
+            const dollars = typeof r.meanReinvestDollars === "number" && Number.isFinite(r.meanReinvestDollars) ? r.meanReinvestDollars : null;
+            const putBack =
+              share !== null && dollars !== null
+                ? `put back ${hlMoney(dollars)} a week (${Math.round(share)}%) on average`
+                : share !== null
+                  ? `put back ${Math.round(share)}% on average`
+                  : dollars !== null
+                    ? `put back ${hlMoney(dollars)} a week on average`
+                    : "put back the least";
+            return hlPoolLedgerRow(`${r.club} — ${putBack}`, `${hlMoney(r.tookOutTotal)} drawn`, 500 + i * 40);
+          })
+          .join("")}</div>
+      </div>`;
+    }
+    default:
+      return "";
   }
-
-  if (pool.freeRide) {
-    parts.push(
-      `<div class="hl-give" id="hlPoolFreeRide">
-        <div class="hl-split-title">THE FREE RIDE</div>
-        ${pool.freeRide
-          .map(
-            (r) => {
-              // 5-6 never sees a percent-shaped number (D62 repair 4): the row
-              // speaks in dollars unless the module sent the share.
-              const share = typeof r.meanReinvestShare === "number" && Number.isFinite(r.meanReinvestShare) ? r.meanReinvestShare : null;
-              const dollars = typeof r.meanReinvestDollars === "number" && Number.isFinite(r.meanReinvestDollars) ? r.meanReinvestDollars : null;
-              const putBack =
-                share !== null && dollars !== null
-                  ? `put back ${hlMoney(dollars)} a week (${Math.round(share)}%) on average`
-                  : share !== null
-                    ? `put back ${Math.round(share)}% on average`
-                    : dollars !== null
-                      ? `put back ${hlMoney(dollars)} a week on average`
-                      : "put back the least";
-              return `<div class="hl-give-row"><span>${escapeHtml(r.club)} — ${putBack}</span><span class="numeric">${hlMoney(r.tookOutTotal)} drawn</span></div>`;
-            },
-          )
-          .join("")}
-      </div>`,
-    );
-  }
-
-  if (pool.roundingNote) {
-    parts.push(`<div class="synthesis-note hl-foot" id="hlPoolRounding">${escapeHtml(pool.roundingNote)}</div>`);
-  }
-
-  return parts.join("");
 }
 
 function renderHostLeagueBoard(view: Record<string, unknown>, mode: string): void {
@@ -1873,6 +1914,41 @@ type WRBoardCard = {
   rails: { rememberWhen: string; ourClass: string; inSports: string; economistsCall: string; outsideSports: string };
 };
 
+/* -------------------------------------------------- Wave 3b: THE FLOOR -- */
+type WRFloorRoundBoard = {
+  index: number;
+  count: number;
+  onCount: number;
+  offCount: number;
+  levelCounts: { levelText: string; count: number }[];
+  proposalsIn: number;
+  deskCount: number;
+};
+type WRInstitutionsBoard = { share: { share: number; condition: boolean } | null; floor: { on: boolean; levelText: string; recipientLabel: string } | null } | null;
+type WRFloorSettle = { dockedTotalText: string; receivedTotalText: string; boundCount: number; clubCount: number };
+
+/** Both institutions' own adopted summaries, public — no seat, no desk. */
+function wrInstitutionsBoard(institutions: WRInstitutionsBoard): string {
+  if (!institutions) return "";
+  return `<div class="wr-board-rule" id="wrBoardInstitutions">SHARE ${institutions.share ? `<b>${institutions.share.share}%</b> · condition <b>${institutions.share.condition ? "ON" : "OFF"}</b>` : "<b>not written</b>"} · FLOOR ${institutions.floor ? `<b>${escapeHtml(institutions.floor.levelText)}</b>` : "<b>NO FLOOR</b>"}</div>`;
+}
+
+/** The floor's own public tally — counts and level tallies as bars, no desk
+ *  or seat identity anywhere on this frame (boardView never carries one). */
+function wrFloorRoundBoard(f: WRFloorRoundBoard): string {
+  const max = Math.max(1, ...f.levelCounts.map((l) => l.count));
+  return `
+    <div class="wr-board-gauge" id="wrBoardFloorCounts">ON <b>${f.onCount}</b> · OFF <b>${f.offCount}</b></div>
+    <div class="wr-board-hist" id="wrBoardFloorLevels">
+      ${f.levelCounts
+        .map((l) => {
+          const pct = l.count === 0 ? 0 : Math.max(6, Math.round((l.count / max) * 100));
+          return `<div class="wr-board-histcol ${l.count > 0 ? "inband" : "outband"}"><div class="wr-board-histwell"><div class="wr-board-histbar" style="height:${pct}%;"></div></div><div class="wr-board-histtick">${escapeHtml(l.levelText)} · ${l.count}</div></div>`;
+        })
+        .join("")}
+    </div>`;
+}
+
 /**
  * The round histogram.
  *
@@ -2092,12 +2168,29 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
         ${view["statusQuoCopy"] ? `<div class="wr-board-copy">${escapeHtml(String(view["statusQuoCopy"]))}</div>` : ""}`;
       return;
 
+    case "floorRounds": {
+      const f = view["floorRound"] as WRFloorRoundBoard;
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}${view["sealed"] ? " · SEALED" : ""}</div>
+        ${ruleStrip}
+        ${wrFloorRoundBoard(f)}
+        <div class="synthesis-note">${f.proposalsIn} of ${f.deskCount} desks have a proposal in THIS round. ${escapeHtml(privacy)}</div>`;
+      return;
+    }
+
+    case "floorAdopted":
+      stage.innerHTML = `
+        <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
+        ${wrInstitutionsBoard(view["institutions"] as WRInstitutionsBoard)}`;
+      return;
+
     case "season": {
       const pairings = (view["pairings"] as { host: string; hostShort: string; visitorShort: string; visitorDraw: number }[]) ?? [];
       const rookie = view["rookie"] as { club: string; copy: string } | undefined;
       stage.innerHTML = `
         <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
         ${ruleStrip}
+        ${wrInstitutionsBoard(view["institutions"] as WRInstitutionsBoard)}
         ${rookie ? `<div class="wr-board-rookie" id="wrBoardRookie">THE ROOKIE LANDED AT ${escapeHtml(rookie.club.toUpperCase())} — ${escapeHtml(rookie.copy)}</div>` : ""}
         <div class="wr-board-pairs">${pairings
           .map(
@@ -2130,15 +2223,23 @@ function renderWriteRuleBoard(view: Record<string, unknown>, mode: string): void
       return;
     }
 
-    case "consequence":
+    case "consequence": {
+      const floorSettle = view["floorSettle"] as WRFloorSettle | undefined;
       stage.innerHTML = `
         <div class="label">${escapeHtml(String(view["title"] ?? ""))}</div>
         ${ruleStrip}
+        ${wrInstitutionsBoard(view["institutions"] as WRInstitutionsBoard)}
         <div class="wr-board-headline" id="wrBoardEra">${escapeHtml(String(view["eraLine"] ?? ""))}</div>
         ${wrEraBoard((view["era"] as WREraRow[]) ?? [])}
+        ${
+          floorSettle
+            ? `<div class="wr-board-gauge" id="wrBoardFloorSettle">THE FLOOR — <b>${floorSettle.boundCount}</b> of <b>${floorSettle.clubCount}</b> clubs were bound at some point · forfeited <b>${escapeHtml(floorSettle.dockedTotalText)}</b> · redistributed <b>${escapeHtml(floorSettle.receivedTotalText)}</b></div>`
+            : ""
+        }
         <div class="synthesis-note" id="wrBoardHorizon">${escapeHtml(String(view["horizonNote"] ?? ""))}</div>
         <div class="exit-prompt wr-board-q">${escapeHtml(String(view["question"] ?? ""))}</div>`;
       return;
+    }
 
     case "counterfactual": {
       const rows = (view["rows"] as WRCfRow[]) ?? [];
