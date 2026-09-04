@@ -613,6 +613,22 @@ export type PotFlow = {
    * is a no-op whenever no floor has been adopted — see `floorRuleFor`).
    */
   floorDocked: boolean;
+  /**
+   * Wave 3b (view-only, additive): THE FLOOR's own dollar amount forfeited by
+   * THIS club THIS week — 0 unless `floorDocked`. Recorded here, alongside the
+   * `base`/`bonus` arithmetic that already computes it in `settleWeek`, so a
+   * view can print an honest dollar figure without re-deriving the floor's
+   * own math a second time and risking it drift from the number that actually
+   * moved the club's cash.
+   */
+  floorForfeitedDollars: number;
+  /**
+   * Wave 3b (view-only, additive): THE FLOOR's own dollar amount THIS club
+   * received THIS week from the forfeited pool — 0 when the floor is off,
+   * this club was not eligible under the adopted `recipient` rule, or nothing
+   * was forfeited that week.
+   */
+  floorReceivedDollars: number;
 };
 
 export type SettledWeek = {
@@ -1156,6 +1172,17 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
     const gets = !floor.on || floor.recipient === "everyone" || floorCompliant[i];
     return Math.round(base[i]! + (gets ? bonus : 0));
   });
+  // Wave 3b (view-only, additive): the same `base`/`bonus` this loop already
+  // computed, read into per-row dollar figures for the view layer alone —
+  // nothing here changes `base`, `bonus`, `tookOut` or any cash the reducer
+  // moves.
+  const floorForfeitedRow = rows.map((_, i) =>
+    floor.on && floorCompliantCount > 0 && !floorCompliant[i] ? Math.round(evenShare - base[i]!) : 0,
+  );
+  const floorReceivedRow = rows.map((_, i) => {
+    const gets = !floor.on || floor.recipient === "everyone" || floorCompliant[i];
+    return floor.on && gets ? Math.round(bonus) : 0;
+  });
 
   const clubs = state.clubs.slice();
   for (const r of rows) {
@@ -1196,6 +1223,8 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
         // under its institution-specific name for the view turn.
         docked: floor.on && floorCompliantCount > 0 && !floorCompliant[r.slot]!,
         floorDocked: floor.on && floorCompliantCount > 0 && !floorCompliant[r.slot]!,
+        floorForfeitedDollars: floorForfeitedRow[r.slot]!,
+        floorReceivedDollars: floorReceivedRow[r.slot]!,
       },
       bill: profile.bill,
       national: NATIONAL,
@@ -3754,6 +3783,7 @@ function viewWeek(state: WriteRuleState, club: Club, w: SettledWeek) {
     drawAfter: w.drawAfter,
     roadDollarsGiven: w.roadDollarsGiven,
     transferLine: transfer.text,
+    floorLine: floorLineFor(floorRuleFor(state), w),
   };
 }
 
@@ -3768,6 +3798,45 @@ const ruleView = (state: WriteRuleState) =>
         conditionMin: CONDITION_MIN_REINVEST,
       }
     : null;
+
+/**
+ * Wave 3b: THE FLOOR's own adopted-institution summary, parallel to
+ * `ruleView` above — `null` before the floor's own two-thirds test has run
+ * (before `floorAdopted`) and `null` again after a failed test (NO FLOOR:
+ * `row.condition === false`), because a failed floor is nothing to summarise
+ * on a shared surface — the season simply runs without it.
+ */
+function floorInstitutionView(state: WriteRuleState): { on: boolean; levelText: string; recipientLabel: string } | null {
+  const row = state.institutions.floor;
+  if (!row || !row.condition) return null;
+  return {
+    on: true,
+    levelText: money(row.share),
+    recipientLabel:
+      row.recipient === "everyone"
+        ? "Every club in the league split what was forfeited"
+        : "Only the clubs that cleared the floor split what was forfeited",
+  };
+}
+
+/**
+ * Wave 3b: THE FLOOR's own per-week line, for the OWN club's settled-week
+ * row alone — dollars only, at either band (the flat-line ruling above), so
+ * this never needs a percent and its two dollar figures are never negative
+ * (a forfeit or a bonus is 0 or positive, never a debt printed as a minus
+ * sign). `null` whenever no floor is in force this season.
+ */
+function floorLineFor(floor: FloorRule, w: SettledWeek): { bound: boolean; dockedText: string; receivedText: string; line: number } | null {
+  if (!floor.on) return null;
+  const dockedAmt = w.pot.floorForfeitedDollars;
+  const receivedAmt = w.pot.floorReceivedDollars;
+  return {
+    bound: w.pot.floorDocked,
+    dockedText: dockedAmt > 0 ? `docked ${money(dockedAmt)}` : "not docked this week",
+    receivedText: receivedAmt > 0 ? `received ${money(receivedAmt)} from the floor pool` : "received nothing from the floor pool",
+    line: floor.level,
+  };
+}
 
 /* --------------------------------------------------------------- module -- */
 
@@ -4628,6 +4697,14 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
     const club = state.clubs[slot]!;
     const agg = computeAggregate(state);
     const card = clubCard(state, slot);
+    // Wave 3b: THE FLOOR joins THE SHARE on every surface once institution 2
+    // has actually run its own test — `floorRounds` (still being argued) is
+    // deliberately excluded; that stage carries its own `floor` ballot object
+    // instead (see below), never a verdict that has not been reached yet.
+    const institutionsView =
+      state.stage === "floorAdopted" || state.stage === "season" || state.stage === "seasonDone"
+        ? { share: ruleView(state), floor: floorInstitutionView(state) }
+        : null;
     const base = {
       seated: true,
       ...card,
@@ -4639,6 +4716,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       seedNote: state.seedNote,
       seeded: state.seeded,
       ...(club.l2Reinvest !== null ? { l2Reinvest: Math.round(club.l2Reinvest * 10) / 10 } : {}),
+      ...(institutionsView ? { institutions: institutionsView } : {}),
     };
     switch (phase) {
       case "LOBBY":
@@ -4693,6 +4771,58 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             mode: "adopted",
             adoption: adoptionLineClaimed(agg).text,
             seasonCopy: seasonCopyFor(state.adopted?.how),
+            league: leagueTable(state, slot),
+          });
+        }
+        if (state.stage === "floorRounds") {
+          // Wave 3b: institution 2's own ballot screen, parallel to the
+          // "rounds" branch above — one authored line at 5-6 (an ON/OFF
+          // choice, never a percent), three at 7-8, plus the stakes card
+          // `openFloorRounds` already printed for this club alone before this
+          // screen ever renders.
+          const levels = floorLevelsFor(state.band);
+          const lines = levels.map((level) => ({ level, levelText: money(level), on: true }));
+          const recipientChoices = FLOOR_RECIPIENTS.map((id) => ({
+            id,
+            label: id === "everyone" ? "Every club in the league" : "Only the clubs that cleared the floor",
+          }));
+          return tag({
+            ...base,
+            mode: "floorRounds",
+            round: Math.min(state.floorRoundIndex + 1, FLOOR_ROUND_COUNT),
+            roundCount: FLOOR_ROUND_COUNT,
+            floor: {
+              round: Math.min(state.floorRoundIndex + 1, FLOOR_ROUND_COUNT),
+              roundCount: FLOOR_ROUND_COUNT,
+              lines,
+              recipientChoices,
+              mine: club.floorProposal
+                ? {
+                    on: club.floorProposal.on,
+                    level: club.floorProposal.level,
+                    levelText: money(club.floorProposal.level),
+                    recipient: club.floorProposal.recipient,
+                  }
+                : null,
+              stakes: club.stakesCard
+                ? {
+                    atLevelText: money(club.stakesCard.atLevel),
+                    ownReinvestText: money(club.stakesCard.ownReinvest),
+                    wouldClear: club.stakesCard.wouldClear,
+                    costIfBoundText: money(club.stakesCard.costIfBound),
+                  }
+                : null,
+            },
+            sealed: state.floorRoundIndex >= FLOOR_ROUND_COUNT,
+            sealedNote:
+              "The floor vote is sealed. Round 2 has closed and the two-thirds test runs on the numbers that were in — nothing you do now can change what this room adopts.",
+            league: leagueTable(state, slot),
+          });
+        }
+        if (state.stage === "floorAdopted") {
+          return tag({
+            ...base,
+            mode: "floorAdopted",
             league: leagueTable(state, slot),
           });
         }

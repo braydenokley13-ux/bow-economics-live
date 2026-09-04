@@ -101,9 +101,14 @@ function renderSettle(wrap: HTMLElement, view: Record<string, unknown>): void {
   const table = document.createElement("table");
   table.className = "slt-desktable";
   table.innerHTML = `
-    <thead><tr><th>Desk</th><th>Jobs covered</th><th>Jobs still open</th></tr></thead>
+    <thead><tr><th>Desk</th><th>Jobs covered</th><th>Jobs still open</th><th>Open again next season</th></tr></thead>
     <tbody>${(settle as V[])
-      .map((s) => `<tr><td>${escapeHtml(str(s["label"]))}</td><td>${num(s["coveredJobs"])}</td><td>${num(s["openJobs"])}</td></tr>`)
+      .map((s) => {
+        const expiring = Array.isArray(s["expiringNextSeason"]) ? (s["expiringNextSeason"] as unknown[]).map((n) => str(n)).filter(Boolean) : [];
+        return `<tr><td>${escapeHtml(str(s["label"]))}</td><td>${num(s["coveredJobs"])}</td><td>${num(s["openJobs"])}</td><td>${
+          expiring.length === 0 ? "—" : escapeHtml(expiring.join(", "))
+        }</td></tr>`;
+      })
       .join("")}</tbody>`;
   wrap.appendChild(table);
 }

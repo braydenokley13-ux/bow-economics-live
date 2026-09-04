@@ -2343,9 +2343,16 @@ type FHNight = {
   renewalAtFloor?: boolean;
   renewalFloorLine?: string;
 };
-type FHBooks = { cash: number; renewals: number; inDebt: boolean };
+// W4 follow-up repair 2: `renewalsText` is the module's band-formatted
+// sentence for `renewals` — print it verbatim, never rebuild `${renewals}%`
+// here. Optional only for a snapshot from before this field existed.
+type FHBooks = { cash: number; renewals: number; inDebt: boolean; renewalsText?: string };
 type FHTwoPeaks = { ticketPeakPrice: number; totalPeakPrice: number; gapDollars: number; gapSteps: number; note?: string };
-type FHReplay = { label: string; cash: number; renewals: number; note: string };
+// W4 follow-up repair 2/4: `renewalsText` is the module's band-formatted
+// sentence for `renewals` — print it verbatim in the counterfactual, never
+// rebuild `${renewals}%` here. Optional only for a snapshot from before this
+// field existed.
+type FHReplay = { label: string; cash: number; renewals: number; note: string; renewalsText?: string };
 
 const TV_LABEL: Record<string, string> = {
   none: "Not on TV",
@@ -2601,7 +2608,9 @@ function fhBooksDock(books: FHBooks | undefined, ui: FHUiCopy, tight: boolean): 
   // chain twelve inches away is tonight's. Neither is a bare `CASH` any more.
   // "after the bill" is gone: CASH also nets the event money and the extra seats.
   const cash = row(ui.chainLabels.cash, money(books.cash), books.inDebt ? "in the red" : ui.seasonQualifier, books.inDebt ? FH_RED : FH_MONEY, "cash");
-  const ren = row(ui.chainLabels.renewals, `${books.renewals}%`, ui.seasonQualifier, FH_INK, "renew");
+  // W4 follow-up repair 2: print the module's band-formatted text verbatim;
+  // fall back to the old `%` form only for a pre-repair snapshot.
+  const ren = row(ui.chainLabels.renewals, books.renewalsText ?? `${books.renewals}%`, ui.seasonQualifier, FH_INK, "renew");
   return `<div style="display:${tight ? "flex" : "grid"}; gap:6px; ${tight ? "flex:1; min-width:0;" : ""}">${cash}${ren}
       <span style="font-size:10.5px; line-height:14px; color:${FH_INK_CAPTION};">${escapeHtml(ui.twoBooksLine)}</span>
     </div>`;
@@ -2705,7 +2714,7 @@ function fhGoalCard(view: Record<string, unknown>, ui: FHUiCopy): string {
       <span style="width:1px; height:26px; background:${FH_HAIR};"></span>
       <span style="display:flex; align-items:baseline; gap:8px;">
         <span style="${FH_LABEL} font-size:10.5px;">${ui.chainLabels.renewals}</span>
-        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:19px; font-weight:600; color:${FH_INK};">${books.renewals}%</b>
+        <b style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:19px; font-weight:600; color:${FH_INK};">${escapeHtml(books.renewalsText ?? `${books.renewals}%`)}</b>
         <span style="font-size:10px; color:${FH_INK_CAPTION};">${escapeHtml(ui.seasonQualifier)}</span>
       </span>
       <span style="font-size:11px; line-height:14px; color:${FH_INK_CAPTION}; max-width:210px;">${escapeHtml(ui.twoBooksLine)}</span>
@@ -3752,6 +3761,9 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
     n5Turnout: number;
     renewalsAtN1: number;
     renewalsAtN5: number;
+    /** W4 follow-up repair 2: band-formatted text for the two figures above — print verbatim, never `${n}%`. */
+    renewalsAtN1Text?: string;
+    renewalsAtN5Text?: string;
     samePrice: boolean;
     renewalsFans: number;
     carryFans: number;
@@ -3765,12 +3777,15 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
     channelLine: string;
   } | null;
   const replays = (view["replays"] as FHReplay[]) ?? [];
-  const side = (label: string, price: number, turnout: number, renewals: number) => `
+  // W4 follow-up repair 2: `renewalsText` is the module's band-formatted
+  // sentence — print it verbatim, falling back to the old `%` form only when
+  // it is absent (a pre-repair snapshot).
+  const side = (label: string, price: number, turnout: number, renewals: number, renewalsText?: string) => `
     <div class="fh-repeat-row" style="display:flex; align-items:baseline; gap:12px; padding:9px 12px; border-radius:10px; background:${FH_PANEL_2}; border:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
       <span style="${FH_LABEL} font-size:10.5px; min-width:54px;">${label}</span>
       <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:15px; color:${FH_INK};">$${price}</span>
       <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${tight ? 24 : 28}px; font-weight:600; color:${FH_INK};">${turnout.toLocaleString()}</span>
-      <span style="margin-left:auto; font-size:11.5px; color:${FH_INK_LABEL};">renewals ${renewals}%</span>
+      <span style="margin-left:auto; font-size:11.5px; color:${FH_INK_LABEL};">renewals ${escapeHtml(renewalsText ?? `${renewals}%`)}</span>
     </div>`;
   const main = `
     <div style="display:flex; flex-direction:column; gap:12px;">
@@ -3780,8 +3795,8 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
           ? `<div class="m2-card fh-repeat" style="${FH_CARD} padding:13px;">
                <span style="${FH_LABEL} margin-bottom:8px;">Night 1 and Night 5 were the same card</span>
                <div style="display:grid; grid-template-columns:${tight ? "1fr" : "1fr 1fr"}; gap:9px;">
-                 ${side("Night 1", repeat.n1Price, repeat.n1Turnout, repeat.renewalsAtN1)}
-                 ${side("Night 5", repeat.n5Price, repeat.n5Turnout, repeat.renewalsAtN5)}
+                 ${side("Night 1", repeat.n1Price, repeat.n1Turnout, repeat.renewalsAtN1, repeat.renewalsAtN1Text)}
+                 ${side("Night 5", repeat.n5Price, repeat.n5Turnout, repeat.renewalsAtN5, repeat.renewalsAtN5Text)}
                </div>
                <div class="fh-repeat-split" id="fhRepeatSplit" style="margin-top:9px; padding:9px 12px; border-radius:10px; border-left:2px solid ${FH_VIOLET}; background:${FH_PANEL_2};">
                  <span style="${FH_LABEL} font-size:10px;">Where that change came from</span>
@@ -3797,7 +3812,7 @@ function renderFHCounterfactual(view: Record<string, unknown>): void {
             (r) => `<div class="fh-replay" style="padding:8px 0; border-top:1px solid var(--m2-hairline-faint, rgba(255,255,255,0.045));">
               <div style="display:flex; justify-content:space-between; gap:12px; align-items:baseline;">
                 <span style="font-size:13px; color:${FH_INK};">${escapeHtml(r.label)}</span>
-                <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${FH_INK_BODY}; white-space:nowrap;">${money(r.cash)} · ${r.renewals}%</span>
+                <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:13px; color:${FH_INK_BODY}; white-space:nowrap;">${money(r.cash)} · ${escapeHtml(r.renewalsText ?? `${r.renewals}%`)}</span>
               </div>
               <p style="margin:3px 0 0; font-size:11.5px; line-height:16px; color:${FH_INK_CAPTION};">${escapeHtml(r.note)}</p>
             </div>`,
@@ -4951,7 +4966,10 @@ function renderHLPlay(view: Record<string, unknown>): void {
   // to the fixed reopen strip, which is one press away and always reachable.
   hidePin();
 
-  const key = `${weekNumber}|${locked}|${history.length}`;
+  // The saved pool position is part of the key: SAVE MY POSITION must show
+  // its own confirmation on the student's own device, not on the next week.
+  const poolSaved = (view["poolPosition"] as HLPoolPosition | undefined)?.current ?? null;
+  const key = `${weekNumber}|${locked}|${history.length}|${poolSaved ? `${poolSaved.chip}|${poolSaved.line}` : ""}`;
   if (hlMountKey === key && document.getElementById("hlPlayRoot")) return;
   hlMountKey = key;
   if (hlLocalPrice === null || !locked) hlLocalPrice = Number(view["price"] ?? 44);

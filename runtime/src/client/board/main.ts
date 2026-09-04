@@ -1445,12 +1445,14 @@ type HLPoolBoard = {
   fillGrandTotal: number | null;
   bowlTotal: number | null;
   visitorLine: { club: string; visitorDollars: number }[] | null;
+  roadLine: { club: string; roadDollars: number }[] | null;
   draw: { club: string; tookOut: number }[] | null;
   net: { club: string; paidIn: number; tookOut: number; netLine: string }[] | null;
   netPage: number;
   netPageCount: number;
   netPageLabel: string;
-  freeRide: { slot: number; club: string; meanReinvestShare: number; tookOutTotal: number }[] | null;
+  // 5-6 rows carry dollars only (D62 repair 4); 7-8 rows carry the share too.
+  freeRide: { slot: number; club: string; meanReinvestShare?: number; meanReinvestDollars?: number; tookOutTotal: number }[] | null;
   roundingNote: string | null;
 };
 
@@ -1507,6 +1509,16 @@ function hlPoolRitualHtml(pool: HLPoolBoard): string {
         </div>`,
       );
     }
+    // D62 repair 1: the given side beside the received side — what each club's
+    // own Draw put on somebody else's books on its away nights.
+    if (pool.roadLine) {
+      parts.push(
+        `<div class="hl-give" id="hlPoolRoadLine">
+          <div class="hl-split-title">THE ROAD LINE</div>
+          ${pool.roadLine.map((r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)}</span><span class="numeric">${hlMoney(r.roadDollars)}</span></div>`).join("")}
+        </div>`,
+      );
+    }
   }
 
   if (pool.draw) {
@@ -1543,7 +1555,21 @@ function hlPoolRitualHtml(pool: HLPoolBoard): string {
         <div class="hl-split-title">THE FREE RIDE</div>
         ${pool.freeRide
           .map(
-            (r) => `<div class="hl-give-row"><span>${escapeHtml(r.club)} — put back ${Math.round(r.meanReinvestShare)}% on average</span><span class="numeric">${hlMoney(r.tookOutTotal)} drawn</span></div>`,
+            (r) => {
+              // 5-6 never sees a percent-shaped number (D62 repair 4): the row
+              // speaks in dollars unless the module sent the share.
+              const share = typeof r.meanReinvestShare === "number" && Number.isFinite(r.meanReinvestShare) ? r.meanReinvestShare : null;
+              const dollars = typeof r.meanReinvestDollars === "number" && Number.isFinite(r.meanReinvestDollars) ? r.meanReinvestDollars : null;
+              const putBack =
+                share !== null && dollars !== null
+                  ? `put back ${hlMoney(dollars)} a week (${Math.round(share)}%) on average`
+                  : share !== null
+                    ? `put back ${Math.round(share)}% on average`
+                    : dollars !== null
+                      ? `put back ${hlMoney(dollars)} a week on average`
+                      : "put back the least";
+              return `<div class="hl-give-row"><span>${escapeHtml(r.club)} — ${putBack}</span><span class="numeric">${hlMoney(r.tookOutTotal)} drawn</span></div>`;
+            },
           )
           .join("")}
       </div>`,

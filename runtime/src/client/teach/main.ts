@@ -100,6 +100,8 @@ const FREE_AGENCY_ID = "m1l3-free-agency";
 const THE_WINDOW_ID = "m1l1-the-window";
 const FULL_HOUSE_ID = "m2l1-full-house";
 const HOST_LEAGUE_ID = "m2l2-host-league";
+/** Mirrors `MISSED_BILL_PENALTY` in hostTheLeague.ts ($200,000) — display only; the module is the authority. */
+const MISSED_BILL_PENALTY_TEXT = "200,000";
 const WRITE_RULE_ID = "m2l3-write-rule";
 const LOBBY_DEMO_ID = "lobby-demo";
 const THE_SEASON_ID = "m1l2-the-season";
@@ -1139,6 +1141,8 @@ function render(payload: TeacherPayload): void {
   const isFullHouse = s.lessonModuleId === FULL_HOUSE_ID;
   const isHostLeague = s.lessonModuleId === HOST_LEAGUE_ID;
   const isWriteRule = s.lessonModuleId === WRITE_RULE_ID;
+  const isTheSeason = s.lessonModuleId === THE_SEASON_ID;
+  const isTheDeadline = s.lessonModuleId === THE_DEADLINE_ID;
   $<HTMLButtonElement>("btnShock").hidden = !isDraftDay;
   $<HTMLButtonElement>("btnShock").disabled = s.ended || s.phase !== "CONSEQUENCE";
   $<HTMLButtonElement>("btnCounterfactual").hidden =
@@ -1155,15 +1159,25 @@ function render(payload: TeacherPayload): void {
   // exactly the next not-yet-revealed step, so the teacher paces the reveal instead of dumping every result
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
   $<HTMLButtonElement>("btnRevealNext").hidden =
-    !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule && !isTheWindow;
+    !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule && !isTheWindow && !isTheSeason && !isTheDeadline;
   /* THE SAME LINE walks beats in three phases, not one: the four reveal beats,
      then CONSEQUENCE, then the naming — where the teacher advances one concept
      at a time and the count is however many the room EARNED. Leaving this rule
      at REVEAL-only disabled the only control that moves the naming forward, so
      a teacher reached the stage and could not run it. */
+  /* THE SEASON (W2) walks three HOOK beats and then the naming; THE DEADLINE
+     (W3) walks only the naming. Neither has a staged REVEAL of its own, so the
+     press is disabled there — the button says which control moves the room. */
+  const seasonNaming = payload.view["naming"] as { index?: number; count?: number } | null | undefined;
+  const seasonBeatsLeft = isTheSeason && s.phase === "HOOK" ? Math.max(0, Number(payload.view["beatCount"] ?? 3) - Number(payload.view["beat"] ?? 0) - 1) : 0;
+  const namesLeft = seasonNaming ? Math.max(0, Number(seasonNaming.count ?? 1) - Number(seasonNaming.index ?? 0) - 1) : 0;
   $<HTMLButtonElement>("btnRevealNext").disabled =
     s.ended ||
-    (s.phase !== "REVEAL" && !(isTheWindow && (s.phase === "CONSEQUENCE" || s.phase === "SYNTHESIS")));
+    (isTheSeason
+      ? !((s.phase === "HOOK" && seasonBeatsLeft > 0) || (s.phase === "SYNTHESIS" && namesLeft > 0))
+      : isTheDeadline
+        ? !(s.phase === "SYNTHESIS" && namesLeft > 0)
+        : s.phase !== "REVEAL" && !(isTheWindow && (s.phase === "CONSEQUENCE" || s.phase === "SYNTHESIS")));
   {
     // gate-l1-teacher TT-B2 / gate-l1-projector repair 5: "Reveal next" was a
     // blind press seven times running. Name what the press will put up, with
@@ -1175,7 +1189,19 @@ function render(payload: TeacherPayload): void {
       ? next
         ? `Reveal ${next.stage} of ${total} — ${next.name}`
         : "Every reveal has played"
-      : isTheWindow && s.phase === "SYNTHESIS"
+      : isTheSeason && s.phase === "HOOK"
+        ? seasonBeatsLeft === 0
+          ? "That was the last beat — advance the phase"
+          : `Next beat (${seasonBeatsLeft} to go)`
+        : (isTheSeason || isTheDeadline) && s.phase === "SYNTHESIS"
+          ? seasonNaming === null || seasonNaming === undefined
+            ? "This room earned no naming"
+            : namesLeft === 0
+              ? "That was the last one"
+              : `Next name (${namesLeft} to go)`
+          : (isTheSeason || isTheDeadline)
+            ? "Nothing to reveal in this phase"
+            : isTheWindow && s.phase === "SYNTHESIS"
         ? (() => {
             // At the naming the press is not "reveal next", it is "say the next
             // one" — and a teacher pressing it needs to know how many are left
@@ -1388,16 +1414,36 @@ function render(payload: TeacherPayload): void {
   }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
   // simultaneously and deterministically, then advances the day counter. A close with zero offers is legal.
-  $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency && !isTheWindow;
-  $<HTMLButtonElement>("btnCloseDay").disabled = s.ended || s.phase !== "PLAY" || Boolean(payload.view["windowClosed"]);
+  $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency && !isTheWindow && !isTheSeason && !isTheDeadline;
+  $<HTMLButtonElement>("btnCloseDay").disabled = isTheSeason
+    ? // W2: the bell closes whichever window is open — January's ten-days in
+      // PLAY, February's buyouts in ADAPT. `round` is null once it has rung.
+      s.ended || (s.phase !== "PLAY" && s.phase !== "ADAPT") || payload.view["round"] === null || Boolean(payload.view["windowClosed"])
+    : isTheDeadline
+      ? s.ended || s.phase !== "PLAY" || Boolean(payload.view["marketClosed"])
+      : s.ended || s.phase !== "PLAY" || Boolean(payload.view["windowClosed"]);
   {
     const pendingCount = Number(payload.view["pendingCount"] ?? 0);
     const actedCount = Number(payload.view["actedCount"] ?? 0);
     const claimedCount = Number(payload.view["claimedCount"] ?? 0);
+    const seasonRound = payload.view["round"];
+    const seasonPending = Array.isArray(payload.view["perDesk"]) ? (payload.view["perDesk"] as { pending?: unknown }[]).filter((d) => d.pending).length : 0;
+    const seasonDesks = Array.isArray(payload.view["perDesk"]) ? (payload.view["perDesk"] as unknown[]).length : 0;
+    const hour = Number(payload.view["hour"] ?? 1);
     $<HTMLButtonElement>("btnCloseDay").innerHTML =
       isFreeAgency || isTheWindow
         ? `${BELL_GLYPH}Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)`
-        : `${BELL_GLYPH}Close signing day`;
+        : isTheSeason
+          ? seasonRound === "JANUARY"
+            ? `${BELL_GLYPH}Close the ten-day window (${seasonPending}/${seasonDesks} desks have a move in)`
+            : seasonRound === "FEBRUARY"
+              ? `${BELL_GLYPH}Close the buyout window (${seasonPending}/${seasonDesks} desks have a move in)`
+              : `${BELL_GLYPH}The window is closed`
+          : isTheDeadline
+            ? payload.view["marketClosed"]
+              ? `${BELL_GLYPH}The deadline has passed`
+              : `${BELL_GLYPH}Close hour ${hour} of 2${hour === 2 ? " — the deadline" : ""}`
+            : `${BELL_GLYPH}Close signing day`;
   }
   // B1 repair (VERIFY_L2.md BLOCKER): the runtime now auto-resolves any unrevealed target the instant the
   // teacher advances out of REVEAL (see tradeDeadline.ts's onPhaseExit), so the numbers can no longer go wrong
@@ -2433,6 +2479,25 @@ function renderHostLeagueAggregate(view: Record<string, unknown>, seats: Teacher
     <div class="kpi"><div class="num" style="font-size:15px;">${view["barReleased"] ? "on the projector" : view["barAvailable"] ? "ready to release" : "not yet"}</div><div class="lbl">Handed-To-You bar</div></div>
     <div class="kpi"><div class="num">${view["revealStage"]}/${view["totalRevealSteps"]}</div><div class="lbl">Reveal stages</div></div>`;
   wrap.appendChild(kpis);
+
+  // W5 seed-in from Week 4: what the link did to the books, in the teacher's own words, never silent.
+  const seedNote = typeof view["seedNote"] === "string" ? (view["seedNote"] as string) : "";
+  const carried = Array.isArray(view["carried"]) ? (view["carried"] as { slot: number; cashOpening: number; penalty: number; billCleared: boolean | null; clamped: boolean }[]) : [];
+  if (seedNote || carried.length > 0) {
+    const row = document.createElement("div");
+    row.style.marginBottom = "12px";
+    const penalised = carried.filter((c) => c.penalty > 0).length;
+    const clamped = carried.filter((c) => c.clamped).length;
+    const carriedLine =
+      carried.length > 0
+        ? `${carried.length} building${carried.length === 1 ? "" : "s"} opened on Week 4 books` +
+          (penalised > 0 ? ` · ${penalised} missed the bill and open $${MISSED_BILL_PENALTY_TEXT} lighter` : "") +
+          (clamped > 0 ? ` · ${clamped} held at the playability floor` : "")
+        : "";
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Week 4 link</div>
+      <div style="font-size:13px; color:var(--ink-secondary);">${escapeHtml(seedNote || carriedLine)}${seedNote && carriedLine ? `<br>${escapeHtml(carriedLine)}` : ""}</div>`;
+    wrap.appendChild(row);
+  }
 
   const shock = view["shock"] as { club: string; short: string; draw: number; live: boolean } | null;
   if (shock) {

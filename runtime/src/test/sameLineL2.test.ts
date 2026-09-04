@@ -10,6 +10,7 @@ import test from "node:test";
 import { sameLineL2Module as mod, SAME_LINE_L2_ID, spotlightView, pressCandidates, type SameLineL2State } from "../modules/sameLine/l2.js";
 import { jobReportFor, branchPick, FEBRUARY_MARKET } from "../modules/sameLine/seasonData.js";
 import { CLUB, CLUBS, LINE, TOOL } from "../modules/sameLine/world.js";
+import type { Signing } from "../modules/sameLine/engine.js";
 import { isOrderedSubsequence } from "../shared/phases.js";
 import type { CanonicalPhase } from "../shared/phases.js";
 import type { GradeBand } from "../shared/gradeBand.js";
@@ -30,6 +31,55 @@ function step(s: SameLineL2State, action: { type: string; [k: string]: unknown }
 function claimed(band: GradeBand = "5-6", sessionId = "s"): SameLineL2State {
   return step(fresh(band, sessionId), { type: "claimDesk" }, "LOBBY", "a");
 }
+
+test("D62: every L2 naming card carries a non-empty real line, and outside never leaks a club or player name", () => {
+  /*
+   * D62 (docs/PRODUCT_DECISIONS.md): the naming card gains a `real` line so
+   * the dated sports fact is never improvised aloud. L2's sunk-cost card
+   * used to smuggle its real Lillard fact into `outside`, breaking the
+   * l1.ts:518 rule that a naming always leaves basketball — this locks that
+   * the real fact lives in `real` and `outside` stays a genuine analogy.
+   */
+  const clubNames = CLUBS.map((c) => c.name);
+  for (const band of ["5-6", "7-8"] as const) {
+    let s = claimed(band, `d62-${band}`);
+    const seatId = Object.keys(s.desks)[0]!;
+    const d = s.desks[seatId]!;
+    const vucevicSigning: Signing = { playerId: "vucevic", name: "Nikola Vucevic", role: "BIG", annual: 3_900_000, tool: "minimum", years: 1, coveredThrough: "2026-27" };
+    const nanceSigning: Signing = { playerId: "nance", name: "Larry Nance Jr.", role: "BIG", annual: 4_000_000, tool: "minimum", years: 1, coveredThrough: "2026-27" };
+    const waivedSigning: Signing = { playerId: "waived-x", name: "Waived Guy", role: "GUARD", annual: 2_000_000, tool: "minimum", years: 1, coveredThrough: "2026-27" };
+    const updated = {
+      ...d,
+      position: { ...d.position, signings: [...d.position.signings, vucevicSigning, nanceSigning], wall: 150_000_000 },
+      waived: [...d.waived, waivedSigning],
+    };
+    s = { ...s, desks: { ...s.desks, [seatId]: updated } };
+
+    const seenTerms = new Set<string>();
+    // Drive `beat` directly rather than through the reveal-walk reducer path
+    // — this file owns the naming array/shape, not the reveal action.
+    for (let beat = 0; beat < 8; beat += 1) {
+      const f = (mod.boardView({ ...s, beat }, "SYNTHESIS") as { naming?: Record<string, unknown> | null }).naming;
+      if (!f) break;
+      const term = String(f["term"]);
+      if (seenTerms.has(term)) continue;
+      seenTerms.add(term);
+      const real = String(f["real"]);
+      const outside = String(f["outside"]);
+      assert.ok(real.length > 0, `${band}/${term}: empty real line`);
+      assert.ok(outside.length > 0, `${band}/${term}: empty outside line`);
+      for (const name of clubNames) {
+        assert.ok(!outside.includes(name), `${band}/${term}: outside line names a club (${name})`);
+      }
+    }
+    assert.ok(seenTerms.has("SUNK COST"), `${band}: sunk cost never showed up in this walk`);
+    assert.ok(seenTerms.has("DECISION QUALITY IS NOT OUTCOME"), `${band}: decision-quality never showed up in this walk`);
+    if (band === "7-8") {
+      assert.ok(seenTerms.has("PATH DEPENDENCE"), "7-8: path dependence never showed up in this walk");
+      assert.ok(seenTerms.has("OPTION VALUE"), "7-8: option value never showed up in this walk");
+    }
+  }
+});
 
 const CHIP = "I need the money";
 const LINE_TEXT = "the roster spot";

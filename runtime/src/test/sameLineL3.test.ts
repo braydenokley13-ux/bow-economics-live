@@ -595,7 +595,7 @@ test("naming appears only at SYNTHESIS/COMPLETE, with the {index,count,term,mome
   const synthStudent = sameLineL3Module.studentView(state, "A", "SYNTHESIS") as { naming: { index: number; count: number; term: string; moment: string; means: string; real: string; outside: string } | null };
   assert.ok(synthStudent.naming);
   assert.equal(typeof synthStudent.naming!.term, "string");
-  assert.match(synthStudent.naming!.real, /2026-02-05/);
+  assert.match(synthStudent.naming!.real, /February 5, 2026/);
   assert.doesNotMatch(synthStudent.naming!.outside, /REAL EXAMPLE PENDING/);
   const synthBoard = sameLineL3Module.boardView(state, "SYNTHESIS") as { naming: { term: string } | null };
   assert.ok(synthBoard.naming);
@@ -624,21 +624,17 @@ test("D62: every L3 naming card carries a non-empty real line, and no REAL EXAMP
   const full: SameLineL3State = { ...state, desks: { A: withDecline, B: state.desks["B"]! } };
 
   const seenTerms = new Set<string>();
-  let walk = full;
-  let guard = 0;
-  while (guard < 12) {
-    guard += 1;
-    const f = (sameLineL3Module.boardView(walk, "SYNTHESIS") as { naming: { term: string; real: string; outside: string; index: number; count: number } | null }).naming;
+  // Drive `beat` directly rather than through `teacher:revealNext` — this
+  // file owns the naming array/shape, not the reveal-walk reducer path.
+  for (let beat = 0; beat < 8; beat += 1) {
+    const f = (sameLineL3Module.boardView({ ...full, beat }, "SYNTHESIS") as { naming: { term: string; real: string; outside: string; index: number; count: number } | null }).naming;
     if (!f) break;
-    if (seenTerms.has(f.term)) break;
+    if (seenTerms.has(f.term)) continue;
     seenTerms.add(f.term);
     assert.ok(f.real.length > 0, `${f.term}: empty real line`);
     assert.doesNotMatch(f.real, /REAL EXAMPLE PENDING/, `${f.term}: PENDING placeholder survives in real`);
     assert.doesNotMatch(f.outside, /REAL EXAMPLE PENDING/, `${f.term}: PENDING placeholder survives in outside`);
     assert.ok(f.outside.length > 0, `${f.term}: empty outside line`);
-    const nx = sameLineL3Module.reduce(walk, { type: "teacher:revealNext" }, ctx("teacher", "SYNTHESIS", ["teacher"]));
-    if (!nx.ok || nx.state === walk) break;
-    walk = nx.state as SameLineL3State;
   }
   assert.ok(seenTerms.has("GAINS FROM TRADE"), "gains from trade never showed up in this walk");
   assert.ok(seenTerms.has("SUBJECTIVE VALUE"), "subjective value never showed up in this walk");

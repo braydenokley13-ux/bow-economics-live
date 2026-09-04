@@ -2097,13 +2097,25 @@ test("D59: per-own-bill coverage — a fraction with no percent sign at 5-6, a p
 
 /** Seats N desks in a room of the given band. Unlike `seated()`, does not fix the band to 5-6. */
 function seatedBand(count: number, band: "5-6" | "7-8"): FullHouseState {
-  // `initialState` only persists `gradeBand` on a seeded (carried) room — see
-  // its own no-seed early return — so an unlinked room is set directly here
-  // rather than depending on THE WINDOW's carry to exercise the band branch.
-  let state: FullHouseState = { ...fullHouseModule.initialState({ sessionId: `sB-${band}`, seatIds: [], gradeBand: band }), gradeBand: band };
+  // W4 follow-up repair (unlinked-room band bug): `initialState` now persists
+  // `input.gradeBand` unconditionally, including on an unlinked (no-seed)
+  // room, so this no longer needs to patch `gradeBand` on afterward.
+  let state: FullHouseState = fullHouseModule.initialState({ sessionId: `sB-${band}`, seatIds: [], gradeBand: band });
   for (let i = 1; i <= count; i += 1) state = ok(act(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`));
   return state;
 }
+
+test("W4 follow-up repair (unlinked-room band bug): an unseeded 7-8 room reports 7-8 through studentView, not a silent 5-6 default", () => {
+  const room78 = seatedBand(1, "7-8");
+  assert.equal(room78.gradeBand, "7-8", "initialState must persist input.gradeBand even with no seed");
+  const view78 = fullHouseModule.studentView(room78, "seat-1", "PLAY") as Record<string, unknown>;
+  assert.equal(JSON.stringify(view78).includes("%"), true, "an unlinked 7-8 room must render a `%` somewhere in its renewals text");
+
+  const room56 = seatedBand(1, "5-6");
+  assert.equal(room56.gradeBand, "5-6");
+  const view56 = fullHouseModule.studentView(room56, "seat-1", "PLAY") as Record<string, unknown>;
+  assert.equal(JSON.stringify(view56).includes("%"), false, "an unlinked 5-6 room must never render a `%`");
+});
 
 test("W4 QA repair 1: RENEWALS prints a fraction sentence at 5-6, never a percent sign; 7-8 keeps the percent", () => {
   const room56 = playedOut();

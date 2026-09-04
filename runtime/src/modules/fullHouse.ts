@@ -1444,11 +1444,20 @@ const gateLabel = (band: GateCall): string => GATE_BANDS.find((b) => b.id === ba
  * pricing well are different skills and the product must not let one stand in
  * for the other. `null` on a night nobody called.
  */
-export function gateCallResolvedFor(night: SettledNight): { called: GateCall; actual: GateCall; right: boolean; line: string } | null {
+export function gateCallResolvedFor(
+  night: SettledNight,
+  band: GradeBand = "5-6",
+): { called: GateCall; actual: GateCall; right: boolean; line: string } | null {
   const called = night.gateCall;
   if (called === null || called === undefined) return null;
   const actual = gateBandOf(night.settlement);
-  const crowd = `${night.settlement.turnout.toLocaleString()} came — ${night.settlement.fillPct}% of the seats you opened`;
+  // W4 follow-up repair 3: this line reaches studentView via `viewNight().call`
+  // — band-gate it the same way as every other renewals/fill figure, never a
+  // bare `%` at 5-6 (`profileFor("5-6").allowsPercentages === false`).
+  const fillText = profileFor(band).allowsPercentages
+    ? `${night.settlement.fillPct}% of the seats you opened`
+    : `${night.settlement.fillPct} of every 100 seats you opened`;
+  const crowd = `${night.settlement.turnout.toLocaleString()} came — ${fillText}`;
   return {
     called,
     actual,
@@ -2245,7 +2254,11 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
 
 /* ----------------------------------------------------- counterfactuals -- */
 
-export type SeasonReplay = { label: string; cash: number; renewals: number; note: string };
+// W4 follow-up repair 2/4: `renewalsText` is the band-formatted sentence for
+// `renewals`, computed once here so the counterfactual client never has to
+// decide whether a `%` is legal to print. Optional only for a snapshot taken
+// before this field existed.
+export type SeasonReplay = { label: string; cash: number; renewals: number; note: string; renewalsText?: string };
 
 /**
  * Replays a desk's whole season under a fixed policy, from its real starting
@@ -2524,8 +2537,14 @@ export function renewalMarginalCost(market: Market): { cheapest: number; dearest
  * row below), and the three hypothetical alternates are not computed at all.
  * A room with no carry keeps all four, unchanged.
  */
-function replaysFor(desk: Desk, cutToOwnNight = false): SeasonReplay[] {
-  const actual: SeasonReplay = { label: "What you actually did", cash: desk.cash, renewals: desk.renewals, note: "Your five nights, your two dials." };
+function replaysFor(desk: Desk, band: GradeBand, cutToOwnNight = false): SeasonReplay[] {
+  const actual: SeasonReplay = {
+    label: "What you actually did",
+    cash: desk.cash,
+    renewals: desk.renewals,
+    renewalsText: renewalsPointsText(desk.renewals, band),
+    note: "Your five nights, your two dials.",
+  };
   if (cutToOwnNight) return [actual];
   const market = marketOf(desk);
   // D59: a carried desk pays its players line on every night of every replay.
@@ -2562,33 +2581,34 @@ function replaysFor(desk: Desk, cutToOwnNight = false): SeasonReplay[] {
       : `Not a proven maximum — the best line we could search out: a different price on every night, and event money on ${
           spentOn.length === 0 ? "no night at all" : spentOn.join(" and ")
         }. On this model it is ahead on both books, so on these five nights the money did not cost the plan holders anything.`;
+  // W4 follow-up repair 4: this note reaches the COUNTERFACTUAL "What if?"
+  // screen, so the renewals figure quoted inside the prose has to obey the
+  // same band rule as every other renewals figure — never a bare `%` at 5-6.
   const renewalsNote =
     renewalGap > 0
-      ? `The other corner: no line in this model ends with more season-ticket holders than ${renewalsCorner.renewals}%, and this is the most cash we could find that still gets there. The ${renewalGap} points between this line and the one below it are NOT all the same price — the cheapest cost about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. Protecting the base starts cheap and ends expensive.`
+      ? `The other corner: no line in this model ends with more season-ticket holders than ${renewalsPointsText(renewalsCorner.renewals, band)}, and this is the most cash we could find that still gets there. The ${renewalGap} points between this line and the one below it are NOT all the same price — the cheapest cost about $${marginal.cheapest.toLocaleString()} each and the last one costs $${marginal.dearest.toLocaleString()}. Protecting the base starts cheap and ends expensive.`
       : `The other corner: the most renewals this model will end on. At these numbers it is not behind on cash either.`;
   return [
-    {
-      label: "What you actually did",
-      cash: desk.cash,
-      renewals: desk.renewals,
-      note: "Your five nights, your two dials.",
-    },
+    actual,
     {
       label: `Same price every night ($${market.planPrice})`,
       cash: flatPlan.cash - seasonBill,
       renewals: flatPlan.renewals,
+      renewalsText: renewalsPointsText(flatPlan.renewals, band),
       note: flatNote,
     },
     {
       label: "The best renewals book we could find",
       cash: renewalsCorner.cash - seasonBill,
       renewals: renewalsCorner.renewals,
+      renewalsText: renewalsPointsText(renewalsCorner.renewals, band),
       note: renewalsNote,
     },
     {
       label: "The most cash we could find",
       cash: strongest.cash - seasonBill,
       renewals: strongest.renewals,
+      renewalsText: renewalsPointsText(strongest.renewals, band),
       note: strongNote,
     },
   ];
@@ -3283,7 +3303,7 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0, band: G
     // How the pair's locked-and-waiting call came out. The SENTENCE is authored
     // here, never in the client: the desk renders words, it does not write
     // verdicts (R-1).
-    call: gateCallResolvedFor(night),
+    call: gateCallResolvedFor(night, band),
     cardId: night.cardId,
     label: CARD_BY_ID.get(night.cardId)?.label ?? night.cardId,
     day: CARD_BY_ID.get(night.cardId)?.day ?? "",
@@ -3522,8 +3542,14 @@ function availableFranchises(state: FullHouseState) {
   }));
 }
 
-function booksFor(desk: Desk) {
-  return { cash: desk.cash, renewals: desk.renewals, inDebt: desk.cash < 0 };
+// W4 follow-up repair 2: `renewalsText` travels the same band-formatted
+// sentence `viewNight` already prints for a settled night's before/after
+// figures, so the season dock and header never have to decide whether a `%`
+// is legal to print. Optional only because a snapshot from before this field
+// existed may still be replayed; the client falls back to the old `%` form
+// in that one case.
+function booksFor(desk: Desk, band: GradeBand) {
+  return { cash: desk.cash, renewals: desk.renewals, inDebt: desk.cash < 0, renewalsText: renewalsPointsText(desk.renewals, band) };
 }
 
 /* ------------------------------------------------- W3: the projector -- */
@@ -3797,10 +3823,26 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
   phases: PHASES,
 
   initialState(input) {
-    const base: FullHouseState = { desks: {}, deskOrder: [], nightIndex: 0, twoPeaksReleased: false, revealStage: 0, cfPage: 0, synthPage: 0 };
-    // No seed: the state is exactly what it always was. A seeded room stores
-    // the PARSED carry and its band — never the raw envelope — and keeps a
-    // refused carry's reason so the console can say why every desk is stock.
+    // W4 follow-up repair (unlinked-room band bug): an unlinked room still has
+    // a real `input.gradeBand` from the teacher's room settings — persist it
+    // unconditionally so `bandOfRoom` never silently falls back to "5-6" for a
+    // 7-8 classroom just because there is no carried seed. `bandOfRoom`'s own
+    // `?? "5-6"` stays as the default for OLD snapshots taken before this
+    // field existed.
+    const base: FullHouseState = {
+      desks: {},
+      deskOrder: [],
+      nightIndex: 0,
+      twoPeaksReleased: false,
+      revealStage: 0,
+      cfPage: 0,
+      synthPage: 0,
+      gradeBand: input.gradeBand,
+    };
+    // No seed: the state is exactly what it always was, other than the band
+    // fix above. A seeded room additionally stores the PARSED carry — never
+    // the raw envelope — and keeps a refused carry's reason so the console
+    // can say why every desk is stock.
     if (input.seed === undefined || input.seed === null) return base;
     const read = extractWindowCarry(input.seed, input.gradeBand);
     const carry: CarryState = read.ok
@@ -3814,7 +3856,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
           sourceSessionId: read.sourceSessionId,
         }
       : { ok: false, reason: read.reason, warnings: [], franchises: [], claims: {}, lines: null, payrollDefinition: null, sourceSessionId: null };
-    return { ...base, gradeBand: input.gradeBand, carry };
+    return { ...base, carry };
   },
 
   /**
@@ -4127,7 +4169,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             objective: OBJECTIVE_COPY,
             rules: HOUSE_RULES,
             plainLine: market.plainLine,
-            books: booksFor(desk),
+            books: booksFor(desk, band),
             horizonLine: HORIZON_LINE,
             modeledDollarsLine: MODELED_DOLLARS_LINE,
             slate: slateView(),
@@ -4149,7 +4191,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               seated: true,
               ...identity,
               allNightsDone: true,
-              books: booksFor(desk),
+              books: booksFor(desk, band),
               // D59 ruling 3: per-own-bill coverage, not a room-wide verdict.
               billCoverage: billCoverageFor(desk, bandOfRoom(state)),
               history,
@@ -4189,7 +4231,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             priceMax: PRICE_MAX,
             priceStep: PRICE_STEP,
             spendStep: SPEND_STEP,
-            books: booksFor(desk),
+            books: booksFor(desk, band),
             rules: HOUSE_RULES,
             // gate-l1-play P10: the rule that governs half the scoreboard, beside
             // the dial that drives it, before the commit. Arithmetic on printed
@@ -4258,7 +4300,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             phase,
             seated: true,
             ...identity,
-            books: booksFor(desk),
+            books: booksFor(desk, band),
             // D59 ruling 3: per-own-bill coverage, not a room-wide verdict.
             billCoverage: billCoverageFor(desk, bandOfRoom(state)),
             history,
@@ -4288,7 +4330,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             phase,
             seated: true,
             ...identity,
-            books: booksFor(desk),
+            books: booksFor(desk, band),
             history,
             questions: ADAPT_QUESTIONS,
             uiCopy: uiCopyFor(null, state.nightIndex),
@@ -4312,7 +4354,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             phase,
             seated: true,
             ...identity,
-            books: booksFor(desk),
+            books: booksFor(desk, band),
             repeat:
               n1 && n5 && row
                 ? {
@@ -4322,6 +4364,11 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
                     n5Turnout: n5.settlement.turnout,
                     renewalsAtN1: n1.renewalsBefore,
                     renewalsAtN5: n5.renewalsBefore,
+                    // W4 follow-up repair 2: the Night 1/Night 5 comparison on
+                    // the COUNTERFACTUAL screen — band-formatted, never a bare
+                    // `%` at 5-6.
+                    renewalsAtN1Text: renewalsPointsText(n1.renewalsBefore, band),
+                    renewalsAtN5Text: renewalsPointsText(n5.renewalsBefore, band),
                     samePrice: n1.price === n5.price,
                     renewalsFans: row.renewalsFans,
                     carryFans: row.carryFans,
@@ -4336,7 +4383,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
                   }
                 : null,
             // D59 ruling 2: cut to one page when this room is running the bill.
-            replays: replaysFor(desk, Boolean(state.carry?.ok)),
+            replays: replaysFor(desk, band, Boolean(state.carry?.ok)),
             honestLimit:
               "We can show you what the money would have done. We cannot show you what you would have done — that is why you played it.",
             prompt: ARGUE_PROMPT,
@@ -4360,7 +4407,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             phase,
             seated: true,
             ...identity,
-            books: booksFor(desk),
+            books: booksFor(desk, band),
             history,
             message: "Look up at the board.",
             exitPrompt: EXIT_PROMPT,
@@ -4377,7 +4424,7 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             phase,
             seated: true,
             ...identity,
-            books: booksFor(desk),
+            books: booksFor(desk, band),
             history,
             message: COMPLETE_COPY,
             exitPrompt: EXIT_PROMPT,

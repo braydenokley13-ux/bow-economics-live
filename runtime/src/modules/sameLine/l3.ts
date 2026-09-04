@@ -675,6 +675,8 @@ function reduce(state: SameLineL3State, action: { type: string; [k: string]: unk
       return { ok: true, state: { ...state, desks: settlement.desks, offers: settlement.offers, executed: settlement.executed } };
     }
 
+    // `/teach`'s bell press arrives as `teacher:closeDay`; here the bell closes the hour.
+    case "teacher:closeDay":
     case "teacher:closeHour": {
       if (ctx.seatId !== "teacher") return fail("only the league office closes the hour");
       if (ctx.phase !== "PLAY") return fail("no hour is open outside the deadline room");
@@ -702,9 +704,15 @@ function reduce(state: SameLineL3State, action: { type: string; [k: string]: unk
       return { ok: true, state: { ...state, hotSeat: seatId } };
     }
 
+    // `/teach`'s generic "Reveal next" press arrives as `teacher:revealNext`;
+    // at the naming it means "say the next one".
+    case "teacher:revealNext":
     case "teacher:nextName": {
       if (ctx.seatId !== "teacher") return fail("only the teacher walks the naming");
       if (ctx.phase !== "SYNTHESIS") return fail("nothing to walk outside SYNTHESIS");
+      const count = namings(state, profileFor(state.gradeBand)).length;
+      if (count === 0) return fail("this room earned no naming to walk");
+      if (state.beat >= count - 1) return fail("that was the last one");
       return { ok: true, state: { ...state, beat: state.beat + 1 } };
     }
 
@@ -1255,6 +1263,7 @@ function teacherView(state: SameLineL3State, phase: CanonicalPhase): unknown {
     hour: state.hour,
     marketClosed: state.marketClosed,
     desks,
+    naming: phase === "SYNTHESIS" || phase === "COMPLETE" ? namingFrame(state, profileFor(state.gradeBand)) : null,
     directorCard: DIRECTOR_CARDS[phase] ?? "",
     pressCandidates: pressCandidatesFor(state, phase),
     warnings: state.warnings,

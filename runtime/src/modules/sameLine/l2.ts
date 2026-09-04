@@ -433,6 +433,9 @@ function reduce(state: SameLineL2State, action: { type: string; [k: string]: unk
       return { ok: true, state: seatFromUnclaimed(state, target, ctx.seatId) };
     }
 
+    // `/teach`'s generic "Reveal next" press arrives as `teacher:revealNext`
+    // (the runtime routes hook names verbatim); here it means the next beat.
+    case "teacher:revealNext":
     case "teacher:beat": {
       if (ctx.phase === "HOOK") return { ok: true, state: { ...state, beat: Math.min(state.beat + 1, HOOK_BEATS - 1) } };
       if (ctx.phase === "SYNTHESIS") {
@@ -587,6 +590,9 @@ function reduce(state: SameLineL2State, action: { type: string; [k: string]: unk
       return { ok: true, state: { ...state, desks: { ...state.desks, [ctx.seatId]: nextDesk }, tape: [...state.tape, entry] } };
     }
 
+    // `/teach`'s bell press arrives as `teacher:closeDay`; here the bell closes
+    // whichever window is open.
+    case "teacher:closeDay":
     case "teacher:closeWindow": {
       if (ctx.phase === "PLAY") {
         if (state.round !== "JANUARY") return fail("there is no open ten-day window to close");
@@ -899,6 +905,7 @@ function teacherView(state: SameLineL2State, phase: CanonicalPhase): unknown {
       report: reportView(d),
     })),
     beat: state.beat,
+    beatCount: HOOK_BEATS,
     naming: phase === "SYNTHESIS" ? namingFrame(state, null) : null,
   };
 }
@@ -995,13 +1002,13 @@ export const sameLineL2Module: LessonModule<SameLineL2State> = {
   },
   allowedActions: (phase) =>
     phase === "PLAY"
-      ? ["claimDesk", "sign", "pass", "teacher:closeWindow"]
+      ? ["claimDesk", "sign", "pass", "teacher:closeWindow", "teacher:closeDay"]
       : phase === "ADAPT"
-        ? ["sign", "pass", "waive", "teacher:closeWindow"]
+        ? ["sign", "pass", "waive", "teacher:closeWindow", "teacher:closeDay"]
         : phase === "LOBBY" || phase === "HOOK"
-          ? ["claimDesk", "teacher:beat"]
+          ? ["claimDesk", "teacher:beat", "teacher:revealNext"]
           : phase === "SYNTHESIS"
-            ? ["teacher:beat"]
+            ? ["teacher:beat", "teacher:revealNext"]
             : [],
   studentView,
   teacherView,
