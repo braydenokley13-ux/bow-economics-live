@@ -384,6 +384,17 @@ export type Club = {
   readonly committed: Sourced<number>;
   /** Money already owed to players who are not on this roster. Zero is a real answer. */
   readonly deadMoney: Sourced<number>;
+  /**
+   * TAX SALARY — active roster plus dead money — what the luxury tax and every
+   * cash bill are charged on. Distinct from `committed` (BC-7, the cap hit),
+   * which can carry free-agent holds and small unattributed camp charges that
+   * are never paid to anyone (W4_BILL_RESEARCH §8). A later week computes
+   * DOLLARS from this and shows cap POSITION from `committed`; mixing them
+   * charges a club cash for an empty chair.
+   */
+  readonly taxSalary: Sourced<number>;
+  /** Free-agent cap holds INSIDE `committed`. Zero is a real, sourced answer. */
+  readonly holds: Sourced<number>;
   readonly contracts: Sourced<number>;
   /** The two open jobs this club starts L1 with. */
   readonly jobs: readonly JobRole[];
@@ -423,6 +434,8 @@ export const CLUBS: readonly Club[] = [
     city: "Memphis",
     committed: fact(161_034_793, "2026-09-03", "salaryswish.com/teams/grizzlies", "cap-database"),
     deadMoney: fact(21_909_021, "2026-09-03", "salaryswish.com/teams/grizzlies", "cap-database"),
+    taxSalary: fact(159_672_824, "2026-09-04", "salaryswish.com/teams/grizzlies (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(0, "2026-09-04", "salaryswish.com/teams/grizzlies (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(13, "2026-09-03", "salaryswish.com/teams/grizzlies", "cap-database"),
     jobs: ["WING", "BIG"],
     situation:
@@ -440,6 +453,8 @@ export const CLUBS: readonly Club[] = [
     city: "Brooklyn",
     committed: fact(162_780_296, "2026-09-03", "salaryswish.com/teams/nets", "cap-database"),
     deadMoney: fact(0, "2026-09-03", "salaryswish.com/teams/nets", "cap-database"),
+    taxSalary: fact(160_056_358, "2026-09-04", "salaryswish.com/teams/nets (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(0, "2026-09-04", "salaryswish.com/teams/nets (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(12, "2026-09-03", "salaryswish.com/teams/nets", "cap-database"),
     jobs: ["BIG", "GUARD"],
     // CORRECTED 2026-09-03. This said "you have real money under the cap", and
@@ -462,6 +477,8 @@ export const CLUBS: readonly Club[] = [
     city: "Detroit",
     committed: fact(188_615_753, "2026-09-03", "salaryswish.com/teams/pistons", "cap-database"),
     deadMoney: fact(0, "2026-09-03", "salaryswish.com/teams/pistons", "cap-database"),
+    taxSalary: fact(154_337_535, "2026-09-04", "salaryswish.com/teams/pistons (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(28_834_548, "2026-09-04", "salaryswish.com/teams/pistons (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(12, "2026-09-03", "salaryswish.com/teams/pistons", "cap-database"),
     jobs: ["WING", "BIG"],
     situation: "You are over the cap but well short of the tax, and your biggest signing tool is still unused.",
@@ -478,6 +495,8 @@ export const CLUBS: readonly Club[] = [
     city: "Milwaukee",
     committed: fact(190_298_316, "2026-09-03", "salaryswish.com/teams/bucks", "cap-database"),
     deadMoney: fact(21_977_720, "2026-09-03", "salaryswish.com/teams/bucks", "cap-database"),
+    taxSalary: fact(190_298_316, "2026-09-04", "salaryswish.com/teams/bucks (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(0, "2026-09-04", "salaryswish.com/teams/bucks (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(13, "2026-09-03", "salaryswish.com/teams/bucks", "cap-database"),
     jobs: ["WING", "GUARD"],
     situation:
@@ -495,6 +514,8 @@ export const CLUBS: readonly Club[] = [
     city: "Boston",
     committed: fact(203_623_048, "2026-09-03", "salaryswish.com/teams/celtics", "cap-database"),
     deadMoney: fact(0, "2026-09-03", "salaryswish.com/teams/celtics", "cap-database"),
+    taxSalary: fact(198_722_406, "2026-09-04", "salaryswish.com/teams/celtics (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(0, "2026-09-04", "salaryswish.com/teams/celtics (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(14, "2026-09-03", "salaryswish.com/teams/celtics", "cap-database"),
     jobs: ["BIG", "WING"],
     situation: "You are past the tax line. Nothing is illegal yet — everything is just more expensive than it looks.",
@@ -515,6 +536,8 @@ export const CLUBS: readonly Club[] = [
     // money was being shown as carrying none, which is precisely the fact this
     // seat exists to teach.
     deadMoney: fact(10_000_000, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
+    taxSalary: fact(201_497_403, "2026-09-04", "salaryswish.com/teams/kings (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(0, "2026-09-04", "salaryswish.com/teams/kings (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(16, "2026-09-03", "salaryswish.com/teams/kings", "cap-database"),
     jobs: ["WING", "BIG"],
     // CORRECTED 2026-09-03. This said the club had "already spent most of your
@@ -538,6 +561,8 @@ export const CLUBS: readonly Club[] = [
     city: "New York",
     committed: fact(218_412_232, "2026-09-03", "salaryswish.com/teams/knicks", "cap-database"),
     deadMoney: fact(0, "2026-09-03", "salaryswish.com/teams/knicks", "cap-database"),
+    taxSalary: fact(218_412_232, "2026-09-04", "salaryswish.com/teams/knicks (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(0, "2026-09-04", "salaryswish.com/teams/knicks (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(13, "2026-09-03", "salaryswish.com/teams/knicks", "cap-database"),
     // THREE holes, and the tools to close two. That asymmetry is the seat.
     // A club past the first apron is a capped-out contender with a thin bench,
@@ -562,6 +587,8 @@ export const CLUBS: readonly Club[] = [
     city: "Minnesota",
     committed: fact(214_930_955, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
     deadMoney: fact(2_055_000, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
+    taxSalary: fact(214_930_955, "2026-09-04", "salaryswish.com/teams/timberwolves (Active roster + dead money; W4_BILL_RESEARCH §8)", "cap-database"),
+    holds: fact(0, "2026-09-04", "salaryswish.com/teams/timberwolves (free-agent holds inside the cap hit; W4_BILL_RESEARCH §8)", "cap-database"),
     contracts: fact(13, "2026-09-03", "salaryswish.com/teams/timberwolves", "cap-database"),
     jobs: ["WING", "GUARD", "BIG", "WING"],
     situation:

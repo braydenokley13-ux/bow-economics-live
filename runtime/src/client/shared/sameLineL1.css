@@ -750,3 +750,56 @@
 .sl-naming-means { margin: 0 0 12px; font-size: 14px; line-height: 1.5; color: var(--sl-ink-2, #b8c0cc); }
 .sl-naming-outside { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sl-ink-2, #b8c0cc); }
 .sl-naming-outside b { display: block; margin-bottom: 3px; font-size: 10px; letter-spacing: 0.14em; color: var(--sl-ink-3, #7d8794); }
+
+/* ------------------------------------------------------------ picker -- */
+/* PICK YOUR CLUB. One student, one franchise: the first screen a student owns.
+   Eight cards, two front offices each; a full club stays visible and greyed so
+   the room's shape is legible, never a card that vanished. Fits 1024x600 with
+   no side scroll: four columns at desk width, two on a narrow Chromebook. */
+.sl-picker { padding: 18px 20px 24px; max-width: 1180px; margin: 0 auto; }
+.sl-picker-head { margin-bottom: 14px; }
+.sl-picker-eyebrow { font-size: 10px; letter-spacing: 0.2em; color: var(--ink-muted); font-weight: 700; }
+.sl-picker-title { margin: 4px 0 6px; font-size: 22px; letter-spacing: -0.01em; color: var(--ink-primary); font-weight: 750; }
+.sl-picker-prompt { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-secondary); max-width: 62ch; }
+.sl-pick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 900px) { .sl-pick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sl-pick {
+  display: grid;
+  gap: 5px;
+  text-align: left;
+  padding: 12px 13px 11px;
+  border: 1px solid var(--hq-hair);
+  border-radius: 12px;
+  background: rgba(13, 17, 25, 0.86);
+  color: var(--ink-primary);
+  font: inherit;
+  cursor: pointer;
+  min-height: 150px;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.sl-pick:hover:not(:disabled) { background: rgba(28, 34, 46, 0.96); border-color: var(--accent-blue); transform: translateY(-1px); }
+.sl-pick:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+.sl-pick:disabled { cursor: not-allowed; opacity: 0.45; }
+.sl-pick-name { font-size: 16px; font-weight: 750; letter-spacing: -0.01em; }
+.sl-pick-city { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.sl-pick-sit { font-size: 12px; line-height: 1.45; color: var(--ink-secondary); }
+.sl-pick-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-muted); margin-top: auto; }
+.sl-pick-open { font-size: 10.5px; letter-spacing: 0.1em; font-weight: 700; color: var(--accent-blue); }
+.sl-pick-open[data-open="1"] { color: var(--over-the-line); }
+.sl-pick-open[data-open="0"] { color: var(--ink-muted); }
+.sl-picker-foot { display: flex; justify-content: flex-end; margin-top: 12px; }
+.sl-deal {
+  font: inherit;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--hq-hair);
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+}
+.sl-deal:hover:not(:disabled) { color: var(--ink-primary); border-color: var(--accent-blue); }
+.sl-deal:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+.sl-deal:disabled { opacity: 0.5; cursor: not-allowed; }

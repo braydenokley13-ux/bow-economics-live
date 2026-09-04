@@ -26,15 +26,29 @@ boundary and before any context compaction. Never a second decision log.
 | 5 YOU DON'T PLAY ALONE | built without carry | no band consumer | none by decision (`hostTheLeague.ts:3205`) | m2l2→m2l3 seed exists |
 | 6 BOARD OF GOVERNORS | built, one decision | no band consumer | m2l2 seed, provenance unread | — |
 
+## Operating model (founder call, 2026-09-04)
+
+Fable orchestrates, integrates and judges. Design specs go to opus experience-director agents;
+bounded builds go to sonnet builders under strict file ownership; Sports Reality / critic passes
+run as their own agents. Never one builder at a time — every wave fans out across independent
+files and converges in this file. Builders never certify their own work.
+
 ## Campaigns
 
 - **C0 Orient/recharter — DONE 2026-09-04:** D59; old chain retired from the picker; state docs.
-- **C1 Ownership + first causal seam — ACTIVE.** L1 club choice (curated, twins labelled,
-  no first-arrival privilege beyond the second slot); L1 seed export (commitments, line
-  position, open jobs, club, band); Full House reads an `m1l1-the-window` seed and opens
-  on the desk's own obligation with a stated units bridge.
-- C2 THE SEASON + Press Conference/Tape · C3 THE DEADLINE · C4 THE BILL · C5 pool + two
-  institutions · C6 director/stage · C7 gauntlet + founder packet.
+- **C1 Ownership + first causal seam — ACTIVE.** Done in tree: `chooseClub` (student picks the
+  club; two front offices per club, the second labelled a twin; DEAL ME ONE fallback); the club
+  picker on `/play`; `sameLine/carry.ts` (`extractWindowCarry`: committed, taxSalary, holds,
+  unattributed, openJobs, signings, forgone, band; refuses the other band; drops a bad desk with a
+  reason); `world.ts` gains sourced `taxSalary` + `holds` for all eight clubs (W4_BILL_RESEARCH §8);
+  L1 teacher strip in the console's shape + seat→club map on the roster. In flight: Full House
+  reads the carry (builder); L1 teach console panel (builder); Press Conference runtime (builder).
+- **C2 THE SEASON** — spec in flight (`docs/gauntlet/module-1/rebuild/W2_THE_SEASON_SPEC.md`).
+- **C3 THE DEADLINE** — spec in flight (`docs/gauntlet/module-1/rebuild/W3_THE_DEADLINE_SPEC.md`).
+- **C4 THE BILL** — spec in flight (`docs/gauntlet/module-2/W4_THE_BILL_SPEC.md`).
+- **C5 W5/W6** — spec in flight (`docs/gauntlet/module-2/W5_W6_SPEC.md`); band plumbing +
+  one-student copy in `hostTheLeague.ts` / `writeTheRule.ts` (builder).
+- C6 director/stage · C7 gauntlet + founder packet.
 
 ## Hot files (reserve before parallel writes)
 
@@ -56,6 +70,7 @@ under `docs/gauntlet/module-*/screens-*`).
 
 ## Exact next action
 
-C1: add `chooseClub` to `sameLine/l1.ts` (student picks a club; two slots per club; the
-second slot is labelled a twin), export `carryOut()` for the seed, and write the
-`m1l1-the-window` seed reader in `fullHouse.ts`.
+Integrate the C1 wave as builders report: `npm test` (whole tree), the L1 e2e
+(`node scripts/e2e-same-line-l1.cjs`), a Full House carry e2e, then commit + push. Then turn each
+landed spec into sonnet build waves by file ownership (module file + its own client renderer +
+its own test file; the three `main.ts` dispatch lines are integrated by the orchestrator).

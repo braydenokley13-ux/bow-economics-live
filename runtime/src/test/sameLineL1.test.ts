@@ -16,7 +16,7 @@
  */
 import assert from "node:assert/strict";
 import test from "node:test";
-import { sameLineL1Module as mod, DAYS, SAME_LINE_L1_ID, forgoneBy, type SameLineL1State } from "../modules/sameLine/l1.js";
+import { sameLineL1Module as mod, DAYS, SAME_LINE_L1_ID, forgoneBy, spotlightViewFor, pressCandidatesFor, type SameLineL1State } from "../modules/sameLine/l1.js";
 import { BOARD, CLUBS, LINE, MARKET, MINIMUM_MARKET, TOOL } from "../modules/sameLine/world.js";
 import { applySigning, jobClosingSignings, readingsFor, ceilingOf, checkOffer, legalOffers, offerValue, openingPosition, outlookAfter, yearsFor } from "../modules/sameLine/engine.js";
 import { isOrderedSubsequence } from "../shared/phases.js";
@@ -1288,7 +1288,7 @@ test("a naming is never shown for something the room did not do", () => {
   }
 });
 
-test("a pair with no club is on the teacher's console, not only on its own dead screen", () => {
+test("a student with no club is on the teacher's console, not only on its own dead screen", () => {
   // The module refuses to invent a seventeenth franchise, which is right: a
   // duplicate position would change numbers the room has already seen. What was
   // wrong was the silence. `observers` was module state that no view exposed, so
@@ -1320,9 +1320,151 @@ test("a pair with no club is on the teacher's console, not only on its own dead 
   const item = (after["intel"] as { label: string; text: string; ask: string }[]).find((i) =>
     i.label.includes("NO CLUB"),
   );
-  assert.ok(item, "the console must say a pair has no club");
-  assert.match(item.text, /1 pair joined/);
-  assert.match(item.text, new RegExp(`holds ${full} desks`));
+  assert.ok(item, "the console must say a student has no club");
+  assert.match(item.text, /1 student joined/);
+  assert.match(item.text, new RegExp(`holds ${full} franchises`));
   // The teacher-transfer payload: a question or an instruction, never a bare fact.
   assert.ok(item.ask.length > 40, "an intel item without something to do is a fact, not direction");
+});
+
+/* ---------------------------------------------------- one student, one club -- */
+
+test("chooseClub: a student picks the club they will run, and the second picker of the same club is its twin", () => {
+  const empty = fresh();
+  const a = mod.reduce(empty, { type: "chooseClub", clubId: "new-york" }, ctx("LOBBY", "a"));
+  assert.ok(a.ok, a.ok ? "" : a.reason);
+  assert.equal(a.state.desks["a"]!.clubId, "new-york");
+  assert.equal(a.state.desks["a"]!.twin, 0);
+  const b = mod.reduce(a.state, { type: "chooseClub", clubId: "new-york" }, ctx("HOOK", "b"));
+  assert.ok(b.ok, b.ok ? "" : b.reason);
+  assert.equal(b.state.desks["b"]!.clubId, "new-york");
+  assert.equal(b.state.desks["b"]!.twin, 1);
+  assert.notEqual(b.state.desks["a"]!.label, b.state.desks["b"]!.label, "twins are two franchises with two names");
+  // Same books: two franchises that started from the same real club (D59 ruling 1).
+  assert.equal(b.state.desks["a"]!.position.committed, b.state.desks["b"]!.position.committed);
+});
+
+test("chooseClub: a full club is refused with the reason, and nothing about the room changes", () => {
+  let s = fresh();
+  for (const seat of ["a", "b"]) s = (mod.reduce(s, { type: "chooseClub", clubId: "memphis" }, ctx("PLAY", seat)) as { ok: true; state: SameLineL1State }).state;
+  const r = mod.reduce(s, { type: "chooseClub", clubId: "memphis" }, ctx("PLAY", "c"));
+  assert.equal(r.ok, false);
+  assert.match(r.ok ? "" : r.reason, /Both front offices at Memphis are taken/);
+  assert.equal(Object.keys(s.desks).length, 2);
+  // A club that is not in this world is refused too, and the student is not seated anywhere.
+  const bad = mod.reduce(s, { type: "chooseClub", clubId: "los-angeles" }, ctx("PLAY", "c"));
+  assert.equal(bad.ok, false);
+  const view = mod.studentView(s, "c", "PLAY") as Record<string, unknown>;
+  assert.equal(view["seated"], false);
+  assert.equal(view["observer"], false, "a refused pick is not being turned away");
+});
+
+test("chooseClub: is idempotent for a seated desk, refuses a teacher, and lands a late arrival as an observer", () => {
+  const s = seat(fresh(), "a");
+  const club = s.desks["a"]!.clubId;
+  const again = mod.reduce(s, { type: "chooseClub", clubId: club === "memphis" ? "boston" : "memphis" }, ctx("PLAY", "a"));
+  assert.ok(again.ok);
+  assert.equal(again.state.desks["a"]!.clubId, club, "a seated desk cannot move clubs by picking again");
+  assert.equal(mod.reduce(s, { type: "chooseClub", clubId: "memphis" }, ctx("PLAY", "teacher")).ok, false);
+  const closed = { ...s, windowClosed: true };
+  const late = mod.reduce(closed, { type: "chooseClub", clubId: "memphis" }, ctx("REVEAL", "z"));
+  assert.ok(late.ok);
+  assert.deepEqual(late.state.observers, ["z"]);
+});
+
+test("the unseated view offers every club with how many front offices are open — and never who holds them", () => {
+  let s = fresh("5-6");
+  s = (mod.reduce(s, { type: "chooseClub", clubId: "detroit" }, ctx("LOBBY", "a")) as { ok: true; state: SameLineL1State }).state;
+  const view = mod.studentView(s, "b", "LOBBY") as Record<string, unknown>;
+  assert.equal(view["seated"], false);
+  assert.equal(view["canChoose"], true);
+  const choices = view["choices"] as Array<Record<string, unknown>>;
+  assert.equal(choices.length, CLUBS.length);
+  const det = choices.find((c) => c["clubId"] === "detroit")!;
+  assert.equal(det["open"], 1);
+  assert.match(String(det["openText"]), /1 desk open/);
+  for (const c of choices) {
+    const text = JSON.stringify(c);
+    assert.ok(!text.includes('"seatId"') && !text.includes("seat-") && !text.includes('"a"'), `a choice leaks who holds a club: ${text}`);
+    assert.equal(typeof c["standing"], "string");
+    assert.ok(!/[-−]\s*\$|%/.test(String(c["standing"])), "5-6 never sees a minus sign or a percent");
+    assert.equal(c["committed"], undefined, "5-6 chooses on situation and jobs; the payroll figure is a third variable and waits for the desk");
+  }
+  const words = String(view["choosePrompt"]).split(/\s+/).length;
+  assert.ok(words <= 40, `the choose prompt is ${words} words; the 5-6 blocking budget is 40`);
+  // 7-8 reads the payroll figure on the card.
+  const older = mod.studentView(fresh("7-8"), "b", "LOBBY") as Record<string, unknown>;
+  const c78 = (older["choices"] as Array<Record<string, unknown>>)[0]!;
+  assert.equal(typeof c78["committed"], "number");
+  assert.equal(typeof c78["committedText"], "string");
+  // Once the window has closed there is nothing to choose.
+  const closed = mod.studentView({ ...s, windowClosed: true }, "b", "REVEAL") as Record<string, unknown>;
+  assert.equal(closed["canChoose"], false);
+  assert.deepEqual(closed["choices"], []);
+});
+
+test("takeSeat still deals a club to a student who would rather be dealt one, skipping clubs already chosen", () => {
+  let s = fresh();
+  s = (mod.reduce(s, { type: "chooseClub", clubId: CLUBS[0]!.id }, ctx("LOBBY", "a")) as { ok: true; state: SameLineL1State }).state;
+  s = (mod.reduce(s, { type: "chooseClub", clubId: CLUBS[0]!.id }, ctx("LOBBY", "b")) as { ok: true; state: SameLineL1State }).state;
+  const dealt = seat(s, "c");
+  assert.equal(dealt.desks["c"]!.clubId, CLUBS[1]!.id, "the dealt club is the first with a front office still open");
+  assert.equal(dealt.desks["c"]!.twin, 0);
+});
+
+test("the console's walk-to strip and the seat-to-club map are teacher-only; the projector and every desk never carry them", () => {
+  let s = fresh();
+  s = (mod.reduce(s, { type: "chooseClub", clubId: "memphis" }, ctx("LOBBY", "a")) as { ok: true; state: SameLineL1State }).state;
+  for (const phase of mod.phases) {
+    const teacher = mod.teacherView(s, phase) as Record<string, unknown>;
+    const strip = teacher["deskStrip"] as { countLine: string; entries: unknown[] };
+    assert.equal(typeof strip.countLine, "string", `deskStrip in ${phase} has a countLine`);
+    assert.equal(strip.entries.length, 1);
+    assert.deepEqual(teacher["seatClubs"], { a: "Memphis A" });
+    const board = JSON.stringify(mod.boardView(s, phase));
+    assert.equal(board.includes("deskStrip") || board.includes("seatClubs"), false, `the projector carries the walk-to list in ${phase}`);
+    const other = JSON.stringify(mod.studentView(s, "b", phase));
+    assert.equal(other.includes("deskStrip") || other.includes("seatClubs") || other.includes("Memphis A"), false, `another desk learns who holds Memphis in ${phase}`);
+  }
+});
+
+/* ------------------------------------------------------------ the podium -- */
+
+test("the podium view is public history only: signed, forgone, chased — never the offer in the air", () => {
+  let s = seatMany(2);
+  const [a, b] = Object.keys(s.desks) as [string, string];
+  const target = BOARD.find((p) => p.minimumScale)!;
+  s = (mod.reduce(s, { type: "offer", playerId: target.id, tool: "minimum", annual: TOOL.minimum.ceiling }, ctx("PLAY", a)) as { ok: true; state: SameLineL1State }).state;
+  const mid = JSON.stringify(spotlightViewFor(s, a, "PLAY"));
+  assert.equal(mid.includes(String(TOOL.minimum.ceiling)), false, "a pending price reached the projector");
+  assert.equal(mid.includes(target.name), false, "a pending target reached the projector");
+  assert.equal(mid.includes(a), false, "a seat id reached the projector");
+  assert.equal(mid.includes(b) || mid.includes(s.desks[b]!.label), false, "another desk reached the podium view");
+  s = (mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher")) as { ok: true; state: SameLineL1State }).state;
+  const after = spotlightViewFor(s, a, "PLAY") as Record<string, unknown>;
+  assert.equal(after["label"], s.desks[a]!.label);
+  assert.equal(typeof after["openingQuestion"], "string");
+  assert.ok(String(after["openingQuestion"]).endsWith("?"), "the opening line is a question to the desk, not a verdict");
+  assert.equal(spotlightViewFor(s, "nobody", "PLAY"), null);
+});
+
+test("press-conference candidates are ranked by contrast, reversal, risk and ambiguity — never by the best desk", () => {
+  let s = fresh();
+  s = (mod.reduce(s, { type: "chooseClub", clubId: "detroit" }, ctx("LOBBY", "spend")) as { ok: true; state: SameLineL1State }).state;
+  s = (mod.reduce(s, { type: "chooseClub", clubId: "detroit" }, ctx("LOBBY", "sit")) as { ok: true; state: SameLineL1State }).state;
+  s = (mod.reduce(s, { type: "chooseClub", clubId: "boston" }, ctx("LOBBY", "quiet")) as { ok: true; state: SameLineL1State }).state;
+  const target = BOARD.find((p) => p.minimumScale)!;
+  s = (mod.reduce(s, { type: "offer", playerId: target.id, tool: "minimum", annual: TOOL.minimum.ceiling }, ctx("PLAY", "spend")) as { ok: true; state: SameLineL1State }).state;
+  s = (mod.reduce(s, { type: "teacher:closeDay" }, ctx("PLAY", "teacher")) as { ok: true; state: SameLineL1State }).state;
+  const list = pressCandidatesFor(s, "PLAY");
+  assert.equal(list.length, 3);
+  const top = list[0]!;
+  assert.ok(["spend", "sit"].includes(top.seatId), `the twins that diverged lead the list, got ${top.seatId}`);
+  assert.match(top.why, /apart from Detroit [AB], from the same books/);
+  for (const c of list) {
+    assert.ok(c.why.length > 10, "every candidate says why");
+    assert.ok(!/best|worst|highest|lowest|correct|right|wrong/i.test(c.why), `ranking by merit is forbidden: ${c.why}`);
+  }
+  // Same state, same list: stable under the teacher's cursor.
+  assert.deepEqual(pressCandidatesFor(s, "PLAY"), list);
 });

@@ -864,6 +864,61 @@ function revealMain(v: V): string {
   return parts.join("");
 }
 
+/* ------------------------------------------------------------ picker -- */
+
+/**
+ * PICK YOUR CLUB — the student's first act of ownership.
+ *
+ * One student, one franchise (D59). Eight clubs, two front offices each; a
+ * club with one desk on it is still open and says so. Rebuilt only when the
+ * openness of the room changes, so a poll does not steal a click; a card that
+ * fills while the student is reading greys out on the next patch rather than
+ * silently accepting a pick the server will refuse.
+ */
+function renderPicker(v: V, choices: V[], host: HTMLElement, submit: Submit): void {
+  const key = "pick:" + choices.map((c) => `${str(c["clubId"])}=${num(c["open"])}`).join(",") + (error ? "!" : "");
+  if (mountKey === key) return;
+  mountKey = key;
+  const cards = choices
+    .map((c, i) => {
+      const open = num(c["open"]);
+      const jobs = (Array.isArray(c["jobs"]) ? (c["jobs"] as unknown[]) : []).map((j) => esc(String(j))).join(" · ");
+      return `<button type="button" class="sl-pick" data-club="${esc(str(c["clubId"]))}" data-index="${i}" data-open="${open}" ${open === 0 ? 'disabled aria-disabled="true"' : ""}>
+        <span class="sl-pick-name">${esc(str(c["club"]))}</span>
+        <span class="sl-pick-city">${esc(str(c["city"]))} · ${esc(str(c["standing"]))}</span>
+        <span class="sl-pick-sit">${esc(str(c["situation"]))}</span>
+        <span class="sl-pick-meta"><span>NEEDS ${jobs}</span>${str(c["committedText"]) ? `<span>PAYROLL ${esc(str(c["committedText"]))}</span>` : ""}</span>
+        <span class="sl-pick-open" data-open="${open}">${esc(str(c["openText"]))}</span>
+      </button>`;
+    })
+    .join("");
+  host.innerHTML = `<div class="sl-picker">
+    <div class="sl-picker-head">
+      <div class="sl-picker-eyebrow">YOUR FRONT OFFICE</div>
+      <h2 class="sl-picker-title">${esc(str(v["message"], "Pick the club you will run."))}</h2>
+      <p class="sl-picker-prompt">${esc(str(v["choosePrompt"]))}</p>
+      ${error ? `<div class="sl-err" role="alert">${esc(error)}</div>` : ""}
+    </div>
+    <div class="sl-pick-grid">${cards}</div>
+    <div class="sl-picker-foot"><button type="button" class="sl-deal" data-deal>DEAL ME ONE</button></div>
+  </div>`;
+  const lock = (): void => {
+    host.querySelectorAll<HTMLButtonElement>(".sl-pick, .sl-deal").forEach((b) => { b.disabled = true; });
+  };
+  host.querySelectorAll<HTMLButtonElement>(".sl-pick").forEach((b) => {
+    b.addEventListener("click", () => {
+      error = null;
+      lock();
+      submit({ type: "chooseClub", clubId: b.dataset["club"] });
+    });
+  });
+  host.querySelector<HTMLButtonElement>("[data-deal]")?.addEventListener("click", () => {
+    error = null;
+    lock();
+    submit({ type: "takeSeat" });
+  });
+}
+
 /* ------------------------------------------------------------ render -- */
 
 export function renderSameLineL1(
@@ -875,20 +930,33 @@ export function renderSameLineL1(
   const v = view as V;
 
   if (v["seated"] === false) {
-    // Ask for a desk. The module is idempotent on `takeSeat`, so a retry is not
-    // an error — but without this the pair sits on the waiting copy forever and
-    // nothing on screen says anything is wrong. Guarded so a poll every second
-    // does not turn into a request every second.
-    if (v["observer"] !== true && !seatRequested) {
-      seatRequested = true;
-      submit({ type: "takeSeat" });
+    if (v["observer"] === true) {
+      host.innerHTML = `<div class="sl-note" style="margin:24px;">${
+        str(v["observerEyebrow"]) ? `<strong>${esc(str(v["observerEyebrow"]))}</strong>` : ""
+      }<p style="margin:8px 0 0">${esc(str(v["message"], "You're in."))}</p>${
+        str(v["observerAction"]) ? `<p style="margin:8px 0 0">${esc(str(v["observerAction"]))}</p>` : ""
+      }</div>`;
+      mountKey = "";
+      return;
     }
-    host.innerHTML = `<div class="sl-note" style="margin:24px;">${
-      str(v["observerEyebrow"]) ? `<strong>${esc(str(v["observerEyebrow"]))}</strong>` : ""
-    }<p style="margin:8px 0 0">${esc(str(v["message"], "You're in. Finding your club…"))}</p>${
-      str(v["observerAction"]) ? `<p style="margin:8px 0 0">${esc(str(v["observerAction"]))}</p>` : ""
-    }</div>`;
-    mountKey = "";
+    const choices = arr(v["choices"]);
+    if (v["canChoose"] !== true || choices.length === 0) {
+      // No choice on offer (a phase past the window, or an older server): fall
+      // back to being dealt a club. The module is idempotent on `takeSeat`, so a
+      // retry is not an error — but without this the student sits on the
+      // waiting copy forever. Guarded so a poll every second does not turn into
+      // a request every second.
+      if (!seatRequested) {
+        seatRequested = true;
+        submit({ type: "takeSeat" });
+      }
+      host.innerHTML = `<div class="sl-note" style="margin:24px;"><p style="margin:0">${esc(
+        str(v["message"], "You're in. Finding your club…"),
+      )}</p></div>`;
+      mountKey = "";
+      return;
+    }
+    renderPicker(v, choices, host, submit);
     return;
   }
 

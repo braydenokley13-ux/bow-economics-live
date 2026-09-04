@@ -179,6 +179,35 @@ function nextSeatFor(state: SameLineL1State): { clubId: ClubId; twin: 0 | 1 } | 
 
 const deskLabel = (clubId: ClubId, twin: 0 | 1): string => `${CLUB[clubId].name} ${twin === 0 ? "A" : "B"}`;
 
+/**
+ * The first open front office on one club, or null when both are held.
+ *
+ * ONE STUDENT = ONE FRANCHISE (D59 ruling 1). A student chooses the club they
+ * will run; two independent franchises may start from the same club's books,
+ * and the second is told so before it commits to anything. The choice is the
+ * student's first act of ownership and it is theirs, not the room's — `takeSeat`
+ * stays as the fallback for a desk that would rather be dealt one.
+ */
+function freeTwinFor(state: SameLineL1State, clubId: ClubId): 0 | 1 | null {
+  const held = Object.values(state.desks).filter((d) => d.clubId === clubId);
+  if (!held.some((d) => d.twin === 0)) return 0;
+  if (!held.some((d) => d.twin === 1)) return 1;
+  return null;
+}
+
+function seatDesk(state: SameLineL1State, seatId: SeatId, clubId: ClubId, twin: 0 | 1): SameLineL1State {
+  const desk: Desk = {
+    seatId,
+    clubId,
+    twin,
+    label: deskLabel(clubId, twin),
+    position: openingPosition(clubId),
+    joinedOnDay: state.day,
+    forgoneAtCommit: [],
+  };
+  return { ...state, desks: { ...state.desks, [seatId]: desk } };
+}
+
 /* --------------------------------------------------------------- the view -- */
 
 const playerById = (id: string): FreeAgent | undefined => MARKET.find((p) => p.id === id);
@@ -245,16 +274,26 @@ function reduce(state: SameLineL1State, action: { type: string; [k: string]: unk
       }
       const next = nextSeatFor(state);
       if (!next) return { ok: true, state: { ...state, observers: [...state.observers, ctx.seatId] } };
-      const desk: Desk = {
-        seatId: ctx.seatId,
-        clubId: next.clubId,
-        twin: next.twin,
-        label: deskLabel(next.clubId, next.twin),
-        position: openingPosition(next.clubId),
-        joinedOnDay: state.day,
-        forgoneAtCommit: [],
-      };
-      return { ok: true, state: { ...state, desks: { ...state.desks, [ctx.seatId]: desk } } };
+      return { ok: true, state: seatDesk(state, ctx.seatId, next.clubId, next.twin) };
+    }
+
+    /* ---- choosing a club. The student's first act of ownership: which
+       franchise is theirs. Refused, with the reason, when both front offices
+       on that club are already held — the student picks again, and nothing
+       about the room changed. ---- */
+    case "chooseClub": {
+      if (ctx.seatId === "teacher") return fail("a teacher does not hold a desk");
+      if (state.desks[ctx.seatId]) return { ok: true, state }; // already seated; a retry is not an error
+      if (state.observers.includes(ctx.seatId)) return { ok: true, state };
+      if (state.windowClosed || ctx.phase === "COMPLETE") {
+        return { ok: true, state: { ...state, observers: [...state.observers, ctx.seatId] } };
+      }
+      const clubId = String(action["clubId"] ?? "");
+      const club = CLUBS.find((c) => c.id === clubId);
+      if (!club) return fail("that is not one of this room's clubs");
+      const twin = freeTwinFor(state, club.id);
+      if (twin === null) return fail(`Both front offices at ${club.name} are taken. Pick another club.`);
+      return { ok: true, state: seatDesk(state, ctx.seatId, club.id, twin) };
     }
 
     /* ---- the offer. Replaceable until the day closes; committing is not
@@ -641,7 +680,7 @@ export const sameLineL1Module: LessonModule<SameLineL1State> = {
      beat 3 would open on the last concept and be unable to go forward. */
   onPhaseExit: (state, _from, to) => (to === "SYNTHESIS" ? { ...state, beat: 0 } : state),
   allowedActions: (phase) =>
-    phase === "PLAY" ? ["takeSeat", "offer", "pass", "declareOverCap"] : phase === "LOBBY" || phase === "HOOK" ? ["takeSeat"] : [],
+    phase === "PLAY" ? ["chooseClub", "takeSeat", "offer", "pass", "declareOverCap"] : phase === "LOBBY" || phase === "HOOK" ? ["chooseClub", "takeSeat"] : [],
 
   studentView: (state, seatId, phase) => studentView(state, seatId, phase),
   teacherView: (state, phase) => teacherView(state, phase),
@@ -697,10 +736,183 @@ export const sameLineL1Module: LessonModule<SameLineL1State> = {
   },
 };
 
+/* ------------------------------------------------------- the podium -- */
+
+/**
+ * THE PODIUM — what the projector may show about ONE desk during a Press
+ * Conference (Bible §12.1B). The runtime owns the pause; this decides what is
+ * public. The rule is the same one the reveal already obeys: a signing that
+ * has settled is a fact of the league, an offer still pending on an open day
+ * is that desk's alone. So nothing here reads `pending`, ever, and a desk
+ * called to the podium mid-day is shown its settled history and its frozen
+ * forgone lists — what it knew, what it chose, what it gave up — never the
+ * price it has in the air right now.
+ */
+export function spotlightViewFor(state: SameLineL1State, seatId: SeatId, phase: CanonicalPhase): unknown {
+  const desk = state.desks[seatId];
+  if (!desk) return null;
+  const club = CLUB[desk.clubId];
+  const profile = bandProfile(state);
+  const signings = desk.position.signings.map((sg) => ({
+    name: sg.name,
+    role: sg.role,
+    annualText: money(sg.annual),
+    tool: TOOL[sg.tool].label,
+    years: sg.years,
+  }));
+  const forgone = desk.forgoneAtCommit.map((f) => ({ day: f.day + 1, signed: f.signed, atPriceText: money(f.atPrice), lost: f.lost }));
+  // The days this desk went after somebody and did not get him — settled
+  // history, so public; it is what the wire showed the whole room already.
+  const chased = state.history
+    .filter((h) => h.chased[seatId] && !h.awards.some((a) => (a.winner as unknown as string) === seatId))
+    .map((h) => ({ day: h.day + 1, name: playerById(h.chased[seatId]!)?.name ?? "somebody" }))
+    .filter((c) => c.name !== "somebody");
+  return {
+    module: SAME_LINE_L1_ID,
+    label: desk.label,
+    club: club.name,
+    situation: club.situation,
+    day: Math.min(state.day + 1, DAYS),
+    ofDays: DAYS,
+    windowClosed: state.windowClosed,
+    committedText: money(desk.position.committed),
+    standing: standingOf(desk.position.committed, profile),
+    openJobs: desk.position.openJobs,
+    signings,
+    forgone,
+    chased,
+    /* The instructor's opening line, deadpan, attacking the decision and never
+       the person (§12.2). The console offers it; the teacher says it. */
+    openingQuestion: openingQuestionFor(desk, chased.length > 0, phase),
+  };
+}
+
+function openingQuestionFor(desk: Desk, lostSomeone: boolean, phase: CanonicalPhase): string {
+  const last = desk.forgoneAtCommit[desk.forgoneAtCommit.length - 1];
+  if (last && last.lost.length > 0) {
+    return `You signed ${last.signed} at ${money(last.atPrice)} and that put ${last.lost.slice(0, 2).join(" and ")} out of reach. Why him?`;
+  }
+  if (last) return `You signed ${last.signed} at ${money(last.atPrice)}. What did that cost you?`;
+  if (lostSomeone) return "You went after him and somebody else got him. What do you do now?";
+  if (desk.position.openJobs.length > 0 && phase === "PLAY") {
+    return `You still have ${desk.position.openJobs.length === 1 ? "a hole" : "holes"} to fill and you have signed nobody. What are you waiting for?`;
+  }
+  return "Walk us through your first move.";
+}
+
+/**
+ * WHO TO CALL — ranked by interesting reasoning, contrast, risk, reversal and
+ * ambiguity; never by the best desk, the highest number or correctness
+ * (Bible §12.2, FOUNDER LOCKED). Every signal below is a fact the reducer
+ * already holds; nothing is a grade. Teacher-only: the runtime relays this
+ * to `/teach` and nowhere else.
+ */
+export function pressCandidatesFor(state: SameLineL1State, _phase: CanonicalPhase): readonly { seatId: SeatId; label: string; why: string }[] {
+  const desks = Object.values(state.desks);
+  const byClub = new Map<ClubId, Desk[]>();
+  for (const d of desks) byClub.set(d.clubId, [...(byClub.get(d.clubId) ?? []), d]);
+  const scored = desks.map((d) => {
+    let score = 0;
+    const why: string[] = [];
+    // CONTRAST — the twin desk went a different way from the same books.
+    const twin = (byClub.get(d.clubId) ?? []).find((o) => o.seatId !== d.seatId);
+    if (twin && twin.position.committed !== d.position.committed) {
+      const gap = Math.abs(twin.position.committed - d.position.committed);
+      score += 3;
+      why.push(`${money(gap)} apart from ${twin.label}, from the same books`);
+    }
+    // REVERSAL — chased somebody, lost him, then signed somebody else.
+    const lostDays = state.history.filter((h) => h.chased[d.seatId] && !h.awards.some((a) => (a.winner as unknown as string) === d.seatId));
+    const signedAfterLoss = lostDays.length > 0 && d.forgoneAtCommit.some((f) => f.day > lostDays[0]!.day);
+    if (signedAfterLoss) {
+      score += 3;
+      why.push("lost the player they went after, then signed somebody else");
+    } else if (lostDays.length > 0) {
+      score += 1;
+      why.push("went after somebody and did not get him");
+    }
+    // RISK — the biggest tool spent, or the cap declared crossed.
+    if (d.position.overCapDeclared) {
+      score += 2;
+      why.push("declared over the cap on purpose");
+    }
+    const bigForgone = d.forgoneAtCommit.find((f) => f.lost.length >= 3);
+    if (bigForgone) {
+      score += 2;
+      why.push(`one signing put ${bigForgone.lost.length} names out of reach`);
+    }
+    // AMBIGUITY — holes still open with the window closing, or signed nobody.
+    if (d.position.signings.length === 0 && state.day >= 1) {
+      score += 2;
+      why.push(`signed nobody through day ${Math.min(state.day, DAYS)}`);
+    } else if (d.position.openJobs.length > 0 && state.day >= DAYS - 1) {
+      score += 1;
+      why.push(`still has ${d.position.openJobs.length === 1 ? "a hole" : "holes"} open late in the window`);
+    }
+    return { seatId: d.seatId, label: d.label, score, why: why.join(" · ") || "a plain run so far — a fair first podium" };
+  });
+  // Stable: score, then the world's club order, then twin, so the list does
+  // not shuffle under the teacher's cursor between polls.
+  const order = new Map(CLUBS.map((c, i) => [c.id, i]));
+  return scored
+    .sort((a, b) => b.score - a.score || order.get(state.desks[a.seatId]!.clubId)! - order.get(state.desks[b.seatId]!.clubId)! || state.desks[a.seatId]!.twin - state.desks[b.seatId]!.twin)
+    .map(({ seatId, label, why }) => ({ seatId, label, why }));
+}
+
 /* ----------------------------------------------------------------- views -- */
 
 function bandProfile(state: SameLineL1State): GradeProfile {
   return profileFor(state.gradeBand);
+}
+
+/**
+ * Where a club stands, in the words the band's ladder uses. Never a signed
+ * number: the side is a word, and at 5-6 only the two live lines are named.
+ */
+function standingOf(committed: number, profile: GradeProfile): string {
+  const band = bandOf(committed);
+  if (profile.band === "5-6") {
+    if (band === "under-floor" || band === "under-cap") return "under the cap";
+    if (band === "under-tax" || band === "under-apron1") return "over the cap";
+    return "over the first apron";
+  }
+  switch (band) {
+    case "under-floor":
+      return "under the floor";
+    case "under-cap":
+      return "under the cap";
+    case "under-tax":
+      return "over the cap, under the tax line";
+    case "under-apron1":
+      return "over the tax line";
+    case "under-apron2":
+      return "over the first apron";
+    case "over-apron2":
+      return "over the second apron";
+  }
+}
+
+/**
+ * The clubs a student can choose from, and how many front offices each has
+ * left. Room-level counts only — never which seat holds which club.
+ */
+function choicesFor(state: SameLineL1State, profile: GradeProfile) {
+  const held = Object.values(state.desks);
+  return CLUBS.map((club) => {
+    const taken = held.filter((d) => d.clubId === club.id).length;
+    const open = Math.max(0, 2 - taken);
+    return {
+      clubId: club.id,
+      club: club.name,
+      city: club.city,
+      situation: club.situation,
+      jobs: club.jobs,
+      standing: standingOf(club.committed.value, profile),
+      open,
+      openText: open === 2 ? "2 desks open" : open === 1 ? "1 desk open — you'd start from the same books" : "FULL",
+      ...(profile.band === "7-8" ? { committed: club.committed.value, committedText: money(club.committed.value), colour: club.colour.value } : {}),
+    };
+  });
 }
 
 function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPhase): unknown {
@@ -718,12 +930,19 @@ function studentView(state: SameLineL1State, seatId: SeatId, phase: CanonicalPha
      */
     const turnedAway = state.observers.includes(seatId);
     if (!turnedAway) {
+      const canChoose = !state.windowClosed && (phase === "LOBBY" || phase === "HOOK" || phase === "PLAY");
       return {
         module: SAME_LINE_L1_ID,
         seated: false,
         observer: false,
-        message: "You're in. Finding your club…",
+        message: canChoose ? "Pick the club you will run." : "You're in. Finding your club…",
         band: state.gradeBand,
+        canChoose,
+        /* Held under the 5-6 blocking-word budget (40): the one screen a
+           student must read before they own anything. */
+        choosePrompt:
+          "Two front offices can run the same club, so a club with one desk on it is still open. Pick yours, or let the room deal you one.",
+        choices: canChoose ? choicesFor(state, profile) : [],
       };
     }
     return {
@@ -1538,15 +1757,29 @@ function teacherView(state: SameLineL1State, phase: CanonicalPhase): unknown {
     payrollDefinition: PAYROLL_DEFINITION,
     projectorCases: PROJECTOR_CASES,
     simplifications: SIMPLIFICATIONS,
-    deskStrip: desks.map((d) => ({
-      seatId: d.seatId,
-      label: d.label,
-      state: state.pending[d.seatId] ? "in" : phase === "PLAY" ? "deciding" : "closed",
-      stateLabel: state.pending[d.seatId] ? "OFFER IN" : phase === "PLAY" ? "still deciding" : "closed",
-      note: d.position.openJobs.length > 0 ? `${d.position.openJobs.length} still open` : "every hole filled",
-      // D36: a desk is never a reason to walk over for a day it was not here for.
-      flag: phase === "PLAY" && !state.pending[d.seatId] && d.joinedOnDay < state.day,
-    })),
+    /* THE DESKS, in the shape the console's walk-to strip reads
+       (`{ countLine, entries }`, the same contract Full House, Host the League
+       and Write the Rule hand it). */
+    deskStrip: {
+      countLine:
+        phase === "PLAY" && !state.windowClosed
+          ? `${Object.keys(state.pending).length} of ${desks.length} desks have an offer in on day ${state.day + 1}`
+          : `${desks.length} ${desks.length === 1 ? "franchise" : "franchises"} in the room`,
+      entries: desks.map((d) => ({
+        seatId: d.seatId,
+        label: d.label,
+        state: state.pending[d.seatId] ? "in" : phase === "PLAY" ? "deciding" : "closed",
+        stateLabel: state.pending[d.seatId] ? "OFFER IN" : phase === "PLAY" ? "still deciding" : "closed",
+        note: d.position.openJobs.length > 0 ? `${d.position.openJobs.length} still open` : "every hole filled",
+        // D36: a desk is never a reason to walk over for a day it was not here for.
+        flag: phase === "PLAY" && !state.pending[d.seatId] && d.joinedOnDay < state.day,
+      })),
+    },
+    /* Who has a club and who is still choosing. ONE STUDENT = ONE FRANCHISE
+       (D59): the console names the seat's franchise, never the student on the
+       projector, and says plainly when a seat has not picked yet. */
+    seatClubs: Object.fromEntries(desks.map((d) => [d.seatId, d.label])),
+    openFranchises: CLUBS.length * 2 - desks.length,
     beat: state.beat,
     beats: REVEAL_BEATS,
     /* THE DIRECTOR CARD for the naming: what is on the wall right now, what to
@@ -1813,21 +2046,21 @@ function intelligence(state: SameLineL1State, phase: CanonicalPhase): readonly I
     }
   }
 
-  /* A PAIR WITH NO CLUB. The module refuses to invent a seventeenth franchise
-     — duplicating a position would quietly change numbers the room has already
-     seen — so a pair that joins once all sixteen desks are taken lands as an
-     observer. That is the right refusal and the wrong silence: the teacher
-     payload never mentioned it, so a teacher who split thirty-four students
-     into seventeen pairs had one pair behind a dead screen for the whole of
-     PLAY with nothing on the console to say so. The random-teacher standard
-     (CLAUDE.md §4) makes this the console's job, not the teacher's eyesight. */
+  /* A STUDENT WITH NO CLUB. The module refuses to invent a seventeenth
+     franchise — duplicating a position would quietly change numbers the room
+     has already seen — so a student who joins once all sixteen desks are taken
+     lands as an observer. That is the right refusal and the wrong silence: the
+     teacher payload never mentioned it, so a teacher with seventeen students
+     had one behind a dead screen for the whole of PLAY with nothing on the
+     console to say so. The random-teacher standard (CLAUDE.md §4) makes this
+     the console's job, not the teacher's eyesight. */
   if (state.observers.length > 0) {
     const n = state.observers.length;
     out.push({
       kind: "watch",
-      label: n === 1 ? "A PAIR HAS NO CLUB" : "PAIRS WITH NO CLUB",
-      text: `${n} ${n === 1 ? "pair" : "pairs"} joined after every club was taken. This room holds ${CLUBS.length * 2} desks, and ${n === 1 ? "that pair has" : "those pairs have"} no franchise and no board.`,
-      ask: `Sit them with a desk that has one — two pairs to a screen is the shape this is built for. If the room will not take that, give them the room's job: pick a club to shadow, say out loud what you think it will do, and check yourself when the day closes.`,
+      label: n === 1 ? "A STUDENT HAS NO CLUB" : "STUDENTS WITH NO CLUB",
+      text: `${n} ${n === 1 ? "student" : "students"} joined after every club was taken. This room holds ${CLUBS.length * 2} franchises, and ${n === 1 ? "that student has" : "those students have"} no franchise and no board.`,
+      ask: `Give them the room's job: pick a club to shadow, say out loud what you think it will do, and check yourself when the day closes. If a desk is willing, they can sit as its co-owner — one franchise, two voices, one offer.`,
     });
   }
 

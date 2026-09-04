@@ -337,13 +337,27 @@ async function runBand(browser, band, label) {
     p.on("dialog", (d) => d.accept());
     await p.goto(`${BASE}/play`);
     await p.fill("#joinCode", code);
-    await p.fill("#joinName", `Pair ${i + 1}`);
+    await p.fill("#joinName", `Student ${i + 1}`);
     await p.click("#btnJoin");
     await p.waitForSelector("#gameCard:not([hidden])");
+    /*
+     * ONE STUDENT = ONE FRANCHISE (D59). The first screen a student owns is the
+     * club picker: eight cards in the world's order, two front offices each.
+     * Desk i takes card i, which keeps NEW_YORK_DESK / DETROIT_DESK meaning what
+     * they say. Before the pick, the card the previous desk took must already
+     * read as one desk open — the room's shape is live, not a snapshot.
+     */
+    await p.waitForSelector(`.sl-pick[data-index="${i}"]`, { timeout: 30000 });
+    if (i > 0) {
+      const prev = (await p.textContent(`.sl-pick[data-index="${i - 1}"] .sl-pick-open`)).trim();
+      assert.match(prev, /^1 desk open/, `${label}: desk ${i + 1} saw "${prev}" on the club desk ${i} just took`);
+    }
+    await p.click(`.sl-pick[data-index="${i}"]`);
+    await p.waitForSelector(".sl-picker", { state: "detached", timeout: 30000 });
     desks.push(p);
-    studentNames.push(`Pair ${i + 1}`);
+    studentNames.push(`Student ${i + 1}`);
   }
-  console.log(`${label}: ${DESKS} pairs joined`);
+  console.log(`${label}: ${DESKS} students joined and chose their clubs`);
 
   await assertBoardFits(boardPage, `${label} LOBBY`);
   await assertBackRow(boardPage, `${label} LOBBY`);
