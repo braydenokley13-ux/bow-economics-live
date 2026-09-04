@@ -1468,3 +1468,12 @@ test("press-conference candidates are ranked by contrast, reversal, risk and amb
   // Same state, same list: stable under the teacher's cursor.
   assert.deepEqual(pressCandidatesFor(s, "PLAY"), list);
 });
+
+test("the module hands the runtime its podium and shortlist (Press Conference contract)", () => {
+  const room = seatMany(3);
+  assert.equal(typeof mod.spotlightView, "function");
+  assert.equal(typeof mod.pressCandidates, "function");
+  const seatId = Object.keys(room.desks)[0]!;
+  assert.deepEqual(mod.spotlightView!(room, seatId, "PLAY"), spotlightViewFor(room, seatId, "PLAY"));
+  assert.deepEqual(mod.pressCandidates!(room, "PLAY"), pressCandidatesFor(room, "PLAY"));
+});

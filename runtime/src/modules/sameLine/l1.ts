@@ -734,6 +734,12 @@ export const sameLineL1Module: LessonModule<SameLineL1State> = {
     }
     return lines;
   },
+
+  // The Press Conference primitive (runtime-owned pause + spotlight) asks the
+  // module two pure questions; both are defined below the object so the
+  // privacy argument sits next to the code that keeps it.
+  spotlightView: (state, seatId, phase) => spotlightViewFor(state, seatId, phase),
+  pressCandidates: (state, phase) => pressCandidatesFor(state, phase),
 };
 
 /* ------------------------------------------------------- the podium -- */
