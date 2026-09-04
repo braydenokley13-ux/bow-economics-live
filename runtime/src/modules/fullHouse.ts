@@ -4079,11 +4079,12 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       }
       const market = marketOf(desk);
       const identity = deskIdentity(desk);
-      const bill = billView(desk, bandOfRoom(state), state.carry?.payrollDefinition ?? null);
+      const band = bandOfRoom(state);
+      const bill = billView(desk, band, state.carry?.payrollDefinition ?? null);
       // Each night's carried fans come from the night before it — the same
       // `carryFansFor` conversion the pair was shown before it spent (R6/P2).
       const history = desk.nights.map((n, i) => {
-        const v = viewNight(n, market, i > 0 ? Math.round(market.eventFans * desk.nights[i - 1]!.spend) : 0);
+        const v = viewNight(n, market, i > 0 ? Math.round(market.eventFans * desk.nights[i - 1]!.spend) : 0, band);
         // W2 repair-2 B6: a night that repeats an earlier card carries the two
         // figures for both nights on the pair's OWN screen, at the moment the
         // result lands, instead of only two phases later on the board.

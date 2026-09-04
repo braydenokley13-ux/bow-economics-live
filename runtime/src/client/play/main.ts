@@ -2310,11 +2310,20 @@ type FHNight = {
   inArena: number;
   total: number;
   bill: number;
+  /** W4 QA repair 2: BUILDING BILL printed by band — "-$…" at 7-8, "spent $…" at 5-6. Never build the sign here. */
+  billOutflowText?: string;
   spendPaid: number;
+  /** W4 QA repair 2: EVENT MONEY printed by band. Only read when spendPaid > 0. */
+  eventOutflowText?: string;
   bowlCost: number;
+  /** W4 QA repair 2: MORE SEATS printed by band. Only read when bowlCost > 0. */
+  bowlOutflowText?: string;
   net: number;
   renewalsBefore: number;
   renewalsAfter: number;
+  /** W4 QA repair 1: the same two figures printed by band — never a "%" at 5-6. Print these, never `${renewalsBefore}%`. */
+  renewalsBeforeText?: string;
+  renewalsAfterText?: string;
   renewalMove: number;
   cashAfter: number;
   resaleNote: string | null;
@@ -3090,7 +3099,17 @@ function fhRuleSlot(view: Record<string, unknown>): string {
 
 /* ------------------------------------------------------- the settled night -- */
 
-/** The CASH decomposition, as a chain (E10). Never one money hero, never one collapsed word for the two books. */
+/**
+ * The CASH decomposition, as a chain (E10). Never one money hero, never one
+ * collapsed word for the two books.
+ *
+ * W4 QA repair 2: the outflow VALUE is printed verbatim from the module
+ * (`billOutflowText` / `eventOutflowText` / `bowlOutflowText`) — never built
+ * here with a hand-composed minus sign, so a 5-6 room can never end up with a
+ * `-$` on screen. The leading operator glyph only reads "−" when the value
+ * the module gave us is itself signed (7-8); a 5-6 "spent $…" row gets no
+ * operator, since the word already says what happened.
+ */
 function fhChainHtml(n: FHNight, ui: FHUiCopy): string {
   const tight = fhTight();
   const row = (op: string, label: string, value: string, sub = "", strong = false) => `
@@ -3099,13 +3118,17 @@ function fhChainHtml(n: FHNight, ui: FHUiCopy): string {
       <span style="min-width:0;"><span style="${FH_LABEL} font-size:${strong ? 11 : 10.5}px;">${label}</span>${sub ? `<span style="display:block; font-size:10.5px; line-height:${tight ? 13 : 15}px; color:${FH_INK_CAPTION};">${sub}</span>` : ""}</span>
       <span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${strong ? (tight ? 26 : 31) : tight ? 15 : 16}px; line-height:${strong ? (tight ? 30 : 33) : tight ? 18 : 20}px; font-weight:600; letter-spacing:-0.02em; color:${strong ? (n.net < 0 ? FH_RED : FH_MONEY) : FH_INK};">${value}</span>
     </div>`;
+  const outflowOp = (text: string) => (text.startsWith("-") ? "−" : "");
+  const billText = n.billOutflowText ?? `-${money(n.bill).replace("-", "")}`;
+  const eventText = n.eventOutflowText ?? `-${money(n.spendPaid).replace("-", "")}`;
+  const bowlText = n.bowlOutflowText ?? `-${money(n.bowlCost).replace("-", "")}`;
   return `<div class="m2-card m2-chain fh-chain" style="${FH_CARD} padding:${tight ? 11 : 14}px;">
       <div style="display:flex; align-items:center; gap:9px; margin-bottom:4px;">${fhBadge("cash", "money", 26)}<span style="${FH_LABEL}">${ui.chainLabels.cash}</span></div>
       ${row("", ui.chainLabels.tickets, money(n.gate), `$${n.price} × ${n.turnout.toLocaleString()}`)}
       ${row("+", ui.chainLabels.inArena, money(n.inArena), escapeHtml(ui.inArenaNote))}
-      ${row("−", ui.chainLabels.bill, `-${money(n.bill).replace("-", "")}`)}
-      ${n.spendPaid > 0 ? row("−", ui.chainLabels.event, `-${money(n.spendPaid).replace("-", "")}`) : ""}
-      ${n.bowlCost > 0 ? row("−", ui.chainLabels.bowl, `-${money(n.bowlCost).replace("-", "")}`) : ""}
+      ${row(outflowOp(billText), ui.chainLabels.bill, billText)}
+      ${n.spendPaid > 0 ? row(outflowOp(eventText), ui.chainLabels.event, eventText) : ""}
+      ${n.bowlCost > 0 ? row(outflowOp(bowlText), ui.chainLabels.bowl, bowlText) : ""}
       ${row("=", ui.chainLabels.cash, money(n.net), ui.tonightQualifier, true)}
     </div>`;
 }
@@ -3117,18 +3140,24 @@ function fhChainHtml(n: FHNight, ui: FHUiCopy): string {
  * registered, and is the same one printed under the dial before the commit —
  * it is restated here so the movement is attributable without recall, and the
  * price-and-card line sits beside it. No new causal claim.
+ *
+ * W4 QA repair 1: the two figures print `renewalsBeforeText` / `renewalsAfterText`
+ * verbatim from the module — never `${n.renewalsBefore}%` built here — so a
+ * 5-6 room never gets a percent sign.
  */
 function fhRenewalsHtml(n: FHNight, ui: FHUiCopy, cause = "", causeLines: string[] = []): string {
   const tight = fhTight();
   const size = tight ? 26 : 31;
   const move = n.renewalMove === 0 ? "no change" : `${n.renewalMove > 0 ? "up" : "down"} ${Math.abs(n.renewalMove)} ${Math.abs(n.renewalMove) === 1 ? "point" : "points"}`;
   const fig = (v: string, dim: boolean) => `<span style="font-family:var(--m2-font-num, inherit); font-variant-numeric:tabular-nums; font-size:${size}px; line-height:${size + 2}px; font-weight:600; letter-spacing:-0.025em; color:${dim ? FH_INK_LABEL : FH_INK};">${v}</span>`;
+  const beforeText = n.renewalsBeforeText ?? `${n.renewalsBefore}%`;
+  const afterText = n.renewalsAfterText ?? `${n.renewalsAfter}%`;
   return `<div class="m2-card fh-renewals" style="${FH_CARD} padding:${tight ? 11 : 14}px;">
       <div style="display:flex; align-items:center; gap:9px; margin-bottom:8px;">${fhBadge("renew", "violet", 26)}<span style="${FH_LABEL}">${ui.chainLabels.renewals}</span></div>
       <div style="display:flex; align-items:baseline; gap:10px;">
-        ${fig(`${n.renewalsBefore}%`, true)}
+        ${fig(escapeHtml(beforeText), true)}
         <span style="font-size:15px; color:${FH_INK_CAPTION};">&rarr;</span>
-        ${fig(`${n.renewalsAfter}%`, false)}
+        ${fig(escapeHtml(afterText), false)}
         <span style="margin-left:auto; font-size:11.5px; color:${FH_INK_LABEL};">${move}</span>
       </div>
       <span style="display:block; margin-top:5px; font-size:11px; color:${FH_INK_CAPTION};">${escapeHtml(ui.renewalsCaption)}</span>

@@ -12,6 +12,11 @@
  * and — the 2026-09-04 regression — BOTH play pages return to their own game
  * within seconds of endPressConference (keyed renderers must remount after a
  * body takeover).
+ * Path C — INVITE FIRST (§12.2): invite never pauses the room; a decline is
+ * usable exactly once per seat and the invite card must say so plainly once
+ * spent; the board never says "podium" or the question before an accept and
+ * never says the word "decline" at any point; a teacher Cancel invite clears
+ * the card without consuming that seat's one decline.
  * Path B — picker: a full club reads FULL and is disabled; a student who loses
  * the race for the last desk sees the refusal text inline and can pick again.
  *
@@ -214,6 +219,177 @@ async function pathA(browser) {
   return results;
 }
 
+/* ============================================================ PATH C ==== */
+/**
+ * §12.2 INVITE FIRST, full lifecycle: invite (no pause, no podium) -> decline
+ * (one-time, then the card must say so plainly and drop the button) ->
+ * re-invite -> accept (podium goes live) -> end -> a clean second invite that
+ * gets cancelled by the teacher instead of answered (no decline consumed).
+ */
+async function pathC(browser) {
+  const results = [];
+  const FIRST_QUESTION = "What is your plan for tonight, honestly?";
+  const { teach, code } = await createSession(browser, "5-6");
+  const board = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+  watchConsole(board, "c-board");
+  await board.goto(`${BASE}/board?code=${code}`);
+
+  const s1 = await joinStudent(browser, code, "Student 1", "c-s1");
+  await s1.page.waitForSelector(".sl-pick[data-index=\"0\"]", { timeout: 20000 });
+  await s1.page.click(".sl-pick[data-index=\"0\"]");
+  await s1.page.waitForSelector(".sl-picker", { state: "detached", timeout: 20000 });
+
+  const s2 = await joinStudent(browser, code, "Student 2", "c-s2");
+  await s2.page.waitForSelector(".sl-pick[data-index=\"1\"]", { timeout: 20000 });
+  await s2.page.click(".sl-pick[data-index=\"1\"]");
+  await s2.page.waitForSelector(".sl-picker", { state: "detached", timeout: 20000 });
+
+  const s1Club = (await s1.page.textContent(".hq-title")).trim();
+  const s2Club = (await s2.page.textContent(".hq-title")).trim();
+  console.log(`PATH C: Student 1 club = "${s1Club}", Student 2 club = "${s2Club}"`);
+
+  await teach.click("#btnAdvance"); // HOOK
+  await teach.waitForTimeout(400);
+  await teach.click("#btnAdvance"); // PLAY
+  await s1.page.waitForSelector(".sl-board .sl-row", { timeout: 20000 });
+  await s2.page.waitForSelector(".sl-board .sl-row", { timeout: 20000 });
+  await teach.waitForSelector("#pcCandidates .pc-cand-list li", { timeout: 20000 });
+
+  /* -------------------------------------------------- STEP 1: invite -- */
+  await teach.fill("#pcQuestion", FIRST_QUESTION);
+  const firstCandLi = teach.locator("#pcCandidates .pc-cand-list li").first();
+  const firstCandLabel = (await firstCandLi.locator("b").innerText()).trim();
+  // Twin desks on THE WINDOW are labelled "<club name> A/B"; two students on
+  // two different clubs are each the sole occupant of their own desk, so the
+  // shortlist label for each is exactly its club name + " A".
+  const invIsS1 = firstCandLabel === `${s1Club} A`;
+  const invIsS2 = firstCandLabel === `${s2Club} A`;
+  results.push([`first candidate label ("${firstCandLabel}") matches exactly one of the two seated desks`, invIsS1 !== invIsS2]);
+  const inv = invIsS1 ? s1 : s2;
+  const other = invIsS1 ? s2 : s1;
+  const invLabel = invIsS1 ? `${s1Club} A` : `${s2Club} A`;
+  console.log(`PATH C: first candidate ("${firstCandLabel}") is ${invIsS1 ? "Student 1" : "Student 2"}`);
+
+  await firstCandLi.locator("button").click();
+  await teach.waitForTimeout(500);
+  await inv.page.waitForSelector(".pc-invite", { timeout: 10000 }).catch(() => {});
+  await board.waitForTimeout(300);
+
+  await shoot(teach, "pc-invite-1-teach");
+  await shoot(board, "pc-invite-1-board");
+  await shoot(inv.page, "pc-invite-1-play-invited");
+  await shoot(other.page, "pc-invite-1-play-other");
+
+  results.push(["invited seat sees the invite card (.pc-invite)", (await inv.page.$(".pc-invite")) !== null]);
+  results.push(["invite card shows ACCEPT", await inv.page.isVisible('[data-pc-invite="accept"]').catch(() => false)]);
+  results.push(["invite card shows NOT THIS TIME (first invite, decline available)", await inv.page.isVisible('[data-pc-invite="decline"]').catch(() => false)]);
+
+  const meInv1 = await (await fetch(`${BASE}/api/me`, { headers: { authorization: `Bearer ${inv.deviceToken}` } })).json();
+  results.push(["invited seat's own /api/me: session.paused is false (an invite never pauses the room)", meInv1.session.paused === false]);
+  results.push(["invited seat's own /api/me: pressInvite.canDecline is true (first invite)", meInv1.pressInvite?.canDecline === true]);
+  results.push(["invited seat's own /api/me: pressInvite carries the question", meInv1.pressInvite?.question === FIRST_QUESTION]);
+
+  results.push(["other student's page shows no lock screen (.pc-lock)", (await other.page.$(".pc-lock")) === null]);
+  results.push(["other student's page still shows its own game board (.sl-board)", (await other.page.$(".sl-board")) !== null]);
+
+  const boardTextInvite = await board.evaluate(() => document.getElementById("stage").innerText);
+  results.push(["board shows no PRESS CONFERENCE podium while only invited (no pause yet)", !boardTextInvite.includes("PRESS CONFERENCE")]);
+  results.push(["board does not show the question yet", !boardTextInvite.includes(FIRST_QUESTION)]);
+
+  const pcStateInvite = (await teach.textContent("#pcState")) || "";
+  results.push([`teacher pcState reads "invited — waiting" ("${pcStateInvite}")`, pcStateInvite.includes("invited — waiting")]);
+
+  /* -------------------------------------------------- STEP 2: decline -- */
+  await inv.page.click('[data-pc-invite="decline"]');
+  await inv.page.waitForSelector(".pc-invite", { state: "detached", timeout: 10000 }).catch(() => {});
+  await teach.waitForTimeout(1500); // teacher console polls; give it a full cycle
+  await board.waitForTimeout(300);
+
+  await shoot(inv.page, "pc-invite-2-play-invited");
+  await shoot(teach, "pc-invite-2-teach");
+  await shoot(board, "pc-invite-2-board");
+
+  results.push(["invite card disappears from the invited seat's page after decline", (await inv.page.$(".pc-invite")) === null]);
+  results.push(["no podium appears anywhere after a decline (.pc-podium)", (await inv.page.$(".pc-podium")) === null]);
+  results.push(["no lock appears anywhere after a decline (.pc-lock, other student)", (await other.page.$(".pc-lock")) === null]);
+  const declinedLi = teach.locator(".pc-cand", { hasText: invLabel });
+  results.push([`teacher candidate list marks ${invLabel} as having used its decline`, (await declinedLi.locator(".pc-cand-declined").count()) > 0]);
+  const boardTextDecline = await board.evaluate(() => document.getElementById("stage").innerText);
+  const boardHtmlDecline = await board.evaluate(() => document.getElementById("stage").innerHTML);
+  results.push(["board innerText never contains the word 'decline'", !/decline/i.test(boardTextDecline)]);
+  results.push(["board innerHTML never contains the word 'decline'", !/decline/i.test(boardHtmlDecline)]);
+
+  /* --------------------------------------------- STEP 3: re-invite/accept -- */
+  const picker = teach.locator("#pcSeatPicker");
+  await picker.waitFor({ state: "visible", timeout: 10000 });
+  await picker.selectOption({ value: inv.seatId });
+  await teach.click("#btnPcInvitePicked");
+  await inv.page.waitForSelector(".pc-invite", { timeout: 10000 }).catch(() => {});
+
+  await shoot(inv.page, "pc-invite-3-play-invited-card");
+
+  results.push(["re-invited card has NO decline button (decline already used)", (await inv.page.$('[data-pc-invite="decline"]')) === null]);
+  const nodeclineText = ((await inv.page.textContent(".pc-invite-nodecline")) || "").trim();
+  results.push([`re-invited card plainly states the decline is used ("${nodeclineText}")`, /already used your one decline/i.test(nodeclineText)]);
+
+  await inv.page.click('[data-pc-invite="accept"]');
+  await inv.page.waitForSelector(".pc-podium", { timeout: 10000 }).catch(() => {});
+  await other.page.waitForSelector(".pc-lock", { timeout: 10000 }).catch(() => {});
+  await board.waitForTimeout(400);
+
+  await shoot(inv.page, "pc-invite-3-play-invited-podium");
+  await shoot(other.page, "pc-invite-3-play-other-lock");
+  await shoot(board, "pc-invite-3-board");
+
+  const invPodiumText = await inv.page.evaluate(() => document.body.innerText);
+  results.push(["accept: invited seat shows the podium (.pc-podium)", (await inv.page.$(".pc-podium")) !== null]);
+  results.push(["accept: podium page shows the question text", invPodiumText.includes(FIRST_QUESTION)]);
+  results.push(["accept: other student sees the lock screen (.pc-lock)", (await other.page.$(".pc-lock")) !== null]);
+
+  const boardTextAccept = await board.evaluate(() => document.getElementById("stage").innerText);
+  const boardHtmlAccept = await board.evaluate(() => document.getElementById("stage").innerHTML);
+  results.push(["accept: board shows the question text", boardTextAccept.includes(FIRST_QUESTION)]);
+  results.push(["accept: board shows the podium label", boardTextAccept.includes(invLabel)]);
+  results.push(["accept: board innerText excludes the seat id", !boardTextAccept.includes(inv.seatId) && !boardTextAccept.includes(other.seatId)]);
+  results.push(["accept: board innerHTML excludes the seat id", !boardHtmlAccept.includes(inv.seatId) && !boardHtmlAccept.includes(other.seatId)]);
+
+  /* -------------------------------------------------- STEP 4: end -- */
+  await teach.click("#btnEndPressConference");
+  let invBoardBack = false, otherBoardBack = false;
+  for (let i = 0; i < 8 && !(invBoardBack && otherBoardBack); i += 1) {
+    await inv.page.waitForTimeout(650);
+    invBoardBack = (await inv.page.$(".sl-board")) !== null;
+    otherBoardBack = (await other.page.$(".sl-board")) !== null;
+  }
+  await shoot(inv.page, "pc-invite-4-play-invited");
+  await shoot(other.page, "pc-invite-4-play-other");
+  results.push(["invited seat's page returns to its own game (.sl-board) within ~5.2s of endPressConference", invBoardBack]);
+  results.push(["other seat's page returns to its own game (.sl-board) within ~5.2s of endPressConference", otherBoardBack]);
+
+  /* --------------------------------------------- STEP 5: invite + cancel -- */
+  await picker.selectOption({ value: other.seatId });
+  await teach.click("#btnPcInvitePicked");
+  await other.page.waitForSelector(".pc-invite", { timeout: 10000 }).catch(() => {});
+  await shoot(other.page, "pc-invite-5-play-other-invited");
+
+  await teach.click("#btnCancelInvite");
+  await other.page.waitForSelector(".pc-invite", { state: "detached", timeout: 10000 }).catch(() => {});
+  await shoot(other.page, "pc-invite-5-play-other-cancelled");
+
+  results.push(["second student's invite card disappears after teacher Cancel invite", (await other.page.$(".pc-invite")) === null]);
+  const meOther = await (await fetch(`${BASE}/api/me`, { headers: { authorization: `Bearer ${other.deviceToken}` } })).json();
+  results.push(["cancelled invite: no decline consumed (session.paused false, no lingering pressInvite)", meOther.session.paused === false && meOther.pressInvite === null]);
+  const otherLabel = invIsS1 ? `${s2Club} A` : `${s1Club} A`;
+  const otherLi = teach.locator(".pc-cand", { hasText: otherLabel });
+  results.push([`teacher candidate list still shows no decline used for ${otherLabel} (Cancel invite is not a decline)`, (await otherLi.locator(".pc-cand-declined").count()) === 0]);
+
+  await s1.page.close();
+  await s2.page.close();
+  await board.close();
+  await teach.close();
+  return results;
+}
+
 /* ============================================================ PATH B ==== */
 async function pathBFullCards(browser) {
   const results = [];
@@ -361,6 +537,8 @@ async function main() {
   try {
     console.log("\n=== PATH A: PRESS CONFERENCE ===");
     report.pathA = await pathA(browser);
+    console.log("\n=== PATH C: INVITE FIRST (invite / decline / re-invite / accept / end / cancel) ===");
+    report.pathC = await pathC(browser);
     console.log("\n=== PATH B: full front offices (loser sees FULL, disabled) ===");
     report.pathBFull = await pathBFullCards(browser);
     console.log("\n=== PATH B: the club-picker race ===");
