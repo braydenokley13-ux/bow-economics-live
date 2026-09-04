@@ -11,11 +11,12 @@
  * here prints a price, a package term, or a refusal — only names, counts,
  * and the already-executed broadcast the reducer itself decided to publish.
  *
- * GAP, recorded because it changes what REVEAL looks like: `boardView` has
- * no `naming` field yet (spec §9's naming stage is not wired into any view
- * as of this build). `namingFrame` below is written defensively against a
- * future `naming` key and falls back to the executed-deal ticker, exactly
- * the way `sameLineL2Board.ts` falls back when its own naming key is absent.
+ * RECONCILED 2026-09-04: `boardView` now carries `reachBlocked` (ONE
+ * integer, summed room-wide by the reducer — an Economic Truth ruling
+ * against ever showing it per desk on a public surface) and `naming
+ * {index,count,term,moment,means,outside} | null`. `namingFrame` still reads
+ * defensively (a `real` field is rendered if a follow-up ever adds one) and
+ * still falls back to the executed-deal ticker when `naming` is null.
  *
  * THE PODIUM is not this file's job — see the header note on
  * `sameLineL2Board.ts`; the same applies here verbatim.
@@ -81,6 +82,7 @@ function marketFrame(v: V): { html: string; peak: boolean } {
       </dl>
     </div>
     ${rows}
+    ${num(v["reachBlocked"]) > 0 ? `<p class="slb-hero-sub">${num(v["reachBlocked"])} reach${num(v["reachBlocked"]) === 1 ? "" : "es"} across the room are blocked by the bars right now.</p>` : ""}
   </div>`,
     peak: false,
   };
@@ -155,6 +157,7 @@ function namingFrame(v: V): { html: string; peak: boolean } | null {
       <p class="slb-naming-moment">${esc(str(f["moment"]))}</p>
       <p class="slb-naming-term">${esc(str(f["term"]))}</p>
       <p class="slb-naming-means">${esc(str(f["means"]))}</p>
+      ${f["real"] ? `<p class="slb-naming-means">${esc(str(f["real"]))}</p>` : ""}
       <p class="slb-naming-lab">OUTSIDE BASKETBALL</p>
       <p class="slb-naming-outside">${esc(str(f["outside"]))}</p>
     </section>

@@ -90,7 +90,14 @@
 .sl3-barrow-value { font-family: var(--font-number); font-size: 16px; }
 .sl3-barrow[data-kind="out"] .sl3-barrow-value { color: var(--accent-gold); }
 .sl3-barrow[data-kind="in"] .sl3-barrow-value { color: var(--accent-blue); }
+.sl3-bars[data-within="no"] .sl3-barrow[data-kind="in"] .sl3-barrow-value { color: var(--cap-tight); }
 .sl3-bars-note { font-size: 11px; color: var(--ink-muted); margin: 0; }
+
+/* -------------------------------------------------------------- settle -- */
+.sl3-settle { display: flex; flex-direction: column; gap: 4px; }
+.sl3-settle-line { font-size: 13px; color: var(--ink-secondary); margin: 0; }
+.sl3-settle-line b { font-family: var(--font-number); color: var(--ink-primary); font-size: 16px; }
+.sl3-naming-real { font-size: 12.5px; color: var(--ink-muted); margin: 6px 0; }
 
 /* ---------------------------------------------------------- commit capture -- */
 .sl3-capture {

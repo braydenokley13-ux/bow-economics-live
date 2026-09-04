@@ -82,6 +82,20 @@ const ctx = (phase: CanonicalPhase, seatId: SeatId | "teacher" = "seat-1") => ({
 
 const empty = (): FullHouseState => fullHouseModule.initialState({ sessionId: "s1", seatIds: [], gradeBand: "5-6" });
 
+/** The shape of one settled night on `studentView(...).history`, for the W4 QA band-text repairs. */
+type FHNightLike = {
+  renewalsBefore: number;
+  renewalsAfter: number;
+  renewalsBeforeText?: string;
+  renewalsAfterText?: string;
+  bill: number;
+  spendPaid: number;
+  bowlCost: number;
+  billOutflowText?: string;
+  eventOutflowText?: string;
+  bowlOutflowText?: string;
+};
+
 function ok(result: ReturnType<typeof fullHouseModule.reduce>): FullHouseState {
   assert.equal(result.ok, true, result.ok ? "" : `expected ok, got: ${result.reason}`);
   return (result as { ok: true; state: FullHouseState }).state;
@@ -2079,6 +2093,91 @@ test("D59: per-own-bill coverage — a fraction with no percent sign at 5-6, a p
     assert.equal(typeof c78["coveragePercent"], "number");
     assert.equal(typeof c78["net"], "number");
   }
+});
+
+/** Seats N desks in a room of the given band. Unlike `seated()`, does not fix the band to 5-6. */
+function seatedBand(count: number, band: "5-6" | "7-8"): FullHouseState {
+  let state = fullHouseModule.initialState({ sessionId: `sB-${band}`, seatIds: [], gradeBand: band });
+  for (let i = 1; i <= count; i += 1) state = ok(act(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`));
+  return state;
+}
+
+test("W4 QA repair 1: RENEWALS prints a fraction sentence at 5-6, never a percent sign; 7-8 keeps the percent", () => {
+  const room56 = playedOut();
+  for (const seatId of Object.keys(room56.desks)) {
+    const view = fullHouseModule.studentView(room56, seatId, "PLAY") as { history: FHNightLike[] };
+    assert.ok(view.history.length > 0, "played-out desk must have settled nights");
+    for (const n of view.history) {
+      assert.equal(typeof n.renewalsBeforeText, "string");
+      assert.equal(typeof n.renewalsAfterText, "string");
+      assert.equal(n.renewalsBeforeText, `${n.renewalsBefore} of every 100 came back`);
+      assert.equal(n.renewalsAfterText, `${n.renewalsAfter} of every 100 came back`);
+      assert.equal(n.renewalsBeforeText!.includes("%"), false, "5-6 renewals text must never carry a percent sign");
+      assert.equal(n.renewalsAfterText!.includes("%"), false, "5-6 renewals text must never carry a percent sign");
+    }
+  }
+
+  let room78 = seatedBand(2, "7-8");
+  room78 = playNight(room78, { "seat-1": 34, "seat-2": 40 });
+  room78 = playNight(room78, { "seat-1": 40, "seat-2": 44 });
+  for (const seatId of Object.keys(room78.desks)) {
+    const view = fullHouseModule.studentView(room78, seatId, "PLAY") as { history: FHNightLike[] };
+    for (const n of view.history) {
+      assert.equal(n.renewalsBeforeText, `${n.renewalsBefore}%`);
+      assert.equal(n.renewalsAfterText, `${n.renewalsAfter}%`);
+    }
+  }
+});
+
+test("W4 QA repair 2: CASH chain outflows print as a spent-word at 5-6 (never `-$`), a signed dollar at 7-8", () => {
+  const room56 = playedOut();
+  for (const seatId of Object.keys(room56.desks)) {
+    const view = fullHouseModule.studentView(room56, seatId, "PLAY") as { history: FHNightLike[] };
+    for (const n of view.history) {
+      assert.equal(n.billOutflowText, `spent $${n.bill.toLocaleString()}`);
+      assert.equal(n.eventOutflowText, `spent $${n.spendPaid.toLocaleString()}`);
+      assert.equal(n.bowlOutflowText, `spent $${n.bowlCost.toLocaleString()}`);
+      for (const t of [n.billOutflowText, n.eventOutflowText, n.bowlOutflowText]) assert.equal(t!.includes("-$"), false, "5-6 outflow text must never carry a minus sign before a dollar figure");
+    }
+  }
+
+  let room78 = seatedBand(2, "7-8");
+  room78 = playNight(room78, { "seat-1": 34, "seat-2": 40 }, { "seat-1": 5_000 });
+  for (const seatId of Object.keys(room78.desks)) {
+    const view = fullHouseModule.studentView(room78, seatId, "PLAY") as { history: FHNightLike[] };
+    for (const n of view.history) {
+      assert.equal(n.billOutflowText, `-$${n.bill.toLocaleString()}`);
+      if (n.spendPaid > 0) assert.equal(n.eventOutflowText, `-$${n.spendPaid.toLocaleString()}`);
+    }
+  }
+});
+
+test("W4 QA repair 3: a destination's `source` is plain and human on every band; the raw doc citation lives only in `sourceRef`, which never reaches a student or board surface", () => {
+  for (const list of [DESTINATIONS_56, DESTINATIONS_78]) {
+    for (const d of list) {
+      assert.equal(d.source.includes(".md"), false, `destination "${d.id}" source leaks a doc filename: ${d.source}`);
+      assert.equal(d.source.includes("§"), false, `destination "${d.id}" source leaks a section mark: ${d.source}`);
+      assert.ok(d.sourceRef.length > 0, `destination "${d.id}" must still carry a sourceRef for a teacher to check`);
+    }
+  }
+
+  // The student surface: THE BILL card on a carried desk.
+  const state = playedOut();
+  for (const seatId of Object.keys(state.desks)) {
+    const view = fullHouseModule.studentView(state, seatId, "PLAY") as { bill: { destinations?: { source: string }[] } | null };
+    const raw = JSON.stringify(view.bill?.destinations ?? []);
+    assert.equal(raw.includes("sourceRef"), false, "a student's bill destinations must never carry sourceRef");
+    assert.equal(raw.includes(".md"), false, "a student's bill destinations must never carry a doc filename");
+    assert.equal(raw.includes("§"), false, "a student's bill destinations must never carry a section mark");
+  }
+
+  // The board surface: THE LEDGER at the final reveal step.
+  let atFinal = state;
+  for (let i = 0; i < REVEAL_STEPS; i += 1) atFinal = ok(act(atFinal, { type: "teacher:revealNext" }, "REVEAL", "teacher"));
+  const board = JSON.stringify((fullHouseModule.boardView(atFinal, "REVEAL") as { ledger: unknown }).ledger);
+  assert.equal(board.includes("sourceRef"), false, "the board's ledger must never carry sourceRef");
+  assert.equal(board.includes(".md"), false, "the board's ledger must never carry a doc filename");
+  assert.equal(board.includes("§"), false, "the board's ledger must never carry a section mark");
 });
 
 test("D59: THE WINDOW's clubs carry into THE BILL through a real played session, and the board never carries a seat id", () => {

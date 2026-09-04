@@ -1,56 +1,48 @@
 /**
  * THE SAME LINE — L3 "THE DEADLINE" (`m1l3-the-deadline`), the student surface.
  *
- * Built against `docs/gauntlet/module-1/rebuild/W3_THE_DEADLINE_SPEC.md`
- * AFTER `runtime/src/modules/sameLine/l3.ts` landed — unlike `sameLineL2.ts`,
- * this file reads the REAL `studentView`, not a guess. Every field name below
- * (`label`, `club`, `hour`, `marketClosed`, `books.{committedText,wallText,
+ * Built against the REAL `studentView`/`reduce` in
+ * `runtime/src/modules/sameLine/l3.ts`. Field names below (`label`, `club`,
+ * `hour`, `marketClosed`, `books.{committedText,taxSalaryText,wallText,
  * standing}`, `roster`, `picksOwned`, `picksOwed`, `openJobs`, `myOffers`,
- * `market`, `capturePrompts`, `maxObjectsPerSide`) is copied verbatim from
- * `l3.ts`'s `studentView`. Every read still goes through defensive
- * `rec/arr/str/num/bool` accessors (the `sameLineL1.ts`/`sameLineL2.ts`
- * discipline) so a future reshape degrades to an empty panel, not a crash.
+ * `market`, `capturePrompts`, `maxObjectsPerSide`, `reachBlocked`, `settled`,
+ * `naming`) are copied verbatim.
  *
- * FOUR GAPS between this spec and the REAL `studentView`, recorded here
- * because they are load-bearing for what this file can and cannot do (see
- * the builder's final report for the full severity ranking):
+ * RECONCILED 2026-09-04 against the engine's second pass, which closed the
+ * gaps the first pass of this file had to work around:
+ * - `market[]` now carries `holderId` (`"<clubId>-<twin>"`, public, never a
+ *   seat id) AND `annualText` — the composer can target a desk and show the
+ *   real WHAT-I-WANT bar. `propose` takes `{toDesk: holderId, ...}`.
+ * - `myOffers[]` gained `counterpartyId` (same `holderId` shape) — used
+ *   below to resolve a counter's CURRENT `send` package against exactly the
+ *   counterparty's own market listings, rather than a room-wide guess.
+ * - `books.taxSalaryText` exists — rendered as its own line.
+ * - `settled {coveredJobs, openJobs} | null` at REVEAL/CONSEQUENCE and
+ *   `naming {index,count,term,moment,means,outside} | null` at
+ *   SYNTHESIS/COMPLETE are both real now; a `real` field on `naming` is
+ *   rendered defensively for a follow-up that hasn't landed.
+ * - `reachBlocked` (a desk-private integer on `studentView`, ONE summed
+ *   integer on `boardView` — never per-desk on the board, an Economic Truth
+ *   ruling) is surfaced as a small note, never a per-object grey reason,
+ *   because the view still does not say WHICH listing is blocked.
  *
- * 1. NO SEAT ID ANYWHERE. `market[].holderLabel` and `myOffers[].
- *    counterpartyLabel` are human labels, never a `seatId` — but `propose`
- *    requires a real `toSeat`. This file reads `holderSeatId`/`seatId`/
- *    `toSeat`/`ownerSeatId` defensively off each market entry in case a
- *    future `l3.ts` adds one; until then, `composeToSeat()` returns `null`
- *    for every entry that ships today, and the SEND OFFER button in that
- *    case is disabled with an on-screen reason instead of submitting a
- *    guaranteed-wrong seat id.
- * 2. NO INCOMING SALARY. `market[]` never carries `annualText` for the
- *    listed object, so the composer's WHAT I WANT bar cannot show a number
- *    before the offer is sent — it shows "?" honestly rather than a fabricated
- *    figure. The two-bar room-absorption check (D61) still runs, just
- *    server-side at submit time; the reason string comes back through the
- *    normal action-rejection banner, not a pre-emptive grey-out.
- * 3. NO taxSalary IN `books`. Only `committedText`/`wallText`/`standing`
- *    are shipped, so the TAX SALARY line the spec asks for only renders when
- *    a future `studentView` adds `books.taxSalaryText`; today the row is
- *    simply omitted (checked defensively, never fabricated).
- * 4. NO PER-SEAT SETTLE. `state.settled` is only on `teacherView`/
- *    `boardView`. REVEAL/CONSEQUENCE render what a desk CAN see for itself —
- *    its post-deadline roster and `picksOwed` lines, both of which already
- *    reflect the executed trades — plus a note pointing at the board for the
- *    room-wide settle.
+ * ONE GAP REMAINS BY CONSTRUCTION, not oversight: `counter` needs the
+ * negotiation's CURRENT `send`/`want` as `ObjectId[]`, but `myOffers` only
+ * ever gives label strings. `want` (always MY OWN objects, when I'm the one
+ * countering) resolves for free from my own `roster`/`picksOwned` ids —
+ * always available. `send` (the counterparty's objects) only resolves if
+ * those objects are THEMSELVES on `market` under `counterpartyId` — if the
+ * counterparty sent something unlisted, this file can't counter it and says
+ * so, rather than guessing an id.
+ *
+ * `withdrawAccept` is 5–6 only (D61); band is read from `gradeBand` if the
+ * view ever carries it, else inferred from `maxObjectsPerSide` (1 at 5–6,
+ * 2 at 7–8 — the same signal `capturePrompts` already keys off of).
  *
  * Escrow is inferred by NAME match against `myOffers[].sendLabels`/
- * `wantLabels` for any offer in an escrowing state (LIVE/COUNTERED/ACCEPTED),
- * because objects are unique room-wide by construction (spec §2) but the
- * view never echoes the escrow flag directly on `roster`/`picksOwned`.
- *
- * COUNTER is deliberately narrow. `counter` needs the offer's CURRENT
- * `send`/`want` as `ObjectId[]`, but `myOffers` only ever gives label
- * strings. This file resolves labels to ids from what it can see (own
- * roster, own picks, the market) and supports exactly the two moves that
- * are ALWAYS resolvable that way — add one of my own unescrowed picks to
- * what I'd give, or remove one of mine already in the package — never an
- * arbitrary swap of an unresolvable object.
+ * `wantLabels` for any offer in an escrowing state (LIVE/COUNTERED/
+ * ACCEPTED) — objects are unique room-wide by construction (spec §2) but
+ * the view never echoes an escrow flag directly on `roster`/`picksOwned`.
  */
 
 import { esc } from "./m2ui.js";
@@ -133,6 +125,19 @@ function wordCount(s: string): number {
   return s.trim().length === 0 ? 0 : s.trim().split(/\s+/).length;
 }
 
+function parseMoney(s: string | null | undefined): number {
+  if (!s) return 0;
+  const n = Number(s.replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** 1 at 5–6, 2 at 7–8 — `capturePrompts`/composer already key off this exact signal. */
+function bandOf(v: V): "5-6" | "7-8" {
+  const explicit = v["gradeBand"];
+  if (explicit === "5-6" || explicit === "7-8") return explicit;
+  return num(v["maxObjectsPerSide"], 1) >= 2 ? "7-8" : "5-6";
+}
+
 /* -------------------------------------------------------------- shell -- */
 
 function shellFor(v: V, main: string, side: string): string {
@@ -198,8 +203,6 @@ function booksPanel(v: V): string {
   const books = rec(v["books"]);
   const rows: string[] = [];
   rows.push(row("CAP POSITION", str(books["committedText"], "—")));
-  // Gap #3: taxSalaryText does not exist on the real studentView yet — read
-  // defensively, render nothing rather than a fabricated number.
   const tax = books["taxSalaryText"];
   if (typeof tax === "string" && tax) rows.push(row("TAX SALARY", tax));
   if (typeof books["wallText"] === "string" && books["wallText"]) rows.push(row("YOUR WALL", str(books["wallText"])));
@@ -250,21 +253,18 @@ function perspective(o: V): { give: string[]; get: string[] } {
   return str(o["direction"]) === "sent" ? { give: send, get: want } : { give: want, get: send };
 }
 
-function buildLabelIndex(v: V): Map<string, string> {
+/** My own objects — ids always known, regardless of market-listing status. */
+function myIndex(v: V): Map<string, string> {
   const map = new Map<string, string>();
   for (const r of arr(v["roster"])) map.set(str(r["name"]), str(r["id"]));
   for (const p of arr(v["picksOwned"])) map.set(str(p["label"]), str(p["id"]));
-  for (const m of arr(v["market"])) map.set(str(m["label"]), str(m["id"]));
   return map;
 }
-
-/** Gap #1 — no field on a market entry has ever shipped a seat id. Checked defensively for the day one does. */
-function seatIdOf(entry: V): string | null {
-  for (const key of ["holderSeatId", "seatId", "toSeat", "ownerSeatId"]) {
-    const cand = entry[key];
-    if (typeof cand === "string" && cand) return cand;
-  }
-  return null;
+/** A specific desk's listed objects, keyed by the public `holderId`. */
+function marketIndexByHolder(v: V, holderId: string): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const m of arr(v["market"])) if (str(m["holderId"]) === holderId) map.set(str(m["label"]), str(m["id"]));
+  return map;
 }
 
 /* ------------------------------------------------------------- roster -- */
@@ -334,16 +334,18 @@ function marketSection(v: V): string {
   const market = arr(v["market"]);
   const mine = new Set([...arr(v["roster"]).map((r) => str(r["id"])), ...arr(v["picksOwned"]).map((p) => str(p["id"]))]);
   const composing = wantIds.length > 0;
-  const composingHolder = composing ? str(market.find((m) => wantIds.includes(str(m["id"])))?.["holderLabel"]) : null;
+  const composingHolderId = composing ? str(market.find((m) => wantIds.includes(str(m["id"])))?.["holderId"]) : null;
+  const reachBlocked = num(v["reachBlocked"]);
   if (!market.length) return panel({ title: "ON THE MARKET" }, `<p class="sl-note">Nothing listed yet.</p>`);
   const rows = market
     .map((m) => {
       const id = str(m["id"]);
       const isMine = mine.has(id);
+      const holderId = str(m["holderId"]);
       const holderLabel = str(m["holderLabel"], "unknown");
       const interest = num(m["interestCount"]);
       const inThisComposer = wantIds.includes(id);
-      const disabledForComposer = composing && !inThisComposer && composingHolder !== holderLabel;
+      const disabledForComposer = composing && !inThisComposer && composingHolderId !== holderId;
       return `
       <div class="sl3-market-row" data-mine="${isMine ? "yes" : "no"}" data-reach="${disabledForComposer ? "no" : "yes"}">
         <span class="sl3-market-name">${esc(str(m["label"]))}</span>
@@ -361,7 +363,8 @@ function marketSection(v: V): string {
       </div>`;
     })
     .join("");
-  return panel({ title: "ON THE MARKET", note: `${market.length} listed` }, `<div class="sl3-market-list">${rows}</div>`);
+  const note = `${market.length} listed${reachBlocked > 0 ? ` · ${reachBlocked} out of reach for your desk right now` : ""}`;
+  return panel({ title: "ON THE MARKET", note }, `<div class="sl3-market-list">${rows}</div>`);
 }
 
 /* ------------------------------------------------------------ composer -- */
@@ -371,14 +374,14 @@ function composerPanel(v: V): string {
   const market = arr(v["market"]);
   const wantEntries = market.filter((m) => wantIds.includes(str(m["id"])));
   if (!wantEntries.length) return "";
+  const holderId = str(wantEntries[0]!["holderId"]);
   const holderLabel = str(wantEntries[0]!["holderLabel"], "this desk");
   const maxSide = Math.max(1, num(v["maxObjectsPerSide"], 1));
-  const canResolveSeat = wantEntries.every((e) => seatIdOf(e) !== null);
+  const canSubmit = holderId.length > 0;
 
   const roster = arr(v["roster"]);
   const picks = arr(v["picksOwned"]);
   const escrowed = escrowedNames(v);
-  const marketIds = new Set(market.map((m) => str(m["id"])));
   const sendable = [...roster, ...picks].filter((o) => {
     const label = str(o["name"], str(o["label"]));
     return !escrowed.has(label);
@@ -395,10 +398,11 @@ function composerPanel(v: V): string {
     })
     .join("");
 
-  const sendTotal = sendable
-    .filter((o) => sendIds.includes(str(o["id"])))
-    .reduce((sum, o) => sum + parseMoney(str(o["annualText"], "$0")), 0);
-  const outText = sendIds.length === 0 ? "—" : `$${sendTotal.toLocaleString("en-US")}`;
+  const outTotal = sendable.filter((o) => sendIds.includes(str(o["id"]))).reduce((sum, o) => sum + parseMoney(str(o["annualText"], "")), 0);
+  const inTotal = wantEntries.reduce((sum, e) => sum + parseMoney(str(e["annualText"], "")), 0);
+  const outText = sendIds.length === 0 ? "—" : `$${outTotal.toLocaleString("en-US")}`;
+  const inText = `$${inTotal.toLocaleString("en-US")}`;
+  const withinBar = sendIds.length > 0 ? inTotal <= outTotal : true;
 
   const cc = rec(v["capturePrompts"]);
   const chips = strArr(cc["send"]);
@@ -410,23 +414,23 @@ function composerPanel(v: V): string {
     { title: `YOUR OFFER TO ${holderLabel.toUpperCase()}` },
     `
     <div class="sl3-composer">
-      ${!canResolveSeat ? `<p class="sl3-composer-warn">This build can't tell which desk holds ${esc(wantEntries.map((e) => str(e["label"])).join(", "))} yet, so SEND OFFER is off. This is a data gap in the reducer, not something you did wrong — tell your teacher.</p>` : ""}
+      ${!canSubmit ? `<p class="sl3-composer-warn">This listing doesn't carry a desk key yet — SEND OFFER is off. Tell your teacher.</p>` : ""}
       <p class="sl3-composer-sub">WHAT I WANT: ${wantEntries.map((e) => `<b>${esc(str(e["label"]))}</b>`).join(", ")}${
         canAddMoreWant ? ` <span class="sl3-composer-note">(pick more from ${esc(holderLabel)} if you want)</span>` : ""
       }</p>
       <p class="sl3-composer-lab">WHAT I SEND</p>
       <div class="sl3-composer-picklist">${sendRows || `<p class="sl-note">Nothing left to send.</p>`}</div>
-      <div class="sl3-bars">
+      <div class="sl3-bars" data-within="${withinBar ? "yes" : "no"}">
         <div class="sl3-barrow" data-kind="out">
           <span class="sl3-barrow-label">WHAT I SEND</span>
           <span class="sl3-barrow-value">${esc(outText)}</span>
         </div>
         <div class="sl3-barrow" data-kind="in">
           <span class="sl3-barrow-label">WHAT I WANT</span>
-          <span class="sl3-barrow-value">?</span>
+          <span class="sl3-barrow-value">${esc(inText)}</span>
         </div>
       </div>
-      <p class="sl3-bars-note">The room checks whether this is legal the moment you send it.</p>
+      <p class="sl3-bars-note">${withinBar ? "This fits the room's bars, but the league office still checks the math." : "This looks bigger than what you're sending — it may still be legal if you have cap room. The league office checks the math."}</p>
       <div class="sl3-capture">
         <p class="sl3-capture-eyebrow">BEFORE THAT'S REAL — SENDING</p>
         <div class="sl3-chips" role="group" aria-label="What are you giving up">
@@ -437,7 +441,7 @@ function composerPanel(v: V): string {
         <p class="sl3-line-count">${words} of ${limit} words</p>
         <div class="sl3-capture-actions">
           <button type="button" class="sl-commit" id="sl3Send" ${
-            sendIds.length && chip && line.trim() && wordCount(line) <= limit && canResolveSeat ? "" : "disabled"
+            sendIds.length && chip && line.trim() && wordCount(line) <= limit && canSubmit ? "" : "disabled"
           }>SEND OFFER</button>
           <button type="button" class="sl-pass" id="sl3CancelCompose">NEVER MIND</button>
         </div>
@@ -447,14 +451,9 @@ function composerPanel(v: V): string {
   );
 }
 
-function parseMoney(s: string): number {
-  const n = Number(s.replace(/[^0-9.-]/g, ""));
-  return Number.isFinite(n) ? n : 0;
-}
-
 /* -------------------------------------------------------------- inbox -- */
 
-function offerBaseCard(o: V, v: V, extraActions: string, extraPanel: string): string {
+function offerBaseCard(o: V, extraActions: string, extraPanel: string): string {
   const id = str(o["id"]);
   const from = str(o["counterpartyLabel"], "a desk");
   const { give, get } = perspective(o);
@@ -483,7 +482,7 @@ function inboxSection(v: V): string {
         ${!countered ? `<button type="button" class="sl-pass sl3-counter-open" data-offer="${esc(id)}">COUNTER</button>` : ""}
         <button type="button" class="sl-pass sl3-decline-open" data-offer="${esc(id)}">DECLINE</button>`;
       const extra = counterOfferId === id ? counterPanel(o, v) : declineOfferId === id ? declinePanel(v) : "";
-      return offerBaseCard(o, v, actions, extra);
+      return offerBaseCard(o, actions, extra);
     })
     .join("");
   return panel({ title: "INBOX", note: `${offers.length} waiting on you` }, `<div class="sl3-offers">${cards}</div>`);
@@ -491,23 +490,59 @@ function inboxSection(v: V): string {
 
 function counterPanel(o: V, v: V): string {
   const id = str(o["id"]);
-  const index = buildLabelIndex(v);
-  const send = strArr(o["sendLabels"]);
-  const want = strArr(o["wantLabels"]);
-  const allResolve = [...send, ...want].every((label) => index.has(label));
-  const myUnescrowedPicks = arr(v["picksOwned"]).filter((p) => !escrowedNames(v).has(str(p["label"])) && !want.includes(str(p["label"])));
-  const myPicksAlreadyIn = arr(v["picksOwned"]).filter((p) => want.includes(str(p["label"])));
-  if (!allResolve) {
-    return `<div class="sl3-counter"><p class="sl-note">This build can't reconstruct this offer's exact package well enough to counter it. Decline it and ask them to try again, or accept it as is.</p></div>`;
+  const counterpartyId = str(o["counterpartyId"]);
+  const sendLabels = strArr(o["sendLabels"]); // their items (what I'd get)
+  const wantLabels = strArr(o["wantLabels"]); // my items (what I'd give)
+  const mine = myIndex(v);
+  const theirs = counterpartyId ? marketIndexByHolder(v, counterpartyId) : new Map<string, string>();
+
+  const wantIdsResolved = wantLabels.map((l) => mine.get(l)).filter((x): x is string => !!x);
+  const sendIdsResolved = sendLabels.map((l) => theirs.get(l)).filter((x): x is string => !!x);
+  const wantOk = wantIdsResolved.length === wantLabels.length;
+  const sendOk = sendIdsResolved.length === sendLabels.length;
+
+  if (!wantOk || !sendOk) {
+    return `<div class="sl3-counter"><p class="sl-note">This build can't reconstruct ${
+      !sendOk ? `what ${theirs.size ? "they'd" : "they'd"} send you (it isn't listed on the market)` : "your own side"
+    } well enough to counter it. Decline it and ask them to try again, or accept it as is.</p>
+    <button type="button" class="sl-pass sl3-counter-cancel">NEVER MIND</button></div>`;
   }
+
+  const escrowed = escrowedNames(v);
+  const myOtherSendables = [...arr(v["roster"]), ...arr(v["picksOwned"])].filter((o2) => {
+    const label = str(o2["name"], str(o2["label"]));
+    return !escrowed.has(label) && !wantLabels.includes(label);
+  });
+  const theirOtherListings = [...theirs.entries()].filter(([label]) => !sendLabels.includes(label));
+  const myUnescrowedPicks = arr(v["picksOwned"]).filter((p) => !escrowed.has(str(p["label"])) && !wantLabels.includes(str(p["label"])));
+  const myPicksAlreadyIn = arr(v["picksOwned"]).filter((p) => wantLabels.includes(str(p["label"])));
+
+  const swapGive =
+    wantLabels.length === 1
+      ? myOtherSendables
+          .map(
+            (o2) =>
+              `<button type="button" class="sl-pass sl3-counter-swap-want" data-offer="${esc(id)}" data-object="${esc(str(o2["id"]))}">OFFER ${esc(
+                str(o2["name"], str(o2["label"])),
+              )} INSTEAD</button>`,
+          )
+          .join("")
+      : "";
+  const swapAsk =
+    sendLabels.length === 1
+      ? theirOtherListings
+          .map(([label, objId]) => `<button type="button" class="sl-pass sl3-counter-swap-send" data-offer="${esc(id)}" data-object="${esc(objId)}">ASK FOR ${esc(label)} INSTEAD</button>`)
+          .join("")
+      : "";
+  const addRemovePicks = `
+    ${myUnescrowedPicks.map((p) => `<button type="button" class="sl-pass sl3-counter-add" data-offer="${esc(id)}" data-pick="${esc(str(p["id"]))}">ADD ${esc(str(p["label"]))}</button>`).join("")}
+    ${myPicksAlreadyIn.map((p) => `<button type="button" class="sl-pass sl3-counter-remove" data-offer="${esc(id)}" data-pick="${esc(str(p["id"]))}">REMOVE ${esc(str(p["label"]))}</button>`).join("")}`;
+
   return `
   <div class="sl3-counter">
-    <p class="sl3-counter-lab">A counter can change exactly one thing. This build only offers the always-safe move: add or remove one of your own $0 picks.</p>
-    <div class="sl3-counter-picks">
-      ${myUnescrowedPicks.map((p) => `<button type="button" class="sl-pass sl3-counter-add" data-offer="${esc(id)}" data-pick="${esc(str(p["id"]))}">ADD ${esc(str(p["label"]))}</button>`).join("")}
-      ${myPicksAlreadyIn.map((p) => `<button type="button" class="sl-pass sl3-counter-remove" data-offer="${esc(id)}" data-pick="${esc(str(p["id"]))}">REMOVE ${esc(str(p["label"]))}</button>`).join("")}
-    </div>
-    ${!myUnescrowedPicks.length && !myPicksAlreadyIn.length ? `<p class="sl-note">No pick to add or remove right now.</p>` : ""}
+    <p class="sl3-counter-lab">A counter can change exactly one thing.</p>
+    <div class="sl3-counter-picks">${swapGive}${swapAsk}${addRemovePicks}</div>
+    ${!swapGive && !swapAsk && !myUnescrowedPicks.length && !myPicksAlreadyIn.length ? `<p class="sl-note">Nothing available to change right now.</p>` : ""}
     <button type="button" class="sl-pass sl3-counter-cancel">NEVER MIND</button>
   </div>`;
 }
@@ -530,18 +565,21 @@ function declinePanel(v: V): string {
 /* -------------------------------------------------------------- outbox -- */
 
 function outboxSection(v: V): string {
-  const offers = arr(v["myOffers"]).filter((o) => str(o["direction"]) === "sent" && !bool(o["awaitingMe"]) && (str(o["state"]) === "LIVE" || str(o["state"]) === "COUNTERED" || str(o["state"]) === "ACCEPTED"));
+  const band = bandOf(v);
+  const offers = arr(v["myOffers"]).filter(
+    (o) => str(o["direction"]) === "sent" && !bool(o["awaitingMe"]) && (str(o["state"]) === "LIVE" || str(o["state"]) === "COUNTERED" || str(o["state"]) === "ACCEPTED"),
+  );
   if (!offers.length) return panel({ title: "OUTBOX" }, `<p class="sl-note">Nothing out right now.</p>`);
   const cards = offers
     .map((o) => {
       const id = str(o["id"]);
       const canWithdraw = str(o["state"]) === "LIVE";
-      const canWithdrawAccept = str(o["state"]) === "ACCEPTED";
+      const canWithdrawAccept = str(o["state"]) === "ACCEPTED" && band === "5-6";
       const actions = `
         ${canWithdraw ? `<button type="button" class="sl-pass sl3-withdraw" data-offer="${esc(id)}">WITHDRAW</button>` : ""}
         ${canWithdrawAccept ? `<button type="button" class="sl-pass sl3-withdraw-accept" data-offer="${esc(id)}">WITHDRAW MY ACCEPT</button>` : ""}
       `;
-      return offerBaseCard(o, v, actions, "");
+      return offerBaseCard(o, actions, "");
     })
     .join("");
   return panel({ title: "OUTBOX", note: `${offers.length} out` }, `<div class="sl3-offers">${cards}</div>`);
@@ -561,9 +599,22 @@ function historySection(v: V): string {
   return panel({ title: "TRADES YOU MADE" }, rows);
 }
 
+function settlePanel(v: V): string {
+  const s = v["settled"];
+  if (!s || typeof s !== "object") return "";
+  const settle = s as V;
+  return panel(
+    { title: "YOUR SEASON SETTLES" },
+    `<div class="sl3-settle">
+       <p class="sl3-settle-line"><b>${num(settle["coveredJobs"])}</b> job${num(settle["coveredJobs"]) === 1 ? "" : "s"} covered by what you traded for</p>
+       <p class="sl3-settle-line"><b>${num(settle["openJobs"])}</b> job${num(settle["openJobs"]) === 1 ? "" : "s"} still open</p>
+     </div>`,
+  );
+}
+
 /* --------------------------------------------------------------- phases -- */
 
-function lobbyMain(v: V): string {
+function lobbyMain(): string {
   return `
   <div class="sl3-hero">
     <p class="sl3-hero-eyebrow">PREVIOUSLY ON</p>
@@ -572,7 +623,7 @@ function lobbyMain(v: V): string {
   </div>`;
 }
 
-function hookMain(v: V): string {
+function hookMain(): string {
   return `
   <div class="sl3-hero">
     <p class="sl3-hero-eyebrow">THE DEADLINE BRIEF</p>
@@ -608,6 +659,7 @@ function revealMain(v: V): string {
     <p class="sl3-hero-eyebrow">THE DEADLINE PASSED</p>
     <h2 class="sl3-hero-title">Here is the desk you're left holding.</h2>
   </div>
+  ${settlePanel(v)}
   ${historySection(v)}
   ${rosterSection(v)}`;
 }
@@ -617,8 +669,8 @@ function consequenceMain(v: V): string {
   <div class="sl3-hero">
     <p class="sl3-hero-eyebrow">THE SEASON SETTLES</p>
     <h2 class="sl3-hero-title">The season reads the roster you now hold, not the one you started with.</h2>
-    <p class="sl3-hero-sub">Look up — the room's own settle is on the board.</p>
   </div>
+  ${settlePanel(v)}
   ${owedPanel(v)}
   ${historySection(v)}`;
 }
@@ -655,6 +707,7 @@ function namingMain(v: V): string {
     `<p class="sl-naming-moment">${esc(str(f["moment"]))}</p>
      <p class="sl-naming-term">${esc(str(f["term"]))}</p>
      <p class="sl-naming-means">${esc(str(f["means"]))}</p>
+     ${f["real"] ? `<p class="sl3-naming-real">${esc(str(f["real"]))}</p>` : ""}
      <p class="sl-naming-outside"><b>OUTSIDE BASKETBALL</b> ${esc(str(f["outside"]))}</p>`,
   );
 }
@@ -691,10 +744,10 @@ export function renderSameLineL3(phase: string, view: Record<string, unknown>, h
   let main: string;
   switch (phase) {
     case "LOBBY":
-      main = lobbyMain(v);
+      main = lobbyMain();
       break;
     case "HOOK":
-      main = hookMain(v);
+      main = hookMain();
       break;
     case "PLAY":
       main = playMain(v);
@@ -726,6 +779,9 @@ export function renderSameLineL3(phase: string, view: Record<string, unknown>, h
     roster.map((r) => `${str(r["id"])}:${str(r["jobState"])}`).join(","),
     market.map((m) => `${str(m["id"])}:${num(m["interestCount"])}`).join(","),
     myOffers.map((o) => `${str(o["id"])}:${str(o["state"])}:${bool(o["awaitingMe"])}`).join(","),
+    num(v["reachBlocked"]),
+    JSON.stringify(v["settled"] ?? null),
+    JSON.stringify(v["naming"] ?? null),
     wantIds.join(","),
     sendIds.join(","),
     chip ?? "-",
@@ -806,8 +862,8 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
     const btn = host.querySelector<HTMLButtonElement>("#sl3Send");
     if (btn) {
       const market = arr(v["market"]);
-      const canResolveSeat = market.filter((m) => wantIds.includes(str(m["id"]))).every((e) => seatIdOf(e) !== null);
-      btn.disabled = !(sendIds.length && chip && line.trim() && canResolveSeat);
+      const canSubmit = market.filter((m) => wantIds.includes(str(m["id"]))).every((e) => str(e["holderId"]).length > 0);
+      btn.disabled = !(sendIds.length && chip && line.trim() && canSubmit);
     }
   });
   host.querySelector("#sl3CancelCompose")?.addEventListener("click", () => {
@@ -819,14 +875,14 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
     if (!sendIds.length || !chip || !line.trim()) return;
     const market = arr(v["market"]);
     const wantEntries = market.filter((m) => wantIds.includes(str(m["id"])));
-    const toSeat = wantEntries.length ? seatIdOf(wantEntries[0]!) : null;
-    if (!toSeat) {
-      error = "This build can't identify the other desk from the market listing yet — see the header comment in sameLineL3.ts.";
+    const toDesk = wantEntries.length ? str(wantEntries[0]!["holderId"]) : "";
+    if (!toDesk) {
+      error = "This listing doesn't carry a desk key yet — tell your teacher.";
       rerender();
       return;
     }
     error = null;
-    submit({ type: "propose", toSeat, send: sendIds, want: wantIds, chip, line: line.trim() });
+    submit({ type: "propose", toDesk, send: sendIds, want: wantIds, chip, line: line.trim() });
     clearComposer();
   });
 
@@ -845,11 +901,6 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
   for (const el of Array.from(host.querySelectorAll<HTMLButtonElement>(".sl3-withdraw-accept"))) {
     el.addEventListener("click", () => {
       error = null;
-      // NOT VERIFIED against `l3.ts`'s `reduce` — no `withdrawAccept` case exists
-      // there as of this build (see the builder's report). Submitted anyway per
-      // D61 ("5–6 may withdraw its single live accept before the hour closes")
-      // and the task contract; the server will refuse it legibly until that
-      // case is added.
       submit({ type: "withdrawAccept", offerId: el.dataset["offer"] });
     });
   }
@@ -871,13 +922,42 @@ function bind(host: HTMLElement, v: V, submit: Submit): void {
       const pickId = el.dataset["pick"] ?? "";
       const offer = arr(v["myOffers"]).find((o) => str(o["id"]) === offerId);
       if (!offer) return;
-      const index = buildLabelIndex(v);
-      const sendIdsResolved = strArr(offer["sendLabels"]).map((l) => index.get(l)).filter((x): x is string => !!x);
-      const wantIdsResolved = strArr(offer["wantLabels"]).map((l) => index.get(l)).filter((x): x is string => !!x);
+      const mine = myIndex(v);
+      const counterpartyId = str(offer["counterpartyId"]);
+      const theirs = counterpartyId ? marketIndexByHolder(v, counterpartyId) : new Map<string, string>();
+      const sendIdsResolved = strArr(offer["sendLabels"]).map((l) => theirs.get(l)).filter((x): x is string => !!x);
+      const wantIdsResolved = strArr(offer["wantLabels"]).map((l) => mine.get(l)).filter((x): x is string => !!x);
       const adding = el.classList.contains("sl3-counter-add");
       const newWant = adding ? [...wantIdsResolved, pickId] : wantIdsResolved.filter((x) => x !== pickId);
       error = null;
       submit({ type: "counter", offerId, send: sendIdsResolved, want: newWant });
+      clearCounter();
+    });
+  }
+  for (const el of Array.from(host.querySelectorAll<HTMLButtonElement>(".sl3-counter-swap-want"))) {
+    el.addEventListener("click", () => {
+      const offerId = el.dataset["offer"] ?? "";
+      const objectId = el.dataset["object"] ?? "";
+      const offer = arr(v["myOffers"]).find((o) => str(o["id"]) === offerId);
+      if (!offer) return;
+      const counterpartyId = str(offer["counterpartyId"]);
+      const theirs = counterpartyId ? marketIndexByHolder(v, counterpartyId) : new Map<string, string>();
+      const sendIdsResolved = strArr(offer["sendLabels"]).map((l) => theirs.get(l)).filter((x): x is string => !!x);
+      error = null;
+      submit({ type: "counter", offerId, send: sendIdsResolved, want: [objectId] });
+      clearCounter();
+    });
+  }
+  for (const el of Array.from(host.querySelectorAll<HTMLButtonElement>(".sl3-counter-swap-send"))) {
+    el.addEventListener("click", () => {
+      const offerId = el.dataset["offer"] ?? "";
+      const objectId = el.dataset["object"] ?? "";
+      const offer = arr(v["myOffers"]).find((o) => str(o["id"]) === offerId);
+      if (!offer) return;
+      const mine = myIndex(v);
+      const wantIdsResolved = strArr(offer["wantLabels"]).map((l) => mine.get(l)).filter((x): x is string => !!x);
+      error = null;
+      submit({ type: "counter", offerId, send: [objectId], want: wantIdsResolved });
       clearCounter();
     });
   }

@@ -881,8 +881,13 @@ function truthFor(state) {
   const nationalTotal = live.reduce((a, c) => a + c.weeks.length * NATIONAL, 0);
   const roadGiven = live.length > 0 ? Math.max(0, ...live.map((c) => c.weeks.reduce((a, w) => a + w.roadDollarsGiven, 0))) : 0;
 
-  // The adoption arithmetic, re-run here from the recorded round.
-  const sealed = state.closedRounds.length > 0 ? state.closedRounds[state.closedRounds.length - 1] : null;
+  // The adoption arithmetic, re-run here from the recorded round. D61 added a
+  // second institution (THE FLOOR) whose own rounds are appended to the SAME
+  // `closedRounds` list after the share's — the share's own sealed round is
+  // the last one tagged `institution: "share"` (or untagged, on an old
+  // snapshot from before the floor existed), never simply the last entry.
+  const shareRounds = state.closedRounds.filter((r) => (r.institution ?? "share") === "share");
+  const sealed = shareRounds.length > 0 ? shareRounds[shareRounds.length - 1] : null;
   const votedShares = sealed ? sealed.shares.filter((s) => s !== null) : [];
   const rawMedian = votedShares.length > 0 ? [...votedShares].sort((a, b) => a - b)[Math.floor(votedShares.length / 2)] : STATUS_QUO_SHARE;
   const evenMedian =
