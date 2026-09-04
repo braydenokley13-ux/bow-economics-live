@@ -1813,6 +1813,24 @@ function intelligence(state: SameLineL1State, phase: CanonicalPhase): readonly I
     }
   }
 
+  /* A PAIR WITH NO CLUB. The module refuses to invent a seventeenth franchise
+     — duplicating a position would quietly change numbers the room has already
+     seen — so a pair that joins once all sixteen desks are taken lands as an
+     observer. That is the right refusal and the wrong silence: the teacher
+     payload never mentioned it, so a teacher who split thirty-four students
+     into seventeen pairs had one pair behind a dead screen for the whole of
+     PLAY with nothing on the console to say so. The random-teacher standard
+     (CLAUDE.md §4) makes this the console's job, not the teacher's eyesight. */
+  if (state.observers.length > 0) {
+    const n = state.observers.length;
+    out.push({
+      kind: "watch",
+      label: n === 1 ? "A PAIR HAS NO CLUB" : "PAIRS WITH NO CLUB",
+      text: `${n} ${n === 1 ? "pair" : "pairs"} joined after every club was taken. This room holds ${CLUBS.length * 2} desks, and ${n === 1 ? "that pair has" : "those pairs have"} no franchise and no board.`,
+      ask: `Sit them with a desk that has one — two pairs to a screen is the shape this is built for. If the room will not take that, give them the room's job: pick a club to shadow, say out loud what you think it will do, and check yourself when the day closes.`,
+    });
+  }
+
   /* DIVERGENCE — the room split on the module's own subject. Only once the
      room has actually done something. */
   if (state.day > 0) {

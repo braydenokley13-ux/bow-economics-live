@@ -1277,7 +1277,17 @@ beats. All three surfaces render it.
   poor. Fixing it means reflowing the cap-sheet column, which is a design
   change, not a tweak — recorded in D57 rather than half-solved.
 
-- **The P-VEC failure was an engine defect, not board thinness** — the earlier
+- **P-VEC FAILS THE GATE at `sacramento/cheap-room`.** The full eight-seat
+  sweep finished 2026-09-04: eight of nine properties hold and all four
+  mutants are caught, but Sacramento's Pareto frontier in the cheap-room
+  environment holds **3** distinct outcome vectors against a floor of 4. Seven
+  seats clear it in all three environments. D53's written claim that the two
+  engine repairs "clear P-VEC at all eight seats" was made before this run
+  finished and is wrong; the repairs themselves are keepers (M3 and M4 both
+  fail as required). Diagnosis in D58. **This is a gate failure, not a known
+  cosmetic gap — do not describe M1 L1's economic sweep as passing.**
+
+- **The earlier P-VEC failure was an engine defect, not board thinness** — the earlier
   diagnosis in this file was wrong, and so was D52's. Two bugs in `readingsFor`
   (a minimum body counting as a hole filled; room left RISING when a club
   crossed a line) were the cause. Both are fixed and pinned by mutation-checked

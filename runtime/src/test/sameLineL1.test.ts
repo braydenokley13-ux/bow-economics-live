@@ -1287,3 +1287,42 @@ test("a naming is never shown for something the room did not do", () => {
     );
   }
 });
+
+test("a pair with no club is on the teacher's console, not only on its own dead screen", () => {
+  // The module refuses to invent a seventeenth franchise, which is right: a
+  // duplicate position would change numbers the room has already seen. What was
+  // wrong was the silence. `observers` was module state that no view exposed, so
+  // a teacher who split thirty-four students into seventeen pairs had one pair
+  // behind "EVERY CLUB IS TAKEN" for the whole of PLAY with nothing on the
+  // console to say so.
+  const full = CLUBS.length * 2;
+  let s = seatMany(full, "7-8");
+  assert.equal(Object.keys(s.desks).length, full, "the room should seat two desks per club");
+
+  const before = mod.teacherView(s, "PLAY") as Record<string, unknown>;
+  const kindsBefore = (before["intel"] as { label: string }[]).map((i) => i.label);
+  assert.ok(
+    !kindsBefore.some((l) => l.includes("NO CLUB")),
+    `a full room is not short of clubs — got ${JSON.stringify(kindsBefore)}`,
+  );
+
+  // One pair too many.
+  const r = mod.reduce(s, { type: "takeSeat" }, ctx("PLAY", "seat-extra", [...Object.keys(s.desks), "seat-extra"]));
+  assert.ok(r.ok);
+  s = r.state;
+  assert.deepEqual(s.observers, ["seat-extra"]);
+  assert.equal(Object.keys(s.desks).length, full, "no seventeenth franchise may be invented");
+
+  const view = mod.studentView(s, "seat-extra", "PLAY") as Record<string, unknown>;
+  assert.equal(view["observer"], true);
+
+  const after = mod.teacherView(s, "PLAY") as Record<string, unknown>;
+  const item = (after["intel"] as { label: string; text: string; ask: string }[]).find((i) =>
+    i.label.includes("NO CLUB"),
+  );
+  assert.ok(item, "the console must say a pair has no club");
+  assert.match(item.text, /1 pair joined/);
+  assert.match(item.text, new RegExp(`holds ${full} desks`));
+  // The teacher-transfer payload: a question or an instruction, never a bare fact.
+  assert.ok(item.ask.length > 40, "an intel item without something to do is a fact, not direction");
+});

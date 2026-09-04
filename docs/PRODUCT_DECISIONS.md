@@ -1195,6 +1195,17 @@ Both repairs together clear P-VEC at all eight seats in all three rival
 environments. Neither alone does. That is the correction to D52: board depth was
 never the binding constraint.
 
+> **This claim is wrong, and the run that was still going when it was written
+> is what disproves it. See D58.** The full eight-seat sweep finished
+> 2026-09-04: eight of nine properties hold and all four mutants are caught,
+> but **P-VEC still fails at `sacramento/cheap-room` — 3 distinct outcome
+> vectors against a floor of 4.** Seven seats clear it in all three
+> environments; one does not, in one environment. The two engine repairs in
+> this decision are real and are keepers — M3 and M4 both fail as required, so
+> the harness can now see the defects they fixed — but "all eight seats"
+> was written before the evidence and the evidence says otherwise. The
+> correction to D52 stands; this sentence does not.
+
 Two prosecution findings were **rejected** and the reasons matter:
 
 - Adding `contestedWon` as a sixth class-facing reading. It is identically zero
@@ -1442,3 +1453,98 @@ rhythm is poor. Fixing it means either dropping the cap sheet below the fold —
 which removes the money panel and makes things worse — or reflowing that panel
 into a horizontal strip, which is a design change, not a tweak. Left as a known
 gap rather than half-solved.
+
+## D58. The gate failed: Sacramento cannot close a hole, and one pair could sit clubless unseen
+
+Two findings from the same pass. The first is a **gate failure**; the second is
+a teacher-transfer defect found while waiting for it.
+
+### D58.1 — `sacramento/cheap-room` is a dead seat
+
+The full eight-seat sweep finished 2026-09-04. **Eight of nine properties hold
+and all four mutants are caught** — M3 and M4, added in D54 precisely because
+the harness could not previously see the two defects D53 fixed, both fail as
+required. But:
+
+```
+FAIL P-VEC — sacramento/cheap-room: frontier holds 3 distinct outcome vectors
+VERDICT: 1 PROPERTIES FAILED
+```
+
+D53's written claim that the two engine repairs "clear P-VEC at all eight seats
+in all three rival environments" was made while that run was still going. It is
+wrong, and D53 now carries the correction inline. The repairs are keepers; the
+claim was not evidence.
+
+**Why it fails, from `--seat sacramento --verbose` (10,852 plans swept).** Every
+plan on Sacramento's frontier in the cheap-room environment reads
+`jobsClosed: 0`. The whole three-day space collapses to:
+
+| plan | spent | longest | room left | holes closed |
+|---|---|---|---|---|
+| sign nobody | $0 | 0 | $6,155,628 | **0** |
+| one minimum body | $2,449,421 | 1 | $3,706,207 | **0** |
+| (a third, same shape) | — | — | — | **0** |
+
+Sacramento sits $6,155,628 under the first apron with two open jobs (WING,
+BIG). When the rival environment fills cheapest, the affordable real players
+come off the board, and the only thing left inside $6.16M is a generic minimum
+body — which by D53's own correction never closes a hole. So the seat's entire
+lesson is "spend nothing" versus "sign someone who fills nothing."
+
+**This is a dead seat in the founder's sense, and it is not the pair's fault.**
+Their outcome is fixed by the position they were dealt before they choose
+anything, which inverts "outcome is not decision quality" — here there is no
+decision to have quality. It is also the failure D28 and P-HOLD exist to
+prevent, arriving through a door neither of them watches.
+
+**Not yet repaired, and the obvious repairs are all wrong:**
+
+- Changing Sacramento's committed figure or dead money — it is cited
+  (`salaryswish.com/teams/kings`, 2026-09-03) and the founder's rule is do not
+  invent numbers to save mechanics.
+- Moving its open jobs — a club that cannot afford anyone at any position is
+  not helped by changing which position.
+- Calling it "the real NBA is like that" — true of a hard-capped club, and
+  still a fifty-minute lesson in which one desk of eight has nothing to decide.
+
+The direction worth testing is the **board's cheap end**: whether it holds
+enough real (non-generic) players inside a taxpayer-scale exception that eight
+clubs filling cheapest cannot strip it bare. That is a world change measured
+against the sweep, not a tuning knob, and it is the next piece of work.
+
+**A filtered sweep is still not a gate result.** The Sacramento-only run
+reports `POISON: at least one mutant went unnoticed` — correctly, because a
+single-seat sweep cannot reach every mutant, and `P-TWIN … between 0` because
+there is no second club to vary. Both are artefacts of `--seat`, already
+documented, and neither weakens the full run's verdict.
+
+### D58.2 — a pair with no club was invisible to the teacher
+
+The module holds `CLUBS.length * 2` = **16 desks**. A pair joining after that
+lands as an observer with an honest screen ("EVERY CLUB IS TAKEN … there is
+none left to hand you without changing numbers this room has already seen").
+That refusal is right: inventing a seventeenth franchise would duplicate a
+position and quietly change numbers the room has already seen.
+
+The silence was wrong. `state.observers` was module state **no view exposed**,
+so a teacher who split thirty-four students into seventeen pairs had one pair
+behind a dead screen for the whole of PLAY with nothing on the console to say
+so — the teacher's eyesight was the only detector. Under CLAUDE.md §4 and
+D50 §8 that is the console's job.
+
+`intelligence()` now emits a `watch` item naming the count and the room's
+capacity, with the instruction: sit them with a desk that has one, or give them
+the room's job — pick a club to shadow, predict its next move out loud, check
+yourself when the day closes.
+
+**Recorded, not claimed:** the observer screen itself has still never been
+reviewed against the MAGNETIC/STRONG bar. It is honest and it is short; whether
+fifteen minutes behind it is acceptable is a question for the player-gameplay
+review, not something this decision settles.
+
+**Evidence.** Full sweep output above, reproducible with
+`node scripts/same-line-sweep.mjs`; `--seat sacramento --verbose` for the
+frontier dump. `runtime/src/test/sameLineL1.test.ts` — "a pair with no club is
+on the teacher's console, not only on its own dead screen". 706 unit tests and
+the two-band browser e2e pass, run 2026-09-04.
