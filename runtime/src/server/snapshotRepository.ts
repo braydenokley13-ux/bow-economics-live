@@ -155,6 +155,12 @@ export class SnapshotRepository implements Repository {
           ...session,
           round: session.round ?? null,
           log: session.log ?? [],
+          // A snapshot written before the press conference / clock-honesty
+          // fields existed has neither — a room upgraded mid-term is not
+          // paused and nobody is at the podium, which is exactly the state a
+          // fresh room starts in.
+          pausedAt: session.pausedAt ?? null,
+          spotlight: session.spotlight ?? null,
           // A room created before the band existed is a grades 5-6 room, which
           // is the only band that existed when it was written.
           gradeBand: bandOrDefault(session.gradeBand),
@@ -273,8 +279,10 @@ export class SnapshotRepository implements Repository {
       gradeBand: input.gradeBand,
       phase: input.phase,
       paused: false,
+      pausedAt: null,
       frozen: false,
       ended: false,
+      spotlight: null,
       state: input.state,
       version: 1,
       checkpoint: null,

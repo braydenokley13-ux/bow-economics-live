@@ -390,6 +390,8 @@ async function handle(
           "advance", "reveal", "pause", "unpause", "freeze", "unfreeze", "hook", "end", "restore",
           // TIME CUT
           "finalCall", "closeNow", "cancelFinalCall",
+          // THE PRESS CONFERENCE
+          "pressConference", "endPressConference",
         ]);
         if (!allowed.has(type)) throw new ServiceError(400, "bad_control", `unknown control action "${type}"`);
         const action =
@@ -397,7 +399,9 @@ async function handle(
             ? { type: "hook" as const, hook: String(body["hook"] ?? "") }
             : type === "finalCall"
               ? { type: "finalCall" as const, ...(body["durationMs"] === undefined ? {} : { durationMs: Number(body["durationMs"]) }) }
-              : { type: type as Exclude<typeof type, "hook"> };
+              : type === "pressConference"
+                ? { type: "pressConference" as const, seatId: String(body["seatId"] ?? "") }
+                : { type: type as Exclude<typeof type, "hook" | "pressConference"> };
         const payload = await service.control(code, action as Parameters<SessionService["control"]>[1], teacherKey);
         sendJson(res, 200, payload);
         return;

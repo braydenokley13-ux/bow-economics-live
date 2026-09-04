@@ -3110,3 +3110,125 @@ html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding:
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* --------------------------------------------------------------------------
+ * THE PRESS CONFERENCE — generic chrome shared by all three surfaces.
+ * `src/client/shared/pressConference.ts` is the only file that emits these
+ * classes; a module that later ships its own bespoke podium frame replaces
+ * that renderer, not this sheet.
+ * ------------------------------------------------------------------------ */
+.pc-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vh;
+  height: 100%;
+  text-align: center;
+}
+.pc-board-line {
+  font-family: var(--font-display);
+  font-size: 2.6vw;
+  letter-spacing: 0.06em;
+  color: var(--accent-gold);
+}
+.pc-board-label {
+  font-family: var(--font-display);
+  font-size: 5vw;
+  color: var(--ink-primary);
+}
+.pc-board-view {
+  margin-top: 1vh;
+  font-size: 1.6vw;
+  color: var(--ink-secondary);
+}
+
+.pc-lock,
+.pc-podium {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  text-align: center;
+}
+.pc-lock-line,
+.pc-podium-line {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--accent-gold);
+}
+.pc-lock-label,
+.pc-podium-view {
+  font-size: 15px;
+  color: var(--ink-secondary);
+}
+.pc-podium-line {
+  font-size: 20px;
+}
+
+.pc-kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 14px;
+  margin: 0;
+  text-align: left;
+  justify-content: center;
+}
+.pc-kv dt {
+  color: var(--ink-secondary);
+  font-weight: 600;
+}
+.pc-kv dd {
+  margin: 0;
+  color: var(--ink-primary);
+}
+.pc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink-primary);
+}
+.pc-empty,
+.pc-single {
+  color: var(--ink-secondary);
+}
+
+/* /teach's own Press Conference panel. */
+#pressconf .pc-cand-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#pressconf .pc-cand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-inset);
+}
+#pressconf .pc-cand-why {
+  color: var(--ink-secondary);
+  font-size: 12px;
+}
+#pressconf .pc-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+#pressconf .pc-clock-note {
+  margin-top: 10px;
+  color: var(--ink-secondary);
+  font-size: 12.5px;
+}

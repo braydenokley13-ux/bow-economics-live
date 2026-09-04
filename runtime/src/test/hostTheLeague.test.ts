@@ -204,7 +204,7 @@ test("phase guards: dials only in PLAY, teacher hooks only from the teacher", ()
   assert.match(bad(act(state, { type: "lock" }, "REVEAL")), /only run a week during PLAY/);
   assert.match(bad(act(state, { type: "teacher:closeWeek" }, "PLAY", "seat-1")), /only the teacher/);
   assert.match(bad(act(state, { type: "teacher:closeWeek" }, "HOOK", "teacher")), /weeks close during PLAY/);
-  assert.match(bad(act(state, { type: "setPrice", price: 40 }, "PLAY", "teacher")), /only a seated pair/);
+  assert.match(bad(act(state, { type: "setPrice", price: 40 }, "PLAY", "teacher")), /only a seated desk/);
   assert.match(bad(act(state, { type: "nope" }, "PLAY")), /unknown action/);
 });
 
@@ -1993,7 +1993,7 @@ test("W6: the pair's one reveal call is taken before the beat that answers it, a
   const atStage = (n: number): HostLeagueState => ({ ...state, revealStage: n });
 
   assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "gave" }, "PLAY", "seat-1")), /during REVEAL/);
-  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "teacher")), /seated pair/);
+  assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "teacher")), /seated desk/);
   assert.match(bad(act(atStage(0), { type: "ledgerPredict", choice: "maybe" }, "REVEAL", "seat-1")), /gave or took/);
   assert.match(bad(act(atStage(2), { type: "ledgerPredict", choice: "gave" }, "REVEAL", "seat-1")), /already on the projector/);
 
@@ -2046,7 +2046,7 @@ test("W6: the locked pair gets the gate call, and only a locked pair does", () =
   assert.ok(!/seat-/.test(JSON.stringify(gate)), "the room line leaked a seat identity onto a private surface");
 
   // Rejections are semantic, never transport-shaped.
-  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "teacher")), /seated pair/);
+  assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "PLAY", "teacher")), /seated desk/);
   assert.match(bad(act(state, { type: "gateCall", band: "maybe" }, "PLAY", "seat-1")), /packed, busy or quiet/);
   assert.match(bad(act(state, { type: "gateCall", band: "packed" }, "REVEAL", "seat-1")), /during PLAY/);
 
@@ -2165,4 +2165,57 @@ test("the desk mirrors the synthesis card the projector is on, and changes with 
     state = next.state;
   }
   assert.equal(seen.size, total, "the desk repeated a card instead of following the board");
+});
+
+/* --------------------------------------------------------- D22 band seam -- */
+
+test("D22 band seam: `gradeBand` is additive, snapshot-safe, and exposed as `band` on every surface in every phase", () => {
+  const bands = ["5-6", "7-8"] as const;
+  for (const band of bands) {
+    const fresh = hostTheLeagueModule.initialState({ sessionId: "s-band", seatIds: [], gradeBand: band });
+    const seatedState = ok(hostTheLeagueModule.reduce(fresh, { type: "takeSeat" }, { phase: "LOBBY", seatId: "seat-1", seatIds: ["seat-1"], now: 0 }));
+    for (const phase of ALL_PHASES) {
+      const student = hostTheLeagueModule.studentView(seatedState, "seat-1", phase) as Record<string, unknown>;
+      const teacher = hostTheLeagueModule.teacherView(seatedState, phase) as Record<string, unknown>;
+      const board = hostTheLeagueModule.boardView(seatedState, phase) as Record<string, unknown>;
+      assert.equal(student["band"], band, `studentView carried the wrong band at ${phase}`);
+      assert.equal(teacher["band"], band, `teacherView carried the wrong band at ${phase}`);
+      assert.equal(board["band"], band, `boardView carried the wrong band at ${phase}`);
+    }
+  }
+
+  // Snapshot-safety: a state written before `gradeBand` existed must read as "5-6",
+  // never throw and never leak `undefined` onto a surface.
+  const legacy = { ...empty() } as Partial<HostLeagueState>;
+  delete legacy.gradeBand;
+  const legacyState = legacy as HostLeagueState;
+  assert.equal((hostTheLeagueModule.teacherView(legacyState, "LOBBY") as Record<string, unknown>)["band"], "5-6");
+  assert.equal((hostTheLeagueModule.boardView(legacyState, "LOBBY") as Record<string, unknown>)["band"], "5-6");
+  assert.equal((hostTheLeagueModule.studentView(legacyState, "seat-1", "LOBBY") as Record<string, unknown>)["band"], "5-6");
+});
+
+test("D22 band seam: the reducer's economics is byte-identical between bands for the same action sequence", () => {
+  function runSession(gradeBand: "5-6" | "7-8"): HostLeagueState {
+    let state = hostTheLeagueModule.initialState({ sessionId: "s-diff", seatIds: [], gradeBand });
+    for (let i = 1; i <= 6; i += 1) state = ok(act(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`));
+    const prices = [24, 44, 60, 36, 78, 52];
+    const shares = [0, 20, 40, 10, 30, 5];
+    for (let w = 0; w < WEEK_COUNT; w += 1) {
+      state = playWeek(
+        state,
+        (i) => prices[(i + w) % prices.length]!,
+        (i) => shares[(i + w * 3) % shares.length]!,
+      );
+    }
+    return state;
+  }
+  const a = runSession("5-6");
+  const b = runSession("7-8");
+  const strip = (s: HostLeagueState): Omit<HostLeagueState, "gradeBand"> => {
+    const { gradeBand, ...rest } = s;
+    void gradeBand;
+    return rest;
+  };
+  assert.deepEqual(strip(a), strip(b), "the room's own economics diverged between bands on an identical action sequence");
+  assert.deepEqual(computeAggregate(a), computeAggregate(b), "the aggregate diverged between bands on an identical action sequence");
 });

@@ -150,7 +150,17 @@ export type RoundPublic = {
 };
 
 export type StudentPayload = {
-  session: { code: string; title: string; phase: CanonicalPhase; paused: boolean; frozen: boolean; ended: boolean; version: number };
+  session: {
+    code: string;
+    title: string;
+    phase: CanonicalPhase;
+    paused: boolean;
+    frozen: boolean;
+    ended: boolean;
+    version: number;
+    /** Null except while a press conference is running. See `StudentSpotlight`. */
+    spotlight: StudentSpotlight | null;
+  };
   seat: { id: string; displayName: string };
   deviceToken?: string;
   rejoinPin?: string;
@@ -178,6 +188,16 @@ export type StudentPayload = {
   view: unknown;
 };
 
+/**
+ * The podium record as a STUDENT surface receives it — deliberately the
+ * smallest thing on the wire. `mine` is the only thing this desk is told that
+ * every other desk is not: whether it is the one at the podium. No seat id
+ * travels here at all, on this payload or any other surface's — a seat that
+ * is not spotlighted must never be able to work out, from its own poll
+ * response, which seat is.
+ */
+export type StudentSpotlight = { label: string; mine: boolean };
+
 export type TeacherPayload = {
   session: {
     id: string;
@@ -193,6 +213,13 @@ export type TeacherPayload = {
     /** The server's clock at the moment this body was built; the console reads the offset once. */
     serverNow: string;
     paused: boolean;
+    /**
+     * When the room became paused, or null. Teacher-only — this is what lets
+     * the Press Conference panel say how much of the final call was left at
+     * the moment the teacher paused, rather than a number that keeps counting
+     * down against a clock the room is not actually running.
+     */
+    pausedAt: string | null;
     frozen: boolean;
     ended: boolean;
     version: number;
@@ -246,6 +273,10 @@ export type TeacherPayload = {
     /** Seats that have committed. Count only — who committed WHAT is not the teacher panel's business here. */
     resolvedCount: number;
   } | null;
+  /** Who is at the podium right now, teacher-private (this is the one payload allowed to name the seat). Null outside a press conference. */
+  spotlight: { seatId: string; label: string; since: string } | null;
+  /** The console's shortlist for who to call up next — the module's own ranking, or `[]` for a lesson that declares none. */
+  pressCandidates: readonly { seatId: string; label: string; why: string }[];
   view: unknown;
 };
 
@@ -256,6 +287,13 @@ export type BoardPayload = {
   ended: boolean;
   version: number;
   round: RoundPublic | null;
+  /**
+   * The full-dark takeover. `view` is exactly the module's own `spotlightView`
+   * for the podium seat — never `null` as a way of hiding that a module has no
+   * such view (the board must be able to tell "nothing to show yet" apart from
+   * "no press conference"), and NEVER the seat id: the projector is public.
+   */
+  spotlight: { label: string; view: unknown } | null;
   view: unknown;
 };
 
@@ -752,6 +790,16 @@ export class SessionService {
    * next round: if the module has moved on, the stale record is dropped.
    */
   private async sweepRound(session: SessionRow): Promise<SessionRow> {
+    // CLOCK HONESTY UNDER PAUSE. A paused room is the teacher holding the
+    // room, and "holding" has to mean the whole room, including a deadline
+    // nobody in it can see moving — a FINAL CALL that quietly expired while
+    // every screen read PAUSED was reproducible before this guard: pause set
+    // the flag, but this sweep still compared `Date.now()` against a
+    // `finalCallEndsAt` that never stopped. No deadline may elapse while
+    // paused, full stop — the debt (however long the pause turns out to
+    // last) is settled once, in full, exactly when the pause ends. See
+    // `clockShiftForResume`, called from every control action that ends one.
+    if (session.paused) return session;
     const contract = this.roundContractFor(session);
     if (!contract) return session;
     const key = contract.currentKey(session.state, session.phase);
@@ -846,6 +894,65 @@ export class SessionService {
     if (session.paused) throw new ServiceError(423, "paused", "the teacher has paused the session", true);
   }
 
+  /**
+   * The timestamp a new pause anchors on.
+   *
+   * `pause`, `freeze`, and `pressConference` all set `paused: true`, and any
+   * one of them can land on a room that is already paused by another of the
+   * three (freeze on top of an existing pause; a press conference called
+   * while frozen). The anchor must not move in that case — it names when the
+   * room STOPPED, and restarting it every time a second hold is layered on
+   * would under-count the pause and claw back real seconds from a FINAL CALL
+   * that never actually ran. Only a room that was actually live starts a
+   * fresh clock.
+   */
+  private pauseAnchor(session: SessionRow): string {
+    return session.paused && session.pausedAt ? session.pausedAt : new Date().toISOString();
+  }
+
+  /**
+   * THE DEBT, SETTLED. Called from every control action that ends a pause —
+   * `unpause`, `unfreeze`, `endPressConference`, and a `restore` that reverts
+   * into a live room — never from `sweepRound` itself, which is exactly the
+   * point: while paused, `sweepRound` returns before it ever compares a clock
+   * to `finalCallEndsAt` (see its own comment), so the deadline sits exactly
+   * where it was the instant the pause began. This is where that debt is paid,
+   * once, in whichever direction it is owed: if `round` is mid FINAL CALL, its
+   * deadline moves forward by exactly how long `session.pausedAt` says the
+   * room was actually stopped, so the desks in it get back precisely the
+   * seconds the pause took and not one more or fewer — a pause of 3 seconds
+   * and a pause of 3 minutes must both leave the SAME time on the clock they
+   * had when the room stopped. A round that is not in FINAL CALL, or has no
+   * deadline, or a session that was never paused, passes through unchanged.
+   */
+  private clockShiftForResume(session: SessionRow, round: RoundState | null): RoundState | null {
+    if (session.pausedAt === null || !round || round.status !== "FINAL_CALL" || !round.finalCallEndsAt) {
+      return round;
+    }
+    const pausedMs = Math.max(0, Date.now() - Date.parse(session.pausedAt));
+    if (pausedMs <= 0) return round;
+    return { ...round, finalCallEndsAt: new Date(Date.parse(round.finalCallEndsAt) + pausedMs).toISOString() };
+  }
+
+  /**
+   * THE PODIUM'S NAME. What `pressConference` writes into `spotlight.label`.
+   *
+   * The teacher's manual seat picker can call up ANY seat, not only one the
+   * module proposed, so this cannot simply read a label off `pressCandidates`'
+   * own list and stop there — it asks the SAME list (the one true source for
+   * "what does this lesson call this desk"), and only falls back to the
+   * founder-specified generic when the module either declares no shortlist at
+   * all or has nothing to say about this particular seat. A student's own
+   * fictional display name is deliberately never consulted: that name is
+   * teacher-private furniture (`SeatRow.displayName`), and `spotlight.label` is
+   * the one field of this whole feature that reaches the projector.
+   */
+  private spotlightLabelFor(session: SessionRow, seatId: SeatId): string {
+    const mod = this.moduleFor(session);
+    const candidates = mod.pressCandidates?.(session.state, session.phase) ?? [];
+    return candidates.find((c) => c.seatId === seatId)?.label ?? "A FRONT OFFICE";
+  }
+
   /* --------------------------------------------------------------- control -- */
 
   async control(
@@ -862,7 +969,12 @@ export class SessionService {
       | { type: "restore" }
       | { type: "finalCall"; durationMs?: number }
       | { type: "closeNow" }
-      | { type: "cancelFinalCall" },
+      | { type: "cancelFinalCall" }
+      // THE PRESS CONFERENCE. Calling one is a pause with a podium attached;
+      // ending one is the ordinary resume, on the same clock-honesty path as
+      // `unpause`/`unfreeze` — see `clockShiftForResume`.
+      | { type: "pressConference"; seatId: string }
+      | { type: "endPressConference" },
     teacherKey: string | null,
   ): Promise<TeacherPayload> {
     let session = await this.requireSession(code);
@@ -921,12 +1033,14 @@ export class SessionService {
         return this.applyPhaseChange(session, "REVEAL");
       }
       case "pause":
-        return this.buildTeacherPayload(await this.patch(session, { paused: true }));
+        return this.buildTeacherPayload(await this.patch(session, { paused: true, pausedAt: this.pauseAnchor(session) }));
       case "unpause":
-        return this.buildTeacherPayload(await this.patch(session, { paused: false }));
+        return this.buildTeacherPayload(
+          await this.patch(session, { paused: false, pausedAt: null, round: this.clockShiftForResume(session, session.round) }),
+        );
       case "freeze":
         return this.buildTeacherPayload(
-          await this.patch(session, { frozen: true, paused: true }, /* checkpoint */ true),
+          await this.patch(session, { frozen: true, paused: true, pausedAt: this.pauseAnchor(session) }, /* checkpoint */ true),
         );
       // gate-l1-projector, blocking classroom-reliability defect: `freeze` sets
       // BOTH flags, and `unfreeze` used to clear only `frozen`. Observed in a
@@ -936,7 +1050,46 @@ export class SessionService {
       // room and no message explaining it. Freeze is one gesture, so unfreeze is
       // its exact inverse: it clears what freeze set.
       case "unfreeze":
-        return this.buildTeacherPayload(await this.patch(session, { frozen: false, paused: false }));
+        return this.buildTeacherPayload(
+          await this.patch(session, {
+            frozen: false,
+            paused: false,
+            pausedAt: null,
+            round: this.clockShiftForResume(session, session.round),
+          }),
+        );
+      /* --------------------------------------------------------- PRESS CONFERENCE --
+       * A press conference IS a pause with a podium attached, not a second hold
+       * mechanism next to it: it reuses the exact `paused`/`pausedAt` machinery
+       * `pause` and `freeze` already own, so `assertActionable`, `sweepRound`'s
+       * paused-early-return, and every retryable-423 path a student's outbox
+       * already understands apply to it for free. Ending one is the ordinary
+       * resume, on the identical clock-shift path as `unpause`/`unfreeze`.
+       * ------------------------------------------------------------------------- */
+      case "pressConference": {
+        const seatId = action.seatId;
+        if (typeof seatId !== "string" || seatId.length === 0) {
+          throw new ServiceError(400, "bad_seat", "pressConference requires a seatId");
+        }
+        const seat = await this.repo.getSeatById(seatId);
+        if (!seat || seat.sessionId !== session.id) throw notFound("seat");
+        return this.buildTeacherPayload(
+          await this.patch(session, {
+            paused: true,
+            pausedAt: this.pauseAnchor(session),
+            spotlight: { seatId, label: this.spotlightLabelFor(session, seatId), since: new Date().toISOString() },
+          }),
+        );
+      }
+      case "endPressConference":
+        return this.buildTeacherPayload(
+          await this.patch(session, {
+            paused: false,
+            pausedAt: null,
+            spotlight: null,
+            round: this.clockShiftForResume(session, session.round),
+          }),
+        );
       case "hook": {
         const result = mod.reduce(
           session.state,
@@ -1018,7 +1171,8 @@ export class SessionService {
         // other risky transition — previously "end" was the one control
         // action that never snapshotted first, so `restore` structurally
         // could not undo it (see the "restore" case and Checkpoint.ended).
-        return this.buildTeacherPayload(await this.patch(session, { ended: true }, true));
+        // Nobody stays at a podium in a session that no longer exists.
+        return this.buildTeacherPayload(await this.patch(session, { ended: true, spotlight: null }, true));
       case "restore": {
         if (!session.checkpoint) throw new ServiceError(400, "no_checkpoint", "no checkpoint to restore");
         const cp = session.checkpoint;
@@ -1028,11 +1182,29 @@ export class SessionService {
         // permanently. It now captures the state it is about to replace, which
         // makes a wrong restore itself undoable — pressing Restore twice returns
         // the room to where it started rather than digging further backwards.
+        //
+        // Restore is also one of the three places a pause can end (the other
+        // two are `unpause`/`unfreeze`): the common case is a checkpoint from
+        // BEFORE the pause began (freeze -> restore), which is a real resume —
+        // `cp.paused` is false and any running FINAL CALL owes the room the
+        // exact clock-shift `unpause` gives it, using the LIVE session's own
+        // `pausedAt` as the anchor (the checkpoint's round is what is coming
+        // back; the pause that just ended happened on this session, not on the
+        // snapshot). If the checkpoint itself was captured mid-pause, restore
+        // is not a resume — the pause continues, and the anchor is preserved
+        // (or, if the live session had somehow already lost it, restarted now
+        // rather than left null, since a paused room with no anchor could never
+        // be resumed honestly).
+        const cpRound = cp.round ?? null;
+        const resuming = !cp.paused;
+        const round = resuming ? this.clockShiftForResume(session, cpRound) : cpRound;
+        const pausedAt = resuming ? null : session.pausedAt ?? new Date().toISOString();
         return this.buildTeacherPayload(
           await this.patch(session, {
             phase: cp.phase,
             state: cp.state,
             paused: cp.paused,
+            pausedAt,
             frozen: cp.frozen,
             // R2 repair: restore now also clears `ended` when the checkpoint
             // predates it — a teacher's accidental "End Session" click,
@@ -1045,7 +1217,12 @@ export class SessionService {
             // undoing a close would leave the lesson back in an open night
             // while the runtime still believed that night had settled — the
             // teacher's Restore would produce a room nobody could act in.
-            round: cp.round ?? null,
+            round,
+            // Nobody stays at a podium across an undo — the room being restored
+            // to a moment before (or after) the press conference never asked for
+            // it, and the seat id must not survive a control path that skips
+            // `endPressConference` entirely.
+            spotlight: null,
             // And the record of what the class did goes back with the class.
             // An append-only log across an undo tells the next desk to come
             // back from a dark Chromebook that a night the teacher took back
@@ -1183,6 +1360,14 @@ export class SessionService {
       ended: session.ended,
       version: session.version,
       round: this.roundPublic(session),
+      // THE TAKEOVER. `spotlightView` is optional on a module, and its absence
+      // is not the same fact as "no press conference" — a lesson with nothing
+      // yet worth putting on a podium still gets `view: null`, distinguishable
+      // from `spotlight: null` (no podium at all). Never the seat id: this is
+      // the one payload the room's projector actually renders.
+      spotlight: session.spotlight
+        ? { label: session.spotlight.label, view: mod.spotlightView?.(session.state, session.spotlight.seatId, session.phase) ?? null }
+        : null,
       view: mod.boardView(session.state, session.phase),
     };
   }
@@ -1329,6 +1514,7 @@ export class SessionService {
     const contract = this.roundContractFor(session);
     const roundOpen = Boolean(contract && contract.currentKey(session.state, session.phase) !== null);
     const mine = contract && roundOpen ? contract.unresolved(session.state, session.phase, [seat.id])[0] ?? null : null;
+    const atPodium = session.spotlight?.seatId === seat.id;
     return {
       round: this.roundPublic(session),
       committed: roundOpen ? mine === null : null,
@@ -1341,11 +1527,24 @@ export class SessionService {
         frozen: session.frozen,
         ended: session.ended,
         version: session.version,
+        // NO SEAT ID TRAVELS HERE, on this seat's own payload or any other
+        // seat's — `mine` is the only fact a desk that is not spotlighted is
+        // ever told about who is.
+        spotlight: session.spotlight ? { label: session.spotlight.label, mine: atPodium } : null,
       },
       seat: { id: seat.id, displayName: seat.displayName },
       away: this.awayFor(session, seat),
       ...credentials,
-      view: mod.studentView(session.state, seat.id, session.phase),
+      // THE PODIUM SEES WHAT THE ROOM SEES. While this desk is spotlighted, its
+      // own `view` is not `studentView` (this desk's private state) but the
+      // SAME `spotlightView` the projector and every other lock screen are
+      // shown — the founder's rule for the podium is that the pair sees
+      // exactly what the room sees, not more. Every other desk, spotlighted or
+      // not, keeps its ordinary private view; a lock screen that ignored it
+      // costs nothing (the client does not render `view` while locked), and a
+      // client that is out of date and DOES render it has lost nothing private
+      // — `studentView` was already scoped to that seat alone.
+      view: atPodium ? mod.spotlightView?.(session.state, seat.id, session.phase) ?? null : mod.studentView(session.state, seat.id, session.phase),
     };
   }
 
@@ -1370,6 +1569,7 @@ export class SessionService {
         createdAt: session.createdAt,
         serverNow: new Date().toISOString(),
         paused: session.paused,
+        pausedAt: session.pausedAt,
         frozen: session.frozen,
         ended: session.ended,
         version: session.version,
@@ -1380,6 +1580,8 @@ export class SessionService {
       seats: [],
       round: this.roundPublic(session),
       timeCut: null,
+      spotlight: session.spotlight ? { ...session.spotlight } : null,
+      pressCandidates: mod.pressCandidates?.(session.state, session.phase) ?? [],
       view: mod.teacherView(session.state, session.phase),
     };
   }

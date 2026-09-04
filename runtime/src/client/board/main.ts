@@ -3,6 +3,7 @@ import { renderSameLineL1Board } from "../shared/sameLineL1Board.js";
 import { crestStyle } from "../shared/crest.js";
 import { createFreshness } from "../shared/freshness.js";
 import { startPolling } from "../shared/poll.js";
+import { renderBoardSpotlight } from "../shared/pressConference.js";
 
 type BoardPayload = {
   phase: string;
@@ -17,6 +18,8 @@ type BoardPayload = {
     serverNow: string;
     closedBy: "final_call_expired" | "close_now" | "module" | null;
   } | null;
+  /** The full-dark press-conference takeover. Never carries a seat id — see pressConference.ts. */
+  spotlight: { label: string; view: unknown } | null;
   view: Record<string, unknown>;
 };
 
@@ -115,6 +118,16 @@ function render(payload: BoardPayload): void {
   if (payload.ended) {
     backdrop.classList.remove("peak");
     stage.innerHTML = `<div class="label">Session complete</div><div class="banner">Thanks, everyone!</div>`;
+    return;
+  }
+  // THE PRESS CONFERENCE takes the whole projector, before any module branch
+  // and before the generic frozen/paused labels below — a press conference
+  // always sets `paused` too (it is a pause with a podium attached), so
+  // checking it first is what turns the generic "Paused" wall into the
+  // specific one the room is actually looking at.
+  if (payload.spotlight) {
+    backdrop.classList.remove("peak");
+    stage.innerHTML = renderBoardSpotlight(payload.spotlight);
     return;
   }
   if (payload.frozen) {

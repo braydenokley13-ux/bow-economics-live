@@ -7,10 +7,21 @@ import { ActionOutbox } from "../shared/outbox.js";
 import { renderSameLineL1, resetSameLineL1, sameLineL1Error } from "../shared/sameLineL1.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
+import { renderPlayLock, renderPlayPodium } from "../shared/pressConference.js";
 
 type Franchise = { name: string; crestIndex: number };
 
-type SessionInfo = { code: string; title: string; phase: string; paused: boolean; frozen: boolean; ended: boolean; version: number };
+type SessionInfo = {
+  code: string;
+  title: string;
+  phase: string;
+  paused: boolean;
+  frozen: boolean;
+  ended: boolean;
+  version: number;
+  /** Set only while a press conference is running. `mine` never reaches a screen it is not true or false for THIS seat. */
+  spotlight: { label: string; mine: boolean } | null;
+};
 type StudentPayload = {
   session: SessionInfo;
   seat: { id: string; displayName: string };
@@ -540,6 +551,16 @@ function renderGame(payload: StudentPayload): void {
   }
   if (s.frozen) {
     body.innerHTML = `<div class="banner">Your teacher has frozen the session. Hang tight.</div>`;
+    return;
+  }
+  // THE PRESS CONFERENCE. A press conference always pauses the room too (it
+  // is a pause with a podium attached), so this must be checked before the
+  // generic paused banner below, or the podium desk and every other desk
+  // both read the same "Paused" line and the reveal never lands on a device.
+  if (s.spotlight) {
+    body.innerHTML = s.spotlight.mine
+      ? renderPlayPodium(s.spotlight.label, payload.view)
+      : renderPlayLock(s.spotlight.label);
     return;
   }
   if (s.paused) {

@@ -157,6 +157,51 @@ export interface LessonModule<TState = unknown> {
   onPhaseExit?(state: TState, fromPhase: CanonicalPhase, toPhase: CanonicalPhase): TState;
 
   /**
+   * THE PODIUM — the public half of a Press Conference.
+   *
+   * Optional. When the teacher calls a desk up, the room goes dark except for
+   * that desk — on the projector, and on every student's own lock screen — so
+   * what this returns is the WHOLE of what the room is allowed to learn about
+   * that seat for as long as the press conference runs. PRIVACY RULE: this is
+   * not a relaxed `studentView`. It is the module deciding, seat by seat, what
+   * a decision looks like with the private half of it stripped away — the
+   * choice and the reasoning the desk gave for it, never the hidden
+   * information nobody else in the room has earned yet, and never anything
+   * that would out a different seat by implication. The runtime enforces
+   * nothing here and cannot: a module that hands back its own `studentView`
+   * verbatim has just handed the projector that seat's private state, and
+   * nothing downstream catches it. PURITY: a function of `state`/`seatId`/
+   * `phase` alone, called on every board and teacher poll for as long as the
+   * spotlight is on, so it must be cheap and deterministic — the room is
+   * staring at this desk in silence; it cannot be seen to change answer
+   * without a decision behind the change. Omit entirely for a lesson with
+   * nothing yet worth putting on a podium; the runtime then shows the desk's
+   * label and nothing else.
+   */
+  spotlightView?(state: TState, seatId: SeatId, phase: CanonicalPhase): unknown;
+
+  /**
+   * THE SHORTLIST — who the teacher might call up, and why.
+   *
+   * Optional. The console never picks a desk itself; it proposes, ranked by
+   * whatever this lesson's own state holds that is worth putting in front of
+   * the room — interesting reasoning, contrast with another desk, risk taken,
+   * a reversal, genuine ambiguity — and NEVER by the best desk, the highest
+   * number, or being right: a desk that is behind is more likely to be
+   * interesting, not less. `why` is the reason a teacher reads (or reads
+   * silently) while deciding who to call — it names the reason, not a
+   * verdict on the decision, and it is never shown to the room. PURITY: same
+   * contract as `spotlightView` — a pure function of `state`/`phase`, cheap
+   * enough to run on every teacher poll, never a coin flip or a clock read,
+   * because the same state must propose the same shortlist every time or a
+   * teacher who refreshes mid-decision watches the candidates reshuffle under
+   * them for no reason connected to anything a desk did. Omit entirely for a
+   * lesson with nothing yet worth calling anyone up for; the runtime falls
+   * back to an empty list, and the teacher's own manual picker still works.
+   */
+  pressCandidates?(state: TState, phase: CanonicalPhase): readonly { seatId: SeatId; label: string; why: string }[];
+
+  /**
    * WHILE YOU WERE AWAY — what the class just did, in the lesson's own words.
    *
    * A Chromebook sleeps, a tab closes, a pair goes to the nurse. The founder's

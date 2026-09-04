@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/shared/m2.css" />
 <link rel="stylesheet" href="/shared/hq.css" />
 <link rel="stylesheet" href="/shared/sameLineL1.css" />
+<link rel="stylesheet" href="/shared/sameLineL1Teach.css" />
 <style>
   header { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; background: var(--surface-panel); }
   header h1 { font-family: var(--font-display); letter-spacing: .08em; font-size: 16px; margin: 0; color: var(--ink-secondary); text-transform: uppercase; }
@@ -319,6 +320,25 @@
     </div>
     <p id="tcPolicy" class="tc-policy"></p>
     <div id="tcUnresolved"></div>
+  </section>
+
+  <!-- THE PRESS CONFERENCE. Calling one is a pause with a podium attached: the
+       board goes dark on one desk, every play surface locks, and the room
+       watches. The console never picks the desk — it proposes a shortlist
+       (ranked by the lesson's own state) and offers a manual picker over
+       every seat for anything the module did not think to propose. -->
+  <section id="pressconf" class="card" hidden>
+    <div class="tc-head">
+      <h2 style="margin:0;">Press conference</h2>
+      <span id="pcState" class="tc-state"></span>
+    </div>
+    <div id="pcCandidates"></div>
+    <div class="pc-picker-row" id="pcPickerRow">
+      <select id="pcSeatPicker" aria-label="Choose a desk to call to the podium"></select>
+      <button id="btnPcCallPicked" class="btn">Call to the podium</button>
+      <button id="btnEndPressConference" class="btn btn-warn">End press conference</button>
+    </div>
+    <p id="pcClockNote" class="pc-clock-note" hidden></p>
   </section>
 
   <!-- THE ROOM. Spread, shape and movement of the live dials, teacher-only.

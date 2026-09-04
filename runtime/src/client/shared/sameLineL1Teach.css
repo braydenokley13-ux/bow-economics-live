@@ -1,0 +1,79 @@
+/* THE WINDOW — teacher console aggregate panel (sameLineL1Teach.ts).
+   Cap Room register: dark, quiet, no startup gradients. Reuses the shared
+   .kpirow / .kpi / .eyebrow tokens already defined for the other consoles so
+   this panel does not introduce a second visual language. */
+
+.slt-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slt-kpirow {
+  margin-bottom: 0;
+}
+
+.slt-instruction {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-secondary);
+  background: var(--surface-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.slt-eyebrow {
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.slt-lines {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--surface-elevated);
+}
+
+.slt-note {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.slt-case {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-secondary);
+  padding: 4px 0;
+}
+
+.slt-case-amt {
+  color: var(--accent-gold);
+  font-family: var(--font-number);
+  font-weight: 700;
+}
+
+.slt-beats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.slt-beat {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 99px;
+  background: var(--surface-elevated);
+  color: var(--ink-muted);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.slt-beat-current {
+  color: #1b1406;
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  font-weight: 700;
+}

@@ -107,8 +107,29 @@ export type SessionRow = {
   gradeBand: GradeBand;
   phase: CanonicalPhase;
   paused: boolean;
+  /**
+   * Server clock, set the instant `paused` becomes true (by `pause`, `freeze`,
+   * or `pressConference`) and cleared the instant it becomes false again. The
+   * one thing this exists to answer is "how long has the room actually been
+   * paused", so that whichever control ends the pause — `unpause`, `unfreeze`,
+   * `endPressConference`, or a `restore` that reverts into a live room — can
+   * push a running FINAL CALL deadline forward by exactly that long. Persisted
+   * with the session (not held in memory) so a mid-pause process restart does
+   * not lose the anchor: the resume moment is `Date.now()` at whichever later
+   * request actually ends the pause, never the moment the process came back.
+   */
+  pausedAt: string | null;
   frozen: boolean;
   ended: boolean;
+  /**
+   * THE PODIUM. Set by the `pressConference` control action, cleared by
+   * `endPressConference`, `restore`, and `end`. Never patched to include a
+   * display name — `label` is what the module (or, absent one, the fallback
+   * "A FRONT OFFICE") calls this desk, because the projector and every other
+   * seat's lock screen are handed this record and must never be handed a
+   * fictional name that could be triangulated back to a real student.
+   */
+  spotlight: { seatId: SeatId; label: string; since: string } | null;
   /** Opaque lesson state, owned entirely by the LessonModule. */
   state: unknown;
   /** Bumped on every mutation. Doubles as the ETag for all three polling surfaces. */
@@ -180,7 +201,7 @@ export type NewSession = {
 };
 
 export type SessionPatch = Partial<
-  Pick<SessionRow, "phase" | "paused" | "frozen" | "ended" | "state" | "checkpoint" | "round" | "log">
+  Pick<SessionRow, "phase" | "paused" | "pausedAt" | "frozen" | "ended" | "state" | "checkpoint" | "round" | "log" | "spotlight">
 >;
 
 export type NewSeat = {

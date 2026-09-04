@@ -65,10 +65,22 @@
 import { CREST_COUNT } from "./draftDay.js";
 import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
+import type { GradeBand } from "../shared/gradeBand.js";
+import { extractWindowCarry, type CarriedFranchise } from "./sameLine/carry.js";
+import { CLUB, type ClubId } from "./sameLine/world.js";
 
 /* ------------------------------------------------------------- markets -- */
 
-export type MarketId = "new-york" | "memphis";
+/**
+ * The two ARCHETYPE markets are the only two demand curves this lesson has
+ * (`MARKETS`). D59 opens Week 4 on the student's OWN franchise carried from
+ * THE WINDOW, whose world has eight clubs, so a market id is now one of those
+ * eight club ids. New York and Memphis are the archetypes themselves; the other
+ * six are built by `marketForClub` — the club's own printed facts over the
+ * nearest archetype's hidden curve. See `CARRIED_MARKET_SIMPLIFICATION`.
+ */
+export type ArchetypeId = "new-york" | "memphis";
+export type MarketId = ClubId;
 export type TvKind = "none" | "local" | "national";
 
 /**
@@ -187,6 +199,8 @@ export type Market = {
   readonly premiumSpan: number;
   /** Point-of-use season stamp for `capacity` (BC-3). Printed wherever the seat count is printed. */
   readonly capacityNote: string;
+  /** Which of the two tuned curves this market's hidden constants come from. */
+  readonly archetype: ArchetypeId;
 };
 
 /**
@@ -226,6 +240,7 @@ export const MARKETS: readonly Market[] = [
     planSlope: 3.2,
     premiumSpan: 92,
     capacityNote: "listed basketball capacity 19,812 · 2025-26",
+    archetype: "new-york",
   },
   {
     id: "memphis",
@@ -253,9 +268,111 @@ export const MARKETS: readonly Market[] = [
     planSlope: 4.1,
     premiumSpan: 90,
     capacityNote: "modeled seat count · published figures range 16,667-18,119",
+    archetype: "memphis",
   },
 ];
-const MARKET_BY_ID: ReadonlyMap<MarketId, Market> = new Map(MARKETS.map((m) => [m.id, m]));
+
+/* --------------------------------------------- the carried-club markets -- */
+
+/**
+ * THE BUILDINGS. Printed facts for the six clubs that have no tuned curve of
+ * their own. Every row carries its source and date because it is printed on a
+ * student screen (BC-3); the six rows marked UNVERIFIED are placeholders the
+ * Sports Reality pass fills — nothing here has been checked against a primary
+ * source by this build, and the note says so wherever the seat count is printed.
+ * New York and Memphis keep the records in `MARKETS`.
+ */
+export type BuildingFact = {
+  readonly clubId: ClubId;
+  readonly club: string;
+  readonly building: string;
+  readonly capacity: number;
+  readonly source: string;
+  readonly asOf: string;
+  readonly verified: boolean;
+};
+const WIKI = "Wikipedia, basketball capacity, read 2026-09-04 (MEDIUM)";
+export const CLUB_BUILDINGS: readonly BuildingFact[] = [
+  { clubId: "detroit", club: "Detroit Pistons", building: "Little Caesars Arena", capacity: 20_332, source: WIKI, asOf: "2026-09-04", verified: true },
+  { clubId: "milwaukee", club: "Milwaukee Bucks", building: "Fiserv Forum", capacity: 17_385, source: WIKI, asOf: "2026-09-04", verified: true },
+  { clubId: "boston", club: "Boston Celtics", building: "TD Garden", capacity: 19_156, source: WIKI, asOf: "2026-09-04", verified: true },
+  { clubId: "brooklyn", club: "Brooklyn Nets", building: "Barclays Center", capacity: 17_732, source: WIKI, asOf: "2026-09-04", verified: true },
+  { clubId: "sacramento", club: "Sacramento Kings", building: "Golden 1 Center", capacity: 17_608, source: WIKI, asOf: "2026-09-04", verified: true },
+  { clubId: "minnesota", club: "Minnesota Timberwolves", building: "Target Center", capacity: 18_798, source: WIKI, asOf: "2026-09-04", verified: true },
+];
+
+/**
+ * REAL GATE, 2024-25, per club (Forbes estimate, calc. Oct 2025, read
+ * 2026-09-04, MEDIUM; "includes club seats", may include playoff dates). Printed
+ * at 7-8 beside the modeled night, divided by 41, so the D59 units seam —
+ * classroom dollars against real dollars — is visible rather than hidden.
+ * Never enters a computation.
+ */
+export const CLUB_GATE_2024_25: Readonly<Record<ClubId, number>> = {
+  "new-york": 193_000_000,
+  boston: 140_000_000,
+  milwaukee: 75_000_000,
+  brooklyn: 68_000_000,
+  sacramento: 61_000_000,
+  minnesota: 59_000_000,
+  detroit: 56_000_000,
+  memphis: 37_000_000,
+};
+export const CLUB_GATE_SOURCE = "Forbes estimate, Oct 2025";
+
+/** Which tuned curve stands in for each club. Big markets take New York's; the rest take Memphis's. */
+export const ARCHETYPE_OF: Readonly<Record<ClubId, ArchetypeId>> = {
+  "new-york": "new-york",
+  brooklyn: "new-york",
+  boston: "new-york",
+  memphis: "memphis",
+  sacramento: "memphis",
+  milwaukee: "memphis",
+  minnesota: "memphis",
+  detroit: "memphis",
+};
+
+/**
+ * The market a carried desk runs.
+ *
+ * PRINTED facts (club, building, capacity, its stamp) are the club's own.
+ * HIDDEN constants are the nearest archetype's, with `base0` and `weekendBase`
+ * — the two absolute crowd terms — rescaled by capacity / archetype capacity so
+ * the building still fills at some legal price (BC-2/R8 kept for every
+ * building). Everything else (bill, plan price, dials, slopes, the renewals
+ * book) is copied unchanged: the tuned properties were swept over the two
+ * archetypes only, and this build does not re-tune them. Registered in
+ * `SIMPLIFICATIONS`.
+ */
+const carriedMarketCache = new Map<ClubId, Market>();
+export function marketForClub(clubId: ClubId): Market {
+  const own = MARKETS.find((m) => m.id === clubId);
+  if (own) return own;
+  const cached = carriedMarketCache.get(clubId);
+  if (cached) return cached;
+  const fact = CLUB_BUILDINGS.find((b) => b.clubId === clubId);
+  const arch = MARKETS.find((m) => m.id === ARCHETYPE_OF[clubId])!;
+  if (!fact) return arch;
+  const ratio = fact.capacity / arch.capacity;
+  const market: Market = {
+    ...arch,
+    id: clubId,
+    club: fact.club,
+    building: fact.building,
+    plainLine: arch.plainLine,
+    capacity: fact.capacity,
+    base0: Math.round(arch.base0 * ratio),
+    weekendBase: Math.round(arch.weekendBase * ratio),
+    capacityNote: `listed basketball capacity ${fact.capacity.toLocaleString()} · ${fact.source}`,
+    archetype: ARCHETYPE_OF[clubId],
+  };
+  carriedMarketCache.set(clubId, market);
+  return market;
+}
+
+/** Every market a desk in this room could be running: the two archetypes, then the six built clubs. */
+export const ALL_MARKETS: readonly Market[] = [...MARKETS, ...CLUB_BUILDINGS.map((b) => marketForClub(b.clubId))];
+const MARKET_BY_ID: ReadonlyMap<MarketId, Market> = new Map(ALL_MARKETS.map((m) => [m.id, m]));
 
 /** What a view is allowed to know about a market: printed facts only, no curve. */
 export type MarketFacts = {
@@ -580,7 +697,15 @@ export type NightSettlement = {
   gate: number;
   inArena: number;
   total: number;
+  /** The doors: what it costs to open the building tonight. Never includes players. */
   bill: number;
+  /**
+   * The players: tonight's fifth of the season's player bill on a carried desk
+   * (D59, `obligationFor`). Zero on a stock desk and on every night settled by a
+   * build before this field existed. Kept apart from `bill` so nothing is ever
+   * counted twice — the two are added ONCE, here, into `net`.
+   */
+  payrollLine: number;
   spendPaid: number;
   bowlCost: number;
   net: number;
@@ -594,6 +719,7 @@ export function settleNight(
   spend: number,
   openBowl: boolean,
   bowlOffered: boolean,
+  payrollLine = 0,
 ): NightSettlement {
   const seatsOpen = market.capacity + (openBowl && bowlOffered ? market.bowlSeats : 0);
   const wanted = Math.max(0, Math.round(curve.base - curve.sens * price));
@@ -611,12 +737,232 @@ export function settleNight(
     inArena,
     total,
     bill: market.bill,
+    payrollLine,
     spendPaid: spend,
     bowlCost,
-    net: total - market.bill - spend - bowlCost,
+    net: total - market.bill - payrollLine - spend - bowlCost,
     soldOut: turnout >= seatsOpen,
   };
 }
+
+/* ------------------------------------------------------ THE BILL (D59) -- */
+
+/**
+ * THE BILL MODEL — how a real season's player bill becomes a line on a
+ * classroom night. One block, so every number a student sees on the bill can
+ * be traced to one of these constants and to the carried payroll.
+ *
+ * THE BILL IS A SEASON, NEVER A NIGHT (W4_BILL_RESEARCH.md §6-7). Stated over
+ * ONE horizon, the 41-date home season, in this order:
+ *
+ *   tax salary (real, annual: roster salary + dead money; cap holds EXCLUDED —
+ *       a hold is paid to nobody, so charging cash for it overstates Detroit
+ *       by up to $52M. The BC-7 cap hit is shown as cap POSITION only.)
+ *     − national TV money (real, annual, the same check for every club)
+ *     = the gap (real, annual)
+ *     + the luxury tax bill (real, cash, charged on tax salary above the line)
+ *     = what local revenue must cover (real, annual)
+ *     ÷ 41 home dates = the local share per real night
+ *     × MODEL_SCALE = the players line on one classroom night
+ *     × 5 nights = the season bill on this desk
+ *
+ * Nothing here is a cap charge counted as cash. Nothing demands one gate pay a
+ * year: 41 dates split it. Nothing omits the other streams to make a desk poor:
+ * the TV check comes off the top, and the sentence on screen says the rest
+ * comes from tickets, food, sponsors AND local TV — tonight's gate is one of
+ * those, on one of 41 nights. Revenue sharing is real and lifts a small
+ * market's league money above this figure by a confidential amount; it is
+ * named on the teacher surface and never given a percentage.
+ *
+ * MODEL_SCALE — 0.36 — is chosen so that a $200M-tax-salary club's players
+ * line is about half of a good New York night's modeled take at the plan
+ * price. Worked at the shipped constants: Night 2 (Saturday, Draw 51, local TV)
+ * at the $24 plan price with renewals at 50 sells the Garden out —
+ * 19,800 × ($24 + $18 in-arena) = $831,600. Half of that is $415,800. A $200M
+ * tax salary less $153M TV money is $47M, no tax; over 41 dates that is
+ * $1,146,341 a night; 0.36 of it is $412,683. So a club at the tax line
+ * carries a players line about the size of one good night's second half, and
+ * a club at the second apron carries more than the doors ($520,000) — the
+ * cost-coverage problem the founder named, not a change in the price that
+ * maximises the night. Asserted by `fullHouseCarry.test.ts`.
+ */
+export const BILL_MODEL = {
+  /**
+   * National media money per club, 2026-27, real dollars. National TV ONLY —
+   * other central money and revenue sharing are kept out (unverified per club
+   * / confidential). Projected from $143M in 2025-26 at the deal's ~7% average
+   * step (Sportico 2025-11-12, read 2026-09-04). MEDIUM, ±$10M.
+   */
+  LEAGUE_MONEY_PER_CLUB: 153_000_000,
+  /** Real dollars of local share per night -> classroom dollars. See the block comment. */
+  MODEL_SCALE: 0.36,
+  /** A real NBA home season. The horizon every cost and receipt on the bill is stated over. */
+  HOME_DATES: 41,
+  /** The classroom nights that stand in for the 41. */
+  NIGHTS: NIGHT_COUNT,
+  asOf: "2026-09-04",
+  source:
+    "LEAGUE_MONEY_PER_CLUB: docs/gauntlet/module-2/W4_BILL_RESEARCH.md §1/§7 (Sportico 2025-11-12, read 2026-09-04). HOME_DATES: NBA regular season, 41 home games. MODEL_SCALE: derived from this module's own Night 2 New York settlement at the plan price (see comment).",
+  confidence: "LEAGUE_MONEY_PER_CLUB MEDIUM (±$10M, projected step); HOME_DATES HIGH; MODEL_SCALE a modelling choice, not a fact",
+} as const;
+
+/**
+ * LUXURY TAX, 2026-27 (2023 CBA). Charged on tax salary above the tax line,
+ * in bands $6,064,000 wide; a REPEATER (in the tax three of the prior four
+ * seasons) pays the higher scale. cbaguide.com/thresholds/luxurytax and Hoops
+ * Rumors glossary 2026-08, read 2026-09-04 — rates agree (HIGH, unchecked
+ * against the CBA text). Hoops Rumors' repeater "maximum penalty" column is
+ * arithmetically wrong and is NOT used here.
+ */
+export const LUXURY_TAX = {
+  bandWidth: 6_064_000,
+  standard: [1.0, 1.25, 3.5, 4.75] as const,
+  repeater: [3.0, 3.25, 5.5, 6.75] as const,
+  /** Each band past the fourth adds this to the previous band's rate. */
+  furtherStep: 0.5,
+  /** Clubs that were taxpayers in 2023-24, 2024-25 and 2025-26 (Hoops Rumors 2026-04, MEDIUM). */
+  repeaters: ["boston", "milwaukee"] as readonly ClubId[],
+  asOf: "2026-09-04",
+  source: "W4_BILL_RESEARCH.md §3",
+} as const;
+
+/** The tax bill on a tax salary, at the standard or repeater scale. Zero at or under the line. */
+export function luxuryTaxFor(taxSalary: number, taxLine: number, repeater: boolean): number {
+  let over = Math.max(0, taxSalary - taxLine);
+  if (over <= 0) return 0;
+  const scale = repeater ? LUXURY_TAX.repeater : LUXURY_TAX.standard;
+  let bill = 0;
+  let band = 0;
+  while (over > 0) {
+    const rate = band < scale.length ? scale[band]! : scale[scale.length - 1]! + LUXURY_TAX.furtherStep * (band - scale.length + 1);
+    const slice = Math.min(over, LUXURY_TAX.bandWidth);
+    bill += slice * rate;
+    over -= slice;
+    band += 1;
+  }
+  return Math.round(bill);
+}
+
+export type ObligationSigning = {
+  readonly name: string;
+  readonly role: string;
+  readonly annual: number;
+  readonly annualText: string;
+  readonly years: number;
+  readonly tool: string;
+  /** "2028-29" style season label from THE WINDOW. Carries a dash: 7-8 surfaces only. */
+  readonly coveredThrough: string;
+};
+
+/**
+ * What a carried desk owes, computed once at seating from the carry record and
+ * frozen on the desk. Real figures are real; `perNightModel` and
+ * `seasonBillModel` are the only two classroom-scale numbers.
+ */
+export type Obligation = {
+  readonly label: string;
+  readonly club: string;
+  /** TAX SALARY — every dollar below is computed from this. */
+  readonly payroll: number;
+  readonly payrollText: string;
+  /** The BC-7 cap hit (holds included). Cap POSITION only; never a cash input. */
+  readonly capHit: number;
+  readonly capHitText: string;
+  readonly holds: number;
+  readonly holdsVerified: boolean;
+  readonly signings: readonly ObligationSigning[];
+  readonly band: string;
+  /** How far past the tax line the tax salary sits, as a magnitude (0 when under it). */
+  readonly overTaxBy: number;
+  readonly taxLine: number;
+  readonly repeater: boolean;
+  /** The luxury tax bill, real cash, on this season's tax salary. */
+  readonly taxBill: number;
+  readonly leagueMoney: number;
+  /** max(0, tax salary − TV money): the part of the players' pay the TV check does not reach. */
+  readonly gapReal: number;
+  /** gap + tax: what local revenue must cover this season. (The task's `gateShareReal`, with the tax in it.) */
+  readonly gateShareReal: number;
+  readonly perNightReal: number;
+  readonly perNightModel: number;
+  readonly seasonBillModel: number;
+  /** Real 2024-25 gate (Forbes estimate) and its 41st, for the 7-8 units seam. */
+  readonly realGate: number;
+  readonly realGatePerDate: number;
+  readonly realGateSource: string;
+};
+
+/** "$203.6M" — the shape THE WINDOW printed the same figure in. */
+export const millionsText = (n: number): string => `$${(n / 1_000_000).toFixed(1)}M`;
+/** "$204 million" — whole millions, no decimal point, for the 5-6 sentence. */
+export const wholeMillionsText = (n: number): string => `$${Math.round(n / 1_000_000).toLocaleString()} million`;
+
+export function obligationFor(f: CarriedRecord, taxLine: number): Obligation {
+  const payroll = Math.round(f.taxSalary);
+  const leagueMoney = BILL_MODEL.LEAGUE_MONEY_PER_CLUB;
+  const repeater = LUXURY_TAX.repeaters.includes(f.clubId);
+  const taxBill = luxuryTaxFor(payroll, taxLine, repeater);
+  const gapReal = Math.max(0, payroll - leagueMoney);
+  const gateShareReal = gapReal + taxBill;
+  const perNightReal = Math.round(gateShareReal / BILL_MODEL.HOME_DATES);
+  const perNightModel = Math.round(perNightReal * BILL_MODEL.MODEL_SCALE);
+  const realGate = CLUB_GATE_2024_25[f.clubId];
+  return {
+    label: f.label,
+    club: f.club,
+    payroll,
+    payrollText: millionsText(payroll),
+    capHit: Math.round(f.committed),
+    capHitText: millionsText(f.committed),
+    holds: f.holds,
+    holdsVerified: f.holdsVerified,
+    signings: f.signings,
+    band: f.band,
+    overTaxBy: Math.max(0, payroll - taxLine),
+    taxLine,
+    repeater,
+    taxBill,
+    leagueMoney,
+    gapReal,
+    gateShareReal,
+    perNightReal,
+    perNightModel,
+    seasonBillModel: perNightModel * BILL_MODEL.NIGHTS,
+    realGate,
+    realGatePerDate: Math.round(realGate / BILL_MODEL.HOME_DATES),
+    realGateSource: CLUB_GATE_SOURCE,
+  };
+}
+
+/** The carry record as this room stores it — every field copied by name, nothing raw. */
+function carriedRecordOf(f: CarriedFranchise): CarriedRecord {
+  return {
+    label: f.label,
+    clubId: f.clubId,
+    club: f.club,
+    city: f.city,
+    twin: f.twin,
+    committed: f.committed,
+    deadMoney: f.deadMoney,
+    holds: f.holds,
+    holdsVerified: f.holdsVerified,
+    taxSalary: f.taxSalary,
+    band: f.band,
+    openJobs: [...f.openJobs],
+    signings: f.signings.map((sg) => ({
+      name: sg.name,
+      role: sg.role,
+      annual: sg.annual,
+      annualText: millionsText(sg.annual),
+      years: sg.years,
+      tool: sg.tool,
+      coveredThrough: sg.coveredThrough,
+    })),
+    overCapDeclared: f.overCapDeclared,
+    forgone: f.forgone.map((r) => ({ day: r.day, signed: r.signed, atPrice: r.atPrice, lost: [...r.lost] })),
+  };
+}
+
 
 /**
  * What a season-plan holder thinks tonight's seat is worth: the plan price on
@@ -765,6 +1111,19 @@ export type Desk = {
   marketId: MarketId;
   crestIndex: number;
   joinedAtNight: number;
+  /**
+   * D59: the franchise this desk carried in from THE WINDOW — "Memphis A",
+   * "Memphis B" — or absent on a stock desk and on any snapshot written before
+   * the carry existed. Two desks may hold one club, so the LABEL is the desk's
+   * name everywhere it is named, never the club alone.
+   */
+  label?: string;
+  /** True when this desk was dealt a stock building (no carry, or the carry ran out / was dropped). */
+  stock?: boolean;
+  /** THE BILL on a carried desk; null on a stock desk. See `obligationFor`. */
+  obligation?: Obligation | null;
+  /** Set once the fifth night settles: season cash at or above zero. Read by Week 5. */
+  clearedTheBill?: boolean;
   cash: number;
   renewals: number;
   price: number;
@@ -780,9 +1139,47 @@ export type Desk = {
   nights: SettledNight[];
 };
 
+/** One carried franchise as this room keeps it: the parsed record, never the raw seed. */
+export type CarriedRecord = {
+  readonly label: string;
+  readonly clubId: ClubId;
+  readonly club: string;
+  readonly city: string;
+  readonly twin: 0 | 1;
+  /** BC-7 cap hit, holds included. Cap POSITION only. */
+  readonly committed: number;
+  readonly deadMoney: number;
+  readonly holds: number;
+  readonly holdsVerified: boolean;
+  /** Roster salary + dead money. Every dollar bill is computed from this. */
+  readonly taxSalary: number;
+  readonly band: string;
+  readonly openJobs: readonly string[];
+  readonly signings: readonly ObligationSigning[];
+  readonly overCapDeclared: boolean;
+  /** Frozen opportunity-cost evidence from THE WINDOW. Shown to a human, never read by a reducer. */
+  readonly forgone: readonly { day: number; signed: string; atPrice: number; lost: readonly string[] }[];
+};
+
+export type CarryState = {
+  readonly ok: boolean;
+  readonly reason?: string;
+  readonly warnings: readonly string[];
+  readonly franchises: readonly CarriedRecord[];
+  /** Label -> the seat holding it. Seat-private: never reaches the board. */
+  readonly claims: Record<string, SeatId>;
+  readonly lines: { readonly floor: number; readonly cap: number; readonly tax: number; readonly apron1: number; readonly apron2: number } | null;
+  readonly payrollDefinition: string | null;
+  readonly sourceSessionId: string | null;
+};
+
 export type FullHouseState = {
   desks: Record<SeatId, Desk>;
   deskOrder: SeatId[];
+  /** Which class this room is for. Absent on a snapshot written before the band existed: read as 5-6. */
+  gradeBand?: GradeBand;
+  /** D59: what walked in from THE WINDOW. Absent on an unseeded room and on older snapshots. */
+  carry?: CarryState;
   /** 0-based index of the night currently open. NIGHT_COUNT once all five have settled. */
   nightIndex: number;
   twoPeaksReleased: boolean;
@@ -1090,7 +1487,7 @@ function applyNight(
   flags: { auto: boolean; stock: boolean },
 ): Desk {
   const curve = curveFor(market, card, desk.renewals, carryFansFor(desk, market));
-  const settlement = settleNight(market, curve, price, spend, openBowl, card.bowlOffer);
+  const settlement = settleNight(market, curve, price, spend, openBowl, card.bowlOffer, desk.obligation?.perNightModel ?? 0);
   const move = renewalDelta(market, card, price, spend);
   const renewalsAfter = clamp(desk.renewals + move, 0, 100);
   const cashAfter = desk.cash + settlement.net;
@@ -1131,11 +1528,12 @@ export const spendCapFor = (desk: Desk, market: Market): number => (desk.cash < 
  * price with no event spend. Stated on screen, deterministic, and
  * attributable — never a silent zero.
  */
-function seatDesk(state: FullHouseState, seatId: SeatId): FullHouseState {
+function seatDesk(state: FullHouseState, seatId: SeatId, franchise: CarriedRecord | null = null): FullHouseState {
   if (state.desks[seatId]) return state;
   const deskNumber = state.deskOrder.length + 1;
-  const marketId = marketForDesk(deskNumber);
+  const marketId: MarketId = franchise ? franchise.clubId : marketForDesk(deskNumber);
   const market = MARKET_BY_ID.get(marketId)!;
+  const carried = Boolean(franchise);
   let desk: Desk = {
     deskNumber,
     marketId,
@@ -1149,12 +1547,60 @@ function seatDesk(state: FullHouseState, seatId: SeatId): FullHouseState {
     locked: false,
     gateCall: null,
     nights: [],
+    // A room with a carry names every desk honestly — carried by label, or
+    // STOCK. A room without one keeps the shape it always had.
+    ...(state.carry
+      ? franchise
+        ? { label: franchise.label, stock: false, obligation: obligationFor(franchise, state.carry.lines?.tax ?? 0) }
+        : { stock: true, obligation: null }
+      : {}),
   };
   for (let i = 0; i < state.nightIndex; i += 1) {
     const card = CARDS[i]!;
     desk = applyNight(desk, market, card, market.planPrice, 0, false, { auto: false, stock: true });
   }
-  return { ...state, desks: { ...state.desks, [seatId]: desk }, deskOrder: [...state.deskOrder, seatId] };
+  const claims = carried && state.carry ? { ...state.carry.claims, [franchise!.label]: seatId } : state.carry?.claims;
+  return {
+    ...state,
+    desks: { ...state.desks, [seatId]: desk },
+    deskOrder: [...state.deskOrder, seatId],
+    ...(state.carry && claims ? { carry: { ...state.carry, claims } } : {}),
+  };
+}
+
+/** The carried franchises nobody has picked up yet, in the carry's own stable order. */
+export function unclaimedFranchises(state: FullHouseState): readonly CarriedRecord[] {
+  const carry = state.carry;
+  if (!carry || !carry.ok) return [];
+  return carry.franchises.filter((f) => carry.claims[f.label] === undefined);
+}
+
+/**
+ * DEAL ME ONE. The next unclaimed carried franchise in list order — the same
+ * deterministic deal THE WINDOW used — and a stock building only when the carry
+ * has none left (or never had any). The desk says which it got.
+ */
+function dealDesk(state: FullHouseState, seatId: SeatId): FullHouseState {
+  if (state.desks[seatId]) return state;
+  const next = unclaimedFranchises(state)[0] ?? null;
+  return seatDesk(state, seatId, next);
+}
+
+/** Pick up one carried franchise by its label. Idempotent for the seat that already holds it. */
+function claimDesk(state: FullHouseState, seatId: SeatId, label: unknown): ReduceResult<FullHouseState> {
+  if (typeof label !== "string" || !label) return { ok: false, reason: "say which franchise you are picking up, by its label" };
+  const carry = state.carry;
+  if (!carry || !carry.ok) return { ok: false, reason: "this room has no carried franchises — press DEAL ME ONE" };
+  const existing = state.desks[seatId];
+  if (existing) {
+    if (existing.label === label) return { ok: true, state };
+    return { ok: false, reason: `you already have ${existing.label ?? `Desk ${existing.deskNumber}`}` };
+  }
+  const franchise = carry.franchises.find((f) => f.label === label);
+  if (!franchise) return { ok: false, reason: `there is no carried franchise called "${label}"` };
+  const holder = carry.claims[label];
+  if (holder !== undefined && holder !== seatId) return { ok: false, reason: `${label} is already taken by another desk` };
+  return { ok: true, state: seatDesk(state, seatId, franchise) };
 }
 
 /** Pairs recorded as observers, tolerant of a snapshot written before the field existed. */
@@ -1278,6 +1724,9 @@ function closeNight(state: FullHouseState, honorPendingDials = false): FullHouse
     const spend = auto && !usePending ? 0 : Math.min(desk.spend, spendCapFor(desk, market));
     const openBowl = auto && !usePending ? false : desk.openBowl;
     desks[seatId] = applyNight(desk, market, card, price, spend, openBowl, { auto, stock: false });
+    // Week 5 reads this. Set on every desk at the last bell — a stock desk's
+    // answer is the same question with a smaller bill.
+    if (state.nightIndex + 1 >= NIGHT_COUNT) desks[seatId] = { ...desks[seatId]!, clearedTheBill: desks[seatId]!.cash >= 0 };
   }
   return { ...state, desks, nightIndex: state.nightIndex + 1 };
 }
@@ -1435,7 +1884,8 @@ export type FullHouseAggregate = {
   autoNightCount: number;
 };
 
-export const deskHandle = (desk: Desk): string => `Desk ${desk.deskNumber} · ${marketOf(desk).club}`;
+/** "Desk 3 · Memphis A" on a carried desk; "Desk 3 · Memphis Grizzlies" on a stock one. The label is the desk's name (D59). */
+export const deskHandle = (desk: Desk): string => `Desk ${desk.deskNumber} · ${desk.label ?? marketOf(desk).club}`;
 
 /* --------------------------------------------------------------- desks -- */
 
@@ -1682,6 +2132,12 @@ export function orderRepeatRows(rows: readonly RepeatRow[]): RepeatRow[] {
   return out;
 }
 
+/** The two archetypes, then any carried-club market a desk in this room is actually running. Unseeded rooms: exactly `MARKETS`. */
+export function marketsInRoom(desks: readonly Desk[]): readonly Market[] {
+  const extra = ALL_MARKETS.filter((m) => !MARKETS.includes(m) && desks.some((d) => d.marketId === m.id));
+  return extra.length === 0 ? MARKETS : [...MARKETS, ...extra];
+}
+
 export function computeAggregate(state: FullHouseState): FullHouseAggregate {
   const desks = Object.values(state.desks);
   const curves: CurvePoint[] = [];
@@ -1716,7 +2172,7 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
   // Two Peaks is drawn on the reveal card, against a REAL desk's locked-at-time
   // curve in that market (D15) — never a fresh recomputation from today's state.
   const twoPeaks: TwoPeaks[] = [];
-  for (const market of MARKETS) {
+  for (const market of marketsInRoom(desks)) {
     const desk = desks.find((d) => d.marketId === market.id && d.nights.some((n) => n.cardId === TWO_PEAKS_CARD_ID));
     const night = desk?.nights.find((n) => n.cardId === TWO_PEAKS_CARD_ID);
     if (!night) continue;
@@ -1752,7 +2208,7 @@ export function computeAggregate(state: FullHouseState): FullHouseAggregate {
   }
   const orderedRepeatCard = orderRepeatRows(repeatCard);
 
-  const books: MarketBooks[] = MARKETS.map((market) => {
+  const books: MarketBooks[] = marketsInRoom(desks).map((market) => {
     const own = desks.filter((d) => d.marketId === market.id);
     const fills = own.flatMap((d) => d.nights.map((n) => n.settlement.fillPct));
     return {
@@ -2056,6 +2512,10 @@ export function renewalMarginalCost(market: Market): { cheapest: number; dearest
  */
 function replaysFor(desk: Desk): SeasonReplay[] {
   const market = marketOf(desk);
+  // D59: a carried desk pays its players line on every night of every replay.
+  // A fixed cost shifts every row by the same amount and changes no gap between
+  // rows — the best price is the best price whatever the payroll.
+  const seasonBill = desk.obligation?.seasonBillModel ?? 0;
   const flatPlan = replayPlan(market, { prices: CARDS.map(() => market.planPrice), spends: CARDS.map(() => 0) });
   const strongest = bestFoundSeason(market);
   const spentOn = CARDS.filter((_c, i) => (strongest.plan.spends[i] ?? 0) > 0).map((c) => c.label.replace("Night ", "N"));
@@ -2099,19 +2559,19 @@ function replaysFor(desk: Desk): SeasonReplay[] {
     },
     {
       label: `Same price every night ($${market.planPrice})`,
-      cash: flatPlan.cash,
+      cash: flatPlan.cash - seasonBill,
       renewals: flatPlan.renewals,
       note: flatNote,
     },
     {
       label: "The best renewals book we could find",
-      cash: renewalsCorner.cash,
+      cash: renewalsCorner.cash - seasonBill,
       renewals: renewalsCorner.renewals,
       note: renewalsNote,
     },
     {
       label: "The most cash we could find",
-      cash: strongest.cash,
+      cash: strongest.cash - seasonBill,
       renewals: strongest.renewals,
       note: strongNote,
     },
@@ -2137,6 +2597,9 @@ const PHASES: readonly CanonicalPhase[] = [
 export const HOOK_COPY =
   "You and your partner do not run the roster today. You run the building. There is a game tonight, the doors open in an hour, and nobody has told you what a seat is worth. Five nights. Two dials. No forecast — just tonight's card and whatever you learned the last time you guessed.";
 
+/** Said on a stock desk in a room that carried franchises in (D59). */
+export const STOCK_DESK_NOTE =
+  "This is a stock building, not one carried in from THE WINDOW: every carried franchise was already picked up, or this desk's record could not be read. Your teacher's console says which. You pay the doors each night and no players line.";
 export const OBJECTIVE_COPY =
   "You are keeping two books, and they do not add up to one number. CASH is the money the building made after the bill. RENEWALS is the share of season-ticket holders who come back next year. A price that is great for one is usually worse for the other — that is the job.";
 
@@ -2247,6 +2710,7 @@ export const FULL_HOUSE_UI_COPY = {
     tickets: "TICKETS",
     inArena: "IN-ARENA",
     bill: "BUILDING BILL",
+    players: "PLAYERS",
     event: "EVENT MONEY",
     bowl: "MORE SEATS",
     cash: "CASH",
@@ -2392,8 +2856,35 @@ export const HORIZON_LINE = "Five nights here stand in for a whole 41-date home 
 export const MODELED_DOLLARS_LINE =
   "The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.";
 
+/**
+ * D59 THE BILL: the season-long obligation, said BEFORE the first price, in the
+ * same breath as the horizon and the money scale — and contradicting neither.
+ */
+export const BILL_HORIZON_LINE =
+  "Your players are paid for the whole season, not for one night. Five nights here stand in for all 41 home dates, so each night here carries one fifth of the season's player bill.";
+export const BILL_SCALE_LINE =
+  "The player bill is shrunk by the same rule as everything else on this screen: real dollars cut to classroom size, so tonight's ticket money and tonight's bill are on one scale.";
+/** Tax salary, in words a fifth-grader can act on. No date, no dash. */
+export const TAX_SALARY_DEFINITION_56 = "Payroll here is what your players are paid this season, plus money still owed to players who have already left.";
+export const TAX_SALARY_DEFINITION_78 =
+  "Tax salary: roster salary plus dead money, the figure the luxury tax is charged on. Cap holds are left out — a hold is charged against the cap for a player the club has not decided about, and is paid to nobody.";
+/**
+ * The approved 5-6 register (W4_BILL_RESEARCH.md §6), verbatim with the payroll
+ * filled in. "About $150 million" is the doc's own rounding of the $153M constant.
+ */
+export const billLine56 = (payrollWholeMillions: string): string =>
+  `Every team gets the same TV check from the league — about $150 million a year. Your players cost about ${payrollWholeMillions}. The TV check pays most of that. The rest of their pay, the staff, the lights and any tax come from your own city: tickets, food, sponsors, local TV. Tonight is one of 41 home nights carrying that.`;
+/** The approved 7-8 addition (W4_BILL_RESEARCH.md §6), verbatim, as the translation table's caption. */
+export const BILL_CAPTION_78 =
+  "Players as a group are promised about half of all NBA money, so payroll is roughly half of revenue by design. Your TV check covers about Memphis ~95%, Boston ~75%, New York ~70% of payroll. Tax is charged on the end-of-season number — $1 per $1 in the first band, $3 if you were in the tax three of the last four years — and half of it goes to the teams that stayed under.";
+export const HOLDS_CAVEAT_78 = "Cap holds not separately verified for this club: the tax salary shown equals the cap hit, which may overstate it.";
+export const BILL_SEASON_LINE_78 = (payrollText: string, leagueText: string): string =>
+  `National TV ≈ ${leagueText} against payroll ${payrollText}; the gap, plus tax, plus running the building, comes from local revenue, of which tonight's gate is one of 41.`;
+
 /** BC-3: every real figure in product copy carries its date. */
 export const SOURCE_NOTES: readonly string[] = [
+  "THE BILL (D59): national media money per club is projected at about $153M for 2026-27 from $143M in 2025-26 at the deal's roughly 7% average step (Sportico 2025-11-12, read 2026-09-04; MEDIUM, ±$10M). Real 2024-25 gate per club is a Forbes estimate, Oct 2025 (MEDIUM). Luxury-tax bands and rates for 2026-27 from cbaguide.com and the Hoops Rumors glossary, read 2026-09-04 (HIGH on rates). Tax salary excludes cap holds. Details: docs/gauntlet/module-2/W4_BILL_RESEARCH.md.",
+  "Carried-club buildings: Little Caesars Arena 20,332; Fiserv Forum 17,385; TD Garden 19,156; Barclays Center 17,732; Golden 1 Center 17,608; Target Center 18,798 (Wikipedia basketball capacities, read 2026-09-04; MEDIUM). Demand curves for those six buildings are the New York or Memphis curve rescaled to the seat count, not the club's own measured demand.",
   "New York Knicks · Madison Square Garden and Memphis Grizzlies · FedExForum are real clubs and real buildings; the Grizzlies' local media deal ran under $10M a year against the Lakers' about $149M in one leaked league year, 2016-17 (reported by ESPN, September 2017; verified as of 2026-08-31).",
   "Night 4 is modeled on a real demand shock: Indiana Fever home attendance went from 4,066 per game in 2023 to 17,036 per game in 2024, the best in the WNBA, and six opposing clubs moved Fever games into bigger buildings (2024 season; verified as of 2026-08-31).",
   "The San Francisco Giants pioneered dynamic ticket pricing in 2009 and ran it across a full season in 2010; variable and dynamic pricing are standard across the NBA today (verified as of 2026-08-31).",
@@ -2478,6 +2969,17 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     what: "The renewals forgiveness line is a modelled construct (`renewalReferencePrice`) that moves with the card and is never printed.",
     why: "The rules state its shape in words — charge well under the plan price and the plan looks like a waste; charge above what tonight is worth to them and they quit; a bigger Draw raises the line and a national-TV listing pulls it back down — but printing the number would hand the pair the answer to the night before they set the dial.",
     risk: "A pair that generalises \"a high price loses renewals\" from Nights 1-3 will be wrong on Night 4, where the line sits above $100 and renewals GAIN at the season-high price in both markets. Let that happen, then name why: what moved was not their price, it was what the night was worth to the people holding the plan.",
+  },
+  // D59 Week 4: the carried-club markets and THE BILL.
+  {
+    what: "Only two demand curves exist (New York, Memphis). A carried desk on any other club runs its own building — real name, real seat count — over the nearest archetype's hidden curve, with the two absolute crowd terms rescaled to the seat count. Bill, plan price and every slope are copied unchanged.",
+    why: "Every demand constant was tuned and swept on two markets. Adding six untuned curves would put six unverified economies in front of a class; borrowing the nearest tuned one keeps every property the harness checks, and the building still fills at some legal price.",
+    risk: "A student may read the Brooklyn desk's crowd as Brooklyn's real demand. It is not — it is the Knicks' modeled demand in a 17,732-seat building. The board's honesty line covers this; say it again when two carried clubs are compared.",
+  },
+  {
+    what: "THE BILL: the season's player cost is (tax salary − one national TV check + luxury tax) ÷ 41, scaled to classroom dollars, and charged as one fifth per night on top of the doors. Real gate, sponsors, local TV and revenue sharing are named, not modeled.",
+    why: "The founder's test is that a student traces tonight's obligation to a roster decision they made themselves, and can tell revenue from clearing the bill. Stating the bill over the same 41-date horizon as the receipts, taking the TV check off the top first, and charging tax on tax salary (not the cap hit with holds) are what keep that honest.",
+    risk: "Three false lessons wait here. (1) 'Payroll is paid from tickets': it is not — money is fungible and the gate is one local stream of four; the screen says so. (2) 'The cap hit is cash': cap holds are charged against the cap and paid to nobody, which is why every dollar here is computed from tax salary and the cap hit is shown only as a position. (3) 'A bigger payroll means a higher ticket price': a fixed cost moves every replay row by the same amount and never moves the best price — it changes whether the season clears the bill. Revenue sharing lifts a small market's league money above the TV figure by a confidential amount: name it, never give it a percentage.",
   },
 ];
 
@@ -2615,6 +3117,9 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
     inArena: night.settlement.inArena,
     total: night.settlement.total,
     bill: night.settlement.bill,
+    // D59: the players line, kept apart from the doors. Zero on a stock desk.
+    payrollLine: night.settlement.payrollLine ?? 0,
+    billTotal: night.settlement.bill + (night.settlement.payrollLine ?? 0),
     spendPaid: night.settlement.spendPaid,
     bowlCost: night.settlement.bowlCost,
     net: night.settlement.net,
@@ -2707,7 +3212,94 @@ function deskIdentity(desk: Desk) {
     crestIndex: desk.crestIndex,
     market: marketFacts(market),
     joinedAtNight: desk.joinedAtNight,
+    // D59: the carried label is the desk's name; a stock desk says so.
+    label: desk.label ?? null,
+    carried: Boolean(desk.obligation),
+    stock: desk.stock ?? false,
   };
+}
+
+const bandOfRoom = (state: FullHouseState): GradeBand => state.gradeBand ?? "5-6";
+
+/**
+ * THE BILL as a desk sees it. 5-6: one number, the names, one sentence — no
+ * percent sign, no dash before a digit, no date. 7-8: the whole translation,
+ * real term per signing, real gate beside the modeled night, the holds caveat.
+ */
+export function billView(desk: Desk, band: GradeBand, payrollDefinition: string | null) {
+  const o = desk.obligation;
+  if (!o) return null;
+  const market = marketOf(desk);
+  const tonight = { doors: market.bill, players: o.perNightModel, total: market.bill + o.perNightModel };
+  if (band === "5-6") {
+    return {
+      band,
+      label: o.label,
+      club: o.club,
+      payrollText: wholeMillionsText(o.payroll),
+      definition: TAX_SALARY_DEFINITION_56,
+      signings: o.signings.map((sg) => ({ name: sg.name, years: sg.years, yearsText: `${sg.years} ${sg.years === 1 ? "year" : "years"}` })),
+      line: billLine56(wholeMillionsText(o.payroll)),
+      leagueMoneyText: "about $150 million",
+      seasonBill: o.seasonBillModel,
+      seasonBillText: `$${o.seasonBillModel.toLocaleString()}`,
+      tonight,
+      tonightText: `$${tonight.players.toLocaleString()}`,
+      horizonLine: BILL_HORIZON_LINE,
+      scaleLine: BILL_SCALE_LINE,
+    };
+  }
+  return {
+    band,
+    label: o.label,
+    club: o.club,
+    payroll: o.payroll,
+    payrollText: o.payrollText,
+    definition: TAX_SALARY_DEFINITION_78,
+    capHit: o.capHit,
+    capHitText: o.capHitText,
+    capHitDefinition: payrollDefinition,
+    holds: o.holds,
+    holdsCaveat: o.holdsVerified ? null : HOLDS_CAVEAT_78,
+    bandName: o.band,
+    overTaxBy: o.overTaxBy,
+    taxLine: o.taxLine,
+    repeater: o.repeater,
+    taxBill: o.taxBill,
+    signings: o.signings.map((sg) => ({ name: sg.name, role: sg.role, annualText: sg.annualText, years: sg.years, coveredThrough: sg.coveredThrough, tool: sg.tool })),
+    seasonLine: BILL_SEASON_LINE_78(o.payrollText, millionsText(o.leagueMoney)),
+    caption: BILL_CAPTION_78,
+    table: [
+      { step: "Tax salary (players this season)", real: o.payroll },
+      { step: "National TV money, off the top", real: o.leagueMoney },
+      { step: "The gap the TV check does not reach", real: o.gapReal },
+      { step: o.repeater ? "Luxury tax, repeater scale" : "Luxury tax", real: o.taxBill },
+      { step: "What local revenue must cover", real: o.gateShareReal },
+      { step: "÷ 41 home dates", real: o.perNightReal },
+      { step: `× ${BILL_MODEL.MODEL_SCALE} classroom scale`, model: o.perNightModel },
+      { step: "× 5 nights here", model: o.seasonBillModel },
+    ],
+    realGate: o.realGate,
+    realGatePerDate: o.realGatePerDate,
+    realGateSource: o.realGateSource,
+    seasonBill: o.seasonBillModel,
+    tonight,
+    horizonLine: BILL_HORIZON_LINE,
+    scaleLine: BILL_SCALE_LINE,
+  };
+}
+
+/** The unseated picker: every carried franchise nobody holds yet, by label. */
+function availableFranchises(state: FullHouseState) {
+  return unclaimedFranchises(state).map((f) => ({
+    label: f.label,
+    club: marketForClub(f.clubId).club,
+    city: f.city,
+    band: f.band,
+    committed: f.committed,
+    committedText: millionsText(f.committed),
+    signings: f.signings.map((sg) => sg.name),
+  }));
 }
 
 function booksFor(desk: Desk) {
@@ -2901,13 +3493,108 @@ export function boardRailFor(state: FullHouseState, agg: FullHouseAggregate): Bo
 
 /* --------------------------------------------------------------- module -- */
 
+/* ----------------------------------------------- D59: the carry surfaces -- */
+
+function carryTeacherView(state: FullHouseState) {
+  const carry = state.carry;
+  if (!carry) return null;
+  const desks = state.deskOrder.map((id) => state.desks[id]).filter((d): d is Desk => d !== undefined);
+  const claimed = carry.franchises
+    .filter((f) => carry.claims[f.label] !== undefined)
+    .map((f) => {
+      const desk = desks.find((d) => d.label === f.label);
+      return { label: f.label, handle: desk ? deskHandle(desk) : null, seatId: carry.claims[f.label]!, payrollText: millionsText(f.taxSalary) };
+    });
+  const unclaimed = carry.franchises.filter((f) => carry.claims[f.label] === undefined).map((f) => f.label);
+  const stock = desks.filter((d) => d.stock).map((d) => deskHandle(d));
+  return {
+    ok: carry.ok,
+    reason: carry.reason ?? null,
+    warnings: carry.warnings,
+    sourceSessionId: carry.sourceSessionId,
+    claimed,
+    unclaimed,
+    stock,
+    stockReason:
+      !carry.ok
+        ? `Every desk is stock: ${carry.reason ?? "the carry was refused"}.`
+        : stock.length === 0
+          ? null
+          : unclaimed.length === 0
+            ? "Every carried franchise was picked up; later desks were dealt stock buildings."
+            : "A stock desk in a room that still has unclaimed franchises means a desk was dealt after a drop — see the warnings.",
+    payrollDefinition: carry.payrollDefinition,
+    lines: carry.lines,
+    leagueMoney: BILL_MODEL.LEAGUE_MONEY_PER_CLUB,
+    revenueSharingNote:
+      "Revenue sharing is real and lifts a small market's league money above the TV figure by a confidential amount. Name it if asked; never give it a percentage.",
+  };
+}
+
+function carrySeedNote(state: FullHouseState): string {
+  const carry = state.carry;
+  if (!carry) return "No source session was linked. Every desk runs a stock building with no players line.";
+  if (!carry.ok) return `The linked session could not be carried: ${carry.reason ?? "unreadable"}. Every desk runs a stock building.`;
+  const n = carry.franchises.length;
+  return `${n} franchise${n === 1 ? "" : "s"} carried in from THE WINDOW${carry.sourceSessionId ? ` (session ${carry.sourceSessionId})` : ""}. Each desk picks its own up by label; a desk that presses DEAL ME ONE gets the next unclaimed one.${
+    carry.warnings.length > 0 ? ` ${carry.warnings.length} warning${carry.warnings.length === 1 ? "" : "s"} — read them below.` : ""
+  }`;
+}
+
+/** The projector's bills-by-label frame. Carried desks only, sorted highest first, plus the spread. Never a seat id. */
+export function billsBoard(state: FullHouseState) {
+  if (!state.carry?.ok) return null;
+  const rows = state.deskOrder
+    .map((id) => state.desks[id])
+    .filter((d): d is Desk => d !== undefined && Boolean(d.obligation))
+    .map((d) => ({
+      label: d.label ?? deskHandle(d),
+      club: marketOf(d).club,
+      payrollText: d.obligation!.payrollText,
+      seasonBill: d.obligation!.seasonBillModel,
+      tonight: d.obligation!.perNightModel,
+      doors: marketOf(d).bill,
+      bandName: d.obligation!.band,
+    }))
+    .sort((a, b) => b.seasonBill - a.seasonBill || a.label.localeCompare(b.label));
+  const stockCount = state.deskOrder.filter((id) => state.desks[id]?.stock).length;
+  const spread =
+    rows.length >= 2
+      ? {
+          highestLabel: rows[0]!.label,
+          highest: rows[0]!.seasonBill,
+          lowestLabel: rows[rows.length - 1]!.label,
+          lowest: rows[rows.length - 1]!.seasonBill,
+          gap: rows[0]!.seasonBill - rows[rows.length - 1]!.seasonBill,
+        }
+      : null;
+  return { rows, spread, stockCount, unclaimed: unclaimedFranchises(state).map((f) => f.label) };
+}
+
 export const fullHouseModule: LessonModule<FullHouseState> = {
   id: MODULE_ID,
   title: "Module 2 · Lesson 1 — Full House",
   phases: PHASES,
 
-  initialState() {
-    return { desks: {}, deskOrder: [], nightIndex: 0, twoPeaksReleased: false, revealStage: 0, cfPage: 0, synthPage: 0 };
+  initialState(input) {
+    const base: FullHouseState = { desks: {}, deskOrder: [], nightIndex: 0, twoPeaksReleased: false, revealStage: 0, cfPage: 0, synthPage: 0 };
+    // No seed: the state is exactly what it always was. A seeded room stores
+    // the PARSED carry and its band — never the raw envelope — and keeps a
+    // refused carry's reason so the console can say why every desk is stock.
+    if (input.seed === undefined || input.seed === null) return base;
+    const read = extractWindowCarry(input.seed, input.gradeBand);
+    const carry: CarryState = read.ok
+      ? {
+          ok: true,
+          warnings: read.warnings,
+          franchises: read.franchises.map(carriedRecordOf),
+          claims: {},
+          lines: read.lines,
+          payrollDefinition: read.payrollDefinition,
+          sourceSessionId: read.sourceSessionId,
+        }
+      : { ok: false, reason: read.reason, warnings: [], franchises: [], claims: {}, lines: null, payrollDefinition: null, sourceSessionId: null };
+    return { ...base, gradeBand: input.gradeBand, carry };
   },
 
   /**
@@ -3039,7 +3726,16 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         // Not a refusal: an honest landing. See `seatLate`.
         return { ok: true, state: seatLate(state, ctx.seatId) };
       }
-      return { ok: true, state: seatDesk(state, ctx.seatId) };
+      return { ok: true, state: dealDesk(state, ctx.seatId) };
+    }
+    if (action.type === "claim") {
+      // D59: pick up your own franchise by its label. Same phases as takeSeat;
+      // after the nights close there is nothing left to pick up (see seatLate).
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated desk can pick up a franchise" };
+      if (ctx.phase !== "LOBBY" && ctx.phase !== "HOOK" && ctx.phase !== "PLAY") {
+        return { ok: true, state: seatLate(state, ctx.seatId) };
+      }
+      return claimDesk(state, ctx.seatId, action["label"]);
     }
     if (action.type === "setPrice" || action.type === "setSpend" || action.type === "setBowl" || action.type === "lock") {
       if (ctx.phase !== "PLAY") return { ok: false, reason: `you can only price a night during PLAY (session is in ${ctx.phase})` };
@@ -3126,8 +3822,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
   },
 
   allowedActions(phase) {
-    if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat"];
-    if (phase === "PLAY") return ["takeSeat", "setPrice", "setSpend", "setBowl", "lock", "gateCall"];
+    if (phase === "LOBBY" || phase === "HOOK") return ["takeSeat", "claim"];
+    if (phase === "PLAY") return ["takeSeat", "claim", "setPrice", "setSpend", "setBowl", "lock", "gateCall"];
     // Still offered after the nights close, so a late device gets an answer
     // instead of a silent 409 loop behind "finding your desk…" (see `seatLate`).
     return ["takeSeat"];
@@ -3149,10 +3845,21 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             observerAction: OBSERVER_ACTION,
           };
         }
-        return { phase, seated: false, observer: false, uiCopy: uiCopyFor(null, 0), message: "You're in! Taking a desk…" };
+        const available = phase === "LOBBY" || phase === "HOOK" || phase === "PLAY" ? availableFranchises(state) : [];
+        return {
+          phase,
+          seated: false,
+          observer: false,
+          uiCopy: uiCopyFor(null, 0),
+          // D59: pick up your own franchise by name, or take the next one dealt.
+          available,
+          carry: state.carry ? { ok: state.carry.ok, reason: state.carry.reason ?? null } : null,
+          message: available.length > 0 ? "Which franchise is yours? Pick it up where THE WINDOW left it." : "You're in! Taking a desk…",
+        };
       }
       const market = marketOf(desk);
       const identity = deskIdentity(desk);
+      const bill = billView(desk, bandOfRoom(state), state.carry?.payrollDefinition ?? null);
       // Each night's carried fans come from the night before it — the same
       // `carryFansFor` conversion the pair was shown before it spent (R6/P2).
       const history = desk.nights.map((n, i) => {
@@ -3182,9 +3889,12 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             phase,
             seated: true,
             ...identity,
-            message: `You have Desk ${desk.deskNumber}. Tonight you run the ${market.club}' building — ${market.building}.`,
+            message: desk.label
+              ? `You have ${desk.label} — Desk ${desk.deskNumber}. Tonight you run the ${market.club}' building — ${market.building}.`
+              : `You have Desk ${desk.deskNumber}. Tonight you run the ${market.club}' building — ${market.building}.`,
             plainLine: market.plainLine,
             uiCopy: uiCopyFor(null, 0),
+            bill,
           };
 
         case "HOOK":
@@ -3201,6 +3911,9 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             modeledDollarsLine: MODELED_DOLLARS_LINE,
             slate: slateView(),
             uiCopy: uiCopyFor(null, 0),
+            // D59: THE BILL is the dominant object on a carried desk's HOOK.
+            bill,
+            stockNote: desk.stock ? STOCK_DESK_NOTE : null,
           };
 
         case "PLAY": {
@@ -3237,6 +3950,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             nextCard: CARDS[state.nightIndex + 1] ? cardView(CARDS[state.nightIndex + 1]!, state.nightIndex + 1) : null,
             slate: slateView(),
             modeledDollarsLine: MODELED_DOLLARS_LINE,
+            // D59: tonight's bill, doors + players, before the first price.
+            bill,
             locked: desk.locked,
             price: desk.price,
             spend: desk.spend,
@@ -3460,6 +4175,12 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         handle: deskHandle(desk),
         marketId: desk.marketId,
         club: marketOf(desk).club,
+        label: desk.label ?? null,
+        stock: desk.stock ?? false,
+        seasonBill: desk.obligation?.seasonBillModel ?? 0,
+        perNightBill: desk.obligation?.perNightModel ?? 0,
+        payrollText: desk.obligation?.payrollText ?? null,
+        clearedTheBill: desk.clearedTheBill ?? null,
         locked: desk.locked,
         price: desk.price,
         spend: desk.spend,
@@ -3583,6 +4304,11 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
       studentScreen: studentScreenMechanics(state),
       // gate-l1-econ N1: where this model knowingly departs from the real thing.
       simplifications: SIMPLIFICATIONS,
+      // D59: what walked in from THE WINDOW, and where every desk came from.
+      seeded: Boolean(state.carry?.ok),
+      seedNote: carrySeedNote(state),
+      carry: carryTeacherView(state),
+      gradeBand: bandOfRoom(state),
       // TT-B6 (HK-2): what ringing the bell will do to a desk that never locked.
       bellNote:
         state.nightIndex >= NIGHT_COUNT
@@ -3604,8 +4330,9 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               .map((seatId) => state.desks[seatId])
               .filter((d): d is Desk => d !== undefined)
               .map((d) => ({ handle: deskHandle(d), crestIndex: d.crestIndex, marketId: d.marketId })),
-            markets: MARKETS.map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity, capacityNote: m.capacityNote })),
+            markets: marketsInRoom(Object.values(state.desks)).map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity, capacityNote: m.capacityNote })),
             message: "You are not the GM today. You run the building.",
+            bills: billsBoard(state),
           };
 
         case "HOOK":
@@ -3614,7 +4341,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             message: HOOK_COPY,
             objective: OBJECTIVE_COPY,
             deskCount: agg.deskCount,
-            markets: MARKETS.map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity, capacityNote: m.capacityNote, bill: m.bill, planPrice: m.planPrice })),
+            markets: marketsInRoom(Object.values(state.desks)).map((m) => ({ id: m.id, club: m.club, building: m.building, plainLine: m.plainLine, capacity: m.capacity, capacityNote: m.capacityNote, bill: m.bill, planPrice: m.planPrice })),
+            // D59: the room's bills by desk label — class evidence, never a seat.
+            bills: billsBoard(state),
+            billHorizonLine: state.carry?.ok ? BILL_HORIZON_LINE : null,
             honestyLine: BOARD_HONESTY_LINE,
             horizonLine: HORIZON_LINE,
             modeledDollarsLine: MODELED_DOLLARS_LINE,

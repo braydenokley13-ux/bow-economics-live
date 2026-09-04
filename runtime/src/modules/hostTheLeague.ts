@@ -91,6 +91,7 @@
 import { CREST_COUNT } from "./draftDay.js";
 import type { LessonAction, LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
 import type { CanonicalPhase } from "../shared/phases.js";
+import { bandOrDefault, type GradeBand } from "../shared/gradeBand.js";
 
 /* ------------------------------------------------------------- markets -- */
 
@@ -607,7 +608,17 @@ export type HostLeagueState = {
   revealStage: number;
   barPage: number;
   synthPage: number;
+  /**
+   * Which class this room is for. Fixed at createSession (D22's second
+   * attachment point). Optional at read time — a snapshot written before this
+   * field existed is still a valid session — so every read goes through
+   * `bandOfRoom()`, never a direct field access.
+   */
+  gradeBand?: GradeBand;
 };
+
+/** Snapshot-safe band read: a state with no `gradeBand` reads as "5-6". */
+export const bandOfRoom = (state: HostLeagueState): GradeBand => bandOrDefault(state.gradeBand);
 
 /**
  * Bars per projector frame on the Handed-To-You board.
@@ -2176,7 +2187,7 @@ export function smallMarketPathFrom(state: HostLeagueState): SmallMarketPath {
     gapAtBigPrice: 0,
     survivesPriceControl: false,
     driver: "none",
-    line: "This room's schedule did not put a small-market desk in front of a big visitor on the same week a big-market desk hosted a weak one, so there is no honest pair here to compare. Look at the bars instead: the visitor block is the one that moves.",
+    line: "This room's schedule did not put a small-market desk in front of a big visitor on the same week a big-market desk hosted a weak one, so there is no honest matchup here to compare. Look at the bars instead: the visitor block is the one that moves.",
     claims: [],
   };
   type Cand = { club: Club; w: SettledWeek };
@@ -2553,7 +2564,17 @@ export function barSummaryFrom(rows: readonly HomeDecomposition[], visitorLed: n
 /* ------------------------------------------------------------ the copy -- */
 
 export const MODULE_ID = "m2l2-host-league" as const;
-const tag = <T extends object>(obj: T): T & { module: typeof MODULE_ID } => ({ module: MODULE_ID, ...obj });
+/**
+ * The single funnel every view return travels through — `studentView`,
+ * `teacherView` and `boardView` each resolve their per-phase payload then hand
+ * it here once, so `band` (the D22 seam's per-view exposure) is stamped
+ * exactly once per surface instead of re-typed into every phase branch.
+ */
+const tag = <T extends object>(obj: T, band: GradeBand): T & { module: typeof MODULE_ID; band: GradeBand } => ({
+  module: MODULE_ID,
+  ...obj,
+  band,
+});
 
 const PHASES: readonly CanonicalPhase[] = ["LOBBY", "HOOK", "PLAY", "REVEAL", "ADAPT", "ARGUE", "SYNTHESIS", "COMPLETE"];
 
@@ -2670,7 +2691,7 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
   },
   {
     what: "On a week when the building sells out, under-pricing costs more than over-pricing by the same amount.",
-    why: "It is the arithmetic of a full house, not a moral: below the sell-out price every extra dollar is pure gain on the same crowd, while above it you start losing people. Everywhere the building does NOT fill, the two mistakes cost within 3x of each other, measured at every reachable Draw pair.",
+    why: "It is the arithmetic of a full house, not a moral: below the sell-out price every extra dollar is pure gain on the same crowd, while above it you start losing people. Everywhere the building does NOT fill, the two mistakes cost within 3x of each other, measured at every reachable Draw combination.",
     risk: "The mirror of the usual worry: not 'charging high is greedy' but 'charging low is safe'. It is not safe on a big week, and the card tells them the week is big before they price — both Draws are printed. HOUSE_RULES says the sentence; say it again if a desk sells out cheap.",
   },
   {
@@ -3227,7 +3248,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
    * cheapest honest limb is L1 renewals -> this club's `base0` offset, printed
    * on a how-you-got-here card and named inside the `fromBuilding` block.
    */
-  initialState() {
+  initialState(input) {
     const clubs: Club[] = [];
     for (let i = 0; i < MIN_LEAGUE; i += 1) clubs.push(makeClub(i));
     return {
@@ -3244,6 +3265,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       revealStage: 0,
       barPage: 0,
       synthPage: 0,
+      gradeBand: input.gradeBand,
     };
   },
 
@@ -3353,7 +3375,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
 
   reduce(state, action: LessonAction, ctx: ReduceContext): ReduceResult<HostLeagueState> {
     if (action.type === "takeSeat") {
-      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair can take a club" };
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated desk can take a club" };
       // W5 N-3: after the weeks are closed there is no club to hand out, but a
       // refusal is not an answer either — the device retried forever. Record the
       // pair instead; their screen and /teach both get told.
@@ -3363,7 +3385,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
 
     if (action.type === "setPrice" || action.type === "setShare" || action.type === "lock") {
       if (ctx.phase !== "PLAY") return { ok: false, reason: `you can only run a week during PLAY (session is in ${ctx.phase})` };
-      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair can work a club" };
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated desk can work a club" };
       const open = requireOpenClub(state, ctx.seatId);
       if (!open.ok) return { ok: false, reason: open.reason };
       if (action.type === "setPrice") {
@@ -3411,7 +3433,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       // purpose: a fifth-grader's misclick must not lock a wrong call in for a
       // whole week, and the commitment that matters is the one standing when
       // the bell rings, which is what the settlement freezes.
-      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the gate" };
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated desk calls the gate" };
       if (ctx.phase !== "PLAY") return { ok: false, reason: `the gate is called during PLAY (session is in ${ctx.phase})` };
       const slot = state.seatToSlot[ctx.seatId];
       if (slot === undefined) return { ok: false, reason: "this seat has no club" };
@@ -3430,7 +3452,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       // settled number: it is the difference between a reveal happening TO the
       // room and WITH it. The desk was otherwise byte-identical across all six
       // presses of the teacher's advance button.
-      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated pair calls the ledger" };
+      if (ctx.seatId === "teacher") return { ok: false, reason: "only a seated desk calls the ledger" };
       if (ctx.phase !== "REVEAL") return { ok: false, reason: `the call is taken during REVEAL (session is in ${ctx.phase})` };
       if (state.revealStage >= 2) return { ok: false, reason: "the ledger is already on the projector" };
       const choice = action["choice"];
@@ -3784,7 +3806,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
           return { phase, seated: true, ...identity };
       }
     })();
-    return tag(view);
+    return tag(view, bandOfRoom(state));
   },
 
   teacherView(state, phase) {
@@ -3920,7 +3942,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
         state.weekIndex >= WEEK_COUNT
           ? "All three weeks are in the books."
           : `Closing week ${openWeekNumber(state)} settles every building in the league at once, against the Draws that were printed before anybody touched a dial. A desk that has not locked settles at its club's house price with nothing reinvested, marked AUTO on its own screen — nobody is skipped and nobody gets a zero.`,
-    });
+    }, bandOfRoom(state));
   },
 
   boardView(state, phase) {
@@ -4106,7 +4128,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
           return { mode: "idle", phase };
       }
     })();
-    return tag(view);
+    return tag(view, bandOfRoom(state));
   },
 
   aggregate(state) {
@@ -4404,7 +4426,7 @@ export function teachPlayMirrorClaimed(state: HostLeagueState): Claimed {
     const word = c.barsUp ? "the bar is on the projector" : "the projector is still holding";
     return {
       text: c.barsUp
-        ? `Three weeks are in the books and ${word}: the Handed-To-You bar for the group you have paged to, its legend and its summary line, and nothing else. The schedule is gone — every pair has this week's pairing on its own device.`
+        ? `Three weeks are in the books and ${word}: the Handed-To-You bar for the group you have paged to, its legend and its summary line, and nothing else. The schedule is gone — every desk has this week's pairing on its own device.`
         : `Three weeks are in the books and ${word}: the room has NOT seen the whole picture yet, and there is no schedule and no bar on the frame. It goes up one beat at a time in REVEAL.`,
       claims: [claimWord("teachPlay.barsUp", word, c.barsUp, c.barsUp ? "the projector is still holding" : "the bar is on the projector")],
     };
@@ -4415,7 +4437,7 @@ export function teachPlayMirrorClaimed(state: HostLeagueState): Claimed {
     // departure card, and explicitly not "underneath the schedule".
     const word = "the bar has REPLACED the schedule";
     return {
-      text: `Week ${c.weekNumber} of ${WEEK_COUNT} — and ${word}. The projector is holding the week strip (${lock.rendered} of ${c.deskCount} locked in), the group pager, the Handed-To-You bars, "Point at the club that paid for your night", and the summary line. That is all of it. The pairing grid and the star-departure card are NOT on the frame any more — there is no control to put them back, and there does not need to be: every pair has this week's pairing and every Draw on its own device. Point at the bars, not at the schedule.`,
+      text: `Week ${c.weekNumber} of ${WEEK_COUNT} — and ${word}. The projector is holding the week strip (${lock.rendered} of ${c.deskCount} locked in), the group pager, the Handed-To-You bars, "Point at the club that paid for your night", and the summary line. That is all of it. The pairing grid and the star-departure card are NOT on the frame any more — there is no control to put them back, and there does not need to be: every desk has this week's pairing and every Draw on its own device. Point at the bars, not at the schedule.`,
       claims: [
         lock,
         claimWord("teachPlay.barsUp", word, true, "underneath the schedule"),
@@ -4477,7 +4499,7 @@ export function teachStage5MirrorClaimed(state: HostLeagueState): Claimed {
   }
   if (arm === "lastWeekNoneLocked") {
     return {
-      text: `${base} Do not resolve it: ${refuses}. This is the cleanest version of the beat: you released it after the week-2 bell and NOT ONE desk had locked week 3 yet, so every pair in this room priced its last week having seen the bar. Ask the whole room, not a subset.`,
+      text: `${base} Do not resolve it: ${refuses}. This is the cleanest version of the beat: you released it after the week-2 bell and NOT ONE desk had locked week 3 yet, so every desk in this room priced its last week having seen the bar. Ask the whole room, not a subset.`,
       claims: [claimWord("teach5.boardChose", refuses, false, "ALREADY chosen"), claimWord("teach5.someLocked", "NOT ONE desk had locked", false, "had already locked")],
     };
   }
@@ -4593,10 +4615,10 @@ function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFl
   if (observers.length > 0) {
     out.push({
       id: "late-observers",
-      label: `${observers.length} pair${observers.length === 1 ? "" : "s"} arrived after the last week closed and could not be given a club`,
-      desks: observers.map((_, i) => `Late pair ${i + 1}`),
+      label: `${observers.length} student${observers.length === 1 ? "" : "s"} arrived after the last week closed and could not be given a club`,
+      desks: observers.map((_, i) => `Late student ${i + 1}`),
       action:
-        "There is no club left to hand them — the weeks are in the books and seating them now would change numbers this room has already been shown. Their screen says so and tells them to pull up to the nearest desk; say the same out loud and pair them with a desk near the door. Everything from here — the board, the argument, the synthesis — is the whole room's, so they lose nothing but the three weeks.",
+        "There is no club left to hand them — the weeks are in the books and seating them now would change numbers this room has already been shown. Their screen says so and tells them to pull up to the nearest desk; say the same out loud and seat them at a desk near the door. Everything from here — the board, the argument, the synthesis — is the whole room's, so they lose nothing but the three weeks.",
       urgency: "now",
     });
   }
@@ -4667,7 +4689,7 @@ function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFl
         // absent; what they were NOT told is what that pair's own screen says
         // while they walk over. It now says the same thing, and the teacher
         // knows it does, so the two surfaces cannot collide in front of the room.
-        "This is a participation problem, not a strategy. Their weeks were auto-committed at the club's house price with nothing reinvested because nobody pressed the button — they did not choose 0%, they chose nothing. Their own screen agrees with you: it reads \"These zeroes are not a decision — they are the weeks that ran without you\", and it does not tell them they chose anything. Go to the desk and say the same. Do NOT use them on the gave/got board and do not name them in the argument: they are not the free-rider case, they are the pair you have not reached yet.",
+        "This is a participation problem, not a strategy. Their weeks were auto-committed at the club's house price with nothing reinvested because nobody pressed the button — they did not choose 0%, they chose nothing. Their own screen agrees with you: it reads \"These zeroes are not a decision — they are the weeks that ran without you\", and it does not tell them they chose anything. Go to the desk and say the same. Do NOT use them on the gave/got board and do not name them in the argument: they are not the free-rider case, they are the desk you have not reached yet.",
       urgency: "now",
     });
   }
@@ -4711,7 +4733,7 @@ function teacherWatchFor(state: HostLeagueState, phase: CanonicalPhase): WatchFl
       id: "debt",
       label: "In the red",
       desks: debt,
-      action: "Recoverable, always: the national check alone clears the weekly bill for every club in this league. Say so if a pair looks sunk.",
+      action: "Recoverable, always: the national check alone clears the weekly bill for every club in this league. Say so if a desk looks sunk.",
       urgency: "now",
     });
   }
@@ -4880,7 +4902,7 @@ function studentScreenMechanics(state: HostLeagueState): string[] {
 export function adaptSpendAnswerClaimed(state: HostLeagueState): Claimed {
   const ct = computeAggregate(state).choiceTotals;
   const where =
-    "You do not need the reveal board back for this — every pair has its own two numbers on its own screen right now, under WHAT YOU GAVE, WHAT YOU GOT. Tell them to read their own.";
+    "You do not need the reveal board back for this — every desk has its own two numbers on its own screen right now, under WHAT YOU GAVE, WHAT YOU GOT. Tell them to read their own.";
   if (!ct.anySpend) {
     return {
       text: `Careful — nobody in this room put anything back, so this question has no spending to be about. Ask it the other way: what would it have cost you, and who else would it have paid? ${where}`,
@@ -5009,7 +5031,7 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
           "Pairs join at /play on one device. Clubs are handed out by desk number, visibly, and the board shows the whole league as it fills.",
           'Read the board line out loud: "This room is the league."',
           `${live} desk${live === 1 ? "" : "s"} in so far, in a ${state.leagueSize}-club league.`,
-          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts the pair straight back in their own desk. If they lost it, press Reseat beside their name and read them a new one.",
+          "Tell the room to write their 4-digit rejoin PIN somewhere that is not the screen showing it — the back of a hand, a corner of a notebook. If a Chromebook dies, that PIN puts them straight back at their own desk. If they lost it, press Reseat beside their name and read them a new one.",
         ],
         ask: [{ q: "Whose building are you running? Say the club and the city.", answer: null }],
         dontExplainYet: [
@@ -5139,7 +5161,7 @@ export function teacherDirector(state: HostLeagueState, phase: CanonicalPhase): 
         now: [
           "Ask the three questions IN THIS ORDER. Take answers from desks, not from yourself.",
           "The bar is still on the projector. Point at it; make them point at it.",
-          "If a pair blames a classmate, do not referee it — turn it into economics: \"what would they have had to do differently, and would it have been worth it to them?\"",
+          "If a desk blames a classmate, do not referee it — turn it into economics: \"what would they have had to do differently, and would it have been worth it to them?\"",
         ],
         ask: [
           {

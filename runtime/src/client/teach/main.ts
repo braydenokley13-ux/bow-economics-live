@@ -3,6 +3,7 @@ import { crestStyle } from "../shared/crest.js";
 import { createFreshness } from "../shared/freshness.js";
 import { startPolling } from "../shared/poll.js";
 import { loadTeachSessionCode, loadTeachSessionKey, saveTeachSessionCode, saveTeachSessionKey } from "../shared/storage.js";
+import { renderSameLineL1Aggregate } from "../shared/sameLineL1Teach.js";
 
 type Lesson = { id: string; title: string; phases: string[] };
 type TeacherSeat = { id: string; displayName: string; joinedAt: string; lastSeenAt: string; quietBucket?: 0 | 1 | 2 | 3 | 4; rejoinLocked: boolean };
@@ -15,10 +16,14 @@ type RoundPublic = {
   closedBy: "final_call_expired" | "close_now" | "module" | null;
 };
 type UnresolvedSeat = { seatId: string; label: string; fallback: string };
+/** Who is at the podium, teacher-private — the one payload allowed to name the seat. */
+type TeacherSpotlight = { seatId: string; label: string; since: string };
+/** The console's shortlist for who to call up next — the module's own ranking, never the runtime's. */
+type PressCandidate = { seatId: string; label: string; why: string };
 type TeacherPayload = {
   session: {
     id: string; code: string; title: string; lessonModuleId: string; phase: string; phases: string[];
-    paused: boolean; frozen: boolean; ended: boolean; version: number; hasCheckpoint: boolean;
+    paused: boolean; pausedAt?: string | null; frozen: boolean; ended: boolean; version: number; hasCheckpoint: boolean;
     checkpointLabel: string | null;
     boardSeenBucket?: 0 | 1 | 2;
     createdAt?: string; serverNow?: string;
@@ -27,6 +32,8 @@ type TeacherPayload = {
   seats: TeacherSeat[];
   round: RoundPublic | null;
   timeCut: { policy: string; unresolved: UnresolvedSeat[]; resolvedCount: number } | null;
+  spotlight: TeacherSpotlight | null;
+  pressCandidates: PressCandidate[];
   view: Record<string, unknown>;
 };
 
@@ -39,6 +46,7 @@ const rosterEl = $("roster");
 const aggregateEl = $("aggregate");
 const directorEl = $("director");
 const timeCutEl = $("timecut");
+const pressConfEl = $("pressconf");
 const liveRoomEl = $("liveroom");
 const desksEl = $("desks");
 const projPreviewEl = $("projpreview"); // claim-ok: an element id, not a rendered word
@@ -892,6 +900,98 @@ function renderTimeCut(payload: TeacherPayload): void {
   listEl.appendChild(ul);
 }
 
+/**
+ * THE PRESS CONFERENCE panel — the console's half of a server-owned
+ * primitive. This never decides who goes to the podium; it only shows the
+ * shortlist the lesson's own state proposes (ranked by the module, not by
+ * this file) and a manual picker over every seat, for the desk the module
+ * did not think to propose. Teacher-private throughout: display names are
+ * fine here and nowhere else this feature reaches.
+ */
+function renderPressConference(payload: TeacherPayload): void {
+  if (payload.session.ended) {
+    pressConfEl.hidden = true;
+    return;
+  }
+  pressConfEl.hidden = false;
+  const spotlight = payload.spotlight;
+  const state = $("pcState");
+  const clockNote = $("pcClockNote");
+  const endBtn = $<HTMLButtonElement>("btnEndPressConference");
+  endBtn.disabled = !spotlight;
+
+  if (spotlight) {
+    state.textContent = `at the podium: ${spotlight.label}`;
+    // The clock is stopped for the whole room, not only the podium desk — a
+    // press conference IS a pause. If a final call was running when the
+    // teacher called it, `pausedAt` marks the instant it stopped moving, and
+    // the seconds it had left are frozen there until "End press conference".
+    const round = payload.round;
+    if (round?.status === "FINAL_CALL" && round.endsAt && payload.session.pausedAt) {
+      const leftMs = Math.max(0, Date.parse(round.endsAt) - Date.parse(payload.session.pausedAt));
+      clockNote.textContent = `the clock is stopped; ${Math.round(leftMs / 1000)}s were left on the final call.`;
+      clockNote.hidden = false;
+    } else {
+      clockNote.hidden = true;
+    }
+  } else {
+    state.textContent = "not running";
+    clockNote.hidden = true;
+  }
+
+  const listEl = $("pcCandidates");
+  listEl.innerHTML = "";
+  if (payload.pressCandidates.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "tc-ok";
+    empty.textContent = "Nothing in this lesson's state stands out yet — use the picker below for any desk.";
+    listEl.appendChild(empty);
+  } else {
+    const ul = document.createElement("ul");
+    ul.className = "pc-cand-list";
+    for (const c of payload.pressCandidates) {
+      const li = document.createElement("li");
+      li.className = "pc-cand";
+      const text = document.createElement("span");
+      const b = document.createElement("b");
+      b.textContent = c.label;
+      text.appendChild(b);
+      text.appendChild(document.createTextNode(` — `));
+      const why = document.createElement("span");
+      why.className = "pc-cand-why";
+      why.textContent = c.why;
+      text.appendChild(why);
+      li.appendChild(text);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-primary";
+      btn.textContent = spotlight?.seatId === c.seatId ? "At the podium" : "Call to the podium";
+      btn.disabled = spotlight?.seatId === c.seatId;
+      btn.addEventListener("click", () => void sendControl({ type: "pressConference", seatId: c.seatId }));
+      li.appendChild(btn);
+      ul.appendChild(li);
+    }
+    listEl.appendChild(ul);
+  }
+
+  // The manual picker: every seat, labelled by the module's own shortlist
+  // when it has an opinion about that seat, and by the roster's display name
+  // (teacher-private, same as everywhere else on this console) otherwise.
+  const labelFor = new Map(payload.pressCandidates.map((c) => [c.seatId, c.label] as const));
+  const picker = $<HTMLSelectElement>("pcSeatPicker");
+  const prior = picker.value;
+  picker.innerHTML = "";
+  for (const seat of payload.seats) {
+    const opt = document.createElement("option");
+    opt.value = seat.id;
+    opt.textContent = labelFor.get(seat.id) ?? seat.displayName;
+    picker.appendChild(opt);
+  }
+  if (prior && payload.seats.some((s) => s.id === prior)) picker.value = prior;
+  const pickerRow = $("pcPickerRow");
+  pickerRow.hidden = payload.seats.length === 0;
+}
+
 function render(payload: TeacherPayload): void {
   statusEl.textContent = `live · v${payload.session.version}${pushLive ? "" : " · polling"}`;
   lastCheckpointLabel = payload.session.checkpointLabel;
@@ -919,6 +1019,7 @@ function render(payload: TeacherPayload): void {
   pill.textContent = pillText;
   $("seatCount").textContent = `${payload.seats.length} joined`;
   renderTimeCut(payload);
+  renderPressConference(payload);
   renderLiveRoom(payload);
   renderNaming(payload);
   renderIntel(payload);
@@ -1264,10 +1365,17 @@ function render(payload: TeacherPayload): void {
 
   const roster = $("rosterList");
   roster.innerHTML = "";
+  // THE WINDOW: one student, one franchise (D59). The seat's club sits beside
+  // the name, and a seat that has not picked yet says so — the lobby's job is
+  // to get every student into a front office before the bell.
+  const seatClubs = isTheWindow ? ((payload.view["seatClubs"] as Record<string, string> | undefined) ?? {}) : null;
   for (const seat of payload.seats) {
     const li = document.createElement("li");
     const joined = new Date(seat.joinedAt).toLocaleTimeString();
-    li.innerHTML = `<span>${escapeHtml(seat.displayName)}</span>`;
+    const club = seatClubs ? (seatClubs[seat.id] ?? null) : null;
+    li.innerHTML = `<span>${escapeHtml(seat.displayName)}${
+      seatClubs ? `<span style="color:var(--ink-muted);"> · ${club ? escapeHtml(club) : s.ended ? "no club" : "choosing a club…"}</span>` : ""
+    }</span>`;
     const right = document.createElement("span");
     right.style.display = "flex";
     right.style.alignItems = "center";
@@ -1725,6 +1833,7 @@ function renderAggregate(view: Record<string, unknown>, seats: TeacherSeat[]): H
   if (view["module"] === FULL_HOUSE_ID) return renderFullHouseAggregate(view, seats);
   if (view["module"] === HOST_LEAGUE_ID) return renderHostLeagueAggregate(view, seats);
   if (view["module"] === WRITE_RULE_ID) return renderWriteRuleAggregate(view, seats);
+  if (view["module"] === THE_WINDOW_ID) return renderSameLineL1Aggregate(view, seats);
 
   const wrap = document.createElement("div");
   if (view && typeof view === "object" && "tally" in view) {
@@ -2469,6 +2578,11 @@ $("btnCommitReveal").addEventListener("click", () => {
   if (commitRevealWarn && !confirm(commitRevealWarn)) return;
   void sendControl({ type: "hook", hook: "commitReveal" });
 });
+$("btnPcCallPicked").addEventListener("click", () => {
+  const seatId = $<HTMLSelectElement>("pcSeatPicker").value;
+  if (seatId) void sendControl({ type: "pressConference", seatId });
+});
+$("btnEndPressConference").addEventListener("click", () => void sendControl({ type: "endPressConference" }));
 $("btnFinalCall").addEventListener("click", () => void sendControl({ type: "finalCall", durationMs: 20000 }));
 $("btnCancelFinalCall").addEventListener("click", () => void sendControl({ type: "cancelFinalCall" }));
 $("btnCloseNow").addEventListener("click", () => {
