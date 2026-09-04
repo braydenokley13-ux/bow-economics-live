@@ -3,11 +3,11 @@
  * Browser QA for Week 4 "THE BILL COMES DUE" (Full House, m2l1-full-house)
  * linked to THE WINDOW (m1l1-the-window). Real Chromium against the built
  * server. Boot/session/join scaffolding copied from
- * runtime/scripts/e2e-press-conference.cjs. Written to the scratchpad per
- * Browser QA role policy (does not write repository files).
+ * runtime/scripts/e2e-press-conference.cjs. Written by the Browser QA role in
+ * the scratchpad (that role does not write repository files); adopted here.
  *
- * Run from anywhere (paths are absolute):
- *   node /tmp/.../scratchpad/e2e-w4-qa.cjs
+ * Run from runtime/ after `npm run build`:
+ *   node scripts/e2e-w4-bill.cjs
  *
  * Item 1 (linked room) is driven end to end where possible; the /teach UI
  * has NO wiring at all to link m2l1-full-house to a source session (its
@@ -28,7 +28,7 @@ const ROOT = path.join(__dirname, "..");
 const DIST = process.env.E2E_DIST ? path.resolve(process.env.E2E_DIST) : path.join(ROOT, "dist");
 const PORT = Number(process.env.E2E_PORT || 4401);
 const BASE = `http://localhost:${PORT}`;
-const SCRATCH = "/tmp/claude-0/-home-user-bow-economics-live/c38d3784-113a-52a9-9efb-c9b845006a27/scratchpad";
+const SCRATCH = path.join(ROOT, ".e2e-scratch");
 const SNAPSHOT_FILE = path.join(SCRATCH, `snapshot-w4-${Date.now()}.json`);
 const SCREEN_DIR = path.join(ROOT, "..", "docs", "gauntlet", "module-2", "screens-w4");
 
