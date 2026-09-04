@@ -85,6 +85,9 @@ let advanceWarnState: AdvanceWarnState = null;
 /** M2 L2's week bell, when it would settle a league with nobody locked in (gate-l2-teacher N5). */
 let closeWeekWarn: string | null = null;
 let ruleStepWarn: string | null = null;
+// Wave 3b: THE FLOOR's own pacing shares btnRuleStep with THE SHARE's — the
+// hook the click handler fires depends on which institution is running.
+let ruleStepHook: "ruleStep" | "institutionStep" = "ruleStep";
 let realRuleWarn: string | null = null;
 let commitRevealWarn: string | null = null;
 // R1: the per-session teacher credential — required on every /control and
@@ -1397,19 +1400,46 @@ function render(payload: TeacherPayload): void {
     const ruleStep = $<HTMLButtonElement>("btnRuleStep");
     const realRule = $<HTMLButtonElement>("btnRealRule");
     const commit = $<HTMLButtonElement>("btnCommitReveal");
+    const reviewStageBtn = $<HTMLButtonElement>("btnReviewStage");
     ruleStep.hidden = !isWriteRule || s.phase !== "PLAY";
     realRule.hidden = !isWriteRule || s.phase !== "PLAY";
     commit.hidden = !isWriteRule || (s.phase !== "HOOK" && s.phase !== "ARGUE");
+    reviewStageBtn.hidden = !isWriteRule || s.phase !== "ARGUE";
     if (isWriteRule) {
-      ruleStep.disabled = s.ended || s.phase !== "PLAY" || !payload.view["ruleStepAvailable"];
-      ruleStep.textContent = String(payload.view["ruleStepLabel"] ?? "Close the round");
-      ruleStepWarn = (payload.view["ruleStepWarn"] as string | null) ?? null;
+      // Wave 3b: THE FLOOR's own console (`floorRound`) is non-null only
+      // while institution 2 is being voted, and `stage === "floorAdopted"`
+      // covers the one press between the floor's own two-thirds test and the
+      // season opening. Neither `ruleStepLabel` nor `ruleStepAvailable` know
+      // about the floor — this button's label/hook is derived here instead,
+      // the way `ruleStepLabel` itself derives from `state.roundIndex`.
+      const stage = String(payload.view["stage"] ?? "");
+      const floorRound = payload.view["floorRound"] as { index: number; count: number; proposalCount: number; deskCount: number } | null;
+      if (floorRound || stage === "floorAdopted") {
+        ruleStepHook = "institutionStep";
+        ruleStep.disabled = s.ended || s.phase !== "PLAY";
+        ruleStep.textContent = floorRound
+          ? floorRound.index < floorRound.count
+            ? `Close floor round ${floorRound.index} of ${floorRound.count} (${floorRound.proposalCount}/${floorRound.deskCount} proposals in)`
+            : "Set the floor"
+          : "Open the season";
+        ruleStepWarn = null;
+      } else {
+        ruleStepHook = "ruleStep";
+        ruleStep.disabled = s.ended || s.phase !== "PLAY" || !payload.view["ruleStepAvailable"];
+        ruleStep.textContent = String(payload.view["ruleStepLabel"] ?? "Close the round");
+        ruleStepWarn = (payload.view["ruleStepWarn"] as string | null) ?? null;
+      }
       realRule.disabled = s.ended || s.phase !== "PLAY" || !payload.view["realRuleAvailable"];
       realRule.title = String(payload.view["realRuleWarn"] ?? "");
       realRuleWarn = (payload.view["realRuleWarn"] as string | null) ?? null;
       commit.disabled = s.ended || !payload.view["commitRevealAvailable"];
       commit.textContent = String(payload.view["commitRevealLabel"] ?? "Reveal");
       commitRevealWarn = (payload.view["commitRevealWarn"] as string | null) ?? null;
+      const reviewStage = payload.view["reviewStage"] as { index: number; count: number; stageName: string } | null;
+      if (reviewStage && !reviewStageBtn.hidden) {
+        reviewStageBtn.disabled = s.ended;
+        reviewStageBtn.textContent = `Show ${reviewStage.stageName} (${reviewStage.index + 1} of ${reviewStage.count})`;
+      }
     }
   }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
@@ -1427,7 +1457,9 @@ function render(payload: TeacherPayload): void {
     const actedCount = Number(payload.view["actedCount"] ?? 0);
     const claimedCount = Number(payload.view["claimedCount"] ?? 0);
     const seasonRound = payload.view["round"];
-    const seasonPending = Array.isArray(payload.view["perDesk"]) ? (payload.view["perDesk"] as { pending?: unknown }[]).filter((d) => d.pending).length : 0;
+    const seasonPending = Array.isArray(payload.view["perDesk"])
+      ? (payload.view["perDesk"] as { pending?: unknown; waived?: unknown[] }[]).filter((d) => d.pending || (Array.isArray(d.waived) && d.waived.length > 0)).length
+      : 0;
     const seasonDesks = Array.isArray(payload.view["perDesk"]) ? (payload.view["perDesk"] as unknown[]).length : 0;
     const hour = Number(payload.view["hour"] ?? 1);
     $<HTMLButtonElement>("btnCloseDay").innerHTML =
@@ -2460,6 +2492,46 @@ function renderWriteRuleAggregate(view: Record<string, unknown>, _seats: Teacher
         .join("")}`;
     wrap.appendChild(row);
   }
+
+  // Wave 3b: THE FLOOR's own round table — parallel to the SHARE rounds
+  // chips above, live only while institution 2 is being voted. `wouldClear
+  // === false` on a desk's own ON proposal is `self-bound` (watchFor already
+  // names it) and is flagged here in the same colour.
+  const floorRound = view["floorRound"] as
+    | {
+        index: number;
+        count: number;
+        proposals: { label: string; on: boolean | null; level: number | null; levelText: string | null; recipient: string | null; wouldClear: boolean | null }[];
+        proposalCount: number;
+        deskCount: number;
+        medianText: string | null;
+      }
+    | null;
+  if (floorRound) {
+    const row = document.createElement("div");
+    row.style.marginBottom = "12px";
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">THE FLOOR — round ${floorRound.index} of ${floorRound.count} · ${floorRound.proposalCount}/${floorRound.deskCount} proposals in${floorRound.medianText ? ` · median ${floorRound.medianText}` : ""}</div>
+      ${floorRound.proposals
+        .map((p) => {
+          const selfBound = p.on === true && p.wouldClear === false;
+          const onText = p.on === null ? "—" : p.on ? "ON" : "OFF";
+          const clearText = p.wouldClear === null ? "" : p.wouldClear ? "would clear" : "would NOT clear — self-bound";
+          return `<div class="row" style="margin:3px 0; font-size:12.5px; ${selfBound ? "color:var(--accent-gold);" : ""}"><span style="width:190px;">${escapeHtml(p.label)}</span><span style="width:60px;">${onText}</span><span style="width:90px; color:var(--ink-muted);">${p.levelText ? escapeHtml(p.levelText) : "—"}</span><span style="width:170px; color:var(--ink-muted);">${p.recipient ? escapeHtml(p.recipient) : "—"}</span><span>${clearText}</span></div>`;
+        })
+        .join("")}`;
+    wrap.appendChild(row);
+  }
+
+  const institutions = view["institutions"] as
+    | { share: { share: number; condition: boolean } | null; floor: { on: boolean; levelText: string; recipientLabel: string } | null }
+    | null;
+  if (institutions) {
+    const row = document.createElement("div");
+    row.style.marginBottom = "12px";
+    row.innerHTML = `<div class="eyebrow" style="font-size:11px; margin-bottom:4px;">Both institutions</div>
+      <div style="font-size:13px; color:var(--ink-secondary);">SHARE ${institutions.share ? `${institutions.share.share}% · condition ${institutions.share.condition ? "ON" : "OFF"}` : "not written"} · FLOOR ${institutions.floor ? `${escapeHtml(institutions.floor.levelText)} — ${escapeHtml(institutions.floor.recipientLabel)}` : "NO FLOOR"}</div>`;
+    wrap.appendChild(row);
+  }
   return wrap;
 }
 
@@ -2735,7 +2807,10 @@ $("btnCloseWeek").addEventListener("click", () => {
 $("btnHandedTo").addEventListener("click", () => void sendControl({ type: "hook", hook: "handedTo" }));
 $("btnRuleStep").addEventListener("click", () => {
   if (ruleStepWarn && !confirm(ruleStepWarn)) return;
-  void sendControl({ type: "hook", hook: "ruleStep" });
+  void sendControl({ type: "hook", hook: ruleStepHook });
+});
+$("btnReviewStage").addEventListener("click", () => {
+  void sendControl({ type: "hook", hook: "reviewStage" });
 });
 $("btnRealRule").addEventListener("click", () => {
   if (realRuleWarn && !confirm(realRuleWarn)) return;

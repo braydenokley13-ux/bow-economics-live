@@ -64,6 +64,12 @@ function renderDeskTable(wrap: HTMLElement, view: Record<string, unknown>): void
     <tbody>${rows
       .map((r) => {
         const pending = r["pending"] && typeof r["pending"] === "object" ? (r["pending"] as V) : null;
+        // A committed waive is a February move too — shown in the same three
+        // columns, marked as done rather than pending.
+        const waives = arr(r["waived"]);
+        const lastWaive = waives.length > 0 ? (waives[waives.length - 1] as V) : null;
+        const move = pending ?? lastWaive;
+        const moveState = pending ? "yes" : lastWaive ? `waived ${str(lastWaive["name"])}` : "—";
         const openJobs = arrStr(r["openJobs"]).join(", ");
         const dealt = r["dealt"] === true ? " (dealt)" : "";
         return `
@@ -73,9 +79,9 @@ function renderDeskTable(wrap: HTMLElement, view: Record<string, unknown>): void
         <td>${escapeHtml(openJobs || "—")}</td>
         <td>${escapeHtml(dollars(r["wall"]) ?? "—")}</td>
         <td>${escapeHtml(dollars(r["committed"]) ?? "—")}</td>
-        <td>${pending ? "yes" : "—"}</td>
-        <td>${escapeHtml(pending ? str(pending["chip"], "—") : "—")}</td>
-        <td class="slt-desktable-line">${escapeHtml(pending ? str(pending["line"], "—") : "—")}</td>
+        <td>${escapeHtml(moveState)}</td>
+        <td>${escapeHtml(move ? str(move["chip"], "—") : "—")}</td>
+        <td class="slt-desktable-line">${escapeHtml(move ? str(move["line"], "—") : "—")}</td>
       </tr>`;
       })
       .join("")}</tbody>`;

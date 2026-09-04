@@ -974,6 +974,12 @@ function teacherView(state: SameLineL2State, phase: CanonicalPhase): unknown {
       wall: d.position.wall,
       committed: d.position.committed,
       pending: state.pending[d.seatId] ?? null,
+      // A February waive resolves the moment it is committed (D59 ruling 2), so
+      // it never sits in `pending` — the console still needs to see the move
+      // and the reason, or a room that only waived reads as a room that did nothing.
+      waived: state.tape
+        .filter((t) => t.seatId === d.seatId && t.kind === "waive")
+        .map((t) => ({ name: t.chose.waived ?? "", chip: t.forgone.chip, line: t.forgone.line })),
       report: reportView(d),
     })),
     beat: state.beat,

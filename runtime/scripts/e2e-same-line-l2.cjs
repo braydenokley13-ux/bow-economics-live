@@ -279,8 +279,10 @@ async function runBand(browser, band, label) {
   let sawWaivable = false;
   for (let i = 0; i < DESKS; i += 1) {
     const p = desks[i];
+    // One desk waives (the modeled July makes every stock desk waivable, D63);
+    // the rest sign, so both February paths reach the teacher console.
     const waiveBtn = await p.$(".sl2-waive-btn");
-    if (waiveBtn) {
+    if (waiveBtn && !sawWaivable) {
       sawWaivable = true;
       await waiveBtn.click();
     } else {
