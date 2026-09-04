@@ -43,30 +43,28 @@ files and converges in this file. Builders never certify their own work.
   (`spotlightView`/`pressCandidates`); the refused-pick dead-picker regression (hunt on 0dffaf4) fixed at
   `play/main.ts` onRejected. In flight: Press Conference runtime (board render + tests), Full House carry
   intake's five W4 direction items. Owed: an e2e that races two seats for one desk; L1 apron-on-holds repair.
-- **C2 THE SEASON — SERVER GREEN, CLIENT RECONCILING.** `sameLine/l2.ts` + `seasonCarry.ts` +
-  `seasonData.ts` registered as `m1l2-the-season` (33/33). Every club/twin slot a carried
-  franchise does not fill is dealt stock. Press Conference runs through `spotlightView`/
-  `pressCandidates` (no `callToPodium`); stretch dropped (ruling 2). Client renderers
-  (`sameLineL2*.ts`) built against inferred payloads — field-by-field reconciliation in flight;
-  L2 e2e script owed. Research: `W2_SEASON_RESEARCH.md`.
-- **C3 THE DEADLINE — ENGINE + CLIENT IN FLIGHT.** Engine (`l3.ts`, `market.ts`, `deadlineCarry.ts`)
-  mid-build; `sameLineMarket.test.ts` had 7 red D61 cases at the last full run. Client renderers
-  (`sameLineL3*.ts`) landed tsc-clean; SEND OFFER disabled until the engine exposes a public desk
-  key (`holderId`, not a seat id), `withdrawAccept` (5-6), `books.taxSalaryText`, per-object
-  `annualText`, `naming`, per-desk `settled`, `spotlightView`/`pressCandidates` — all requested.
-- **C4 THE BILL — MODULE + CLIENT LANDED, BROWSER TRUTH IN FLIGHT.** `fullHouse.ts` carry intake
-  (86/86); play/board/teach render roster note, destinations, night share, coverage, the
-  seventh-step ledger. QA harness running; screens will land under `module-2/screens-w4/`.
-- **C5 W5/W6 — MODULES IN FLIGHT.** `hostTheLeague.ts`: seed IN (real Full House shape:
-  `desks`/`deskOrder`, `marketId`, `cash`, `clearedTheBill`), levy on `gate + localMedia`,
-  exact split, six-stage ritual, `poolPosition`, THE VISITOR LINE, `spotlightView`/`pressCandidates`;
-  tests being written separately; synthesis/director beats in flight; no client wiring yet.
-  `writeTheRule.ts`: THE FLOOR was an unreachable skeleton with a dollar-vs-percent unit bug —
-  wave 2 (settlement repoint to the floor ballot, reduce wiring, tests) in flight; views next.
-- **Cross-cutting landed:** Press Conference runtime + `scripts/e2e-press-conference.cjs` (20 PASS;
-  stuck-podium remount regression fixed); §12.2 safeguards (invite first, decline once, teacher
-  first question) in flight; L1 apron-on-holds bounded repair in flight; fresh Economic Truth
-  review of the W5/W6 chains and R-7 (W3 real examples) in flight.
+- **C2 THE SEASON — SERVER + CLIENT LANDED, BROWSER TRUTH IN FLIGHT.** `m1l2-the-season` (33/33);
+  client reconciled to the real reducer (fixed-price market, `claimDesk {sourceSeatId}`, the
+  inferred negotiation UI removed). `scripts/e2e-same-line-l2.cjs` being written.
+- **C3 THE DEADLINE — ENGINE FINISHING.** Client renderers landed; engine adding the public desk key
+  (`holderId`/`toDesk`), `withdrawAccept` (5-6), `books.taxSalaryText`, per-object `annualText`,
+  `naming` (with a `real` line, D62), per-desk `settled`, `spotlightView`/`pressCandidates`.
+  R-7 real examples adopted into §9 (`W3_R7_REAL_EXAMPLES.md`); §3 R1 text now matches D61.
+- **C4 THE BILL — LANDED; QA FINDINGS BEING FIXED.** Browser truth (`scripts/e2e-w4-bill.cjs`,
+  `module-2/screens-w4/`): linked and unlinked rooms play; board ledger at step 7 carries no seat
+  id. Defects: RENEWALS "%" at 5-6, doc references on the student screen, `-$` outflows at 5-6 —
+  builder on it. /teach could not link Full House at all — fixed (table-driven links for the chain).
+- **C5 W5/W6.** W5 landed on all three surfaces (levy line, how-you-got-here, pool position, six-
+  stage ritual with VISITOR + ROAD lines, teacher stage controls, director beats) — 89/89;
+  `scripts/e2e-w5-pool.cjs` being written; board/teach visuals reuse generic classes (Visual
+  pass owed). W6: THE FLOOR settlement repointed to the floor ballot in dollars, reducer wired,
+  63/63; D62 feasibility sweep + level retune + harness P6 repoint in flight; views next.
+- **Cross-cutting landed:** Press Conference §12.2 safeguards (invite first, decline once per
+  session, teacher first question) — 30/30, browser harness being extended. Fidelity notes for
+  the founder: the Bible says "first Press Conference of the course is invited" and "decline once
+  per course"; the build gates every shortlist call through invite and counts the decline per
+  session (no cross-session seat memory exists yet). Suite: 876/877 (only the pre-D61 tuning
+  harness P6, being repointed). L1 e2e green both bands. L1 apron-on-holds repair in flight.
 - C6 director/stage · C7 gauntlet + founder packet.
 
 ## Hot files (reserve before parallel writes)
