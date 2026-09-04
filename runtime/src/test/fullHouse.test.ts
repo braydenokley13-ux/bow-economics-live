@@ -2117,6 +2117,64 @@ test("W4 follow-up repair (unlinked-room band bug): an unseeded 7-8 room reports
   assert.equal(JSON.stringify(view56).includes("%"), false, "an unlinked 5-6 room must never render a `%`");
 });
 
+/**
+ * Four desks that played all five nights, at the same moving prices
+ * `playedOut()` uses, except seat-1 also makes a real `gateCall` on Night 1
+ * (locking, calling, then letting the bell settle it) so `gateCallResolvedFor`
+ * has a real called/actual pair to resolve, band-gated, on every history entry.
+ */
+function playedOutWithGateCall(band: "5-6" | "7-8"): FullHouseState {
+  let state = seatedBand(4, band);
+  const prices = [34, 58, 70, 46, 34];
+  for (let i = 0; i < NIGHT_COUNT; i += 1) {
+    const p = prices[i]!;
+    if (i === 0) {
+      let next = state;
+      next = ok(act(next, { type: "setPrice", price: p }, "PLAY", "seat-1"));
+      next = ok(act(next, { type: "lock" }, "PLAY", "seat-1"));
+      next = ok(act(next, { type: "gateCall", band: "packed" }, "PLAY", "seat-1"));
+      next = ok(act(next, { type: "setPrice", price: p + 6 }, "PLAY", "seat-2"));
+      next = ok(act(next, { type: "lock" }, "PLAY", "seat-2"));
+      next = ok(act(next, { type: "setPrice", price: p - 6 }, "PLAY", "seat-3"));
+      next = ok(act(next, { type: "lock" }, "PLAY", "seat-3"));
+      next = ok(act(next, { type: "setPrice", price: p }, "PLAY", "seat-4"));
+      next = ok(act(next, { type: "lock" }, "PLAY", "seat-4"));
+      state = ok(act(next, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+    } else {
+      state = playNight(state, { "seat-1": p, "seat-2": p + 6, "seat-3": p - 6, "seat-4": p });
+    }
+  }
+  return state;
+}
+
+// A true negative-dollar figure (`outflowText`'s 7-8 form) is a "-$" not
+// preceded by a digit, e.g. "-$1,234". A dollar RANGE in static copy, e.g.
+// "$10-$120" or "event dial $0-$50,000", also contains the literal
+// substring "-$" but is not a negative amount — the dash there sits right
+// after a digit. Excluding that case is what keeps this walker from
+// false-positiving on legitimate price-range copy that never changed.
+const NEGATIVE_DOLLAR = /(^|[^0-9])-\$\d/;
+
+test("W4 follow-up repair 5: a played-out 5-6 room never prints `%` or a negative dollar figure in studentView across every phase (a real gateCall and COUNTERFACTUAL included); a 7-8 room does print `%` somewhere", () => {
+  const room56 = playedOutWithGateCall("5-6");
+  for (const seatId of Object.keys(room56.desks)) {
+    for (const phase of ALL_PHASES) {
+      const raw = JSON.stringify(fullHouseModule.studentView(room56, seatId, phase));
+      assert.equal(raw.includes("%"), false, `5-6 ${phase} view for ${seatId} must never render a percent sign`);
+      assert.equal(NEGATIVE_DOLLAR.test(raw), false, `5-6 ${phase} view for ${seatId} must never render a negative dollar figure`);
+    }
+  }
+
+  const room78 = playedOutWithGateCall("7-8");
+  let sawPercent = false;
+  for (const seatId of Object.keys(room78.desks)) {
+    for (const phase of ALL_PHASES) {
+      if (JSON.stringify(fullHouseModule.studentView(room78, seatId, phase)).includes("%")) sawPercent = true;
+    }
+  }
+  assert.equal(sawPercent, true, "a 7-8 room must render a `%` somewhere across its phases");
+});
+
 test("W4 QA repair 1: RENEWALS prints a fraction sentence at 5-6, never a percent sign; 7-8 keeps the percent", () => {
   const room56 = playedOut();
   for (const seatId of Object.keys(room56.desks)) {

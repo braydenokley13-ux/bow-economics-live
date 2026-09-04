@@ -3270,6 +3270,29 @@ export function teacherWatchFor(state: WriteRuleState, phase: CanonicalPhase): W
     }
   }
 
+  if (phase === "PLAY" && state.stage === "floorRounds") {
+    const selfBound = live.filter((c) => c.floorProposal?.on === true && c.stakesCard?.wouldClear === false).map(deskHandleFor);
+    if (selfBound.length > 0) {
+      out.push({
+        id: "self-bound",
+        label: "Proposed a floor its own club would not clear",
+        desks: selfBound,
+        action: "Its own stakes card says this club would forfeit under the line it just proposed. Ask why — holding your own club to a standard you have not yet met is a real position, not a mistake to correct.",
+        urgency: "now",
+      });
+    }
+    const offVotes = live.filter((c) => c.floorProposal?.on === false).length;
+    if (live.length > 0 && offVotes * 2 > live.length) {
+      out.push({
+        id: "floor-off-bloc",
+        label: `More than half the room has proposed OFF (${offVotes}/${live.length})`,
+        desks: live.filter((c) => c.floorProposal?.on === false).map(deskHandleFor),
+        action: "Do not push back. A room that votes no floor is a real, teachable outcome — the season simply runs without institution 2, lived rather than announced, and CONSEQUENCE still has plenty to show them.",
+        urgency: "later",
+      });
+    }
+  }
+
   if (phase === "PLAY" && state.stage === "season") {
     const stalled = live.filter((c) => !c.locked).map(deskHandleFor);
     if (stalled.length > 0) {
@@ -3537,6 +3560,47 @@ export function teacherDirector(state: WriteRuleState, phase: CanonicalPhase): D
           ask: [{ q: "Whose money is this rule about to move?", answer: "Anything. You are only making sure they know the rule is live before they touch a dial." }],
           dontExplainYet: ["What the rule will do to the reinvest dial. Twelve minutes from now they will show you."],
           trigger: "Close the first week when the room is ready.",
+          timeCut: TIME_CUT,
+        };
+      }
+      if (state.stage === "floorRounds") {
+        const liveFloor = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+        const inFloor = liveFloor.filter((c) => c.floorProposal !== null).length;
+        return {
+          phase,
+          minuteBudget: "4 min for both rounds",
+          now: [
+            "This is institution 2, THE FLOOR — a separate vote from the share the room just sealed. Every desk already has its own stakes card, priced against the share this room actually adopted: what it would cost THIS club if the floor bound and it did not move.",
+            `Round ${Math.min(state.floorRoundIndex + 1, FLOOR_ROUND_COUNT)} of ${FLOOR_ROUND_COUNT}. ${inFloor}/${liveFloor.length} desks have a proposal in.`,
+            state.band === "5-6"
+              ? `At this band the ballot is one line: turn the floor ON at ${money(FLOOR_LINE_5_6)}, or OFF.`
+              : `At this band the ballot is three lines: ${FLOOR_LINES_7_8.map((l) => money(l)).join(", ")}, or OFF.`,
+            state.floorRoundIndex >= FLOOR_ROUND_COUNT
+              ? "The floor vote is SEALED. Nothing a desk touches now can change what this room adopts."
+              : "Institution 2's own step is a SEPARATE control from the share's step — it never advances the season by itself.",
+          ],
+          ask: [{ q: "Look at your own stakes card. Would the floor cost you anything, or nothing at all?", answer: "Both answers are legitimate. A desk it would not cost is arguing about someone else's money, and that is worth naming out loud." }],
+          dontExplainYet: ["Whether the floor is a good idea. That verdict is ARGUE's and SYNTHESIS's, not this vote's."],
+          trigger:
+            state.floorRoundIndex >= FLOOR_ROUND_COUNT - 1
+              ? "After this round: press the institution step once more to run the two-thirds test and print the floor."
+              : "Press the institution step to close this round.",
+          timeCut: TIME_CUT,
+        };
+      }
+      if (state.stage === "floorAdopted") {
+        const floor = floorRuleFor(state);
+        return {
+          phase,
+          minuteBudget: "1 min",
+          now: [
+            floor.on
+              ? `THE FLOOR is set at ${money(floor.level)}. A club that does not clear it in dollars, this week, forfeits half its pot share to ${floor.recipient === "everyone" ? "every club in the league" : "the clubs that did clear it"}.`
+              : "NO FLOOR. The room's own vote did not clear the two-thirds test, and the season runs with institution 2 lived, not announced.",
+          ],
+          ask: [{ q: "Whose reinvest dial does this rule actually watch?", answer: "Anything. You are only making sure they know the season is about to open under both institutions at once." }],
+          dontExplainYet: ["What the floor will do to anybody's dial. CONSEQUENCE shows them."],
+          trigger: "Open the season when the room is ready.",
           timeCut: TIME_CUT,
         };
       }
@@ -3836,6 +3900,87 @@ function floorLineFor(floor: FloorRule, w: SettledWeek): { bound: boolean; docke
     receivedText: receivedAmt > 0 ? `received ${money(receivedAmt)} from the floor pool` : "received nothing from the floor pool",
     line: floor.level,
   };
+}
+
+/**
+ * Wave 3b: THE PODIUM, this module's own half. Public only — the caller's
+ * own club and its own floor position, never another seat's dial.
+ */
+export function spotlightViewFor(state: WriteRuleState, seatId: SeatId, phase: CanonicalPhase): unknown {
+  const slot = state.seatToSlot[seatId];
+  if (slot === undefined) return null;
+  const club = state.clubs[slot]!;
+  const lastWeek = club.weeks[club.weeks.length - 1] ?? null;
+  return {
+    phase,
+    club: defOf(club).short,
+    marketBand: profileOf(club).sizeLabel,
+    floorLine: lastWeek ? floorLineFor(floorRuleFor(state), lastWeek) : null,
+    stakes: club.stakesCard
+      ? { atLevelText: money(club.stakesCard.atLevel), wouldClear: club.stakesCard.wouldClear }
+      : null,
+  };
+}
+
+/**
+ * Wave 3b: THE SHORTLIST. Three reasons this module's own state can name —
+ * the bound club that reinvested least, the club that took the most out of
+ * the forfeited pool, and the desk whose own proposal matched the line the
+ * room adopted (the pivotal vote) — never a coin flip, never "who is
+ * winning", empty before the floor has actually been adopted.
+ */
+export function pressCandidatesFor(state: WriteRuleState, phase: CanonicalPhase): readonly { seatId: SeatId; label: string; why: string }[] {
+  const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+  const floor = state.institutions.floor;
+  const out: { seatId: SeatId; label: string; why: string }[] = [];
+  if (!floor || !floor.condition) return out;
+
+  let leastClub: Club | null = null;
+  let leastAmt = Number.POSITIVE_INFINITY;
+  let mostClub: Club | null = null;
+  let mostAmt = -1;
+  for (const c of live) {
+    let received = 0;
+    let boundReinvest: number | null = null;
+    for (const w of c.weeks) {
+      received += w.pot.floorReceivedDollars;
+      if (w.pot.floorDocked && (boundReinvest === null || w.reinvestSpend < boundReinvest)) boundReinvest = w.reinvestSpend;
+    }
+    if (boundReinvest !== null && boundReinvest < leastAmt) {
+      leastAmt = boundReinvest;
+      leastClub = c;
+    }
+    if (received > mostAmt) {
+      mostAmt = received;
+      mostClub = c;
+    }
+  }
+  if (leastClub) {
+    out.push({
+      seatId: leastClub.seatId!,
+      label: deskHandleFor(leastClub),
+      why: `Forfeited under the floor while putting back the least of any bound club — ${money(leastAmt)} reinvested the week it was docked.`,
+    });
+  }
+  if (mostClub && mostAmt > 0) {
+    out.push({
+      seatId: mostClub.seatId!,
+      label: deskHandleFor(mostClub),
+      why: `Took the most out of the floor's own forfeited pool of any club in the league — ${money(mostAmt)} across the season.`,
+    });
+  }
+  const pivot = live.find((c) => {
+    const lastProposal = [...c.floorProposals].reverse().find((p) => p !== null) ?? null;
+    return lastProposal && lastProposal.on && lastProposal.level === floor.share;
+  });
+  if (pivot) {
+    out.push({
+      seatId: pivot.seatId!,
+      label: deskHandleFor(pivot),
+      why: `Proposed exactly the line this room adopted for the floor, ${money(floor.share)} — the pivotal vote.`,
+    });
+  }
+  return out;
 }
 
 /* --------------------------------------------------------------- module -- */
@@ -4930,6 +5075,15 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
           revealed: state.kingsRevealed,
           ...(state.kingsSplitShown ? { split: agg.kingsSplit } : {}),
           ...(state.kingsRevealed ? { revealCopy: ARGUE_REVEAL_COPY } : {}),
+          // Wave 3b: the institution recap's own paging state, honestly —
+          // `teacher:reviewStage` pages between the two institutions this
+          // room actually wrote, and this is what stage the teacher is on.
+          review: {
+            stage: state.reviewStage,
+            stageCount: 2,
+            stageName: state.reviewStage === 0 ? "The Share" : "The Floor",
+            showing: state.reviewStage === 0 ? ruleView(state) : floorInstitutionView(state),
+          },
         });
       case "SYNTHESIS": {
         // The desk used to carry the whole deck the moment SYNTHESIS opened, so
@@ -5051,6 +5205,47 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       synthPrevLabel: "Back a card",
       synthCurrentLabel: `Card ${state.synthPage + 1} of ${synthesisCards(state, agg).length}`,
       synthPageNote: "One card at a time on the projector. Each desk gets the cards you have already turned to, so a pair can look back without reading ahead of the room.",
+      // Wave 3b: THE FLOOR's own console, parallel to `room`/`ruleStepLabel`
+      // above — live only during `floorRounds` (`null` otherwise, same
+      // discipline `nextRevealStage` already uses for a beat that has not
+      // arrived), never a seat identity, only desk handles (teacher-only
+      // surface, same as `room`/`deskStrip`).
+      floorRound:
+        state.stage === "floorRounds"
+          ? (() => {
+              const liveFloor = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+              const proposals = liveFloor.map((c) => ({
+                label: deskHandleFor(c),
+                on: c.floorProposal?.on ?? null,
+                level: c.floorProposal ? (c.floorProposal.on ? c.floorProposal.level : FLOOR_OFF) : null,
+                levelText: c.floorProposal ? money(c.floorProposal.on ? c.floorProposal.level : FLOOR_OFF) : null,
+                recipient: c.floorProposal?.recipient ?? null,
+                wouldClear: c.stakesCard?.wouldClear ?? null,
+              }));
+              const votedLevels = proposals.map((p) => p.level).filter((l): l is number => l !== null);
+              return {
+                index: Math.min(state.floorRoundIndex + 1, FLOOR_ROUND_COUNT),
+                count: FLOOR_ROUND_COUNT,
+                proposals,
+                proposalCount: proposals.filter((p) => p.on !== null).length,
+                deskCount: liveFloor.length,
+                medianText: votedLevels.length > 0 ? money(medianOf(votedLevels)) : null,
+              };
+            })()
+          : null,
+      // Wave 3b: both institutions' own adopted summaries, teacher-facing —
+      // the same shape the student devices carry, referenced here rather
+      // than rebuilt (`ruleView`/`floorInstitutionView` are the one source
+      // for both surfaces).
+      institutions:
+        state.stage === "floorAdopted" || state.stage === "season" || state.stage === "seasonDone"
+          ? { share: ruleView(state), floor: floorInstitutionView(state) }
+          : null,
+      // Wave 3b: the ARGUE-phase institution recap's own paging state,
+      // exposed honestly — `teacher:reviewStage` pages this counter and no
+      // view read it until now. Two stages, SHARE then FLOOR, per the
+      // reducer's own placeholder total.
+      reviewStage: { index: state.reviewStage, count: 2, stageName: state.reviewStage === 0 ? "The Share" : "The Floor" },
       director: teacherDirector(state, phase),
       watchFor: teacherWatchFor(state, phase),
       // The shell's director layer reads `projectorNow`; the same key name L1
@@ -5072,6 +5267,12 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       privacyLine: BOARD_PRIVACY_LINE,
       rule: ruleView(state),
       sources: SOURCE_NOTES,
+      // Wave 3b: both institutions' own adopted summaries, public — never a
+      // seat, never a desk, the room's own two verdicts alone.
+      institutions:
+        state.stage === "floorAdopted" || state.stage === "season" || state.stage === "seasonDone"
+          ? { share: ruleView(state), floor: floorInstitutionView(state) }
+          : null,
     };
     switch (phase) {
       case "LOBBY":
@@ -5131,6 +5332,41 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             statusQuoCopy: state.adopted?.how === "statusQuo" ? STATUS_QUO_COPY : state.adopted?.how === "leagueOffice" ? LEAGUE_OFFICE_COPY : null,
           });
         }
+        if (state.stage === "floorRounds") {
+          // Wave 3b: THE FLOOR's own public tally — counts only, never a
+          // desk, never a seat, never a proposer's own level tied to it.
+          const liveFloor = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+          const proposalsIn = liveFloor.filter((c) => c.floorProposal !== null).length;
+          const onCount = liveFloor.filter((c) => c.floorProposal?.on === true).length;
+          const offCount = liveFloor.filter((c) => c.floorProposal?.on === false).length;
+          const levelCounts = floorLevelsFor(state.band).map((level) => ({
+            levelText: money(level),
+            count: liveFloor.filter((c) => c.floorProposal?.on === true && c.floorProposal.level === level).length,
+          }));
+          return tag({
+            ...common,
+            mode: "floorRounds",
+            title: `THE FLOOR — ROUND ${Math.min(state.floorRoundIndex + 1, FLOOR_ROUND_COUNT)} OF ${FLOOR_ROUND_COUNT}`,
+            floorRound: {
+              index: Math.min(state.floorRoundIndex + 1, FLOOR_ROUND_COUNT),
+              count: FLOOR_ROUND_COUNT,
+              onCount,
+              offCount,
+              levelCounts,
+              proposalsIn,
+              deskCount: liveFloor.length,
+            },
+            sealed: state.floorRoundIndex >= FLOOR_ROUND_COUNT,
+          });
+        }
+        if (state.stage === "floorAdopted") {
+          const floor = floorRuleFor(state);
+          return tag({
+            ...common,
+            mode: "floorAdopted",
+            title: floor.on ? "THE FLOOR IS SET" : "NO FLOOR",
+          });
+        }
         return tag({
           ...common,
           mode: "season",
@@ -5184,6 +5420,31 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
             "Three weeks shows the transfer. What the effort that stopped actually costs lands in DRAW, next season — and nothing in this lesson prices a point of Draw in dollars.",
           question: consequenceQuestionFor(state, agg),
           potFlows: agg.potFlows,
+          // Wave 3b: THE FLOOR's own settle totals — league-wide, never a
+          // club, never a seat. `null` whenever no floor is in force.
+          ...(floorRuleFor(state).on
+            ? {
+                floorSettle: (() => {
+                  const liveFloor = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+                  let dockedTotal = 0;
+                  let receivedTotal = 0;
+                  const bound = new Set<number>();
+                  for (const c of liveFloor) {
+                    for (const w of c.weeks) {
+                      dockedTotal += w.pot.floorForfeitedDollars;
+                      receivedTotal += w.pot.floorReceivedDollars;
+                      if (w.pot.floorDocked) bound.add(c.slot);
+                    }
+                  }
+                  return {
+                    dockedTotalText: money(dockedTotal),
+                    receivedTotalText: money(receivedTotal),
+                    boundCount: bound.size,
+                    clubCount: liveFloor.length,
+                  };
+                })(),
+              }
+            : {}),
         });
       case "COUNTERFACTUAL":
         return tag({
@@ -5246,4 +5507,7 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
   aggregate(state) {
     return computeAggregate(state);
   },
+
+  spotlightView: spotlightViewFor,
+  pressCandidates: pressCandidatesFor,
 };
