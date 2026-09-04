@@ -2920,7 +2920,14 @@ export const BILL_SEASON_LINE_78 = (payrollText: string, leagueText: string): st
  * percentage). Never a named suffering individual (the direction's
  * non-negotiables).
  */
-export type Destination = { readonly id: string; readonly label: string; readonly sentence: string; readonly source: string };
+/**
+ * `source` is student-facing and MUST stay plain and human — a reader, never a
+ * document. `sourceRef` carries the doc citation (file, section, date, read
+ * date) for a teacher surface that needs to check the number; it is stripped
+ * before either the student or the board ever sees a destination (see
+ * `studentFacingDestinations`).
+ */
+export type Destination = { readonly id: string; readonly label: string; readonly sentence: string; readonly source: string; readonly sourceRef: string };
 
 export const DESTINATIONS_78: readonly Destination[] = [
   {
@@ -2928,21 +2935,24 @@ export const DESTINATIONS_78: readonly Destination[] = [
     label: "PLAYERS' ESCROW",
     sentence:
       "League-wide, players are promised about half of all basketball revenue. When the league collects more than that, the extra is held back and paid out to the players — $480 million, returned for the 2024-25 season.",
-    source: "W4_BILL_RESEARCH.md §2 (Sportico, read 2026-09-04, HIGH)",
+    source: "the players' and owners' agreement, 2023",
+    sourceRef: "W4_BILL_RESEARCH.md §2 (Sportico, read 2026-09-04, HIGH)",
   },
   {
     id: "tax-pool",
     label: "THE TAX POOL",
     sentence:
       "A club over the tax line pays real cash to the league. Half of it is split evenly among every club that stayed under it — $11.5 million to each of 20 clubs in 2024-25.",
-    source: "W4_BILL_RESEARCH.md §3 (cbaguide.com, read 2026-09-04, HIGH)",
+    source: "league tax-sharing rules, 2024-25 figure",
+    sourceRef: "W4_BILL_RESEARCH.md §3 (cbaguide.com, read 2026-09-04, HIGH)",
   },
   {
     id: "revenue-sharing",
     label: "REVENUE SHARING",
     sentence:
       "Money also moves every year from the biggest markets to the smaller ones. Memphis received $28 million this way in the 2021-22 season. The formula itself is confidential — no percentage is published.",
-    source: "W4_BILL_RESEARCH.md §5",
+    source: "league revenue sharing, 2021-22 figure",
+    sourceRef: "W4_BILL_RESEARCH.md §5",
   },
 ];
 
@@ -2953,21 +2963,28 @@ export const DESTINATIONS_56: readonly Destination[] = [
     label: "PLAYERS' ESCROW",
     sentence:
       "Around the league, players are promised about half of all the money basketball makes. If teams end up paying them less than that in one year, the held-back money is paid to them later.",
-    source: "W4_BILL_RESEARCH.md §2",
+    source: "the players' and owners' agreement",
+    sourceRef: "W4_BILL_RESEARCH.md §2",
   },
   {
     id: "tax-pool",
     label: "THE TAX POOL",
     sentence: "Teams that spend the most send real money to the league. Half of that money is shared with every team that spent less.",
-    source: "W4_BILL_RESEARCH.md §3",
+    source: "the league's tax-sharing rules",
+    sourceRef: "W4_BILL_RESEARCH.md §3",
   },
   {
     id: "revenue-sharing",
     label: "REVENUE SHARING",
     sentence: "Every year, some money also moves from the biggest-city teams to smaller ones, so more teams can compete.",
-    source: "W4_BILL_RESEARCH.md §5",
+    source: "the league's revenue-sharing rules",
+    sourceRef: "W4_BILL_RESEARCH.md §5",
   },
 ];
+
+/** Strips `sourceRef` before a destination list reaches a student or board surface — the doc citation is a teacher-only fact. */
+const studentFacingDestinations = (list: readonly Destination[]): readonly Omit<Destination, "sourceRef">[] =>
+  list.map(({ id, label, sentence, source }) => ({ id, label, sentence, source }));
 
 /**
  * D59 W4 ruling 3: `clearedTheBill` (season-end binary, still frozen on the
@@ -3035,7 +3052,7 @@ function ledgerFor(state: FullHouseState): {
             taxed.reduce((s, d) => s + d.obligation!.taxBill, 0),
           )} in real cash. Half of every taxed dollar is split among the clubs that stayed under the line.`,
         };
-  return { destinations: band === "5-6" ? DESTINATIONS_56 : DESTINATIONS_78, coverage, moment };
+  return { destinations: studentFacingDestinations(band === "5-6" ? DESTINATIONS_56 : DESTINATIONS_78), coverage, moment };
 }
 
 /** BC-3: every real figure in product copy carries its date. */
@@ -3246,8 +3263,21 @@ function resultHeadlineFor(night: SettledNight): string {
   return `NIGHT ${nightNumber} · ${s.turnout.toLocaleString()} CAME AT $${night.price}`;
 }
 
+/**
+ * W4 QA repair 1/2: a band-appropriate presentation of the two renewals
+ * figures and the three cash outflows, so the client never has to decide
+ * whether a `%` or a `-$` is legal to print. 5-6 gets a fraction sentence and
+ * a spent-word outflow (`profileFor("5-6").allowsPercentages === false`
+ * forbids both `%` and a bare negative on that band); 7-8 keeps the percent
+ * and the signed dollar form.
+ */
+const renewalsPointsText = (points: number, band: GradeBand): string =>
+  profileFor(band).allowsPercentages ? `${points}%` : `${points} of every 100 came back`;
+const outflowText = (amount: number, band: GradeBand): string =>
+  profileFor(band).allowsPercentages ? `-$${amount.toLocaleString()}` : `spent $${amount.toLocaleString()}`;
+
 /** The ONLY function that turns a settled night into something a view may carry. `hidden` never crosses it. */
-function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
+function viewNight(night: SettledNight, market: Market, carryFansIn = 0, band: GradeBand = "5-6") {
   const nightCard = CARD_BY_ID.get(night.cardId) ?? null;
   return {
     // How the pair's locked-and-waiting call came out. The SENTENCE is authored
@@ -3274,14 +3304,24 @@ function viewNight(night: SettledNight, market: Market, carryFansIn = 0) {
     inArena: night.settlement.inArena,
     total: night.settlement.total,
     bill: night.settlement.bill,
+    // W4 QA repair 2: BUILDING BILL, printed by band — never a `-$` at 5-6.
+    billOutflowText: outflowText(night.settlement.bill, band),
     // D59: the players line, kept apart from the doors. Zero on a stock desk.
     payrollLine: night.settlement.payrollLine ?? 0,
     billTotal: night.settlement.bill + (night.settlement.payrollLine ?? 0),
     spendPaid: night.settlement.spendPaid,
+    // W4 QA repair 2: EVENT MONEY, printed by band. Only read when spendPaid > 0.
+    eventOutflowText: outflowText(night.settlement.spendPaid, band),
     bowlCost: night.settlement.bowlCost,
+    // W4 QA repair 2: MORE SEATS, printed by band. Only read when bowlCost > 0.
+    bowlOutflowText: outflowText(night.settlement.bowlCost, band),
     net: night.settlement.net,
     renewalsBefore: night.renewalsBefore,
     renewalsAfter: night.renewalsAfter,
+    // W4 QA repair 1: the same two figures, printed by band — never a `%` at
+    // 5-6 (`profileFor("5-6").allowsPercentages === false`).
+    renewalsBeforeText: renewalsPointsText(night.renewalsBefore, band),
+    renewalsAfterText: renewalsPointsText(night.renewalsAfter, band),
     renewalMove: night.renewalMove,
     cashAfter: night.cashAfter,
     resaleNote:
@@ -3415,7 +3455,7 @@ export function billView(desk: Desk, band: GradeBand, payrollDefinition: string 
       tonightText: `$${tonight.players.toLocaleString()}`,
       horizonLine: BILL_HORIZON_LINE,
       scaleLine: BILL_SCALE_LINE,
-      destinations: DESTINATIONS_56,
+      destinations: studentFacingDestinations(DESTINATIONS_56),
     };
   }
   return {
@@ -3448,7 +3488,7 @@ export function billView(desk: Desk, band: GradeBand, payrollDefinition: string 
     })),
     seasonLine: BILL_SEASON_LINE_78(o.payrollText, millionsText(o.leagueMoney)),
     caption: BILL_CAPTION_78,
-    destinations: DESTINATIONS_78,
+    destinations: studentFacingDestinations(DESTINATIONS_78),
     table: [
       { step: "Tax salary (players this season)", real: o.payroll },
       { step: "National TV money, off the top", real: o.leagueMoney },
