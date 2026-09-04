@@ -1774,3 +1774,52 @@ Builders never certify their own work; the orchestrator runs the suite and the b
 - **Owner:** lead-integrator (rulings), founder (operating model)
 - **Evidence:** the four spec files above; `runtime/src/modules/sameLine/carry.ts`;
   `runtime/src/test/sameLineCarry.test.ts` (every club reconciles: residual ≥ 0, < $6M).
+
+## D61. Economic Truth review of W3 / W5 / W6 before the reducers landed — rulings adopted
+
+An independent Economic Truth pass (opus, 2026-09-04, computed against the compiled
+modules; scripts in session scratch) rated `W3_THE_DEADLINE_SPEC.md` and `W5_W6_SPEC.md`
+FALSE LESSON as written. The builders were stopped and redirected before the composer,
+the floor ballot and the pool ritual landed. Adopted:
+
+- **W3 R1 replaced by the room-absorption rule.** "Incoming ≤ outgoing" on both sides
+  makes only exactly-equal-salary trades legal (14 distinct salaries on the board; the
+  market clears nothing; R2–R4 and the seed-out become dead code; the spec's own
+  consequence chapter describes trades §3 forbids). Now: OUT bar = salary sent + cap room
+  remaining after the trade; legal iff incoming ≤ OUT bar. A desk ending over the cap
+  matches 100%; a desk with room absorbs. Simplification recorded: real below-apron clubs
+  get 125% / 200% bands — misconception risk "cap room is worthless in a trade" is the
+  one avoided, "every trade must be even" the one still carried into the debrief.
+- **Picks carry an in-lesson cost**: the settle prints "open again next season" from
+  `yearsRemaining`, so a rental bought with a pick reopens the hole; `picksOwed` still
+  carries to Week 4 as OWED.
+- **The sweep declares its family** (desk count ∈ {12,16}; surplus-role distribution;
+  prices from the real BOARD; inbox concentration spread / one-hub) and names four
+  non-covered environments (one-hub, no-inventory, price-degenerate, friends bloc).
+  The critic's dissent from D60's "build proceeds" is recorded: R1, not the sweep, was
+  the blocker.
+- 5–6 may withdraw its single live accept before the hour closes (no speed premium);
+  the inbox cap is rationing, never "attention priced"; blocked reaches aggregate to
+  one board integer; twin copy: "same books on day one — different rooms answered them".
+- **W6 THE FLOOR is a flat dollar line per week** ($300,000 working value; 7–8 chooses
+  among three lines), not a percent of own revenue: the percent form binds the same
+  big-market coalition as the share (Lakers, Boston, Philadelphia) and does not invert;
+  the flat line binds seven small markets and matches the real absolute floor
+  ($148,465,000 = 90% of the cap, identical for every club). `adopted.condition` is
+  repointed at the floor ballot so the second vote is never cosmetic. Tuning sweep
+  before ship.
+- **W5 ritual rebuilt around what the model produces**: "the bars IN are different; the
+  bars OUT are the same." No scripted chip counts, no "big pays / small takes" (Miami is
+  a net receiver; Draw, not market size, sets the optimum). THE FREE RIDE is defined on
+  reinvest, never on pool contributions. The Week 5 levy uses Week 6's base
+  (`gate + localMedia`) so the room's own rule is a true escalation. "Reinvest zero" is
+  verified non-dominant at 20% and 50% levies — the spec's NOT VERIFIED line is closed.
+- **Owed**: W5 has no synthesis chains and W6 has format only (R-10) — being drafted;
+  W3's GAINS FROM TRADE and SUBJECTIVE VALUE chains need real examples that fit (R-7);
+  the missing simplification ledger entries (R-9).
+
+- **Status:** ACTIVE (provisional for the founder)
+- **Date:** 2026-09-04
+- **Owner:** lead-integrator; Economic Truth critic (findings)
+- **Evidence:** critic report in session transcript; computations against
+  `runtime/dist/modules/{hostTheLeague,writeTheRule}.js` shipped constants.
