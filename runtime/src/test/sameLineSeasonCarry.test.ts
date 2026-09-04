@@ -111,10 +111,12 @@ test("waiving carries as dead money owed, never as a change to this season's com
         ...s.desks["a"]!,
         position: {
           ...s.desks["a"]!.position,
-          signings: [
-            ...s.desks["a"]!.position.signings,
-            { playerId: "nance", name: "Larry Nance Jr.", role: "BIG", annual: 4_000_000, tool: "roomMle", years: 1, coveredThrough: "2026-27" },
-          ],
+          // Wholesale replace, not append: `playedRoom` now returns a STOCK
+          // desk (no seed) whose own STOCK JULY already includes a "nance"
+          // signing (`l2.ts` STOCK_JULY_SIGNINGS) — appending a second one
+          // with the same playerId would leave a duplicate behind after only
+          // one is waived, which is not what this test is checking.
+          signings: [{ playerId: "nance", name: "Larry Nance Jr.", role: "BIG", annual: 4_000_000, tool: "roomMle", years: 1, coveredThrough: "2026-27" }],
         },
       },
     },

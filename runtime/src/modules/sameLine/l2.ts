@@ -773,6 +773,17 @@ function namings(state: SameLineL2State, profile: GradeProfile): readonly Naming
 
   const walled = desks.filter((d) => d.position.wall !== null);
   const refused = desks.filter((d) => d.position.wall !== null && d.position.committed >= LINE.apron1);
+  // Computed unconditionally (cheap, band-agnostic) so it can serve both the
+  // wall-gated slot below AND the unconditional fallback further down without
+  // ever being authored twice.
+  const optionValue: Naming = {
+    id: "option-value",
+    term: "OPTION VALUE",
+    moment: `The ten-day contract cost almost nothing and bought a look before a real commitment. ${state.history.some((h) => h.round === "JANUARY") ? "Some desks used it that way." : "Every desk in this room had that option in January, whether or not it used it."}`,
+    means: "Sometimes the smartest move is not to buy the thing — it is to buy the right to decide later, for less than the thing itself would have cost.",
+    real: "On February 17, 2026, San Antonio signed Mason Plumlee to a cheap 10-day contract — a short, low-cost look, not a real commitment. Ten days later, on February 27, satisfied with what it saw, San Antonio signed him for the rest of the season instead. The team paid to look before it had to decide.",
+    outside: "Paying a small deposit to hold a seat, instead of buying the ticket outright, is buying the same thing: a little money now, to keep a bigger choice open.",
+  };
   if (walled.length > 0) {
     out.push({
       id: "path-dependence",
@@ -782,14 +793,25 @@ function namings(state: SameLineL2State, profile: GradeProfile): readonly Naming
       real: "Phoenix went over the NBA's second apron for the 2024-25 season, and its own earlier roster decisions became a rulebook against future-Phoenix: no combining two contracts to match a bigger salary in a trade, no full mid-level exception, no signing bought-out players above a lower dollar line. The league even froze Phoenix's 2032 first-round pick until it got back under the line. The wall was not new — it was the direct result of decisions Phoenix had already made.",
       outside: "The elective you picked in September decides what you are allowed to take in March. Nobody changed the rules. You changed your own room to move in.",
     });
-    out.push({
-      id: "option-value",
-      term: "OPTION VALUE",
-      moment: `The ten-day contract cost almost nothing and bought a look before a real commitment. ${state.history.some((h) => h.round === "JANUARY") ? "Some desks used it that way." : "Every desk in this room had that option in January, whether or not it used it."}`,
-      means: "Sometimes the smartest move is not to buy the thing — it is to buy the right to decide later, for less than the thing itself would have cost.",
-      real: "On February 17, 2026, San Antonio signed Mason Plumlee to a cheap 10-day contract — a short, low-cost look, not a real commitment. Ten days later, on February 27, satisfied with what it saw, San Antonio signed him for the rest of the season instead. The team paid to look before it had to decide.",
-      outside: "Paying a small deposit to hold a seat, instead of buying the ticket outright, is buying the same thing: a little money now, to keep a bigger choice open.",
-    });
+    out.push(optionValue);
+  }
+
+  // UNCONDITIONAL FALLBACK (bug fix): `namings()` must never return zero for
+  // a room that played (CLAUDE.md §1 — a room meeting no economics at the
+  // naming is a failed lesson). Before this, an unlinked room's stock desks
+  // never drew a wall and could sign nothing but generic ten-days, so a room
+  // that only signed ten-days and passed reached SYNTHESIS with SUNK COST,
+  // DECISION QUALITY, PATH DEPENDENCE and OPTION VALUE all silent — zero
+  // namings at both bands. OPTION VALUE is the one naming that never depends
+  // on what a room did: every desk, carried or stock, always had the January
+  // ten-day option whether or not it used it (the `moment` text above already
+  // reads correctly either way, at both bands). Added ONLY when nothing else
+  // fired, so it can only ever raise a count of 0 to 1 — the 5-6 two-term cap
+  // and the 7-8 four-term cap (`gradeBand.ts` `maxNewTerms`) are already
+  // satisfied by the at-most-2-per-gate structure above and cannot be crossed
+  // by this line.
+  if (out.length === 0) {
+    out.push(optionValue);
   }
 
   return out;

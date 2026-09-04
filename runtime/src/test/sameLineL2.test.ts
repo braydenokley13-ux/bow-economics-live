@@ -216,7 +216,10 @@ test("13. a dealt (stock) desk is a normal candidate for its own February — ne
   let s = mod.initialState({ sessionId: "s", seatIds: [], seed, gradeBand: "5-6" });
   s = step(s, { type: "claimDesk" }, "LOBBY", "a");
   assert.equal(s.desks["a"]!.dealt, true);
-  assert.equal(s.desks["a"]!.report.length, 0, "a stock desk has no July signings, so no report to be judged on");
+  // Bug fix: a dealt desk's July is now STOCK JULY (`l2.ts` STOCK_JULY_SIGNINGS)
+  // — two real, dated, named contracts surfaced so ADAPT's waive path and
+  // SUNK COST are reachable — so it DOES have a report, on those two names.
+  assert.equal(s.desks["a"]!.report.length, 2, "a stock desk's STOCK JULY carries a report on its two named contracts");
   const candidates = pressCandidates(s, "CONSEQUENCE");
   assert.ok(candidates.some((c) => c.seatId === "a"), "a dealt desk may still podium for its own week");
   assert.ok(!candidates.find((c) => c.seatId === "a")!.why.includes("July"), "never cited for a July it did not play");
@@ -446,4 +449,71 @@ test("a stock franchise's desk carries the dealt flag onto studentView", () => {
   const view = mod.studentView(s, "a", "HOOK") as { hq: { dealt: boolean; dealtNote: string | null } };
   assert.equal(view.hq.dealt, true);
   assert.match(view.hq.dealtNote ?? "", /not played by you/);
+});
+
+/* ------------------------------------------------ bug fix: unlinked room -- */
+
+/** No source session at all — `extractWindowCarry` refuses on `seed === undefined`, so every desk is stock, at both bands. */
+function unlinkedRoom(band: GradeBand, sessionId: string): SameLineL2State {
+  return mod.initialState({ sessionId, seatIds: [], gradeBand: band });
+}
+
+for (const band of ["5-6", "7-8"] as const) {
+  test(`unlinked room (${band}): a stock desk's ADAPT waivable is non-empty before any action`, () => {
+    let s = unlinkedRoom(band, `unlinked-waivable-${band}`);
+    s = step(s, { type: "claimDesk" }, "LOBBY", "a");
+    assert.equal(s.desks["a"]!.dealt, true);
+    const view = mod.studentView(s, "a", "ADAPT") as { waivable: readonly { contractId: string; name: string }[] };
+    assert.ok(view.waivable.length > 0, `${band}: a stock desk's waivable list must not be empty`);
+  });
+
+  test(`unlinked room (${band}): signing only a January ten-day and passing still yields at least one naming`, () => {
+    let s = unlinkedRoom(band, `unlinked-naming-${band}`);
+    s = step(s, { type: "claimDesk" }, "LOBBY", "a");
+    s = { ...s, round: "JANUARY" } as SameLineL2State;
+    s = step(s, { type: "sign", role: "BIG", chip: CHIP, line: LINE_TEXT }, "PLAY", "a");
+    s = step(s, { type: "teacher:closeWindow" }, "PLAY", "teacher");
+    s = { ...s, round: "FEBRUARY" } as SameLineL2State;
+    s = step(s, { type: "pass", chip: CHIP, line: LINE_TEXT }, "ADAPT", "a");
+    s = step(s, { type: "teacher:closeWindow" }, "ADAPT", "teacher");
+    const view = mod.studentView(s, "a", "SYNTHESIS") as { naming: { count: number } | null };
+    assert.ok(view.naming, `${band}: SYNTHESIS must never show zero namings for a room that played`);
+    assert.ok(view.naming!.count >= 1, `${band}: expected at least one naming`);
+  });
+
+  test(`unlinked room (${band}): waiving a stock desk's own named contract surfaces SUNK COST`, () => {
+    let s = unlinkedRoom(band, `unlinked-sunkcost-${band}`);
+    s = step(s, { type: "claimDesk" }, "LOBBY", "a");
+    const contractId = s.desks["a"]!.position.signings.find((sg) => !sg.playerId.startsWith("min-"))!.playerId;
+    s = { ...s, round: "FEBRUARY" } as SameLineL2State;
+    s = step(s, { type: "waive", contractId, chip: CHIP, line: LINE_TEXT }, "ADAPT", "a");
+    const terms = new Set<string>();
+    for (let beat = 0; beat < 8; beat += 1) {
+      const f = (mod.boardView({ ...s, beat }, "SYNTHESIS") as { naming?: Record<string, unknown> | null }).naming;
+      if (!f) break;
+      terms.add(String(f["term"]));
+    }
+    assert.ok(terms.has("SUNK COST"), `${band}: waiving a stock desk's own contract must surface SUNK COST`);
+  });
+}
+
+test("unlinked room (7-8): a stock desk's wall appears in studentView.wall and can gate a February signing", () => {
+  let s = unlinkedRoom("7-8", "unlinked-wall-7-8");
+  s = step(s, { type: "claimDesk" }, "LOBBY", "a");
+  assert.equal(s.desks["a"]!.position.wall, LINE.tax, "a 7-8 stock desk carries a stock wall at the tax line");
+  const view = mod.studentView(s, "a", "PLAY") as { hq: { wallText: string | null } };
+  assert.match(view.hq.wallText ?? "", /\$/);
+  const terms = new Set<string>();
+  for (let beat = 0; beat < 8; beat += 1) {
+    const f = (mod.boardView({ ...s, beat }, "SYNTHESIS") as { naming?: Record<string, unknown> | null }).naming;
+    if (!f) break;
+    terms.add(String(f["term"]));
+  }
+  assert.ok(terms.has("PATH DEPENDENCE"), "7-8: a stock desk's wall must be able to fire PATH DEPENDENCE");
+});
+
+test("unlinked room (5-6): a stock desk never carries a wall", () => {
+  let s = unlinkedRoom("5-6", "unlinked-wall-5-6");
+  s = step(s, { type: "claimDesk" }, "LOBBY", "a");
+  assert.equal(s.desks["a"]!.position.wall, null, "the 5-6 profile never reasons about a wall (profile.maxVariables < 3 gates namings() before it ever reads one)");
 });
