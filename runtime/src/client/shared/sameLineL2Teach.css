@@ -1,0 +1,33 @@
+/*
+ * THE SEASON (`m1l2-the-season`) — teacher console aggregate panel.
+ *
+ * `.slt-*` chrome (`.slt-wrap`, `.slt-kpirow`, `.slt-instruction`, `.slt-note`)
+ * is already provided by `sameLineL1Teach.css`, which every surface that
+ * ships this lesson also links — this file adds only the one table this
+ * lesson's panel needs that L1's never did.
+ */
+
+.slt-desktable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.slt-desktable th {
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.slt-desktable td {
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--ink-primary);
+}
+.slt-desktable-line {
+  color: var(--ink-secondary);
+  font-style: italic;
+  max-width: 320px;
+}

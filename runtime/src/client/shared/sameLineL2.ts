@@ -413,13 +413,24 @@ function pocketsPanel(v: V): string {
 }
 
 function wallPanel(v: V): string {
-  const wall = rec(v["wall"]);
+  const raw = v["wall"];
+  // Defensive against either shape: a plain dollar magnitude (as
+  // `sameLine/market.ts`'s trade-side wall check currently reads it) or an
+  // object carrying pre-rendered text + the spec §3 "Attribution" sentence.
+  // Conform once `l2.ts`'s real `studentView` exists.
+  if (raw === null || raw === undefined) {
+    return panel({ title: "YOUR WALL" }, `<p class="sl2-note">No wall drawn yet.</p>`);
+  }
+  if (typeof raw === "number") {
+    return panel({ title: "YOUR WALL" }, `<p class="sl2-wall-amount">${esc(dollars(raw))}</p>`);
+  }
+  const wall = rec(raw);
   if (Object.keys(wall).length === 0) {
     return panel({ title: "YOUR WALL" }, `<p class="sl2-note">No wall drawn yet.</p>`);
   }
   return panel(
     { title: "YOUR WALL" },
-    `<p class="sl2-wall-amount">${esc(str(wall["amountText"], "—"))}</p>
+    `<p class="sl2-wall-amount">${esc(str(wall["amountText"], typeof wall["amount"] === "number" ? dollars(num(wall["amount"])) : "—"))}</p>
      ${wall["attribution"] ? `<p class="sl2-wall-attr">${esc(str(wall["attribution"]))}</p>` : ""}`,
   );
 }

@@ -55,11 +55,21 @@ import {
   settleNight,
   ticketPeakPrice,
   totalPeakPrice,
+  obligationFor,
+  billView,
+  billCoverageFor,
+  DESTINATIONS_56,
+  DESTINATIONS_78,
   type FullHouseState,
   type Market,
+  type Desk,
+  type CarriedRecord,
 } from "../modules/fullHouse.js";
 import { isOrderedSubsequence, type CanonicalPhase } from "../shared/phases.js";
 import type { LessonAction, SeatId } from "../shared/lessonModule.js";
+import { sameLineL1Module, DAYS, SAME_LINE_L1_ID, type SameLineL1State } from "../modules/sameLine/l1.js";
+import { BOARD as SAME_LINE_BOARD } from "../modules/sameLine/world.js";
+import { legalOffers } from "../modules/sameLine/engine.js";
 
 /* ------------------------------------------------------------- helpers -- */
 
@@ -1952,4 +1962,188 @@ test("a zero-desk rehearsal shows WATCH FOR in every phase it exists in, always 
       assert.ok(f.action.trim().length > 30, "a flag rendered with no instruction");
     }
   }
+});
+
+/* --------------------------------------------------------- D59 the bill -- */
+
+/** The 2026-27 tax line (W4_BILL_RESEARCH.md §3: band above $200,428,000). */
+const TAX_LINE = 200_428_000;
+
+/** A synthetic carried franchise, every dollar field overridable. */
+function fakeCarried(over: Partial<CarriedRecord> = {}): CarriedRecord {
+  return {
+    label: "Memphis A",
+    clubId: "memphis",
+    club: "Memphis Grizzlies",
+    city: "Memphis",
+    twin: 0,
+    committed: 161_034_793,
+    deadMoney: 21_909_021,
+    holds: 0,
+    unattributed: 0,
+    taxSalary: 159_672_824,
+    band: "under-tax",
+    openJobs: [],
+    signings: [{ name: "Test Player", role: "WING", annual: 20_000_000, annualText: "$20.0M", years: 3, tool: "room", coveredThrough: "2028-29" }],
+    overCapDeclared: false,
+    forgone: [],
+    ...over,
+  };
+}
+
+/** A minimal Desk carrying one obligation, with `nightsPlayed` settled nights each charging `payrollLine` and `bill`. */
+function deskWithObligation(obligation: ReturnType<typeof obligationFor> | null, nightsPlayed = 0): Desk {
+  const nights = [];
+  for (let i = 0; i < nightsPlayed; i += 1) {
+    const settlement = settleNight(MARKETS[0]!, curveFor(MARKETS[0]!, CARDS[i]!, RENEWALS_START, 0), MARKETS[0]!.planPrice, 0, false, CARDS[i]!.bowlOffer, obligation?.perNightModel ?? 0);
+    nights.push({ cardId: CARDS[i]!.id, price: MARKETS[0]!.planPrice, spend: 0, openBowl: false, renewalsBefore: RENEWALS_START, renewalsAfter: RENEWALS_START, auto: false, stock: false, settlement, gateCall: null });
+  }
+  return {
+    deskNumber: 1,
+    marketId: "new-york",
+    crestIndex: 0,
+    joinedAtNight: 0,
+    label: obligation?.label,
+    stock: !obligation,
+    obligation,
+    cash: 0,
+    renewals: RENEWALS_START,
+    price: MARKETS[0]!.planPrice,
+    spend: 0,
+    openBowl: false,
+    locked: false,
+    gateCall: null,
+    nights: nights as unknown as Desk["nights"],
+  };
+}
+
+test("D59: cash and tax compute from taxSalary only — committed (cap position) never enters a dollar computation", () => {
+  const low = obligationFor(fakeCarried({ committed: 161_034_793, taxSalary: 159_672_824 }), TAX_LINE);
+  const high = obligationFor(fakeCarried({ committed: 400_000_000, taxSalary: 159_672_824 }), TAX_LINE);
+  // Every dollar figure derived from taxSalary is identical...
+  assert.equal(low.payroll, high.payroll);
+  assert.equal(low.gapReal, high.gapReal);
+  assert.equal(low.taxBill, high.taxBill);
+  assert.equal(low.gateShareReal, high.gateShareReal);
+  assert.equal(low.perNightReal, high.perNightReal);
+  assert.equal(low.perNightModel, high.perNightModel);
+  assert.equal(low.seasonBillModel, high.seasonBillModel);
+  // ...while the cap POSITION fields track `committed` and only `committed`.
+  assert.notEqual(low.capHit, high.capHit);
+  assert.equal(low.capHit, 161_034_793);
+  assert.equal(high.capHit, 400_000_000);
+});
+
+test("D59: cap holds are never charged as cash", () => {
+  const noHolds = obligationFor(fakeCarried({ holds: 0, taxSalary: 154_337_535 }), TAX_LINE);
+  const bigHolds = obligationFor(fakeCarried({ holds: 28_834_548, taxSalary: 154_337_535 }), TAX_LINE);
+  assert.equal(noHolds.payroll, bigHolds.payroll);
+  assert.equal(noHolds.gapReal, bigHolds.gapReal);
+  assert.equal(noHolds.taxBill, bigHolds.taxBill);
+  assert.equal(noHolds.perNightModel, bigHolds.perNightModel);
+  // `holds` is carried through as a position fact only, never summed into payroll.
+  assert.equal(bigHolds.holds, 28_834_548);
+  assert.notEqual(bigHolds.payroll, bigHolds.holds + bigHolds.payroll - bigHolds.payroll + bigHolds.holds); // sanity: holds is not payroll
+});
+
+test("D59: the unattributed cap residual prints as its own line and is never folded into payroll or the tax salary", () => {
+  const clean = obligationFor(fakeCarried({ unattributed: 0 }), TAX_LINE);
+  const residual = obligationFor(fakeCarried({ unattributed: 5_443_670 }), TAX_LINE);
+  // The residual changes nothing about the bill...
+  assert.equal(clean.payroll, residual.payroll);
+  assert.equal(clean.taxBill, residual.taxBill);
+  assert.equal(clean.perNightModel, residual.perNightModel);
+  // ...and is only ever visible as its own field.
+  assert.equal(residual.unattributed, 5_443_670);
+  const view78 = billView(deskWithObligation(residual), "7-8", null) as { unattributed: number; unattributedCaveat: string | null };
+  assert.equal(view78.unattributed, 5_443_670);
+  assert.ok(view78.unattributedCaveat, "a nonzero residual must carry a caveat sentence");
+  const cleanView78 = billView(deskWithObligation(clean), "7-8", null) as { unattributed: number; unattributedCaveat: string | null };
+  assert.equal(cleanView78.unattributed, 0);
+  assert.equal(cleanView78.unattributedCaveat, null, "a zero residual carries no caveat");
+});
+
+test("D59: per-own-bill coverage — a fraction with no percent sign at 5-6, a percent and a signed net at 7-8", () => {
+  const state = playedOut();
+  for (const seatId of Object.keys(state.desks)) {
+    const desk = state.desks[seatId]!;
+    const c56 = billCoverageFor(desk, "5-6") as Record<string, unknown>;
+    assert.equal(typeof c56["filled"], "number");
+    assert.ok((c56["filled"] as number) >= 0 && (c56["filled"] as number) <= 1, "the 5-6 bar must be a 0..1 fraction");
+    assert.equal("coveragePercent" in c56, false, "5-6 coverage must not carry a percent field");
+    assert.equal("net" in c56, false, "5-6 coverage must not carry a signed net (no negative numbers at 5-6)");
+    assert.equal(JSON.stringify(c56).includes("%"), false, "5-6 coverage payload must contain no percent sign");
+    for (const { n } of walkNumbers(c56)) assert.ok(n >= 0, "5-6 coverage must never carry a negative number");
+
+    const c78 = billCoverageFor(desk, "7-8") as Record<string, unknown>;
+    assert.equal(typeof c78["coveragePercent"], "number");
+    assert.equal(typeof c78["net"], "number");
+  }
+});
+
+test("D59: THE WINDOW's clubs carry into THE BILL through a real played session, and the board never carries a seat id", () => {
+  const ctxSL = (phase: CanonicalPhase, seatId: string) => ({ phase, seatId, seatIds: [seatId], now: 1_760_000_000_000 });
+  function stepSL(s: SameLineL1State, action: { type: string; [k: string]: unknown }, phase: CanonicalPhase, seatId: string): SameLineL1State {
+    const r = sameLineL1Module.reduce(s, action, ctxSL(phase, seatId));
+    assert.ok(r.ok, r.ok ? "" : `${action.type} by ${seatId}: ${r.reason}`);
+    return (r as { ok: true; state: SameLineL1State }).state;
+  }
+  let src = sameLineL1Module.initialState({ sessionId: "src-w1", seatIds: [], gradeBand: "5-6" });
+  src = stepSL(src, { type: "chooseClub", clubId: "detroit" }, "LOBBY", "spender");
+  src = stepSL(src, { type: "chooseClub", clubId: "detroit" }, "LOBBY", "sitter");
+  for (let day = 0; day < DAYS; day += 1) {
+    const desk = src.desks["spender"]!;
+    const taken = new Set(src.taken);
+    const offers = legalOffers(desk.position, SAME_LINE_BOARD.filter((p) => !taken.has(p.id)), taken).filter((o) => o.tool !== "minimum");
+    if (offers.length > 0) {
+      const best = [...offers].sort((a, b) => b.annual - a.annual)[0]!;
+      src = stepSL(src, { type: "offer", playerId: best.playerId, tool: best.tool, annual: best.annual }, "PLAY", "spender");
+    }
+    src = stepSL(src, { type: "teacher:closeDay" }, "PLAY", "teacher");
+  }
+  assert.equal(src.windowClosed, true);
+
+  const seed = {
+    lessonModuleId: SAME_LINE_L1_ID,
+    state: src,
+    sourceSessionId: "src-w1",
+    sourcePhase: "COMPLETE",
+    sourceEnded: true,
+    sourceGradeBand: src.gradeBand,
+  };
+  let state = fullHouseModule.initialState({ sessionId: "fh1", seatIds: [], gradeBand: "5-6", seed });
+  assert.ok(state.carry?.ok, state.carry?.ok ? "" : (state.carry as { reason: string }).reason);
+  assert.equal(state.carry.franchises.length, 2);
+
+  // Both desks pick up their carried franchise by label.
+  const labels = state.carry.franchises.map((f) => f.label);
+  state = ok(act(state, { type: "claim", label: labels[0] }, "LOBBY", "seat-1"));
+  state = ok(act(state, { type: "claim", label: labels[1] }, "LOBBY", "seat-2"));
+  const desk1 = state.desks["seat-1"]!;
+  assert.ok(desk1.obligation, "a claimed carried desk must carry an obligation");
+  const carried1 = state.carry!.franchises.find((f) => f.label === desk1.label)!;
+  // The obligation's cash-relevant figure is the carried TAX SALARY, and its
+  // cap-position figure is the carried cap hit — never swapped or blended.
+  assert.equal(desk1.obligation!.payroll, Math.round(carried1.taxSalary));
+  assert.equal(desk1.obligation!.capHit, Math.round(carried1.committed));
+
+  // Play one night, then check every surface for a leaked seat id.
+  state = ok(act(state, { type: "setPrice", price: 40 }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-1"));
+  state = ok(act(state, { type: "setPrice", price: 40 }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "lock" }, "PLAY", "seat-2"));
+  state = ok(act(state, { type: "teacher:closeNight" }, "PLAY", "teacher"));
+
+  for (const phase of ["LOBBY", "HOOK", "PLAY", "REVEAL"] as const) {
+    const raw = JSON.stringify(fullHouseModule.boardView(state, phase));
+    assert.equal(raw.includes("seat-1"), false, `board leaked seat-1 in ${phase}`);
+    assert.equal(raw.includes("seat-2"), false, `board leaked seat-2 in ${phase}`);
+    assert.equal(/seatId/i.test(raw), false, `board carried a seatId field in ${phase}`);
+  }
+
+  // The HOOK note is said out loud on both the desk and the board.
+  const hook1 = fullHouseModule.studentView(state, "seat-1", "HOOK") as { rosterNote: string | null };
+  assert.ok(hook1.rosterNote, "a carried desk must be told the crowd does not depend on its roster");
+  const boardHook = fullHouseModule.boardView(state, "HOOK") as { rosterNote: string | null };
+  assert.ok(boardHook.rosterNote);
 });

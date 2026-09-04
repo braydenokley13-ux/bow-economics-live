@@ -2517,7 +2517,16 @@ export function renewalMarginalCost(market: Market): { cheapest: number; dearest
  * strong line's note only claims a renewals cost when it has one, and says so
  * with the size of the gap.
  */
-function replaysFor(desk: Desk): SeasonReplay[] {
+/**
+ * `cutToOwnNight`: D59 W4_THE_BILL_DIRECTION.md ruling 2 — what pays for the
+ * bill's added minutes. In a room running the bill, the counterfactual pages
+ * shrink to one: the desk's own night ("What you actually did" — the first
+ * row below), and the three hypothetical alternates are not computed at all.
+ * A room with no carry keeps all four, unchanged.
+ */
+function replaysFor(desk: Desk, cutToOwnNight = false): SeasonReplay[] {
+  const actual: SeasonReplay = { label: "What you actually did", cash: desk.cash, renewals: desk.renewals, note: "Your five nights, your two dials." };
+  if (cutToOwnNight) return [actual];
   const market = marketOf(desk);
   // D59: a carried desk pays its players line on every night of every replay.
   // A fixed cost shifts every row by the same amount and changes no gap between
@@ -2607,6 +2616,13 @@ export const HOOK_COPY =
 /** Said on a stock desk in a room that carried franchises in (D59). */
 export const STOCK_DESK_NOTE =
   "This is a stock building, not one carried in from THE WINDOW: every carried franchise was already picked up, or this desk's record could not be read. Your teacher's console says which. You pay the doors each night and no players line.";
+/**
+ * D59 W4_THE_BILL_DIRECTION.md ruling 1: until a roster→renewals term is
+ * built, the product SAYS OUT LOUD that tonight's crowd does not depend on
+ * what a desk carried in — silence was the one option the direction refused.
+ */
+export const CARRIED_ROSTER_HOOK_NOTE =
+  "Tonight's crowd does not know or care who you signed in July. The building fills the same size whether your roster is strong or weak. What those signings bought shows up later — in RENEWALS, and in the weeks after this one.";
 export const OBJECTIVE_COPY =
   "You are keeping two books, and they do not add up to one number. CASH is the money the building made after the bill. RENEWALS is the share of season-ticket holders who come back next year. A price that is great for one is usually worse for the other — that is the job.";
 
@@ -2860,8 +2876,15 @@ export const BOARD_HONESTY_LINE =
 export const HORIZON_LINE = "Five nights here stand in for a whole 41-date home season. A real NBA season is 41 home games.";
 
 /** BC-3 / gate-l1-sr F3: the money scale, said out loud BEFORE the first price, not once at SYNTHESIS. */
+/**
+ * D59 W4 risk 3: once `payrollLine` is charged into `net` (see `settleNight`),
+ * the old sentence "not what the players are paid" is false on the student's
+ * own screen. Rewritten so the translation covers BOTH halves of the bill —
+ * the doors and the players — the same shrink-to-classroom-size rule applied
+ * to both, honestly, before the first price.
+ */
 export const MODELED_DOLLARS_LINE =
-  "The dollars here are shrunk to classroom size. One real Knicks home night takes in several million; tonight's bill is what it costs to open the doors, not what the players are paid.";
+  "The dollars here are shrunk to classroom size, the same rule for every number on this screen. One real Knicks home night takes in several million dollars; tonight's bill is that same rule applied twice — what it costs to open the doors, and your share of what the players are paid this season.";
 
 /**
  * D59 THE BILL: the season-long obligation, said BEFORE the first price, in the
@@ -2889,6 +2912,131 @@ export const UNATTRIBUTED_CAVEAT_78 = (amountText: string): string =>
   `${amountText} of this club's cap figure is not a signed contract, dead money or a cap hold — SalarySwish does not label it, and it is never charged as a cash dollar.`;
 export const BILL_SEASON_LINE_78 = (payrollText: string, leagueText: string): string =>
   `National TV ≈ ${leagueText} against payroll ${payrollText}; the gap, plus tax, plus running the building, comes from local revenue, of which tonight's gate is one of 41.`;
+
+/**
+ * WHERE THE MONEY GOES (D59 W4_THE_BILL_DIRECTION.md ruling 5). Only sourced
+ * destinations ship: players' escrow (W4_BILL_RESEARCH.md §2), the luxury-tax
+ * pool (§3), and revenue sharing (§5, confidential formula — never a
+ * percentage). Never a named suffering individual (the direction's
+ * non-negotiables).
+ */
+export type Destination = { readonly id: string; readonly label: string; readonly sentence: string; readonly source: string };
+
+export const DESTINATIONS_78: readonly Destination[] = [
+  {
+    id: "escrow",
+    label: "PLAYERS' ESCROW",
+    sentence:
+      "League-wide, players are promised about half of all basketball revenue. When the league collects more than that, the extra is held back and paid out to the players — $480 million, returned for the 2024-25 season.",
+    source: "W4_BILL_RESEARCH.md §2 (Sportico, read 2026-09-04, HIGH)",
+  },
+  {
+    id: "tax-pool",
+    label: "THE TAX POOL",
+    sentence:
+      "A club over the tax line pays real cash to the league. Half of it is split evenly among every club that stayed under it — $11.5 million to each of 20 clubs in 2024-25.",
+    source: "W4_BILL_RESEARCH.md §3 (cbaguide.com, read 2026-09-04, HIGH)",
+  },
+  {
+    id: "revenue-sharing",
+    label: "REVENUE SHARING",
+    sentence:
+      "Money also moves every year from the biggest markets to the smaller ones. Memphis received $28 million this way in the 2021-22 season. The formula itself is confidential — no percentage is published.",
+    source: "W4_BILL_RESEARCH.md §5",
+  },
+];
+
+/** The same three destinations, in words a fifth-grader can act on: no percent sign, no dash before a digit, no date. */
+export const DESTINATIONS_56: readonly Destination[] = [
+  {
+    id: "escrow",
+    label: "PLAYERS' ESCROW",
+    sentence:
+      "Around the league, players are promised about half of all the money basketball makes. If teams end up paying them less than that in one year, the held-back money is paid to them later.",
+    source: "W4_BILL_RESEARCH.md §2",
+  },
+  {
+    id: "tax-pool",
+    label: "THE TAX POOL",
+    sentence: "Teams that spend the most send real money to the league. Half of that money is shared with every team that spent less.",
+    source: "W4_BILL_RESEARCH.md §3",
+  },
+  {
+    id: "revenue-sharing",
+    label: "REVENUE SHARING",
+    sentence: "Every year, some money also moves from the biggest-city teams to smaller ones, so more teams can compete.",
+    source: "W4_BILL_RESEARCH.md §5",
+  },
+];
+
+/**
+ * D59 W4 ruling 3: `clearedTheBill` (season-end binary, still frozen on the
+ * desk for the W4→W5 seed) is demoted from the headline. Unequal feasibility
+ * across carried clubs is the lesson — some players lines alone approach the
+ * doors — so what a desk sees is how much of ITS OWN bill (doors plus its own
+ * players line, on the nights it has actually played) its OWN gate has
+ * covered. 5-6: a fraction 0..1 for a bar, no percent sign, never negative
+ * (`profileFor("5-6").allowsPercentages === false`). 7-8: a percentage and a
+ * signed net. Never a class ranking (D4), never a room-wide pass/fail — this
+ * function only ever reads one desk.
+ */
+export function billCoverageFor(desk: Desk, band: GradeBand) {
+  const nights = desk.nights;
+  const ownBill = nights.reduce((s, n) => s + n.settlement.bill + n.settlement.payrollLine, 0);
+  const ownGate = nights.reduce((s, n) => s + n.settlement.total, 0);
+  const nightsSettled = nights.length;
+  const ratio = ownBill > 0 ? ownGate / ownBill : ownGate > 0 ? 1 : 0;
+  if (!profileFor(band).allowsPercentages) {
+    return {
+      band,
+      nightsSettled,
+      nightsTotal: NIGHT_COUNT,
+      ownGateText: `$${ownGate.toLocaleString()}`,
+      ownBillText: `$${ownBill.toLocaleString()}`,
+      // 0..1: the bar's own fill, never a percent sign, never negative.
+      filled: Math.max(0, Math.min(1, ratio)),
+      coveredSoFar: ownGate >= ownBill,
+    };
+  }
+  return {
+    band,
+    nightsSettled,
+    nightsTotal: NIGHT_COUNT,
+    ownGate,
+    ownBill,
+    coveragePercent: ownBill > 0 ? Math.round(ratio * 100) : ownGate > 0 ? 100 : 0,
+    net: ownGate - ownBill,
+    coveredSoFar: ownGate >= ownBill,
+  };
+}
+
+/**
+ * THE LEDGER — D59 W4 ruling 2: the seventh reveal step (the season books,
+ * market by market) carries this rather than adding an eighth beat the class
+ * has no minute for. Coverage is per desk, by LABEL, never a seat id, and
+ * never ranked against another desk's number.
+ */
+function ledgerFor(state: FullHouseState): {
+  destinations: readonly Destination[];
+  coverage: { label: string; club: string; nightsSettled: number; filled?: number; coveragePercent?: number; net?: number }[];
+  moment: { headline: string; body: string };
+} | null {
+  if (!state.carry?.ok) return null;
+  const band = bandOfRoom(state);
+  const desks = state.deskOrder.map((id) => state.desks[id]).filter((d): d is Desk => d !== undefined && Boolean(d.obligation));
+  const coverage = desks.map((d) => ({ label: d.label ?? deskHandle(d), club: marketOf(d).club, ...billCoverageFor(d, band) }));
+  const taxed = desks.filter((d) => (d.obligation!.taxBill ?? 0) > 0);
+  const moment =
+    taxed.length === 0
+      ? { headline: "THE LEDGER", body: "No desk in this room owed the luxury tax this season, so nobody's overage became someone else's check this time." }
+      : {
+          headline: "THE LEDGER",
+          body: `${taxed.map((d) => d.label ?? marketOf(d).club).join(", ")} paid the luxury tax this season — ${millionsText(
+            taxed.reduce((s, d) => s + d.obligation!.taxBill, 0),
+          )} in real cash. Half of every taxed dollar is split among the clubs that stayed under the line.`,
+        };
+  return { destinations: band === "5-6" ? DESTINATIONS_56 : DESTINATIONS_78, coverage, moment };
+}
 
 /** BC-3: every real figure in product copy carries its date. */
 export const SOURCE_NOTES: readonly string[] = [
@@ -3240,6 +3388,12 @@ export function billView(desk: Desk, band: GradeBand, payrollDefinition: string 
   if (!o) return null;
   const market = marketOf(desk);
   const tonight = { doors: market.bill, players: o.perNightModel, total: market.bill + o.perNightModel };
+  // D59 item 5: every named Week-1 signing gets a night share — its own
+  // annual real salary sliced across the five nights this room plays, so the
+  // desk can point at its own July and say which signature wrote which
+  // dollar. Real dollars, like `annual` itself; not the classroom-scaled
+  // `perNightModel`, which is the WHOLE roster's night, not one player's.
+  const signingsWithShare = o.signings.map((sg) => ({ ...sg, nightShare: Math.round(sg.annual / NIGHT_COUNT) }));
   if (band === "5-6") {
     return {
       band,
@@ -3247,7 +3401,12 @@ export function billView(desk: Desk, band: GradeBand, payrollDefinition: string 
       club: o.club,
       payrollText: wholeMillionsText(o.payroll),
       definition: TAX_SALARY_DEFINITION_56,
-      signings: o.signings.map((sg) => ({ name: sg.name, years: sg.years, yearsText: `${sg.years} ${sg.years === 1 ? "year" : "years"}` })),
+      signings: signingsWithShare.map((sg) => ({
+        name: sg.name,
+        years: sg.years,
+        yearsText: `${sg.years} ${sg.years === 1 ? "year" : "years"}`,
+        nightShareText: `$${sg.nightShare.toLocaleString()}`,
+      })),
       line: billLine56(wholeMillionsText(o.payroll)),
       leagueMoneyText: "about $150 million",
       seasonBill: o.seasonBillModel,
@@ -3256,6 +3415,7 @@ export function billView(desk: Desk, band: GradeBand, payrollDefinition: string 
       tonightText: `$${tonight.players.toLocaleString()}`,
       horizonLine: BILL_HORIZON_LINE,
       scaleLine: BILL_SCALE_LINE,
+      destinations: DESTINATIONS_56,
     };
   }
   return {
@@ -3277,9 +3437,18 @@ export function billView(desk: Desk, band: GradeBand, payrollDefinition: string 
     taxLine: o.taxLine,
     repeater: o.repeater,
     taxBill: o.taxBill,
-    signings: o.signings.map((sg) => ({ name: sg.name, role: sg.role, annualText: sg.annualText, years: sg.years, coveredThrough: sg.coveredThrough, tool: sg.tool })),
+    signings: signingsWithShare.map((sg) => ({
+      name: sg.name,
+      role: sg.role,
+      annualText: sg.annualText,
+      years: sg.years,
+      coveredThrough: sg.coveredThrough,
+      tool: sg.tool,
+      nightShareText: `$${sg.nightShare.toLocaleString()}`,
+    })),
     seasonLine: BILL_SEASON_LINE_78(o.payrollText, millionsText(o.leagueMoney)),
     caption: BILL_CAPTION_78,
+    destinations: DESTINATIONS_78,
     table: [
       { step: "Tax salary (players this season)", real: o.payroll },
       { step: "National TV money, off the top", real: o.leagueMoney },
@@ -3925,6 +4094,9 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // D59: THE BILL is the dominant object on a carried desk's HOOK.
             bill,
             stockNote: desk.stock ? STOCK_DESK_NOTE : null,
+            // D59 ruling 1: said out loud, not implied — the crowd tonight does
+            // not depend on the roster this desk carried in.
+            rosterNote: desk.obligation ? CARRIED_ROSTER_HOOK_NOTE : null,
           };
 
         case "PLAY": {
@@ -3937,6 +4109,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
               ...identity,
               allNightsDone: true,
               books: booksFor(desk),
+              // D59 ruling 3: per-own-bill coverage, not a room-wide verdict.
+              billCoverage: billCoverageFor(desk, bandOfRoom(state)),
               history,
               lastNight,
               // The settled-night state renders from this payload too, so the
@@ -3963,6 +4137,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             modeledDollarsLine: MODELED_DOLLARS_LINE,
             // D59: tonight's bill, doors + players, before the first price.
             bill,
+            // D59 ruling 3: per-own-bill coverage so far, not a room-wide verdict.
+            billCoverage: billCoverageFor(desk, bandOfRoom(state)),
             locked: desk.locked,
             price: desk.price,
             spend: desk.spend,
@@ -4042,6 +4218,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             seated: true,
             ...identity,
             books: booksFor(desk),
+            // D59 ruling 3: per-own-bill coverage, not a room-wide verdict.
+            billCoverage: billCoverageFor(desk, bandOfRoom(state)),
             history,
             revealStage: state.revealStage,
             totalRevealSteps: REVEAL_STEPS,
@@ -4116,7 +4294,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
                     channelLine: row.channelLine,
                   }
                 : null,
-            replays: replaysFor(desk),
+            // D59 ruling 2: cut to one page when this room is running the bill.
+            replays: replaysFor(desk, Boolean(state.carry?.ok)),
             honestLimit:
               "We can show you what the money would have done. We cannot show you what you would have done — that is why you played it.",
             prompt: ARGUE_PROMPT,
@@ -4192,6 +4371,9 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
         perNightBill: desk.obligation?.perNightModel ?? 0,
         payrollText: desk.obligation?.payrollText ?? null,
         clearedTheBill: desk.clearedTheBill ?? null,
+        // D59 ruling 3: the teacher console always sees the full percent/net
+        // shape, independent of the room's student-facing band.
+        billCoverage: billCoverageFor(desk, "7-8"),
         locked: desk.locked,
         price: desk.price,
         spend: desk.spend,
@@ -4356,6 +4538,8 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             // D59: the room's bills by desk label — class evidence, never a seat.
             bills: billsBoard(state),
             billHorizonLine: state.carry?.ok ? BILL_HORIZON_LINE : null,
+            // D59 ruling 1: said out loud on the public surface too.
+            rosterNote: state.carry?.ok ? CARRIED_ROSTER_HOOK_NOTE : null,
             honestyLine: BOARD_HONESTY_LINE,
             horizonLine: HORIZON_LINE,
             modeledDollarsLine: MODELED_DOLLARS_LINE,
@@ -4431,6 +4615,10 @@ export const fullHouseModule: LessonModule<FullHouseState> = {
             twoPeaks: state.revealStage >= NIGHT_COUNT + 1 ? agg.twoPeaks : [],
             booksReleased: state.revealStage >= REVEAL_STEPS,
             books: state.revealStage >= REVEAL_STEPS ? agg.books : [],
+            // D59 ruling 2: the seventh reveal step carries THE LEDGER too,
+            // rather than adding an eighth beat — sourced destinations plus
+            // each carried desk's own-bill coverage, by label, never a seat.
+            ledger: state.revealStage >= REVEAL_STEPS ? ledgerFor(state) : null,
             // Held until every night is up: at stage 0 this counted nights the
             // room had not been shown yet (gate-l1-projector).
             totalTurnedAway: state.revealStage >= NIGHT_COUNT ? agg.totalTurnedAway : null,

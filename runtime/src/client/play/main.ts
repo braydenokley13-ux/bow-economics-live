@@ -5,6 +5,7 @@ import { brandMark, dotChart } from "../shared/m2ui.js";
 import { createFreshness } from "../shared/freshness.js";
 import { ActionOutbox } from "../shared/outbox.js";
 import { renderSameLineL1, resetSameLineL1, sameLineL1Error } from "../shared/sameLineL1.js";
+import { renderSameLineL2, resetSameLineL2 } from "../shared/sameLineL2.js";
 import { startPolling, type PollHandle } from "../shared/poll.js";
 import { clearPlayCredentials, loadPlayCredentials, savePlayCredentials, type PlayCredentials } from "../shared/storage.js";
 import { renderPlayLock, renderPlayPodium } from "../shared/pressConference.js";
@@ -219,6 +220,7 @@ $("btnRejoin").addEventListener("click", () => {
  */
 function resetSeatRenderState(): void {
   lastRoundKey = null;
+  resetSameLineL2();
   // The closing countdown belongs to the seat that was in the round, not to
   // the device — handing the Chromebook to the next pair must not leave the
   // previous pair's final call ticking over their screen.
@@ -609,6 +611,14 @@ function renderGame(payload: StudentPayload): void {
      */
     if (s.phase !== "LOBBY") hidePin();
     renderSameLineL1(s.phase, view, body, (action) => {
+      void outbox?.submit(action);
+    });
+    return;
+  }
+  if (view["module"] === "m1l2-the-season") {
+    document.documentElement.dataset.module = "hq";
+    if (s.phase !== "LOBBY") hidePin();
+    renderSameLineL2(s.phase, view, body, (action) => {
       void outbox?.submit(action);
     });
     return;

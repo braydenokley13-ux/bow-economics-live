@@ -74,8 +74,22 @@ export type TradeDeskLike = {
   readonly twin: 0 | 1;
   readonly roster: readonly ContractObject[];
   readonly picksOwned: readonly PickObject[];
-  readonly books: { readonly committed: number; readonly wall: number | null };
+  /**
+   * `committed` is the cap POSITION (cap hit, holds included) — what a desk's
+   * own screen shows and what `DeadlineCarry` reports onward. `holds` is the
+   * free-agent cap holds baked into that figure. Every apron/wall test below
+   * runs on APRON TEAM SALARY = `committed - holds` (cbaguide.com/thresholds/
+   * apron, read 2026-09-03), never on raw `committed` — a desk carrying real
+   * holds (Detroit carries $28,834,548 of them, `world.ts`/`carry.ts`) would
+   * otherwise be tested against a line it is not actually near. A hold is not
+   * a dollar paid to anyone; it is cap reserved for a free agent this desk has
+   * not yet re-signed, and the real CBA does not count it against the aprons.
+   */
+  readonly books: { readonly committed: number; readonly holds: number; readonly wall: number | null };
 };
+
+/** APRON TEAM SALARY — the figure every apron/wall line in this file tests against. */
+export const apronSalaryOf = (committed: number, holds: number): number => committed - holds;
 
 function ownedObject(desk: TradeDeskLike, id: ObjectId): TradeObject | null {
   const contract = desk.roster.find((c) => c.contractId === id);
@@ -100,25 +114,54 @@ export function resolveOwned(desk: TradeDeskLike, ids: readonly ObjectId[]): rea
 export type Legality = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
 /**
- * R1/R4 — SALARY MATCHING.
+ * R1 — SALARY MATCHING, THE ROOM-ABSORPTION RULE.
  *
- * The honest simplification (spec §3, "the smallest honest simplification"):
- * at 5-6, the tightest true band applies to every desk regardless of position —
- * incoming may never exceed outgoing, full stop, which is the real rule for
- * every over-first-apron team and therefore produces no false positive. At 7-8
- * the ladder loosens the further a desk sits from the aprons: real front
- * offices below the tax line can genuinely take back meaningfully more than
- * they send; a first-apron team cannot. The exact multipliers below are a
- * simplification of the CBA's tiered dollar brackets (§1.4) rather than the
- * brackets themselves — flattened the same way `engine.ts` flattens the tool
- * ladder — and are never rendered as league law.
+ * REPLACES an earlier draft that applied "incoming <= outgoing" to BOTH sides
+ * of every trade. That draft was economically dead: for two desks A and B,
+ * incoming_A <= outgoing_A and incoming_B <= outgoing_B, with incoming_A ==
+ * outgoing_B and incoming_B == outgoing_A, together force outgoing_A ==
+ * outgoing_B — every legal trade had to be dollar-for-dollar exact. Swept over
+ * this room's 14 distinct contract salaries, that cleared nothing: no desk had
+ * a partner whose salary matched to the dollar (Economic Truth review finding,
+ * recorded here rather than only in a run log).
+ *
+ * THE FIX. A desk's OUT BAR is what it may receive: the salary it sends, PLUS
+ * whatever cap room it still has once that salary has left —
+ *
+ *   outBar = sent + max(0, CAP - (committedBeforeTrade - sent))
+ *
+ * — and a trade is legal on this desk's side iff incoming <= outBar. A desk
+ * already at or past the cap even after sending has zero room, so its bar
+ * collapses to `sent` — the real 100%-matching rule for a taxpayer, recovered
+ * as a special case rather than assumed everywhere. A desk with real room
+ * absorbs real money: Memphis (committed $161,034,793) sending a $2,900,000
+ * contract has $6,826,207 of room once that salary is gone, an OUT bar of
+ * $9,726,207, and can legally take back Kuminga's $6,064,000 — a trade the
+ * dollar-exact draft could never have allowed, and a real one (room absorbing
+ * an incoming salary is the ordinary case in actual NBA trades). This is what
+ * a pick-for-contract trade needs too: a $0 pick sent by a room-rich desk has
+ * an OUT bar equal to that desk's room alone, so "contract for pick" is legal
+ * exactly in the direction the receiving desk can actually absorb it.
+ *
+ * KEYED ON RAW `committed`, never apron-team-salary — cap room is a CAP
+ * concept (a hold occupies room, same as real cap accounting) even though the
+ * APRON tests two functions down key on `committed - holds` instead.
+ *
+ * THE SIMPLIFICATION, NAMED. The real CBA's matching bands for teams already
+ * over the cap are not flat 100% — they step up to 125%/200% the further below
+ * the tax line a team sits (§1.4's tiered brackets). Flattening every
+ * over-the-cap desk to exact 100% (this function's `sent` floor) is the
+ * smallest honest simplification available: it can only make a real trade
+ * ILLEGAL here that the league would allow, never the reverse, so it produces
+ * no false positive. The misconception it is written to avoid is the sharper
+ * one: a version that ignored room entirely taught "cap room is worthless in
+ * a trade," which is backwards — room is exactly what lets a team spend BOTH
+ * on the summer market and at the deadline.
  */
-export function matchingCeiling(outgoingAnnual: number, committedBeforeTrade: number, profile: GradeProfile): number {
-  if (profile.band === "5-6") return outgoingAnnual;
-  if (outgoingAnnual <= 0) return 0;
-  if (committedBeforeTrade < LINE.tax) return Math.round(outgoingAnnual * 1.25 + 250_000);
-  if (committedBeforeTrade < LINE.apron1) return Math.round(outgoingAnnual * 1.1);
-  return outgoingAnnual;
+export function outBar(committedBeforeTrade: number, sentSalary: number): number {
+  const afterSendingOnly = committedBeforeTrade - sentSalary;
+  const roomAfter = Math.max(0, LINE.cap - afterSendingOnly);
+  return sentSalary + roomAfter;
 }
 
 const maxObjectsPerSide = (profile: GradeProfile): 1 | 2 => (profile.maxVariables >= 3 ? 2 : 1);
@@ -161,19 +204,24 @@ export function checkTrade(
   const sendContracts = sendObjects.filter(isContract).length;
   const wantContracts = wantObjects.filter(isContract).length;
 
-  // R1 — incoming <= what this room's ladder allows, from EACH side's own seat.
-  const fromCeiling = matchingCeiling(sendSalary, fromDesk.books.committed, profile);
-  if (wantSalary > fromCeiling) {
+  // APRON TEAM SALARY — never raw `committed`. Used only by the wall/apron2
+  // tests below; the room-absorption matching rule keys on raw `committed`.
+  const fromApronBefore = apronSalaryOf(fromDesk.books.committed, fromDesk.books.holds);
+  const toApronBefore = apronSalaryOf(toDesk.books.committed, toDesk.books.holds);
+
+  // R1 — the room-absorption rule, from EACH side's own seat.
+  const fromBar = outBar(fromDesk.books.committed, sendSalary);
+  if (wantSalary > fromBar) {
     return {
       ok: false,
-      reason: `You are sending ${money(sendSalary)} and asking for ${money(wantSalary)}. From where you sit you cannot take back more than ${money(fromCeiling)}.`,
+      reason: `You are sending ${money(sendSalary)} and asking for ${money(wantSalary)}. Between that and your own room, you cannot take back more than ${money(fromBar)}.`,
     };
   }
-  const toCeiling = matchingCeiling(wantSalary, toDesk.books.committed, profile);
-  if (sendSalary > toCeiling) {
+  const toBar = outBar(toDesk.books.committed, wantSalary);
+  if (sendSalary > toBar) {
     return {
       ok: false,
-      reason: `They would be sending ${money(wantSalary)} and taking back ${money(sendSalary)}. From where they sit that is more than their books allow.`,
+      reason: `They would be sending ${money(wantSalary)} and taking back ${money(sendSalary)}. Between that and their own room, that is more than their books allow.`,
     };
   }
 
@@ -187,16 +235,19 @@ export function checkTrade(
     return { ok: false, reason: `This would leave them with ${toCount} players under contract. A roster has to stay between ${ROSTER.min} and ${ROSTER.max}.` };
   }
 
-  // R2/R3 — the test is post-trade: the wall a desk drew for itself in July.
-  const fromAfter = fromDesk.books.committed - sendSalary + wantSalary;
-  if (fromDesk.books.wall !== null && fromAfter > fromDesk.books.wall) {
+  // R2/R3 — the test is post-trade, on APRON TEAM SALARY: the wall a desk drew
+  // for itself in July, tested against committed-minus-holds, never raw
+  // committed (a hold is cap reserved for nobody on this roster yet, and the
+  // real aprons do not count it).
+  const fromApronAfter = fromApronBefore - sendSalary + wantSalary;
+  if (fromDesk.books.wall !== null && fromApronAfter > fromDesk.books.wall) {
     return {
       ok: false,
       reason: `You drew a wall at ${money(fromDesk.books.wall)} back in July. This trade would take you past it, and you may not cross it for any reason.`,
     };
   }
-  const toAfter = toDesk.books.committed - wantSalary + sendSalary;
-  if (toDesk.books.wall !== null && toAfter > toDesk.books.wall) {
+  const toApronAfter = toApronBefore - wantSalary + sendSalary;
+  if (toDesk.books.wall !== null && toApronAfter > toDesk.books.wall) {
     return {
       ok: false,
       reason: `They drew a wall at ${money(toDesk.books.wall)} back in July. This trade would take them past it.`,
@@ -205,11 +256,12 @@ export function checkTrade(
 
   // R4 — aggregation (7-8 only, but harmless to check at 5-6 since send/want
   // are already capped at one object there). Two outgoing contracts may be
-  // combined unless the trade leaves that desk above the second apron.
-  if (send.length === 2 && fromAfter > LINE.apron2) {
-    return { ok: false, reason: `Sending two contracts at once would leave you at ${money(fromAfter)} — past the second apron. You may not aggregate into that.` };
+  // combined unless the trade leaves that desk above the second apron, tested
+  // on apron team salary.
+  if (send.length === 2 && fromApronAfter > LINE.apron2) {
+    return { ok: false, reason: `Sending two contracts at once would leave you at ${money(fromApronAfter)} against the aprons — past the second apron. You may not aggregate into that.` };
   }
-  if (want.length === 2 && toAfter > LINE.apron2) {
+  if (want.length === 2 && toApronAfter > LINE.apron2) {
     return { ok: false, reason: "They would land past the second apron if they sent both of those back at once." };
   }
 

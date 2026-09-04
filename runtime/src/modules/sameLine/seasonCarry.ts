@@ -23,6 +23,7 @@ import type { Signing } from "./engine.js";
 import { SEASON } from "./engine.js";
 import { CLUB, CLUBS, LINE, type Band, type ClubId, type JobRole } from "./world.js";
 import type { ForgoneRecord } from "./l1.js";
+import { jobReportFor } from "./seasonData.js";
 
 export const SAME_LINE_L2_ID = "m1l2-the-season";
 
@@ -188,7 +189,39 @@ function readTape(v: unknown): SeasonTapeEntry[] {
   return out;
 }
 
-function readDesk(seatId: string, v: unknown): { franchise: SeasonCarriedFranchise } | { dropped: string } {
+/**
+ * `l2.ts`'s own `SeasonDesk` carries no pre-built `roster` — it carries
+ * `position.signings` (the active contracts) plus `acquiredInWeek2` (which of
+ * them were signed THIS week, January or February). This rebuilds the
+ * roster the same way `carry.ts` rebuilds a franchise from THE WINDOW's own
+ * `Position`: from the module's real fields, never from a shape the module
+ * does not actually produce. `jobState` is re-derived from the same
+ * deterministic report (`seasonData.jobReportFor`) the module itself used —
+ * a pure function of `sessionId` and `playerId`, never of price.
+ */
+function buildRoster(sessionId: string, signings: readonly Signing[], acquiredWeek2: ReadonlySet<string>): SeasonRosterEntry[] {
+  return signings.map((sg) => {
+    const acquiredWeek: 1 | 2 = acquiredWeek2.has(sg.playerId) ? 2 : 1;
+    let jobState: SeasonJobState = "UNPLAYED";
+    if (acquiredWeek === 1) {
+      const report = jobReportFor(sessionId, sg.playerId, sg.role);
+      jobState = report === null ? "UNPLAYED" : report.verdict === "DOES_NOT_DO_THE_JOB" ? "DID_NOT" : "DID_THE_JOB";
+    }
+    return {
+      contractId: sg.playerId,
+      playerId: sg.playerId,
+      name: sg.name,
+      role: sg.role,
+      annual: sg.annual,
+      yearsRemaining: sg.years,
+      coveredThrough: sg.coveredThrough,
+      jobState,
+      acquiredWeek,
+    };
+  });
+}
+
+function readDesk(sessionId: string, seatId: string, v: unknown): { franchise: SeasonCarriedFranchise } | { dropped: string } {
   if (!isRecord(v)) return { dropped: `${seatId}: not a desk record` };
   if (!isClubId(v["clubId"])) return { dropped: `${seatId}: club "${String(v["clubId"])}" is not one of this world's clubs` };
   const clubId = v["clubId"];
@@ -203,29 +236,19 @@ function readDesk(seatId: string, v: unknown): { franchise: SeasonCarriedFranchi
   if (!isMoney(pos["taxSalary"])) return { dropped: `${club.name}: tax salary is not a money amount` };
   const taxSalary = pos["taxSalary"];
   const deadMoney = isMoney(pos["deadMoney"]) ? pos["deadMoney"] : club.deadMoney.value;
-  const deadMoneyIncurred = isMoney(v["deadMoneyIncurred"]) ? (v["deadMoneyIncurred"] as number) : 0;
   const openJobs = Array.isArray(pos["openJobs"]) ? pos["openJobs"].filter((j): j is JobRole => typeof j === "string" && JOB_ROLES.includes(j)) : null;
   if (!openJobs) return { dropped: `${club.name}: open jobs are missing` };
   const wall = pos["wall"] === null ? null : isMoney(pos["wall"]) ? pos["wall"] : null;
   const toolsSpent = Array.isArray(pos["spent"]) ? pos["spent"].filter((t): t is string => typeof t === "string") : [];
 
-  const rawRoster = Array.isArray(v["roster"]) ? v["roster"] : null;
-  if (!rawRoster) return { dropped: `${club.name}: roster is missing` };
-  const roster: SeasonRosterEntry[] = [];
-  for (const r of rawRoster) {
-    const entry = readRosterEntry(r);
-    if (!entry) return { dropped: `${club.name}: a roster entry is malformed` };
-    roster.push(entry);
-  }
-
-  const rawPicks = Array.isArray(v["picks"]) ? v["picks"] : null;
+  const rawSignings = Array.isArray(pos["signings"]) ? pos["signings"] : null;
+  if (!rawSignings) return { dropped: `${club.name}: signings are missing` };
+  const signings = readWaived(rawSignings); // same shape reader; a Signing is a Signing
+  const acquiredWeek2 = new Set(Array.isArray(v["acquiredInWeek2"]) ? v["acquiredInWeek2"].filter((x): x is string => typeof x === "string") : []);
+  const roster = buildRoster(sessionId, signings, acquiredWeek2);
+  const waivedList = readWaived(v["waived"]);
+  const deadMoneyIncurred = waivedList.reduce((sum, w) => sum + w.annual, 0);
   const picks: SeasonPick[] = [];
-  if (rawPicks) {
-    for (const p of rawPicks) {
-      const pick = readPick(p);
-      if (pick) picks.push(pick);
-    }
-  }
 
   const label = typeof v["label"] === "string" && v["label"] ? v["label"] : `${club.name} ${twin === 0 ? "A" : "B"}`;
 
@@ -296,9 +319,10 @@ export function extractSeasonCarry(seed: unknown, receivingBand: GradeBand): Sea
     warnings.push("The linked season closed but the lesson had not ended. The books are final; the reveal and naming may not have been shown.");
   }
 
+  const sessionId = typeof seed["sourceSessionId"] === "string" ? seed["sourceSessionId"] : typeof state["sessionId"] === "string" ? state["sessionId"] : "";
   const franchises: SeasonCarriedFranchise[] = [];
   for (const [seatId, v] of Object.entries(desks)) {
-    const read = readDesk(seatId, v);
+    const read = readDesk(sessionId, seatId, v);
     if ("dropped" in read) {
       warnings.push(`Dropped: ${read.dropped}. That desk gets a stock franchise here, and the console says so.`);
       continue;

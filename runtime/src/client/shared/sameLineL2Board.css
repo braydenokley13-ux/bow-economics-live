@@ -1,0 +1,16 @@
+/*
+ * THE SAME LINE — L2 "THE SEASON" projector panels.
+ *
+ * `renderSameLineL2Board.ts` reuses `sameLineL1Board.css`'s `.slb-*` frame
+ * vocabulary on purpose (hero title, market table, signed list, naming
+ * frame) — every surface that ships this lesson already links that sheet,
+ * and a second copy of the same rules would be two places for the
+ * back-of-the-room legibility bar (max type, max contrast, `assertBoardFits`)
+ * to drift apart. This file holds only what is genuinely new to this
+ * lesson's own frames.
+ */
+
+/* The buyout-window frame (ADAPT) reuses `.slb-market` for `openJobsByRole`
+   and needs no new row shape — a role and a count is the whole row, and
+   `.slb-market`/`.slb-name`/`.slb-int` already size and align that. */
+.slb-market td.slb-int { text-align: right; }

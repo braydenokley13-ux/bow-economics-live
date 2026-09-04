@@ -1,0 +1,1185 @@
+/**
+ * MODULE 1 · LESSON 3 — "THE DEADLINE."
+ *
+ * Built against `docs/gauntlet/module-1/rebuild/W3_THE_DEADLINE_SPEC.md`, under
+ * the integrator's binding rulings at the top of that file: the sweep problem
+ * is open and this ships on a declared, printed family of modelled market
+ * environments; collusion between friends is live economics, contained rather
+ * than blocked; two market hours; the season settles BEFORE the Boardroom; the
+ * Clippers cap-circumvention material stays out.
+ *
+ * TWO TRADEABLE OBJECT TYPES, AND ONLY TWO (spec §2): a `contract` this room
+ * signed, and a franchise's own two future picks at `$0`. All the legality and
+ * the contested-hour resolution live in `market.ts`, pure and sweep-testable;
+ * this file is state, gating, seeds and words — same split L1 draws between
+ * `engine.ts` and `l1.ts`.
+ *
+ * THE ONE PHASE GATE. `reduce` is it. The runtime checks ended, frozen and
+ * paused, and nothing else. Every case below asks what phase it is in.
+ */
+import { CLUB, CLUBS, LINE, ROSTER, bandOf, type Band, type ClubId, type JobRole } from "./world.js";
+import { money } from "./engine.js";
+import {
+  applyTrade,
+  checkTrade,
+  isContract,
+  isOneChange,
+  isPick,
+  resolveContested,
+  resolveOwned,
+  salaryOf,
+  sumSalary,
+  type ContestEntry,
+  type ContractObject,
+  type JobState,
+  type ObjectId,
+  type PickObject,
+  type TradeDeskLike,
+  type TradeObject,
+} from "./market.js";
+import { extractWindowCarry, type CarriedFranchise, type WindowCarry } from "./carry.js";
+import { profileFor, type GradeBand, type GradeProfile } from "../../shared/gradeBand.js";
+import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../../shared/lessonModule.js";
+import type { CanonicalPhase } from "../../shared/phases.js";
+
+export const SAME_LINE_L3_ID = "m1l3-the-deadline";
+
+/**
+ * The Week 2 module id this file would read a real season carry from.
+ *
+ * NOT VERIFIED: `W2_THE_SEASON_SPEC.md` does not exist as of 2026-09-04 (spec
+ * §7's own words), so neither this id nor the shape below has ever shipped.
+ * `extractSeasonLike` treats a seed stamped with anything else — including
+ * this id, until it is confirmed — as "no season seed", which routes straight
+ * to the Week 1 degradation path. When Week 2 lands for real, whoever builds
+ * it should replace this guess and the parsing below with the real contract,
+ * the same way a receiving module always does (`carry.ts`'s own docstring).
+ */
+export const SAME_LINE_L2_ID_GUESS = "m1l2-the-season";
+
+/* ------------------------------------------------------------ objects -- */
+
+const OWN_PICK_YEARS: Readonly<Record<1 | 2, number>> = { 1: 2029, 2: 2030 };
+const ROUND_WORD: Readonly<Record<1 | 2, string>> = { 1: "first", 2: "second" };
+
+function ownPicks(clubId: ClubId, twin: 0 | 1): PickObject[] {
+  return ([1, 2] as const).map((round) => ({
+    kind: "pick" as const,
+    pickId: `${clubId}-${twin}-${round === 1 ? "first" : "second"}`,
+    year: OWN_PICK_YEARS[round],
+    round,
+    label: `${OWN_PICK_YEARS[round]} ${ROUND_WORD[round]}`,
+  }));
+}
+
+/**
+ * Deterministic, seeded on `(sessionId, contractId)` — never `Math.random`, so
+ * a teacher can rerun the class and say "this was always going to happen"
+ * (spec §4, ARC_DESIGN §3). Used twice, for two different questions: whether a
+ * carried-but-unearned contract "does the job" when Week 2 was never played,
+ * and what an acquired contract did against the job it was traded for at the
+ * season settle. Both are honestly modelled coin flips, not predictions.
+ */
+export function hashJobState(sessionId: string, contractId: string): JobState {
+  const s = `${sessionId}::${contractId}`;
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (Math.imul(h, 31) + s.charCodeAt(i)) >>> 0;
+  const bucket = h % 10;
+  if (bucket < 5) return "DOES_JOB";
+  if (bucket < 8) return "MORE_THAN_JOB";
+  return "DOES_NOT_DO_JOB";
+}
+
+/* ------------------------------------------------------------- desk -- */
+
+export type Capture = {
+  readonly id: string;
+  readonly seatId: SeatId;
+  readonly kind: "send" | "decline";
+  readonly chip: string;
+  readonly line?: string;
+  readonly hour: 1 | 2;
+};
+
+export type Desk = {
+  readonly seatId: SeatId;
+  readonly clubId: ClubId;
+  readonly twin: 0 | 1;
+  readonly label: string;
+  readonly books: {
+    readonly committed: number;
+    readonly taxSalary: number;
+    readonly deadMoney: number;
+    /**
+     * Free-agent cap holds baked into `committed`. Every apron/wall test runs
+     * on `committed - holds` (APRON TEAM SALARY), never on raw `committed` —
+     * see the note on `market.ts`'s `TradeDeskLike.books`.
+     */
+    readonly holds: number;
+    readonly wall: number | null;
+    readonly band: Band;
+  };
+  readonly roster: readonly ContractObject[];
+  readonly picksOwned: readonly PickObject[];
+  /** The two pick ids this desk started the week with — for the OWED bookkeeping only. */
+  readonly ownPickIds: readonly string[];
+  readonly picksOwed: readonly { readonly pickId: string; readonly year: number; readonly toLabel: string }[];
+  readonly openJobs: readonly JobRole[];
+  readonly bookVersion: number;
+  readonly captures: readonly Capture[];
+  /** Sentences, never numbers a reducer reads back — the tape the Boardroom reconstructs from. */
+  readonly evidence: readonly string[];
+  readonly seedWarning: string | null;
+};
+
+function toTradeDesk(d: Desk): TradeDeskLike {
+  return { seatId: d.seatId, clubId: d.clubId, twin: d.twin, roster: d.roster, picksOwned: d.picksOwned, books: { committed: d.books.committed, holds: d.books.holds, wall: d.books.wall } };
+}
+
+/* ------------------------------------------------------------- offer -- */
+
+export type OfferState = "LIVE" | "COUNTERED" | "ACCEPTED" | "EXECUTED" | "DECLINED" | "EXPIRED" | "VOID_STALE";
+
+export type Offer = {
+  readonly id: string;
+  /** Fixed for the life of the negotiation — the identity of the two desks involved. */
+  readonly fromSeat: SeatId;
+  readonly toSeat: SeatId;
+  /** Current terms: `fromSeat` sends `send` and receives `want`, however the terms most recently changed. */
+  readonly send: readonly ObjectId[];
+  readonly want: readonly ObjectId[];
+  /** Who authored the CURRENT terms — `fromSeat` until a counter, `toSeat` after. */
+  readonly proposedBy: SeatId;
+  readonly state: OfferState;
+  /** Whether this negotiation has already used its one allowed counter. */
+  readonly countered: boolean;
+  readonly fromBookVersion: number;
+  readonly toBookVersion: number;
+  readonly captureId: string | null;
+  readonly hour: 1 | 2;
+  readonly acceptedBy: SeatId | null;
+  readonly declinedBy: SeatId | null;
+  /** Private forever to `declinedBy` (froth §4.1) — never read by `fromSeat`'s view. */
+  readonly declineReason: string | null;
+  /** Public once set — the books-changed sentence, shown to both parties. */
+  readonly voidNote: string | null;
+};
+
+const recipientOf = (o: Offer): SeatId => (o.proposedBy === o.fromSeat ? o.toSeat : o.fromSeat);
+const isOpenOffer = (o: Offer): boolean => o.state === "LIVE" || o.state === "COUNTERED";
+const isEscrowingState = (s: OfferState): boolean => s === "LIVE" || s === "COUNTERED" || s === "ACCEPTED";
+
+export type Deal = {
+  readonly id: string;
+  readonly hour: 1 | 2;
+  readonly fromSeat: SeatId;
+  readonly toSeat: SeatId;
+  readonly send: readonly ObjectId[];
+  readonly want: readonly ObjectId[];
+};
+
+export type SeasonSettleDesk = {
+  readonly seatId: SeatId;
+  readonly coveredJobs: number;
+  readonly openJobs: number;
+  readonly acquiredResults: readonly { readonly contractId: string; readonly name: string; readonly role: JobRole; readonly result: JobState }[];
+};
+
+export type SeasonSettle = { readonly perSeat: Readonly<Record<SeatId, SeasonSettleDesk>> };
+
+/* ------------------------------------------------------------- seeds -- */
+
+/**
+ * The shape a real Week 2 carry would need — matches the structural extension
+ * the parallel builder is writing in `seasonCarry.ts` (`CarriedFranchise` plus
+ * `roster`, `picks`, `deadMoneyIncurred`, `waived`, `tape`). Defined locally
+ * because that file does not exist in this tree yet; if it lands, a future
+ * pass should import the real type and delete this one (spec's own
+ * instruction: "re-check for seasonCarry.ts before you finish").
+ */
+export type SeasonLikeFranchise = CarriedFranchise & {
+  readonly roster: readonly { contractId: string; playerId: string; name: string; role: JobRole; annual: number; yearsRemaining: number; jobState: JobState; acquiredWeek: 1 | 2 }[];
+  readonly picks: readonly { pickId: string; year: number; round: 1 | 2; label: string }[];
+  readonly deadMoneyIncurred: number;
+  readonly waived: readonly string[];
+};
+
+export type PoolFranchise = {
+  readonly clubId: ClubId;
+  readonly twin: 0 | 1;
+  readonly label: string;
+  readonly committed: number;
+  readonly taxSalary: number;
+  readonly deadMoney: number;
+  /** See the note on `Desk.books.holds` — apron/wall tests key off `committed - holds`. */
+  readonly holds: number;
+  readonly wall: number | null;
+  readonly openJobs: readonly JobRole[];
+  readonly roster: readonly ContractObject[];
+  readonly picksOwned: readonly PickObject[];
+  readonly ownPickIds: readonly string[];
+  readonly band: Band;
+  readonly seedWarning: string | null;
+};
+
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/**
+ * Best-effort read of a real Week 2 carry. NOT VERIFIED against a real
+ * `seasonCarry.ts` — see the docstring on `SAME_LINE_L2_ID_GUESS`. Any desk
+ * that does not fit this guessed shape is dropped with a reason, exactly as
+ * `carry.ts` drops a bad Week 1 desk; it never takes the whole room down.
+ */
+function readSeasonSeed(seed: unknown, receivingBand: GradeBand): { ok: true; franchises: readonly PoolFranchise[]; warnings: readonly string[] } | { ok: false; reason: string } {
+  if (!isRecord(seed) || seed["lessonModuleId"] !== SAME_LINE_L2_ID_GUESS) {
+    return { ok: false, reason: "no m1l2-the-season seed was linked" };
+  }
+  const state = seed["state"];
+  if (!isRecord(state)) return { ok: false, reason: "the linked Week 2 session carries no state" };
+  const desks = state["desks"];
+  if (!isRecord(desks)) return { ok: false, reason: "the linked Week 2 session has no desks" };
+  const warnings: string[] = ["Linked to a Week 2 room. NOT VERIFIED: no Week 2 spec exists yet, so this reading is a best-effort guess at its shape."];
+  const franchises: PoolFranchise[] = [];
+  for (const [seatId, v] of Object.entries(desks)) {
+    if (!isRecord(v)) {
+      warnings.push(`Dropped: ${seatId}: not a desk record. That desk gets a stock franchise here.`);
+      continue;
+    }
+    const clubId = v["clubId"];
+    if (typeof clubId !== "string" || !CLUBS.some((c) => c.id === clubId)) {
+      warnings.push(`Dropped: ${seatId}: unrecognised club. That desk gets a stock franchise here.`);
+      continue;
+    }
+    const twin = v["twin"] === 1 ? 1 : v["twin"] === 0 ? 0 : null;
+    const label = typeof v["label"] === "string" ? v["label"] : null;
+    const pos = v["position"];
+    if (twin === null || !label || !isRecord(pos)) {
+      warnings.push(`Dropped: ${label ?? seatId}: missing position, twin or label. That desk gets a stock franchise here.`);
+      continue;
+    }
+    const rosterRaw = Array.isArray(pos["roster"]) ? pos["roster"] : [];
+    const roster: ContractObject[] = [];
+    for (const r of rosterRaw) {
+      if (!isRecord(r)) continue;
+      const { contractId, playerId, name, role, annual, yearsRemaining, jobState } = r;
+      if (typeof contractId !== "string" || typeof playerId !== "string" || typeof name !== "string") continue;
+      if (role !== "BIG" && role !== "WING" && role !== "GUARD") continue;
+      if (typeof annual !== "number" || typeof yearsRemaining !== "number") continue;
+      const js = jobState === "DOES_JOB" || jobState === "MORE_THAN_JOB" || jobState === "DOES_NOT_DO_JOB" ? jobState : "DOES_JOB";
+      roster.push({ kind: "contract", contractId, playerId, name, role, annual, yearsRemaining, jobState: js, acquiredWeek: 1 });
+    }
+    const picksRaw = Array.isArray(pos["picks"]) ? pos["picks"] : [];
+    const picks: PickObject[] = [];
+    for (const p of picksRaw) {
+      if (!isRecord(p)) continue;
+      const { pickId, year, round, label: pl } = p;
+      if (typeof pickId !== "string" || typeof year !== "number" || (round !== 1 && round !== 2) || typeof pl !== "string") continue;
+      picks.push({ kind: "pick", pickId, year, round, label: pl });
+    }
+    const committed = typeof pos["committed"] === "number" ? pos["committed"] : CLUB[clubId as ClubId].committed.value;
+    const taxSalary = typeof pos["taxSalary"] === "number" ? pos["taxSalary"] : CLUB[clubId as ClubId].taxSalary.value;
+    const deadMoney = typeof pos["deadMoney"] === "number" ? pos["deadMoney"] : CLUB[clubId as ClubId].deadMoney.value;
+    const holds = typeof pos["holds"] === "number" ? pos["holds"] : CLUB[clubId as ClubId].holds.value;
+    const wall = typeof pos["wall"] === "number" ? pos["wall"] : null;
+    const openJobs = Array.isArray(pos["openJobs"]) ? pos["openJobs"].filter((j): j is JobRole => j === "BIG" || j === "WING" || j === "GUARD") : [];
+    franchises.push({
+      clubId: clubId as ClubId,
+      twin,
+      label,
+      committed,
+      taxSalary,
+      deadMoney,
+      holds,
+      wall,
+      openJobs,
+      roster,
+      picksOwned: picks.length ? picks : ownPicks(clubId as ClubId, twin),
+      ownPickIds: ownPicks(clubId as ClubId, twin).map((p) => p.pickId),
+      band: bandOf(committed),
+      seedWarning: null,
+    });
+  }
+  const order = new Map(CLUBS.map((c, i) => [c.id, i]));
+  franchises.sort((a, b) => (order.get(a.clubId)! - order.get(b.clubId)!) || a.twin - b.twin);
+  return { ok: true, franchises, warnings };
+}
+
+/** Degrade to Week 1's own carry when no Week 2 seed is usable (spec §7 "degradation"). */
+function fromWindowCarry(sessionId: string, wc: WindowCarry & { ok: true }): { franchises: readonly PoolFranchise[]; warnings: readonly string[] } {
+  const franchises: PoolFranchise[] = wc.franchises.map((f) => {
+    const roster: ContractObject[] = f.signings.map((sg) => {
+      const contractId = `${f.clubId}-${f.twin}-${sg.playerId}`;
+      return {
+        kind: "contract",
+        contractId,
+        playerId: sg.playerId,
+        name: sg.name,
+        role: sg.role,
+        annual: sg.annual,
+        yearsRemaining: Math.max(1, sg.years - 1),
+        jobState: hashJobState(sessionId, contractId),
+        acquiredWeek: 1,
+      };
+    });
+    return {
+      clubId: f.clubId,
+      twin: f.twin,
+      label: f.label,
+      committed: f.committed,
+      taxSalary: f.taxSalary,
+      deadMoney: f.deadMoney,
+      holds: f.holds,
+      wall: f.wall,
+      openJobs: f.openJobs,
+      roster,
+      picksOwned: ownPicks(f.clubId, f.twin),
+      ownPickIds: ownPicks(f.clubId, f.twin).map((p) => p.pickId),
+      band: f.band,
+      seedWarning: "No Week 2 season was linked for this franchise. Job states were seeded, not earned.",
+    };
+  });
+  return { franchises, warnings: [...wc.warnings, "No season was played — job states were seeded, not earned."] };
+}
+
+function stockPool(): readonly PoolFranchise[] {
+  const out: PoolFranchise[] = [];
+  for (const club of CLUBS) {
+    for (const twin of [0, 1] as const) {
+      out.push({
+        clubId: club.id,
+        twin,
+        label: `${club.name} ${twin === 0 ? "A" : "B"}`,
+        committed: club.committed.value,
+        taxSalary: club.taxSalary.value,
+        deadMoney: club.deadMoney.value,
+        holds: club.holds.value,
+        wall: null,
+        openJobs: club.jobs,
+        roster: [],
+        picksOwned: ownPicks(club.id, twin),
+        ownPickIds: ownPicks(club.id, twin).map((p) => p.pickId),
+        band: bandOf(club.committed.value),
+        seedWarning: "No linked room was found. This is a stock franchise, with nothing signed yet — the console says so.",
+      });
+    }
+  }
+  return out;
+}
+
+/** The one place a seed is turned into a pool of desks-to-be. See spec §7 "Seed IN". */
+function resolveSeed(sessionId: string, seed: unknown, gradeBand: GradeBand): { pool: readonly PoolFranchise[]; warnings: readonly string[] } {
+  const season = readSeasonSeed(seed, gradeBand);
+  if (season.ok) return { pool: season.franchises, warnings: season.warnings };
+
+  const window = extractWindowCarry(seed, gradeBand);
+  if (window.ok) {
+    const degraded = fromWindowCarry(sessionId, window);
+    return { pool: degraded.franchises, warnings: degraded.warnings };
+  }
+  // BC-18: a band mismatch or malformed seed refuses the carry outright, and a
+  // dropped room still opens playable rather than stranding the class.
+  return { pool: stockPool(), warnings: [`No usable Week 1 or Week 2 history was found (${window.reason}). Every desk starts from a stock franchise, and the console says so.`] };
+}
+
+/* ---------------------------------------------------------------- state -- */
+
+export type SameLineL3State = {
+  readonly sessionId: string;
+  readonly gradeBand: GradeBand;
+  readonly hour: 1 | 2;
+  readonly marketClosed: boolean;
+  readonly desks: Readonly<Record<SeatId, Desk>>;
+  readonly listings: readonly ObjectId[];
+  readonly offers: Readonly<Record<string, Offer>>;
+  readonly executed: readonly Deal[];
+  readonly settled: SeasonSettle | null;
+  readonly beat: number;
+  readonly warnings: readonly string[];
+  readonly observers: readonly SeatId[];
+  readonly pool: readonly PoolFranchise[];
+  readonly nextPoolIndex: number;
+  readonly nextSeq: number;
+  readonly hotSeat: SeatId | null;
+  readonly defenses: Readonly<Record<SeatId, string>>;
+};
+
+function initialState(input: { sessionId: string; seatIds: readonly SeatId[]; seed?: unknown; gradeBand: GradeBand }): SameLineL3State {
+  const { pool, warnings } = resolveSeed(input.sessionId, input.seed, input.gradeBand);
+  return {
+    sessionId: input.sessionId,
+    gradeBand: input.gradeBand,
+    hour: 1,
+    marketClosed: false,
+    desks: {},
+    listings: [],
+    offers: {},
+    executed: [],
+    settled: null,
+    beat: 0,
+    warnings,
+    observers: [],
+    pool,
+    nextPoolIndex: 0,
+    nextSeq: 1,
+    hotSeat: null,
+    defenses: {},
+  };
+}
+
+/* -------------------------------------------------------------- chips -- */
+
+export const SEND_CHIPS_56 = ["A JOB SOMEBODY WAS DOING", "MONEY I MIGHT NEED LATER", "A PICK I CAN'T GET BACK", "NOTHING I'LL MISS"] as const;
+export const SEND_CHIPS_78 = ["THE ONLY BIG CONTRACT I COULD MOVE", "A FUTURE ASSET", "ROOM UNDER MY WALL", "A ROLE I HAVE NOBODY ELSE FOR"] as const;
+export const DECLINE_CHIPS = ["I NEED WHAT THEY WANTED", "NOT ENOUGH BACK", "WRONG JOB", "I'M WAITING FOR SOMETHING BETTER"] as const;
+
+const wordCount = (s: string): number => s.trim().split(/\s+/).filter(Boolean).length;
+
+/* --------------------------------------------------------------- reduce -- */
+
+const PHASES: readonly CanonicalPhase[] = ["LOBBY", "HOOK", "PLAY", "REVEAL", "CONSEQUENCE", "COUNTERFACTUAL", "ARGUE", "SYNTHESIS", "COMPLETE"];
+
+const fail = (reason: string): ReduceResult<SameLineL3State> => ({ ok: false, reason });
+
+function isEscrowed(offers: Readonly<Record<string, Offer>>, id: ObjectId): boolean {
+  return Object.values(offers).some((o) => isEscrowingState(o.state) && (o.send.includes(id) || o.want.includes(id)));
+}
+
+function labelFor(objects: readonly TradeObject[]): string {
+  return objects.map((o) => (isContract(o) ? o.name : o.label)).join(" and ");
+}
+
+function reduce(state: SameLineL3State, action: { type: string; [k: string]: unknown }, ctx: ReduceContext): ReduceResult<SameLineL3State> {
+  switch (action.type) {
+    case "takeSeat": {
+      if (ctx.seatId === "teacher") return fail("a teacher does not hold a desk");
+      if (state.desks[ctx.seatId]) return { ok: true, state };
+      if (state.observers.includes(ctx.seatId)) return { ok: true, state };
+      if (state.marketClosed || ctx.phase === "COMPLETE" || state.nextPoolIndex >= state.pool.length) {
+        return { ok: true, state: { ...state, observers: [...state.observers, ctx.seatId] } };
+      }
+      const entry = state.pool[state.nextPoolIndex]!;
+      const desk: Desk = {
+        seatId: ctx.seatId,
+        clubId: entry.clubId,
+        twin: entry.twin,
+        label: entry.label,
+        books: { committed: entry.committed, taxSalary: entry.taxSalary, deadMoney: entry.deadMoney, holds: entry.holds, wall: entry.wall, band: entry.band },
+        roster: entry.roster,
+        picksOwned: entry.picksOwned,
+        ownPickIds: entry.ownPickIds,
+        picksOwed: [],
+        openJobs: entry.openJobs,
+        bookVersion: 1,
+        captures: [],
+        evidence: [],
+        seedWarning: entry.seedWarning,
+      };
+      return { ok: true, state: { ...state, desks: { ...state.desks, [ctx.seatId]: desk }, nextPoolIndex: state.nextPoolIndex + 1 } };
+    }
+
+    case "list":
+    case "unlist": {
+      if (ctx.phase !== "PLAY") return fail(`the market is not open in this phase`);
+      const desk = state.desks[ctx.seatId];
+      if (!desk) return fail("you do not hold a desk");
+      const id = action["objectId"];
+      if (typeof id !== "string") return fail("no object named");
+      if (action.type === "unlist") {
+        return { ok: true, state: { ...state, listings: state.listings.filter((x) => x !== id) } };
+      }
+      const owned = resolveOwned(toTradeDesk(desk), [id]);
+      if (!owned) return fail("that is not on your own books");
+      if (isEscrowed(state.offers, id)) return fail("that is tied up in a live offer");
+      if (state.listings.includes(id)) return { ok: true, state };
+      return { ok: true, state: { ...state, listings: [...state.listings, id] } };
+    }
+
+    case "propose": {
+      if (ctx.phase !== "PLAY") return fail("the deadline room is not open in this phase");
+      if (state.marketClosed) return fail("the market is closed. The deadline has passed.");
+      const fromDesk = state.desks[ctx.seatId];
+      if (!fromDesk) return fail("you do not hold a desk");
+      const toSeat = action["toSeat"];
+      const send = action["send"];
+      const want = action["want"];
+      const chip = action["chip"];
+      const line = action["line"];
+      if (typeof toSeat !== "string" || !Array.isArray(send) || !Array.isArray(want)) return fail("a trade needs a desk, what you send and what you want");
+      const toDesk = state.desks[toSeat];
+      if (!toDesk) return fail("no such desk");
+      if (!send.every((s): s is string => typeof s === "string") || !want.every((s): s is string => typeof s === "string")) return fail("malformed package");
+
+      const liveOut = Object.values(state.offers).filter((o) => o.fromSeat === ctx.seatId && isOpenOffer(o) && recipientOf(o) !== ctx.seatId ? false : o.fromSeat === ctx.seatId && o.state === "LIVE").length;
+      const trueLiveOut = Object.values(state.offers).filter((o) => o.fromSeat === ctx.seatId && o.state === "LIVE").length;
+      void liveOut;
+      if (trueLiveOut >= 2) return fail("You already have two offers out. Wait to hear back, or withdraw one, before sending a third.");
+
+      const inbox = Object.values(state.offers).filter((o) => o.toSeat === toSeat && o.state === "LIVE").length;
+      if (inbox >= 3) return fail(`${toDesk.label}'s desk is full. Try somebody else.`);
+
+      for (const id of [...send, ...want]) {
+        if (isEscrowed(state.offers, id)) return fail("Something in this trade is already tied up in another live offer.");
+      }
+
+      const profile = profileFor(state.gradeBand);
+      const legality = checkTrade(toTradeDesk(fromDesk), toTradeDesk(toDesk), send, want, profile);
+      if (!legality.ok) return fail(legality.reason);
+
+      const chipList = profile.band === "5-6" ? SEND_CHIPS_56 : SEND_CHIPS_78;
+      if (typeof chip !== "string" || !(chipList as readonly string[]).includes(chip)) {
+        return fail("Every offer needs to say what you're giving up before it can go out.");
+      }
+      const limit = profile.band === "5-6" ? 12 : 20;
+      if (line !== undefined && (typeof line !== "string" || wordCount(line) > limit)) {
+        return fail(`That line is longer than ${limit} words.`);
+      }
+
+      const offerId = `offer-${state.nextSeq}`;
+      const captureId = `capture-${state.nextSeq}`;
+      const capture: Capture = { id: captureId, seatId: ctx.seatId, kind: "send", chip, line: typeof line === "string" ? line : undefined, hour: state.hour };
+      const offer: Offer = {
+        id: offerId,
+        fromSeat: ctx.seatId,
+        toSeat,
+        send,
+        want,
+        proposedBy: ctx.seatId,
+        state: "LIVE",
+        countered: false,
+        fromBookVersion: fromDesk.bookVersion,
+        toBookVersion: toDesk.bookVersion,
+        captureId,
+        hour: state.hour,
+        acceptedBy: null,
+        declinedBy: null,
+        declineReason: null,
+        voidNote: null,
+      };
+      return {
+        ok: true,
+        state: {
+          ...state,
+          nextSeq: state.nextSeq + 1,
+          offers: { ...state.offers, [offerId]: offer },
+          desks: { ...state.desks, [ctx.seatId]: { ...fromDesk, captures: [...fromDesk.captures, capture] } },
+        },
+      };
+    }
+
+    case "withdraw": {
+      if (ctx.phase !== "PLAY") return fail("cannot withdraw outside the deadline room");
+      const id = action["offerId"];
+      if (typeof id !== "string") return fail("no offer named");
+      const offer = state.offers[id];
+      if (!offer) return fail("no such offer");
+      if (offer.fromSeat !== ctx.seatId) return fail("that is not your offer to withdraw");
+      if (!isOpenOffer(offer)) return fail("that offer is no longer live");
+      return { ok: true, state: { ...state, offers: { ...state.offers, [id]: { ...offer, state: "EXPIRED" } } } };
+    }
+
+    case "counter": {
+      if (ctx.phase !== "PLAY") return fail("cannot counter outside the deadline room");
+      if (state.marketClosed) return fail("the market is closed");
+      const id = action["offerId"];
+      if (typeof id !== "string") return fail("no offer named");
+      const original = state.offers[id];
+      if (!original) return fail("no such offer");
+      if (original.state !== "LIVE") return fail("that offer is not open to a counter");
+      if (recipientOf(original) !== ctx.seatId) return fail("only the recipient may counter");
+      if (original.countered) return fail("this negotiation already used its one counter");
+
+      const send = action["send"];
+      const want = action["want"];
+      if (!Array.isArray(send) || !Array.isArray(want) || !send.every((s): s is string => typeof s === "string") || !want.every((s): s is string => typeof s === "string")) {
+        return fail("malformed counter");
+      }
+      const fromDesk = state.desks[original.fromSeat];
+      const toDesk = state.desks[original.toSeat];
+      if (!fromDesk || !toDesk) return fail("a desk in this negotiation no longer exists");
+      const isPickId = (oid: ObjectId): boolean => fromDesk.picksOwned.some((p) => p.pickId === oid) || toDesk.picksOwned.some((p) => p.pickId === oid);
+      if (!isOneChange(original.send, original.want, send, want, isPickId)) {
+        return fail("A counter may change exactly one thing — swap one object, or add or remove one pick.");
+      }
+      for (const oid of [...send, ...want]) {
+        if (isEscrowed(state.offers, oid) && !original.send.includes(oid) && !original.want.includes(oid)) {
+          return fail("Something in this counter is already tied up in another live offer.");
+        }
+      }
+      const profile = profileFor(state.gradeBand);
+      const legality = checkTrade(toTradeDesk(fromDesk), toTradeDesk(toDesk), send, want, profile);
+      if (!legality.ok) return fail(legality.reason);
+
+      const countered: Offer = {
+        ...original,
+        send,
+        want,
+        proposedBy: ctx.seatId,
+        state: "COUNTERED",
+        countered: true,
+      };
+      return { ok: true, state: { ...state, offers: { ...state.offers, [id]: countered } } };
+    }
+
+    case "accept": {
+      if (ctx.phase !== "PLAY") return fail("cannot accept outside the deadline room");
+      if (state.marketClosed) return fail("the market is closed");
+      const id = action["offerId"];
+      if (typeof id !== "string") return fail("no offer named");
+      const offer = state.offers[id];
+      if (!offer) return fail("no such offer");
+      if (!isOpenOffer(offer)) return fail("that offer is no longer open");
+      if (recipientOf(offer) !== ctx.seatId) return fail("that is not yours to accept");
+
+      const fromDesk = state.desks[offer.fromSeat];
+      const toDesk = state.desks[offer.toSeat];
+      if (!fromDesk || !toDesk) return fail("a desk in this negotiation no longer exists");
+      if (offer.fromBookVersion !== fromDesk.bookVersion || offer.toBookVersion !== toDesk.bookVersion) {
+        const voided: Offer = { ...offer, state: "VOID_STALE", voidNote: "The books changed after this was sent. The deal is off." };
+        return { ok: true, state: { ...state, offers: { ...state.offers, [id]: voided } } };
+      }
+      const profile = profileFor(state.gradeBand);
+      if (profile.band === "5-6") {
+        const alreadyHasAccept = Object.values(state.offers).some((o) => o.acceptedBy === ctx.seatId && o.state === "ACCEPTED");
+        if (alreadyHasAccept) return fail("You already have a deal on the table this hour.");
+      }
+      const accepted: Offer = { ...offer, state: "ACCEPTED", acceptedBy: ctx.seatId };
+      return { ok: true, state: { ...state, offers: { ...state.offers, [id]: accepted } } };
+    }
+
+    /*
+     * Economic Truth ruling (2026-09-04): at 5-6 the single live accept must
+     * be reversible before the hour closes, or the desk that answers fastest
+     * is rewarded for speed rather than for the deal. Reverts to whichever
+     * open state this negotiation was actually in (COUNTERED once it has used
+     * its one counter, LIVE otherwise) — never re-litigates the package.
+     */
+    case "withdrawAccept": {
+      if (ctx.phase !== "PLAY") return fail("cannot withdraw an accept outside the deadline room");
+      const id = action["offerId"];
+      if (typeof id !== "string") return fail("no offer named");
+      const offer = state.offers[id];
+      if (!offer) return fail("no such offer");
+      if (offer.state !== "ACCEPTED") return fail("that offer is not sitting on an accept");
+      if (offer.acceptedBy !== ctx.seatId) return fail("that is not your accept to withdraw");
+      const reverted: Offer = { ...offer, state: offer.countered ? "COUNTERED" : "LIVE", acceptedBy: null };
+      return { ok: true, state: { ...state, offers: { ...state.offers, [id]: reverted } } };
+    }
+
+    case "decline": {
+      if (ctx.phase !== "PLAY") return fail("cannot decline outside the deadline room");
+      const id = action["offerId"];
+      if (typeof id !== "string") return fail("no offer named");
+      const offer = state.offers[id];
+      if (!offer) return fail("no such offer");
+      if (!isOpenOffer(offer)) return fail("that offer is no longer open");
+      if (recipientOf(offer) !== ctx.seatId) return fail("that is not yours to decline");
+      const chip = action["chip"];
+      if (typeof chip !== "string" || !(DECLINE_CHIPS as readonly string[]).includes(chip)) {
+        return fail("A decline needs a reason chip.");
+      }
+      const desk = state.desks[ctx.seatId];
+      if (!desk) return fail("you do not hold a desk");
+      const captureId = `capture-${state.nextSeq}`;
+      const capture: Capture = { id: captureId, seatId: ctx.seatId, kind: "decline", chip, hour: state.hour };
+      const declined: Offer = { ...offer, state: "DECLINED", declinedBy: ctx.seatId, declineReason: chip };
+      return {
+        ok: true,
+        state: {
+          ...state,
+          nextSeq: state.nextSeq + 1,
+          offers: { ...state.offers, [id]: declined },
+          desks: { ...state.desks, [ctx.seatId]: { ...desk, captures: [...desk.captures, capture] } },
+        },
+      };
+    }
+
+    case "teacher:executeCall": {
+      if (ctx.seatId !== "teacher") return fail("only the league office executes a call");
+      if (ctx.phase !== "PLAY") return fail("nothing to execute outside the deadline room");
+      const settlement = settleHour(state, false);
+      return { ok: true, state: { ...state, desks: settlement.desks, offers: settlement.offers, executed: settlement.executed } };
+    }
+
+    case "teacher:closeHour": {
+      if (ctx.seatId !== "teacher") return fail("only the league office closes the hour");
+      if (ctx.phase !== "PLAY") return fail("no hour is open outside the deadline room");
+      if (state.marketClosed) return fail("the market is already closed");
+      const settlement = settleHour(state, true);
+      const next: SameLineL3State = { ...state, desks: settlement.desks, offers: settlement.offers, executed: settlement.executed };
+      if (state.hour === 1) return { ok: true, state: { ...next, hour: 2 } };
+      return { ok: true, state: { ...next, marketClosed: true, settled: next.settled ?? computeSeasonSettle(next) } };
+    }
+
+    case "defend": {
+      if (ctx.phase !== "COUNTERFACTUAL" && ctx.phase !== "ARGUE") return fail("nothing to defend yet");
+      const desk = state.desks[ctx.seatId];
+      if (!desk) return fail("you do not hold a desk");
+      const text = action["text"];
+      if (typeof text !== "string" || !text.trim()) return fail("a defense needs words");
+      return { ok: true, state: { ...state, defenses: { ...state.defenses, [ctx.seatId]: text } } };
+    }
+
+    case "teacher:hotSeat": {
+      if (ctx.seatId !== "teacher") return fail("only the teacher calls the hot seat");
+      if (ctx.phase !== "ARGUE") return fail("the hot seat is an ARGUE control");
+      const seatId = action["seatId"];
+      if (typeof seatId !== "string" || !state.desks[seatId]) return fail("no such desk");
+      return { ok: true, state: { ...state, hotSeat: seatId } };
+    }
+
+    case "teacher:nextName": {
+      if (ctx.seatId !== "teacher") return fail("only the teacher walks the naming");
+      if (ctx.phase !== "SYNTHESIS") return fail("nothing to walk outside SYNTHESIS");
+      return { ok: true, state: { ...state, beat: state.beat + 1 } };
+    }
+
+    default:
+      return fail(`unknown action "${action.type}"`);
+  }
+}
+
+/* ------------------------------------------------------ hour settlement -- */
+
+function buildContestEntry(state: SameLineL3State, o: Offer): ContestEntry {
+  const acceptedBy = o.acceptedBy!;
+  const counterparty = acceptedBy === o.fromSeat ? state.desks[o.toSeat]! : state.desks[o.fromSeat]!;
+  const acceptingDesk = state.desks[acceptedBy]!;
+  // What the accepting desk sends away under these terms.
+  const acceptingSends = acceptedBy === o.fromSeat ? o.send : o.want;
+  const acceptingGets = acceptedBy === o.fromSeat ? o.want : o.send;
+  const gotObjects = resolveOwned(toTradeDesk(counterparty), acceptingGets) ?? [];
+  const fillsOpenJob = gotObjects.some((obj) => isContract(obj) && obj.jobState !== "DOES_NOT_DO_JOB" && acceptingDesk.openJobs.includes(obj.role));
+  const sentObjects = resolveOwned(toTradeDesk(acceptingDesk), acceptingSends) ?? [];
+  return {
+    offerId: o.id,
+    acceptedBy,
+    counterpartyClubId: counterparty.clubId,
+    counterpartyTwin: counterparty.twin,
+    fillsOpenJob,
+    outgoingSalaryFromAccepting: sumSalary(sentObjects),
+  };
+}
+
+function dealSentence(hour: 1 | 2, fromLabel: string, toLabel: string, sent: readonly TradeObject[], got: readonly TradeObject[]): string {
+  return `Hour ${hour}: ${fromLabel} sent ${labelFor(sent)} to ${toLabel} for ${labelFor(got)}.`;
+}
+
+/**
+ * Execute every ACCEPTED offer this hour (through §2's sealed, deterministic
+ * contest), then — when `expireRest` is true — expire everything still
+ * LIVE/COUNTERED and release its escrow. The same routine backs
+ * `teacher:closeHour`, `teacher:executeCall`, and `onPhaseExit` leaving PLAY,
+ * so a round closed by the clock and one closed by hand cannot diverge.
+ */
+function settleHour(state: SameLineL3State, expireRest: boolean): { desks: Readonly<Record<SeatId, Desk>>; offers: Readonly<Record<string, Offer>>; executed: readonly Deal[] } {
+  const accepted = Object.values(state.offers).filter((o) => o.state === "ACCEPTED");
+  const entries = accepted.map((o) => buildContestEntry(state, o));
+  const { clears, voided } = resolveContested(entries, CLUBS.map((c) => c.id));
+
+  let desks = { ...state.desks };
+  let offers = { ...state.offers };
+  const executed: Deal[] = [];
+
+  for (const id of voided) {
+    offers[id] = { ...offers[id]!, state: "VOID_STALE", voidNote: "The books changed. That trade is off." };
+  }
+
+  for (const id of clears) {
+    const o = offers[id]!;
+    const fromDesk = desks[o.fromSeat]!;
+    const toDesk = desks[o.toSeat]!;
+    const sentObjects = resolveOwned(toTradeDesk(fromDesk), o.send) ?? [];
+    const gotObjects = resolveOwned(toTradeDesk(toDesk), o.want) ?? [];
+    const effect = applyTrade(
+      { roster: fromDesk.roster, picksOwned: fromDesk.picksOwned, committed: fromDesk.books.committed, taxSalary: fromDesk.books.taxSalary },
+      { roster: toDesk.roster, picksOwned: toDesk.picksOwned, committed: toDesk.books.committed, taxSalary: toDesk.books.taxSalary },
+      o.send,
+      o.want,
+      3,
+    );
+
+    const fromOwedNew = o.send.filter((oid) => fromDesk.ownPickIds.includes(oid)).map((oid) => {
+      const p = fromDesk.picksOwned.find((pp) => pp.pickId === oid)!;
+      return { pickId: p.pickId, year: p.year, toLabel: toDesk.label };
+    });
+    const toOwedNew = o.want.filter((oid) => toDesk.ownPickIds.includes(oid)).map((oid) => {
+      const p = toDesk.picksOwned.find((pp) => pp.pickId === oid)!;
+      return { pickId: p.pickId, year: p.year, toLabel: fromDesk.label };
+    });
+
+    desks[o.fromSeat] = {
+      ...fromDesk,
+      roster: effect.from.roster,
+      picksOwned: effect.from.picksOwned,
+      picksOwed: [...fromDesk.picksOwed, ...fromOwedNew],
+      books: { ...fromDesk.books, committed: effect.from.committed, taxSalary: effect.from.taxSalary },
+      bookVersion: fromDesk.bookVersion + 1,
+      evidence: [...fromDesk.evidence, dealSentence(o.hour, fromDesk.label, toDesk.label, sentObjects, gotObjects)],
+    };
+    desks[o.toSeat] = {
+      ...toDesk,
+      roster: effect.to.roster,
+      picksOwned: effect.to.picksOwned,
+      picksOwed: [...toDesk.picksOwed, ...toOwedNew],
+      books: { ...toDesk.books, committed: effect.to.committed, taxSalary: effect.to.taxSalary },
+      bookVersion: toDesk.bookVersion + 1,
+      evidence: [...toDesk.evidence, dealSentence(o.hour, toDesk.label, fromDesk.label, gotObjects, sentObjects)],
+    };
+    offers[id] = { ...o, state: "EXECUTED" };
+    executed.push({ id: o.id, hour: o.hour, fromSeat: o.fromSeat, toSeat: o.toSeat, send: o.send, want: o.want });
+  }
+
+  if (expireRest) {
+    for (const [id, o] of Object.entries(offers)) {
+      if (isOpenOffer(o)) offers[id] = { ...o, state: "EXPIRED" };
+    }
+  }
+
+  return { desks, offers, executed: [...state.executed, ...executed] };
+}
+
+/**
+ * THE SEASON SETTLE — job-based, never a scalar (ARC_DESIGN §8.1). Runs once,
+ * BEFORE the Boardroom (D59 ruling 4), against the roster each desk actually
+ * holds once the deadline has passed. Deterministic on `(sessionId,
+ * contractId)`; a contract kept from before this week keeps the jobState it
+ * already carried, and only a contract acquired THIS week gets a fresh result
+ * against the job it was traded for.
+ */
+function computeSeasonSettle(state: SameLineL3State): SeasonSettle {
+  const perSeat: Record<SeatId, SeasonSettleDesk> = {};
+  for (const desk of Object.values(state.desks)) {
+    const acquired = desk.roster.filter((c) => c.acquiredWeek === 3);
+    const acquiredResults = acquired.map((c) => ({ contractId: c.contractId, name: c.name, role: c.role, result: hashJobState(state.sessionId, c.contractId) }));
+    const remaining = [...desk.openJobs];
+    let covered = 0;
+    for (const r of acquiredResults) {
+      if (r.result === "DOES_NOT_DO_JOB") continue;
+      const idx = remaining.indexOf(r.role);
+      if (idx >= 0) {
+        remaining.splice(idx, 1);
+        covered += 1;
+      }
+    }
+    perSeat[desk.seatId] = { seatId: desk.seatId, coveredJobs: covered, openJobs: remaining.length, acquiredResults };
+  }
+  return { perSeat };
+}
+
+/* ----------------------------------------------------------------- module -- */
+
+export const sameLineL3Module: LessonModule<SameLineL3State> = {
+  id: SAME_LINE_L3_ID,
+  title: "The Deadline",
+  phases: PHASES,
+  initialState,
+  reduce,
+  onPhaseExit: (state, from, to) => {
+    let next = state;
+    if (from === "PLAY") {
+      const settlement = settleHour(next, true);
+      next = { ...next, desks: settlement.desks, offers: settlement.offers, executed: settlement.executed, marketClosed: true };
+      if (!next.settled) next = { ...next, settled: computeSeasonSettle(next) };
+    }
+    if (to === "SYNTHESIS") next = { ...next, beat: 0 };
+    return next;
+  },
+  allowedActions: (phase) =>
+    phase === "PLAY"
+      ? ["takeSeat", "list", "unlist", "propose", "withdraw", "counter", "accept", "decline"]
+      : phase === "LOBBY" || phase === "HOOK"
+        ? ["takeSeat"]
+        : phase === "COUNTERFACTUAL" || phase === "ARGUE"
+          ? ["defend"]
+          : [],
+
+  studentView: (state, seatId, phase) => studentView(state, seatId, phase),
+  teacherView: (state, phase) => teacherView(state, phase),
+  boardView: (state, phase) => boardView(state, phase),
+  aggregate: (state) => ({ desks: Object.keys(state.desks).length, hour: state.hour, marketClosed: state.marketClosed, executed: state.executed.length }),
+
+  round: {
+    closeHook: "teacher:closeHour",
+    noun: "hour",
+    currentKey: (state, phase) => (phase === "PLAY" && !state.marketClosed ? `hour${state.hour}` : null),
+    fallbackPolicy:
+      "An offer nobody answered expires when the hour ends. Nothing is accepted for anybody and nothing is charged. The offer is gone, the players come out of escrow, and the desk that sent it gets its slot back.",
+    unresolved: (state, phase, seatIds) => {
+      if (phase !== "PLAY" || state.marketClosed) return [];
+      const out: UnresolvedSeat[] = [];
+      for (const seatId of seatIds) {
+        const desk = state.desks[seatId];
+        if (!desk) continue;
+        const waiting = Object.values(state.offers).filter((o) => isOpenOffer(o) && recipientOf(o) === seatId);
+        if (waiting.length === 0) continue;
+        const n = waiting.length;
+        out.push({
+          seatId,
+          label: desk.label,
+          fallback: `${desk.label} — ${n} offer${n === 1 ? "" : "s"} sitting unanswered; ${n === 1 ? "it expires" : "both expire"}`,
+          selfFallback: `You have ${n} offer${n === 1 ? "" : "s"} waiting. If the hour ends now, ${n === 1 ? "it expires" : "they expire"} and you keep everything.`,
+        });
+      }
+      return out;
+    },
+  },
+
+  classEvents: (prev, next, transition) => {
+    const lines: string[] = [];
+    if (next.executed.length > prev.executed.length) {
+      const n = next.executed.length - prev.executed.length;
+      lines.push(`${n} trade${n === 1 ? "" : "s"} cleared.`);
+    }
+    if (transition.fromPhase !== transition.toPhase && transition.toPhase === "REVEAL") {
+      lines.push("The deadline passed. The room started going through what happened.");
+    }
+    return lines;
+  },
+};
+
+/* ------------------------------------------------------- the podium -- */
+
+export function spotlightViewFor(state: SameLineL3State, seatId: SeatId, phase: CanonicalPhase): unknown {
+  const desk = state.desks[seatId];
+  if (!desk) return null;
+  const publicDeals = state.executed.filter((d) => d.fromSeat === seatId || d.toSeat === seatId);
+  return {
+    module: SAME_LINE_L3_ID,
+    label: desk.label,
+    club: CLUB[desk.clubId].name,
+    hour: state.hour,
+    marketClosed: state.marketClosed,
+    committedText: money(desk.books.committed),
+    wallText: desk.books.wall !== null ? money(desk.books.wall) : null,
+    openJobs: desk.openJobs,
+    tradesExecuted: publicDeals.length,
+    picksOwed: desk.picksOwed,
+    openingQuestion:
+      publicDeals.length > 0
+        ? `You made ${publicDeals.length} trade${publicDeals.length === 1 ? "" : "s"} today. Walk us through the last one.`
+        : desk.openJobs.length > 0 && phase !== "LOBBY" && phase !== "HOOK"
+          ? `You still have ${desk.openJobs.length === 1 ? "a hole" : "holes"} open and you made no trade. What were you waiting for?`
+          : "Walk us through your deadline.",
+  };
+}
+
+export function pressCandidatesFor(state: SameLineL3State, _phase: CanonicalPhase): readonly { seatId: SeatId; label: string; why: string }[] {
+  const desks = Object.values(state.desks);
+  const byClub = new Map<ClubId, Desk[]>();
+  for (const d of desks) byClub.set(d.clubId, [...(byClub.get(d.clubId) ?? []), d]);
+  const scored = desks.map((d) => {
+    let score = 0;
+    const why: string[] = [];
+    const twin = (byClub.get(d.clubId) ?? []).find((o) => o.seatId !== d.seatId);
+    const mine = state.executed.filter((deal) => deal.fromSeat === d.seatId || deal.toSeat === d.seatId).length;
+    if (twin) {
+      const theirs = state.executed.filter((deal) => deal.fromSeat === twin.seatId || deal.toSeat === twin.seatId).length;
+      if (mine !== theirs) {
+        score += 3;
+        why.push(`${mine} trades against ${theirs} from the same books as ${twin.label}`);
+      }
+    }
+    const declined = Object.values(state.offers).filter((o) => o.declinedBy === d.seatId).length;
+    if (declined >= 2) {
+      score += 2;
+      why.push(`said no ${declined} times`);
+    }
+    if (mine === 0 && state.marketClosed) {
+      score += 2;
+      why.push("stood pat all session");
+    }
+    const received = Object.values(state.offers).filter((o) => o.toSeat === d.seatId || o.fromSeat === d.seatId).length;
+    if (mine === 1 && received === 1) {
+      score += 1;
+      why.push("accepted the first offer it saw");
+    }
+    return { seatId: d.seatId, label: d.label, score, why: why.join(" · ") || "a plain deadline — a fair first podium" };
+  });
+  const order = new Map(CLUBS.map((c, i) => [c.id, i]));
+  return scored
+    .sort((a, b) => b.score - a.score || order.get(state.desks[a.seatId]!.clubId)! - order.get(state.desks[b.seatId]!.clubId)! || state.desks[a.seatId]!.twin - state.desks[b.seatId]!.twin)
+    .map(({ seatId, label, why }) => ({ seatId, label, why }));
+}
+
+/* ------------------------------------------------------------------ views -- */
+
+function standingOf(committed: number, band: Band): string {
+  void band;
+  return bandOf(committed) === "over-apron2" ? "over the second apron" : bandOf(committed) === "under-apron2" ? "over the first apron" : bandOf(committed) === "under-apron1" ? "over the tax line" : bandOf(committed) === "under-tax" ? "over the cap" : "under the cap";
+}
+
+function contractView(c: ContractObject) {
+  return { id: c.contractId, kind: "contract" as const, name: c.name, role: c.role, annualText: money(c.annual), yearsRemaining: c.yearsRemaining, jobState: c.jobState };
+}
+function pickView(p: PickObject) {
+  return { id: p.pickId, kind: "pick" as const, label: p.label };
+}
+
+function offerFacingSeat(o: Offer, seatId: SeatId): { direction: "sent" | "received"; awaitingMe: boolean; counterpartySeat: SeatId } {
+  const iAmFrom = o.fromSeat === seatId;
+  const counterpartySeat = iAmFrom ? o.toSeat : o.fromSeat;
+  const awaitingMe = isOpenOffer(o) && recipientOf(o) === seatId;
+  return { direction: iAmFrom ? "sent" : "received", awaitingMe, counterpartySeat };
+}
+
+function studentView(state: SameLineL3State, seatId: SeatId, phase: CanonicalPhase): unknown {
+  const desk = state.desks[seatId];
+  const profile = profileFor(state.gradeBand);
+  if (!desk) {
+    return { module: SAME_LINE_L3_ID, seated: false, observer: state.observers.includes(seatId), hour: state.hour, marketClosed: state.marketClosed };
+  }
+  const labelById = (id: ObjectId): string => {
+    for (const d of Object.values(state.desks)) {
+      const c = d.roster.find((x) => x.contractId === id);
+      if (c) return c.name;
+      const p = d.picksOwned.find((x) => x.pickId === id);
+      if (p) return p.label;
+    }
+    return id;
+  };
+  const myOffers = Object.values(state.offers)
+    .filter((o) => o.fromSeat === seatId || o.toSeat === seatId)
+    .map((o) => {
+      const facing = offerFacingSeat(o, seatId);
+      const isDecliner = o.declinedBy === seatId;
+      return {
+        id: o.id,
+        state: o.state,
+        hour: o.hour,
+        direction: facing.direction,
+        awaitingMe: facing.awaitingMe,
+        counterpartyLabel: state.desks[facing.counterpartySeat]?.label ?? "a desk",
+        sendLabels: o.send.map(labelById),
+        wantLabels: o.want.map(labelById),
+        countered: o.countered,
+        voidNote: o.voidNote,
+        // Private forever to the desk that declined it (spec §2).
+        declineReason: isDecliner ? o.declineReason : null,
+      };
+    });
+  return {
+    module: SAME_LINE_L3_ID,
+    seated: true,
+    label: desk.label,
+    club: CLUB[desk.clubId].name,
+    hour: state.hour,
+    marketClosed: state.marketClosed,
+    seedWarning: desk.seedWarning,
+    books: { committedText: money(desk.books.committed), wallText: desk.books.wall !== null ? money(desk.books.wall) : null, standing: standingOf(desk.books.committed, desk.books.band) },
+    roster: desk.roster.map(contractView),
+    picksOwned: desk.picksOwned.map(pickView),
+    picksOwed: desk.picksOwed.map((p) => ({ label: `OWED: your ${p.year} pick (to ${p.toLabel})` })),
+    openJobs: desk.openJobs,
+    myOffers,
+    market: state.listings.map((id) => ({
+      id,
+      label: labelById(id),
+      holderLabel: Object.values(state.desks).find((d) => d.roster.some((c) => c.contractId === id) || d.picksOwned.some((p) => p.pickId === id))?.label ?? "unknown",
+      interestCount: Object.values(state.offers).filter((o) => isOpenOffer(o) && (o.send.includes(id) || o.want.includes(id))).length,
+    })),
+    capturePrompts: { send: profile.band === "5-6" ? SEND_CHIPS_56 : SEND_CHIPS_78, decline: DECLINE_CHIPS, lineWordLimit: profile.band === "5-6" ? 12 : 20 },
+    maxObjectsPerSide: profile.maxVariables >= 3 ? 2 : 1,
+    phase,
+  };
+}
+
+function walkToSignals(state: SameLineL3State, desk: Desk): readonly string[] {
+  const signals: string[] = [];
+  const sentCount = Object.values(state.offers).filter((o) => o.fromSeat === desk.seatId).length;
+  if (!state.marketClosed && sentCount === 0) signals.push("NO OFFER SENT");
+  const declinedCount = Object.values(state.offers).filter((o) => o.declinedBy === desk.seatId).length;
+  if (declinedCount >= 2) signals.push("REFUSED TWICE");
+  const receivedLive = Object.values(state.offers).filter((o) => o.toSeat === desk.seatId && o.state === "LIVE").length;
+  if (receivedLive >= 3) signals.push("DUMPED ON");
+  const twin = Object.values(state.desks).find((d) => d.clubId === desk.clubId && d.seatId !== desk.seatId);
+  if (twin) {
+    const mine = state.executed.filter((d) => d.fromSeat === desk.seatId || d.toSeat === desk.seatId).length;
+    const theirs = state.executed.filter((d) => d.fromSeat === twin.seatId || d.toSeat === twin.seatId).length;
+    if (mine !== theirs) signals.push("TWINS DIVERGED");
+  }
+  const collided = Object.values(state.offers).some((o) => o.state === "VOID_STALE" && o.acceptedBy === desk.seatId && o.voidNote?.startsWith("The books changed. That trade"));
+  if (collided) signals.push("MARKET COLLISION");
+  return signals;
+}
+
+const DIRECTOR_CARDS: Readonly<Partial<Record<CanonicalPhase, string>>> = {
+  HOOK: "NOW: read the club situation of the desk with the largest hole, aloud. WATCH FOR: desks who have not opened their roster. DON'T EXPLAIN YET: salary matching. ASK: \"Who has something they don't need?\" TRIGGER: the dated deadline story.",
+  PLAY: "NOW: walk, don't talk. WATCH FOR: NO OFFER SENT after 4 minutes; DUMPED ON. DON'T EXPLAIN YET: why an offer was refused. ASK the stuck desk: \"What's the job you still can't fill?\" TRIGGER: FINAL CALL when unresolved() is under three desks.",
+  REVEAL: "NOW: read two executed deals off the board, in the room's own numbers. WATCH FOR: the room converging on \"even is fair.\" ASK: \"Both of you said yes. Who won?\" — and refuse to answer it.",
+  CONSEQUENCE: "NOW: the twin pair, side by side. WATCH FOR: a desk blaming the dice. ASK: \"Same books in September. What made this different?\"",
+  COUNTERFACTUAL: "NOW: private card, everyone writes. TRIGGER: the UNLUCKY GOOD DECISION tape.",
+  ARGUE: "ASK the hot seat, deadpan, the decision not the person.",
+  SYNTHESIS: "NOW: one name at a time, each opening with what this room did. TRIGGER: nextName.",
+};
+
+function teacherView(state: SameLineL3State, phase: CanonicalPhase): unknown {
+  const desks = Object.values(state.desks).map((d) => ({
+    seatId: d.seatId,
+    label: d.label,
+    committedText: money(d.books.committed),
+    liveOut: Object.values(state.offers).filter((o) => o.fromSeat === d.seatId && o.state === "LIVE").length,
+    liveIn: Object.values(state.offers).filter((o) => o.toSeat === d.seatId && o.state === "LIVE").length,
+    executed: state.executed.filter((deal) => deal.fromSeat === d.seatId || deal.toSeat === d.seatId).length,
+    walkTo: walkToSignals(state, d),
+    seedWarning: d.seedWarning,
+  }));
+  return {
+    module: SAME_LINE_L3_ID,
+    hour: state.hour,
+    marketClosed: state.marketClosed,
+    desks,
+    directorCard: DIRECTOR_CARDS[phase] ?? "",
+    pressCandidates: pressCandidatesFor(state, phase),
+    warnings: state.warnings,
+    settled: state.settled
+      ? Object.values(state.settled.perSeat).map((s) => ({ label: state.desks[s.seatId]?.label ?? s.seatId, coveredJobs: s.coveredJobs, openJobs: s.openJobs }))
+      : null,
+  };
+}
+
+function boardView(state: SameLineL3State, phase: CanonicalPhase): unknown {
+  const contracts = new Set<string>();
+  const picks = new Set<string>();
+  for (const d of Object.values(state.desks)) {
+    for (const c of d.roster) contracts.add(c.contractId);
+    for (const p of d.picksOwned) picks.add(p.pickId);
+  }
+  const labelById = (id: ObjectId): { name: string; holderLabel: string } => {
+    for (const d of Object.values(state.desks)) {
+      const c = d.roster.find((x) => x.contractId === id);
+      if (c) return { name: c.name, holderLabel: d.label };
+      const p = d.picksOwned.find((x) => x.pickId === id);
+      if (p) return { name: p.label, holderLabel: d.label };
+    }
+    return { name: id, holderLabel: "unknown" };
+  };
+  const market = state.listings.map((id) => {
+    const { name, holderLabel } = labelById(id);
+    const interestCount = Object.values(state.offers).filter((o) => isOpenOffer(o) && (o.send.includes(id) || o.want.includes(id))).length;
+    return { name, holderLabel, interestCount };
+  });
+  const executedBroadcast = state.executed.map((d) => {
+    const from = state.desks[d.fromSeat];
+    const to = state.desks[d.toSeat];
+    return {
+      hour: d.hour,
+      fromLabel: from?.label ?? "a desk",
+      toLabel: to?.label ?? "a desk",
+      sent: d.send.map((id) => labelById(id).name),
+      got: d.want.map((id) => labelById(id).name),
+    };
+  });
+  return {
+    module: SAME_LINE_L3_ID,
+    hour: state.hour,
+    marketClosed: state.marketClosed,
+    market: { contractsOnMarket: contracts.size, picksOnMarket: picks.size, objects: market },
+    executedBroadcast,
+    seasonSettle: state.settled
+      ? Object.values(state.settled.perSeat).map((s) => ({ label: state.desks[s.seatId]?.label ?? s.seatId, coveredJobs: s.coveredJobs, openJobs: s.openJobs }))
+      : null,
+    phase,
+  };
+}
+
+export { toTradeDesk, isEscrowed };

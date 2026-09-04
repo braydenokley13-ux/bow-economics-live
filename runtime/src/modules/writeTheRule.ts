@@ -347,6 +347,87 @@ export const SHARE_GRID: readonly number[] = (() => {
   return out;
 })();
 
+/* --------------------------------------------------- band decision spaces -- */
+
+/**
+ * THE SHARE ballot's own decision space, per band (gradeBand.ts `allowsPercentages`).
+ * 5-6 never sees a percent: the four cards are printed as "$0/$2/$4/$6 out of
+ * every $10 of local money" and only ever carry these four internal share
+ * values. 7-8 keeps the full continuous grid. `maxVariables` at 5-6 is 2 and
+ * this ballot spends one of them (SHARE_SLATE_LABEL_5_6 documents the print).
+ */
+export const SHARE_SLATE_5_6: readonly number[] = [0, 20, 40, 60];
+export const SHARE_SLATE_LABEL_5_6: Readonly<Record<number, string>> = { 0: "$0", 20: "$2", 40: "$4", 60: "$6" };
+
+export const shareOptionsFor = (band: GradeBand): readonly number[] => (band === "5-6" ? SHARE_SLATE_5_6 : SHARE_GRID);
+
+export const isValidShareForBand = (band: GradeBand, v: unknown): v is number =>
+  typeof v === "number" && Number.isFinite(v) && shareOptionsFor(band).includes(v);
+
+/**
+ * THE FLOOR's own decision space, per band — a FLAT DOLLAR reinvest LINE per
+ * week, never a percent of a club's own revenue.
+ *
+ * Economic Truth ruling (binding, computed against the shipped constants): a
+ * percent-of-own-revenue floor (the old `CONDITION_MIN_REINVEST` reading)
+ * binds the SAME big-market coalition institution 1 already binds — a big
+ * market's 15% of a much bigger local-revenue base is a bigger dollar number
+ * than a small market's 15%, so the percent form never inverts the coalition
+ * the whole two-institution design turns on. A FLAT dollar line does invert
+ * it: at the working value below, seven small/mid markets (Memphis, New
+ * Orleans, Milwaukee, Utah, Oklahoma City, Indiana, Denver) fall under it on
+ * a typical week and only two big markets do — and it matches the real
+ * institution, an absolute dollar minimum team salary identical for every
+ * club regardless of market size. `CONDITION_MIN_REINVEST`/
+ * `CONDITION_COLLECT_FRACTION` stay exactly as they are and stay institution
+ * 1's own constants; the floor's dock-and-redistribute REUSES the collect
+ * fraction (see `floorRuleFor` / `settleWeek`) but tests dollars, not percent.
+ *
+ * Working values, NOT VERIFIED by a tuning-harness sweep this session — flag
+ * for Economic Truth before ship: does $300,000/week actually bind the
+ * intended coalition across every adopted share, not only the modal one?
+ */
+export const FLOOR_ROUND_COUNT = 2;
+export const FLOOR_OFF = 0;
+export const FLOOR_LINE_5_6 = 300_000;
+export const FLOOR_LINES_7_8: readonly number[] = [200_000, 300_000, 400_000];
+export const FLOOR_RECIPIENTS: readonly FloorRecipient[] = ["compliant", "everyone"];
+export const STATUS_QUO_FLOOR_ON = false;
+
+export const floorLevelsFor = (band: GradeBand): readonly number[] => (band === "5-6" ? [FLOOR_LINE_5_6] : FLOOR_LINES_7_8);
+
+/** Untrusted-input validation for a `proposeFloor` payload, band-aware. */
+export function isValidFloorProposal(band: GradeBand, value: unknown): value is { on: boolean; level?: number; recipient?: FloorRecipient } {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  if (typeof v["on"] !== "boolean") return false;
+  if (!v["on"]) return true; // OFF needs nothing else, at either band
+  if (band === "5-6") return true; // ON at 5-6 is always the one authored line
+  if (typeof v["level"] !== "number" || !FLOOR_LINES_7_8.includes(v["level"])) return false;
+  if (v["recipient"] !== "compliant" && v["recipient"] !== "everyone") return false;
+  return true;
+}
+
+/** Fills in the band's authored defaults so the stored proposal is always complete. */
+export function normalizeFloorProposal(band: GradeBand, value: { on: boolean; level?: number; recipient?: FloorRecipient }): FloorProposal {
+  if (band === "5-6") return { on: value.on, level: value.on ? FLOOR_LINE_5_6 : FLOOR_OFF, recipient: "compliant" };
+  return { on: value.on, level: value.on ? (value.level as number) : FLOOR_OFF, recipient: value.on ? (value.recipient as FloorRecipient) : "compliant" };
+}
+
+/**
+ * The active floor, read from the room's own adopted institution row (or the
+ * status quo — no floor — when none has been adopted yet, or on a snapshot
+ * from before this institution existed). `share`/`condition` are the reused
+ * `AdoptedRule` slots — see the type doc above.
+ */
+export type FloorRule = { on: boolean; level: number; recipient: FloorRecipient };
+
+export function floorRuleFor(state: { institutions?: Record<InstitutionId, AdoptedRule | null> }): FloorRule {
+  const row = state.institutions ? state.institutions.floor : null;
+  if (!row || !row.condition) return { on: false, level: FLOOR_OFF, recipient: "compliant" };
+  return { on: true, level: row.share, recipient: row.recipient ?? "compliant" };
+}
+
 /* -------------------------------------------------- the hidden economics -- */
 
 export type HomeSettlement = {
@@ -510,8 +591,15 @@ export type PotFlow = {
   paidIn: number;
   tookOut: number;
   net: number;
-  /** True when the CONDITION docked this club's share this week. */
+  /** True when institution 1's own CONDITION docked this club's share this week. */
   docked: boolean;
+  /**
+   * True when institution 2 — THE FLOOR — separately docked this club this
+   * week (additive: the floor's own forfeit-and-redistribute layer runs on
+   * top of whatever institution 1 already settled, never in place of it, and
+   * is a no-op whenever no floor has been adopted — see `floorRuleFor`).
+   */
+  floorDocked: boolean;
 };
 
 export type SettledWeek = {
@@ -538,6 +626,30 @@ export type SettledWeek = {
   roadDollarsGiven: number;
 };
 
+/**
+ * THE FLOOR's stakes card — private, dollar-denominated, printed for this
+ * club alone before the floor's rounds open (non-negotiable 6: a stakes card
+ * before debate opens, derived from this club's own history, never assigned).
+ * It is a MODELED projection at the share the room actually adopted, holding
+ * this club's own most recent reinvest rate fixed — not a promise, and the
+ * card says so.
+ */
+export type StakesCard = {
+  /** The DOLLAR LINE this card is priced against — the one authored line at
+   *  5-6, or the middle of the three options at 7-8, before the room has
+   *  voted a level. Never a percent (5-6 `allowsPercentages: false`). */
+  atLevel: number;
+  /** This club's own projected weekly reinvest SPEND, in dollars, at its
+   *  current dial and current Draw — not a percent, so it reads directly
+   *  against `atLevel`. */
+  ownReinvest: number;
+  /** Whether that projected spend would already clear `atLevel`. */
+  wouldClear: boolean;
+  /** What one week's forfeit would cost this club if it does not move and the
+   *  floor binds at `atLevel` — 0 when `wouldClear` is true. */
+  costIfBound: number;
+};
+
 export type Club = {
   slot: number;
   deskNumber: number;
@@ -558,6 +670,12 @@ export type Club = {
   hookPick: "pay" | "breakup" | null;
   proposal: RuleProposal | null;
   proposals: (RuleProposal | null)[];
+  /** Institution 2's own ballot and history — parallel to `proposal`/`proposals`. */
+  floorProposal: FloorProposal | null;
+  floorProposals: (FloorProposal | null)[];
+  /** Set once, the moment the floor's rounds open. Null before then and on
+   *  every snapshot from before this institution existed. */
+  stakesCard: StakesCard | null;
   price: number;
   reinvest: number;
   locked: boolean;
@@ -569,7 +687,7 @@ export type Club = {
   handedOver: boolean;
 };
 
-export type WriteRuleStage = "rounds" | "adopted" | "season" | "seasonDone";
+export type WriteRuleStage = "rounds" | "adopted" | "floorRounds" | "floorAdopted" | "season" | "seasonDone";
 
 export type WriteRuleState = {
   clubs: Club[];
@@ -583,15 +701,30 @@ export type WriteRuleState = {
   /** The room's own L2 mean reinvest, when linked — the left-hand bar. */
   l2MeanReinvest: number | null;
   hookRevealed: boolean;
+  /** Which class this room is for (D22/D38 seam). Fixed for the life of the room. */
+  band: GradeBand;
   stage: WriteRuleStage;
   roundIndex: number;
+  /** Institution 2's own round counter — parallel to `roundIndex`, never shared with it. */
+  floorRoundIndex: number;
   /**
    * `shares`/`conditions` are per LIVE DESK in slot order and carry `null` for a
    * desk that never put a number in that round. A non-vote is an abstention, not
-   * a fabricated 5% — see `runAdoption`.
+   * a fabricated 5% — see `runAdoption`. `institution` names which ballot this
+   * round belongs to and is absent (read as "share") on every round closed
+   * before institution 2 existed — see `institutionOf`. On a FLOOR round,
+   * `shares[i]` carries the level this desk proposed (0 for an explicit OFF
+   * vote, never confused with `null`, a true abstention) and `conditions[i]`
+   * carries whether that desk asked the forfeit to go to "everyone" (true) or
+   * only the compliant (false) — the same reused slots `AdoptedRule` reuses.
    */
-  closedRounds: { round: number; shares: (number | null)[]; conditions: (boolean | null)[]; median: number; slots: number[] }[];
+  closedRounds: { round: number; institution?: InstitutionId; shares: (number | null)[]; conditions: (boolean | null)[]; median: number; slots: number[] }[];
   adopted: AdoptedRule | null;
+  /** Both institutions' own adopted rows — additive alongside `adopted`, which
+   *  stays the share row so every pre-existing snapshot and view still reads. */
+  institutions: Record<InstitutionId, AdoptedRule | null>;
+  /** Paging counter for the ARGUE-phase institution recap (`teacher:reviewStage`). */
+  reviewStage: number;
   weekIndex: number;
   rookieSlot: number | null;
   revealStage: number;
@@ -658,6 +791,9 @@ function makeClub(slot: number): Club {
     hookPick: null,
     proposal: null,
     proposals: [],
+    floorProposal: null,
+    floorProposals: [],
+    stakesCard: null,
     price: profile.housePrice,
     reinvest: 0,
     locked: false,
@@ -802,6 +938,26 @@ export function extractCarriedClubs(seed: unknown): CarriedClub[] {
     });
   }
   return out;
+}
+
+/**
+ * THE THIRD ATTACHMENT POINT (gradeBand.ts) — a 5-6 room's own carry read by a
+ * 7-8 room, or the reverse, is a live classroom possibility (D59 ruling / the
+ * spec's own naming) and this receiving module has to notice it, not merely
+ * trust a well-formed envelope from the right module id. `sourceGradeBand` is
+ * itself untrusted input: absent, malformed, or matching, all read as "no
+ * band objection" — REFUSAL requires a genuine, valid, MISMATCHED band, never
+ * a throw either way. Called before `extractCarriedClubs`; a refusal here
+ * means the carry is never read at all, and the reason is teacher-readable.
+ */
+export function weekFiveBandMismatch(seed: unknown, receivingBand: GradeBand): string | null {
+  if (!seed || typeof seed !== "object") return null;
+  const s = seed as Record<string, unknown>;
+  if (s["lessonModuleId"] !== "m2l2-host-league") return null;
+  const sourceBand = s["sourceGradeBand"];
+  if (!isGradeBand(sourceBand)) return null;
+  if (sourceBand === receivingBand) return null;
+  return `last lesson's session was a grades ${sourceBand} room, and this is a grades ${receivingBand} room`;
 }
 
 /* --------------------------------------------------------------- bots -- */
@@ -974,7 +1130,34 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
     return collected;
   });
   const bonus = compliantCount > 0 ? forfeited / compliantCount : 0;
-  const tookOut = rows.map((_, i) => Math.round(base[i]! + (compliant[i] ? bonus : 0)));
+  const shareTookOut = rows.map((_, i) => Math.round(base[i]! + (compliant[i] ? bonus : 0)));
+
+  // INSTITUTION 2 — THE FLOOR. Additive, on top of institution 1's own
+  // CONDITION above, never in its place: a second forfeit-and-redistribute
+  // pass over what institution 1 already settled, gated on the room's own
+  // separately-adopted floor (`floorRuleFor`) rather than on `rule.condition`.
+  // A room with no floor adopted (or a snapshot from before this institution
+  // existed) reads `floor.on === false` and this pass is a no-op — the exact
+  // arithmetic institution 1 has always produced, byte for byte. Same
+  // no-bonfire rule as institution 1 (econ B4): with nobody clearing the
+  // floor there is nobody to redistribute to, so nothing is forfeited.
+  const floor = floorRuleFor(state);
+  const floorCompliant = rows.map((r) => !floor.on || r.reinvest >= floor.level);
+  const floorCompliantCount = floorCompliant.filter(Boolean).length;
+  let floorForfeited = 0;
+  const afterFloor = shareTookOut.map((amt, i) => {
+    if (!floor.on || floorCompliant[i] || floorCompliantCount === 0) return amt;
+    const kept = Math.round(amt * CONDITION_COLLECT_FRACTION);
+    floorForfeited += amt - kept;
+    return kept;
+  });
+  const floorBonusPool = !floor.on ? 0 : floor.recipient === "everyone" ? size : floorCompliantCount;
+  const floorBonus = floorBonusPool > 0 ? floorForfeited / floorBonusPool : 0;
+  const tookOut = afterFloor.map((amt, i) => {
+    if (!floor.on) return amt;
+    const gets = floor.recipient === "everyone" || floorCompliant[i];
+    return Math.round(amt + (gets ? floorBonus : 0));
+  });
 
   const clubs = state.clubs.slice();
   for (const r of rows) {
@@ -1011,6 +1194,7 @@ function settleWeek(state: WriteRuleState, honorPendingDials: boolean): WriteRul
         tookOut: tookOut[r.slot]!,
         net: tookOut[r.slot]! - r.paidIn,
         docked: compliantCount > 0 && !compliant[r.slot]!,
+        floorDocked: floor.on && floorCompliantCount > 0 && !floorCompliant[r.slot]!,
       },
       bill: profile.bill,
       national: NATIONAL,
@@ -1090,8 +1274,17 @@ export function weekTakeFor(
   const backFromPot = paidIn / Math.max(1, state.leagueSize);
   const docked = rule && rule.condition && reinvest < CONDITION_MIN_REINVEST;
   const collected = docked ? backFromPot * CONDITION_COLLECT_FRACTION : backFromPot;
+  // Institution 2's own, separate dock (see `settleWeek`'s identical layer) —
+  // read off the room's own adopted floor, independent of whichever `rule`
+  // (institution 1's share) was passed in, because the two institutions no
+  // longer share a ballot. No bonus is modeled here either way: this is a
+  // single club's own hypothetical holding the rest of the league fixed, the
+  // same approximation the pre-existing `collected` line already makes.
+  const floor = floorRuleFor(state);
+  const floorDocked = floor.on && reinvest < floor.level;
+  const afterFloor = floorDocked ? collected * CONDITION_COLLECT_FRACTION : collected;
   return {
-    cash: home.gate + home.inArena + localMedia + NATIONAL - profile.bill - spend - paidIn + collected,
+    cash: home.gate + home.inArena + localMedia + NATIONAL - profile.bill - spend - paidIn + afterFloor,
     drawAfter: nextDraw(profile, hostDraw, spend),
     taxedLocal,
     localRevenue,
@@ -1237,19 +1430,49 @@ export type AdoptionOutcome = {
  * room's middle number without saying a number out loud. Both halves are printed
  * on the desk, on the board tally and in the teacher's WATCH FOR panel.
  */
-export function runAdoption(state: WriteRuleState): AdoptionOutcome {
+/** Winner of a discrete slate: most votes, ties toward the lowest printable
+ *  value — deterministic, never a coin flip (R7 — no random source anywhere
+ *  in this file). Used wherever a ballot's own decision space is a slate
+ *  rather than a continuous grid: the 5-6 SHARE ballot and THE FLOOR at
+ *  either band (spec: "the ±10 band degenerates — the test becomes plurality
+ *  card ≥ needed"). */
+function pluralityWinner(values: readonly number[]): number | null {
+  if (values.length === 0) return null;
+  const counts = new Map<number, number>();
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+  let best: number | null = null;
+  let bestCount = -1;
+  for (const [v, c] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
+    if (c > bestCount) {
+      bestCount = c;
+      best = v;
+    }
+  }
+  return best;
+}
+
+export function runAdoption(state: WriteRuleState, institution: InstitutionId = "share"): AdoptionOutcome {
+  if (institution === "floor") return runFloorAdoption(state);
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
-  // The vote is sealed at the close of the last round: the adopted rule reads
-  // the RECORDED round, never a live control that can still be touched.
-  const sealed = state.closedRounds.length > 0 ? state.closedRounds[state.closedRounds.length - 1]! : null;
+  // The vote is sealed at the close of the last SHARE round: the adopted rule
+  // reads the RECORDED round, never a live control that can still be touched,
+  // and never a FLOOR round that may since have closed on the same array.
+  const shareRounds = state.closedRounds.filter((r) => institutionOf(r) === "share");
+  const sealed = shareRounds.length > 0 ? shareRounds[shareRounds.length - 1]! : null;
   const proposals: (number | null)[] = sealed ? sealed.shares.slice() : live.map((c) => c.proposal?.share ?? null);
   const conditions: (boolean | null)[] = sealed ? sealed.conditions.slice() : live.map((c) => c.proposal?.condition ?? null);
   const liveDesks = sealed ? sealed.shares.length : live.length;
   const votedIdx = proposals.map((p, i) => (p === null ? -1 : i)).filter((i) => i >= 0);
   const votedShares = votedIdx.map((i) => proposals[i]!);
+  // 5-6's ballot is a four-card slate, never a percent (gradeBand.ts
+  // `allowsPercentages: false`), so the ±10 band test degenerates to plurality
+  // — the same rule applied to THE FLOOR below, at either band.
+  const discrete = state.band === "5-6";
   const median = votedShares.length > 0 ? medianOf(votedShares) : STATUS_QUO_SHARE;
-  const snapped = snapShare(median);
-  const bandIdx = votedIdx.filter((i) => Math.abs(proposals[i]! - median) <= ADOPT_BAND + 1e-9);
+  const snapped = discrete ? pluralityWinner(votedShares) ?? STATUS_QUO_SHARE : snapShare(median);
+  const bandIdx = discrete
+    ? votedIdx.filter((i) => proposals[i]! === snapped)
+    : votedIdx.filter((i) => Math.abs(proposals[i]! - median) <= ADOPT_BAND + 1e-9);
   const needed = Math.ceil((liveDesks * ADOPT_NUMERATOR) / ADOPT_DENOMINATOR);
   const passes = liveDesks > 0 && votedShares.length > 0 && bandIdx.length >= needed;
   // On the fallback path the replay runs at the number the room FAILED to agree
@@ -1268,6 +1491,7 @@ export function runAdoption(state: WriteRuleState): AdoptionOutcome {
         liveDesks,
         median: snapped,
         runnerUp,
+        institution: "share",
       },
       proposals,
       inBand: bandIdx.length,
@@ -1290,6 +1514,7 @@ export function runAdoption(state: WriteRuleState): AdoptionOutcome {
       liveDesks,
       median: snapped,
       runnerUp,
+      institution: "share",
     },
     proposals,
     inBand: bandIdx.length,
@@ -1331,6 +1556,105 @@ export function runnerUpShare(proposals: readonly number[], adoptedShare: number
   // number where there is one, and to the league office's rule otherwise.
   if (failedMedian !== undefined && failedMedian > adoptedShare) return failedMedian;
   return adoptedShare === REAL_RULE_SHARE ? SHARE_MAX : REAL_RULE_SHARE;
+}
+
+/**
+ * INSTITUTION 2 — THE FLOOR's own adoption. Always a discrete-slate test
+ * (plurality ≥ two-thirds of live desks), at either band: 5-6 is a genuine
+ * two-card slate (OFF or the one authored level), 7-8 a three-level slate
+ * with a second, rider dimension (who receives the shortfall) decided the
+ * same way institution 1 already decides its own CONDITION — by majority of
+ * the bloc that actually carried the winning level.
+ *
+ * Threshold is recomputed here, at THE FLOOR's OWN seal — `liveDesks` reads
+ * the floor's own sealed round, never institution 1's, so a desk that leaves
+ * the room between the two votes moves this denominator and not the other.
+ *
+ * Fails -> NO FLOOR: `share` (the reused level slot) is `FLOOR_OFF`,
+ * `condition` (the reused on/off slot) is `false`, and the season simply
+ * never runs the floor's own dock — lived, not announced (spec: "the board
+ * says nothing about it until ARGUE").
+ */
+function floorRunnerUp(proposals: readonly number[], adoptedLine: number): number {
+  const counts = new Map<number, number>();
+  for (const p of proposals) counts.set(p, (counts.get(p) ?? 0) + 1);
+  counts.delete(adoptedLine);
+  let best = -1;
+  let bestCount = -1;
+  for (const [line, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
+    if (line > 0 && count > bestCount) {
+      bestCount = count;
+      best = line;
+    }
+  }
+  return best > 0 ? best : FLOOR_OFF;
+}
+
+function runFloorAdoption(state: WriteRuleState): AdoptionOutcome {
+  const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+  const floorRounds = state.closedRounds.filter((r) => institutionOf(r) === "floor");
+  const sealed = floorRounds.length > 0 ? floorRounds[floorRounds.length - 1]! : null;
+  // A floor proposal of level 0 (an explicit OFF vote) is a REAL, counted
+  // vote — never confused with `null`, a true abstention (no proposal at all).
+  const proposals: (number | null)[] = sealed
+    ? sealed.shares.slice()
+    : live.map((c) => (c.floorProposal ? (c.floorProposal.on ? c.floorProposal.level : FLOOR_OFF) : null));
+  const wantsEveryone: (boolean | null)[] = sealed
+    ? sealed.conditions.slice()
+    : live.map((c) => (c.floorProposal ? c.floorProposal.recipient === "everyone" : null));
+  const liveDesks = sealed ? sealed.shares.length : live.length;
+  const votedIdx = proposals.map((p, i) => (p === null ? -1 : i)).filter((i) => i >= 0);
+  const votedLevels = votedIdx.map((i) => proposals[i]!);
+  const winner = votedLevels.length > 0 ? pluralityWinner(votedLevels) ?? FLOOR_OFF : FLOOR_OFF;
+  const bandIdx = votedIdx.filter((i) => proposals[i]! === winner);
+  const needed = Math.ceil((liveDesks * ADOPT_NUMERATOR) / ADOPT_DENOMINATOR);
+  const passes = liveDesks > 0 && votedLevels.length > 0 && winner > FLOOR_OFF && bandIdx.length >= needed;
+  const abstained = liveDesks - votedLevels.length;
+  // Dollar lines, not share points — `runnerUpShare` clamps to the 0-60 share
+  // grid and would truncate a $300,000 line to 60. The floor's own runner-up
+  // is the second most-voted DOLLAR line on the table, excluding the adopted
+  // one, falling back to the highest other line proposed and then to $0.
+  const runnerUp = floorRunnerUp(votedLevels, passes ? winner : FLOOR_OFF);
+  if (!passes) {
+    return {
+      adopted: {
+        share: FLOOR_OFF,
+        condition: false,
+        how: "statusQuo",
+        supporting: bandIdx.length,
+        liveDesks,
+        median: winner,
+        runnerUp,
+        institution: "floor",
+        recipient: "compliant",
+      },
+      proposals,
+      inBand: bandIdx.length,
+      needed,
+      voted: votedLevels.length,
+      abstained,
+    };
+  }
+  const everyoneVotes = bandIdx.filter((i) => wantsEveryone[i] === true).length;
+  const recipient: FloorRecipient = everyoneVotes * 2 > bandIdx.length ? "everyone" : "compliant";
+  return {
+    adopted: {
+      share: winner,
+      condition: true,
+      how: "voted",
+      supporting: bandIdx.length,
+      liveDesks,
+      median: winner,
+      runnerUp,
+      institution: "floor",
+      recipient,
+    },
+    proposals,
+    inBand: bandIdx.length,
+    needed,
+    voted: votedLevels.length,
+    abstained,
+  };
 }
 
 /* ---------------------------------------------------------- aggregates -- */
@@ -3479,6 +3803,7 @@ export function closeRound(state: WriteRuleState): WriteRuleState {
   const votedShares = shares.filter((s): s is number => s !== null);
   const closed = {
     round: state.roundIndex + 1,
+    institution: "share" as InstitutionId,
     shares,
     conditions,
     median: votedShares.length > 0 ? snapShare(medianOf(votedShares)) : STATUS_QUO_SHARE,
@@ -3497,26 +3822,107 @@ export function closeRound(state: WriteRuleState): WriteRuleState {
 }
 
 export function adoptRule(state: WriteRuleState): WriteRuleState {
-  const outcome = runAdoption(state);
-  return { ...state, adopted: outcome.adopted, stage: "adopted" };
+  const outcome = runAdoption(state, "share");
+  return { ...state, adopted: outcome.adopted, institutions: { ...state.institutions, share: outcome.adopted }, stage: "adopted" };
 }
 
 export function adoptLeagueOfficeRule(state: WriteRuleState): WriteRuleState {
   const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize).length;
+  const rule: AdoptedRule = {
+    share: REAL_RULE_SHARE,
+    condition: REAL_RULE_CONDITION,
+    how: "leagueOffice",
+    supporting: 0,
+    liveDesks: live,
+    median: REAL_RULE_SHARE,
+    // Never below the rule in force, and never 0% (gate-l3-play repair 4).
+    runnerUp: SHARE_MAX,
+    institution: "share",
+  };
+  // The panic button skips institution 2 entirely (the room ran out of road
+  // for one vote; it has none left for two) — THE FLOOR stays unadopted, and
+  // the season plays under institution 1 alone. Documented, not hidden: the
+  // league-office script says this room did not write ANY rule it is living
+  // under, and that already covers the floor's absence honestly.
+  return { ...state, adopted: rule, institutions: { ...state.institutions, share: rule }, stage: "adopted" };
+}
+
+/**
+ * OPENS THE FLOOR. The board's own printed cost line and each club's own
+ * stakes card are computed here, against the share the room ACTUALLY
+ * adopted — never the median it argued about and never the floor's own
+ * (not-yet-voted) level — because this is the one moment the spec's path
+ * dependence has to be visible: what the floor would cost is now a fact
+ * about a rule this room already wrote.
+ */
+export function openFloorRounds(state: WriteRuleState): WriteRuleState {
+  const clubs = state.clubs.map((c) =>
+    c.seatId !== null && c.slot < state.leagueSize ? { ...c, stakesCard: floorStakesFor(state, c) } : c,
+  );
+  return { ...state, clubs, stage: "floorRounds", floorRoundIndex: 0 };
+}
+
+/** Institution 2's own stakes card — see the type doc on `StakesCard`. Priced
+ *  in DOLLARS, never a percent, per the flat-line ruling above. */
+export function floorStakesFor(state: WriteRuleState, club: Club): StakesCard {
+  const levels = floorLevelsFor(state.band);
+  const atLevel = levels[Math.floor((levels.length - 1) / 2)] ?? FLOOR_LINE_5_6;
+  const rule = state.adopted;
+  const profile = profileOf(club);
+  const def = defOf(club);
+  // A projection, not a promise: this club's own opening Draw and house price,
+  // under the SHARE the room actually adopted, split evenly across the
+  // league — the same approximation `weekTakeFor` already makes for a single
+  // club's own hypothetical.
+  const home = settleHome(profile, def.capacity, club.draw, DRAW_START, profile.housePrice);
+  const localRevenue = home.gate + home.inArena + localMediaFor(profile, club.draw);
+  const taxedLocal = home.gate + localMediaFor(profile, club.draw);
+  const share = rule ? rule.share / 100 : 0;
+  const paidIn = Math.round(share * taxedLocal);
+  const evenShare = paidIn / Math.max(1, state.leagueSize);
+  // This club's own projected weekly reinvest SPEND in dollars — its current
+  // dial applied to its own opening local revenue, the same basis
+  // `reinvestSpend` uses everywhere else in this module.
+  const ownReinvest = Math.round((club.reinvest / 100) * localRevenue);
+  const wouldClear = ownReinvest >= atLevel;
+  return {
+    atLevel,
+    ownReinvest,
+    wouldClear,
+    costIfBound: wouldClear ? 0 : Math.round(evenShare * CONDITION_COLLECT_FRACTION),
+  };
+}
+
+/** Institution 2's own round close — parallel to `closeRound`, on the floor's own ballot. */
+export function closeFloorRound(state: WriteRuleState): WriteRuleState {
+  const live = state.clubs.filter((c) => c.seatId !== null && c.slot < state.leagueSize);
+  const shares = live.map((c) => (c.floorProposal ? (c.floorProposal.on ? c.floorProposal.level : FLOOR_OFF) : null));
+  const conditions = live.map((c) => (c.floorProposal ? c.floorProposal.recipient === "everyone" : null));
+  const votedShares = shares.filter((s): s is number => s !== null);
+  const closed = {
+    round: state.floorRoundIndex + 1,
+    institution: "floor" as InstitutionId,
+    shares,
+    conditions,
+    median: votedShares.length > 0 ? snapShare(medianOf(votedShares)) : FLOOR_OFF,
+    slots: live.map((c) => c.slot),
+  };
+  const clubs = state.clubs.map((c) =>
+    c.seatId !== null && c.slot < state.leagueSize ? { ...c, floorProposals: [...c.floorProposals, c.floorProposal], floorProposal: null } : c,
+  );
   return {
     ...state,
-    adopted: {
-      share: REAL_RULE_SHARE,
-      condition: REAL_RULE_CONDITION,
-      how: "leagueOffice",
-      supporting: 0,
-      liveDesks: live,
-      median: REAL_RULE_SHARE,
-      // Never below the rule in force, and never 0% (gate-l3-play repair 4).
-      runnerUp: SHARE_MAX,
-    },
-    stage: "adopted",
+    clubs,
+    closedRounds: [...state.closedRounds, closed],
+    floorRoundIndex: state.floorRoundIndex + 1,
+    leagueFrozen: true,
   };
+}
+
+/** Institution 2's own adoption print — parallel to `adoptRule`. */
+export function adoptFloor(state: WriteRuleState): WriteRuleState {
+  const outcome = runAdoption(state, "floor");
+  return { ...state, institutions: { ...state.institutions, floor: outcome.adopted }, stage: "floorAdopted" };
 }
 
 /* ----------------------------------------------------------------- room -- */
@@ -3753,9 +4159,16 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
   phases: PHASES,
 
   initialState(input) {
+    const band: GradeBand = input.gradeBand;
     const clubs: Club[] = [];
     for (let i = 0; i < MIN_LEAGUE; i += 1) clubs.push(makeClub(i));
-    const carried = extractCarriedClubs(input.seed);
+    // Untrusted-input discipline, in order: a foreign `lessonModuleId` is
+    // ignored entirely (extractCarriedClubs returns []); a genuine band
+    // mismatch is refused with a teacher-readable reason and the carry is
+    // never read; anything else degrades to the existing per-club validation.
+    // Never a throw on any branch.
+    const bandMismatch = weekFiveBandMismatch(input.seed, band);
+    const carried = bandMismatch ? [] : extractCarriedClubs(input.seed);
     let seeded = false;
     let l2MeanReinvest: number | null = null;
     if (carried.length > 0) {
@@ -3782,15 +4195,21 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
       leagueSize: Math.max(MIN_LEAGUE, Math.min(clubs.length, MIN_LEAGUE)),
       leagueFrozen: false,
       seeded,
-      seedNote: seeded
-        ? "Every club's Draw and bank balance walked in from this room's own Lesson 2 session."
-        : "No Lesson 2 session is linked, so the league opens on a stock spread. Nothing else about the lesson changes.",
+      seedNote: bandMismatch
+        ? `This room did not use last lesson's numbers: ${bandMismatch}. The league opens on a stock spread.`
+        : seeded
+          ? "Every club's Draw and bank balance walked in from this room's own Lesson 2 session."
+          : "No Lesson 2 session is linked, so the league opens on a stock spread. Nothing else about the lesson changes.",
       l2MeanReinvest,
       hookRevealed: false,
+      band,
       stage: "rounds",
       roundIndex: 0,
+      floorRoundIndex: 0,
       closedRounds: [],
       adopted: null,
+      institutions: { share: null, floor: null },
+      reviewStage: 0,
       weekIndex: 0,
       rookieSlot: null,
       revealStage: 0,
