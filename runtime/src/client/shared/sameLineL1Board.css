@@ -1,0 +1,319 @@
+/*
+ * THE SAME LINE — projector frames.
+ *
+ * A projector cannot scroll, cannot be leaned toward, and is read from the back
+ * row of a classroom. Everything here is sized in `vh`/`vw` so a frame that
+ * fits at 1366x768 fits at 1920x1080 without a second set of numbers, and the
+ * repo's measured back-row floor (2.6% of screen height) is the smallest type
+ * on any of these frames.
+ */
+
+#stage .slb {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2vh;
+  padding: 3.4vh 3.4vw;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.slb-eyebrow {
+  font-size: 1.5vh;
+  letter-spacing: 0.30em;
+  font-weight: 700;
+  color: var(--accent-violet);
+  margin: 0 0 0.8vh;
+}
+.slb-title {
+  font-family: var(--font-display);
+  font-size: 6.4vh;
+  line-height: 0.88;
+  margin: 0;
+  letter-spacing: 0.015em;
+}
+.slb-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3vw;
+  border-bottom: 1px solid rgba(246, 244, 236, 0.14);
+  padding-bottom: 1.8vh;
+}
+
+.slb-stats { display: flex; gap: 2.6vw; margin: 0; }
+.slb-stats dt { font-size: 1.4vh; letter-spacing: 0.22em; font-weight: 700; color: var(--ink-muted); }
+.slb-stats dd {
+  margin: 0.5vh 0 0;
+  font-family: var(--font-number);
+  font-size: 4.4vh;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.slb-stats dd small { font-size: 1.9vh; color: var(--ink-muted); }
+
+/* ------------------------------------------------------------- hero -- */
+
+.slb--hero { justify-content: center; align-items: flex-start; }
+.slb-hero {
+  font-family: var(--font-display);
+  font-size: 11vh;
+  line-height: 0.86;
+  margin: 0;
+  letter-spacing: 0.012em;
+}
+.slb-hero--beat { font-size: 8.4vh; max-width: 88vw; }
+.slb-hero-sub { font-size: 2.6vh; color: var(--ink-secondary); margin: 2vh 0 0; }
+
+/* ----------------------------------------------------------- market -- */
+
+/*
+ * THE SCRIM UNDER THE MARKET.
+ *
+ * The arena backdrop is a light source, and a light source behind a table of
+ * dollar figures is a contrast problem rather than atmosphere. The hero and
+ * reveal frames want the shafts across them; a price read from the back row of
+ * a classroom does not. So the scrim is scoped to this one frame.
+ */
+.slb-market-wrap {
+  background: linear-gradient(180deg, rgba(8, 11, 17, 0.74), rgba(8, 11, 17, 0.86));
+  border: 1px solid rgba(246, 244, 236, 0.07);
+  border-radius: 1.2vh;
+  padding: 1.4vh 2vw 0.6vh;
+}
+.slb-market { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.slb-market th {
+  font-size: 1.4vh;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  color: var(--ink-muted);
+  text-align: left;
+  padding: 0 0 1vh;
+}
+.slb-market th:last-child, .slb-market td:last-child { text-align: right; }
+/* AGE, PTS, ASKING — every number column right-aligned so the price ladder and
+   the production ladder can be compared down the page at a glance. They do not
+   run in the same order, and that disagreement is the whole reason both
+   columns are on the wall. */
+.slb-market th:nth-child(3), .slb-market td:nth-child(3),
+.slb-market th:nth-child(4), .slb-market td:nth-child(4),
+.slb-market th:nth-child(5), .slb-market td:nth-child(5) { text-align: right; padding-right: 2.2vw; }
+.slb-market td { padding: 0.68vh 0; border-top: 1px solid rgba(246, 244, 236, 0.08); }
+.slb-name { font-size: 2.7vh; font-weight: 650; }
+.slb-role { font-size: 1.6vh; letter-spacing: 0.18em; color: var(--ink-muted); font-weight: 700; }
+.slb-ask { font-family: var(--font-number); font-size: 2.6vh; color: var(--ink-secondary); }
+.slb-age { font-family: var(--font-number); font-size: 2.2vh; color: var(--ink-muted); }
+.slb-stat { font-family: var(--font-number); font-size: 2.6vh; color: var(--ink-primary); }
+.slb-int { white-space: nowrap; }
+.slb-int b { font-family: var(--font-number); font-size: 3vh; margin-left: 1vw; }
+.slb-dots i {
+  display: inline-block;
+  width: 0.9vh;
+  height: 0.9vh;
+  border-radius: 50%;
+  background: var(--accent-violet);
+  margin-left: 0.35vh;
+}
+.slb-market tr[data-hot="yes"] .slb-name { color: var(--accent-gold); }
+.slb-market tr[data-hot="yes"] .slb-dots i { background: var(--accent-gold); }
+.slb-market tr[data-hot="no"] { opacity: 0.55; }
+.slb-market tr[data-hot="no"] .slb-int b { color: var(--ink-muted); }
+
+.slb-foot { margin: auto 0 0; font-size: 1.9vh; color: var(--ink-muted); }
+
+/* ----------------------------------------------------------- signed -- */
+
+/* Whatever the room signed, centred on the wall — three cards and twelve are
+   the same frame, and neither should sit in a corner of it. */
+.slb-signed-list {
+  flex: 1 1 auto;
+  align-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(24vw, 1fr));
+  gap: 1.2vh 2vw;
+  align-content: start;
+  overflow: hidden;
+}
+.slb-signed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.3vh 1vw;
+  padding: 1.3vh 1.4vw;
+  border: 1px solid rgba(246, 244, 236, 0.1);
+  border-left: 3px solid var(--accent-gold);
+  border-radius: 0.8vh;
+  background: rgba(255, 255, 255, 0.026);
+}
+.slb-signed-name { font-size: 2.7vh; font-weight: 650; }
+.slb-signed-price {
+  font-family: var(--font-number);
+  font-size: 2.4vh;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-gold);
+  text-align: right;
+}
+.slb-signed-to { grid-column: 1 / -1; font-size: 1.7vh; letter-spacing: 0.16em; color: var(--ink-muted); font-weight: 700; }
+
+/* -------------------------------------------------------- disagree -- */
+
+/* Two or four lines, centred in the room rather than crowded under the title
+   with two thirds of the wall empty below them. */
+.slb-disagree { flex: 1 1 auto; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.6vh; }
+.slb-disagree li {
+  font-family: var(--font-display);
+  font-size: 5vh;
+  line-height: 1.02;
+  letter-spacing: 0.012em;
+  padding-left: 2.2vw;
+  border-left: 4px solid var(--accent-violet);
+}
+.slb-disagree li:nth-child(2) { border-left-color: var(--accent-gold); }
+.slb-disagree li:nth-child(3) { border-left-color: var(--cap-safe); }
+.slb-disagree li:nth-child(4) { border-left-color: var(--accent-blue); }
+
+/* --------------------------------------------- beat 1 · what he cost them -- */
+/* Sized in vh/vw like everything else on this surface: a projector cannot
+   scroll, so the frame either fits the room it is in or it is broken. */
+/* The evidence takes the wall. Before this the columns were a thin band across
+   the middle of a mostly empty projector at the peak of the lesson: `flex: 1`
+   lets them grow into the room, and the cap below still holds. */
+.slb-cost {
+  flex: 1 1 auto;
+  /* The block grows into the room and then centres itself in it. `start` left
+     two short columns pinned under the title with two thirds of the wall
+     empty below them. */
+  align-content: center;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 1.4vw;
+  margin-top: 2.2vh;
+  /* A projector cannot scroll, so the evidence gets a hard ceiling rather than
+     a hope: whatever the room did, this frame fits the wall it is thrown on. */
+  min-height: 0;
+  max-height: 66vh;
+  overflow: hidden;
+}
+.slb-cost-col {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 3px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.8vh;
+  padding: 1.6vh 1.2vw;
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+.slb-cost-col[data-won="yes"] {
+  border-top-color: var(--accent-gold, #f4b942);
+  background: linear-gradient(180deg, rgba(244, 185, 66, 0.10), rgba(244, 185, 66, 0.01));
+}
+.slb-cost-club {
+  font-family: var(--font-display); font-size: 2.6vh; line-height: 1.05; margin: 0 0 0.5vh;
+  letter-spacing: .01em; color: var(--ink-primary);
+}
+.slb-cost-col[data-won="yes"] .slb-cost-club { color: var(--accent-gold, #f4b942); }
+.slb-cost-out { margin: 0 0 1.2vh; font-size: 1.55vh; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); }
+.slb-cost-lab { margin: 0 0 0.5vh; font-family: var(--font-display); font-size: 1.4vh; letter-spacing: .16em; color: var(--ink-muted); }
+.slb-cost-none { margin: 0; font-size: 1.9vh; color: var(--ink-secondary); }
+.slb-cost-list { list-style: none; margin: 0; padding: 0; }
+.slb-cost-list li {
+  font-size: 2.1vh; line-height: 1.35; color: var(--ink-secondary); padding-left: 1.6vh; position: relative;
+}
+.slb-cost-list li::before {
+  content: "✕"; position: absolute; left: 0; color: var(--over-the-line); font-size: 1.5vh; top: 0.35vh;
+}
+
+/* -------------------------------------------------- beat 2 · two books -- */
+/* Two panels, equal height, filling the wall — the frame is a comparison and a
+   comparison reads as two things the same size. */
+.slb-books { flex: 1 1 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 2vw; margin-top: 2.2vh; min-height: 0; }
+.slb-book {
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 0.8vh;
+  padding: 1.6vh 1.4vw; background: rgba(255, 255, 255, 0.02); min-width: 0;
+}
+.slb-book-tag {
+  margin: 0 0 1vh; font-family: var(--font-display); font-size: 1.5vh; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-muted);
+}
+.slb-book-none { margin: 0 0 1.4vh; font-family: var(--font-display); font-size: 3vh; color: var(--ink-muted); }
+.slb-book-list { list-style: none; margin: 0 0 1.4vh; padding: 0; }
+.slb-book-list li {
+  display: flex; justify-content: space-between; gap: 1vw; align-items: baseline;
+  font-size: 2.2vh; line-height: 1.5; color: var(--ink-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding: 0.4vh 0;
+}
+.slb-book-list b { font-family: var(--font-number); font-variant-numeric: tabular-nums; color: var(--accent-gold, #f4b942); font-weight: 700; }
+.slb-book-foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8vw; margin: 0; }
+.slb-book-foot dt { font-family: var(--font-display); font-size: 1.25vh; letter-spacing: .14em; color: var(--ink-muted); }
+.slb-book-foot dd { margin: 0.3vh 0 0; font-size: 1.7vh; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+
+.slb-cost-more { margin: 0.4vh 0 0; font-size: 1.6vh; color: var(--ink-muted); }
+
+/* The veteran-minimum charge, named on the wall. Quiet enough that it does not
+   compete with the signing itself, legible enough to read from the back row. */
+.slb-signed-note {
+  grid-column: 1 / -1;
+  font-size: 1.55vh;
+  letter-spacing: 0.02em;
+  color: #8b96a5;
+  text-transform: none;
+  margin-top: 0.2vh;
+}
+
+/* THE NAMING on the wall. Everything here is sized to the back row of a
+   classroom, not to a laptop: the term is the largest type in the module, and
+   the two label lines are the smallest thing that still clears the 1.28%
+   back-row floor the browser run enforces. */
+.slb-naming-body {
+  flex: 1 1 auto;
+  align-content: center;
+  display: grid;
+  gap: 0.6vh;
+  max-width: 76vw;
+  margin: 0 auto;
+}
+.slb-naming-lab {
+  margin: 1.4vh 0 0;
+  font-size: 1.6vh;
+  letter-spacing: 0.2em;
+  color: #7d8794;
+}
+.slb-naming-moment {
+  margin: 0;
+  font-size: 3.1vh;
+  line-height: 1.4;
+  color: var(--paper, #f6f4ec);
+}
+.slb-naming-term {
+  margin: 2.4vh 0 0;
+  font-family: var(--font-display, inherit);
+  font-size: 7.4vh;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--accent-gold, #f0b429);
+}
+.slb-naming-means {
+  margin: 0.8vh 0 0;
+  font-size: 2.7vh;
+  line-height: 1.45;
+  color: #c8cfd8;
+}
+.slb-naming-outside {
+  margin: 0;
+  font-size: 2.5vh;
+  line-height: 1.45;
+  color: #c8cfd8;
+}
+.slb-naming-dots { display: inline-flex; gap: 0.7vw; align-items: center; }
+.slb-naming-dots i {
+  width: 1.1vh;
+  height: 1.1vh;
+  border-radius: 50%;
+  background: rgba(246, 244, 236, 0.2);
+}
+.slb-naming-dots i.on { background: var(--accent-gold, #f0b429); }

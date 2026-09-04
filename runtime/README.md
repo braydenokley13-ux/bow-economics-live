@@ -1236,3 +1236,69 @@ three static pages), not a general-purpose framework being reinvented.
   the lockout/unlock UI) — worth deliberately exercising the "PIN LOCKED /
   Unlock" flow and a lost-teacher-key recovery scenario in the next
   fresh-context verification round.
+
+## Module 1 rebuild — "THE SAME LINE", Lesson 1 (`src/modules/sameLine/`)
+
+The in-flight rebuild of Module 1 as an NBA front-office world (D48–D51). Not
+in the four-module status list above because it is not finished; this section
+is the honest state.
+
+**What is real.** `world.ts` holds every NBA figure the module renders, each
+with a source and an `asOf`, plus `REFRESH` cadences for thresholds, clubs and
+the board. `engine.ts` is the pure cap engine (five lines, six signing tools,
+hard-cap walls, terms). `l1.ts` is the `LessonModule` — three simultaneous
+sealed signing days across eight real clubs at up to sixteen desks, against a
+board of seventeen real dated contracts plus three generic minimum bodies, with
+a per-desk wire, class intelligence for `/teach`, and four projector reveal
+beats. All three surfaces render it.
+
+**What is verified, and how.**
+
+- `npm test` — 705 tests, run and passing on 2026-09-04.
+- `node scripts/e2e-same-line-l1.cjs` — browser truth, both grade bands, eight
+  desks, three settled days, every reveal beat and every earned naming walked
+  on the projector, no side scroll at 1366×768 or 1024×600, no interest leak,
+  zero console errors. `assertDecisionAboveFold` covers the amount, the dial
+  and the total as well as the button (D57), and is mutation-checked. Run and
+  passing on 2026-09-04. Writes
+  `docs/gauntlet/module-1/rebuild/screens-l1/`.
+- `node scripts/same-line-sweep.mjs` — exhaustive economic sweep over every
+  legal (player, tool, price, term) offer at every seat against three rival
+  environments, with a poison limb that must fail. It walks a full three-day
+  tree, so its cost is roughly cubic in the board size: **budget 20-40 minutes**
+  at twenty market entries, against about four at fifteen. Run it in the
+  background, not in a tight edit loop. `--seat boston,new-york` narrows it for
+  diagnosis; a filtered run prints PARTIAL and is **not** a gate result.
+
+**Known gaps.**
+
+- **The board's name column is ~54px at 1024×600**, so most real NBA names wrap
+  to two or three lines. Every number is present and legible; the rhythm is
+  poor. Fixing it means reflowing the cap-sheet column, which is a design
+  change, not a tweak — recorded in D57 rather than half-solved.
+
+- **P-VEC FAILS THE GATE at `sacramento/cheap-room`.** The full eight-seat
+  sweep finished 2026-09-04: eight of nine properties hold and all four
+  mutants are caught, but Sacramento's Pareto frontier in the cheap-room
+  environment holds **3** distinct outcome vectors against a floor of 4. Seven
+  seats clear it in all three environments. D53's written claim that the two
+  engine repairs "clear P-VEC at all eight seats" was made before this run
+  finished and is wrong; the repairs themselves are keepers (M3 and M4 both
+  fail as required). Diagnosis in D58. **This is a gate failure, not a known
+  cosmetic gap — do not describe M1 L1's economic sweep as passing.**
+
+- **The earlier P-VEC failure was an engine defect, not board thinness** — the earlier
+  diagnosis in this file was wrong, and so was D52's. Two bugs in `readingsFor`
+  (a minimum body counting as a hole filled; room left RISING when a club
+  crossed a line) were the cause. Both are fixed and pinned by mutation-checked
+  tests; see D53. The full eight-seat sweep verifying it is a 30-minute run —
+  **check the current status line below before citing it.**
+- `/teach` is on the front-office visual system for the panels this lesson
+  drives — class intelligence, the desk strip, the live-room histogram and the
+  projector mirror — and two frames are captured every browser run. The
+  surrounding console chrome is still the legacy system.
+- No conduct or classroom-suitability screen has been run across any of the
+  seventeen named players (`PLAYER_PRODUCTION_RESEARCH.md` §8). Classroom-release
+  blocker.
+- L2, L3 and the Boardroom are unbuilt.
+- Nothing here is classroom-proven (D10). No class has played it.

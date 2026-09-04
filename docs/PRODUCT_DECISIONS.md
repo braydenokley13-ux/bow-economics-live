@@ -857,3 +857,749 @@ the teacher's own Back button, and the forward wrap past the last card, would
 otherwise take cards off thirty screens in the middle of the discussion those
 cards are for. Reading ahead is the thing forbidden; looking back is the thing
 the desk copy promises.
+
+## D48. Module 1 architecture ruling — "THE SAME LINE", candidate D plus five sourced grafts
+
+MODULE 1 ARCHITECTURE SELECTION. Module 1 is rebuilt from the ground up on **Candidate D,
+"THE SAME LINE"** (`docs/gauntlet/module-1/rebuild/DESIGN_D_CHALLENGER.md`), with five named
+grafts. Decision record and the binding 23-item build charter BC-1..BC-23:
+`docs/gauntlet/module-1/rebuild/ARCHITECTURE_SELECTION.md`.
+
+**The war.** Four genuinely competing directions were designed independently against an Economic
+Learning Contract written before any of them existed, each shipping a PLAYABLE Stage-0 L1 loop:
+A FRONT OFFICE UNDER PRESSURE (eight face-up pressure cards), B THE FRANCHISE (inherit one real
+club's actual books), C CLEAN ROOM (five doors — you pick how you pay, not who you sign, produced
+with the existing M1 withheld), D THE SAME LINE (you hold a position relative to lines drawn in the
+same place for every desk, and the lines move). Three independent lenses prosecuted all four by
+executing their models, not by reading their prose.
+
+**The lenses conflicted, and the conflict resolved on inspection rather than by compromise.**
+Sports Reality ranked C > A > D > B and blocked B; Economic Truth ranked B > A > C > D and blocked
+D; Player/Classroom ranked D > B > C > A and rated only D and B STRONG. The apparent Economic-Truth
+/ Gameplay contradiction about D was not one: Economic Truth enumerated legal three-day *plans*
+scored on D's five displayed readings, Gameplay swept the *continuous bid space* scored on who the
+student actually got. Both hold, and together they say — **D's bid is the richest input in the war
+and D's five readings are the poorest register of it. The defect is not the mechanic; the reveal
+does not measure what the mechanic produces.** D's own author had already named that repair. Two
+prosecutors and the design converge on one fix, which no other candidate's fatal has.
+
+**Killed on evidence, not on taste.** A is dead and not repairable: no pair can ever lose anything
+to a rival (`rivalsTake()` sweeps only cards the pair declined), its central strategic premise was
+falsified by computation, and its intellectual reveal is never produced by its own model. B is
+disqualified by an interaction neither lens could see alone — the repair Sports Reality's block
+requires deletes the very cards that produced B's first-place economic evidence, so B's ranking
+rests on a model we are not allowed to build; and B's shipped reveal ranks desks by two composite
+scalars, which is the §0 defect at the prize. C is the best document in the war, owns the best
+cap-as-institution object anywhere, and its loop is FUNCTIONAL — below the bar for the first thing
+a student ever plays (CLAUDE.md §5) — with a repair its own instrument cannot detect.
+
+**The five grafts, each on a named prosecutor's finding:** (1) from C, the five lines rendered as
+five different KINDS of object — a compulsion, a permission system, a price, a confiscation, a
+prohibition; (2) from C, the frozen forgone receipt and THE SAME PLAYER COST EVERY DESK A DIFFERENT
+THING, which works better in D because D's tie-break always awards a contested player; (3) from B,
+THE SAME MOVE, TWO BOOKS as L1's intellectual reveal; (4) from B, the director voice wholesale plus
+THE TWIN DESK and its falsifiable P-TWIN property, the instrument against the dead seats every
+candidate shipped; (5) from A, THE POCKETS as the repair for D's degenerate over-cap tool ladder,
+plus A's invented-constants header and its rule that no real person is a decision object unless the
+situation is dated and sourced. A base plus five sourced grafts — not a design average.
+
+**Three findings every candidate failed, and which therefore discriminated nothing** — carried into
+the charter as obligations: the persistence property P1 is unsatisfied in all four; every candidate
+ships at least one seat with no game; no candidate allocates the 55 minutes, and none produced
+executable evidence that the 7–8 band faces a different economic object.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** CEO / lead integrator
+- **Evidence:** `docs/gauntlet/module-1/rebuild/` — ECONOMIC_CONTRACT.md, DESIGN_A..D, the four
+  Stage-0 prototypes in `stage0/`, ARCHITECTURE_SELECTION.md (three prosecutions, full rankings and
+  blockers). All four prototypes were played in real Chromium by the lead with zero console errors.
+
+## D49. The three questions the Module 1 selection could not settle, ruled under standing founder invariants
+
+The architecture selection surfaced three genuine calibration questions. None is a pair of
+incompatible visions, so per the founder's froth instruction they are ruled here rather than
+escalated; all three are revisable on real classroom evidence.
+
+**Q1 — how many of the five cap lines does L1 carry, at which band? RULED: all five are DRAWN in
+both bands; the number that are LIVE differs.** The five-line ladder is the war's best
+cap-as-institution object and is the module's title concept, so neither band loses it. But five
+lines is not five decision variables: at grades 5–6, L1 makes exactly **two** lines live constraints
+the student can hit — the cap (a permission system) and the first apron (a confiscation) — chosen
+because they are two different KINDS of object, which is the whole point of the ladder. The other
+three are drawn, labelled by what they do, and never bind in L1. At grades 7–8 all five are live.
+This satisfies BC-16's ≤2-variables rule and BC-1's ladder requirement simultaneously, which the
+selection record correctly says cannot both be met with five live lines at 5–6.
+
+**Q2 — open sequential bidding at 5–6, or hidden simultaneous in both bands? RULED: hidden
+simultaneous in both bands, with a 5–6 scaffold that is not a change of mechanic.** Design Rule 12
+prescribes the split and rates itself LOW confidence; the dossier records that it has no source at
+all. Against that, CLAUDE.md §8 names "hidden rival bid" explicitly as legitimate student-to-student
+interaction, the sealed typed number is D's spine, and it earned the war's only STRONG. Forking the
+mechanic by band would also break BC-17's one-reducer requirement. Grades 5–6 instead get the
+scaffolding the productive-failure evidence actually demands: the shared pool's remaining supply is
+visible, and each player carries a public count of how many desks are in on him — never who, and
+never how much. That is a scaffold on INFORMATION, not a different game. Revisit with real
+classroom evidence; running both variants at 5–6 remains the right first live comparison.
+
+**Q3 — does the module admit its staging out loud? RULED: yes, in the module's own voice, and this
+is already founder policy.** Every candidate with a player market places real people in a July 2026
+free agency none of them was in. CLAUDE.md §3 and the founder's §17 already answer this: prefer real
+or closely modelled facts, record what was simplified and why, and where a frozen snapshot makes a
+better stable simulation, say "based on the NBA as of [date]" and freeze it deliberately. So the
+student surface says so — these are real contracts real clubs really signed, on the dates shown,
+gathered into one window so you can shop them — and the staging is registered in the simplifications
+ledger with its misconception risk. The alternative (restricting the board to genuinely available
+dated free agents) shrinks the board below BC-13's frontier requirement and costs the real
+2016/2025/2026 cap-growth triple two charter items depend on.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-03
+- **Owner:** CEO / lead integrator (all three revisable by the founder, and by classroom evidence)
+- **Evidence:** `ARCHITECTURE_SELECTION.md` §7; `NBA_FINANCIAL_TRUTH.md` §6.4 rules 1, 6 and 12 and
+  §7.11; CLAUDE.md §3, §8; founder brief §17.
+
+## D50. Module 1 is a bounded living NBA league — the social architecture, locked by the founder
+
+The founder ruled the whole social layer in one pass. It supersedes any conflicting agent selection,
+including the "no counter" ruling in `TRADE_MECHANIC_FROTH.md` §4.
+
+**The shape: C — hybrid economic ecosystem.** Not sixteen independent simulations with a
+leaderboard, not an unrestricted NBA sandbox. L1 emphasises **competitive scarcity** ("your choice
+can reduce my options"); L3 emphasises **cooperative exchange / gains from trade** ("your assets may
+solve my problem while mine solve yours"). The product test: *does something another student does
+meaningfully change what I can do next?*
+
+**The fantasy is the franchise; the cap is invisible physics.** M1 is not a salary-cap simulator.
+The student thinks about players, needs, talent, assets, contention, flexibility, offers, and what
+other franchises are doing. Emotional loop: WANT → CHOOSE → LOSE SOMETHING → WORLD CHANGES → ADAPT →
+NEGOTIATE → DEFEND.
+
+The eleven locked rulings:
+
+1. **Information — meaningful but incomplete.** Public: roster, broad financial position, obvious
+   roster construction, broad needs, league activity, modeled market intelligence ("THREE FRANCHISES
+   ACTIVE IN THE CENTER MARKET"). Never public: exact acceptance thresholds, private objectives,
+   predetermined winning moves, or invented private preferences of real people presented as fact.
+   Information itself becomes economically useful.
+2. **Tradeable assets — same engine, different freedom.** 5–6: curated players plus draft picks
+   ("the better player now, but one of my future picks"). 7–8: a richer bounded pool that may
+   include contract/flexibility implications where truthfully modeled. More GM power, not harder
+   arithmetic.
+3. **Trade construction — guided at 5–6, freer at 7–8.** 5–6 gets a guided builder (choose franchise
+   → what do you want → what will you give → see the tradeoff → send) and still authors the trade;
+   three preset answers is not compliance. 7–8 constructs packages inside a bounded eligible pool.
+4. **Proposal budget: ~two active outgoing proposals, one counter per negotiation.** Negotiating
+   attention is itself scarce. No spam, no floods, no endless trade chats.
+5. **Negotiation depth: one counter.** OFFER → ACCEPT/DECLINE/COUNTER → FINAL ACCEPT/DECLINE. This
+   overturns the earlier no-counter selection.
+6. **The server blocks illegality; it does not block bad strategy.** Canonical server truth owns
+   ownership, validity, timing, modeled legality, availability, executability. Illegal: block and
+   explain. Legal but lopsided: a bounded advisory ("UNUSUAL VALUE — far from current modeled market
+   value") with SEND ANYWAY. A student may value an asset differently, knowingly overpay, or make a
+   mistake; those choices are the evidence. The machine is never the authoritative GM.
+7. **A completed trade is a league event.** The transaction belongs to the two franchises; the
+   moment belongs to the class. The projector makes the room look up, with broadcast restraint —
+   never a transaction table.
+8. **`/teach` is director + commissioner, not an approvals queue.** No teacher sign-off on normal
+   legal transactions. Powers: open/close trade window, final call, spotlight deal, call boardroom,
+   trigger authored shock, compare strategies. More importantly it surfaces classroom intelligence
+   the teacher should not have to find by hand — DISCUSSION OPPORTUNITY, MARKET COLLISION, CONTRAST.
+   Software runs normality; the teacher directs meaning.
+9. **L2 is a shared event with franchise-specific consequences.** Not sixteen unrelated RNG cards,
+   not a reset. Your earlier strategy collides with new information; the same development lands
+   differently because each franchise inherited a different position. And: a different outcome does
+   not retroactively prove a different decision quality.
+10. **Final evaluation is evidence, not a machine verdict.** Truthful descriptive outcomes are fine
+    (roster profile, flexibility, future assets, exposure, adaptation). `DECISION QUALITY = 87/100`
+    and "team 6 made the best decisions" are forbidden. The Boardroom reconstructs the student's
+    actual history and makes them defend STRATEGY / ALTERNATIVE / RISK / ADAPTATION / DECISION
+    QUALITY-given-what-they-knew-then.
+11. **Both bands are designed from birth**, never 5–6 first with complexity bolted on. Same world,
+    engine, franchise identity, consequences, and social league; different cognition.
+
+Standing constraints restated as part of this ruling: the phone lights up only when the kid should
+care; social uncertainty is bounded and real, never invented private NBA intentions; HQ is the
+stage and the moving league is the product; the projector shows only what is worth looking up for
+(~75% restraint, ~25% earned spectacle); "living league" does not license all 30 franchises, a full
+CBA sandbox, unlimited trades, unrestricted chat, or a notification centre. Boundaries are a
+feature.
+
+- **Status:** ACTIVE — supersedes `TRADE_MECHANIC_FROTH.md` §4 on counters and on the L3 builder.
+- **Date:** 2026-09-03
+- **Owner:** Founder
+- **Evidence:** founder ruling, this session, verbatim in the run transcript.
+
+## D51. The board prints what a player DID, not only what he costs
+
+A commissioned Sports Reality research pass pulled the 2025-26 box-score line for all twelve named
+free agents on the L1 board from basketball-reference and raised one finding as **blocking**:
+
+> The board's price ordering currently asserts a quality ordering that the real production
+> contradicts, and the module gives students no data with which to notice.
+
+It is true, and it is worse than it sounds. Ordered by price the bigs read Vučević → Nance →
+Horford → Nurkić → Robinson. Ordered by points last season they read almost exactly backwards.
+Nance costs **$100,000 more** than Vučević for 3.7 points a game against 15.1. The most expensive
+card on the board scored 5.7. A ten-year-old reading price alone learns that the expensive player
+is the better player, which on these twelve real contracts is false.
+
+**Ruling: price never ships alone.** Each named card carries four numbers — points, rebounds,
+assists, and the one that separates him from the next card in his role (blocks for a big, three-point
+percentage for a guard or a wing) — plus **his age on the day he signed** and **the real term of the
+real deal**. All six together or none: production without age and term teaches that NBA front
+offices are incompetent, which is a different false lesson. The money is buying years and youth, and
+with age and term on the card that becomes arguable rather than baffling. Registered as
+simplifications S8 and S9.
+
+The same two ladders go on the **projector market table**, right-aligned beside each other, because
+the disagreement between them is the point and a wall is where a room can see it at once. And the
+leading number goes on the **list row**, unclicked, so a student meets the inversion before opening
+anything.
+
+Consequences accepted:
+
+- **Ten data errors were found and fixed**, including one that had been handing the Boston seat a
+  Bird-rights tie-break it never had (Chicago held Simons' rights, and Chicago is not a desk in this
+  room), two wrong signing dates, and two asks that were averages being charged against a cap.
+  Detail and sources in `docs/gauntlet/module-1/rebuild/PLAYER_PRODUCTION_RESEARCH.md`.
+- **Three unsourced scouting lines were struck** rather than kept because they sounded right.
+- **Two asks stay averages and say so on the card.** Dividing a reported total by a raise ladder to
+  produce a plausible first-year salary would be an invented dollar figure printed as an NBA fact.
+- **Truth cost the harness something.** Removing Boston's phantom claim on Simons narrowed that
+  seat's frontier: P-VEC now fails at three seat/environment pairs rather than two. The board is
+  genuinely too thin — twelve named players against sixteen desks — and that is a board-depth
+  problem to fix with more researched contracts, never by restoring a false one.
+- A **classroom-suitability flag** was recorded and decided: Mitchell Robinson's hand injury is
+  printable, its cause is not, and nothing in the module references it.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead, on a blocking Sports Reality finding
+- **Evidence:** `docs/gauntlet/module-1/rebuild/PLAYER_PRODUCTION_RESEARCH.md`; the tripwire test
+  "the price ordering on this board really is upside down" in `runtime/src/test/sameLineL1.test.ts`.
+
+## D52. The board is seventeen contracts, because four seats had no middle
+
+D51 said board thinness was the reason P-VEC failed, and that the repair was
+more researched contracts. This is that repair. A per-seat probe of the opening
+reachable sets made the shape of the problem exact rather than suspected:
+
+| seat | reachable named players | what they cost |
+|---|---:|---|
+| memphis / brooklyn / boston / sacramento | 6 | three of the six are minimum-scale and all cost the same $2,449,421, so really four prices |
+| new-york | 4 | $2,449,421 and $15,044,000, **and nothing in between** |
+| detroit / milwaukee | 11 | healthy |
+| minnesota | 7 | healthy |
+
+Five real contracts added, every source opened first-hand on 2026-09-04 and
+listed in the addendum to `FREE_AGENT_BOARD_RESEARCH.md`: **Precious Achiuwa**
+(BIG, $5,477,000), **Jaxson Hayes** (BIG, $6,000,000), **Josh Okogie** (WING,
+$6,000,000), **Tim Hardaway Jr.** (WING, $6,065,000) and **José Alvarado**
+(GUARD, $4,439,656, New York's own on Bird rights). Twelve named contracts
+became seventeen.
+
+Three of them earn their place on truth rather than arithmetic:
+
+- **Achiuwa played all season for Sacramento, which is a desk in this room, and
+  Sacramento still could not simply keep him.** The reporting is explicit: the
+  Kings held only his *Non-Bird* rights and the deal exceeded what those rights
+  allow, so they had to spend their entire bi-annual exception. A club that has
+  a player and cannot re-sign him with rights is the apron lesson in one line.
+- **Hardaway's real first-year salary is $6,065,000 and the taxpayer mid-level
+  is $6,064,000.** Four of the eight clubs in this room miss the best shooter
+  available to them by one thousand dollars. Nobody invented that.
+- **Alvarado is what gives New York a middle**, and he is unrestricted, so every
+  other desk may bid. New York's advantage is the rights, not exclusivity.
+
+Four candidates were rejected and the reasons are recorded, because a rejection
+nobody wrote down gets re-proposed: **Landry Shamet** (Early Bird is a *capped*
+tool and the module's own-player tool has no ceiling — shipping him would let a
+desk offer him thirty million), **Quinten Post** (two pages of the same
+publisher disagree on his salary, and he arrived on a restricted-free-agent
+offer sheet the module does not model), **Ariel Hukporti** (2.2 points a game at
+$3,400,000 is a dominated card — noise, not choice), and **Tarik Biberovic** (no
+NBA box score to print).
+
+One consequence in the product: the projector market table fits twelve rows of
+back-row-readable type at 1366×768, and there are now seventeen players. It
+shows twelve and **counts the rest out loud** under the table. A wall that
+silently drops rows hides the players nobody has bid on, which on a scarcity
+board are exactly the rows a teacher wants to point at.
+
+**Amended 2026-09-04 by D53: the diagnosis in the first paragraph was wrong.**
+Board thinness was real and the five contracts are worth keeping on their own
+merits, but it was not why P-VEC failed. The sweep against the deeper board
+still failed at three seat/environment pairs, and the actual cause turned out to
+be two defects in `readingsFor`. D53 records them. This entry stands as written
+because the decision log is not rewritten — but the causal claim it opens with
+is superseded, and nobody should cite it as evidence that board depth fixes a
+Pareto frontier.
+
+- **Status:** ACTIVE (causal claim superseded by D53)
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** the addendum to `docs/gauntlet/module-1/rebuild/FREE_AGENT_BOARD_RESEARCH.md`;
+  `runtime/scripts/same-line-sweep.mjs`.
+
+
+## D53. The module was computing its own named false lesson, and its flexibility reading rewarded crossing a line
+
+Two defects in `readingsFor`, both in the five numbers the class argues from,
+both confirmed first-hand against the built engine before anything was changed.
+An independent economic-truth prosecution found them while being asked a
+narrower question, and refuted the question's own premise on the way.
+
+**V1 — a minimum body counted as a hole filled.** `applySigning` refuses to
+close a job for a generic minimum body and says why in seventeen lines: a roster
+hole and a roster spot are not the same thing, and treating them as the same
+collapsed every constrained seat's frontier when it last shipped. `readingsFor`
+then counted the body anyway. Measured at Boston: sign one generic body,
+`openJobs` stays `[BIG, WING]` and `readings.jobsClosed` says **1**. Sign three
+— $7,348,263 of bodies, zero holes actually filled — and it says **2**, topping
+two of the five class readings. The projector's `rd-cheap-jobs` claim then
+argued *from* that number: "the desk that closed the most holes closed two…
+spending more did not buy more here." The module was manufacturing the exact
+false lesson it exists to break, on the surface the room reasons from.
+
+There were **three** job-closing definitions and they disagreed: the engine's
+(generic excluded, capped), the reading's (generic included, capped), and a
+third in the reveal (generic included, **uncapped** — two bigs against one open
+big job read as two holes closed). There is one now, `jobClosingSignings`, and
+all three call it.
+
+**V2 — room left rose when you spent.** The reading was measured to "the next
+line above where the club finished", and that reference moves when you cross it.
+Measured at Boston:
+
+| committed | ROOM LEFT printed | what the club could actually sign |
+|---:|---:|---:|
+| $203,623,048 | $5,391,952 | $6,064,000 |
+| $209,014,999 | **$1** | $6,064,000 |
+| $209,015,000 | **$12,671,000** | $6,064,000 |
+
+One dollar of payroll multiplied the displayed figure by 12.67 million, in the
+direction that rewards crossing the first apron, at the exact moment the club
+loses the big exception and the small one. The label on that number is "what you
+can still do", and across the whole range what the club could do never moved.
+
+Room left is now measured to **the line the club started the window under** —
+its own line, the one this lesson is named for — so it falls monotonically as
+money is committed, and going past it is an outcome rather than a reset. The
+value may be negative; it is **never rendered** with a minus sign. Surfaces
+print `PAST IT BY $4,510,000`, and the module hands every student payload a
+pre-rendered string plus a magnitude, so no client can leak a sign onto a grade
+5-6 screen. Simplify the interface before simplifying the economics.
+
+Both repairs together clear P-VEC at all eight seats in all three rival
+environments. Neither alone does. That is the correction to D52: board depth was
+never the binding constraint.
+
+> **This claim is wrong, and the run that was still going when it was written
+> is what disproves it. See D58.** The full eight-seat sweep finished
+> 2026-09-04: eight of nine properties hold and all four mutants are caught,
+> but **P-VEC still fails at `sacramento/cheap-room` — 3 distinct outcome
+> vectors against a floor of 4.** Seven seats clear it in all three
+> environments; one does not, in one environment. The two engine repairs in
+> this decision are real and are keepers — M3 and M4 both fail as required, so
+> the harness can now see the defects they fixed — but "all eight seats"
+> was written before the evidence and the evidence says otherwise. The
+> correction to D52 stands; this sentence does not.
+
+Two prosecution findings were **rejected** and the reasons matter:
+
+- Adding `contestedWon` as a sixth class-facing reading. It is identically zero
+  across all 6,730 Boston plans and all 1,672 New York plans in the quiet room —
+  a reading of what the room did, not what the desk did — and the founder's
+  "outcome is not decision quality" bars a success number a desk tops because
+  rivals happened not to bid.
+- Weakening P-VEC for hard-capped seats on the grounds that an apron team really
+  has no choices. It is false in this model — corrected, Boston's quiet-room
+  frontier holds **eight** distinct outcomes, not three — and false about the
+  league, where a club $5.4M under the first apron has five genuinely different
+  postures. It would also have retired the instrument that detects four students
+  spending a lesson watching.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/src/test/sameLineL1.test.ts` — "a minimum body never
+  closes a hole, on any surface" and "room left never rises because you spent
+  money", both mutation-checked (each fails when its defect is reintroduced into
+  the built engine); `runtime/scripts/same-line-sweep.mjs` mutants M3 and M4.
+
+## D54. The harness gets a property that is not about the frontier's shape, and mutants that can reach the readings
+
+Both D53 defects shipped straight through an exhaustive sweep that reported
+ALL PROPERTIES HOLD. That is the failure this harness exists to prevent, so the
+instrument is repaired alongside the product.
+
+Why it was blind. Every property was a property of the **Pareto frontier's
+shape**, and the defects did not deform the frontier — they described a
+different world than the one the desk was playing in, internally consistently.
+And every poison mutant patched `world` *data*, so the poison limb could not
+reach `readingsFor` at all. Half the model had no mutant that could touch it.
+
+Three changes:
+
+- **P-AGREE**, a consistency invariant rather than a shape property: over every
+  plan at every seat, the holes-closed reading must equal the number of holes
+  the position actually lost. V1 violated it on the cheapest plan available to
+  every desk in the room.
+- **The readings go through a swappable binding**, so a mutant can poison the
+  reading layer. This is the change that makes the next V1 findable.
+- **M3 `a-body-fills-a-hole`** (breaks P-AGREE) and **M4 `spending-buys-room`**
+  (breaks P-VEC), each reintroducing a defect that genuinely shipped. Both are
+  caught.
+
+Also added, and explicitly **not** a gate: `--seat boston,new-york` narrows the
+sweep for diagnosis. The full sweep is roughly cubic in board size and costs
+30-plus minutes at twenty market entries, which is fine for a gate and useless
+for chasing one seat's frontier. A filtered run prints `PARTIAL` on its verdict
+line and says it is not a gate result, because a partial pasted into a document
+is otherwise indistinguishable from a pass.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/scripts/same-line-sweep.mjs` — the poison limb prints
+  each mutant and the property it was required to break.
+
+## D55. The board prints what a veteran-minimum deal actually charges
+
+Found on a projector screenshot, not by any assertion. The board told the room
+"Nikola Vučević — HE IS ASKING $3,900,000"; four minutes later the reveal
+printed "Nikola Vučević · Sacramento · $2,449,421". Nothing on any of the three
+surfaces connected them.
+
+Both figures are correct and the gap is real NBA law, not a simplification: a
+veteran-minimum contract pays the player his full service-based minimum while
+charging the club only the two-year-veteran amount, with the league reimbursing
+the difference. It is the reason no club in this room is ever completely stuck —
+which makes it one of the better facts in the lesson, and it was being delivered
+as an unexplained contradiction. The only inference available to a ten-year-old
+is that a desk talked him down or that the board lied, and the second costs you
+every other number in the lesson.
+
+Now said in three places, and **only where it applies**: on the composer's ask
+line when the minimum is the selected tool, in the wire the moment the deal
+settles, and on the projector beside any signing that landed on the charge. The
+gating is not incidental — shipped ungated for one build, the note printed "only
+$2,449,421 of that counts against your money" directly above a $4,300,000 offer
+made with the small exception. Two contradictory numbers a hand's width apart is
+worse than the silence it was written to fix.
+
+Two smaller repairs shipped alongside, both found the same way:
+
+- **Every card in the 5-6 band claimed the chosen tool was the only way to pay
+  the player.** The composer branched on whether tool BUTTONS were rendered, and
+  5-6 renders none by design, so "It is the only way you have that reaches him"
+  printed under cards where the desk had four legal tools. The module now sends
+  the real count to both bands and the copy is derived from it.
+- **The `/teach` surface had never been screenshotted** in this lesson's browser
+  run, the same blind spot that let the projector ship with its stylesheet
+  unlinked. Two frames are now captured every run, guarded by a computed-style
+  check that an unstyled console cannot pass.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/src/test/sameLineL1.test.ts` — "a veteran-minimum
+  signing never prints a number the room cannot explain" (mutation-checked) and
+  "a card never tells a desk it has one way to pay when it has four", which
+  checks the count against the engine rather than against itself;
+  `runtime/scripts/e2e-same-line-l1.cjs` asserts the note rendered on the desk
+  whose only route is the minimum and absent on the desk paying full freight.
+
+## D56. The lesson gets the stage it was missing: the naming
+
+CLAUDE.md §1 ends the loop on **explicit economics formalization** and calls
+that stage essential — "the simulation does not replace economics instruction,
+it makes it understandable." An economic-truth prosecution went looking for the
+map from the five class readings to named economic concepts and reported it
+could not verify the map because **there was no map**. `SYNTHESIS` shipped the
+readings, the forgone list, and a placeholder string reading "Look up — this
+part is the whole room's." The words *scarcity* and *opportunity cost* appeared
+nowhere in the product.
+
+So the room had an afternoon and not a lesson. This is the stage.
+
+**The name is earned, never asserted.** Every naming opens with what THIS room
+did, in this room's own numbers, computed from live state — and a concept whose
+evidence the room did not produce is **not shown at all**. A quiet window with
+no contested signing gets no COMPETITION SETS PRICE frame. A naming with an
+invented moment would be worse than no naming: it teaches the concept and
+teaches that the numbers on the wall are decoration.
+
+What that looks like on the wall, from a real eight-desk run:
+
+> **WHAT HAPPENED HERE** — Minnesota signed Jaxson Hayes. The same moment it
+> did, 10 other players went out of its reach: Trendon Watford, Nikola Vučević,
+> Gary Payton II, Larry Nance Jr., Anfernee Simons, Jonathan Kuminga, and 4
+> more. Nobody took them away. No rival outbid it for them. Its own signing did
+> that.
+>
+> **OPPORTUNITY COST**
+>
+> **OUTSIDE BASKETBALL** — The hour you spent on this lesson is an hour you did
+> not spend on anything else, and that hour is the real price of it.
+
+**The band decides the list.** 5-6 gets exactly two — scarcity and opportunity
+cost — and only here. 7-8 gets those plus the two that need them to stand on:
+*an institution* (the lines are a rule thirty clubs and a union agreed on, not a
+law of nature) and *competition sets price* (he never raised his price; the
+other desks in the room raised it). Both bands' lists are pinned by test.
+
+**Three surfaces, three jobs.** The wall carries the concept and the
+generalisation, and is structurally never handed a seat identity. The pair's own
+screen carries **their** case of it — their forgone list by name, their hole
+never filled, their own wall — because "opportunity cost" is a phrase and
+"signing Kelly Oubre Jr. is what put Mitchell Robinson out of your reach" is
+something that happened to you. Reading order on both is moment, then case, then
+the term: a pair that meets the word first stops reading.
+
+**The console leads with the question, and says what not to say.** The hard part
+of a naming is the order — a teacher who says "opportunity cost" before a
+student has said the idea has turned the best moment of the hour into
+vocabulary. So `/teach` prints ASK FIRST, then LISTEN FOR (what a right answer
+sounds like when a twelve-year-old says it badly), then NOT YET in red, and only
+then the term. No timer: the teacher advances one concept at a time and the
+control names how many are left.
+
+Teacher-paced with the same beat control as the reveal, which meant the control
+had to learn a third phase — it was REVEAL-only, so a teacher reaching the
+naming could not move it. Every concept is a projector frame that fits, clears
+the back-row type floor, and carries no student name.
+
+- **Status:** ACTIVE
+- **Date:** 2026-09-04
+- **Owner:** Lead
+- **Evidence:** `runtime/src/test/sameLineL1.test.ts` — "the naming is earned
+  from the room's own numbers, and both bands get their list" and "a naming is
+  never shown for something the room did not do";
+  `runtime/scripts/e2e-same-line-l1.cjs` walks every earned concept on the wall
+  in both bands and screenshots each;
+  `docs/gauntlet/module-1/rebuild/screens-l1/*-board-naming*.png`.
+
+## D57. The pair could commit an amount they had never seen
+
+**Found by looking at the screen, not by a test.** Every assertion in the suite
+was green — 705 unit tests, a two-band browser e2e that explicitly checks
+"PUT THE OFFER IN is not below the fold" at 1024×600 and 1366×768 — and the
+product was still broken at the resolution `PLATFORM_REALITY.md` §34 names as
+first contact.
+
+Measured at 1024×600 on the committed build:
+
+- The player card was clamped to the viewport (`max-height: calc(100vh − band
+  − 44px)` = 447px) with its contents in a nested `overflow-y: auto` scroller.
+- The composer inside that scroller was **661px tall**. The pair saw **125px of
+  it**: the ask line and one payment tool.
+- `PUT THE OFFER IN` was `position: sticky` — transparent to layout — so it
+  floated across the bottom, over whatever text was beneath it.
+- The price (`$4,300,000`), the dial that sets it, and the total were at
+  y752, y873 and y863, in a 600px viewport.
+
+So the loudest control on a student's screen committed a number that was not on
+that screen. That is not a decision; it is a dare. It also breaks the founder's
+third emotional beat — *"signing him changes what else I can do"* — which
+cannot land on a figure the pair never saw.
+
+**The repair.** The three things the pair is deciding leave the scroller and
+become the card's floor:
+
+1. `offerMath(card)` extracts the arithmetic once, so the bar and the composer
+   can never disagree about what is being offered.
+2. `offerBar(card)` renders the money, the dial and the button as a sibling of
+   the card body, `position: sticky; bottom: 0`.
+3. The nested scroller is gone. The card is the height it needs and the **page**
+   scrolls, once. `.sl-card-scroll` is renamed `.sl-card-body` because it no
+   longer scrolls.
+4. `.sl-card` lost `overflow: hidden`. Clipping makes an element the sticky
+   containing block for its subtree, so with it the bar silently stopped
+   pinning — the corners are now rounded by the two children that touch them.
+5. The bar's background is two layers over an **opaque** base; a single
+   translucent gradient let THE RISK and the payment tools read straight
+   through the money. A 22px fade above it says "there is more up there"
+   rather than leaving a sentence that looks broken.
+
+**Two smaller repairs found in the same pass:**
+
+- **The dial's total used the tool's default term, not the pair's.** The input
+  handler read `num(chosen["years"], 1)` while the composer rendered
+  `term ?? maxYears`. A 7-8 desk that set four years on a two-year tool and
+  then dragged the money watched the total silently revert to the two-year
+  figure — a wrong number, on the decision surface, only while they were
+  moving it. Both now read `offerMath`.
+- **The rejoin PIN covered the lesson.** The expanded card is fixed at
+  x74–374 y468–586 at 1024×600, squarely over the forgone panel — the one
+  place on the screen that says what a signing cost. It auto-collapsed on a
+  20-second timer, which is right for a pair who joins in the lobby and wrong
+  for one who joins late. It now collapses on the first frame of any phase past
+  LOBBY, and the reopen chip is parked inside the rail at every width (measured
+  at 1366×768 it had been printing across "$2,180,704 of cap room").
+
+**Evidence.** `runtime/scripts/e2e-same-line-l1.cjs` —
+`assertDecisionAboveFold` now checks the amount, the dial and the total, not
+only the button; mutation-checked by putting the money and dial back inside the
+composer, which fails with *"the dial sits at 576-602 in a 600px viewport"*.
+705 unit tests pass; the e2e passes both bands. Screens:
+`docs/gauntlet/module-1/rebuild/screens-l1/*-play-composer-1024.png`.
+
+**Recorded, not repaired.** At 1024×600 the three-column shell leaves the board
+309px, so its name column is ~54px and most real NBA names wrap to two or three
+lines ("Gary Payton II" takes three). Every number is present and legible; the
+rhythm is poor. Fixing it means either dropping the cap sheet below the fold —
+which removes the money panel and makes things worse — or reflowing that panel
+into a horizontal strip, which is a design change, not a tweak. Left as a known
+gap rather than half-solved.
+
+## D58. The gate failed: Sacramento cannot close a hole, and one pair could sit clubless unseen
+
+Two findings from the same pass. The first is a **gate failure**; the second is
+a teacher-transfer defect found while waiting for it.
+
+### D58.1 — `sacramento/cheap-room` is a dead seat
+
+The full eight-seat sweep finished 2026-09-04. **Eight of nine properties hold
+and all four mutants are caught** — M3 and M4, added in D54 precisely because
+the harness could not previously see the two defects D53 fixed, both fail as
+required. But:
+
+```
+FAIL P-VEC — sacramento/cheap-room: frontier holds 3 distinct outcome vectors
+VERDICT: 1 PROPERTIES FAILED
+```
+
+D53's written claim that the two engine repairs "clear P-VEC at all eight seats
+in all three rival environments" was made while that run was still going. It is
+wrong, and D53 now carries the correction inline. The repairs are keepers; the
+claim was not evidence.
+
+**Why it fails, from `--seat sacramento --verbose` (10,852 plans, 5,695
+Pareto-optimal rows, three distinct vectors).**
+
+| plan | holes closed | job-years | cheapest hole closed | longest | room left |
+|---|---|---|---|---|---|
+| sign nobody | 0 | 0 | — | 0 | $6,155,628 |
+| one minimum body | 0 | 0 | — | 1 | $3,706,207 |
+| close one hole | **1** | 4 | $3,150,000 | 4 | $3,005,628 |
+
+*(An earlier draft of this decision read "every plan on Sacramento's frontier
+reads `jobsClosed: 0`". That was generalised from the first twelve rows of the
+dump before the whole frontier was counted, and it is wrong — the third vector
+closes a hole. Corrected here rather than quietly: the same discipline this
+decision applies to D53 applies to itself.)*
+
+Sacramento is **not priced out of the board.** It sits $6,155,628 under the
+first apron and can legally reach eleven of the seventeen named players,
+including four wings and five bigs — its own two open jobs. It closes a hole
+in plenty of plans; it wins Watford at $3,150,000 by out-bidding the
+cheap-room rival's $2,900,000 by one bid step.
+
+What it can never do is **close both holes**, and that is arithmetic, not a
+bug: the cheapest wing asks $2,900,000 and the cheapest big asks $3,900,000,
+so any pair of real signings costs at least $6,800,000 against $6,155,628 of
+room. Every two-hole plan is illegal at this seat.
+
+That collapses the frontier to three points, because the class-facing readings
+cannot tell *which* hole a desk closed — only how many, how cheaply, and for
+how long. Filling the wing and filling the big are genuinely different
+decisions that produce the same vector shape, and the cheaper one dominates.
+So a pair here is choosing between "nothing", "a body who fills nothing", and
+"one hole, at a price" — real, but one short of the floor BC-13 sets for a seat
+to carry a decision worth arguing about.
+
+**Not yet repaired, and two of the three obvious repairs are wrong:**
+
+- Changing Sacramento's committed figure or dead money — it is cited
+  (`salaryswish.com/teams/kings`, 2026-09-03) and the founder's rule is do not
+  invent numbers to save mechanics.
+- Moving its open jobs — no pair of real players on this board fits inside
+  $6,155,628 at any position, so which two holes it has changes nothing.
+- Calling it "the real NBA is like that" — true of a club up against a hard
+  line, and still a seat one vector short of the bar.
+
+**What is actually going on, verified against the built engine.** Two holes are
+not merely legal at this seat — they are *comfortably* legal, and the thing
+that makes them legal is the veteran-minimum charge D55 modelled:
+
+```
+sign Watford  on a minimum deal — charged $2,449,421 -> committed $205,308,793, jobs left [BIG]
+sign Vucevic  on a minimum deal — charged $2,449,421 -> committed $207,758,214, jobs left []
+                                   both holes closed, $1,256,786 still under the apron
+```
+
+Sacramento's two-hole plan costs it $4,898,842 of cap charge against
+$6,155,628 of room, because both players' real 2026 deals were veteran
+minimums and the league pays the difference. It fails in cheap-room for one
+reason: **a rival bidding the ask ($2,900,000, $3,900,000) beats a $2,449,421
+minimum offer, and out-bidding forfeits the subsidy that made the second
+signing affordable.** Sacramento can win either player at $3,150,000 through
+the big exception — and the moment it does, the other hole is out of reach.
+
+That is not a bug. It is the sharpest piece of economics in the module: the
+cheapest way to fill two holes only works while nobody else wants those
+players, and the price of winning a contest is the mechanism that made your
+plan work. The defect is that the class-facing readings cannot see it — they
+count holes, years, price and room, so "won the wing at a price" and "won the
+big at a price" are the same vector, and the seat reports three outcomes where
+a pair experiences several.
+
+**Three admissible repairs, none taken yet:**
+
+1. **Widen the cheap end with sourced players.** A big asking at or under
+   $3,255,628 makes the two-hole plan winnable outright. But
+   `FREE_AGENT_BOARD_RESEARCH.md`'s twenty-seven sourced signings hold **no big
+   under $3,900,000** — Vučević is the floor — so this needs new research with
+   real sources, not a number chosen to clear a property. (The table does hold
+   one high-confidence player not on the board: **LeBron James**, WING,
+   2 yr / $7,946,884, AAV $3,973,442, year 1 $3,876,529, a veteran minimum with
+   a 5% raise. That widens the wing end and would not, on its own, fix this
+   seat.)
+2. **Soften the rival model.** Rejected on sight: weakening the adversary to
+   pass a property is how a harness stops being evidence.
+3. **Restate P-VEC to its intent**, as P-HOLD was already restated in this
+   harness when a literal reading became impossible to satisfy honestly. That
+   is only admissible with a falsifier at least as strong as the current one,
+   and with M1-M4 still failing. It is a real option, not an escape hatch, and
+   it needs its own argument.
+
+Left open deliberately. Forcing a fix today would mean inventing a contract or
+blunting the adversary, and both are worse than a recorded failing gate.
+
+**A filtered sweep is still not a gate result.** The Sacramento-only run
+reports `POISON: at least one mutant went unnoticed` — correctly, because a
+single-seat sweep cannot reach every mutant, and `P-TWIN … between 0` because
+there is no second club to vary. Both are artefacts of `--seat`, already
+documented, and neither weakens the full run's verdict.
+
+### D58.2 — a pair with no club was invisible to the teacher
+
+The module holds `CLUBS.length * 2` = **16 desks**. A pair joining after that
+lands as an observer with an honest screen ("EVERY CLUB IS TAKEN … there is
+none left to hand you without changing numbers this room has already seen").
+That refusal is right: inventing a seventeenth franchise would duplicate a
+position and quietly change numbers the room has already seen.
+
+The silence was wrong. `state.observers` was module state **no view exposed**,
+so a teacher who split thirty-four students into seventeen pairs had one pair
+behind a dead screen for the whole of PLAY with nothing on the console to say
+so — the teacher's eyesight was the only detector. Under CLAUDE.md §4 and
+D50 §8 that is the console's job.
+
+`intelligence()` now emits a `watch` item naming the count and the room's
+capacity, with the instruction: sit them with a desk that has one, or give them
+the room's job — pick a club to shadow, predict its next move out loud, check
+yourself when the day closes.
+
+**Recorded, not claimed:** the observer screen itself has still never been
+reviewed against the MAGNETIC/STRONG bar. It is honest and it is short; whether
+fifteen minutes behind it is acceptable is a question for the player-gameplay
+review, not something this decision settles.
+
+**Evidence.** Full sweep output above, reproducible with
+`node scripts/same-line-sweep.mjs`; `--seat sacramento --verbose` for the
+frontier dump. `runtime/src/test/sameLineL1.test.ts` — "a pair with no club is
+on the teacher's console, not only on its own dead screen". 706 unit tests and
+the two-band browser e2e pass, run 2026-09-04.

@@ -24,6 +24,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { RepositoryError, type Repository } from "./repository.js";
 import type { SessionBus } from "./sessionBus.js";
+import { bandOrDefault } from "../shared/gradeBand.js";
 import type {
   NewSeat,
   NewSession,
@@ -150,7 +151,14 @@ export class SnapshotRepository implements Repository {
       // class that may be mid-period, and "the runtime was upgraded between
       // periods" must not be a way to lose a room.
       for (const session of parsed.sessions) {
-        this.putSession({ ...session, round: session.round ?? null, log: session.log ?? [] });
+        this.putSession({
+          ...session,
+          round: session.round ?? null,
+          log: session.log ?? [],
+          // A room created before the band existed is a grades 5-6 room, which
+          // is the only band that existed when it was written.
+          gradeBand: bandOrDefault(session.gradeBand),
+        });
       }
       for (const seat of parsed.seats) {
         this.putSeat({
@@ -262,6 +270,7 @@ export class SnapshotRepository implements Repository {
       code: input.code,
       title: input.title,
       lessonModuleId: input.lessonModuleId,
+      gradeBand: input.gradeBand,
       phase: input.phase,
       paused: false,
       frozen: false,
@@ -308,7 +317,27 @@ export class SnapshotRepository implements Repository {
     if (expectedVersion !== null && row.version !== expectedVersion) {
       return { ok: false, conflict: true, session: clone(row) };
     }
-    const next: SessionRow = { ...row, ...patch, version: row.version + 1, updatedAt: this.now() };
+    const next: SessionRow = {
+      ...row,
+      ...patch,
+      version: row.version + 1,
+      updatedAt: this.now(),
+      // IDENTITY IS NOT PATCHABLE, AND THE TYPE SAYING SO IS NOT ENOUGH.
+      //
+      // `SessionPatch` omits these, but a patch is an object arriving from
+      // another layer and TypeScript is gone by the time it gets here — a
+      // spread applies whatever it is handed. A test asserting a room cannot
+      // change class mid-lesson failed against exactly that gap. These four
+      // are what a room IS: which room, which class, which lesson, and the
+      // credential that controls it. Everything else about a session is a
+      // thing that happens to it.
+      id: row.id,
+      code: row.code,
+      gradeBand: row.gradeBand,
+      lessonModuleId: row.lessonModuleId,
+      teacherKeyHash: row.teacherKeyHash,
+      createdAt: row.createdAt,
+    };
     this.putSession(next, row.code);
     this.persist();
     this.bus?.publish(next.id, next.version);

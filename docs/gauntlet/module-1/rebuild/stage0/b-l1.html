@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stage-0 · DESIGN B "THE FRANCHISE" · L1 "Take the Job"</title>
+<!--
+==============================================================================
+  DESIGN B — THE FRANCHISE · Module 1 Lesson 1 "TAKE THE JOB"
+  Stage-0 playable prototype of the L1 signature loop.
+  Date: 2026-09-03.  Self-contained. No network. No build. No external assets.
+
+  WHAT THIS IS
+  You inherit one real NBA club's actual books three weeks before training camp
+  and spend three CAMP DAYS filling roster jobs off a shared, shrinking board.
+  Five other desks are in the room. What you can get depends on what they do.
+  There is no team rating anywhere. You walk out holding two books that cannot
+  be added together: THE SHAPE OF THE ROSTER and WHAT YOU STILL HOLD.
+
+  SOURCED (NBA FINANCIAL TRUTH DOSSIER, editorial date 2026-09-03)
+    Cap $164,961,000 / floor $148,465,000 / tax $200,428,000 /
+      1st apron $209,015,000 / 2nd apron $221,686,000   §8.1 #1  official-nba  2026-06-30
+    Floor = exactly 90% of cap; tax = 121.5% of cap       §8.1 #2, #3
+    NTMLE $15,044,000 (4 yr, 5% raises) / room MLE $9,366,000 (3 yr) /
+      taxpayer MLE $6,064,000 (2 yr)                      §8.1 #7  official-nba
+    Bi-annual exception $5,477,000 (2 yr)                  §1.2  SINGLE SOURCE (§7.4)
+    Minimums $1,357,763 (rookie) / $3,876,529 (10+ yrs)    §1.2  2026-07-01
+    Roster: 15 standard max, 14 min, 3 two-way             §8.1 #8
+    Empty-slot charge $1,357,763 per slot below 12         §2.5
+    Using the NTMLE or BAE hard-caps you at the 1st apron
+      for the rest of the league year                      §2.3  cbaguide high, corroborated
+    Above the 2nd apron: no mid-level exception at all     §2.3  uncontested, 3 researchers
+    Re-signing your own player = 5 yr / 8%; elsewhere 4 / 5% (term is bargaining
+      power — the basis of this prototype's contention rule)  §8.1 #10
+    Rookie scale is an administered ladder by slot: No.1 $14,748,000,
+      No.30 $2,926,800 — which is why cheap ANCHORs exist   §8.1 #9  2026-07-02
+    Club committed 2026-27 payrolls: HoopsHype ladder       §4.4  cap-database MEDIUM  2026-09-03
+    Dead money: MIL Lillard $21,311,053 thru 2030-31 (§8.1 #21); MIL Micic
+      $666,667; MEM $21,909,021 (KCP ~$17.7M, Cole Anthony ~$3.7M) (§4.1 #9);
+      DEN Valanciunas stretch ~$667K x3 (§5.5, 2026-08-27)
+    Board card salaries: Durant $43,902,439 (§4.5); Irving $39,491,282 (§4.5);
+      Flagg $14,517,480 (§4.5); Vassell $27,500,000 (§4.1 #10);
+      Keldon Johnson $18,000,000 (§4.1 #10); Trae Young $49,488,300 (§4.2);
+      Alex Sarr $12,370,000 (§4.2); AJ Dybantsa $14,748,000 (§4.2)
+
+  INVENTED — NOT SOURCED. Every one of these is a model choice, not an NBA fact.
+    1. TIER (ANCHOR / ROTATION / CAMP) for every board card. The dossier gives
+       salaries, not quality tiers. This is the largest invention here. The
+       honest fallback, if a critic rejects an authored tier, is to derive it
+       purely from the contract (max tier or top-10 rookie slot = ANCHOR,
+       above the minimum = ROTATION, at the minimum = CAMP).
+    2. STARTING ROSTER-SLOT COUNTS (12/12/13/13/14/14) and each club's opening
+       JOB SHAPE. The dossier gives a roster count for exactly one club.
+    3. OUT-YEAR BOOKS (2027-28, 2028-29) for all six clubs — plausible decay
+       curves, not researched figures. They exist so path dependence has
+       somewhere to land.
+    4. THE FIVE JOB SLOTS (PG/SG/WG/PF/C). Real rosters are not five slots.
+    5. THE BOARD'S COMPOSITION — the prices are real, the SET is chosen, and it
+       is what the no-monotone-money property is tuned against.
+    6. THE CONTENTION TIE-BREAKS below "longer contract wins" (job state, then
+       fewer contracts, then desk order). Term-wins is real (§8.1 #10); the
+       rest is the module's, and is disclosed before play.
+    7. RIVAL DESK POLICIES. Five modelled desks so contention is real offline.
+    8. CONTRACTS PRICED AT AN EXCEPTION OR THE MINIMUM HAVE UNLIMITED SUPPLY —
+       they are a price point, not a person, and several clubs sign an MLE-level
+       player every summer. Only the eight NAMED real players are scarce. What
+       limits exception signings is the toolbox (each exception once), not supply.
+       This is also what guarantees every seat can always reach 14 contracts —
+       the recoverability invariant.
+    9. THE OWNER'S MANDATE per club. Each is a roster obligation satisfiable by an
+       always-available action; the interesting version sits above that floor.
+
+  NOT RENDERED ANYWHERE, BY RULE (§8.2)
+    No trade salary-matching percentage (#1). No luxury-tax dollar bill (#5).
+    No market-size tier label (#11). No hard-cap status for GSW/CLE/IND/MIA and
+    none of them is a seat (#3). No Clippers/Raptors roster fact (#4). No
+    second-apron pick-penalty count (#2). No logos, marks, arena images or
+    photographs (#22). No load-bearing percentage, ratio, negative number or
+    probability (#21) — over a line is stated in words, never as a minus sign.
+    No team rating, OVR, franchise value or fan trust exists in the model.
+==============================================================================
+-->
+<style>
+  :root{
+    --bg:#0d1014; --panel:#161b22; --panel2:#1e242e; --line:#2c3542;
+    --ink:#e9edf3; --dim:#93a0b3; --accent:#c8a04a; --accent2:#8b6bd6;
+    --good:#4caf7a; --warn:#d9a441; --bad:#d9655e; --ghost:#5b6472;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);margin:0;padding:18px 22px 60px;
+    font-family:"Iowan Old Style",Georgia,'Times New Roman',serif;font-size:15px;}
+  h1{font-size:1.25rem;margin:0 0 2px;letter-spacing:.02em;}
+  h2{font-size:.82rem;color:var(--accent);text-transform:uppercase;letter-spacing:.09em;
+     border-bottom:1px solid var(--line);padding-bottom:5px;margin:0 0 10px;}
+  h3{margin:0 0 6px;font-size:.92rem;}
+  .sub{color:var(--dim);font-size:.85rem;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+    flex-wrap:wrap;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:7px 13px;
+    border-radius:6px;cursor:pointer;font-family:inherit;font-size:.86rem;}
+  button:hover:not(:disabled){border-color:var(--accent);}
+  button:disabled{opacity:.32;cursor:not-allowed;}
+  button.primary{background:#3a2f14;border-color:var(--accent);color:#f3e2bd;}
+  button.danger{border-color:var(--bad);}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:13px 15px;margin-bottom:14px;}
+  .cols{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;align-items:start;}
+  .wordmark{font-size:1.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .facts{color:var(--dim);font-size:.8rem;margin-top:2px;}
+  .mandate{margin-top:9px;padding:8px 10px;background:#20180a;border-left:3px solid var(--accent);
+    border-radius:0 6px 6px 0;font-size:.87rem;}
+  /* line meter */
+  .meter{position:relative;height:44px;margin:12px 0 26px;background:#0a0d11;
+    border:1px solid var(--line);border-radius:6px;}
+  .meter .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2f4a6b,#4a6fa5);
+    border-radius:5px 0 0 5px;}
+  .meter .mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--dim);}
+  .meter .mark.floor{background:var(--good);}
+  .meter .mark.cap{background:var(--accent);}
+  .meter .mark.tax{background:var(--warn);}
+  .meter .mark.ap1{background:var(--bad);}
+  .meter .mark.ap2{background:#ff3b30;}
+  .meter .mark.wall{background:#fff;width:3px;}
+  .meter .lbl{position:absolute;top:46px;font-size:.63rem;color:var(--dim);
+    transform:translateX(-50%);white-space:nowrap;letter-spacing:.04em;}
+  .meter .you{position:absolute;top:-19px;font-size:.66rem;color:#9fc3ef;transform:translateX(-50%);white-space:nowrap;}
+  /* books */
+  .books{border-collapse:collapse;width:100%;font-size:.8rem;}
+  .books th{text-align:left;color:var(--dim);font-weight:normal;font-size:.68rem;
+    text-transform:uppercase;letter-spacing:.07em;padding:3px 6px;border-bottom:1px solid var(--line);}
+  .books td{padding:4px 6px;border-bottom:1px solid #1c222b;}
+  .books td.n{text-align:right;font-variant-numeric:tabular-nums;}
+  .bar{height:11px;border-radius:2px;background:#4a6fa5;display:inline-block;vertical-align:middle;}
+  .bar.dead{background:repeating-linear-gradient(45deg,var(--ghost),var(--ghost) 3px,#2a313c 3px,#2a313c 6px);}
+  .bar.new{background:#7a9c5e;}
+  .ghostrow td{color:var(--ghost);font-style:italic;}
+  .offgrid{color:var(--bad);font-size:.68rem;}
+  /* jobs */
+  .jobs{display:flex;gap:7px;margin:10px 0 4px;flex-wrap:wrap;}
+  .job{flex:1;min-width:78px;border:1px solid var(--line);border-radius:6px;padding:6px 7px;background:#12171e;}
+  .job .jn{font-size:.63rem;color:var(--dim);letter-spacing:.09em;text-transform:uppercase;}
+  .job .js{font-size:.78rem;margin-top:2px;letter-spacing:.03em;}
+  .job.OPEN{border-color:#4a3030;} .job.OPEN .js{color:var(--bad);}
+  .job.THIN{border-color:#4a4030;} .job.THIN .js{color:var(--warn);}
+  .job.COVERED{border-color:#2f4436;} .job.COVERED .js{color:var(--good);}
+  .job.ANCHORED{border-color:var(--accent);background:#1d1708;} .job.ANCHORED .js{color:var(--accent);}
+  .job .who{font-size:.63rem;color:var(--dim);margin-top:3px;min-height:.8em;}
+  /* board */
+  .card{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:7px;
+    background:var(--panel2);cursor:pointer;}
+  .card:hover{border-color:var(--accent);}
+  .card.sel{border-color:var(--accent);background:#241d0c;}
+  .card.gone{opacity:.34;text-decoration:line-through;cursor:not-allowed;}
+  .card.unreach{opacity:.5;}
+  .card .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+  .card .nm{font-size:.92rem;}
+  .card .pr{font-variant-numeric:tabular-nums;color:var(--accent);font-size:.88rem;}
+  .chip{display:inline-block;font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;
+    border:1px solid var(--line);border-radius:20px;padding:1px 8px;color:var(--dim);margin-top:3px;}
+  .chip.ANCHOR{border-color:var(--accent);color:var(--accent);}
+  .chip.ROTATION{border-color:#3f6a52;color:var(--good);}
+  .chip.CAMP{border-color:#4a4a4a;color:var(--dim);}
+  .card .sr{font-size:.74rem;color:var(--dim);margin-top:4px;line-height:1.35;}
+  /* tools */
+  .tool{display:flex;justify-content:space-between;gap:8px;padding:6px 9px;border:1px solid var(--line);
+    border-radius:6px;margin-bottom:5px;background:#12171e;cursor:pointer;font-size:.8rem;}
+  .tool:hover:not(.no){border-color:var(--accent);}
+  .tool.sel{border-color:var(--accent);background:#241d0c;}
+  .tool.no{opacity:.4;cursor:not-allowed;text-decoration:line-through;}
+  .tool .tt{color:var(--dim);font-size:.68rem;}
+  .foregone{background:#1a1208;border:1px solid #3d3113;border-radius:8px;padding:9px 11px;
+    font-size:.79rem;margin-top:10px;line-height:1.45;}
+  .foregone b{color:var(--accent);}
+  .log{font-size:.79rem;line-height:1.5;max-height:190px;overflow:auto;}
+  .log div{padding:2px 0;border-bottom:1px solid #1a1f27;}
+  pre{background:#080a0d;border:1px solid var(--line);border-radius:8px;padding:11px;
+    font-size:.7rem;line-height:1.45;overflow:auto;max-height:440px;color:#b9c5d6;
+    font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre;}
+  table.probe{border-collapse:collapse;font-size:.7rem;width:100%;
+    font-family:ui-monospace,Menlo,Consolas,monospace;}
+  table.probe th,table.probe td{border:1px solid #232b36;padding:3px 6px;text-align:left;white-space:nowrap;}
+  table.probe th{background:#141a22;color:var(--dim);}
+  .good{color:var(--good);} .bad{color:var(--bad);} .warn{color:var(--warn);} .dim{color:var(--dim);}
+  .walls{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;}
+  .wall{border:1px solid var(--line);border-radius:8px;padding:8px 9px;background:#12171e;}
+  .wall h4{margin:0 0 6px;font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);}
+  .wall ul{margin:0;padding-left:0;list-style:none;font-size:.73rem;line-height:1.6;}
+  .wall li.me{color:var(--accent);}
+  .rules{font-size:.76rem;color:var(--dim);line-height:1.55;}
+  .banner{background:#1c2430;border:1px solid #33405230;border-left:3px solid var(--accent2);
+    border-radius:0 8px 8px 0;padding:9px 12px;font-size:.82rem;margin-bottom:12px;}
+  select{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:6px;
+    padding:5px 8px;font-family:inherit;font-size:.84rem;}
+  .kv{display:flex;justify-content:space-between;font-size:.79rem;padding:2px 0;}
+  .kv span:last-child{font-variant-numeric:tabular-nums;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>TAKE THE JOB — three weeks to camp</h1>
+    <div class="sub">Design B "The Franchise" · Module 1 Lesson 1 · Stage-0 · 2026-09-03 · one real club's real books, three camp days, five other desks in the room</div>
+  </div>
+  <div style="text-align:right;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+    <select id="clubPick"></select>
+    <button id="newRun">New run</button>
+    <button id="probeBtn" class="primary">STRATEGY PROBE</button>
+  </div>
+</div>
+
+<div id="setup" class="panel">
+  <h2>Pick the club you inherit</h2>
+  <div class="rules" id="setupList"></div>
+  <div style="margin-top:10px"><button id="startBtn" class="primary">TAKE THE JOB</button></div>
+</div>
+
+<div id="game" style="display:none">
+
+  <div class="banner" id="dayBanner"></div>
+
+  <div class="cols">
+    <!-- LEFT: franchise band + books -->
+    <div>
+      <div class="panel">
+        <div class="wordmark" id="wm"></div>
+        <div class="facts" id="facts"></div>
+        <div class="mandate" id="mandate"></div>
+        <div class="meter" id="meter"></div>
+        <div class="jobs" id="jobs"></div>
+        <div class="sub" style="font-size:.72rem;margin-top:2px">OPEN &lt; THIN &lt; COVERED &lt; ANCHORED. This is a shape, not a score. It never adds up to a number.</div>
+      </div>
+
+      <div class="panel">
+        <h2>The books</h2>
+        <table class="books" id="booksTbl"></table>
+        <div style="margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:4px 18px">
+          <div class="kv"><span>Committed 2026-27</span><span id="kCommit"></span></div>
+          <div class="kv"><span>Standard contracts</span><span id="kSlots"></span></div>
+          <div class="kv"><span>Room under the cap</span><span id="kRoom"></span></div>
+          <div class="kv"><span>Your wall</span><span id="kWall"></span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>What happened</h2>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: board + tool + commit -->
+    <div>
+      <div class="panel">
+        <h2>The board <span class="sub" id="boardCount"></span></h2>
+        <div id="board"></div>
+      </div>
+      <div class="panel" id="claimPanel">
+        <h2>Your claim</h2>
+        <div id="jobPick" style="margin-bottom:9px"></div>
+        <div id="tools"></div>
+        <div class="foregone" id="foregone"></div>
+        <div style="margin-top:11px;display:flex;gap:8px;flex-wrap:wrap">
+          <button id="commitBtn" class="primary" disabled>ENTER THE CLAIM</button>
+          <button id="passBtn">PASS THIS DAY</button>
+          <button id="clearBtn">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="endPanel" style="display:none">
+    <h2>The room's five walls — no column is better than another</h2>
+    <div class="walls" id="wallsBox"></div>
+    <div style="margin-top:12px" id="endNotes"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>MODEL — every formula and constant this prototype is running</h2>
+  <pre id="modelBox"></pre>
+</div>
+
+<div class="panel" id="probePanel" style="display:none">
+  <h2>Strategy probe — five canned strategies, three focal clubs, five rival desks, full three-day loop</h2>
+  <div id="probeOut"></div>
+</div>
+
+<script>
+"use strict";
+/* ============================== CONSTANTS ============================== */
+const CAP=164961000, FLOOR=148465000, TAX=200428000, AP1=209015000, AP2=221686000;
+const NTMLE=15044000, ROOMMLE=9366000, TAXMLE=6064000, BAE=5477000;
+const MINR=1357763, MINV=3876529;
+const ROSTER_MAX=15, ROSTER_MIN=14, SLOT_FLOOR=12, RAISE=0.05;
+const TERM={room:4,ntmle:4,roommle:3,taxmle:2,bae:2,min:1};
+const AMT ={ntmle:NTMLE,roommle:ROOMMLE,taxmle:TAXMLE,bae:BAE};
+const JOBS=["PG","SG","WG","PF","C"];
+const JOBNAME={PG:"Point guard",SG:"Shooting guard",WG:"Wing",PF:"Forward",C:"Centre"};
+const RANK={OPEN:0,THIN:1,COVERED:2,ANCHORED:3};
+const STATE_OF={ANCHOR:"ANCHORED",ROTATION:"COVERED",CAMP:"THIN"};
+const $=id=>document.getElementById(id);
+const M=n=>"$"+n.toLocaleString("en-US");
+const Mm=n=>"$"+(n/1e6).toFixed(1)+"M";
+
+/* ============================== CLUBS ==============================
+   committed[0] = HoopsHype committed 2026-27 roster salary (§4.4, medium, 2026-09-03).
+   committed[1..2], slots, and the opening job shape are INVENTED (see header). */
+const CLUBS=[
+ {id:"DET",name:"Detroit",market:"Detroit, Michigan",bldg:"Little Caesars Arena",
+  committed:[136252755,96000000,62000000],dead:[],slots:11,
+  jobs:{PG:"ANCHORED",SG:"OPEN",WG:"COVERED",PF:"COVERED",C:"OPEN"},
+  who:{PG:"Cade Cunningham $50,105,628",WG:"Duncan Robinson $15,992,957",PF:"John Collins $17,000,000"},
+  mandate:"Reach fourteen contracts and clear the floor at $148,465,000. You hold eleven. You are legally required to spend.",
+  note:"Lowest committed payroll in the league and BELOW the floor. Seven firsts through 2033. (§4.1 #6, §4.4)"},
+ {id:"BKN",name:"Brooklyn",market:"Brooklyn, New York",bldg:"Barclays Center",
+  committed:[161410000,74000000,40000000],dead:[],slots:12,
+  jobs:{PG:"COVERED",SG:"OPEN",WG:"ANCHORED",PF:"COVERED",C:"OPEN"},
+  who:{PG:"Terance Mann $15,500,000",WG:"Michael Porter Jr. $40,806,150",PF:"Julius Randle $33,333,334"},
+  mandate:"Reach fourteen contracts and put a body in both open jobs. Almost nothing is committed past this year — do not waste it.",
+  note:"Genuine cap space, youngest roster in the league (23.7), four unprotected future firsts. (§4.1 #7, §4.4)"},
+ {id:"MEM",name:"Memphis",market:"Memphis, Tennessee",bldg:"FedExForum",
+  committed:[169040000,118000000,96000000],
+  dead:[{n:"Kentavious Caldwell-Pope",per:17700000,last:2027},{n:"Cole Anthony",per:3700000,last:2027}],
+  slots:13,jobs:{PG:"ANCHORED",SG:"COVERED",WG:"THIN",PF:"COVERED",C:"OPEN"},who:{},
+  mandate:"Reach fourteen contracts. You have no room under the cap, and $21,909,021 of your payroll pays men who left.",
+  note:"Dead money $21,909,021. Owns 2027 firsts from Utah, the Lakers and Cleveland. (§4.1 #9, §4.4)"},
+ {id:"MIL",name:"Milwaukee",market:"Milwaukee, Wisconsin",bldg:"Fiserv Forum",
+  committed:[192860000,150000000,130000000],
+  dead:[{n:"Damian Lillard",per:21311053,last:2031},{n:"Vasilije Micic",per:666667,last:2029}],
+  slots:13,jobs:{PG:"OPEN",SG:"COVERED",WG:"COVERED",PF:"ANCHORED",C:"COVERED"},
+  who:{SG:"Tyler Herro $33,000,000",C:"Myles Turner $26,584,164",WG:"Kyle Kuzma $20,490,152"},
+  mandate:"Reach fourteen contracts and put a point guard on the floor. Lillard's money is gone either way — the live question is the roster spot.",
+  note:"Pays Damian Lillard $21,311,053 a year through 2030-31 — the club's third-largest cap charge, and he plays elsewhere. (§8.1 #21)"},
+ {id:"OKC",name:"Oklahoma City",market:"Oklahoma City, Oklahoma",bldg:"Paycom Center",
+  committed:[216410000,205000000,190000000],dead:[],slots:13,
+  jobs:{PG:"ANCHORED",SG:"COVERED",WG:"COVERED",PF:"ANCHORED",C:"OPEN"},
+  who:{PG:"Shai Gilgeous-Alexander $40,806,150",PF:"Chet Holmgren $41,240,250",SG:"Jalen Williams $41,240,250"},
+  mandate:"Reach fourteen contracts and cover the centre job. You have $5,276,000 before the second apron at $221,686,000 — and the only centre you can reach costs $6,064,000.",
+  note:"Reigning champion, smallest market, richest club in draft assets: 13 future firsts and 16 seconds. (§4.1 #2, §5.8)"},
+ {id:"DEN",name:"Denver",market:"Denver, Colorado",bldg:"Ball Arena",
+  committed:[226680000,190000000,150000000],
+  dead:[{n:"Jonas Valanciunas",per:667000,last:2029}],slots:14,
+  jobs:{PG:"COVERED",SG:"OPEN",WG:"OPEN",PF:"COVERED",C:"ANCHORED"},
+  who:{C:"Nikola Jokic $59,033,114",PG:"Jamal Murray $50,105,628",PF:"Aaron Gordon $31,978,037"},
+  mandate:"Put a body in one of your two open jobs. You are past the second apron, so every mid-level exception is confiscated and you hold one roster slot. You cannot fix both.",
+  note:"$4,994,000 past the second apron. Stretched Valanciunas on 2026-08-27. (§4.1 #3, §2.3, §5.5)"}
+];
+
+/* ============================== THE BOARD ==============================
+   Prices are real (dossier sections in `src`). TIER is INVENTED. */
+const BOARD_SEED=[
+ {id:"kd", nm:"Kevin Durant",     tier:"ANCHOR",  fits:["WG","PF"], price:43902439, src:"§4.5",
+  s:"One of the best scorers alive.", r:"Costs more than a quarter of the whole cap."},
+ {id:"ty", nm:"Trae Young",       tier:"ANCHOR",  fits:["PG"],      price:49488300, src:"§4.2",
+  s:"Runs an offence by himself.", r:"The single biggest price on the board."},
+ {id:"ki", nm:"Kyrie Irving",     tier:"ANCHOR",  fits:["PG","SG"], price:39491282, src:"§4.5",
+  s:"Handles the ball in the last two minutes.", r:"You will need most of your money for one job."},
+ {id:"cf", nm:"Cooper Flagg",     tier:"ANCHOR",  fits:["PF","WG"], price:14517480, src:"§4.5",
+  s:"A cornerstone at a rookie-scale price.", r:"Only two tools in the league reach him, and one draws a wall."},
+ {id:"aj", nm:"AJ Dybantsa",      tier:"ANCHOR",  fits:["WG"],      price:14748000, src:"§4.2 / §8.1 #9",
+  s:"No. 1 rookie-scale price — an administered ladder, not a market.", r:"Same reach problem as Flagg."},
+ {id:"dv", nm:"Devin Vassell",    tier:"ROTATION",fits:["WG","SG"], price:27500000, src:"§4.1 #10",
+  s:"Plays every night.", r:"Costs nearly twice a rookie-scale cornerstone and does less."},
+ {id:"kj", nm:"Keldon Johnson",   tier:"ROTATION",fits:["PF","WG"], price:18000000, src:"§4.1 #10",
+  s:"Solid, known, available.", r:"Above the mid-level, so only room reaches him."},
+ {id:"as", nm:"Alex Sarr",        tier:"ROTATION",fits:["C","PF"],  price:12370000, src:"§4.2",
+  s:"Young centre on a rookie deal.", r:"Not a finished player yet."},
+ {id:"rm", nm:"Room mid-level centre", tier:"ROTATION",fits:["C"],  price:ROOMMLE, unlimited:true, src:"§8.1 #7",
+  s:"A real rotation centre at the room mid-level price.", r:"Only a club that went under the cap can sign him."},
+ {id:"tm", nm:"Taxpayer mid-level guard", tier:"ROTATION",fits:["PG","SG"], price:TAXMLE, unlimited:true, src:"§8.1 #7",
+  s:"The last exception a taxpaying club still has.", r:"Two years only, and it is gone once used."},
+ {id:"tc", nm:"Taxpayer mid-level centre", tier:"ROTATION",fits:["C","PF"], price:TAXMLE, unlimited:true, src:"§8.1 #7",
+  s:"A rotation centre at exactly the taxpayer mid-level.", r:"Signing him may put you past a line you wanted to stay under."},
+ {id:"c1", nm:"Camp contract · centre", tier:"CAMP", fits:["C"],   price:MINR, camp:true, src:"§1.2",
+  s:"Cheapest legal contract there is.", r:"A camp contract makes a job THIN, not covered."},
+ {id:"c2", nm:"Camp contract · guard",  tier:"CAMP", fits:["PG","SG"], price:MINR, camp:true, src:"§1.2",
+  s:"Cheapest legal contract there is.", r:"A camp contract makes a job THIN, not covered."},
+ {id:"c3", nm:"Veteran minimum · wing", tier:"CAMP", fits:["WG","PF"], price:MINV, camp:true, src:"§1.2",
+  s:"Ten years in the league, at the veteran minimum.", r:"Still only makes the job THIN."}
+];
+
+/* ============================== ENGINE ============================== */
+function newDesk(club,policy){
+  return {club:club.id,name:club.name,policy:policy,
+    committed:club.committed.slice(),dead:club.dead.map(d=>({...d})),
+    slots:club.slots,jobs:{...club.jobs},who:{...(club.who||{})},
+    tools:{ntmle:null,roommle:null,taxmle:null,bae:null,room:null},
+    hardCap:0,cause:null,usedRoom:false,signed:[],lost:[],mandate:club.mandate};
+}
+function room(d){ return Math.max(0, CAP - d.committed[0]); }
+function underCap(d){ return d.committed[0] < CAP; }
+
+/* Tool legality — transcribed from §2.3 / §2.4, not approximated. */
+function toolLegal(d,t){
+  if(d.tools[t]==="used") return false;
+  switch(t){
+    case "min":     return true;
+    case "room":    return underCap(d);
+    case "roommle": return d.usedRoom && d.committed[0] < AP2;
+    case "ntmle":   return !underCap(d) && !d.usedRoom && d.committed[0] < AP1;
+    case "bae":     return !underCap(d) && !d.usedRoom && d.committed[0] < AP1;
+    case "taxmle":  return !underCap(d) && d.committed[0] < AP2;
+  }
+  return false;
+}
+function toolCapacity(d,t){
+  if(t==="min")  return MINV;          // the biggest minimum contract
+  if(t==="room") return room(d);
+  return AMT[t];
+}
+function legalSign(d,card,job,t){
+  if(!card||!job||!t) return "pick a card, a job and a tool";
+  if(!card.fits.includes(job)) return "he does not play that job";
+  if(!toolLegal(d,t)) return "that tool is not available to you";
+  if(t==="min" && !card.camp) return "the minimum only signs a camp contract";
+  if(t!=="min" && card.camp && card.price>toolCapacity(d,t)) return "tool too small";
+  if(card.price > toolCapacity(d,t)) return "that tool does not reach his price";
+  if(d.slots >= ROSTER_MAX) return "you already hold fifteen standard contracts";
+  if(d.hardCap>0 && d.committed[0]+card.price > d.hardCap)
+    return "your wall is at "+M(d.hardCap)+" — this puts you at "+M(d.committed[0]+card.price);
+  return null;
+}
+function applySign(d,card,job,t,day){
+  const term=TERM[t]==null?1:TERM[t];
+  d.committed[0]+=card.price;
+  for(let k=1;k<3;k++) if(k<term) d.committed[k]+=Math.round(card.price*Math.pow(1+RAISE,k));
+  d.slots+=1;
+  if(t!=="min") d.tools[t]="used";
+  if(t==="room"){ d.usedRoom=true; d.tools.ntmle="illegal"; d.tools.bae="illegal"; }
+  if(t==="ntmle"||t==="bae"){ if(d.hardCap===0){ d.hardCap=AP1; d.cause=(t==="ntmle"?"the mid-level exception":"the bi-annual exception")+", Camp Day "+day; } }
+  if(RANK[STATE_OF[card.tier]]>RANK[d.jobs[job]]){ d.jobs[job]=STATE_OF[card.tier]; d.who[job]=card.nm+" "+M(card.price); }
+  d.signed.push({nm:card.nm,job:job,price:card.price,tool:t,term:term,day:day});
+}
+/* Contention — in-model only. Never arrival time. */
+function resolveDay(desks,claims,board,day,logFn){
+  const byCard={};
+  claims.forEach(c=>{ if(!c.card) return; (byCard[c.card]=byCard[c.card]||[]).push(c); });
+  const gone=[];
+  Object.keys(byCard).forEach(cid=>{
+    const card=board.find(c=>c.id===cid); if(!card) return;
+    let bids=byCard[cid].filter(b=>legalSign(desks[b.d],card,b.job,b.tool)===null);
+    if(!bids.length) return;
+    if(card.camp||card.unlimited){ bids.forEach(b=>applySign(desks[b.d],card,b.job,b.tool,day)); return; } // a price point, not a person
+    bids.sort((a,b)=>{
+      const ta=TERM[a.tool]||1, tb=TERM[b.tool]||1;
+      if(tb!==ta) return tb-ta;                                        // 1. longer contract wins
+      const ja=RANK[desks[a.d].jobs[a.job]], jb=RANK[desks[b.d].jobs[b.job]];
+      if(ja!==jb) return ja-jb;                                        // 2. OPEN beats THIN beats COVERED
+      if(desks[a.d].slots!==desks[b.d].slots) return desks[a.d].slots-desks[b.d].slots; // 3. fewer contracts
+      return a.d-b.d;                                                  // 4. desk order, disclosed
+    });
+    const w=bids[0];
+    applySign(desks[w.d],card,w.job,w.tool,day);
+    bids.slice(1).forEach(b=>desks[b.d].lost.push({nm:card.nm,to:desks[w.d].name,term:TERM[w.tool]||1}));
+    gone.push({card:card,winner:desks[w.d].name,term:TERM[w.tool]||1,contested:bids.length});
+  });
+  gone.forEach(g=>{ const i=board.findIndex(c=>c.id===g.card.id); if(i>=0) board.splice(i,1); });
+  if(logFn) gone.forEach(g=>logFn(g));
+  return gone;
+}
+function settle(d){
+  const out={};
+  if(d.slots<SLOT_FLOOR){ out.emptyCharge=(SLOT_FLOOR-d.slots)*MINR; d.committed[0]+=out.emptyCharge; }
+  out.shortfall=Math.max(0,FLOOR-d.committed[0]);
+  out.roster=d.slots>=ROSTER_MIN;
+  return out;
+}
+function mandateMet(d,s){
+  switch(d.club){
+    case "DET": return d.slots>=ROSTER_MIN && s.shortfall===0;
+    case "BKN": return d.slots>=ROSTER_MIN && RANK[d.jobs.SG]>=RANK.THIN && RANK[d.jobs.C]>=RANK.THIN;
+    case "MEM": return d.slots>=ROSTER_MIN;
+    case "MIL": return d.slots>=ROSTER_MIN && RANK[d.jobs.PG]>=RANK.THIN;
+    case "OKC": return d.slots>=ROSTER_MIN && RANK[d.jobs.C]>=RANK.COVERED;
+    case "DEN": return Object.keys(d.jobs).some(j=>RANK[d.jobs[j]]>RANK[CLUBS.find(c=>c.id==="DEN").jobs[j]]);
+  }
+  return true;
+}
+function shape(d){ return JOBS.map(j=>d.jobs[j][0]).join(" "); }
+function opening(d){ return CLUBS.find(c=>c.id===d.club); }
+/* DECISION-RELATIVE MEASURES. Every class-facing ordering uses these, never an
+   absolute, because an absolute ordering ranks what a desk INHERITED rather than
+   what it DECIDED. The first cut of this prototype ordered on absolutes and the
+   strategy probe's P-TWIN check failed on two of three dimensions — the club moved
+   the outcome more than the plan did, which is this design territory's named risk
+   arriving exactly where it was predicted. These are the repair. */
+function anchored(d){ return JOBS.filter(j=>d.jobs[j]==="ANCHORED").length; }
+function covered(d){ return JOBS.filter(j=>RANK[d.jobs[j]]>=RANK.COVERED).length; }
+function raised(d){ const o=opening(d); return JOBS.filter(j=>RANK[d.jobs[j]]>RANK[o.jobs[j]]).length; }
+function spentThisSummer(d){ return d.committed[0]-opening(d).committed[0]; }
+function promisedLater(d){ const o=opening(d); return (d.committed[1]-o.committed[1])+(d.committed[2]-o.committed[2]); }
+function nearestLine(d){
+  const v=d.committed[0];
+  if(v<FLOOR)  return {word:"below the floor",  gap:FLOOR-v, dir:"under"};
+  if(v<CAP)    return {word:"under the cap",    gap:CAP-v,   dir:"under"};
+  if(v<TAX)    return {word:"under the tax line",gap:TAX-v,  dir:"under"};
+  if(v<AP1)    return {word:"under the first apron",gap:AP1-v,dir:"under"};
+  if(v<AP2)    return {word:"under the second apron",gap:AP2-v,dir:"under"};
+  return {word:"past the second apron", gap:v-AP2, dir:"over"};
+}
+function toolsLeft(d){ return ["ntmle","roommle","taxmle","bae"].filter(t=>toolLegal(d,t)); }
+const TOOLLBL={ntmle:"mid-level $15,044,000",roommle:"room mid-level $9,366,000",
+  taxmle:"taxpayer mid-level $6,064,000",bae:"bi-annual $5,477,000",room:"cap room",min:"minimum"};
+
+/* ============================== RIVAL POLICIES (INVENTED) ============= */
+function pickPolicy(d,board,day,pol){
+  const openFirst=JOBS.slice().sort((a,b)=>RANK[d.jobs[a]]-RANK[d.jobs[b]]);
+  const tools=["room","ntmle","roommle","taxmle","bae","min"];
+  const options=[];
+  board.forEach(card=>openFirst.forEach(job=>tools.forEach(t=>{
+    if(legalSign(d,card,job,t)===null) options.push({card:card.id,job:job,tool:t,c:card});
+  })));
+  if(!options.length) return {card:null};
+  const gain=o=>RANK[STATE_OF[o.c.tier]]-RANK[d.jobs[o.job]];
+  const need=d.slots<ROSTER_MIN;
+  switch(pol){
+    case "SPEND": // spend to the line: biggest reachable price, prefer a job that improves
+      options.sort((a,b)=>(gain(b)>0)-(gain(a)>0)||b.c.price-a.c.price); break;
+    case "HOLD":
+      if(!(need&&day===3)) return {card:null};
+      options.sort((a,b)=>a.c.price-b.c.price); break;
+    case "COPYEXP": // copy the most expensive card on the board, job be damned
+      options.sort((a,b)=>b.c.price-a.c.price); break;
+    case "ANCHORHUNT": // the trap: highest tier reachable, biggest tool first
+      options.sort((a,b)=>RANK[STATE_OF[b.c.tier]]-RANK[STATE_OF[a.c.tier]]
+        ||(TERM[b.tool]||1)-(TERM[a.tool]||1)||b.c.price-a.c.price); break;
+    case "MINIMUMS":
+      options.sort((a,b)=>a.c.price-b.c.price||gain(b)-gain(a)); break;
+    case "CHEAPOPEN":
+      options.sort((a,b)=>gain(b)-gain(a)||a.c.price-b.c.price); break;
+    default: // BALANCED: fix the weakest job with the smallest tool that reaches
+      options.sort((a,b)=>gain(b)-gain(a)||a.c.price-b.c.price||(TERM[a.tool]||1)-(TERM[b.tool]||1));
+  }
+  const o=options[0];
+  if(pol!=="SPEND"&&pol!=="COPYEXP"&&pol!=="ANCHORHUNT"&&gain(o)<=0&&!need) return {card:null};
+  return {card:o.card,job:o.job,tool:o.tool};
+}
+const DEFAULT_POL={DET:"BALANCED",BKN:"BALANCED",MEM:"CHEAPOPEN",MIL:"BALANCED",OKC:"HOLD",DEN:"MINIMUMS"};
+
+/* ============================== RUN A WHOLE ROOM ===================== */
+function runRoom(focalId,focalPolicy){
+  const desks=CLUBS.map(c=>newDesk(c,c.id===focalId?focalPolicy:DEFAULT_POL[c.id]));
+  const board=BOARD_SEED.map(c=>({...c}));
+  for(let day=1;day<=3;day++){
+    const claims=desks.map((d,i)=>{ const p=pickPolicy(d,board,day,d.policy); return {d:i,...p}; });
+    resolveDay(desks,claims,board,day,null);
+  }
+  const res=desks.map(d=>{ const s=settle(d); return {d:d,s:s,met:mandateMet(d,s)}; });
+  return {desks:desks,res:res,board:board};
+}
+
+/* ============================== LIVE GAME ============================ */
+let G=null;
+function startGame(clubId){
+  G={desks:CLUBS.map(c=>newDesk(c,c.id===clubId?null:DEFAULT_POL[c.id])),
+     board:BOARD_SEED.map(c=>({...c})),me:CLUBS.findIndex(c=>c.id===clubId),
+     day:1,sel:{card:null,job:null,tool:null},log:[],done:false};
+  $("setup").style.display="none"; $("game").style.display="";
+  $("endPanel").style.display="none";
+  log("You took the job at "+CLUBS[G.me].name+". Three weeks to camp.");
+  render();
+}
+function log(s){ G.log.unshift(s); }
+function me(){ return G.desks[G.me]; }
+
+function render(){
+  const d=me(), c=CLUBS[G.me];
+  $("dayBanner").innerHTML = G.done
+    ? "<b>The summer is over.</b> Camp opens. Below are the room's five walls — five different orderings that disagree with each other, which is the point."
+    : "<b>CAMP DAY "+G.day+" of 3.</b> One claim per desk per day. Five other desks are claiming at the same time. A card you lose is gone for good.";
+  $("wm").textContent=c.name;
+  $("facts").textContent=c.market+" · "+c.bldg+" · "+c.note;
+  $("mandate").innerHTML="<b>THE OWNER:</b> "+d.mandate;
+
+  /* line meter */
+  const lo=130000000, hi=235000000, pct=v=>((v-lo)/(hi-lo))*100;
+  let m='<div class="fill" style="width:'+Math.max(0,Math.min(100,pct(d.committed[0])))+'%"></div>';
+  const marks=[[FLOOR,"floor","FLOOR "+Mm(FLOOR)],[CAP,"cap","CAP "+Mm(CAP)],[TAX,"tax","TAX "+Mm(TAX)],
+               [AP1,"ap1","1ST APRON "+Mm(AP1)],[AP2,"ap2","2ND APRON "+Mm(AP2)]];
+  marks.forEach(k=>{ m+='<div class="mark '+k[1]+'" style="left:'+pct(k[0])+'%"></div>'+
+    '<div class="lbl" style="left:'+pct(k[0])+'%">'+k[2]+'</div>'; });
+  if(d.hardCap) m+='<div class="mark wall" style="left:'+pct(d.hardCap)+'%"></div>';
+  m+='<div class="you" style="left:'+Math.max(3,Math.min(97,pct(d.committed[0])))+'%">YOU '+M(d.committed[0])+'</div>';
+  $("meter").innerHTML=m;
+
+  /* jobs */
+  $("jobs").innerHTML=JOBS.map(j=>'<div class="job '+d.jobs[j]+'"><div class="jn">'+JOBNAME[j]+
+    '</div><div class="js">'+d.jobs[j]+'</div><div class="who">'+(d.who[j]||"")+'</div></div>').join("");
+
+  /* books */
+  const yr=["2026-27","2027-28","2028-29"], w=v=>Math.max(2,Math.round(v/1.6e6));
+  let t='<tr><th>Line</th><th>'+yr[0]+'</th><th>'+yr[1]+'</th><th>'+yr[2]+'</th></tr>';
+  t+='<tr><td>Contracts already on the books</td>'+[0,1,2].map(k=>{
+      const dd=d.dead.reduce((a,x)=>a+(2027+k<=x.last?x.per:0),0);
+      const base=CLUBS[G.me].committed[k]-(k===0?d.dead.reduce((a,x)=>a+x.per,0):0);
+      return '<td class="n">'+M(Math.max(0,base))+' <span class="bar" style="width:'+w(Math.max(0,base))+'px"></span></td>';
+    }).join("")+'</tr>';
+  d.dead.forEach(x=>{ t+='<tr class="ghostrow"><td>'+x.n+' — waived, still paid</td>'+[0,1,2].map(k=>{
+      const on=(2027+k)<=x.last;
+      return '<td class="n">'+(on?M(x.per)+' <span class="bar dead" style="width:'+w(x.per)+'px"></span>':"—")+'</td>';
+    }).join("")+'</tr>';
+    if(x.last>2029) t+='<tr class="ghostrow"><td colspan="4" class="offgrid">…and '+M(x.per)+
+      ' a year past the right edge of this grid, through '+x.last+"-"+String(x.last+1).slice(2)+'.</td></tr>';
+  });
+  d.signed.forEach(s=>{ t+='<tr><td>'+s.nm+' — signed on Day '+s.day+' ('+TOOLLBL[s.tool]+', '+s.term+" yr"+(s.term>1?"s":"")+')</td>'+
+      [0,1,2].map(k=>{ const on=k<s.term, v=Math.round(s.price*Math.pow(1+RAISE,k));
+        return '<td class="n">'+(on?M(v)+' <span class="bar new" style="width:'+w(v)+'px"></span>':"—")+'</td>'; }).join("")+'</tr>'; });
+  t+='<tr><th>Committed</th>'+[0,1,2].map(k=>'<th class="n">'+M(d.committed[k])+'</th>').join("")+'</tr>';
+  $("booksTbl").innerHTML=t;
+
+  const nl=nearestLine(d);
+  $("kCommit").textContent=M(d.committed[0]);
+  $("kSlots").textContent=d.slots+" of 15 (you need 14)";
+  $("kRoom").textContent=underCap(d)?M(room(d)):"none — you are over the cap";
+  $("kWall").innerHTML=d.hardCap?('<span class="bad">'+M(d.hardCap)+"</span> — you drew it with "+d.cause):'<span class="dim">no wall</span>';
+
+  /* board */
+  $("boardCount").textContent="· "+G.board.filter(c=>!c.camp&&!c.unlimited).length+" named players left (each can go to one desk only). Contracts priced at an exception or the minimum are a price, not a person — they never run out.";
+  $("board").innerHTML=G.board.map(card=>{
+    const anyLegal=JOBS.some(j=>["room","ntmle","roommle","taxmle","bae","min"].some(t=>legalSign(d,card,j,t)===null));
+    return '<div class="card '+(G.sel.card===card.id?"sel":"")+(anyLegal?"":" unreach")+'" data-card="'+card.id+'">'+
+      '<div class="top"><span class="nm">'+card.nm+'</span><span class="pr">'+M(card.price)+'</span></div>'+
+      '<span class="chip '+card.tier+'">'+card.tier+' · '+card.fits.map(f=>JOBNAME[f]).join(" / ")+'</span>'+
+      '<div class="sr"><b>Good:</b> '+card.s+'<br><b>Risk:</b> '+card.r+
+      (anyLegal?"":'<br><span class="bad">Nothing you hold reaches him today.</span>')+'</div></div>';
+  }).join("");
+  $("board").querySelectorAll(".card").forEach(el=>el.onclick=()=>{
+    G.sel.card=el.dataset.card; G.sel.job=null; G.sel.tool=null; render(); });
+
+  /* job + tool pickers */
+  const card=G.board.find(c=>c.id===G.sel.card);
+  $("jobPick").innerHTML = card
+    ? '<div class="sub" style="font-size:.72rem;margin-bottom:4px">Which job does he fill?</div>'+
+      card.fits.map(j=>'<button data-job="'+j+'" style="margin-right:6px'+(G.sel.job===j?';border-color:var(--accent);background:#241d0c':'')+'">'+
+        JOBNAME[j]+' <span class="dim">('+d.jobs[j]+')</span></button>').join("")
+    : '<div class="sub">Pick a card from the board.</div>';
+  $("jobPick").querySelectorAll("button").forEach(b=>b.onclick=()=>{G.sel.job=b.dataset.job;G.sel.tool=null;render();});
+
+  const tl=["room","ntmle","roommle","taxmle","bae","min"];
+  $("tools").innerHTML = card&&G.sel.job ? tl.map(t=>{
+      const why=legalSign(d,card,G.sel.job,t);
+      const cap=t==="room"?room(d):toolCapacity(d,t);
+      return '<div class="tool '+(why?"no":"")+(G.sel.tool===t?" sel":"")+'" data-tool="'+t+'">'+
+        '<span>'+TOOLLBL[t]+'<div class="tt">'+(TERM[t]||1)+" year"+((TERM[t]||1)>1?"s":"")+
+        (t==="ntmle"||t==="bae"?" · draws a wall at "+M(AP1)+" until next July":"")+'</div></span>'+
+        '<span class="tt">'+(why?why:"reaches "+M(cap))+'</span></div>';
+    }).join("") : '<div class="sub">Then choose what pays for him.</div>';
+  $("tools").querySelectorAll(".tool:not(.no)").forEach(el=>el.onclick=()=>{G.sel.tool=el.dataset.tool;render();});
+
+  /* foregone panel — live, named, priced */
+  if(card&&G.sel.job&&G.sel.tool&&!legalSign(d,card,G.sel.job,G.sel.tool)){
+    const probe=JSON.parse(JSON.stringify(d)); applySign(probe,card,G.sel.job,G.sel.tool,G.day);
+    const nowOut=G.board.filter(x=>x.id!==card.id&&!x.camp&&!x.unlimited)
+      .filter(x=>JOBS.some(j=>tl.some(t=>legalSign(d,x,j,t)===null)))
+      .filter(x=>!JOBS.some(j=>tl.some(t=>legalSign(probe,x,j,t)===null)));
+    let f="<b>If you sign him this way:</b><br>";
+    if(G.sel.tool==="ntmle"||G.sel.tool==="bae") f+="• your wall goes up at <b>"+M(AP1)+"</b> and stays up until next July.<br>";
+    if(G.sel.tool==="room") f+="• you become a room club: the mid-level exception is gone and you get the room mid-level, <b>"+M(ROOMMLE)+"</b>, instead.<br>";
+    const yrs=[1,2].filter(k=>k<(TERM[G.sel.tool]||1));
+    if(yrs.length) f+="• your books hold "+yrs.map(k=>"<b>"+M(Math.round(card.price*Math.pow(1+RAISE,k)))+"</b> in "+yr[k]).join(" and ")+".<br>";
+    f+="• "+JOBNAME[G.sel.job]+" goes "+d.jobs[G.sel.job]+" → <b>"+
+       (RANK[STATE_OF[card.tier]]>RANK[d.jobs[G.sel.job]]?STATE_OF[card.tier]:d.jobs[G.sel.job]+" (no change — already covered)")+"</b>.<br>";
+    f+= nowOut.length? "• these go out of reach: <b>"+nowOut.map(x=>x.nm+" "+M(x.price)).join(", ")+"</b>."
+                     : '• nothing else on the board goes out of reach.';
+    $("foregone").innerHTML=f;
+  } else $("foregone").innerHTML='<span class="dim">Pick a card, a job and a tool. This panel names, in dollars, exactly what the claim would cost you elsewhere — and it is frozen the moment you press.</span>';
+
+  $("commitBtn").disabled = !(card&&G.sel.job&&G.sel.tool&&!legalSign(d,card,G.sel.job,G.sel.tool));
+  $("log").innerHTML=G.log.map(s=>"<div>"+s+"</div>").join("");
+  $("claimPanel").style.display=G.done?"none":"";
+}
+
+function commitDay(pass){
+  const d=me();
+  const claims=G.desks.map((dd,i)=> i===G.me
+    ? (pass?{d:i,card:null}:{d:i,card:G.sel.card,job:G.sel.job,tool:G.sel.tool})
+    : {d:i,...pickPolicy(dd,G.board,G.day,dd.policy)});
+  const mine=claims[G.me];
+  const before=d.signed.length;
+  resolveDay(G.desks,claims,G.board,G.day,g=>{
+    log("Day "+G.day+": <b>"+g.card.nm+"</b> "+M(g.card.price)+" went to "+g.winner+" on a "+g.term+"-year deal"+
+        (g.contested>1?" ("+g.contested+" desks wanted him)":"")+".");
+  });
+  if(pass) log("Day "+G.day+": you entered no claim. You keep your money and your tools — and the board shrank anyway.");
+  else if(d.signed.length>before){ const s=d.signed[d.signed.length-1];
+    log("Day "+G.day+": <b>you signed "+s.nm+"</b> for "+M(s.price)+" with the "+TOOLLBL[s.tool]+", "+s.term+" year"+(s.term>1?"s":"")+".");
+    if(d.hardCap&&d.cause&&d.cause.indexOf("Day "+G.day)>=0) log("→ You drew a wall at <b>"+M(d.hardCap)+"</b>. It stands until next July.");
+  } else if(mine.card){
+    const why=legalSign(d,BOARD_SEED.find(c=>c.id===mine.card)||{fits:[],price:0},mine.job,mine.tool);
+    const l=d.lost[d.lost.length-1];
+    if(why) log("Day "+G.day+": your claim was refused — "+why+". Your money and your tool are untouched.");
+    else log("Day "+G.day+": you lost <b>"+(l?l.nm:"the card")+"</b>"+(l?" to "+l.to+", who offered "+l.term+" years":"")+
+        ". Your tool is still unspent — the day is what it cost you."); }
+  G.sel={card:null,job:null,tool:null};
+  G.day++;
+  if(G.day>3){ G.done=true; endGame(); }
+  render();
+}
+
+function endGame(){
+  const results=G.desks.map(d=>{ const s=settle(d); return {d:d,s:s,met:mandateMet(d,s)}; });
+  const mk=(title,sub,rows)=>'<div class="wall"><h4>'+title+'</h4><ul>'+rows.map(r=>
+     '<li class="'+(r.i===G.me?"me":"")+'">'+r.t+'</li>').join("")+'</ul>'+
+     '<div class="dim" style="font-size:.63rem;margin-top:5px">'+sub+'</div></div>';
+  const ord=(f,fmt,asc)=>G.desks.map((d,i)=>({i:i,v:f(d),d:d}))
+     .sort((a,b)=>asc?a.v-b.v:b.v-a.v).map(x=>({i:x.i,t:x.d.name+" — "+fmt(x.v,x.d)}));
+  $("wallsBox").innerHTML=
+    mk("Deepest","how many jobs you raised, and the shape you got",
+       ord(d=>anchored(d)*10+covered(d), (v,d)=>shape(d)+" · "+anchored(d)+" anchored, "+covered(d)+" covered, raised "+raised(d)))+
+    mk("Still holding","tools you did not spend, and whether you drew a wall",
+       ord(d=>toolsLeft(d).length*10-(d.hardCap?1:0),
+        (v,d)=>(toolsLeft(d).length||"no")+" tool"+(toolsLeft(d).length===1?"":"s")+" left · "+(d.hardCap?"walled at "+Mm(d.hardCap):"no wall")))+
+    mk("Spent this summer","what you added to this year's payroll",
+       ord(d=>spentThisSummer(d), v=>Mm(v)))+
+    mk("Promised later","what you added to 2027-28 and 2028-29",
+       ord(d=>promisedLater(d), v=>Mm(v)))+
+    mk("The twins","same club, two desks — everything different is a decision",
+       G.desks.map((d,i)=>({i:i,t:d.name+" — "+shape(d)+" · "+(d.hardCap?"walled":"free")})));
+  let n="";
+  results.forEach(r=>{ if(r.d===me()){
+    n+="<h3>Your summer</h3><div class='rules'>";
+    n+="Shape: <b>"+shape(r.d)+"</b> (ANCHORED / COVERED / THIN / OPEN, five jobs).<br>";
+    n+="Committed: <b>"+M(r.d.committed[0])+"</b> — "+Mm(nearestLine(r.d).gap)+" "+nearestLine(r.d).word+".<br>";
+    n+="Contracts: <b>"+r.d.slots+"</b>"+(r.d.slots<ROSTER_MIN?' <span class="bad">— you are below the fourteen-contract minimum</span>':"")+".<br>";
+    if(r.s.shortfall>0) n+='<span class="bad">The floor: you are '+M(r.s.shortfall)+
+      " below "+M(FLOOR)+". You must pay that, and it goes to players across the league. It does not buy you a player.</span><br>";
+    if(r.s.emptyCharge) n+='<span class="warn">Empty-slot charge: '+M(r.s.emptyCharge)+" added to your payroll for carrying fewer than twelve.</span><br>";
+    n+="Tools still in hand: <b>"+(toolsLeft(r.d).map(t=>TOOLLBL[t]).join(", ")||"none")+"</b>.<br>";
+    n+="Wall: <b>"+(r.d.hardCap?M(r.d.hardCap)+" — you drew it with "+r.d.cause:"none")+"</b>.<br>";
+    n+="Books already promised: <b>"+M(r.d.committed[1])+"</b> in 2027-28 and <b>"+M(r.d.committed[2])+"</b> in 2028-29.<br>";
+    n+="The owner's mandate: <b class='"+(r.met?"good":"bad")+"'>"+(r.met?"met":"not met")+"</b>.<br>";
+    if(r.d.lost.length) n+="Gone for good: "+r.d.lost.map(l=>l.nm+" (to "+l.to+", "+l.term+" years)").join("; ")+".";
+    n+="</div>";
+  }});
+  /* FL1 check on this room's own play — the class evidence the reveal is required to contain */
+  const pairs=[];
+  G.desks.forEach((a,i)=>G.desks.forEach((b,j)=>{ if(i>=j) return;
+    const better=(x,y)=>anchored(x)>=anchored(y)&&covered(x)>=covered(y)&&(anchored(x)>anchored(y)||covered(x)>covered(y));
+    if(spentThisSummer(a)<spentThisSummer(b)&&better(a,b)) pairs.push(a.name+" paid "+Mm(spentThisSummer(a))+" this summer and got more roster than "+b.name+" paid "+Mm(spentThisSummer(b))+" for");
+    if(spentThisSummer(b)<spentThisSummer(a)&&better(b,a)) pairs.push(b.name+" paid "+Mm(spentThisSummer(b))+" this summer and got more roster than "+a.name+" paid "+Mm(spentThisSummer(a))+" for"); }));
+  n+='<div class="rules" style="margin-top:10px"><b>FL1 — is the best team the most expensive team?</b> '+
+     (pairs.length? "This room's own evidence: "+pairs.slice(0,3).join("; ")+"."
+      : 'This room did not produce an instance. The projector says so honestly and the teacher\'s card carries the real one: New Orleans, ninth-highest payroll in the league at $212,290,592, not a contender (§4.1 #12).')+'</div>';
+  $("endNotes").innerHTML=n;
+  $("endPanel").style.display="";
+}
+
+/* ============================== PROBE ============================== */
+const STRATS=[["SPEND","spend to the line"],["HOLD","hold everything"],
+  ["COPYEXP","copy the most expensive"],["BALANCED","balanced"],["ANCHORHUNT","THE TRAP: anchor hunt, biggest tool first"]];
+function runProbe(){
+  const focals=["DET","BKN","MEM","MIL","OKC","DEN"];
+  const store={};
+  let h='<table class="probe"><tr><th>club</th><th>strategy</th><th>shape</th><th>anch</th><th>cov</th><th>raised</th>'+
+        '<th>committed</th><th>position</th><th>wall</th><th>tools left</th>'+
+        '<th>spent this summer</th><th>promised later</th><th>slots</th><th>floor shortfall</th><th>mandate</th></tr>';
+  focals.forEach(f=>{ STRATS.forEach(([sg,lbl])=>{
+    const r=runRoom(f,sg); const i=CLUBS.findIndex(c=>c.id===f); const d=r.desks[i]; const st=r.res[i];
+    store[f+"|"+sg]={d:d,st:st,shape:shape(d),anch:anchored(d),cov:covered(d),raised:raised(d),
+      tools:toolsLeft(d).length,spent:spentThisSummer(d),promised:promisedLater(d),
+      met:st.met?1:0,slots:d.slots,wall:d.hardCap,short:st.s.shortfall};
+    h+='<tr><td>'+f+'</td><td>'+lbl+'</td><td>'+shape(d)+'</td><td>'+anchored(d)+'</td><td>'+covered(d)+'</td><td>'+raised(d)+'</td>'+
+       '<td>'+M(d.committed[0])+'</td><td>'+Mm(nearestLine(d).gap)+" "+nearestLine(d).word+'</td>'+
+       '<td>'+(d.hardCap?Mm(d.hardCap):"—")+'</td><td>'+toolsLeft(d).length+'</td>'+
+       '<td>'+Mm(spentThisSummer(d))+'</td><td>'+Mm(promisedLater(d))+'</td><td>'+d.slots+'</td>'+
+       '<td class="'+(st.s.shortfall?"bad":"")+'">'+(st.s.shortfall?M(st.s.shortfall):"—")+'</td>'+
+       '<td class="'+(st.met?"good":"bad")+'">'+(st.met?"met":"NOT MET")+'</td></tr>';
+  }); h+='<tr><td colspan="15" style="background:#0d1014;border:0;height:6px"></td></tr>'; });
+  h+='</table>';
+
+  /* ---- Dominance. This is how a dominant strategy is caught on the bench. ----
+     A strategy dominates if, at some club, it is at least as good as EVERY other
+     strategy on all four things a desk walks out holding — depth, tools unspent,
+     dollars promised to later years (less is better), and the owner's mandate —
+     and strictly better than one of them on something. */
+  let dom="<h3 style='margin-top:14px'>Dominance checks</h3><div class='rules'>";
+  let found=[];
+  focals.forEach(f=>{
+    const legal=STRATS.map(x=>x[0]).filter(o=>store[f+"|"+o].met);   // obligation-meeting plans only
+    legal.forEach(sg=>{
+      const a=store[f+"|"+sg];
+      const beatsAll=legal.every(o=>{ if(o===sg) return true; const b=store[f+"|"+o];
+        return a.anch>=b.anch && a.cov>=b.cov && a.tools>=b.tools && a.promised<=b.promised; });
+      const strict=legal.some(o=>{ if(o===sg) return false; const b=store[f+"|"+o];
+        return a.anch>b.anch || a.cov>b.cov || a.tools>b.tools || a.promised<b.promised; });
+      if(beatsAll&&strict) found.push(f+" / "+sg);
+    });
+  });
+  dom += found.length
+    ? '<div class="bad"><b>DOMINANT STRATEGY FOUND:</b> '+found.join(", ")+
+      '. At that club this plan is at least as good as every other obligation-meeting plan on anchored jobs, on covered jobs, on tools kept AND on dollars promised later, and strictly better on one of them. The model is broken there and the board or the seat must be retuned.</div>'
+    : '<div class="good">No plan is weakly best on all four of {anchored jobs, covered jobs, tools kept, dollars promised later} at any of the six clubs. An extra anchored job and an extra covered job are not comparable — that is what a shape buys you that a score does not — and every year of term you buy is a year you promised. Worth knowing: an earlier cut of this prototype summed the four coverage states into ONE number, and under that scalar "balanced" DID dominate at Detroit. The scalar was the defect, not the strategy.</div>';
+
+  /* ---- P-PASS: does the TIME CUT fallback dominate acting? ---- */
+  dom+="<br><b>P-PASS — does doing nothing beat playing?</b> (the fallback must never dominate a desk's best available action)<br>";
+  focals.forEach(f=>{ const hd=store[f+"|HOLD"];
+    const beaten=STRATS.some(([o])=>{ if(o==="HOLD") return false; const b=store[f+"|"+o];
+      return b.anch>hd.anch || b.cov>hd.cov || b.met>hd.met; });
+    dom+='<span class="'+(beaten?"good":"bad")+'">'+f+": all-PASS "+(beaten?"is beaten by at least one active plan":"IS NOT BEATEN BY ANY ACTIVE PLAN — state sludge")+
+      " (hold: "+hd.shape+", raised "+hd.raised+", mandate "+(hd.met?"met":"NOT MET")+
+      "; best active covered "+Math.max(...STRATS.filter(x=>x[0]!=="HOLD").map(x=>store[f+"|"+x[0]].cov))+" vs "+hd.cov+")</span><br>"; });
+
+  /* ---- P-TWIN: does the situation decide more than the decision? ----
+     The territory's named risk, stated as a number. All three dimensions are
+     decision-relative on purpose: an absolute ordering measures the inheritance. */
+  dom+="<br><b>P-TWIN — does the club you inherited move the outcome more than the plan you chose?</b><br>";
+  [["raised","jobs raised",v=>v],["spent","spent this summer",Mm],["promised","promised to later years",Mm]].forEach(([dim,lbl,fmt])=>{
+    let within=0,between=0;
+    focals.forEach(f=>{ const v=STRATS.map(([sg])=>store[f+"|"+sg][dim]); within=Math.max(within,Math.max(...v)-Math.min(...v)); });
+    STRATS.forEach(([sg])=>{ const v=focals.map(f=>store[f+"|"+sg][dim]); between=Math.max(between,Math.max(...v)-Math.min(...v)); });
+    const ok=within>=between;
+    dom+='<span class="'+(ok?"good":"bad")+'">'+lbl+": widest spread across plans at one club = "+fmt(within)+
+      "; widest spread across clubs for one fixed plan = "+fmt(between)+" (ratio "+(between?(within/between).toFixed(2):"n/a")+") — "+
+      (ok?"the plan moves it at least as much as the club does.":
+          "THE CLUB MOVES IT MORE THAN THE PLAN DOES. This is the territory's named failure and the board or the seat set must be retuned.")+'</span><br>';
+  });
+
+  /* ---- FL1: no monotone map from money spent to roster shape ---- */
+  dom+="<br><b>FL1 — is the best team the most expensive team?</b><br>";
+  let inversions=[];
+  focals.forEach(f=>STRATS.forEach(([s1])=>STRATS.forEach(([s2])=>{
+    const a=store[f+"|"+s1], b=store[f+"|"+s2];
+    if(a.spent<b.spent && a.anch>=b.anch && a.cov>=b.cov && a.met>=b.met)
+      inversions.push(f+": \""+s1+"\" paid "+Mm(a.spent)+" and got at least as much roster as \""+s2+"\" paid "+Mm(b.spent)+" for");
+  })));
+  dom += inversions.length
+    ? '<span class="good">'+inversions.length+" cases where paying less bought at least as much. Examples: "+inversions.slice(0,3).join("; ")+'.</span>'
+    : '<span class="bad">NO INVERSION FOUND — spending more never bought less. The board is monotone in price and the module teaches FL1 by construction.</span>';
+
+  /* ---- recoverability ---- */
+  dom+="<br><br><b>Recoverability — is every mandate satisfiable?</b><br>";
+  focals.forEach(f=>{ const any=STRATS.some(([sg])=>store[f+"|"+sg].met);
+    dom+='<span class="'+(any?"good":"bad")+'">'+f+": "+(any?"at least one plan meets the owner's mandate":"NO PLAN MEETS THE MANDATE — this seat is unplayable")+'</span><br>'; });
+  dom+="</div>";
+  $("probeOut").innerHTML=h+dom;
+  $("probePanel").style.display="";
+  $("probePanel").scrollIntoView({behavior:"smooth"});
+}
+
+/* ============================== MODEL PANEL ======================== */
+$("modelBox").textContent=
+`SOURCED CONSTANTS  (NBA FINANCIAL TRUTH DOSSIER, 2026-09-03)
+  CAP        = ${M(CAP)}        §8.1 #1  official-nba  2026-06-30
+  FLOOR      = ${M(FLOOR)}        §8.1 #1,#2  = 0.90 x CAP exactly
+  TAX        = ${M(TAX)}        §8.1 #1,#3  = 1.215 x CAP
+  APRON 1    = ${M(AP1)}        §8.1 #1
+  APRON 2    = ${M(AP2)}        §8.1 #1
+  NTMLE      = ${M(NTMLE)}   4 yrs, 5% raises   §8.1 #7
+  ROOM MLE   = ${M(ROOMMLE)}    3 yrs             §8.1 #7
+  TAX MLE    = ${M(TAXMLE)}    2 yrs             §8.1 #7
+  BAE        = ${M(BAE)}    2 yrs   SINGLE SOURCE §7.4 — non-load-bearing
+  MINIMUM    = ${M(MINR)} (rookie) / ${M(MINV)} (10+ yrs)   §1.2
+  ROSTER     = 15 max, 14 min, empty-slot charge ${M(MINR)} per slot below 12   §8.1 #8, §2.5
+  RAISES     = 5% per year on exception contracts   §1.2
+
+TOOL LEGALITY  (transcribed from §2.3 / §2.4)
+  under the cap        -> cap ROOM (4 yrs here; 5 with Bird rights in L3) and, once room is
+                          used, the ROOM MLE. An under-cap club has NO non-taxpayer MLE.
+  over the cap,
+    below apron 1      -> NTMLE, BAE, TAXPAYER MLE, minimums
+  above apron 1        -> TAXPAYER MLE, minimums.  No NTMLE. No BAE.
+  above apron 2        -> minimums only. NO mid-level exception of any kind.
+  USING THE NTMLE OR THE BAE draws a hard cap at ${M(AP1)} for the rest of the
+  league year — a line you may not cross under any circumstance (§2.3).
+  USING CAP ROOM permanently costs you the NTMLE and the BAE this summer (§2.4).
+
+SIGNING LEGALITY
+  legal(card, job, tool) =
+        card.fits contains job
+    AND toolLegal(tool)
+    AND card.price <= toolCapacity(tool)          (room -> CAP - committed[0])
+    AND slots < 15
+    AND (hardCap == 0 OR committed[0] + price <= hardCap)
+
+APPLY
+  committed[0] += price
+  committed[k] += round(price * 1.05^k)   for 1 <= k < term(tool)
+  slots += 1 ;  tool marked used
+  jobs[job] = max(jobs[job], ANCHOR->ANCHORED | ROTATION->COVERED | CAMP->THIN)
+
+TERM BY TOOL  (term is bargaining power — §8.1 #10: your own player 5 yrs/8%, elsewhere 4/5%)
+  minimum 1  <  BAE 2 = taxpayer MLE 2  <  room MLE 3  <  cap room 4 = NTMLE 4
+
+CONTENTION AT DAY CLOSE  (in-model only — never HTTP arrival time, never Math.random)
+  1. LONGER CONTRACT WINS.                                (real: §8.1 #10)
+  2. tie -> the club where his job is OPEN beats THIN beats COVERED.   (INVENTED)
+  3. tie -> the club holding fewer standard contracts.                 (INVENTED)
+  4. tie -> lower desk order, disclosed before play.                   (INVENTED)
+  Losers keep the money AND the tool. What the claim cost them is the DAY, and the
+  player is gone permanently — not benched.
+  CONTRACTS PRICED AT AN EXCEPTION OR THE MINIMUM ARE UNLIMITED (INVENTED): they are a
+  price, not a person. Only the eight NAMED players are scarce. Your toolbox is the
+  limit — each exception once — not the supply. This is what keeps 14 reachable at
+  every seat, which is the recoverability invariant.
+
+END OF SUMMER
+  if slots < 12 : committed[0] += (12 - slots) * ${M(MINR)}            §2.5
+  shortfall = max(0, ${M(FLOOR)} - committed[0])                 §2.1
+      -> paid to players league-wide. It does not buy you a player.
+
+THE TWO BOOKS — THEY DO NOT ADD UP AND NOTHING SUMS THEM
+  SHAPE   : five jobs, each OPEN < THIN < COVERED < ANCHORED. Ordinal, five cells.
+  HOLDING : dollars under your nearest line, tools unspent by name, slots free,
+            and whether you drew a wall and where.
+  There is no team rating, no OVR, no franchise value, no fan trust, no win model,
+  and no function anywhere in this file that combines the two books into one number.
+
+INVENTED, NOT SOURCED — see the header comment for the full list
+  tier (ANCHOR/ROTATION/CAMP) · starting slot counts · opening job shapes ·
+  out-year books · the five job slots · the board's composition · tie-breaks 2-4 ·
+  rival desk policies · unlimited supply of exception- and minimum-priced contracts ·
+  the owner's mandate per club
+
+WHAT THE STRATEGY PROBE ALREADY CAUGHT IN THIS MODEL (all four repaired except the last)
+  1. Oklahoma City: doing nothing was weakly better than every active plan. Repaired by
+     giving OKC an open centre, 13 contracts, and a roster mandate instead of a line mandate.
+  2. Brooklyn and Milwaukee: mandates that other desks could make unreachable. Repaired.
+     Detroit went 12 -> 11 contracts because at 12 it could not clear the floor with
+     camp contracts alone.
+  3. An earlier cut SUMMED the four coverage states into one number. Under that scalar,
+     "balanced" DOMINATED at Detroit. Under the vector the model actually holds — anchored
+     jobs and covered jobs, which are not comparable — nothing dominates anywhere. The
+     scalar was the defect. This is the best argument in the whole prototype for refusing
+     a team-quality score.
+  4. STILL OPEN: P-TWIN fails marginally on "promised to later years" (ratio 0.97).
+     Detroit has room and can promise $85.7M of future money; Denver has none and can
+     promise nothing. Press STRATEGY PROBE to see it.`;
+
+/* ============================== BOOT ============================== */
+$("setupList").innerHTML=CLUBS.map(c=>{
+  const d=newDesk(c,null), nl=nearestLine(d);
+  return "<div style='padding:5px 0;border-bottom:1px solid #1a1f27'><b>"+c.name+"</b> — "+
+    M(c.committed[0])+" committed, "+Mm(nl.gap)+" "+nl.word+", "+c.slots+" contracts"+
+    (c.dead.length?", dead money "+M(c.dead.reduce((a,x)=>a+x.per,0)):"")+
+    ".<br><span class='dim'>"+c.note+"</span></div>";
+}).join("");
+$("clubPick").innerHTML=CLUBS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("");
+$("startBtn").onclick=()=>startGame($("clubPick").value);
+$("newRun").onclick=()=>{ $("setup").style.display=""; $("game").style.display="none"; };
+$("commitBtn").onclick=()=>commitDay(false);
+$("passBtn").onclick=()=>commitDay(true);
+$("clearBtn").onclick=()=>{ G.sel={card:null,job:null,tool:null}; render(); };
+$("probeBtn").onclick=runProbe;
+</script>
+</body>
+</html>

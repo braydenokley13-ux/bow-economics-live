@@ -1,4 +1,5 @@
 import { ApiError } from "../shared/api.js";
+import { renderSameLineL1Board } from "../shared/sameLineL1Board.js";
 import { crestStyle } from "../shared/crest.js";
 import { createFreshness } from "../shared/freshness.js";
 import { startPolling } from "../shared/poll.js";
@@ -126,6 +127,12 @@ function render(payload: BoardPayload): void {
   }
 
   const view = payload.view;
+  if (view["module"] === "m1l1-the-window") {
+    const frame = renderSameLineL1Board(view, payload.phase);
+    backdrop.classList.toggle("peak", frame.peak);
+    stage.innerHTML = frame.html;
+    return;
+  }
   if (view["module"] === "m1l1-draft-day") {
     const mode = String(view["mode"] ?? "");
     backdrop.classList.toggle("peak", PEAK_MODES.has(mode));

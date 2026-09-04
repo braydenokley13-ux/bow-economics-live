@@ -84,6 +84,7 @@ let poller: { stop: () => void } | null = null;
 const TRADE_DEADLINE_ID = "m1l2-trade-deadline";
 const DRAFT_DAY_ID = "m1l1-draft-day";
 const FREE_AGENCY_ID = "m1l3-free-agency";
+const THE_WINDOW_ID = "m1l1-the-window";
 const FULL_HOUSE_ID = "m2l1-full-house";
 const HOST_LEAGUE_ID = "m2l2-host-league";
 const WRITE_RULE_ID = "m2l3-write-rule";
@@ -265,7 +266,7 @@ async function createSession(): Promise<void> {
   const payload = await apiFetch<TeacherPayload>("/api/sessions", {
     method: "POST",
     headers: setupAuthHeaders(),
-    body: JSON.stringify({ lessonModuleId, title, sourceSessionId }),
+    body: JSON.stringify({ lessonModuleId, title, sourceSessionId, gradeBand: $<HTMLSelectElement>("gradeBand").value }),
   });
   if (!payload.teacherKey) {
     statusEl.textContent = "server did not issue a teacher key — cannot continue safely";
@@ -595,6 +596,88 @@ function initProjectorPreview(): void {
 let deskFilterOn = false;
 let deskLastPayload: TeacherPayload | null = null;
 
+/**
+ * CLASS INTELLIGENCE — the patterns the teacher would otherwise have to find by
+ * reading sixteen cap sheets from the front of the room.
+ *
+ * Each item is computed from live state by the module and arrives with the
+ * question already written, because "four franchises are chasing a centre" is
+ * an observation and "if everybody needs the same thing, what happens to its
+ * price?" is a lesson. An intelligence item with no question attached is a
+ * dashboard tile, and the module's own tests reject one.
+ *
+ * MARKET COLLISION is the live one — it is true only while the room is still
+ * deciding, and it is the single most useful thing a teacher can know in that
+ * window, because it names the argument that is about to happen.
+ */
+type IntelItem = { kind: string; label: string; text: string; ask: string };
+
+/**
+ * WHAT TO SAY NOW — the naming stage's director card.
+ *
+ * The random-teacher standard (CLAUDE.md §4) is load-bearing here in a way it
+ * is not anywhere else in this lesson: a teacher who says "opportunity cost"
+ * before a student has said the idea has turned the best moment in the hour
+ * into vocabulary. So the console prints the question FIRST, what a right
+ * answer sounds like coming out of a twelve-year-old, and what must not be
+ * explained yet — and only then the term, so the teacher's own eye meets it in
+ * the same order the room will.
+ */
+function renderNaming(payload: TeacherPayload): void {
+  const el = document.getElementById("naming");
+  if (!el) return;
+  const n = payload.view["naming"] as Record<string, unknown> | null | undefined;
+  if (!n || payload.session.ended) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  const s = (k: string): string => (typeof n[k] === "string" ? (n[k] as string) : "");
+  const i = typeof n["index"] === "number" ? (n["index"] as number) : 0;
+  const c = typeof n["count"] === "number" ? (n["count"] as number) : 1;
+  const left = Math.max(0, c - i - 1);
+  const set = (id: string, text: string): void => {
+    const t = document.getElementById(id);
+    if (t) t.textContent = text;
+  };
+  set("namingCount", left === 0 ? `last one \u2014 ${i + 1} of ${c}` : `${i + 1} of ${c} \u2014 ${left} still to come`);
+  set("namingMoment", s("moment"));
+  set("namingAsk", s("ask"));
+  set("namingListen", s("listenFor"));
+  set("namingHold", s("hold"));
+  const term = document.getElementById("namingTerm");
+  if (term) {
+    term.innerHTML = `${escapeHtml(s("term"))}<small>${escapeHtml(s("means"))}</small>`;
+  }
+}
+
+function renderIntel(payload: TeacherPayload): void {
+  const el = document.getElementById("intel");
+  if (!el) return;
+  const items = (payload.view["intel"] as IntelItem[] | undefined) ?? null;
+  if (!Array.isArray(items) || items.length === 0 || payload.session.ended) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  const count = document.getElementById("intelCount");
+  if (count) {
+    count.textContent =
+      items.length === 1 ? "one thing worth saying out loud" : `${items.length} things worth saying out loud`;
+  }
+  const list = document.getElementById("intelList");
+  if (!list) return;
+  list.innerHTML = items
+    .map(
+      (i) => `<div class="intel-item" data-kind="${escapeHtml(i.kind)}">
+        <span class="intel-label">${escapeHtml(i.label)}</span>
+        <p class="intel-text">${escapeHtml(i.text)}</p>
+        <p class="intel-ask">${escapeHtml(i.ask)}</p>
+      </div>`,
+    )
+    .join("");
+}
+
 function renderDesks(payload: TeacherPayload): void {
   const strip = (payload.view["deskStrip"] as DeskStrip | null | undefined) ?? null;
   const ended = payload.session.ended;
@@ -837,6 +920,8 @@ function render(payload: TeacherPayload): void {
   $("seatCount").textContent = `${payload.seats.length} joined`;
   renderTimeCut(payload);
   renderLiveRoom(payload);
+  renderNaming(payload);
+  renderIntel(payload);
   renderDesks(payload);
   // The preview lives for the whole session, not just PLAY — REVEAL through
   // SYNTHESIS is exactly when the projector IS the lesson. It goes away when
@@ -885,6 +970,7 @@ function render(payload: TeacherPayload): void {
   const isDraftDay = s.lessonModuleId === DRAFT_DAY_ID;
   const isTradeDeadline = s.lessonModuleId === TRADE_DEADLINE_ID;
   const isFreeAgency = s.lessonModuleId === FREE_AGENCY_ID;
+  const isTheWindow = s.lessonModuleId === THE_WINDOW_ID;
   const isFullHouse = s.lessonModuleId === FULL_HOUSE_ID;
   const isHostLeague = s.lessonModuleId === HOST_LEAGUE_ID;
   const isWriteRule = s.lessonModuleId === WRITE_RULE_ID;
@@ -903,8 +989,16 @@ function render(payload: TeacherPayload): void {
   // The staged per-target auction theater (charter point 6, and L3's own staged finale): one click reveals
   // exactly the next not-yet-revealed step, so the teacher paces the reveal instead of dumping every result
   // at once. Same control, same label, works for both lessons' own reveal-staging counters.
-  $<HTMLButtonElement>("btnRevealNext").hidden = !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule;
-  $<HTMLButtonElement>("btnRevealNext").disabled = s.ended || s.phase !== "REVEAL";
+  $<HTMLButtonElement>("btnRevealNext").hidden =
+    !isTradeDeadline && !isFreeAgency && !isFullHouse && !isHostLeague && !isWriteRule && !isTheWindow;
+  /* THE SAME LINE walks beats in three phases, not one: the four reveal beats,
+     then CONSEQUENCE, then the naming — where the teacher advances one concept
+     at a time and the count is however many the room EARNED. Leaving this rule
+     at REVEAL-only disabled the only control that moves the naming forward, so
+     a teacher reached the stage and could not run it. */
+  $<HTMLButtonElement>("btnRevealNext").disabled =
+    s.ended ||
+    (s.phase !== "REVEAL" && !(isTheWindow && (s.phase === "CONSEQUENCE" || s.phase === "SYNTHESIS")));
   {
     // gate-l1-teacher TT-B2 / gate-l1-projector repair 5: "Reveal next" was a
     // blind press seven times running. Name what the press will put up, with
@@ -916,7 +1010,16 @@ function render(payload: TeacherPayload): void {
       ? next
         ? `Reveal ${next.stage} of ${total} — ${next.name}`
         : "Every reveal has played"
-      : "Reveal next";
+      : isTheWindow && s.phase === "SYNTHESIS"
+        ? (() => {
+            // At the naming the press is not "reveal next", it is "say the next
+            // one" — and a teacher pressing it needs to know how many are left
+            // before they decide the room is done arguing about this one.
+            const n = payload.view["naming"] as { index?: number; count?: number } | null | undefined;
+            const left = n ? Math.max(0, Number(n.count ?? 1) - Number(n.index ?? 0) - 1) : 0;
+            return left === 0 ? "That was the last one" : `Next name (${left} to go)`;
+          })()
+        : "Reveal next";
   }
   // M2 L1's own pacing controls: the night bell (every desk settles at once against the card that
   // was printed before anyone touched a dial) and the manual Two Peaks release. Both are teacher-
@@ -1093,15 +1196,16 @@ function render(payload: TeacherPayload): void {
   }
   // L3's own market day-close hook (charter §2): resolves every still-open agent for the currently open day,
   // simultaneously and deterministically, then advances the day counter. A close with zero offers is legal.
-  $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency;
+  $<HTMLButtonElement>("btnCloseDay").hidden = !isFreeAgency && !isTheWindow;
   $<HTMLButtonElement>("btnCloseDay").disabled = s.ended || s.phase !== "PLAY" || Boolean(payload.view["windowClosed"]);
   {
     const pendingCount = Number(payload.view["pendingCount"] ?? 0);
     const actedCount = Number(payload.view["actedCount"] ?? 0);
     const claimedCount = Number(payload.view["claimedCount"] ?? 0);
-    $<HTMLButtonElement>("btnCloseDay").innerHTML = isFreeAgency
-      ? `${BELL_GLYPH}Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)`
-      : `${BELL_GLYPH}Close signing day`;
+    $<HTMLButtonElement>("btnCloseDay").innerHTML =
+      isFreeAgency || isTheWindow
+        ? `${BELL_GLYPH}Close signing day (${actedCount}/${claimedCount} acted, ${pendingCount} offer${pendingCount === 1 ? "" : "s"} in)`
+        : `${BELL_GLYPH}Close signing day`;
   }
   // B1 repair (VERIFY_L2.md BLOCKER): the runtime now auto-resolves any unrevealed target the instant the
   // teacher advances out of REVEAL (see tradeDeadline.ts's onPhaseExit), so the numbers can no longer go wrong

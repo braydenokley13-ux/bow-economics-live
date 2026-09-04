@@ -44,7 +44,15 @@ if (existsSync(fontsFrom)) {
   console.log(`copied ${files.length} webfont file(s) into dist/client/shared/fonts/`);
 }
 
-// The visual identity SVGs live in the sibling design/ directory, owned by
+// Every extension the runtime's static router can actually serve as art. Kept
+// in step with STATIC_TYPES in src/server/http.ts: a file copied here that the
+// router cannot type is a 404 the build says nothing about, and a type the
+// router serves but the build never copies is a 404 the build says nothing
+// about either. Both halves failed silently before raster art was allowed.
+const ART_EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif"];
+const isArt = (f) => ART_EXTENSIONS.some((ext) => f.toLowerCase().endsWith(ext));
+
+// The visual identity assets live in the sibling design/ directory, owned by
 // a different agent — read-only here, never written back. Copied into
 // dist/client/assets/ at build time so the runtime's own static router
 // (which only ever serves dist/client/**) can hand them to the browser
@@ -53,11 +61,21 @@ const designAssetsDir = path.join(root, "..", "design", "assets");
 if (existsSync(designAssetsDir)) {
   const toDir = path.join(root, "dist", "client", "assets");
   mkdirSync(toDir, { recursive: true });
-  const svgs = readdirSync(designAssetsDir).filter((f) => f.endsWith(".svg"));
-  for (const file of svgs) {
+  const art = readdirSync(designAssetsDir).filter(isArt);
+  for (const file of art) {
     cpSync(path.join(designAssetsDir, file), path.join(toDir, file));
   }
-  console.log(`copied ${svgs.length} design asset(s) into dist/client/assets/`);
+  console.log(`copied ${art.length} design asset(s) into dist/client/assets/`);
 } else {
   console.log("design/assets/ not found yet — skipping visual asset copy (structural styling only)");
+}
+
+// Art that belongs to the runtime rather than to design/ — a lesson's own
+// backdrops and textures, checked in beside the client that uses them. Copied
+// whole, subdirectories included, so a module can own a folder.
+const clientArtDir = path.join(root, "src", "client", "shared", "art");
+if (existsSync(clientArtDir)) {
+  const toDir = path.join(root, "dist", "client", "shared", "art");
+  cpSync(clientArtDir, toDir, { recursive: true });
+  console.log(`copied runtime client art into dist/client/shared/art/`);
 }

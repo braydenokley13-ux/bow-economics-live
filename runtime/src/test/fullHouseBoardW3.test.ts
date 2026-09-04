@@ -48,7 +48,7 @@ const act = (state: FullHouseState, action: LessonAction, phase: CanonicalPhase,
   fullHouseModule.reduce(state, action, ctx(phase, seatId));
 
 function seated(count: number): FullHouseState {
-  let state = fullHouseModule.initialState({ sessionId: "s1", seatIds: [] });
+  let state = fullHouseModule.initialState({ sessionId: "s1", seatIds: [], gradeBand: "5-6" });
   for (let i = 1; i <= count; i += 1) state = ok(act(state, { type: "takeSeat" }, "LOBBY", `seat-${i}`));
   return state;
 }

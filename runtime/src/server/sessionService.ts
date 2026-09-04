@@ -9,14 +9,23 @@
  * fixed 35-item `StepId` union with a hand-authored ceiling map — that shape
  * is exactly what Track 101 cannot reuse, because the whole point of the
  * LessonModule contract is that lessons define their own phase list at
- * registration time, not at compile time. What ports is the *algorithm*:
- * one phase index, action must match the session's current phase exactly
- * (no queued future-phase actions, no stale past-phase replays), a hard
- * stop while paused/frozen/ended. That algorithm is `assertActionable`
- * below.
+ * registration time, not at compile time.
+ *
+ * WHAT ACTUALLY PORTED IS THE HARD STOP, NOT THE PHASE COMPARE. This comment
+ * used to claim that "action must match the session's current phase exactly",
+ * and `assertActionable` below has never done that: it checks ended, frozen
+ * and paused, and returns. There is no phase field on an action and nothing
+ * reads one. Phase correctness is the MODULE'S job, in its own reducer, using
+ * the `phase` on the `ReduceContext` — a module that accepts `lock` without
+ * asking what phase it is in accepts a `lock` in SYNTHESIS, and no layer here
+ * will stop it. The claim is corrected rather than implemented because the
+ * built lessons already gate in `reduce` and adding a second gate here would
+ * silently change which of their actions are legal; the fix that matters is
+ * that the next module author reads the truth.
  */
 import { randomUUID } from "node:crypto";
-import type { AnyLessonModule, UnresolvedSeat } from "../shared/lessonModule.js";
+import type { AnyLessonModule, SeatId, UnresolvedSeat } from "../shared/lessonModule.js";
+import { bandOrDefault, type GradeBand } from "../shared/gradeBand.js";
 import { isOrderedSubsequence, type CanonicalPhase } from "../shared/phases.js";
 import {
   generateDeviceToken,
@@ -175,6 +184,8 @@ export type TeacherPayload = {
     code: string;
     title: string;
     lessonModuleId: string;
+    /** The band this room is for. On the console so a teacher can see which class they opened. */
+    gradeBand: GradeBand;
     phase: CanonicalPhase;
     phases: readonly CanonicalPhase[];
     /** When this room was created — the anchor for the console's class clock. */
@@ -296,9 +307,12 @@ export class SessionService {
   async createSession(input: {
     lessonModuleId: string;
     title: string;
+    /** Which class this room is for. Defaults to 5-6, the band that existed first. */
+    gradeBand?: unknown;
     sourceSessionId?: string;
     teacherKey?: string | null;
   }): Promise<TeacherPayload> {
+    const gradeBand = bandOrDefault(input.gradeBand);
     const mod = this.modules.get(input.lessonModuleId);
     if (!mod) throw new ServiceError(400, "unknown_module", `no lesson module registered as "${input.lessonModuleId}"`);
     // Creating a room is open — this product has no accounts and never asked
@@ -314,12 +328,42 @@ export class SessionService {
     // is not an error here, it just means no seed (`undefined`), and the
     // receiving module is required to normalize that gracefully (its own
     // "stock franchise" story), same as any other malformed-seed case.
+    //
+    // The envelope carries PROVENANCE alongside the state, because the two
+    // questions a receiving module has to answer about a carry are "what shape
+    // is this" and "should I trust it", and it used to be handed the answer to
+    // only the first. D39 makes linking a session that has not finished
+    // deliberate but permitted — and that warning lives entirely in the /teach
+    // UI, so a module inheriting a half-played room cannot tell, even though
+    // whether the source ROUND closed is exactly the kind of thing a carry
+    // rule turns on. `sourceEnded` and `sourcePhase` say it; `sourceSessionId`
+    // lets a module name the room it came from rather than assert one.
+    // Additive: a module reading only `lessonModuleId` and `state` is
+    // unaffected.
     let seed: unknown;
     if (input.sourceSessionId) {
       const source = await this.repo.getSessionById(input.sourceSessionId);
-      if (source) seed = { lessonModuleId: source.lessonModuleId, state: source.state };
+      if (source) {
+        seed = {
+          lessonModuleId: source.lessonModuleId,
+          state: source.state,
+          sourceSessionId: source.id,
+          sourcePhase: source.phase,
+          sourceEnded: source.ended,
+          // THE THIRD ATTACHMENT POINT, and the one D38 did not name.
+          //
+          // Without it a 7-8 room seeded from a 5-6 room accepts the carry in
+          // silence, and nothing in the runtime is able to notice: the
+          // receiving module sees a well-formed envelope from the right module
+          // id and every reason to trust it. The runtime still does not JUDGE
+          // this -- judging a cross-band carry is the module's call, because
+          // only the module knows whether its own state means the same thing in
+          // both bands. What the runtime owes is the fact.
+          sourceGradeBand: source.gradeBand,
+        };
+      }
     }
-    const state = mod.initialState({ sessionId, seatIds: [], seed });
+    const state = mod.initialState({ sessionId, seatIds: [], seed, gradeBand });
     let code = "";
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const candidate = generateJoinCode();
@@ -334,6 +378,7 @@ export class SessionService {
       code,
       title: input.title || mod.title,
       lessonModuleId: mod.id,
+      gradeBand,
       phase: mod.phases[0]!,
       state,
       teacherKeyHash: hashDeviceToken(teacherKey),
@@ -641,7 +686,7 @@ export class SessionService {
     const result = mod.reduce(session.state, action, {
       phase: session.phase,
       seatId: seat.id,
-      seatIds: (await this.repo.listSeatsForSession(session.id)).map((s) => s.id),
+      seatIds: await this.seatIdsOf(session),
       now: Date.now(),
     });
     if (!result.ok) {
@@ -746,7 +791,7 @@ export class SessionService {
     const result = mod.reduce(
       session.state,
       { type: contract.closeHook },
-      { phase: session.phase, seatId: "teacher", seatIds: [], now: Date.now() },
+      { phase: session.phase, seatId: "teacher", seatIds: await this.seatIdsOf(session), now: Date.now() },
     );
     // A close the module refuses is not a crash: the round is marked closed so
     // the room stops waiting on a window that is not accepting anything, and
@@ -772,6 +817,22 @@ export class SessionService {
    * What the runtime enforces here is the class-wide hard stops a module
    * cannot see: ended, frozen, paused.
    */
+  /**
+   * Who is in this room, for a `ReduceContext`.
+   *
+   * Every path that reduces must use this. Two of them used to pass `[]`
+   * instead — `closeRound` and the generic teacher `hook` — which is worse
+   * than it sounds, because `RoundContract.unresolved` IS handed the real
+   * roster to build the teacher's per-desk "what closing will do to them"
+   * list. The runtime therefore told the module exactly who had not committed,
+   * and then closed the round without telling it anyone existed. A fallback
+   * policy that has to act ON the uncommitted desks — which is every honest
+   * one — could not see them at the only moment it runs.
+   */
+  private async seatIdsOf(session: SessionRow): Promise<readonly SeatId[]> {
+    return (await this.repo.listSeatsForSession(session.id)).map((s) => s.id);
+  }
+
   private assertActionable(session: SessionRow): void {
     // Ended is the one hard stop with no future: nothing about this session
     // will ever accept another action, so holding the action would be a lie.
@@ -815,6 +876,23 @@ export class SessionService {
     switch (action.type) {
       case "advance": {
         const idx = mod.phases.indexOf(session.phase);
+        // A session whose stored phase is not in this module's list has no
+        // "next" — and the arithmetic below would invent one. `indexOf` returns
+        // -1, `phases[-1 + 1]` is `phases[0]`, and the `!next` guard does not
+        // fire: pressing ADVANCE would send the whole room back to the FIRST
+        // phase of the lesson, mid-class, with the projector following it.
+        // Reachable whenever a stored phase and a registered module disagree —
+        // a lesson whose phase list changed between builds, restored from a
+        // snapshot the loader only checks for `id` and `code`
+        // (snapshotRepository.ts). D32 says a surface never moves backwards;
+        // this is the one place the server itself could push it there.
+        if (idx === -1) {
+          throw new ServiceError(
+            409,
+            "phase_not_in_module",
+            `this room is in ${session.phase}, which is not a phase of ${mod.id} — it was probably created by a different build. Restore, or start a new room.`,
+          );
+        }
         const next = mod.phases[idx + 1];
         if (!next) throw new ServiceError(400, "no_next_phase", "already at the final phase — use end");
         return this.applyPhaseChange(session, next);
@@ -822,6 +900,23 @@ export class SessionService {
       case "reveal": {
         if (!mod.phases.includes("REVEAL")) {
           throw new ServiceError(400, "no_reveal_phase", "this lesson module has no REVEAL phase");
+        }
+        // REVEAL is a jump, not a step, so unlike `advance` it can name a phase
+        // the class is already past — a teacher on SYNTHESIS who presses the
+        // reveal control lands the room back on REVEAL. Two things break at
+        // once: the room moves backwards (D32), and `onPhaseExit` fires on a
+        // BACKWARD transition, though its whole contract is written in forward
+        // language and modules act on that — L2 and L3 both auto-resolve
+        // pending work "because the phase offering it is being left." Firing
+        // that in reverse resolves work the class has already been shown.
+        const here = mod.phases.indexOf(session.phase);
+        const revealAt = mod.phases.indexOf("REVEAL");
+        if (here !== -1 && revealAt < here) {
+          throw new ServiceError(
+            409,
+            "phase_would_rewind",
+            `this room is already past REVEAL (it is in ${session.phase}) — use Undo to go back, not the reveal control.`,
+          );
         }
         return this.applyPhaseChange(session, "REVEAL");
       }
@@ -846,7 +941,7 @@ export class SessionService {
         const result = mod.reduce(
           session.state,
           { type: `teacher:${action.hook}` },
-          { phase: session.phase, seatId: "teacher", seatIds: [], now: Date.now() },
+          { phase: session.phase, seatId: "teacher", seatIds: await this.seatIdsOf(session), now: Date.now() },
         );
         if (!result.ok) throw new ServiceError(400, "hook_rejected", result.reason);
         return this.buildTeacherPayload(await this.patch(session, { state: result.state }, true));
@@ -1262,6 +1357,7 @@ export class SessionService {
         code: session.code,
         title: session.title,
         lessonModuleId: session.lessonModuleId,
+        gradeBand: session.gradeBand,
         phase: session.phase,
         phases: mod.phases,
         // Every time-cut instruction in every lesson is written as "past minute

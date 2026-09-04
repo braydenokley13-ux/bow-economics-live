@@ -1,0 +1,1393 @@
+<!doctype html>
+<!--
+===============================================================================
+ STAGE-0 PROTOTYPE — DESIGN A: "FRONT OFFICE UNDER PRESSURE"
+ Module 1 · Lesson 1 · "THE SUMMER"
+ Date: 2026-09-03
+ Companion: ../DESIGN_A_FRONT_OFFICE_UNDER_PRESSURE.md
+
+ This plays the ACTUAL L1 decision loop end to end for one desk:
+   THE HOLDS  ->  WINDOW 1  ->  WINDOW 2  ->  WINDOW 3  ->  CAMP (pressure)
+   ->  THE LINE MOVED  ->  ONE REPAIR  ->  THE FIVE COLUMNS
+ No network, no build, no external assets. Open it and play it.
+
+-------------------------------------------------------------------------------
+ SOURCED — every one of these is an NBA fact with a dossier section
+ (docs/gauntlet/module-1/rebuild/NBA_FINANCIAL_TRUTH.md), all official-nba
+ unless noted:
+   cap 164,961,000 · floor 148,465,000 · tax 200,428,000
+   first apron 209,015,000 · second apron 221,686,000                    (§1.2)
+   non-taxpayer MLE 15,044,000 · room MLE 9,366,000 · taxpayer MLE 6,064,000 (§1.2)
+   bi-annual 5,477,000                          (§1.2, cap-database, §7.4 single source)
+   rookie minimum 1,357,763 · veteran (10+) minimum 3,876,529            (§1.2)
+   empty-slot charge = one rookie minimum per slot below 12               (§2.5)
+   15 standard roster contracts                                          (§2.10)
+   using the NTMLE or the BAE hard-caps you at the first apron            (§2.3)
+   using cap room costs you the bigger MLE                                (§2.4)
+   renouncing permanently destroys Bird rights                            (§2.5)
+   No. 1 rookie-scale slot 2026 = 14,748,000                              (§8.1 #9)
+   Noah stretch: 19.3M -> 6.4M x 3                                        (§8.1 #20)
+   the 2026-27 cap came in ~1,000,000 BELOW projection because local
+     media revenue fell, and it flowed through to every other line        (§3.3)
+   Detroit  cap hit 188,615,753 / roster salary 136,252,755 (a 52,362,998
+     definition gap that is its own free agents' cap holds)        (§4.1 #6, §7.6)
+   Brooklyn cap hit 162,780,296, cap space 2,180,704                     (§4.1 #7)
+   Memphis  cap hit 161,034,793, cap room 3,926,207, dead cap 21,909,021 (§4.1 #9)
+   Phoenix  cap hit 219,949,444, 1,736,556 under the second apron and
+     hard-capped at it, dead cap 24,197,051 incl. Beal 19,383,010        (§4.1 #5)
+   named contracts: Cunningham 50,105,628 · Collins 17,000,000 · Robinson
+     15,992,957 · Porter Jr. 40,806,150 · Randle 33,333,334 · Mann
+     15,500,000 · Booker 57,078,728 · Green 36,250,000 · Bridges
+     22,830,000 · Brooks 20,990,000                                 (§4.1)
+ Golden State, Cleveland, Indiana, Miami, the Clippers and Toronto are
+ deliberately NOT seats (§7.3 / §8.2 #3, #4). No luxury-tax dollar bill, no
+ trade-matching percentage, no market-size tier and no revenue-sharing figure
+ appears anywhere (§8.2 #1, #5, #8, #11).
+
+-------------------------------------------------------------------------------
+ INVENTED — everything below is THIS MODULE'S OWN RULE, not an NBA fact.
+ A critic should attack these first.
+   1. The five needs (RIM / CREATE / SHOOT / WING D / DEPTH).
+   2. Coverage levels 1 and 2, assigned by role. Not a rating of any real
+      player and never derived from performance data.
+   3. COVER(need) = min(3, sum of levels).  ANSWERED >= 2, THIN = 1, OPEN = 0.
+   4. The market: contract slots at the league's administered prices, with a
+      role, a strength and a risk, and NO scalar. No invented NBA players.
+   5. Detroit's 52,362,998 of holds split into three own free agents at
+      28,000,000 / 15,362,998 / 9,000,000, and the module rule that re-signing
+      your own costs his hold amount.
+   6. Coverage assignments for Memphis's inherited roster (the dossier names no
+      Memphis active contracts).
+   7. The eight-card pressure deck, its effects, and the deal rules
+      DECK[(seatIndex*5 + 2) mod 6] and target need NEEDS[(seatIndex+2) mod 5].
+   8. THE BILL charge of 6,400,000/yr (shaped on the real Noah arithmetic).
+   9. THE MARKET MOVED reprice: x1.5 and one level down, fired at >= 3 of 5
+      big moves by the end of window 2.
+  10. Rival desks take the two highest-priced remaining non-minimum slots each
+      window and never take a minimum-tier slot.
+  11. Starting filled roster slots per club (12 / 11 / 12 / 13).
+  12. The L2 trade rule quoted in the model panel ("send out at least as much
+      as you take back") — required because NBA_FINANCIAL_TRUTH §8.2 #1
+      forbids rendering any of the three published matching percentages.
+===============================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stage 0 · A · L1 THE SUMMER</title>
+<style>
+  :root{
+    --bg:#0a0b0e; --panel:#12141a; --panel2:#171a22; --line:#252a35;
+    --ink:#e9ecf3; --dim:#98a0b3; --dimmer:#6b7385;
+    --accent:#7c6cff; --gold:#e0b64a; --good:#4ec98a; --warn:#e08a4a; --bad:#e2626b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h1,h2,h3{margin:0;font-weight:650;letter-spacing:.01em}
+  a{color:var(--accent)}
+  .wrap{max-width:1500px;margin:0 auto;padding:14px}
+  header.top{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;
+    border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+  .eyebrow{color:var(--accent);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+  .sub{color:var(--dim);font-size:12.5px}
+  .grow{flex:1}
+  .chip{display:inline-block;border:1px solid var(--line);background:var(--panel2);
+    border-radius:4px;padding:3px 8px;font-size:11.5px;color:var(--dim)}
+  .chip b{color:var(--ink);font-weight:600}
+  button{font:inherit;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:5px;padding:6px 11px;cursor:pointer}
+  button:hover:not(:disabled){border-color:#3a4152;background:#1c2029}
+  button:disabled{opacity:.36;cursor:not-allowed}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#0a0b0e;font-weight:650}
+  button.primary:hover:not(:disabled){background:#8d7fff}
+  button.ghost{background:transparent}
+  select{font:inherit;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:5px;padding:5px 8px}
+  .cols{display:grid;grid-template-columns:330px 1fr 340px;gap:14px;align-items:start}
+  @media (max-width:1200px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+  .panel h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer);
+    margin-bottom:9px}
+  .mono{font-family:var(--mono)}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  /* ledger */
+  .ledger{display:flex;gap:10px}
+  .barwrap{position:relative;width:104px;background:#0d0f14;border:1px solid var(--line);
+    border-radius:4px;height:430px;overflow:hidden}
+  .band{position:absolute;left:0;right:0;border-top:1px solid rgba(0,0,0,.55);
+    background:#2f3550;overflow:hidden}
+  .band.dead{background:repeating-linear-gradient(135deg,#2a1f22,#2a1f22 4px,#3a2a2e 4px,#3a2a2e 8px);
+    border:1px dashed #6b4b52}
+  .band.hold{background:transparent;border:1px dashed #4a5266}
+  .band.sign{background:#3a4a86}
+  .band.own{background:#4a3f86}
+  .rule{position:absolute;left:0;right:0;height:0;border-top:1px dashed #5a6478}
+  .rule span{position:absolute;right:2px;top:-13px;font-size:9px;color:#8b93a6;
+    background:var(--panel);padding:0 2px;font-family:var(--mono)}
+  .rule.wall{border-top:2px solid var(--bad)}
+  .rule.wall span{color:var(--bad)}
+  .lg{flex:1;font-size:11.5px}
+  .lgrow{display:flex;justify-content:space-between;gap:6px;padding:2px 0;border-bottom:1px dotted #1e222c}
+  .lgrow span:first-child{color:var(--dim)}
+  .lgrow.deadrow span:first-child{color:#c98a92}
+  .lgrow.holdrow span:first-child{color:#7f899e;font-style:italic}
+  /* coverage */
+  .cov{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+  .cov.three{grid-template-columns:repeat(3,1fr)}
+  .cell{border:1px solid var(--line);border-radius:5px;padding:6px 4px;text-align:center;background:#0e1015}
+  .cell .n{font-size:9.5px;letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
+  .cell .v{font-size:17px;font-family:var(--mono);margin:2px 0}
+  .cell .s{font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+  .cell.OPEN{border-color:#5c2a30}.cell.OPEN .s{color:var(--bad)}
+  .cell.THIN{border-color:#5c452a}.cell.THIN .s{color:var(--warn)}
+  .cell.ANSWERED{border-color:#2a5c44}.cell.ANSWERED .s{color:var(--good)}
+  /* pockets */
+  .pk{display:flex;justify-content:space-between;align-items:center;gap:8px;
+    border:1px solid var(--line);border-radius:5px;padding:6px 8px;margin-bottom:5px;background:#0e1015}
+  .pk.dead{opacity:.42}
+  .pk.dead .pkname{text-decoration:line-through}
+  .pkname{font-size:12px}
+  .pkwhy{font-size:10px;color:var(--dimmer)}
+  .pkamt{font-family:var(--mono);font-size:12px;color:var(--gold)}
+  /* market */
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px}
+  .slot{border:1px solid var(--line);border-radius:6px;padding:9px;background:var(--panel2)}
+  .slot.gone{opacity:.3}
+  .slot.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .slot .role{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+  .slot .price{font-family:var(--mono);font-size:15px;margin:3px 0}
+  .slot .desc{font-size:11.5px;color:var(--dim);min-height:32px}
+  .slot .risk{font-size:10.5px;color:var(--warn);margin-top:4px}
+  .slot .cmp{font-size:10px;color:var(--dimmer);margin-top:3px;font-style:italic}
+  .slot .btns{margin-top:7px;display:flex;flex-wrap:wrap;gap:4px}
+  .slot .btns button{padding:3px 7px;font-size:11px}
+  /* cards */
+  .deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+  .card{border:1px solid var(--line);border-radius:5px;padding:7px;background:#0e1015;font-size:11px}
+  .card .t{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold)}
+  .card.mine{border-color:var(--gold);background:#1a1508}
+  .card .anc{color:var(--dimmer);font-size:9.5px;margin-top:4px;font-style:italic}
+  /* misc */
+  .log{max-height:190px;overflow:auto;font-size:11.5px;font-family:var(--mono);color:var(--dim)}
+  .log div{padding:2px 0;border-bottom:1px dotted #1a1e26}
+  .log .no{color:var(--bad)}
+  .log .yes{color:var(--good)}
+  table{border-collapse:collapse;width:100%;font-size:11.5px}
+  th,td{border:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+  th{color:var(--dimmer);font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:600}
+  td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+  pre{margin:0;font-family:var(--mono);font-size:11px;color:var(--dim);white-space:pre-wrap;line-height:1.5}
+  .note{font-size:11px;color:var(--dimmer);margin-top:7px}
+  .banner{border:1px solid var(--gold);background:#171205;border-radius:6px;padding:10px 12px;margin-bottom:12px}
+  .banner.bad{border-color:var(--bad);background:#1a0d0f}
+  .banner h2{font-size:15px;margin-bottom:4px}
+  .banner p{margin:3px 0;font-size:12.5px;color:var(--dim)}
+  details{border:1px solid var(--line);border-radius:8px;background:var(--panel);margin-top:14px}
+  summary{padding:10px 12px;cursor:pointer;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--dimmer)}
+  details[open] summary{border-bottom:1px solid var(--line)}
+  .dbody{padding:12px}
+  .flex{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .sep{height:1px;background:var(--line);margin:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <div class="eyebrow">Stage 0 · Design A · Front Office Under Pressure</div>
+    <h1>THE SUMMER</h1>
+    <div class="sub">July 2026. Three signing windows, one shared market, then camp opens.</div>
+  </div>
+  <div class="grow"></div>
+  <div class="flex">
+    <label class="chip">SEAT
+      <select id="seatSel"></select>
+    </label>
+    <label class="chip">GRADE BAND
+      <select id="bandSel"><option value="7-8">7–8</option><option value="5-6">5–6</option></select>
+    </label>
+    <button id="resetBtn" class="ghost">Restart</button>
+    <button id="probeBtn">STRATEGY PROBE</button>
+  </div>
+</header>
+
+<div id="banner"></div>
+
+<div class="cols">
+
+  <!-- ================= LEFT: THE LEDGER ================= -->
+  <div>
+    <div class="panel">
+      <h3>The ledger · cap hit including cap holds</h3>
+      <div class="ledger">
+        <div class="barwrap" id="bar"></div>
+        <div class="lg" id="ledgerList"></div>
+      </div>
+      <div class="sep"></div>
+      <div id="salaryLine"></div>
+      <div class="note" id="defLine">Payroll definition: <b>cap hit including cap holds</b>
+        (SalarySwish). The other published definition, roster salary (HoopsHype), differs by up to
+        $52M on one club. This room uses one and says which.</div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>Coverage</h3>
+      <div id="covStrip" class="cov"></div>
+      <div class="note">Coverage levels are <b>this room's own assignment, by role</b>. They are not
+        a rating of any real player.</div>
+    </div>
+  </div>
+
+  <!-- ================= CENTRE: THE MARKET ================= -->
+  <div>
+    <div class="panel" id="holdsPanel"></div>
+    <div class="panel" style="margin-top:12px" id="marketPanel"></div>
+    <div class="panel" style="margin-top:12px" id="resultPanel" hidden></div>
+  </div>
+
+  <!-- ================= RIGHT: POCKETS / DECK / LOG ================= -->
+  <div>
+    <div class="panel">
+      <h3>Your pockets</h3>
+      <div id="pockets"></div>
+      <div class="sep"></div>
+      <div><span class="chip">ROOM TO MOVE <b id="rtm">–</b></span></div>
+      <div class="note" id="rtmList"></div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>The eight things that can go wrong</h3>
+      <div id="deck" class="deck"></div>
+      <div class="note" id="dealRule"></div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>What happened</h3>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+</div>
+
+<details id="modelBox">
+  <summary>MODEL — every formula and constant this prototype is using</summary>
+  <div class="dbody"><pre id="modelText"></pre></div>
+</details>
+
+<details id="probeBox">
+  <summary>STRATEGY PROBE — five canned strategies across every seat</summary>
+  <div class="dbody" id="probeOut"><div class="note">Press STRATEGY PROBE.</div></div>
+</details>
+
+</div>
+
+<script>
+"use strict";
+/* ========================================================================== */
+/* SOURCED CONSTANTS                                                          */
+/* ========================================================================== */
+const T0 = {           // 2026-27 league year, pr.nba.com, official-nba, high (§1.2)
+  CAP:     164961000,
+  FLOOR:   148465000,
+  TAX:     200428000,
+  APRON1:  209015000,
+  APRON2:  221686000
+};
+const NTMLE   = 15044000;   // non-taxpayer MLE      (§1.2) — hard-caps at first apron (§2.3)
+const ROOMMLE =  9366000;   // room MLE              (§1.2)
+const TAXMLE  =  6064000;   // taxpayer MLE          (§1.2)
+const BAE     =  5477000;   // bi-annual             (§1.2, single source §7.4) — hard-caps
+const MINROOK =  1357763;   // rookie minimum        (§1.2)
+const MINVET  =  3876529;   // veteran (10+) minimum (§1.2)
+const ROSTER_MAX     = 15;  // standard contracts    (§2.10)
+const ROSTER_COUNTED = 12;  // below this you are charged a rookie min per empty slot (§2.5)
+const ROOKIE_SLOT1   = 14748000; // 2026 No.1 rookie-scale slot (§8.1 #9)
+const BILL_CHARGE    =  6400000; // shaped on Noah 19.3M -> 6.4M x 3 (§8.1 #20)  [MODULE RULE]
+const LINE_DROP      =  1000000; // the 2026-27 cap came in ~1M under projection (§3.3)
+
+const NEEDS = ["RIM","CREATE","SHOOT","WINGD","DEPTH"];
+const NEEDLABEL = {RIM:"RIM",CREATE:"CREATE",SHOOT:"SHOOT",WINGD:"WING D",DEPTH:"DEPTH"};
+
+/* ========================================================================== */
+/* SEATS — real clubs, real 2026-27 books                                     */
+/* ========================================================================== */
+const SEATS = [
+{
+  id:"DET", idx:0, club:"DETROIT", market:"Detroit, Michigan",
+  capHit:188615753, rosterSalary:136252755,           // §4.1 #6 / §7.6
+  startSlots:12,                                      // [MODULE RULE]
+  contracts:[
+    {n:"Cade Cunningham",  s:50105628},
+    {n:"John Collins",     s:17000000},
+    {n:"Duncan Robinson",  s:15992957},
+    {n:"the rest of the roster (9)", s:53154170}
+  ],
+  dead:[],
+  // sum of contracts = 136,252,755 = the published roster salary
+  holds:[  // [MODULE RULE] split of the sourced 52,362,998 definition gap
+    {id:"h1", n:"our own free-agent wing",   amt:28000000, cov:{WINGD:2,CREATE:1}},
+    {id:"h2", n:"our own free-agent centre", amt:24362998, cov:{RIM:2}}
+  ],
+  contributors:[
+    {label:"Cade Cunningham", cov:{CREATE:2}, dur:false},
+    {label:"Duncan Robinson", cov:{SHOOT:2},  dur:false},
+    {label:"John Collins",    cov:{RIM:1},    dur:false},
+    {label:"inherited depth", cov:{DEPTH:1},  dur:false}
+  ],
+  hook:"The cheapest team in the NBA is paying $52,362,998 for nobody."
+},
+{
+  id:"BKN", idx:1, club:"BROOKLYN", market:"Brooklyn, New York",
+  capHit:162780296, rosterSalary:162780296,           // §4.1 #7
+  startSlots:11,                                      // [MODULE RULE]
+  contracts:[
+    {n:"Michael Porter Jr.", s:40806150},
+    {n:"Julius Randle",      s:33333334},
+    {n:"Terance Mann",       s:15500000},
+    {n:"the rest of the roster (8)", s:73140812}
+  ],
+  dead:[], holds:[],
+  contributors:[
+    {label:"Michael Porter Jr.", cov:{SHOOT:2},        dur:false},
+    {label:"Julius Randle",      cov:{CREATE:1,RIM:1}, dur:false},
+    {label:"Terance Mann",       cov:{WINGD:1},        dur:false},
+    {label:"inherited depth",    cov:{DEPTH:1},        dur:false}
+  ],
+  hook:"Nothing is committed. Every single thing that happens here is yours."
+},
+{
+  id:"MEM", idx:2, club:"MEMPHIS", market:"Memphis, Tennessee",
+  capHit:161034793, rosterSalary:161034793,           // §4.1 #9
+  startSlots:12,
+  contracts:[{n:"the roster you have (12)", s:139125772}],
+  dead:[
+    {n:"Kentavious Caldwell-Pope (waived)", s:17700000},
+    {n:"Cole Anthony (waived)",             s:3700000},
+    {n:"other waived charges",              s:509021}
+  ],                                                  // total 21,909,021 (§4.1 #9)
+  holds:[],
+  contributors:[  // [MODULE RULE] — the dossier names no Memphis active contracts
+    {label:"inherited lead guard", cov:{CREATE:2}, dur:false},
+    {label:"inherited big",        cov:{RIM:1},    dur:false},
+    {label:"inherited wing",       cov:{WINGD:1},  dur:false},
+    {label:"inherited depth",      cov:{DEPTH:1},  dur:false}
+  ],
+  hook:"Your spending money is $3,926,207. What you pay players who left is $21,909,021."
+},
+{
+  id:"PHX", idx:3, club:"PHOENIX", market:"Phoenix, Arizona",
+  capHit:219949444, rosterSalary:219949444,           // §4.1 #5
+  startSlots:13, hardCapAt:T0.APRON2,                 // hard-capped at the second apron (§4.1 #5)
+  contracts:[
+    {n:"Devin Booker",  s:57078728},
+    {n:"Jalen Green",   s:36250000},
+    {n:"Miles Bridges", s:22830000},
+    {n:"Dillon Brooks", s:20990000},
+    {n:"the rest of the roster (9)", s:58603665}
+  ],
+  dead:[
+    {n:"Bradley Beal (stretched, through 2029-30)", s:19383010},
+    {n:"other waived charges",                      s:4814041}
+  ],                                                  // total 24,197,051 (§4.1 #5)
+  holds:[],
+  contributors:[
+    {label:"Devin Booker",    cov:{CREATE:2,SHOOT:1}, dur:false},
+    {label:"Jalen Green",     cov:{SHOOT:2},          dur:false},
+    {label:"Dillon Brooks",   cov:{WINGD:2},          dur:false},
+    {label:"Miles Bridges",   cov:{WINGD:1},          dur:false},
+    {label:"inherited big",   cov:{RIM:1},            dur:false},
+    {label:"inherited depth", cov:{DEPTH:1},          dur:false}
+  ],
+  hook:"The fifth-biggest line on your payroll is a man who plays for another team."
+}];
+const SEAT = id => SEATS.find(s=>s.id===id);
+
+/* ========================================================================== */
+/* THE MARKET — roles at the league's administered prices. [MODULE RULE]      */
+/* No invented NBA players. Card core = role/price/strength/risk (Rule 15).   */
+/* ========================================================================== */
+const POOL = {
+1:[
+ {id:"w1a",cov:{RIM:2},   price:NTMLE,  d:"A starting centre who protects the basket.", r:"None flagged.", dur:false, cmp:"Comparable: Myles Turner, 4 yrs/$107M, Milwaukee, July 2025."},
+ {id:"w1b",cov:{WINGD:2}, price:NTMLE,  d:"Guards their best perimeter player.",        r:"None flagged.", dur:false, cmp:""},
+ {id:"w1c",cov:{SHOOT:2}, price:ROOMMLE,d:"Spaces the floor from deep.",                r:"None flagged.", dur:false, cmp:""},
+ {id:"w1d",cov:{CREATE:1,DEPTH:1},price:TAXMLE,d:"A backup who can run the offence.",   r:"None flagged.", dur:false, cmp:""},
+ {id:"w1e",cov:{RIM:2},   price:MINROOK,d:"A centre who protects the basket.",          r:"BOOM-OR-BUST — has not played a full season in three years.", dur:true, cmp:"Price is not value: San Antonio pays Victor Wembanyama $16,868,013 and De'Aaron Fox $49,488,300."},
+ {id:"w1f",cov:{DEPTH:1}, price:MINROOK,d:"A body who can play three positions.",       r:"None flagged.", dur:false, cmp:""},
+ {id:"w1g",cov:{SHOOT:2}, price:NTMLE,  d:"The name everyone in the room knows.",       r:"None flagged.", dur:false, cmp:""}
+],
+2:[
+ {id:"w2a",cov:{CREATE:2},price:NTMLE,  d:"Makes shots for other people.",              r:"None flagged.", dur:false, cmp:""},
+ {id:"w2b",cov:{RIM:1,DEPTH:1},price:TAXMLE,d:"A big man who can play 18 minutes.",     r:"None flagged.", dur:false, cmp:""},
+ {id:"w2c",cov:{WINGD:2}, price:ROOMMLE,d:"Takes the hardest defensive assignment.",    r:"None flagged.", dur:false, cmp:""},
+ {id:"w2d",cov:{SHOOT:1}, price:MINVET, d:"A veteran shooter in his thirteenth year.",  r:"SOLID — plays fewer minutes than he used to.", dur:false, cmp:""},
+ {id:"w2e",cov:{WINGD:2}, price:MINROOK,d:"Guards their best perimeter player.",        r:"BOOM-OR-BUST — was waived in February.", dur:true, cmp:""},
+ {id:"w2f",cov:{DEPTH:1}, price:MINROOK,d:"A body who can play three positions.",       r:"None flagged.", dur:false, cmp:""},
+ {id:"w2g",cov:{CREATE:2},price:BAE,    d:"Ran an offence for a playoff team in 2024.", r:"BOOM-OR-BUST — coming back from a season-ending injury.", dur:true, cmp:""}
+],
+3:[
+ {id:"w3a",cov:{RIM:2},   price:ROOMMLE,d:"A starting centre who protects the basket.", r:"None flagged.", dur:false, cmp:""},
+ {id:"w3b",cov:{SHOOT:2}, price:TAXMLE, d:"Spaces the floor from deep.",                r:"None flagged.", dur:false, cmp:""},
+ {id:"w3c",cov:{CREATE:1,WINGD:1},price:MINVET,d:"A veteran guard who defends.",        r:"SOLID.", dur:false, cmp:""},
+ {id:"w3d",cov:{DEPTH:1}, price:MINROOK,d:"A body who can play three positions.",       r:"None flagged.", dur:false, cmp:""},
+ {id:"w3e",cov:{WINGD:1}, price:MINROOK,d:"A wing who can guard two positions.",        r:"None flagged.", dur:false, cmp:""},
+ {id:"w3f",cov:{RIM:1},   price:MINROOK,d:"A big man for fifteen minutes a night.",     r:"None flagged.", dur:false, cmp:""},
+ {id:"w3g",cov:{CREATE:2},price:NTMLE,  d:"Makes shots for other people.",              r:"None flagged.", dur:false, cmp:""}
+],
+// the repair market at CAMP: thin, and mostly minimums. [MODULE RULE]
+9:[
+ {id:"r1",cov:{RIM:1},   price:MINROOK,d:"A big man off the street in October.",        r:"None flagged.", dur:false, cmp:""},
+ {id:"r2",cov:{WINGD:1}, price:MINROOK,d:"A wing off the street in October.",           r:"None flagged.", dur:false, cmp:""},
+ {id:"r3",cov:{DEPTH:1}, price:MINROOK,d:"A body who can play three positions.",        r:"None flagged.", dur:false, cmp:""},
+ {id:"r4",cov:{SHOOT:1,CREATE:1},price:TAXMLE,d:"A guard whose team just waived him.",  r:"SOLID.", dur:false, cmp:""}
+]};
+
+/* ========================================================================== */
+/* THE EIGHT THINGS THAT CAN GO WRONG  [MODULE RULE, each with a real anchor] */
+/* ========================================================================== */
+const DECK = [
+ {k:"KNEE",   t:"THE KNEE",              d:"Your biggest contributor at one need is out for the season. His salary stays on the books.", a:"Tyrese Haliburton's Achilles tear changed Indiana's whole payroll decision in one week, July 2025."},
+ {k:"OPTION", t:"THE OPTION COMES DUE",  d:"A rookie-scale team option is due by October 31. Pay $14,748,000 or he leaves.",            a:"Rookie-scale years 3 and 4 are team options; the 2026 No.1 slot is $14,748,000."},
+ {k:"BILL",   t:"THE BILL",              d:"A contract you thought was ending is not. $6,400,000 a year of dead money, buying nothing.", a:"New York waived and stretched Joakim Noah, 2018-10-13: $19.3M became $6.4M x 3."},
+ {k:"SQUEEZE",t:"THE SQUEEZE",           d:"You hold three pieces at one need. The surplus one cannot be moved, because of a wall.",     a:"Phoenix above the second apron, 2024-25, could not aggregate two salaries in a trade."},
+ {k:"FLOOR",  t:"THE FLOOR",             d:"Below $148,465,000 you pay the shortfall — to players league-wide, not to your roster.",     a:"The floor is exactly 90% of the cap. You can compute it yourself."},
+ {k:"HEALTHY",t:"THE HEALTHY YEAR",      d:"Nothing breaks. The money you held was not needed.",                                          a:"An option is only worth something if you eventually use it. Chicago's $17,991,071 trade exception expires."}
+];
+const CLASS_CARDS = [
+ {t:"THE LINE MOVED (the whole room)", d:"The league revises the cap down $1,000,000 and it flows through to the floor, the tax and both aprons.", a:"The real 2026-27 cap came in ~$1M below projection because local media revenue fell in 13 cities."},
+ {t:"THE MARKET MOVED (the whole room)", d:"If enough desks reach for a mid-level, what is left in window 3 costs more and does less.", a:"2016: the cap jumped ~34%, everyone had money at once, and prices rose faster than value."}
+];
+/* published deal rules — deterministic, no Math.random anywhere */
+const dealCard   = idx => DECK[(idx*5 + 2) % 6];
+const dealTarget = idx => NEEDS[(idx + 2) % 5];
+
+/* ========================================================================== */
+/* STATE + THE MODEL                                                          */
+/* ========================================================================== */
+function mkState(seatId, band){
+  const S = SEAT(seatId);
+  return {
+    seatId, band, idx:S.idx,
+    th:{...T0},
+    holds:S.holds.map(h=>({...h, state:"held"})),   // held | resigned | renounced
+    signings:[],                                     // {slot, price, pocket, cov, dur, label}
+    slots:S.startSlots,
+    mid:null, baeUsed:false, roomUsed:false,
+    hardCapAt: S.hardCapAt ?? null,
+    extraDead:[], floorPaid:0, optionPaid:0,
+    knee:null,
+    window:1, taken:{}, forgone:null, card:null, cardApplied:false,
+    marketMoved:false, bigMoves:0, rivalBig:0, roomBig:0, repairDone:false,
+    stage:"HOLDS", log:[]
+  };
+}
+const seatOf = st => SEAT(st.seatId);
+
+/* --- SALARY ------------------------------------------------------------- */
+function salaryOf(st){
+  const S = seatOf(st);
+  let x = S.contracts.reduce((a,c)=>a+c.s,0);
+  x += S.dead.reduce((a,d)=>a+d.s,0);
+  x += st.extraDead.reduce((a,d)=>a+d.s,0);
+  // a hold costs the same whether it is a hold or the contract that replaces it
+  for(const h of st.holds) if(h.state!=="renounced") x += h.amt;
+  for(const g of st.signings) x += g.price;
+  x += st.optionPaid;
+  x += MINROOK * Math.max(0, ROSTER_COUNTED - st.slots);   // §2.5 anti-gaming backstop
+  return x;
+}
+const emptySlotCharge = st => MINROOK * Math.max(0, ROSTER_COUNTED - st.slots);
+
+/* --- COVERAGE ----------------------------------------------------------- */
+function contributorsOf(st){
+  const out = seatOf(st).contributors.map(c=>({...c, src:"inherited"}));
+  for(const h of st.holds) if(h.state==="resigned") out.push({label:h.n, cov:h.cov, dur:false, src:"own"});
+  for(const g of st.signings) out.push({label:g.label, cov:g.cov, dur:g.dur, src:"signed"});
+  return out.filter(c=>c.label!==st.knee);
+}
+function coverageOf(st){
+  const c = {}; NEEDS.forEach(n=>c[n]=0);
+  for(const x of contributorsOf(st)) for(const k in x.cov) c[k]=Math.min(3, c[k]+x.cov[k]);
+  return c;
+}
+const statusOf = v => v>=2 ? "ANSWERED" : (v===1 ? "THIN" : "OPEN");
+
+/* --- POCKETS ------------------------------------------------------------ */
+function pocketsOf(st){
+  const sal = salaryOf(st), P = [];
+  const room = Math.max(0, st.th.CAP - sal);
+  P.push({k:"room", name:"CAP ROOM", amt:room,
+    ok: sal < st.th.CAP,
+    why: sal < st.th.CAP ? "using it retires the mid-level and the bi-annual; you get the room MLE"
+                         : "you are over the cap — there is no room to use"});
+  // A team UNDER the cap has one mid-level and it is the room MLE. A team OVER the cap has one
+  // mid-level and it is the non-taxpayer or the taxpayer MLE. That is the real fork (NBA §2.4).
+  P.push({k:"ntmle", name:"NON-TAXPAYER MLE", amt:NTMLE,
+    ok: st.mid===null && !st.roomUsed && sal >= st.th.CAP && sal < st.th.APRON1,
+    why: st.mid ? "you have already used your one mid-level"
+       : st.roomUsed ? "gone — you used cap room"
+       : sal < st.th.CAP ? "only for teams over the cap; under the cap your mid-level is the room MLE"
+       : sal >= st.th.APRON1 ? "you are above the first apron"
+       : "SETS A WALL at the first apron for the rest of the year"});
+  P.push({k:"taxmle", name:"TAXPAYER MLE", amt:TAXMLE,
+    ok: st.mid===null && !st.roomUsed && sal >= st.th.CAP && sal < st.th.APRON2,
+    why: st.mid ? "you have already used your one mid-level"
+       : st.roomUsed ? "gone — you used cap room"
+       : sal < st.th.CAP ? "only for teams over the cap"
+       : sal >= st.th.APRON2 ? "you are above the second apron"
+       : "smaller, but it sets no wall — and that is sometimes worth more than the bigger one"});
+  P.push({k:"roommle", name:"ROOM MLE", amt:ROOMMLE,
+    ok: st.mid===null && (st.roomUsed || sal < st.th.CAP),
+    why: st.mid ? "you have already used your one mid-level"
+       : (st.roomUsed || sal < st.th.CAP) ? "yours because you are under the cap"
+       : "only for teams under the cap"});
+  P.push({k:"bae", name:"BI-ANNUAL", amt:BAE,
+    ok: !st.baeUsed && !st.roomUsed && sal >= st.th.CAP && sal < st.th.APRON1,
+    why: st.baeUsed ? "used" : st.roomUsed ? "gone — you used cap room"
+       : sal < st.th.CAP ? "only for teams over the cap"
+       : sal >= st.th.APRON1 ? "you are above the first apron" : "SETS A WALL at the first apron"});
+  P.push({k:"min", name:"MINIMUM", amt:MINVET, ok:true, why:"always legal, never runs out"});
+  return P;
+}
+const pocketBy = (st,k) => pocketsOf(st).find(p=>p.k===k);
+
+/* --- LEGALITY: the one predicate every purchase, repair and rescue uses -- */
+function legalSign(st, slot, pk){
+  const p = pocketBy(st, pk), sal = salaryOf(st);
+  if(!p) return "no such pocket";
+  if(!p.ok) return "that pocket is not available: " + p.why;
+  if(p.amt < slot.price) return "that pocket holds $"+fm(p.amt)+" and this costs $"+fm(slot.price);
+  if(st.slots >= ROSTER_MAX) return "your roster is full at 15 standard contracts";
+  if(st.hardCapAt !== null && sal + slot.price > st.hardCapAt)
+    return "this would put you at $"+fm(sal+slot.price)+". You may not go above $"+fm(st.hardCapAt)+
+           (st.wallWhy ? " — you set that wall yourself when you " + st.wallWhy
+                       : " — your club is hard-capped at that line and may not cross it for any reason");
+  return null;
+}
+function applySign(st, slot, pk){
+  const bad = legalSign(st, slot, pk);
+  if(bad){ st.log.push({no:true, t:"REFUSED — "+bad}); return false; }
+  const p = pocketBy(st, pk);
+  st.signings.push({slot:slot.id, price:slot.price, pocket:pk, cov:slot.cov, dur:slot.dur,
+                    label:slot.d.replace(/\.$/,"")});
+  st.slots++;
+  st.taken[slot.id] = "you";
+  if(pk==="room"){ st.roomUsed = true; }
+  if(pk==="ntmle"||pk==="taxmle"||pk==="roommle"){ st.mid = pk; }
+  if(pk==="bae"){ st.baeUsed = true; }
+  if(pk==="ntmle"||pk==="bae"){
+    if(st.hardCapAt===null || st.th.APRON1 < st.hardCapAt){
+      st.hardCapAt = st.th.APRON1;
+      st.wallWhy = "used the " + (pk==="ntmle" ? "mid-level" : "bi-annual") + " in window " + st.window;
+    }
+  }
+  if(slot.price >= ROOMMLE) st.bigMoves++;
+  st.log.push({yes:true, t:"SIGNED "+covStr(slot.cov)+" for $"+fm(slot.price)+" out of "+p.name});
+  return true;
+}
+function applyResign(st, h){
+  if(st.slots >= ROSTER_MAX){ st.log.push({no:true,t:"REFUSED — roster full at 15"}); return false; }
+  if(h.state!=="held"){ return false; }
+  h.state = "resigned"; st.slots++;
+  st.log.push({yes:true, t:"RE-SIGNED "+h.n+" for $"+fm(h.amt)+" using Bird rights, over the cap"});
+  return true;
+}
+function applyRenounce(st, h){
+  if(h.state!=="held") return false;
+  h.state = "renounced";
+  st.log.push({no:false, t:"RENOUNCED "+h.n+" — $"+fm(h.amt)+" comes off the books, and the right to keep him is gone for good"});
+  return true;
+}
+/* ROOM TO MOVE = the pockets you could still make a legal move out of. */
+function roomToMove(st){
+  const sal = salaryOf(st), out = [];
+  for(const p of pocketsOf(st)){
+    if(!p.ok) continue;
+    const cheapest = MINROOK;
+    if(p.amt < cheapest) continue;
+    if(st.slots >= ROSTER_MAX) continue;
+    if(st.hardCapAt !== null && sal + cheapest > st.hardCapAt) continue;
+    out.push(p.name);
+  }
+  return out;
+}
+
+/* --- THE ROOM'S OWN MARKET (window 3 reprice) --------------------------- */
+function checkMarketMoved(st){
+  // [MODULE RULE] a "big move" is a signing at or above the room-MLE price. The room's count is
+  // yours plus the rivals' takes in windows 1-2. At 6 or more, window 3 reprices.
+  st.roomBig = st.bigMoves + st.rivalBig;
+  if(st.roomBig >= 6){ st.marketMoved = true; }
+}
+function poolFor(st, w){
+  let list = POOL[w].map(s=>({...s}));
+  if(w===3 && st.marketMoved){
+    list = list.map(s=>{
+      if(s.price <= MINVET) return s;
+      const cov = {}; for(const k in s.cov) cov[k] = Math.max(1, s.cov[k]-1);
+      return {...s, price: Math.round(s.price*1.5), cov, d:s.d+" (the market moved)"};
+    });
+  }
+  if(st.band==="5-6") list = list.slice(0,5);   // narrower choice space at 5-6 (Rule 4)
+  return list;
+}
+/* rivals: take the two highest-priced remaining NON-minimum slots. Published. */
+function rivalsTake(st, w){
+  const list = poolFor(st,w).filter(s=>!st.taken[s.id] && s.price > MINVET)
+                            .sort((a,b)=>b.price-a.price);
+  const gone = [];
+  for(let i=0;i<2 && i<list.length;i++){ st.taken[list[i].id] = "rival"; gone.push(list[i]);
+    if(w<=2 && list[i].price >= ROOMMLE) st.rivalBig++; }
+  if(gone.length) st.log.push({t:"Window "+w+" closed. Another desk took "+
+      gone.map(g=>covStr(g.cov)+" at $"+fm(g.price)).join(" and ")+". Gone for good."});
+}
+
+/* --- CAMP --------------------------------------------------------------- */
+function applyCamp(st){
+  applyCard(st, dealCard(st.idx));
+  // THE LINE MOVED — the class card, always
+  st.th = {CAP:st.th.CAP-LINE_DROP, FLOOR:st.th.FLOOR-LINE_DROP, TAX:st.th.TAX-LINE_DROP,
+           APRON1:st.th.APRON1-LINE_DROP, APRON2:st.th.APRON2-LINE_DROP};
+  if(st.hardCapAt!==null) st.hardCapAt -= LINE_DROP;
+  st.log.push({t:"THE LINE MOVED — local TV money fell in 13 cities, so the cap fell $"+
+    fm(LINE_DROP)+" for all 30 teams, and took the floor, the tax and both aprons with it."});
+  st.cardApplied = true;
+}
+function applyCard(st, card){
+  st.card = card;
+  if(card.k==="KNEE"){
+    const need = dealTarget(st.idx);
+    const cands = contributorsOf(st).filter(c=>c.cov[need]);
+    cands.sort((a,b)=> (b.dur?1:0)-(a.dur?1:0) || b.cov[need]-a.cov[need]);
+    if(cands.length){ st.knee = cands[0].label;
+      st.log.push({no:true,t:"THE KNEE — "+cands[0].label+" is out for the season. "+
+        NEEDLABEL[need]+" loses "+cands[0].cov[need]+". His salary stays on the books."});
+    } else st.log.push({t:"THE KNEE — you have nobody at "+NEEDLABEL[need]+" to lose."});
+  }
+  else if(card.k==="OPTION"){
+    st.optionPending = true;   // resolved by the player (or by the fallback: DECLINE)
+    st.log.push({t:"THE OPTION COMES DUE — $"+fm(ROOKIE_SLOT1)+" by October 31, or he leaves."});
+  }
+  else if(card.k==="BILL"){
+    st.extraDead.push({n:"a contract that did not end", s:BILL_CHARGE});
+    st.log.push({no:true,t:"THE BILL — $"+fm(BILL_CHARGE)+" of dead money, buying nothing."});
+  }
+  else if(card.k==="SQUEEZE"){
+    const c = coverageOf(st), at = NEEDS.filter(n=>c[n]>=3);
+    st.log.push({t: at.length
+      ? "THE SQUEEZE — you hold three at "+at.map(n=>NEEDLABEL[n]).join(" and ")+
+        " and cannot move the surplus. Nothing changes. You just find out."
+      : "THE SQUEEZE — you are not stacked anywhere. Nothing happens."});
+  }
+  else if(card.k==="FLOOR"){
+    const sal = salaryOf(st);
+    if(sal < st.th.FLOOR){ st.floorPaid = st.th.FLOOR - sal;
+      st.log.push({no:true,t:"THE FLOOR — you are $"+fm(st.floorPaid)+
+        " below $"+fm(st.th.FLOOR)+". You pay it, and it goes to players league-wide."});
+    } else st.log.push({t:"THE FLOOR — you are above $"+fm(st.th.FLOOR)+". Nothing happens."});
+  }
+  else st.log.push({t:"THE HEALTHY YEAR — nothing breaks. The money you held was not needed."});
+}
+
+/* Stress: what this allocation is worth under EACH of the six cards, not just the one dealt.
+   The lowest number is the honest measure of how much trouble this roster can survive. */
+function stressTest(preCamp){
+  const out = {};
+  for(const card of DECK){
+    const c = structuredClone(preCamp);
+    applyCard(c, card);
+    if(card.k==="OPTION"){ const sal = salaryOf(c);
+      if(c.hardCapAt===null || sal+ROOKIE_SLOT1<=c.hardCapAt) c.optionPaid = ROOKIE_SLOT1; }
+    const cov = coverageOf(c);
+    out[card.k] = NEEDS.filter(n=>cov[n]>=2).length;
+  }
+  out.worst = Math.min(...DECK.map(d=>out[d.k]));
+  return out;
+}
+
+/* --- THE FIVE COLUMNS --------------------------------------------------- */
+function columns(st, before){
+  const c = coverageOf(st);
+  const answeredNow = NEEDS.filter(n=>c[n]>=2);
+  const insurance   = NEEDS.filter(n=>before[n]>=2 && c[n]>=2).length;
+  const forg = st.forgone || [];
+  return {
+    covered: NEEDS.map(n=>({n, v:c[n], s:statusOf(c[n])})),
+    answered: answeredNow.length,
+    able: roomToMove(st),
+    cost: salaryOf(st) + st.floorPaid,
+    insurance,
+    gaveUp: forg
+  };
+}
+
+/* ========================================================================== */
+/* HEADLESS RUNNER — the same functions the UI calls. Used by the probe.      */
+/* ========================================================================== */
+function runLoop(seatId, band, strategy){
+  const st = mkState(seatId, band);
+  strategy.holds(st);
+  st.forgone = freezeForgone(st);
+  for(let w=1; w<=3; w++){
+    st.window = w;
+    if(w===3) checkMarketMoved(st);
+    const avail = () => poolFor(st,w).filter(s=>!st.taken[s.id]);
+    strategy.window(st, avail, w);
+    rivalsTake(st, w);
+  }
+  const before = coverageOf(st);
+  const preCamp = structuredClone(st);
+  applyCamp(st);
+  if(st.optionPending) strategy.option ? strategy.option(st) : null;
+  strategy.repair(st);
+  return {st, before, stress: stressTest(preCamp)};
+}
+function freezeForgone(st){
+  const out = [];
+  for(const h of st.holds) if(h.state==="renounced")
+    out.push(h.n+" — $"+fm(h.amt)+" off the books, and we can never keep him");
+  if(st.roomUsed) out.push("the $"+fm(NTMLE)+" mid-level and the $"+fm(BAE)+" bi-annual");
+  return out;
+}
+/* --- helpers used by every canned strategy ------------------------------ */
+function cheapestPocketFor(st, slot){
+  const order = ["min","bae","roommle","taxmle","ntmle","room"];
+  const ps = pocketsOf(st).filter(p=>p.ok && p.amt>=slot.price);
+  ps.sort((a,b)=> order.indexOf(a.k)-order.indexOf(b.k));
+  for(const p of ps) if(!legalSign(st,slot,p.k)) return p.k;
+  return null;
+}
+function bestPocketFor(st, slot){
+  const ps = pocketsOf(st).filter(p=>p.ok && p.amt>=slot.price)
+                          .sort((a,b)=>b.amt-a.amt);
+  for(const p of ps) if(!legalSign(st,slot,p.k)) return p.k;
+  return null;
+}
+function gain(st, slot){ // how many needs this slot moves toward ANSWERED
+  const c = coverageOf(st); let g=0;
+  for(const k in slot.cov){
+    const before=c[k], after=Math.min(3, before+slot.cov[k]);
+    if(before<2 && after>=2) g+=2; else if(after>before && before<2) g+=1;
+  }
+  return g;
+}
+
+/* ========================================================================== */
+/* FIVE CANNED STRATEGIES                                                     */
+/* ========================================================================== */
+const payOptionIfLegal = st => { const sal=salaryOf(st);
+  if(st.hardCapAt===null || sal+ROOKIE_SLOT1<=st.hardCapAt) st.optionPaid=ROOKIE_SLOT1; };
+const takePriciest = (st,list) => { for(const s of list.slice().sort((a,b)=>b.price-a.price)){
+  const p=bestPocketFor(st,s); if(p){ applySign(st,s,p); return true; } } return false; };
+const takeBestGain = (st,list) => {
+  const sorted = list.slice().sort((a,b)=> gain(st,b)-gain(st,a) || a.price-b.price);
+  for(const s of sorted){ if(gain(st,s)===0) continue;
+    const p=cheapestPocketFor(st,s); if(p){ applySign(st,s,p); return true; } } return false; };
+/* a second body at a need you already answer: worth 0 today, worth everything under THE KNEE */
+const takeInsurance = (st,list) => {
+  const c = coverageOf(st);
+  const sorted = list.filter(s=>Object.keys(s.cov).some(k=>c[k]===2))
+                     .sort((a,b)=>a.price-b.price);
+  for(const s of sorted){ const p=cheapestPocketFor(st,s); if(p){ applySign(st,s,p); return true; } }
+  return false; };
+
+const STRATS = {
+// Keep your own, then push every remaining pocket out the door on the biggest thing it buys.
+"SPEND-TO-THE-CAP":{
+  holds:st=>{ st.holds.forEach(h=>applyResign(st,h)); },
+  window:(st,avail)=>{ for(let i=0;i<2;i++) if(!takePriciest(st, avail())) break; },
+  option:payOptionIfLegal,
+  repair:st=>{ takePriciest(st, POOL[9]); }
+},
+// Commit nothing, all summer. The cautious pair finds this one.
+"HOLD-EVERYTHING":{ holds:()=>{}, window:()=>{}, option:()=>{}, repair:()=>{} },
+// Renounce for the money, then always buy the most expensive thing available, need or no need.
+"COPY-THE-MOST-EXPENSIVE":{
+  holds:st=>{ st.holds.forEach(h=>applyRenounce(st,h)); },
+  window:(st,avail)=>{ takePriciest(st, avail()); },
+  option:payOptionIfLegal,
+  repair:st=>{ takePriciest(st, POOL[9]); }
+},
+// Fill open needs cheapest, THEN spend what is left on second bodies at needs already answered.
+"BALANCED — OPEN NEEDS FIRST, THEN BUY DEPTH":{
+  holds:st=>{ for(const h of st.holds){ const c=coverageOf(st);
+      let useful=false; for(const k in h.cov) if(c[k]<2) useful=true;
+      if(useful) applyResign(st,h); else applyRenounce(st,h); } },
+  window:(st,avail)=>{ for(let i=0;i<2;i++){
+      if(takeBestGain(st, avail())) continue;
+      if(takeInsurance(st, avail())) continue;
+      break; } },
+  option:st=>{ const c=coverageOf(st);
+      if(NEEDS.some(n=>c[n]<2)) payOptionIfLegal(st); },
+  repair:st=>{ if(!takeBestGain(st, POOL[9])) takeInsurance(st, POOL[9]); }
+},
+// THE TRAP. Answer all five needs with exactly one piece each, as cheaply as possible, and keep
+// nothing spare. It is the play that looks most like "build the best team", it tops STILL COVERED,
+// and every need it answers stands on one man.
+"THE TRAP — ONE PLAYER PER NEED, NOTHING SPARE":{
+  holds:st=>{ for(const h of st.holds){ const c=coverageOf(st);
+      let useful=false; for(const k in h.cov) if(c[k]<2) useful=true;
+      if(useful) applyResign(st,h); else applyRenounce(st,h); } },
+  window:(st,avail)=>{ for(let i=0;i<2;i++){
+      const c=coverageOf(st);
+      // only ever buy into a need that is not yet ANSWERED; never add a second body anywhere
+      const list=avail().filter(s=>Object.keys(s.cov).some(k=>c[k]<2))
+                        .sort((a,b)=> gain(st,b)-gain(st,a) || a.price-b.price);
+      const s=list[0]; if(!s) break;
+      const p=cheapestPocketFor(st,s); if(!p) break; applySign(st,s,p); } },
+  option:st=>{ const c=coverageOf(st); if(NEEDS.some(n=>c[n]<2)) payOptionIfLegal(st); },
+  repair:st=>{ const c=coverageOf(st);
+      takeBestGain(st, POOL[9].filter(s=>Object.keys(s.cov).some(k=>c[k]<2))); }
+}};
+
+/* ========================================================================== */
+/* UI                                                                         */
+/* ========================================================================== */
+const $ = id => document.getElementById(id);
+const fm = n => Math.round(n).toLocaleString("en-US");
+const covStr = cov => Object.keys(cov).map(k=>NEEDLABEL[k]+" "+cov[k]).join(" + ");
+
+let ST = null, BEFORE = null, PRECAMP = null, sel = null;
+
+function counterfactualStrip(st){
+  const s = stressTest(PRECAMP || st), mine = dealCard(st.idx).k;
+  return DECK.map(c=>`<div class="card ${c.k===mine?'mine':''}">
+      <div class="t">${c.t}${c.k===mine?" · YOURS":""}</div>
+      You would still answer <b>${s[c.k]} of 5</b> needs.
+    </div>`).join("") +
+    `<div class="card"><div class="t">WORST OF THE EIGHT</div>
+       The fewest you would answer under any card in the deck: <b>${s.worst} of 5</b>.
+       That number is the third book, and you could not see it while you were shopping.</div>`;
+}
+
+function boot(){
+  $("seatSel").innerHTML = SEATS.map(s=>`<option value="${s.id}">${s.club}</option>`).join("");
+  $("seatSel").onchange = reset; $("bandSel").onchange = reset;
+  $("resetBtn").onclick = reset;
+  $("probeBtn").onclick = runProbe;
+  $("modelText").textContent = MODEL_TEXT();
+  reset();
+}
+function reset(){
+  ST = mkState($("seatSel").value, $("bandSel").value);
+  BEFORE = null; PRECAMP = null; sel = null;
+  ST.log.push({t:seatOf(ST).hook});
+  render();
+}
+
+function render(){
+  const st = ST, S = seatOf(st), sal = salaryOf(st), cov = coverageOf(st);
+  drawLedger(st, sal);
+  drawCoverage(st, cov);
+  drawPockets(st);
+  drawDeck(st);
+  drawHolds(st);
+  drawMarket(st);
+  drawBanner(st);
+  drawResult(st);
+  $("log").innerHTML = st.log.slice().reverse()
+    .map(l=>`<div class="${l.no?'no':(l.yes?'yes':'')}">${l.t}</div>`).join("");
+  const rtm = roomToMove(st);
+  $("rtm").textContent = rtm.length;
+  $("rtmList").innerHTML = rtm.length
+    ? "You could still make a legal signing out of: " + rtm.join(", ") + "."
+    : "There is no legal move left. Not because you are out of money — because of the walls and the roster.";
+}
+
+function drawLedger(st, sal){
+  const S = seatOf(st);
+  const top = Math.max(st.th.APRON2 + 12000000, sal + 12000000);
+  const H = 430, y = v => H - (v/top)*H;
+  const bands = [];
+  let acc = 0;
+  const push = (label, amt, cls) => { bands.push({label, amt, cls, from:acc, to:acc+amt}); acc += amt; };
+  S.contracts.forEach(c=>push(c.n, c.s, ""));
+  S.dead.forEach(d=>push(d.n, d.s, "dead"));
+  st.extraDead.forEach(d=>push(d.n, d.s, "dead"));
+  st.holds.forEach(h=>{ if(h.state==="held") push(h.n+" (cap hold — nobody in the chair)", h.amt, "hold");
+                        else if(h.state==="resigned") push(h.n+" (re-signed)", h.amt, "own"); });
+  st.signings.forEach(g=>push(g.label, g.price, "sign"));
+  if(st.optionPaid) push("team option exercised", st.optionPaid, "sign");
+  const esc = emptySlotCharge(st);
+  if(esc) push("empty roster spots (charged)", esc, "dead");
+
+  let html = "";
+  for(const b of bands){
+    const h = Math.max(2, (b.amt/top)*H);
+    html += `<div class="band ${b.cls}" style="bottom:${(b.from/top)*H}px;height:${h}px"></div>`;
+  }
+  const rules = [
+    ["floor", st.th.FLOOR], ["cap", st.th.CAP], ["tax", st.th.TAX],
+    ["1st apron", st.th.APRON1], ["2nd apron", st.th.APRON2]
+  ];
+  for(const [n,v] of rules){
+    const wall = st.hardCapAt!==null && Math.abs(v-st.hardCapAt)<1;
+    html += `<div class="rule ${wall?'wall':''}" style="bottom:${(v/top)*H}px">
+      <span>${wall?'WALL ':''}${n} ${fm(v)}</span></div>`;
+  }
+  $("bar").innerHTML = html;
+  $("ledgerList").innerHTML = bands.map(b=>
+    `<div class="lgrow ${b.cls==='dead'?'deadrow':(b.cls==='hold'?'holdrow':'')}">
+       <span>${b.label}</span><span class="num">$${fm(b.amt)}</span></div>`).join("");
+  const room = Math.max(0, st.th.CAP - sal);
+  $("salaryLine").innerHTML =
+    `<div class="flex"><span class="chip">SALARY <b class="num">$${fm(sal)}</b></span>
+     <span class="chip">ROSTER <b>${st.slots} / 15</b></span>
+     ${room>0?`<span class="chip">CAP ROOM <b class="num">$${fm(room)}</b></span>`:""}
+     ${st.hardCapAt!==null?`<span class="chip" style="border-color:#5c2a30">WALL <b class="num">$${fm(st.hardCapAt)}</b></span>`:""}
+     ${st.floorPaid?`<span class="chip" style="border-color:#5c2a30">PAID TO THE FLOOR <b class="num">$${fm(st.floorPaid)}</b></span>`:""}</div>`;
+}
+
+function drawCoverage(st, cov){
+  const show = st.band==="5-6"
+    ? NEEDS.filter(n=>seatBaseCov(st)[n] < 2).slice(0,3)
+    : NEEDS;
+  const el = $("covStrip");
+  el.className = "cov" + (show.length===3 ? " three" : "");
+  el.innerHTML = show.map(n=>{
+    const v = cov[n], s = statusOf(v);
+    return `<div class="cell ${s}"><div class="n">${NEEDLABEL[n]}</div>
+      <div class="v">${v}</div><div class="s">${s}</div></div>`;
+  }).join("");
+}
+function seatBaseCov(st){
+  const c = {}; NEEDS.forEach(n=>c[n]=0);
+  for(const x of seatOf(st).contributors) for(const k in x.cov) c[k]=Math.min(3,c[k]+x.cov[k]);
+  return c;
+}
+
+function drawPockets(st){
+  $("pockets").innerHTML = pocketsOf(st).map(p=>
+    `<div class="pk ${p.ok?"":"dead"}">
+       <div><div class="pkname">${p.name}</div><div class="pkwhy">${p.why}</div></div>
+       <div class="pkamt">${p.ok?"$"+fm(p.amt):"—"}</div>
+     </div>`).join("");
+}
+
+function drawDeck(st){
+  const mine = dealCard(st.idx);
+  $("deck").innerHTML =
+    DECK.map(c=>`<div class="card ${c.k===mine.k?'mine':''}">
+        <div class="t">${c.t}${c.k===mine.k?" · YOURS":""}</div>${c.d}
+        <div class="anc">${c.a}</div></div>`).join("") +
+    CLASS_CARDS.map(c=>`<div class="card"><div class="t">${c.t}</div>${c.d}
+        <div class="anc">${c.a}</div></div>`).join("");
+  $("dealRule").innerHTML =
+    `The deal is published and fixed: your card is <span class="mono">DECK[(seat×5+2) mod 6]</span>
+     and, for THE KNEE, the need it lands on is <span class="mono">NEEDS[(seat+2) mod 5]</span> =
+     <b>${NEEDLABEL[dealTarget(st.idx)]}</b>. No dice anywhere. Two desks with the same books can
+     still draw different cards — that is the point.`;
+}
+
+function drawHolds(st){
+  const S = seatOf(st), el = $("holdsPanel");
+  if(!S.holds.length){
+    el.innerHTML = `<h3>Your own free agents</h3>
+      <div class="note">${S.club} carries no cap holds under this room's payroll definition, so the
+      renounce fork does not exist at this desk. Your pockets are what they are.</div>`;
+    return;
+  }
+  const done = st.stage!=="HOLDS";
+  el.innerHTML = `<h3>Your own free agents — the room or the rights</h3>
+    <div class="note" style="margin-top:0;margin-bottom:8px">
+      A cap hold is a chair with nobody in it. It costs money and covers nothing. Re-sign one and
+      you pay the same number but get the player, <b>over the cap, with no exception used</b>.
+      Renounce one and the money comes off — and the right to keep him is gone for good.
+    </div>` +
+    st.holds.map(h=>`<div class="pk">
+        <div><div class="pkname">${h.n} — ${covStr(h.cov)}</div>
+             <div class="pkwhy">${h.state==="held" ? "on the books as a hold" :
+               (h.state==="resigned" ? "RE-SIGNED — on the roster" : "RENOUNCED — gone for good")}</div></div>
+        <div class="flex">
+          <span class="pkamt">$${fm(h.amt)}</span>
+          ${h.state==="held" && !done ? `<button data-rs="${h.id}">Re-sign</button>
+            <button data-rn="${h.id}" class="ghost">Renounce</button>`:""}
+        </div></div>`).join("") +
+    (done ? "" : `<div class="flex" style="margin-top:8px">
+       <button class="primary" id="holdsDone">Lock these and open window 1</button>
+       <span class="note">Locking freezes what you gave up. ${st.band==="5-6"
+         ? "At 5–6 this is one all-or-nothing choice; per-player renouncing is the 7–8 compound move."
+         : "At 7–8 you may mix: renounce some, keep others, and use the room that creates."}</span></div>`);
+  el.querySelectorAll("[data-rs]").forEach(b=>b.onclick=()=>{
+    const h = st.holds.find(x=>x.id===b.dataset.rs);
+    if(st.band==="5-6"){ st.holds.forEach(x=>applyResign(st,x)); } else applyResign(st,h);
+    render();
+  });
+  el.querySelectorAll("[data-rn]").forEach(b=>b.onclick=()=>{
+    const h = st.holds.find(x=>x.id===b.dataset.rn);
+    if(st.band==="5-6"){ st.holds.forEach(x=>applyRenounce(st,x)); } else applyRenounce(st,h);
+    render();
+  });
+  const d = $("holdsDone");
+  if(d) d.onclick = ()=>{ st.stage="PLAY"; st.forgone = freezeForgone(st);
+    st.log.push({t:"Locked. "+(st.forgone.length? "Given up: "+st.forgone.join("; ") :
+      "You gave up nothing yet — you kept every right you had.")}); render(); };
+}
+
+function drawMarket(st){
+  const el = $("marketPanel");
+  if(st.stage==="HOLDS"){ el.innerHTML = `<h3>The market</h3>
+    <div class="note">Settle your own free agents first. The market opens after that.</div>`; return; }
+  if(st.stage==="DONE"){ el.innerHTML = ""; el.hidden = true; return; }
+  el.hidden = false;
+
+  if(st.stage==="CAMP"){
+    let extra = "";
+    if(st.optionPending && !st.optionResolved){
+      extra = `<div class="flex" style="margin:8px 0">
+        <button id="optPay">Exercise the option — $${fm(ROOKIE_SLOT1)}</button>
+        <button id="optDrop" class="ghost">Decline — he leaves</button></div>`;
+    }
+    const pool = POOL[9].filter(s=>!st.taken[s.id]);
+    el.innerHTML = `<h3>Camp · one repair</h3>
+      <div class="note" style="margin:0 0 8px">The market in October is thin. You get one move,
+      out of whatever pocket you have left, by the same arithmetic that validated every signing
+      in July.</div>${extra}
+      <div class="slots">${pool.map(s=>slotHTML(st,s,true)).join("")}</div>
+      <div class="flex" style="margin-top:10px">
+        <button class="primary" id="finish">Skip the repair and see the room</button></div>`;
+    wireSlots(st, true);
+    if($("optPay")) $("optPay").onclick=()=>{
+      const sal=salaryOf(st);
+      if(st.hardCapAt!==null && sal+ROOKIE_SLOT1>st.hardCapAt){
+        st.log.push({no:true,t:"REFUSED — exercising would put you at $"+fm(sal+ROOKIE_SLOT1)+
+          " and your wall is $"+fm(st.hardCapAt)+". He leaves, and you did that in July."});
+      } else { st.optionPaid=ROOKIE_SLOT1; st.log.push({yes:true,t:"Option exercised, $"+fm(ROOKIE_SLOT1)+"."}); }
+      st.optionResolved=true; render(); };
+    if($("optDrop")) $("optDrop").onclick=()=>{ st.optionResolved=true;
+      st.log.push({t:"Option declined. He leaves."}); render(); };
+    $("finish").onclick=()=>{ st.stage="DONE"; render(); };
+    return;
+  }
+
+  const w = st.window, pool = poolFor(st,w).filter(s=>!st.taken[s.id]);
+  const gonecount = poolFor(st,w).length - pool.length;
+  el.innerHTML = `<h3>Window ${w} of 3 · the market</h3>
+    <div class="note" style="margin:0 0 8px">
+      ${st.marketMoved && w===3 ? "<b style='color:var(--gold)'>THE MARKET MOVED.</b> Enough desks reached for a mid-level, so what is left costs half again as much and does less. " : ""}
+      ${gonecount ? gonecount+" of this window's slots are already gone. " : ""}
+      Every card shows a role, a price, one strength and one risk. There is no rating on any card,
+      and there is nothing to sort by.</div>
+    <div class="slots">${pool.map(s=>slotHTML(st,s,false)).join("")}</div>
+    <div class="flex" style="margin-top:10px">
+      <button class="primary" id="closeW">${w<3?"Close window "+w:"Close window 3 — camp opens"}</button>
+      <span class="note">Closing with nothing committed signs nobody. Whatever another desk took
+      is gone, and every empty roster spot below 12 still costs you $${fm(MINROOK)}.</span>
+    </div>`;
+  wireSlots(st, false);
+  $("closeW").onclick = ()=>{
+    rivalsTake(st, w);
+    if(w<3){ st.window = w+1; if(st.window===3) checkMarketMoved(st); }
+    else { BEFORE = coverageOf(st); PRECAMP = structuredClone(st); applyCamp(st); st.stage="CAMP"; }
+    render();
+  };
+}
+function slotHTML(st, s, repair){
+  const pockets = pocketsOf(st).filter(p=>p.ok && p.amt>=s.price);
+  const btns = pockets.map(p=>{
+    const bad = legalSign(st,s,p.k);
+    return `<button data-slot="${s.id}" data-pk="${p.k}" data-rep="${repair?1:0}"
+      ${bad?`disabled title="${bad.replace(/"/g,"'")}"`:""}>${p.name}</button>`;
+  }).join("");
+  return `<div class="slot">
+    <div class="role">${covStr(s.cov)}</div>
+    <div class="price">$${fm(s.price)}</div>
+    <div class="desc">${s.d}</div>
+    <div class="risk">${s.r}</div>
+    ${st.band==="7-8" && s.cmp ? `<div class="cmp">${s.cmp}</div>`:""}
+    <div class="btns">${btns || `<span class="note">No pocket of yours reaches this price.</span>`}</div>
+  </div>`;
+}
+function wireSlots(st, repair){
+  document.querySelectorAll("[data-slot]").forEach(b=>b.onclick=()=>{
+    const w = repair ? 9 : st.window;
+    const s = (repair ? POOL[9] : poolFor(st,w)).find(x=>x.id===b.dataset.slot);
+    if(applySign(st, s, b.dataset.pk) && repair){ st.stage="DONE"; }
+    render();
+  });
+}
+
+function drawBanner(st){
+  const b = $("banner");
+  if(st.stage==="CAMP" && st.card){
+    b.className=""; b.innerHTML = `<div class="banner ${st.card.k==="HEALTHY"?"":"bad"}">
+      <h2>CAMP OPENS — ${st.card.t}</h2>
+      <p>${st.card.d}</p>
+      <p><b>THE LINE MOVED:</b> the cap fell $${fm(LINE_DROP)} for all 30 teams because local TV
+      money fell in 13 cities, and the floor, the tax and both aprons fell with it. The number that
+      has been the wall all lesson is not a law of physics. Somebody's revenue decided it.</p>
+      <p class="mono">2016-17 +~34% (no growth limit) · 2025-26 +10.0% (at the CBA ceiling) ·
+      2026-27 +6.7% (under it). Same trigger. Three rules. Three outcomes.</p></div>`;
+  } else if(st.stage==="DONE"){
+    b.innerHTML = `<div class="banner"><h2>THE FIVE COLUMNS</h2>
+      <p>Five definitions of success. Nobody is on top of all of them. There is no score, no rank
+      and no champion — the disagreement is the product.</p></div>`;
+  } else b.innerHTML = "";
+}
+
+function drawResult(st){
+  const el = $("resultPanel");
+  if(st.stage!=="DONE"){ el.hidden = true; return; }
+  el.hidden = false;
+  const before = BEFORE || seatBaseCov(st);
+  const you = columns(st, before);
+  // three rival desks, run headless on the other seats with fixed strategies
+  const rivalPlan = ["BALANCED — OPEN NEEDS FIRST, THEN BUY DEPTH","SPEND-TO-THE-CAP","HOLD-EVERYTHING"];
+  const rivals = SEATS.filter(s=>s.id!==st.seatId).map((s,i)=>{
+    const name = rivalPlan[i%3];
+    const {st:rs, before:rb} = runLoop(s.id, st.band, STRATS[name]);
+    return {club:s.club, how:name, c:columns(rs, rb)};
+  });
+  const rows = [{club:seatOf(st).club+" (you)", how:"your own play", c:you}, ...rivals];
+  el.innerHTML = `<h3>The five columns — no winner, on purpose</h3>
+    <table><thead><tr>
+      <th>Desk</th><th>Still covered</th><th>Still able</th><th>What it cost</th>
+      <th>Insurance that paid</th><th>What you gave up</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr>
+        <td><b>${r.club}</b><div class="note">${r.how}</div></td>
+        <td>${r.c.covered.map(x=>`<span class="chip" style="margin:1px;padding:1px 5px">${NEEDLABEL[x.n]} ${x.s[0]}</span>`).join("")}
+            <div class="note">${r.c.answered} of 5 answered</div></td>
+        <td class="n">${r.c.able.length}<div class="note" style="text-align:left">${r.c.able.join("<br>")||"nothing"}</div></td>
+        <td class="n">$${fm(r.c.cost)}</td>
+        <td class="n">${r.c.insurance}</td>
+        <td>${r.c.gaveUp.length? r.c.gaveUp.join("<br>") : "nothing named"}</td>
+      </tr>`).join("")}
+    </tbody></table>
+    <div class="note">A = ANSWERED, T = THIN, O = OPEN. <b>What it cost is displayed and never
+    ranked</b> — the board carries no payroll ordering anywhere, because the whole point is that
+    New Orleans carries the ninth-highest payroll in the league, $212,290,592, and is not a
+    contender.</div>
+    <div class="sep"></div>
+    <h3>The counterfactual the product runs for you — what each of the eight would have done</h3>
+    <div class="deck">${counterfactualStrip(st)}</div>
+    <div class="note">This is the 5–6 counterfactual: the product runs it and displays it, and the
+    pair reacts. At 7–8 it is withheld until the pair has committed an answer to "which one could
+    you not have survived?"</div>`;
+}
+
+/* ========================================================================== */
+/* THE MODEL PANEL                                                            */
+/* ========================================================================== */
+function MODEL_TEXT(){ return `
+SOURCED CONSTANTS  (NBA_FINANCIAL_TRUTH.md, 2026-27 league year, official-nba unless noted)
+  cap              164,961,000      floor  148,465,000 (= exactly 90% of the cap)
+  luxury tax       200,428,000      first apron 209,015,000     second apron 221,686,000
+  non-taxpayer MLE  15,044,000      room MLE 9,366,000          taxpayer MLE 6,064,000
+  bi-annual          5,477,000  (cap-database, single source)
+  rookie minimum     1,357,763      veteran (10+) minimum 3,876,529
+  2026 No.1 rookie-scale slot 14,748,000
+  roster: 15 standard contracts max; below 12 counted you are charged one rookie
+          minimum per empty slot (this is why doing nothing is not free)
+
+FORMULAS
+  SALARY = SUM(active contracts)
+         + SUM(dead money)                                 [coverage 0, removable by nothing]
+         + SUM(cap holds not renounced)                    [coverage 0 until re-signed]
+         + SUM(signing prices) + option exercised
+         + 1,357,763 x max(0, 12 - filled roster slots)
+
+  COVER(need) = min(3, SUM of levels over rostered contributors covering that need)
+  ANSWERED <=> COVER >= 2      THIN <=> COVER = 1      OPEN <=> COVER = 0
+    -> the cap at 3 is why greedy fails: a third piece at a need you already answer is worth 0,
+       so what a card is worth depends on what you already own.
+
+  LEGAL(move) <=>  pocket unused
+               AND pocketAmount >= price
+               AND filledSlots < 15
+               AND (hardCapAt = null OR SALARY + price <= hardCapAt)
+               AND ELIGIBLE(pocket)
+
+  A team UNDER the cap has one mid-level and it is the ROOM MLE. A team OVER the cap has one
+  mid-level and it is the NON-TAXPAYER or the TAXPAYER MLE. That fork is the whole lesson.
+
+  ELIGIBLE(CAP ROOM) <=> SALARY < CAP        ; pays up to CAP - SALARY
+                                             ; using it RETIRES the NTMLE and the bi-annual (NBA §2.4)
+  ELIGIBLE(NTMLE)    <=> CAP <= SALARY < FIRST APRON  -> hardCapAt := FIRST APRON  (NBA §2.3)
+  ELIGIBLE(TAX MLE)  <=> CAP <= SALARY < SECOND APRON -> no wall
+  ELIGIBLE(BAE)      <=> CAP <= SALARY < FIRST APRON AND room unused -> hardCapAt := FIRST APRON
+  ELIGIBLE(ROOM MLE) <=> SALARY < CAP, or cap room has already been used
+  ELIGIBLE(MINIMUM)  <=> always                       -> the universal escape hatch; it is what
+                                                         makes every seeded position recoverable
+  ONE MID-LEVEL ONLY: using NTMLE, TAX MLE or ROOM MLE retires the other two.
+
+  RE-SIGN a cap hold : costs his hold amount, over the cap, no exception used, +1 roster slot.
+                       SALARY does not change - the hold was already on the books.
+  RENOUNCE a hold    : the amount comes off; the right is destroyed for good; recorded in
+                       WHAT YOU GAVE UP and frozen at lock.                        (NBA §2.5)
+
+  THREE BOOKS, AND THEY CANNOT BE ADDED:
+    1. STILL COVERED  — how many of the five needs you answer.
+    2. STILL ABLE     — ROOM TO MOVE = |{ pockets you could still make a legal minimum signing
+                        out of }|, by the SAME LEGAL() predicate that validated every purchase.
+    3. WORST OF THE EIGHT — re-run this exact allocation against every card in the deck and take
+                        the fewest needs it still answers. You cannot see this one while you shop,
+                        and it is the one the whole lesson is about.
+
+  THE KNEE     : removes the single largest contributor at NEEDS[(seat+2) mod 5],
+                 preferring a durability-flagged signing. Two level-1 pieces survive it as THIN;
+                 one level-2 piece collapses to OPEN, and no minimum can rebuild an OPEN need.
+                 That is why depth is insurance and why insurance can only be bought where you
+                 already have something.
+  THE LINE MOVED: every threshold -1,000,000, and your wall with it. It is not retroactive — a
+                 salary already above a wall stays legal; what you lose is the room to move again.
+  THE MARKET MOVED: a "big move" is a signing at or above the room-MLE price. At 6 or more across
+                 the room by the end of window 2 (yours plus the rivals' takes), window 3's
+                 non-minimum slots reprice x1.5 and drop one level. This is the 2016 cap spike run
+                 as the room's own price distribution, with no probability in it anywhere.
+
+  THE FIVE CANNED STRATEGIES THE PROBE RUNS
+    SPEND-TO-THE-CAP        keep your own, then push every pocket out on the biggest thing it buys
+    HOLD-EVERYTHING         commit nothing, all summer
+    COPY-THE-MOST-EXPENSIVE renounce for the money, then always buy the priciest thing available
+    BALANCED                open needs first and cheapest, THEN second bodies where you already
+                            answer — the play that buys the third book
+    THE TRAP                answer all five with exactly one piece each and keep nothing spare.
+                            It tops STILL COVERED and every need it answers stands on one man.
+
+INVENTED HERE, NOT NBA FACTS  [MODULE RULE]
+  the five needs; coverage levels 1/2 assigned by role; the cap at 3; ANSWERED at 2;
+  the market's composition; Detroit's 52,362,998 hold split (28,000,000 + 24,362,998) and the rule
+  that re-signing costs the hold amount; Memphis's inherited coverage; the eight-card deck, its
+  effects and its deal rules; the 6,400,000 BILL charge; the x1.5 reprice; the rivals' rule (take
+  the two highest-priced remaining non-minimum slots, never a minimum); starting filled roster
+  slots (12 / 11 / 12 / 13).
+
+NOT RENDERED ANYWHERE, ON PURPOSE  (NBA_FINANCIAL_TRUTH §8.2)
+  #1  any trade salary-matching percentage (100 / 110 / 125). Lesson 2 runs on this room's own
+      rule instead: "a trade must send out at least as much salary as it takes back", printed
+      in the module's voice, replaced (not patched) when CBA Article VII is read.
+  #3  Golden State, Cleveland, Indiana and Miami are not seats - all four are reported
+      hard-capped at a line their own listed salary exceeds.
+  #5  any specific luxury-tax dollar bill. There is no tax bill in this prototype at all.
+  #8  any revenue-sharing percentage.   #11 any market-size tier label.
+  #21 any load-bearing percentage, ratio, negative number or probability in the 5-6 band.
+      Nothing here computes one. Risk is ordinal: SOLID / BOOM-OR-BUST / none flagged.
+
+WHAT WOULD FALSIFY THIS MODEL — the probe runs three of these and prints the verdict
+  1. One strategy weakly best on ALL THREE books at a majority of seats.
+  2. Doing nothing weakly best anywhere (then the TIME CUT fallback dominates every decision).
+  3. Any reachable state with no legal action at all. (The minimum contract is what rules this
+     out, and it is a real rule, not a tuned one.)
+  4. A monotone map from money spent to needs answered — that is FL1, "the best team is the most
+     expensive team", computed by the model itself.
+  Also owed, and NOT testable here: put this market and this pocket rack in front of three adults
+  who do not follow basketball and ask them to make a legal signing that answers an open need.
+  NBA_FINANCIAL_TRUTH §7.12 #7 records that the fandom-accessibility claim has never been tested
+  against a non-fan reader. If they cannot, the surface is wrong, not the reader.
+`.trim(); }
+
+/* ========================================================================== */
+/* STRATEGY PROBE                                                             */
+/* ========================================================================== */
+function runProbe(){
+  $("probeBox").open = true;
+  const band = $("bandSel").value;
+  const names = Object.keys(STRATS);
+  let html = `<div class="note" style="margin-bottom:10px">Every strategy run through the full
+    loop — holds, three windows against the same rivals, camp, the line moving, one repair — on
+    every seat, at band ${band}. This is where a dominant strategy is caught on the bench.</div>`;
+  for(const S of SEATS){
+    const rows = names.map(n=>{
+      const {st, before, stress} = runLoop(S.id, band, STRATS[n]);
+      const c = columns(st, before);
+      return {n, c, stress, card: dealCard(st.idx).t, wall: st.hardCapAt};
+    });
+    html += `<h3 style="margin:14px 0 6px">${S.club} — pressure card dealt: ${rows[0].card}</h3>
+      <table><thead><tr><th>Strategy</th><th>Still covered</th><th>Answered</th>
+      <th>Still able</th><th>Worst of the eight</th><th>What it cost</th><th>Wall</th><th>Gave up</th>
+      </tr></thead><tbody>` +
+      rows.map(r=>`<tr>
+        <td>${r.n}</td>
+        <td>${r.c.covered.map(x=>NEEDLABEL[x.n]+" "+x.s[0]).join(" · ")}</td>
+        <td class="n">${r.c.answered}</td>
+        <td class="n">${r.c.able.length}</td>
+        <td class="n">${r.stress.worst}</td>
+        <td class="n">$${fm(r.c.cost)}</td>
+        <td class="n">${r.wall!==null?"$"+fm(r.wall):"none"}</td>
+        <td>${r.c.gaveUp.length}</td></tr>`).join("") + `</tbody></table>
+      <div class="note">"Worst of the eight" re-runs this same allocation against every card in the
+      deck and reports the fewest needs it still answers. It is the honest measure of how much
+      trouble the roster can take, and it is the third book — the one that is not visible while you
+      are shopping.</div>`;
+  }
+  // ---- FALSIFIER 1: is any ONE strategy weakly best on BOTH books at a MAJORITY of seats? ----
+  html += `<h3 style="margin:16px 0 6px">Falsifier 1 — dominance across the three books</h3>`;
+  const wins = {}; names.forEach(n=>wins[n]=[]);
+  const trivial = [];
+  for(const S of SEATS){
+    const res = names.map(n=>{ const {st,before,stress}=runLoop(S.id,band,STRATS[n]);
+                               const c=columns(st,before);
+                               return {n,a:c.answered,b:c.able.length,w:stress.worst}; });
+    const distinct = new Set(res.map(r=>r.a+"/"+r.b+"/"+r.w)).size;
+    if(distinct <= 2) trivial.push(S.club+" ("+distinct+" distinct outcomes — this seat has almost no action space)");
+    for(const x of res){
+      const weaklyBest = res.every(y => y.n===x.n || (x.a>=y.a && x.b>=y.b && x.w>=y.w));
+      const strictly   = res.some(y => y.n!==x.n && (x.a>y.a || x.b>y.b || x.w>y.w));
+      if(weaklyBest && strictly) wins[x.n].push(S.club);
+    }
+  }
+  const majority = Math.ceil(SEATS.length/2)+ (SEATS.length%2===0?1:0); // 3 of 4
+  const bad = names.filter(n=>wins[n].length >= majority);
+  html += bad.length
+    ? `<div class="banner bad"><b>FALSIFIER 1 HAS FIRED.</b><br>` +
+      bad.map(n=>`<b>${n}</b> is weakly best on both books at ${wins[n].join(", ")}.`).join("<br>") +
+      `<p>The pool composition, the coverage cap or the roster-slot budget needs retuning before
+       this design is defensible. Do not argue with this; retune it.</p></div>`
+    : `<div class="banner"><b>No single strategy is weakly best on both books at a majority of seats.</b>
+       <p>Per-seat weak wins: ` + names.map(n=>`${n} ${wins[n].length}`).join(" · ") + `.
+       Every strategy that answers more needs has fewer moves left, and every strategy that keeps
+       more moves answers fewer needs. That is the frontier the pair is choosing a point on, and no
+       amount of arithmetic picks the point — only a judgment about which of the eight cards you
+       can live with does.</p></div>`;
+  if(trivial.length) html += `<div class="note" style="margin-top:8px"><b>Honest note:</b> ` +
+    trivial.join("; ") + `. A seat that legally has one move is a real NBA position, not a bug —
+    but it is not where a dominance claim can be tested.</div>`;
+
+  // ---- FALSIFIER 2: is doing nothing ever weakly best? ----
+  const nothingWins = [];
+  for(const S of SEATS){
+    const res = names.map(n=>{ const {st,before,stress}=runLoop(S.id,band,STRATS[n]);
+                               const c=columns(st,before);
+                               return {n,a:c.answered,b:c.able.length,w:stress.worst}; });
+    const hold = res.find(r=>r.n==="HOLD-EVERYTHING");
+    if(res.every(y=>y.n===hold.n || (hold.a>=y.a && hold.b>=y.b && hold.w>=y.w))) nothingWins.push(S.club);
+  }
+  html += `<h3 style="margin:16px 0 6px">Falsifier 2 — is doing nothing weakly best anywhere?</h3>` +
+    (nothingWins.length
+      ? `<div class="banner bad"><b>Doing nothing is weakly best at ${nothingWins.join(", ")}.</b>
+         <p>The TIME CUT fallback would then dominate every real decision, and the lesson has no
+         decision in it.</p></div>`
+      : `<div class="banner"><b>Doing nothing is never weakly best.</b>
+         <p>HOLD-EVERYTHING always keeps the most moves and always answers the fewest needs — and
+         the empty-slot charge means it is not even free.</p></div>`);
+
+  // ---- FALSIFIER 4: monotone money -> outcome? ----
+  let mono = true, pairs = [];
+  for(const S of SEATS){
+    const res = names.map(n=>{ const {st,before}=runLoop(S.id,band,STRATS[n]);
+                               const c=columns(st,before); return {n,cost:c.cost,a:c.answered}; })
+                     .sort((x,y)=>x.cost-y.cost);
+    for(let i=1;i<res.length;i++) if(res[i].a < res[i-1].a){
+      mono = false;
+      pairs.push(`${S.club}: ${res[i-1].n} spent $${fm(res[i-1].cost)} and answered ${res[i-1].a};
+                  ${res[i].n} spent $${fm(res[i].cost)} and answered ${res[i].a}`);
+    }
+  }
+  html += `<h3 style="margin:16px 0 6px">Falsifier 4 — does more money always buy more?</h3>` +
+    (mono
+      ? `<div class="banner bad"><b>Money spent maps monotonically onto needs answered.</b>
+         <p>That is FL1 — "the best team is the most expensive team" — computed by the model
+         itself. Retune the pool.</p></div>`
+      : `<div class="banner"><b>No. A cheaper allocation beats a more expensive one here:</b>
+         <p>${pairs.slice(0,4).join("<br>")}</p></div>`);
+  $("probeOut").innerHTML = html;
+}
+
+boot();
+</script>
+</body>
+</html>

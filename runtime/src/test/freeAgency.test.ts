@@ -41,7 +41,7 @@ function expectRejected<T>(result: { ok: boolean; reason?: string }, match?: Reg
 }
 
 function buildLockedL1(picks: { slot: string; playerId: string }[], seatId = "s1", seatIds = ["s1"]): DraftDayState {
-  let state = draftDayModule.initialState({ sessionId: "l1", seatIds: [] });
+  let state = draftDayModule.initialState({ sessionId: "l1", seatIds: [], gradeBand: "5-6" });
   for (const { slot, playerId } of picks) {
     state = expectOk(draftDayModule.reduce(state, { type: "place", slotId: slot, playerId }, ddCtx("PLAY", seatId, seatIds)));
   }
@@ -81,19 +81,19 @@ const HIGH_DEAD_CAP_AT_CAP_ROSTER = [
 function freshL3FromL1(picks: { slot: string; playerId: string }[] = AT_CAP_ROSTER, l1SeatId = "s1", l3SeatIds = ["t1", "t2", "t3"]): FreeAgencyState {
   const l1 = buildLockedL1(picks, l1SeatId, [l1SeatId]);
   const seed = { lessonModuleId: draftDayModule.id, state: l1 };
-  return freeAgencyModule.initialState({ sessionId: "l3", seatIds: l3SeatIds, seed });
+  return freeAgencyModule.initialState({ sessionId: "l3", seatIds: l3SeatIds, seed, gradeBand: "5-6" });
 }
 
 /** A fresh freeAgency session with no seed at all — the pure-stock path. */
 function freshL3Stock(l3SeatIds = ["t1", "t2", "t3"]): FreeAgencyState {
-  return freeAgencyModule.initialState({ sessionId: "l3", seatIds: l3SeatIds, seed: undefined });
+  return freeAgencyModule.initialState({ sessionId: "l3", seatIds: l3SeatIds, seed: undefined, gradeBand: "5-6" });
 }
 
 /** Builds a real L2 (tradeDeadline) session, seeded from a real locked L1, drives it to a given path for
  *  seat "t1" (the only claimant of index 0), and returns the raw TradeDeadlineState for use as an L3 seed. */
 function buildL2State(opts: { l1Picks?: { slot: string; playerId: string }[]; path: "standPat" | "veteran" | "bidWon" | "bidLostUnrescued" | "bidLostRescued" }): TradeDeadlineState {
   const l1 = buildLockedL1(opts.l1Picks ?? CUT_ROOM_ROSTER, "s1", ["s1"]);
-  let l2 = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1"], seed: { lessonModuleId: draftDayModule.id, state: l1 } });
+  let l2 = tradeDeadlineModule.initialState({ sessionId: "l2", seatIds: ["t1"], seed: { lessonModuleId: draftDayModule.id, state: l1 }, gradeBand: "5-6" });
   l2 = expectOk(tradeDeadlineModule.reduce(l2, { type: "claim", carriedIndex: 0 }, tdCtx("HOOK", "t1", ["t1"])));
   if (opts.path === "standPat") {
     return expectOk(tradeDeadlineModule.reduce(l2, { type: "standPat", reason: "happy-with-roster" }, tdCtx("PLAY", "t1", ["t1"])));
@@ -118,7 +118,7 @@ function buildL2State(opts: { l1Picks?: { slot: string; playerId: string }[]; pa
 
 /** A fresh freeAgency session seeded from a real L2 (tradeDeadline) state built by `buildL2State`. */
 function freshL3FromL2(l2: TradeDeadlineState, l3SeatIds = ["t1", "t2", "t3"]): FreeAgencyState {
-  return freeAgencyModule.initialState({ sessionId: "l3", seatIds: l3SeatIds, seed: { lessonModuleId: TD_MODULE_ID, state: l2 } });
+  return freeAgencyModule.initialState({ sessionId: "l3", seatIds: l3SeatIds, seed: { lessonModuleId: TD_MODULE_ID, state: l2 }, gradeBand: "5-6" });
 }
 
 function claimStock(state: FreeAgencyState, seatId: string, seatIds = ["t1", "t2", "t3"]): FreeAgencyState {
