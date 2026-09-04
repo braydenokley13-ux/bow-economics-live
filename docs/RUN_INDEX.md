@@ -43,18 +43,30 @@ files and converges in this file. Builders never certify their own work.
   (`spotlightView`/`pressCandidates`); the refused-pick dead-picker regression (hunt on 0dffaf4) fixed at
   `play/main.ts` onRejected. In flight: Press Conference runtime (board render + tests), Full House carry
   intake's five W4 direction items. Owed: an e2e that races two seats for one desk; L1 apron-on-holds repair.
-- **C2 THE SEASON — BUILD WAVE LIVE.** Spec landed (`W2_THE_SEASON_SPEC.md`, rulings in D60).
-  Builders: server (`sameLine/l2.ts`, `seasonCarry.ts`, `seasonData.ts`, two tests) · client
-  (`client/shared/sameLineL2*.ts/.css` + dispatch lines) · Sports Reality research
-  (`W2_SEASON_RESEARCH.md`, job reports + February market).
-- **C3 THE DEADLINE — BUILD WAVE LIVE.** Spec landed (`W3_THE_DEADLINE_SPEC.md`, D60). Builder:
-  engine (`sameLine/l3.ts`, `market.ts`, `deadlineCarry.ts`, two tests, `same-line-l3-sweep.mjs`).
-  Client renderers follow once the engine's payloads are real.
-- **C4 THE BILL — BUILD WAVE LIVE.** Direction landed (`W4_THE_BILL_DIRECTION.md`, D60). Builder:
-  `fullHouse.ts` carry intake + the five direction items + tests.
-- **C5 W5/W6 — BUILD WAVE LIVE.** Spec landed (`W5_W6_SPEC.md`, D60). Builders: `hostTheLeague.ts`
-  band + one-student plumbing · `writeTheRule.ts` THE FLOOR institution + band + one-student copy.
-  Week 5 pool ritual build follows the plumbing.
+- **C2 THE SEASON — SERVER GREEN, CLIENT RECONCILING.** `sameLine/l2.ts` + `seasonCarry.ts` +
+  `seasonData.ts` registered as `m1l2-the-season` (33/33). Every club/twin slot a carried
+  franchise does not fill is dealt stock. Press Conference runs through `spotlightView`/
+  `pressCandidates` (no `callToPodium`); stretch dropped (ruling 2). Client renderers
+  (`sameLineL2*.ts`) built against inferred payloads — field-by-field reconciliation in flight;
+  L2 e2e script owed. Research: `W2_SEASON_RESEARCH.md`.
+- **C3 THE DEADLINE — ENGINE + CLIENT IN FLIGHT.** Engine (`l3.ts`, `market.ts`, `deadlineCarry.ts`)
+  mid-build; `sameLineMarket.test.ts` had 7 red D61 cases at the last full run. Client renderers
+  (`sameLineL3*.ts`) landed tsc-clean; SEND OFFER disabled until the engine exposes a public desk
+  key (`holderId`, not a seat id), `withdrawAccept` (5-6), `books.taxSalaryText`, per-object
+  `annualText`, `naming`, per-desk `settled`, `spotlightView`/`pressCandidates` — all requested.
+- **C4 THE BILL — MODULE + CLIENT LANDED, BROWSER TRUTH IN FLIGHT.** `fullHouse.ts` carry intake
+  (86/86); play/board/teach render roster note, destinations, night share, coverage, the
+  seventh-step ledger. QA harness running; screens will land under `module-2/screens-w4/`.
+- **C5 W5/W6 — MODULES IN FLIGHT.** `hostTheLeague.ts`: seed IN (real Full House shape:
+  `desks`/`deskOrder`, `marketId`, `cash`, `clearedTheBill`), levy on `gate + localMedia`,
+  exact split, six-stage ritual, `poolPosition`, THE VISITOR LINE, `spotlightView`/`pressCandidates`;
+  tests being written separately; synthesis/director beats in flight; no client wiring yet.
+  `writeTheRule.ts`: THE FLOOR was an unreachable skeleton with a dollar-vs-percent unit bug —
+  wave 2 (settlement repoint to the floor ballot, reduce wiring, tests) in flight; views next.
+- **Cross-cutting landed:** Press Conference runtime + `scripts/e2e-press-conference.cjs` (20 PASS;
+  stuck-podium remount regression fixed); §12.2 safeguards (invite first, decline once, teacher
+  first question) in flight; L1 apron-on-holds bounded repair in flight; fresh Economic Truth
+  review of the W5/W6 chains and R-7 (W3 real examples) in flight.
 - C6 director/stage · C7 gauntlet + founder packet.
 
 ## Hot files (reserve before parallel writes)
