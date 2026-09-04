@@ -2316,12 +2316,15 @@ test("W5 item 2: a W4 seed with the wrong lessonModuleId is ignored entirely", (
   assert.match(state.seedNote ?? "", /different lesson/i);
 });
 
-// ---- item 3 (expected to pass after the seed-reader fix) -----------------
+// ---- item 3 -----------------------------------------------------------
+// `memphis` and `boston` are real Full House `MarketId`s that this league's
+// `WEEK4_MARKET_TO_SLOT` maps directly (slots 1 and 5) — the primary path,
+// not the by-desk-order fallback for a market this league does not seat.
 
 test("W5 item 3: a W4 seed missing a club leaves that club stock", () => {
   const desks = {
-    "seat-1": fhDesk({ deskNumber: 1, marketId: "oklahoma-city", cash: 900_000, clearedTheBill: true }),
-    "seat-2": fhDesk({ deskNumber: 2, marketId: "golden-state", cash: 150_000, clearedTheBill: true }),
+    "seat-1": fhDesk({ deskNumber: 1, marketId: "memphis", cash: 900_000, clearedTheBill: true }),
+    "seat-2": fhDesk({ deskNumber: 2, marketId: "boston", cash: 150_000, clearedTheBill: true }),
   };
   const seed = week4Seed(desks);
   const state = hostTheLeagueModule.initialState({ sessionId: "s-missing", seatIds: [], gradeBand: "5-6", seed });
@@ -2331,10 +2334,10 @@ test("W5 item 3: a W4 seed missing a club leaves that club stock", () => {
   assert.equal(stockCount, MIN_LEAGUE - carried.length, "every club the seed did not name must open at its stock cash, and no other club may");
 });
 
-// ---- item 4 (expected to pass after the seed-reader fix) -----------------
+// ---- item 4 -------------------------------------------------------------
 
 test("W5 item 4: a negative carried cash never opens a franchise unable to operate", () => {
-  const desks = { "seat-1": fhDesk({ cash: -5_000_000, clearedTheBill: false }) };
+  const desks = { "seat-1": fhDesk({ marketId: "sacramento", cash: -5_000_000, clearedTheBill: false }) };
   const seed = week4Seed(desks);
   const state = hostTheLeagueModule.initialState({ sessionId: "s-negative", seatIds: [], gradeBand: "5-6", seed });
   assert.ok(state.clubs.every((c) => c.cash >= MIN_CARRIED_CASH), "no club may open with less cash than the playability floor");
