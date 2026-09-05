@@ -46,6 +46,7 @@ import {
   MODELED_DOLLARS_SHORT,
   OBJECTIVE_COPY,
   barReleaseArm,
+  bestResponseFor,
   botShareFor,
   bowlTotalFor,
   carriedClubsOf,
@@ -2650,4 +2651,88 @@ test("D62 R-14 item 9: the existing 5-6 pool ritual is unaffected — ritualStag
   const teacher = hostTheLeagueModule.teacherView(next, "REVEAL") as { director: { trigger: string | null } };
   assert.match(teacher.director.trigger ?? "", /Move on to ADAPT/);
   assert.equal((teacher.director.trigger ?? "").includes("NO-BOWL"), false);
+});
+
+/* --------------------------------- D62 R-14 EXTENSION: best-response -- */
+
+test("D62 R-14 extension item 10: for a played 7-8 season, every club's best-response reinvest at no-bowl is at least as high as at the room's actual levy", () => {
+  const state = runRitualToEnd(fullSession78(6));
+  const next = ok(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  const nb = next.noBowl!;
+  assert.ok(nb.bestResponse.rows.length > 0, "must have at least one best-response row");
+  for (const row of nb.bestResponse.rows) {
+    assert.ok(
+      row.bestReinvestNoBowl >= row.bestReinvestWithBowl,
+      `mechanism violated for ${row.club} (slot ${row.slot}): bestReinvestNoBowl=${row.bestReinvestNoBowl} < bestReinvestWithBowl=${row.bestReinvestWithBowl}`,
+    );
+  }
+});
+
+test("D62 R-14 extension item 11: the league-wide mean best-response reinvest strictly rises with no bowl", () => {
+  const state = runRitualToEnd(fullSession78(6));
+  const next = ok(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  const nb = next.noBowl!;
+  assert.ok(
+    nb.bestResponse.leagueMeanNoBowl > nb.bestResponse.leagueMeanWithBowl,
+    `leagueMeanNoBowl (${nb.bestResponse.leagueMeanNoBowl}) must exceed leagueMeanWithBowl (${nb.bestResponse.leagueMeanWithBowl})`,
+  );
+  assert.match(nb.bestResponse.line, /%/);
+  assert.match(nb.bestResponse.line, new RegExp(String(nb.bestResponse.leagueMeanNoBowl)));
+  assert.match(nb.bestResponse.line, new RegExp(String(nb.bestResponse.leagueMeanWithBowl)));
+});
+
+test("D62 R-14 extension item 12: boardView carries bestResponse club rows and a league line, no seat id; teacherView carries the full layer; studentView carries only the caller's own club", () => {
+  const state = runRitualToEnd(fullSession78(6));
+  const next = ok(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+
+  const teacher = hostTheLeagueModule.teacherView(next, "REVEAL") as {
+    noBowl: { bestResponse: { rows: unknown[]; leagueMeanWithBowl: number; leagueMeanNoBowl: number; line: string } | null };
+  };
+  assert.ok(teacher.noBowl.bestResponse, "teacherView must carry the full bestResponse layer");
+  assert.equal(teacher.noBowl.bestResponse!.rows.length, next.noBowl!.bestResponse.rows.length);
+
+  const board = hostTheLeagueModule.boardView(next, "REVEAL") as {
+    noBowl: { bestResponse: { rows: { club: string; bestReinvestWithBowl: number; bestReinvestNoBowl: number }[]; line: string } };
+  };
+  assert.ok(board.noBowl.bestResponse.rows.length > 0);
+  const seatIds = Object.keys(next.seatToSlot);
+  const raw = JSON.stringify(board.noBowl.bestResponse);
+  for (const seatId of seatIds) assert.equal(raw.includes(seatId), false, `boardView bestResponse leaked seat id "${seatId}"`);
+  assert.equal(raw.includes("seatId"), false, "boardView bestResponse must never carry a seatId key");
+
+  for (const seatId of Object.keys(next.seatToSlot)) {
+    const slot = next.seatToSlot[seatId]!;
+    const view = hostTheLeagueModule.studentView(next, seatId, "REVEAL") as {
+      noBowl: { bestResponse: { bestReinvestWithBowl: number; bestReinvestNoBowl: number } | null } | null;
+    };
+    const ownRow = next.noBowl!.bestResponse.rows.find((r) => r.slot === slot)!;
+    assert.ok(view.noBowl?.bestResponse, `studentView must carry bestResponse for ${seatId}`);
+    assert.equal(view.noBowl!.bestResponse!.bestReinvestWithBowl, ownRow.bestReinvestWithBowl);
+    assert.equal(view.noBowl!.bestResponse!.bestReinvestNoBowl, ownRow.bestReinvestNoBowl);
+  }
+});
+
+test("D62 R-14 extension item 13: bestResponse is absent at 5-6 (no field, or null) and the press still refuses at 5-6", () => {
+  const state56 = runRitualToEnd(fullSession(6));
+  const reason = bad(act(state56, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  assert.match(reason, /7-8/);
+
+  const teacher56 = hostTheLeagueModule.teacherView(state56, "REVEAL") as { noBowl: { bestResponse: unknown } };
+  assert.equal(teacher56.noBowl.bestResponse, null);
+  const board56 = hostTheLeagueModule.boardView(state56, "REVEAL") as { noBowl: unknown };
+  assert.equal(board56.noBowl, null);
+});
+
+test("D62 R-14 extension item 14: bestResponseFor uses the shipped grids (56 x 9 = 504 evaluations per club per week) and returns null for a non-live slot or unplayed week", () => {
+  const state = runRitualToEnd(fullSession78(6));
+  const next = ok(act(state, { type: "teacher:noBowl" }, "REVEAL", "teacher"));
+  assert.equal(PRICE_GRID.length * SHARE_GRID.length, 504, "grid budget note: 56 price points x 9 reinvest points = 504 evaluations, well under the ~2,000 per-club-per-week live-press budget");
+
+  const liveSlot = next.noBowl!.rows[0]!.slot;
+  const result = bestResponseFor(next, liveSlot, 0, LEVY_FRACTION);
+  assert.ok(result, "a live slot's already-settled week must produce a best response");
+  assert.ok(PRICE_GRID.includes(result!.price), "returned price must be on the shipped price grid");
+  assert.ok(SHARE_GRID.includes(result!.reinvest), "returned reinvest must be on the shipped share grid");
+
+  assert.equal(bestResponseFor(next, liveSlot, WEEK_COUNT, LEVY_FRACTION), null, "an unplayed week index must return null");
 });

@@ -258,6 +258,7 @@ function resetSeatRenderState(): void {
   wrLocalFloorOn = null;
   wrLocalFloorLevel = null;
   wrLocalFloorRecipient = null;
+  wrFloorRoundSeen = null;
   wrLastSettledSeen = null;
   boxDialMounted = null;
   boxDragging = false;
@@ -5454,6 +5455,11 @@ let wrLocalCondition: boolean | null = null;
 let wrLocalFloorOn: boolean | null = null;
 let wrLocalFloorLevel: number | null = null;
 let wrLocalFloorRecipient: "compliant" | "everyone" | null = null;
+// Tracks the last floor round this desk's local dial state was seeded from,
+// so a fresh round (mine === null again, a new stakes card) always starts
+// from the room's authored defaults rather than carrying round 1's local
+// choice into round 2's screen before the desk has touched anything.
+let wrFloorRoundSeen: number | null = null;
 let wrLastSettledSeen: string | null = null;
 
 type WRRule = { share: number; condition: boolean; how: string; supporting: number; liveDesks: number; conditionMin: number } | null;
@@ -6059,6 +6065,14 @@ function renderWRPlay(view: Record<string, unknown>): void {
       ${wrBooks(view)}`;
     return;
   }
+  if (mode === "floorRounds") {
+    renderWRFloorRounds(view);
+    return;
+  }
+  if (mode === "floorAdopted") {
+    renderWRFloorAdopted(view);
+    return;
+  }
   renderWRSeason(view);
 }
 
@@ -6227,6 +6241,218 @@ function renderWRRounds(view: Record<string, unknown>): void {
     outbox?.submit({ type: "propose", share: Number(dial.value), condition: Boolean(wrLocalCondition) });
     submit.textContent = "IN";
   });
+}
+
+/**
+ * THE FLOOR's own ballot (gate-l6-play B1: this mode used to fall through to
+ * `renderWRSeason`, which reads season-only fields and drew a broken screen
+ * for the whole room during institution 2's vote).
+ *
+ * Deliberately not a slider: THE FLOOR is a discrete line the room authored —
+ * never a percent, and 5-6 never sees a negative number either, so every
+ * number on this screen is a dollar string straight off the view. At 5-6
+ * `lines` carries exactly one authored line and the whole choice collapses to
+ * an ON/OFF press; at 7-8 the three lines are their own targets plus a
+ * separate OFF, and only then does the recipient choice matter (a compliant-
+ * club-only floor and an everyone floor are two different institutions, and a
+ * one-line band never had that choice to begin with — `normalizeFloorProposal`
+ * forces "compliant" there regardless of what a device sends).
+ */
+function renderWRFloorRounds(view: Record<string, unknown>): void {
+  document.body.classList.remove("fh-compact-play");
+  const floor = (view["floor"] as WRFloorBallot | null) ?? null;
+  const round = floor?.round ?? Number(view["round"] ?? 1);
+  const roundCount = floor?.roundCount ?? Number(view["roundCount"] ?? 2);
+  const lines = floor?.lines ?? [];
+  const recipientChoices = floor?.recipientChoices ?? [];
+  const mine = floor?.mine ?? null;
+  const stakes = floor?.stakes ?? null;
+  const sealed = Boolean(view["sealed"]);
+  const key = `floorRounds|${round}|${JSON.stringify(mine)}|${sealed}`;
+  if (wrMountKey === key && document.getElementById("wrFloorRoot")) return;
+  wrMountKey = key;
+  hidePin();
+
+  // A fresh round always reseeds from the room's own defaults — see the
+  // module doc comment on `wrFloorRoundSeen` above.
+  if (wrFloorRoundSeen !== round) {
+    wrFloorRoundSeen = round;
+    wrLocalFloorOn = null;
+    wrLocalFloorLevel = null;
+    wrLocalFloorRecipient = null;
+  }
+  if (wrLocalFloorOn === null) wrLocalFloorOn = mine?.on ?? false;
+  if (wrLocalFloorLevel === null) wrLocalFloorLevel = mine?.level ?? lines[0]?.level ?? 0;
+  if (wrLocalFloorRecipient === null) wrLocalFloorRecipient = mine?.recipient ?? "compliant";
+
+  const singleLine = lines.length <= 1;
+  const showRecipient = lines.length > 1;
+
+  const recipientLabelFor = (id: string | null): string => recipientChoices.find((r) => r.id === id)?.label ?? "";
+
+  const lineHtml = singleLine
+    ? `<button type="button" class="btn wr-floor-line wr-floor-toggle" id="wrFloorToggle" aria-pressed="${wrLocalFloorOn}" ${sealed ? "disabled" : ""}>${wrLocalFloorOn ? `ON — ${escapeHtml(lines[0]?.levelText ?? "")}` : "OFF"}</button>`
+    : `${lines
+        .map(
+          (l) =>
+            `<button type="button" class="btn wr-floor-line" data-wr-level="${l.level}" aria-pressed="${wrLocalFloorOn && wrLocalFloorLevel === l.level}" ${sealed ? "disabled" : ""}>${escapeHtml(l.levelText)}</button>`,
+        )
+        .join("")}<button type="button" class="btn wr-floor-line wr-floor-off" id="wrFloorOff" aria-pressed="${!wrLocalFloorOn}" ${sealed ? "disabled" : ""}>OFF</button>`;
+
+  const recipientHtml = showRecipient
+    ? `<div class="eyebrow" style="font-size:12px; margin-top:12px;">WHO GETS WHAT WAS FORFEITED</div>
+       <div class="wr-choice" id="wrFloorRecipient">
+         ${recipientChoices
+           .map(
+             (r) =>
+               `<button type="button" class="btn wr-floor-recipient" data-wr-recipient="${r.id}" aria-pressed="${wrLocalFloorRecipient === r.id}" ${sealed || !wrLocalFloorOn ? "disabled" : ""}>${escapeHtml(r.label)}</button>`,
+           )
+           .join("")}
+       </div>`
+    : "";
+
+  const stakesHtml = stakes
+    ? `<div class="panel" id="wrFloorStakes" style="padding:14px; margin-top:10px;">
+         <div class="eyebrow" style="font-size:12px;">What this line costs you</div>
+         <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">At ${escapeHtml(stakes.atLevelText)} you would put back ${escapeHtml(stakes.ownReinvestText)}.</p>
+         <p style="margin:6px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${stakes.wouldClear ? "You would clear it." : `It would cost you ${escapeHtml(stakes.costIfBoundText)}.`}</p>
+       </div>`
+    : "";
+
+  const mineHtml = mine
+    ? `<div class="hl-give-note" id="wrFloorMine">Your proposal: ${mine.on ? `ON at ${escapeHtml(mine.levelText)}, paid to ${escapeHtml(recipientLabelFor(mine.recipient))}` : "OFF"}</div>`
+    : `<div class="hl-give-note" id="wrFloorMine">You have not put a proposal in this round.</div>`;
+
+  $("gameBody").innerHTML = `
+    <div id="wrFloorRoot" class="hl-decide">
+      <div class="hl-span">${wrDeskHeader(view)}</div>
+      <div class="hl-col-context">
+        ${wrLeagueFloor(view, { compact: true })}
+      </div>
+      <div class="hl-col-decide" id="wrFloorDecisionBand">
+        <div class="hl-week-card">
+          <div class="hl-week-top">
+            <span class="hl-week-num">THE FLOOR — ROUND ${round} of ${roundCount}</span>
+          </div>
+        </div>
+        ${stakesHtml}
+        <div class="panel fh-dials" style="padding:14px; margin-top:10px;">
+          <div class="eyebrow" style="font-size:12px;">THE FLOOR — how much every club must spend on its own product, or forfeit</div>
+          <div class="wr-choice" id="wrFloorLines">${lineHtml}</div>
+          ${recipientHtml}
+        </div>
+        ${mineHtml}
+        ${
+          sealed
+            ? `<div class="panel" id="wrFloorSealed" style="padding:14px; margin-top:10px; border-color: rgba(244,185,66,0.5);">
+                 <div class="eyebrow" style="font-size:12px;">THE VOTE IS SEALED</div>
+                 <p style="margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--ink-primary);">${escapeHtml(String(view["sealedNote"] ?? ""))}</p>
+               </div>`
+            : ""
+        }
+      </div>
+    </div>
+    <div class="hl-lockbar" id="wrFloorLock">
+      <span class="hl-lockbar-vals" id="wrFloorLockVals">${sealed ? "Sealed — the two-thirds test runs on the numbers that were in" : `Round ${round} · <b id="wrFloorLockState">${wrLocalFloorOn ? "ON" : "OFF"}</b>`}</span>
+      <button class="btn btn-primary" id="wrFloorSubmit" ${sealed ? "disabled" : ""}>${sealed ? "VOTE SEALED" : "PUT IT IN"}</button>
+    </div>`;
+  document.body.classList.add("hl-has-lockbar");
+  document.body.classList.add("hl-wide");
+  const bar = document.getElementById("wrFloorLock");
+  if (bar) document.body.style.setProperty("--hl-lockbar-h", `${Math.ceil(bar.getBoundingClientRect().height)}px`);
+
+  if (sealed) return;
+
+  const lockState = document.getElementById("wrFloorLockState");
+  const submit = $<HTMLButtonElement>("wrFloorSubmit");
+
+  const refreshButtons = (): void => {
+    if (singleLine) {
+      const btn = document.getElementById("wrFloorToggle");
+      if (btn) {
+        btn.setAttribute("aria-pressed", String(wrLocalFloorOn));
+        btn.classList.toggle("btn-primary", Boolean(wrLocalFloorOn));
+        btn.textContent = wrLocalFloorOn ? `ON — ${lines[0]?.levelText ?? ""}` : "OFF";
+      }
+    } else {
+      document.querySelectorAll<HTMLButtonElement>("#wrFloorLines .wr-floor-line[data-wr-level]").forEach((btn) => {
+        const level = Number(btn.dataset["wrLevel"]);
+        const pressed = Boolean(wrLocalFloorOn) && wrLocalFloorLevel === level;
+        btn.setAttribute("aria-pressed", String(pressed));
+        btn.classList.toggle("btn-primary", pressed);
+      });
+      const off = document.getElementById("wrFloorOff");
+      if (off) {
+        off.setAttribute("aria-pressed", String(!wrLocalFloorOn));
+        off.classList.toggle("btn-primary", !wrLocalFloorOn);
+      }
+    }
+    document.querySelectorAll<HTMLButtonElement>("#wrFloorRecipient .wr-floor-recipient").forEach((btn) => {
+      const id = btn.dataset["wrRecipient"] ?? null;
+      const pressed = wrLocalFloorRecipient === id;
+      btn.setAttribute("aria-pressed", String(pressed));
+      btn.classList.toggle("btn-primary", pressed);
+      btn.disabled = !wrLocalFloorOn;
+    });
+    if (lockState) lockState.textContent = wrLocalFloorOn ? "ON" : "OFF";
+  };
+
+  if (singleLine) {
+    document.getElementById("wrFloorToggle")?.addEventListener("click", () => {
+      wrLocalFloorOn = !wrLocalFloorOn;
+      wrLocalFloorLevel = lines[0]?.level ?? 0;
+      refreshButtons();
+    });
+  } else {
+    document.querySelectorAll<HTMLButtonElement>("#wrFloorLines .wr-floor-line[data-wr-level]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        wrLocalFloorOn = true;
+        wrLocalFloorLevel = Number(btn.dataset["wrLevel"]);
+        refreshButtons();
+      });
+    });
+    document.getElementById("wrFloorOff")?.addEventListener("click", () => {
+      wrLocalFloorOn = false;
+      refreshButtons();
+    });
+  }
+  document.querySelectorAll<HTMLButtonElement>("#wrFloorRecipient .wr-floor-recipient").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+      wrLocalFloorRecipient = (btn.dataset["wrRecipient"] as "compliant" | "everyone") ?? "compliant";
+      refreshButtons();
+    });
+  });
+
+  submit.addEventListener("click", () => {
+    outbox?.submit({
+      type: "proposeFloor",
+      on: Boolean(wrLocalFloorOn),
+      level: wrLocalFloorLevel ?? lines[0]?.level ?? 0,
+      recipient: wrLocalFloorRecipient ?? "compliant",
+    });
+    submit.textContent = "IN";
+    submit.disabled = true;
+  });
+}
+
+/** THE FLOOR's own verdict card, parallel to the SHARE `adopted` branch above. */
+function renderWRFloorAdopted(view: Record<string, unknown>): void {
+  wrMountKey = null;
+  document.body.classList.remove("hl-has-lockbar", "fh-compact-play", "hl-wide");
+  const institutions = (view["institutions"] as WRInstitutions) ?? null;
+  const floor = institutions?.floor ?? null;
+  const verdict = floor
+    ? `THE FLOOR IS SET at ${escapeHtml(floor.levelText)} a week — ${escapeHtml(floor.recipientLabel)}.`
+    : "NO FLOOR. The two-thirds test did not pass, so the season runs without one.";
+  $("gameBody").innerHTML = `
+    ${wrDeskHeader(view)}
+    ${wrRuleStrip(view["rule"] as WRRule)}
+    <div class="panel" id="wrFloorVerdict" style="padding:18px; margin-top:12px;">
+      <div class="eyebrow" style="font-size:12px;">The floor</div>
+      <p style="margin:8px 0 0; font-size:16px; line-height:1.5; color:var(--ink-primary);">${verdict}</p>
+    </div>
+    ${wrBooks(view)}`;
 }
 
 function renderWRSeason(view: Record<string, unknown>): void {

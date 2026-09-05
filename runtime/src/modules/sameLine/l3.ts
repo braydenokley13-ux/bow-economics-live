@@ -18,7 +18,7 @@
  * paused, and nothing else. Every case below asks what phase it is in.
  */
 import { CLUB, CLUBS, LINE, ROSTER, bandOf, type Band, type ClubId, type JobRole } from "./world.js";
-import { money } from "./engine.js";
+import { money, type Signing } from "./engine.js";
 import {
   applyTrade,
   checkTrade,
@@ -39,6 +39,7 @@ import {
 } from "./market.js";
 import { extractWindowCarry, type WindowCarry } from "./carry.js";
 import { extractSeasonCarry, type SeasonCarry } from "./seasonCarry.js";
+import { stockFranchise } from "./l2.js";
 import { profileFor, type GradeBand, type GradeProfile } from "../../shared/gradeBand.js";
 import type { LessonModule, ReduceContext, ReduceResult, SeatId, UnresolvedSeat } from "../../shared/lessonModule.js";
 import type { CanonicalPhase } from "../../shared/phases.js";
@@ -248,23 +249,71 @@ function fromSeasonCarry(sessionId: string, sc: SeasonCarry & { ok: true }): { f
   return { franchises, warnings: sc.warnings };
 }
 
+/**
+ * The one place a `Signing` (real or stock) becomes a tradeable
+ * `ContractObject`. Both `fromWindowCarry` (a real Week 1 carry, no Week 2
+ * played) and `stockPool` (no Week 1 either — see below) route through this,
+ * so a stock roster row is byte-for-byte the same shape a carried one has:
+ * same `contractId` scheme, same `yearsRemaining` haircut, same
+ * `hashJobState` seeding.
+ */
+function contractsFromSignings(sessionId: string, clubId: ClubId, twin: 0 | 1, signings: readonly Signing[]): ContractObject[] {
+  return signings.map((sg) => {
+    const contractId = `${clubId}-${twin}-${sg.playerId}`;
+    return {
+      kind: "contract",
+      contractId,
+      playerId: sg.playerId,
+      name: sg.name,
+      role: sg.role,
+      annual: sg.annual,
+      yearsRemaining: Math.max(1, sg.years - 1),
+      jobState: hashJobState(sessionId, contractId),
+      acquiredWeek: 1,
+    };
+  });
+}
+
+/**
+ * R6 in `market.ts` (`checkTrade`) gates every trade on the LITERAL length of
+ * `TradeDeskLike.roster` staying in `[ROSTER.min, ROSTER.max]` = [14, 15] —
+ * the in-season real-roster-size rule, not a slot count passed separately (L3
+ * has no `slots` field the way L2's `SeasonPosition` does). A stock desk only
+ * ever names two real contracts (the July signings); everything else this
+ * club actually carries is modeled here as unnamed filler so `roster.length`
+ * reads the club's real in-season body count, never just "2" — the same
+ * reasoning `l2.ts`'s `seatFromUnclaimed` applies to its own `slots` field,
+ * adapted to a field `checkTrade` reads directly instead of separately.
+ * `club.contracts.value` is a pre-season (2026-09-03) snapshot, several
+ * clubs' real counts (12–13) sit under the in-season minimum of 14, and
+ * seeding right at 14 leaves no headroom: sending away even one contract
+ * (the deadline's own core move) would immediately breach the floor. Every
+ * stock desk is instead seeded at `ROSTER.max` (15) — the real in-season cap
+ * a full active roster carries most of the season anyway — so one contract
+ * can leave (15 → 14, still legal) or arrive on the other side's smaller
+ * slate without either desk starting the hour already pinned to an edge.
+ */
+function fillRoster(named: readonly ContractObject[], clubId: ClubId, twin: 0 | 1, slotCount: number): ContractObject[] {
+  if (named.length >= slotCount) return [...named];
+  const roles: readonly JobRole[] = ["BIG", "WING", "GUARD"];
+  const fillers: ContractObject[] = Array.from({ length: slotCount - named.length }, (_, i) => ({
+    kind: "contract" as const,
+    contractId: `${clubId}-${twin}-roster-${i}`,
+    playerId: `${clubId}-${twin}-roster-${i}`,
+    name: "Rest of the roster",
+    role: roles[i % roles.length]!,
+    annual: 2_300_000,
+    yearsRemaining: 1,
+    jobState: "DOES_JOB" as JobState,
+    acquiredWeek: 1 as const,
+  }));
+  return [...named, ...fillers];
+}
+
 /** Degrade to Week 1's own carry when no Week 2 seed is usable (spec §7 "degradation"). */
 function fromWindowCarry(sessionId: string, wc: WindowCarry & { ok: true }): { franchises: readonly PoolFranchise[]; warnings: readonly string[] } {
   const franchises: PoolFranchise[] = wc.franchises.map((f) => {
-    const roster: ContractObject[] = f.signings.map((sg) => {
-      const contractId = `${f.clubId}-${f.twin}-${sg.playerId}`;
-      return {
-        kind: "contract",
-        contractId,
-        playerId: sg.playerId,
-        name: sg.name,
-        role: sg.role,
-        annual: sg.annual,
-        yearsRemaining: Math.max(1, sg.years - 1),
-        jobState: hashJobState(sessionId, contractId),
-        acquiredWeek: 1,
-      };
-    });
+    const roster = contractsFromSignings(sessionId, f.clubId, f.twin, f.signings);
     return {
       clubId: f.clubId,
       twin: f.twin,
@@ -285,25 +334,39 @@ function fromWindowCarry(sessionId: string, wc: WindowCarry & { ok: true }): { f
   return { franchises, warnings: [...wc.warnings, "No season was played — job states were seeded, not earned."] };
 }
 
-function stockPool(): readonly PoolFranchise[] {
+/**
+ * D63 decision 3: an unlinked room is a MODELED JULY, not an empty one. THE
+ * DEADLINE's unlinked desk is that same modeled desk after a season nobody
+ * played: the identical two July signings `l2.ts`'s `stockFranchise` carries
+ * (Vučević, Nance — real, dated, from `world.ts` BOARD), the identical 7-8
+ * wall / 5-6 no-wall split, `committed`/`taxSalary` left at the club's real
+ * aggregate (the two contracts sit inside it, never added on top — matching
+ * `stockFranchise`'s own comment). Read through `stockFranchise` once, here,
+ * so roster/wall/openJobs/committed all derive from that one source rather
+ * than a second, drifting copy of the July facts.
+ */
+function stockPool(sessionId: string, gradeBand: GradeBand): readonly PoolFranchise[] {
   const out: PoolFranchise[] = [];
   for (const club of CLUBS) {
     for (const twin of [0, 1] as const) {
+      const franchise = stockFranchise(club.id, twin, gradeBand);
+      const named = contractsFromSignings(sessionId, club.id, twin, franchise.signings);
+      const slotCount = ROSTER.max;
       out.push({
         clubId: club.id,
         twin,
-        label: `${club.name} ${twin === 0 ? "A" : "B"}`,
-        committed: club.committed.value,
-        taxSalary: club.taxSalary.value,
-        deadMoney: club.deadMoney.value,
-        holds: club.holds.value,
-        wall: null,
-        openJobs: club.jobs,
-        roster: [],
+        label: franchise.label,
+        committed: franchise.committed,
+        taxSalary: franchise.taxSalary,
+        deadMoney: franchise.deadMoney,
+        holds: franchise.holds,
+        wall: franchise.wall,
+        openJobs: franchise.openJobs,
+        roster: fillRoster(named, club.id, twin, slotCount),
         picksOwned: ownPicks(club.id, twin),
         ownPickIds: ownPicks(club.id, twin).map((p) => p.pickId),
-        band: bandOf(club.committed.value),
-        seedWarning: "No linked room was found. This is a stock franchise, with nothing signed yet — the console says so.",
+        band: bandOf(franchise.committed),
+        seedWarning: "This July was dealt to this desk, not played by it: the two signings below are real, but no season happened before this deadline. Job states were seeded, not earned.",
       });
     }
   }
@@ -325,7 +388,7 @@ function resolveSeed(sessionId: string, seed: unknown, gradeBand: GradeBand): { 
   }
   // BC-18: a band mismatch or malformed seed refuses the carry outright, and a
   // dropped room still opens playable rather than stranding the class.
-  return { pool: stockPool(), warnings: [`No usable Week 1 or Week 2 history was found (${window.reason}). Every desk starts from a stock franchise, and the console says so.`] };
+  return { pool: stockPool(sessionId, gradeBand), warnings: [`No usable Week 1 or Week 2 history was found (${window.reason}). Every desk starts from a stock franchise, and the console says so.`] };
 }
 
 /* ---------------------------------------------------------------- state -- */

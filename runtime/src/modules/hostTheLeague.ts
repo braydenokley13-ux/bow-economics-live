@@ -795,6 +795,32 @@ export type NoBowlResult = {
   leagueReinvestNoBowl: number;
   roomReinvestLineWithBowl: string;
   roomReinvestLineNoBowl: string;
+  /**
+   * D62 R-14 EXTENSION — THE BEST-RESPONSE LAYER. `reinvestWithBowl`/
+   * `reinvestNoBowl` above are the SAME played dial (dials held, D62 R-14's
+   * own point: the bowl only ever moves cash). This is the OTHER number the
+   * INCENTIVE chain needs: what each club's own best reinvest WOULD have
+   * been, re-decided from scratch under `bestResponseFor`, at the room's
+   * actual levy versus at levy 0. A computed re-decision, never a played
+   * one — see `SIMPLIFICATIONS`.
+   */
+  bestResponse: NoBowlBestResponse;
+};
+
+/** One live club's own best-response reinvest, mean over the three settled weeks, both ways. */
+export type NoBowlBestResponseRow = {
+  slot: number;
+  club: string;
+  bestReinvestWithBowl: number;
+  bestReinvestNoBowl: number;
+  bestReinvestDollarsWithBowl: number;
+  bestReinvestDollarsNoBowl: number;
+};
+export type NoBowlBestResponse = {
+  rows: NoBowlBestResponseRow[];
+  leagueMeanWithBowl: number;
+  leagueMeanNoBowl: number;
+  line: string;
 };
 /** Snapshot-safe read: a state with no `noBowl` (never pressed, or pre-dates the field) reads as `null`. */
 export const noBowlOf = (state: HostLeagueState): NoBowlResult | null => state.noBowl ?? null;
@@ -3141,6 +3167,11 @@ export const SIMPLIFICATIONS: readonly { what: string; why: string; risk: string
     why: "An equal split is legible in one reveal and lets the room see 'the bars IN are different; the bars OUT are the same' without a second formula to explain.",
     risk: "The real NBA's revenue sharing is a confidential, market-size-adjusted formula, not an equal split — some big-market clubs are net payers and some are net receivers, and the exact terms are not public. Say plainly: the real pot is not split evenly the way this room's is.",
   },
+  {
+    what: "THE NO-BOWL SEASON's best-response layer holds every dial the room actually played for the reinvest-with-bowl side, and only re-decides the club under test — no other desk's price or reinvest is ever re-optimized alongside it. Reinvest itself is scored by this week's own cash plus the Draw it buys valued FORWARD at `profile.drawDollars` (the same per-Draw-point local-media rate `localMediaFor` already charges every week) across the season's remaining weeks, RETAINED net of the levy's equal split (a club keeps only `(1 - levy) + levy / liveSlots.length` of that future dollar, since THE POOL assesses and splits future local media exactly like this week's) — zero on the last settled week, same as `reinvestRuleFor`'s own framing.",
+    why: "A full re-equilibration (every club re-deciding against every other club's re-decision, repeated to a fixed point) is a different and much heavier computation than a live 50-minute press can carry, and the INCENTIVE chain only needs one club's own best response to the SAME levy question — not a league-wide re-equilibrium. A purely single-week cash objective is worse than useless here: reinvest is pure cost the week it is spent, so it would always brute-force to zero and manufacture the false lesson 'nobody should ever reinvest.' Valuing the Draw forward through the local-media channel alone (never re-running `settleHome` for future weeks) is the cheapest fix that still lets reinvest win some cells.",
+    risk: "Two false lessons sit on either side of this number. 'The levy changed nobody's mind' — the held-dial press alone invites exactly this, which is why this layer exists. And the opposite overclaim: 'the levy alone decides the dial' — it does not; it is one input into a best response computed against everything else in the room held fixed, not a formula that outputs a club's reinvest by itself. A third risk is specific to the forward valuation: it prices a Draw point ONLY through local media, never through the extra gate revenue a higher Draw also pulls in future weeks (`ownDrawFans`/`visitorDrawFans` in `settleHome`) — so this best-response number understates the true value of reinvest and is a floor, not the club's actual optimum. Say all three: the mechanism is real (best-response reinvest falls as the levy rises), this number is a computed re-decision never a played one, and it is a conservative estimate of that re-decision, not an exact one.",
+  },
 ];
 
 export const SHOCK_REVEAL_COPY =
@@ -3706,6 +3737,123 @@ export function poolTotalsAll(state: HostLeagueState): PoolTotals[] {
 }
 
 /**
+ * D62 R-14 EXTENSION — THE BEST-RESPONSE LAYER. One live club, one already-
+ * settled week: holding every OTHER live club's recorded price and reinvest
+ * for that week fixed (no other club's assessed local revenue can move —
+ * `settleHome`'s `gate`/`localMediaFor` never read another club's price or
+ * reinvest, only Draws printed before the week opened), brute-force THIS
+ * club's own price x reinvest over the module's own legal grids (`PRICE_GRID`
+ * x `SHARE_GRID`, 56 x 9 = 504 evaluations — inside the ~2,000-per-club-per-
+ * week budget for a live press) through the SAME `settleHome` /
+ * `poolSplitFor` calls `settleWeek` itself uses, at the supplied `levy`, and
+ * return whichever cell maximises this club's own OBJECTIVE: this week's own
+ * cash (`net + poolNet`, exactly what `settleWeek` would add to this club's
+ * books that week) PLUS the Draw this reinvest buys valued FORWARD at
+ * `profile.drawDollars` across the season's remaining settled weeks (zero on
+ * the last one), RETAINED net of the levy's equal split — future local media
+ * is assessed and pooled exactly like this week's (`assessedLocalRevenue =
+ * gate + localMedia`), so only `(1 - levy) + levy / liveSlots.length` of that
+ * future dollar is this club's own (see the retention comment inline and
+ * `SIMPLIFICATIONS`). A pure single-week cash objective would brute-force to
+ * reinvest = 0 always, since reinvest is pure cost the week it is paid.
+ * `null` when the slot was not a live desk in that settled week (nothing to
+ * re-decide).
+ */
+export function bestResponseFor(
+  state: HostLeagueState,
+  slot: number,
+  weekIndex: number,
+  levy: number,
+): { price: number; reinvest: number; reinvestDollars: number; take: number } | null {
+  const club = state.clubs.find((c) => c.slot === slot);
+  if (!club || club.seatId === null) return null;
+  const week = club.weeks[weekIndex];
+  if (!week || week.stock) return null;
+  const profile = profileOf(club);
+  const capacity = week.home.capacity;
+  const localMedia = week.localMedia;
+  const size = state.leagueSize;
+  const weekRows = poolRowsFor(state, weekIndex);
+  const liveSlots = weekRows.some((p) => p.slot === slot) ? weekRows.map((p) => p.slot) : [...weekRows.map((p) => p.slot), slot];
+  const assessedLocalRevenue: number[] = new Array(size).fill(0);
+  for (const p of weekRows) assessedLocalRevenue[p.slot] = p.assessedLocalRevenue;
+
+  let best: { price: number; reinvest: number; reinvestDollars: number; take: number } | null = null;
+  for (const price of PRICE_GRID) {
+    const home = settleHome(profile, capacity, week.hostDrawBefore, week.visitorDrawBefore, price);
+    assessedLocalRevenue[slot] = home.gate + localMedia;
+    for (const reinvest of SHARE_GRID) {
+      const reinvestDollars = Math.round((reinvest / 100) * home.doorMoney);
+      const net = home.doorMoney + localMedia + NATIONAL - profile.bill - reinvestDollars;
+      const { paidIn, tookOut } = poolSplitFor(size, liveSlots, assessedLocalRevenue, levy);
+      const poolNet = (tookOut[slot] ?? 0) - (paidIn[slot] ?? 0);
+      // Forward half of the objective: the Draw this reinvest buys earns nothing
+      // THIS week (`reinvestRuleFor`'s own "LAST WEEK" framing) — it is worth the
+      // extra local media/sponsorship it draws on every REMAINING settled week,
+      // priced at `profile.drawDollars`, the shipped per-Draw-point rate
+      // `localMediaFor` already charges every week. Zero on the last settled
+      // week, matching that framing exactly. Ignores any forward gate-side Draw
+      // benefit (`ownDrawFans` in `settleHome`) — see `SIMPLIFICATIONS`.
+      const drawAfter = nextDraw(profile, week.hostDrawBefore, reinvestDollars);
+      // The Draw this reinvest buys shows up as MORE local media in a future
+      // week, which THE POOL then assesses and splits equally (`poolSplitFor`,
+      // same as line ~1373's `assessedLocalRevenue = gate + localMedia`) — so
+      // the club keeps only `(1 - levy) + levy / liveSlots.length` of every
+      // extra future local-media dollar its own Draw earns, never the whole
+      // dollar. At `levy = 0` this retention factor is exactly 1 (no bowl, no
+      // split, nothing lost) — the free-ride mechanism itself is what makes
+      // the levy move this argmax at all.
+      const retained = (1 - levy) + levy / liveSlots.length;
+      const forwardDrawValue = (drawAfter - week.hostDrawBefore) * profile.drawDollars * (WEEK_COUNT - 1 - weekIndex) * retained;
+      const take = net + poolNet + forwardDrawValue;
+      if (best === null || take > best.take + 1e-9) {
+        best = { price, reinvest, reinvestDollars, take };
+      }
+    }
+  }
+  return best;
+}
+
+/**
+ * D62 R-14 EXTENSION. Every live club's own best-response reinvest, mean over
+ * the three settled weeks, at the room's actual levy versus at levy 0 —
+ * `bestResponseFor` run twice per club per week. This is the number the
+ * held-dial replay above cannot produce (`reinvestWithBowl === reinvestNoBowl`
+ * always there, by construction): a re-decided dial, not a played one.
+ */
+function bestResponseSummaryFor(state: HostLeagueState): NoBowlBestResponse {
+  const totals = poolTotalsAll(state);
+  const levy = levyOf(state);
+  const mean = (xs: readonly number[]): number => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
+  const rows: NoBowlBestResponseRow[] = totals.map((t): NoBowlBestResponseRow => {
+    const withBowl: { reinvest: number; dollars: number }[] = [];
+    const noBowl: { reinvest: number; dollars: number }[] = [];
+    for (let w = 0; w < WEEK_COUNT; w += 1) {
+      const wb = bestResponseFor(state, t.slot, w, levy);
+      const nb = bestResponseFor(state, t.slot, w, 0);
+      if (wb) withBowl.push({ reinvest: wb.reinvest, dollars: wb.reinvestDollars });
+      if (nb) noBowl.push({ reinvest: nb.reinvest, dollars: nb.reinvestDollars });
+    }
+    return {
+      slot: t.slot,
+      club: t.club,
+      bestReinvestWithBowl: Math.round(mean(withBowl.map((x) => x.reinvest))),
+      bestReinvestNoBowl: Math.round(mean(noBowl.map((x) => x.reinvest))),
+      bestReinvestDollarsWithBowl: Math.round(mean(withBowl.map((x) => x.dollars))),
+      bestReinvestDollarsNoBowl: Math.round(mean(noBowl.map((x) => x.dollars))),
+    };
+  });
+  const leagueMeanWithBowl = Math.round(mean(rows.map((r) => r.bestReinvestWithBowl)));
+  const leagueMeanNoBowl = Math.round(mean(rows.map((r) => r.bestReinvestNoBowl)));
+  return {
+    rows,
+    leagueMeanWithBowl,
+    leagueMeanNoBowl,
+    line: `Had every club re-decided with no bowl, the room's best reinvest would have been ${leagueMeanNoBowl}% instead of ${leagueMeanWithBowl}%.`,
+  };
+}
+
+/**
  * D62 R-14 — THE NO-BOWL SEASON. The same three weeks, every live desk's own
  * recorded price and reinvest held fixed, replayed with `levy = 0`: the
  * "before" this room never played, computed rather than invented.
@@ -3750,6 +3898,7 @@ export function computeNoBowl(state: HostLeagueState): NoBowlResult {
     leagueReinvestNoBowl,
     roomReinvestLineWithBowl: `With the bowl running, the room put back $${leagueReinvestWithBowl.toLocaleString()} of its own money across the whole season.`,
     roomReinvestLineNoBowl: `Replayed with no bowl at all — same prices, same reinvest calls — the room still puts back $${leagueReinvestNoBowl.toLocaleString()}. Nobody's reinvest call changes; only whose books the cash ends up sitting on does.`,
+    bestResponse: bestResponseSummaryFor(state),
   };
 }
 
@@ -4678,8 +4827,28 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
             ...(bandOfRoom(state) === "7-8" && noBowlOf(state)
               ? {
                   noBowl: (() => {
-                    const row = noBowlOf(state)!.rows.find((r) => r.slot === slot) ?? null;
-                    return row ? { club: row.club, cashWithBowl: row.cashWithBowl, cashNoBowl: row.cashNoBowl, reinvestWithBowl: row.reinvestWithBowl, reinvestNoBowl: row.reinvestNoBowl } : null;
+                    const nb = noBowlOf(state)!;
+                    const row = nb.rows.find((r) => r.slot === slot) ?? null;
+                    const brRow = nb.bestResponse.rows.find((r) => r.slot === slot) ?? null;
+                    return row
+                      ? {
+                          club: row.club,
+                          cashWithBowl: row.cashWithBowl,
+                          cashNoBowl: row.cashNoBowl,
+                          reinvestWithBowl: row.reinvestWithBowl,
+                          reinvestNoBowl: row.reinvestNoBowl,
+                          // D62 R-14 EXTENSION — this desk's own re-decided best
+                          // reinvest only, both ways.
+                          bestResponse: brRow
+                            ? {
+                                bestReinvestWithBowl: brRow.bestReinvestWithBowl,
+                                bestReinvestNoBowl: brRow.bestReinvestNoBowl,
+                                bestReinvestDollarsWithBowl: brRow.bestReinvestDollarsWithBowl,
+                                bestReinvestDollarsNoBowl: brRow.bestReinvestDollarsNoBowl,
+                              }
+                            : null,
+                        }
+                      : null;
                   })(),
                 }
               : {}),
@@ -4938,7 +5107,7 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
       // D62 R-14 — THE NO-BOWL SEASON. 7-8 only, one press, after THE RITUAL
       // and every week is settled. `available` reflects whether the press can
       // fire NOW (false once it has already run — a second press is refused).
-      noBowl: ((): { available: boolean; reason: string; run: boolean; rows: NoBowlRow[]; leagueLine: string } => {
+      noBowl: ((): { available: boolean; reason: string; run: boolean; rows: NoBowlRow[]; leagueLine: string; bestResponse: NoBowlBestResponse | null } => {
         const band = bandOfRoom(state);
         const nb = noBowlOf(state);
         const run = nb !== null;
@@ -4962,6 +5131,9 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
           run,
           rows: nb?.rows ?? [],
           leagueLine: nb ? `${nb.roomReinvestLineWithBowl} ${nb.roomReinvestLineNoBowl}` : "",
+          // D62 R-14 EXTENSION — teacher gets the full best-response layer:
+          // every club's row plus the league means and the Cap Room line.
+          bestResponse: nb?.bestResponse ?? null,
         };
       })(),
     }, bandOfRoom(state));
@@ -5121,6 +5293,18 @@ export const hostTheLeagueModule: LessonModule<HostLeagueState> = {
                       reinvestWithBowl,
                       reinvestNoBowl,
                     })),
+                    // D62 R-14 EXTENSION — club rows and the room's mean line,
+                    // never a seat id (same club-wordmark discipline as above).
+                    bestResponse: {
+                      leagueMeanWithBowl: noBowlOf(state)!.bestResponse.leagueMeanWithBowl,
+                      leagueMeanNoBowl: noBowlOf(state)!.bestResponse.leagueMeanNoBowl,
+                      line: noBowlOf(state)!.bestResponse.line,
+                      rows: noBowlOf(state)!.bestResponse.rows.map(({ club, bestReinvestWithBowl, bestReinvestNoBowl }) => ({
+                        club,
+                        bestReinvestWithBowl,
+                        bestReinvestNoBowl,
+                      })),
+                    },
                   }
                 : null,
           };

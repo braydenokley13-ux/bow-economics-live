@@ -2935,6 +2935,19 @@ html:not([data-module="m2"]) .hl-decide > .hl-col-context .fh-sellout { padding:
 .wr-league.compact .wr-club-cash { display: none; }
 .wr-league.compact .wr-club-name { height: 72px; }
 .wr-league.compact .wr-club-name > span { font-size: 9.5px; }
+/* ---------------------------------------------------------------- L3 · THE FLOOR (institution 2) ---
+   THE FLOOR is a discrete authored line, never a dial: the ballot is a row of
+   press targets (an ON/OFF toggle at 5-6, three lines plus OFF at 7-8) rather
+   than the SHARE round's slider above. `.wr-choice .btn` already guarantees
+   the 46px press-target floor and the flex layout; these rules only add the
+   pressed-state affordance `aria-pressed` needs and the stakes/verdict cards'
+   own accent. */
+.wr-floor-line[aria-pressed="true"] { border-color: var(--accent-gold); }
+.wr-floor-recipient[aria-pressed="true"] { border-color: var(--accent-blue); }
+.wr-floor-toggle { flex: 1 1 100%; }
+#wrFloorStakes { border-left: 3px solid var(--accent-blue); }
+#wrFloorVerdict { border-left: 3px solid var(--accent-gold); }
+
 /* The REVEAL call: one tap, before beat 2 settles it. */
 .hl-call { border-left: 3px solid var(--accent-blue); }
 .hl-call .wr-choice { display: flex; gap: 8px; flex-wrap: wrap; }

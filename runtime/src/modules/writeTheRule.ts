@@ -5230,6 +5230,12 @@ export const writeTheRuleModule: LessonModule<WriteRuleState> = {
                 proposalCount: proposals.filter((p) => p.on !== null).length,
                 deskCount: liveFloor.length,
                 medianText: votedLevels.length > 0 ? money(medianOf(votedLevels)) : null,
+                // True once the last round's proposals are in and the next
+                // press sets the floor rather than closing another round —
+                // the console reads the engine's word for it instead of
+                // guessing from `index === count`, which is also true one
+                // press early (the last round while it is still open).
+                sealed: state.floorRoundIndex >= FLOOR_ROUND_COUNT,
               };
             })()
           : null,

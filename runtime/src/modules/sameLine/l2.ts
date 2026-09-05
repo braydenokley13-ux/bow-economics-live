@@ -231,7 +231,7 @@ const STOCK_JULY_SIGNINGS: readonly Signing[] = [
   { playerId: STOCK_JULY_B.id, name: STOCK_JULY_B.name, role: STOCK_JULY_B.role, annual: STOCK_JULY_B.ask.value, tool: "minimum", years: STOCK_JULY_B.years, coveredThrough: "2026-27" },
 ];
 
-function stockFranchise(clubId: ClubId, twin: 0 | 1, gradeBand: GradeBand): UnclaimedSeasonFranchise {
+export function stockFranchise(clubId: ClubId, twin: 0 | 1, gradeBand: GradeBand): UnclaimedSeasonFranchise {
   const club = CLUB[clubId];
   return {
     sourceSeatId: null,

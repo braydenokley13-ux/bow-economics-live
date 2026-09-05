@@ -160,7 +160,7 @@ function readDesk(seatId: string, v: unknown): { franchise: CarriedFranchise } |
       holds: club.holds.value,
       unattributed: club.committed.value - club.taxSalary.value - club.holds.value,
       taxSalary: club.taxSalary.value + (committed - club.committed.value),
-      band: bandOf(committed),
+      band: bandOf(committed, club.holds.value),
       openJobs,
       signings,
       overCapDeclared: v["position"] !== undefined && pos["overCapDeclared"] === true,

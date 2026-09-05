@@ -377,6 +377,13 @@ async function runUnlinkedBand(browser, band) {
     await board
       .waitForFunction((prev) => (document.querySelector("#stage .label")?.textContent ?? "") !== prev, boardLabelBefore, { timeout: 20000 })
       .catch(() => {});
+    // The frame's own motion (D63: 500ms hold + 500ms unveil + up to ~240ms
+    // stagger) is real, not just a network wait — a screenshot taken right
+    // after the press lands inside the hold and shows a frame with only the
+    // persistent label/footer visible, which is misleading evidence of a
+    // broken frame rather than a mid-animation one. Settle before reading
+    // anything visual.
+    await board.waitForTimeout(1300);
 
     const boardLabel = await board.evaluate(() => document.querySelector("#stage .label")?.textContent ?? "");
     const boardText = await board.evaluate(() => document.body.innerText);

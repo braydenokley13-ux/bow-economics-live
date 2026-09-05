@@ -689,3 +689,91 @@ test("a trade never crosses LINE.cap for a desk with room, per the room-absorpti
   const r = reduce(state, { type: "propose", toSeat: "B", send: ["a-1"], want: ["b-1"], chip: SEND_CHIPS_56[0] }, ctx("A"));
   assert.equal(r.ok, false);
 });
+
+/* ------------------------------------------------- D63: unlinked stock pool -- */
+
+/**
+ * An unlinked room (no Week 1/2 source) is a MODELED JULY (D63 decision 3),
+ * not an empty one. THE DEADLINE's stock desk must be that same modeled July
+ * desk after a season nobody played: the two real July signings `l2.ts`'s
+ * `stockFranchise` carries (Vucevic, Nance), real enough to list and trade,
+ * plus enough modeled roster body to satisfy `checkTrade`'s R6 roster-count
+ * rule (`market.ts`, `ROSTER.min..max` = 14..15) instead of stalling on
+ * `roster.length === 2`.
+ */
+function seatInOrder(state: SameLineL3State, seatIds: readonly string[]): SameLineL3State {
+  let s = state;
+  for (const seatId of seatIds) {
+    const r = reduce(s, { type: "takeSeat" }, ctx(seatId));
+    assert.equal(r.ok, true, `takeSeat(${seatId}) should succeed`);
+    if (r.ok) s = r.state;
+  }
+  return s;
+}
+
+for (const gradeBand of ["5-6", "7-8"] as const) {
+  test(`D63 unlinked stock pool (${gradeBand}): every seated desk carries the two named July signings, listable and within ROSTER bounds`, () => {
+    const state = sameLineL3Module.initialState({ sessionId: `unlinked-${gradeBand}`, seatIds: [], gradeBand }) as SameLineL3State;
+    // memphis-0, memphis-1, brooklyn-0 in pool order — A and C are different
+    // clubs (twins never trade, R8), so the trade test below is legal on R8.
+    const seated = seatInOrder(state, ["A", "B", "C"]);
+    const a = seated.desks["A"]!;
+    const b = seated.desks["B"]!;
+    const c = seated.desks["C"]!;
+    assert.equal(a.clubId, "memphis");
+    assert.equal(b.clubId, "memphis");
+    assert.equal(c.clubId, "brooklyn");
+
+    for (const d of [a, b, c]) {
+      assert.ok(d.roster.some((r) => r.contractId === `${d.clubId}-${d.twin}-vucevic`), `${d.label} should carry a named Vucevic contract`);
+      assert.ok(d.roster.some((r) => r.contractId === `${d.clubId}-${d.twin}-nance`), `${d.label} should carry a named Nance contract`);
+      assert.ok(d.roster.length >= 14 && d.roster.length <= 15, `${d.label} roster (${d.roster.length}) should sit within ROSTER.min..max`);
+      assert.notEqual(d.seedWarning, null);
+    }
+    // 7-8 carries the same wall D63/`stockFranchise` gives an unlinked desk; 5-6 carries none.
+    assert.equal(a.books.wall, gradeBand === "7-8" ? LINE.tax : null);
+
+    // The two named contracts are listable, not just the two picks (the bug this fixes).
+    const listVucevic = reduce(seated, { type: "list", objectId: `memphis-0-vucevic` }, ctx("A"));
+    assert.equal(listVucevic.ok, true);
+    if (!listVucevic.ok) return;
+    const afterList = listVucevic.state;
+    assert.ok(afterList.listings.includes("memphis-0-vucevic"));
+    const marketView = sameLineL3Module.studentView(afterList, "C", "PLAY") as { market: readonly { id: string }[] };
+    assert.ok(marketView.market.some((m) => m.id === "memphis-0-vucevic"));
+
+    // list -> propose (contract for contract, salary-matched, via holderId) -> accept -> teacher:closeHour executes.
+    // C sends its Nance ($4.0M) to A for A's Vucevic ($3.9M): both stock
+    // desks carry the identical two named contracts, so this is symmetric
+    // absorption between two identically-shaped desks rather than the
+    // contract-for-pick pairing that tripped R1 (a real cap-room check, not
+    // a roster-count bug) against a specific real club's committed payroll.
+    const chip = gradeBand === "5-6" ? SEND_CHIPS_56[0] : SEND_CHIPS_78[0];
+    const proposed = reduce(afterList, { type: "propose", toDesk: "memphis-0", send: ["brooklyn-0-nance"], want: ["memphis-0-vucevic"], chip }, ctx("C"));
+    assert.equal(proposed.ok, true, !proposed.ok ? proposed.reason : "");
+    if (!proposed.ok) return;
+    const offerId = Object.keys(proposed.state.offers)[0]!;
+    const accepted = reduce(proposed.state, { type: "accept", offerId }, ctx("A"));
+    assert.equal(accepted.ok, true, !accepted.ok ? accepted.reason : "");
+    if (!accepted.ok) return;
+
+    const closedHour1 = reduce(accepted.state, { type: "teacher:closeHour" }, ctx("teacher"));
+    assert.equal(closedHour1.ok, true);
+    if (!closedHour1.ok) return;
+    assert.equal(closedHour1.state.hour, 2);
+    assert.ok(closedHour1.state.executed.length > 0, "the accepted deal should have executed on the first closeHour");
+    const executedDeal = closedHour1.state.executed[0]!;
+    assert.ok(executedDeal.send.includes("brooklyn-0-nance"));
+    assert.ok(executedDeal.want.includes("memphis-0-vucevic"));
+
+    const closedHour2 = reduce(closedHour1.state, { type: "teacher:closeHour" }, ctx("teacher"));
+    assert.equal(closedHour2.ok, true);
+    if (!closedHour2.ok) return;
+    assert.equal(closedHour2.state.marketClosed, true);
+
+    // boardView never carries a seat id, even after real trades executed on a stock pool.
+    const board = sameLineL3Module.boardView(closedHour2.state, "REVEAL") as Record<string, unknown>;
+    assert.equal(JSON.stringify(board).includes(`"A"`), false);
+    assert.equal(JSON.stringify(board).includes(`"seatId"`), false);
+  });
+}
